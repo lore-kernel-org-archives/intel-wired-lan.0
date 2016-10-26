@@ -1,131 +1,167 @@
-From: Tushar Dave <tushar.n.dave@oracle.com>
-Date: Wed, 26 Oct 2016 10:49:27 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: fix panic on SPARC while changing
-	num of desc
-Message-ID: <1477504167-10910-1-git-send-email-tushar.n.dave@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 27 Oct 2016 02:41:56 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ a3f00d98dfec22b0f9d8e603af336d839c775624
+Message-ID: <5810f8f4.MjjAktPlY7PciOf+%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On SPARC, writel() should not be used to write directly to memory
-address but only to memory mapped I/O address otherwise it causes
-data access exception.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+a3f00d98dfec22b0f9d8e603af336d839c775624  i40e: avoid duplicate private flags definitions
 
-Commit 147e81ec75689 ("i40e: Test memory before ethtool alloc
-succeeds") introduced a code that uses memory address to fake the HW
-tail address and attempt to write to that address using writel()
-causes kernel panic on SPARC. The issue is reproduced while changing
-number of descriptors using ethtool.
+elapsed time: 89m
 
-This change resolves the panic by using HW read-only memory mapped
-I/O register to fake HW tail address instead memory address.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 146
 
-e.g.
-> ethtool -G eth2 tx 2048 rx 2048
-i40e 0000:03:00.2 eth2: Changing Tx descriptor count from 512 to 2048.
-i40e 0000:03:00.2 eth2: Changing Rx descriptor count from 512 to 2048
-sun4v_data_access_exception: ADDR[fff8001f9734a000] CTX[0000]
-TYPE[0004], going.
-              \|/ ____ \|/
-              "@'/ .. \`@"
-              /_| \__/ |_\
-                 \__U_/
-ethtool(3273): Dax [#1]
-CPU: 9 PID: 3273 Comm: ethtool Tainted: G            E
-4.8.0-linux-net_temp+ #7
-task: fff8001f96d7a660 task.stack: fff8001f97348000
-TSTATE: 0000009911001601 TPC: 00000000103189e4 TNPC: 00000000103189e8 Y:
-00000000    Tainted: G            E
-TPC: <i40e_alloc_rx_buffers+0x124/0x260 [i40e]>
-g0: fff8001f4eb64000 g1: 00000000000007ff g2: fff8001f9734b92c g3:
-00203e0000000000
-g4: fff8001f96d7a660 g5: fff8001fa6704000 g6: fff8001f97348000 g7:
-0000000000000001
-o0: 0006000046706928 o1: 00000000db3e2000 o2: fff8001f00000000 o3:
-0000000000002000
-o4: 0000000000002000 o5: 0000000000000001 sp: fff8001f9734afc1 ret_pc:
-0000000010318a64
-RPC: <i40e_alloc_rx_buffers+0x1a4/0x260 [i40e]>
-l0: fff8001f4e8bffe0 l1: fff8001f4e8cffe0 l2: 00000000000007ff l3:
-00000000ff000000
-l4: 0000000000ff0000 l5: 000000000000ff00 l6: 0000000000cda6a8 l7:
-0000000000e822f0
-i0: fff8001f96380000 i1: 0000000000000000 i2: 00203edb00000000 i3:
-0006000046706928
-i4: 0000000002086320 i5: 0000000000e82370 i6: fff8001f9734b071 i7:
-00000000103062d4
-I7: <i40e_set_ringparam+0x3b4/0x540 [i40e]>
-Call Trace:
- [00000000103062d4] i40e_set_ringparam+0x3b4/0x540 [i40e]
- [000000000094e2f8] dev_ethtool+0x898/0xbe0
- [0000000000965570] dev_ioctl+0x250/0x300
- [0000000000923800] sock_do_ioctl+0x40/0x60
- [000000000092427c] sock_ioctl+0x7c/0x280
- [00000000005ef040] vfs_ioctl+0x20/0x60
- [00000000005ef5d4] do_vfs_ioctl+0x194/0x4c0
- [00000000005ef974] SyS_ioctl+0x74/0xa0
- [0000000000406214] linux_sparc_syscall+0x34/0x44
-Disabling lock debugging due to kernel taint
-Caller[00000000103062d4]: i40e_set_ringparam+0x3b4/0x540 [i40e]
-Caller[000000000094e2f8]: dev_ethtool+0x898/0xbe0
-Caller[0000000000965570]: dev_ioctl+0x250/0x300
-Caller[0000000000923800]: sock_do_ioctl+0x40/0x60
-Caller[000000000092427c]: sock_ioctl+0x7c/0x280
-Caller[00000000005ef040]: vfs_ioctl+0x20/0x60
-Caller[00000000005ef5d4]: do_vfs_ioctl+0x194/0x4c0
-Caller[00000000005ef974]: SyS_ioctl+0x74/0xa0
-Caller[0000000000406214]: linux_sparc_syscall+0x34/0x44
-Caller[0000000000107154]: 0x107154
-Instruction DUMP: e43620c8
- e436204a  c45e2038
-<c2a083a0> 82102000
- 81cfe008  90086001
- 82102000  81cfe008
+i386                     randconfig-a0-201643
+x86_64                 randconfig-a0-10270033
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+blackfin               BF518F-EZBRD_defconfig
+blackfin                    PNAV-10_defconfig
+mips                           mtx1_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                            zeus_defconfig
+arm64                             allnoconfig
+m68k                        mvme147_defconfig
+x86_64                 randconfig-x014-201643
+x86_64                 randconfig-x011-201643
+x86_64                 randconfig-x017-201643
+x86_64                 randconfig-x015-201643
+x86_64                 randconfig-x012-201643
+x86_64                 randconfig-x018-201643
+x86_64                 randconfig-x019-201643
+x86_64                 randconfig-x013-201643
+x86_64                 randconfig-x010-201643
+x86_64                 randconfig-x016-201643
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201643
+i386                     randconfig-s1-201643
+x86_64                 randconfig-s0-10270111
+x86_64                 randconfig-s1-10270111
+x86_64                 randconfig-s2-10270111
+x86_64                 randconfig-s3-10270124
+x86_64                 randconfig-s4-10270124
+x86_64                 randconfig-s5-10270124
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201643
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201643
+i386                     randconfig-i1-201643
+i386                   randconfig-x014-201643
+i386                   randconfig-x019-201643
+i386                   randconfig-x017-201643
+i386                   randconfig-x018-201643
+i386                   randconfig-x015-201643
+i386                   randconfig-x016-201643
+i386                   randconfig-x012-201643
+i386                   randconfig-x013-201643
+i386                   randconfig-x011-201643
+i386                   randconfig-x010-201643
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201643
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-10261824
+ia64                            sim_defconfig
+m32r                             allyesconfig
+i386                   randconfig-x071-201643
+i386                   randconfig-x073-201643
+i386                   randconfig-x072-201643
+i386                   randconfig-x076-201643
+i386                   randconfig-x078-201643
+i386                   randconfig-x075-201643
+i386                   randconfig-x077-201643
+i386                   randconfig-x074-201643
+i386                   randconfig-x079-201643
+i386                   randconfig-x070-201643
+x86_64                                  kexec
+x86_64                               rhel-7.2
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                               defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x001-201643
+x86_64                 randconfig-x008-201643
+x86_64                 randconfig-x009-201643
+x86_64                 randconfig-x000-201643
+x86_64                 randconfig-x003-201643
+x86_64                 randconfig-x005-201643
+x86_64                 randconfig-x007-201643
+x86_64                 randconfig-x002-201643
+x86_64                 randconfig-x004-201643
+x86_64                 randconfig-x006-201643
+i386                     randconfig-r0-201643
+x86_64                 randconfig-r0-10262314
+i386                   randconfig-x004-201643
+i386                   randconfig-x006-201643
+i386                   randconfig-x007-201643
+i386                   randconfig-x003-201643
+i386                   randconfig-x008-201643
+i386                   randconfig-x000-201643
+i386                   randconfig-x002-201643
+i386                   randconfig-x009-201643
+i386                   randconfig-x001-201643
+i386                   randconfig-x005-201643
 
-Kernel panic - not syncing: Fatal exception
-
-Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 92bc884..23f4eee 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -1219,6 +1219,7 @@ static int i40e_set_ringparam(struct net_device *netdev,
- {
- 	struct i40e_ring *tx_rings = NULL, *rx_rings = NULL;
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
-+	struct i40e_hw *hw = &np->vsi->back->hw;
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
- 	u32 new_rx_count, new_tx_count;
-@@ -1311,10 +1312,6 @@ static int i40e_set_ringparam(struct net_device *netdev,
- 		}
- 
- 		for (i = 0; i < vsi->num_queue_pairs; i++) {
--			/* this is to allow wr32 to have something to write to
--			 * during early allocation of Rx buffers
--			 */
--			u32 __iomem faketail = 0;
- 			struct i40e_ring *ring;
- 			u16 unused;
- 
-@@ -1326,7 +1323,10 @@ static int i40e_set_ringparam(struct net_device *netdev,
- 			 */
- 			rx_rings[i].desc = NULL;
- 			rx_rings[i].rx_bi = NULL;
--			rx_rings[i].tail = (u8 __iomem *)&faketail;
-+			/* this is to allow wr32 to have something to write to
-+			 * during early allocation of Rx buffers
-+			 */
-+			rx_rings[i].tail = hw->hw_addr + I40E_PRTGEN_STATUS;
- 			err = i40e_setup_rx_descriptors(&rx_rings[i]);
- 			if (err)
- 				goto rx_unwind;
--- 
-1.9.1
-
+Thanks,
+Fengguang
