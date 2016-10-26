@@ -1,199 +1,55 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 27 Oct 2016 10:53:03 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- ef979c536cfde4735228dbe449fb2f3cf1a40f87
-Message-ID: <58116c0f.yQKfqmn20UVVikaz%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 26 Oct 2016 21:17:53 +0000
+Subject: [Intel-wired-lan] [next PATCH S51-V2 1/8] i40e: Be much
+	more	verbose about what we can and cannot offload
+In-Reply-To: <1477436933-13679-2-git-send-email-bimmy.pujari@intel.com>
+References: <1477436933-13679-1-git-send-email-bimmy.pujari@intel.com>
+ <1477436933-13679-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA2925F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-ef979c536cfde4735228dbe449fb2f3cf1a40f87  i40e: Add protocols over MCTP to i40e_aq_discover_capabilities
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Tuesday, October 25, 2016 4:09 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S51-V2 1/8] i40e: Be much more
+> verbose about what we can and cannot offload
+> 
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> 
+> This change makes it so that we are much more robust about defining what
+> we can and cannot offload.  Previously we were just checking for the L4
+> tunnel header length, however there are other fields we should be verifying
+> as there are multiple scenarios in which we cannot perform hardware
+> offloads.
+> 
+> In addition the device only supports GSO as long as the MSS is 64 or greater.
+> We were not checking this so an MSS less than that was resulting in Tx hangs.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> Change-ID: I5e2fd5f3075c73601b4b36327b771c64fcb6c31b
+> ---
+> Testing Hints:
+>         This is half of the fix needed to address MSS less than 64.  This
+>         is the fix for upstream and kernels after 3.18.4, but we will need
+>         to come up with a separate fix for out-of-tree that can be stripped
+>         on kernels prior to 3.18.4.
+> 
+>         An easy test for this patch is to just set the MTU for an interface
+>         to a value 102.  Without this patch we should see Tx hangs with
+>         netperf and with we should be able to pass traffic without
+>         triggering Tx hangs.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 52
+> ++++++++++++++++++++++++-----
+>  1 file changed, 44 insertions(+), 8 deletions(-)
 
-elapsed time: 562m
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+No TX Hangs with MTU 102
 
-configs tested: 176
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                           omap1_defconfig
-arm                       spear13xx_defconfig
-powerpc                 canyonlands_defconfig
-i386                     randconfig-a0-201643
-x86_64                 randconfig-a0-10270033
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin               BF518F-EZBRD_defconfig
-blackfin                    PNAV-10_defconfig
-mips                           mtx1_defconfig
-arm                          nuc950_defconfig
-powerpc                      katmai_defconfig
-sh                           se7619_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10270118
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-arm                            zeus_defconfig
-m68k                        mvme147_defconfig
-x86_64                 randconfig-x014-201643
-x86_64                 randconfig-x011-201643
-x86_64                 randconfig-x017-201643
-x86_64                 randconfig-x015-201643
-x86_64                 randconfig-x012-201643
-x86_64                 randconfig-x018-201643
-x86_64                 randconfig-x019-201643
-x86_64                 randconfig-x013-201643
-x86_64                 randconfig-x010-201643
-x86_64                 randconfig-x016-201643
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201643
-i386                     randconfig-s1-201643
-x86_64                 randconfig-s0-10270111
-x86_64                 randconfig-s1-10270111
-x86_64                 randconfig-s2-10270111
-x86_64                 randconfig-s3-10270124
-x86_64                 randconfig-s4-10270124
-x86_64                 randconfig-s5-10270124
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201643
-i386                   randconfig-b0-10262355
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201643
-i386                     randconfig-i1-201643
-i386                             allyesconfig
-x86_64                 randconfig-b0-10261839
-arm                          badge4_defconfig
-sparc64                          allmodconfig
-x86_64                 randconfig-n0-10270119
-i386                   randconfig-x014-201643
-i386                   randconfig-x019-201643
-i386                   randconfig-x017-201643
-i386                   randconfig-x018-201643
-i386                   randconfig-x015-201643
-i386                   randconfig-x016-201643
-i386                   randconfig-x012-201643
-i386                   randconfig-x013-201643
-i386                   randconfig-x011-201643
-i386                   randconfig-x010-201643
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-n0-201643
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                            sim_defconfig
-m32r                             allyesconfig
-i386                   randconfig-x071-201643
-i386                   randconfig-x073-201643
-i386                   randconfig-x072-201643
-i386                   randconfig-x076-201643
-i386                   randconfig-x078-201643
-i386                   randconfig-x075-201643
-i386                   randconfig-x077-201643
-i386                   randconfig-x074-201643
-i386                   randconfig-x079-201643
-i386                   randconfig-x070-201643
-x86_64                           allmodconfig
-x86_64                 randconfig-x001-201643
-x86_64                 randconfig-x008-201643
-x86_64                 randconfig-x009-201643
-x86_64                 randconfig-x000-201643
-x86_64                 randconfig-x003-201643
-x86_64                 randconfig-x005-201643
-x86_64                 randconfig-x007-201643
-x86_64                 randconfig-x002-201643
-x86_64                 randconfig-x004-201643
-x86_64                 randconfig-x006-201643
-x86_64                                  kexec
-i386                     randconfig-r0-201643
-x86_64                 randconfig-r0-10262314
-arm                       netwinder_defconfig
-c6x                        evmc6472_defconfig
-mn10300                          allyesconfig
-i386                   randconfig-x004-201643
-i386                   randconfig-x006-201643
-i386                   randconfig-x007-201643
-i386                   randconfig-x003-201643
-i386                   randconfig-x008-201643
-i386                   randconfig-x000-201643
-i386                   randconfig-x002-201643
-i386                   randconfig-x009-201643
-i386                   randconfig-x001-201643
-i386                   randconfig-x005-201643
-
-Thanks,
-Fengguang
