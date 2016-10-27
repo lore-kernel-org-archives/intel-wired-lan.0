@@ -1,207 +1,94 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 26 Oct 2016 16:25:18 -0700
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Report driver version to
-	firmware for x550 devices
-Message-ID: <1477524318-17574-1-git-send-email-anthony.l.nguyen@intel.com>
+From: Chris Arges <carges@vectranetworks.com>
+Date: Thu, 27 Oct 2016 01:44:30 +0000
+Subject: [Intel-wired-lan] Bug with 'igb: Remove GS40G specific
+ defines/functions'
+In-Reply-To: <BA60E6BA-8852-4D31-856B-434449463644@vectranetworks.com>
+References: <77C85CBC-39FD-40B4-9456-56A3FEE3544A@vectranetworks.com>
+ <1570773976.567827.1476303559656.JavaMail.zimbra@xes-inc.com>
+ <20F028E5-EC20-4F65-8889-3F254196ABF8@vectranetworks.com>
+ <133564642.602581.1476305193640.JavaMail.zimbra@xes-inc.com>
+ <F267652D-6FE2-4808-BFE7-013510C5A733@vectranetworks.com>
+ <1476349095.18484.15.camel@maxwell>
+ <1749CC13-EEFE-4EEB-B74E-40B563D7230C@vectranetworks.com>
+ <1476444273.23813.23.camel@maxwell>,
+ <BA60E6BA-8852-4D31-856B-434449463644@vectranetworks.com>
+Message-ID: <CO2PR0801MB647BD797B2A8B5A7C9E93ECAEAA0@CO2PR0801MB647.namprd08.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Some x550 devices require the driver version reported to its firmware; this
-patch sends the driver version string to the firmware through the host
-interface command for x550 devices.
+Jochen,
 
-v2:
-  Set ixgbe_set_fw_drv_ver_x550() to static
+Not sure if you had time to look at this, do you thing the patch I sent previously is on the right path?
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |  7 ++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |  3 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |  5 ++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   | 14 +++++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   | 58 ++++++++++++++++++++++++-
- 5 files changed, 80 insertions(+), 7 deletions(-)
+I'm happy to submit a formal patch to the list.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index deac764..eb112f0 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3532,7 +3532,7 @@ void ixgbe_set_rxpba_generic(struct ixgbe_hw *hw,
-  *  Calculates the checksum for some buffer on a specified length.  The
-  *  checksum calculated is returned.
-  **/
--static u8 ixgbe_calculate_checksum(u8 *buffer, u32 length)
-+u8 ixgbe_calculate_checksum(u8 *buffer, u32 length)
- {
- 	u32 i;
- 	u8 sum = 0;
-@@ -3676,6 +3676,8 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
-  *  @min: driver version minor number
-  *  @build: driver version build number
-  *  @sub: driver version sub build number
-+ *  @len: length of driver_ver string
-+ *  @driver_ver: driver string
-  *
-  *  Sends driver version number to firmware through the manageability
-  *  block.  On success return 0
-@@ -3683,7 +3685,8 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
-  *  semaphore or IXGBE_ERR_HOST_INTERFACE_COMMAND when command fails.
-  **/
- s32 ixgbe_set_fw_drv_ver_generic(struct ixgbe_hw *hw, u8 maj, u8 min,
--				 u8 build, u8 sub)
-+				 u8 build, u8 sub, __always_unused u16 len,
-+				 __always_unused const char *driver_ver)
- {
- 	struct ixgbe_hic_drv_info fw_cmd;
- 	int i;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-index 6d4c260..a0a04ff 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-@@ -110,7 +110,8 @@ void ixgbe_set_mac_anti_spoofing(struct ixgbe_hw *hw, bool enable, int vf);
- void ixgbe_set_vlan_anti_spoofing(struct ixgbe_hw *hw, bool enable, int vf);
- s32 ixgbe_get_device_caps_generic(struct ixgbe_hw *hw, u16 *device_caps);
- s32 ixgbe_set_fw_drv_ver_generic(struct ixgbe_hw *hw, u8 maj, u8 min,
--				 u8 build, u8 ver);
-+				 u8 build, u8 ver, u16 len, const char *str);
-+u8 ixgbe_calculate_checksum(u8 *buffer, u32 length);
- s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *, u32 length,
- 				 u32 timeout, bool return_data);
- void ixgbe_clear_tx_pending(struct ixgbe_hw *hw);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index a582bea..e36a27b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -9812,8 +9812,9 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	 * since os does not support feature
- 	 */
- 	if (hw->mac.ops.set_fw_drv_ver)
--		hw->mac.ops.set_fw_drv_ver(hw, 0xFF, 0xFF, 0xFF,
--					   0xFF);
-+		hw->mac.ops.set_fw_drv_ver(hw, 0xFF, 0xFF, 0xFF, 0xFF,
-+					   sizeof(ixgbe_driver_version) - 1,
-+					   ixgbe_driver_version);
- 
- 	/* add san mac addr to netdev */
- 	ixgbe_add_sanmac_netdev(netdev);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index dfd6143..af7d9a7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -2618,6 +2618,7 @@ enum ixgbe_fdir_pballoc_type {
- #define FW_CEM_UNUSED_VER		0x0
- #define FW_CEM_MAX_RETRIES		3
- #define FW_CEM_RESP_STATUS_SUCCESS	0x1
-+#define FW_CEM_DRIVER_VERSION_SIZE	39 /* +9 would send 48 bytes to fw */
- #define FW_READ_SHADOW_RAM_CMD		0x31
- #define FW_READ_SHADOW_RAM_LEN		0x6
- #define FW_WRITE_SHADOW_RAM_CMD		0x33
-@@ -2685,6 +2686,16 @@ struct ixgbe_hic_drv_info {
- 	u16 pad2; /* end spacing to ensure length is mult. of dword2 */
- };
- 
-+struct ixgbe_hic_drv_info2 {
-+	struct ixgbe_hic_hdr hdr;
-+	u8 port_num;
-+	u8 ver_sub;
-+	u8 ver_build;
-+	u8 ver_min;
-+	u8 ver_maj;
-+	char driver_string[FW_CEM_DRIVER_VERSION_SIZE];
-+};
-+
- /* These need to be dword aligned */
- struct ixgbe_hic_read_shadow_ram {
- 	union ixgbe_hic_hdr2 hdr;
-@@ -3360,7 +3371,8 @@ struct ixgbe_mac_operations {
- 	void (*fc_autoneg)(struct ixgbe_hw *);
- 
- 	/* Manageability interface */
--	s32 (*set_fw_drv_ver)(struct ixgbe_hw *, u8, u8, u8, u8);
-+	s32 (*set_fw_drv_ver)(struct ixgbe_hw *, u8, u8, u8, u8, u16,
-+			      const char *);
- 	s32 (*get_thermal_sensor_data)(struct ixgbe_hw *);
- 	s32 (*init_thermal_sensor_thresh)(struct ixgbe_hw *hw);
- 	void (*disable_rx)(struct ixgbe_hw *hw);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index b6b35e4..4e825c8 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -2354,6 +2354,62 @@ static s32 ixgbe_led_off_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
- 	return 0;
- }
- 
-+/**
-+ *  ixgbe_set_fw_drv_ver_x550 - Sends driver version to firmware
-+ *  @hw: pointer to the HW structure
-+ *  @maj: driver version major number
-+ *  @min: driver version minor number
-+ *  @build: driver version build number
-+ *  @sub: driver version sub build number
-+ *  @len: length of driver_ver string
-+ *  @driver_ver: driver string
-+ *
-+ *  Sends driver version number to firmware through the manageability
-+ *  block.  On success return 0
-+ *  else returns IXGBE_ERR_SWFW_SYNC when encountering an error acquiring
-+ *  semaphore or IXGBE_ERR_HOST_INTERFACE_COMMAND when command fails.
-+ **/
-+static s32 ixgbe_set_fw_drv_ver_x550(struct ixgbe_hw *hw, u8 maj, u8 min,
-+				     u8 build, u8 sub, u16 len,
-+				     const char *driver_ver)
-+{
-+	struct ixgbe_hic_drv_info2 fw_cmd;
-+	s32 ret_val;
-+	int i;
-+
-+	if (!len || !driver_ver || (len > sizeof(fw_cmd.driver_string)))
-+		return IXGBE_ERR_INVALID_ARGUMENT;
-+
-+	fw_cmd.hdr.cmd = FW_CEM_CMD_DRIVER_INFO;
-+	fw_cmd.hdr.buf_len = FW_CEM_CMD_DRIVER_INFO_LEN + len;
-+	fw_cmd.hdr.cmd_or_resp.cmd_resv = FW_CEM_CMD_RESERVED;
-+	fw_cmd.port_num = (u8)hw->bus.func;
-+	fw_cmd.ver_maj = maj;
-+	fw_cmd.ver_min = min;
-+	fw_cmd.ver_build = build;
-+	fw_cmd.ver_sub = sub;
-+	fw_cmd.hdr.checksum = 0;
-+	memcpy(fw_cmd.driver_string, driver_ver, len);
-+	fw_cmd.hdr.checksum = ixgbe_calculate_checksum((u8 *)&fw_cmd,
-+			      (FW_CEM_HDR_LEN + fw_cmd.hdr.buf_len));
-+
-+	for (i = 0; i <= FW_CEM_MAX_RETRIES; i++) {
-+		ret_val = ixgbe_host_interface_command(hw, (u32 *)&fw_cmd,
-+						       sizeof(fw_cmd),
-+						       IXGBE_HI_COMMAND_TIMEOUT,
-+						       true);
-+		if (ret_val)
-+			continue;
-+
-+		if (fw_cmd.hdr.cmd_or_resp.ret_status !=
-+		    FW_CEM_RESP_STATUS_SUCCESS)
-+			return IXGBE_ERR_HOST_INTERFACE_COMMAND;
-+		return 0;
-+	}
-+
-+	return ret_val;
-+}
-+
- /** ixgbe_get_lcd_x550em - Determine lowest common denominator
-  *  @hw: pointer to hardware structure
-  *  @lcd_speed: pointer to lowest common link speed
-@@ -3273,7 +3329,7 @@ static s32 ixgbe_write_phy_reg_x550a(struct ixgbe_hw *hw, u32 reg_addr,
- 	.clear_vfta			= &ixgbe_clear_vfta_generic, \
- 	.set_vfta			= &ixgbe_set_vfta_generic, \
- 	.fc_enable			= &ixgbe_fc_enable_generic, \
--	.set_fw_drv_ver			= &ixgbe_set_fw_drv_ver_generic, \
-+	.set_fw_drv_ver			= &ixgbe_set_fw_drv_ver_x550, \
- 	.init_uta_tables		= &ixgbe_init_uta_tables_generic, \
- 	.set_mac_anti_spoofing		= &ixgbe_set_mac_anti_spoofing, \
- 	.set_vlan_anti_spoofing		= &ixgbe_set_vlan_anti_spoofing, \
--- 
-2.4.0
+Thanks,
 
+--chris
+
+________________________________
+From: Chris Arges
+Sent: Monday, October 17, 2016 1:36:38 PM
+To: Jochen Henneberg
+Cc: Aaron Sierra; intel-wired-lan
+Subject: Re: [Intel-wired-lan] Bug with 'igb: Remove GS40G specific defines/functions'
+
+On 10/14/16, 6:24 AM, "Jochen Henneberg" <jh@henneberg-systemdesign.com> wrote:
+
+    On Do, 2016-10-13 at 13:56 +0000, Chris Arges wrote:
+    > Jochen,
+    >
+    > Thanks for this update. I tested this patch and it fixes my issue!
+    > If there are no other ill effects from this patch perhaps it would be
+    > a good
+    > candidate for mainline and stable.
+
+    The patch is hacky, it does neither use the phy-ops.write_reg() nor does
+    it check for the correct chip before it applies the write.
+    I will try to prepare a clean fix and send a patch.
+
+    Regards
+    -Jochen
+
+What about something as follows? This fixes the issue for me.
+
+diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
+index 5b54254..6d42dfe 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_phy.c
++++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
+@@ -77,6 +77,10 @@ s32 igb_get_phy_id(struct e1000_hw *hw)
+        s32 ret_val = 0;
+        u16 phy_id;
+
++       /* ensure phy page selection to fix misconfigured i210 */
++       if (hw->mac.type == e1000_i210)
++               phy->ops.write_reg(hw, I347AT4_PAGE_SELECT, 0);
++
+        ret_val = phy->ops.read_reg(hw, PHY_ID1, &phy_id);
+        if (ret_val)
+                goto out;
+
+    >
+    > --chris
+
+    --
+    Henneberg - Systemdesign
+    Jochen Henneberg
+    Loehnfeld 26
+    21423 Winsen (Luhe)
+    --
+    Fon: +49 4174 668 773
+    Mobile: +49 172 160 14 69
+    Fax: +49 321 210 761 64
+    www: www.henneberg-systemdesign.com<http://www.henneberg-systemdesign.com>
+
+
+
+
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161027/1c327c42/attachment-0001.html>
