@@ -1,40 +1,158 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 28 Oct 2016 02:50:01 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: x86: e1000 driver trying to
- free already-free irq.
-In-Reply-To: <20161017165108.29718-5-davsingl@cisco.com>
-References: <20161017165108.29718-5-davsingl@cisco.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81FBD577@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 28 Oct 2016 16:27:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 27e5a3d4a5399b98ff16402be79c2445383cbbdb
+Message-ID: <58130be7.T2aYNawpOUsx0f/9%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-
-> owner at vger.kernel.org] On Behalf Of David Singleton
-> Sent: Monday, October 17, 2016 9:51 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: khalidm <khalidm@cisco.com>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [PATCH] e1000e: x86: e1000 driver trying to free already-free irq.
-> 
-> From: khalidm <khalidm@cisco.com>
-> 
-> During systemd reboot sequence network driver interface is shutdown
-> by e1000_close. The PCI driver interface is shut by e1000_shutdown.
-> The e1000_shutdown checks for netif_running status, if still up it
-> brings down driver. But it disables msi outside of this if statement,
-> regardless of netif status. All this is OK when e1000_close happens
-> after shutdown. However, by default, everything in systemd is done
-> in parallel. This creates a conditions where e1000_shutdown is called
-> after e1000_close, therefore hitting BUG_ON assert in free_msi_irqs.
-> 
-> Cc-Id: xe-kernel at external.cisco.com
-> Signed-off-by: khalidm <khalidm@cisco.com>
-> Signed-off-by: David Singleton <davsingl@cisco.com>
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+27e5a3d4a5399b98ff16402be79c2445383cbbdb  checkpatch: Fix warnings when --no-tree is used
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+elapsed time: 212m
+
+configs tested: 134
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                     randconfig-a0-201643
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x010-201643
+x86_64                 randconfig-x011-201643
+x86_64                 randconfig-x012-201643
+x86_64                 randconfig-x013-201643
+x86_64                 randconfig-x014-201643
+x86_64                 randconfig-x015-201643
+x86_64                 randconfig-x016-201643
+x86_64                 randconfig-x017-201643
+x86_64                 randconfig-x018-201643
+x86_64                 randconfig-x019-201643
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201643
+i386                     randconfig-s1-201643
+x86_64                 randconfig-s3-10281522
+x86_64                 randconfig-s4-10281522
+x86_64                 randconfig-s5-10281522
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201643
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201643
+i386                     randconfig-i1-201643
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                           h5000_defconfig
+avr32                             allnoconfig
+cris                             alldefconfig
+x86_64                 randconfig-u0-10281402
+i386                   randconfig-x010-201643
+i386                   randconfig-x011-201643
+i386                   randconfig-x012-201643
+i386                   randconfig-x013-201643
+i386                   randconfig-x014-201643
+i386                   randconfig-x015-201643
+i386                   randconfig-x016-201643
+i386                   randconfig-x017-201643
+i386                   randconfig-x018-201643
+i386                   randconfig-x019-201643
+i386                     randconfig-n0-201643
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-x071-201643
+i386                   randconfig-x073-201643
+i386                   randconfig-x072-201643
+i386                   randconfig-x076-201643
+i386                   randconfig-x078-201643
+i386                   randconfig-x075-201643
+i386                   randconfig-x077-201643
+i386                   randconfig-x074-201643
+i386                   randconfig-x079-201643
+i386                   randconfig-x070-201643
+x86_64                                  kexec
+x86_64                randconfig-ws0-10271548
+x86_64                 randconfig-x001-201643
+x86_64                 randconfig-x008-201643
+x86_64                 randconfig-x009-201643
+x86_64                 randconfig-x000-201643
+x86_64                 randconfig-x003-201643
+x86_64                 randconfig-x005-201643
+x86_64                 randconfig-x007-201643
+x86_64                 randconfig-x002-201643
+x86_64                 randconfig-x004-201643
+x86_64                 randconfig-x006-201643
+i386                     randconfig-r0-201643
+i386                   randconfig-x000-201643
+i386                   randconfig-x001-201643
+i386                   randconfig-x002-201643
+i386                   randconfig-x003-201643
+i386                   randconfig-x004-201643
+i386                   randconfig-x005-201643
+i386                   randconfig-x006-201643
+i386                   randconfig-x007-201643
+i386                   randconfig-x008-201643
+i386                   randconfig-x009-201643
+
+Thanks,
+Fengguang
