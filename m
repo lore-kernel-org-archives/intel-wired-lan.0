@@ -1,62 +1,74 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 28 Oct 2016 10:46:39 -0700
-Subject: [Intel-wired-lan] [PATCH V2] ixgbevf: Handle previously-freed
-	msix_entries
-Message-ID: <147767679915.21196.12625601185481181813.stgit@mdrustad-wks.jf.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 28 Oct 2016 11:09:26 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 03/27] swiotlb: Add support
+	for DMA_ATTR_SKIP_CPU_SYNC
+In-Reply-To: <20161028173430.GE5112@char.us.oracle.com>
+References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
+ <20161025153703.4815.13673.stgit@ahduyck-blue-test.jf.intel.com>
+ <20161028173430.GE5112@char.us.oracle.com>
+Message-ID: <CAKgT0UeG7HXCx7xpyFa5u5ytUEd4s3oor5AX-8b8UbDrqvOgUw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The msix_entries memory can be freed by a previous suspend or
-remove, so don't crash on close when it isn't there. Also only
-clear the interrupts when the interface is up, because there
-aren't any when it is not up.
+On Fri, Oct 28, 2016 at 10:34 AM, Konrad Rzeszutek Wilk
+<konrad.wilk@oracle.com> wrote:
+> On Tue, Oct 25, 2016 at 11:37:03AM -0400, Alexander Duyck wrote:
+>> As a first step to making DMA_ATTR_SKIP_CPU_SYNC apply to architectures
+>> beyond just ARM I need to make it so that the swiotlb will respect the
+>> flag.  In order to do that I also need to update the swiotlb-xen since it
+>> heavily makes use of the functionality.
+>>
+>> Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+>
+> I am pretty sure I acked it the RFC. Was there a particular
+> reason (this is very different from the RFC?) you dropped my ACk?
+>
+> Thanks.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
-Change in V2:
-- Only clear interrupt scheme when interface is up
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+If I recall you had acked patch 1, but for 2 you had some review
+comments on and suggested I change a few things.  What was patch 2 in
+the RFC was split out into patches 2 and 3.  That is why I didn't
+include an Ack from you for those patches.
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index d2775f032f74..d316f503a727 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1498,6 +1498,9 @@ static void ixgbevf_free_irq(struct ixgbevf_adapter *adapter)
- {
- 	int i, q_vectors;
- 
-+	if (!adapter->msix_entries)
-+		return;
-+
- 	q_vectors = adapter->num_msix_vectors;
- 	i = q_vectors - 1;
- 
-@@ -2552,6 +2555,9 @@ static void ixgbevf_free_q_vectors(struct ixgbevf_adapter *adapter)
-  **/
- static void ixgbevf_reset_interrupt_capability(struct ixgbevf_adapter *adapter)
- {
-+	if (!adapter->msix_entries)
-+		return;
-+
- 	pci_disable_msix(adapter->pdev);
- 	kfree(adapter->msix_entries);
- 	adapter->msix_entries = NULL;
-@@ -3794,11 +3800,10 @@ static int ixgbevf_suspend(struct pci_dev *pdev, pm_message_t state)
- 		ixgbevf_free_irq(adapter);
- 		ixgbevf_free_all_tx_resources(adapter);
- 		ixgbevf_free_all_rx_resources(adapter);
-+		ixgbevf_clear_interrupt_scheme(adapter);
- 		rtnl_unlock();
- 	}
- 
--	ixgbevf_clear_interrupt_scheme(adapter);
--
- #ifdef CONFIG_PM
- 	retval = pci_save_state(pdev);
- 	if (retval)
+Patch 2 is a fix for Xen to address the fact that you could return
+either 0 or ~0.  It was part of patch 2 originally and I pulled it out
+into a separate patch.
 
+Patch 3 does most of what patch 2 in the RFC was doing before with
+fixes to address the fact that I was moving some code to avoid going
+over 80 characters.  I found a different way to fix that by just
+updating attrs before using it instead of ORing in the value when
+passing it as a parameter.
+
+>> @@ -558,11 +560,12 @@ void xen_swiotlb_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
+>>                                                                start_dma_addr,
+>>                                                                sg_phys(sg),
+>>                                                                sg->length,
+>> -                                                              dir);
+>> +                                                              dir, attrs);
+>>                       if (map == SWIOTLB_MAP_ERROR) {
+>>                               dev_warn(hwdev, "swiotlb buffer is full\n");
+>>                               /* Don't panic here, we expect map_sg users
+>>                                  to do proper error handling. */
+>> +                             attrs |= DMA_ATTR_SKIP_CPU_SYNC;
+>>                               xen_swiotlb_unmap_sg_attrs(hwdev, sgl, i, dir,
+>>                                                          attrs);
+>>                               sg_dma_len(sgl) = 0;
+
+The biggest difference from patch 2 in the RFC is right here.  This
+code before was moving this off to the end of the function and adding
+a label which I then jumped to.  I just ORed the
+DMA_ATTR_SKIP_CPU_SYNC into attrs and skipped the problem entirely.
+It should be harmless to do this way since attrs isn't used anywhere
+else once we have had the error.
+
+I hope that helps to clear it up.  So if you want I will add your
+Acked-by for patches 2 and 3, but I just wanted to make sure this
+worked with the changes you suggested.
+
+Thanks.
+
+- Alex
