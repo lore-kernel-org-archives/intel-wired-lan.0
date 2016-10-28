@@ -1,185 +1,188 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 28 Oct 2016 07:07:06 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 18ffb1d4504a29b1a5b99aedd2ac747b1e4d124e
-Message-ID: <5812889a.LQn1h+KPBKCZUEGm%fengguang.wu@intel.com>
+From: Tom Herbert <tom@herbertland.com>
+Date: Thu, 27 Oct 2016 19:35:13 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 2/3] net: Refactor removal of
+ queues from XPS map and apply on num_tc changes
+In-Reply-To: <20161027154009.13989.25522.stgit@ahduyck-blue-test.jf.intel.com>
+References: <20161027153539.13989.14349.stgit@ahduyck-blue-test.jf.intel.com>
+ <20161027154009.13989.25522.stgit@ahduyck-blue-test.jf.intel.com>
+Message-ID: <CALx6S36OgqbtkUp76Mf23C7Xn7EnqPN_Ybyjz-60jn7gE=94pg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-18ffb1d4504a29b1a5b99aedd2ac747b1e4d124e  checkpatch: Fix warnings when --no-tree is used
+On Thu, Oct 27, 2016 at 8:40 AM, Alexander Duyck
+<alexander.h.duyck@intel.com> wrote:
+> This patch updates the code for removing queues from the XPS map and makes
+> it so that we can apply the code any time we change either the number of
+> traffic classes or the mapping of a given block of queues.  This way we
+> avoid having queues pulling traffic from a foreign traffic class.
+>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> ---
+>  net/core/dev.c |   79 ++++++++++++++++++++++++++++++++++++++++----------------
+>  1 file changed, 56 insertions(+), 23 deletions(-)
+>
+> diff --git a/net/core/dev.c b/net/core/dev.c
+> index d4d45bf..d124081 100644
+> --- a/net/core/dev.c
+> +++ b/net/core/dev.c
+> @@ -1953,32 +1953,56 @@ static void netif_setup_tc(struct net_device *dev, unsigned int txq)
+>  #define xmap_dereference(P)            \
+>         rcu_dereference_protected((P), lockdep_is_held(&xps_map_mutex))
+>
+> -static struct xps_map *remove_xps_queue(struct xps_dev_maps *dev_maps,
+> -                                       int cpu, u16 index)
+> +static bool remove_xps_queue(struct xps_dev_maps *dev_maps,
+> +                            int tci, u16 index)
+>  {
+>         struct xps_map *map = NULL;
+>         int pos;
+>
+>         if (dev_maps)
+> -               map = xmap_dereference(dev_maps->cpu_map[cpu]);
+> +               map = xmap_dereference(dev_maps->cpu_map[tci]);
+> +       if (!map)
+> +               return false;
+>
+> -       for (pos = 0; map && pos < map->len; pos++) {
+> -               if (map->queues[pos] == index) {
+> -                       if (map->len > 1) {
+> -                               map->queues[pos] = map->queues[--map->len];
+> -                       } else {
+> -                               RCU_INIT_POINTER(dev_maps->cpu_map[cpu], NULL);
+> -                               kfree_rcu(map, rcu);
+> -                               map = NULL;
+> -                       }
+> +       for (pos = map->len; pos--;) {
+> +               if (map->queues[pos] != index)
+> +                       continue;
+> +
+> +               if (map->len > 1) {
+> +                       map->queues[pos] = map->queues[--map->len];
+>                         break;
+>                 }
+> +
+> +               RCU_INIT_POINTER(dev_maps->cpu_map[tci], NULL);
+> +               kfree_rcu(map, rcu);
+> +               return false;
+>         }
+>
+> -       return map;
+> +       return true;
+>  }
+>
+> -static void netif_reset_xps_queues_gt(struct net_device *dev, u16 index)
+> +static bool remove_xps_queue_cpu(struct net_device *dev,
+> +                                struct xps_dev_maps *dev_maps,
+> +                                int cpu, u16 offset, u16 count)
+> +{
+> +       bool active = false;
+> +       int i;
+> +
+> +       count += offset;
+> +       i = count;
+> +
+> +       do {
+> +               if (i-- == offset) {
+> +                       active = true;
+> +                       break;
+> +               }
+> +       } while (remove_xps_queue(dev_maps, cpu, i));
+> +
+IMO do/while's are hard to read. Does something like this work:
 
-elapsed time: 136m
+static bool remove_xps_queue_cpu(struct net_device *dev,
+                                struct xps_dev_maps *dev_maps,
+                                int cpu, u16 offset, u16 count)
+{
+     int i;
 
-configs tested: 162
+     for (i = count + offset; i > offset; i--)
+          if (!remove_xps_queue(dev_maps, cpu, i - 1))
+              break;
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+     return (i == offset);
+}
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-h8300                     edosk2674_defconfig
-m68k                          hp300_defconfig
-powerpc                        cell_defconfig
-i386                     randconfig-a0-201643
-x86_64                 randconfig-a0-10280554
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                          nuc910_defconfig
-blackfin              BF561-ACVILON_defconfig
-h8300                       h8s-sim_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10280613
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-x010-201643
-x86_64                 randconfig-x011-201643
-x86_64                 randconfig-x012-201643
-x86_64                 randconfig-x013-201643
-x86_64                 randconfig-x014-201643
-x86_64                 randconfig-x015-201643
-x86_64                 randconfig-x016-201643
-x86_64                 randconfig-x017-201643
-x86_64                 randconfig-x018-201643
-x86_64                 randconfig-x019-201643
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201643
-i386                     randconfig-s1-201643
-x86_64                 randconfig-s0-10280502
-x86_64                 randconfig-s1-10280502
-x86_64                 randconfig-s2-10280502
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-10280455
-x86_64                 randconfig-s4-10280455
-x86_64                 randconfig-s5-10280455
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201643
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201643
-i386                     randconfig-i1-201643
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-u0-10280514
-sh                        edosk7705_defconfig
-sparc                             allnoconfig
-x86_64                 randconfig-n0-10280436
-i386                               tinyconfig
-i386                   randconfig-x010-201643
-i386                   randconfig-x011-201643
-i386                   randconfig-x012-201643
-i386                   randconfig-x013-201643
-i386                   randconfig-x014-201643
-i386                   randconfig-x015-201643
-i386                   randconfig-x016-201643
-i386                   randconfig-x017-201643
-i386                   randconfig-x018-201643
-i386                   randconfig-x019-201643
-i386                     randconfig-n0-201643
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-x070-201643
-i386                   randconfig-x071-201643
-i386                   randconfig-x072-201643
-i386                   randconfig-x073-201643
-i386                   randconfig-x074-201643
-i386                   randconfig-x075-201643
-i386                   randconfig-x076-201643
-i386                   randconfig-x077-201643
-i386                   randconfig-x078-201643
-i386                   randconfig-x079-201643
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x000-201643
-x86_64                 randconfig-x001-201643
-x86_64                 randconfig-x002-201643
-x86_64                 randconfig-x003-201643
-x86_64                 randconfig-x004-201643
-x86_64                 randconfig-x005-201643
-x86_64                 randconfig-x006-201643
-x86_64                 randconfig-x007-201643
-x86_64                 randconfig-x008-201643
-x86_64                 randconfig-x009-201643
-i386                     randconfig-r0-201643
-i386                   randconfig-x000-201643
-i386                   randconfig-x001-201643
-i386                   randconfig-x002-201643
-i386                   randconfig-x003-201643
-i386                   randconfig-x004-201643
-i386                   randconfig-x005-201643
-i386                   randconfig-x006-201643
-i386                   randconfig-x007-201643
-i386                   randconfig-x008-201643
-i386                   randconfig-x009-201643
+> +       return active;
+> +}
+> +
+> +static void netif_reset_xps_queues(struct net_device *dev, u16 offset,
+> +                                  u16 count)
+>  {
+>         struct xps_dev_maps *dev_maps;
+>         int cpu, i;
+> @@ -1990,21 +2014,16 @@ static void netif_reset_xps_queues_gt(struct net_device *dev, u16 index)
+>         if (!dev_maps)
+>                 goto out_no_maps;
+>
+> -       for_each_possible_cpu(cpu) {
+> -               for (i = index; i < dev->num_tx_queues; i++) {
+> -                       if (!remove_xps_queue(dev_maps, cpu, i))
+> -                               break;
+> -               }
+> -               if (i == dev->num_tx_queues)
+> -                       active = true;
+> -       }
+> +       for_each_possible_cpu(cpu)
+> +               active |= remove_xps_queue_cpu(dev, dev_maps, cpu, offset,
+> +                                              count);
 
-Thanks,
-Fengguang
+Maybe just do dumb "if (remove_xps...) active = true;"
+
+>
+>         if (!active) {
+>                 RCU_INIT_POINTER(dev->xps_maps, NULL);
+>                 kfree_rcu(dev_maps, rcu);
+>         }
+>
+> -       for (i = index; i < dev->num_tx_queues; i++)
+> +       for (i = offset + (count - 1); count--; i--)
+>                 netdev_queue_numa_node_write(netdev_get_tx_queue(dev, i),
+>                                              NUMA_NO_NODE);
+>
+> @@ -2012,6 +2031,11 @@ static void netif_reset_xps_queues_gt(struct net_device *dev, u16 index)
+>         mutex_unlock(&xps_map_mutex);
+>  }
+>
+> +static void netif_reset_xps_queues_gt(struct net_device *dev, u16 index)
+> +{
+> +       netif_reset_xps_queues(dev, index, dev->num_tx_queues - index);
+> +}
+> +
+>  static struct xps_map *expand_xps_map(struct xps_map *map,
+>                                       int cpu, u16 index)
+>  {
+> @@ -2175,6 +2199,9 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
+>  #endif
+>  void netdev_reset_tc(struct net_device *dev)
+>  {
+> +#ifdef CONFIG_XPS
+> +       netif_reset_xps_queues_gt(dev, 0);
+> +#endif
+>         dev->num_tc = 0;
+>         memset(dev->tc_to_txq, 0, sizeof(dev->tc_to_txq));
+>         memset(dev->prio_tc_map, 0, sizeof(dev->prio_tc_map));
+> @@ -2186,6 +2213,9 @@ int netdev_set_tc_queue(struct net_device *dev, u8 tc, u16 count, u16 offset)
+>         if (tc >= dev->num_tc)
+>                 return -EINVAL;
+>
+> +#ifdef CONFIG_XPS
+> +       netif_reset_xps_queues(dev, offset, count);
+> +#endif
+>         dev->tc_to_txq[tc].count = count;
+>         dev->tc_to_txq[tc].offset = offset;
+>         return 0;
+> @@ -2197,6 +2227,9 @@ int netdev_set_num_tc(struct net_device *dev, u8 num_tc)
+>         if (num_tc > TC_MAX_QUEUE)
+>                 return -EINVAL;
+>
+> +#ifdef CONFIG_XPS
+> +       netif_reset_xps_queues_gt(dev, 0);
+> +#endif
+>         dev->num_tc = num_tc;
+>         return 0;
+>  }
+>
