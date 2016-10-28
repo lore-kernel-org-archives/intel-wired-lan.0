@@ -1,313 +1,145 @@
-From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Fri, 28 Oct 2016 11:50:13 -0400
-Subject: [Intel-wired-lan] [net-next PATCH v2 4/4] net: Add support for XPS
- with QoS via traffic classes
-In-Reply-To: <20161028154126.67826.76735.stgit@ahduyck-blue-test.jf.intel.com>
-References: <20161028154126.67826.76735.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <20161028154654.67826.25648.stgit@ahduyck-blue-test.jf.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 29 Oct 2016 07:50:46 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 33d4588f8539b4f3375c9ad63e9baa3301246bc9
+Message-ID: <5813e456.U5BMLwf6Te2lWbYf%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds support for setting and using XPS when QoS via traffic
-classes is enabled.  With this change we will factor in the priority and
-traffic class mapping of the packet and use that information to correctly
-select the queue.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+33d4588f8539b4f3375c9ad63e9baa3301246bc9  ixgbevf: Handle previously-freed msix_entries
 
-This allows us to define a set of queues for a given traffic class via
-mqprio and then configure the XPS mapping for those queues so that the
-traffic flows can avoid head-of-line blocking between the individual CPUs
-if so desired.
+elapsed time: 106m
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
+configs tested: 121
 
-v2: Mostly for loop updates based on changes in patch 3
-    Replaced "i = 0; i < X; i++" with "i = X; i--;" as i was just a counter
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
- include/linux/netdevice.h |    4 +-
- net/core/dev.c            |  117 ++++++++++++++++++++++++++++++++-------------
- net/core/net-sysfs.c      |   31 ++++++++----
- 3 files changed, 105 insertions(+), 47 deletions(-)
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201643
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                        multi_v7_defconfig
+powerpc                      makalu_defconfig
+powerpc                      ppc40x_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10290454
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201643
+x86_64                 randconfig-x011-201643
+x86_64                 randconfig-x012-201643
+x86_64                 randconfig-x013-201643
+x86_64                 randconfig-x014-201643
+x86_64                 randconfig-x015-201643
+x86_64                 randconfig-x016-201643
+x86_64                 randconfig-x017-201643
+x86_64                 randconfig-x018-201643
+x86_64                 randconfig-x019-201643
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201643
+i386                     randconfig-s1-201643
+x86_64                 randconfig-s0-10290620
+x86_64                 randconfig-s1-10290620
+x86_64                 randconfig-s2-10290620
+i386                               tinyconfig
+i386                   randconfig-x014-201643
+i386                   randconfig-x019-201643
+i386                   randconfig-x017-201643
+i386                   randconfig-x018-201643
+i386                   randconfig-x015-201643
+i386                   randconfig-x016-201643
+i386                   randconfig-x012-201643
+i386                   randconfig-x013-201643
+i386                   randconfig-x011-201643
+i386                   randconfig-x010-201643
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201643
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-10290552
+blackfin                BF548-EZKIT_defconfig
+blackfin                  TCM-BF518_defconfig
+i386                   randconfig-x070-201643
+i386                   randconfig-x071-201643
+i386                   randconfig-x072-201643
+i386                   randconfig-x073-201643
+i386                   randconfig-x074-201643
+i386                   randconfig-x075-201643
+i386                   randconfig-x076-201643
+i386                   randconfig-x077-201643
+i386                   randconfig-x078-201643
+i386                   randconfig-x079-201643
+x86_64                                  kexec
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                randconfig-ws0-10271548
+i386                   randconfig-x000-201643
+i386                   randconfig-x001-201643
+i386                   randconfig-x002-201643
+i386                   randconfig-x003-201643
+i386                   randconfig-x004-201643
+i386                   randconfig-x005-201643
+i386                   randconfig-x006-201643
+i386                   randconfig-x007-201643
+i386                   randconfig-x008-201643
+i386                   randconfig-x009-201643
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index b60a156..56f90f7 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -732,8 +732,8 @@ struct xps_dev_maps {
- 	struct rcu_head rcu;
- 	struct xps_map __rcu *cpu_map[0];
- };
--#define XPS_DEV_MAPS_SIZE (sizeof(struct xps_dev_maps) +		\
--    (nr_cpu_ids * sizeof(struct xps_map *)))
-+#define XPS_DEV_MAPS_SIZE(_tcs) (sizeof(struct xps_dev_maps) +		\
-+	(nr_cpu_ids * (_tcs) * sizeof(struct xps_map *)))
- #endif /* CONFIG_XPS */
- 
- #define TC_MAX_QUEUE	16
-diff --git a/net/core/dev.c b/net/core/dev.c
-index fea7061..0ebb035 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2002,14 +2002,22 @@ static bool remove_xps_queue_cpu(struct net_device *dev,
- 				 struct xps_dev_maps *dev_maps,
- 				 int cpu, u16 offset, u16 count)
- {
--	int i, j;
-+	int num_tc = dev->num_tc ? : 1;
-+	bool active = false;
-+	int tci;
- 
--	for (i = count, j = offset; i--; j++) {
--		if (!remove_xps_queue(dev_maps, cpu, j))
--			break;
-+	for (tci = cpu * num_tc; num_tc--; tci++) {
-+		int i, j;
-+
-+		for (i = count, j = offset; i--; j++) {
-+			if (!remove_xps_queue(dev_maps, cpu, j))
-+				break;
-+		}
-+
-+		active |= i < 0;
- 	}
- 
--	return i < 0;
-+	return active;
- }
- 
- static void netif_reset_xps_queues(struct net_device *dev, u16 offset,
-@@ -2086,20 +2094,28 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
- 			u16 index)
- {
- 	struct xps_dev_maps *dev_maps, *new_dev_maps = NULL;
-+	int i, cpu, tci, numa_node_id = -2;
-+	int maps_sz, num_tc = 1, tc = 0;
- 	struct xps_map *map, *new_map;
--	int maps_sz = max_t(unsigned int, XPS_DEV_MAPS_SIZE, L1_CACHE_BYTES);
--	int cpu, numa_node_id = -2;
- 	bool active = false;
- 
-+	if (dev->num_tc) {
-+		num_tc = dev->num_tc;
-+		tc = netdev_txq_to_tc(dev, index);
-+		if (tc < 0)
-+			return -EINVAL;
-+	}
-+
-+	maps_sz = XPS_DEV_MAPS_SIZE(num_tc);
-+	if (maps_sz < L1_CACHE_BYTES)
-+		maps_sz = L1_CACHE_BYTES;
-+
- 	mutex_lock(&xps_map_mutex);
- 
- 	dev_maps = xmap_dereference(dev->xps_maps);
- 
- 	/* allocate memory for queue storage */
--	for_each_online_cpu(cpu) {
--		if (!cpumask_test_cpu(cpu, mask))
--			continue;
--
-+	for_each_cpu_and(cpu, cpu_online_mask, mask) {
- 		if (!new_dev_maps)
- 			new_dev_maps = kzalloc(maps_sz, GFP_KERNEL);
- 		if (!new_dev_maps) {
-@@ -2107,25 +2123,38 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
- 			return -ENOMEM;
- 		}
- 
--		map = dev_maps ? xmap_dereference(dev_maps->cpu_map[cpu]) :
-+		tci = cpu * num_tc + tc;
-+		map = dev_maps ? xmap_dereference(dev_maps->cpu_map[tci]) :
- 				 NULL;
- 
- 		map = expand_xps_map(map, cpu, index);
- 		if (!map)
- 			goto error;
- 
--		RCU_INIT_POINTER(new_dev_maps->cpu_map[cpu], map);
-+		RCU_INIT_POINTER(new_dev_maps->cpu_map[tci], map);
- 	}
- 
- 	if (!new_dev_maps)
- 		goto out_no_new_maps;
- 
- 	for_each_possible_cpu(cpu) {
-+		/* copy maps belonging to foreign traffic classes */
-+		for (i = tc, tci = cpu * num_tc; dev_maps && i--; tci++) {
-+			/* fill in the new device map from the old device map */
-+			map = xmap_dereference(dev_maps->cpu_map[tci]);
-+			RCU_INIT_POINTER(new_dev_maps->cpu_map[tci], map);
-+		}
-+
-+		/* We need to explicitly update tci as prevous loop
-+		 * could break out early if dev_maps is NULL.
-+		 */
-+		tci = cpu * num_tc + tc;
-+
- 		if (cpumask_test_cpu(cpu, mask) && cpu_online(cpu)) {
- 			/* add queue to CPU maps */
- 			int pos = 0;
- 
--			map = xmap_dereference(new_dev_maps->cpu_map[cpu]);
-+			map = xmap_dereference(new_dev_maps->cpu_map[tci]);
- 			while ((pos < map->len) && (map->queues[pos] != index))
- 				pos++;
- 
-@@ -2139,26 +2168,36 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
- #endif
- 		} else if (dev_maps) {
- 			/* fill in the new device map from the old device map */
--			map = xmap_dereference(dev_maps->cpu_map[cpu]);
--			RCU_INIT_POINTER(new_dev_maps->cpu_map[cpu], map);
-+			map = xmap_dereference(dev_maps->cpu_map[tci]);
-+			RCU_INIT_POINTER(new_dev_maps->cpu_map[tci], map);
- 		}
- 
-+		/* copy maps belonging to foreign traffic classes */
-+		for (i = num_tc - tc, tci++; dev_maps && --i; tci++) {
-+			/* fill in the new device map from the old device map */
-+			map = xmap_dereference(dev_maps->cpu_map[tci]);
-+			RCU_INIT_POINTER(new_dev_maps->cpu_map[tci], map);
-+		}
- 	}
- 
- 	rcu_assign_pointer(dev->xps_maps, new_dev_maps);
- 
- 	/* Cleanup old maps */
--	if (dev_maps) {
--		for_each_possible_cpu(cpu) {
--			new_map = xmap_dereference(new_dev_maps->cpu_map[cpu]);
--			map = xmap_dereference(dev_maps->cpu_map[cpu]);
-+	if (!dev_maps)
-+		goto out_no_old_maps;
-+
-+	for_each_possible_cpu(cpu) {
-+		for (i = num_tc, tci = cpu * num_tc; i--; tci++) {
-+			new_map = xmap_dereference(new_dev_maps->cpu_map[tci]);
-+			map = xmap_dereference(dev_maps->cpu_map[tci]);
- 			if (map && map != new_map)
- 				kfree_rcu(map, rcu);
- 		}
--
--		kfree_rcu(dev_maps, rcu);
- 	}
- 
-+	kfree_rcu(dev_maps, rcu);
-+
-+out_no_old_maps:
- 	dev_maps = new_dev_maps;
- 	active = true;
- 
-@@ -2173,11 +2212,12 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
- 
- 	/* removes queue from unused CPUs */
- 	for_each_possible_cpu(cpu) {
--		if (cpumask_test_cpu(cpu, mask) && cpu_online(cpu))
--			continue;
--
--		if (remove_xps_queue(dev_maps, cpu, index))
--			active = true;
-+		for (i = tc, tci = cpu * num_tc; i--; tci++)
-+			active |= remove_xps_queue(dev_maps, tci, index);
-+		if (!cpumask_test_cpu(cpu, mask) || !cpu_online(cpu))
-+			active |= remove_xps_queue(dev_maps, tci, index);
-+		for (i = num_tc - tc, tci++; --i; tci++)
-+			active |= remove_xps_queue(dev_maps, tci, index);
- 	}
- 
- 	/* free map if not active */
-@@ -2193,11 +2233,14 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
- error:
- 	/* remove any maps that we added */
- 	for_each_possible_cpu(cpu) {
--		new_map = xmap_dereference(new_dev_maps->cpu_map[cpu]);
--		map = dev_maps ? xmap_dereference(dev_maps->cpu_map[cpu]) :
--				 NULL;
--		if (new_map && new_map != map)
--			kfree(new_map);
-+		for (i = num_tc, tci = cpu * num_tc; i--; tci++) {
-+			new_map = xmap_dereference(new_dev_maps->cpu_map[tci]);
-+			map = dev_maps ?
-+			      xmap_dereference(dev_maps->cpu_map[tci]) :
-+			      NULL;
-+			if (new_map && new_map != map)
-+				kfree(new_map);
-+		}
- 	}
- 
- 	mutex_unlock(&xps_map_mutex);
-@@ -3157,8 +3200,14 @@ static inline int get_xps_queue(struct net_device *dev, struct sk_buff *skb)
- 	rcu_read_lock();
- 	dev_maps = rcu_dereference(dev->xps_maps);
- 	if (dev_maps) {
--		map = rcu_dereference(
--		    dev_maps->cpu_map[skb->sender_cpu - 1]);
-+		unsigned int tci = skb->sender_cpu - 1;
-+
-+		if (dev->num_tc) {
-+			tci *= dev->num_tc;
-+			tci += netdev_get_prio_tc_map(dev, skb->priority);
-+		}
-+
-+		map = rcu_dereference(dev_maps->cpu_map[tci]);
- 		if (map) {
- 			if (map->len == 1)
- 				queue_index = map->queues[0];
-diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index c4e4e7d..3b2b935 100644
---- a/net/core/net-sysfs.c
-+++ b/net/core/net-sysfs.c
-@@ -1207,29 +1207,38 @@ static ssize_t show_xps_map(struct netdev_queue *queue,
- 			    struct netdev_queue_attribute *attribute, char *buf)
- {
- 	struct net_device *dev = queue->dev;
-+	int cpu, len, num_tc = 1, tc = 0;
- 	struct xps_dev_maps *dev_maps;
- 	cpumask_var_t mask;
- 	unsigned long index;
--	int i, len;
- 
- 	if (!zalloc_cpumask_var(&mask, GFP_KERNEL))
- 		return -ENOMEM;
- 
- 	index = get_netdev_queue_index(queue);
- 
-+	if (dev->num_tc) {
-+		num_tc = dev->num_tc;
-+		tc = netdev_txq_to_tc(dev, index);
-+		if (tc < 0)
-+			return -EINVAL;
-+	}
-+
- 	rcu_read_lock();
- 	dev_maps = rcu_dereference(dev->xps_maps);
- 	if (dev_maps) {
--		for_each_possible_cpu(i) {
--			struct xps_map *map =
--			    rcu_dereference(dev_maps->cpu_map[i]);
--			if (map) {
--				int j;
--				for (j = 0; j < map->len; j++) {
--					if (map->queues[j] == index) {
--						cpumask_set_cpu(i, mask);
--						break;
--					}
-+		for_each_possible_cpu(cpu) {
-+			int i, tci = cpu * num_tc + tc;
-+			struct xps_map *map;
-+
-+			map = rcu_dereference(dev_maps->cpu_map[tci]);
-+			if (!map)
-+				continue;
-+
-+			for (i = map->len; i--;) {
-+				if (map->queues[i] == index) {
-+					cpumask_set_cpu(cpu, mask);
-+					break;
- 				}
- 			}
- 		}
-
+Thanks,
+Fengguang
