@@ -1,50 +1,105 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Fri, 28 Oct 2016 08:49:40 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 3/3] net: Add support for XPS
- with QoS via traffic classes
-In-Reply-To: <CAKgT0UcZY4eKP0ezsijiJquqGKEwap8kA3Kqmg0BRYL8JF_90g@mail.gmail.com>
-References: <20161027153539.13989.14349.stgit@ahduyck-blue-test.jf.intel.com>
- <20161027154014.13989.33421.stgit@ahduyck-blue-test.jf.intel.com>
- <CALx6S36F=6R12O6Xb-WfhruOQN7S6QjOite7PVW2JqNK5BtWYg@mail.gmail.com>
- <CAKgT0UcZY4eKP0ezsijiJquqGKEwap8kA3Kqmg0BRYL8JF_90g@mail.gmail.com>
-Message-ID: <58137394.4050803@gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 28 Oct 2016 16:30:18 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: fix panic on SPARC while
+ changing	num of desc
+In-Reply-To: <1477504167-10910-1-git-send-email-tushar.n.dave@oracle.com>
+References: <1477504167-10910-1-git-send-email-tushar.n.dave@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA29551@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-10-28 07:58 AM, Alexander Duyck wrote:
-> On Thu, Oct 27, 2016 at 7:38 PM, Tom Herbert <tom@herbertland.com> wrote:
->> On Thu, Oct 27, 2016 at 8:40 AM, Alexander Duyck
->> <alexander.h.duyck@intel.com> wrote:
->>> This patch adds support for setting and using XPS when QoS via traffic
->>> classes is enabled.  With this change we will factor in the priority and
->>> traffic class mapping of the packet and use that information to correctly
->>> select the queue.
->>>
->>> This allows us to define a set of queues for a given traffic class via
->>> mqprio and then configure the XPS mapping for those queues so that the
->>> traffic flows can avoid head-of-line blocking between the individual CPUs
->>> if so desired.
->>>
->> Does this change the sys API for XPS? Is it up the user to know which
->> are priority queues in sys?
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Tushar Dave
+> Sent: Wednesday, October 26, 2016 10:49 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
+> lan at lists.osuosl.org; netdev at vger.kernel.org; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] i40e: fix panic on SPARC while changing
+> num of desc
 > 
-> The idea was to keep the change transparent.  So for now the only
-> change in relation to XPS from the XPS point of view is that the map
-> for a given queue is invalidated when either the dev->num_tcs changes
-> or if the queue is moved into a dev->tx_to_txq mapping.  Otherwise the
-> interface should behave exactly the same as before.
+> On SPARC, writel() should not be used to write directly to memory address
+> but only to memory mapped I/O address otherwise it causes data access
+> exception.
 > 
-> One thing I could look at doing is adding a read-only sysfs value that
-> the user could use to identify which traffic class a given queue
-> belongs to.  Then at least that way they would be able to dump both
-> the XPS map and the tc to determine how the traffic will flow through
-> the device.
+> Commit 147e81ec75689 ("i40e: Test memory before ethtool alloc
+> succeeds") introduced a code that uses memory address to fake the HW tail
+> address and attempt to write to that address using writel() causes kernel
+> panic on SPARC. The issue is reproduced while changing number of
+> descriptors using ethtool.
 > 
+> This change resolves the panic by using HW read-only memory mapped I/O
+> register to fake HW tail address instead memory address.
+> 
+> e.g.
+> > ethtool -G eth2 tx 2048 rx 2048
+> i40e 0000:03:00.2 eth2: Changing Tx descriptor count from 512 to 2048.
+> i40e 0000:03:00.2 eth2: Changing Rx descriptor count from 512 to 2048
+> sun4v_data_access_exception: ADDR[fff8001f9734a000] CTX[0000]
+> TYPE[0004], going.
+>               \|/ ____ \|/
+>               "@'/ .. \`@"
+>               /_| \__/ |_\
+>                  \__U_/
+> ethtool(3273): Dax [#1]
+> CPU: 9 PID: 3273 Comm: ethtool Tainted: G            E
+> 4.8.0-linux-net_temp+ #7
+> task: fff8001f96d7a660 task.stack: fff8001f97348000
+> TSTATE: 0000009911001601 TPC: 00000000103189e4 TNPC: 00000000103189e8
+> Y:
+> 00000000    Tainted: G            E
+> TPC: <i40e_alloc_rx_buffers+0x124/0x260 [i40e]>
+> g0: fff8001f4eb64000 g1: 00000000000007ff g2: fff8001f9734b92c g3:
+> 00203e0000000000
+> g4: fff8001f96d7a660 g5: fff8001fa6704000 g6: fff8001f97348000 g7:
+> 0000000000000001
+> o0: 0006000046706928 o1: 00000000db3e2000 o2: fff8001f00000000 o3:
+> 0000000000002000
+> o4: 0000000000002000 o5: 0000000000000001 sp: fff8001f9734afc1 ret_pc:
+> 0000000010318a64
+> RPC: <i40e_alloc_rx_buffers+0x1a4/0x260 [i40e]>
+> l0: fff8001f4e8bffe0 l1: fff8001f4e8cffe0 l2: 00000000000007ff l3:
+> 00000000ff000000
+> l4: 0000000000ff0000 l5: 000000000000ff00 l6: 0000000000cda6a8 l7:
+> 0000000000e822f0
+> i0: fff8001f96380000 i1: 0000000000000000 i2: 00203edb00000000 i3:
+> 0006000046706928
+> i4: 0000000002086320 i5: 0000000000e82370 i6: fff8001f9734b071 i7:
+> 00000000103062d4
+> I7: <i40e_set_ringparam+0x3b4/0x540 [i40e]> Call Trace:
+>  [00000000103062d4] i40e_set_ringparam+0x3b4/0x540 [i40e]
+> [000000000094e2f8] dev_ethtool+0x898/0xbe0  [0000000000965570]
+> dev_ioctl+0x250/0x300  [0000000000923800] sock_do_ioctl+0x40/0x60
+> [000000000092427c] sock_ioctl+0x7c/0x280  [00000000005ef040]
+> vfs_ioctl+0x20/0x60  [00000000005ef5d4] do_vfs_ioctl+0x194/0x4c0
+> [00000000005ef974] SyS_ioctl+0x74/0xa0  [0000000000406214]
+> linux_sparc_syscall+0x34/0x44 Disabling lock debugging due to kernel taint
+> Caller[00000000103062d4]: i40e_set_ringparam+0x3b4/0x540 [i40e]
+> Caller[000000000094e2f8]: dev_ethtool+0x898/0xbe0
+> Caller[0000000000965570]: dev_ioctl+0x250/0x300
+> Caller[0000000000923800]: sock_do_ioctl+0x40/0x60
+> Caller[000000000092427c]: sock_ioctl+0x7c/0x280
+> Caller[00000000005ef040]: vfs_ioctl+0x20/0x60
+> Caller[00000000005ef5d4]: do_vfs_ioctl+0x194/0x4c0
+> Caller[00000000005ef974]: SyS_ioctl+0x74/0xa0
+> Caller[0000000000406214]: linux_sparc_syscall+0x34/0x44
+> Caller[0000000000107154]: 0x107154
+> Instruction DUMP: e43620c8
+>  e436204a  c45e2038
+> <c2a083a0> 82102000
+>  81cfe008  90086001
+>  82102000  81cfe008
+> 
+> Kernel panic - not syncing: Fatal exception
+> 
+> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 
-I could see some value in a sysfs read-only tc-queue mapping might be
-especially for devices that are negotiating these things using firmware.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-.John
+
