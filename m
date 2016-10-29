@@ -1,141 +1,215 @@
-From: Mao Wenan <maowenan@huawei.com>
-Date: Sat, 29 Oct 2016 15:08:52 +0800
-Subject: [Intel-wired-lan] [PATCH] add one parameter wro_enable for IXGBE
-In-Reply-To: <1477724932-5440-1-git-send-email-maowenan@huawei.com>
-References: <1477724932-5440-1-git-send-email-maowenan@huawei.com>
-Message-ID: <1477724932-5440-2-git-send-email-maowenan@huawei.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sun, 30 Oct 2016 01:59:04 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
+ 5d4ca23e58f2db7c14b76070f31295244b6edb7b
+Message-ID: <5814e368.wsEFssAXEvhISQHM%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h        |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c  | 29 ++++++++++++++-----------
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 28 +++++++++++++-----------
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |  9 ++++++++
- 4 files changed, 41 insertions(+), 26 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+5d4ca23e58f2db7c14b76070f31295244b6edb7b  i40e: Clean up handling of msglevel flags and debug parameter
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index b06e32d..9bc0be5 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -1027,4 +1027,5 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
- 				  struct ixgbe_ring *tx_ring);
- u32 ixgbe_rss_indir_tbl_entries(struct ixgbe_adapter *adapter);
- void ixgbe_store_reta(struct ixgbe_adapter *adapter);
-+bool ixgbe_wro_enable(void);
- #endif /* _IXGBE_H_ */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-index fb51be7..c312aaa 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-@@ -186,20 +186,23 @@ static s32 ixgbe_start_hw_82598(struct ixgbe_hw *hw)
- 	ret_val = ixgbe_start_hw_generic(hw);
- 
- #ifndef CONFIG_SPARC
--	/* Disable relaxed ordering */
--	for (i = 0; ((i < hw->mac.max_tx_queues) &&
--	     (i < IXGBE_DCA_MAX_QUEUES_82598)); i++) {
--		regval = IXGBE_READ_REG(hw, IXGBE_DCA_TXCTRL(i));
--		regval &= ~IXGBE_DCA_TXCTRL_DESC_WRO_EN;
--		IXGBE_WRITE_REG(hw, IXGBE_DCA_TXCTRL(i), regval);
--	}
-+	if(likely(!ixgbe_wro_enable())) {
-+
-+		/* Disable relaxed ordering */
-+		for (i = 0; ((i < hw->mac.max_tx_queues) &&
-+		     (i < IXGBE_DCA_MAX_QUEUES_82598)); i++) {
-+			regval = IXGBE_READ_REG(hw, IXGBE_DCA_TXCTRL(i));
-+			regval &= ~IXGBE_DCA_TXCTRL_DESC_WRO_EN;
-+			IXGBE_WRITE_REG(hw, IXGBE_DCA_TXCTRL(i), regval);
-+		}
- 
--	for (i = 0; ((i < hw->mac.max_rx_queues) &&
--	     (i < IXGBE_DCA_MAX_QUEUES_82598)); i++) {
--		regval = IXGBE_READ_REG(hw, IXGBE_DCA_RXCTRL(i));
--		regval &= ~(IXGBE_DCA_RXCTRL_DATA_WRO_EN |
--			    IXGBE_DCA_RXCTRL_HEAD_WRO_EN);
--		IXGBE_WRITE_REG(hw, IXGBE_DCA_RXCTRL(i), regval);
-+		for (i = 0; ((i < hw->mac.max_rx_queues) &&
-+		     (i < IXGBE_DCA_MAX_QUEUES_82598)); i++) {
-+			regval = IXGBE_READ_REG(hw, IXGBE_DCA_RXCTRL(i));
-+			regval &= ~(IXGBE_DCA_RXCTRL_DATA_WRO_EN |
-+				    IXGBE_DCA_RXCTRL_HEAD_WRO_EN);
-+			IXGBE_WRITE_REG(hw, IXGBE_DCA_RXCTRL(i), regval);
-+		}
- 	}
- #endif
- 	if (ret_val)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 77d3039..7115dc0 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -347,22 +347,24 @@ s32 ixgbe_start_hw_gen2(struct ixgbe_hw *hw)
- 	IXGBE_WRITE_FLUSH(hw);
- 
- #ifndef CONFIG_SPARC
--	/* Disable relaxed ordering */
--	for (i = 0; i < hw->mac.max_tx_queues; i++) {
--		u32 regval;
--
--		regval = IXGBE_READ_REG(hw, IXGBE_DCA_TXCTRL_82599(i));
--		regval &= ~IXGBE_DCA_TXCTRL_DESC_WRO_EN;
--		IXGBE_WRITE_REG(hw, IXGBE_DCA_TXCTRL_82599(i), regval);
--	}
-+	if(likely(!ixgbe_wro_enable())) {
-+		/* Disable relaxed ordering */
-+		for (i = 0; i < hw->mac.max_tx_queues; i++) {
-+			u32 regval;
-+
-+			regval = IXGBE_READ_REG(hw, IXGBE_DCA_TXCTRL_82599(i));
-+			regval &= ~IXGBE_DCA_TXCTRL_DESC_WRO_EN;
-+			IXGBE_WRITE_REG(hw, IXGBE_DCA_TXCTRL_82599(i), regval);
-+		}
- 
--	for (i = 0; i < hw->mac.max_rx_queues; i++) {
--		u32 regval;
-+		for (i = 0; i < hw->mac.max_rx_queues; i++) {
-+			u32 regval;
- 
--		regval = IXGBE_READ_REG(hw, IXGBE_DCA_RXCTRL(i));
--		regval &= ~(IXGBE_DCA_RXCTRL_DATA_WRO_EN |
--			    IXGBE_DCA_RXCTRL_HEAD_WRO_EN);
-+			regval = IXGBE_READ_REG(hw, IXGBE_DCA_RXCTRL(i));
-+			regval &= ~(IXGBE_DCA_RXCTRL_DATA_WRO_EN |
-+				    IXGBE_DCA_RXCTRL_HEAD_WRO_EN);
- 		IXGBE_WRITE_REG(hw, IXGBE_DCA_RXCTRL(i), regval);
-+		}
- 	}
- #endif
- 	return 0;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index a244d9a..79ebce3 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -171,11 +171,20 @@ static int debug = -1;
- module_param(debug, int, 0);
- MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
- 
-+static bool wro_enable = 0;
-+module_param(wro_enable, bool, 0);
-+MODULE_PARM_DESC(wro_enable, "enable 82599 TX and RX's WRO attribute");
-+
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
- MODULE_DESCRIPTION("Intel(R) 10 Gigabit PCI Express Network Driver");
- MODULE_LICENSE("GPL");
- MODULE_VERSION(DRV_VERSION);
- 
-+bool ixgbe_wro_enable(void)
-+{
-+	return wro_enable;
-+}
-+
- static struct workqueue_struct *ixgbe_wq;
- 
- static bool ixgbe_check_cfg_remove(struct ixgbe_hw *hw, struct pci_dev *pdev);
--- 
-2.5.0
+elapsed time: 626m
 
+configs tested: 191
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                     randconfig-a0-201643
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64       nfsroot+CONFIG_DEBUG_INFO_REDUCED
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+alpha                            alldefconfig
+arm                         s3c2410_defconfig
+mips                malta_qemu_32r6_defconfig
+powerpc                      bamboo_defconfig
+arm                        neponset_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                     powernv_defconfig
+powerpc                         wii_defconfig
+sparc64                             defconfig
+x86_64                 randconfig-x014-201643
+x86_64                 randconfig-x011-201643
+x86_64                 randconfig-x017-201643
+x86_64                 randconfig-x015-201643
+x86_64                 randconfig-x012-201643
+x86_64                 randconfig-x018-201643
+x86_64                 randconfig-x019-201643
+x86_64                 randconfig-x013-201643
+x86_64                 randconfig-x010-201643
+x86_64                 randconfig-x016-201643
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201643
+i386                     randconfig-s1-201643
+x86_64                 randconfig-s0-10291504
+x86_64                 randconfig-s1-10291504
+x86_64                 randconfig-s2-10291504
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-10291544
+x86_64                 randconfig-s4-10291544
+x86_64                 randconfig-s5-10291544
+x86_64                 randconfig-s3-10291640
+x86_64                 randconfig-s4-10291640
+x86_64                 randconfig-s5-10291640
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                      acs5k_tiny_defconfig
+ia64                      gensparse_defconfig
+m68k                             alldefconfig
+mips                 pnx8335_stb225_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201643
+i386                   randconfig-b0-10291558
+sparc                               defconfig
+sparc64                           allnoconfig
+arm                         mv78xx0_defconfig
+blackfin                       SRV1_defconfig
+mips                          rm200_defconfig
+xtensa                  audio_kc705_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201643
+i386                     randconfig-i1-201643
+x86_64                 randconfig-b0-10291551
+arm                       multi_v4t_defconfig
+sh                               allyesconfig
+sh                          r7785rp_defconfig
+x86_64                 randconfig-u0-10291617
+x86_64                 randconfig-n0-10291648
+i386                               tinyconfig
+i386                   randconfig-x010-201643
+i386                   randconfig-x011-201643
+i386                   randconfig-x012-201643
+i386                   randconfig-x013-201643
+i386                   randconfig-x014-201643
+i386                   randconfig-x015-201643
+i386                   randconfig-x016-201643
+i386                   randconfig-x017-201643
+i386                   randconfig-x018-201643
+i386                   randconfig-x019-201643
+i386                     randconfig-n0-201643
+i386                   randconfig-h0-10291643
+i386                   randconfig-h1-10291643
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                        mini2440_defconfig
+powerpc                      pmac32_defconfig
+powerpc                          g5_defconfig
+i386                   randconfig-x071-201643
+i386                   randconfig-x073-201643
+i386                   randconfig-x072-201643
+i386                   randconfig-x076-201643
+i386                   randconfig-x078-201643
+i386                   randconfig-x075-201643
+i386                   randconfig-x077-201643
+i386                   randconfig-x074-201643
+i386                   randconfig-x079-201643
+i386                   randconfig-x070-201643
+x86_64                                  kexec
+x86_64                               rhel-7.2
+x86_64                 randconfig-n0-10291548
+x86_64                 randconfig-n0-10291634
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+arm                            xcep_defconfig
+mips                       capcella_defconfig
+powerpc                 mpc836x_rdk_defconfig
+x86_64                 randconfig-x000-201643
+x86_64                 randconfig-x001-201643
+x86_64                 randconfig-x002-201643
+x86_64                 randconfig-x003-201643
+x86_64                 randconfig-x004-201643
+x86_64                 randconfig-x005-201643
+x86_64                 randconfig-x006-201643
+x86_64                 randconfig-x007-201643
+x86_64                 randconfig-x008-201643
+x86_64                 randconfig-x009-201643
+i386                     randconfig-r0-201643
+x86_64                 randconfig-r0-10291540
+arm                         hackkit_defconfig
+m68k                        mvme147_defconfig
+powerpc                       ebony_defconfig
+i386                   randconfig-x000-201643
+i386                   randconfig-x001-201643
+i386                   randconfig-x002-201643
+i386                   randconfig-x003-201643
+i386                   randconfig-x004-201643
+i386                   randconfig-x005-201643
+i386                   randconfig-x006-201643
+i386                   randconfig-x007-201643
+i386                   randconfig-x008-201643
+i386                   randconfig-x009-201643
+i386                   randconfig-x0-10291620
+
+Thanks,
+Fengguang
