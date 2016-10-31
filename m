@@ -1,184 +1,216 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 31 Oct 2016 20:16:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- dbde96a3f2d99d84463b7f06bb9e8a74e440ad57
-Message-ID: <5817362f.NRZ6GX5qBI8xv60c%fengguang.wu@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Mon, 31 Oct 2016 13:29:08 +0100
+Subject: [Intel-wired-lan]
+ =?utf-8?q?=5Bixgbe=5D_Problem_with_Linux_4=2E8?=
+ =?utf-8?q?=2E4=2C_link_doesn=E2=80=99t_receive_packets?=
+In-Reply-To: <87618083B2453E4A8714035B62D6799250705F85@FMSMSX105.amr.corp.intel.com>
+References: <0e726f89-130a-2602-4aee-554d2b622764@molgen.mpg.de>
+ <87618083B2453E4A8714035B62D6799250705F85@FMSMSX105.amr.corp.intel.com>
+Message-ID: <e67005ce-950e-ca08-fb1f-4b4201076870@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-dbde96a3f2d99d84463b7f06bb9e8a74e440ad57  ixgbevf: Handle previously-freed msix_entries
+Dear Emil,
 
-elapsed time: 59m
 
-configs tested: 160
+Thank you for your reply.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201644
-x86_64                 randconfig-a0-10311734
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10311804
-x86_64                randconfig-it0-10311606
-x86_64                 randconfig-g0-10311619
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                         assabet_defconfig
-arm                             pxa_defconfig
-blackfin                BF537-STAMP_defconfig
-s390                                defconfig
-x86_64                 randconfig-x011-201644
-x86_64                 randconfig-x014-201644
-x86_64                 randconfig-x015-201644
-x86_64                 randconfig-x017-201644
-x86_64                 randconfig-x012-201644
-x86_64                 randconfig-x018-201644
-x86_64                 randconfig-x019-201644
-x86_64                 randconfig-x013-201644
-x86_64                 randconfig-x016-201644
-x86_64                 randconfig-x010-201644
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201644
-i386                     randconfig-s1-201644
-x86_64                 randconfig-s0-10311842
-x86_64                 randconfig-s1-10311842
-x86_64                 randconfig-s2-10311842
-x86_64                 randconfig-s3-10311807
-x86_64                 randconfig-s4-10311807
-x86_64                 randconfig-s5-10311807
-i386                               tinyconfig
-i386                             allmodconfig
-mips                          lasat_defconfig
-openrisc                         allmodconfig
-sh                            hp6xx_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201644
-i386                   randconfig-b0-10311749
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201644
-i386                     randconfig-i1-201644
-x86_64                           allmodconfig
-arm                           sunxi_defconfig
-mips                        nlm_xlr_defconfig
-powerpc                    sam440ep_defconfig
-x86_64                 randconfig-u0-10311804
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x010-201644
-i386                   randconfig-x011-201644
-i386                   randconfig-x012-201644
-i386                   randconfig-x013-201644
-i386                   randconfig-x014-201644
-i386                   randconfig-x015-201644
-i386                   randconfig-x016-201644
-i386                   randconfig-x017-201644
-i386                   randconfig-x018-201644
-i386                   randconfig-x019-201644
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-arm                           u8500_defconfig
-powerpc                      katmai_defconfig
-powerpc                    socrates_defconfig
-i386                   randconfig-x073-201644
-i386                   randconfig-x071-201644
-i386                   randconfig-x072-201644
-i386                   randconfig-x078-201644
-i386                   randconfig-x076-201644
-i386                   randconfig-x075-201644
-i386                   randconfig-x077-201644
-i386                   randconfig-x074-201644
-i386                   randconfig-x070-201644
-i386                   randconfig-x079-201644
-x86_64                 randconfig-n0-10311838
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                randconfig-ws0-10310929
-x86_64                 randconfig-x008-201644
-x86_64                 randconfig-x001-201644
-x86_64                 randconfig-x009-201644
-x86_64                 randconfig-x000-201644
-x86_64                 randconfig-x005-201644
-x86_64                 randconfig-x003-201644
-x86_64                 randconfig-x002-201644
-x86_64                 randconfig-x007-201644
-x86_64                 randconfig-x006-201644
-x86_64                 randconfig-x004-201644
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201644
-x86_64                 randconfig-r0-10311651
-mips                             allmodconfig
-parisc                        c8000_defconfig
-i386                   randconfig-x006-201644
-i386                   randconfig-x004-201644
-i386                   randconfig-x007-201644
-i386                   randconfig-x003-201644
-i386                   randconfig-x008-201644
-i386                   randconfig-x000-201644
-i386                   randconfig-x009-201644
-i386                   randconfig-x002-201644
-i386                   randconfig-x001-201644
-i386                   randconfig-x005-201644
-i386                   randconfig-x0-10311842
+On 10/27/16 21:05, Tantilov, Emil S wrote:
+>> -----Original Message-----
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Paul Menzel
+>> Sent: Thursday, October 27, 2016 11:37 AM
+>> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+>> <jeffrey.t.kirsher@intel.com>
+>> Subject: [Intel-wired-lan] [ixgbe] Problem with Linux 4.8.4, link doesn?t
+>> receive packets
+>>
+>> Dear Linux developers,
+>>
+>>
+>> Booting Linux 4.8.4, we have the following behavior on a TYAN S8812 with
+>> the devices below.
+>>
+>> [I mark it up as citation, as otherwise Mozilla Thunderbird autowraps it.]
+>>
+>>> 04:00.0 Ethernet controller [0200]: Intel Corporation 82574L Gigabit
+>> Network Connection [8086:10d3]
+>>> 05:00.0 Ethernet controller [0200]: Intel Corporation 82576 Gigabit
+>> Network Connection [8086:10c9] (rev 01)
+>>> 05:00.1 Ethernet controller [0200]: Intel Corporation 82576 Gigabit
+>> Network Connection [8086:10c9] (rev 01)
+>>> 06:00.0 RAID bus controller [0104]: 3ware Inc 9750 SAS2/SATA-II RAID PCIe
+>> [13c1:1010] (rev 05)
+>>> 07:00.0 Ethernet controller [0200]: Intel Corporation 82599ES 10-Gigabit
+>> SFI/SFP+ Network Connection [8086:10fb] (rev 01)
+>>> 07:00.1 Ethernet controller [0200]: Intel Corporation 82599ES 10-Gigabit
+>> SFI/SFP+ Network Connection [8086:10fb] (rev 01)
+>>
+>> The problem is, the link is up, but doesn?t receive any packets. Both
+>> LEDs are on, the switch doesn?t show a connection though.
+>>
+>> ### Linux 4.4.14 ###
+>>
+>> Here is the working boot with Linux 4.4.14.
+>>
+>>> [   14.407431] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver -
+>> version 4.2.1-k
+>>> [   14.407878] ixgbe: Copyright (c) 1999-2015 Intel Corporation.
+>>> [   15.509390] ixgbe 0000:07:00.0: Multiqueue Enabled: Rx Queue count =
+>> 63, Tx Queue count = 63
+>>> [   15.509960] ixgbe 0000:07:00.0: PCI Express bandwidth of 32GT/s
+>> available
+>>> [   15.510194] ixgbe 0000:07:00.0: (Speed:5.0GT/s, Width: x8, Encoding
+>> Loss:20%)
+>>> [   15.510516] ixgbe 0000:07:00.0: MAC: 2, PHY: 1, PBA No: E68793-004
+>>> [   15.510794] ixgbe 0000:07:00.0: 00:1b:21:d6:ca:bc
+>>> [   15.513170] ixgbe 0000:07:00.0: Intel(R) 10 Gigabit Network Connection
+>>> [   15.682545] ixgbe 0000:07:00.1: Multiqueue Enabled: Rx Queue count =
+>> 63, Tx Queue count = 63
+>>> [   15.683115] ixgbe 0000:07:00.1: PCI Express bandwidth of 32GT/s
+>> available
+>>> [   15.683352] ixgbe 0000:07:00.1: (Speed:5.0GT/s, Width: x8, Encoding
+>> Loss:20%)
+>>> [   15.683672] ixgbe 0000:07:00.1: MAC: 2, PHY: 18, SFP+: 6, PBA No:
+>> E68793-004
+>>> [   15.683949] ixgbe 0000:07:00.1: 00:1b:21:d6:ca:bd
+>>> [   15.686311] ixgbe 0000:07:00.1: Intel(R) 10 Gigabit Network Connection
+>>> [   18.493786] ixgbe 0000:07:00.0 net03: renamed from eth3
+>>> [   18.507056] ixgbe 0000:07:00.1 net04: renamed from eth4
+>>> [   18.839122] ixgbe 0000:07:00.1: registered PHC device on net04
+>>> [   19.010366] ixgbe 0000:07:00.1 net04: detected SFP+: 6
+>>> [   19.253458] ixgbe 0000:07:00.1 net04: NIC Link is Up 10 Gbps, Flow
+>> Control: RX/TX
+>>
+>> ### Linux 4.8.4 ###
+>>
+>>> [   22.136906] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver -
+>> version 4.4.0-k
+>>> [   22.137360] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
+>>> [   23.272410] ixgbe 0000:07:00.0: Multiqueue Enabled: Rx Queue count =
+>> 63, Tx Queue count = 63
+>>> [   23.272931] ixgbe 0000:07:00.0: PCI Express bandwidth of 32GT/s
+>> available
+>>> [   23.273217] ixgbe 0000:07:00.0: (Speed:5.0GT/s, Width: x8, Encoding
+>> Loss:20%)
+>>> [   23.273532] ixgbe 0000:07:00.0: MAC: 2, PHY: 1, PBA No: E68793-004
+>>> [   23.273765] ixgbe 0000:07:00.0: 00:1b:21:d6:ca:bc
+>>> [   23.276469] ixgbe 0000:07:00.0: Intel(R) 10 Gigabit Network Connection
+>>> [   23.438461] ixgbe 0000:07:00.1: Multiqueue Enabled: Rx Queue count =
+>> 63, Tx Queue count = 63
+>>> [   23.438981] ixgbe 0000:07:00.1: PCI Express bandwidth of 32GT/s
+>> available
+>>> [   23.439266] ixgbe 0000:07:00.1: (Speed:5.0GT/s, Width: x8, Encoding
+>> Loss:20%)
+>>> [   23.439580] ixgbe 0000:07:00.1: MAC: 2, PHY: 18, SFP+: 6, PBA No:
+>> E68793-004
+>>> [   23.439817] ixgbe 0000:07:00.1: 00:1b:21:d6:ca:bd
+>>> [   23.442483] ixgbe 0000:07:00.1: Intel(R) 10 Gigabit Network Connection
+>>> [   26.911415] ixgbe 0000:07:00.0 net03: renamed from eth3
+>>> [   26.927234] ixgbe 0000:07:00.1 net04: renamed from eth4
+>>> [   27.277634] ixgbe 0000:07:00.1: registered PHC device on net04
+>>> [   27.457916] ixgbe 0000:07:00.1 net04: detected SFP+: 6
+>>> [   27.713989] ixgbe 0000:07:00.1 net04: NIC Link is Up 10 Gbps, Flow
+>> Control: RX/TX
+>>
+>> No packets are received on the interface. After unplugging the network
+>> cable, and plugging it back in, it works.
+>>
+>>> [ 2009.455327] ixgbe 0000:07:00.1 net04: NIC Link is Down
+>>> [ 2012.354168] ixgbe 0000:07:00.1 net04: NIC Link is Up 10 Gbps, Flow
+>> Control: RX/TX
+>>
+>>
+>> After a reboot, there is the *same* result.
+>>
+>>> [   21.427370] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver -
+>> version 4.4.0-k
+>>> [   21.431447] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
+>>> [   22.568344] ixgbe 0000:07:00.0: Multiqueue Enabled: Rx Queue count =
+>> 63, Tx Queue count = 63
+>>> [   22.568506] ixgbe 0000:07:00.0: PCI Express bandwidth of 32GT/s
+>> available
+>>> [   22.568508] ixgbe 0000:07:00.0: (Speed:5.0GT/s, Width: x8, Encoding
+>> Loss:20%)
+>>> [   22.568588] ixgbe 0000:07:00.0: MAC: 2, PHY: 1, PBA No: E68793-004
+>>> [   22.568589] ixgbe 0000:07:00.0: 00:1b:21:d6:ca:bc
+>>> [   22.571967] ixgbe 0000:07:00.0: Intel(R) 10 Gigabit Network Connection
+>>> [   22.734311] ixgbe 0000:07:00.1: Multiqueue Enabled: Rx Queue count =
+>> 63, Tx Queue count = 63
+>>> [   22.734833] ixgbe 0000:07:00.1: PCI Express bandwidth of 32GT/s
+>> available
+>>> [   22.735126] ixgbe 0000:07:00.1: (Speed:5.0GT/s, Width: x8, Encoding
+>> Loss:20%)
+>>> [   22.735441] ixgbe 0000:07:00.1: MAC: 2, PHY: 18, SFP+: 6, PBA No:
+>> E68793-004
+>>> [   22.735675] ixgbe 0000:07:00.1: 00:1b:21:d6:ca:bd
+>>> [   22.738115] ixgbe 0000:07:00.1: Intel(R) 10 Gigabit Network Connection
+>>> [   25.980145] ixgbe 0000:07:00.0 net03: renamed from eth3
+>>> [   26.005989] ixgbe 0000:07:00.1 net04: renamed from eth4
+>>> [   26.379269] ixgbe 0000:07:00.1: registered PHC device on net04
+>>> [   26.551580] ixgbe 0000:07:00.1 net04: detected SFP+: 6
+>>> [   26.802655] ixgbe 0000:07:00.1 net04: NIC Link is Up 10 Gbps, Flow
+>> Control: RX/TX
+>>
+>>
+>> After doing `ip link set dev net04 down`, and `ip link set dev net04
+>> up`, the link works as expected.
+>>
+>>> [  151.437972] ixgbe 0000:07:00.1: removed PHC on net04
+>>> [  162.174209] ixgbe 0000:07:00.1: registered PHC device on net04
+>>> [  162.350749] ixgbe 0000:07:00.1 net04: detected SFP+: 6
+>>> [  162.599821] ixgbe 0000:07:00.1 net04: NIC Link is Up 10 Gbps, Flow
+>> Control: RX/TX
+>>
+>> So I have some questions.
+>>
+>> 1. Have you heard of such problems in Linux kernels after 4.4?
+>
+> We have now.
+>
+> From what you are describing it appears that the switch is not detecting
+> a link when the interface is brought up. Resetting the interface will
+> also force a re-negotiation of the link which apparently helps.
+>
+>> 2. Can you explain the behavior, that there is no message *NIC Link is
+>> Down* from Linux after `ip link set dev net04 down`?
+>
+> The "Link Up/Down" messages are interrupt driven and when you bring the
+> interface down there are no interrupts and hence no way to detect the
+> link change. BTW just because you brought the interface down it does not
+> mean that the link is down.
 
-Thanks,
-Fengguang
+Ah, thank you for clearing that up.
+
+>> 3. If it is a bug, what can I do to get it fixed? Is this mailing list
+>> the right forum, or should I create a ticket at the Linux Kernel
+>> Bugtracker [1]? What other information than above do you need?
+>
+> What is the SFP module you are using and the model of the switch?
+> Are you using a supported SFP+ module (not loading the driver with
+> allow_unsupported_sfp)?
+
+Yes, only supported SFP+ modules are used.
+
+> If it worked in previous versions of the kernel/driver then it could
+> be a bug introduced with a more recent patch. If you can bisect it you
+> should be able to pinpoint the patch that introduced this issue.
+
+(Un)fortunately, this problem is present on one machine, which is used 
+in production. So bisection is not an option.
+
+> Also you may want to test with the current development tree from:
+> git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+>
+> In case this issue has already been addressed in the development branch.
+
+One reboot should be doable this week to test Linux 4.9-rc3.
+
+
+Kind regards,
+
+Paul
