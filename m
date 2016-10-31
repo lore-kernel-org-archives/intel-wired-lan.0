@@ -1,51 +1,190 @@
-From: Matwey V. Kornilov <matwey@sai.msu.ru>
-Date: Thu, 24 Nov 2016 13:32:48 +0300
-Subject: [Intel-wired-lan] [PATCH] igb: Explicitly select page 0 at
-	initialization
-Message-ID: <1479983568-4383-1-git-send-email-matwey@sai.msu.ru>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 01 Nov 2016 05:51:00 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 1137086fc85712aa123d29c87c604310a17a7d4e
+Message-ID: <5817bcc4.kxKXRqrL5a+BdZDk%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The functions igb_read_phy_reg_gs40g/igb_write_phy_reg_gs40g (which were
-removed in 2a3cdea) explicitly selected the required page at every phy_reg
-access. Currently, igb_get_phy_id_82575 relays on the fact that page 0 is
-already selected. The assumption is not fulfilled for my Lex 3I380CW
-motherboard with integrated dual i211 based gigabit ethernet. This leads to igb
-initialization failure and network interfaces are not working:
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+1137086fc85712aa123d29c87c604310a17a7d4e  Merge branch 'sctp-hold-transport-fixes'
 
-    igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
-    igb: Copyright (c) 2007-2014 Intel Corporation.
-    igb: probe of 0000:01:00.0 failed with error -2
-    igb: probe of 0000:02:00.0 failed with error -2
+elapsed time: 84m
 
-In order to fix it, we explicitly select page 0 before first access to phy
-registers.
+configs tested: 166
 
-See also: https://bugzilla.suse.com/show_bug.cgi?id=1009911
-See also: http://www.lex.com.tw/products/pdf/3I380A&3I380CW.pdf
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Fixes: 2a3cdea ("igb: Remove GS40G specific defines/functions")
-Cc: <stable@vger.kernel.org> # 4.5+
-Signed-off-by: Matwey V. Kornilov <matwey@sai.msu.ru>
----
- drivers/net/ethernet/intel/igb/e1000_82575.c | 1 +
- 1 file changed, 1 insertion(+)
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+mips                      pistachio_defconfig
+sh                            migor_defconfig
+sparc                            allyesconfig
+i386                     randconfig-a0-201644
+x86_64                 randconfig-a0-11010305
+x86_64                 randconfig-a0-11010516
+x86_64                             acpi-redef
+x86_64       acpi-redef+CONFIG_DEBUG_INFO_REDUCED
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-11010241
+x86_64                randconfig-in0-10312346
+x86_64                                  kexec
+x86_64                                   rhel
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                    vt8500_v6_v7_defconfig
+blackfin             BF527-TLL6527M_defconfig
+cris                             allmodconfig
+ia64                            sim_defconfig
+powerpc                      katmai_defconfig
+arm                         em_x270_defconfig
+m68k                         apollo_defconfig
+m68k                        m5272c3_defconfig
+sh                          landisk_defconfig
+x86_64                 randconfig-x011-201644
+x86_64                 randconfig-x014-201644
+x86_64                 randconfig-x015-201644
+x86_64                 randconfig-x017-201644
+x86_64                 randconfig-x012-201644
+x86_64                 randconfig-x018-201644
+x86_64                 randconfig-x019-201644
+x86_64                 randconfig-x013-201644
+x86_64                 randconfig-x016-201644
+x86_64                 randconfig-x010-201644
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201644
+i386                     randconfig-s1-201644
+x86_64                 randconfig-s0-11010432
+x86_64                 randconfig-s1-11010432
+x86_64                 randconfig-s2-11010432
+x86_64                 randconfig-s0-11010507
+x86_64                 randconfig-s1-11010507
+x86_64                 randconfig-s2-11010507
+x86_64                 randconfig-s3-11010448
+x86_64                 randconfig-s4-11010448
+x86_64                 randconfig-s5-11010448
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201644
+i386                   randconfig-b0-11010355
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201644
+i386                     randconfig-i1-201644
+x86_64                 randconfig-b0-10312351
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                randconfig-ne0-11010451
+x86_64                randconfig-ne0-11010516
+i386                               tinyconfig
+alpha                             allnoconfig
+arm                            lart_defconfig
+sh                           se7724_defconfig
+tile                             allyesconfig
+powerpc               mpc86xx_basic_defconfig
+sh                          r7785rp_defconfig
+um                                  defconfig
+i386                   randconfig-x014-201644
+i386                   randconfig-x019-201644
+i386                   randconfig-x018-201644
+i386                   randconfig-x017-201644
+i386                   randconfig-x015-201644
+i386                   randconfig-x016-201644
+i386                   randconfig-x012-201644
+i386                   randconfig-x011-201644
+i386                   randconfig-x013-201644
+i386                   randconfig-x010-201644
+i386                     randconfig-n0-201644
+i386                   randconfig-h0-11010352
+i386                   randconfig-h1-11010352
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                               rhel-7.2
+x86_64                 randconfig-h0-11010157
+i386                   randconfig-x070-201644
+i386                   randconfig-x071-201644
+i386                   randconfig-x072-201644
+i386                   randconfig-x073-201644
+i386                   randconfig-x074-201644
+i386                   randconfig-x075-201644
+i386                   randconfig-x076-201644
+i386                   randconfig-x077-201644
+i386                   randconfig-x078-201644
+i386                   randconfig-x079-201644
+blackfin                            defconfig
+mips                                defconfig
+x86_64                randconfig-ws0-10312348
+x86_64                 randconfig-x008-201644
+x86_64                 randconfig-x001-201644
+x86_64                 randconfig-x009-201644
+x86_64                 randconfig-x000-201644
+x86_64                 randconfig-x005-201644
+x86_64                 randconfig-x003-201644
+x86_64                 randconfig-x002-201644
+x86_64                 randconfig-x007-201644
+x86_64                 randconfig-x006-201644
+x86_64                 randconfig-x004-201644
+i386                     randconfig-r0-201644
+x86_64                 randconfig-r0-11010211
+i386                   randconfig-x006-201644
+i386                   randconfig-x004-201644
+i386                   randconfig-x007-201644
+i386                   randconfig-x003-201644
+i386                   randconfig-x008-201644
+i386                   randconfig-x000-201644
+i386                   randconfig-x009-201644
+i386                   randconfig-x002-201644
+i386                   randconfig-x001-201644
+i386                   randconfig-x005-201644
+i386                   randconfig-x0-11010347
+i386                   randconfig-x0-11010512
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index a61447f..1264a36 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -246,6 +246,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
- 			E1000_STATUS_FUNC_SHIFT;
- 
- 	/* Set phy->phy_addr and phy->id. */
-+	igb_write_phy_reg_82580(hw, I347AT4_PAGE_SELECT, 0);
- 	ret_val = igb_get_phy_id_82575(hw);
- 	if (ret_val)
- 		return ret_val;
--- 
-2.1.4
-
+Thanks,
+Fengguang
