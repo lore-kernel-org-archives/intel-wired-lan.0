@@ -1,78 +1,56 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Mon, 31 Oct 2016 13:00:34 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: handle race between close and
-	suspend on shutdown
-Message-ID: <20161031200034.4729.18959.stgit@localhost6.localdomain6>
+From: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+Date: Mon, 31 Oct 2016 18:12:29 -0200
+Subject: [Intel-wired-lan] [PATCH net] igb: re-assign hw address pointer on
+	reset after PCI error
+Message-ID: <1477944749-22822-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When an interface is part of a namespace it is possible that
-ixgbevf_close() may be called while ixgbevf_suspend() is running
-which ends up in a double free WARN and/or a BUG in free_msi_irqs()
+Whenever the igb driver detects the result of a read operation returns
+a value composed only by F's (like 0xFFFFFFFF), it will detach the
+net_device, clear the hw_addr pointer and warn to the user that adapter's
+link is lost - those steps happen on igb_rd32().
 
-This patch introduces a new adapter->state bit that will allow us
-to handle this rate atomically. The idea is that ixgbevf_close() should
-not run if ixgbevf_suspend is in session.
+In case a PCI error happens on Power architecture, there's a recovery
+mechanism called EEH, that will reset the PCI slot and call driver's
+handlers to reset the adapter and network functionality as well.
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+We observed that once hw_addr is NULL after the error is detected on
+igb_rd32(), it's never assigned back, so in the process of resetting
+the network functionality we got a NULL pointer dereference in both
+igb_configure_tx_ring() and igb_configure_rx_ring(). In order to avoid
+such bug, we re-assign the hw_addr value in the beginning of the
+function igb_reset(), in case the hw_addr is NULL when we reach that
+path.
+
+Reported-by: Anthony H. Thai <ahthai@us.ibm.com>
+Reported-by: Harsha Thyagaraja <hathyaga@in.ibm.com>
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    1 +
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    9 +++++++++
- 2 files changed, 10 insertions(+)
+ drivers/net/ethernet/intel/igb/igb_main.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-index 5639fbe..dc4b3b4 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-@@ -446,6 +446,7 @@ enum ixbgevf_state_t {
- 	__IXGBEVF_SERVICE_INITED,
- 	__IXGBEVF_RESET_REQUESTED,
- 	__IXGBEVF_QUEUE_RESET_REQUESTED,
-+	__IXGBEVF_CLEAR_IRQS,
- };
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index edc9a6a..c19119c 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -1873,6 +1873,13 @@ void igb_reset(struct igb_adapter *adapter)
+ 	struct e1000_fc_info *fc = &hw->fc;
+ 	u32 pba, hwm;
  
- enum ixgbevf_boards {
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index d316f50..8ebe797 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3242,12 +3242,17 @@ int ixgbevf_close(struct net_device *netdev)
- {
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 
-+	if (test_and_set_bit(__IXGBEVF_CLEAR_IRQS, &adapter->state))
-+		return 0;
++	/* In case of PCI error, adapter might have lost its HW
++	 * address; if we reached this point after an error scenario,
++	 * we should re-assign the hw_addr based on the saved io_addr.
++	 */
++	if (!hw->hw_addr)
++		hw->hw_addr = adapter->io_addr;
 +
- 	ixgbevf_down(adapter);
- 	ixgbevf_free_irq(adapter);
- 
- 	ixgbevf_free_all_tx_resources(adapter);
- 	ixgbevf_free_all_rx_resources(adapter);
- 
-+	clear_bit(__IXGBEVF_CLEAR_IRQS, &adapter->state);
-+
- 	return 0;
- }
- 
-@@ -3792,6 +3797,9 @@ static int ixgbevf_suspend(struct pci_dev *pdev, pm_message_t state)
- 	int retval = 0;
- #endif
- 
-+	while (test_and_set_bit(__IXGBEVF_CLEAR_IRQS, &adapter->state))
-+		usleep_range(1000, 2000);
-+
- 	netif_device_detach(netdev);
- 
- 	if (netif_running(netdev)) {
-@@ -3813,6 +3821,7 @@ static int ixgbevf_suspend(struct pci_dev *pdev, pm_message_t state)
- 	if (!test_and_set_bit(__IXGBEVF_DISABLED, &adapter->state))
- 		pci_disable_device(pdev);
- 
-+	clear_bit(__IXGBEVF_CLEAR_IRQS, &adapter->state);
- 	return 0;
- }
- 
+ 	/* Repartition Pba for greater than 9k mtu
+ 	 * To take effect CTRL.RST is required.
+ 	 */
+-- 
+2.1.0
 
