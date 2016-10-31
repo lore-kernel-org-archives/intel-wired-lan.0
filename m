@@ -1,56 +1,59 @@
-From: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Date: Mon, 31 Oct 2016 18:12:29 -0200
-Subject: [Intel-wired-lan] [PATCH net] igb: re-assign hw address pointer on
-	reset after PCI error
-Message-ID: <1477944749-22822-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Mon, 31 Oct 2016 12:11:58 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix check for
+	ixgbe_phy_x550em_ext_t reset
+Message-ID: <1477941118-17973-1-git-send-email-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Whenever the igb driver detects the result of a read operation returns
-a value composed only by F's (like 0xFFFFFFFF), it will detach the
-net_device, clear the hw_addr pointer and warn to the user that adapter's
-link is lost - those steps happen on igb_rd32().
+The generic PHY reset check we had previously is not sufficient for the
+ixgbe_phy_x550em_ext_t PHY type.  Check 1.CC02.0 instead - same as
+ixgbe_init_ext_t_x550().
 
-In case a PCI error happens on Power architecture, there's a recovery
-mechanism called EEH, that will reset the PCI slot and call driver's
-handlers to reset the adapter and network functionality as well.
-
-We observed that once hw_addr is NULL after the error is detected on
-igb_rd32(), it's never assigned back, so in the process of resetting
-the network functionality we got a NULL pointer dereference in both
-igb_configure_tx_ring() and igb_configure_rx_ring(). In order to avoid
-such bug, we re-assign the hw_addr value in the beginning of the
-function igb_reset(), in case the hw_addr is NULL when we reach that
-path.
-
-Reported-by: Anthony H. Thai <ahthai@us.ibm.com>
-Reported-by: Harsha Thyagaraja <hathyaga@in.ibm.com>
-Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 25 +++++++++++++++++++++----
+ 1 file changed, 21 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index edc9a6a..c19119c 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1873,6 +1873,13 @@ void igb_reset(struct igb_adapter *adapter)
- 	struct e1000_fc_info *fc = &hw->fc;
- 	u32 pba, hwm;
- 
-+	/* In case of PCI error, adapter might have lost its HW
-+	 * address; if we reached this point after an error scenario,
-+	 * we should re-assign the hw_addr based on the saved io_addr.
-+	 */
-+	if (!hw->hw_addr)
-+		hw->hw_addr = adapter->io_addr;
-+
- 	/* Repartition Pba for greater than 9k mtu
- 	 * To take effect CTRL.RST is required.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index e27798d9..b1711ff 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -451,10 +451,27 @@ s32 ixgbe_reset_phy_generic(struct ixgbe_hw *hw)
  	 */
+ 	for (i = 0; i < 30; i++) {
+ 		msleep(100);
+-		hw->phy.ops.read_reg(hw, MDIO_CTRL1, MDIO_MMD_PHYXS, &ctrl);
+-		if (!(ctrl & MDIO_CTRL1_RESET)) {
+-			udelay(2);
+-			break;
++		if (hw->phy.type == ixgbe_phy_x550em_ext_t) {
++			status = hw->phy.ops.read_reg(hw,
++						  IXGBE_MDIO_TX_VENDOR_ALARMS_3,
++						  MDIO_MMD_PMAPMD, &ctrl);
++			if (status)
++				return status;
++
++			if (ctrl & IXGBE_MDIO_TX_VENDOR_ALARMS_3_RST_MASK) {
++				udelay(2);
++				break;
++			}
++		} else {
++			status = hw->phy.ops.read_reg(hw, MDIO_CTRL1,
++						      MDIO_MMD_PHYXS, &ctrl);
++			if (status)
++				return status;
++
++			if (!(ctrl & MDIO_CTRL1_RESET)) {
++				udelay(2);
++				break;
++			}
+ 		}
+ 	}
+ 
 -- 
-2.1.0
+2.4.0
 
