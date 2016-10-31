@@ -1,59 +1,53 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 31 Oct 2016 12:11:58 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix check for
-	ixgbe_phy_x550em_ext_t reset
-Message-ID: <1477941118-17973-1-git-send-email-anthony.l.nguyen@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 31 Oct 2016 14:30:24 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: handle race between close
+ and suspend on shutdown
+In-Reply-To: <20161031200034.4729.18959.stgit@localhost6.localdomain6>
+References: <20161031200034.4729.18959.stgit@localhost6.localdomain6>
+Message-ID: <CAKgT0UckEekjeSPY3nt-nVJKG5RU0YCv9+09kEDYUoHckxmm9g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The generic PHY reset check we had previously is not sufficient for the
-ixgbe_phy_x550em_ext_t PHY type.  Check 1.CC02.0 instead - same as
-ixgbe_init_ext_t_x550().
+On Mon, Oct 31, 2016 at 1:00 PM, Emil Tantilov <emil.s.tantilov@intel.com>
+wrote:
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 25 +++++++++++++++++++++----
- 1 file changed, 21 insertions(+), 4 deletions(-)
+> When an interface is part of a namespace it is possible that
+> ixgbevf_close() may be called while ixgbevf_suspend() is running
+> which ends up in a double free WARN and/or a BUG in free_msi_irqs()
+>
+> This patch introduces a new adapter->state bit that will allow us
+> to handle this rate atomically. The idea is that ixgbevf_close() should
+> not run if ixgbevf_suspend is in session.
+>
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+>
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index e27798d9..b1711ff 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -451,10 +451,27 @@ s32 ixgbe_reset_phy_generic(struct ixgbe_hw *hw)
- 	 */
- 	for (i = 0; i < 30; i++) {
- 		msleep(100);
--		hw->phy.ops.read_reg(hw, MDIO_CTRL1, MDIO_MMD_PHYXS, &ctrl);
--		if (!(ctrl & MDIO_CTRL1_RESET)) {
--			udelay(2);
--			break;
-+		if (hw->phy.type == ixgbe_phy_x550em_ext_t) {
-+			status = hw->phy.ops.read_reg(hw,
-+						  IXGBE_MDIO_TX_VENDOR_ALARMS_3,
-+						  MDIO_MMD_PMAPMD, &ctrl);
-+			if (status)
-+				return status;
-+
-+			if (ctrl & IXGBE_MDIO_TX_VENDOR_ALARMS_3_RST_MASK) {
-+				udelay(2);
-+				break;
-+			}
-+		} else {
-+			status = hw->phy.ops.read_reg(hw, MDIO_CTRL1,
-+						      MDIO_MMD_PHYXS, &ctrl);
-+			if (status)
-+				return status;
-+
-+			if (!(ctrl & MDIO_CTRL1_RESET)) {
-+				udelay(2);
-+				break;
-+			}
- 		}
- 	}
- 
--- 
-2.4.0
+I'm pretty sure this isn't the correct fix for this.  You still have the
+two technically race against each other because the close could get caught
+behind the rtnl lock and then flow through trying to free the interrupt
+from it's side.  Also there are scenarios where this can leak interrupts
+and such since suspend could set the bit, close could run through take the
+rtnl lock, see the bit set so it doesn't free anything, then suspend
+resumes and netif_running returns false so you never free the ring
+resources.
 
+I think the correct fix for this is to move the rtnl_lock/unlock so that
+they are outside of the netif_device_detach() and
+ixgbevf_clear_interrupt_scheme() calls that are a part of ixgbevf_suspend.
+That way you shouldn't race with close.
+
+It also looks like there is a similar bug in
+the ixgbevf_queue_reset_subtask().  It should be taking the rtnl_lock
+before checking netif_running, and releasing it at the end of the
+function.  You could also add a call to netif_device_present to
+ixgbevf_close and if it returns false then just return since the rtnl_lock
+will guarantee that if it is set then suspend will have already freed the
+resources.
+
+- Alex
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161031/ae8fc41e/attachment.html>
