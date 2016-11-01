@@ -1,125 +1,129 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue,  1 Nov 2016 13:58:27 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove driver config for KX4 PHY
-Message-ID: <1478033907-10221-1-git-send-email-anthony.l.nguyen@intel.com>
+From: Joe Perches <joe@perches.com>
+Date: Tue,  1 Nov 2016 15:35:14 -0700
+Subject: [Intel-wired-lan] [PATCH net-next] i40evf: Move some
+	i40evf_reset_task code to separate function
+Message-ID: <a93a0a56a25a4f5357e548af6e535f4d5e06ea74.1478039638.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The KX4 PHY is configured by the NVM.  Currently, the driver is overwriting
-the config; remove the code associated with KX4 configuration.
+The i40evf_reset_task function is a couple hundred lines and it has
+a separable block that disables vf.  Move that block to a new
+i40evf_disable_vf function to shorten i40evf_reset_task a bit.
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |  3 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 12 --------
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 40 +--------------------------
- 3 files changed, 3 insertions(+), 52 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 86 +++++++++++++------------
+ 1 file changed, 44 insertions(+), 42 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index b1711ff..df657ef 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -784,7 +784,8 @@ s32 ixgbe_setup_phy_link_speed_generic(struct ixgbe_hw *hw,
- 		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_100_FULL;
- 
- 	/* Setup link based on the new speed settings */
--	hw->phy.ops.setup_link(hw);
-+	if (hw->phy.ops.setup_link)
-+		hw->phy.ops.setup_link(hw);
- 
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index bde7e33..9ad110d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -3679,15 +3679,6 @@ struct ixgbe_info {
- #define IXGBE_KRM_TX_COEFF_CTRL_1_CZERO_EN		BIT(3)
- #define IXGBE_KRM_TX_COEFF_CTRL_1_OVRRD_EN		BIT(31)
- 
--#define IXGBE_KX4_LINK_CNTL_1				0x4C
--#define IXGBE_KX4_LINK_CNTL_1_TETH_AN_CAP_KX		BIT(16)
--#define IXGBE_KX4_LINK_CNTL_1_TETH_AN_CAP_KX4		BIT(17)
--#define IXGBE_KX4_LINK_CNTL_1_TETH_EEE_CAP_KX		BIT(24)
--#define IXGBE_KX4_LINK_CNTL_1_TETH_EEE_CAP_KX4		BIT(25)
--#define IXGBE_KX4_LINK_CNTL_1_TETH_AN_ENABLE		BIT(29)
--#define IXGBE_KX4_LINK_CNTL_1_TETH_FORCE_LINK_UP	BIT(30)
--#define IXGBE_KX4_LINK_CNTL_1_TETH_AN_RESTART		BIT(31)
--
- #define IXGBE_SB_IOSF_INDIRECT_CTRL		0x00011144
- #define IXGBE_SB_IOSF_INDIRECT_DATA		0x00011148
- 
-@@ -3704,9 +3695,6 @@ struct ixgbe_info {
- #define IXGBE_SB_IOSF_CTRL_BUSY_SHIFT		31
- #define IXGBE_SB_IOSF_CTRL_BUSY		BIT(IXGBE_SB_IOSF_CTRL_BUSY_SHIFT)
- #define IXGBE_SB_IOSF_TARGET_KR_PHY	0
--#define IXGBE_SB_IOSF_TARGET_KX4_UNIPHY	1
--#define IXGBE_SB_IOSF_TARGET_KX4_PCS0	2
--#define IXGBE_SB_IOSF_TARGET_KX4_PCS1	3
- 
- #define IXGBE_NW_MNG_IF_SEL		0x00011178
- #define IXGBE_NW_MNG_IF_SEL_MDIO_ACT		BIT(1)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 92f2b5e..80be82d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -2146,44 +2146,6 @@ static s32 ixgbe_setup_kr_speed_x550em(struct ixgbe_hw *hw,
- 	return ixgbe_restart_an_internal_phy_x550em(hw);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index db36744c6691..4cd3a47d888f 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1693,6 +1693,49 @@ static void i40evf_watchdog_task(struct work_struct *work)
+ 	schedule_work(&adapter->adminq_task);
  }
  
--/** ixgbe_setup_kx4_x550em - Configure the KX4 PHY.
-- *  @hw: pointer to hardware structure
-- *
-- *   Configures the integrated KX4 PHY.
-- **/
--static s32 ixgbe_setup_kx4_x550em(struct ixgbe_hw *hw)
--{
--	s32 status;
--	u32 reg_val;
--
--	status = hw->mac.ops.read_iosf_sb_reg(hw, IXGBE_KX4_LINK_CNTL_1,
--					      IXGBE_SB_IOSF_TARGET_KX4_PCS0 +
--					      hw->bus.lan_id, &reg_val);
--	if (status)
--		return status;
--
--	reg_val &= ~(IXGBE_KX4_LINK_CNTL_1_TETH_AN_CAP_KX4 |
--		     IXGBE_KX4_LINK_CNTL_1_TETH_AN_CAP_KX);
--
--	reg_val |= IXGBE_KX4_LINK_CNTL_1_TETH_AN_ENABLE;
--
--	/* Advertise 10G support. */
--	if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_10GB_FULL)
--		reg_val |= IXGBE_KX4_LINK_CNTL_1_TETH_AN_CAP_KX4;
--
--	/* Advertise 1G support. */
--	if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_1GB_FULL)
--		reg_val |= IXGBE_KX4_LINK_CNTL_1_TETH_AN_CAP_KX;
--
--	/* Restart auto-negotiation. */
--	reg_val |= IXGBE_KX4_LINK_CNTL_1_TETH_AN_RESTART;
--	status = hw->mac.ops.write_iosf_sb_reg(hw, IXGBE_KX4_LINK_CNTL_1,
--					       IXGBE_SB_IOSF_TARGET_KX4_PCS0 +
--					       hw->bus.lan_id, reg_val);
--
--	return status;
--}
--
++static void i40evf_disable_vf(struct i40evf_adapter *adapter)
++{
++	struct i40evf_mac_filter *f, *ftmp;
++	struct i40evf_vlan_filter *fv, *fvtmp;
++
++	adapter->flags |= I40EVF_FLAG_PF_COMMS_FAILED;
++
++	if (netif_running(adapter->netdev)) {
++		set_bit(__I40E_DOWN, &adapter->vsi.state);
++		netif_carrier_off(adapter->netdev);
++		netif_tx_disable(adapter->netdev);
++		adapter->link_up = false;
++		i40evf_napi_disable_all(adapter);
++		i40evf_irq_disable(adapter);
++		i40evf_free_traffic_irqs(adapter);
++		i40evf_free_all_tx_resources(adapter);
++		i40evf_free_all_rx_resources(adapter);
++	}
++
++	/* Delete all of the filters, both MAC and VLAN. */
++	list_for_each_entry_safe(f, ftmp, &adapter->mac_filter_list, list) {
++		list_del(&f->list);
++		kfree(f);
++	}
++
++	list_for_each_entry_safe(fv, fvtmp, &adapter->vlan_filter_list, list) {
++		list_del(&fv->list);
++		kfree(fv);
++	}
++
++	i40evf_free_misc_irq(adapter);
++	i40evf_reset_interrupt_capability(adapter);
++	i40evf_free_queues(adapter);
++	i40evf_free_q_vectors(adapter);
++	kfree(adapter->vf_res);
++	i40evf_shutdown_adminq(&adapter->hw);
++	adapter->netdev->flags &= ~IFF_UP;
++	clear_bit(__I40EVF_IN_CRITICAL_TASK, &adapter->crit_section);
++	adapter->flags &= ~I40EVF_FLAG_RESET_PENDING;
++	adapter->state = __I40EVF_DOWN;
++	dev_info(&adapter->pdev->dev, "Reset task did not complete, VF disabled\n");
++}
++
+ #define I40EVF_RESET_WAIT_MS 10
+ #define I40EVF_RESET_WAIT_COUNT 500
  /**
-  * ixgbe_setup_kr_x550em - Configure the KR PHY
-  * @hw: pointer to hardware structure
-@@ -2764,7 +2726,7 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
- 	/* Set functions pointers based on phy type */
- 	switch (hw->phy.type) {
- 	case ixgbe_phy_x550em_kx4:
--		phy->ops.setup_link = ixgbe_setup_kx4_x550em;
-+		phy->ops.setup_link = NULL;
- 		phy->ops.read_reg = ixgbe_read_phy_reg_x550em;
- 		phy->ops.write_reg = ixgbe_write_phy_reg_x550em;
- 		break;
+@@ -1758,50 +1801,9 @@ static void i40evf_reset_task(struct work_struct *work)
+ 	pci_set_master(adapter->pdev);
+ 
+ 	if (i == I40EVF_RESET_WAIT_COUNT) {
+-		struct i40evf_mac_filter *ftmp;
+-		struct i40evf_vlan_filter *fv, *fvtmp;
+-
+-		/* reset never finished */
+ 		dev_err(&adapter->pdev->dev, "Reset never finished (%x)\n",
+ 			reg_val);
+-		adapter->flags |= I40EVF_FLAG_PF_COMMS_FAILED;
+-
+-		if (netif_running(adapter->netdev)) {
+-			set_bit(__I40E_DOWN, &adapter->vsi.state);
+-			netif_carrier_off(netdev);
+-			netif_tx_disable(netdev);
+-			adapter->link_up = false;
+-			i40evf_napi_disable_all(adapter);
+-			i40evf_irq_disable(adapter);
+-			i40evf_free_traffic_irqs(adapter);
+-			i40evf_free_all_tx_resources(adapter);
+-			i40evf_free_all_rx_resources(adapter);
+-		}
+-
+-		/* Delete all of the filters, both MAC and VLAN. */
+-		list_for_each_entry_safe(f, ftmp, &adapter->mac_filter_list,
+-					 list) {
+-			list_del(&f->list);
+-			kfree(f);
+-		}
+-
+-		list_for_each_entry_safe(fv, fvtmp, &adapter->vlan_filter_list,
+-					 list) {
+-			list_del(&fv->list);
+-			kfree(fv);
+-		}
+-
+-		i40evf_free_misc_irq(adapter);
+-		i40evf_reset_interrupt_capability(adapter);
+-		i40evf_free_queues(adapter);
+-		i40evf_free_q_vectors(adapter);
+-		kfree(adapter->vf_res);
+-		i40evf_shutdown_adminq(hw);
+-		adapter->netdev->flags &= ~IFF_UP;
+-		clear_bit(__I40EVF_IN_CRITICAL_TASK, &adapter->crit_section);
+-		adapter->flags &= ~I40EVF_FLAG_RESET_PENDING;
+-		adapter->state = __I40EVF_DOWN;
+-		dev_info(&adapter->pdev->dev, "Reset task did not complete, VF disabled\n");
++		i40evf_disable_vf(adapter);
+ 		return; /* Do not attempt to reinit. It's dead, Jim. */
+ 	}
+ 
 -- 
-2.4.0
+2.10.0.rc2.1.g053435c
 
