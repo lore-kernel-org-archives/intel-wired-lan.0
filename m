@@ -1,78 +1,27 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 02 Nov 2016 16:45:52 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: handle close/suspend race with
- netif_device_detach/present
-Message-ID: <20161102234552.17964.61132.stgit@localhost6.localdomain6>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Wed, 2 Nov 2016 23:58:05 +0000
+Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: remove SFP ixfi support
+In-Reply-To: <20161004000958.22554.2468.stgit@localhost6.localdomain6>
+References: <20161004000958.22554.2468.stgit@localhost6.localdomain6>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E42E439FA@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When an interface is part of a namespace it is possible that
-ixgbe_close() may be called while __ixgbe_shutdown() is running
-which ends up in a double free WARN and/or a BUG in free_msi_irqs().
 
-To handle this situation we extend the rtnl_lock() to protect the
-call to netif_device_detach() and ixgbe_clear_interrupt_scheme()
-in __ixgbe_shutdown() and check for netif_device_present()
-to avoid clearing the interrupts second time in ixgbe_close().
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Emil Tantilov
+Sent: Monday, October 3, 2016 5:10 PM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: remove SFP ixfi support
 
-Also extend the rtnl lock in ixgbe_resume() to netif_device_attach().
+Remove SFP ixfi code since there is no HW that currently supports it.
 
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 51cdac9..6d049d7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -6200,7 +6200,8 @@ int ixgbe_close(struct net_device *netdev)
- 
- 	ixgbe_ptp_stop(adapter);
- 
--	ixgbe_close_suspend(adapter);
-+	if (netif_device_present(netdev))
-+		ixgbe_close_suspend(adapter);
- 
- 	ixgbe_fdir_filter_exit(adapter);
- 
-@@ -6245,14 +6246,12 @@ static int ixgbe_resume(struct pci_dev *pdev)
- 	if (!err && netif_running(netdev))
- 		err = ixgbe_open(netdev);
- 
--	rtnl_unlock();
- 
--	if (err)
--		return err;
--
--	netif_device_attach(netdev);
-+	if (!err)
-+		netif_device_attach(netdev);
-+	rtnl_unlock();
- 
--	return 0;
-+	return err;
- }
- #endif /* CONFIG_PM */
- 
-@@ -6267,14 +6266,14 @@ static int __ixgbe_shutdown(struct pci_dev *pdev, bool *enable_wake)
- 	int retval = 0;
- #endif
- 
-+	rtnl_lock();
- 	netif_device_detach(netdev);
- 
--	rtnl_lock();
- 	if (netif_running(netdev))
- 		ixgbe_close_suspend(adapter);
--	rtnl_unlock();
- 
- 	ixgbe_clear_interrupt_scheme(adapter);
-+	rtnl_unlock();
- 
- #ifdef CONFIG_PM
- 	retval = pci_save_state(pdev);
+Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
+
 
