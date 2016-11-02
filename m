@@ -1,170 +1,131 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 03 Nov 2016 04:26:50 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 639618b4ab3910ca120b9dfdf7ced752ac464873
-Message-ID: <581a4c0a.U3cHVg8u5EsZrgFa%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 2 Nov 2016 21:19:33 +0000
+Subject: [Intel-wired-lan] Kernel regression introduced by "e1000e: Do
+ not write lsc to ics in msi-x mode" and/or "e1000e: Do not read ICR in
+ Other interrupt"
+In-Reply-To: <1478044618.14119.774423193.0F79737A@webmail.messagingengine.com>
+References: <1478044618.14119.774423193.0F79737A@webmail.messagingengine.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81FC067C@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-639618b4ab3910ca120b9dfdf7ced752ac464873  igb: Workaround for igb i210 firmware issue.
+> From: Jack Suter [mailto:jack at suter.io]
+> Sent: Tuesday, November 1, 2016 4:57 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org; bpoirier at suse.com; Brown, Aaron F
+> <aaron.f.brown@intel.com>; jhodzic at ucdavis.edu; linux-
+> kernel at vger.kernel.org
+> Subject: Kernel regression introduced by "e1000e: Do not write lsc to ics in
+> msi-x mode" and/or "e1000e: Do not read ICR in Other interrupt"
+> 
+> Hi there,
+> 
+> I have some servers with an 82574L based NIC and recently upgraded from
+> a 4.4 series kernel to 4.7. Upon doing so, servers with this chipset
+> have begun frequently reporting "Link is Down" and "Link is Up"
+> messages. No other related network errors are reported by the kernel or
+> e1000e driver. I saw some reports about using "ethtool -s $iface msglvl
+> 6" to reveal more information, but nothing extra was reported.
+> 
+> Some testing showed that this was introduced between the 4.4 and 4.5
+> series. I was able to further narrow it down to two commits that look
+> related:
+> 
+>  e1000e: Do not write lsc to ics in msi-x mode
+>  (a61cfe4ffad7864a07e0c74969ca7ceb77ab2f1f)
+>  e1000e: Do not read ICR in Other interrupt
+>  (16ecba59bc333d6282ee057fb02339f77a880beb)
 
-elapsed time: 120m
+I did not notice any link flapping when I tested those patches, I would have rejected them if I had.  I have several systems with 82574L LOMs and as yet am not able to reproduce a link flap with recent upstream kernels/drivers (net-next 4.8.0 on one and 4.9.0-rc3 on another.) 
 
-configs tested: 146
+One of those systems is dedicated to a kernel regression setup, I checked the test logs from it and am not seeing any evidence of flaps in the 4.4, through 4.6 range either.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> 
+> Reverting these two commits resolves the Link is Down/Link is Up
+> messages. This has been tested on about six servers so far and all have
+> stopped reporting these link flaps.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201644
-i386                               tinyconfig
-x86_64                            allnoconfig
-mips                              allnoconfig
-sh                         apsh4a3a_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11030241
-x86_64                           allmodconfig
-x86_64                 randconfig-v0-11022229
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-11030231
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x011-201644
-x86_64                 randconfig-x014-201644
-x86_64                 randconfig-x015-201644
-x86_64                 randconfig-x017-201644
-x86_64                 randconfig-x012-201644
-x86_64                 randconfig-x018-201644
-x86_64                 randconfig-x019-201644
-x86_64                 randconfig-x013-201644
-x86_64                 randconfig-x016-201644
-x86_64                 randconfig-x010-201644
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201644
-i386                     randconfig-s1-201644
-x86_64                 randconfig-s0-11030241
-x86_64                 randconfig-s1-11030241
-x86_64                 randconfig-s2-11030241
-x86_64                 randconfig-s3-11030242
-x86_64                 randconfig-s4-11030242
-x86_64                 randconfig-s5-11030242
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201644
-i386                     randconfig-i1-201644
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                randconfig-ne0-11030256
-m68k                        mvme16x_defconfig
-mips                         cobalt_defconfig
-mips                        xilfpga_defconfig
-powerpc                   motionpro_defconfig
-i386                   randconfig-x014-201644
-i386                   randconfig-x019-201644
-i386                   randconfig-x018-201644
-i386                   randconfig-x017-201644
-i386                   randconfig-x015-201644
-i386                   randconfig-x016-201644
-i386                   randconfig-x012-201644
-i386                   randconfig-x011-201644
-i386                   randconfig-x013-201644
-i386                   randconfig-x010-201644
-mips                           mtx1_defconfig
-mips                          rm200_defconfig
-i386                   randconfig-x073-201644
-i386                   randconfig-x071-201644
-i386                   randconfig-x072-201644
-i386                   randconfig-x078-201644
-i386                   randconfig-x076-201644
-i386                   randconfig-x075-201644
-i386                   randconfig-x077-201644
-i386                   randconfig-x074-201644
-i386                   randconfig-x070-201644
-i386                   randconfig-x079-201644
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x008-201644
-x86_64                 randconfig-x001-201644
-x86_64                 randconfig-x009-201644
-x86_64                 randconfig-x000-201644
-x86_64                 randconfig-x005-201644
-x86_64                 randconfig-x003-201644
-x86_64                 randconfig-x002-201644
-x86_64                 randconfig-x007-201644
-x86_64                 randconfig-x006-201644
-x86_64                 randconfig-x004-201644
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-i386                     randconfig-r0-201644
-i386                   randconfig-x006-201644
-i386                   randconfig-x004-201644
-i386                   randconfig-x007-201644
-i386                   randconfig-x003-201644
-i386                   randconfig-x008-201644
-i386                   randconfig-x000-201644
-i386                   randconfig-x009-201644
-i386                   randconfig-x002-201644
-i386                   randconfig-x001-201644
-i386                   randconfig-x005-201644
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+Are you able to revert either of the patches independently, I don't recall if they were stand alone or not.
 
-Thanks,
-Fengguang
+> 
+> In total I have about ten servers that are frequently seeing this issue,
+> and a couple dozen more triggering it sporadically.
+
+Are they all 82574L or does it affect others?
+
+> 
+> This is about the extent of my troubleshooting knowledge so far. I am
+> happy to test code changes and provide any additional information as
+> necessary. While I do not understand what specifically causes the link
+> flaps, they reliably begin occurring on the affected servers within a
+> couple hours of boot.
+
+Is there any particular traffic pattern involved?  Sitting idle, moderate use, heavy constant flow? 
+
+> 
+> A snip of one such instance is below.
+> 
+> Thank you for any assistance troubleshooting this.
+
+Which kernel tree are you using?  Linus's upstream kernel from kernel.org, a distribution provided one or?  I'm generally working off of David Miller's net-next, but can try to repro the issue on my boxes if I know the exact kernel to work from.
+
+Perhaps a power saving state trying to kick in?  Bad cables or speed/duplex mismatches are common causes of link flap, but they seem unlikely given reverting the patches resolves the issue.
+
+Those patches are interrupt related, what kind of interrupts are in use?  What is interrupt moderation (coalescing set to)?  What is the link partner?  Same type switch for all problem machines or a mix?
+
+cat /proc/interrupts
+ethtool -c enp2s0
+
+maybe an `lspci` dump could help shed some more light.
+
+> 
+> Kind regards,
+> 
+> Jack Suter
+> 
+> # ethtool -i enp2s0
+> driver: e1000e
+> version: 3.2.6-k
+> firmware-version: 2.1-2
+> bus-info: 0000:02:00.0
+> supports-statistics: yes
+> supports-test: yes
+> supports-eeprom-access: yes
+> supports-register-dump: yes
+> supports-priv-flags: no
+> 
+> [ 3532.745587] e1000e: enp2s0 NIC Link is Down
+> [ 3532.771461] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [15463.117592] e1000e: enp2s0 NIC Link is Down
+> [15463.119419] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [15469.155922] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [15648.196579] e1000e: enp2s0 NIC Link is Down
+> [15651.405310] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [15728.959981] e1000e: enp2s0 NIC Link is Down
+> [15729.000625] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [15835.132034] e1000e: enp2s0 NIC Link is Down
+> [15835.185222] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [15839.104020] e1000e: enp2s0 NIC Link is Down
+> [15839.142346] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [15845.142287] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [16401.940127] e1000e: enp2s0 NIC Link is Down
+> [16401.945106] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [16408.121843] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [17025.823220] e1000e: enp2s0 NIC Link is Down
+> [17025.825473] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
+> [17032.100202] e1000e: enp2s0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: Rx/Tx
