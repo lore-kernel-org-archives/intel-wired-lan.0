@@ -1,49 +1,78 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  2 Nov 2016 16:44:44 -0700
-Subject: [Intel-wired-lan] [PATCH 1/4] fm10k-shared: use mac-> instead of
-	hw->mac.
-Message-ID: <20161102234447.17181-1-jacob.e.keller@intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Wed, 02 Nov 2016 16:45:52 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: handle close/suspend race with
+ netif_device_detach/present
+Message-ID: <20161102234552.17964.61132.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+When an interface is part of a namespace it is possible that
+ixgbe_close() may be called while __ixgbe_shutdown() is running
+which ends up in a double free WARN and/or a BUG in free_msi_irqs().
 
-Since a pointer "mac" to fm10k_mac_info structure exists, use it to
-access the contents of its members.
+To handle this situation we extend the rtnl_lock() to protect the
+call to netif_device_detach() and ixgbe_clear_interrupt_scheme()
+in __ixgbe_shutdown() and check for netif_device_present()
+to avoid clearing the interrupts second time in ixgbe_close().
 
-Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Also extend the rtnl lock in ixgbe_resume() to netif_device_attach().
+
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_common.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_common.c b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
-index dd95ac4f4c64..62a6ad9b3eed 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_common.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
-@@ -506,7 +506,7 @@ s32 fm10k_get_host_state_generic(struct fm10k_hw *hw, bool *host_ready)
- 		goto out;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 51cdac9..6d049d7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6200,7 +6200,8 @@ int ixgbe_close(struct net_device *netdev)
  
- 	/* if we somehow dropped the Tx enable we should reset */
--	if (hw->mac.tx_ready && !(txdctl & FM10K_TXDCTL_ENABLE)) {
-+	if (mac->tx_ready && !(txdctl & FM10K_TXDCTL_ENABLE)) {
- 		ret_val = FM10K_ERR_RESET_REQUESTED;
- 		goto out;
- 	}
-@@ -523,8 +523,8 @@ s32 fm10k_get_host_state_generic(struct fm10k_hw *hw, bool *host_ready)
+ 	ixgbe_ptp_stop(adapter);
  
- 	/* interface cannot receive traffic without logical ports */
- 	if (mac->dglort_map == FM10K_DGLORTMAP_NONE) {
--		if (hw->mac.ops.request_lport_map)
--			ret_val = hw->mac.ops.request_lport_map(hw);
-+		if (mac->ops.request_lport_map)
-+			ret_val = mac->ops.request_lport_map(hw);
+-	ixgbe_close_suspend(adapter);
++	if (netif_device_present(netdev))
++		ixgbe_close_suspend(adapter);
  
- 		goto out;
- 	}
--- 
-2.10.1.777.gd068e6b
+ 	ixgbe_fdir_filter_exit(adapter);
+ 
+@@ -6245,14 +6246,12 @@ static int ixgbe_resume(struct pci_dev *pdev)
+ 	if (!err && netif_running(netdev))
+ 		err = ixgbe_open(netdev);
+ 
+-	rtnl_unlock();
+ 
+-	if (err)
+-		return err;
+-
+-	netif_device_attach(netdev);
++	if (!err)
++		netif_device_attach(netdev);
++	rtnl_unlock();
+ 
+-	return 0;
++	return err;
+ }
+ #endif /* CONFIG_PM */
+ 
+@@ -6267,14 +6266,14 @@ static int __ixgbe_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ 	int retval = 0;
+ #endif
+ 
++	rtnl_lock();
+ 	netif_device_detach(netdev);
+ 
+-	rtnl_lock();
+ 	if (netif_running(netdev))
+ 		ixgbe_close_suspend(adapter);
+-	rtnl_unlock();
+ 
+ 	ixgbe_clear_interrupt_scheme(adapter);
++	rtnl_unlock();
+ 
+ #ifdef CONFIG_PM
+ 	retval = pci_save_state(pdev);
 
