@@ -1,10 +1,10 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Wed, 2 Nov 2016 23:37:37 +0000
-Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: handle race between close
- and suspend on shutdown
-In-Reply-To: <20161101201041.25498.20160.stgit@localhost6.localdomain6>
-References: <20161101201041.25498.20160.stgit@localhost6.localdomain6>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E42E43983@ORSMSX103.amr.corp.intel.com>
+Date: Wed, 2 Nov 2016 23:38:30 +0000
+Subject: [Intel-wired-lan] [PATCH V2] ixgbevf: Handle
+	previously-freed	msix_entries
+In-Reply-To: <147767679915.21196.12625601185481181813.stgit@mdrustad-wks.jf.intel.com>
+References: <147767679915.21196.12625601185481181813.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E42E43998@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,22 +13,14 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 -----Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Emil Tantilov
-Sent: Tuesday, November 1, 2016 1:11 PM
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Mark D Rustad
+Sent: Friday, October 28, 2016 10:47 AM
 To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: handle race between close and suspend on shutdown
+Subject: [Intel-wired-lan] [PATCH V2] ixgbevf: Handle previously-freed msix_entries
 
-When an interface is part of a namespace it is possible that
-ixgbevf_close() may be called while ixgbevf_suspend() is running which ends up in a double free WARN and/or a BUG in free_msi_irqs()
+The msix_entries memory can be freed by a previous suspend or remove, so don't crash on close when it isn't there. Also only clear the interrupts when the interface is up, because there aren't any when it is not up.
 
-To handle this situation we extend the rtnl_lock() to protect the call to netif_device_detach() and check for !netif_device_present() to avoid entering close while in suspend.
-
-Also added rtnl locks to ixgbevf_queue_reset_subtask().
-
--v2 handle the race with netif_device_detach/present() and rtnl locks as suggested by Alex Duyck
-
-CC: Alexander Duyck <alexander.h.duyck@intel.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
 
 Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
