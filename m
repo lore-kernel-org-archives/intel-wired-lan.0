@@ -1,33 +1,40 @@
-From: Cao jin <caoj.fnst@cn.fujitsu.com>
-Date: Wed, 2 Nov 2016 15:20:15 +0800
-Subject: [Intel-wired-lan] [PATCH] igb/e1000: correct register comments
-Message-ID: <1478071215-5122-1-git-send-email-caoj.fnst@cn.fujitsu.com>
+From: Chris J Arges <christopherarges@gmail.com>
+Date: Wed,  2 Nov 2016 09:13:42 -0500
+Subject: [Intel-wired-lan] [PATCH] igb: Workaround for igb i210 firmware
+	issue.
+Message-ID: <1478096032-22119-1-git-send-email-christopherarges@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Signed-off-by: Cao jin <caoj.fnst@cn.fujitsu.com>
+Sometimes firmware may not properly initialize I347AT4_PAGE_SELECT causing
+the probe of an igb i210 NIC to fail. This patch adds an addition zeroing of
+this register during igb_get_phy_id to workaround this issue.
+
+Thanks for Jochen Henneberg for the idea and original patch.
+
+Signed-off-by: Chris J Arges <christopherarges@gmail.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_regs.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igb/e1000_phy.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_regs.h b/drivers/net/ethernet/intel/igb/e1000_regs.h
-index d84afdd..58adbf2 100644
---- a/drivers/net/ethernet/intel/igb/e1000_regs.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_regs.h
-@@ -320,7 +320,7 @@
- #define E1000_VT_CTL   0x0581C  /* VMDq Control - RW */
- #define E1000_WUC      0x05800  /* Wakeup Control - RW */
- #define E1000_WUFC     0x05808  /* Wakeup Filter Control - RW */
--#define E1000_WUS      0x05810  /* Wakeup Status - RO */
-+#define E1000_WUS      0x05810  /* Wakeup Status - R/W1C */
- #define E1000_MANC     0x05820  /* Management Control - RW */
- #define E1000_IPAV     0x05838  /* IP Address Valid - RW */
- #define E1000_WUPL     0x05900  /* Wakeup Packet Length - RW */
+diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
+index 5b54254..93ec2d0 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_phy.c
++++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
+@@ -77,6 +77,10 @@ s32 igb_get_phy_id(struct e1000_hw *hw)
+ 	s32 ret_val = 0;
+ 	u16 phy_id;
+ 
++	/* ensure phy page selection to fix misconfigured i210 */
++	if (hw->mac.type == e1000_i210)
++		phy->ops.write_reg(hw, I347AT4_PAGE_SELECT, 0);
++
+ 	ret_val = phy->ops.read_reg(hw, PHY_ID1, &phy_id);
+ 	if (ret_val)
+ 		goto out;
 -- 
-2.1.0
-
-
+2.7.4
 
