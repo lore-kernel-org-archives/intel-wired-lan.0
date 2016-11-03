@@ -1,36 +1,110 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 3 Nov 2016 15:53:29 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] i40evf: Move
-	some	i40evf_reset_task code to separate function
-In-Reply-To: <a93a0a56a25a4f5357e548af6e535f4d5e06ea74.1478039638.git.joe@perches.com>
-References: <a93a0a56a25a4f5357e548af6e535f4d5e06ea74.1478039638.git.joe@perches.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA29FCF@ORSMSX104.amr.corp.intel.com>
+From: Baicar, Tyler <tbaicar@codeaurora.org>
+Date: Thu, 3 Nov 2016 09:54:15 -0600
+Subject: [Intel-wired-lan] [PATCH] e1000e: free IRQ when the link is up
+ or down
+In-Reply-To: <36CDDD56DDB4D44E911123902EFC26B06CD48342@HASMSX110.ger.corp.intel.com>
+References: <1478120896-5907-1-git-send-email-tbaicar@codeaurora.org>
+ <36CDDD56DDB4D44E911123902EFC26B06CD48342@HASMSX110.ger.corp.intel.com>
+Message-ID: <9e978719-55f0-d3da-a149-046a344bd3c6@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Joe Perches
-> Sent: Tuesday, November 01, 2016 3:35 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH net-next] i40evf: Move some
-> i40evf_reset_task code to separate function
-> 
-> The i40evf_reset_task function is a couple hundred lines and it has a
-> separable block that disables vf.  Move that block to a new i40evf_disable_vf
-> function to shorten i40evf_reset_task a bit.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 86 +++++++++++++-------
-> -----
->  1 file changed, 44 insertions(+), 42 deletions(-)
+On 11/3/2016 2:09 AM, Ruinskiy, Dima wrote:
+>> -----Original Message-----
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Tyler Baicar
+>> Sent: Wednesday, 02 November, 2016 23:08
+>> To: Kirsher, Jeffrey T; intel-wired-lan at lists.osuosl.org;
+>> netdev at vger.kernel.org; linux-kernel at vger.kernel.org;
+>> okaya at codeaurora.org; timur at codeaurora.org
+>> Cc: Tyler Baicar
+>> Subject: [Intel-wired-lan] [PATCH] e1000e: free IRQ when the link is up or
+>> down
+>>
+>> Move IRQ free code so that it will happen regardless of the link state.
+>> Currently the e1000e driver only releases its IRQ if the link is up. This is not
+>> sufficient because it is possible for a link to go down without releasing the IRQ.
+>> A secondary bus reset can cause this case to happen.
+>>
+>> Signed-off-by: Tyler Baicar <tbaicar@codeaurora.org>
+>> ---
+>> drivers/net/ethernet/intel/e1000e/netdev.c | 3 ++-
+>> 1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
+>> b/drivers/net/ethernet/intel/e1000e/netdev.c
+>> index 7017281..36cfcb0 100644
+>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+>> @@ -4679,12 +4679,13 @@ int e1000e_close(struct net_device *netdev)
+>>
+>> 	if (!test_bit(__E1000_DOWN, &adapter->state)) {
+>> 		e1000e_down(adapter, true);
+>> -		e1000_free_irq(adapter);
+>>
+>> 		/* Link status message must follow this format */
+>> 		pr_info("%s NIC Link is Down\n", adapter->netdev->name);
+>> 	}
+>>
+>> +	e1000_free_irq(adapter);
+>> +
+>> 	napi_disable(&adapter->napi);
+>>
+>> 	e1000e_free_tx_resources(adapter->tx_ring);
+> This is not correct. __E1000_DOWN has nothing to do with link state. It is an internal driver status bit that indicates that device shutdown is in progress.
+>
+> I would not change this code without checking very carefully the driver state machine. This can cause a whole lot of issues. Did you encounter some particular problem that is resolved by this change?
+Hello Dima,
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+The issue is that when a secondary bus reset occurs the current code 
+will not free the IRQ due to this __E1000_DOWN check. If the IRQ isn't 
+freed, then later in e1000_remove we run into a kernel bug:
 
+pcieport 0004:00:00.0: PCIe Bus Error: severity=Corrected, type=Physical 
+Layer, id=0000(Receiver ID)
+pcieport 0004:00:00.0:   device [17cb:0400] error 
+status/mask=00000001/00006000
+pcieport 0004:00:00.0:    [ 0] Receiver Error         (First)
+pcieport 0004:00:00.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), 
+type=Transaction Layer, id=0000(Requester ID)
+pcieport 0004:00:00.0:   device [17cb:0400] error 
+status/mask=00004000/00400000
+pcieport 0004:00:00.0:    [14] Completion Timeout     (First)
+ACPI: \_SB_.PCI4: Device has suffered a power fault
+kernel BUG at drivers/pci/msi.c:369!
+
+The stack dump is:
+
+free_msi_irqs+0x6c/0x1a8
+pci_disable_msi+0xb0/0x148
+e1000e_reset_interrupt_capability+0x60/0x78
+e1000_remove+0xc8/0x180
+pci_device_remove+0x48/0x118
+__device_release_driver+0x80/0x108
+device_release_driver+0x2c/0x40
+pci_stop_bus_device+0xa0/0xb0
+pci_stop_bus_device+0x3c/0xb0
+pci_stop_root_bus+0x54/0x80
+acpi_pci_root_remove+0x28/0x64
+acpi_bus_trim+0x6c/0xa4
+acpi_device_hotplug+0x19c/0x3f4
+acpi_hotplug_work_fn+0x28/0x3c
+process_one_work+0x150/0x460
+worker_thread+0x50/0x4b8
+kthread+0xd4/0xe8
+ret_from_fork+0x10/0x50
+
+This bug is hit because the IRQ still has action since it was never 
+freed. This patch resolves this issue.
+
+Thanks,
+Tyler
+
+-- 
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project.
 
