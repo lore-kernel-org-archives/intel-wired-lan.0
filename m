@@ -1,246 +1,47 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 05 Nov 2016 00:26:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- f07cbd245e67a539bab259314be1d7f50d18360f
-Message-ID: <581cb6b8.1PzlnNeU5Y790t6W%fengguang.wu@intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Fri,  4 Nov 2016 10:35:57 -0700
+Subject: [Intel-wired-lan] [next PATCH S52 00/11] i40e/i40evf updates
+Message-ID: <1478280968-8098-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-f07cbd245e67a539bab259314be1d7f50d18360f  fm10k: Limit dma sync of RX buffers to actual packet size
+Alan Brady checks for msix_entries null dereference.
 
-elapsed time: 360m
+Carolyn Wyborny adds 25G PHY_TYPE capability defines, 
+adds FEC for 25g, adds fix for new bits set and sizing 
+for 25G support.
 
-configs tested: 223
+Eric Joyner adds code to preserve extended PHY type 
+field in i40e_set_fc().
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Henry Tieman removes unreachable code and adds code 
+to pass unknown PHY type for unknown PHYs.
 
-arm                          pcm027_defconfig
-powerpc                     pq2fads_defconfig
-score                      spct6600_defconfig
-arm                          lpd270_defconfig
-mips                      loongson3_defconfig
-sparc                       sparc64_defconfig
-x86_64                            allnoconfig
-blackfin                       SRV1_defconfig
-powerpc                      cm5200_defconfig
-i386                     randconfig-a0-201644
-x86_64                 randconfig-a0-11041859
-x86_64                 randconfig-a0-11042103
-x86_64                 randconfig-a0-11042351
-mips                malta_kvm_guest_defconfig
-sh                           se7206_defconfig
-xtensa                       common_defconfig
-powerpc                      ppc6xx_defconfig
-sh                        edosk7705_defconfig
-xtensa                           alldefconfig
-i386                   randconfig-c0-11042139
-i386                   randconfig-c0-11042336
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                          ks8695_defconfig
-mips                            gpr_defconfig
-powerpc                      virtex_defconfig
-i386                             allyesconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                         axm55xx_defconfig
-powerpc                      ppc40x_defconfig
-sh                                allnoconfig
-sh                                  defconfig
-sh                          rsk7203_defconfig
-arm                        clps711x_defconfig
-arm                       versatile_defconfig
-sh                          rsk7201_defconfig
-sparc64                          allyesconfig
-avr32        atngw100mkii_evklcd101_defconfig
-powerpc                       eiger_defconfig
-powerpc                   motionpro_defconfig
-x86_64                 randconfig-x010-201644
-x86_64                 randconfig-x011-201644
-x86_64                 randconfig-x012-201644
-x86_64                 randconfig-x013-201644
-x86_64                 randconfig-x014-201644
-x86_64                 randconfig-x015-201644
-x86_64                 randconfig-x016-201644
-x86_64                 randconfig-x017-201644
-x86_64                 randconfig-x018-201644
-x86_64                 randconfig-x019-201644
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                            eywa-module
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201644
-i386                     randconfig-s1-201644
-x86_64                 randconfig-s0-11041950
-x86_64                 randconfig-s1-11041950
-x86_64                 randconfig-s2-11041950
-x86_64                 randconfig-s0-11042138
-x86_64                 randconfig-s1-11042138
-x86_64                 randconfig-s2-11042138
-x86_64                 randconfig-s0-11042322
-x86_64                 randconfig-s1-11042322
-x86_64                 randconfig-s2-11042322
-x86_64                 randconfig-s3-11041957
-x86_64                 randconfig-s4-11041957
-x86_64                 randconfig-s5-11041957
-x86_64                 randconfig-s3-11042134
-x86_64                 randconfig-s4-11042134
-x86_64                 randconfig-s5-11042134
-x86_64                 randconfig-s3-11042245
-x86_64                 randconfig-s4-11042245
-x86_64                 randconfig-s5-11042245
-x86_64                 randconfig-s3-11042345
-x86_64                 randconfig-s4-11042345
-x86_64                 randconfig-s5-11042345
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201644
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-b0-11042050
-x86_64                 randconfig-b0-11042358
-m32r                    m32700ut.up_defconfig
-mn10300                             defconfig
-arm                           viper_defconfig
-mips                 pnx8335_stb225_defconfig
-mn10300                          allyesconfig
-arm                         s3c6400_defconfig
-blackfin                      H8606_defconfig
-m68k                              allnoconfig
-powerpc                   currituck_defconfig
-powerpc                       ebony_defconfig
-x86_64                 randconfig-u0-11042103
-x86_64                 randconfig-u0-11042350
-x86_64                 randconfig-u0-11050015
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-xtensa                          iss_defconfig
-arm                            netx_defconfig
-powerpc                 mpc832x_mds_defconfig
-blackfin                    PNAV-10_defconfig
-blackfin                         alldefconfig
-mips                           ci20_defconfig
-ia64                      gensparse_defconfig
-mn10300                     asb2303_defconfig
-x86_64                              defconfig
-powerpc64                           defconfig
-x86_64                randconfig-ne0-11041902
-x86_64                randconfig-ne0-11041949
-x86_64                randconfig-ne0-11042154
-i386                               tinyconfig
-x86_64                           alldefconfig
-arm                         em_x270_defconfig
-mips                            e55_defconfig
-i386                   randconfig-x010-201644
-i386                   randconfig-x011-201644
-i386                   randconfig-x012-201644
-i386                   randconfig-x013-201644
-i386                   randconfig-x014-201644
-i386                   randconfig-x015-201644
-i386                   randconfig-x016-201644
-i386                   randconfig-x017-201644
-i386                   randconfig-x018-201644
-i386                   randconfig-x019-201644
-x86_64                                    lkp
-i386                     randconfig-n0-201644
-i386                   randconfig-h0-11041924
-i386                   randconfig-h1-11041924
-avr32                    hammerhead_defconfig
-m68k                             allmodconfig
-i386                   randconfig-x070-201644
-i386                   randconfig-x071-201644
-i386                   randconfig-x072-201644
-i386                   randconfig-x073-201644
-i386                   randconfig-x074-201644
-i386                   randconfig-x075-201644
-i386                   randconfig-x076-201644
-i386                   randconfig-x077-201644
-i386                   randconfig-x078-201644
-i386                   randconfig-x079-201644
-x86_64                 randconfig-n0-11041848
-arm                          pxa3xx_defconfig
-powerpc                     redwood_defconfig
-sh                          rsk7264_defconfig
-x86_64                 randconfig-x008-201644
-x86_64                 randconfig-x001-201644
-x86_64                 randconfig-x009-201644
-x86_64                 randconfig-x000-201644
-x86_64                 randconfig-x005-201644
-x86_64                 randconfig-x003-201644
-x86_64                 randconfig-x002-201644
-x86_64                 randconfig-x007-201644
-x86_64                 randconfig-x006-201644
-x86_64                 randconfig-x004-201644
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201644
-x86_64                 randconfig-r0-11041942
-i386                   randconfig-x000-201644
-i386                   randconfig-x001-201644
-i386                   randconfig-x002-201644
-i386                   randconfig-x003-201644
-i386                   randconfig-x004-201644
-i386                   randconfig-x005-201644
-i386                   randconfig-x006-201644
-i386                   randconfig-x007-201644
-i386                   randconfig-x008-201644
-i386                   randconfig-x009-201644
-i386                   randconfig-x0-11042157
-i386                   randconfig-x0-11042351
+Jacob Keller adds code to protect against NULL 
+msix_entries and q_vectors pointers.
 
-Thanks,
-Fengguang
+Michal Kosiarz adds support for 25G and adds media 
+type detection for 25G link.
+
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 40 +++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_common.c      | 23 ++++---
+ drivers/net/ethernet/intel/i40e/i40e_devids.h      |  2 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 20 +++++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |  4 +-
+ drivers/net/ethernet/intel/i40e/i40e_type.h        | 71 +++++++++++-----------
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  3 +
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 40 +++++++++++-
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    |  2 +
+ drivers/net/ethernet/intel/i40evf/i40e_devids.h    |  2 +
+ drivers/net/ethernet/intel/i40evf/i40e_type.h      | 71 +++++++++++-----------
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  8 +++
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 26 ++++++--
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  3 +
+ 14 files changed, 221 insertions(+), 94 deletions(-)
+
+-- 
+2.4.11
+
