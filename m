@@ -1,156 +1,59 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 05 Nov 2016 18:06:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE] BUILD SUCCESS
- eeffceee421b17a1d484679d738f278fbaa01384
-Message-ID: <581daf40.5UEqK916Sofa4/IN%fengguang.wu@intel.com>
+From: Tieman, Henry W <henry.w.tieman@intel.com>
+Date: Fri, 4 Nov 2016 22:19:55 +0000
+Subject: [Intel-wired-lan] [next PATCH S52 03/11] i40e: Pass unknown PHY
+ type for unknown PHYs
+In-Reply-To: <1478280968-8098-4-git-send-email-bimmy.pujari@intel.com>
+References: <1478280968-8098-1-git-send-email-bimmy.pujari@intel.com>
+ <1478280968-8098-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <FED06286FE4D9D4D96767F1273A7F05E79FCAD55@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
-eeffceee421b17a1d484679d738f278fbaa01384  ixgbevf: Handle previously-freed msix_entries
+ACK
 
-elapsed time: 131m
+-----Original Message-----
+From: Pujari, Bimmy 
+Sent: Friday, November 04, 2016 10:36 AM
+To: intel-wired-lan@lists.osuosl.org
+Cc: Tieman, Henry W <henry.w.tieman@intel.com>
+Subject: [next PATCH S52 03/11] i40e: Pass unknown PHY type for unknown PHYs
 
-configs tested: 132
+From: Henry Tieman <henry.w.tieman@intel.com>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The PHY type value for unrecognized PHYs and cables was changed
+based on firmware version number. Newer hardware use lower firmware
+version numbers and this was causing some PHYs to be identified
+as type 0x16 instead of 0xe (unknown).
 
-i386                     randconfig-a0-201644
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x010-201644
-x86_64                 randconfig-x011-201644
-x86_64                 randconfig-x012-201644
-x86_64                 randconfig-x013-201644
-x86_64                 randconfig-x014-201644
-x86_64                 randconfig-x015-201644
-x86_64                 randconfig-x016-201644
-x86_64                 randconfig-x017-201644
-x86_64                 randconfig-x018-201644
-x86_64                 randconfig-x019-201644
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                            eywa-module
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201644
-i386                     randconfig-s1-201644
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201644
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201644
-i386                     randconfig-i1-201644
-i386                   randconfig-x014-201644
-i386                   randconfig-x019-201644
-i386                   randconfig-x018-201644
-i386                   randconfig-x017-201644
-i386                   randconfig-x015-201644
-i386                   randconfig-x016-201644
-i386                   randconfig-x012-201644
-i386                   randconfig-x011-201644
-i386                   randconfig-x013-201644
-i386                   randconfig-x010-201644
-i386                     randconfig-n0-201644
-i386                   randconfig-x070-201644
-i386                   randconfig-x071-201644
-i386                   randconfig-x072-201644
-i386                   randconfig-x073-201644
-i386                   randconfig-x074-201644
-i386                   randconfig-x075-201644
-i386                   randconfig-x076-201644
-i386                   randconfig-x077-201644
-i386                   randconfig-x078-201644
-i386                   randconfig-x079-201644
-x86_64                 randconfig-x008-201644
-x86_64                 randconfig-x001-201644
-x86_64                 randconfig-x009-201644
-x86_64                 randconfig-x000-201644
-x86_64                 randconfig-x005-201644
-x86_64                 randconfig-x003-201644
-x86_64                 randconfig-x002-201644
-x86_64                 randconfig-x007-201644
-x86_64                 randconfig-x006-201644
-x86_64                 randconfig-x004-201644
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-i386                     randconfig-r0-201644
-i386                   randconfig-x000-201644
-i386                   randconfig-x001-201644
-i386                   randconfig-x002-201644
-i386                   randconfig-x003-201644
-i386                   randconfig-x004-201644
-i386                   randconfig-x005-201644
-i386                   randconfig-x006-201644
-i386                   randconfig-x007-201644
-i386                   randconfig-x008-201644
-i386                   randconfig-x009-201644
+Without this patch, newer card will incorrectly identify unknown
+PHYs and cables.
 
-Thanks,
-Fengguang
+This change adds hardware type to the check for firmware version
+so the PHY type is reported correctly.
+
+Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+Change-ID: I0723cbfd263c76fc73ff1a5275d1639051376c9a
+---
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index b0358c0..33bcf23 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1854,7 +1854,8 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
+ 	else
+ 		hw_link_info->lse_enable = false;
+ 
+-	if ((hw->aq.fw_maj_ver < 4 || (hw->aq.fw_maj_ver == 4 &&
++	if ((hw->mac.type == I40E_MAC_XL710) &&
++	    (hw->aq.fw_maj_ver < 4 || (hw->aq.fw_maj_ver == 4 &&
+ 	     hw->aq.fw_min_ver < 40)) && hw_link_info->phy_type == 0xE)
+ 		hw_link_info->phy_type = I40E_PHY_TYPE_10GBASE_SFPP_CU;
+ 
+-- 
+2.4.11
+
