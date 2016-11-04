@@ -1,564 +1,514 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Thu,  3 Nov 2016 21:01:37 -0400
-Subject: [Intel-wired-lan] [PATCH v6] ixgbe: Add X553 FW ALEF support
-Message-ID: <1478221297-48647-1-git-send-email-donald.c.skidmore@intel.com>
+From: Sumit Gemini1 <sumit.gemini1@globallogic.com>
+Date: Fri, 4 Nov 2016 14:10:51 +0530
+Subject: [Intel-wired-lan] Soft lockup issue in igb driver
+Message-ID: <CAAooqb2iVioyrhDBmFgULzGkBgRtWZ1t8nsfzMeJvGOnWWn47Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Don Skidmore <donald.c.skidmore@intel.com>
+this igb-3.2.10 driver and kernel is 3.1.10. operating system is Suse 12.3
 
-This patch add X553 FW ALEF support for B0.  ALEF is the new unified
-FW.  This contains updated register defines for ALEF speed
-configuration.  Likewise it also removes the AN_CNTL_8 usage from
-the native SFI flow as it is no longer supported by FW.
+I have one issue, at customer machine the user space process is hogging up
+the processor (soft lockup)along with 2 kernel process and dump stack trace
+showing RIP at _ticket_spin_lock in all 3 process.
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |  96 +++++++----
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  17 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 239 +++++++++++++++++++-------
- 3 files changed, 255 insertions(+), 97 deletions(-)
+As i know "If an user-space process had caused the soft-lockup, a line
+identifying the process by its pid would logged, followed by the contents
+of various CPU-registers without a call-trace of any sorts" but in my case
+i am getting dump stack trace for user process too.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 78edf5b..4b555e7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -243,6 +243,42 @@ s32 ixgbe_write_i2c_combined_generic_int(struct ixgbe_hw *hw, u8 addr,
- }
- 
- /**
-+ *  ixgbe_probe_phy - Probe a single address for a PHY
-+ *  @hw: pointer to hardware structure
-+ *  @phy_addr: PHY address to probe
-+ *
-+ *  Returns true if PHY found
-+ **/
-+static bool ixgbe_probe_phy(struct ixgbe_hw *hw, u16 phy_addr)
-+{
-+	u16 ext_ability = 0;
-+
-+	hw->phy.mdio.prtad = phy_addr;
-+	if (mdio45_probe(&hw->phy.mdio, phy_addr) != 0)
-+		return false;
-+
-+	if (ixgbe_get_phy_id(hw))
-+		return false;
-+
-+	hw->phy.type = ixgbe_get_phy_type_from_id(hw->phy.id);
-+
-+	if (hw->phy.type == ixgbe_phy_unknown) {
-+		hw->phy.ops.read_reg(hw,
-+				     MDIO_PMA_EXTABLE,
-+				     MDIO_MMD_PMAPMD,
-+				     &ext_ability);
-+		if (ext_ability &
-+		    (MDIO_PMA_EXTABLE_10GBT |
-+		     MDIO_PMA_EXTABLE_1000BT))
-+			hw->phy.type = ixgbe_phy_cu_unknown;
-+		else
-+			hw->phy.type = ixgbe_phy_generic;
-+	}
-+
-+	return true;
-+}
-+
-+/**
-  *  ixgbe_identify_phy_generic - Get physical layer module
-  *  @hw: pointer to hardware structure
-  *
-@@ -251,7 +287,7 @@ s32 ixgbe_write_i2c_combined_generic_int(struct ixgbe_hw *hw, u8 addr,
- s32 ixgbe_identify_phy_generic(struct ixgbe_hw *hw)
- {
- 	u32 phy_addr;
--	u16 ext_ability = 0;
-+	u32 status = IXGBE_ERR_PHY_ADDR_INVALID;
- 
- 	if (!hw->phy.phy_semaphore_mask) {
- 		if (hw->bus.lan_id)
-@@ -260,37 +296,34 @@ s32 ixgbe_identify_phy_generic(struct ixgbe_hw *hw)
- 			hw->phy.phy_semaphore_mask = IXGBE_GSSR_PHY0_SM;
- 	}
- 
--	if (hw->phy.type == ixgbe_phy_unknown) {
--		for (phy_addr = 0; phy_addr < IXGBE_MAX_PHY_ADDR; phy_addr++) {
--			hw->phy.mdio.prtad = phy_addr;
--			if (mdio45_probe(&hw->phy.mdio, phy_addr) == 0) {
--				ixgbe_get_phy_id(hw);
--				hw->phy.type =
--					ixgbe_get_phy_type_from_id(hw->phy.id);
--
--				if (hw->phy.type == ixgbe_phy_unknown) {
--					hw->phy.ops.read_reg(hw,
--							     MDIO_PMA_EXTABLE,
--							     MDIO_MMD_PMAPMD,
--							     &ext_ability);
--					if (ext_ability &
--					    (MDIO_PMA_EXTABLE_10GBT |
--					     MDIO_PMA_EXTABLE_1000BT))
--						hw->phy.type =
--							 ixgbe_phy_cu_unknown;
--					else
--						hw->phy.type =
--							 ixgbe_phy_generic;
--				}
-+	if (hw->phy.type != ixgbe_phy_unknown)
-+		return 0;
- 
--				return 0;
--			}
-+	if (hw->phy.nw_mng_if_sel) {
-+		phy_addr = (hw->phy.nw_mng_if_sel &
-+			    IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD) >>
-+			   IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD_SHIFT;
-+		if (ixgbe_probe_phy(hw, phy_addr))
-+			return 0;
-+		else
-+			return IXGBE_ERR_PHY_ADDR_INVALID;
-+	}
-+
-+	for (phy_addr = 0; phy_addr < IXGBE_MAX_PHY_ADDR; phy_addr++) {
-+		if (ixgbe_probe_phy(hw, phy_addr)) {
-+			status = 0;
-+			break;
- 		}
--		/* indicate no PHY found */
--		hw->phy.mdio.prtad = MDIO_PRTAD_NONE;
--		return IXGBE_ERR_PHY_ADDR_INVALID;
- 	}
--	return 0;
-+
-+	/* Certain media types do not have a phy so an address will not
-+	 * be found and the code will take this path.  Caller has to
-+	 * decide if it is an error or not.
-+	 */
-+	if (status)
-+		hw->phy.mdio.prtad = MDIO_PRTAD_NONE;
-+
-+	return status;
- }
- 
- /**
-@@ -367,6 +400,7 @@ static enum ixgbe_phy_type ixgbe_get_phy_type_from_id(u32 phy_id)
- 		phy_type = ixgbe_phy_nl;
- 		break;
- 	case X557_PHY_ID:
-+	case X557_PHY_ID2:
- 		phy_type = ixgbe_phy_x550em_ext_t;
- 		break;
- 	default:
-@@ -417,8 +451,7 @@ s32 ixgbe_reset_phy_generic(struct ixgbe_hw *hw)
- 	 */
- 	for (i = 0; i < 30; i++) {
- 		msleep(100);
--		hw->phy.ops.read_reg(hw, MDIO_CTRL1,
--				     MDIO_MMD_PHYXS, &ctrl);
-+		hw->phy.ops.read_reg(hw, MDIO_CTRL1, MDIO_MMD_PHYXS, &ctrl);
- 		if (!(ctrl & MDIO_CTRL1_RESET)) {
- 			udelay(2);
- 			break;
-@@ -770,6 +803,7 @@ static s32 ixgbe_get_copper_speeds_supported(struct ixgbe_hw *hw)
- 		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_5GB_FULL;
- 		break;
- 	case ixgbe_mac_X550EM_x:
-+	case ixgbe_mac_x550em_a:
- 		hw->phy.speeds_supported &= ~IXGBE_LINK_SPEED_100_FULL;
- 		break;
- 	default:
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index fe1d13e..dfd6143 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -1379,6 +1379,7 @@ struct ixgbe_thermal_sensor_data {
- #define X540_PHY_ID      0x01540200
- #define X550_PHY_ID      0x01540220
- #define X557_PHY_ID      0x01540240
-+#define X557_PHY_ID2	0x01540250
- #define QT2022_PHY_ID    0x0043A400
- #define ATH_PHY_ID       0x03429050
- #define AQ_FW_REV        0x20
-@@ -3602,9 +3603,25 @@ struct ixgbe_info {
- #define IXGBE_KRM_DSP_TXFFE_STATE_5(P)	((P) ? 0x8638 : 0x4638)
- #define IXGBE_KRM_RX_TRN_LINKUP_CTRL(P)	((P) ? 0x8B00 : 0x4B00)
- #define IXGBE_KRM_PMD_DFX_BURNIN(P)	((P) ? 0x8E00 : 0x4E00)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20(P)	((P) ? 0x9054 : 0x5054)
- #define IXGBE_KRM_TX_COEFF_CTRL_1(P)	((P) ? 0x9520 : 0x5520)
- #define IXGBE_KRM_RX_ANA_CTL(P)		((P) ? 0x9A00 : 0x5A00)
- 
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_DA		~(0x3 << 20)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_SR		BIT(20)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_LR		(0x2 << 20)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SGMII_EN		BIT(25)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_AN37_EN		BIT(26)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_AN_EN		BIT(27)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_10M		~(0x7 << 28)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_100M		BIT(28)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_1G		(0x2 << 28)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_10G		(0x3 << 28)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_AN		(0x4 << 28)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_2_5G		(0x7 << 28)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_MASK		(0x7 << 28)
-+#define IXGBE_KRM_PMD_FLX_MASK_ST20_FW_AN_RESTART	BIT(31)
-+
- #define IXGBE_KRM_PORT_CAR_GEN_CTRL_NELB_32B		BIT(9)
- #define IXGBE_KRM_PORT_CAR_GEN_CTRL_NELB_KRPCS		BIT(11)
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 6206b51..b6b35e4 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1281,6 +1281,53 @@ static s32 ixgbe_setup_ixfi_x550em_x(struct ixgbe_hw *hw)
- 	return status;
- }
- 
-+/**
-+ *  ixgbe_restart_an_internal_phy_x550em - restart autonegotiation for the
-+ *  internal PHY
-+ *  @hw: pointer to hardware structure
-+ **/
-+static s32 ixgbe_restart_an_internal_phy_x550em(struct ixgbe_hw *hw)
-+{
-+	s32 status;
-+	u32 link_ctrl;
-+
-+	/* Restart auto-negotiation. */
-+	status = hw->mac.ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &link_ctrl);
-+
-+	if (status) {
-+		hw_dbg(hw, "Auto-negotiation did not complete\n");
-+		return status;
-+	}
-+
-+	link_ctrl |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
-+	status = hw->mac.ops.write_iosf_sb_reg(hw,
-+				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, link_ctrl);
-+
-+	if (hw->mac.type == ixgbe_mac_x550em_a) {
-+		u32 flx_mask_st20;
-+
-+		/* Indicate to FW that AN restart has been asserted */
-+		status = hw->mac.ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &flx_mask_st20);
-+
-+		if (status) {
-+			hw_dbg(hw, "Auto-negotiation did not complete\n");
-+			return status;
-+		}
-+
-+		flx_mask_st20 |= IXGBE_KRM_PMD_FLX_MASK_ST20_FW_AN_RESTART;
-+		status = hw->mac.ops.write_iosf_sb_reg(hw,
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, flx_mask_st20);
-+	}
-+
-+	return status;
-+}
-+
- /** ixgbe_setup_ixfi_x550em - Configure the KR PHY for iXFI mode.
-  *  @hw: pointer to hardware structure
-  *  @speed: the link speed to force
-@@ -1330,16 +1377,7 @@ static s32 ixgbe_setup_ixfi_x550em(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
- 	}
- 
- 	/* Toggle port SW reset by AN reset. */
--	status = ixgbe_read_iosf_sb_reg_x550(hw,
--				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
--				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
--	if (status)
--		return status;
--
--	reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
--	status = ixgbe_write_iosf_sb_reg_x550(hw,
--				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
--				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
-+	status = ixgbe_restart_an_internal_phy_x550em(hw);
- 
- 	return status;
- }
-@@ -1423,6 +1461,55 @@ ixgbe_setup_mac_link_sfp_x550em(struct ixgbe_hw *hw,
- }
- 
- /**
-+ * ixgbe_setup_sfi_x550a - Configure the internal PHY for native SFI mode
-+ * @hw: pointer to hardware structure
-+ * @speed: the link speed to force
-+ *
-+ * Configures the integrated PHY for native SFI mode. Used to connect the
-+ * internal PHY directly to an SFP cage, without autonegotiation.
-+ **/
-+static s32 ixgbe_setup_sfi_x550a(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
-+{
-+	struct ixgbe_mac_info *mac = &hw->mac;
-+	s32 status;
-+	u32 reg_val;
-+
-+	/* Disable all AN and force speed to 10G Serial. */
-+	status = mac->ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
-+	if (status)
-+		return status;
-+
-+	reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_AN_EN;
-+	reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_AN37_EN;
-+	reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SGMII_EN;
-+	reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_MASK;
-+
-+	/* Select forced link speed for internal PHY. */
-+	switch (*speed) {
-+	case IXGBE_LINK_SPEED_10GB_FULL:
-+		reg_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_10G;
-+		break;
-+	case IXGBE_LINK_SPEED_1GB_FULL:
-+		reg_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_1G;
-+		break;
-+	default:
-+		/* Other link speeds are not supported by internal PHY. */
-+		return IXGBE_ERR_LINK_SETUP;
-+	}
-+
-+	status = mac->ops.write_iosf_sb_reg(hw,
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
-+
-+	/* Toggle port SW reset by AN reset. */
-+	status = ixgbe_restart_an_internal_phy_x550em(hw);
-+
-+	return status;
-+}
-+
-+/**
-  * ixgbe_setup_mac_link_sfp_n - Setup internal PHY for native SFP
-  * @hw: pointer to hardware structure
-  *
-@@ -1434,45 +1521,39 @@ ixgbe_setup_mac_link_sfp_n(struct ixgbe_hw *hw, ixgbe_link_speed speed,
- {
- 	bool setup_linear = false;
- 	u32 reg_phy_int;
--	s32 rc;
-+	s32 ret_val;
- 
- 	/* Check if SFP module is supported and linear */
--	rc = ixgbe_supported_sfp_modules_X550em(hw, &setup_linear);
-+	ret_val = ixgbe_supported_sfp_modules_X550em(hw, &setup_linear);
- 
- 	/* If no SFP module present, then return success. Return success since
- 	 * SFP not present error is not excepted in the setup MAC link flow.
- 	 */
--	if (rc == IXGBE_ERR_SFP_NOT_PRESENT)
-+	if (ret_val == IXGBE_ERR_SFP_NOT_PRESENT)
- 		return 0;
- 
--	if (!rc)
--		return rc;
-+	if (!ret_val)
-+		return ret_val;
- 
--	/* Configure internal PHY for native SFI */
--	rc = hw->mac.ops.read_iosf_sb_reg(hw,
--					  IXGBE_KRM_AN_CNTL_8(hw->bus.lan_id),
--					  IXGBE_SB_IOSF_TARGET_KR_PHY,
--					  &reg_phy_int);
--	if (rc)
--		return rc;
-+	/* Configure internal PHY for native SFI based on module type */
-+	ret_val = hw->mac.ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_phy_int);
-+	if (!ret_val)
-+		return ret_val;
- 
--	if (setup_linear) {
--		reg_phy_int &= ~IXGBE_KRM_AN_CNTL_8_LIMITING;
--		reg_phy_int |= IXGBE_KRM_AN_CNTL_8_LINEAR;
--	} else {
--		reg_phy_int |= IXGBE_KRM_AN_CNTL_8_LIMITING;
--		reg_phy_int &= ~IXGBE_KRM_AN_CNTL_8_LINEAR;
--	}
-+	reg_phy_int &= IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_DA;
-+	if (!setup_linear)
-+		reg_phy_int |= IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_SR;
- 
--	rc = hw->mac.ops.write_iosf_sb_reg(hw,
--					   IXGBE_KRM_AN_CNTL_8(hw->bus.lan_id),
--					   IXGBE_SB_IOSF_TARGET_KR_PHY,
--					   reg_phy_int);
--	if (rc)
--		return rc;
-+	ret_val = hw->mac.ops.write_iosf_sb_reg(hw,
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_phy_int);
-+	if (!ret_val)
-+		return ret_val;
- 
--	/* Setup XFI/SFI internal link */
--	return ixgbe_setup_ixfi_x550em(hw, &speed);
-+	/* Setup SFI internal link. */
-+	return ixgbe_setup_sfi_x550a(hw, &speed);
- }
- 
- /**
-@@ -1488,19 +1569,19 @@ ixgbe_setup_mac_link_sfp_x550a(struct ixgbe_hw *hw, ixgbe_link_speed speed,
- 	u32 reg_slice, slice_offset;
- 	bool setup_linear = false;
- 	u16 reg_phy_ext;
--	s32 rc;
-+	s32 ret_val;
- 
- 	/* Check if SFP module is supported and linear */
--	rc = ixgbe_supported_sfp_modules_X550em(hw, &setup_linear);
-+	ret_val = ixgbe_supported_sfp_modules_X550em(hw, &setup_linear);
- 
- 	/* If no SFP module present, then return success. Return success since
- 	 * SFP not present error is not excepted in the setup MAC link flow.
- 	 */
--	if (rc == IXGBE_ERR_SFP_NOT_PRESENT)
-+	if (ret_val == IXGBE_ERR_SFP_NOT_PRESENT)
- 		return 0;
- 
--	if (!rc)
--		return rc;
-+	if (!ret_val)
-+		return ret_val;
- 
- 	/* Configure internal PHY for KR/KX. */
- 	ixgbe_setup_kr_speed_x550em(hw, speed);
-@@ -1509,10 +1590,10 @@ ixgbe_setup_mac_link_sfp_x550a(struct ixgbe_hw *hw, ixgbe_link_speed speed,
- 		return IXGBE_ERR_PHY_ADDR_INVALID;
- 
- 	/* Get external PHY device id */
--	rc = hw->phy.ops.read_reg(hw, IXGBE_CS4227_GLOBAL_ID_MSB,
-+	ret_val = hw->phy.ops.read_reg(hw, IXGBE_CS4227_GLOBAL_ID_MSB,
- 				  IXGBE_MDIO_ZERO_DEV_TYPE, &reg_phy_ext);
--	if (rc)
--		return rc;
-+	if (ret_val)
-+		return ret_val;
- 
- 	/* When configuring quad port CS4223, the MAC instance is part
- 	 * of the slice offset.
-@@ -1625,7 +1706,7 @@ ixgbe_setup_sgmii(struct ixgbe_hw *hw, __always_unused ixgbe_link_speed speed,
- 		  __always_unused bool autoneg_wait_to_complete)
- {
- 	struct ixgbe_mac_info *mac = &hw->mac;
--	u32 lval, sval;
-+	u32 lval, sval, flx_val;
- 	s32 rc;
- 
- 	rc = mac->ops.read_iosf_sb_reg(hw,
-@@ -1659,11 +1740,31 @@ ixgbe_setup_sgmii(struct ixgbe_hw *hw, __always_unused ixgbe_link_speed speed,
- 	if (rc)
- 		return rc;
- 
--	lval |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
-+	rc = mac->ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &flx_val);
-+	if (rc)
-+		return rc;
-+
-+	rc = mac->ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &flx_val);
-+	if (rc)
-+		return rc;
-+
-+	flx_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_MASK;
-+	flx_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_1G;
-+	flx_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_AN_EN;
-+	flx_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SGMII_EN;
-+	flx_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_AN37_EN;
-+
- 	rc = mac->ops.write_iosf_sb_reg(hw,
--					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
--					IXGBE_SB_IOSF_TARGET_KR_PHY, lval);
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, flx_val);
-+	if (rc)
-+		return rc;
- 
-+	rc = ixgbe_restart_an_internal_phy_x550em(hw);
- 	return rc;
- }
- 
-@@ -2018,13 +2119,31 @@ static s32 ixgbe_setup_kr_speed_x550em(struct ixgbe_hw *hw,
- 	if (speed & IXGBE_LINK_SPEED_1GB_FULL)
- 		reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_CAP_KX;
- 
--	/* Restart auto-negotiation. */
--	reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
- 	status = hw->mac.ops.write_iosf_sb_reg(hw,
- 					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
- 					IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
- 
--	return status;
-+	if (hw->mac.type == ixgbe_mac_x550em_a) {
-+		/* Set lane mode  to KR auto negotiation */
-+		status = hw->mac.ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
-+
-+		if (status)
-+			return status;
-+
-+		reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_MASK;
-+		reg_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_AN;
-+		reg_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_AN_EN;
-+		reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_AN37_EN;
-+		reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SGMII_EN;
-+
-+		status = hw->mac.ops.write_iosf_sb_reg(hw,
-+				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
-+	}
-+
-+	return ixgbe_restart_an_internal_phy_x550em(hw);
- }
- 
- /** ixgbe_setup_kx4_x550em - Configure the KX4 PHY.
-@@ -2892,7 +3011,6 @@ static void ixgbe_set_source_address_pruning_X550(struct ixgbe_hw *hw,
- static s32 ixgbe_setup_fc_backplane_x550em_a(struct ixgbe_hw *hw)
- {
- 	s32 status = 0;
--	u32 link_ctrl = 0;
- 	u32 an_cntl = 0;
- 
- 	/* Validate the requested mode */
-@@ -2963,18 +3081,7 @@ static s32 ixgbe_setup_fc_backplane_x550em_a(struct ixgbe_hw *hw)
- 					IXGBE_SB_IOSF_TARGET_KR_PHY, an_cntl);
- 
- 	/* Restart auto-negotiation. */
--	status = hw->mac.ops.read_iosf_sb_reg(hw,
--				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
--				IXGBE_SB_IOSF_TARGET_KR_PHY, &link_ctrl);
--	if (status) {
--		hw_dbg(hw, "Auto-Negotiation did not complete\n");
--		return status;
--	}
--
--	link_ctrl |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
--	status = hw->mac.ops.write_iosf_sb_reg(hw,
--				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
--				IXGBE_SB_IOSF_TARGET_KR_PHY, link_ctrl);
-+	status = ixgbe_restart_an_internal_phy_x550em(hw);
- 
- 	return status;
- }
-@@ -3238,7 +3345,7 @@ static struct ixgbe_mac_operations mac_ops_x550em_a = {
- 	.acquire_swfw_sync	= ixgbe_acquire_swfw_sync_x550em_a,
- 	.release_swfw_sync	= ixgbe_release_swfw_sync_x550em_a,
- 	.setup_fc		= ixgbe_setup_fc_x550em,
--	.fc_autoneg		= NULL, /* defined later */
-+	.fc_autoneg		= ixgbe_fc_autoneg,
- 	.read_iosf_sb_reg	= ixgbe_read_iosf_sb_reg_x550a,
- 	.write_iosf_sb_reg	= ixgbe_write_iosf_sb_reg_x550a,
- };
--- 
-2.4.3
+is it coming from a misbehaving user space app? is it normal functionality
+of soft lockup? if is it functionality of soft lockup then how to resolve
+the issue?
 
+Any help will be highly appreciated.
+
+it is x86_64 machine and kernel is 3.1.10. I know all 3 process are waiting
+for _ticket_spin_lock. see :
+
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492033] BUG: soft lockup -
+CPU#3 stuck for 22s! [virtio_shm/5/3:7874]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404215] BUG: soft lockup -
+CPU#31 stuck for 23s! [kni_thread:6605]
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172014] BUG: soft lockup -
+CPU#0 stuck for 22s! [gis:14145]
+
+
+here gis is my user space process but has call trace.
+
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492033] BUG: soft lockup -
+CPU#3 stuck for 22s! [virtio_shm/5/3:7874]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492036] Modules linked in:
+xt_sharedlimit xt_hashlimit ip_set_hash_ipport ip_set_hash_ipportip
+xt_NOTRACK ip_set_bitmap_port xt_sctp nf_conntrack_ipv6 nf_defrag_ipv6
+xt_CT arpt_mangle ip_set_hash_ipnet xt_NFLOG xt_limit xt_hashcounter
+ip_set_hash_ipip xt_set ip_set_hash_ip deflate ctr twofish_x86_64
+twofish_common camellia serpent blowfish cast5 des_generic cbc xcbc rmd160
+crypto_null af_key iptable_mangle ip_set arptable_filter arp_tables
+iptable_raw iptable_nat nfnetlink_log nfnetlink ipt_ULOG ipt_PORTMAP
+af_packet zlib zlib_deflate sha512_generic sha256_generic sha1_generic md5
+icp_qa_al pcie8120 rte_kni pfe_pep virtio_rte virtio_shm virtio_vtnet
+virtio_uio igb_uio virtio_ring virtio uio xt_tcpudp xt_state xt_pkttype
+nf_conntrack_control bonding binfmt_misc iptable_filter ip6table_filter
+ip6_tables nf_nat_ftp nf_nat nf_conntrack_ftp nf_conntrack_ipv4
+nf_defrag_ipv4 ip_tables x_tables mperf ipmi_devintf ipmi_si
+ipmi_msghandler edd nf_conntrack_proto_sctp nf_conntrack sctp 8021q garp
+stp llc gb_sys usb_storage uas iTCO_wdt ioatdma pcspkr iTCO_vendor_support
+ixgbe igb wmi i2c_i801 mdio dca sg button container ipv6 autofs4 usbhid
+ehci_hcd megasr(P) usbcore processor thermal_sys
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492126] CPU 3
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492127] Modules linked in:
+xt_sharedlimit xt_hashlimit ip_set_hash_ipport ip_set_hash_ipportip
+xt_NOTRACK ip_set_bitmap_port xt_sctp nf_conntrack_ipv6 nf_defrag_ipv6
+xt_CT arpt_mangle ip_set_hash_ipnet xt_NFLOG xt_limit xt_hashcounter
+ip_set_hash_ipip xt_set ip_set_hash_ip deflate ctr twofish_x86_64
+twofish_common camellia serpent blowfish cast5 des_generic cbc xcbc rmd160
+crypto_null af_key iptable_mangle ip_set arptable_filter arp_tables
+iptable_raw iptable_nat nfnetlink_log nfnetlink ipt_ULOG ipt_PORTMAP
+af_packet zlib zlib_deflate sha512_generic sha256_generic sha1_generic md5
+icp_qa_al pcie8120 rte_kni pfe_pep virtio_rte virtio_shm virtio_vtnet
+virtio_uio igb_uio virtio_ring virtio uio xt_tcpudp xt_state xt_pkttype
+nf_conntrack_control bonding binfmt_misc iptable_filter ip6table_filter
+ip6_tables nf_nat_ftp nf_nat nf_conntrack_ftp nf_conntrack_ipv4
+nf_defrag_ipv4 ip_tables x_tables mperf ipmi_devintf ipmi_si
+ipmi_msghandler edd nf_conntrack_proto_sctp nf_conntrack sctp 8021q garp
+stp llc gb_sys usb_storage uas iTCO_wdt ioatdma pcspkr iTCO_vendor_support
+ixgbe igb wmi i2c_i801 mdio dca sg button container ipv6 autofs4 usbhid
+ehci_hcd megasr(P) usbcore processor thermal_sys
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492193]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492196] Pid: 7874, comm:
+virtio_shm/5/3 Tainted: P            3.1.10-gb20-default #1 Intel
+Corporation S2600CO/S2600CO
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492201] RIP:
+0010:[<ffffffff81020650>]  [<ffffffff81020650>] __ticket_spin_lock+0x18/0x1b
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492208] RSP:
+0018:ffff88043ee63de8  EFLAGS: 00000293
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492210] RAX:
+00000000000069be RBX: ffff880423772740 RCX: 000000000000000e
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492213] RDX:
+00000000000069bc RSI: 000000000000000e RDI: ffff88041e56a484
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492215] RBP:
+ffff88041e56a484 R08: ffff88041e56a740 R09: ffff88041554f04c
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492217] R10:
+0000000000000048 R11: ffff88041ee7fbc0 R12: ffff88043ee63d58
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492219] R13:
+ffffffff813f831e R14: ffff88041e56a484 R15: ffff88041ee7fbc0
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492222] FS:
+ 0000000000000000(0000) GS:ffff88043ee60000(0000) knlGS:0000000000000000
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492225] CS:  0010 DS: 0000
+ES: 0000 CR0: 000000008005003b
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492227] CR2:
+000000000078a410 CR3: 000000080b8df000 CR4: 00000000000406e0
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492229] DR0:
+0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492232] DR3:
+0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492234] Process
+virtio_shm/5/3 (pid: 7874, threadinfo ffff880811e52000, task
+ffff880821e320c0)
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492236] Stack:
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492238]  ffffffff8106b766
+ffffffffa05e3a1e 000000001201fea9 ffffffffa03ef8b8
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492244]  0000002e1201fea9
+ffff880423772000 ffff88043ee63e48 ffff880423772000
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492249]  ffffffff8192a870
+0000000000000608 0000000000000000 ffffffff81928b00
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492255] Call Trace:
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492266]
+ [<ffffffff8106b766>] do_raw_spin_lock+0x5/0x8
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492275]
+ [<ffffffffa05e3a1e>] packet_rcv+0x254/0x2ab [af_packet]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492299]
+ [<ffffffff81337bbf>] __netif_receive_skb+0x2e1/0x36b
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492304]
+ [<ffffffff81339722>] netif_receive_skb+0x7e/0x84
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492311]
+ [<ffffffffa03e2b49>] virtio_rte_recv_packets+0x2c/0x49 [virtio_rte]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492318]
+ [<ffffffffa03e2b78>] virtio_rte_poll+0x12/0x8c [virtio_rte]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492325]
+ [<ffffffff81339c88>] net_rx_action+0x65/0x178
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492331]
+ [<ffffffff81045c73>] __do_softirq+0xb2/0x19d
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492337]
+ [<ffffffff813f9aac>] call_softirq+0x1c/0x30
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492343]
+ [<ffffffff81003931>] do_softirq+0x3c/0x7b
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492348]
+ [<ffffffff81045971>] _local_bh_enable_ip.isra.12+0x75/0x9b
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492355]
+ [<ffffffffa03d8cdc>] virtio_shm_interrupt.isra.8+0xd6/0xeb [virtio_shm]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492363]
+ [<ffffffffa03d8e0c>] virtio_shm_intr_task+0x11b/0x15f [virtio_shm]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492371]
+ [<ffffffff8105975a>] kthread+0x76/0x7e
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492377]
+ [<ffffffff813f99b4>] kernel_thread_helper+0x4/0x10
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492379] Code: b7 c9 40 0f
+b6 ff 48 89 c2 44 89 ce e9 8e fb ff ff 90 90 b8 00 00 01 00 f0 0f c1 07 0f
+b7 d0 c1 e8 10 39 c2 74 07 f3 90 0f b7 17 <eb> f5 c3 8b 07 89 c2 c1 c0 10
+39 c2 8d 90 00 00 01 00 75 04 f0
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492409] Call Trace:
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492413]
+ [<ffffffff8106b766>] do_raw_spin_lock+0x5/0x8
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492418]
+ [<ffffffffa05e3a1e>] packet_rcv+0x254/0x2ab [af_packet]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492428]
+ [<ffffffff81337bbf>] __netif_receive_skb+0x2e1/0x36b
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492432]
+ [<ffffffff81339722>] netif_receive_skb+0x7e/0x84
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492437]
+ [<ffffffffa03e2b49>] virtio_rte_recv_packets+0x2c/0x49 [virtio_rte]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492444]
+ [<ffffffffa03e2b78>] virtio_rte_poll+0x12/0x8c [virtio_rte]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492450]
+ [<ffffffff81339c88>] net_rx_action+0x65/0x178
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492454]
+ [<ffffffff81045c73>] __do_softirq+0xb2/0x19d
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492459]
+ [<ffffffff813f9aac>] call_softirq+0x1c/0x30
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492463]
+ [<ffffffff81003931>] do_softirq+0x3c/0x7b
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492467]
+ [<ffffffff81045971>] _local_bh_enable_ip.isra.12+0x75/0x9b
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492472]
+ [<ffffffffa03d8cdc>] virtio_shm_interrupt.isra.8+0xd6/0xeb [virtio_shm]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492480]
+ [<ffffffffa03d8e0c>] virtio_shm_intr_task+0x11b/0x15f [virtio_shm]
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492486]
+ [<ffffffff8105975a>] kthread+0x76/0x7e
+Aug 26 09:31:58 at-vie01a-cq21b kernel: [115452.492491]
+ [<ffffffff813f99b4>] kernel_thread_helper+0x4/0x10
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404215] BUG: soft lockup -
+CPU#31 stuck for 23s! [kni_thread:6605]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404219] Modules linked in:
+xt_sharedlimit xt_hashlimit ip_set_hash_ipport ip_set_hash_ipportip
+xt_NOTRACK ip_set_bitmap_port xt_sctp nf_conntrack_ipv6 nf_defrag_ipv6
+xt_CT arpt_mangle ip_set_hash_ipnet xt_NFLOG xt_limit xt_hashcounter
+ip_set_hash_ipip xt_set ip_set_hash_ip deflate ctr twofish_x86_64
+twofish_common camellia serpent blowfish cast5 des_generic cbc xcbc rmd160
+crypto_null af_key iptable_mangle ip_set arptable_filter arp_tables
+iptable_raw iptable_nat nfnetlink_log nfnetlink ipt_ULOG ipt_PORTMAP
+af_packet zlib zlib_deflate sha512_generic sha256_generic sha1_generic md5
+icp_qa_al pcie8120 rte_kni pfe_pep virtio_rte virtio_shm virtio_vtnet
+virtio_uio igb_uio virtio_ring virtio uio xt_tcpudp xt_state xt_pkttype
+nf_conntrack_control bonding binfmt_misc iptable_filter ip6table_filter
+ip6_tables nf_nat_ftp nf_nat nf_conntrack_ftp nf_conntrack_ipv4
+nf_defrag_ipv4 ip_tables x_tables mperf ipmi_devintf ipmi_si
+ipmi_msghandler edd nf_conntrack_proto_sctp nf_conntrack sctp 8021q garp
+stp llc gb_sys usb_storage uas iTCO_wdt ioatdma pcspkr iTCO_vendor_support
+ixgbe igb wmi i2c_i801 mdio dca sg button container ipv6 autofs4 usbhid
+ehci_hcd megasr(P) usbcore processor thermal_sys
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404306] CPU 31
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404308] Modules linked in:
+xt_sharedlimit xt_hashlimit ip_set_hash_ipport ip_set_hash_ipportip
+xt_NOTRACK ip_set_bitmap_port xt_sctp nf_conntrack_ipv6 nf_defrag_ipv6
+xt_CT arpt_mangle ip_set_hash_ipnet xt_NFLOG xt_limit xt_hashcounter
+ip_set_hash_ipip xt_set ip_set_hash_ip deflate ctr twofish_x86_64
+twofish_common camellia serpent blowfish cast5 des_generic cbc xcbc rmd160
+crypto_null af_key iptable_mangle ip_set arptable_filter arp_tables
+iptable_raw iptable_nat nfnetlink_log nfnetlink ipt_ULOG ipt_PORTMAP
+af_packet zlib zlib_deflate sha512_generic sha256_generic sha1_generic md5
+icp_qa_al pcie8120 rte_kni pfe_pep virtio_rte virtio_shm virtio_vtnet
+virtio_uio igb_uio virtio_ring virtio uio xt_tcpudp xt_state xt_pkttype
+nf_conntrack_control bonding binfmt_misc iptable_filter ip6table_filter
+ip6_tables nf_nat_ftp nf_nat nf_conntrack_ftp nf_conntrack_ipv4
+nf_defrag_ipv4 ip_tables x_tables mperf ipmi_devintf ipmi_si
+ipmi_msghandler edd nf_conntrack_proto_sctp nf_conntrack sctp 8021q garp
+stp llc gb_sys usb_storage uas iTCO_wdt ioatdma pcspkr iTCO_vendor_support
+ixgbe igb wmi i2c_i801 mdio dca sg button container ipv6 autofs4 usbhid
+ehci_hcd megasr(P) usbcore processor thermal_sys
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404373]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404376] Pid: 6605, comm:
+kni_thread Tainted: P            3.1.10-gb20-default #1 Intel Corporation
+S2600CO/S2600CO
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404380] RIP:
+0010:[<ffffffff81020650>]  [<ffffffff81020650>] __ticket_spin_lock+0x18/0x1b
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404389] RSP:
+0018:ffff88083ede3cf0  EFLAGS: 00000297
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404391] RAX:
+00000000000069bd RBX: 0000000000000000 RCX: 000000000000000e
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404393] RDX:
+00000000000069bc RSI: 000000000000000e RDI: ffff88041e56a484
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404395] RBP:
+ffff88041e56a484 R08: ffff88041e56a740 R09: ffff880808f20440
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404397] R10:
+ffff88080d395084 R11: 000000000000001f R12: ffff88083ede3c68
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404400] R13:
+ffffffff813f831e R14: ffff88041e56a484 R15: ffff88080b97d0c0
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404402] FS:
+ 0000000000000000(0000) GS:ffff88083ede0000(0000) knlGS:0000000000000000
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404405] CS:  0010 DS: 0000
+ES: 0000 CR0: 000000008005003b
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404407] CR2:
+00007f0ad3e5e000 CR3: 0000000001805000 CR4: 00000000000406e0
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404409] DR0:
+0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404412] DR3:
+0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404414] Process kni_thread
+(pid: 6605, threadinfo ffff88080cab8000, task ffff8808138562c0)
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404416] Stack:
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404418]  ffffffff8106b766
+ffffffffa05e3a1e 0000000000000000 0000000000000000
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404424]  0000002e00000000
+ffff88042488a000 0000000000000000 ffff88042488a000
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404429]  ffffffff8192a870
+0000000000000608 0000000000000000 ffffffff81928b00
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404435] Call Trace:
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404446]
+ [<ffffffff8106b766>] do_raw_spin_lock+0x5/0x8
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404454]
+ [<ffffffffa05e3a1e>] packet_rcv+0x254/0x2ab [af_packet]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404477]
+ [<ffffffff81337bbf>] __netif_receive_skb+0x2e1/0x36b
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404482]
+ [<ffffffff81339722>] netif_receive_skb+0x7e/0x84
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404487]
+ [<ffffffff8133979e>] napi_skb_finish+0x1c/0x31
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404497]
+ [<ffffffffa031adee>] igb_clean_rx_irq+0x30d/0x39e [igb]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404517]
+ [<ffffffffa031aecd>] igb_poll+0x4e/0x74 [igb]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404532]
+ [<ffffffff81339c88>] net_rx_action+0x65/0x178
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404538]
+ [<ffffffff81045c73>] __do_softirq+0xb2/0x19d
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404544]
+ [<ffffffff813f9aac>] call_softirq+0x1c/0x30
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404550]
+ [<ffffffff81003931>] do_softirq+0x3c/0x7b
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404555]
+ [<ffffffff81045f98>] irq_exit+0x3c/0xac
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404558]
+ [<ffffffff81003655>] do_IRQ+0x82/0x98
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404565]
+ [<ffffffff813f24ee>] common_interrupt+0x6e/0x6e
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404573]
+ [<ffffffffa05e0003>] atomic_inc+0x3/0x4 [af_packet]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404579]
+ [<ffffffffa05e3a33>] packet_rcv+0x269/0x2ab [af_packet]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404477]
+ [<ffffffff81337bbf>] __netif_receive_skb+0x2e1/0x36b
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404482]
+ [<ffffffff81339722>] netif_receive_skb+0x7e/0x84
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404487]
+ [<ffffffff8133979e>] napi_skb_finish+0x1c/0x31
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404589]
+ [<ffffffff81337bbf>] __netif_receive_skb+0x2e1/0x36b
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404593]
+ [<ffffffff81339722>] netif_receive_skb+0x7e/0x84
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404610]
+ [<ffffffffa041bd4b>] kni_net_rx_normal+0x12d/0x178 [rte_kni]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404690]
+ [<ffffffffa041ae58>] kni_thread+0x39/0x91 [rte_kni]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404758]
+ [<ffffffff8105975a>] kthread+0x76/0x7e
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404763]
+ [<ffffffff813f99b4>] kernel_thread_helper+0x4/0x10
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404766] Code: b7 c9 40 0f
+b6 ff 48 89 c2 44 89 ce e9 8e fb ff ff 90 90 b8 00 00 01 00 f0 0f c1 07 0f
+b7 d0 c1 e8 10 39 c2 74 07 f3 90 0f b7 17 <eb> f5 c3 8b 07 89 c2 c1 c0 10
+39 c2 8d 90 00 00 01 00 75 04 f0
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404795] Call Trace:
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404800]
+ [<ffffffff8106b766>] do_raw_spin_lock+0x5/0x8
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404805]
+ [<ffffffffa05e3a1e>] packet_rcv+0x254/0x2ab [af_packet]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404814]
+ [<ffffffff81337bbf>] __netif_receive_skb+0x2e1/0x36b
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404818]
+ [<ffffffff81339722>] netif_receive_skb+0x7e/0x84
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404822]
+ [<ffffffff8133979e>] napi_skb_finish+0x1c/0x31
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404831]
+ [<ffffffffa031adee>] igb_clean_rx_irq+0x30d/0x39e [igb]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404849]
+ [<ffffffffa031aecd>] igb_poll+0x4e/0x74 [igb]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404863]
+ [<ffffffff81339c88>] net_rx_action+0x65/0x178
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404868]
+ [<ffffffff81045c73>] __do_softirq+0xb2/0x19d
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404872]
+ [<ffffffff813f9aac>] call_softirq+0x1c/0x30
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404875]
+ [<ffffffff81003931>] do_softirq+0x3c/0x7b
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404880]
+ [<ffffffff81045f98>] irq_exit+0x3c/0xac
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404883]
+ [<ffffffff81003655>] do_IRQ+0x82/0x98
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404887]
+ [<ffffffff813f24ee>] common_interrupt+0x6e/0x6e
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404893]
+ [<ffffffffa05e0003>] atomic_inc+0x3/0x4 [af_packet]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404899]
+ [<ffffffffa05e3a33>] packet_rcv+0x269/0x2ab [af_packet]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404908]
+ [<ffffffff81337bbf>] __netif_receive_skb+0x2e1/0x36b
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404912]
+ [<ffffffff81339722>] netif_receive_skb+0x7e/0x84
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404921]
+ [<ffffffffa041bd4b>] kni_net_rx_normal+0x12d/0x178 [rte_kni]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.404996]
+ [<ffffffffa041ae58>] kni_thread+0x39/0x91 [rte_kni]
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.405064]
+ [<ffffffff8105975a>] kthread+0x76/0x7e
+Aug 26 09:32:00 at-vie01a-cq21b kernel: [115455.405068]
+ [<ffffffff813f99b4>] kernel_thread_helper+0x4/0x10
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172014] BUG: soft lockup -
+CPU#0 stuck for 22s! [gis:14145]
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172017] Modules linked in:
+xt_sharedlimit xt_hashlimit ip_set_hash_ipport ip_set_hash_ipportip
+xt_NOTRACK ip_set_bitmap_port xt_sctp nf_conntrack_ipv6 nf_defrag_ipv6
+xt_CT arpt_mangle ip_set_hash_ipnet xt_NFLOG xt_limit xt_hashcounter
+ip_set_hash_ipip xt_set ip_set_hash_ip deflate ctr twofish_x86_64
+twofish_common camellia serpent blowfish cast5 des_generic cbc xcbc rmd160
+crypto_null af_key iptable_mangle ip_set arptable_filter arp_tables
+iptable_raw iptable_nat nfnetlink_log nfnetlink ipt_ULOG ipt_PORTMAP
+af_packet zlib zlib_deflate sha512_generic sha256_generic sha1_generic md5
+icp_qa_al pcie8120 rte_kni pfe_pep virtio_rte virtio_shm virtio_vtnet
+virtio_uio igb_uio virtio_ring virtio uio xt_tcpudp xt_state xt_pkttype
+nf_conntrack_control bonding binfmt_misc iptable_filter ip6table_filter
+ip6_tables nf_nat_ftp nf_nat nf_conntrack_ftp nf_conntrack_ipv4
+nf_defrag_ipv4 ip_tables x_tables mperf ipmi_devintf ipmi_si
+ipmi_msghandler edd nf_conntrack_proto_sctp nf_conntrack sctp 8021q garp
+stp llc gb_sys usb_storage uas iTCO_wdt ioatdma pcspkr iTCO_vendor_support
+ixgbe igb wmi i2c_i801 mdio dca sg button container ipv6 autofs4 usbhid
+ehci_hcd megasr(P) usbcore processor thermal_sys
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172098] CPU 0
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172099] Modules linked in:
+xt_sharedlimit xt_hashlimit ip_set_hash_ipport ip_set_hash_ipportip
+xt_NOTRACK ip_set_bitmap_port xt_sctp nf_conntrack_ipv6 nf_defrag_ipv6
+xt_CT arpt_mangle ip_set_hash_ipnet xt_NFLOG xt_limit xt_hashcounter
+ip_set_hash_ipip xt_set ip_set_hash_ip deflate ctr twofish_x86_64
+twofish_common camellia serpent blowfish cast5 des_generic cbc xcbc rmd160
+crypto_null af_key iptable_mangle ip_set arptable_filter arp_tables
+iptable_raw iptable_nat nfnetlink_log nfnetlink ipt_ULOG ipt_PORTMAP
+af_packet zlib zlib_deflate sha512_generic sha256_generic sha1_generic md5
+icp_qa_al pcie8120 rte_kni pfe_pep virtio_rte virtio_shm virtio_vtnet
+virtio_uio igb_uio virtio_ring virtio uio xt_tcpudp xt_state xt_pkttype
+nf_conntrack_control bonding binfmt_misc iptable_filter ip6table_filter
+ip6_tables nf_nat_ftp nf_nat nf_conntrack_ftp nf_conntrack_ipv4
+nf_defrag_ipv4 ip_tables x_tables mperf ipmi_devintf ipmi_si
+ipmi_msghandler edd nf_conntrack_proto_sctp nf_conntrack sctp 8021q garp
+stp llc gb_sys usb_storage uas iTCO_wdt ioatdma pcspkr iTCO_vendor_support
+ixgbe igb wmi i2c_i801 mdio dca sg button container ipv6 autofs4 usbhid
+ehci_hcd megasr(P) usbcore processor thermal_sys
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172163]
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172166] Pid: 14145, comm:
+gis Tainted: P            3.1.10-gb20-default #1 Intel Corporation
+S2600CO/S2600CO
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172170] RIP:
+0010:[<ffffffff8102064d>]  [<ffffffff8102064d>] __ticket_spin_lock+0x15/0x1b
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172178] RSP:
+0000:ffff88043ee03cf0  EFLAGS: 00000293
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172180] RAX:
+00000000000069bf RBX: 00000000020110ac RCX: 000000000000000e
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172182] RDX:
+00000000000069bc RSI: 000000000000000e RDI: ffff88041e56a484
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172184] RBP:
+ffff88041e56a484 R08: ffff88041e56a740 R09: ffff8804154a5840
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172187] R10:
+00007f0afce77000 R11: 0000000000000000 R12: ffff88043ee03c68
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172189] R13:
+ffffffff813f831e R14: ffff88041e56a484 R15: ffff88041e568280
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172192] FS:
+ 00007f0afd70b700(0000) GS:ffff88043ee00000(0000) knlGS:0000000000000000
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172194] CS:  0010 DS: 0000
+ES: 0000 CR0: 0000000080050033
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172196] CR2:
+00007f54f6b88098 CR3: 000000042427e000 CR4: 00000000000406f0
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172199] DR0:
+0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172201] DR3:
+0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172204] Process gis (pid:
+14145, threadinfo ffff88037537e000, task ffff88036a8fe180)
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172205] Stack:
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172207]  ffffffff8106b766
+ffffffffa05e3a1e 0000000101b72e68 ffff8808260ae680
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172213]  0000002e1e568280
+ffff880420450000 ffff88041f887a00 ffff880420450000
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172218]  ffffffff8192a870
+0000000000000608 0000000000000000 ffffffff81928b00
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172224] Call Trace:
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172233]
+ [<ffffffff8106b766>] do_raw_spin_lock+0x5/0x8
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172240]
+ [<ffffffffa05e3a1e>] packet_rcv+0x254/0x2ab [af_packet]
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172257]
+ [<ffffffff81337bbf>] __netif_receive_skb+0x2e1/0x36b
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172262]
+ [<ffffffff81339722>] netif_receive_skb+0x7e/0x84
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172266]
+ [<ffffffff8133979e>] napi_skb_finish+0x1c/0x31
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172277]
+ [<ffffffffa031adee>] igb_clean_rx_irq+0x30d/0x39e [igb]
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172298]
+ [<ffffffffa031aecd>] igb_poll+0x4e/0x74 [igb]
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172313]
+ [<ffffffff81339c88>] net_rx_action+0x65/0x178
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172319]
+ [<ffffffff81045c73>] __do_softirq+0xb2/0x19d
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172324]
+ [<ffffffff813f9aac>] call_softirq+0x1c/0x30
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172329]
+ [<ffffffff81003931>] do_softirq+0x3c/0x7b
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172333]
+ [<ffffffff81045f98>] irq_exit+0x3c/0xac
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172337]
+ [<ffffffff81003655>] do_IRQ+0x82/0x98
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172342]
+ [<ffffffff813f24ee>] common_interrupt+0x6e/0x6e
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172351]
+ [<00007f0c560356d1>] 0x7f0c560356d0
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172353] Code: ff 45 0f b7
+c9 40 0f b6 ff 48 89 c2 44 89 ce e9 8e fb ff ff 90 90 b8 00 00 01 00 f0 0f
+c1 07 0f b7 d0 c1 e8 10 39 c2 74 07 f3 90 <0f> b7 17 eb f5 c3 8b 07 89 c2
+c1 c0 10 39 c2 8d 90 00 00 01 00
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172382] Call Trace:
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172386]
+ [<ffffffff8106b766>] do_raw_spin_lock+0x5/0x8
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172392]
+ [<ffffffffa05e3a1e>] packet_rcv+0x254/0x2ab [af_packet]
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172402]
+ [<ffffffff81337bbf>] __netif_receive_skb+0x2e1/0x36b
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172406]
+ [<ffffffff81339722>] netif_receive_skb+0x7e/0x84
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172410]
+ [<ffffffff8133979e>] napi_skb_finish+0x1c/0x31
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172418]
+ [<ffffffffa031adee>] igb_clean_rx_irq+0x30d/0x39e [igb]
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172436]
+ [<ffffffffa031aecd>] igb_poll+0x4e/0x74 [igb]
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172450]
+ [<ffffffff81339c88>] net_rx_action+0x65/0x178
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172454]
+ [<ffffffff81045c73>] __do_softirq+0xb2/0x19d
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172459]
+ [<ffffffff813f9aac>] call_softirq+0x1c/0x30
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172462]
+ [<ffffffff81003931>] do_softirq+0x3c/0x7b
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172467]
+ [<ffffffff81045f98>] irq_exit+0x3c/0xac
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172470]
+ [<ffffffff81003655>] do_IRQ+0x82/0x98
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172474]
+ [<ffffffff813f24ee>] common_interrupt+0x6e/0x6e
+Aug 26 09:32:01 at-vie01a-cq21b kernel: [115456.172480]
+ [<00007f0c560356d1>] 0x7f0c560356d0
+
+
+
+Judging by the backtrace, this sounds more like some sort of a bug in the
+igb network interface driver or the network packet driver af_packet. Your
+gis userland process is probably the main thing that talks to the network
+on that machine, so it appears connected, but soft lockups are really
+kernel space bugs.
+
+is my analysis right?
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161104/14ee9f83/attachment-0001.html>
