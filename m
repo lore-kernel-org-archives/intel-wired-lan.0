@@ -1,58 +1,87 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri,  4 Nov 2016 10:35:59 -0700
-Subject: [Intel-wired-lan] [next PATCH S52 02/11] i40e: Remove unreachable
-	code
+Date: Fri,  4 Nov 2016 10:36:01 -0700
+Subject: [Intel-wired-lan] [next PATCH S52 04/11] i40evf: protect against
+	NULL msix_entries and q_vectors pointers
 In-Reply-To: <1478280968-8098-1-git-send-email-bimmy.pujari@intel.com>
 References: <1478280968-8098-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1478280968-8098-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1478280968-8098-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Henry Tieman <henry.w.tieman@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-The code at the end of i40e_read_phy_register_clause22() contained
-unreachable code and redundant control statements.
+Update the functions which free msix_entries and q_vectors so that they
+are safe against NULL values. This allows calling code to not care
+whether these have already been freed when disabling and freeing them.
 
-This change removes the unreachable code. And deletes the redundant
-goto statement and if statement.
-
-Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
-Change-ID: I713032b1585396f40f903cbcfdea987abd874400
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: I31bfd1c0da18023d971b618edc6fb049721f3298
 ---
-Testing Hints:
-    Found by static analysis. Test by code inspection.
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
- drivers/net/ethernet/intel/i40e/i40e_common.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 4672bf1..b0358c0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -4439,19 +4439,12 @@ i40e_status i40e_read_phy_register_clause22(struct i40e_hw *hw, u16 reg,
- 	if (status) {
- 		i40e_debug(hw, I40E_DEBUG_PHY,
- 			   "PHY: Can't write command to external PHY.\n");
--		goto phy_read_end;
--	}
--
--	if (!status) {
-+	} else {
- 		command = rd32(hw, I40E_GLGEN_MSRWD(port_num));
- 		*value = (command & I40E_GLGEN_MSRWD_MDIRDDATA_MASK) >>
- 			 I40E_GLGEN_MSRWD_MDIRDDATA_SHIFT;
--	} else {
--		i40e_debug(hw, I40E_DEBUG_PHY,
--			   "PHY: Can't read register value from external PHY.\n");
- 	}
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index a47ca2d..e26c218 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -207,6 +207,9 @@ static void i40evf_misc_irq_disable(struct i40evf_adapter *adapter)
+ {
+ 	struct i40e_hw *hw = &adapter->hw;
  
--phy_read_end:
- 	return status;
++	if (!adapter->msix_entries)
++		return;
++
+ 	wr32(hw, I40E_VFINT_DYN_CTL01, 0);
+ 
+ 	/* read flush */
+@@ -654,6 +657,9 @@ static void i40evf_free_misc_irq(struct i40evf_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
+ 
++	if (!adapter->msix_entries)
++		return;
++
+ 	free_irq(adapter->msix_entries[0].vector, netdev);
  }
  
+@@ -1428,6 +1434,9 @@ static void i40evf_free_q_vectors(struct i40evf_adapter *adapter)
+ 	int q_idx, num_q_vectors;
+ 	int napi_vectors;
+ 
++	if (!adapter->q_vectors)
++		return;
++
+ 	num_q_vectors = adapter->num_msix_vectors - NONQ_VECS;
+ 	napi_vectors = adapter->num_active_queues;
+ 
+@@ -1437,6 +1446,7 @@ static void i40evf_free_q_vectors(struct i40evf_adapter *adapter)
+ 			netif_napi_del(&q_vector->napi);
+ 	}
+ 	kfree(adapter->q_vectors);
++	adapter->q_vectors = NULL;
+ }
+ 
+ /**
+@@ -2860,12 +2870,10 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 		msleep(50);
+ 	}
+ 
+-	if (adapter->msix_entries) {
+-		i40evf_misc_irq_disable(adapter);
+-		i40evf_free_misc_irq(adapter);
+-		i40evf_reset_interrupt_capability(adapter);
+-		i40evf_free_q_vectors(adapter);
+-	}
++	i40evf_misc_irq_disable(adapter);
++	i40evf_free_misc_irq(adapter);
++	i40evf_reset_interrupt_capability(adapter);
++	i40evf_free_q_vectors(adapter);
+ 
+ 	if (adapter->watchdog_timer.function)
+ 		del_timer_sync(&adapter->watchdog_timer);
 -- 
 2.4.11
 
