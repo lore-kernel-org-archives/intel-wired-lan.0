@@ -1,51 +1,53 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Fri,  4 Nov 2016 16:46:16 -0400
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Correct X550 phy ID
-Message-ID: <1478292376-38601-1-git-send-email-donald.c.skidmore@intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Fri, 04 Nov 2016 14:03:03 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: add mask for 64 RSS queues
+Message-ID: <20161104210303.10489.64989.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We were using an old Alpha version of the X550 phy ID.  This was leading
-to unnecessary queries of the PHY.  I removed the old ID (which shouldn't
-be on any HW) and add the two that are.
+The indirection table was reported incorrectly for X550 and newer
+where we can support up to 64 RSS queues.
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+Reported-by Krishneil Singh <krishneil.k.singh@intel.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 3 ++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index b1a26cd..4aa6793 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -389,7 +389,8 @@ static enum ixgbe_phy_type ixgbe_get_phy_type_from_id(u32 phy_id)
- 	case TN1010_PHY_ID:
- 		phy_type = ixgbe_phy_tn;
- 		break;
--	case X550_PHY_ID:
-+	case X550_PHY_ID2:
-+	case X550_PHY_ID3:
- 	case X540_PHY_ID:
- 		phy_type = ixgbe_phy_aq;
- 		break;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 9ad110d..c81116b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -1377,7 +1377,8 @@ struct ixgbe_thermal_sensor_data {
- #define TN1010_PHY_ID    0x00A19410
- #define TNX_FW_REV       0xB
- #define X540_PHY_ID      0x01540200
--#define X550_PHY_ID      0x01540220
-+#define X550_PHY_ID2     0x01540223
-+#define X550_PHY_ID3     0x01540221
- #define X557_PHY_ID      0x01540240
- #define X557_PHY_ID2	0x01540250
- #define QT2022_PHY_ID    0x0043A400
--- 
-2.4.3
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+index 15ab337..10d2967 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+@@ -308,6 +308,7 @@ static void ixgbe_cache_ring_register(struct ixgbe_adapter *adapter)
+ 	ixgbe_cache_ring_rss(adapter);
+ }
+ 
++#define IXGBE_RSS_64Q_MASK	0x3F
+ #define IXGBE_RSS_16Q_MASK	0xF
+ #define IXGBE_RSS_8Q_MASK	0x7
+ #define IXGBE_RSS_4Q_MASK	0x3
+@@ -604,6 +605,7 @@ static bool ixgbe_set_sriov_queues(struct ixgbe_adapter *adapter)
+  **/
+ static bool ixgbe_set_rss_queues(struct ixgbe_adapter *adapter)
+ {
++	struct ixgbe_hw *hw = &adapter->hw;
+ 	struct ixgbe_ring_feature *f;
+ 	u16 rss_i;
+ 
+@@ -612,7 +614,11 @@ static bool ixgbe_set_rss_queues(struct ixgbe_adapter *adapter)
+ 	rss_i = f->limit;
+ 
+ 	f->indices = rss_i;
+-	f->mask = IXGBE_RSS_16Q_MASK;
++
++	if (hw->mac.type < ixgbe_mac_X550)
++		f->mask = IXGBE_RSS_16Q_MASK;
++	else
++		f->mask = IXGBE_RSS_64Q_MASK;
+ 
+ 	/* disable ATR by default, it will be configured below */
+ 	adapter->flags &= ~IXGBE_FLAG_FDIR_HASH_CAPABLE;
 
