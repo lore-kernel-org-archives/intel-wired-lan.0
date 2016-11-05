@@ -1,28 +1,190 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Fri, 4 Nov 2016 21:39:12 +0000
-Subject: [Intel-wired-lan] [PATCH v6] ixgbe: Add X553 FW ALEF support
-In-Reply-To: <1478221297-48647-1-git-send-email-donald.c.skidmore@intel.com>
-References: <1478221297-48647-1-git-send-email-donald.c.skidmore@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E42E44614@ORSMSX103.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 05 Nov 2016 09:14:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 1719a889f627619ff30fd26e2facb3e710b9c9d6
+Message-ID: <581d3277./k69TU2dL7V51TDC%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+1719a889f627619ff30fd26e2facb3e710b9c9d6  i40e: Add media type detection for 25G link
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Donald C Skidmore
-Sent: Thursday, November 3, 2016 6:02 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH v6] ixgbe: Add X553 FW ALEF support
+elapsed time: 84m
 
-From: Don Skidmore <donald.c.skidmore@intel.com>
+configs tested: 166
 
-This patch add X553 FW ALEF support for B0.  ALEF is the new unified FW.  This contains updated register defines for ALEF speed configuration.  Likewise it also removes the AN_CNTL_8 usage from the native SFI flow as it is no longer supported by FW.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
----
+i386                     randconfig-a0-201644
+x86_64                 randconfig-a0-11050703
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-11050751
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+avr32                    hammerhead_defconfig
+m68k                             allmodconfig
+m68k                       bvme6000_defconfig
+mips                      maltasmvp_defconfig
+powerpc                     taishan_defconfig
+x86_64                 randconfig-x011-201644
+x86_64                 randconfig-x014-201644
+x86_64                 randconfig-x015-201644
+x86_64                 randconfig-x017-201644
+x86_64                 randconfig-x012-201644
+x86_64                 randconfig-x018-201644
+x86_64                 randconfig-x019-201644
+x86_64                 randconfig-x013-201644
+x86_64                 randconfig-x016-201644
+x86_64                 randconfig-x010-201644
+i386                     randconfig-s0-201644
+i386                     randconfig-s1-201644
+x86_64                 randconfig-s0-11050758
+x86_64                 randconfig-s1-11050758
+x86_64                 randconfig-s2-11050758
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-11050802
+x86_64                 randconfig-s4-11050802
+x86_64                 randconfig-s5-11050802
+arm                          moxart_defconfig
+mips                  cavium_octeon_defconfig
+powerpc                     sbc834x_defconfig
+s390                             alldefconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201644
+i386                   randconfig-b0-11050759
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201644
+i386                     randconfig-i1-201644
+x86_64                 randconfig-b0-11050640
+powerpc                     tqm8555_defconfig
+sparc                            alldefconfig
+xtensa                  cadence_csp_defconfig
+x86_64                 randconfig-u0-11050708
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                randconfig-ne0-11050756
+i386                               tinyconfig
+ia64                         bigsur_defconfig
+powerpc                  mpc885_ads_defconfig
+sh                               allmodconfig
+i386                   randconfig-x014-201644
+i386                   randconfig-x019-201644
+i386                   randconfig-x018-201644
+i386                   randconfig-x017-201644
+i386                   randconfig-x015-201644
+i386                   randconfig-x016-201644
+i386                   randconfig-x012-201644
+i386                   randconfig-x011-201644
+i386                   randconfig-x013-201644
+i386                   randconfig-x010-201644
+i386                     randconfig-n0-201644
+i386                   randconfig-h0-11050729
+i386                   randconfig-h1-11050729
+x86_64                 randconfig-h0-11050805
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+frv                               allnoconfig
+mips                          ath79_defconfig
+i386                   randconfig-x073-201644
+i386                   randconfig-x071-201644
+i386                   randconfig-x072-201644
+i386                   randconfig-x078-201644
+i386                   randconfig-x076-201644
+i386                   randconfig-x075-201644
+i386                   randconfig-x077-201644
+i386                   randconfig-x074-201644
+i386                   randconfig-x070-201644
+i386                   randconfig-x079-201644
+x86_64                                  kexec
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                           alldefconfig
+mips                            ar7_defconfig
+sh                            migor_defconfig
+x86_64                 randconfig-x008-201644
+x86_64                 randconfig-x001-201644
+x86_64                 randconfig-x009-201644
+x86_64                 randconfig-x000-201644
+x86_64                 randconfig-x005-201644
+x86_64                 randconfig-x003-201644
+x86_64                 randconfig-x002-201644
+x86_64                 randconfig-x007-201644
+x86_64                 randconfig-x006-201644
+x86_64                 randconfig-x004-201644
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201644
+x86_64                 randconfig-r0-11050543
+i386                             allmodconfig
+i386                   randconfig-x006-201644
+i386                   randconfig-x004-201644
+i386                   randconfig-x007-201644
+i386                   randconfig-x003-201644
+i386                   randconfig-x008-201644
+i386                   randconfig-x000-201644
+i386                   randconfig-x009-201644
+i386                   randconfig-x002-201644
+i386                   randconfig-x001-201644
+i386                   randconfig-x005-201644
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
 
-Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
-
+Thanks,
+Fengguang
