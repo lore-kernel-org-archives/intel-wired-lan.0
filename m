@@ -1,101 +1,60 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 7 Nov 2016 10:49:16 -0800
-Subject: [Intel-wired-lan] [PATCH] igb: drop field "tail" of struct
-	igb_ring
-In-Reply-To: <1478522697-4773-1-git-send-email-caoj.fnst@cn.fujitsu.com>
-References: <1478522697-4773-1-git-send-email-caoj.fnst@cn.fujitsu.com>
-Message-ID: <CAKgT0UcHutO9kotxN2-MTH=rrB1PjmyMdjyeT4PkYbBXkBquFw@mail.gmail.com>
+From: Ray Bellis <ray@isc.org>
+Date: Mon, 7 Nov 2016 20:16:15 +0000
+Subject: [Intel-wired-lan] i40e performance regression after 1.3.9 ?
+In-Reply-To: <CAKgT0Uc9W_tvMEoKzLzBG-pK7Sjznr3B+xgjne0tUuTX17d+Hg@mail.gmail.com>
+References: <9f9f62ec-fbce-534a-d2bd-e918a03a3899@isc.org>
+ <CAKgT0Uc9W_tvMEoKzLzBG-pK7Sjznr3B+xgjne0tUuTX17d+Hg@mail.gmail.com>
+Message-ID: <fe40bb83-d28c-8fc4-148a-37ff7ad5c7aa@isc.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Nov 7, 2016 at 4:44 AM, Cao jin <caoj.fnst@cn.fujitsu.com> wrote:
-> Under certain condition, I find guest will oops on writel() in
-> igb_configure_tx_ring(), because hw->hw_address is NULL. While other
-> register access won't oops kernel because they use wr32/rd32 which have
-> a defense against NULL pointer. The oops message are as following:
->
->     [  141.225449] pcieport 0000:00:1c.0: AER: Multiple Uncorrected (Fatal)
->     error received: id=0101
->     [  141.225523] igb 0000:01:00.1: PCIe Bus Error: severity=Uncorrected
->     (Fatal), type=Unaccessible, id=0101(Unregistered Agent ID)
->     [  141.299442] igb 0000:01:00.1: broadcast error_detected message
->     [  141.300539] igb 0000:01:00.0 enp1s0f0: PCIe link lost, device now
->     detached
->     [  141.351019] igb 0000:01:00.1 enp1s0f1: PCIe link lost, device now
->     detached
->     [  143.465904] pcieport 0000:00:1c.0: Root Port link has been reset
->     [  143.465994] igb 0000:01:00.1: broadcast slot_reset message
->     [  143.466039] igb 0000:01:00.0: enabling device (0000 -> 0002)
->     [  144.389078] igb 0000:01:00.1: enabling device (0000 -> 0002)
->     [  145.312078] igb 0000:01:00.1: broadcast resume message
->     [  145.322211] BUG: unable to handle kernel paging request at
->     0000000000003818
->     [  145.361275] IP: [<ffffffffa02fd38d>] igb_configure_tx_ring+0x14d/0x280 [igb]
->     [  145.438007] Oops: 0002 [#1] SMP
->
-> On the other hand, commit 238ac817 does some optimization which
-> dropped the field "head". So I think it is time to drop "tail" as well.
+On 07/11/2016 18:42, Alexander Duyck wrote:
 
-There is a bug here, but removing tail isn't the fix.
+> Do you know if the packets are being dropped in the Rx path or is the
+> bottleneck on the Tx side?  
 
-> Signed-off-by: Cao jin <caoj.fnst@cn.fujitsu.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb.h      |  1 -
->  drivers/net/ethernet/intel/igb/igb_main.c | 16 +++++++++-------
->  2 files changed, 9 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-> index d11093d..0df06bc 100644
-> --- a/drivers/net/ethernet/intel/igb/igb.h
-> +++ b/drivers/net/ethernet/intel/igb/igb.h
-> @@ -247,7 +247,6 @@ struct igb_ring {
->         };
->         void *desc;                     /* descriptor ring memory */
->         unsigned long flags;            /* ring specific flags */
-> -       void __iomem *tail;             /* pointer to ring tail register */
->         dma_addr_t dma;                 /* phys address of the ring */
->         unsigned int  size;             /* length of desc. ring in bytes */
->
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index edc9a6a..e177d0e 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -3390,9 +3390,8 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
->              tdba & 0x00000000ffffffffULL);
->         wr32(E1000_TDBAH(reg_idx), tdba >> 32);
->
-> -       ring->tail = hw->hw_addr + E1000_TDT(reg_idx);
+None were being dropped AFAICR (from looking at the interface stats) and
+I can't tell which side is the bottleneck.
 
-This line is where the bug is.  This should be adapter->io_addr, not
-hw->hw_addr.
+> It looks like this could be one of a few
+> things.  Doing a quick git log and git diff between v4.3 and v4.4 the
+> two things that jump out at me are changes to the Tx tail bumping code
+> and changes to the interrupt moderation code.
+> 
+> To narrow this down you might try manually configuring both the 1.3.9
+> and 1.3.38 drivers to the same interrupt moderation values using a
+> command like:
+> ethtool -C <iface> adaptive-rx off adaptive-tx off rx-usecs 25 tx-usecs 25
+> 
+> That would default the interrupt moderation to somewhere around 40K
+> interrupts per second.  If you run this command on both drivers and
+> they give you the same performance than we would know that the issue
+> is likely due to changes in the dynamic interrupt moderation.
 
->         wr32(E1000_TDH(reg_idx), 0);
-> -       writel(0, ring->tail);
-> +        wr32(E1000_TDT(reg_idx), 0);
->
->         txdctl |= IGB_TX_PTHRESH;
->         txdctl |= IGB_TX_HTHRESH << 8;
-> @@ -3729,9 +3728,8 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
->              ring->count * sizeof(union e1000_adv_rx_desc));
->
->         /* initialize head and tail */
-> -       ring->tail = hw->hw_addr + E1000_RDT(reg_idx);
+I had noticed last week that the rx-usecs and tx-usecs values were
+different between 4.3 and 4.4, but when I changed the 25/25 that 4.4
+uses to the 62/122 that 4.3 uses it made no difference.
 
-Same thing here.  It looks like the wrong values where used.
+However that's not quite what you've asked, so I shall repeat the test
+tomorrow, and also see whether your suggestion of changing 4.3 to the
+4.4 values causes the same drop.
 
->         wr32(E1000_RDH(reg_idx), 0);
-> -       writel(0, ring->tail);
-> +       wr32(E1000_RDT(reg_idx), 0);
->
->         /* set descriptor configuration */
+I also didn't turn off adaptive rx or tx, so I shall try that too.
 
-Would you prefer to submit the patch for this or should I?  Basically
-all you need to do is change the two lines where ring->tail is
-populated so that you use adapter->io_addr instead of hw->hw_addr.
+Also if it helps, I've got flame graphs of "before" and "after":
 
-Thanks.
+http://users.isc.org/~ray/graph-fast.svg   (1.3.9)
+http://users.isc.org/~ray/graph-slow.svg   (1.3.38+)
 
-- Alex
+These both represent 30 seconds of dnsperf hammering my UDP echo server,
+although I suspect that compiler inlining may have interfered with the
+stack traces.
+
+thanks,
+
+Ray
+
+
