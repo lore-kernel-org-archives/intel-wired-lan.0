@@ -1,68 +1,131 @@
-From: Tieman, Henry W <henry.w.tieman@intel.com>
-Date: Fri, 4 Nov 2016 22:20:09 +0000
-Subject: [Intel-wired-lan] [next PATCH S52 02/11] i40e: Remove
-	unreachable code
-In-Reply-To: <1478280968-8098-3-git-send-email-bimmy.pujari@intel.com>
-References: <1478280968-8098-1-git-send-email-bimmy.pujari@intel.com>
- <1478280968-8098-3-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <FED06286FE4D9D4D96767F1273A7F05E79FCAD62@ORSMSX102.amr.corp.intel.com>
+From: Cao jin <caoj.fnst@cn.fujitsu.com>
+Date: Mon, 7 Nov 2016 20:44:57 +0800
+Subject: [Intel-wired-lan] [PATCH] igb: drop field "tail" of struct igb_ring
+Message-ID: <1478522697-4773-1-git-send-email-caoj.fnst@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+Under certain condition, I find guest will oops on writel() in
+igb_configure_tx_ring(), because hw->hw_address is NULL. While other
+register access won't oops kernel because they use wr32/rd32 which have
+a defense against NULL pointer. The oops message are as following:
 
------Original Message-----
-From: Pujari, Bimmy 
-Sent: Friday, November 04, 2016 10:36 AM
-To: intel-wired-lan@lists.osuosl.org
-Cc: Tieman, Henry W <henry.w.tieman@intel.com>
-Subject: [next PATCH S52 02/11] i40e: Remove unreachable code
+    [  141.225449] pcieport 0000:00:1c.0: AER: Multiple Uncorrected (Fatal)
+    error received: id=0101
+    [  141.225523] igb 0000:01:00.1: PCIe Bus Error: severity=Uncorrected
+    (Fatal), type=Unaccessible, id=0101(Unregistered Agent ID)
+    [  141.299442] igb 0000:01:00.1: broadcast error_detected message
+    [  141.300539] igb 0000:01:00.0 enp1s0f0: PCIe link lost, device now
+    detached
+    [  141.351019] igb 0000:01:00.1 enp1s0f1: PCIe link lost, device now
+    detached
+    [  143.465904] pcieport 0000:00:1c.0: Root Port link has been reset
+    [  143.465994] igb 0000:01:00.1: broadcast slot_reset message
+    [  143.466039] igb 0000:01:00.0: enabling device (0000 -> 0002)
+    [  144.389078] igb 0000:01:00.1: enabling device (0000 -> 0002)
+    [  145.312078] igb 0000:01:00.1: broadcast resume message
+    [  145.322211] BUG: unable to handle kernel paging request at
+    0000000000003818
+    [  145.361275] IP: [<ffffffffa02fd38d>] igb_configure_tx_ring+0x14d/0x280 [igb]
+    [  145.438007] Oops: 0002 [#1] SMP
 
-From: Henry Tieman <henry.w.tieman@intel.com>
+On the other hand, commit 238ac817 does some optimization which
+dropped the field "head". So I think it is time to drop "tail" as well.
 
-The code at the end of i40e_read_phy_register_clause22() contained
-unreachable code and redundant control statements.
-
-This change removes the unreachable code. And deletes the redundant
-goto statement and if statement.
-
-Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
-Change-ID: I713032b1585396f40f903cbcfdea987abd874400
+Signed-off-by: Cao jin <caoj.fnst@cn.fujitsu.com>
 ---
-Testing Hints:
-    Found by static analysis. Test by code inspection.
+ drivers/net/ethernet/intel/igb/igb.h      |  1 -
+ drivers/net/ethernet/intel/igb/igb_main.c | 16 +++++++++-------
+ 2 files changed, 9 insertions(+), 8 deletions(-)
 
- drivers/net/ethernet/intel/i40e/i40e_common.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 4672bf1..b0358c0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -4439,19 +4439,12 @@ i40e_status i40e_read_phy_register_clause22(struct i40e_hw *hw, u16 reg,
- 	if (status) {
- 		i40e_debug(hw, I40E_DEBUG_PHY,
- 			   "PHY: Can't write command to external PHY.\n");
--		goto phy_read_end;
--	}
--
--	if (!status) {
-+	} else {
- 		command = rd32(hw, I40E_GLGEN_MSRWD(port_num));
- 		*value = (command & I40E_GLGEN_MSRWD_MDIRDDATA_MASK) >>
- 			 I40E_GLGEN_MSRWD_MDIRDDATA_SHIFT;
--	} else {
--		i40e_debug(hw, I40E_DEBUG_PHY,
--			   "PHY: Can't read register value from external PHY.\n");
- 	}
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index d11093d..0df06bc 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -247,7 +247,6 @@ struct igb_ring {
+ 	};
+ 	void *desc;			/* descriptor ring memory */
+ 	unsigned long flags;		/* ring specific flags */
+-	void __iomem *tail;		/* pointer to ring tail register */
+ 	dma_addr_t dma;			/* phys address of the ring */
+ 	unsigned int  size;		/* length of desc. ring in bytes */
  
--phy_read_end:
- 	return status;
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index edc9a6a..e177d0e 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3390,9 +3390,8 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
+ 	     tdba & 0x00000000ffffffffULL);
+ 	wr32(E1000_TDBAH(reg_idx), tdba >> 32);
+ 
+-	ring->tail = hw->hw_addr + E1000_TDT(reg_idx);
+ 	wr32(E1000_TDH(reg_idx), 0);
+-	writel(0, ring->tail);
++        wr32(E1000_TDT(reg_idx), 0);
+ 
+ 	txdctl |= IGB_TX_PTHRESH;
+ 	txdctl |= IGB_TX_HTHRESH << 8;
+@@ -3729,9 +3728,8 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 	     ring->count * sizeof(union e1000_adv_rx_desc));
+ 
+ 	/* initialize head and tail */
+-	ring->tail = hw->hw_addr + E1000_RDT(reg_idx);
+ 	wr32(E1000_RDH(reg_idx), 0);
+-	writel(0, ring->tail);
++	wr32(E1000_RDT(reg_idx), 0);
+ 
+ 	/* set descriptor configuration */
+ 	srrctl = IGB_RX_HDR_LEN << E1000_SRRCTL_BSIZEHDRSIZE_SHIFT;
+@@ -5130,6 +5128,8 @@ static void igb_tx_map(struct igb_ring *tx_ring,
+ 	u32 tx_flags = first->tx_flags;
+ 	u32 cmd_type = igb_tx_cmd_type(skb, tx_flags);
+ 	u16 i = tx_ring->next_to_use;
++        struct igb_adapter *adapter = netdev_priv(tx_ring->netdev);
++        struct e1000_hw *hw = &adapter->hw;
+ 
+ 	tx_desc = IGB_TX_DESC(tx_ring, i);
+ 
+@@ -5223,7 +5223,7 @@ static void igb_tx_map(struct igb_ring *tx_ring,
+ 	igb_maybe_stop_tx(tx_ring, DESC_NEEDED);
+ 
+ 	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
+-		writel(i, tx_ring->tail);
++                wr32(E1000_TDT(tx_ring->reg_idx), i);
+ 
+ 		/* we need this if more than one processor can write to our tail
+ 		 * at a time, it synchronizes IO on IA64/Altix systems
+@@ -6756,7 +6756,7 @@ static bool igb_clean_tx_irq(struct igb_q_vector *q_vector, int napi_budget)
+ 				"  desc.status          <%x>\n",
+ 				tx_ring->queue_index,
+ 				rd32(E1000_TDH(tx_ring->reg_idx)),
+-				readl(tx_ring->tail),
++				rd32(E1000_TDT(tx_ring->reg_idx)),
+ 				tx_ring->next_to_use,
+ 				tx_ring->next_to_clean,
+ 				tx_buffer->time_stamp,
+@@ -7265,6 +7265,8 @@ void igb_alloc_rx_buffers(struct igb_ring *rx_ring, u16 cleaned_count)
+ 	union e1000_adv_rx_desc *rx_desc;
+ 	struct igb_rx_buffer *bi;
+ 	u16 i = rx_ring->next_to_use;
++        struct igb_adapter *adapter = netdev_priv(rx_ring->netdev);
++        struct e1000_hw *hw = &adapter->hw;
+ 
+ 	/* nothing to do */
+ 	if (!cleaned_count)
+@@ -7313,7 +7315,7 @@ void igb_alloc_rx_buffers(struct igb_ring *rx_ring, u16 cleaned_count)
+ 		 * such as IA-64).
+ 		 */
+ 		wmb();
+-		writel(i, rx_ring->tail);
++                wr32(E1000_RDT(rx_ring->reg_idx), i);
+ 	}
  }
  
 -- 
-2.4.11
+2.1.0
+
+
 
