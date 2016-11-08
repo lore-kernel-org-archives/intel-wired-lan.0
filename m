@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  8 Nov 2016 13:05:15 -0800
-Subject: [Intel-wired-lan] [next PATCH S52-V2 11/15] i40e: restore
-	workaround for removing default MAC filter
+Date: Tue,  8 Nov 2016 13:05:10 -0800
+Subject: [Intel-wired-lan] [next PATCH S52-V2 06/15] i40e: set broadcast
+	promiscuous mode for each active VLAN
 In-Reply-To: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
 References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1478639119-14656-12-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1478639119-14656-7-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,104 +13,307 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-A previous commit 53cb6e9e8949 ("i40e: Removal of workaround for simple
-MAC address filter deletion") removed a workaround for some
-firmware versions which was reported to not be necessary in production
-NICs. Unfortunately this workaround is necessary in some configurations,
-specifically the Ethernet Controller XL710 for 40GbE QSFP+ (8086:1583).
+A previous workaround added to ensure receipt of all broadcast frames
+incorrectly set the broadcast promiscuous mode unconditionally
+regardless of active VLAN status.
 
-Without this patch, the mentioned NICs with current firmware exhibit
-issues when adding VLANs, as outlined by the following reproduction:
+Replace this partial workaround with a complete solution that sets the
+broadcast promiscuous filters in i40e_sync_vsi_filters. This new method
+sets the promiscuous mode based on when broadcast filters are added or
+removed.
 
-  $modprobe i40e
-  $ip link set <device> up
-  $ip link add link <device> vlan100 type vlan id 100
-  $dmesg | tail
-  <snip>
-  kernel: i40e 0000:82:00.0: Error I40E_AQ_RC_EINVAL adding RX
-filters on PF, promiscuous mode forced on
+I40E_VLAN_ANY will request a broadcast filter for all VLANs, (as we're
+in untagged mode) while a broadcast filter on a specific VLAN will only
+request broadcast for that VLAN.
 
-This results in filters being marked as FAILED and setting the device in
-promiscuous mode.
+Thus, we restore addition of broadcast filter to the array, but we add
+special handling for these such that they enable the broadcast
+promiscuous mode instead of being sent as regular filters.
 
-The root cause of receiving the -EINVAL error response appears to be due
-to a conflict with the default MAC filter which still exists on the
-default firmware for this device. Attempting to add a new VLAN filter on
-the default MAC address conflicts with the IGNORE_VLAN setting on the
-default rule.
+The end result is that we will correctly receive all broadcast packets
+(even those with a *source* address equal to the broadcast address) but
+will not receive packets for which we don't have an active VLAN filter.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I4d8f6d48ac5f60cfe981b3baad30eb4d7c170d61
+Change-ID: I7d0585c5cec1a5bf55bf533b42e5e817d5db6a2d
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 41 +++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+Testing-hints:
+  Ensure that we do not receive broadcast packets for VLANs which are
+  not configured. That is, when we no VLANs configured we need to
+  receive broadcast packets on all VLANs. When we have added a VLAN
+  filter, we need to receive broadcasts only on VID=0 and any active
+  VLANs, but *not* any in-actve VLANs.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 161f512..ef6eb19 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1226,6 +1226,39 @@ bool i40e_is_vsi_in_vlan(struct i40e_vsi *vsi)
+  Additionally we need to ensure that we do not break the receipt of
+  broadcast filters with a *source* address equal to the broadcast
+  address. This can be tested using scapy or similar tools. Ensure that
+  these packets follow the same receipt rules as above.
+
+  Additionally it may be worth checking whether adding many VLANs
+  rapidly does not cause any driver stability issues and that the
+  broadcast packets are still correctly received.
+
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |  34 +++++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 106 +++++++++++++++++----
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   3 +
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   7 ++
+ 4 files changed, 129 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 33bcf23..d1dcd4f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -2170,6 +2170,40 @@ enum i40e_status_code i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
  }
  
  /**
-+ * i40e_rm_default_mac_filter - Remove the default MAC filter set by NVM
-+ * @vsi: the PF Main VSI - inappropriate for any other VSI
-+ * @macaddr: the MAC address
-+ *
-+ * Remove whatever filter the firmware set up so the driver can manage
-+ * its own filtering intelligently.
++ * i40e_aq_set_vsi_bc_promisc_on_vlan
++ * @hw: pointer to the hw struct
++ * @seid: vsi number
++ * @enable: set broadcast promiscuous enable/disable for a given VLAN
++ * @vid: The VLAN tag filter - capture any broadcast packet with this VLAN tag
++ * @cmd_details: pointer to command details structure or NULL
 + **/
-+static void i40e_rm_default_mac_filter(struct i40e_vsi *vsi, u8 *macaddr)
++i40e_status i40e_aq_set_vsi_bc_promisc_on_vlan(struct i40e_hw *hw,
++				u16 seid, bool enable, u16 vid,
++				struct i40e_asq_cmd_details *cmd_details)
 +{
-+	struct i40e_aqc_remove_macvlan_element_data element;
-+	struct i40e_pf *pf = vsi->back;
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_set_vsi_promiscuous_modes *cmd =
++		(struct i40e_aqc_set_vsi_promiscuous_modes *)&desc.params.raw;
++	i40e_status status;
++	u16 flags = 0;
 +
-+	/* Only appropriate for the PF main VSI */
-+	if (vsi->type != I40E_VSI_MAIN)
-+		return;
++	i40e_fill_default_direct_cmd_desc(&desc,
++					i40e_aqc_opc_set_vsi_promiscuous_modes);
 +
-+	memset(&element, 0, sizeof(element));
-+	ether_addr_copy(element.mac_addr, macaddr);
-+	element.vlan_tag = 0;
-+	/* Ignore error returns, some firmware does it this way... */
-+	element.flags = I40E_AQC_MACVLAN_DEL_PERFECT_MATCH;
-+	i40e_aq_remove_macvlan(&pf->hw, vsi->seid, &element, 1, NULL);
++	if (enable)
++		flags |= I40E_AQC_SET_VSI_PROMISC_BROADCAST;
 +
-+	memset(&element, 0, sizeof(element));
-+	ether_addr_copy(element.mac_addr, macaddr);
-+	element.vlan_tag = 0;
-+	/* ...and some firmware does it this way. */
-+	element.flags = I40E_AQC_MACVLAN_DEL_PERFECT_MATCH |
-+			I40E_AQC_MACVLAN_DEL_IGNORE_VLAN;
-+	i40e_aq_remove_macvlan(&pf->hw, vsi->seid, &element, 1, NULL);
++	cmd->promiscuous_flags = cpu_to_le16(flags);
++	cmd->valid_flags = cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_BROADCAST);
++	cmd->seid = cpu_to_le16(seid);
++	cmd->vlan_tag = cpu_to_le16(vid | I40E_AQC_SET_VSI_VLAN_VALID);
++
++	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++
++	return status;
 +}
 +
 +/**
-  * i40e_add_filter - Add a mac/vlan filter to the VSI
-  * @vsi: the VSI to be searched
-  * @macaddr: the MAC address
-@@ -9283,6 +9316,12 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 	if (vsi->type == I40E_VSI_MAIN) {
- 		SET_NETDEV_DEV(netdev, &pf->pdev->dev);
- 		ether_addr_copy(mac_addr, hw->mac.perm_addr);
-+		/* The following steps are necessary to prevent reception
-+		 * of tagged packets - some older NVM configurations load a
-+		 * default a MAC-VLAN filter that accepts any tagged packet
-+		 * which must be replaced by a normal filter.
-+		 */
-+		i40e_rm_default_mac_filter(vsi, mac_addr);
- 		spin_lock_bh(&vsi->mac_filter_hash_lock);
- 		i40e_add_filter(vsi, mac_addr, I40E_VLAN_ANY);
- 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
-@@ -9816,6 +9855,8 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
- 	pf->vsi[pf->lan_vsi]->tc_config.enabled_tc = 0;
- 	pf->vsi[pf->lan_vsi]->seid = pf->main_vsi_seid;
- 	i40e_vsi_config_tc(pf->vsi[pf->lan_vsi], enabled_tc);
-+	if (vsi->type == I40E_VSI_MAIN)
-+		i40e_rm_default_mac_filter(vsi, pf->hw.mac.perm_addr);
+  * i40e_aq_set_vsi_broadcast
+  * @hw: pointer to the hw struct
+  * @seid: vsi number
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 3886119..8187d32 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1245,13 +1245,6 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
+ 	if (!vsi || !macaddr)
+ 		return NULL;
  
- 	/* assign it some queues */
- 	ret = i40e_alloc_rings(vsi);
+-	/* Do not allow broadcast filter to be added since broadcast filter
+-	 * is added as part of add VSI for any newly created VSI except
+-	 * FDIR VSI
+-	 */
+-	if (is_broadcast_ether_addr(macaddr))
+-		return NULL;
+-
+ 	f = i40e_find_filter(vsi, macaddr, vlan);
+ 	if (!f) {
+ 		f = kzalloc(sizeof(*f), GFP_ATOMIC);
+@@ -1857,6 +1850,47 @@ void i40e_aqc_add_filters(struct i40e_vsi *vsi, const char *vsi_name,
+ }
+ 
+ /**
++ * i40e_aqc_broadcast_filter - Set promiscuous broadcast flags
++ * @vsi: pointer to the VSI
++ * @f: filter data
++ *
++ * This function sets or clears the promiscuous broadcast flags for VLAN
++ * filters in order to properly receive broadcast frames. Assumes that only
++ * broadcast filters are passed.
++ **/
++static
++void i40e_aqc_broadcast_filter(struct i40e_vsi *vsi, const char *vsi_name,
++			       struct i40e_mac_filter *f)
++{
++	bool enable = f->state == I40E_FILTER_NEW;
++	struct i40e_hw *hw = &vsi->back->hw;
++	i40e_status aq_ret;
++
++	if (f->vlan == I40E_VLAN_ANY) {
++		aq_ret = i40e_aq_set_vsi_broadcast(hw,
++						   vsi->seid,
++						   enable,
++						   NULL);
++	} else {
++		aq_ret = i40e_aq_set_vsi_bc_promisc_on_vlan(hw,
++							    vsi->seid,
++							    enable,
++							    f->vlan,
++							    NULL);
++	}
++
++	if (aq_ret) {
++		dev_warn(&vsi->back->pdev->dev,
++			 "Error %s setting broadcast promiscuous mode on %s\n",
++			 i40e_aq_str(hw, hw->aq.asq_last_status),
++			 vsi_name);
++		f->state = I40E_FILTER_FAILED;
++	} else if (enable) {
++		f->state = I40E_FILTER_ACTIVE;
++	}
++}
++
++/**
+  * i40e_sync_vsi_filters - Update the VSI filter list to the HW
+  * @vsi: ptr to the VSI
+  *
+@@ -2004,6 +2038,17 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 		hlist_for_each_entry_safe(f, h, &tmp_del_list, hlist) {
+ 			cmd_flags = 0;
+ 
++			/* handle broadcast filters by updating the broadcast
++			 * promiscuous flag instead of deleting a MAC filter.
++			 */
++			if (is_broadcast_ether_addr(f->macaddr)) {
++				i40e_aqc_broadcast_filter(vsi, vsi_name, f);
++
++				hlist_del(&f->hlist);
++				kfree(f);
++				continue;
++			}
++
+ 			/* add to delete list */
+ 			ether_addr_copy(del_list[num_del].mac_addr, f->macaddr);
+ 			if (f->vlan == I40E_VLAN_ANY) {
+@@ -2060,12 +2105,25 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 			goto err_no_memory;
+ 
+ 		num_add = 0;
+-		hlist_for_each_entry(f, &tmp_add_list, hlist) {
++		hlist_for_each_entry_safe(f, h, &tmp_add_list, hlist) {
+ 			if (test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
+ 				     &vsi->state)) {
+ 				f->state = I40E_FILTER_FAILED;
+ 				continue;
+ 			}
++
++			/* handle broadcast filters by updating the broadcast
++			 * promiscuous flag instead of adding a MAC filter.
++			 */
++			if (is_broadcast_ether_addr(f->macaddr)) {
++				u64 key = i40e_addr_to_hkey(f->macaddr);
++				i40e_aqc_broadcast_filter(vsi, vsi_name, f);
++
++				hlist_del(&f->hlist);
++				hash_add(vsi->mac_filter_hash, &f->hlist, key);
++				continue;
++			}
++
+ 			/* add to add array */
+ 			if (num_add == 0)
+ 				add_head = f;
+@@ -9166,6 +9224,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 	struct i40e_hw *hw = &pf->hw;
+ 	struct i40e_netdev_priv *np;
+ 	struct net_device *netdev;
++	u8 broadcast[ETH_ALEN];
+ 	u8 mac_addr[ETH_ALEN];
+ 	int etherdev_size;
+ 
+@@ -9234,6 +9293,24 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
+ 	}
+ 
++	/* Add the broadcast filter so that we initially will receive
++	 * broadcast packets. Note that when a new VLAN is first added the
++	 * driver will convert all filters marked I40E_VLAN_ANY into VLAN
++	 * specific filters as part of transitioning into "vlan" operation.
++	 * When more VLANs are added, the driver will copy each existing MAC
++	 * filter and add it for the new VLAN.
++	 *
++	 * Broadcast filters are handled specially by
++	 * i40e_sync_filters_subtask, as the driver must to set the broadcast
++	 * promiscuous bit instead of adding this directly as a MAC/VLAN
++	 * filter. The subtask will update the correct broadcast promiscuous
++	 * bits as VLANs become active or inactive.
++	 */
++	eth_broadcast_addr(broadcast);
++	spin_lock_bh(&vsi->mac_filter_hash_lock);
++	i40e_add_filter(vsi, broadcast, I40E_VLAN_ANY);
++	spin_unlock_bh(&vsi->mac_filter_hash_lock);
++
+ 	ether_addr_copy(netdev->dev_addr, mac_addr);
+ 	ether_addr_copy(netdev->perm_addr, mac_addr);
+ 
+@@ -9316,7 +9393,6 @@ int i40e_is_vsi_uplink_mode_veb(struct i40e_vsi *vsi)
+ static int i40e_add_vsi(struct i40e_vsi *vsi)
+ {
+ 	int ret = -ENODEV;
+-	i40e_status aq_ret = 0;
+ 	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	struct i40e_vsi_context ctxt;
+@@ -9506,18 +9582,6 @@ static int i40e_add_vsi(struct i40e_vsi *vsi)
+ 		vsi->seid = ctxt.seid;
+ 		vsi->id = ctxt.vsi_number;
+ 	}
+-	/* Except FDIR VSI, for all other VSI set the broadcast filter */
+-	if (vsi->type != I40E_VSI_FDIR) {
+-		aq_ret = i40e_aq_set_vsi_broadcast(hw, vsi->seid, true, NULL);
+-		if (aq_ret) {
+-			ret = i40e_aq_rc_to_posix(aq_ret,
+-						  hw->aq.asq_last_status);
+-			dev_info(&pf->pdev->dev,
+-				 "set brdcast promisc failed, err %s, aq_err %s\n",
+-				 i40e_stat_str(hw, aq_ret),
+-				 i40e_aq_str(hw, hw->aq.asq_last_status));
+-		}
+-	}
+ 
+ 	vsi->active_filters = 0;
+ 	clear_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index b1bf64e..4e641a6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -144,6 +144,9 @@ enum i40e_status_code i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
+ 							 u16 seid, bool enable,
+ 							 u16 vid,
+ 				struct i40e_asq_cmd_details *cmd_details);
++i40e_status i40e_aq_set_vsi_bc_promisc_on_vlan(struct i40e_hw *hw,
++				u16 seid, bool enable, u16 vid,
++				struct i40e_asq_cmd_details *cmd_details);
+ i40e_status i40e_aq_set_vsi_vlan_promisc(struct i40e_hw *hw,
+ 				u16 seid, bool enable,
+ 				struct i40e_asq_cmd_details *cmd_details);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 46908c0..05ed49b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -674,6 +674,7 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, enum i40e_vsi_type type)
+ 	}
+ 	if (type == I40E_VSI_SRIOV) {
+ 		u64 hena = i40e_pf_get_default_rss_hena(pf);
++		u8 broadcast[ETH_ALEN];
+ 
+ 		vf->lan_vsi_idx = vsi->idx;
+ 		vf->lan_vsi_id = vsi->id;
+@@ -696,6 +697,12 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, enum i40e_vsi_type type)
+ 					 "Could not add MAC filter %pM for VF %d\n",
+ 					vf->default_lan_addr.addr, vf->vf_id);
+ 		}
++		eth_broadcast_addr(broadcast);
++		f = i40e_add_filter(vsi, broadcast,
++				    vf->port_vlan_id ? vf->port_vlan_id : -1);
++		if (!f)
++			dev_info(&pf->pdev->dev,
++				 "Could not allocate VF broadcast filter\n");
+ 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
+ 		i40e_write_rx_ctl(&pf->hw, I40E_VFQF_HENA1(0, vf->vf_id),
+ 				  (u32)hena);
 -- 
 2.4.11
 
