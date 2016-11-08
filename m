@@ -1,9 +1,11 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 8 Nov 2016 21:56:54 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 0/3] PHC frequency fine tuning
-In-Reply-To: <cover.1478526333.git.richardcochran@gmail.com>
+Date: Tue, 8 Nov 2016 22:02:22 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 2/3] ptp: igb: Use the high
+ resolution frequency method.
+In-Reply-To: <b1d732324e0b1960b294e90ca5eb2a31b6559188.1478526333.git.richardcochran@gmail.com>
 References: <cover.1478526333.git.richardcochran@gmail.com>
-Message-ID: <1478642213.7545.36.camel@intel.com>
+ <b1d732324e0b1960b294e90ca5eb2a31b6559188.1478526333.git.richardcochran@gmail.com>
+Message-ID: <1478642533.7545.38.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,70 +13,77 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On Tue, 2016-11-08 at 22:49 +0100, Richard Cochran wrote:
-> This series expands the PTP Hardware Clock subsystem by adding a
-> method that passes the frequency tuning word to the the drivers
-> without dropping the low order bits.??Keeping those bits is useful
-> for
-> drivers whose frequency resolution is higher than 1 ppb.
+> The 82580 and related devices offer a frequency resolution of about
+> 0.029 ppb.??This patch lets users of the device benefit from the
+> increased frequency resolution when tuning the clock.
 > 
+> Signed-off-by: Richard Cochran <richardcochran@gmail.com>
+> ---
+> ?drivers/net/ethernet/intel/igb/igb_ptp.c | 16 ++++++++--------
+> ?1 file changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c
+> b/drivers/net/ethernet/intel/igb/igb_ptp.c
+> index a7895c4..c30eea8 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_ptp.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+> @@ -226,7 +226,7 @@ static int igb_ptp_adjfreq_82576(struct
+> ptp_clock_info *ptp, s32 ppb)
+> ?	return 0;
+> ?}
+> ?
+> -static int igb_ptp_adjfreq_82580(struct ptp_clock_info *ptp, s32
+> ppb)
+> +static int igb_ptp_adjfine_82580(struct ptp_clock_info *ptp, long
+> scaled_ppm)
+> ?{
+> ?	struct igb_adapter *igb = container_of(ptp, struct
+> igb_adapter,
+> ?					???????ptp_caps);
+> @@ -235,13 +235,13 @@ static int igb_ptp_adjfreq_82580(struct
+> ptp_clock_info *ptp, s32 ppb)
+> ?	u64 rate;
+> ?	u32 inca;
+> ?
+> -	if (ppb < 0) {
+> +	if (scaled_ppm < 0) {
+> ?		neg_adj = 1;
+> -		ppb = -ppb;
+> +		scaled_ppm = -scaled_ppm;
+> ?	}
+> -	rate = ppb;
+> -	rate <<= 26;
+> -	rate = div_u64(rate, 1953125);
+> +	rate = scaled_ppm;
+> +	rate <<= 13;
+> +	rate = div_u64(rate, 15625);
+> ?
 
-Makes sense.
-
-> The appended script (below) runs a simple demonstration of the
-> improvement.??This test needs two Intel i210 PCIe cards installed in
-> the same PC, with their SDP0 pins connected by copper
-> wire.??Measuring
-> the estimated offset (from the ptp4l servo) and the true offset (from
-> the PPS) over one hour yields the following statistics.
-> 
-> > 
-> > ???????|???Est. Before |????Est. After |???True Before |????True
-> > After |
-> > --------+---------------+---------------+---------------+--------
-> > -------|
-> > min????| -5.200000e+01 | -1.600000e+01 | -3.100000e+01 |
-> > -1.000000e+00 |
-> > max????| +5.700000e+01 | +2.500000e+01 | +8.500000e+01 |
-> > +4.000000e+01 |
-> > pk-pk: | +1.090000e+02 | +4.100000e+01 | +1.160000e+02 |
-> > +4.100000e+01 |
-> > mean???| +6.472222e-02 | +1.277778e-02 | +2.422083e+01 |
-> > +1.826083e+01 |
-> > stddev | +1.158006e+01 | +4.581982e+00 | +1.207708e+01 |
-> > +4.981435e+00 |
-> 
-> Here the numbers in units of nanoseconds, and the ~20 nanosecond PPS
-> offset is due to input/output delays on the i210's external interface
-> logic.
-> 
-> With the series applied, both the peak to peak error and the standard
-> deviation improve by a factor of more than two.??These two graphs
-> show
-> the improvement nicely.
-> 
-> ? http://linuxptp.sourceforge.net/fine-tuning/fine-est.png
-> 
-> ? http://linuxptp.sourceforge.net/fine-tuning/fine-tru.png
-> 
-
-Wow, nice! I'll take a look at the actual patches in a few minutes, but
-this is a really nice improvement!
+I'm curious how you generate the new math here, since this can be
+tricky, and I could use more examples in order to port to some of the
+other drivers implementations. I'm not quit sure how to handle the
+value when the lower 16 bits are fractional.
 
 Thanks,
 Jake
 
-> 
-> Thanks,
-> Richard
-> 
-> Richard Cochran (3):
-> ? ptp: Introduce a high resolution frequency adjustment method.
-> ? ptp: igb: Use the high resolution frequency method.
-> ? ptp: dp83640: Use the high resolution frequency method.
-> 
-> ?drivers/net/ethernet/intel/igb/igb_ptp.c | 16 ++++++++--------
-> ?drivers/net/phy/dp83640.c????????????????| 14 +++++++-------
-> ?drivers/ptp/ptp_clock.c??????????????????|??5 ++++-
-> ?include/linux/ptp_clock_kernel.h?????????|??8 ++++++++
-> ?4 files changed, 27 insertions(+), 16 deletions(-)
-> 
+> ?	inca = rate & INCVALUE_MASK;
+> ?	if (neg_adj)
+> @@ -1103,7 +1103,7 @@ void igb_ptp_init(struct igb_adapter *adapter)
+> ?		adapter->ptp_caps.max_adj = 62499999;
+> ?		adapter->ptp_caps.n_ext_ts = 0;
+> ?		adapter->ptp_caps.pps = 0;
+> -		adapter->ptp_caps.adjfreq = igb_ptp_adjfreq_82580;
+> +		adapter->ptp_caps.adjfine = igb_ptp_adjfine_82580;
+> ?		adapter->ptp_caps.adjtime = igb_ptp_adjtime_82576;
+> ?		adapter->ptp_caps.gettime64 = igb_ptp_gettime_82576;
+> ?		adapter->ptp_caps.settime64 = igb_ptp_settime_82576;
+> @@ -1131,7 +1131,7 @@ void igb_ptp_init(struct igb_adapter *adapter)
+> ?		adapter->ptp_caps.n_pins = IGB_N_SDP;
+> ?		adapter->ptp_caps.pps = 1;
+> ?		adapter->ptp_caps.pin_config = adapter->sdp_config;
+> -		adapter->ptp_caps.adjfreq = igb_ptp_adjfreq_82580;
+> +		adapter->ptp_caps.adjfine = igb_ptp_adjfine_82580;
+> ?		adapter->ptp_caps.adjtime = igb_ptp_adjtime_i210;
+> ?		adapter->ptp_caps.gettime64 = igb_ptp_gettime_i210;
+> ?		adapter->ptp_caps.settime64 = igb_ptp_settime_i210;
