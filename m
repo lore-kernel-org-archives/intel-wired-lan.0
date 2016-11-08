@@ -1,87 +1,99 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  8 Nov 2016 13:05:08 -0800
-Subject: [Intel-wired-lan] [next PATCH S52-V2 04/15] i40evf: protect against
-	NULL msix_entries and q_vectors pointers
+Date: Tue,  8 Nov 2016 13:05:09 -0800
+Subject: [Intel-wired-lan] [next PATCH S52-V2 05/15] i40e: Fix for ethtool
+	Supported link modes
 In-Reply-To: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
 References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1478639119-14656-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1478639119-14656-6-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-Update the functions which free msix_entries and q_vectors so that they
-are safe against NULL values. This allows calling code to not care
-whether these have already been freed when disabling and freeing them.
+This patch fixes the problem where the ethtool Supported link
+modes list backplane interfaces on X722 devices for 10GbE with
+SFP+ and Cortina retimer. This patch fixes the problem by setting
+and using a flag for this particular device since the backplane
+interface is only between the internal PHY and the retimer and it
+should not be seen by the user as they cannont use it.
+Without this patch, the user wrongly thinks that backplane interfaces
+are supported on their device when they actually are not.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I31bfd1c0da18023d971b618edc6fb049721f3298
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Change-ID: I3882bc2928431d48a2db03a51a713a1f681a79e9
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h         |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 16 ++++++++++------
+ drivers/net/ethernet/intel/i40e/i40e_main.c    |  3 ++-
+ 3 files changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 420e545..ca85021 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -207,6 +207,9 @@ static void i40evf_misc_irq_disable(struct i40evf_adapter *adapter)
- {
- 	struct i40e_hw *hw = &adapter->hw;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 29c2318..4cb8fb3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -359,6 +359,7 @@ struct i40e_pf {
+ #define I40E_FLAG_HAVE_10GBASET_PHY		BIT_ULL(48)
+ #define I40E_FLAG_PF_MAC			BIT_ULL(50)
+ #define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(51)
++#define I40E_FLAG_HAVE_CRT_RETIMER		BIT_ULL(52)
  
-+	if (!adapter->msix_entries)
-+		return;
-+
- 	wr32(hw, I40E_VFINT_DYN_CTL01, 0);
- 
- 	/* read flush */
-@@ -654,6 +657,9 @@ static void i40evf_free_misc_irq(struct i40evf_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
- 
-+	if (!adapter->msix_entries)
-+		return;
-+
- 	free_irq(adapter->msix_entries[0].vector, netdev);
+ 	/* tracks features that get auto disabled by errors */
+ 	u64 auto_disable_flags;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 92a2f03..9500e7b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -345,11 +345,13 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 			*advertising |= ADVERTISED_20000baseKR2_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR) {
+-		*supported |= SUPPORTED_10000baseKR_Full |
+-			      SUPPORTED_Autoneg;
++		if (!(pf->flags & I40E_FLAG_HAVE_CRT_RETIMER))
++			*supported |= SUPPORTED_10000baseKR_Full |
++				      SUPPORTED_Autoneg;
+ 		*advertising |= ADVERTISED_Autoneg;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+-			*advertising |= ADVERTISED_10000baseKR_Full;
++			if (!(pf->flags & I40E_FLAG_HAVE_CRT_RETIMER))
++				*advertising |= ADVERTISED_10000baseKR_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KX4) {
+ 		*supported |= SUPPORTED_10000baseKX4_Full |
+@@ -359,11 +361,13 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 			*advertising |= ADVERTISED_10000baseKX4_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX) {
+-		*supported |= SUPPORTED_1000baseKX_Full |
+-			      SUPPORTED_Autoneg;
++		if (!(pf->flags & I40E_FLAG_HAVE_CRT_RETIMER))
++			*supported |= SUPPORTED_1000baseKX_Full |
++				      SUPPORTED_Autoneg;
+ 		*advertising |= ADVERTISED_Autoneg;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+-			*advertising |= ADVERTISED_1000baseKX_Full;
++			if (!(pf->flags & I40E_FLAG_HAVE_CRT_RETIMER))
++				*advertising |= ADVERTISED_1000baseKX_Full;
+ 	}
  }
  
-@@ -1428,6 +1434,9 @@ static void i40evf_free_q_vectors(struct i40evf_adapter *adapter)
- 	int q_idx, num_q_vectors;
- 	int napi_vectors;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index bae168c..3886119 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -11290,7 +11290,8 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if ((pf->hw.device_id == I40E_DEV_ID_10G_BASE_T) ||
+ 	    (pf->hw.device_id == I40E_DEV_ID_10G_BASE_T4))
+ 		pf->flags |= I40E_FLAG_HAVE_10GBASET_PHY;
+-
++	if (pf->hw.device_id == I40E_DEV_ID_SFP_I_X722)
++		pf->flags |= I40E_FLAG_HAVE_CRT_RETIMER;
+ 	/* print a string summarizing features */
+ 	i40e_print_features(pf);
  
-+	if (!adapter->q_vectors)
-+		return;
-+
- 	num_q_vectors = adapter->num_msix_vectors - NONQ_VECS;
- 	napi_vectors = adapter->num_active_queues;
- 
-@@ -1437,6 +1446,7 @@ static void i40evf_free_q_vectors(struct i40evf_adapter *adapter)
- 			netif_napi_del(&q_vector->napi);
- 	}
- 	kfree(adapter->q_vectors);
-+	adapter->q_vectors = NULL;
- }
- 
- /**
-@@ -2862,12 +2872,10 @@ static void i40evf_remove(struct pci_dev *pdev)
- 		msleep(50);
- 	}
- 
--	if (adapter->msix_entries) {
--		i40evf_misc_irq_disable(adapter);
--		i40evf_free_misc_irq(adapter);
--		i40evf_reset_interrupt_capability(adapter);
--		i40evf_free_q_vectors(adapter);
--	}
-+	i40evf_misc_irq_disable(adapter);
-+	i40evf_free_misc_irq(adapter);
-+	i40evf_reset_interrupt_capability(adapter);
-+	i40evf_free_q_vectors(adapter);
- 
- 	if (adapter->watchdog_timer.function)
- 		del_timer_sync(&adapter->watchdog_timer);
 -- 
 2.4.11
 
