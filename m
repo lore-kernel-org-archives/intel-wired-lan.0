@@ -1,37 +1,52 @@
-From: Skidmore, Donald C <donald.c.skidmore@intel.com>
-Date: Tue, 8 Nov 2016 17:54:26 +0000
-Subject: [Intel-wired-lan] I am looking for a specific driver - 3.4.8-k
-In-Reply-To: <1478627090.2341.8.camel@intel.com>
-References: <OFBF794E37.EA201181-ON86258065.0050FFD1-86258065.0051242C@graco.com>
- <1478627090.2341.8.camel@intel.com>
-Message-ID: <F6FB0E698C9B3143BDF729DF2228664696B0DB64@ORSMSX116.amr.corp.intel.com>
+From: Hisashi T Fujinaka <htodd@twofifty.com>
+Date: Tue, 8 Nov 2016 10:32:10 -0800 (PST)
+Subject: [Intel-wired-lan] [PATCH] igb: use igb_adapter->io_addr instead
+ of e1000_hw->hw_addr
+In-Reply-To: <alpine.NEB.2.20.17.1611080910530.6177@chris.i8u.org>
+References: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
+ <20161108164214.GF31855@calimero.vinschen.de>
+ <alpine.NEB.2.20.17.1611080910530.6177@chris.i8u.org>
+Message-ID: <alpine.NEB.2.20.17.1611081030000.6177@chris.i8u.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Tue, 8 Nov 2016, Hisashi T Fujinaka wrote:
 
+>> Incidentally we're just looking for a solution to that problem too.
+>> Do three patches to fix the same problem at rougly the same time already
+>> qualify as freak accident?
+>> 
+>> FTR, I attached my current patch, which I was planning to submit after
+>> some external testing.
+>> 
+>> However, all three patches have one thing in common:  They workaround
+>> a somewhat dubious resetting of the hardware address to NULL in case
+>> reading from a register failed.
+>> 
+>> That makes me wonder if setting the hardware address to NULL in
+>> rd32/igb_rd32 is really such a good idea.  It's performed in a function
+>> which return value is *never* tested for validity in the calling
+>> functions and leads to subsequent crashes since no tests for hw_addr ==
+>> NULL are performed.
+>> 
+>> Maybe commit 22a8b2915 should be reconsidered?  Isn't there some more
+>> graceful way to handle the "surprise removal"?
+>
+> Answering this from my home account because, well, work is Outlook.
+>
+> "Reconsidering" would be great. In fact, revert if if you'd like. I'm
+> uncertain that the surprise removal code actually works the way I
+> thought previously and I think I took a lot of it out of my local code.
+>
+> Unfortuantely I don't have any equipment that I can use to reproduce
+> surprise removal any longer so that means I wouldn't be able to test
+> anything. I have to defer to you or Cao Jin.
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Tuesday, November 08, 2016 9:45 AM
-> To: SKahn at graco.com; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] I am looking for a specific driver - 3.4.8-k
-> 
-> On Tue, 2016-11-08 at 08:46 -0600, SKahn at graco.com wrote:
-> > I am trying to locate a driver for X520 Dual Port 10 G Ethernet PICe
-> > Adapter, this version specifically - Manufacturer = Intel Adapter
-> > Driver = 3.4.8-k .
-> >
-> > This is for a Cisco UCSC system with RedHat Linux 5.8 64 bit
-> 
-> You should be able to find the version of ixgbe driver you are looking for on
-> e1000.sf.net.
+Whoops. Never mind. I was just told that I had a bug that Alex Duyck and
+Cao Jin just fixed. I'd stick to listening to Alex.
 
-Also the "-k" at the end of the version means the driver is an in-kernel driver.  This is further complicated by how RedHat can backport patches into its driver without it reflecting in the driver version number.  So why you can go to source forge to get a similarly versioned driver and it should be close it however will not be exactly the same as was in RedHat Linux 5.8.  It will contain kcompat code and not contain patches than may have be back ported by RedHat, along with other possible differences.  These might not be that important by I thought I would mention it.
-
-Thanks,
--Don <donald.c.skidmore@intel.com>
-
+-- 
+Hisashi T Fujinaka - htodd at twofifty.com
