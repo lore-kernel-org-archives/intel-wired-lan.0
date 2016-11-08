@@ -1,116 +1,154 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  8 Nov 2016 13:05:17 -0800
-Subject: [Intel-wired-lan] [next PATCH S52-V2 13/15] i40e: remove code to
-	handle dev_addr specially
+Date: Tue,  8 Nov 2016 13:05:14 -0800
+Subject: [Intel-wired-lan] [next PATCH S52-V2 10/15] i40e: simplify txd use
+	count calculation
 In-Reply-To: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
 References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1478639119-14656-14-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1478639119-14656-11-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-The netdev->dev_addr MAC filter already exists in the
-MAC/VLAN hash table, as it is added when we configure
-the netdev in i40e_configure_netdev. Because we already
-know that this address will be updated in the
-hash_for_each loops, we do not need to handle it
-specially. This removes duplicate code and simplifies
-the i40e_vsi_add_vlan and i40e_vsi_kill_vlan functions.
-Because we know these filters must be part of the
-MAC/VLAN hash table, this should not have any functional
-impact on what filters are included and is merely a code
-simplification.
+The i40e_txd_use_count function was fast but confusing. In the comments,
+it even admits that it's ugly. So replace it with a new function that is
+(very) slightly faster and has extensive commenting to help the thicker
+among us (including the author, who will forget in a week) understand
+how it works.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I5e648302dbdd7cc29efc6d203b7019c11f0b5705
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Change-ID: Ifb533f13786a0bf39cb29f77969a5be2c83d9a87
 ---
-Testing-hints:
-  Ensure that adding and removing VLANs correctly updates the filters
-  for the MAC address of the device.
+Testing Hints : Lots and lots of TSO with various
+data sizes. This should operate exactly as before, with no noticeable
+performance change.
 
- drivers/net/ethernet/intel/i40e/i40e_main.c | 43 +++++------------------------
- 1 file changed, 7 insertions(+), 36 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h   | 45 +++++++++++++++++----------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h | 45 +++++++++++++++++----------
+ 2 files changed, 56 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index ef6eb19..eddb14c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2503,17 +2503,6 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
- 	/* Locked once because all functions invoked below iterates list*/
- 	spin_lock_bh(&vsi->mac_filter_hash_lock);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index de8550f..e065321 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -173,26 +173,37 @@ static inline bool i40e_test_staterr(union i40e_rx_desc *rx_desc,
+ #define I40E_MAX_DATA_PER_TXD_ALIGNED \
+ 	(I40E_MAX_DATA_PER_TXD & ~(I40E_MAX_READ_REQ_SIZE - 1))
  
--	if (vsi->netdev) {
--		add_f = i40e_add_filter(vsi, vsi->netdev->dev_addr, vid);
--		if (!add_f) {
--			dev_info(&vsi->back->pdev->dev,
--				 "Could not add vlan filter %d for %pM\n",
--				 vid, vsi->netdev->dev_addr);
--			spin_unlock_bh(&vsi->mac_filter_hash_lock);
--			return -ENOMEM;
--		}
--	}
--
- 	hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f, hlist) {
- 		if (f->state == I40E_FILTER_REMOVE)
- 			continue;
-@@ -2527,28 +2516,14 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
- 		}
- 	}
- 
--	/* Now if we add a vlan tag, make sure to check if it is the first
--	 * tag (i.e. a "tag" -1 does exist) and if so replace the -1 "tag"
--	 * with 0, so we now accept untagged and specified tagged traffic
--	 * (and not all tags along with untagged)
-+	/* When we add a new VLAN filter, we need to make sure that all existing
-+	 * filters which are marked as vid=-1 (I40E_VLAN_ANY) are converted to
-+	 * vid=0. The simplest way is just search for all filters marked as
-+	 * vid=-1 and replace them with vid=0. This converts all filters that
-+	 * were marked to receive all traffic (tagged or untagged) into
-+	 * filters to receive only untagged traffic, so that we don't receive
-+	 * tagged traffic for VLANs which we have not configured.
- 	 */
--	if (vid > 0 && vsi->netdev) {
--		del_f = i40e_find_filter(vsi, vsi->netdev->dev_addr,
--					 I40E_VLAN_ANY);
--		if (del_f) {
--			__i40e_del_filter(vsi, del_f);
--			add_f = i40e_add_filter(vsi, vsi->netdev->dev_addr, 0);
--			if (!add_f) {
--				dev_info(&vsi->back->pdev->dev,
--					 "Could not add filter 0 for %pM\n",
--					 vsi->netdev->dev_addr);
--				spin_unlock_bh(&vsi->mac_filter_hash_lock);
--				return -ENOMEM;
--			}
--		}
--	}
--
--	/* Do not assume that I40E_VLAN_ANY should be reset to VLAN 0 */
- 	if (vid > 0 && !vsi->info.pvid) {
- 		hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f, hlist) {
- 			if (f->state == I40E_FILTER_REMOVE)
-@@ -2585,7 +2560,6 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
-  **/
- void i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
+-/* This ugly bit of math is equivalent to DIV_ROUNDUP(size, X) where X is
+- * the value I40E_MAX_DATA_PER_TXD_ALIGNED.  It is needed due to the fact
+- * that 12K is not a power of 2 and division is expensive.  It is used to
+- * approximate the number of descriptors used per linear buffer.  Note
+- * that this will overestimate in some cases as it doesn't account for the
+- * fact that we will add up to 4K - 1 in aligning the 12K buffer, however
+- * the error should not impact things much as large buffers usually mean
+- * we will use fewer descriptors then there are frags in an skb.
++/**
++ * i40e_txd_use_count  - estimate the number of descriptors needed for Tx
++ * @size: transmit request size in bytes
++ *
++ * Due to hardware alignment restrictions (4K alignment), we need to
++ * assume that we can have no more than 12K of data per descriptor, even
++ * though each descriptor can take up to 16K - 1 bytes of aligned memory.
++ * Thus, we need to divide by 12K. But division is slow! Instead,
++ * we decompose the operation into shifts and one relatively cheap
++ * multiply operation.
++ *
++ * To divide by 12K, we first divide by 4K, then divide by 3:
++ *     To divide by 4K, shift right by 12 bits
++ *     To divide by 3, multiply by 85, then divide by 256
++ *     (Divide by 256 is done by shifting right by 8 bits)
++ * Finally, we add one to round up. Because 256 isn't an exact multiple of
++ * 3, we'll underestimate near each multiple of 12K. This is actually more
++ * accurate as we have 4K - 1 of wiggle room that we can fit into the last
++ * segment.  For our purposes this is accurate out to 1M which is orders of
++ * magnitude greater than our largest possible GSO size.
++ *
++ * This would then be implemented as:
++ *     return (((size >> 12) * 85) >> 8) + 1;
++ *
++ * Since multiplication and division are commutative, we can reorder
++ * operations into:
++ *     return ((size * 85) >> 20) + 1;
+  */
+ static inline unsigned int i40e_txd_use_count(unsigned int size)
  {
--	struct net_device *netdev = vsi->netdev;
- 	struct i40e_mac_filter *f;
- 	struct hlist_node *h;
- 	int bkt;
-@@ -2593,9 +2567,6 @@ void i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
- 	/* Locked once because all functions invoked below iterates list */
- 	spin_lock_bh(&vsi->mac_filter_hash_lock);
- 
--	if (vsi->netdev)
--		i40e_del_filter(vsi, netdev->dev_addr, vid);
+-	const unsigned int max = I40E_MAX_DATA_PER_TXD_ALIGNED;
+-	const unsigned int reciprocal = ((1ull << 32) - 1 + (max / 2)) / max;
+-	unsigned int adjust = ~(u32)0;
 -
- 	hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f, hlist) {
- 		if (f->vlan == vid)
- 			__i40e_del_filter(vsi, f);
+-	/* if we rounded up on the reciprocal pull down the adjustment */
+-	if ((max * reciprocal) > adjust)
+-		adjust = ~(u32)(reciprocal - 1);
+-
+-	return (u32)((((u64)size * reciprocal) + adjust) >> 32);
++	return ((size * 85) >> 20) + 1;
+ }
+ 
+ /* Tx Descriptors needed, worst case */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index a586e19..a5fc789 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -173,26 +173,37 @@ static inline bool i40e_test_staterr(union i40e_rx_desc *rx_desc,
+ #define I40E_MAX_DATA_PER_TXD_ALIGNED \
+ 	(I40E_MAX_DATA_PER_TXD & ~(I40E_MAX_READ_REQ_SIZE - 1))
+ 
+-/* This ugly bit of math is equivalent to DIV_ROUNDUP(size, X) where X is
+- * the value I40E_MAX_DATA_PER_TXD_ALIGNED.  It is needed due to the fact
+- * that 12K is not a power of 2 and division is expensive.  It is used to
+- * approximate the number of descriptors used per linear buffer.  Note
+- * that this will overestimate in some cases as it doesn't account for the
+- * fact that we will add up to 4K - 1 in aligning the 12K buffer, however
+- * the error should not impact things much as large buffers usually mean
+- * we will use fewer descriptors then there are frags in an skb.
++/**
++ * i40e_txd_use_count  - estimate the number of descriptors needed for Tx
++ * @size: transmit request size in bytes
++ *
++ * Due to hardware alignment restrictions (4K alignment), we need to
++ * assume that we can have no more than 12K of data per descriptor, even
++ * though each descriptor can take up to 16K - 1 bytes of aligned memory.
++ * Thus, we need to divide by 12K. But division is slow! Instead,
++ * we decompose the operation into shifts and one relatively cheap
++ * multiply operation.
++ *
++ * To divide by 12K, we first divide by 4K, then divide by 3:
++ *     To divide by 4K, shift right by 12 bits
++ *     To divide by 3, multiply by 85, then divide by 256
++ *     (Divide by 256 is done by shifting right by 8 bits)
++ * Finally, we add one to round up. Because 256 isn't an exact multiple of
++ * 3, we'll underestimate near each multiple of 12K. This is actually more
++ * accurate as we have 4K - 1 of wiggle room that we can fit into the last
++ * segment.  For our purposes this is accurate out to 1M which is orders of
++ * magnitude greater than our largest possible GSO size.
++ *
++ * This would then be implemented as:
++ *     return (((size >> 12) * 85) >> 8) + 1;
++ *
++ * Since multiplication and division are commutative, we can reorder
++ * operations into:
++ *     return ((size * 85) >> 20) + 1;
+  */
+ static inline unsigned int i40e_txd_use_count(unsigned int size)
+ {
+-	const unsigned int max = I40E_MAX_DATA_PER_TXD_ALIGNED;
+-	const unsigned int reciprocal = ((1ull << 32) - 1 + (max / 2)) / max;
+-	unsigned int adjust = ~(u32)0;
+-
+-	/* if we rounded up on the reciprocal pull down the adjustment */
+-	if ((max * reciprocal) > adjust)
+-		adjust = ~(u32)(reciprocal - 1);
+-
+-	return (u32)((((u64)size * reciprocal) + adjust) >> 32);
++	return ((size * 85) >> 20) + 1;
+ }
+ 
+ /* Tx Descriptors needed, worst case */
 -- 
 2.4.11
 
