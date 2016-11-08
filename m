@@ -1,154 +1,116 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  8 Nov 2016 13:05:14 -0800
-Subject: [Intel-wired-lan] [next PATCH S52-V2 10/15] i40e: simplify txd use
-	count calculation
+Date: Tue,  8 Nov 2016 13:05:15 -0800
+Subject: [Intel-wired-lan] [next PATCH S52-V2 11/15] i40e: restore
+	workaround for removing default MAC filter
 In-Reply-To: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
 References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1478639119-14656-11-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1478639119-14656-12-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-The i40e_txd_use_count function was fast but confusing. In the comments,
-it even admits that it's ugly. So replace it with a new function that is
-(very) slightly faster and has extensive commenting to help the thicker
-among us (including the author, who will forget in a week) understand
-how it works.
+A previous commit 53cb6e9e8949 ("i40e: Removal of workaround for simple
+MAC address filter deletion") removed a workaround for some
+firmware versions which was reported to not be necessary in production
+NICs. Unfortunately this workaround is necessary in some configurations,
+specifically the Ethernet Controller XL710 for 40GbE QSFP+ (8086:1583).
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Change-ID: Ifb533f13786a0bf39cb29f77969a5be2c83d9a87
+Without this patch, the mentioned NICs with current firmware exhibit
+issues when adding VLANs, as outlined by the following reproduction:
+
+  $modprobe i40e
+  $ip link set <device> up
+  $ip link add link <device> vlan100 type vlan id 100
+  $dmesg | tail
+  <snip>
+  kernel: i40e 0000:82:00.0: Error I40E_AQ_RC_EINVAL adding RX
+filters on PF, promiscuous mode forced on
+
+This results in filters being marked as FAILED and setting the device in
+promiscuous mode.
+
+The root cause of receiving the -EINVAL error response appears to be due
+to a conflict with the default MAC filter which still exists on the
+default firmware for this device. Attempting to add a new VLAN filter on
+the default MAC address conflicts with the IGNORE_VLAN setting on the
+default rule.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: I4d8f6d48ac5f60cfe981b3baad30eb4d7c170d61
 ---
-Testing Hints : Lots and lots of TSO with various
-data sizes. This should operate exactly as before, with no noticeable
-performance change.
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 41 +++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.h   | 45 +++++++++++++++++----------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h | 45 +++++++++++++++++----------
- 2 files changed, 56 insertions(+), 34 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index de8550f..e065321 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -173,26 +173,37 @@ static inline bool i40e_test_staterr(union i40e_rx_desc *rx_desc,
- #define I40E_MAX_DATA_PER_TXD_ALIGNED \
- 	(I40E_MAX_DATA_PER_TXD & ~(I40E_MAX_READ_REQ_SIZE - 1))
- 
--/* This ugly bit of math is equivalent to DIV_ROUNDUP(size, X) where X is
-- * the value I40E_MAX_DATA_PER_TXD_ALIGNED.  It is needed due to the fact
-- * that 12K is not a power of 2 and division is expensive.  It is used to
-- * approximate the number of descriptors used per linear buffer.  Note
-- * that this will overestimate in some cases as it doesn't account for the
-- * fact that we will add up to 4K - 1 in aligning the 12K buffer, however
-- * the error should not impact things much as large buffers usually mean
-- * we will use fewer descriptors then there are frags in an skb.
-+/**
-+ * i40e_txd_use_count  - estimate the number of descriptors needed for Tx
-+ * @size: transmit request size in bytes
-+ *
-+ * Due to hardware alignment restrictions (4K alignment), we need to
-+ * assume that we can have no more than 12K of data per descriptor, even
-+ * though each descriptor can take up to 16K - 1 bytes of aligned memory.
-+ * Thus, we need to divide by 12K. But division is slow! Instead,
-+ * we decompose the operation into shifts and one relatively cheap
-+ * multiply operation.
-+ *
-+ * To divide by 12K, we first divide by 4K, then divide by 3:
-+ *     To divide by 4K, shift right by 12 bits
-+ *     To divide by 3, multiply by 85, then divide by 256
-+ *     (Divide by 256 is done by shifting right by 8 bits)
-+ * Finally, we add one to round up. Because 256 isn't an exact multiple of
-+ * 3, we'll underestimate near each multiple of 12K. This is actually more
-+ * accurate as we have 4K - 1 of wiggle room that we can fit into the last
-+ * segment.  For our purposes this is accurate out to 1M which is orders of
-+ * magnitude greater than our largest possible GSO size.
-+ *
-+ * This would then be implemented as:
-+ *     return (((size >> 12) * 85) >> 8) + 1;
-+ *
-+ * Since multiplication and division are commutative, we can reorder
-+ * operations into:
-+ *     return ((size * 85) >> 20) + 1;
-  */
- static inline unsigned int i40e_txd_use_count(unsigned int size)
- {
--	const unsigned int max = I40E_MAX_DATA_PER_TXD_ALIGNED;
--	const unsigned int reciprocal = ((1ull << 32) - 1 + (max / 2)) / max;
--	unsigned int adjust = ~(u32)0;
--
--	/* if we rounded up on the reciprocal pull down the adjustment */
--	if ((max * reciprocal) > adjust)
--		adjust = ~(u32)(reciprocal - 1);
--
--	return (u32)((((u64)size * reciprocal) + adjust) >> 32);
-+	return ((size * 85) >> 20) + 1;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 161f512..ef6eb19 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1226,6 +1226,39 @@ bool i40e_is_vsi_in_vlan(struct i40e_vsi *vsi)
  }
  
- /* Tx Descriptors needed, worst case */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index a586e19..a5fc789 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -173,26 +173,37 @@ static inline bool i40e_test_staterr(union i40e_rx_desc *rx_desc,
- #define I40E_MAX_DATA_PER_TXD_ALIGNED \
- 	(I40E_MAX_DATA_PER_TXD & ~(I40E_MAX_READ_REQ_SIZE - 1))
- 
--/* This ugly bit of math is equivalent to DIV_ROUNDUP(size, X) where X is
-- * the value I40E_MAX_DATA_PER_TXD_ALIGNED.  It is needed due to the fact
-- * that 12K is not a power of 2 and division is expensive.  It is used to
-- * approximate the number of descriptors used per linear buffer.  Note
-- * that this will overestimate in some cases as it doesn't account for the
-- * fact that we will add up to 4K - 1 in aligning the 12K buffer, however
-- * the error should not impact things much as large buffers usually mean
-- * we will use fewer descriptors then there are frags in an skb.
+ /**
++ * i40e_rm_default_mac_filter - Remove the default MAC filter set by NVM
++ * @vsi: the PF Main VSI - inappropriate for any other VSI
++ * @macaddr: the MAC address
++ *
++ * Remove whatever filter the firmware set up so the driver can manage
++ * its own filtering intelligently.
++ **/
++static void i40e_rm_default_mac_filter(struct i40e_vsi *vsi, u8 *macaddr)
++{
++	struct i40e_aqc_remove_macvlan_element_data element;
++	struct i40e_pf *pf = vsi->back;
++
++	/* Only appropriate for the PF main VSI */
++	if (vsi->type != I40E_VSI_MAIN)
++		return;
++
++	memset(&element, 0, sizeof(element));
++	ether_addr_copy(element.mac_addr, macaddr);
++	element.vlan_tag = 0;
++	/* Ignore error returns, some firmware does it this way... */
++	element.flags = I40E_AQC_MACVLAN_DEL_PERFECT_MATCH;
++	i40e_aq_remove_macvlan(&pf->hw, vsi->seid, &element, 1, NULL);
++
++	memset(&element, 0, sizeof(element));
++	ether_addr_copy(element.mac_addr, macaddr);
++	element.vlan_tag = 0;
++	/* ...and some firmware does it this way. */
++	element.flags = I40E_AQC_MACVLAN_DEL_PERFECT_MATCH |
++			I40E_AQC_MACVLAN_DEL_IGNORE_VLAN;
++	i40e_aq_remove_macvlan(&pf->hw, vsi->seid, &element, 1, NULL);
++}
++
 +/**
-+ * i40e_txd_use_count  - estimate the number of descriptors needed for Tx
-+ * @size: transmit request size in bytes
-+ *
-+ * Due to hardware alignment restrictions (4K alignment), we need to
-+ * assume that we can have no more than 12K of data per descriptor, even
-+ * though each descriptor can take up to 16K - 1 bytes of aligned memory.
-+ * Thus, we need to divide by 12K. But division is slow! Instead,
-+ * we decompose the operation into shifts and one relatively cheap
-+ * multiply operation.
-+ *
-+ * To divide by 12K, we first divide by 4K, then divide by 3:
-+ *     To divide by 4K, shift right by 12 bits
-+ *     To divide by 3, multiply by 85, then divide by 256
-+ *     (Divide by 256 is done by shifting right by 8 bits)
-+ * Finally, we add one to round up. Because 256 isn't an exact multiple of
-+ * 3, we'll underestimate near each multiple of 12K. This is actually more
-+ * accurate as we have 4K - 1 of wiggle room that we can fit into the last
-+ * segment.  For our purposes this is accurate out to 1M which is orders of
-+ * magnitude greater than our largest possible GSO size.
-+ *
-+ * This would then be implemented as:
-+ *     return (((size >> 12) * 85) >> 8) + 1;
-+ *
-+ * Since multiplication and division are commutative, we can reorder
-+ * operations into:
-+ *     return ((size * 85) >> 20) + 1;
-  */
- static inline unsigned int i40e_txd_use_count(unsigned int size)
- {
--	const unsigned int max = I40E_MAX_DATA_PER_TXD_ALIGNED;
--	const unsigned int reciprocal = ((1ull << 32) - 1 + (max / 2)) / max;
--	unsigned int adjust = ~(u32)0;
--
--	/* if we rounded up on the reciprocal pull down the adjustment */
--	if ((max * reciprocal) > adjust)
--		adjust = ~(u32)(reciprocal - 1);
--
--	return (u32)((((u64)size * reciprocal) + adjust) >> 32);
-+	return ((size * 85) >> 20) + 1;
- }
+  * i40e_add_filter - Add a mac/vlan filter to the VSI
+  * @vsi: the VSI to be searched
+  * @macaddr: the MAC address
+@@ -9283,6 +9316,12 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 	if (vsi->type == I40E_VSI_MAIN) {
+ 		SET_NETDEV_DEV(netdev, &pf->pdev->dev);
+ 		ether_addr_copy(mac_addr, hw->mac.perm_addr);
++		/* The following steps are necessary to prevent reception
++		 * of tagged packets - some older NVM configurations load a
++		 * default a MAC-VLAN filter that accepts any tagged packet
++		 * which must be replaced by a normal filter.
++		 */
++		i40e_rm_default_mac_filter(vsi, mac_addr);
+ 		spin_lock_bh(&vsi->mac_filter_hash_lock);
+ 		i40e_add_filter(vsi, mac_addr, I40E_VLAN_ANY);
+ 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
+@@ -9816,6 +9855,8 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
+ 	pf->vsi[pf->lan_vsi]->tc_config.enabled_tc = 0;
+ 	pf->vsi[pf->lan_vsi]->seid = pf->main_vsi_seid;
+ 	i40e_vsi_config_tc(pf->vsi[pf->lan_vsi], enabled_tc);
++	if (vsi->type == I40E_VSI_MAIN)
++		i40e_rm_default_mac_filter(vsi, pf->hw.mac.perm_addr);
  
- /* Tx Descriptors needed, worst case */
+ 	/* assign it some queues */
+ 	ret = i40e_alloc_rings(vsi);
 -- 
 2.4.11
 
