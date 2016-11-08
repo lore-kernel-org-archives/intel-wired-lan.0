@@ -1,181 +1,135 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 08 Nov 2016 09:49:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 75cce45039d9b20517b7c1bd77ffd9bd9f24a635
-Message-ID: <58212f35.66FnJkXWcWR1SPZ9%fengguang.wu@intel.com>
+From: Cao jin <caoj.fnst@cn.fujitsu.com>
+Date: Tue, 8 Nov 2016 10:50:14 +0800
+Subject: [Intel-wired-lan] [PATCH] igb: drop field "tail" of struct
+ igb_ring
+In-Reply-To: <CAKgT0UcHutO9kotxN2-MTH=rrB1PjmyMdjyeT4PkYbBXkBquFw@mail.gmail.com>
+References: <1478522697-4773-1-git-send-email-caoj.fnst@cn.fujitsu.com>
+ <CAKgT0UcHutO9kotxN2-MTH=rrB1PjmyMdjyeT4PkYbBXkBquFw@mail.gmail.com>
+Message-ID: <58213D66.5090203@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-75cce45039d9b20517b7c1bd77ffd9bd9f24a635  ixgbe: add mask for 64 RSS queues
 
-elapsed time: 146m
 
-configs tested: 157
+On 11/08/2016 02:49 AM, Alexander Duyck wrote:
+> On Mon, Nov 7, 2016 at 4:44 AM, Cao jin <caoj.fnst@cn.fujitsu.com> wrote:
+>> Under certain condition, I find guest will oops on writel() in
+>> igb_configure_tx_ring(), because hw->hw_address is NULL. While other
+>> register access won't oops kernel because they use wr32/rd32 which have
+>> a defense against NULL pointer. The oops message are as following:
+>>
+>>      [  141.225449] pcieport 0000:00:1c.0: AER: Multiple Uncorrected (Fatal)
+>>      error received: id=0101
+>>      [  141.225523] igb 0000:01:00.1: PCIe Bus Error: severity=Uncorrected
+>>      (Fatal), type=Unaccessible, id=0101(Unregistered Agent ID)
+>>      [  141.299442] igb 0000:01:00.1: broadcast error_detected message
+>>      [  141.300539] igb 0000:01:00.0 enp1s0f0: PCIe link lost, device now
+>>      detached
+>>      [  141.351019] igb 0000:01:00.1 enp1s0f1: PCIe link lost, device now
+>>      detached
+>>      [  143.465904] pcieport 0000:00:1c.0: Root Port link has been reset
+>>      [  143.465994] igb 0000:01:00.1: broadcast slot_reset message
+>>      [  143.466039] igb 0000:01:00.0: enabling device (0000 -> 0002)
+>>      [  144.389078] igb 0000:01:00.1: enabling device (0000 -> 0002)
+>>      [  145.312078] igb 0000:01:00.1: broadcast resume message
+>>      [  145.322211] BUG: unable to handle kernel paging request at
+>>      0000000000003818
+>>      [  145.361275] IP: [<ffffffffa02fd38d>] igb_configure_tx_ring+0x14d/0x280 [igb]
+>>      [  145.438007] Oops: 0002 [#1] SMP
+>>
+>> On the other hand, commit 238ac817 does some optimization which
+>> dropped the field "head". So I think it is time to drop "tail" as well.
+>
+> There is a bug here, but removing tail isn't the fix.
+>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Yes, totally agree with you. The oops issue just drive me find that 
+"tail" may should be dropped as "head", at least won't oops kernel when 
+this driver's bug come out.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201645
-x86_64                 randconfig-a0-11080754
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                randconfig-it0-11080801
-x86_64                 randconfig-v0-11080752
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                         s5pv210_defconfig
-ia64                            zx1_defconfig
-m68k                          sun3x_defconfig
-sh                         ecovec24_defconfig
-sh                             sh03_defconfig
-x86_64                 randconfig-x011-201645
-x86_64                 randconfig-x014-201645
-x86_64                 randconfig-x015-201645
-x86_64                 randconfig-x017-201645
-x86_64                 randconfig-x012-201645
-x86_64                 randconfig-x018-201645
-x86_64                 randconfig-x019-201645
-x86_64                 randconfig-x013-201645
-x86_64                 randconfig-x016-201645
-x86_64                 randconfig-x010-201645
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-11071731
-i386                   randconfig-s1-11071731
-x86_64                 randconfig-s0-11080735
-x86_64                 randconfig-s1-11080735
-x86_64                 randconfig-s2-11080735
-x86_64                 randconfig-s0-11080803
-x86_64                 randconfig-s1-11080803
-x86_64                 randconfig-s2-11080803
-x86_64                 randconfig-s3-11080804
-x86_64                 randconfig-s4-11080804
-x86_64                 randconfig-s5-11080804
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201645
-i386                   randconfig-b0-11080746
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201645
-i386                     randconfig-i1-201645
-x86_64                           allmodconfig
-arm                        clps711x_defconfig
-c6x                         dsk6455_defconfig
-parisc                           allyesconfig
-x86_64                 randconfig-u0-11080753
-sparc64                          allyesconfig
-x86_64                randconfig-ne0-11080745
-i386                   randconfig-x014-201645
-i386                   randconfig-x019-201645
-i386                   randconfig-x017-201645
-i386                   randconfig-x018-201645
-i386                   randconfig-x015-201645
-i386                   randconfig-x016-201645
-i386                   randconfig-x012-201645
-i386                   randconfig-x011-201645
-i386                   randconfig-x013-201645
-i386                   randconfig-x010-201645
-i386                     randconfig-n0-201645
-mips                           ci20_defconfig
-powerpc                      pasemi_defconfig
-i386                   randconfig-x073-201645
-i386                   randconfig-x071-201645
-i386                   randconfig-x072-201645
-i386                   randconfig-x078-201645
-i386                   randconfig-x076-201645
-i386                   randconfig-x075-201645
-i386                   randconfig-x077-201645
-i386                   randconfig-x074-201645
-i386                   randconfig-x070-201645
-i386                   randconfig-x079-201645
-x86_64                 randconfig-x008-201645
-x86_64                 randconfig-x001-201645
-x86_64                 randconfig-x009-201645
-x86_64                 randconfig-x000-201645
-x86_64                 randconfig-x005-201645
-x86_64                 randconfig-x003-201645
-x86_64                 randconfig-x002-201645
-x86_64                 randconfig-x007-201645
-x86_64                 randconfig-x006-201645
-x86_64                 randconfig-x004-201645
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201645
-i386                             allmodconfig
-i386                   randconfig-x006-201645
-i386                   randconfig-x004-201645
-i386                   randconfig-x007-201645
-i386                   randconfig-x003-201645
-i386                   randconfig-x008-201645
-i386                   randconfig-x000-201645
-i386                   randconfig-x002-201645
-i386                   randconfig-x009-201645
-i386                   randconfig-x001-201645
-i386                   randconfig-x005-201645
+Couldn't we remove "tail"? Removed "head" while left "tail" untouched 
+seems weird, and all the other register's access go via rd32/wr32, 
+except "tail", it also seems weird, isn't it?
 
-Thanks,
-Fengguang
+>> Signed-off-by: Cao jin <caoj.fnst@cn.fujitsu.com>
+>> ---
+>>   drivers/net/ethernet/intel/igb/igb.h      |  1 -
+>>   drivers/net/ethernet/intel/igb/igb_main.c | 16 +++++++++-------
+>>   2 files changed, 9 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+>> index d11093d..0df06bc 100644
+>> --- a/drivers/net/ethernet/intel/igb/igb.h
+>> +++ b/drivers/net/ethernet/intel/igb/igb.h
+>> @@ -247,7 +247,6 @@ struct igb_ring {
+>>          };
+>>          void *desc;                     /* descriptor ring memory */
+>>          unsigned long flags;            /* ring specific flags */
+>> -       void __iomem *tail;             /* pointer to ring tail register */
+>>          dma_addr_t dma;                 /* phys address of the ring */
+>>          unsigned int  size;             /* length of desc. ring in bytes */
+>>
+>> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+>> index edc9a6a..e177d0e 100644
+>> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+>> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+>> @@ -3390,9 +3390,8 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
+>>               tdba & 0x00000000ffffffffULL);
+>>          wr32(E1000_TDBAH(reg_idx), tdba >> 32);
+>>
+>> -       ring->tail = hw->hw_addr + E1000_TDT(reg_idx);
+>
+> This line is where the bug is.  This should be adapter->io_addr, not
+> hw->hw_addr.
+
+hw->hw_addr could be alterred to NULL(in igb_rd32), this is why writel 
+oops the kernel, you give a fine solution.
+
+But from the oops message, we can find, register reading returns all 
+F's, I also have a question want to consult: when igb device is reset, 
+would reading register(no matter config space or non-PCIe configuration 
+registers) during reset returns all F's? (I guess this is the core of my 
+issue)
+
+>
+>>          wr32(E1000_TDH(reg_idx), 0);
+>> -       writel(0, ring->tail);
+>> +        wr32(E1000_TDT(reg_idx), 0);
+>>
+>>          txdctl |= IGB_TX_PTHRESH;
+>>          txdctl |= IGB_TX_HTHRESH << 8;
+>> @@ -3729,9 +3728,8 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+>>               ring->count * sizeof(union e1000_adv_rx_desc));
+>>
+>>          /* initialize head and tail */
+>> -       ring->tail = hw->hw_addr + E1000_RDT(reg_idx);
+>
+> Same thing here.  It looks like the wrong values where used.
+>
+>>          wr32(E1000_RDH(reg_idx), 0);
+>> -       writel(0, ring->tail);
+>> +       wr32(E1000_RDT(reg_idx), 0);
+>>
+>>          /* set descriptor configuration */
+>
+> Would you prefer to submit the patch for this or should I?  Basically
+> all you need to do is change the two lines where ring->tail is
+> populated so that you use adapter->io_addr instead of hw->hw_addr.
+>
+> Thanks.
+>
+> - Alex
+>
+>
+> .
+>
+
+-- 
+Yours Sincerely,
+
+Cao jin
+
+
