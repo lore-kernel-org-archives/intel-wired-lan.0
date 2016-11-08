@@ -1,100 +1,54 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Tue, 08 Nov 2016 12:18:00 -0800
-Subject: [Intel-wired-lan] [PATCH v3] ixgbevf: handle race between close and
- suspend on shutdown
-Message-ID: <20161108201800.10886.90964.stgit@localhost6.localdomain6>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Tue,  8 Nov 2016 13:05:04 -0800
+Subject: [Intel-wired-lan] [next PATCH S52-V2 00/15] i40e/i40evf updates
+Message-ID: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When an interface is part of a namespace it is possible that
-ixgbevf_close() may be called while ixgbevf_suspend() is running
-which ends up in a double free WARN and/or a BUG in free_msi_irqs()
 
-To handle this situation we extend the rtnl_lock() to protect the
-call to netif_device_detach() and check for !netif_device_present()
-to avoid entering close while in suspend.
+Alan Brady adds check for msix_entries null dereference.
 
-Also added rtnl locks to ixgbevf_queue_reset_subtask().
+Alexander Duyck fixes napi_poll function to return the actual the 
+work done.
 
--v2 handle the race with netif_device_detach/present() and rtnl
-locks as suggested by Alex Duyck
+Bimmy Pujari changes version from 1.6.21 to 1.6.25.
 
--v3 add rtnl locks and check in ixgbevf_remove()
+Carolyn Wyborny adds code for change message to only appear when 
+extra debug info is wanted.
 
-CC: Alexander Duyck <alexander.h.duyck@intel.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+Filip Sadowski adds code to make driver prints log message on link 
+speed change.
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index d316f50..eac594c 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3242,6 +3242,9 @@ int ixgbevf_close(struct net_device *netdev)
- {
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 
-+	if (!netif_device_present(netdev))
-+		return 0;
-+
- 	ixgbevf_down(adapter);
- 	ixgbevf_free_irq(adapter);
- 
-@@ -3268,6 +3271,8 @@ static void ixgbevf_queue_reset_subtask(struct ixgbevf_adapter *adapter)
- 	 * match packet buffer alignment. Unfortunately, the
- 	 * hardware is not flexible enough to do this dynamically.
- 	 */
-+	rtnl_lock();
-+
- 	if (netif_running(dev))
- 		ixgbevf_close(dev);
- 
-@@ -3276,6 +3281,8 @@ static void ixgbevf_queue_reset_subtask(struct ixgbevf_adapter *adapter)
- 
- 	if (netif_running(dev))
- 		ixgbevf_open(dev);
-+
-+	rtnl_unlock();
- }
- 
- static void ixgbevf_tx_ctxtdesc(struct ixgbevf_ring *tx_ring,
-@@ -3792,17 +3799,17 @@ static int ixgbevf_suspend(struct pci_dev *pdev, pm_message_t state)
- 	int retval = 0;
- #endif
- 
-+	rtnl_lock();
- 	netif_device_detach(netdev);
- 
- 	if (netif_running(netdev)) {
--		rtnl_lock();
- 		ixgbevf_down(adapter);
- 		ixgbevf_free_irq(adapter);
- 		ixgbevf_free_all_tx_resources(adapter);
- 		ixgbevf_free_all_rx_resources(adapter);
- 		ixgbevf_clear_interrupt_scheme(adapter);
--		rtnl_unlock();
- 	}
-+	rtnl_unlock();
- 
- #ifdef CONFIG_PM
- 	retval = pci_save_state(pdev);
-@@ -4199,8 +4206,12 @@ static void ixgbevf_remove(struct pci_dev *pdev)
- 	if (netdev->reg_state == NETREG_REGISTERED)
- 		unregister_netdev(netdev);
- 
--	ixgbevf_clear_interrupt_scheme(adapter);
--	ixgbevf_reset_interrupt_capability(adapter);
-+	rtnl_lock();
-+	if (netif_device_present(netdev)) {
-+		ixgbevf_clear_interrupt_scheme(adapter);
-+		ixgbevf_reset_interrupt_capability(adapter);
-+	}
-+	rtnl_unlock();
- 
- 	iounmap(adapter->io_addr);
- 	pci_release_regions(pdev);
+Harshitha Ramamurthy adds fix for ethtool Supported link modes.
+
+Henry Tieman removes unreachable code, adds code to pass unknown 
+PHY type for unknown PHYs and adds code to link LED on 1G BaseT 
+boards.
+
+Jacob Keller adds code to protect against NULL msix_entries and 
+q_vectors pointers, sets broadcast promiscuous mode for each active 
+VLAN, replaces memcpy with single memcpy call in ethtool, restores 
+workaround for removing default MAC filter and removes code to handle 
+dev_addr specially.
+
+Mitch Williams adds code to simplify txd use count calculation.
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |   4 +-
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |  46 ++++-
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  50 +++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 207 ++++++++++++++-------
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   3 +
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        |   2 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |  45 +++--
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   7 +
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |   2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |  45 +++--
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  28 ++-
+ 11 files changed, 296 insertions(+), 143 deletions(-)
+
+-- 
+2.4.11
 
