@@ -1,98 +1,93 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 8 Nov 2016 11:33:17 -0800
-Subject: [Intel-wired-lan] [PATCH] igb: use igb_adapter->io_addr instead
- of e1000_hw->hw_addr
-In-Reply-To: <20161108183739.GA3744@calimero.vinschen.de>
-References: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
- <20161108164214.GF31855@calimero.vinschen.de>
- <alpine.NEB.2.20.17.1611080910530.6177@chris.i8u.org>
- <20161108183739.GA3744@calimero.vinschen.de>
-Message-ID: <CAKgT0UeaoGfOOC1=h4pGk+=FDd5EqvgRGAdk1StLuiW1-M8tVA@mail.gmail.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Tue, 08 Nov 2016 11:47:33 -0800
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: handle close/suspend race with
+ netif_device_detach/present
+Message-ID: <20161108194733.29155.16082.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Nov 8, 2016 at 10:37 AM, Corinna Vinschen <vinschen@redhat.com> wrote:
-> On Nov  8 09:16, Hisashi T Fujinaka wrote:
->> On Tue, 8 Nov 2016, Corinna Vinschen wrote:
->> > On Nov  8 15:06, Cao jin wrote:
->> > > When running as guest, under certain condition, it will oops as following.
->> > > writel() in igb_configure_tx_ring() results in oops, because hw->hw_addr
->> > > is NULL. While other register access won't oops kernel because they use
->> > > wr32/rd32 which have a defense against NULL pointer.
->> > > [...]
->> >
->> > Incidentally we're just looking for a solution to that problem too.
->> > Do three patches to fix the same problem at rougly the same time already
->> > qualify as freak accident?
->> >
->> > FTR, I attached my current patch, which I was planning to submit after
->> > some external testing.
->> >
->> > However, all three patches have one thing in common:  They workaround
->> > a somewhat dubious resetting of the hardware address to NULL in case
->> > reading from a register failed.
->> >
->> > That makes me wonder if setting the hardware address to NULL in
->> > rd32/igb_rd32 is really such a good idea.  It's performed in a function
->> > which return value is *never* tested for validity in the calling
->> > functions and leads to subsequent crashes since no tests for hw_addr ==
->> > NULL are performed.
->> >
->> > Maybe commit 22a8b2915 should be reconsidered?  Isn't there some more
->> > graceful way to handle the "surprise removal"?
->>
->> Answering this from my home account because, well, work is Outlook.
->>
->> "Reconsidering" would be great. In fact, revert if if you'd like. I'm
->> uncertain that the surprise removal code actually works the way I
->> thought previously and I think I took a lot of it out of my local code.
->>
->> Unfortuantely I don't have any equipment that I can use to reproduce
->> surprise removal any longer so that means I wouldn't be able to test
->> anything. I have to defer to you or Cao Jin.
->
-> I'm not too keen to rip out a PCIe NIC under power from my locale
-> desktop machine, but I think an actual surprise removal is not the
-> problem.
->
-> As described in my git log entry, the error condition in igb_rd32 can be
-> triggered during a suspend.  The HW has been put into a sleep state but
-> some register read requests are apparently not guarded against that
-> situation.  Reading a register in this state returns -1, thus a suspend
-> is erroneously triggering the "surprise removal" sequence.
+When an interface is part of a namespace it is possible that
+ixgbe_close() may be called while __ixgbe_shutdown() is running
+which ends up in a double free WARN and/or a BUG in free_msi_irqs().
 
-The question I would have is what is reading the device when it is in
-this state.  The watchdog and any other functions that would read the
-device should be disabled.
+To handle this situation we extend the rtnl_lock() to protect the
+call to netif_device_detach() and ixgbe_clear_interrupt_scheme()
+in __ixgbe_shutdown() and check for netif_device_present()
+to avoid clearing the interrupts second time in ixgbe_close() and
+ixgbe_remove().
 
-One possibility could be a race between a call to igb_close and the
-igb_suspend function.  We have seen some of those pop up recently on
-ixgbe and it looks like igb has the same bug.  We should probably be
-using the rtnl_lock to guarantee that netif_device_detach and the call
-to __igb_close are completed before igb_close could possibly be called
-by the network stack.
+Also extend the rtnl lock in ixgbe_resume() to netif_device_attach().
 
-> Here's a raw idea:
->
-> - Note that device is suspended in e1000_hw struct.  Don't trigger
->   error sequence in igb_rd32 if so (...and return a 0 value???)
+v2 - add rtnl locks and a check in ixgbe_remove()
 
-The thing is that a suspended device should not be accessed at all.
-If we are accessing it while it is suspended then that is a bug.  If
-you could throw a WARN_ON call in igb_rd32 to capture where this is
-being triggered that might be useful.
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-> - Otherwise assume it's actually a surprise removal.  In theory that
->   should somehow trigger a device removal sequence, kind of like
->   calling igb_remove, no?
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 51cdac9..0b1fa5d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6200,7 +6200,8 @@ int ixgbe_close(struct net_device *netdev)
+ 
+ 	ixgbe_ptp_stop(adapter);
+ 
+-	ixgbe_close_suspend(adapter);
++	if (netif_device_present(netdev))
++		ixgbe_close_suspend(adapter);
+ 
+ 	ixgbe_fdir_filter_exit(adapter);
+ 
+@@ -6245,14 +6246,12 @@ static int ixgbe_resume(struct pci_dev *pdev)
+ 	if (!err && netif_running(netdev))
+ 		err = ixgbe_open(netdev);
+ 
+-	rtnl_unlock();
+-
+-	if (err)
+-		return err;
+ 
+-	netif_device_attach(netdev);
++	if (!err)
++		netif_device_attach(netdev);
++	rtnl_unlock();
+ 
+-	return 0;
++	return err;
+ }
+ #endif /* CONFIG_PM */
+ 
+@@ -6267,14 +6266,14 @@ static int __ixgbe_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ 	int retval = 0;
+ #endif
+ 
++	rtnl_lock();
+ 	netif_device_detach(netdev);
+ 
+-	rtnl_lock();
+ 	if (netif_running(netdev))
+ 		ixgbe_close_suspend(adapter);
+-	rtnl_unlock();
+ 
+ 	ixgbe_clear_interrupt_scheme(adapter);
++	rtnl_unlock();
+ 
+ #ifdef CONFIG_PM
+ 	retval = pci_save_state(pdev);
+@@ -9923,7 +9922,10 @@ static void ixgbe_remove(struct pci_dev *pdev)
+ 	if (netdev->reg_state == NETREG_REGISTERED)
+ 		unregister_netdev(netdev);
+ 
+-	ixgbe_clear_interrupt_scheme(adapter);
++	rtnl_lock();
++	if (netif_device_present(netdev))
++		ixgbe_clear_interrupt_scheme(adapter);
++	rtnl_unlock();
+ 
+ 	ixgbe_release_hw_control(adapter);
+ 
 
-Well a read of the MMIO region while suspended is more of a surprise
-read since there shouldn't be anything going on.  We need to isolate
-where that read is coming from and fix it.
-
-Thanks.
-
-- Alex
