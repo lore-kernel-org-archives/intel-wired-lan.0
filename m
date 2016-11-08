@@ -1,319 +1,92 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  8 Nov 2016 13:05:10 -0800
-Subject: [Intel-wired-lan] [next PATCH S52-V2 06/15] i40e: set broadcast
-	promiscuous mode for each active VLAN
-In-Reply-To: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
-References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1478639119-14656-7-git-send-email-bimmy.pujari@intel.com>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue,  8 Nov 2016 22:49:15 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 0/3] PHC frequency fine tuning
+Message-ID: <cover.1478526333.git.richardcochran@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+This series expands the PTP Hardware Clock subsystem by adding a
+method that passes the frequency tuning word to the the drivers
+without dropping the low order bits.  Keeping those bits is useful for
+drivers whose frequency resolution is higher than 1 ppb.
 
-A previous workaround added to ensure receipt of all broadcast frames
-incorrectly set the broadcast promiscuous mode unconditionally
-regardless of active VLAN status.
+The appended script (below) runs a simple demonstration of the
+improvement.  This test needs two Intel i210 PCIe cards installed in
+the same PC, with their SDP0 pins connected by copper wire.  Measuring
+the estimated offset (from the ptp4l servo) and the true offset (from
+the PPS) over one hour yields the following statistics.
 
-Replace this partial workaround with a complete solution that sets the
-broadcast promiscuous filters in i40e_sync_vsi_filters. This new method
-sets the promiscuous mode based on when broadcast filters are added or
-removed.
+|        |   Est. Before |    Est. After |   True Before |    True After |
+|--------+---------------+---------------+---------------+---------------|
+| min    | -5.200000e+01 | -1.600000e+01 | -3.100000e+01 | -1.000000e+00 |
+| max    | +5.700000e+01 | +2.500000e+01 | +8.500000e+01 | +4.000000e+01 |
+| pk-pk: | +1.090000e+02 | +4.100000e+01 | +1.160000e+02 | +4.100000e+01 |
+| mean   | +6.472222e-02 | +1.277778e-02 | +2.422083e+01 | +1.826083e+01 |
+| stddev | +1.158006e+01 | +4.581982e+00 | +1.207708e+01 | +4.981435e+00 |
 
-I40E_VLAN_ANY will request a broadcast filter for all VLANs, (as we're
-in untagged mode) while a broadcast filter on a specific VLAN will only
-request broadcast for that VLAN.
+Here the numbers in units of nanoseconds, and the ~20 nanosecond PPS
+offset is due to input/output delays on the i210's external interface
+logic.
 
-Thus, we restore addition of broadcast filter to the array, but we add
-special handling for these such that they enable the broadcast
-promiscuous mode instead of being sent as regular filters.
+With the series applied, both the peak to peak error and the standard
+deviation improve by a factor of more than two.  These two graphs show
+the improvement nicely.
 
-The end result is that we will correctly receive all broadcast packets
-(even those with a *source* address equal to the broadcast address) but
-will not receive packets for which we don't have an active VLAN filter.
+  http://linuxptp.sourceforge.net/fine-tuning/fine-est.png
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I7d0585c5cec1a5bf55bf533b42e5e817d5db6a2d
----
-Testing-hints:
-  Ensure that we do not receive broadcast packets for VLANs which are
-  not configured. That is, when we no VLANs configured we need to
-  receive broadcast packets on all VLANs. When we have added a VLAN
-  filter, we need to receive broadcasts only on VID=0 and any active
-  VLANs, but *not* any in-actve VLANs.
+  http://linuxptp.sourceforge.net/fine-tuning/fine-tru.png
 
-  Additionally we need to ensure that we do not break the receipt of
-  broadcast filters with a *source* address equal to the broadcast
-  address. This can be tested using scapy or similar tools. Ensure that
-  these packets follow the same receipt rules as above.
 
-  Additionally it may be worth checking whether adding many VLANs
-  rapidly does not cause any driver stability issues and that the
-  broadcast packets are still correctly received.
+Thanks,
+Richard
 
- drivers/net/ethernet/intel/i40e/i40e_common.c      |  34 +++++++
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 106 +++++++++++++++++----
- drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   3 +
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   7 ++
- 4 files changed, 129 insertions(+), 21 deletions(-)
+Richard Cochran (3):
+  ptp: Introduce a high resolution frequency adjustment method.
+  ptp: igb: Use the high resolution frequency method.
+  ptp: dp83640: Use the high resolution frequency method.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 33bcf23..d1dcd4f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -2170,6 +2170,40 @@ enum i40e_status_code i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
- }
- 
- /**
-+ * i40e_aq_set_vsi_bc_promisc_on_vlan
-+ * @hw: pointer to the hw struct
-+ * @seid: vsi number
-+ * @enable: set broadcast promiscuous enable/disable for a given VLAN
-+ * @vid: The VLAN tag filter - capture any broadcast packet with this VLAN tag
-+ * @cmd_details: pointer to command details structure or NULL
-+ **/
-+i40e_status i40e_aq_set_vsi_bc_promisc_on_vlan(struct i40e_hw *hw,
-+				u16 seid, bool enable, u16 vid,
-+				struct i40e_asq_cmd_details *cmd_details)
-+{
-+	struct i40e_aq_desc desc;
-+	struct i40e_aqc_set_vsi_promiscuous_modes *cmd =
-+		(struct i40e_aqc_set_vsi_promiscuous_modes *)&desc.params.raw;
-+	i40e_status status;
-+	u16 flags = 0;
-+
-+	i40e_fill_default_direct_cmd_desc(&desc,
-+					i40e_aqc_opc_set_vsi_promiscuous_modes);
-+
-+	if (enable)
-+		flags |= I40E_AQC_SET_VSI_PROMISC_BROADCAST;
-+
-+	cmd->promiscuous_flags = cpu_to_le16(flags);
-+	cmd->valid_flags = cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_BROADCAST);
-+	cmd->seid = cpu_to_le16(seid);
-+	cmd->vlan_tag = cpu_to_le16(vid | I40E_AQC_SET_VSI_VLAN_VALID);
-+
-+	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
-+
-+	return status;
-+}
-+
-+/**
-  * i40e_aq_set_vsi_broadcast
-  * @hw: pointer to the hw struct
-  * @seid: vsi number
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 3886119..8187d32 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1245,13 +1245,6 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
- 	if (!vsi || !macaddr)
- 		return NULL;
- 
--	/* Do not allow broadcast filter to be added since broadcast filter
--	 * is added as part of add VSI for any newly created VSI except
--	 * FDIR VSI
--	 */
--	if (is_broadcast_ether_addr(macaddr))
--		return NULL;
--
- 	f = i40e_find_filter(vsi, macaddr, vlan);
- 	if (!f) {
- 		f = kzalloc(sizeof(*f), GFP_ATOMIC);
-@@ -1857,6 +1850,47 @@ void i40e_aqc_add_filters(struct i40e_vsi *vsi, const char *vsi_name,
- }
- 
- /**
-+ * i40e_aqc_broadcast_filter - Set promiscuous broadcast flags
-+ * @vsi: pointer to the VSI
-+ * @f: filter data
-+ *
-+ * This function sets or clears the promiscuous broadcast flags for VLAN
-+ * filters in order to properly receive broadcast frames. Assumes that only
-+ * broadcast filters are passed.
-+ **/
-+static
-+void i40e_aqc_broadcast_filter(struct i40e_vsi *vsi, const char *vsi_name,
-+			       struct i40e_mac_filter *f)
-+{
-+	bool enable = f->state == I40E_FILTER_NEW;
-+	struct i40e_hw *hw = &vsi->back->hw;
-+	i40e_status aq_ret;
-+
-+	if (f->vlan == I40E_VLAN_ANY) {
-+		aq_ret = i40e_aq_set_vsi_broadcast(hw,
-+						   vsi->seid,
-+						   enable,
-+						   NULL);
-+	} else {
-+		aq_ret = i40e_aq_set_vsi_bc_promisc_on_vlan(hw,
-+							    vsi->seid,
-+							    enable,
-+							    f->vlan,
-+							    NULL);
-+	}
-+
-+	if (aq_ret) {
-+		dev_warn(&vsi->back->pdev->dev,
-+			 "Error %s setting broadcast promiscuous mode on %s\n",
-+			 i40e_aq_str(hw, hw->aq.asq_last_status),
-+			 vsi_name);
-+		f->state = I40E_FILTER_FAILED;
-+	} else if (enable) {
-+		f->state = I40E_FILTER_ACTIVE;
-+	}
-+}
-+
-+/**
-  * i40e_sync_vsi_filters - Update the VSI filter list to the HW
-  * @vsi: ptr to the VSI
-  *
-@@ -2004,6 +2038,17 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		hlist_for_each_entry_safe(f, h, &tmp_del_list, hlist) {
- 			cmd_flags = 0;
- 
-+			/* handle broadcast filters by updating the broadcast
-+			 * promiscuous flag instead of deleting a MAC filter.
-+			 */
-+			if (is_broadcast_ether_addr(f->macaddr)) {
-+				i40e_aqc_broadcast_filter(vsi, vsi_name, f);
-+
-+				hlist_del(&f->hlist);
-+				kfree(f);
-+				continue;
-+			}
-+
- 			/* add to delete list */
- 			ether_addr_copy(del_list[num_del].mac_addr, f->macaddr);
- 			if (f->vlan == I40E_VLAN_ANY) {
-@@ -2060,12 +2105,25 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 			goto err_no_memory;
- 
- 		num_add = 0;
--		hlist_for_each_entry(f, &tmp_add_list, hlist) {
-+		hlist_for_each_entry_safe(f, h, &tmp_add_list, hlist) {
- 			if (test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
- 				     &vsi->state)) {
- 				f->state = I40E_FILTER_FAILED;
- 				continue;
- 			}
-+
-+			/* handle broadcast filters by updating the broadcast
-+			 * promiscuous flag instead of adding a MAC filter.
-+			 */
-+			if (is_broadcast_ether_addr(f->macaddr)) {
-+				u64 key = i40e_addr_to_hkey(f->macaddr);
-+				i40e_aqc_broadcast_filter(vsi, vsi_name, f);
-+
-+				hlist_del(&f->hlist);
-+				hash_add(vsi->mac_filter_hash, &f->hlist, key);
-+				continue;
-+			}
-+
- 			/* add to add array */
- 			if (num_add == 0)
- 				add_head = f;
-@@ -9166,6 +9224,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 	struct i40e_hw *hw = &pf->hw;
- 	struct i40e_netdev_priv *np;
- 	struct net_device *netdev;
-+	u8 broadcast[ETH_ALEN];
- 	u8 mac_addr[ETH_ALEN];
- 	int etherdev_size;
- 
-@@ -9234,6 +9293,24 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
- 	}
- 
-+	/* Add the broadcast filter so that we initially will receive
-+	 * broadcast packets. Note that when a new VLAN is first added the
-+	 * driver will convert all filters marked I40E_VLAN_ANY into VLAN
-+	 * specific filters as part of transitioning into "vlan" operation.
-+	 * When more VLANs are added, the driver will copy each existing MAC
-+	 * filter and add it for the new VLAN.
-+	 *
-+	 * Broadcast filters are handled specially by
-+	 * i40e_sync_filters_subtask, as the driver must to set the broadcast
-+	 * promiscuous bit instead of adding this directly as a MAC/VLAN
-+	 * filter. The subtask will update the correct broadcast promiscuous
-+	 * bits as VLANs become active or inactive.
-+	 */
-+	eth_broadcast_addr(broadcast);
-+	spin_lock_bh(&vsi->mac_filter_hash_lock);
-+	i40e_add_filter(vsi, broadcast, I40E_VLAN_ANY);
-+	spin_unlock_bh(&vsi->mac_filter_hash_lock);
-+
- 	ether_addr_copy(netdev->dev_addr, mac_addr);
- 	ether_addr_copy(netdev->perm_addr, mac_addr);
- 
-@@ -9316,7 +9393,6 @@ int i40e_is_vsi_uplink_mode_veb(struct i40e_vsi *vsi)
- static int i40e_add_vsi(struct i40e_vsi *vsi)
- {
- 	int ret = -ENODEV;
--	i40e_status aq_ret = 0;
- 	struct i40e_pf *pf = vsi->back;
- 	struct i40e_hw *hw = &pf->hw;
- 	struct i40e_vsi_context ctxt;
-@@ -9506,18 +9582,6 @@ static int i40e_add_vsi(struct i40e_vsi *vsi)
- 		vsi->seid = ctxt.seid;
- 		vsi->id = ctxt.vsi_number;
- 	}
--	/* Except FDIR VSI, for all other VSI set the broadcast filter */
--	if (vsi->type != I40E_VSI_FDIR) {
--		aq_ret = i40e_aq_set_vsi_broadcast(hw, vsi->seid, true, NULL);
--		if (aq_ret) {
--			ret = i40e_aq_rc_to_posix(aq_ret,
--						  hw->aq.asq_last_status);
--			dev_info(&pf->pdev->dev,
--				 "set brdcast promisc failed, err %s, aq_err %s\n",
--				 i40e_stat_str(hw, aq_ret),
--				 i40e_aq_str(hw, hw->aq.asq_last_status));
--		}
--	}
- 
- 	vsi->active_filters = 0;
- 	clear_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index b1bf64e..4e641a6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -144,6 +144,9 @@ enum i40e_status_code i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
- 							 u16 seid, bool enable,
- 							 u16 vid,
- 				struct i40e_asq_cmd_details *cmd_details);
-+i40e_status i40e_aq_set_vsi_bc_promisc_on_vlan(struct i40e_hw *hw,
-+				u16 seid, bool enable, u16 vid,
-+				struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_set_vsi_vlan_promisc(struct i40e_hw *hw,
- 				u16 seid, bool enable,
- 				struct i40e_asq_cmd_details *cmd_details);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 46908c0..05ed49b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -674,6 +674,7 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, enum i40e_vsi_type type)
- 	}
- 	if (type == I40E_VSI_SRIOV) {
- 		u64 hena = i40e_pf_get_default_rss_hena(pf);
-+		u8 broadcast[ETH_ALEN];
- 
- 		vf->lan_vsi_idx = vsi->idx;
- 		vf->lan_vsi_id = vsi->id;
-@@ -696,6 +697,12 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, enum i40e_vsi_type type)
- 					 "Could not add MAC filter %pM for VF %d\n",
- 					vf->default_lan_addr.addr, vf->vf_id);
- 		}
-+		eth_broadcast_addr(broadcast);
-+		f = i40e_add_filter(vsi, broadcast,
-+				    vf->port_vlan_id ? vf->port_vlan_id : -1);
-+		if (!f)
-+			dev_info(&pf->pdev->dev,
-+				 "Could not allocate VF broadcast filter\n");
- 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
- 		i40e_write_rx_ctl(&pf->hw, I40E_VFQF_HENA1(0, vf->vf_id),
- 				  (u32)hena);
+ drivers/net/ethernet/intel/igb/igb_ptp.c | 16 ++++++++--------
+ drivers/net/phy/dp83640.c                | 14 +++++++-------
+ drivers/ptp/ptp_clock.c                  |  5 ++++-
+ include/linux/ptp_clock_kernel.h         |  8 ++++++++
+ 4 files changed, 27 insertions(+), 16 deletions(-)
+
 -- 
-2.4.11
+2.1.4
 
+---
+#!/bin/sh
+
+set -e
+set -x
+
+killall ptp4l || true
+
+DUR=3600
+ETHA=eth6
+ETHB=eth3
+DEVA=/dev/ptp`ethtool -T $ETHA | awk '/PTP/ {print $4}'`
+DEVB=/dev/ptp`ethtool -T $ETHB | awk '/PTP/ {print $4}'`
+
+testptp -d $DEVA -p 0
+
+for x in $DEVA $DEVB; do
+	testptp -d $x -f 0
+	testptp -d $x -s
+done
+
+testptp -d $DEVA -L 0,2  # periodic output
+testptp -d $DEVB -L 0,1  # external time stamp
+testptp -d $DEVA -p 2000000000
+
+ptp4l -m -q -2 -i $ETHA > log.master &
+ptp4l -m -q -2 -i $ETHB -s > log.slave &
+
+sleep 60
+testptp -d $DEVB -e $DUR > log.pps
+tail -n $DUR log.slave > log.est
+
+killall ptp4l
