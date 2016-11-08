@@ -1,102 +1,72 @@
-From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
-Date: Tue, 8 Nov 2016 16:05:53 +0000
+From: Ray Bellis <ray@isc.org>
+Date: Tue, 8 Nov 2016 16:31:26 +0000
 Subject: [Intel-wired-lan] i40e performance regression after 1.3.9 ?
-In-Reply-To: <aea231d5-64bb-97e7-57f6-cf845629d9ef@isc.org>
+In-Reply-To: <9BBC4E0CF881AA4299206E2E1412B626502D1704@ORSMSX102.amr.corp.intel.com>
 References: <9f9f62ec-fbce-534a-d2bd-e918a03a3899@isc.org>
  <CAKgT0Uc9W_tvMEoKzLzBG-pK7Sjznr3B+xgjne0tUuTX17d+Hg@mail.gmail.com>
  <fe40bb83-d28c-8fc4-148a-37ff7ad5c7aa@isc.org>
  <CAKgT0UfB-ofJw6gA2f-FJvBcn-4Qd52DrQuth828xWkp8+WSDg@mail.gmail.com>
  <aea231d5-64bb-97e7-57f6-cf845629d9ef@isc.org>
-Message-ID: <9BBC4E0CF881AA4299206E2E1412B626502D1704@ORSMSX102.amr.corp.intel.com>
+ <9BBC4E0CF881AA4299206E2E1412B626502D1704@ORSMSX102.amr.corp.intel.com>
+Message-ID: <9948372e-4093-4ce3-ee3e-aa06d2a7a939@isc.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Ray Bellis
-> Sent: Tuesday, November 08, 2016 2:31 AM
-> To: Alexander Duyck <alexander.duyck@gmail.com>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] i40e performance regression after 1.3.9 ?
-> 
-> On 07/11/2016 20:44, Alexander Duyck wrote:
-> 
-> > The adaptive Rx and Tx being disabled is the important part.  If you
-> > didn't do that then changing the other values really had no effect.
-> 
-> I've just confirmed that turning off adaptive Rx and Tx on the "server"
-> side has the desired effect, bringing my packet rate back up to 1.3+ Mpps.
-> 
-> I'm getting odd effects when I try this on the "client" side though
-> (with the dnsperf program which generates packets and then waits for the
-> response)
-> 
-> With the 1.3.9 driver, I get a pretty consistent packet rate:
-> 
-> 1478599801.555815: 1346798.548250
-> 1478599802.556818: 1345090.873854
-> 1478599803.557820: 1348886.415811
-> 1478599804.558826: 1347842.070877
-> 1478599805.559823: 1346257.780992
-> 1478599806.560821: 1347437.257617
-> 1478599807.561818: 1346674.365657
-> 1478599808.562824: 1351776.113230
-> 1478599809.563818: 1347379.704574
-> 
-> I then unload the driver and install the new one:
-> 
-> # ifdown enp5s0f1
-> Device 'enp5s0f1' successfully disconnected.
-> # rmmod i40e
-> # insmod ./i40e-1.3.38-4.3.5-300.fc23.ko
-> # ifup enp5s0f1
-> # ethtool -C enp5s0f1 adaptive-rx off adaptive-tx off
-> 
-> and re-running the test the packet rates are all over the place, and
-> almost seem to be trending downwards over time:
-> 
-> 1478599891.282086: 1064831.565393
-> 1478599892.282814: 1013365.270083
-> 1478599893.283820: 958262.987435
-> 1478599894.284814: 960207.553692
-> 1478599895.285817: 947161.996517
-> 1478599896.286852: 964507.734495
-> 1478599897.287818: 991703.014888
-> 1478599898.288815: 1010553.478182
-> 1478599899.289822: 963053.205422
-> 1478599900.290860: 933701.817513
-> 1478599901.291816: 988006.465819
-> 1478599902.292821: 957132.082257
-> 1478599903.293822: 1017923.059018
-> 1478599904.294820: 974373.575172
-> 1478599905.295816: 947963.828027
-> 1478599906.296817: 943062.993943
-> 1478599907.297851: 885024.884270
-> 1478599908.298818: 868948.726581
-> 1478599909.299814: 945017.762309
-> 1478599910.300846: 954253.210687
-> 1478599911.301817: 936898.271778
-> 1478599912.302818: 885917.196886
-> 
-> Even more bizarrely, the first time I ran this test it actually gave me
-> the expected 1.35 Mpps for the first ten seconds or so before
-> (gradually) dropping down to 1 Mpps or less.
-> 
-> More experimentation required - I'll do so with some reboots rather that
-> rmmod / insmod.
+On 08/11/2016 16:05, Wyborny, Carolyn wrote:
 
-Thanks for this info Ray.  This narrows it down a lot.  I'll be looking closely at the adaptive-itr mechanism for some improvements.  In the 1.3.38 version, it was not actually enabled.  The i40e hw's ITR feature is different than our other parts.  I wanted to confirm something though.  Are you still seeing variability in the non-adaptive ITR settings  on your client system?
+> Thanks for this info Ray.  This narrows it down a lot.  I'll be
+> looking closely at the adaptive-itr mechanism for some improvements.
+> In the 1.3.38 version, it was not actually enabled.  The i40e hw's
+> ITR feature is different than our other parts.  I wanted to confirm
+> something though.  Are you still seeing variability in the
+> non-adaptive ITR settings  on your client system?
 
-Thanks again,
+If I upgrade to anything beyond 1.3.9 in the client system I seem to be
+unable to maintain the original packet rates regardless of adapter settings.
 
-Carolyn
+With default settings, immediately after loading the 1.3.38 driver:
 
-Carolyn Wyborny 
-Linux Development 
-Networking Division 
-Intel Corporation 
+1478621396.881368: 391141.759023
+1478621397.882212: 354922.445456
+1478621398.883211: 416478.937541
+1478621399.884240: 430534.979506
+1478621400.885273: 422226.839675
+1478621401.886212: 422115.633420
+
+I then turned off adaptive-rx and -tx (note that this is the same test
+as the second set of figures from my previous email)
+
+1478622609.157284: 1328728.765727
+1478622610.158216: 1308772.224287
+1478622611.159251: 1332014.365132
+1478622612.160215: 1282047.106589
+1478622613.161251: 1269727.562246
+1478622614.162212: 1152071.858944
+1478622615.163212: 1291263.736264
+1478622616.164220: 1260214.703579
+1478622617.165220: 1336847.152847
+1478622618.166216: 1087381.967560
+1478622619.167211: 1260368.932912
+1478622620.168214: 1312834.227270
+1478622621.169253: 1000005.993772
+1478622622.170286: 1320425.999942
+
+For unknown reasons it's producing higher figures than my run from this
+morning (UK time) but the variability is still very high.  This time
+it's averaging 1.2 Mpps (still down from 1.35) but earlier it was more
+like 930 kpps.
+
+[one possible difference is that the client machine was rebooted in
+between.  FWIW, both machines are using the default Haswell intel_pstate
+frequency governer in powersave mode.  I can change that to
+'performance' with a specified range if necessary]
+
+If there's a specific sequence of tests you'd like me to make, please
+let me know.
+
+Ray
 
 
