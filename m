@@ -1,27 +1,190 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 8 Nov 2016 22:04:23 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 2/3] ptp: igb: Use the high
- resolution frequency method.
-In-Reply-To: <b1d732324e0b1960b294e90ca5eb2a31b6559188.1478526333.git.richardcochran@gmail.com>
-References: <cover.1478526333.git.richardcochran@gmail.com>
- <b1d732324e0b1960b294e90ca5eb2a31b6559188.1478526333.git.richardcochran@gmail.com>
-Message-ID: <1478642646.7545.39.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 09 Nov 2016 06:51:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 0344b2dfe0d0e4166360a22822bab4e187f7201e
+Message-ID: <5822570e.P7S27YRMCCW4CPsg%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-11-08 at 22:49 +0100, Richard Cochran wrote:
-> The 82580 and related devices offer a frequency resolution of about
-> 0.029 ppb.??This patch lets users of the device benefit from the
-> increased frequency resolution when tuning the clock.
-> 
-> Signed-off-by: Richard Cochran <richardcochran@gmail.com>
-> ---
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+0344b2dfe0d0e4166360a22822bab4e187f7201e  igb: re-assign hw address pointer on reset after PCI error
 
-Additionally, what about min/max frequency check? Wouldn't this need to
-be updated for the new adjfine operation?
+elapsed time: 69m
+
+configs tested: 166
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                     randconfig-a0-201645
+x86_64                 randconfig-a0-11090419
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-11090531
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-v0-11090439
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x011-201645
+x86_64                 randconfig-x014-201645
+x86_64                 randconfig-x015-201645
+x86_64                 randconfig-x017-201645
+x86_64                 randconfig-x012-201645
+x86_64                 randconfig-x018-201645
+x86_64                 randconfig-x019-201645
+x86_64                 randconfig-x013-201645
+x86_64                 randconfig-x016-201645
+x86_64                 randconfig-x010-201645
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201645
+i386                     randconfig-s1-201645
+x86_64                 randconfig-s0-11090455
+x86_64                 randconfig-s1-11090455
+x86_64                 randconfig-s2-11090455
+x86_64                 randconfig-s0-11090608
+x86_64                 randconfig-s1-11090608
+x86_64                 randconfig-s2-11090608
+x86_64                 randconfig-s3-11090530
+x86_64                 randconfig-s4-11090530
+x86_64                 randconfig-s5-11090530
+x86_64                   randconfig-i0-201645
+i386                   randconfig-b0-11090516
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201645
+i386                     randconfig-i1-201645
+x86_64                           allmodconfig
+arm                           sama5_defconfig
+avr32                  atngw100mkii_defconfig
+m68k                             allyesconfig
+x86_64                 randconfig-u0-11090436
+openrisc                         allmodconfig
+sh                        edosk7705_defconfig
+arm                            hisi_defconfig
+powerpc                 mpc8315_rdb_defconfig
+powerpc64                        alldefconfig
+i386                   randconfig-x010-201645
+i386                   randconfig-x011-201645
+i386                   randconfig-x012-201645
+i386                   randconfig-x013-201645
+i386                   randconfig-x014-201645
+i386                   randconfig-x015-201645
+i386                   randconfig-x016-201645
+i386                   randconfig-x017-201645
+i386                   randconfig-x018-201645
+i386                   randconfig-x019-201645
+i386                     randconfig-n0-201645
+i386                   randconfig-h0-11090459
+i386                   randconfig-h1-11090459
+blackfin                    DNP5370_defconfig
+frv                              allyesconfig
+powerpc                 mpc836x_rdk_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-11090502
+arm                          ep93xx_defconfig
+powerpc                       maple_defconfig
+x86_64                                  kexec
+x86_64                               rhel-7.2
+x86_64                 randconfig-n0-11090531
+x86_64                 randconfig-x000-201645
+x86_64                 randconfig-x001-201645
+x86_64                 randconfig-x002-201645
+x86_64                 randconfig-x003-201645
+x86_64                 randconfig-x004-201645
+x86_64                 randconfig-x005-201645
+x86_64                 randconfig-x006-201645
+x86_64                 randconfig-x007-201645
+x86_64                 randconfig-x008-201645
+x86_64                 randconfig-x009-201645
+x86_64                                   rhel
+i386                     randconfig-r0-201645
+i386                   randconfig-x000-201645
+i386                   randconfig-x001-201645
+i386                   randconfig-x002-201645
+i386                   randconfig-x003-201645
+i386                   randconfig-x004-201645
+i386                   randconfig-x005-201645
+i386                   randconfig-x006-201645
+i386                   randconfig-x007-201645
+i386                   randconfig-x008-201645
+i386                   randconfig-x009-201645
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+i386                   randconfig-x0-11090448
 
 Thanks,
-Jake
+Fengguang
