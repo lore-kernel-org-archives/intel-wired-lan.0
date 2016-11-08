@@ -1,57 +1,73 @@
-From: Benjamin Poirier <bpoirier@suse.com>
-Date: Tue, 8 Nov 2016 14:52:00 +0800
-Subject: [Intel-wired-lan] Kernel regression introduced by "e1000e: Do
- not write lsc to ics in msi-x mode" and/or "e1000e: Do not read ICR in
- Other interrupt"
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81FC067C@ORSMSX101.amr.corp.intel.com>
-References: <1478044618.14119.774423193.0F79737A@webmail.messagingengine.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81FC067C@ORSMSX101.amr.corp.intel.com>
-Message-ID: <20161108065200.77w6o5hz2uy4oukt@f1.synalogic.ca>
+From: Cao jin <caoj.fnst@cn.fujitsu.com>
+Date: Tue, 8 Nov 2016 15:06:20 +0800
+Subject: [Intel-wired-lan] [PATCH] igb: use igb_adapter->io_addr instead of
+	e1000_hw->hw_addr
+Message-ID: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2016/11/02 21:19, Brown, Aaron F wrote:
-> > From: Jack Suter [mailto:jack at suter.io]
-> > Sent: Tuesday, November 1, 2016 4:57 PM
-> > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> > Cc: intel-wired-lan at lists.osuosl.org; bpoirier at suse.com; Brown, Aaron F
-> > <aaron.f.brown@intel.com>; jhodzic at ucdavis.edu; linux-
-> > kernel at vger.kernel.org
-> > Subject: Kernel regression introduced by "e1000e: Do not write lsc to ics in
-> > msi-x mode" and/or "e1000e: Do not read ICR in Other interrupt"
-> > 
-> > Hi there,
-> > 
-> > I have some servers with an 82574L based NIC and recently upgraded from
-> > a 4.4 series kernel to 4.7. Upon doing so, servers with this chipset
-> > have begun frequently reporting "Link is Down" and "Link is Up"
-> > messages. No other related network errors are reported by the kernel or
-> > e1000e driver. I saw some reports about using "ethtool -s $iface msglvl
-> > 6" to reveal more information, but nothing extra was reported.
-> > 
-> > Some testing showed that this was introduced between the 4.4 and 4.5
-> > series. I was able to further narrow it down to two commits that look
-> > related:
-> > 
-> >  e1000e: Do not write lsc to ics in msi-x mode
-> >  (a61cfe4ffad7864a07e0c74969ca7ceb77ab2f1f)
-> >  e1000e: Do not read ICR in Other interrupt
-> >  (16ecba59bc333d6282ee057fb02339f77a880beb)
-> 
-> I did not notice any link flapping when I tested those patches, I would have rejected them if I had.  I have several systems with 82574L LOMs and as yet am not able to reproduce a link flap with recent upstream kernels/drivers (net-next 4.8.0 on one and 4.9.0-rc3 on another.) 
-> 
-> One of those systems is dedicated to a kernel regression setup, I checked the test logs from it and am not seeing any evidence of flaps in the 4.4, through 4.6 range either.
-> 
-> > 
-> > Reverting these two commits resolves the Link is Down/Link is Up
-> > messages. This has been tested on about six servers so far and all have
-> > stopped reporting these link flaps.
-> 
-> Are you able to revert either of the patches independently, I don't recall if they were stand alone or not.
+When running as guest, under certain condition, it will oops as following.
+writel() in igb_configure_tx_ring() results in oops, because hw->hw_addr
+is NULL. While other register access won't oops kernel because they use
+wr32/rd32 which have a defense against NULL pointer.
 
-From what I recall, the series is entirely bisectable. I tested again
-just now and could do a netperf RR test after applying each commit
-sequentially.
+    [  141.225449] pcieport 0000:00:1c.0: AER: Multiple Uncorrected (Fatal)
+    error received: id=0101
+    [  141.225523] igb 0000:01:00.1: PCIe Bus Error:
+    severity=Uncorrected (Fatal), type=Unaccessible,
+    id=0101(Unregistered Agent ID)
+    [  141.299442] igb 0000:01:00.1: broadcast error_detected message
+    [  141.300539] igb 0000:01:00.0 enp1s0f0: PCIe link lost, device now
+    detached
+    [  141.351019] igb 0000:01:00.1 enp1s0f1: PCIe link lost, device now
+    detached
+    [  143.465904] pcieport 0000:00:1c.0: Root Port link has been reset
+    [  143.465994] igb 0000:01:00.1: broadcast slot_reset message
+    [  143.466039] igb 0000:01:00.0: enabling device (0000 -> 0002)
+    [  144.389078] igb 0000:01:00.1: enabling device (0000 -> 0002)
+    [  145.312078] igb 0000:01:00.1: broadcast resume message
+    [  145.322211] BUG: unable to handle kernel paging request at
+    0000000000003818
+    [  145.361275] IP: [<ffffffffa02fd38d>]
+    igb_configure_tx_ring+0x14d/0x280 [igb]
+    [  145.400048] PGD 0
+    [  145.438007] Oops: 0002 [#1] SMP
+
+A similiar issue & solution could be found at:
+    http://patchwork.ozlabs.org/patch/689592/
+
+Signed-off-by: Cao jin <caoj.fnst@cn.fujitsu.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index edc9a6a..3f240ac 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3390,7 +3390,7 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
+ 	     tdba & 0x00000000ffffffffULL);
+ 	wr32(E1000_TDBAH(reg_idx), tdba >> 32);
+ 
+-	ring->tail = hw->hw_addr + E1000_TDT(reg_idx);
++	ring->tail = adapter->io_addr + E1000_TDT(reg_idx);
+ 	wr32(E1000_TDH(reg_idx), 0);
+ 	writel(0, ring->tail);
+ 
+@@ -3729,7 +3729,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 	     ring->count * sizeof(union e1000_adv_rx_desc));
+ 
+ 	/* initialize head and tail */
+-	ring->tail = hw->hw_addr + E1000_RDT(reg_idx);
++	ring->tail = adapter->io_addr + E1000_RDT(reg_idx);
+ 	wr32(E1000_RDH(reg_idx), 0);
+ 	writel(0, ring->tail);
+ 
+-- 
+2.1.0
+
+
+
