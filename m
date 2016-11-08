@@ -1,45 +1,70 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  8 Nov 2016 13:05:12 -0800
-Subject: [Intel-wired-lan] [next PATCH S52-V2 08/15] i40e: change message to
-	only appear when extra debug info is wanted
+Date: Tue,  8 Nov 2016 13:05:16 -0800
+Subject: [Intel-wired-lan] [next PATCH S52-V2 12/15] i40e/i40evf: napi_poll
+	must return the work done
 In-Reply-To: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
 References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1478639119-14656-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1478639119-14656-13-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This patch changes an X722 informational message so that it only
-appears when extra messages are desired.  Without this patch,
-on X722 devices, this message appears at load, potentially causing
-unnecessary alarm.
+Currently the function i40e_napi-poll() returns 0 when it clean completely
+the rx rings, but this foul budget accounting in core code.
 
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Change-ID: I94f7aae15dc5b2723cc9728c630c72538a3e670e
+Fix this by returning the actual work done, capped to budget - 1, since
+the core doesn't allow to return the full budget when the driver modifies
+the napi status
+
+This is based on a similar change that was made for the ixgbe driver by
+Paolo Abeni.
+
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Change-ID: Ic3d93ad2fa2fc8ce3164bc461e69367da0f9173b
 ---
-Testing Hints :  "cleared PE_CRITERR message
-should no longer appear.
+Testing Hints:
+        This may slightly improve the responsiveness of the system, but the
+        big gain for us is actually when using i40e to perform busy polling
+        since the return value is used to verify if we have received any
+        packets.
 
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+        For our purposes the best test is probably just an Rx performance
+        test to make sure we didn't cause a regression.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 8187d32..548cbe0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3567,7 +3567,7 @@ static irqreturn_t i40e_intr(int irq, void *data)
- 	    (ena_mask & I40E_PFINT_ICR0_ENA_PE_CRITERR_MASK)) {
- 		ena_mask &= ~I40E_PFINT_ICR0_ENA_PE_CRITERR_MASK;
- 		icr0 &= ~I40E_PFINT_ICR0_ENA_PE_CRITERR_MASK;
--		dev_info(&pf->pdev->dev, "cleared PE_CRITERR\n");
-+		dev_dbg(&pf->pdev->dev, "cleared PE_CRITERR\n");
- 	}
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 5544b50..352cf7c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2027,7 +2027,7 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+ 	else
+ 		i40e_update_enable_itr(vsi, q_vector);
  
- 	/* only q0 is used in MSI/Legacy mode, and none are used in MSIX */
+-	return 0;
++	return min(work_done, budget - 1);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index c4b174a..df67ef3 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1490,7 +1490,7 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
+ 	else
+ 		i40e_update_enable_itr(vsi, q_vector);
+ 
+-	return 0;
++	return min(work_done, budget - 1);
+ }
+ 
+ /**
 -- 
 2.4.11
 
