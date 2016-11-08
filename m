@@ -1,54 +1,58 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  8 Nov 2016 13:05:04 -0800
-Subject: [Intel-wired-lan] [next PATCH S52-V2 00/15] i40e/i40evf updates
-Message-ID: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
+Date: Tue,  8 Nov 2016 13:05:06 -0800
+Subject: [Intel-wired-lan] [next PATCH S52-V2 02/15] i40e: Remove
+	unreachable code
+In-Reply-To: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
+References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1478639119-14656-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+From: Henry Tieman <henry.w.tieman@intel.com>
 
-Alan Brady adds check for msix_entries null dereference.
+The code at the end of i40e_read_phy_register_clause22() contained
+unreachable code and redundant control statements.
 
-Alexander Duyck fixes napi_poll function to return the actual the 
-work done.
+This change removes the unreachable code. And deletes the redundant
+goto statement and if statement.
 
-Bimmy Pujari changes version from 1.6.21 to 1.6.25.
+Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+Change-ID: I713032b1585396f40f903cbcfdea987abd874400
+---
+Testing Hints:
+    Found by static analysis. Test by code inspection.
+ 
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-Carolyn Wyborny adds code for change message to only appear when 
-extra debug info is wanted.
-
-Filip Sadowski adds code to make driver prints log message on link 
-speed change.
-
-Harshitha Ramamurthy adds fix for ethtool Supported link modes.
-
-Henry Tieman removes unreachable code, adds code to pass unknown 
-PHY type for unknown PHYs and adds code to link LED on 1G BaseT 
-boards.
-
-Jacob Keller adds code to protect against NULL msix_entries and 
-q_vectors pointers, sets broadcast promiscuous mode for each active 
-VLAN, replaces memcpy with single memcpy call in ethtool, restores 
-workaround for removing default MAC filter and removes code to handle 
-dev_addr specially.
-
-Mitch Williams adds code to simplify txd use count calculation.
-
- drivers/net/ethernet/intel/i40e/i40e.h             |   4 +-
- drivers/net/ethernet/intel/i40e/i40e_common.c      |  46 ++++-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  50 +++--
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 207 ++++++++++++++-------
- drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   3 +
- drivers/net/ethernet/intel/i40e/i40e_txrx.c        |   2 +-
- drivers/net/ethernet/intel/i40e/i40e_txrx.h        |  45 +++--
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   7 +
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |   2 +-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |  45 +++--
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  28 ++-
- 11 files changed, 296 insertions(+), 143 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 4672bf1..b0358c0 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -4439,19 +4439,12 @@ i40e_status i40e_read_phy_register_clause22(struct i40e_hw *hw, u16 reg,
+ 	if (status) {
+ 		i40e_debug(hw, I40E_DEBUG_PHY,
+ 			   "PHY: Can't write command to external PHY.\n");
+-		goto phy_read_end;
+-	}
+-
+-	if (!status) {
++	} else {
+ 		command = rd32(hw, I40E_GLGEN_MSRWD(port_num));
+ 		*value = (command & I40E_GLGEN_MSRWD_MDIRDDATA_MASK) >>
+ 			 I40E_GLGEN_MSRWD_MDIRDDATA_SHIFT;
+-	} else {
+-		i40e_debug(hw, I40E_DEBUG_PHY,
+-			   "PHY: Can't read register value from external PHY.\n");
+ 	}
+ 
+-phy_read_end:
+ 	return status;
+ }
+ 
 -- 
 2.4.11
 
