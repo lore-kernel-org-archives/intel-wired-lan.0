@@ -1,66 +1,80 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Tue,  8 Nov 2016 22:49:18 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 3/3] ptp: dp83640: Use the high
-	resolution frequency method.
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 8 Nov 2016 21:56:54 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 0/3] PHC frequency fine tuning
 In-Reply-To: <cover.1478526333.git.richardcochran@gmail.com>
 References: <cover.1478526333.git.richardcochran@gmail.com>
-Message-ID: <d7d35004cd2769efcd0e26b0b78d2890bd5c9d40.1478526333.git.richardcochran@gmail.com>
+Message-ID: <1478642213.7545.36.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The dp83640 has a frequency resolution of about 0.029 ppb.
-This patch lets users of the device benefit from the
-increased frequency resolution when tuning the clock.
+On Tue, 2016-11-08 at 22:49 +0100, Richard Cochran wrote:
+> This series expands the PTP Hardware Clock subsystem by adding a
+> method that passes the frequency tuning word to the the drivers
+> without dropping the low order bits.??Keeping those bits is useful
+> for
+> drivers whose frequency resolution is higher than 1 ppb.
+> 
 
-Signed-off-by: Richard Cochran <richardcochran@gmail.com>
----
- drivers/net/phy/dp83640.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+Makes sense.
 
-diff --git a/drivers/net/phy/dp83640.c b/drivers/net/phy/dp83640.c
-index 7a240fc..e2460a5 100644
---- a/drivers/net/phy/dp83640.c
-+++ b/drivers/net/phy/dp83640.c
-@@ -375,7 +375,7 @@ static int periodic_output(struct dp83640_clock *clock,
- 
- /* ptp clock methods */
- 
--static int ptp_dp83640_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
-+static int ptp_dp83640_adjfine(struct ptp_clock_info *ptp, long scaled_ppm)
- {
- 	struct dp83640_clock *clock =
- 		container_of(ptp, struct dp83640_clock, caps);
-@@ -384,13 +384,13 @@ static int ptp_dp83640_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
- 	int neg_adj = 0;
- 	u16 hi, lo;
- 
--	if (ppb < 0) {
-+	if (scaled_ppm < 0) {
- 		neg_adj = 1;
--		ppb = -ppb;
-+		scaled_ppm = -scaled_ppm;
- 	}
--	rate = ppb;
--	rate <<= 26;
--	rate = div_u64(rate, 1953125);
-+	rate = scaled_ppm;
-+	rate <<= 13;
-+	rate = div_u64(rate, 15625);
- 
- 	hi = (rate >> 16) & PTP_RATE_HI_MASK;
- 	if (neg_adj)
-@@ -1035,7 +1035,7 @@ static void dp83640_clock_init(struct dp83640_clock *clock, struct mii_bus *bus)
- 	clock->caps.n_per_out	= N_PER_OUT;
- 	clock->caps.n_pins	= DP83640_N_PINS;
- 	clock->caps.pps		= 0;
--	clock->caps.adjfreq	= ptp_dp83640_adjfreq;
-+	clock->caps.adjfine	= ptp_dp83640_adjfine;
- 	clock->caps.adjtime	= ptp_dp83640_adjtime;
- 	clock->caps.gettime64	= ptp_dp83640_gettime;
- 	clock->caps.settime64	= ptp_dp83640_settime;
--- 
-2.1.4
+> The appended script (below) runs a simple demonstration of the
+> improvement.??This test needs two Intel i210 PCIe cards installed in
+> the same PC, with their SDP0 pins connected by copper
+> wire.??Measuring
+> the estimated offset (from the ptp4l servo) and the true offset (from
+> the PPS) over one hour yields the following statistics.
+> 
+> > 
+> > ???????|???Est. Before |????Est. After |???True Before |????True
+> > After |
+> > --------+---------------+---------------+---------------+--------
+> > -------|
+> > min????| -5.200000e+01 | -1.600000e+01 | -3.100000e+01 |
+> > -1.000000e+00 |
+> > max????| +5.700000e+01 | +2.500000e+01 | +8.500000e+01 |
+> > +4.000000e+01 |
+> > pk-pk: | +1.090000e+02 | +4.100000e+01 | +1.160000e+02 |
+> > +4.100000e+01 |
+> > mean???| +6.472222e-02 | +1.277778e-02 | +2.422083e+01 |
+> > +1.826083e+01 |
+> > stddev | +1.158006e+01 | +4.581982e+00 | +1.207708e+01 |
+> > +4.981435e+00 |
+> 
+> Here the numbers in units of nanoseconds, and the ~20 nanosecond PPS
+> offset is due to input/output delays on the i210's external interface
+> logic.
+> 
+> With the series applied, both the peak to peak error and the standard
+> deviation improve by a factor of more than two.??These two graphs
+> show
+> the improvement nicely.
+> 
+> ? http://linuxptp.sourceforge.net/fine-tuning/fine-est.png
+> 
+> ? http://linuxptp.sourceforge.net/fine-tuning/fine-tru.png
+> 
 
+Wow, nice! I'll take a look at the actual patches in a few minutes, but
+this is a really nice improvement!
+
+Thanks,
+Jake
+
+> 
+> Thanks,
+> Richard
+> 
+> Richard Cochran (3):
+> ? ptp: Introduce a high resolution frequency adjustment method.
+> ? ptp: igb: Use the high resolution frequency method.
+> ? ptp: dp83640: Use the high resolution frequency method.
+> 
+> ?drivers/net/ethernet/intel/igb/igb_ptp.c | 16 ++++++++--------
+> ?drivers/net/phy/dp83640.c????????????????| 14 +++++++-------
+> ?drivers/ptp/ptp_clock.c??????????????????|??5 ++++-
+> ?include/linux/ptp_clock_kernel.h?????????|??8 ++++++++
+> ?4 files changed, 27 insertions(+), 16 deletions(-)
+> 
