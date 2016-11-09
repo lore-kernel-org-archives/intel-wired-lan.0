@@ -1,75 +1,71 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 9 Nov 2016 08:28:34 -0800
-Subject: [Intel-wired-lan] [PATCH] igb: use igb_adapter->io_addr instead
-	of e1000_hw->hw_addr
-In-Reply-To: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
-References: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
-Message-ID: <CAKgT0UfA5jcr_1bB1=iVoBJuwLkwagNL_MUeoAq8q=Ep_OATXg@mail.gmail.com>
+Date: Wed, 9 Nov 2016 09:12:37 -0800
+Subject: [Intel-wired-lan] [PATCH net] igb: re-assign hw address pointer
+ on reset after PCI error
+In-Reply-To: <1477944749-22822-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+References: <1477944749-22822-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Message-ID: <CAKgT0UdYrO14ytSgPfa6KgC0OPaydqtd2-j2+AQFgJMgz69d+w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Nov 7, 2016 at 11:06 PM, Cao jin <caoj.fnst@cn.fujitsu.com> wrote:
-> When running as guest, under certain condition, it will oops as following.
-> writel() in igb_configure_tx_ring() results in oops, because hw->hw_addr
-> is NULL. While other register access won't oops kernel because they use
-> wr32/rd32 which have a defense against NULL pointer.
+On Mon, Oct 31, 2016 at 1:12 PM, Guilherme G. Piccoli
+<gpiccoli@linux.vnet.ibm.com> wrote:
+> Whenever the igb driver detects the result of a read operation returns
+> a value composed only by F's (like 0xFFFFFFFF), it will detach the
+> net_device, clear the hw_addr pointer and warn to the user that adapter's
+> link is lost - those steps happen on igb_rd32().
 >
->     [  141.225449] pcieport 0000:00:1c.0: AER: Multiple Uncorrected (Fatal)
->     error received: id=0101
->     [  141.225523] igb 0000:01:00.1: PCIe Bus Error:
->     severity=Uncorrected (Fatal), type=Unaccessible,
->     id=0101(Unregistered Agent ID)
->     [  141.299442] igb 0000:01:00.1: broadcast error_detected message
->     [  141.300539] igb 0000:01:00.0 enp1s0f0: PCIe link lost, device now
->     detached
->     [  141.351019] igb 0000:01:00.1 enp1s0f1: PCIe link lost, device now
->     detached
->     [  143.465904] pcieport 0000:00:1c.0: Root Port link has been reset
->     [  143.465994] igb 0000:01:00.1: broadcast slot_reset message
->     [  143.466039] igb 0000:01:00.0: enabling device (0000 -> 0002)
->     [  144.389078] igb 0000:01:00.1: enabling device (0000 -> 0002)
->     [  145.312078] igb 0000:01:00.1: broadcast resume message
->     [  145.322211] BUG: unable to handle kernel paging request at
->     0000000000003818
->     [  145.361275] IP: [<ffffffffa02fd38d>]
->     igb_configure_tx_ring+0x14d/0x280 [igb]
->     [  145.400048] PGD 0
->     [  145.438007] Oops: 0002 [#1] SMP
+> In case a PCI error happens on Power architecture, there's a recovery
+> mechanism called EEH, that will reset the PCI slot and call driver's
+> handlers to reset the adapter and network functionality as well.
 >
-> A similiar issue & solution could be found at:
->     http://patchwork.ozlabs.org/patch/689592/
+> We observed that once hw_addr is NULL after the error is detected on
+> igb_rd32(), it's never assigned back, so in the process of resetting
+> the network functionality we got a NULL pointer dereference in both
+> igb_configure_tx_ring() and igb_configure_rx_ring(). In order to avoid
+> such bug, we re-assign the hw_addr value in the beginning of the
+> function igb_reset(), in case the hw_addr is NULL when we reach that
+> path.
 >
-> Signed-off-by: Cao jin <caoj.fnst@cn.fujitsu.com>
+> Reported-by: Anthony H. Thai <ahthai@us.ibm.com>
+> Reported-by: Harsha Thyagaraja <hathyaga@in.ibm.com>
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/igb/igb_main.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
 >
 > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index edc9a6a..3f240ac 100644
+> index edc9a6a..c19119c 100644
 > --- a/drivers/net/ethernet/intel/igb/igb_main.c
 > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -3390,7 +3390,7 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
->              tdba & 0x00000000ffffffffULL);
->         wr32(E1000_TDBAH(reg_idx), tdba >> 32);
+> @@ -1873,6 +1873,13 @@ void igb_reset(struct igb_adapter *adapter)
+>         struct e1000_fc_info *fc = &hw->fc;
+>         u32 pba, hwm;
 >
-> -       ring->tail = hw->hw_addr + E1000_TDT(reg_idx);
-> +       ring->tail = adapter->io_addr + E1000_TDT(reg_idx);
->         wr32(E1000_TDH(reg_idx), 0);
->         writel(0, ring->tail);
->
-> @@ -3729,7 +3729,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
->              ring->count * sizeof(union e1000_adv_rx_desc));
->
->         /* initialize head and tail */
-> -       ring->tail = hw->hw_addr + E1000_RDT(reg_idx);
-> +       ring->tail = adapter->io_addr + E1000_RDT(reg_idx);
->         wr32(E1000_RDH(reg_idx), 0);
->         writel(0, ring->tail);
->
+> +       /* In case of PCI error, adapter might have lost its HW
+> +        * address; if we reached this point after an error scenario,
+> +        * we should re-assign the hw_addr based on the saved io_addr.
+> +        */
+> +       if (!hw->hw_addr)
+> +               hw->hw_addr = adapter->io_addr;
+> +
+>         /* Repartition Pba for greater than 9k mtu
+>          * To take effect CTRL.RST is required.
+>          */
 
-This patch looks good to me.
+It seems like this would have the potential to get noisy pretty
+quickly since every reset would retrigger this.
 
-Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
+It might make more sense to move this line into igb_io_slot_reset and
+igb_resume where the device would have gone through a reset of some
+sort and then had the state of the device restored and the device
+memory access was re-enabled via pci_enable_device_mem.  Also there is
+no point in really doing the "if" since you should always be okay to
+overwrite hw->hw_addr with adapter->io_addr.
+
+Thanks.
+
+- Alex
