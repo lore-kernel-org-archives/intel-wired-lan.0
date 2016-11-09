@@ -1,94 +1,84 @@
-From: Tantilov, Emil S <emil.s.tantilov@intel.com>
-Date: Wed, 9 Nov 2016 20:43:18 +0000
-Subject: [Intel-wired-lan] [PATCH v3] ixgbevf: handle race between close
- and suspend on shutdown
-In-Reply-To: <CAKgT0Ufr3v=+svxtit2+t_m5sNphN0A9Ke2OV7OBjTZe6VzNcQ@mail.gmail.com>
-References: <20161108201800.10886.90964.stgit@localhost6.localdomain6>
- <CAKgT0Uc7i=YnVYhzGCwfiwrNzsBvkpVjS7r3Yn_myBtBe08DOg@mail.gmail.com>
- <87618083B2453E4A8714035B62D6799250709CDF@FMSMSX105.amr.corp.intel.com>
- <CAKgT0Ufr3v=+svxtit2+t_m5sNphN0A9Ke2OV7OBjTZe6VzNcQ@mail.gmail.com>
-Message-ID: <87618083B2453E4A8714035B62D6799250709F0B@FMSMSX105.amr.corp.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Wed, 9 Nov 2016 21:40:04 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 2/3] ptp: igb: Use the high
+ resolution frequency method.
+In-Reply-To: <20161109131146.GA6491@localhost.localdomain>
+References: <cover.1478526333.git.richardcochran@gmail.com>
+ <b1d732324e0b1960b294e90ca5eb2a31b6559188.1478526333.git.richardcochran@gmail.com>
+ <1478642533.7545.38.camel@intel.com>
+ <20161109131146.GA6491@localhost.localdomain>
+Message-ID: <02874ECE860811409154E81DA85FBB5857C68AFE@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
->Sent: Tuesday, November 08, 2016 11:09 PM
->To: Tantilov, Emil S <emil.s.tantilov@intel.com>
->Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
->Subject: Re: [Intel-wired-lan] [PATCH v3] ixgbevf: handle race between
->close and suspend on shutdown
->
->
->
->On Tuesday, November 8, 2016, Tantilov, Emil S <emil.s.tantilov@intel.com
-><mailto:emil.s.tantilov@intel.com> > wrote:
->
->
->	>-----Original Message-----
->	>From: Alexander Duyck [mailto:alexander.duyck at gmail.com
-><javascript:;> ]
->	>Sent: Tuesday, November 08, 2016 7:24 PM
->	>To: Tantilov, Emil S <emil.s.tantilov@intel.com <javascript:;> >
->	>Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org <javascript:;>
->>
->	>Subject: Re: [Intel-wired-lan] [PATCH v3] ixgbevf: handle race
->between
->	>close and suspend on shutdown
->	>
->	>On Tue, Nov 8, 2016 at 12:18 PM, Emil Tantilov
->	><emil.s.tantilov@intel.com <javascript:;> > wrote:
->	>> When an interface is part of a namespace it is possible that
->	>> ixgbevf_close() may be called while ixgbevf_suspend() is running
->	>> which ends up in a double free WARN and/or a BUG in
->free_msi_irqs()
->	>>
->	>> To handle this situation we extend the rtnl_lock() to protect the
->	>> call to netif_device_detach() and check for
->!netif_device_present()
->	>> to avoid entering close while in suspend.
->	>>
->	>> Also added rtnl locks to ixgbevf_queue_reset_subtask().
->	>>
->	>> -v2 handle the race with netif_device_detach/present() and rtnl
->	>> locks as suggested by Alex Duyck
->	>>
->	>> -v3 add rtnl locks and check in ixgbevf_remove()
->	>
->	>I'm not sure where you got the idea that you needed to add the
->checks
->	>to ixgbevf_remove, but I'm pretty sure you don't need to.
->
->	When injecting PCIe AER error and the device fails to recover we end
->up
->	in a situation where removing the driver (rmmod) will trigger BUG_ON
->in
->	free_msi_irqs(), so not exactly a race and the rtnl locks may not be
->needed,
->	but we need the check to make sure we don't double free.
->
->	If netif_device_present() is not a good check I suppose we can check
->for __IXGBEVF_DISABLED.
->
->	Thanks,
->	Emil
->
->
->The problem is that I don't think we free the irq in the AER detach case.
->The error paths need to be updated to match the state of the suspend/resume
->state.
+> -----Original Message-----
+> From: Richard Cochran [mailto:richardcochran at gmail.com]
+> Sent: Wednesday, November 09, 2016 5:12 AM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> Cc: netdev at vger.kernel.org; tglx at linutronix.de; Manfred.Rudigier at omicron.at;
+> ulrik.debie-os at e2big.org; stefan.sorensen at spectralink.com;
+> davem at davemloft.net; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
+> john.stultz at linaro.org; intel-wired-lan at lists.osuosl.org
+> Subject: Re: [PATCH net-next 2/3] ptp: igb: Use the high resolution frequency
+> method.
+> 
+> On Tue, Nov 08, 2016 at 10:02:22PM +0000, Keller, Jacob E wrote:
+> > On Tue, 2016-11-08 at 22:49 +0100, Richard Cochran wrote:
+> > > -	rate = ppb;
+> > > -	rate <<= 26;
+> > > -	rate = div_u64(rate, 1953125);
+> > > +	rate = scaled_ppm;
+> > > +	rate <<= 13;
+> > > +	rate = div_u64(rate, 15625);
+> >
+> > I'm curious how you generate the new math here, since this can be
+> > tricky, and I could use more examples in order to port to some of the
+> > other drivers implementations. I'm not quit sure how to handle the
+> > value when the lower 16 bits are fractional.
+> 
+> TL;DR version:
+> 
+> In ptp_clock.c we convert scaled_ppm to ppb like this.
+> 
+> 	ppb = scaled_ppm * 10^3 * 2^-16
+> 
+> If you already have a working driver that does
+> 
+> 	regval = ppb * SOMEMATH;
+> 
+> then just substitute
+> 
+> 	regval = (scaled_ppm * 10^3 * 2^-16) * SOMEMATH;
+> 	       = (scaled_ppm *  5^3 * 2^-13) * SOMEMATH;
+> 
+> and simplify by combining the 5^3 and 2^-13 constants into SOMEMATH.
+> 
 
-Actually I think the problem may be exactly that we did not free the IRQs,
-but I lost the failing setup and can't debug this further at the moment.
+Thanks, this makes more sense :)
 
-Jeff,
+> Longer explanation:
+> 
+> You have to consider how the frequency adjustment HW works, case by
+> case.  Both the i210 and the phyter have an adjustment register that
+> holds units of 2^-32 nanoseconds per 8 nanosecond clock period, and so
+> the rate from adjustment value 1 is (2^-32 / 8).
+> 
+> Then with the old interface, the conversion from "adjustment unit" to
+> ppb was (2^-32 / 8 * 10^9) or (2^-26 * 5^9).  The conversion the other
+> way needs the inverse, and so the code did (ppb << 26) / 5^9.
+> 
+> With the new interface, the conversion from "adjustment unit" to
+> scaled_ppm is (2^-32 / 8 * 10^6 * 2^16) or (2^-13 * 5^6).  The code
+> converts the other direction using the inverse, (s_ppm << 13) / 5^6.
+> 
 
-Could you drop this and the related ixgbe patches to their previous versions?
-Or if it's easier I can submit v4/3 without the ixgbe/vf_remove() pieces.
+Right. This helps.
 
 Thanks,
-Emil
+Jake
 
+> HTH,
+> Richard
