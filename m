@@ -1,116 +1,75 @@
-From: Cao jin <caoj.fnst@cn.fujitsu.com>
-Date: Wed, 9 Nov 2016 21:28:03 +0800
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 9 Nov 2016 08:28:34 -0800
 Subject: [Intel-wired-lan] [PATCH] igb: use igb_adapter->io_addr instead
- of e1000_hw->hw_addr
-In-Reply-To: <CAKgT0UeaoGfOOC1=h4pGk+=FDd5EqvgRGAdk1StLuiW1-M8tVA@mail.gmail.com>
+	of e1000_hw->hw_addr
+In-Reply-To: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
 References: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
- <20161108164214.GF31855@calimero.vinschen.de>
- <alpine.NEB.2.20.17.1611080910530.6177@chris.i8u.org>
- <20161108183739.GA3744@calimero.vinschen.de>
- <CAKgT0UeaoGfOOC1=h4pGk+=FDd5EqvgRGAdk1StLuiW1-M8tVA@mail.gmail.com>
-Message-ID: <58232463.7030107@cn.fujitsu.com>
+Message-ID: <CAKgT0UfA5jcr_1bB1=iVoBJuwLkwagNL_MUeoAq8q=Ep_OATXg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks Corrina for your info.
-
-I tested my patch, it works for me on kernel 4.9-rc4.
-"surprise removal" maybe another issue to solve. This one is enough to 
-solve my issue and other one's, could it be accept first?
-
-Cao jin
-
-On 11/09/2016 03:33 AM, Alexander Duyck wrote:
-> On Tue, Nov 8, 2016 at 10:37 AM, Corinna Vinschen <vinschen@redhat.com> wrote:
->> On Nov  8 09:16, Hisashi T Fujinaka wrote:
->>> On Tue, 8 Nov 2016, Corinna Vinschen wrote:
->>>> On Nov  8 15:06, Cao jin wrote:
->>>>> When running as guest, under certain condition, it will oops as following.
->>>>> writel() in igb_configure_tx_ring() results in oops, because hw->hw_addr
->>>>> is NULL. While other register access won't oops kernel because they use
->>>>> wr32/rd32 which have a defense against NULL pointer.
->>>>> [...]
->>>>
->>>> Incidentally we're just looking for a solution to that problem too.
->>>> Do three patches to fix the same problem at rougly the same time already
->>>> qualify as freak accident?
->>>>
->>>> FTR, I attached my current patch, which I was planning to submit after
->>>> some external testing.
->>>>
->>>> However, all three patches have one thing in common:  They workaround
->>>> a somewhat dubious resetting of the hardware address to NULL in case
->>>> reading from a register failed.
->>>>
->>>> That makes me wonder if setting the hardware address to NULL in
->>>> rd32/igb_rd32 is really such a good idea.  It's performed in a function
->>>> which return value is *never* tested for validity in the calling
->>>> functions and leads to subsequent crashes since no tests for hw_addr ==
->>>> NULL are performed.
->>>>
->>>> Maybe commit 22a8b2915 should be reconsidered?  Isn't there some more
->>>> graceful way to handle the "surprise removal"?
->>>
->>> Answering this from my home account because, well, work is Outlook.
->>>
->>> "Reconsidering" would be great. In fact, revert if if you'd like. I'm
->>> uncertain that the surprise removal code actually works the way I
->>> thought previously and I think I took a lot of it out of my local code.
->>>
->>> Unfortuantely I don't have any equipment that I can use to reproduce
->>> surprise removal any longer so that means I wouldn't be able to test
->>> anything. I have to defer to you or Cao Jin.
->>
->> I'm not too keen to rip out a PCIe NIC under power from my locale
->> desktop machine, but I think an actual surprise removal is not the
->> problem.
->>
->> As described in my git log entry, the error condition in igb_rd32 can be
->> triggered during a suspend.  The HW has been put into a sleep state but
->> some register read requests are apparently not guarded against that
->> situation.  Reading a register in this state returns -1, thus a suspend
->> is erroneously triggering the "surprise removal" sequence.
+On Mon, Nov 7, 2016 at 11:06 PM, Cao jin <caoj.fnst@cn.fujitsu.com> wrote:
+> When running as guest, under certain condition, it will oops as following.
+> writel() in igb_configure_tx_ring() results in oops, because hw->hw_addr
+> is NULL. While other register access won't oops kernel because they use
+> wr32/rd32 which have a defense against NULL pointer.
 >
-> The question I would have is what is reading the device when it is in
-> this state.  The watchdog and any other functions that would read the
-> device should be disabled.
+>     [  141.225449] pcieport 0000:00:1c.0: AER: Multiple Uncorrected (Fatal)
+>     error received: id=0101
+>     [  141.225523] igb 0000:01:00.1: PCIe Bus Error:
+>     severity=Uncorrected (Fatal), type=Unaccessible,
+>     id=0101(Unregistered Agent ID)
+>     [  141.299442] igb 0000:01:00.1: broadcast error_detected message
+>     [  141.300539] igb 0000:01:00.0 enp1s0f0: PCIe link lost, device now
+>     detached
+>     [  141.351019] igb 0000:01:00.1 enp1s0f1: PCIe link lost, device now
+>     detached
+>     [  143.465904] pcieport 0000:00:1c.0: Root Port link has been reset
+>     [  143.465994] igb 0000:01:00.1: broadcast slot_reset message
+>     [  143.466039] igb 0000:01:00.0: enabling device (0000 -> 0002)
+>     [  144.389078] igb 0000:01:00.1: enabling device (0000 -> 0002)
+>     [  145.312078] igb 0000:01:00.1: broadcast resume message
+>     [  145.322211] BUG: unable to handle kernel paging request at
+>     0000000000003818
+>     [  145.361275] IP: [<ffffffffa02fd38d>]
+>     igb_configure_tx_ring+0x14d/0x280 [igb]
+>     [  145.400048] PGD 0
+>     [  145.438007] Oops: 0002 [#1] SMP
 >
-> One possibility could be a race between a call to igb_close and the
-> igb_suspend function.  We have seen some of those pop up recently on
-> ixgbe and it looks like igb has the same bug.  We should probably be
-> using the rtnl_lock to guarantee that netif_device_detach and the call
-> to __igb_close are completed before igb_close could possibly be called
-> by the network stack.
+> A similiar issue & solution could be found at:
+>     http://patchwork.ozlabs.org/patch/689592/
 >
->> Here's a raw idea:
->>
->> - Note that device is suspended in e1000_hw struct.  Don't trigger
->>    error sequence in igb_rd32 if so (...and return a 0 value???)
+> Signed-off-by: Cao jin <caoj.fnst@cn.fujitsu.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> The thing is that a suspended device should not be accessed at all.
-> If we are accessing it while it is suspended then that is a bug.  If
-> you could throw a WARN_ON call in igb_rd32 to capture where this is
-> being triggered that might be useful.
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index edc9a6a..3f240ac 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -3390,7 +3390,7 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
+>              tdba & 0x00000000ffffffffULL);
+>         wr32(E1000_TDBAH(reg_idx), tdba >> 32);
 >
->> - Otherwise assume it's actually a surprise removal.  In theory that
->>    should somehow trigger a device removal sequence, kind of like
->>    calling igb_remove, no?
+> -       ring->tail = hw->hw_addr + E1000_TDT(reg_idx);
+> +       ring->tail = adapter->io_addr + E1000_TDT(reg_idx);
+>         wr32(E1000_TDH(reg_idx), 0);
+>         writel(0, ring->tail);
 >
-> Well a read of the MMIO region while suspended is more of a surprise
-> read since there shouldn't be anything going on.  We need to isolate
-> where that read is coming from and fix it.
+> @@ -3729,7 +3729,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+>              ring->count * sizeof(union e1000_adv_rx_desc));
 >
-> Thanks.
->
-> - Alex
->
->
-> .
+>         /* initialize head and tail */
+> -       ring->tail = hw->hw_addr + E1000_RDT(reg_idx);
+> +       ring->tail = adapter->io_addr + E1000_RDT(reg_idx);
+>         wr32(E1000_RDH(reg_idx), 0);
+>         writel(0, ring->tail);
 >
 
+This patch looks good to me.
 
-
-
+Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
