@@ -1,25 +1,116 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Wed, 9 Nov 2016 14:15:11 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 2/3] ptp: igb: Use the high
- resolution frequency method.
-In-Reply-To: <1478642646.7545.39.camel@intel.com>
-References: <cover.1478526333.git.richardcochran@gmail.com>
- <b1d732324e0b1960b294e90ca5eb2a31b6559188.1478526333.git.richardcochran@gmail.com>
- <1478642646.7545.39.camel@intel.com>
-Message-ID: <20161109131511.GB6491@localhost.localdomain>
+From: Cao jin <caoj.fnst@cn.fujitsu.com>
+Date: Wed, 9 Nov 2016 21:28:03 +0800
+Subject: [Intel-wired-lan] [PATCH] igb: use igb_adapter->io_addr instead
+ of e1000_hw->hw_addr
+In-Reply-To: <CAKgT0UeaoGfOOC1=h4pGk+=FDd5EqvgRGAdk1StLuiW1-M8tVA@mail.gmail.com>
+References: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
+ <20161108164214.GF31855@calimero.vinschen.de>
+ <alpine.NEB.2.20.17.1611080910530.6177@chris.i8u.org>
+ <20161108183739.GA3744@calimero.vinschen.de>
+ <CAKgT0UeaoGfOOC1=h4pGk+=FDd5EqvgRGAdk1StLuiW1-M8tVA@mail.gmail.com>
+Message-ID: <58232463.7030107@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Nov 08, 2016 at 10:04:23PM +0000, Keller, Jacob E wrote:
-> Additionally, what about min/max frequency check? Wouldn't this need to
-> be updated for the new adjfine operation?
+Thanks Corrina for your info.
 
-In theory you might increase the max by some sub-ppb value, but we
-cannot express that as the resolution of the user space interface is
-in ppb, and that little extra is not important anyhow.
+I tested my patch, it works for me on kernel 4.9-rc4.
+"surprise removal" maybe another issue to solve. This one is enough to 
+solve my issue and other one's, could it be accept first?
 
-Thanks,
-Richard
+Cao jin
+
+On 11/09/2016 03:33 AM, Alexander Duyck wrote:
+> On Tue, Nov 8, 2016 at 10:37 AM, Corinna Vinschen <vinschen@redhat.com> wrote:
+>> On Nov  8 09:16, Hisashi T Fujinaka wrote:
+>>> On Tue, 8 Nov 2016, Corinna Vinschen wrote:
+>>>> On Nov  8 15:06, Cao jin wrote:
+>>>>> When running as guest, under certain condition, it will oops as following.
+>>>>> writel() in igb_configure_tx_ring() results in oops, because hw->hw_addr
+>>>>> is NULL. While other register access won't oops kernel because they use
+>>>>> wr32/rd32 which have a defense against NULL pointer.
+>>>>> [...]
+>>>>
+>>>> Incidentally we're just looking for a solution to that problem too.
+>>>> Do three patches to fix the same problem at rougly the same time already
+>>>> qualify as freak accident?
+>>>>
+>>>> FTR, I attached my current patch, which I was planning to submit after
+>>>> some external testing.
+>>>>
+>>>> However, all three patches have one thing in common:  They workaround
+>>>> a somewhat dubious resetting of the hardware address to NULL in case
+>>>> reading from a register failed.
+>>>>
+>>>> That makes me wonder if setting the hardware address to NULL in
+>>>> rd32/igb_rd32 is really such a good idea.  It's performed in a function
+>>>> which return value is *never* tested for validity in the calling
+>>>> functions and leads to subsequent crashes since no tests for hw_addr ==
+>>>> NULL are performed.
+>>>>
+>>>> Maybe commit 22a8b2915 should be reconsidered?  Isn't there some more
+>>>> graceful way to handle the "surprise removal"?
+>>>
+>>> Answering this from my home account because, well, work is Outlook.
+>>>
+>>> "Reconsidering" would be great. In fact, revert if if you'd like. I'm
+>>> uncertain that the surprise removal code actually works the way I
+>>> thought previously and I think I took a lot of it out of my local code.
+>>>
+>>> Unfortuantely I don't have any equipment that I can use to reproduce
+>>> surprise removal any longer so that means I wouldn't be able to test
+>>> anything. I have to defer to you or Cao Jin.
+>>
+>> I'm not too keen to rip out a PCIe NIC under power from my locale
+>> desktop machine, but I think an actual surprise removal is not the
+>> problem.
+>>
+>> As described in my git log entry, the error condition in igb_rd32 can be
+>> triggered during a suspend.  The HW has been put into a sleep state but
+>> some register read requests are apparently not guarded against that
+>> situation.  Reading a register in this state returns -1, thus a suspend
+>> is erroneously triggering the "surprise removal" sequence.
+>
+> The question I would have is what is reading the device when it is in
+> this state.  The watchdog and any other functions that would read the
+> device should be disabled.
+>
+> One possibility could be a race between a call to igb_close and the
+> igb_suspend function.  We have seen some of those pop up recently on
+> ixgbe and it looks like igb has the same bug.  We should probably be
+> using the rtnl_lock to guarantee that netif_device_detach and the call
+> to __igb_close are completed before igb_close could possibly be called
+> by the network stack.
+>
+>> Here's a raw idea:
+>>
+>> - Note that device is suspended in e1000_hw struct.  Don't trigger
+>>    error sequence in igb_rd32 if so (...and return a 0 value???)
+>
+> The thing is that a suspended device should not be accessed at all.
+> If we are accessing it while it is suspended then that is a bug.  If
+> you could throw a WARN_ON call in igb_rd32 to capture where this is
+> being triggered that might be useful.
+>
+>> - Otherwise assume it's actually a surprise removal.  In theory that
+>>    should somehow trigger a device removal sequence, kind of like
+>>    calling igb_remove, no?
+>
+> Well a read of the MMIO region while suspended is more of a surprise
+> read since there shouldn't be anything going on.  We need to isolate
+> where that read is coming from and fix it.
+>
+> Thanks.
+>
+> - Alex
+>
+>
+> .
+>
+
+
+
+
