@@ -1,50 +1,46 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed,  9 Nov 2016 10:48:48 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Add bounds check for x540 LED
-	functions
-Message-ID: <1478717328-2168-1-git-send-email-anthony.l.nguyen@intel.com>
+Date: Wed,  9 Nov 2016 10:50:06 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Reduce I2C retry count on X550
+	devices
+Message-ID: <1478717406-2295-1-git-send-email-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is an extension of commit 003287e0f087 ("ixgbevf: Correct parameter
-sent to LED function"); add bounds checking to x540 functions to ensure the
-index is valid.
+A retry count of 10 is likely to run into problems on X550 devices that
+have to detect and reset unresponsive CS4227 devices. So, reduce the I2C
+retry count to 3 for X550 and above. This should avoid any possible
+regressions in existing devices.
 
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-index e2ff823..afc4d16 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-@@ -780,8 +780,10 @@ s32 ixgbe_blink_led_start_X540(struct ixgbe_hw *hw, u32 index)
- 	ixgbe_link_speed speed;
- 	bool link_up;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 4aa6793..10a102c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -121,6 +121,8 @@ s32 ixgbe_read_i2c_combined_generic_int(struct ixgbe_hw *hw, u8 addr,
+ 	u8 reg_high;
+ 	u8 csum;
  
--	/*
--	 * Link should be up in order for the blink bit in the LED control
-+	if (index > 3)
-+		return IXGBE_ERR_PARAM;
-+
-+	/* Link should be up in order for the blink bit in the LED control
- 	 * register to work. Force link and speed in the MAC if link is down.
- 	 * This will be reversed when we stop the blinking.
- 	 */
-@@ -814,6 +816,9 @@ s32 ixgbe_blink_led_stop_X540(struct ixgbe_hw *hw, u32 index)
- 	u32 macc_reg;
- 	u32 ledctl_reg;
++	if (hw->mac.type >= ixgbe_mac_X550)
++		max_retry = 3;
+ 	reg_high = ((reg >> 7) & 0xFE) | 1;     /* Indicate read combined */
+ 	csum = ixgbe_ones_comp_byte_add(reg_high, reg & 0xFF);
+ 	csum = ~csum;
+@@ -1756,6 +1758,8 @@ static s32 ixgbe_read_i2c_byte_generic_int(struct ixgbe_hw *hw, u8 byte_offset,
+ 	u32 swfw_mask = hw->phy.phy_semaphore_mask;
+ 	bool nack = true;
  
-+	if (index > 3)
-+		return IXGBE_ERR_PARAM;
-+
- 	/* Restore the LED to its default value. */
- 	ledctl_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
- 	ledctl_reg &= ~IXGBE_LED_MODE_MASK(index);
++	if (hw->mac.type >= ixgbe_mac_X550)
++		max_retry = 3;
+ 	if (ixgbe_is_sfp_probe(hw, byte_offset, dev_addr))
+ 		max_retry = IXGBE_SFP_DETECT_RETRIES;
+ 
 -- 
 2.4.0
 
