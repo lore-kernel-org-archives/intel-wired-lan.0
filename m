@@ -1,190 +1,138 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 09 Nov 2016 06:51:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 0344b2dfe0d0e4166360a22822bab4e187f7201e
-Message-ID: <5822570e.P7S27YRMCCW4CPsg%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 8 Nov 2016 19:23:51 -0800
+Subject: [Intel-wired-lan] [PATCH v3] ixgbevf: handle race between close
+ and suspend on shutdown
+In-Reply-To: <20161108201800.10886.90964.stgit@localhost6.localdomain6>
+References: <20161108201800.10886.90964.stgit@localhost6.localdomain6>
+Message-ID: <CAKgT0Uc7i=YnVYhzGCwfiwrNzsBvkpVjS7r3Yn_myBtBe08DOg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-0344b2dfe0d0e4166360a22822bab4e187f7201e  igb: re-assign hw address pointer on reset after PCI error
+On Tue, Nov 8, 2016 at 12:18 PM, Emil Tantilov
+<emil.s.tantilov@intel.com> wrote:
+> When an interface is part of a namespace it is possible that
+> ixgbevf_close() may be called while ixgbevf_suspend() is running
+> which ends up in a double free WARN and/or a BUG in free_msi_irqs()
+>
+> To handle this situation we extend the rtnl_lock() to protect the
+> call to netif_device_detach() and check for !netif_device_present()
+> to avoid entering close while in suspend.
+>
+> Also added rtnl locks to ixgbevf_queue_reset_subtask().
+>
+> -v2 handle the race with netif_device_detach/present() and rtnl
+> locks as suggested by Alex Duyck
+>
+> -v3 add rtnl locks and check in ixgbevf_remove()
 
-elapsed time: 69m
+I'm not sure where you got the idea that you needed to add the checks
+to ixgbevf_remove, but I'm pretty sure you don't need to.
 
-configs tested: 166
+The call to unregister_netdev takes the rtnl_lock and will then call
+close on the interface.  So you don't have to worry about racing
+against anything that might take the rtnl.  As far as remove versus
+suspend the two are protected by a PCI lock if I remember correctly so
+you shouldn't be able to call both at the same time.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> CC: Alexander Duyck <alexander.h.duyck@intel.com>
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   19 +++++++++++++++----
+>  1 file changed, 15 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> index d316f50..eac594c 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> @@ -3242,6 +3242,9 @@ int ixgbevf_close(struct net_device *netdev)
+>  {
+>         struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+>
+> +       if (!netif_device_present(netdev))
+> +               return 0;
+> +
+>         ixgbevf_down(adapter);
+>         ixgbevf_free_irq(adapter);
+>
+> @@ -3268,6 +3271,8 @@ static void ixgbevf_queue_reset_subtask(struct ixgbevf_adapter *adapter)
+>          * match packet buffer alignment. Unfortunately, the
+>          * hardware is not flexible enough to do this dynamically.
+>          */
+> +       rtnl_lock();
+> +
+>         if (netif_running(dev))
+>                 ixgbevf_close(dev);
+>
+> @@ -3276,6 +3281,8 @@ static void ixgbevf_queue_reset_subtask(struct ixgbevf_adapter *adapter)
+>
+>         if (netif_running(dev))
+>                 ixgbevf_open(dev);
+> +
+> +       rtnl_unlock();
+>  }
+>
+>  static void ixgbevf_tx_ctxtdesc(struct ixgbevf_ring *tx_ring,
+> @@ -3792,17 +3799,17 @@ static int ixgbevf_suspend(struct pci_dev *pdev, pm_message_t state)
+>         int retval = 0;
+>  #endif
+>
+> +       rtnl_lock();
+>         netif_device_detach(netdev);
+>
+>         if (netif_running(netdev)) {
+> -               rtnl_lock();
+>                 ixgbevf_down(adapter);
+>                 ixgbevf_free_irq(adapter);
+>                 ixgbevf_free_all_tx_resources(adapter);
+>                 ixgbevf_free_all_rx_resources(adapter);
+>                 ixgbevf_clear_interrupt_scheme(adapter);
+> -               rtnl_unlock();
+>         }
+> +       rtnl_unlock();
+>
+>  #ifdef CONFIG_PM
+>         retval = pci_save_state(pdev);
+> @@ -4199,8 +4206,12 @@ static void ixgbevf_remove(struct pci_dev *pdev)
+>         if (netdev->reg_state == NETREG_REGISTERED)
+>                 unregister_netdev(netdev);
 
-i386                     randconfig-a0-201645
-x86_64                 randconfig-a0-11090419
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11090531
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-v0-11090439
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x011-201645
-x86_64                 randconfig-x014-201645
-x86_64                 randconfig-x015-201645
-x86_64                 randconfig-x017-201645
-x86_64                 randconfig-x012-201645
-x86_64                 randconfig-x018-201645
-x86_64                 randconfig-x019-201645
-x86_64                 randconfig-x013-201645
-x86_64                 randconfig-x016-201645
-x86_64                 randconfig-x010-201645
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201645
-i386                     randconfig-s1-201645
-x86_64                 randconfig-s0-11090455
-x86_64                 randconfig-s1-11090455
-x86_64                 randconfig-s2-11090455
-x86_64                 randconfig-s0-11090608
-x86_64                 randconfig-s1-11090608
-x86_64                 randconfig-s2-11090608
-x86_64                 randconfig-s3-11090530
-x86_64                 randconfig-s4-11090530
-x86_64                 randconfig-s5-11090530
-x86_64                   randconfig-i0-201645
-i386                   randconfig-b0-11090516
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201645
-i386                     randconfig-i1-201645
-x86_64                           allmodconfig
-arm                           sama5_defconfig
-avr32                  atngw100mkii_defconfig
-m68k                             allyesconfig
-x86_64                 randconfig-u0-11090436
-openrisc                         allmodconfig
-sh                        edosk7705_defconfig
-arm                            hisi_defconfig
-powerpc                 mpc8315_rdb_defconfig
-powerpc64                        alldefconfig
-i386                   randconfig-x010-201645
-i386                   randconfig-x011-201645
-i386                   randconfig-x012-201645
-i386                   randconfig-x013-201645
-i386                   randconfig-x014-201645
-i386                   randconfig-x015-201645
-i386                   randconfig-x016-201645
-i386                   randconfig-x017-201645
-i386                   randconfig-x018-201645
-i386                   randconfig-x019-201645
-i386                     randconfig-n0-201645
-i386                   randconfig-h0-11090459
-i386                   randconfig-h1-11090459
-blackfin                    DNP5370_defconfig
-frv                              allyesconfig
-powerpc                 mpc836x_rdk_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-11090502
-arm                          ep93xx_defconfig
-powerpc                       maple_defconfig
-x86_64                                  kexec
-x86_64                               rhel-7.2
-x86_64                 randconfig-n0-11090531
-x86_64                 randconfig-x000-201645
-x86_64                 randconfig-x001-201645
-x86_64                 randconfig-x002-201645
-x86_64                 randconfig-x003-201645
-x86_64                 randconfig-x004-201645
-x86_64                 randconfig-x005-201645
-x86_64                 randconfig-x006-201645
-x86_64                 randconfig-x007-201645
-x86_64                 randconfig-x008-201645
-x86_64                 randconfig-x009-201645
-x86_64                                   rhel
-i386                     randconfig-r0-201645
-i386                   randconfig-x000-201645
-i386                   randconfig-x001-201645
-i386                   randconfig-x002-201645
-i386                   randconfig-x003-201645
-i386                   randconfig-x004-201645
-i386                   randconfig-x005-201645
-i386                   randconfig-x006-201645
-i386                   randconfig-x007-201645
-i386                   randconfig-x008-201645
-i386                   randconfig-x009-201645
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-i386                   randconfig-x0-11090448
+So this line here should be what takes care of unregistering the
+netdev.  It will take care of the rtnl_lock/unlock calls for you and
+call close.
 
-Thanks,
-Fengguang
+> -       ixgbevf_clear_interrupt_scheme(adapter);
+> -       ixgbevf_reset_interrupt_capability(adapter);
+> +       rtnl_lock();
+> +       if (netif_device_present(netdev)) {
+> +               ixgbevf_clear_interrupt_scheme(adapter);
+> +               ixgbevf_reset_interrupt_capability(adapter);
+> +       }
+> +       rtnl_unlock();
+
+This is a definite nack.  We should always be calling these in the
+cleanup routine even if the network device is not present.
+
+The funny thing is that based on the setup it looks like some
+redundancy is okay with these calls.  It looks like
+ixgbevf_clear_interrupt_scheme calls
+ixgbevf_reset_interrupt_capability.  So calling the
+ixgbevf_reset_interrupt_capability more than once must have no effect.
+
+The one thing I might change is to add a check for NULL to
+ixgbevf_free_q_vectors.  It doesn't look like that function could
+handle us calling it more than once.  Other than that the rest of this
+is fine to leave it as is.
+
+The key bits are that while the netdev is present we have to rely on
+the rtnl_lock, once it is gone then the PCI device lock should keep us
+from doing multiple things on the same device at the same time.  The
+only thing we have to make sure of is that if we call
+ixgbevf_clear_interrupt_scheme in suspend that we can call it in
+remove without causing a NULL pointer deference.
+
+Thanks.
+
+- Alex
