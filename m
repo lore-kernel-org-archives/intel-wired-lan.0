@@ -1,84 +1,48 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 9 Nov 2016 21:40:04 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 2/3] ptp: igb: Use the high
- resolution frequency method.
-In-Reply-To: <20161109131146.GA6491@localhost.localdomain>
-References: <cover.1478526333.git.richardcochran@gmail.com>
- <b1d732324e0b1960b294e90ca5eb2a31b6559188.1478526333.git.richardcochran@gmail.com>
- <1478642533.7545.38.camel@intel.com>
- <20161109131146.GA6491@localhost.localdomain>
-Message-ID: <02874ECE860811409154E81DA85FBB5857C68AFE@ORSMSX115.amr.corp.intel.com>
+From: Tyler Baicar <tbaicar@codeaurora.org>
+Date: Wed,  9 Nov 2016 14:41:21 -0700
+Subject: [Intel-wired-lan] [PATCH v2] e1000e: free IRQ regardless of
+	__E1000_DOWN
+Message-ID: <1478727681-16505-1-git-send-email-tbaicar@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Richard Cochran [mailto:richardcochran at gmail.com]
-> Sent: Wednesday, November 09, 2016 5:12 AM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>
-> Cc: netdev at vger.kernel.org; tglx at linutronix.de; Manfred.Rudigier at omicron.at;
-> ulrik.debie-os at e2big.org; stefan.sorensen at spectralink.com;
-> davem at davemloft.net; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
-> john.stultz at linaro.org; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [PATCH net-next 2/3] ptp: igb: Use the high resolution frequency
-> method.
-> 
-> On Tue, Nov 08, 2016 at 10:02:22PM +0000, Keller, Jacob E wrote:
-> > On Tue, 2016-11-08 at 22:49 +0100, Richard Cochran wrote:
-> > > -	rate = ppb;
-> > > -	rate <<= 26;
-> > > -	rate = div_u64(rate, 1953125);
-> > > +	rate = scaled_ppm;
-> > > +	rate <<= 13;
-> > > +	rate = div_u64(rate, 15625);
-> >
-> > I'm curious how you generate the new math here, since this can be
-> > tricky, and I could use more examples in order to port to some of the
-> > other drivers implementations. I'm not quit sure how to handle the
-> > value when the lower 16 bits are fractional.
-> 
-> TL;DR version:
-> 
-> In ptp_clock.c we convert scaled_ppm to ppb like this.
-> 
-> 	ppb = scaled_ppm * 10^3 * 2^-16
-> 
-> If you already have a working driver that does
-> 
-> 	regval = ppb * SOMEMATH;
-> 
-> then just substitute
-> 
-> 	regval = (scaled_ppm * 10^3 * 2^-16) * SOMEMATH;
-> 	       = (scaled_ppm *  5^3 * 2^-13) * SOMEMATH;
-> 
-> and simplify by combining the 5^3 and 2^-13 constants into SOMEMATH.
-> 
+Move IRQ free code so that it will happen regardless of the
+__E1000_DOWN bit. Currently the e1000e driver only releases its IRQ
+if the __E1000_DOWN bit is cleared. This is not sufficient because
+it is possible for __E1000_DOWN to be set without releasing the IRQ.
+In such a situation, we will hit a kernel bug later in e1000_remove
+because the IRQ still has action since it was never freed. A
+secondary bus reset can cause this case to happen.
 
-Thanks, this makes more sense :)
+Signed-off-by: Tyler Baicar <tbaicar@codeaurora.org>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> Longer explanation:
-> 
-> You have to consider how the frequency adjustment HW works, case by
-> case.  Both the i210 and the phyter have an adjustment register that
-> holds units of 2^-32 nanoseconds per 8 nanosecond clock period, and so
-> the rate from adjustment value 1 is (2^-32 / 8).
-> 
-> Then with the old interface, the conversion from "adjustment unit" to
-> ppb was (2^-32 / 8 * 10^9) or (2^-26 * 5^9).  The conversion the other
-> way needs the inverse, and so the code did (ppb << 26) / 5^9.
-> 
-> With the new interface, the conversion from "adjustment unit" to
-> scaled_ppm is (2^-32 / 8 * 10^6 * 2^16) or (2^-13 * 5^6).  The code
-> converts the other direction using the inverse, (s_ppm << 13) / 5^6.
-> 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 7017281..36cfcb0 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4679,12 +4679,13 @@ int e1000e_close(struct net_device *netdev)
+ 
+ 	if (!test_bit(__E1000_DOWN, &adapter->state)) {
+ 		e1000e_down(adapter, true);
+-		e1000_free_irq(adapter);
+ 
+ 		/* Link status message must follow this format */
+ 		pr_info("%s NIC Link is Down\n", adapter->netdev->name);
+ 	}
+ 
++	e1000_free_irq(adapter);
++
+ 	napi_disable(&adapter->napi);
+ 
+ 	e1000e_free_tx_resources(adapter->tx_ring);
+-- 
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project.
 
-Right. This helps.
-
-Thanks,
-Jake
-
-> HTH,
-> Richard
