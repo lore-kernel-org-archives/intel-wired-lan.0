@@ -1,66 +1,94 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Wed, 9 Nov 2016 19:17:31 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Reduce I2C retry count on
-	X550	devices
-In-Reply-To: <1478717406-2295-1-git-send-email-anthony.l.nguyen@intel.com>
-References: <1478717406-2295-1-git-send-email-anthony.l.nguyen@intel.com>
-Message-ID: <21814759-D688-449F-B029-E3251806979F@intel.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Wed, 9 Nov 2016 20:43:18 +0000
+Subject: [Intel-wired-lan] [PATCH v3] ixgbevf: handle race between close
+ and suspend on shutdown
+In-Reply-To: <CAKgT0Ufr3v=+svxtit2+t_m5sNphN0A9Ke2OV7OBjTZe6VzNcQ@mail.gmail.com>
+References: <20161108201800.10886.90964.stgit@localhost6.localdomain6>
+ <CAKgT0Uc7i=YnVYhzGCwfiwrNzsBvkpVjS7r3Yn_myBtBe08DOg@mail.gmail.com>
+ <87618083B2453E4A8714035B62D6799250709CDF@FMSMSX105.amr.corp.intel.com>
+ <CAKgT0Ufr3v=+svxtit2+t_m5sNphN0A9Ke2OV7OBjTZe6VzNcQ@mail.gmail.com>
+Message-ID: <87618083B2453E4A8714035B62D6799250709F0B@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Tony Nguyen <anthony.l.nguyen@intel.com> wrote:
-
-> A retry count of 10 is likely to run into problems on X550 devices that
-> have to detect and reset unresponsive CS4227 devices. So, reduce the I2C
-> retry count to 3 for X550 and above. This should avoid any possible
-> regressions in existing devices.
-
-There is no reason to check the MAC type. There are no devices prior to  
-X550 that can use I2C combined bus cycles - the CS4227 on Xeon D is the  
-only one. So just change the retry count if that is what is needed. There  
-is no need to make it conditional.
-
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 4 ++++
->  1 file changed, 4 insertions(+)
+>-----Original Message-----
+>From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+>Sent: Tuesday, November 08, 2016 11:09 PM
+>To: Tantilov, Emil S <emil.s.tantilov@intel.com>
+>Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+>Subject: Re: [Intel-wired-lan] [PATCH v3] ixgbevf: handle race between
+>close and suspend on shutdown
 >
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-> index 4aa6793..10a102c 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-> @@ -121,6 +121,8 @@ s32 ixgbe_read_i2c_combined_generic_int(struct  
-> ixgbe_hw *hw, u8 addr,
->  	u8 reg_high;
->  	u8 csum;
 >
-> +	if (hw->mac.type >= ixgbe_mac_X550)
-> +		max_retry = 3;
->  	reg_high = ((reg >> 7) & 0xFE) | 1;     /* Indicate read combined */
->  	csum = ixgbe_ones_comp_byte_add(reg_high, reg & 0xFF);
->  	csum = ~csum;
-> @@ -1756,6 +1758,8 @@ static s32 ixgbe_read_i2c_byte_generic_int(struct  
-> ixgbe_hw *hw, u8 byte_offset,
->  	u32 swfw_mask = hw->phy.phy_semaphore_mask;
->  	bool nack = true;
 >
-> +	if (hw->mac.type >= ixgbe_mac_X550)
-> +		max_retry = 3;
->  	if (ixgbe_is_sfp_probe(hw, byte_offset, dev_addr))
->  		max_retry = IXGBE_SFP_DETECT_RETRIES;
+>On Tuesday, November 8, 2016, Tantilov, Emil S <emil.s.tantilov@intel.com
+><mailto:emil.s.tantilov@intel.com> > wrote:
 >
+>
+>	>-----Original Message-----
+>	>From: Alexander Duyck [mailto:alexander.duyck at gmail.com
+><javascript:;> ]
+>	>Sent: Tuesday, November 08, 2016 7:24 PM
+>	>To: Tantilov, Emil S <emil.s.tantilov@intel.com <javascript:;> >
+>	>Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org <javascript:;>
+>>
+>	>Subject: Re: [Intel-wired-lan] [PATCH v3] ixgbevf: handle race
+>between
+>	>close and suspend on shutdown
+>	>
+>	>On Tue, Nov 8, 2016 at 12:18 PM, Emil Tantilov
+>	><emil.s.tantilov@intel.com <javascript:;> > wrote:
+>	>> When an interface is part of a namespace it is possible that
+>	>> ixgbevf_close() may be called while ixgbevf_suspend() is running
+>	>> which ends up in a double free WARN and/or a BUG in
+>free_msi_irqs()
+>	>>
+>	>> To handle this situation we extend the rtnl_lock() to protect the
+>	>> call to netif_device_detach() and check for
+>!netif_device_present()
+>	>> to avoid entering close while in suspend.
+>	>>
+>	>> Also added rtnl locks to ixgbevf_queue_reset_subtask().
+>	>>
+>	>> -v2 handle the race with netif_device_detach/present() and rtnl
+>	>> locks as suggested by Alex Duyck
+>	>>
+>	>> -v3 add rtnl locks and check in ixgbevf_remove()
+>	>
+>	>I'm not sure where you got the idea that you needed to add the
+>checks
+>	>to ixgbevf_remove, but I'm pretty sure you don't need to.
+>
+>	When injecting PCIe AER error and the device fails to recover we end
+>up
+>	in a situation where removing the driver (rmmod) will trigger BUG_ON
+>in
+>	free_msi_irqs(), so not exactly a race and the rtnl locks may not be
+>needed,
+>	but we need the check to make sure we don't double free.
+>
+>	If netif_device_present() is not a good check I suppose we can check
+>for __IXGBEVF_DISABLED.
+>
+>	Thanks,
+>	Emil
+>
+>
+>The problem is that I don't think we free the irq in the AER detach case.
+>The error paths need to be updated to match the state of the suspend/resume
+>state.
 
+Actually I think the problem may be exactly that we did not free the IRQs,
+but I lost the failing setup and can't debug this further at the moment.
 
---
-Mark Rustad, Networking Division, Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161109/27c27cd1/attachment.asc>
+Jeff,
+
+Could you drop this and the related ixgbe patches to their previous versions?
+Or if it's easier I can submit v4/3 without the ixgbe/vf_remove() pieces.
+
+Thanks,
+Emil
+
