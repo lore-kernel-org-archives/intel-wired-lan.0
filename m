@@ -1,190 +1,102 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 11 Nov 2016 03:32:36 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 0a8ba75a9923d1d3526af74b090746635fc32507
-Message-ID: <5824cb54.g+iI1fWukzHZPm07%fengguang.wu@intel.com>
+From: Baicar, Tyler <tbaicar@codeaurora.org>
+Date: Thu, 10 Nov 2016 15:35:17 -0700
+Subject: [Intel-wired-lan] [PATCH v2] e1000e: free IRQ regardless of
+ __E1000_DOWN
+In-Reply-To: <42e53bc2-0361-e7b7-1093-4e095aa56955@intel.com>
+References: <1478727681-16505-1-git-send-email-tbaicar@codeaurora.org>
+ <42e53bc2-0361-e7b7-1093-4e095aa56955@intel.com>
+Message-ID: <dff136c7-cb6a-8a61-d311-01959bac16b9@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-0a8ba75a9923d1d3526af74b090746635fc32507  ixgbevf: handle race between close and suspend on shutdown
+Hello Sasha,
 
-elapsed time: 164m
+On 11/9/2016 11:19 PM, Neftin, Sasha wrote:
+> On 11/9/2016 11:41 PM, Tyler Baicar wrote:
+>> Move IRQ free code so that it will happen regardless of the
+>> __E1000_DOWN bit. Currently the e1000e driver only releases its IRQ
+>> if the __E1000_DOWN bit is cleared. This is not sufficient because
+>> it is possible for __E1000_DOWN to be set without releasing the IRQ.
+>> In such a situation, we will hit a kernel bug later in e1000_remove
+>> because the IRQ still has action since it was never freed. A
+>> secondary bus reset can cause this case to happen.
+>>
+>> Signed-off-by: Tyler Baicar <tbaicar@codeaurora.org>
+>> ---
+>>   drivers/net/ethernet/intel/e1000e/netdev.c | 3 ++-
+>>   1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+>> index 7017281..36cfcb0 100644
+>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+>> @@ -4679,12 +4679,13 @@ int e1000e_close(struct net_device *netdev)
+>>   
+>>   	if (!test_bit(__E1000_DOWN, &adapter->state)) {
+>>   		e1000e_down(adapter, true);
+>> -		e1000_free_irq(adapter);
+>>   
+>>   		/* Link status message must follow this format */
+>>   		pr_info("%s NIC Link is Down\n", adapter->netdev->name);
+>>   	}				
+>>   
+>> +	e1000_free_irq(adapter);
+>> +
+>>   	napi_disable(&adapter->napi);
+>>   
+>>   	e1000e_free_tx_resources(adapter->tx_ring);
+>>
+> I would like not recommend insert this change. This change related
+> driver state machine, we afraid from lot of synchronization problem and
+> issues.
+> We need keep e1000_free_irq in loop and check for 'test_bit' ready.
 
-configs tested: 166
+What do you mean here? There is no loop. If __E1000_DOWN is set then we
+will never free the IRQ.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> Another point, does before execute secondary bus reset your SW back up
+> pcie configuration space as properly?
 
-mips                      maltasmvp_defconfig
-sh                               alldefconfig
-sh                         ecovec24_defconfig
-i386                     randconfig-a0-201645
-x86_64                 randconfig-a0-11102220
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-h8300                       h8s-sim_defconfig
-powerpc                     mpc83xx_defconfig
-sh                          urquell_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11110157
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-mips                             alldefconfig
-powerpc                 mpc832x_rdb_defconfig
-um                                allnoconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                        trizeps4_defconfig
-powerpc                   motionpro_defconfig
-powerpc                 mpc832x_mds_defconfig
-s390                             allmodconfig
-x86_64                 randconfig-x011-201645
-x86_64                 randconfig-x014-201645
-x86_64                 randconfig-x015-201645
-x86_64                 randconfig-x017-201645
-x86_64                 randconfig-x012-201645
-x86_64                 randconfig-x018-201645
-x86_64                 randconfig-x019-201645
-x86_64                 randconfig-x013-201645
-x86_64                 randconfig-x016-201645
-x86_64                 randconfig-x010-201645
-i386                     randconfig-s0-201645
-i386                     randconfig-s1-201645
-x86_64                 randconfig-s0-11110052
-x86_64                 randconfig-s1-11110052
-x86_64                 randconfig-s2-11110052
-x86_64                 randconfig-s3-11110048
-x86_64                 randconfig-s4-11110048
-x86_64                 randconfig-s5-11110048
-i386                             allmodconfig
-arm                        keystone_defconfig
-powerpc                      virtex_defconfig
-sh                           se7206_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201645
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201645
-i386                     randconfig-i1-201645
-x86_64                 randconfig-b0-11110126
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-u0-11110100
-x86_64                randconfig-ne0-11110155
-i386                   randconfig-x010-201645
-i386                   randconfig-x011-201645
-i386                   randconfig-x012-201645
-i386                   randconfig-x013-201645
-i386                   randconfig-x014-201645
-i386                   randconfig-x015-201645
-i386                   randconfig-x016-201645
-i386                   randconfig-x017-201645
-i386                   randconfig-x018-201645
-i386                   randconfig-x019-201645
-i386                     randconfig-n0-201645
-i386                   randconfig-h0-11110137
-i386                   randconfig-h1-11110137
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-11102242
-i386                   randconfig-x070-201645
-i386                   randconfig-x071-201645
-i386                   randconfig-x072-201645
-i386                   randconfig-x073-201645
-i386                   randconfig-x074-201645
-i386                   randconfig-x075-201645
-i386                   randconfig-x076-201645
-i386                   randconfig-x077-201645
-i386                   randconfig-x078-201645
-i386                   randconfig-x079-201645
-x86_64                                  kexec
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                  randconfig-sb0-11102357
-x86_64                           allmodconfig
-x86_64                randconfig-ws0-11110033
-x86_64                 randconfig-x008-201645
-x86_64                 randconfig-x001-201645
-x86_64                 randconfig-x009-201645
-x86_64                 randconfig-x000-201645
-x86_64                 randconfig-x005-201645
-x86_64                 randconfig-x003-201645
-x86_64                 randconfig-x002-201645
-x86_64                 randconfig-x007-201645
-x86_64                 randconfig-x006-201645
-x86_64                 randconfig-x004-201645
-i386                     randconfig-r0-201645
-alpha                            alldefconfig
-powerpc                      pasemi_defconfig
-sh                           se7750_defconfig
-i386                   randconfig-x006-201645
-i386                   randconfig-x004-201645
-i386                   randconfig-x007-201645
-i386                   randconfig-x003-201645
-i386                   randconfig-x008-201645
-i386                   randconfig-x000-201645
-i386                   randconfig-x002-201645
-i386                   randconfig-x009-201645
-i386                   randconfig-x001-201645
-i386                   randconfig-x005-201645
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x0-11110103
+After a secondary bus reset, the link needs to recover and go back to a
+working state after 1 second.
+
+ From the callstack, the issue is happening while removing the endpoint
+from the system, before applying the secondary bus reset.
+
+The order of events is
+1. remove the drivers
+2. cause a secondary bus reset
+3. wait 1 second
+4. recover the link
+
+callstack:
+free_msi_irqs+0x6c/0x1a8
+pci_disable_msi+0xb0/0x148
+e1000e_reset_interrupt_capability+0x60/0x78
+e1000_remove+0xc8/0x180
+pci_device_remove+0x48/0x118
+__device_release_driver+0x80/0x108
+device_release_driver+0x2c/0x40
+pci_stop_bus_device+0xa0/0xb0
+pci_stop_bus_device+0x3c/0xb0
+pci_stop_root_bus+0x54/0x80
+acpi_pci_root_remove+0x28/0x64
+acpi_bus_trim+0x6c/0xa4
+acpi_device_hotplug+0x19c/0x3f4
+acpi_hotplug_work_fn+0x28/0x3c
+process_one_work+0x150/0x460
+worker_thread+0x50/0x4b8
+kthread+0xd4/0xe8
+ret_from_fork+0x10/0x50
 
 Thanks,
-Fengguang
+Tyler
+
+-- 
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project.
+
