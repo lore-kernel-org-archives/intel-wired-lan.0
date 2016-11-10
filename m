@@ -1,59 +1,82 @@
-From: Hisashi T Fujinaka <htodd@twofifty.com>
-Date: Thu, 10 Nov 2016 05:48:20 -0800 (PST)
-Subject: [Intel-wired-lan] [PATCH] igb: use igb_adapter->io_addr instead
- of e1000_hw->hw_addr
-In-Reply-To: <20161110093549.GA24351@calimero.vinschen.de>
-References: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
- <20161108164214.GF31855@calimero.vinschen.de>
- <alpine.NEB.2.20.17.1611080910530.6177@chris.i8u.org>
- <20161108183739.GA3744@calimero.vinschen.de>
- <CAKgT0UeaoGfOOC1=h4pGk+=FDd5EqvgRGAdk1StLuiW1-M8tVA@mail.gmail.com>
- <20161110093549.GA24351@calimero.vinschen.de>
-Message-ID: <alpine.NEB.2.20.17.1611100544220.6177@chris.i8u.org>
+From: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+Date: Thu, 10 Nov 2016 14:48:30 -0200
+Subject: [Intel-wired-lan] [PATCH net] igb: re-assign hw address pointer
+ on reset after PCI error
+In-Reply-To: <CAKgT0UdYrO14ytSgPfa6KgC0OPaydqtd2-j2+AQFgJMgz69d+w@mail.gmail.com>
+References: <1477944749-22822-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <CAKgT0UdYrO14ytSgPfa6KgC0OPaydqtd2-j2+AQFgJMgz69d+w@mail.gmail.com>
+Message-ID: <5824A4DE.9020508@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 10 Nov 2016, Corinna Vinschen wrote:
-
-> On Nov  8 11:33, Alexander Duyck wrote:
-...
->> The question I would have is what is reading the device when it is in
->> this state.  The watchdog and any other functions that would read the
->> device should be disabled.
+On 11/09/2016 03:12 PM, Alexander Duyck wrote:
+> On Mon, Oct 31, 2016 at 1:12 PM, Guilherme G. Piccoli
+> <gpiccoli@linux.vnet.ibm.com> wrote:
+>> Whenever the igb driver detects the result of a read operation returns
+>> a value composed only by F's (like 0xFFFFFFFF), it will detach the
+>> net_device, clear the hw_addr pointer and warn to the user that adapter's
+>> link is lost - those steps happen on igb_rd32().
 >>
->> One possibility could be a race between a call to igb_close and the
->> igb_suspend function.  We have seen some of those pop up recently on
->> ixgbe and it looks like igb has the same bug.  We should probably be
->> using the rtnl_lock to guarantee that netif_device_detach and the call
->> to __igb_close are completed before igb_close could possibly be called
->> by the network stack.
->
-> Do you have a pointer to the related ixgbe patch, by any chance?
-...
->> The thing is that a suspended device should not be accessed at all.
->> If we are accessing it while it is suspended then that is a bug.  If
->> you could throw a WARN_ON call in igb_rd32 to capture where this is
->> being triggered that might be useful.
+>> In case a PCI error happens on Power architecture, there's a recovery
+>> mechanism called EEH, that will reset the PCI slot and call driver's
+>> handlers to reset the adapter and network functionality as well.
 >>
->>> - Otherwise assume it's actually a surprise removal.  In theory that
->>>   should somehow trigger a device removal sequence, kind of like
->>>   calling igb_remove, no?
+>> We observed that once hw_addr is NULL after the error is detected on
+>> igb_rd32(), it's never assigned back, so in the process of resetting
+>> the network functionality we got a NULL pointer dereference in both
+>> igb_configure_tx_ring() and igb_configure_rx_ring(). In order to avoid
+>> such bug, we re-assign the hw_addr value in the beginning of the
+>> function igb_reset(), in case the hw_addr is NULL when we reach that
+>> path.
 >>
->> Well a read of the MMIO region while suspended is more of a surprise
->> read since there shouldn't be anything going on.  We need to isolate
->> where that read is coming from and fix it.
->
-> That would be ideal, but the problem couldn't be reproduced yet apart
-> from at a customer's customer site.  It's not clear yet if we can access
-> the machine for further testing.
+>> Reported-by: Anthony H. Thai <ahthai@us.ibm.com>
+>> Reported-by: Harsha Thyagaraja <hathyaga@in.ibm.com>
+>> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+>> ---
+>>  drivers/net/ethernet/intel/igb/igb_main.c | 7 +++++++
+>>  1 file changed, 7 insertions(+)
+>>
+>> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+>> index edc9a6a..c19119c 100644
+>> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+>> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+>> @@ -1873,6 +1873,13 @@ void igb_reset(struct igb_adapter *adapter)
+>>         struct e1000_fc_info *fc = &hw->fc;
+>>         u32 pba, hwm;
+>>
+>> +       /* In case of PCI error, adapter might have lost its HW
+>> +        * address; if we reached this point after an error scenario,
+>> +        * we should re-assign the hw_addr based on the saved io_addr.
+>> +        */
+>> +       if (!hw->hw_addr)
+>> +               hw->hw_addr = adapter->io_addr;
+>> +
+>>         /* Repartition Pba for greater than 9k mtu
+>>          * To take effect CTRL.RST is required.
+>>          */
+> 
+> It seems like this would have the potential to get noisy pretty
+> quickly since every reset would retrigger this.
+> 
+> It might make more sense to move this line into igb_io_slot_reset and
+> igb_resume where the device would have gone through a reset of some
+> sort and then had the state of the device restored and the device
+> memory access was re-enabled via pci_enable_device_mem.  Also there is
+> no point in really doing the "if" since you should always be okay to
+> overwrite hw->hw_addr with adapter->io_addr.
 
-Here's the initial patch for igb I have, but it's on hold awaiting more
-changes in ixgbe regarding AER.
+Thanks for the good suggestion Alexander, will send a V2.
+Cheers,
 
--- 
-Hisashi T Fujinaka - htodd at twofifty.com
-BSEE + BSChem + BAEnglish + MSCS + $2.50 = coffee
--------------- next part --------------
+Guilherme
+
+
+> 
+> Thanks.
+> 
+> - Alex
+> 
+
