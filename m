@@ -1,53 +1,190 @@
-From: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Date: Thu, 10 Nov 2016 16:46:43 -0200
-Subject: [Intel-wired-lan] [PATCH net v2] igb: re-assign hw address pointer
-	on reset after PCI error
-Message-ID: <1478803603-30306-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 11 Nov 2016 03:32:36 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 0a8ba75a9923d1d3526af74b090746635fc32507
+Message-ID: <5824cb54.g+iI1fWukzHZPm07%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Whenever the igb driver detects the result of a read operation returns
-a value composed only by F's (like 0xFFFFFFFF), it will detach the
-net_device, clear the hw_addr pointer and warn to the user that adapter's
-link is lost - those steps happen on igb_rd32().
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+0a8ba75a9923d1d3526af74b090746635fc32507  ixgbevf: handle race between close and suspend on shutdown
 
-In case a PCI error happens on Power architecture, there's a recovery
-mechanism called EEH, that will reset the PCI slot and call driver's
-handlers to reset the adapter and network functionality as well.
+elapsed time: 164m
 
-We observed that once hw_addr is NULL after the error is detected on
-igb_rd32(), it's never assigned back, so in the process of resetting
-the network functionality we got a NULL pointer dereference in both
-igb_configure_tx_ring() and igb_configure_rx_ring(). In order to avoid
-such bug, this patch re-assigns the hw_addr value in the slot_reset
-handler.
+configs tested: 166
 
-Reported-by: Anthony H. Thai <ahthai@us.ibm.com>
-Reported-by: Harsha Thyagaraja <hathyaga@in.ibm.com>
-Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 5 +++++
- 1 file changed, 5 insertions(+)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index edc9a6a..136ee9e 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -7878,6 +7878,11 @@ static pci_ers_result_t igb_io_slot_reset(struct pci_dev *pdev)
- 		pci_enable_wake(pdev, PCI_D3hot, 0);
- 		pci_enable_wake(pdev, PCI_D3cold, 0);
- 
-+		/* In case of PCI error, adapter lose its HW address
-+		 * so we should re-assign it here.
-+		 */
-+		hw->hw_addr = adapter->io_addr;
-+
- 		igb_reset(adapter);
- 		wr32(E1000_WUS, ~0);
- 		result = PCI_ERS_RESULT_RECOVERED;
--- 
-2.1.0
+mips                      maltasmvp_defconfig
+sh                               alldefconfig
+sh                         ecovec24_defconfig
+i386                     randconfig-a0-201645
+x86_64                 randconfig-a0-11102220
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+h8300                       h8s-sim_defconfig
+powerpc                     mpc83xx_defconfig
+sh                          urquell_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-11110157
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+mips                             alldefconfig
+powerpc                 mpc832x_rdb_defconfig
+um                                allnoconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                        trizeps4_defconfig
+powerpc                   motionpro_defconfig
+powerpc                 mpc832x_mds_defconfig
+s390                             allmodconfig
+x86_64                 randconfig-x011-201645
+x86_64                 randconfig-x014-201645
+x86_64                 randconfig-x015-201645
+x86_64                 randconfig-x017-201645
+x86_64                 randconfig-x012-201645
+x86_64                 randconfig-x018-201645
+x86_64                 randconfig-x019-201645
+x86_64                 randconfig-x013-201645
+x86_64                 randconfig-x016-201645
+x86_64                 randconfig-x010-201645
+i386                     randconfig-s0-201645
+i386                     randconfig-s1-201645
+x86_64                 randconfig-s0-11110052
+x86_64                 randconfig-s1-11110052
+x86_64                 randconfig-s2-11110052
+x86_64                 randconfig-s3-11110048
+x86_64                 randconfig-s4-11110048
+x86_64                 randconfig-s5-11110048
+i386                             allmodconfig
+arm                        keystone_defconfig
+powerpc                      virtex_defconfig
+sh                           se7206_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201645
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201645
+i386                     randconfig-i1-201645
+x86_64                 randconfig-b0-11110126
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-u0-11110100
+x86_64                randconfig-ne0-11110155
+i386                   randconfig-x010-201645
+i386                   randconfig-x011-201645
+i386                   randconfig-x012-201645
+i386                   randconfig-x013-201645
+i386                   randconfig-x014-201645
+i386                   randconfig-x015-201645
+i386                   randconfig-x016-201645
+i386                   randconfig-x017-201645
+i386                   randconfig-x018-201645
+i386                   randconfig-x019-201645
+i386                     randconfig-n0-201645
+i386                   randconfig-h0-11110137
+i386                   randconfig-h1-11110137
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-11102242
+i386                   randconfig-x070-201645
+i386                   randconfig-x071-201645
+i386                   randconfig-x072-201645
+i386                   randconfig-x073-201645
+i386                   randconfig-x074-201645
+i386                   randconfig-x075-201645
+i386                   randconfig-x076-201645
+i386                   randconfig-x077-201645
+i386                   randconfig-x078-201645
+i386                   randconfig-x079-201645
+x86_64                                  kexec
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                  randconfig-sb0-11102357
+x86_64                           allmodconfig
+x86_64                randconfig-ws0-11110033
+x86_64                 randconfig-x008-201645
+x86_64                 randconfig-x001-201645
+x86_64                 randconfig-x009-201645
+x86_64                 randconfig-x000-201645
+x86_64                 randconfig-x005-201645
+x86_64                 randconfig-x003-201645
+x86_64                 randconfig-x002-201645
+x86_64                 randconfig-x007-201645
+x86_64                 randconfig-x006-201645
+x86_64                 randconfig-x004-201645
+i386                     randconfig-r0-201645
+alpha                            alldefconfig
+powerpc                      pasemi_defconfig
+sh                           se7750_defconfig
+i386                   randconfig-x006-201645
+i386                   randconfig-x004-201645
+i386                   randconfig-x007-201645
+i386                   randconfig-x003-201645
+i386                   randconfig-x008-201645
+i386                   randconfig-x000-201645
+i386                   randconfig-x002-201645
+i386                   randconfig-x009-201645
+i386                   randconfig-x001-201645
+i386                   randconfig-x005-201645
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                   randconfig-x0-11110103
 
+Thanks,
+Fengguang
