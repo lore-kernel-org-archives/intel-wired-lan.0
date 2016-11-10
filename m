@@ -1,51 +1,53 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 10 Nov 2016 09:57:29 -0800
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Reduce I2C retry count on X550
-	devices
-Message-ID: <1478800649-22831-1-git-send-email-anthony.l.nguyen@intel.com>
+From: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+Date: Thu, 10 Nov 2016 16:46:43 -0200
+Subject: [Intel-wired-lan] [PATCH net v2] igb: re-assign hw address pointer
+	on reset after PCI error
+Message-ID: <1478803603-30306-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-A retry count of 10 is likely to run into problems on X550 devices that
-have to detect and reset unresponsive CS4227 devices. So, reduce the I2C
-retry count to 3 for X550 and above. This should avoid any possible
-regressions in existing devices.
+Whenever the igb driver detects the result of a read operation returns
+a value composed only by F's (like 0xFFFFFFFF), it will detach the
+net_device, clear the hw_addr pointer and warn to the user that adapter's
+link is lost - those steps happen on igb_rd32().
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+In case a PCI error happens on Power architecture, there's a recovery
+mechanism called EEH, that will reset the PCI slot and call driver's
+handlers to reset the adapter and network functionality as well.
+
+We observed that once hw_addr is NULL after the error is detected on
+igb_rd32(), it's never assigned back, so in the process of resetting
+the network functionality we got a NULL pointer dereference in both
+igb_configure_tx_ring() and igb_configure_rx_ring(). In order to avoid
+such bug, this patch re-assigns the hw_addr value in the slot_reset
+handler.
+
+Reported-by: Anthony H. Thai <ahthai@us.ibm.com>
+Reported-by: Harsha Thyagaraja <hathyaga@in.ibm.com>
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 ---
+ drivers/net/ethernet/intel/igb/igb_main.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-v2 -
-  Removed mac check in ixgbe_read_i2c_combined_generic_int(); set initial
-  max_retry value to 3 instead.
-
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 4aa6793..e0fc147 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -113,7 +113,7 @@ s32 ixgbe_read_i2c_combined_generic_int(struct ixgbe_hw *hw, u8 addr,
- 					u16 reg, u16 *val, bool lock)
- {
- 	u32 swfw_mask = hw->phy.phy_semaphore_mask;
--	int max_retry = 10;
-+	int max_retry = 3;
- 	int retry = 0;
- 	u8 csum_byte;
- 	u8 high_bits;
-@@ -1756,6 +1756,8 @@ static s32 ixgbe_read_i2c_byte_generic_int(struct ixgbe_hw *hw, u8 byte_offset,
- 	u32 swfw_mask = hw->phy.phy_semaphore_mask;
- 	bool nack = true;
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index edc9a6a..136ee9e 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -7878,6 +7878,11 @@ static pci_ers_result_t igb_io_slot_reset(struct pci_dev *pdev)
+ 		pci_enable_wake(pdev, PCI_D3hot, 0);
+ 		pci_enable_wake(pdev, PCI_D3cold, 0);
  
-+	if (hw->mac.type >= ixgbe_mac_X550)
-+		max_retry = 3;
- 	if (ixgbe_is_sfp_probe(hw, byte_offset, dev_addr))
- 		max_retry = IXGBE_SFP_DETECT_RETRIES;
- 
++		/* In case of PCI error, adapter lose its HW address
++		 * so we should re-assign it here.
++		 */
++		hw->hw_addr = adapter->io_addr;
++
+ 		igb_reset(adapter);
+ 		wr32(E1000_WUS, ~0);
+ 		result = PCI_ERS_RESULT_RECOVERED;
 -- 
-2.4.0
+2.1.0
 
