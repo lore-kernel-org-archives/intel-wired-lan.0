@@ -1,143 +1,166 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri, 11 Nov 2016 12:16:23 -0800
-Subject: [Intel-wired-lan] [next PATCH S53 4/5] i40e: Add functions which
-	apply correct PHY access method for read and write operation
+Date: Fri, 11 Nov 2016 12:16:22 -0800
+Subject: [Intel-wired-lan] [next PATCH S53 3/5] i40e: Add FEC for 25g
 In-Reply-To: <1478895384-23904-1-git-send-email-bimmy.pujari@intel.com>
 References: <1478895384-23904-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1478895384-23904-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1478895384-23904-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Kosiarz <michal.kosiarz@intel.com>
+From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 
-Depending on external PHY type, register access method should be
-different. Clause22 or Clause45 can be chosen for different PHYs.
-Implemented functions apply correct access method for used device.
+This patch adds adminq support for Forward Error
+Correction ("FEC")for 25g products.
 
-Signed-off-by: Michal Kosiarz <michal.kosiarz@intel.com>
-Change-ID: If39d5f0da9c0b905a8cbdc1ab89885535e7d0426
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Jacek Naczyk <jacek.naczyk@intel.com>
+Change-ID: Iaff4910737c239d2c730e5c22a313ce9c37d3964
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c      | 72 ++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  4 ++
- drivers/net/ethernet/intel/i40evf/i40e_prototype.h |  4 ++
- 3 files changed, 80 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 25 ++++++++++++++++++--
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |  2 ++
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 27 +++++++++++++++++++---
+ 3 files changed, 49 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index c9d1f91..b2101a5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -1686,6 +1686,8 @@ struct i40e_aq_get_phy_abilities_resp {
+ #define I40E_AQ_PHY_LINK_ENABLED	0x08
+ #define I40E_AQ_PHY_AN_ENABLED		0x10
+ #define I40E_AQ_PHY_FLAG_MODULE_QUAL	0x20
++#define I40E_AQ_PHY_FEC_ABILITY_KR	0x40
++#define I40E_AQ_PHY_FEC_ABILITY_RS	0x80
+ 	__le16	eee_capability;
+ #define I40E_AQ_EEE_100BASE_TX		0x0002
+ #define I40E_AQ_EEE_1000BASE_T		0x0004
+@@ -1701,7 +1703,16 @@ struct i40e_aq_get_phy_abilities_resp {
+ #define I40E_AQ_PHY_TYPE_EXT_25G_CR	0X02
+ #define I40E_AQ_PHY_TYPE_EXT_25G_SR	0x04
+ #define I40E_AQ_PHY_TYPE_EXT_25G_LR	0x08
+-	u8	mod_type_ext;
++	u8	fec_cfg_curr_mod_ext_info;
++#define I40E_AQ_ENABLE_FEC_KR		0x01
++#define I40E_AQ_ENABLE_FEC_RS		0x02
++#define I40E_AQ_REQUEST_FEC_KR		0x04
++#define I40E_AQ_REQUEST_FEC_RS		0x08
++#define I40E_AQ_ENABLE_FEC_AUTO		0x10
++#define I40E_AQ_FEC
++#define I40E_AQ_MODULE_TYPE_EXT_MASK	0xE0
++#define I40E_AQ_MODULE_TYPE_EXT_SHIFT	5
++
+ 	u8	ext_comp_code;
+ 	u8	phy_id[4];
+ 	u8	module_type[3];
+@@ -1729,7 +1740,15 @@ struct i40e_aq_set_phy_config { /* same bits as above in all */
+ #define I40E_AQ_PHY_TYPE_EXT_25G_CR	0X02
+ #define I40E_AQ_PHY_TYPE_EXT_25G_SR	0x04
+ #define I40E_AQ_PHY_TYPE_EXT_25G_LR	0x08
+-	u8	reserved[2];
++	u8	fec_config;
++#define I40E_AQ_SET_FEC_ABILITY_KR	BIT(0)
++#define I40E_AQ_SET_FEC_ABILITY_RS	BIT(1)
++#define I40E_AQ_SET_FEC_REQUEST_KR	BIT(2)
++#define I40E_AQ_SET_FEC_REQUEST_RS	BIT(3)
++#define I40E_AQ_SET_FEC_AUTO		BIT(4)
++#define I40E_AQ_PHY_FEC_CONFIG_SHIFT	0x0
++#define I40E_AQ_PHY_FEC_CONFIG_MASK	(0x1F << I40E_AQ_PHY_FEC_CONFIG_SHIFT)
++	u8	reserved;
+ };
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aq_set_phy_config);
+@@ -1819,6 +1838,8 @@ struct i40e_aqc_get_link_status {
+ 	u8	loopback; /* use defines from i40e_aqc_set_lb_mode */
+ 	__le16	max_frame_size;
+ 	u8	config;
++#define I40E_AQ_CONFIG_FEC_KR_ENA	0x01
++#define I40E_AQ_CONFIG_FEC_RS_ENA	0x02
+ #define I40E_AQ_CONFIG_CRC_ENA		0x04
+ #define I40E_AQ_CONFIG_PACING_MASK	0x78
+ 	u8	external_power_ability;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index d9da786..59e766c 100644
+index 3961fc2..d9da786 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -4676,6 +4676,78 @@ i40e_status i40e_write_phy_register_clause45(struct i40e_hw *hw, u8 page,
- }
+@@ -1714,6 +1714,8 @@ enum i40e_status_code i40e_set_fc(struct i40e_hw *hw, u8 *aq_failures,
+ 		config.eee_capability = abilities.eee_capability;
+ 		config.eeer = abilities.eeer_val;
+ 		config.low_power_ctrl = abilities.d3_lpan;
++		config.fec_config = abilities.fec_cfg_curr_mod_ext_info &
++				    I40E_AQ_PHY_FEC_CONFIG_MASK;
+ 		status = i40e_aq_set_phy_config(hw, &config, NULL);
  
- /**
-+ * i40e_write_phy_register
-+ * @hw: pointer to the HW structure
-+ * @page: registers page number
-+ * @reg: register address in the page
-+ * @phy_adr: PHY address on MDIO interface
-+ * @value: PHY register value
-+ *
-+ * Writes value to specified PHY register
-+ **/
-+i40e_status i40e_write_phy_register(struct i40e_hw *hw,
-+				u8 page, u16 reg, u8 phy_addr, u16 value)
-+{
-+	i40e_status status;
+ 		if (status)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index f8d7d95..267c698 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -28,7 +28,7 @@
+ #define _I40E_ADMINQ_CMD_H_
+ 
+ /* This header file defines the i40e Admin Queue commands and is shared between
+- * i40e Firmware and Software.
++ * i40e Fitruct i40e_aq_set_phy_configmware and Software.
+  *
+  * This file needs to comply with the Linux Kernel coding style.
+  */
+@@ -1683,6 +1683,8 @@ struct i40e_aq_get_phy_abilities_resp {
+ #define I40E_AQ_PHY_LINK_ENABLED	0x08
+ #define I40E_AQ_PHY_AN_ENABLED		0x10
+ #define I40E_AQ_PHY_FLAG_MODULE_QUAL	0x20
++#define I40E_AQ_PHY_FEC_ABILITY_KR	0x40
++#define I40E_AQ_PHY_FEC_ABILITY_RS	0x80
+ 	__le16	eee_capability;
+ #define I40E_AQ_EEE_100BASE_TX		0x0002
+ #define I40E_AQ_EEE_1000BASE_T		0x0004
+@@ -1698,7 +1700,16 @@ struct i40e_aq_get_phy_abilities_resp {
+ #define I40E_AQ_PHY_TYPE_EXT_25G_CR	0X02
+ #define I40E_AQ_PHY_TYPE_EXT_25G_SR	0x04
+ #define I40E_AQ_PHY_TYPE_EXT_25G_LR	0x08
+-	u8	mod_type_ext;
++	u8	fec_cfg_curr_mod_ext_info;
++#define I40E_AQ_ENABLE_FEC_KR		0x01
++#define I40E_AQ_ENABLE_FEC_RS		0x02
++#define I40E_AQ_REQUEST_FEC_KR		0x04
++#define I40E_AQ_REQUEST_FEC_RS		0x08
++#define I40E_AQ_ENABLE_FEC_AUTO		0x10
++#define I40E_AQ_FEC
++#define I40E_AQ_MODULE_TYPE_EXT_MASK	0xE0
++#define I40E_AQ_MODULE_TYPE_EXT_SHIFT	5
 +
-+	switch (hw->device_id) {
-+	case I40E_DEV_ID_1G_BASE_T_X722:
-+		status = i40e_write_phy_register_clause22(hw,
-+			reg, phy_addr, value);
-+		break;
-+	case I40E_DEV_ID_10G_BASE_T:
-+	case I40E_DEV_ID_10G_BASE_T4:
-+	case I40E_DEV_ID_10G_BASE_T_X722:
-+	case I40E_DEV_ID_25G_B:
-+	case I40E_DEV_ID_25G_SFP28:
-+		status = i40e_write_phy_register_clause45(hw,
-+			page, reg, phy_addr, value);
-+		break;
-+	default:
-+		status = I40E_ERR_UNKNOWN_PHY;
-+		break;
-+	}
-+
-+	return status;
-+}
-+
-+/**
-+ * i40e_read_phy_register
-+ * @hw: pointer to the HW structure
-+ * @page: registers page number
-+ * @reg: register address in the page
-+ * @phy_adr: PHY address on MDIO interface
-+ * @value: PHY register value
-+ *
-+ * Reads specified PHY register value
-+ **/
-+i40e_status i40e_read_phy_register(struct i40e_hw *hw,
-+				u8 page, u16 reg, u8 phy_addr, u16 *value)
-+{
-+	i40e_status status;
-+
-+	switch (hw->device_id) {
-+	case I40E_DEV_ID_1G_BASE_T_X722:
-+		status = i40e_read_phy_register_clause22(hw, reg, phy_addr,
-+							 value);
-+		break;
-+	case I40E_DEV_ID_10G_BASE_T:
-+	case I40E_DEV_ID_10G_BASE_T4:
-+	case I40E_DEV_ID_10G_BASE_T_X722:
-+	case I40E_DEV_ID_25G_B:
-+	case I40E_DEV_ID_25G_SFP28:
-+		status = i40e_read_phy_register_clause45(hw, page, reg,
-+							 phy_addr, value);
-+		break;
-+	default:
-+		status = I40E_ERR_UNKNOWN_PHY;
-+		break;
-+	}
-+
-+	return status;
-+}
-+
-+/**
-  * i40e_get_phy_address
-  * @hw: pointer to the HW structure
-  * @dev_num: PHY port num that address we want
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index 4e641a6..bb5c982 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -373,6 +373,10 @@ i40e_status i40e_read_phy_register_clause45(struct i40e_hw *hw,
- 				u8 page, u16 reg, u8 phy_addr, u16 *value);
- i40e_status i40e_write_phy_register_clause45(struct i40e_hw *hw,
- 				u8 page, u16 reg, u8 phy_addr, u16 value);
-+i40e_status i40e_read_phy_register(struct i40e_hw *hw,
-+				u8 page, u16 reg, u8 phy_addr, u16 *value);
-+i40e_status i40e_write_phy_register(struct i40e_hw *hw,
-+				u8 page, u16 reg, u8 phy_addr, u16 value);
- u8 i40e_get_phy_address(struct i40e_hw *hw, u8 dev_num);
- i40e_status i40e_blink_phy_link_led(struct i40e_hw *hw,
- 				    u32 time, u32 interval);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
-index d89d521..ee5d7fe 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
-@@ -115,6 +115,10 @@ i40e_status i40e_read_phy_register(struct i40e_hw *hw, u8 page,
- 				   u16 reg, u8 phy_addr, u16 *value);
- i40e_status i40e_write_phy_register(struct i40e_hw *hw, u8 page,
- 				    u16 reg, u8 phy_addr, u16 value);
-+i40e_status i40e_read_phy_register(struct i40e_hw *hw,
-+				u8 page, u16 reg, u8 phy_addr, u16 *value);
-+i40e_status i40e_write_phy_register(struct i40e_hw *hw,
-+				u8 page, u16 reg, u8 phy_addr, u16 value);
- u8 i40e_get_phy_address(struct i40e_hw *hw, u8 dev_num);
- i40e_status i40e_blink_phy_link_led(struct i40e_hw *hw,
- 				    u32 time, u32 interval);
+ 	u8	ext_comp_code;
+ 	u8	phy_id[4];
+ 	u8	module_type[3];
+@@ -1726,7 +1737,15 @@ struct i40e_aq_set_phy_config { /* same bits as above in all */
+ #define I40E_AQ_PHY_TYPE_EXT_25G_CR	0X02
+ #define I40E_AQ_PHY_TYPE_EXT_25G_SR	0x04
+ #define I40E_AQ_PHY_TYPE_EXT_25G_LR	0x08
+-	u8	reserved[2];
++	u8	fec_config;
++#define I40E_AQ_SET_FEC_ABILITY_KR	BIT(0)
++#define I40E_AQ_SET_FEC_ABILITY_RS	BIT(1)
++#define I40E_AQ_SET_FEC_REQUEST_KR	BIT(2)
++#define I40E_AQ_SET_FEC_REQUEST_RS	BIT(3)
++#define I40E_AQ_SET_FEC_AUTO		BIT(4)
++#define I40E_AQ_PHY_FEC_CONFIG_SHIFT	0x0
++#define I40E_AQ_PHY_FEC_CONFIG_MASK	(0x1F << I40E_AQ_PHY_FEC_CONFIG_SHIFT)
++	u8	reserved;
+ };
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aq_set_phy_config);
+@@ -1816,6 +1835,8 @@ struct i40e_aqc_get_link_status {
+ 	u8	loopback; /* use defines from i40e_aqc_set_lb_mode */
+ 	__le16	max_frame_size;
+ 	u8	config;
++#define I40E_AQ_CONFIG_FEC_KR_ENA	0x01
++#define I40E_AQ_CONFIG_FEC_RS_ENA	0x02
+ #define I40E_AQ_CONFIG_CRC_ENA		0x04
+ #define I40E_AQ_CONFIG_PACING_MASK	0x78
+ 	u8	external_power_ability;
 -- 
 2.4.11
 
