@@ -1,65 +1,83 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 10 Nov 2016 16:01:33 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Support 2.5Gb and 5Gb speed
-Message-ID: <1478822493-29862-1-git-send-email-anthony.l.nguyen@intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Fri, 11 Nov 2016 10:07:47 -0800
+Subject: [Intel-wired-lan] [PATCH v3] ixgbe: handle close/suspend race with
+ netif_device_detach/present
+Message-ID: <20161111180747.17123.27924.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Though not advertised through ethtool, if the link partner advertises a
-2.5Gb or 5Gb connection, and the adapter supports it, allow the speed to be
-used.
+When an interface is part of a namespace it is possible that
+ixgbe_close() may be called while __ixgbe_shutdown() is running
+which ends up in a double free WARN and/or a BUG in free_msi_irqs().
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+To handle this situation we extend the rtnl_lock() to protect the
+call to netif_device_detach() and ixgbe_clear_interrupt_scheme()
+in __ixgbe_shutdown() and check for netif_device_present()
+to avoid clearing the interrupts second time in ixgbe_close();
+
+Also extend the rtnl lock in ixgbe_resume() to netif_device_attach().
+
+v2 - add rtnl locks and a check in ixgbe_remove()
+
+v3 - remove the check in ixgbe_remove(), I will submit a separate
+patch to address the case of failed PCIe error recovery
+
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  3 +++
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     | 10 +++++++---
- 2 files changed, 10 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index fd192bf..55c8a23 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -337,6 +337,9 @@ static int ixgbe_get_settings(struct net_device *netdev,
- 		case IXGBE_LINK_SPEED_10GB_FULL:
- 			ethtool_cmd_speed_set(ecmd, SPEED_10000);
- 			break;
-+		case IXGBE_LINK_SPEED_5GB_FULL:
-+			ethtool_cmd_speed_set(ecmd, SPEED_5000);
-+			break;
- 		case IXGBE_LINK_SPEED_2_5GB_FULL:
- 			ethtool_cmd_speed_set(ecmd, SPEED_2500);
- 			break;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 4aa6793..372a1c8 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -768,9 +768,7 @@ s32 ixgbe_setup_phy_link_speed_generic(struct ixgbe_hw *hw,
- 				       ixgbe_link_speed speed,
- 				       bool autoneg_wait_to_complete)
- {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 51cdac9..6d049d7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6200,7 +6200,8 @@ int ixgbe_close(struct net_device *netdev)
+ 
+ 	ixgbe_ptp_stop(adapter);
+ 
+-	ixgbe_close_suspend(adapter);
++	if (netif_device_present(netdev))
++		ixgbe_close_suspend(adapter);
+ 
+ 	ixgbe_fdir_filter_exit(adapter);
+ 
+@@ -6245,14 +6246,12 @@ static int ixgbe_resume(struct pci_dev *pdev)
+ 	if (!err && netif_running(netdev))
+ 		err = ixgbe_open(netdev);
+ 
+-	rtnl_unlock();
+ 
+-	if (err)
+-		return err;
 -
--	/*
--	 * Clear autoneg_advertised and set new values based on input link
-+	/* Clear autoneg_advertised and set new values based on input link
- 	 * speed.
- 	 */
- 	hw->phy.autoneg_advertised = 0;
-@@ -778,6 +776,12 @@ s32 ixgbe_setup_phy_link_speed_generic(struct ixgbe_hw *hw,
- 	if (speed & IXGBE_LINK_SPEED_10GB_FULL)
- 		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_10GB_FULL;
+-	netif_device_attach(netdev);
++	if (!err)
++		netif_device_attach(netdev);
++	rtnl_unlock();
  
-+	if (speed & IXGBE_LINK_SPEED_5GB_FULL)
-+		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_5GB_FULL;
-+
-+	if (speed & IXGBE_LINK_SPEED_2_5GB_FULL)
-+		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_2_5GB_FULL;
-+
- 	if (speed & IXGBE_LINK_SPEED_1GB_FULL)
- 		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_1GB_FULL;
+-	return 0;
++	return err;
+ }
+ #endif /* CONFIG_PM */
  
--- 
-2.4.0
+@@ -6267,14 +6266,14 @@ static int __ixgbe_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ 	int retval = 0;
+ #endif
+ 
++	rtnl_lock();
+ 	netif_device_detach(netdev);
+ 
+-	rtnl_lock();
+ 	if (netif_running(netdev))
+ 		ixgbe_close_suspend(adapter);
+-	rtnl_unlock();
+ 
+ 	ixgbe_clear_interrupt_scheme(adapter);
++	rtnl_unlock();
+ 
+ #ifdef CONFIG_PM
+ 	retval = pci_save_state(pdev);
 
