@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri, 11 Nov 2016 12:39:26 -0800
-Subject: [Intel-wired-lan] [next PATCH S54 02/15] i40e: recalculate
-	vsi->active_filters from hash contents
+Date: Fri, 11 Nov 2016 12:39:27 -0800
+Subject: [Intel-wired-lan] [next PATCH S54 03/15] i40e: refactor
+	i40e_update_filter_state to avoid passing aq_err
 In-Reply-To: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
 References: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1478896779-13697-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1478896779-13697-4-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,125 +13,138 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-Previous code refactors have accidentally caused issues with the
-counting of active_filters. Avoid similar issues in the future by simply
-re-counting the active filters every time after we handle add and delete
-of all the filters. Additionally this allows us to simplify the check
-for when we exit promiscuous mode since we can combine the check for
-failed filters at the same time.
+The current caller of i40e_update_filter_state incorrectly passes
+aq_ret, an i40e_status variable, instead of the expected aq_err. This
+happens to work because i40e_status is actually just a typedef integer,
+and 0 is still the successful return. However i40e_update_filter_state
+has special handling for ENOSPC which is currently being ignored.
 
-Additionally since we recount filters at the end we need to set
-vsi->promisc_threshold as well.
+Also notice that firmware does not update the per-filter response for
+many types of errors, such as EINVAL. Thus, modify the filter setup so
+that the firmware response memory is pre-set with I40E_AQC_MM_ERR_NO_RES.
 
-The resulting code takes a bit longer since we do have to loop over
-filters again. However, the result is more readable and less likely to
-become incorrect due to failed accounting of filters in the future.
-Finally, this ensures that it is not possible for vsi->active_filters to
-ever underflow since we never decrement it.
+This enables us to refactor i40e_update_filter_state, removing the need
+to pass aq_err and avoiding a need for having 3 different flows for
+checking the filter state.
+
+The resulting code for i40e_update_filter_state is much simpler, only
+a single loop and we always check each filter response value every time.
+Since we pre-set the response value to match our expected error this
+correctly works for all success and error flows.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: Ib4f3a377e60eb1fa6c91ea86cc02238c08edd102
+Change-ID: Ie292c9511f34ee18c6ef40f955ad13e28b7aea7d
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 52 ++++++++++++++++-------------
- 1 file changed, 29 insertions(+), 23 deletions(-)
+Testing-hints:
+  This shouldn't have any visible side effects, but it may help detect
+  some errors from firmware more accurately. Ensure that adding and
+  deleting many MAC/VLAN filters works as expected without issue and
+  that the added filters function correctly.
+
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 58 +++++++++++------------------
+ 1 file changed, 21 insertions(+), 37 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 0b62d63..42b6d73 100644
+index 42b6d73..8f176d0 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1869,12 +1869,10 @@ void i40e_aqc_add_filters(struct i40e_vsi *vsi, const char *vsi_name,
- 	aq_ret = i40e_aq_add_macvlan(hw, vsi->seid, list, num_add, NULL);
+@@ -1756,7 +1756,6 @@ static void i40e_undo_filter_entries(struct i40e_vsi *vsi,
+  * @count: Number of filters added
+  * @add_list: return data from fw
+  * @head: pointer to first filter in current batch
+- * @aq_err: status from fw
+  *
+  * MAC filter entries from list were slated to be added to device. Returns
+  * number of successful filters. Note that 0 does NOT mean success!
+@@ -1764,47 +1763,30 @@ static void i40e_undo_filter_entries(struct i40e_vsi *vsi,
+ static int
+ i40e_update_filter_state(int count,
+ 			 struct i40e_aqc_add_macvlan_element_data *add_list,
+-			 struct i40e_mac_filter *add_head, int aq_err)
++			 struct i40e_mac_filter *add_head)
+ {
+ 	int retval = 0;
+ 	int i;
+ 
+-
+-	if (!aq_err) {
+-		retval = count;
+-		/* Everything's good, mark all filters active. */
+-		for (i = 0; i < count ; i++) {
+-			add_head->state = I40E_FILTER_ACTIVE;
+-			add_head = hlist_entry(add_head->hlist.next,
+-					       typeof(struct i40e_mac_filter),
+-					       hlist);
+-		}
+-	} else if (aq_err == I40E_AQ_RC_ENOSPC) {
+-		/* Device ran out of filter space. Check the return value
+-		 * for each filter to see which ones are active.
++	for (i = 0; i < count; i++) {
++		/* Always check status of each filter. We don't need to check
++		 * the firmware return status because we pre-set the filter
++		 * status to I40E_AQC_MM_ERR_NO_RES when sending the filter
++		 * request to the adminq. Thus, if it no longer matches then
++		 * we know the filter is active.
+ 		 */
+-		for (i = 0; i < count ; i++) {
+-			if (add_list[i].match_method ==
+-			    I40E_AQC_MM_ERR_NO_RES) {
+-				add_head->state = I40E_FILTER_FAILED;
+-			} else {
+-				add_head->state = I40E_FILTER_ACTIVE;
+-				retval++;
+-			}
+-			add_head = hlist_entry(add_head->hlist.next,
+-					       typeof(struct i40e_mac_filter),
+-					       hlist);
+-		}
+-	} else {
+-		/* Some other horrible thing happened, fail all filters */
+-		retval = 0;
+-		for (i = 0; i < count ; i++) {
++		if (add_list[i].match_method == I40E_AQC_MM_ERR_NO_RES) {
+ 			add_head->state = I40E_FILTER_FAILED;
+-			add_head = hlist_entry(add_head->hlist.next,
+-					       typeof(struct i40e_mac_filter),
+-					       hlist);
++		} else {
++			add_head->state = I40E_FILTER_ACTIVE;
++			retval++;
+ 		}
++
++		add_head = hlist_entry(add_head->hlist.next,
++				       typeof(struct i40e_mac_filter),
++				       hlist);
+ 	}
++
+ 	return retval;
+ }
+ 
+@@ -1863,12 +1845,11 @@ void i40e_aqc_add_filters(struct i40e_vsi *vsi, const char *vsi_name,
+ 			  int num_add, bool *promisc_changed)
+ {
+ 	struct i40e_hw *hw = &vsi->back->hw;
+-	i40e_status aq_ret;
+ 	int aq_err, fcnt;
+ 
+-	aq_ret = i40e_aq_add_macvlan(hw, vsi->seid, list, num_add, NULL);
++	i40e_aq_add_macvlan(hw, vsi->seid, list, num_add, NULL);
  	aq_err = hw->aq.asq_last_status;
- 	fcnt = i40e_update_filter_state(num_add, list, add_head, aq_ret);
--	vsi->active_filters += fcnt;
+-	fcnt = i40e_update_filter_state(num_add, list, add_head, aq_ret);
++	fcnt = i40e_update_filter_state(num_add, list, add_head);
  
  	if (fcnt != num_add) {
  		*promisc_changed = true;
- 		set_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state);
--		vsi->promisc_threshold = (vsi->active_filters * 3) / 4;
- 		dev_warn(&vsi->back->pdev->dev,
- 			 "Error %s adding RX filters on %s, promiscuous mode forced on\n",
- 			 i40e_aq_str(hw, aq_err),
-@@ -1938,6 +1936,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 	struct i40e_hw *hw = &vsi->back->hw;
- 	unsigned int vlan_any_filters = 0;
- 	unsigned int non_vlan_filters = 0;
-+	unsigned int failed_filters = 0;
- 	unsigned int vlan_filters = 0;
- 	bool promisc_changed = false;
- 	char vsi_name[16] = "PF";
-@@ -1984,7 +1983,6 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 				/* Move the element into temporary del_list */
- 				hash_del(&f->hlist);
- 				hlist_add_head(&f->hlist, &tmp_del_list);
--				vsi->active_filters--;
- 
- 				/* Avoid counting removed filters */
- 				continue;
-@@ -2045,7 +2043,6 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 				f->state = I40E_FILTER_REMOVE;
- 				hash_del(&f->hlist);
- 				hlist_add_head(&f->hlist, &tmp_del_list);
--				vsi->active_filters--;
+@@ -2167,6 +2148,9 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 					cpu_to_le16((u16)(f->vlan));
  			}
- 
- 			/* Also update any filters on the tmp_add list */
-@@ -2202,27 +2199,36 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		add_list = NULL;
- 	}
- 
--	/* Check to see if we can drop out of overflow promiscuous mode. */
-+	/* Determine the number of active and failed filters. */
-+	spin_lock_bh(&vsi->mac_filter_hash_lock);
-+	vsi->active_filters = 0;
-+	hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
-+		if (f->state == I40E_FILTER_ACTIVE)
-+			vsi->active_filters++;
-+		else if (f->state == I40E_FILTER_FAILED)
-+			failed_filters++;
-+	}
-+	spin_unlock_bh(&vsi->mac_filter_hash_lock);
-+
-+	/* If promiscuous mode has changed, we need to calculate a new
-+	 * threshold for when we are safe to exit
-+	 */
-+	if (promisc_changed)
-+		vsi->promisc_threshold = (vsi->active_filters * 3) / 4;
-+
-+	/* Check if we are able to exit overflow promiscuous mode. We can
-+	 * safely exit if we didn't just enter, we no longer have any failed
-+	 * filters, and we have reduced filters below the threshold value.
-+	 */
- 	if (test_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state) &&
-+	    !promisc_changed && !failed_filters &&
- 	    (vsi->active_filters < vsi->promisc_threshold)) {
--		int failed_count = 0;
--		/* See if we have any failed filters. We can't drop out of
--		 * promiscuous until these have all been deleted.
--		 */
--		spin_lock_bh(&vsi->mac_filter_hash_lock);
--		hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
--			if (f->state == I40E_FILTER_FAILED)
--				failed_count++;
--		}
--		spin_unlock_bh(&vsi->mac_filter_hash_lock);
--		if (!failed_count) {
--			dev_info(&pf->pdev->dev,
--				 "filter logjam cleared on %s, leaving overflow promiscuous mode\n",
--				 vsi_name);
--			clear_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state);
--			promisc_changed = true;
--			vsi->promisc_threshold = 0;
--		}
-+		dev_info(&pf->pdev->dev,
-+			 "filter logjam cleared on %s, leaving overflow promiscuous mode\n",
-+			 vsi_name);
-+		clear_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state);
-+		promisc_changed = true;
-+		vsi->promisc_threshold = 0;
- 	}
- 
- 	/* if the VF is not trusted do not do promisc */
+ 			add_list[num_add].queue_number = 0;
++			/* set invalid match method for later detection */
++			add_list[num_add].match_method =
++				cpu_to_le16((u16)I40E_AQC_MM_ERR_NO_RES);
+ 			cmd_flags |= I40E_AQC_MACVLAN_ADD_PERFECT_MATCH;
+ 			add_list[num_add].flags = cpu_to_le16(cmd_flags);
+ 			num_add++;
 -- 
 2.4.11
 
