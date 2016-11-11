@@ -1,79 +1,43 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri, 11 Nov 2016 12:39:33 -0800
-Subject: [Intel-wired-lan] [next PATCH S54 09/15] i40e: fold the
-	i40e_is_vsi_in_vlan check into i40e_put_mac_in_vlan
+Date: Fri, 11 Nov 2016 12:39:39 -0800
+Subject: [Intel-wired-lan] [next PATCH S54 15/15] i40evf: remove unused
+	device ID
 In-Reply-To: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
 References: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1478896779-13697-10-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1478896779-13697-16-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Fold the check for determining when to call i40e_put_mac_in_vlan directly 
-into the function so that we don't need to decide which function to use 
-ahead of time. This allows us to just call i40e_put_mac_in_vlan directly 
-without having to check ahead of time.
+This device ID was intended for use when running Linux VF drivers under
+Hyper-V, but we have determined that it is not necessary. Since it is
+unused, and will never be used, remove it.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: Ifff526940748ac14b8418be5df5a149502eed137
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I74998ab4237db043cd400547bb54a0a5e2a37ea5
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 11 ++++-------
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  8 ++------
- 2 files changed, 6 insertions(+), 13 deletions(-)
+Testing Hints : No code change. Modinfo should not
+show 37D9 as a device supported by i40evf. This is DCR 2216.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4630a71..aa61bbb 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1503,6 +1503,9 @@ struct i40e_mac_filter *i40e_put_mac_in_vlan(struct i40e_vsi *vsi,
- 		return i40e_add_filter(vsi, macaddr,
- 				       le16_to_cpu(vsi->info.pvid));
- 
-+	if (!i40e_is_vsi_in_vlan(vsi))
-+		return i40e_add_filter(vsi, macaddr, I40E_VLAN_ANY);
-+
- 	hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f, hlist) {
- 		if (f->state == I40E_FILTER_REMOVE)
- 			continue;
-@@ -1761,14 +1764,8 @@ static int i40e_addr_sync(struct net_device *netdev, const u8 *addr)
- {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
--	struct i40e_mac_filter *f;
--
--	if (i40e_is_vsi_in_vlan(vsi))
--		f = i40e_put_mac_in_vlan(vsi, addr);
--	else
--		f = i40e_add_filter(vsi, addr, I40E_VLAN_ANY);
- 
--	if (f)
-+	if (i40e_put_mac_in_vlan(vsi, addr))
- 		return 0;
- 	else
- 		return -ENOMEM;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index a6198b7..0cdbdd3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1942,12 +1942,8 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 		struct i40e_mac_filter *f;
- 
- 		f = i40e_find_mac(vsi, al->list[i].addr);
--		if (!f) {
--			if (i40e_is_vsi_in_vlan(vsi))
--				f = i40e_put_mac_in_vlan(vsi, al->list[i].addr);
--			else
--				f = i40e_add_filter(vsi, al->list[i].addr, -1);
--		}
-+		if (!f)
-+			f = i40e_put_mac_in_vlan(vsi, al->list[i].addr);
- 
- 		if (!f) {
- 			dev_err(&pf->pdev->dev,
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index c0fc533..3fe87e0 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -59,7 +59,6 @@ static const struct pci_device_id i40evf_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF_HV), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_X722_VF), 0},
+-	{PCI_VDEVICE(INTEL, I40E_DEV_ID_X722_VF_HV), 0},
+ 	/* required last entry */
+ 	{0, }
+ };
 -- 
 2.4.11
 
