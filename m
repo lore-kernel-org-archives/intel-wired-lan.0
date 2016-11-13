@@ -1,37 +1,104 @@
-From: Shannon Nelson <sln@onemain.com>
-Date: Sat, 12 Nov 2016 12:13:20 -0800
-Subject: [Intel-wired-lan] [next PATCH S53 3/5] i40e: Add FEC for 25g
-In-Reply-To: <1478895384-23904-3-git-send-email-bimmy.pujari@intel.com>
-References: <1478895384-23904-1-git-send-email-bimmy.pujari@intel.com>
- <1478895384-23904-3-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <178d1f9e-7645-525f-21d4-2721abc7f8a9@onemain.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Sun, 13 Nov 2016 10:34:54 +0200
+Subject: [Intel-wired-lan] [PATCH v2] e1000e: free IRQ regardless of
+ __E1000_DOWN
+In-Reply-To: <dff136c7-cb6a-8a61-d311-01959bac16b9@codeaurora.org>
+References: <1478727681-16505-1-git-send-email-tbaicar@codeaurora.org>
+ <42e53bc2-0361-e7b7-1093-4e095aa56955@intel.com>
+ <dff136c7-cb6a-8a61-d311-01959bac16b9@codeaurora.org>
+Message-ID: <3914adae-91b2-7b74-02bc-579b3e32d143@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On 11/11/2016 12:16 PM, Bimmy Pujari wrote:
-> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
->
-> This patch adds adminq support for Forward Error
-> Correction ("FEC")for 25g products.
-
-[...]
-
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-> index f8d7d95..267c698 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-> +++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-> @@ -28,7 +28,7 @@
->   #define _I40E_ADMINQ_CMD_H_
->   
->   /* This header file defines the i40e Admin Queue commands and is shared between
-> - * i40e Firmware and Software.
-> + * i40e Fitruct i40e_aq_set_phy_configmware and Software.
-
-Huh?
-
-sln
+On 11/11/2016 12:35 AM, Baicar, Tyler wrote:
+> Hello Sasha,
+> 
+> On 11/9/2016 11:19 PM, Neftin, Sasha wrote:
+>> On 11/9/2016 11:41 PM, Tyler Baicar wrote:
+>>> Move IRQ free code so that it will happen regardless of the
+>>> __E1000_DOWN bit. Currently the e1000e driver only releases its IRQ
+>>> if the __E1000_DOWN bit is cleared. This is not sufficient because
+>>> it is possible for __E1000_DOWN to be set without releasing the IRQ.
+>>> In such a situation, we will hit a kernel bug later in e1000_remove
+>>> because the IRQ still has action since it was never freed. A
+>>> secondary bus reset can cause this case to happen.
+>>>
+>>> Signed-off-by: Tyler Baicar <tbaicar@codeaurora.org>
+>>> ---
+>>>   drivers/net/ethernet/intel/e1000e/netdev.c | 3 ++-
+>>>   1 file changed, 2 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
+>>> b/drivers/net/ethernet/intel/e1000e/netdev.c
+>>> index 7017281..36cfcb0 100644
+>>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+>>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+>>> @@ -4679,12 +4679,13 @@ int e1000e_close(struct net_device *netdev)
+>>>         if (!test_bit(__E1000_DOWN, &adapter->state)) {
+>>>           e1000e_down(adapter, true);
+>>> -        e1000_free_irq(adapter);
+>>>             /* Link status message must follow this format */
+>>>           pr_info("%s NIC Link is Down\n", adapter->netdev->name);
+>>>       }               
+>>>   +    e1000_free_irq(adapter);
+>>> +
+>>>       napi_disable(&adapter->napi);
+>>>         e1000e_free_tx_resources(adapter->tx_ring);
+>>>
+>> I would like not recommend insert this change. This change related
+>> driver state machine, we afraid from lot of synchronization problem and
+>> issues.
+>> We need keep e1000_free_irq in loop and check for 'test_bit' ready.
+> 
+> What do you mean here? There is no loop. If __E1000_DOWN is set then we
+> will never free the IRQ.
+> 
+>> Another point, does before execute secondary bus reset your SW back up
+>> pcie configuration space as properly?
+> 
+> After a secondary bus reset, the link needs to recover and go back to a
+> working state after 1 second.
+> 
+> From the callstack, the issue is happening while removing the endpoint
+> from the system, before applying the secondary bus reset.
+> 
+> The order of events is
+> 1. remove the drivers
+> 2. cause a secondary bus reset
+> 3. wait 1 second
+Actually, this is too much, usually link up in less than 100ms.You can
+check Data Link Layer indication.
+> 4. recover the link
+> 
+> callstack:
+> free_msi_irqs+0x6c/0x1a8
+> pci_disable_msi+0xb0/0x148
+> e1000e_reset_interrupt_capability+0x60/0x78
+> e1000_remove+0xc8/0x180
+> pci_device_remove+0x48/0x118
+> __device_release_driver+0x80/0x108
+> device_release_driver+0x2c/0x40
+> pci_stop_bus_device+0xa0/0xb0
+> pci_stop_bus_device+0x3c/0xb0
+> pci_stop_root_bus+0x54/0x80
+> acpi_pci_root_remove+0x28/0x64
+> acpi_bus_trim+0x6c/0xa4
+> acpi_device_hotplug+0x19c/0x3f4
+> acpi_hotplug_work_fn+0x28/0x3c
+> process_one_work+0x150/0x460
+> worker_thread+0x50/0x4b8
+> kthread+0xd4/0xe8
+> ret_from_fork+0x10/0x50
+> 
+> Thanks,
+> Tyler
+> 
+Hello Tyler,
+Okay, we need consult more about this suggestion.
+May I ask what is setup you run? Is there NIC or on board LAN? I would
+like try reproduce this issue in our lab's too.
+Also, is same issue observed with same scenario and others NIC's too?
+Sasha
