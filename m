@@ -1,112 +1,146 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Sun, 13 Nov 2016 11:25:34 +0200
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: free IRQ regardless of
- __E1000_DOWN
-In-Reply-To: <3914adae-91b2-7b74-02bc-579b3e32d143@intel.com>
-References: <1478727681-16505-1-git-send-email-tbaicar@codeaurora.org>
- <42e53bc2-0361-e7b7-1093-4e095aa56955@intel.com>
- <dff136c7-cb6a-8a61-d311-01959bac16b9@codeaurora.org>
- <3914adae-91b2-7b74-02bc-579b3e32d143@intel.com>
-Message-ID: <70121f26-2d5a-528f-04f5-30a97b93a585@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 14 Nov 2016 07:19:33 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 3d708e08a58f1271092b4c5f67dbdcd98cf3bd94
+Message-ID: <5828f505.njqxRmuRM6chpBoT%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 11/13/2016 10:34 AM, Neftin, Sasha wrote:
-> On 11/11/2016 12:35 AM, Baicar, Tyler wrote:
->> Hello Sasha,
->>
->> On 11/9/2016 11:19 PM, Neftin, Sasha wrote:
->>> On 11/9/2016 11:41 PM, Tyler Baicar wrote:
->>>> Move IRQ free code so that it will happen regardless of the
->>>> __E1000_DOWN bit. Currently the e1000e driver only releases its IRQ
->>>> if the __E1000_DOWN bit is cleared. This is not sufficient because
->>>> it is possible for __E1000_DOWN to be set without releasing the IRQ.
->>>> In such a situation, we will hit a kernel bug later in e1000_remove
->>>> because the IRQ still has action since it was never freed. A
->>>> secondary bus reset can cause this case to happen.
->>>>
->>>> Signed-off-by: Tyler Baicar <tbaicar@codeaurora.org>
->>>> ---
->>>>   drivers/net/ethernet/intel/e1000e/netdev.c | 3 ++-
->>>>   1 file changed, 2 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
->>>> b/drivers/net/ethernet/intel/e1000e/netdev.c
->>>> index 7017281..36cfcb0 100644
->>>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
->>>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
->>>> @@ -4679,12 +4679,13 @@ int e1000e_close(struct net_device *netdev)
->>>>         if (!test_bit(__E1000_DOWN, &adapter->state)) {
->>>>           e1000e_down(adapter, true);
->>>> -        e1000_free_irq(adapter);
->>>>             /* Link status message must follow this format */
->>>>           pr_info("%s NIC Link is Down\n", adapter->netdev->name);
->>>>       }               
->>>>   +    e1000_free_irq(adapter);
->>>> +
->>>>       napi_disable(&adapter->napi);
->>>>         e1000e_free_tx_resources(adapter->tx_ring);
->>>>
->>> I would like not recommend insert this change. This change related
->>> driver state machine, we afraid from lot of synchronization problem and
->>> issues.
->>> We need keep e1000_free_irq in loop and check for 'test_bit' ready.
->>
->> What do you mean here? There is no loop. If __E1000_DOWN is set then we
->> will never free the IRQ.
->>
->>> Another point, does before execute secondary bus reset your SW back up
->>> pcie configuration space as properly?
->>
->> After a secondary bus reset, the link needs to recover and go back to a
->> working state after 1 second.
->>
->> From the callstack, the issue is happening while removing the endpoint
->> from the system, before applying the secondary bus reset.
->>
->> The order of events is
->> 1. remove the drivers
->> 2. cause a secondary bus reset
->> 3. wait 1 second
-> Actually, this is too much, usually link up in less than 100ms.You can
-> check Data Link Layer indication.
->> 4. recover the link
->>
->> callstack:
->> free_msi_irqs+0x6c/0x1a8
->> pci_disable_msi+0xb0/0x148
->> e1000e_reset_interrupt_capability+0x60/0x78
->> e1000_remove+0xc8/0x180
->> pci_device_remove+0x48/0x118
->> __device_release_driver+0x80/0x108
->> device_release_driver+0x2c/0x40
->> pci_stop_bus_device+0xa0/0xb0
->> pci_stop_bus_device+0x3c/0xb0
->> pci_stop_root_bus+0x54/0x80
->> acpi_pci_root_remove+0x28/0x64
->> acpi_bus_trim+0x6c/0xa4
->> acpi_device_hotplug+0x19c/0x3f4
->> acpi_hotplug_work_fn+0x28/0x3c
->> process_one_work+0x150/0x460
->> worker_thread+0x50/0x4b8
->> kthread+0xd4/0xe8
->> ret_from_fork+0x10/0x50
->>
->> Thanks,
->> Tyler
->>
-> Hello Tyler,
-> Okay, we need consult more about this suggestion.
-> May I ask what is setup you run? Is there NIC or on board LAN? I would
-> like try reproduce this issue in our lab's too.
-> Also, is same issue observed with same scenario and others NIC's too?
-> Sasha
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
-Please, specify what is device used.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+3d708e08a58f1271092b4c5f67dbdcd98cf3bd94  igb: re-assign hw address pointer on reset after PCI error
+
+elapsed time: 74m
+
+configs tested: 122
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                     randconfig-a0-201646
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x010-201646
+x86_64                 randconfig-x011-201646
+x86_64                 randconfig-x012-201646
+x86_64                 randconfig-x013-201646
+x86_64                 randconfig-x014-201646
+x86_64                 randconfig-x015-201646
+x86_64                 randconfig-x016-201646
+x86_64                 randconfig-x017-201646
+x86_64                 randconfig-x018-201646
+x86_64                 randconfig-x019-201646
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201646
+i386                     randconfig-s1-201646
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201646
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-11140126
+i386                   randconfig-i1-11140126
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x010-201646
+i386                   randconfig-x011-201646
+i386                   randconfig-x012-201646
+i386                   randconfig-x013-201646
+i386                   randconfig-x014-201646
+i386                   randconfig-x015-201646
+i386                   randconfig-x016-201646
+i386                   randconfig-x017-201646
+i386                   randconfig-x018-201646
+i386                   randconfig-x019-201646
+i386                     randconfig-n0-201646
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-x070-201646
+i386                   randconfig-x071-201646
+i386                   randconfig-x072-201646
+i386                   randconfig-x073-201646
+i386                   randconfig-x074-201646
+i386                   randconfig-x075-201646
+i386                   randconfig-x076-201646
+i386                   randconfig-x077-201646
+i386                   randconfig-x078-201646
+i386                   randconfig-x079-201646
+x86_64                                  kexec
+x86_64                               rhel-7.2
+i386                             allmodconfig
+i386                   randconfig-x006-201646
+i386                   randconfig-x004-201646
+i386                   randconfig-x007-201646
+i386                   randconfig-x003-201646
+i386                   randconfig-x008-201646
+i386                   randconfig-x000-201646
+i386                   randconfig-x009-201646
+i386                   randconfig-x002-201646
+i386                   randconfig-x001-201646
+i386                   randconfig-x005-201646
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
