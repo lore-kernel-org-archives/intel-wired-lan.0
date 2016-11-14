@@ -1,201 +1,45 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 15 Nov 2016 05:06:52 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 3b5d0516c41e3411e7028d90bf9ea60d3062a362
-Message-ID: <582a276c.ygU6o7A9Q1p9di6p%fengguang.wu@intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Mon, 14 Nov 2016 13:06:45 -0800
+Subject: [Intel-wired-lan] [next PATCH S53-V2 1/5] i40e: use unsigned printf
+	format specifier for active_filters count
+Message-ID: <1479157609-30812-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-3b5d0516c41e3411e7028d90bf9ea60d3062a362  igb: re-assign hw address pointer on reset after PCI error
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-elapsed time: 76m
+Replace the %d specifier used for printing vsi->active_filters and
+vsi->promisc_threshold with an unsigned %u format specifier. While it is
+unlikely in practice that these values will ever reach such a large
+number they are unsigned values and thus should not be interpreted as
+negative numbers.
 
-configs tested: 178
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: Iff050fad5a1c8537c4c57fcd527441cd95cfc0d4
+---
+Testing-hints:
+  This should go upstream, even though it is in debugfs code. We're not
+  adding features but simply correcting output of existing features.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-i386                     randconfig-a0-201646
-x86_64                 randconfig-a0-11150150
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11150231
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-g0-11150243
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-powerpc                     mpc83xx_defconfig
-sh                ecovec24-romimage_defconfig
-um                               allmodconfig
-arm                         ebsa110_defconfig
-mips                            ar7_defconfig
-sh                          urquell_defconfig
-tile                              allnoconfig
-x86_64                 randconfig-x011-201646
-x86_64                 randconfig-x014-201646
-x86_64                 randconfig-x017-201646
-x86_64                 randconfig-x015-201646
-x86_64                 randconfig-x012-201646
-x86_64                 randconfig-x018-201646
-x86_64                 randconfig-x019-201646
-x86_64                 randconfig-x013-201646
-x86_64                 randconfig-x010-201646
-x86_64                 randconfig-x016-201646
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201646
-i386                     randconfig-s1-201646
-x86_64                 randconfig-s0-11150359
-x86_64                 randconfig-s1-11150359
-x86_64                 randconfig-s2-11150359
-x86_64                 randconfig-s3-11150352
-x86_64                 randconfig-s4-11150352
-x86_64                 randconfig-s5-11150352
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201646
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-11140126
-i386                   randconfig-i1-11140126
-x86_64                 randconfig-b0-11150030
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-u0-11150246
-x86_64                 randconfig-u0-11150439
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                            pleb_defconfig
-arm                         cm_x2xx_defconfig
-arm                             pxa_defconfig
-x86_64                randconfig-ne0-11150251
-c6x                         dsk6455_defconfig
-mips                   sb1250_swarm_defconfig
-powerpc                         wii_defconfig
-i386                   randconfig-x014-201646
-i386                   randconfig-x019-201646
-i386                   randconfig-x018-201646
-i386                   randconfig-x017-201646
-i386                   randconfig-x015-201646
-i386                   randconfig-x016-201646
-i386                   randconfig-x012-201646
-i386                   randconfig-x011-201646
-i386                   randconfig-x013-201646
-i386                   randconfig-x010-201646
-x86_64                                    lkp
-i386                     randconfig-n0-201646
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-x070-201646
-i386                   randconfig-x071-201646
-i386                   randconfig-x072-201646
-i386                   randconfig-x073-201646
-i386                   randconfig-x074-201646
-i386                   randconfig-x075-201646
-i386                   randconfig-x076-201646
-i386                   randconfig-x077-201646
-i386                   randconfig-x078-201646
-i386                   randconfig-x079-201646
-i386                  randconfig-sb0-11150109
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                randconfig-ws0-11150035
-x86_64                 randconfig-x008-201646
-x86_64                 randconfig-x001-201646
-x86_64                 randconfig-x009-201646
-x86_64                 randconfig-x000-201646
-x86_64                 randconfig-x003-201646
-x86_64                 randconfig-x005-201646
-x86_64                 randconfig-x002-201646
-x86_64                 randconfig-x007-201646
-x86_64                 randconfig-x004-201646
-x86_64                 randconfig-x006-201646
-i386                     randconfig-r0-201646
-x86_64                 randconfig-r0-11150207
-i386                   randconfig-x006-201646
-i386                   randconfig-x004-201646
-i386                   randconfig-x007-201646
-i386                   randconfig-x003-201646
-i386                   randconfig-x008-201646
-i386                   randconfig-x000-201646
-i386                   randconfig-x009-201646
-i386                   randconfig-x002-201646
-i386                   randconfig-x001-201646
-i386                   randconfig-x005-201646
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index b8a03a0..f1f41f1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -172,7 +172,7 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
+ 			 f->macaddr, f->vlan,
+ 			 i40e_filter_state_string[f->state]);
+ 	}
+-	dev_info(&pf->pdev->dev, "    active_filters %d, promisc_threshold %d, overflow promisc %s\n",
++	dev_info(&pf->pdev->dev, "    active_filters %u, promisc_threshold %u, overflow promisc %s\n",
+ 		 vsi->active_filters, vsi->promisc_threshold,
+ 		 (test_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state) ?
+ 		  "ON" : "OFF"));
+-- 
+2.4.11
 
-Thanks,
-Fengguang
