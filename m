@@ -1,43 +1,49 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 7 Oct 2016 19:32:04 +0000
-Subject: [Intel-wired-lan] [next PATCH S49-V2 08/15] i40e: properly
- cleanup	on allocation failure in i40e_sync_vsi_filters
-In-Reply-To: <1475685046-16900-9-git-send-email-bimmy.pujari@intel.com>
-References: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
- <1475685046-16900-9-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0FCAA@ORSMSX104.amr.corp.intel.com>
+From: Pujari, Bimmy <bimmy.pujari@intel.com>
+Date: Mon, 14 Nov 2016 21:06:59 +0000
+Subject: [Intel-wired-lan] [next PATCH S53 3/5] i40e: Add FEC for 25g
+In-Reply-To: <178d1f9e-7645-525f-21d4-2721abc7f8a9@onemain.com>
+References: <1478895384-23904-1-git-send-email-bimmy.pujari@intel.com>
+ <1478895384-23904-3-git-send-email-bimmy.pujari@intel.com>
+ <178d1f9e-7645-525f-21d4-2721abc7f8a9@onemain.com>
+Message-ID: <B759292EEECB5C46AEDF3EC46470BC94AD47CC@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Wednesday, October 05, 2016 9:31 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S49-V2 08/15] i40e: properly cleanup
-> on allocation failure in i40e_sync_vsi_filters
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> Currently, we fail to correctly restore filters on the temporary add list when
-> we fail to allocate memory either for deletion or addition.
-> Replace calls to "goto out;" with calls to a new location that correctly handles
-> memory allocation failures.
-> 
-> Note that it is safe for us to call i40e_undo_filter_entries on the tmp_del_list
-> even after we've deleted filters because at this point it will be empty, so we
-> don't need to separate the logic for add and delete failure.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-Id: Iee107fd219c6e03e2fd9645c2debf8e8384a8521
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 39 ++++++++++++++++-------
-> ------
->  1 file changed, 22 insertions(+), 17 deletions(-)
+Fixed it.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+-----Original Message-----
+From: Shannon Nelson [mailto:sln at onemain.com] 
+Sent: Saturday, November 12, 2016 12:13 PM
+To: Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
+Cc: Naczyk, Jacek <jacek.naczyk@intel.com>
+Subject: Re: [Intel-wired-lan] [next PATCH S53 3/5] i40e: Add FEC for 25g
 
 
+
+On 11/11/2016 12:16 PM, Bimmy Pujari wrote:
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+>
+> This patch adds adminq support for Forward Error Correction ("FEC")for 
+> 25g products.
+
+[...]
+
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h 
+> b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+> index f8d7d95..267c698 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+> +++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+> @@ -28,7 +28,7 @@
+>   #define _I40E_ADMINQ_CMD_H_
+>   
+>   /* This header file defines the i40e Admin Queue commands and is 
+> shared between
+> - * i40e Firmware and Software.
+> + * i40e Fitruct i40e_aq_set_phy_configmware and Software.
+
+Huh?
+
+sln
