@@ -1,91 +1,101 @@
-From: Duyck, Alexander H <alexander.h.duyck@intel.com>
-Date: Tue, 15 Nov 2016 17:55:54 +0000
-Subject: [Intel-wired-lan] [PATCH] [PATCH v2] igb: close/suspend race in
- netif_device_detach
-In-Reply-To: <1479228866-15506-1-git-send-email-todd.fujinaka@intel.com>
-References: <1479228866-15506-1-git-send-email-todd.fujinaka@intel.com>
-Message-ID: <1479232551.681.96.camel@intel.com>
+From: Peterson, Scott D <scott.d.peterson@intel.com>
+Date: Tue, 15 Nov 2016 19:03:59 +0000
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe/ixgbevf: Enables TSO for
+ MPLS encapsulated packets
+Message-ID: <1479236637.26945.70.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-11-15 at 08:54 -0800, Todd Fujinaka wrote:
-> Similar to ixgbe, when an interface is part of a namespace it is
-> possible that igb_close() may be called while __igb_shutdown() is
-> running which ends up in a double free WARN and/or a BUG in
-> free_msi_irqs().
-> 
-> Extend the rtnl_lock() to protect the call to netif_device_detach() and
-> igb_clear_interrupt_scheme() in __igb_shutdown() and check for
-> netif_device_present() to avoid calling igb_clear_interrupt_scheme() a
-> second time in igb_close().
-> 
-> Also extend the rtnl lock in igb_resume() to netif_device_attach().
-> 
-> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+This patch advertises TSO & GSO features in netdev->mpls_features.?
+In ixgbe(vf)_tso() where we set up segmentation offload, the IP?
+header will be the inner network header when eth_p_mpls() indicates
+the Ethernet protocol is MPLS (UC or MC).
 
-Looks good.
+We're submitting this upstream first, because it depends on related
+upstream changes not yet present in the OOT drivers.
 
-Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Suggested-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Scott Peterson <scott.d.peterson@intel.com>
+---
 
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 21 ++++++++++++---------
->  1 file changed, 12 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 4feca69..8b1b4dd 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -3275,7 +3275,9 @@ static int __igb_close(struct net_device *netdev, bool suspending)
->  
->  int igb_close(struct net_device *netdev)
->  {
-> -	return __igb_close(netdev, false);
-> +	if (netif_device_present(netdev))
-> +		return __igb_close(netdev, false);
-> +	return 0;
->  }
->  
->  /**
-> @@ -7537,6 +7539,7 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
->  	int retval = 0;
->  #endif
->  
-> +	rtnl_lock();
->  	netif_device_detach(netdev);
->  
->  	if (netif_running(netdev))
-> @@ -7545,6 +7548,7 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
->  	igb_ptp_suspend(adapter);
->  
->  	igb_clear_interrupt_scheme(adapter);
-> +	rtnl_unlock();
->  
->  #ifdef CONFIG_PM
->  	retval = pci_save_state(pdev);
-> @@ -7663,16 +7667,15 @@ static int igb_resume(struct device *dev)
->  
->  	wr32(E1000_WUS, ~0);
->  
-> -	if (netdev->flags & IFF_UP) {
-> -		rtnl_lock();
-> +	rtnl_lock();
-> +	if (!err && netif_running(netdev))
->  		err = __igb_open(netdev, true);
-> -		rtnl_unlock();
-> -		if (err)
-> -			return err;
-> -	}
->  
-> -	netif_device_attach(netdev);
-> -	return 0;
-> +	if (!err)
-> +		netif_device_attach(netdev);
-> +	rtnl_unlock();
-> +
-> +	return err;
->  }
->  
->  static int igb_runtime_idle(struct device *dev)
+?drivers/net/ethernet/intel/ixgbe/ixgbe_main.c?????| 12 ++++++++++--
+?drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 12 ++++++++++--
+?2 files changed, 20 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 2436984..04b2ceb 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -55,6 +55,7 @@
+?#include <net/tc_act/tc_gact.h>
+?#include <net/tc_act/tc_mirred.h>
+?#include <net/vxlan.h>
++#include <net/mpls.h>
+?
+?#include "ixgbe.h"
+?#include "ixgbe_common.h"
+@@ -7279,7 +7280,10 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+????????if (err < 0)
+????????????????return err;
+?
+-???????ip.hdr = skb_network_header(skb);
++???????if (eth_p_mpls(first->protocol))
++???????????????ip.hdr = skb_inner_network_header(skb);
++???????else
++???????????????ip.hdr = skb_network_header(skb);
+????????l4.hdr = skb_checksum_start(skb);
+?
+????????/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
+@@ -9653,7 +9657,11 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+?
+????????netdev->vlan_features |= netdev->features | NETIF_F_TSO_MANGLEID;
+????????netdev->hw_enc_features |= netdev->vlan_features;
+-???????netdev->mpls_features |= NETIF_F_HW_CSUM;
++???????netdev->mpls_features |= NETIF_F_SG |
++????????????????????????????????NETIF_F_TSO |
++????????????????????????????????NETIF_F_TSO6 |
++????????????????????????????????NETIF_F_HW_CSUM;
++???????netdev->mpls_features |= IXGBE_GSO_PARTIAL_FEATURES;
+?
+????????/* set this bit last since it cannot be part of vlan_features */
+????????netdev->features |= NETIF_F_HW_VLAN_CTAG_FILTER |
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index d316f50..8498eed 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -49,6 +49,7 @@
+?#include <linux/if.h>
+?#include <linux/if_vlan.h>
+?#include <linux/prefetch.h>
++#include <net/mpls.h>
+?
+?#include "ixgbevf.h"
+?
+@@ -3327,7 +3328,10 @@ static int ixgbevf_tso(struct ixgbevf_ring *tx_ring,
+????????if (err < 0)
+????????????????return err;
+?
+-???????ip.hdr = skb_network_header(skb);
++???????if (eth_p_mpls(first->protocol))
++???????????????ip.hdr = skb_inner_network_header(skb);
++???????else
++???????????????ip.hdr = skb_network_header(skb);
+????????l4.hdr = skb_checksum_start(skb);
+?
+????????/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
+@@ -4083,7 +4087,11 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+????????????????netdev->features |= NETIF_F_HIGHDMA;
+?
+????????netdev->vlan_features |= netdev->features | NETIF_F_TSO_MANGLEID;
+-???????netdev->mpls_features |= NETIF_F_HW_CSUM;
++???????netdev->mpls_features |= NETIF_F_SG |
++????????????????????????????????NETIF_F_TSO |
++????????????????????????????????NETIF_F_TSO6 |
++????????????????????????????????NETIF_F_HW_CSUM;
++???????netdev->mpls_features |= IXGBEVF_GSO_PARTIAL_FEATURES;
+????????netdev->hw_enc_features |= netdev->vlan_features;
+?
+????????/* set this bit last since it cannot be part of vlan_features */
