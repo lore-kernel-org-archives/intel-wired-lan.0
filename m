@@ -1,45 +1,35 @@
-From: Lino Sanfilippo <LinoSanfilippo@gmx.de>
-Date: Wed, 16 Nov 2016 15:05:44 +0100
-Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: write flush vfta registers
-In-Reply-To: <1479300041-3436-1-git-send-email-zyjzyj2000@gmail.com>
-References: <1479300041-3436-1-git-send-email-zyjzyj2000@gmail.com>
-Message-ID: <trinity-ec3a2e6f-7310-41aa-8743-61bc62ccf663-1479305144399@3capp-gmx-bs59>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 16 Nov 2016 20:34:19 +0000
+Subject: [Intel-wired-lan] [next PATCH S52-V2 07/15] i40e/i40evf:
+ replace	for memcpy with single memcpy call in ethtool
+In-Reply-To: <1478639119-14656-8-git-send-email-bimmy.pujari@intel.com>
+References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
+ <1478639119-14656-8-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA36D7F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-Hi,
-
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Tuesday, November 08, 2016 1:05 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S52-V2 07/15] i40e/i40evf: replace for
+> memcpy with single memcpy call in ethtool
 > 
-> Sometimes vfta registers can not be written successfully in dcb mode.
-> This is very occassional. When the ixgbe nic runs for a very long time,
-> sometimes this bug occurs. But after IXGBE_WRITE_FLUSH is executed,
-> this bug never occurs.
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
+> memcpy replaced with single memcpy call in ethtool.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: I3f5bef6bcc593412c56592c6459784db41575a0a
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index bd93d82..1221cfb 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -4138,8 +4138,10 @@ static void ixgbe_vlan_promisc_enable(struct ixgbe_adapter *adapter)
->  	}
->  
->  	/* Set all bits in the VLAN filter table array */
-> -	for (i = hw->mac.vft_size; i--;)
-> +	for (i = hw->mac.vft_size; i--;) {
->  		IXGBE_WRITE_REG(hw, IXGBE_VFTA(i), ~0U);
-> +		IXGBE_WRITE_FLUSH(hw);
-> +	}
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 24 ++++++++----------------
+>  1 file changed, 8 insertions(+), 16 deletions(-)
 
-Should it not be sufficient to do the flush only once, at the end of the function?
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Regards,
-Lino
+
