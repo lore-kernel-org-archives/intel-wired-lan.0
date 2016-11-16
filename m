@@ -1,199 +1,64 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 16 Nov 2016 09:02:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 6f468519415e5e9df0cdd460ecdc46f871066137
-Message-ID: <582bb042.+HVGfiE6STsbyZ6k%fengguang.wu@intel.com>
+Date: Wed, 16 Nov 2016 10:17:04 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 746/792]
+ drivers/net/ethernet/broadcom/bcm63xx_enet.c:1440:2: error: expected
+ expression before 'return'
+Message-ID: <201611161053.eVal2Hwm%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-6f468519415e5e9df0cdd460ecdc46f871066137  igb: use igb_adapter->io_addr instead of e1000_hw->hw_addr
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   6f468519415e5e9df0cdd460ecdc46f871066137
+commit: 42469bf5d9bb9fe5e2ab28f18a5d39776797f026 [746/792] net: bcm63xx_enet: Utilize phy_ethtool_nway_reset
+config: mips-bcm63xx_defconfig (attached as .config)
+compiler: mips-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 42469bf5d9bb9fe5e2ab28f18a5d39776797f026
+        # save the attached .config to linux build tree
+        make.cross ARCH=mips 
 
-elapsed time: 88m
+All error/warnings (new ones prefixed by >>):
 
-configs tested: 175
+   drivers/net/ethernet/broadcom/bcm63xx_enet.c: In function 'bcm_enet_nway_reset':
+>> drivers/net/ethernet/broadcom/bcm63xx_enet.c:1440:2: error: expected expression before 'return'
+     return -EOPNOTSUPP;
+     ^~~~~~
+>> drivers/net/ethernet/broadcom/bcm63xx_enet.c:1441:1: warning: control reaches end of non-void function [-Wreturn-type]
+    }
+    ^
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+vim +/return +1440 drivers/net/ethernet/broadcom/bcm63xx_enet.c
 
-frv                               allnoconfig
-powerpc                     powernv_defconfig
-sh                             sh03_defconfig
-i386                     randconfig-a0-201646
-x86_64                 randconfig-a0-11160547
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11160634
-x86_64                           allmodconfig
-x86_64                randconfig-it0-11160706
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-v0-11160439
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-11160632
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                           omap1_defconfig
-arm                         s3c2410_defconfig
-openrisc                          allnoconfig
-sparc64                          allmodconfig
-x86_64                 randconfig-x011-201646
-x86_64                 randconfig-x014-201646
-x86_64                 randconfig-x017-201646
-x86_64                 randconfig-x015-201646
-x86_64                 randconfig-x012-201646
-x86_64                 randconfig-x018-201646
-x86_64                 randconfig-x019-201646
-x86_64                 randconfig-x013-201646
-x86_64                 randconfig-x010-201646
-x86_64                 randconfig-x016-201646
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201646
-i386                     randconfig-s1-201646
-x86_64                 randconfig-s3-11160642
-x86_64                 randconfig-s4-11160642
-x86_64                 randconfig-s5-11160642
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                           spitz_defconfig
-powerpc                 xes_mpc85xx_defconfig
-sparc                             allnoconfig
-xtensa                  audio_kc705_defconfig
-x86_64                   randconfig-i0-201646
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201646
-i386                     randconfig-i1-201646
-m68k                             allmodconfig
-x86_64                randconfig-ne0-11160749
-arm                            qcom_defconfig
-powerpc               corenet_basic_defconfig
-sparc                       sparc32_defconfig
-i386                   randconfig-x014-201646
-i386                   randconfig-x019-201646
-i386                   randconfig-x018-201646
-i386                   randconfig-x017-201646
-i386                   randconfig-x015-201646
-i386                   randconfig-x016-201646
-i386                   randconfig-x012-201646
-i386                   randconfig-x011-201646
-i386                   randconfig-x013-201646
-i386                   randconfig-x010-201646
-i386                     randconfig-n0-201646
-i386                   randconfig-h0-11160706
-i386                   randconfig-h1-11160706
-i386                   randconfig-x073-201646
-i386                   randconfig-x071-201646
-i386                   randconfig-x072-201646
-i386                   randconfig-x078-201646
-i386                   randconfig-x076-201646
-i386                   randconfig-x075-201646
-i386                   randconfig-x077-201646
-i386                   randconfig-x074-201646
-i386                   randconfig-x070-201646
-i386                   randconfig-x079-201646
-x86_64                                  kexec
-x86_64                               rhel-7.2
-i386                  randconfig-sb0-11160518
-x86_64                 randconfig-x008-201646
-x86_64                 randconfig-x001-201646
-x86_64                 randconfig-x009-201646
-x86_64                 randconfig-x000-201646
-x86_64                 randconfig-x003-201646
-x86_64                 randconfig-x005-201646
-x86_64                 randconfig-x002-201646
-x86_64                 randconfig-x007-201646
-x86_64                 randconfig-x004-201646
-x86_64                 randconfig-x006-201646
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-i386                     randconfig-r0-201646
-i386                             allmodconfig
-i386                   randconfig-x006-201646
-i386                   randconfig-x004-201646
-i386                   randconfig-x007-201646
-i386                   randconfig-x003-201646
-i386                   randconfig-x008-201646
-i386                   randconfig-x000-201646
-i386                   randconfig-x009-201646
-i386                   randconfig-x002-201646
-i386                   randconfig-x001-201646
-i386                   randconfig-x005-201646
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-11160556
+7260aac9 Maxime Bizon     2013-06-04  1434  	struct bcm_enet_priv *priv;
+7260aac9 Maxime Bizon     2013-06-04  1435  
+7260aac9 Maxime Bizon     2013-06-04  1436  	priv = netdev_priv(dev);
+42469bf5 Florian Fainelli 2016-11-15  1437  	if (priv->has_phy)
+42469bf5 Florian Fainelli 2016-11-15  1438  		return phy_ethtool_nway_reset(dev),
+7260aac9 Maxime Bizon     2013-06-04  1439  
+7260aac9 Maxime Bizon     2013-06-04 @1440  	return -EOPNOTSUPP;
+7260aac9 Maxime Bizon     2013-06-04 @1441  }
+7260aac9 Maxime Bizon     2013-06-04  1442  
+639cfa9e Philippe Reynes  2016-09-18  1443  static int bcm_enet_get_link_ksettings(struct net_device *dev,
+639cfa9e Philippe Reynes  2016-09-18  1444  				       struct ethtool_link_ksettings *cmd)
 
-Thanks,
-Fengguang
+:::::: The code at line 1440 was first introduced by commit
+:::::: 7260aac97447a2b2cb9e8684d1162118c4426354 bcm63xx_enet: implement reset autoneg ethtool callback
+
+:::::: TO: Maxime Bizon <mbizon@freebox.fr>
+:::::: CC: David S. Miller <davem@davemloft.net>
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 11975 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161116/6df84ed9/attachment-0001.bin>
