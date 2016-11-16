@@ -1,54 +1,199 @@
-From: Ken Cox <jkc@redhat.com>
-Date: Tue, 15 Nov 2016 13:00:37 -0600
-Subject: [Intel-wired-lan] [1/1] ixgbe: test for trust in macvlan
-	adjustments for vf
-Message-ID: <882304dc5b8489b3293148ebec7c26b328bd4d88.1479236297.git.jkc@redhat.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 16 Nov 2016 09:02:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 6f468519415e5e9df0cdd460ecdc46f871066137
+Message-ID: <582bb042.+HVGfiE6STsbyZ6k%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There are two methods for setting mac addresses in a Macvlan, that
-differentiate themselves in the function macvlan_set_mac_Address.
-If the macvlan mode is passthru, then we use the dev_set_mac_address
-method, otherwise we use the dev_uc api via macvlan_sync_addresses.
-The latter method (which would stem from using any non-passthru mode,
-like bridge, or vepa), calls down into the driver in a path that terminates
-in ixgbevf_set_uc_addr_vf, which sends a IXGBE_VF_SET_MACVLAN message,
-which causes the pf to spawn the noted error message.  This occurs because
-it appears that the guest is trying to delete the mac address of the macvlan
-before adding another.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+6f468519415e5e9df0cdd460ecdc46f871066137  igb: use igb_adapter->io_addr instead of e1000_hw->hw_addr
 
-The other path in macvlan_set_mac_address uses dev_set_mac_address, which
-calls into ixgbevf_set_mac which uses the IXGBE_VF_SET_MAC_ADDR to the
-pf to set the macvlan mac address.
+elapsed time: 88m
 
-The discrepancy here is in the handlers.  The handler function for
-IXGBE_VF_SET_MAC_ADDR (ixgbe_set_vf_mac_addr) has a check for
-the vfinfo[].trusted bit to allow the operation if the vf is trusted.
-In comparison, the IXGBE_VF_SET_MACVLAN message handler
-(ixgbe_set_vf_macvlan_msg) has no such check of the trusted bit.
+configs tested: 175
 
-Signed-off-by: Ken Cox <jkc@redhat.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 42138be..9021c06 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -934,7 +934,8 @@ static int ixgbe_set_vf_macvlan_msg(struct ixgbe_adapter *adapter,
- 		    IXGBE_VT_MSGINFO_SHIFT;
- 	int err;
- 
--	if (adapter->vfinfo[vf].pf_set_mac && index > 0) {
-+	if (adapter->vfinfo[vf].pf_set_mac && !adapter->vfinfo[vf].trusted &&
-+	    index > 0) {
- 		e_warn(drv,
- 		       "VF %d requested MACVLAN filter but is administratively denied\n",
- 		       vf);
--- 
-2.5.5
+frv                               allnoconfig
+powerpc                     powernv_defconfig
+sh                             sh03_defconfig
+i386                     randconfig-a0-201646
+x86_64                 randconfig-a0-11160547
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-11160634
+x86_64                           allmodconfig
+x86_64                randconfig-it0-11160706
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-v0-11160439
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-g0-11160632
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                           omap1_defconfig
+arm                         s3c2410_defconfig
+openrisc                          allnoconfig
+sparc64                          allmodconfig
+x86_64                 randconfig-x011-201646
+x86_64                 randconfig-x014-201646
+x86_64                 randconfig-x017-201646
+x86_64                 randconfig-x015-201646
+x86_64                 randconfig-x012-201646
+x86_64                 randconfig-x018-201646
+x86_64                 randconfig-x019-201646
+x86_64                 randconfig-x013-201646
+x86_64                 randconfig-x010-201646
+x86_64                 randconfig-x016-201646
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201646
+i386                     randconfig-s1-201646
+x86_64                 randconfig-s3-11160642
+x86_64                 randconfig-s4-11160642
+x86_64                 randconfig-s5-11160642
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                           spitz_defconfig
+powerpc                 xes_mpc85xx_defconfig
+sparc                             allnoconfig
+xtensa                  audio_kc705_defconfig
+x86_64                   randconfig-i0-201646
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201646
+i386                     randconfig-i1-201646
+m68k                             allmodconfig
+x86_64                randconfig-ne0-11160749
+arm                            qcom_defconfig
+powerpc               corenet_basic_defconfig
+sparc                       sparc32_defconfig
+i386                   randconfig-x014-201646
+i386                   randconfig-x019-201646
+i386                   randconfig-x018-201646
+i386                   randconfig-x017-201646
+i386                   randconfig-x015-201646
+i386                   randconfig-x016-201646
+i386                   randconfig-x012-201646
+i386                   randconfig-x011-201646
+i386                   randconfig-x013-201646
+i386                   randconfig-x010-201646
+i386                     randconfig-n0-201646
+i386                   randconfig-h0-11160706
+i386                   randconfig-h1-11160706
+i386                   randconfig-x073-201646
+i386                   randconfig-x071-201646
+i386                   randconfig-x072-201646
+i386                   randconfig-x078-201646
+i386                   randconfig-x076-201646
+i386                   randconfig-x075-201646
+i386                   randconfig-x077-201646
+i386                   randconfig-x074-201646
+i386                   randconfig-x070-201646
+i386                   randconfig-x079-201646
+x86_64                                  kexec
+x86_64                               rhel-7.2
+i386                  randconfig-sb0-11160518
+x86_64                 randconfig-x008-201646
+x86_64                 randconfig-x001-201646
+x86_64                 randconfig-x009-201646
+x86_64                 randconfig-x000-201646
+x86_64                 randconfig-x003-201646
+x86_64                 randconfig-x005-201646
+x86_64                 randconfig-x002-201646
+x86_64                 randconfig-x007-201646
+x86_64                 randconfig-x004-201646
+x86_64                 randconfig-x006-201646
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+i386                     randconfig-r0-201646
+i386                             allmodconfig
+i386                   randconfig-x006-201646
+i386                   randconfig-x004-201646
+i386                   randconfig-x007-201646
+i386                   randconfig-x003-201646
+i386                   randconfig-x008-201646
+i386                   randconfig-x000-201646
+i386                   randconfig-x009-201646
+i386                   randconfig-x002-201646
+i386                   randconfig-x001-201646
+i386                   randconfig-x005-201646
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-11160556
 
+Thanks,
+Fengguang
