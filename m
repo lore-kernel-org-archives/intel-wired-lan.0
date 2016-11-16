@@ -1,113 +1,45 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 16 Nov 2016 11:25:34 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix AER error handling
-Message-ID: <20161116192534.12765.65734.stgit@localhost6.localdomain6>
+From: Lino Sanfilippo <LinoSanfilippo@gmx.de>
+Date: Wed, 16 Nov 2016 15:05:44 +0100
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: write flush vfta registers
+In-Reply-To: <1479300041-3436-1-git-send-email-zyjzyj2000@gmail.com>
+References: <1479300041-3436-1-git-send-email-zyjzyj2000@gmail.com>
+Message-ID: <trinity-ec3a2e6f-7310-41aa-8743-61bc62ccf663-1479305144399@3capp-gmx-bs59>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Make sure that we free the IRQs in ixgbevf_io_error_detected() when
-responding to an PCIe AER error and also restore them when the
-interface recovers from it.
 
-Previously it was possible to trigger BUG_ON() check in free_msix_irqs()
-in the case where we call ixgbevf_remove() after a failed recovery from
-AER error because the inerrupts were not freed.
 
-Also moved the down and free functions into ixgbevf_close_suspend()
-same as with ixgbe.
+Hi,
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   43 ++++++++++++---------
- 1 file changed, 25 insertions(+), 18 deletions(-)
+> 
+> Sometimes vfta registers can not be written successfully in dcb mode.
+> This is very occassional. When the ixgbe nic runs for a very long time,
+> sometimes this bug occurs. But after IXGBE_WRITE_FLUSH is executed,
+> this bug never occurs.
+> 
+> Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index bd93d82..1221cfb 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -4138,8 +4138,10 @@ static void ixgbe_vlan_promisc_enable(struct ixgbe_adapter *adapter)
+>  	}
+>  
+>  	/* Set all bits in the VLAN filter table array */
+> -	for (i = hw->mac.vft_size; i--;)
+> +	for (i = hw->mac.vft_size; i--;) {
+>  		IXGBE_WRITE_REG(hw, IXGBE_VFTA(i), ~0U);
+> +		IXGBE_WRITE_FLUSH(hw);
+> +	}
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 2cc3d90..8bc3e4d 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3228,6 +3228,21 @@ int ixgbevf_open(struct net_device *netdev)
- }
- 
- /**
-+ * ixgbevf_close_suspend - actions necessary to both suspend and close flows
-+ * @adapter: the private adapter struct
-+ *
-+ * This function should contain the necessary work common to both suspending
-+ * and closing of the device.
-+ */
-+static void ixgbevf_close_suspend(struct ixgbevf_adapter *adapter)
-+{
-+		ixgbevf_down(adapter);
-+		ixgbevf_free_irq(adapter);
-+		ixgbevf_free_all_tx_resources(adapter);
-+		ixgbevf_free_all_rx_resources(adapter);
-+}
-+
-+/**
-  * ixgbevf_close - Disables a network interface
-  * @netdev: network interface device structure
-  *
-@@ -3242,14 +3257,8 @@ int ixgbevf_close(struct net_device *netdev)
- {
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 
--	if (!netif_device_present(netdev))
--		return 0;
--
--	ixgbevf_down(adapter);
--	ixgbevf_free_irq(adapter);
--
--	ixgbevf_free_all_tx_resources(adapter);
--	ixgbevf_free_all_rx_resources(adapter);
-+	if (netif_device_present(netdev))
-+		ixgbevf_close_suspend(adapter);
- 
- 	return 0;
- }
-@@ -3802,13 +3811,10 @@ static int ixgbevf_suspend(struct pci_dev *pdev, pm_message_t state)
- 	rtnl_lock();
- 	netif_device_detach(netdev);
- 
--	if (netif_running(netdev)) {
--		ixgbevf_down(adapter);
--		ixgbevf_free_irq(adapter);
--		ixgbevf_free_all_tx_resources(adapter);
--		ixgbevf_free_all_rx_resources(adapter);
--		ixgbevf_clear_interrupt_scheme(adapter);
--	}
-+	if (netif_running(netdev))
-+		ixgbevf_close_suspend(adapter);
-+
-+	ixgbevf_clear_interrupt_scheme(adapter);
- 	rtnl_unlock();
- 
- #ifdef CONFIG_PM
-@@ -4247,7 +4253,7 @@ static pci_ers_result_t ixgbevf_io_error_detected(struct pci_dev *pdev,
- 	}
- 
- 	if (netif_running(netdev))
--		ixgbevf_down(adapter);
-+		ixgbevf_close_suspend(adapter);
- 
- 	if (!test_and_set_bit(__IXGBEVF_DISABLED, &adapter->state))
- 		pci_disable_device(pdev);
-@@ -4295,12 +4301,13 @@ static pci_ers_result_t ixgbevf_io_slot_reset(struct pci_dev *pdev)
- static void ixgbevf_io_resume(struct pci_dev *pdev)
- {
- 	struct net_device *netdev = pci_get_drvdata(pdev);
--	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 
-+	rtnl_lock();
- 	if (netif_running(netdev))
--		ixgbevf_up(adapter);
-+		ixgbevf_open(netdev);
- 
- 	netif_device_attach(netdev);
-+	rtnl_unlock();
- }
- 
- /* PCI Error Recovery (ERS) */
+Should it not be sufficient to do the flush only once, at the end of the function?
 
+Regards,
+Lino
