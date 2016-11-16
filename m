@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 16 Nov 2016 18:56:04 +0000
-Subject: [Intel-wired-lan] [next PATCH S52-V2 01/15] i40evf: check
-	for	msix_entries null dereference
-In-Reply-To: <1478639119-14656-2-git-send-email-bimmy.pujari@intel.com>
+Date: Wed, 16 Nov 2016 18:58:54 +0000
+Subject: [Intel-wired-lan] [next PATCH S52-V2 02/15] i40e:
+	Remove	unreachable code
+In-Reply-To: <1478639119-14656-3-git-send-email-bimmy.pujari@intel.com>
 References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
- <1478639119-14656-2-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA35CF9@ORSMSX104.amr.corp.intel.com>
+ <1478639119-14656-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA36D0A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,29 +17,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, November 08, 2016 1:05 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Brady, Alan <alan.brady@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S52-V2 01/15] i40evf: check for
-> msix_entries null dereference
+> Cc: Tieman, Henry W <henry.w.tieman@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S52-V2 02/15] i40e: Remove
+> unreachable code
 > 
-> From: Alan Brady <alan.brady@intel.com>
+> From: Henry Tieman <henry.w.tieman@intel.com>
 > 
-> It is possible for msix_entries to be freed by a previous suspend/remove
-> before a VF is closed.  This patch fixes the issue by checking for NULL before
-> dereferencing msix_entries and returning early in the case where it is NULL
-> within the i40evf_close code path.  Without this patch it is possible to trigger
-> a kernel panic through NULL dereference.
+> The code at the end of i40e_read_phy_register_clause22() contained
+> unreachable code and redundant control statements.
 > 
-> Signed-off-by: Alan Brady <alan.brady@intel.com>
-> Change-ID: I92a2746e82533a889e25f91578eac9abd0388ae2
+> This change removes the unreachable code. And deletes the redundant goto
+> statement and if statement.
+> 
+> Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+> Change-ID: I713032b1585396f40f903cbcfdea987abd874400
 > ---
-> Testing-hints:
->     Create lots of VFs and bring themm up on the host, assign them and the PF
-> to namespaces, then shut the system down.
+> Testing Hints:
+>     Found by static analysis. Test by code inspection.
 > 
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 9 +--------
+>  1 file changed, 1 insertion(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Was able to shut system down with many VFs assigned to namespaces, no kernel panic
+Code changes properly applied
 
 
