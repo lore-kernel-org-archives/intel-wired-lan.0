@@ -1,186 +1,45 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 17 Nov 2016 02:29:16 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 8719d8978e41be815504e9e9d353f5127ebb1158
-Message-ID: <582ca57c.2LkKgf2G5+hvm7bn%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 16 Nov 2016 18:56:04 +0000
+Subject: [Intel-wired-lan] [next PATCH S52-V2 01/15] i40evf: check
+	for	msix_entries null dereference
+In-Reply-To: <1478639119-14656-2-git-send-email-bimmy.pujari@intel.com>
+References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
+ <1478639119-14656-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA35CF9@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-8719d8978e41be815504e9e9d353f5127ebb1158  ixgbe: test for trust in macvlan adjustments for vf
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Tuesday, November 08, 2016 1:05 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Brady, Alan <alan.brady@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S52-V2 01/15] i40evf: check for
+> msix_entries null dereference
+> 
+> From: Alan Brady <alan.brady@intel.com>
+> 
+> It is possible for msix_entries to be freed by a previous suspend/remove
+> before a VF is closed.  This patch fixes the issue by checking for NULL before
+> dereferencing msix_entries and returning early in the case where it is NULL
+> within the i40evf_close code path.  Without this patch it is possible to trigger
+> a kernel panic through NULL dereference.
+> 
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
+> Change-ID: I92a2746e82533a889e25f91578eac9abd0388ae2
+> ---
+> Testing-hints:
+>     Create lots of VFs and bring themm up on the host, assign them and the PF
+> to namespaces, then shut the system down.
+> 
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
 
-elapsed time: 139m
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Was able to shut system down with many VFs assigned to namespaces, no kernel panic
 
-configs tested: 163
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                   CM-BF527_defconfig
-h8300                     edosk2674_defconfig
-powerpc                    gamecube_defconfig
-i386                     randconfig-a0-201646
-x86_64                 randconfig-a0-11170025
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11170015
-x86_64                           allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-11170001
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                             ezx_defconfig
-arm                            zeus_defconfig
-ia64                          tiger_defconfig
-powerpc                         ps3_defconfig
-x86_64                 randconfig-x010-201646
-x86_64                 randconfig-x011-201646
-x86_64                 randconfig-x012-201646
-x86_64                 randconfig-x013-201646
-x86_64                 randconfig-x014-201646
-x86_64                 randconfig-x015-201646
-x86_64                 randconfig-x016-201646
-x86_64                 randconfig-x017-201646
-x86_64                 randconfig-x018-201646
-x86_64                 randconfig-x019-201646
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201646
-i386                     randconfig-s1-201646
-x86_64                 randconfig-s0-11170022
-x86_64                 randconfig-s1-11170022
-x86_64                 randconfig-s2-11170022
-x86_64                 randconfig-s3-11170022
-x86_64                 randconfig-s4-11170022
-x86_64                 randconfig-s5-11170022
-frv                                 defconfig
-i386                               tinyconfig
-avr32                             allnoconfig
-openrisc                          allnoconfig
-powerpc                     sequoia_defconfig
-x86_64                   randconfig-i0-201646
-i386                   randconfig-b0-11170029
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201646
-i386                     randconfig-i1-201646
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mips                             alldefconfig
-mips                            gpr_defconfig
-x86_64                randconfig-ne0-11170020
-i386                   randconfig-x014-201646
-i386                   randconfig-x019-201646
-i386                   randconfig-x018-201646
-i386                   randconfig-x017-201646
-i386                   randconfig-x015-201646
-i386                   randconfig-x016-201646
-i386                   randconfig-x012-201646
-i386                   randconfig-x011-201646
-i386                   randconfig-x013-201646
-i386                   randconfig-x010-201646
-i386                     randconfig-n0-201646
-x86_64                                  kexec
-x86_64                               rhel-7.2
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                  randconfig-sb0-11162300
-x86_64                 randconfig-x000-201646
-x86_64                 randconfig-x001-201646
-x86_64                 randconfig-x002-201646
-x86_64                 randconfig-x003-201646
-x86_64                 randconfig-x004-201646
-x86_64                 randconfig-x005-201646
-x86_64                 randconfig-x006-201646
-x86_64                 randconfig-x007-201646
-x86_64                 randconfig-x008-201646
-x86_64                 randconfig-x009-201646
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-i386                     randconfig-r0-201646
-i386                             allmodconfig
-i386                   randconfig-x000-201646
-i386                   randconfig-x001-201646
-i386                   randconfig-x002-201646
-i386                   randconfig-x003-201646
-i386                   randconfig-x004-201646
-i386                   randconfig-x005-201646
-i386                   randconfig-x006-201646
-i386                   randconfig-x007-201646
-i386                   randconfig-x008-201646
-i386                   randconfig-x009-201646
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-11170010
-
-Thanks,
-Fengguang
