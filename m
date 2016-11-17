@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 17 Nov 2016 21:35:00 +0000
+Date: Thu, 17 Nov 2016 21:55:33 +0000
 Subject: [Intel-wired-lan] [next PATCH S53-V2 3/5] i40e: Add FEC for 25g
 In-Reply-To: <1479157609-30812-3-git-send-email-bimmy.pujari@intel.com>
 References: <1479157609-30812-1-git-send-email-bimmy.pujari@intel.com>
  <1479157609-30812-3-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38076@ORSMSX104.amr.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38095@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -36,6 +36,6 @@ List-ID: <intel-wired-lan.osuosl.org>
 > ++++++++++++++++++++--
 >  3 files changed, 48 insertions(+), 4 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
