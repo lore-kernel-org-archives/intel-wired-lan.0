@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 17 Nov 2016 21:55:33 +0000
-Subject: [Intel-wired-lan] [next PATCH S53-V2 3/5] i40e: Add FEC for 25g
-In-Reply-To: <1479157609-30812-3-git-send-email-bimmy.pujari@intel.com>
+Date: Thu, 17 Nov 2016 21:55:58 +0000
+Subject: [Intel-wired-lan] [next PATCH S53-V2 4/5] i40e: Add functions
+ which	apply correct PHY access method for read and write operation
+In-Reply-To: <1479157609-30812-4-git-send-email-bimmy.pujari@intel.com>
 References: <1479157609-30812-1-git-send-email-bimmy.pujari@intel.com>
- <1479157609-30812-3-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38095@ORSMSX104.amr.corp.intel.com>
+ <1479157609-30812-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA380A5@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,25 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, November 14, 2016 1:07 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Naczyk, Jacek <jacek.naczyk@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S53-V2 3/5] i40e: Add FEC for 25g
+> Cc: Kosiarz, Michal <michal.kosiarz@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S53-V2 4/5] i40e: Add functions which
+> apply correct PHY access method for read and write operation
 > 
-> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> From: Michal Kosiarz <michal.kosiarz@intel.com>
 > 
-> This patch adds adminq support for Forward Error Correction ("FEC")for 25g
-> products.
+> Depending on external PHY type, register access method should be
+> different. Clause22 or Clause45 can be chosen for different PHYs.
+> Implemented functions apply correct access method for used device.
 > 
-> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Signed-off-by: Jacek Naczyk <jacek.naczyk@intel.com>
-> Change-ID: Iaff4910737c239d2c730e5c22a313ce9c37d3964
+> Signed-off-by: Michal Kosiarz <michal.kosiarz@intel.com>
+> Change-ID: If39d5f0da9c0b905a8cbdc1ab89885535e7d0426
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 25
-> ++++++++++++++++++++--
->  drivers/net/ethernet/intel/i40e/i40e_common.c      |  2 ++
->  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 25
-> ++++++++++++++++++++--
->  3 files changed, 48 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c      | 72
+> ++++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  4 ++
+>  drivers/net/ethernet/intel/i40evf/i40e_prototype.h |  4 ++
+>  3 files changed, 80 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
