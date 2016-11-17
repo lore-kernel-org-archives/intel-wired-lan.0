@@ -1,43 +1,63 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 16 Nov 2016 23:51:02 +0000
-Subject: [Intel-wired-lan] [next PATCH S52-V2 09/15] i40e: Driver prints
- log	message on link speed change
-In-Reply-To: <1478639119-14656-10-git-send-email-bimmy.pujari@intel.com>
-References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
- <1478639119-14656-10-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA36E15@ORSMSX104.amr.corp.intel.com>
+From: zhuyj <zyjzyj2000@gmail.com>
+Date: Thu, 17 Nov 2016 17:33:03 +0800
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: write flush vfta registers
+In-Reply-To: <trinity-ec3a2e6f-7310-41aa-8743-61bc62ccf663-1479305144399@3capp-gmx-bs59>
+References: <1479300041-3436-1-git-send-email-zyjzyj2000@gmail.com>
+ <trinity-ec3a2e6f-7310-41aa-8743-61bc62ccf663-1479305144399@3capp-gmx-bs59>
+Message-ID: <CAD=hENfbWUobVvUOKhjRi+7fNCj=87R3GFeGjXg+zd_zez_SpQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Tuesday, November 08, 2016 1:05 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Sadowski, Filip <filip.sadowski@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S52-V2 09/15] i40e: Driver prints log
-> message on link speed change
-> 
-> From: Filip Sadowski <filip.sadowski@intel.com>
-> 
-> This patch makes the driver log link speed change. Before applying the patch
-> link messages were printed only on state change. Now message is printed
-> when link is brought up or down and when speed changes.
-> 
-> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
-> Change-ID: Ifbee14b4b16c24967450b3cecac6e8351dcc8f74
-> ---
-> Testing-hints:
->   Check that link message is logged in system log when link speed
->   changes. Use lanconf and a device with backplane NVM image.
-> 
->  drivers/net/ethernet/intel/i40e/i40e.h      | 1 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 +++++-
->  2 files changed, 6 insertions(+), 1 deletion(-)
+Sure. From the following.
+"
+VLAN Filter. Each bit ?i? in register ?n? affects packets with VLAN
+tags equal to 32*n+i.
+128 VLAN Filter registers compose a table of 4096 bits that cover all
+possible VLAN
+tags.
+Each bit when set, enables packets with the associated VLAN tags to
+pass. Each bit
+when cleared, blocks packets with this VLAN tag.
+"
+Your suggestions seems reasonable. Please wait. I will make tests to
+vefiry your suggestions.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+I will keep you update.
 
-
+On Wed, Nov 16, 2016 at 10:05 PM, Lino Sanfilippo <LinoSanfilippo@gmx.de> wrote:
+>
+>
+> Hi,
+>
+>>
+>> Sometimes vfta registers can not be written successfully in dcb mode.
+>> This is very occassional. When the ixgbe nic runs for a very long time,
+>> sometimes this bug occurs. But after IXGBE_WRITE_FLUSH is executed,
+>> this bug never occurs.
+>>
+>> Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
+>> ---
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> index bd93d82..1221cfb 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> @@ -4138,8 +4138,10 @@ static void ixgbe_vlan_promisc_enable(struct ixgbe_adapter *adapter)
+>>       }
+>>
+>>       /* Set all bits in the VLAN filter table array */
+>> -     for (i = hw->mac.vft_size; i--;)
+>> +     for (i = hw->mac.vft_size; i--;) {
+>>               IXGBE_WRITE_REG(hw, IXGBE_VFTA(i), ~0U);
+>> +             IXGBE_WRITE_FLUSH(hw);
+>> +     }
+>
+> Should it not be sufficient to do the flush only once, at the end of the function?
+>
+> Regards,
+> Lino
