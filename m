@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 17 Nov 2016 18:11:15 +0000
-Subject: [Intel-wired-lan] [next PATCH S52-V2 11/15] i40e:
-	restore	workaround for removing default MAC filter
-In-Reply-To: <1478639119-14656-12-git-send-email-bimmy.pujari@intel.com>
+Date: Thu, 17 Nov 2016 18:27:23 +0000
+Subject: [Intel-wired-lan] [next PATCH S52-V2 12/15] i40e/i40evf:
+ napi_poll	must return the work done
+In-Reply-To: <1478639119-14656-13-git-send-email-bimmy.pujari@intel.com>
 References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
- <1478639119-14656-12-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA37F23@ORSMSX104.amr.corp.intel.com>
+ <1478639119-14656-13-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA37F37@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,44 +17,37 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, November 08, 2016 1:05 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S52-V2 11/15] i40e: restore
-> workaround for removing default MAC filter
+> Subject: [Intel-wired-lan] [next PATCH S52-V2 12/15] i40e/i40evf: napi_poll
+> must return the work done
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> A previous commit 53cb6e9e8949 ("i40e: Removal of workaround for simple
-> MAC address filter deletion") removed a workaround for some firmware
-> versions which was reported to not be necessary in production NICs.
-> Unfortunately this workaround is necessary in some configurations,
-> specifically the Ethernet Controller XL710 for 40GbE QSFP+ (8086:1583).
+> Currently the function i40e_napi-poll() returns 0 when it clean completely
+> the rx rings, but this foul budget accounting in core code.
 > 
-> Without this patch, the mentioned NICs with current firmware exhibit issues
-> when adding VLANs, as outlined by the following reproduction:
+> Fix this by returning the actual work done, capped to budget - 1, since the
+> core doesn't allow to return the full budget when the driver modifies the
+> napi status
 > 
->   $modprobe i40e
->   $ip link set <device> up
->   $ip link add link <device> vlan100 type vlan id 100
->   $dmesg | tail
->   <snip>
->   kernel: i40e 0000:82:00.0: Error I40E_AQ_RC_EINVAL adding RX filters on PF,
-> promiscuous mode forced on
+> This is based on a similar change that was made for the ixgbe driver by Paolo
+> Abeni.
 > 
-> This results in filters being marked as FAILED and setting the device in
-> promiscuous mode.
-> 
-> The root cause of receiving the -EINVAL error response appears to be due to
-> a conflict with the default MAC filter which still exists on the default firmware
-> for this device. Attempting to add a new VLAN filter on the default MAC
-> address conflicts with the IGNORE_VLAN setting on the default rule.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: I4d8f6d48ac5f60cfe981b3baad30eb4d7c170d61
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> Change-ID: Ic3d93ad2fa2fc8ce3164bc461e69367da0f9173b
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 41
-> +++++++++++++++++++++++++++++
->  1 file changed, 41 insertions(+)
+> Testing Hints:
+>         This may slightly improve the responsiveness of the system, but the
+>         big gain for us is actually when using i40e to perform busy polling
+>         since the return value is used to verify if we have received any
+>         packets.
+> 
+>         For our purposes the best test is probably just an Rx performance
+>         test to make sure we didn't cause a regression.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 2 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Adding VLAN with device 1583 successful, no error message recorded
 
 
