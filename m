@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 17 Nov 2016 20:41:39 +0000
-Subject: [Intel-wired-lan] [next PATCH S53-V2 1/5] i40e: use unsigned
- printf	format specifier for active_filters count
-In-Reply-To: <1479157609-30812-1-git-send-email-bimmy.pujari@intel.com>
+Date: Thu, 17 Nov 2016 21:23:04 +0000
+Subject: [Intel-wired-lan] [next PATCH S53-V2 2/5] i40e: Add support for
+ 25G	devices
+In-Reply-To: <1479157609-30812-2-git-send-email-bimmy.pujari@intel.com>
 References: <1479157609-30812-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38044@ORSMSX104.amr.corp.intel.com>
+ <1479157609-30812-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38060@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,27 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, November 14, 2016 1:07 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S53-V2 1/5] i40e: use unsigned printf
-> format specifier for active_filters count
+> Cc: Tieman, Henry W <henry.w.tieman@intel.com>; Joyner, Eric
+> <eric.joyner@intel.com>; Kosiarz, Michal <michal.kosiarz@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S53-V2 2/5] i40e: Add support for 25G
+> devices
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 > 
-> Replace the %d specifier used for printing vsi->active_filters and
-> vsi->promisc_threshold with an unsigned %u format specifier. While it is
-> unlikely in practice that these values will ever reach such a large number they
-> are unsigned values and thus should not be interpreted as negative
-> numbers.
+> Add support for 25G devices - defines and data structures.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: Iff050fad5a1c8537c4c57fcd527441cd95cfc0d4
-> ---
-> Testing-hints:
->   This should go upstream, even though it is in debugfs code. We're not
->   adding features but simply correcting output of existing features.
+> One tricky part here is that the firmware support for these Devices
+> introduces a mismatch between the PHY type enum and the bitfields for the
+> phy types.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> This change creates a macro and uses it to increment the 25G PHY values
+> when creating 25G bitfields.
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+25G devices identified correctly, show correct link speed, and pass traffic correctly
 
 
