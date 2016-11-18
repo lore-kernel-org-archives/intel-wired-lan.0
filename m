@@ -1,56 +1,37 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 18 Nov 2016 09:45:38 -0800
-Subject: [Intel-wired-lan] [PATCH 1/2] fm10k: report the receive timestamp
-	in FM10K_CB(skb)->tstamp
-Message-ID: <20161118174539.30191-1-jacob.e.keller@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 18 Nov 2016 17:48:30 +0000
+Subject: [Intel-wired-lan] [next PATCH S54 12/15] i40e: avoid O(n^2)
+ loop	when deleting all filters
+In-Reply-To: <1478896779-13697-13-git-send-email-bimmy.pujari@intel.com>
+References: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
+ <1478896779-13697-13-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38174@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This was accidentally removed when we defeatured the full 1588 Clock
-support. We need to report the Rx descriptor timestamp value so that
-applications built on top of the IES API can function properly.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Friday, November 11, 2016 12:40 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S54 12/15] i40e: avoid O(n^2) loop
+> when deleting all filters
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> Use __i40e_del_filter instead of using i40e_del_filter() which will avoid doing
+> an additional search to delete a filter we already have the pointer for.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: Iea5a7e3cafbf8c682ed9d3b6c69cf5ff53f44daf
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h             | 1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
+>  3 files changed, 3 insertions(+), 2 deletions(-)
 
-Additionally, remove the FM10K_FLAG_RX_TS_ENABLED, as it is not used now
-that 1588 functionality has been removed.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k.h      | 5 ++---
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 ++
- 2 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 4d19e46f7c55..75d2c8018815 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -260,9 +260,8 @@ struct fm10k_intfc {
- #define FM10K_FLAG_RESET_REQUESTED		(u32)(BIT(0))
- #define FM10K_FLAG_RSS_FIELD_IPV4_UDP		(u32)(BIT(1))
- #define FM10K_FLAG_RSS_FIELD_IPV6_UDP		(u32)(BIT(2))
--#define FM10K_FLAG_RX_TS_ENABLED		(u32)(BIT(3))
--#define FM10K_FLAG_SWPRI_CONFIG			(u32)(BIT(4))
--#define FM10K_FLAG_DEBUG_STATS			(u32)(BIT(5))
-+#define FM10K_FLAG_SWPRI_CONFIG			(u32)(BIT(3))
-+#define FM10K_FLAG_DEBUG_STATS			(u32)(BIT(4))
- 	int xcast_mode;
- 
- 	/* Tx fast path data */
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 8f90c6db53ff..5bb233a9614c 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -475,6 +475,8 @@ static unsigned int fm10k_process_skb_fields(struct fm10k_ring *rx_ring,
- 
- 	fm10k_rx_checksum(rx_ring, rx_desc, skb);
- 
-+	FM10K_CB(skb)->tstamp = rx_desc->q.timestamp;
-+
- 	FM10K_CB(skb)->fi.w.vlan = rx_desc->w.vlan;
- 
- 	skb_record_rx_queue(skb, rx_ring->queue_index);
--- 
-2.11.0.rc2.152.g4d04e67
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
