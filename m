@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 18 Nov 2016 17:51:43 +0000
-Subject: [Intel-wired-lan] [next PATCH S53-V2 5/5] i40e: lock service
- task	correctly
-In-Reply-To: <1479157609-30812-5-git-send-email-bimmy.pujari@intel.com>
-References: <1479157609-30812-1-git-send-email-bimmy.pujari@intel.com>
- <1479157609-30812-5-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38184@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 18 Nov 2016 18:03:42 +0000
+Subject: [Intel-wired-lan] [next PATCH S54 13/15] i40e: when adding
+	or	removing MAC filters, correctly handle VLANs
+In-Reply-To: <1478896779-13697-14-git-send-email-bimmy.pujari@intel.com>
+References: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
+ <1478896779-13697-14-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA381A3@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,31 +15,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Bimmy Pujari
-> Sent: Monday, November 14, 2016 1:07 PM
+> Sent: Friday, November 11, 2016 12:40 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S53-V2 5/5] i40e: lock service task
-> correctly
+> Subject: [Intel-wired-lan] [next PATCH S54 13/15] i40e: when adding or
+> removing MAC filters, correctly handle VLANs
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> The service task lock was being set in the scheduling function, not the actual
-> service task. This would potentially leave the bit set for a long time before
-> the task actually ran. Furthermore, if the service task takes too long, it calls
-> the schedule function to reschedule itself - which would fail to take the lock
-> and do nothing.
+> Instead of using i40e_add_filter or i40e_del_filter directly, when adding a
+> MAC address, we should normally be using i40e_add_mac_filter or
+> i40e_del_mac_filter. These functions correctly handle the various cases of
+> VLAN mode or PVID settings. This ensures consistency and avoids the issues
+> that can occur with the recent addition of a WARN_ON() in
+> i40e_sync_vsi_filters.
 > 
-> Instead, set and clear the lock bit in the service task itself. In the process, get
-> rid of the i40e_service_event_complete() function, which is really just two
-> lines of code that can be put right in the service task itself.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I83155e682b686121e2897f4429eb7d3f7c669168
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: I7fe62db063391fdd1180b2d6a6a3c5ab4307eeee
 > ---
-> Testing Hints : Should be no functional change, particularly around link
-> up/down events. This is prep work for using this lock bit in the client.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 24 +++++++-----------------
->  1 file changed, 7 insertions(+), 17 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        |  6 +++---
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 ++++-------
+>  2 files changed, 7 insertions(+), 10 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
