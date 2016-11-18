@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 18 Nov 2016 17:48:30 +0000
-Subject: [Intel-wired-lan] [next PATCH S54 12/15] i40e: avoid O(n^2)
- loop	when deleting all filters
-In-Reply-To: <1478896779-13697-13-git-send-email-bimmy.pujari@intel.com>
-References: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
- <1478896779-13697-13-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38174@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 18 Nov 2016 17:51:43 +0000
+Subject: [Intel-wired-lan] [next PATCH S53-V2 5/5] i40e: lock service
+ task	correctly
+In-Reply-To: <1479157609-30812-5-git-send-email-bimmy.pujari@intel.com>
+References: <1479157609-30812-1-git-send-email-bimmy.pujari@intel.com>
+ <1479157609-30812-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38184@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,23 +15,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Bimmy Pujari
-> Sent: Friday, November 11, 2016 12:40 PM
+> Sent: Monday, November 14, 2016 1:07 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S54 12/15] i40e: avoid O(n^2) loop
-> when deleting all filters
+> Subject: [Intel-wired-lan] [next PATCH S53-V2 5/5] i40e: lock service task
+> correctly
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> Use __i40e_del_filter instead of using i40e_del_filter() which will avoid doing
-> an additional search to delete a filter we already have the pointer for.
+> The service task lock was being set in the scheduling function, not the actual
+> service task. This would potentially leave the bit set for a long time before
+> the task actually ran. Furthermore, if the service task takes too long, it calls
+> the schedule function to reschedule itself - which would fail to take the lock
+> and do nothing.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: Iea5a7e3cafbf8c682ed9d3b6c69cf5ff53f44daf
+> Instead, set and clear the lock bit in the service task itself. In the process, get
+> rid of the i40e_service_event_complete() function, which is really just two
+> lines of code that can be put right in the service task itself.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: I83155e682b686121e2897f4429eb7d3f7c669168
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h             | 1 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 2 +-
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
->  3 files changed, 3 insertions(+), 2 deletions(-)
+> Testing Hints : Should be no functional change, particularly around link
+> up/down events. This is prep work for using this lock bit in the client.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 24 +++++++-----------------
+>  1 file changed, 7 insertions(+), 17 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
 
