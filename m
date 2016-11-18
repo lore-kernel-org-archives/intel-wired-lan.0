@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 18 Nov 2016 17:18:07 +0000
-Subject: [Intel-wired-lan] [next PATCH S54 15/15] i40evf: remove
-	unused	device ID
-In-Reply-To: <1478896779-13697-16-git-send-email-bimmy.pujari@intel.com>
+Date: Fri, 18 Nov 2016 17:21:41 +0000
+Subject: [Intel-wired-lan] [next PATCH S54 14/15] i40e: Deprecating
+ unused	macro and
+In-Reply-To: <1478896779-13697-15-git-send-email-bimmy.pujari@intel.com>
 References: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
- <1478896779-13697-16-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38137@ORSMSX104.amr.corp.intel.com>
+ <1478896779-13697-15-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38148@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,23 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Friday, November 11, 2016 12:40 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S54 15/15] i40evf: remove unused
-> device ID
+> Subject: [Intel-wired-lan] [next PATCH S54 14/15] i40e: Deprecating unused
+> macro and
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> I40E_MAC_X710 was supposed to be for 10G and I40E_MAC_XL710 was
+> supposed to be for 40G. But function i40e_is_mac_710 sets I40E_MAC_XL710
+> for all device IDS, I40E_MAC_X710 is not used at all. As there is nothing to
+> compare there is no need for this function. Thus deprecating this extra macro
+> and removing this function entirely and replacing it with a direct check.
 > 
-> This device ID was intended for use when running Linux VF drivers under
-> Hyper-V, but we have determined that it is not necessary. Since it is unused,
-> and will never be used, remove it.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I74998ab4237db043cd400547bb54a0a5e2a37ea5
+> Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
+> Change-ID: I7d1769954dccd574a290ac04adb836ebd156730e
 > ---
-> Testing Hints : No code change. Modinfo should not show 37D9 as a device
-> supported by i40evf. This is DCR 2216.
-> 
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 1 -
->  1 file changed, 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h        | 13 -------------
+>  drivers/net/ethernet/intel/i40e/i40e_main.c   |  6 +++---
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 -
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h |  1 -
+>  4 files changed, 3 insertions(+), 18 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
