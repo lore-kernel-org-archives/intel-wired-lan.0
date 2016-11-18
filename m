@@ -1,41 +1,42 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 17 Nov 2016 21:55:58 +0000
-Subject: [Intel-wired-lan] [next PATCH S53-V2 4/5] i40e: Add functions
- which	apply correct PHY access method for read and write operation
-In-Reply-To: <1479157609-30812-4-git-send-email-bimmy.pujari@intel.com>
-References: <1479157609-30812-1-git-send-email-bimmy.pujari@intel.com>
- <1479157609-30812-4-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA380A5@ORSMSX104.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 17 Nov 2016 21:53:30 -0800
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe/ixgbevf: Enables TSO
+ for MPLS encapsulated packets
+In-Reply-To: <1479236637.26945.70.camel@intel.com>
+References: <1479236637.26945.70.camel@intel.com>
+Message-ID: <1479448410.2420.92.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Monday, November 14, 2016 1:07 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Kosiarz, Michal <michal.kosiarz@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S53-V2 4/5] i40e: Add functions which
-> apply correct PHY access method for read and write operation
+On Tue, 2016-11-15 at 19:03 +0000, Peterson, Scott D wrote:
+> This patch advertises TSO & GSO features in netdev->mpls_features.?
+> In ixgbe(vf)_tso() where we set up segmentation offload, the IP?
+> header will be the inner network header when eth_p_mpls() indicates
+> the Ethernet protocol is MPLS (UC or MC).
 > 
-> From: Michal Kosiarz <michal.kosiarz@intel.com>
+> We're submitting this upstream first, because it depends on related
+> upstream changes not yet present in the OOT drivers.
 > 
-> Depending on external PHY type, register access method should be
-> different. Clause22 or Clause45 can be chosen for different PHYs.
-> Implemented functions apply correct access method for used device.
-> 
-> Signed-off-by: Michal Kosiarz <michal.kosiarz@intel.com>
-> Change-ID: If39d5f0da9c0b905a8cbdc1ab89885535e7d0426
+> Suggested-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> Signed-off-by: Scott Peterson <scott.d.peterson@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c      | 72
-> ++++++++++++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  4 ++
->  drivers/net/ethernet/intel/i40evf/i40e_prototype.h |  4 ++
->  3 files changed, 80 insertions(+)
+> 
+> ?drivers/net/ethernet/intel/ixgbe/ixgbe_main.c?????| 12 ++++++++++--
+> ?drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 12 ++++++++++--
+> ?2 files changed, 20 insertions(+), 4 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Not sure what is going on, but your patch does not apply. ?I tried
+downloading your patch from patchworks and it says the patch is corrupt.
 
-
+I will look at this later tonight to see if your patch can be applied by
+hand for testing.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161117/83a698f6/attachment.asc>
