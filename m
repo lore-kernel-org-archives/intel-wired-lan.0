@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 21 Nov 2016 23:11:34 +0000
-Subject: [Intel-wired-lan] [next PATCH S53-V3 1/5] i40e: use unsigned
- printf	format specifier for active_filters count
-In-Reply-To: <1479762231-27559-1-git-send-email-bimmy.pujari@intel.com>
+Date: Mon, 21 Nov 2016 23:18:40 +0000
+Subject: [Intel-wired-lan] [next PATCH S53-V3 2/5] i40e: Add support for
+ 25G	devices
+In-Reply-To: <1479762231-27559-2-git-send-email-bimmy.pujari@intel.com>
 References: <1479762231-27559-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA3857F@ORSMSX104.amr.corp.intel.com>
+ <1479762231-27559-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA3858F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,22 +17,46 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, November 21, 2016 1:04 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S53-V3 1/5] i40e: use unsigned printf
-> format specifier for active_filters count
+> Cc: Tieman, Henry W <henry.w.tieman@intel.com>; Joyner, Eric
+> <eric.joyner@intel.com>; Kosiarz, Michal <michal.kosiarz@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S53-V3 2/5] i40e: Add support for 25G
+> devices
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 > 
-> Replace the %d specifier used for printing vsi->active_filters and
-> vsi->promisc_threshold with an unsigned %u format specifier. While it is
-> unlikely in practice that these values will ever reach such a large number they
-> are unsigned values and thus should not be interpreted as negative
-> numbers.
+> Add support for 25G devices - defines and data structures.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: Iff050fad5a1c8537c4c57fcd527441cd95cfc0d4
+> One tricky part here is that the firmware support for these Devices
+> introduces a mismatch between the PHY type enum and the bitfields for the
+> phy types.
+> 
+> This change creates a macro and uses it to increment the 25G PHY values
+> when creating 25G bitfields.
+> 
+> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Signed-off-by: Michal Kosiarz <michal.kosiarz@intel.com>
+> Signed-off-by: Eric Joyner <eric.joyner@intel.com>
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+> Change-ID: I69b24d837d44cf9220bf5cb8dd46c5be89ce490b
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 30 +++++++-
+>  drivers/net/ethernet/intel/i40e/i40e_common.c      | 11 ++-
+>  drivers/net/ethernet/intel/i40e/i40e_devids.h      |  2 +
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 26 ++++++-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        |  6 +-
+>  drivers/net/ethernet/intel/i40e/i40e_type.h        | 82 +++++++++++++-------
+> --
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  3 +
+>  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 30 +++++++-
+>  drivers/net/ethernet/intel/i40evf/i40e_common.c    |  2 +
+>  drivers/net/ethernet/intel/i40evf/i40e_devids.h    |  2 +
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h      | 82 +++++++++++++------
+> ---
+>  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  8 +++
+>  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  3 +
+>  13 files changed, 208 insertions(+), 79 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
