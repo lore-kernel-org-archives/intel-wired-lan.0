@@ -1,90 +1,59 @@
-From: Yusuke Suzuki <yus-suzuki@uf.jp.nec.com>
-Date: Mon, 21 Nov 2016 06:48:45 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix incorrect bitwise operations
- of PTP Rx timestamp flags
-Message-ID: <0033F4D0CBA60E4088C47C946608755C02C8B736@BPXM22GP.gisp.nec.co.jp>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 21 Nov 2016 17:49:22 +0000
+Subject: [Intel-wired-lan] [next PATCH S54 03/15] i40e:
+	refactor	i40e_update_filter_state to avoid passing aq_err
+In-Reply-To: <1478896779-13697-4-git-send-email-bimmy.pujari@intel.com>
+References: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
+ <1478896779-13697-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA383B3@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Yusuke Suzuki <yus-suzuki@uf.jp.nec.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Friday, November 11, 2016 12:39 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S54 03/15] i40e: refactor
+> i40e_update_filter_state to avoid passing aq_err
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> The current caller of i40e_update_filter_state incorrectly passes aq_ret, an
+> i40e_status variable, instead of the expected aq_err. This happens to work
+> because i40e_status is actually just a typedef integer, and 0 is still the
+> successful return. However i40e_update_filter_state has special handling for
+> ENOSPC which is currently being ignored.
+> 
+> Also notice that firmware does not update the per-filter response for many
+> types of errors, such as EINVAL. Thus, modify the filter setup so that the
+> firmware response memory is pre-set with I40E_AQC_MM_ERR_NO_RES.
+> 
+> This enables us to refactor i40e_update_filter_state, removing the need to
+> pass aq_err and avoiding a need for having 3 different flows for checking the
+> filter state.
+> 
+> The resulting code for i40e_update_filter_state is much simpler, only a single
+> loop and we always check each filter response value every time.
+> Since we pre-set the response value to match our expected error this
+> correctly works for all success and error flows.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: Ie292c9511f34ee18c6ef40f955ad13e28b7aea7d
+> ---
+> Testing-hints:
+>   This shouldn't have any visible side effects, but it may help detect
+>   some errors from firmware more accurately. Ensure that adding and
+>   deleting many MAC/VLAN filters works as expected without issue and
+>   that the added filters function correctly.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 58 +++++++++++---------------
+> ---
+>  1 file changed, 21 insertions(+), 37 deletions(-)
 
-Rx timestamp does not work on 82599 and X540 because bitwise operation
-of RX_HWTSTAMP flags is incorrect and ixgbe_ptp_rx_hwtstamp() is never
-called. This patch fixes it to enable Rx timestamp on 82599 and X540.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Without this fix:
-# ptp4l -Hsmq -i ens27f0
-ptp4l[278.730]: selected /dev/ptp8 as PTP clock
-ptp4l[278.733]: port 1: INITIALIZING to LISTENING on INITIALIZE
-ptp4l[278.733]: port 0: INITIALIZING to LISTENING on INITIALIZE
-ptp4l[278.834]: port 1: received SYNC without timestamp
-ptp4l[278.835]: port 1: new foreign master 1c3947.fffe.60f9cc-1
-ptp4l[279.834]: port 1: received SYNC without timestamp
-ptp4l[280.834]: port 1: received SYNC without timestamp
-ptp4l[281.834]: port 1: received SYNC without timestamp
-ptp4l[282.834]: port 1: received SYNC without timestamp
-ptp4l[282.835]: selected best master clock 1c3947.fffe.60f9cc
-ptp4l[282.835]: port 1: LISTENING to UNCALIBRATED on RS_SLAVE
-ptp4l[283.834]: port 1: received SYNC without timestamp
-
-With this fix:
-# ptp4l -Hsmq -i ens27f0
-ptp4l[239.154]: selected /dev/ptp8 as PTP clock
-ptp4l[239.157]: port 1: INITIALIZING to LISTENING on INITIALIZE
-ptp4l[239.157]: port 0: INITIALIZING to LISTENING on INITIALIZE
-ptp4l[240.989]: port 1: new foreign master 1c3947.fffe.60f9cc-1
-ptp4l[244.989]: selected best master clock 1c3947.fffe.60f9cc
-ptp4l[244.989]: port 1: LISTENING to UNCALIBRATED on RS_SLAVE
-ptp4l[246.977]: master offset -899583339542096 s0 freq      +0 path delay     16222
-ptp4l[247.977]: master offset -899583339617265 s1 freq  -75169 path delay     16177
-ptp4l[248.977]: master offset       -130 s2 freq  -75299 path delay     16177
-ptp4l[248.977]: port 1: UNCALIBRATED to SLAVE on MASTER_CLOCK_SELECTED
-ptp4l[249.977]: master offset         -9 s2 freq  -75217 path delay     16177
-ptp4l[250.977]: master offset         88 s2 freq  -75123 path delay     16132
-
-Fixes: a9763f3cb54c ("ixgbe: Update PTP to support X550EM_x devices")
-Signed-off-by: Yusuke Suzuki <yus-suzuki@uf.jp.nec.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-index a922776..5599907 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-@@ -858,14 +858,14 @@ static int ixgbe_ptp_set_timestamp_mode(struct ixgbe_adapter *adapter,
- 	case HWTSTAMP_FILTER_PTP_V1_L4_SYNC:
- 		tsync_rx_ctl |= IXGBE_TSYNCRXCTL_TYPE_L4_V1;
- 		tsync_rx_mtrl |= IXGBE_RXMTRL_V1_SYNC_MSG;
--		adapter->flags &= ~(IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
--				    IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
-+		adapter->flags |= (IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
-+				   IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
- 		break;
- 	case HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ:
- 		tsync_rx_ctl |= IXGBE_TSYNCRXCTL_TYPE_L4_V1;
- 		tsync_rx_mtrl |= IXGBE_RXMTRL_V1_DELAY_REQ_MSG;
--		adapter->flags &= ~(IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
--				    IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
-+		adapter->flags |= (IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
-+				   IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
- 		break;
- 	case HWTSTAMP_FILTER_PTP_V2_EVENT:
- 	case HWTSTAMP_FILTER_PTP_V2_L2_EVENT:
-@@ -879,8 +879,8 @@ static int ixgbe_ptp_set_timestamp_mode(struct ixgbe_adapter *adapter,
- 		tsync_rx_ctl |= IXGBE_TSYNCRXCTL_TYPE_EVENT_V2;
- 		is_l2 = true;
- 		config->rx_filter = HWTSTAMP_FILTER_PTP_V2_EVENT;
--		adapter->flags &= ~(IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
--				    IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
-+		adapter->flags |= (IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
-+				   IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
- 		break;
- 	case HWTSTAMP_FILTER_PTP_V1_L4_EVENT:
- 	case HWTSTAMP_FILTER_ALL:
--- 
-1.8.3.1
 
