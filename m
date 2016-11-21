@@ -1,74 +1,158 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 21 Nov 2016 21:17:37 +0000
-Subject: [Intel-wired-lan] [next PATCH S52-V2 06/15] i40e: set
-	broadcast	promiscuous mode for each active VLAN
-In-Reply-To: <1478639119-14656-7-git-send-email-bimmy.pujari@intel.com>
-References: <1478639119-14656-1-git-send-email-bimmy.pujari@intel.com>
- <1478639119-14656-7-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38546@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 22 Nov 2016 06:53:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ df03575b2a35892aa63e49a245acba342923f448
+Message-ID: <58337ae4.5zCemShY8InSI71q%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Tuesday, November 08, 2016 1:05 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S52-V2 06/15] i40e: set broadcast
-> promiscuous mode for each active VLAN
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> A previous workaround added to ensure receipt of all broadcast frames
-> incorrectly set the broadcast promiscuous mode unconditionally regardless
-> of active VLAN status.
-> 
-> Replace this partial workaround with a complete solution that sets the
-> broadcast promiscuous filters in i40e_sync_vsi_filters. This new method sets
-> the promiscuous mode based on when broadcast filters are added or
-> removed.
-> 
-> I40E_VLAN_ANY will request a broadcast filter for all VLANs, (as we're in
-> untagged mode) while a broadcast filter on a specific VLAN will only request
-> broadcast for that VLAN.
-> 
-> Thus, we restore addition of broadcast filter to the array, but we add special
-> handling for these such that they enable the broadcast promiscuous mode
-> instead of being sent as regular filters.
-> 
-> The end result is that we will correctly receive all broadcast packets (even
-> those with a *source* address equal to the broadcast address) but will not
-> receive packets for which we don't have an active VLAN filter.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: I7d0585c5cec1a5bf55bf533b42e5e817d5db6a2d
-> ---
-> Testing-hints:
->   Ensure that we do not receive broadcast packets for VLANs which are
->   not configured. That is, when we no VLANs configured we need to
->   receive broadcast packets on all VLANs. When we have added a VLAN
->   filter, we need to receive broadcasts only on VID=0 and any active
->   VLANs, but *not* any in-actve VLANs.
-> 
->   Additionally we need to ensure that we do not break the receipt of
->   broadcast filters with a *source* address equal to the broadcast
->   address. This can be tested using scapy or similar tools. Ensure that
->   these packets follow the same receipt rules as above.
-> 
->   Additionally it may be worth checking whether adding many VLANs
->   rapidly does not cause any driver stability issues and that the
->   broadcast packets are still correctly received.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_common.c      |  34 +++++++
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 106
-> +++++++++++++++++----
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   3 +
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   7 ++
->  4 files changed, 129 insertions(+), 21 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+df03575b2a35892aa63e49a245acba342923f448  i40evf: remove unused device ID
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 75m
 
+configs tested: 134
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                     randconfig-a0-201647
+x86_64                           allmodconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x011-201647
+x86_64                 randconfig-x014-201647
+x86_64                 randconfig-x017-201647
+x86_64                 randconfig-x015-201647
+x86_64                 randconfig-x012-201647
+x86_64                 randconfig-x018-201647
+x86_64                 randconfig-x019-201647
+x86_64                 randconfig-x013-201647
+x86_64                 randconfig-x010-201647
+x86_64                 randconfig-x016-201647
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201647
+i386                     randconfig-s1-201647
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201647
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201647
+i386                     randconfig-i1-201647
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+i386                   randconfig-x014-201647
+i386                   randconfig-x019-201647
+i386                   randconfig-x017-201647
+i386                   randconfig-x018-201647
+i386                   randconfig-x015-201647
+i386                   randconfig-x016-201647
+i386                   randconfig-x012-201647
+i386                   randconfig-x011-201647
+i386                   randconfig-x013-201647
+i386                   randconfig-x010-201647
+i386                     randconfig-n0-201647
+i386                   randconfig-x073-201647
+i386                   randconfig-x071-201647
+i386                   randconfig-x072-201647
+i386                   randconfig-x078-201647
+i386                   randconfig-x076-201647
+i386                   randconfig-x075-201647
+i386                   randconfig-x077-201647
+i386                   randconfig-x074-201647
+i386                   randconfig-x070-201647
+i386                   randconfig-x079-201647
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x008-201647
+x86_64                 randconfig-x001-201647
+x86_64                 randconfig-x009-201647
+x86_64                 randconfig-x000-201647
+x86_64                 randconfig-x003-201647
+x86_64                 randconfig-x005-201647
+x86_64                 randconfig-x002-201647
+x86_64                 randconfig-x007-201647
+x86_64                 randconfig-x004-201647
+x86_64                 randconfig-x006-201647
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-r0-201647
+i386                   randconfig-x006-201647
+i386                   randconfig-x004-201647
+i386                   randconfig-x007-201647
+i386                   randconfig-x003-201647
+i386                   randconfig-x008-201647
+i386                   randconfig-x000-201647
+i386                   randconfig-x002-201647
+i386                   randconfig-x009-201647
+i386                   randconfig-x001-201647
+i386                   randconfig-x005-201647
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
