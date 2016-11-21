@@ -1,94 +1,157 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 21 Nov 2016 13:03:51 -0800
-Subject: [Intel-wired-lan] [next PATCH S53-V3 5/5] i40e: lock service task
-	correctly
+Date: Mon, 21 Nov 2016 13:03:49 -0800
+Subject: [Intel-wired-lan] [next PATCH S53-V3 3/5] i40e: Add FEC for 25g
 In-Reply-To: <1479762231-27559-1-git-send-email-bimmy.pujari@intel.com>
 References: <1479762231-27559-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1479762231-27559-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1479762231-27559-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 
-The service task lock was being set in the scheduling function, not the
-actual service task. This would potentially leave the bit set for a long
-time before the task actually ran. Furthermore, if the service task
-takes too long, it calls the schedule function to reschedule itself -
-which would fail to take the lock and do nothing.
+This patch adds adminq support for Forward Error
+Correction ("FEC")for 25g products.
 
-Instead, set and clear the lock bit in the service task itself. In the
-process, get rid of the i40e_service_event_complete() function, which is
-really just two lines of code that can be put right in the service task
-itself.
-
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I83155e682b686121e2897f4429eb7d3f7c669168
+Signed-off-by: Jacek Naczyk <jacek.naczyk@intel.com>
+Change-ID: Iaff4910737c239d2c730e5c22a313ce9c37d3964
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 24 +++++++-----------------
- 1 file changed, 7 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 25 ++++++++++++++++++++--
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |  2 ++
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 25 ++++++++++++++++++++--
+ 3 files changed, 48 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 849feaa..57850fd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -288,8 +288,7 @@ struct i40e_vsi *i40e_find_vsi_from_id(struct i40e_pf *pf, u16 id)
- void i40e_service_event_schedule(struct i40e_pf *pf)
- {
- 	if (!test_bit(__I40E_DOWN, &pf->state) &&
--	    !test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state) &&
--	    !test_and_set_bit(__I40E_SERVICE_SCHED, &pf->state))
-+	    !test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state))
- 		queue_work(i40e_wq, &pf->service_task);
- }
- 
-@@ -5943,19 +5942,6 @@ static void i40e_handle_lan_overflow_event(struct i40e_pf *pf,
- }
- 
- /**
-- * i40e_service_event_complete - Finish up the service event
-- * @pf: board private structure
-- **/
--static void i40e_service_event_complete(struct i40e_pf *pf)
--{
--	WARN_ON(!test_bit(__I40E_SERVICE_SCHED, &pf->state));
--
--	/* flush memory to make sure state is correct before next watchog */
--	smp_mb__before_atomic();
--	clear_bit(__I40E_SERVICE_SCHED, &pf->state);
--}
--
--/**
-  * i40e_get_cur_guaranteed_fd_count - Get the consumed guaranteed FD filters
-  * @pf: board private structure
-  **/
-@@ -7264,10 +7250,12 @@ static void i40e_service_task(struct work_struct *work)
- 
- 	/* don't bother with service tasks if a reset is in progress */
- 	if (test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state)) {
--		i40e_service_event_complete(pf);
- 		return;
- 	}
- 
-+	if (test_and_set_bit(__I40E_SERVICE_SCHED, &pf->state))
-+		return;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index c9d1f91..b2101a5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -1686,6 +1686,8 @@ struct i40e_aq_get_phy_abilities_resp {
+ #define I40E_AQ_PHY_LINK_ENABLED	0x08
+ #define I40E_AQ_PHY_AN_ENABLED		0x10
+ #define I40E_AQ_PHY_FLAG_MODULE_QUAL	0x20
++#define I40E_AQ_PHY_FEC_ABILITY_KR	0x40
++#define I40E_AQ_PHY_FEC_ABILITY_RS	0x80
+ 	__le16	eee_capability;
+ #define I40E_AQ_EEE_100BASE_TX		0x0002
+ #define I40E_AQ_EEE_1000BASE_T		0x0004
+@@ -1701,7 +1703,16 @@ struct i40e_aq_get_phy_abilities_resp {
+ #define I40E_AQ_PHY_TYPE_EXT_25G_CR	0X02
+ #define I40E_AQ_PHY_TYPE_EXT_25G_SR	0x04
+ #define I40E_AQ_PHY_TYPE_EXT_25G_LR	0x08
+-	u8	mod_type_ext;
++	u8	fec_cfg_curr_mod_ext_info;
++#define I40E_AQ_ENABLE_FEC_KR		0x01
++#define I40E_AQ_ENABLE_FEC_RS		0x02
++#define I40E_AQ_REQUEST_FEC_KR		0x04
++#define I40E_AQ_REQUEST_FEC_RS		0x08
++#define I40E_AQ_ENABLE_FEC_AUTO		0x10
++#define I40E_AQ_FEC
++#define I40E_AQ_MODULE_TYPE_EXT_MASK	0xE0
++#define I40E_AQ_MODULE_TYPE_EXT_SHIFT	5
 +
- 	i40e_detect_recover_hung(pf);
- 	i40e_sync_filters_subtask(pf);
- 	i40e_reset_subtask(pf);
-@@ -7280,7 +7268,9 @@ static void i40e_service_task(struct work_struct *work)
- 	i40e_sync_udp_filters_subtask(pf);
- 	i40e_clean_adminq_subtask(pf);
+ 	u8	ext_comp_code;
+ 	u8	phy_id[4];
+ 	u8	module_type[3];
+@@ -1729,7 +1740,15 @@ struct i40e_aq_set_phy_config { /* same bits as above in all */
+ #define I40E_AQ_PHY_TYPE_EXT_25G_CR	0X02
+ #define I40E_AQ_PHY_TYPE_EXT_25G_SR	0x04
+ #define I40E_AQ_PHY_TYPE_EXT_25G_LR	0x08
+-	u8	reserved[2];
++	u8	fec_config;
++#define I40E_AQ_SET_FEC_ABILITY_KR	BIT(0)
++#define I40E_AQ_SET_FEC_ABILITY_RS	BIT(1)
++#define I40E_AQ_SET_FEC_REQUEST_KR	BIT(2)
++#define I40E_AQ_SET_FEC_REQUEST_RS	BIT(3)
++#define I40E_AQ_SET_FEC_AUTO		BIT(4)
++#define I40E_AQ_PHY_FEC_CONFIG_SHIFT	0x0
++#define I40E_AQ_PHY_FEC_CONFIG_MASK	(0x1F << I40E_AQ_PHY_FEC_CONFIG_SHIFT)
++	u8	reserved;
+ };
  
--	i40e_service_event_complete(pf);
-+	/* flush memory to make sure state is correct before next watchdog */
-+	smp_mb__before_atomic();
-+	clear_bit(__I40E_SERVICE_SCHED, &pf->state);
+ I40E_CHECK_CMD_LENGTH(i40e_aq_set_phy_config);
+@@ -1819,6 +1838,8 @@ struct i40e_aqc_get_link_status {
+ 	u8	loopback; /* use defines from i40e_aqc_set_lb_mode */
+ 	__le16	max_frame_size;
+ 	u8	config;
++#define I40E_AQ_CONFIG_FEC_KR_ENA	0x01
++#define I40E_AQ_CONFIG_FEC_RS_ENA	0x02
+ #define I40E_AQ_CONFIG_CRC_ENA		0x04
+ #define I40E_AQ_CONFIG_PACING_MASK	0x78
+ 	u8	external_power_ability;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 3961fc2..d9da786 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1714,6 +1714,8 @@ enum i40e_status_code i40e_set_fc(struct i40e_hw *hw, u8 *aq_failures,
+ 		config.eee_capability = abilities.eee_capability;
+ 		config.eeer = abilities.eeer_val;
+ 		config.low_power_ctrl = abilities.d3_lpan;
++		config.fec_config = abilities.fec_cfg_curr_mod_ext_info &
++				    I40E_AQ_PHY_FEC_CONFIG_MASK;
+ 		status = i40e_aq_set_phy_config(hw, &config, NULL);
  
- 	/* If the tasks have taken longer than one timer cycle or there
- 	 * is more work to be done, reschedule the service task now
+ 		if (status)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index f8d7d95..eeb9864 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -1683,6 +1683,8 @@ struct i40e_aq_get_phy_abilities_resp {
+ #define I40E_AQ_PHY_LINK_ENABLED	0x08
+ #define I40E_AQ_PHY_AN_ENABLED		0x10
+ #define I40E_AQ_PHY_FLAG_MODULE_QUAL	0x20
++#define I40E_AQ_PHY_FEC_ABILITY_KR	0x40
++#define I40E_AQ_PHY_FEC_ABILITY_RS	0x80
+ 	__le16	eee_capability;
+ #define I40E_AQ_EEE_100BASE_TX		0x0002
+ #define I40E_AQ_EEE_1000BASE_T		0x0004
+@@ -1698,7 +1700,16 @@ struct i40e_aq_get_phy_abilities_resp {
+ #define I40E_AQ_PHY_TYPE_EXT_25G_CR	0X02
+ #define I40E_AQ_PHY_TYPE_EXT_25G_SR	0x04
+ #define I40E_AQ_PHY_TYPE_EXT_25G_LR	0x08
+-	u8	mod_type_ext;
++	u8	fec_cfg_curr_mod_ext_info;
++#define I40E_AQ_ENABLE_FEC_KR		0x01
++#define I40E_AQ_ENABLE_FEC_RS		0x02
++#define I40E_AQ_REQUEST_FEC_KR		0x04
++#define I40E_AQ_REQUEST_FEC_RS		0x08
++#define I40E_AQ_ENABLE_FEC_AUTO		0x10
++#define I40E_AQ_FEC
++#define I40E_AQ_MODULE_TYPE_EXT_MASK	0xE0
++#define I40E_AQ_MODULE_TYPE_EXT_SHIFT	5
++
+ 	u8	ext_comp_code;
+ 	u8	phy_id[4];
+ 	u8	module_type[3];
+@@ -1726,7 +1737,15 @@ struct i40e_aq_set_phy_config { /* same bits as above in all */
+ #define I40E_AQ_PHY_TYPE_EXT_25G_CR	0X02
+ #define I40E_AQ_PHY_TYPE_EXT_25G_SR	0x04
+ #define I40E_AQ_PHY_TYPE_EXT_25G_LR	0x08
+-	u8	reserved[2];
++	u8	fec_config;
++#define I40E_AQ_SET_FEC_ABILITY_KR	BIT(0)
++#define I40E_AQ_SET_FEC_ABILITY_RS	BIT(1)
++#define I40E_AQ_SET_FEC_REQUEST_KR	BIT(2)
++#define I40E_AQ_SET_FEC_REQUEST_RS	BIT(3)
++#define I40E_AQ_SET_FEC_AUTO		BIT(4)
++#define I40E_AQ_PHY_FEC_CONFIG_SHIFT	0x0
++#define I40E_AQ_PHY_FEC_CONFIG_MASK	(0x1F << I40E_AQ_PHY_FEC_CONFIG_SHIFT)
++	u8	reserved;
+ };
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aq_set_phy_config);
+@@ -1816,6 +1835,8 @@ struct i40e_aqc_get_link_status {
+ 	u8	loopback; /* use defines from i40e_aqc_set_lb_mode */
+ 	__le16	max_frame_size;
+ 	u8	config;
++#define I40E_AQ_CONFIG_FEC_KR_ENA	0x01
++#define I40E_AQ_CONFIG_FEC_RS_ENA	0x02
+ #define I40E_AQ_CONFIG_CRC_ENA		0x04
+ #define I40E_AQ_CONFIG_PACING_MASK	0x78
+ 	u8	external_power_ability;
 -- 
 2.4.11
 
