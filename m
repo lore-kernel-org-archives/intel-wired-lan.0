@@ -1,85 +1,90 @@
-From: Chris J Arges <carges@vectranetworks.com>
-Date: Wed, 30 Nov 2016 21:13:18 -0600
-Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the
-	PHY ID
-In-Reply-To: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
-References: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
-Message-ID: <20161201031318.GA6368@outlook.office365.com>
+From: Yusuke Suzuki <yus-suzuki@uf.jp.nec.com>
+Date: Mon, 21 Nov 2016 06:48:45 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix incorrect bitwise operations
+ of PTP Rx timestamp flags
+Message-ID: <0033F4D0CBA60E4088C47C946608755C02C8B736@BPXM22GP.gisp.nec.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Nov 29, 2016 at 10:03:56AM -0600, Aaron Sierra wrote:
-> Several people have reported firmware leaving the I210/I211 PHY's page
-> select register set to something other than the default of zero. This
-> causes the first accesses, PHY_IDx register reads, to access something
-> else, resulting in device probe failure:
-> 
->     igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
->     igb: Copyright (c) 2007-2014 Intel Corporation.
->     igb: probe of 0000:01:00.0 failed with error -2
-> 
-> This problem began for them after a previous patch I submitted was
-> applied:
-> 
->     commit 2a3cdead8b408351fa1e3079b220fa331480ffbc
->     Author: Aaron Sierra <asierra@xes-inc.com>
->     Date:   Tue Nov 3 12:37:09 2015 -0600
-> 
->         igb: Remove GS40G specific defines/functions
-> 
-> I personally experienced this problem after attempting to PXE boot from
-> I210 devices using this firmware:
-> 
->     Intel(R) Boot Agent GE v1.5.78
->     Copyright (C) 1997-2014, Intel Corporation
-> 
-> Resetting the PHY before reading from it, ensures the page select
-> register is in its default state and doesn't make assumptions about
-> the PHY's register set before the PHY has been probed.
->
+From: Yusuke Suzuki <yus-suzuki@uf.jp.nec.com>
 
-Hi,
-I could not get this patch to fix the original issue I had.
-The patch I submitted a while back fixed the issue for me:
-https://patchwork.ozlabs.org/patch/690464/
+Rx timestamp does not work on 82599 and X540 because bitwise operation
+of RX_HWTSTAMP flags is incorrect and ixgbe_ptp_rx_hwtstamp() is never
+called. This patch fixes it to enable Rx timestamp on 82599 and X540.
 
-Let me know if there is something else I can get check here. To reproduce
-I have to fully power off the server which contains this NIC.
---chris
+Without this fix:
+# ptp4l -Hsmq -i ens27f0
+ptp4l[278.730]: selected /dev/ptp8 as PTP clock
+ptp4l[278.733]: port 1: INITIALIZING to LISTENING on INITIALIZE
+ptp4l[278.733]: port 0: INITIALIZING to LISTENING on INITIALIZE
+ptp4l[278.834]: port 1: received SYNC without timestamp
+ptp4l[278.835]: port 1: new foreign master 1c3947.fffe.60f9cc-1
+ptp4l[279.834]: port 1: received SYNC without timestamp
+ptp4l[280.834]: port 1: received SYNC without timestamp
+ptp4l[281.834]: port 1: received SYNC without timestamp
+ptp4l[282.834]: port 1: received SYNC without timestamp
+ptp4l[282.835]: selected best master clock 1c3947.fffe.60f9cc
+ptp4l[282.835]: port 1: LISTENING to UNCALIBRATED on RS_SLAVE
+ptp4l[283.834]: port 1: received SYNC without timestamp
 
- 
-> Cc: Matwey V. Kornilov <matwey@sai.msu.ru>
-> Cc: Chris Arges <carges@vectranetworks.com>
-> Cc: Jochen Henneberg <jh@henneberg-systemdesign.com>
-> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
-> ---
->  drivers/net/ethernet/intel/igb/e1000_82575.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-> index a61447f..ee44398 100644
-> --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-> +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-> @@ -245,6 +245,17 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
->  	hw->bus.func = (rd32(E1000_STATUS) & E1000_STATUS_FUNC_MASK) >>
->  			E1000_STATUS_FUNC_SHIFT;
->  
-> +	/* Make sure the PHY is in a good state. Several people have reported
-> +	 * firmware leaving the PHY's page select register set to something
-> +	 * other than the default of zero, which causes the PHY ID read to
-> +	 * access something other than the intended register.
-> +	 */
-> +	ret_val = hw->phy.ops.reset(hw);
-> +	if (ret_val) {
-> +		hw_dbg("Error resetting the PHY.\n");
-> +		goto out;
-> +	}
-> +
->  	/* Set phy->phy_addr and phy->id. */
->  	ret_val = igb_get_phy_id_82575(hw);
->  	if (ret_val)
-> -- 
-> 1.9.1
+With this fix:
+# ptp4l -Hsmq -i ens27f0
+ptp4l[239.154]: selected /dev/ptp8 as PTP clock
+ptp4l[239.157]: port 1: INITIALIZING to LISTENING on INITIALIZE
+ptp4l[239.157]: port 0: INITIALIZING to LISTENING on INITIALIZE
+ptp4l[240.989]: port 1: new foreign master 1c3947.fffe.60f9cc-1
+ptp4l[244.989]: selected best master clock 1c3947.fffe.60f9cc
+ptp4l[244.989]: port 1: LISTENING to UNCALIBRATED on RS_SLAVE
+ptp4l[246.977]: master offset -899583339542096 s0 freq      +0 path delay     16222
+ptp4l[247.977]: master offset -899583339617265 s1 freq  -75169 path delay     16177
+ptp4l[248.977]: master offset       -130 s2 freq  -75299 path delay     16177
+ptp4l[248.977]: port 1: UNCALIBRATED to SLAVE on MASTER_CLOCK_SELECTED
+ptp4l[249.977]: master offset         -9 s2 freq  -75217 path delay     16177
+ptp4l[250.977]: master offset         88 s2 freq  -75123 path delay     16132
+
+Fixes: a9763f3cb54c ("ixgbe: Update PTP to support X550EM_x devices")
+Signed-off-by: Yusuke Suzuki <yus-suzuki@uf.jp.nec.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+index a922776..5599907 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+@@ -858,14 +858,14 @@ static int ixgbe_ptp_set_timestamp_mode(struct ixgbe_adapter *adapter,
+ 	case HWTSTAMP_FILTER_PTP_V1_L4_SYNC:
+ 		tsync_rx_ctl |= IXGBE_TSYNCRXCTL_TYPE_L4_V1;
+ 		tsync_rx_mtrl |= IXGBE_RXMTRL_V1_SYNC_MSG;
+-		adapter->flags &= ~(IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
+-				    IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
++		adapter->flags |= (IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
++				   IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
+ 		break;
+ 	case HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ:
+ 		tsync_rx_ctl |= IXGBE_TSYNCRXCTL_TYPE_L4_V1;
+ 		tsync_rx_mtrl |= IXGBE_RXMTRL_V1_DELAY_REQ_MSG;
+-		adapter->flags &= ~(IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
+-				    IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
++		adapter->flags |= (IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
++				   IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
+ 		break;
+ 	case HWTSTAMP_FILTER_PTP_V2_EVENT:
+ 	case HWTSTAMP_FILTER_PTP_V2_L2_EVENT:
+@@ -879,8 +879,8 @@ static int ixgbe_ptp_set_timestamp_mode(struct ixgbe_adapter *adapter,
+ 		tsync_rx_ctl |= IXGBE_TSYNCRXCTL_TYPE_EVENT_V2;
+ 		is_l2 = true;
+ 		config->rx_filter = HWTSTAMP_FILTER_PTP_V2_EVENT;
+-		adapter->flags &= ~(IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
+-				    IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
++		adapter->flags |= (IXGBE_FLAG_RX_HWTSTAMP_ENABLED |
++				   IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER);
+ 		break;
+ 	case HWTSTAMP_FILTER_PTP_V1_L4_EVENT:
+ 	case HWTSTAMP_FILTER_ALL:
+-- 
+1.8.3.1
+
