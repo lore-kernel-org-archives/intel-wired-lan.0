@@ -1,43 +1,67 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 23 Nov 2016 10:11:31 -0800
-Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: restore hw_addr on resume or
-	error
-Message-ID: <20161123181131.11570.85615.stgit@localhost6.localdomain6>
+From: =?unknown-8bit?b?0JDQu9C10LrRgdC10Lkg0JTQtdGA0LrQsNGH0ZHQsg==?= <alexey@gelicon.ru>
+Date: Tue, 22 Nov 2016 23:44:54 +0300
+Subject: [Intel-wired-lan] i40e filter frames with physical addresses used
+	previously.
+Message-ID: <fa0abc24-68ad-8fcf-15e1-117211b97ec7@gelicon.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Restore adapter->hw.hw_addr after handling an error, or a resume
-operation to make sure we can access the registers.
+i40e filter frames with physical addresses used previously.
 
-v2 - restore hw_addr pnly if pci_enable_device_mem() succeeds
-in ixgbevf_io_slot_reset()
+# uname -a
+Linux nas2 4.8.9-gentoo #6 SMP Tue Nov 22 20:35:18 MSK 2016 x86_64 
+Intel(R) Core(TM) i7 CPU 860 @ 2.80GHz GenuineIntel GNU/Linux
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    2 ++
- 1 file changed, 2 insertions(+)
+# ethtool -i net1
+driver: i40e
+version: 1.6.11-k
+firmware-version: 5.04 0x800024c6 0.0.0
+bus-info: 0000:06:00.1
+supports-statistics: yes
+supports-test: yes
+supports-eeprom-access: yes
+supports-register-dump: yes
+supports-priv-flags: yes
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 88c5352..1093b41 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3840,6 +3840,7 @@ static int ixgbevf_resume(struct pci_dev *pdev)
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 	u32 err;
- 
-+	adapter->hw.hw_addr = adapter->io_addr;
- 	pci_restore_state(pdev);
- 	/* pci_restore_state clears dev->state_saved so call
- 	 * pci_save_state to restore it.
-@@ -4289,6 +4290,7 @@ static pci_ers_result_t ixgbevf_io_slot_reset(struct pci_dev *pdev)
- 		return PCI_ERS_RESULT_DISCONNECT;
- 	}
- 
-+	adapter->hw.hw_addr = adapter->io_addr;
- 	smp_mb__before_atomic();
- 	clear_bit(__IXGBEVF_DISABLED, &adapter->state);
- 	pci_set_master(pdev);
+Testing:
+
+1. SERVER1
+ip link add link net1 name net1.21 type vlan id 21
+ip link set dev net1.21 up
+ip addr del dev net1.21 37.139.86.84/28
+
+5. SERVER 2
+ip link add link net1 name net1.21 type vlan id 21
+ip link set dev net1.21 up
+ip addr del dev net1.21 37.139.86.82/28
+
+2. SERVER 3
+ip link add link net1 name net1.21 type vlan id 21
+ip link set dev net1.21 up
+ip addr del dev net1.21 37.139.86.83/28
+ip link set dev net1.21 address 00:1b:fc:6d:9a:77
+
+arping2 37.139.86.84
+or
+ping 37.139.86.84
+Answers are present
+
+3. SERVER1
+ip link set dev net1.21 address 00:1b:fc:6d:9a:77
+ip link set dev net1.21 address 3c:fd:fe:a0:26:c5
+
+4. SERVER 2
+arping2 37.139.86.84
+or
+ping 37.139.86.84
+Answers are present
+
+5. SERVER 3
+arping2 37.139.86.84
+or
+ping 37.139.86.84
+The answers are no.
 
