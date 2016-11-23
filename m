@@ -1,143 +1,179 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 22 Nov 2016 15:44:53 -0800
-Subject: [Intel-wired-lan] [PATCH RFC v1] ethtool: implement helper to get
-	flow_type value
-Message-ID: <20161122234453.31611-1-jacob.e.keller@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 23 Nov 2016 14:25:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 0f59fb6ba3a6286feca30e5c2547e99f9fb787d7
+Message-ID: <58353654.B+hQSVx1ABuhQm6k%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Often a driver wants to store the flow type and thus it must mask the
-extra fields. This is a task that could grow more complex as more flags
-are added in the future. Add a helper function that masks the flags for
-marking additional fields.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+0f59fb6ba3a6286feca30e5c2547e99f9fb787d7  igb: re-assign hw address pointer on reset after PCI error
 
-Modify drivers in drivers/net/ethernet that currently check for FLOW_EXT
-and FLOW_MAC_EXT to use the helper. Currently this is only the mellanox
-drivers.
+elapsed time: 107m
 
-I chose not to modify other drivers as I'm actually unsure whether we
-should always mask the flow type even for drivers which don't recognize
-the newer flags. On the one hand, today's drivers (generally)
-automatically fail when a new flag is used because they won't mask it
-and their checks against flow_type will not match. On the other hand, it
-means another place that you have to update when you begin implementing
-a flag.
+configs tested: 155
 
-An alternative is to have the driver store a set of flags that it knows
-about, and then have ethtool core do the check for us to discard frames.
-I haven't implemented this quite yet.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
-I plan on using this helper when fixing the mask code for ntuple filters
-in the Intel i40e driver. I wanted to see whether this approach was
-acceptable, and whether we should implement additional checks. The
-primary reason is that today's drivers are "fail closed" in that a new
-flag type will probably fail on drivers due to checking for flow types
-they recognize. Since drivers only remove the masked bits they recognize
-this works. However, this gets cumbersome if new additional flags get
-added in the future. I would like some sort of helper, but if we
-encourage its use, and a new flag gets added, the helper will then
-unforunately make the driver "fail open" in that a new flag will get
-ignored as the driver won't know to return -EINVAL.
+i386                     randconfig-a0-201647
+x86_64                 randconfig-a0-11231243
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+arm                        shmobile_defconfig
+mips                            e55_defconfig
+powerpc                      katmai_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-11231116
+x86_64                           allmodconfig
+x86_64                 randconfig-v0-11231001
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x011-201647
+x86_64                 randconfig-x014-201647
+x86_64                 randconfig-x017-201647
+x86_64                 randconfig-x015-201647
+x86_64                 randconfig-x012-201647
+x86_64                 randconfig-x018-201647
+x86_64                 randconfig-x019-201647
+x86_64                 randconfig-x013-201647
+x86_64                 randconfig-x010-201647
+x86_64                 randconfig-x016-201647
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201647
+i386                     randconfig-s1-201647
+x86_64                 randconfig-s0-11231244
+x86_64                 randconfig-s1-11231244
+x86_64                 randconfig-s2-11231244
+x86_64                 randconfig-s3-11231247
+x86_64                 randconfig-s4-11231247
+x86_64                 randconfig-s5-11231247
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201647
+i386                   randconfig-b0-11231149
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201647
+i386                     randconfig-i1-201647
+powerpc                  iss476-smp_defconfig
+sparc                            allyesconfig
+x86_64                 randconfig-u0-11231205
+blackfin                  TCM-BF518_defconfig
+powerpc                       holly_defconfig
+i386                   randconfig-x014-201647
+i386                   randconfig-x019-201647
+i386                   randconfig-x017-201647
+i386                   randconfig-x018-201647
+i386                   randconfig-x015-201647
+i386                   randconfig-x016-201647
+i386                   randconfig-x012-201647
+i386                   randconfig-x011-201647
+i386                   randconfig-x013-201647
+i386                   randconfig-x010-201647
+i386                     randconfig-n0-201647
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-11231302
+i386                   randconfig-x070-201647
+i386                   randconfig-x071-201647
+i386                   randconfig-x072-201647
+i386                   randconfig-x073-201647
+i386                   randconfig-x074-201647
+i386                   randconfig-x075-201647
+i386                   randconfig-x076-201647
+i386                   randconfig-x077-201647
+i386                   randconfig-x078-201647
+i386                   randconfig-x079-201647
+x86_64                                  kexec
+x86_64                               rhel-7.2
+x86_64                 randconfig-n0-11231250
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                randconfig-ws0-11231057
+x86_64                 randconfig-x008-201647
+x86_64                 randconfig-x001-201647
+x86_64                 randconfig-x009-201647
+x86_64                 randconfig-x000-201647
+x86_64                 randconfig-x003-201647
+x86_64                 randconfig-x005-201647
+x86_64                 randconfig-x002-201647
+x86_64                 randconfig-x007-201647
+x86_64                 randconfig-x004-201647
+x86_64                 randconfig-x006-201647
+i386                     randconfig-r0-201647
+x86_64                 randconfig-r0-11231050
+i386                   randconfig-x006-201647
+i386                   randconfig-x004-201647
+i386                   randconfig-x007-201647
+i386                   randconfig-x003-201647
+i386                   randconfig-x008-201647
+i386                   randconfig-x000-201647
+i386                   randconfig-x002-201647
+i386                   randconfig-x009-201647
+i386                   randconfig-x001-201647
+i386                   randconfig-x005-201647
+i386                   randconfig-x0-11231109
 
-I think the right solution will be to add some sort of checks in core
-ethtool which we can basically set the recognized flags in some way for
-all drivers such that the ethtool core can drop requests for flows with
-unknown flag types. I'm unsure how to implement this though.
-
-Thoughts?
-
- drivers/net/ethernet/mellanox/mlx4/en_ethtool.c         |  4 ++--
- drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c |  6 +++---
- include/uapi/linux/ethtool.h                            | 11 ++++++++---
- 3 files changed, 13 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c b/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-index 487a58f9c192..d8f9839ce2a3 100644
---- a/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-@@ -1270,7 +1270,7 @@ static int mlx4_en_validate_flow(struct net_device *dev,
- 			return -EINVAL;
- 	}
- 
--	switch (cmd->fs.flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(cmd->fs.flow_type)) {
- 	case TCP_V4_FLOW:
- 	case UDP_V4_FLOW:
- 		if (cmd->fs.m_u.tcp_ip4_spec.tos)
-@@ -1493,7 +1493,7 @@ static int mlx4_en_ethtool_to_net_trans_rule(struct net_device *dev,
- 	if (err)
- 		return err;
- 
--	switch (cmd->fs.flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(cmd->fs.flow_type)) {
- 	case ETHER_FLOW:
- 		spec_l2 = kzalloc(sizeof(*spec_l2), GFP_KERNEL);
- 		if (!spec_l2)
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c b/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-index 3691451c728c..066e6c5cf38b 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-@@ -63,7 +63,7 @@ static struct mlx5e_ethtool_table *get_flow_table(struct mlx5e_priv *priv,
- 	int table_size;
- 	int prio;
- 
--	switch (fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(fs->flow_type)) {
- 	case TCP_V4_FLOW:
- 	case UDP_V4_FLOW:
- 		max_tuples = ETHTOOL_NUM_L3_L4_FTS;
-@@ -147,7 +147,7 @@ static int set_flow_attrs(u32 *match_c, u32 *match_v,
- 					     outer_headers);
- 	void *outer_headers_v = MLX5_ADDR_OF(fte_match_param, match_v,
- 					     outer_headers);
--	u32 flow_type = fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT);
-+	u32 flow_type = ethtool_get_flow_spec_type(fs->flow_type);
- 	struct ethtool_tcpip4_spec *l4_mask;
- 	struct ethtool_tcpip4_spec *l4_val;
- 	struct ethtool_usrip4_spec *l3_mask;
-@@ -393,7 +393,7 @@ static int validate_flow(struct mlx5e_priv *priv,
- 	    fs->ring_cookie != RX_CLS_FLOW_DISC)
- 		return -EINVAL;
- 
--	switch (fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(fs->flow_type)) {
- 	case ETHER_FLOW:
- 		eth_mask = &fs->m_u.ether_spec;
- 		if (!is_zero_ether_addr(eth_mask->h_dest))
-diff --git a/include/uapi/linux/ethtool.h b/include/uapi/linux/ethtool.h
-index f0db7788f887..e6d7d2aea56c 100644
---- a/include/uapi/linux/ethtool.h
-+++ b/include/uapi/linux/ethtool.h
-@@ -880,6 +880,14 @@ struct ethtool_rx_flow_spec {
- 	__u32		location;
- };
- 
-+/* Flag to enable additional fields in struct ethtool_rx_flow_spec */
-+#define	FLOW_EXT	0x80000000
-+#define	FLOW_MAC_EXT	0x40000000
-+static inline __u32 ethtool_get_flow_spec_type(__u32 flow_type)
-+{
-+	return flow_type & (FLOW_EXT | FLOW_MAC_EXT);
-+}
-+
- /* How rings are layed out when accessing virtual functions or
-  * offloaded queues is device specific. To allow users to do flow
-  * steering and specify these queues the ring cookie is partitioned
-@@ -1579,9 +1587,6 @@ static inline int ethtool_validate_duplex(__u8 duplex)
- #define	IPV4_FLOW	0x10	/* hash only */
- #define	IPV6_FLOW	0x11	/* hash only */
- #define	ETHER_FLOW	0x12	/* spec only (ether_spec) */
--/* Flag to enable additional fields in struct ethtool_rx_flow_spec */
--#define	FLOW_EXT	0x80000000
--#define	FLOW_MAC_EXT	0x40000000
- 
- /* L3-L4 network traffic flow hash options */
- #define	RXH_L2DA	(1 << 1)
--- 
-2.11.0.rc2.152.g4d04e67
-
+Thanks,
+Fengguang
