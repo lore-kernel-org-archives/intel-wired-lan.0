@@ -1,46 +1,55 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 23 Nov 2016 11:24:08 -0800
-Subject: [Intel-wired-lan] [PATCH v3] ixgbevf: restore hw_addr on resume or
-	error
-Message-ID: <20161123192408.12895.85255.stgit@localhost6.localdomain6>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 23 Nov 2016 23:48:52 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: use igb_adapter->io_addr instead
+ of	e1000_hw->hw_addr
+In-Reply-To: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
+References: <1478588780-24480-1-git-send-email-caoj.fnst@cn.fujitsu.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81FDE478@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Restore adapter->hw.hw_addr after handling an error, or a resume
-operation to make sure we can access the registers.
+> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Cao jin [caoj.fnst at cn.fujitsu.com]
+> Sent: Monday, November 07, 2016 11:06 PM
+To> : linux-kernel at vger.kernel.org; netdev at vger.kernel.org
+> Cc: izumi.taku at jp.fujitsu.com; intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] igb: use igb_adapter->io_addr instead of     e1000_hw->hw_addr
+> 
+> When running as guest, under certain condition, it will oops as following.
+> writel() in igb_configure_tx_ring() results in oops, because hw->hw_addr
+> is NULL. While other register access won't oops kernel because they use
+> wr32/rd32 which have a defense against NULL pointer.
+> 
+>     [  141.225449] pcieport 0000:00:1c.0: AER: Multiple Uncorrected (Fatal)
+>     error received: id=0101
+>     [  141.225523] igb 0000:01:00.1: PCIe Bus Error:
+>     severity=Uncorrected (Fatal), type=Unaccessible,
+>     id=0101(Unregistered Agent ID)
+>     [  141.299442] igb 0000:01:00.1: broadcast error_detected message
+>     [  141.300539] igb 0000:01:00.0 enp1s0f0: PCIe link lost, device now
+>     detached
+>     [  141.351019] igb 0000:01:00.1 enp1s0f1: PCIe link lost, device now
+>     detached
+>     [  143.465904] pcieport 0000:00:1c.0: Root Port link has been reset
+>     [  143.465994] igb 0000:01:00.1: broadcast slot_reset message
+>     [  143.466039] igb 0000:01:00.0: enabling device (0000 -> 0002)
+>     [  144.389078] igb 0000:01:00.1: enabling device (0000 -> 0002)
+>     [  145.312078] igb 0000:01:00.1: broadcast resume message
+>     [  145.322211] BUG: unable to handle kernel paging request at
+>     0000000000003818
+>     [  145.361275] IP: [<ffffffffa02fd38d>]
+>     igb_configure_tx_ring+0x14d/0x280 [igb]
+>     [  145.400048] PGD 0
+>     [  145.438007] Oops: 0002 [#1] SMP
+> 
+> A similiar issue & solution could be found at:
+>     http://patchwork.ozlabs.org/patch/689592/
+> 
+> Signed-off-by: Cao jin <caoj.fnst@cn.fujitsu.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-v2 - restore hw_addr only if pci_enable_device_mem() succeeds
-in ixgbevf_io_slot_reset()
-
-v3 - restore hw_addr after pci_enable_device_mem() in ixgbevf_resume()
-
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 88c5352..5531347 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3851,6 +3851,8 @@ static int ixgbevf_resume(struct pci_dev *pdev)
- 		dev_err(&pdev->dev, "Cannot enable PCI device from suspend\n");
- 		return err;
- 	}
-+
-+	adapter->hw.hw_addr = adapter->io_addr;
- 	smp_mb__before_atomic();
- 	clear_bit(__IXGBEVF_DISABLED, &adapter->state);
- 	pci_set_master(pdev);
-@@ -4289,6 +4291,7 @@ static pci_ers_result_t ixgbevf_io_slot_reset(struct pci_dev *pdev)
- 		return PCI_ERS_RESULT_DISCONNECT;
- 	}
- 
-+	adapter->hw.hw_addr = adapter->io_addr;
- 	smp_mb__before_atomic();
- 	clear_bit(__IXGBEVF_DISABLED, &adapter->state);
- 	pci_set_master(pdev);
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
