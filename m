@@ -1,67 +1,35 @@
-From: =?unknown-8bit?b?0JDQu9C10LrRgdC10Lkg0JTQtdGA0LrQsNGH0ZHQsg==?= <alexey@gelicon.ru>
-Date: Tue, 22 Nov 2016 23:44:54 +0300
-Subject: [Intel-wired-lan] i40e filter frames with physical addresses used
-	previously.
-Message-ID: <fa0abc24-68ad-8fcf-15e1-117211b97ec7@gelicon.ru>
+From: Phil Turnbull <phil.turnbull@oracle.com>
+Date: Wed, 23 Nov 2016 13:33:58 -0500
+Subject: [Intel-wired-lan] [PATCH] fm10k: correctly check if interface is
+	removed.
+Message-ID: <20161123183358.16851-1-phil.turnbull@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i40e filter frames with physical addresses used previously.
+FM10K_REMOVED expects a hardware address, not a 'struct fm10k_hw'.
 
-# uname -a
-Linux nas2 4.8.9-gentoo #6 SMP Tue Nov 22 20:35:18 MSK 2016 x86_64 
-Intel(R) Core(TM) i7 CPU 860 @ 2.80GHz GenuineIntel GNU/Linux
+Fixes: 5cb8db4a4cbc ("fm10k: Add support for VF")
+Signed-off-by: Phil Turnbull <phil.turnbull@oracle.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-# ethtool -i net1
-driver: i40e
-version: 1.6.11-k
-firmware-version: 5.04 0x800024c6 0.0.0
-bus-info: 0000:06:00.1
-supports-statistics: yes
-supports-test: yes
-supports-eeprom-access: yes
-supports-register-dump: yes
-supports-priv-flags: yes
-
-Testing:
-
-1. SERVER1
-ip link add link net1 name net1.21 type vlan id 21
-ip link set dev net1.21 up
-ip addr del dev net1.21 37.139.86.84/28
-
-5. SERVER 2
-ip link add link net1 name net1.21 type vlan id 21
-ip link set dev net1.21 up
-ip addr del dev net1.21 37.139.86.82/28
-
-2. SERVER 3
-ip link add link net1 name net1.21 type vlan id 21
-ip link set dev net1.21 up
-ip addr del dev net1.21 37.139.86.83/28
-ip link set dev net1.21 address 00:1b:fc:6d:9a:77
-
-arping2 37.139.86.84
-or
-ping 37.139.86.84
-Answers are present
-
-3. SERVER1
-ip link set dev net1.21 address 00:1b:fc:6d:9a:77
-ip link set dev net1.21 address 3c:fd:fe:a0:26:c5
-
-4. SERVER 2
-arping2 37.139.86.84
-or
-ping 37.139.86.84
-Answers are present
-
-5. SERVER 3
-arping2 37.139.86.84
-or
-ping 37.139.86.84
-The answers are no.
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 5241e0873397..7041d83d48bf 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -942,7 +942,7 @@ static void fm10k_self_test(struct net_device *dev,
+ 
+ 	memset(data, 0, sizeof(*data) * FM10K_TEST_LEN);
+ 
+-	if (FM10K_REMOVED(hw)) {
++	if (FM10K_REMOVED(hw->hw_addr)) {
+ 		netif_err(interface, drv, dev,
+ 			  "Interface removed - test blocked\n");
+ 		eth_test->flags |= ETH_TEST_FL_FAILED;
+-- 
+2.10.0
 
