@@ -1,20 +1,20 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 23 Nov 2016 14:25:24 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 0f59fb6ba3a6286feca30e5c2547e99f9fb787d7
-Message-ID: <58353654.B+hQSVx1ABuhQm6k%fengguang.wu@intel.com>
+Date: Wed, 23 Nov 2016 14:25:29 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 15fffd05a619216bfa6905710329e119479d10ad
+Message-ID: <58353659.lnm0R+pr5qZ4RtC4%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-0f59fb6ba3a6286feca30e5c2547e99f9fb787d7  igb: re-assign hw address pointer on reset after PCI error
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+15fffd05a619216bfa6905710329e119479d10ad  ixgbe: prefix Data Center Bridge ops struct
 
-elapsed time: 107m
+elapsed time: 78m
 
-configs tested: 155
+configs tested: 144
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -65,9 +65,6 @@ x86_64                 randconfig-x019-201647
 x86_64                 randconfig-x013-201647
 x86_64                 randconfig-x010-201647
 x86_64                 randconfig-x016-201647
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
 m68k                           sun3_defconfig
@@ -87,42 +84,24 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
 powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 s390                        default_defconfig
 x86_64                   randconfig-i0-201647
 i386                   randconfig-b0-11231149
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-i0-201647
 i386                     randconfig-i1-201647
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
 powerpc                  iss476-smp_defconfig
 sparc                            allyesconfig
 x86_64                 randconfig-u0-11231205
 blackfin                  TCM-BF518_defconfig
 powerpc                       holly_defconfig
-i386                   randconfig-x014-201647
-i386                   randconfig-x019-201647
-i386                   randconfig-x017-201647
-i386                   randconfig-x018-201647
-i386                   randconfig-x015-201647
-i386                   randconfig-x016-201647
-i386                   randconfig-x012-201647
-i386                   randconfig-x011-201647
-i386                   randconfig-x013-201647
-i386                   randconfig-x010-201647
-i386                     randconfig-n0-201647
 i386                             allmodconfig
 ia64                             alldefconfig
 ia64                              allnoconfig
@@ -173,6 +152,16 @@ i386                   randconfig-x002-201647
 i386                   randconfig-x009-201647
 i386                   randconfig-x001-201647
 i386                   randconfig-x005-201647
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
 i386                   randconfig-x0-11231109
 
 Thanks,
