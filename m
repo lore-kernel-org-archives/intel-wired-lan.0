@@ -1,9 +1,10 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 23 Nov 2016 15:52:40 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: remove unnecessary __packed
-In-Reply-To: <1479592438-17078-1-git-send-email-tushar.n.dave@oracle.com>
-References: <1479592438-17078-1-git-send-email-tushar.n.dave@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA387ED@ORSMSX104.amr.corp.intel.com>
+From: Duyck, Alexander H <alexander.h.duyck@intel.com>
+Date: Wed, 23 Nov 2016 15:54:58 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: restore hw_addr on resume
+	or	error
+In-Reply-To: <20161122233059.31775.78519.stgit@localhost6.localdomain6>
+References: <20161122233059.31775.78519.stgit@localhost6.localdomain6>
+Message-ID: <B1C1DF2ACD01FD4881736AA51731BAB2A48A3F@ORSMSX107.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,43 +13,43 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Tushar Dave
-> Sent: Saturday, November 19, 2016 1:54 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: remove unnecessary __packed
+> Behalf Of Emil Tantilov
+> Sent: Tuesday, November 22, 2016 3:31 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbevf: restore hw_addr on resume or error
 > 
-> 'struct i40e_dma_mem' defined with 'packed' directive causing kernel
-> unaligned errors on sparc.
+> Restore adapter->hw.hw_addr after handling an error, or a resume operation to
+> make sure we can access the registers.
 > 
-> e.g.
-> i40e: Intel(R) Ethernet Connection XL710 Network Driver - version 1.6.16-k
-> i40e: Copyright (c) 2013 - 2014 Intel Corporation.
-> Kernel unaligned access at TPC[44894c]
-> dma_4v_alloc_coherent+0x1ac/0x300 Kernel unaligned access at
-> TPC[44894c] dma_4v_alloc_coherent+0x1ac/0x300 Kernel unaligned access
-> at TPC[44894c] dma_4v_alloc_coherent+0x1ac/0x300 Kernel unaligned
-> access at TPC[44894c] dma_4v_alloc_coherent+0x1ac/0x300 Kernel
-> unaligned access at TPC[44894c] dma_4v_alloc_coherent+0x1ac/0x300 i40e
-> 0000:03:00.0: fw 5.1.40981 api 1.5 nvm 5.04 0x80002548 0.0.0
-> 
-> This can be fixed with get_unaligned/put_unaligned(). However no
-> reference in driver shows that 'struct i40e_dma_mem' directly shoved into
-> NIC hardware. But instead fields of the struct are being read and used for
-> hardware. Therefore, __packed is unnecessary for 'struct i40e_dma_mem'.
-> 
-> In addition, although 'struct i40e_virt_mem' doesn't cause any unaligned
-> access, keeping it packed is unnecessary as well because of aforementioned
-> reason.
-> 
-> This change make 'struct i40e_dma_mem' and 'struct i40e_virt_mem'
-> unpacked.
-> 
-> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_osdep.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> index 88c5352..d94ab8c 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> @@ -3840,6 +3840,7 @@ static int ixgbevf_resume(struct pci_dev *pdev)
+>  	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+>  	u32 err;
+> 
+> +	adapter->hw.hw_addr = adapter->io_addr;
+>  	pci_restore_state(pdev);
+>  	/* pci_restore_state clears dev->state_saved so call
+>  	 * pci_save_state to restore it.
+> @@ -4283,6 +4284,7 @@ static pci_ers_result_t ixgbevf_io_slot_reset(struct
+> pci_dev *pdev)
+>  	struct net_device *netdev = pci_get_drvdata(pdev);
+>  	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+> 
+> +	adapter->hw.hw_addr = adapter->io_addr;
+>  	if (pci_enable_device_mem(pdev)) {
+>  		dev_err(&pdev->dev,
+>  			"Cannot re-enable PCI device after reset.\n");
+> 
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+It might be better if you reset this after completing the call to pci_enable_device_mem instead of before.  That way you don't re-enable the device when it isn't actually working.
 
-
+- Alex
