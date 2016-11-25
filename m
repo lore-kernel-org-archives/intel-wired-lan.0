@@ -1,49 +1,44 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Date: Thu, 24 Nov 2016 13:36:55 +0300
-Subject: [Intel-wired-lan] [PATCH] igb: Explicitly select page 0 at
-	initialization
-In-Reply-To: <1479983568-4383-1-git-send-email-matwey@sai.msu.ru>
-References: <1479983568-4383-1-git-send-email-matwey@sai.msu.ru>
-Message-ID: <bf11b668-0ee4-3cfd-405b-43705a6e011e@cogentembedded.com>
+From: David Miller <davem@davemloft.net>
+Date: Fri, 25 Nov 2016 16:06:34 -0500 (EST)
+Subject: [Intel-wired-lan] [PATCH RFC v1] ethtool: implement helper to
+	get flow_type value
+In-Reply-To: <20161122234453.31611-1-jacob.e.keller@intel.com>
+References: <20161122234453.31611-1-jacob.e.keller@intel.com>
+Message-ID: <20161125.160634.944615331208897862.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello.
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Tue, 22 Nov 2016 15:44:53 -0800
 
-On 11/24/2016 1:32 PM, Matwey V. Kornilov wrote:
+> @@ -880,6 +880,14 @@ struct ethtool_rx_flow_spec {
+>  	__u32		location;
+>  };
+>  
+> +/* Flag to enable additional fields in struct ethtool_rx_flow_spec */
+> +#define	FLOW_EXT	0x80000000
+> +#define	FLOW_MAC_EXT	0x40000000
+> +static inline __u32 ethtool_get_flow_spec_type(__u32 flow_type)
+> +{
+> +	return flow_type & (FLOW_EXT | FLOW_MAC_EXT);
+> +}
+> +
+>  /* How rings are layed out when accessing virtual functions or
+>   * offloaded queues is device specific. To allow users to do flow
+>   * steering and specify these queues the ring cookie is partitioned
+> @@ -1579,9 +1587,6 @@ static inline int ethtool_validate_duplex(__u8 duplex)
+>  #define	IPV4_FLOW	0x10	/* hash only */
+>  #define	IPV6_FLOW	0x11	/* hash only */
+>  #define	ETHER_FLOW	0x12	/* spec only (ether_spec) */
+> -/* Flag to enable additional fields in struct ethtool_rx_flow_spec */
+> -#define	FLOW_EXT	0x80000000
+> -#define	FLOW_MAC_EXT	0x40000000
+>  
+>  /* L3-L4 network traffic flow hash options */
+>  #define	RXH_L2DA	(1 << 1)
 
-> The functions igb_read_phy_reg_gs40g/igb_write_phy_reg_gs40g (which were
-> removed in 2a3cdea) explicitly selected the required page at every phy_reg
-
-    This is not the way to cite a commit -- you need to specify at least 12 
-digits and follow them with the commit subject enclosed into ("").
-
-> access. Currently, igb_get_phy_id_82575 relays on the fact that page 0 is
-> already selected. The assumption is not fulfilled for my Lex 3I380CW
-> motherboard with integrated dual i211 based gigabit ethernet. This leads to igb
-> initialization failure and network interfaces are not working:
->
->     igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
->     igb: Copyright (c) 2007-2014 Intel Corporation.
->     igb: probe of 0000:01:00.0 failed with error -2
->     igb: probe of 0000:02:00.0 failed with error -2
->
-> In order to fix it, we explicitly select page 0 before first access to phy
-> registers.
->
-> See also: https://bugzilla.suse.com/show_bug.cgi?id=1009911
-> See also: http://www.lex.com.tw/products/pdf/3I380A&3I380CW.pdf
->
-> Fixes: 2a3cdea ("igb: Remove GS40G specific defines/functions")
-
-    Again, at least 12 digits.
-
-> Cc: <stable@vger.kernel.org> # 4.5+
-> Signed-off-by: Matwey V. Kornilov <matwey@sai.msu.ru>
-[...]
-
-MBR, Sergei
-
+Please put the helper after the FLOW_* definitions rather than moving
+them earlier in the file.
