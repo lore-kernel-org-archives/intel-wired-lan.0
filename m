@@ -1,45 +1,58 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 28 Nov 2016 14:26:02 -0800
-Subject: [Intel-wired-lan] [net PATCH 0/2] Don't use lco_csum to compute
-	IPv4 checksum
-In-Reply-To: <20161128153927.15466.99193.stgit@ahduyck-blue-test.jf.intel.com>
-References: <20161128153927.15466.99193.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <1480371962.2402.36.camel@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Mon, 28 Nov 2016 22:49:38 +0000
+Subject: [Intel-wired-lan] [PATCH RFC v1] ethtool: implement helper to
+	get flow_type value
+In-Reply-To: <20161125.160634.944615331208897862.davem@davemloft.net>
+References: <20161122234453.31611-1-jacob.e.keller@intel.com>
+ <20161125.160634.944615331208897862.davem@davemloft.net>
+Message-ID: <02874ECE860811409154E81DA85FBB5857CCA45D@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2016-11-28 at 10:42 -0500, Alexander Duyck wrote:
-> When I implemented the GSO partial support in the Intel drivers I was
-> using
-> lco_csum to compute the checksum that we needed to plug into the IPv4
-> checksum field in order to cancel out the data that was not a part of the
-> IPv4 header.? However this didn't take into account that the transport
-> offset might be pointing to the inner transport header.
+> -----Original Message-----
+> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org] On
+> Behalf Of David Miller
+> Sent: Friday, November 25, 2016 1:07 PM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: Re: [PATCH RFC v1] ethtool: implement helper to get flow_type value
 > 
-> Instead of using lco_csum I have just coded around it so that we can use
-> the outer IP header plus the IP header length to determine where we need
-> to
-> start our checksum and then just call csum_partial ourselves.
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> Date: Tue, 22 Nov 2016 15:44:53 -0800
 > 
-> This should fix the SIT issue reported on igb interfaces as well as
-> simliar
-> issues that would pop up on other Intel NICs.
+> > @@ -880,6 +880,14 @@ struct ethtool_rx_flow_spec {
+> >  	__u32		location;
+> >  };
+> >
+> > +/* Flag to enable additional fields in struct ethtool_rx_flow_spec */
+> > +#define	FLOW_EXT	0x80000000
+> > +#define	FLOW_MAC_EXT	0x40000000
+> > +static inline __u32 ethtool_get_flow_spec_type(__u32 flow_type)
+> > +{
+> > +	return flow_type & (FLOW_EXT | FLOW_MAC_EXT);
+> > +}
+> > +
+> >  /* How rings are layed out when accessing virtual functions or
+> >   * offloaded queues is device specific. To allow users to do flow
+> >   * steering and specify these queues the ring cookie is partitioned
+> > @@ -1579,9 +1587,6 @@ static inline int ethtool_validate_duplex(__u8 duplex)
+> >  #define	IPV4_FLOW	0x10	/* hash only */
+> >  #define	IPV6_FLOW	0x11	/* hash only */
+> >  #define	ETHER_FLOW	0x12	/* spec only (ether_spec) */
+> > -/* Flag to enable additional fields in struct ethtool_rx_flow_spec */
+> > -#define	FLOW_EXT	0x80000000
+> > -#define	FLOW_MAC_EXT	0x40000000
+> >
+> >  /* L3-L4 network traffic flow hash options */
+> >  #define	RXH_L2DA	(1 << 1)
 > 
-> ---
-> 
-> Alexander Duyck (2):
-> ????? igb/igbvf: Don't use lco_csum to compute IPv4 checksum
-> ????? ixgbe/ixgbevf: Don't use lco_csum to compute IPv4 checksum
+> Please put the helper after the FLOW_* definitions rather than moving
+> them earlier in the file.
 
-Stephen, I have applied Alex's patches to my net-queue tree. ?Can you
-confirm they resolve the bug seen?
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161128/65505eaa/attachment.asc>
+Will do. I originally moved them to place these with other similar helpers but I can re-spin this.
+
+Thanks,
+Jake
