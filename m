@@ -1,111 +1,159 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 28 Nov 2016 15:03:43 -0800
-Subject: [Intel-wired-lan] [PATCH RFC v2] ethtool: implement helper to get
-	flow_type value
-Message-ID: <20161128230343.19110-1-jacob.e.keller@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 29 Nov 2016 07:18:48 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ a3299d9bb652d20e8dc01972b5687c926b13ea6e
+Message-ID: <583cbb58.MK9ceOkzLPn5Iw36%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Often a driver wants to store the flow type and thus it must mask the
-extra fields. This is a task that could grow more complex as more flags
-are added in the future. Add a helper function that masks the flags for
-marking additional fields.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+a3299d9bb652d20e8dc01972b5687c926b13ea6e  ixgbe/ixgbevf: Don't use lco_csum to compute IPv4 checksum
 
-Modify drivers in drivers/net/ethernet that currently check for FLOW_EXT
-and FLOW_MAC_EXT to use the helper. Currently this is only the mellanox
-drivers.
+elapsed time: 55m
 
-I chose not to modify other drivers as I'm actually unsure whether we
-should always mask the flow type even for drivers which don't recognize
-the newer flags. On the one hand, today's drivers (generally)
-automatically fail when a new flag is used because they won't mask it
-and their checks against flow_type will not match. On the other hand, it
-means another place that you have to update when you begin implementing
-a flag.
+configs tested: 135
 
-An alternative is to have the driver store a set of flags that it knows
-about, and then have ethtool core do the check for us to discard frames.
-I haven't implemented this quite yet.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/mellanox/mlx4/en_ethtool.c         | 4 ++--
- drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c | 6 +++---
- include/uapi/linux/ethtool.h                            | 5 +++++
- 3 files changed, 10 insertions(+), 5 deletions(-)
+i386                     randconfig-a0-201648
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-11290707
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-x015-201648
+x86_64                 randconfig-x017-201648
+x86_64                 randconfig-x014-201648
+x86_64                 randconfig-x011-201648
+x86_64                 randconfig-x012-201648
+x86_64                 randconfig-x019-201648
+x86_64                 randconfig-x018-201648
+x86_64                 randconfig-x016-201648
+x86_64                 randconfig-x010-201648
+x86_64                 randconfig-x013-201648
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201648
+i386                     randconfig-s1-201648
+x86_64                 randconfig-s0-11290700
+x86_64                 randconfig-s1-11290700
+x86_64                 randconfig-s2-11290700
+x86_64                           allmodconfig
+i386                               tinyconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201648
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201648
+i386                     randconfig-i1-201648
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                            hisi_defconfig
+powerpc                   motionpro_defconfig
+ia64                         bigsur_defconfig
+mips                            e55_defconfig
+mips                      maltaaprp_defconfig
+powerpc                     ep8248e_defconfig
+i386                   randconfig-x019-201648
+i386                   randconfig-x014-201648
+i386                   randconfig-x015-201648
+i386                   randconfig-x018-201648
+i386                   randconfig-x017-201648
+i386                   randconfig-x012-201648
+i386                   randconfig-x016-201648
+i386                   randconfig-x010-201648
+i386                   randconfig-x013-201648
+i386                   randconfig-x011-201648
+i386                     randconfig-n0-201648
+i386                   randconfig-h0-11290709
+i386                   randconfig-h1-11290709
+i386                             allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x001-201648
+x86_64                 randconfig-x008-201648
+x86_64                 randconfig-x009-201648
+x86_64                 randconfig-x005-201648
+x86_64                 randconfig-x003-201648
+x86_64                 randconfig-x000-201648
+x86_64                 randconfig-x006-201648
+x86_64                 randconfig-x004-201648
+x86_64                 randconfig-x007-201648
+x86_64                 randconfig-x002-201648
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+i386                     randconfig-r0-201648
+i386                   randconfig-x007-201648
+i386                   randconfig-x004-201648
+i386                   randconfig-x006-201648
+i386                   randconfig-x008-201648
+i386                   randconfig-x003-201648
+i386                   randconfig-x009-201648
+i386                   randconfig-x002-201648
+i386                   randconfig-x000-201648
+i386                   randconfig-x005-201648
+i386                   randconfig-x001-201648
 
-diff --git a/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c b/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-index 487a58f9c192..d8f9839ce2a3 100644
---- a/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-@@ -1270,7 +1270,7 @@ static int mlx4_en_validate_flow(struct net_device *dev,
- 			return -EINVAL;
- 	}
- 
--	switch (cmd->fs.flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(cmd->fs.flow_type)) {
- 	case TCP_V4_FLOW:
- 	case UDP_V4_FLOW:
- 		if (cmd->fs.m_u.tcp_ip4_spec.tos)
-@@ -1493,7 +1493,7 @@ static int mlx4_en_ethtool_to_net_trans_rule(struct net_device *dev,
- 	if (err)
- 		return err;
- 
--	switch (cmd->fs.flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(cmd->fs.flow_type)) {
- 	case ETHER_FLOW:
- 		spec_l2 = kzalloc(sizeof(*spec_l2), GFP_KERNEL);
- 		if (!spec_l2)
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c b/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-index 3691451c728c..066e6c5cf38b 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-@@ -63,7 +63,7 @@ static struct mlx5e_ethtool_table *get_flow_table(struct mlx5e_priv *priv,
- 	int table_size;
- 	int prio;
- 
--	switch (fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(fs->flow_type)) {
- 	case TCP_V4_FLOW:
- 	case UDP_V4_FLOW:
- 		max_tuples = ETHTOOL_NUM_L3_L4_FTS;
-@@ -147,7 +147,7 @@ static int set_flow_attrs(u32 *match_c, u32 *match_v,
- 					     outer_headers);
- 	void *outer_headers_v = MLX5_ADDR_OF(fte_match_param, match_v,
- 					     outer_headers);
--	u32 flow_type = fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT);
-+	u32 flow_type = ethtool_get_flow_spec_type(fs->flow_type);
- 	struct ethtool_tcpip4_spec *l4_mask;
- 	struct ethtool_tcpip4_spec *l4_val;
- 	struct ethtool_usrip4_spec *l3_mask;
-@@ -393,7 +393,7 @@ static int validate_flow(struct mlx5e_priv *priv,
- 	    fs->ring_cookie != RX_CLS_FLOW_DISC)
- 		return -EINVAL;
- 
--	switch (fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(fs->flow_type)) {
- 	case ETHER_FLOW:
- 		eth_mask = &fs->m_u.ether_spec;
- 		if (!is_zero_ether_addr(eth_mask->h_dest))
-diff --git a/include/uapi/linux/ethtool.h b/include/uapi/linux/ethtool.h
-index f0db7788f887..e92ad725c9d0 100644
---- a/include/uapi/linux/ethtool.h
-+++ b/include/uapi/linux/ethtool.h
-@@ -1583,6 +1583,11 @@ static inline int ethtool_validate_duplex(__u8 duplex)
- #define	FLOW_EXT	0x80000000
- #define	FLOW_MAC_EXT	0x40000000
- 
-+static inline __u32 ethtool_get_flow_spec_type(__u32 flow_type)
-+{
-+	return flow_type & (FLOW_EXT | FLOW_MAC_EXT);
-+}
-+
- /* L3-L4 network traffic flow hash options */
- #define	RXH_L2DA	(1 << 1)
- #define	RXH_VLAN	(1 << 2)
--- 
-2.11.0.rc2.152.g4d04e67
-
+Thanks,
+Fengguang
