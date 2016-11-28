@@ -1,71 +1,52 @@
-From: Aaron Sierra <asierra@xes-inc.com>
-Date: Tue, 29 Nov 2016 10:03:56 -0600 (CST)
-Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the PHY
-	ID
-Message-ID: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 29 Nov 2016 10:43:04 +1100
+Subject: [Intel-wired-lan] [net PATCH 0/2] Don't use lco_csum to compute
+	IPv4 checksum
+In-Reply-To: <1480371962.2402.36.camel@intel.com>
+References: <20161128153927.15466.99193.stgit@ahduyck-blue-test.jf.intel.com>
+ <1480371962.2402.36.camel@intel.com>
+Message-ID: <20161129104253.00ada847@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Several people have reported firmware leaving the I210/I211 PHY's page
-select register set to something other than the default of zero. This
-causes the first accesses, PHY_IDx register reads, to access something
-else, resulting in device probe failure:
+Hi Jeff,
 
-    igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
-    igb: Copyright (c) 2007-2014 Intel Corporation.
-    igb: probe of 0000:01:00.0 failed with error -2
+On Mon, 28 Nov 2016 14:26:02 -0800 Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
+>
+> On Mon, 2016-11-28 at 10:42 -0500, Alexander Duyck wrote:
+> > When I implemented the GSO partial support in the Intel drivers I was
+> > using
+> > lco_csum to compute the checksum that we needed to plug into the IPv4
+> > checksum field in order to cancel out the data that was not a part of the
+> > IPv4 header.? However this didn't take into account that the transport
+> > offset might be pointing to the inner transport header.
+> > 
+> > Instead of using lco_csum I have just coded around it so that we can use
+> > the outer IP header plus the IP header length to determine where we need
+> > to
+> > start our checksum and then just call csum_partial ourselves.
+> > 
+> > This should fix the SIT issue reported on igb interfaces as well as
+> > simliar
+> > issues that would pop up on other Intel NICs.
+> > 
+> > ---
+> > 
+> > Alexander Duyck (2):
+> > ????? igb/igbvf: Don't use lco_csum to compute IPv4 checksum
+> > ????? ixgbe/ixgbevf: Don't use lco_csum to compute IPv4 checksum  
+> 
+> Stephen, I have applied Alex's patches to my net-queue tree. ?Can you
+> confirm they resolve the bug seen?
 
-This problem began for them after a previous patch I submitted was
-applied:
+Its a bit tricky because the origin problem only happens on my
+production server (ozlabs.org), but I will see if I can manage to just
+remove and reload the driver ...  though, the server is running a 4.7.8
+kernel and I am wondering how well these patches will apply?
 
-    commit 2a3cdead8b408351fa1e3079b220fa331480ffbc
-    Author: Aaron Sierra <asierra@xes-inc.com>
-    Date:   Tue Nov 3 12:37:09 2015 -0600
-
-        igb: Remove GS40G specific defines/functions
-
-I personally experienced this problem after attempting to PXE boot from
-I210 devices using this firmware:
-
-    Intel(R) Boot Agent GE v1.5.78
-    Copyright (C) 1997-2014, Intel Corporation
-
-Resetting the PHY before reading from it, ensures the page select
-register is in its default state and doesn't make assumptions about
-the PHY's register set before the PHY has been probed.
-
-Cc: Matwey V. Kornilov <matwey@sai.msu.ru>
-Cc: Chris Arges <carges@vectranetworks.com>
-Cc: Jochen Henneberg <jh@henneberg-systemdesign.com>
-Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
----
- drivers/net/ethernet/intel/igb/e1000_82575.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index a61447f..ee44398 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -245,6 +245,17 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
- 	hw->bus.func = (rd32(E1000_STATUS) & E1000_STATUS_FUNC_MASK) >>
- 			E1000_STATUS_FUNC_SHIFT;
- 
-+	/* Make sure the PHY is in a good state. Several people have reported
-+	 * firmware leaving the PHY's page select register set to something
-+	 * other than the default of zero, which causes the PHY ID read to
-+	 * access something other than the intended register.
-+	 */
-+	ret_val = hw->phy.ops.reset(hw);
-+	if (ret_val) {
-+		hw_dbg("Error resetting the PHY.\n");
-+		goto out;
-+	}
-+
- 	/* Set phy->phy_addr and phy->id. */
- 	ret_val = igb_get_phy_id_82575(hw);
- 	if (ret_val)
 -- 
-1.9.1
+Cheers,
+Stephen Rothwell
