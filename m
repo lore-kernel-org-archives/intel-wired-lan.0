@@ -1,71 +1,113 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 29 Nov 2016 20:33:28 +0000
-Subject: [Intel-wired-lan] [next PATCH S54 06/15] i40e:
-	use	(add|rm)_vlan_all_mac helper functions when changing PVID
-In-Reply-To: <1478896779-13697-7-git-send-email-bimmy.pujari@intel.com>
-References: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
- <1478896779-13697-7-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38D1E@ORSMSX104.amr.corp.intel.com>
+From: Chris Arges <carges@vectranetworks.com>
+Date: Tue, 29 Nov 2016 21:54:26 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the
+	PHY ID
+In-Reply-To: <CAJs94EbDpHK5WoS=nFow=-yNH6G9+nV1USPdP1VGtUfvKh3bEg@mail.gmail.com>
+References: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>,
+ <CAJs94EbDpHK5WoS=nFow=-yNH6G9+nV1USPdP1VGtUfvKh3bEg@mail.gmail.com>
+Message-ID: <CO2PR0801MB6473323A00DACFFB7D620AAAE8D0@CO2PR0801MB647.namprd08.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Friday, November 11, 2016 12:40 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S54 06/15] i40e: use
-> (add|rm)_vlan_all_mac helper functions when changing PVID
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> The current flow for adding or updating the PVID for a VF uses
-> i40e_vsi_add_vlan and i40e_vsi_kill_vlan which each take, then release the
-> hash lock. In addition the two functions also must take special care that they
-> do not perform VLAN mode changes as this will make the code in
-> i40e_ndo_set_vf_port_vlan behave incorrectly.
-> 
-> Fix these issues by using the new helper functions i40e_add_vlan_all_mac
-> and i40e_rm_vlan_all_mac which expect the hash lock to already be taken.
-> Additionally these functions do not perform any state updates in regards to
-> vlan mode, so they are safe to use in the PVID update flow.
-> 
-> It should be noted that we don't need the VLAN mode update code here,
-> because there are only a few flows here.
-> 
-> (a) we're adding a new PVID
->   In this case, if we already had VLAN filters the VSI is knocked
->   offline so we don't need to worry about pre-existing VLAN filters
-> 
-> (b) we're replacing an existing PVID
->   In this case, we can't have any VLAN filters except those with the old
->   PVID which we already take care of manually.
-> 
-> (c) we're removing an existing PVID
->   Similarly to above, we can't have any existing VLAN filters except
->   those with the old PVID which we already take care of correctly.
-> 
-> Because of this, we do not need (or even want) the special accounting done
-> in i40e_vsi_add_vlan, so use of the helpers is a saner alternative.
-> It also opens the door for a future patch which will refactor the flow of
-> i40e_vsi_add_vlan now that it is not needed in this function.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: Ia841f63da94e12b106f41cf7d28ce8ce92f2ad99
+
+________________________________
+From: matwey.kornilov@gmail.com <matwey.kornilov@gmail.com> on behalf of Matwey V. Kornilov <matwey@sai.msu.ru>
+Sent: Tuesday, November 29, 2016 11:56 AM
+To: Aaron Sierra
+Cc: Jeffrey T Kirsher; Chris Arges; Jochen Henneberg; intel-wired-lan
+Subject: Re: [PATCH] igb: reset the PHY before reading the PHY ID
+
+
+I'm having the same issues on my end using this patch.
+
+
+I had posted this patch earlier which does fix my issues:
+
+https://patchwork.ozlabs.org/patch/690464/
+
+--chris
+
+2016-11-29 19:03 GMT+03:00 Aaron Sierra <asierra@xes-inc.com>:
+> Several people have reported firmware leaving the I210/I211 PHY's page
+> select register set to something other than the default of zero. This
+> causes the first accesses, PHY_IDx register reads, to access something
+> else, resulting in device probe failure:
+>
+>     igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
+>     igb: Copyright (c) 2007-2014 Intel Corporation.
+>     igb: probe of 0000:01:00.0 failed with error -2
+>
+> This problem began for them after a previous patch I submitted was
+> applied:
+>
+>     commit 2a3cdead8b408351fa1e3079b220fa331480ffbc
+>     Author: Aaron Sierra <asierra@xes-inc.com>
+>     Date:   Tue Nov 3 12:37:09 2015 -0600
+>
+>         igb: Remove GS40G specific defines/functions
+>
+> I personally experienced this problem after attempting to PXE boot from
+> I210 devices using this firmware:
+>
+>     Intel(R) Boot Agent GE v1.5.78
+>     Copyright (C) 1997-2014, Intel Corporation
+
+Indeed! I use Boot Agent GE v1.5.53. When I disable PCIe Boot ROM the
+kernel works without this patch.
+The patch fixes kernel even with PXE boot enabled.
+
+>
+> Resetting the PHY before reading from it, ensures the page select
+> register is in its default state and doesn't make assumptions about
+> the PHY's register set before the PHY has been probed.
+>
+> Cc: Matwey V. Kornilov <matwey@sai.msu.ru>
+
+Tested-By: Matwey V. Kornilov <matwey@sai.msu.ru>
+
+> Cc: Chris Arges <carges@vectranetworks.com>
+> Cc: Jochen Henneberg <jh@henneberg-systemdesign.com>
+> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
 > ---
-> Testing-hints:
->   Ensure that adding and removing PVID for a VF works as expected, and
->   that the PVID is enforced correctly.
-> 
->  drivers/net/ethernet/intel/i40e/i40e.h             |  2 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c        |  4 +-
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 43 ++++++++++++++---
-> -----
->  3 files changed, 32 insertions(+), 17 deletions(-)
+>  drivers/net/ethernet/intel/igb/e1000_82575.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+>
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+> index a61447f..ee44398 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
+> +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+> @@ -245,6 +245,17 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+>         hw->bus.func = (rd32(E1000_STATUS) & E1000_STATUS_FUNC_MASK) >>
+>                         E1000_STATUS_FUNC_SHIFT;
+>
+> +       /* Make sure the PHY is in a good state. Several people have reported
+> +        * firmware leaving the PHY's page select register set to something
+> +        * other than the default of zero, which causes the PHY ID read to
+> +        * access something other than the intended register.
+> +        */
+> +       ret_val = hw->phy.ops.reset(hw);
+> +       if (ret_val) {
+> +               hw_dbg("Error resetting the PHY.\n");
+> +               goto out;
+> +       }
+> +
+>         /* Set phy->phy_addr and phy->id. */
+>         ret_val = igb_get_phy_id_82575(hw);
+>         if (ret_val)
+> --
+> 1.9.1
+>
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
+--
+With best regards,
+Matwey V. Kornilov.
+Sternberg Astronomical Institute, Lomonosov Moscow State University, Russia
+119991, Moscow, Universitetsky pr-k 13, +7 (495) 9392382
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161129/bea4a650/attachment-0001.html>
