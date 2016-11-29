@@ -1,82 +1,71 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 29 Nov 2016 10:04:44 +0200
-Subject: [Intel-wired-lan] Fwd: FW: [PATCH] e1000e: x86: e1000 driver trying
- to free already-free irq.
-In-Reply-To: <630A6B92B7EDEB45A87E20D3D286660153E3F990@hasmsx109.ger.corp.intel.com>
-References: <630A6B92B7EDEB45A87E20D3D286660153E3F990@hasmsx109.ger.corp.intel.com>
-Message-ID: <14e1aa00-13b4-e02d-71ca-1c85184996a2@intel.com>
+From: Aaron Sierra <asierra@xes-inc.com>
+Date: Tue, 29 Nov 2016 10:03:56 -0600 (CST)
+Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the PHY
+	ID
+Message-ID: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Several people have reported firmware leaving the I210/I211 PHY's page
+select register set to something other than the default of zero. This
+causes the first accesses, PHY_IDx register reads, to access something
+else, resulting in device probe failure:
 
--------- Forwarded Message --------
-Subject: FW: [PATCH] e1000e: x86: e1000 driver trying to free
-already-free irq.
-Date: Tue, 29 Nov 2016 09:54:40 +0200
-From: Neftin, Sasha <sasha.neftin@intel.com>
-To: Neftin, Sasha <sasha.neftin@intel.com>
+    igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
+    igb: Copyright (c) 2007-2014 Intel Corporation.
+    igb: probe of 0000:01:00.0 failed with error -2
 
+This problem began for them after a previous patch I submitted was
+applied:
 
+    commit 2a3cdead8b408351fa1e3079b220fa331480ffbc
+    Author: Aaron Sierra <asierra@xes-inc.com>
+    Date:   Tue Nov 3 12:37:09 2015 -0600
 
-Skype Me???! -----Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
-On Behalf Of David Singleton -X (davsingl - MONTA VISTA SOFTWARE INC at
-Cisco)
-Sent: Thursday, November 24, 2016 5:18 AM
-To: Brown, Aaron F <aaron.f.brown@intel.com>
-Cc: David Singleton -X (davsingl - MONTA VISTA SOFTWARE INC at Cisco)
-<davsingl@cisco.com>; intel-wired-lan at lists.osuosl.org; Khalid Mughal
-(khalidm) <khalidm@cisco.com>
-Subject: Re: [Intel-wired-lan] [PATCH] e1000e: x86: e1000 driver trying
-to free already-free irq.
+        igb: Remove GS40G specific defines/functions
 
-Any further status on getting this fix into kernel.org?
+I personally experienced this problem after attempting to PXE boot from
+I210 devices using this firmware:
 
+    Intel(R) Boot Agent GE v1.5.78
+    Copyright (C) 1997-2014, Intel Corporation
 
-> On Oct 27, 2016, at 7:50 PM, Brown, Aaron F <aaron.f.brown@intel.com> wrote:
-> 
->> From: netdev-owner at vger.kernel.org [mailto:netdev- 
->> owner at vger.kernel.org] On Behalf Of David Singleton
->> Sent: Monday, October 17, 2016 9:51 AM
->> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
->> Cc: khalidm <khalidm@cisco.com>; intel-wired-lan at lists.osuosl.org; 
->> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
->> Subject: [PATCH] e1000e: x86: e1000 driver trying to free already-free irq.
->> 
->> From: khalidm <khalidm@cisco.com>
->> 
->> During systemd reboot sequence network driver interface is shutdown 
->> by e1000_close. The PCI driver interface is shut by e1000_shutdown.
->> The e1000_shutdown checks for netif_running status, if still up it 
->> brings down driver. But it disables msi outside of this if statement, 
->> regardless of netif status. All this is OK when e1000_close happens 
->> after shutdown. However, by default, everything in systemd is done in 
->> parallel. This creates a conditions where e1000_shutdown is called 
->> after e1000_close, therefore hitting BUG_ON assert in free_msi_irqs.
->> 
->> Cc-Id: xe-kernel at external.cisco.com
->> Signed-off-by: khalidm <khalidm@cisco.com>
->> Signed-off-by: David Singleton <davsingl@cisco.com>
->> ---
->> drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
->> 1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Resetting the PHY before reading from it, ensures the page select
+register is in its default state and doesn't make assumptions about
+the PHY's register set before the PHY has been probed.
 
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at lists.osuosl.org
-http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Cc: Matwey V. Kornilov <matwey@sai.msu.ru>
+Cc: Chris Arges <carges@vectranetworks.com>
+Cc: Jochen Henneberg <jh@henneberg-systemdesign.com>
+Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
+---
+ drivers/net/ethernet/intel/igb/e1000_82575.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Hello David,
-I would like recommend do not change kernel code in this moment. This is
-very sensitive for a driver state machine and we afraid from opening lot
-of issues. As I know hit on BUG_ON happen on very old NIC. Our more new
-NIC do not experienced such problem.
-What is the NIC you use? Do you experience problem with another ours
-NIC, igb for example?
-Sasha
-
+diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+index a61447f..ee44398 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_82575.c
++++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+@@ -245,6 +245,17 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+ 	hw->bus.func = (rd32(E1000_STATUS) & E1000_STATUS_FUNC_MASK) >>
+ 			E1000_STATUS_FUNC_SHIFT;
+ 
++	/* Make sure the PHY is in a good state. Several people have reported
++	 * firmware leaving the PHY's page select register set to something
++	 * other than the default of zero, which causes the PHY ID read to
++	 * access something other than the intended register.
++	 */
++	ret_val = hw->phy.ops.reset(hw);
++	if (ret_val) {
++		hw_dbg("Error resetting the PHY.\n");
++		goto out;
++	}
++
+ 	/* Set phy->phy_addr and phy->id. */
+ 	ret_val = igb_get_phy_id_82575(hw);
+ 	if (ret_val)
+-- 
+1.9.1
