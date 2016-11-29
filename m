@@ -1,105 +1,294 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 28 Nov 2016 16:06:02 -0800
-Subject: [Intel-wired-lan] [next PATCH S55 05/14] i40e: refactor macro
-	INTRL_USEC_TO_REG
+Date: Mon, 28 Nov 2016 16:05:59 -0800
+Subject: [Intel-wired-lan] [next PATCH S55 02/14] i40e: Quick refactor to
+	start moving data off stack and into Tx buffer info
 In-Reply-To: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
 References: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1480377971-23412-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1480377971-23412-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This patch refactors the macro INTRL_USEC_TO_REG into a static inline
-function and fixes a couple subtle bugs caused by the macro.
+This patch does some quick work to pull some of the data off of the stack
+and hopefully start storing it in the Tx buffer info section of the Tx
+ring.  Ideally we should be moving away from having to store much of
+anything on the stack and can just maintain it all in the descriptor rings.
 
-This patch fixes a bug which was caused by passing a bad register value
-to the firmware.  If enabling interrupt rate limiting, a non-zero value
-for the rate limit must be used.  Otherwise the firmware sets the
-interrupt rate limit to the maximum value.  Due to the limited
-resolution of the register, attempting to set a value of 1, 2, or 3
-would be rounded down to 0 and limiting was left enabled, causing
-unexpected behavior.
-
-This patch also fixes a possible bug in which using the macro itself can
-introduce unintended side-affects because the macro argument is used
-more than once in the macro definition (e.g. a variable post-increment
-argument would perform a double increment on the variable).
-
-Without this patch, attempting to set interrupt rate limits of 1, 2, or
-3 results in unexpected behavior and future use of this macro could
-cause subtle bugs.
-
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Change-Id: I83ac842de0ca9c86761923d6e3a4d7b1b95f2b3f
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Change-ID: I4b4715ea1920e122502482b3f9e56a9a6cb1e9fe
 ---
-Testing-hints:
-Use 'ethtool -C ethx rx-usecs-high xxx' to set different values for the
-rate limit and 'idb ethx read 0x00035800' to observe register
-PFINT_RATEN for values of 1, 2, 3, compared to 0 and 4.
+Testing Hints:
+        This should not break the transmit path and should have no
+        signficant impact on Tx performance.  It brings us closer to what
+        is already in ixgbe and enables us to add support for a workaround
+        needed to deal with gso_size less than 64.
 
-HSDES-number: 1208935557
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 47 +++++++++++++++------------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 47 +++++++++++++++------------
+ 2 files changed, 54 insertions(+), 40 deletions(-)
 
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c    |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_txrx.h    | 15 ++++++++++++++-
- 3 files changed, 16 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 99772ee..977ae6f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2072,7 +2072,7 @@ static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
- 	struct i40e_q_vector *q_vector;
- 	u16 vector, intrl;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 352cf7c..a347d08 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2251,14 +2251,16 @@ static inline int i40e_tx_prepare_vlan_flags(struct sk_buff *skb,
  
--	intrl = INTRL_USEC_TO_REG(vsi->int_rate_limit);
-+	intrl = i40e_intrl_usec_to_reg(vsi->int_rate_limit);
+ /**
+  * i40e_tso - set up the tso context descriptor
+- * @skb:      ptr to the skb we're sending
++ * @first:    pointer to first Tx buffer for xmit
+  * @hdr_len:  ptr to the size of the packet header
+  * @cd_type_cmd_tso_mss: Quad Word 1
+  *
+  * Returns 0 if no TSO can happen, 1 if tso is going, or error
+  **/
+-static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
++static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
++		    u64 *cd_type_cmd_tso_mss)
+ {
++	struct sk_buff *skb = first->skb;
+ 	u64 cd_cmd, cd_tso_len, cd_mss;
+ 	union {
+ 		struct iphdr *v4;
+@@ -2271,6 +2273,7 @@ static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+ 		unsigned char *hdr;
+ 	} l4;
+ 	u32 paylen, l4_offset;
++	u16 gso_segs, gso_size;
+ 	int err;
  
- 	vsi->rx_rings[queue]->rx_itr_setting = ec->rx_coalesce_usecs;
- 	vsi->tx_rings[queue]->tx_itr_setting = ec->tx_coalesce_usecs;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 769f922..4b5f6c0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3263,7 +3263,7 @@ static void i40e_vsi_configure_msix(struct i40e_vsi *vsi)
- 		wr32(hw, I40E_PFINT_ITRN(I40E_TX_ITR, vector - 1),
- 		     q_vector->tx.itr);
- 		wr32(hw, I40E_PFINT_RATEN(vector - 1),
--		     INTRL_USEC_TO_REG(vsi->int_rate_limit));
-+		     i40e_intrl_usec_to_reg(vsi->int_rate_limit));
+ 	if (skb->ip_summed != CHECKSUM_PARTIAL)
+@@ -2335,10 +2338,18 @@ static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+ 	/* compute length of segmentation header */
+ 	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
  
- 		/* Linked list for the queuepairs assigned to this vector */
- 		wr32(hw, I40E_PFINT_LNKLSTN(vector - 1), qp);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index e065321..1ea820e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -52,7 +52,20 @@
-  */
- #define INTRL_ENA                  BIT(6)
- #define INTRL_REG_TO_USEC(intrl) ((intrl & ~INTRL_ENA) << 2)
--#define INTRL_USEC_TO_REG(set) ((set) ? ((set) >> 2) | INTRL_ENA : 0)
-+/**
-+ * i40e_intrl_usec_to_reg - convert interrupt rate limit to register
-+ * @intrl: interrupt rate limit to convert
-+ *
-+ * This function converts a decimal interrupt rate limit to the appropriate
-+ * register format expected by the firmware when setting interrupt rate limit.
-+ */
-+static inline u16 i40e_intrl_usec_to_reg(int intrl)
-+{
-+	if (intrl >> 2)
-+		return ((intrl >> 2) | INTRL_ENA);
-+	else
-+		return 0;
-+}
- #define I40E_INTRL_8K              125     /* 8000 ints/sec */
- #define I40E_INTRL_62K             16      /* 62500 ints/sec */
- #define I40E_INTRL_83K             12      /* 83333 ints/sec */
++	/* pull values out of skb_shinfo */
++	gso_size = skb_shinfo(skb)->gso_size;
++	gso_segs = skb_shinfo(skb)->gso_segs;
++
++	/* update gso size and bytecount with header size */
++	first->gso_segs = gso_segs;
++	first->bytecount += (first->gso_segs - 1) * *hdr_len;
++
+ 	/* find the field values */
+ 	cd_cmd = I40E_TX_CTX_DESC_TSO;
+ 	cd_tso_len = skb->len - *hdr_len;
+-	cd_mss = skb_shinfo(skb)->gso_size;
++	cd_mss = gso_size;
+ 	*cd_type_cmd_tso_mss |= (cd_cmd << I40E_TXD_CTX_QW1_CMD_SHIFT) |
+ 				(cd_tso_len << I40E_TXD_CTX_QW1_TSO_LEN_SHIFT) |
+ 				(cd_mss << I40E_TXD_CTX_QW1_MSS_SHIFT);
+@@ -2699,7 +2710,6 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	u16 i = tx_ring->next_to_use;
+ 	u32 td_tag = 0;
+ 	dma_addr_t dma;
+-	u16 gso_segs;
+ 	u16 desc_count = 1;
+ 
+ 	if (tx_flags & I40E_TX_FLAGS_HW_VLAN) {
+@@ -2708,15 +2718,6 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 			 I40E_TX_FLAGS_VLAN_SHIFT;
+ 	}
+ 
+-	if (tx_flags & (I40E_TX_FLAGS_TSO | I40E_TX_FLAGS_FSO))
+-		gso_segs = skb_shinfo(skb)->gso_segs;
+-	else
+-		gso_segs = 1;
+-
+-	/* multiply data chunks by size of headers */
+-	first->bytecount = skb->len - hdr_len + (gso_segs * hdr_len);
+-	first->gso_segs = gso_segs;
+-	first->skb = skb;
+ 	first->tx_flags = tx_flags;
+ 
+ 	dma = dma_map_single(tx_ring->dev, skb->data, size, DMA_TO_DEVICE);
+@@ -2902,8 +2903,10 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 
+ 	count = i40e_xmit_descriptor_count(skb);
+ 	if (i40e_chk_linearize(skb, count)) {
+-		if (__skb_linearize(skb))
+-			goto out_drop;
++		if (__skb_linearize(skb)) {
++			dev_kfree_skb_any(skb);
++			return NETDEV_TX_OK;
++		}
+ 		count = i40e_txd_use_count(skb->len);
+ 		tx_ring->tx_stats.tx_linearize++;
+ 	}
+@@ -2919,6 +2922,12 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 		return NETDEV_TX_BUSY;
+ 	}
+ 
++	/* record the location of the first descriptor for this packet */
++	first = &tx_ring->tx_bi[tx_ring->next_to_use];
++	first->skb = skb;
++	first->bytecount = skb->len;
++	first->gso_segs = 1;
++
+ 	/* prepare the xmit flags */
+ 	if (i40e_tx_prepare_vlan_flags(skb, tx_ring, &tx_flags))
+ 		goto out_drop;
+@@ -2926,16 +2935,13 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	/* obtain protocol of skb */
+ 	protocol = vlan_get_protocol(skb);
+ 
+-	/* record the location of the first descriptor for this packet */
+-	first = &tx_ring->tx_bi[tx_ring->next_to_use];
+-
+ 	/* setup IPv4/IPv6 offloads */
+ 	if (protocol == htons(ETH_P_IP))
+ 		tx_flags |= I40E_TX_FLAGS_IPV4;
+ 	else if (protocol == htons(ETH_P_IPV6))
+ 		tx_flags |= I40E_TX_FLAGS_IPV6;
+ 
+-	tso = i40e_tso(skb, &hdr_len, &cd_type_cmd_tso_mss);
++	tso = i40e_tso(first, &hdr_len, &cd_type_cmd_tso_mss);
+ 
+ 	if (tso < 0)
+ 		goto out_drop;
+@@ -2973,7 +2979,8 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	return NETDEV_TX_OK;
+ 
+ out_drop:
+-	dev_kfree_skb_any(skb);
++	dev_kfree_skb_any(first->skb);
++	first->skb = NULL;
+ 	return NETDEV_TX_OK;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index df67ef3..1818cdf 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1549,14 +1549,16 @@ static inline int i40evf_tx_prepare_vlan_flags(struct sk_buff *skb,
+ 
+ /**
+  * i40e_tso - set up the tso context descriptor
+- * @skb:      ptr to the skb we're sending
++ * @first:    pointer to first Tx buffer for xmit
+  * @hdr_len:  ptr to the size of the packet header
+  * @cd_type_cmd_tso_mss: Quad Word 1
+  *
+  * Returns 0 if no TSO can happen, 1 if tso is going, or error
+  **/
+-static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
++static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
++		    u64 *cd_type_cmd_tso_mss)
+ {
++	struct sk_buff *skb = first->skb;
+ 	u64 cd_cmd, cd_tso_len, cd_mss;
+ 	union {
+ 		struct iphdr *v4;
+@@ -1569,6 +1571,7 @@ static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+ 		unsigned char *hdr;
+ 	} l4;
+ 	u32 paylen, l4_offset;
++	u16 gso_segs, gso_size;
+ 	int err;
+ 
+ 	if (skb->ip_summed != CHECKSUM_PARTIAL)
+@@ -1633,10 +1636,18 @@ static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+ 	/* compute length of segmentation header */
+ 	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
+ 
++	/* pull values out of skb_shinfo */
++	gso_size = skb_shinfo(skb)->gso_size;
++	gso_segs = skb_shinfo(skb)->gso_segs;
++
++	/* update gso size and bytecount with header size */
++	first->gso_segs = gso_segs;
++	first->bytecount += (first->gso_segs - 1) * *hdr_len;
++
+ 	/* find the field values */
+ 	cd_cmd = I40E_TX_CTX_DESC_TSO;
+ 	cd_tso_len = skb->len - *hdr_len;
+-	cd_mss = skb_shinfo(skb)->gso_size;
++	cd_mss = gso_size;
+ 	*cd_type_cmd_tso_mss |= (cd_cmd << I40E_TXD_CTX_QW1_CMD_SHIFT) |
+ 				(cd_tso_len << I40E_TXD_CTX_QW1_TSO_LEN_SHIFT) |
+ 				(cd_mss << I40E_TXD_CTX_QW1_MSS_SHIFT);
+@@ -1949,7 +1960,6 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	u16 i = tx_ring->next_to_use;
+ 	u32 td_tag = 0;
+ 	dma_addr_t dma;
+-	u16 gso_segs;
+ 	u16 desc_count = 1;
+ 
+ 	if (tx_flags & I40E_TX_FLAGS_HW_VLAN) {
+@@ -1958,15 +1968,6 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 			 I40E_TX_FLAGS_VLAN_SHIFT;
+ 	}
+ 
+-	if (tx_flags & (I40E_TX_FLAGS_TSO | I40E_TX_FLAGS_FSO))
+-		gso_segs = skb_shinfo(skb)->gso_segs;
+-	else
+-		gso_segs = 1;
+-
+-	/* multiply data chunks by size of headers */
+-	first->bytecount = skb->len - hdr_len + (gso_segs * hdr_len);
+-	first->gso_segs = gso_segs;
+-	first->skb = skb;
+ 	first->tx_flags = tx_flags;
+ 
+ 	dma = dma_map_single(tx_ring->dev, skb->data, size, DMA_TO_DEVICE);
+@@ -2151,8 +2152,10 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 
+ 	count = i40e_xmit_descriptor_count(skb);
+ 	if (i40e_chk_linearize(skb, count)) {
+-		if (__skb_linearize(skb))
+-			goto out_drop;
++		if (__skb_linearize(skb)) {
++			dev_kfree_skb_any(skb);
++			return NETDEV_TX_OK;
++		}
+ 		count = i40e_txd_use_count(skb->len);
+ 		tx_ring->tx_stats.tx_linearize++;
+ 	}
+@@ -2168,6 +2171,12 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 		return NETDEV_TX_BUSY;
+ 	}
+ 
++	/* record the location of the first descriptor for this packet */
++	first = &tx_ring->tx_bi[tx_ring->next_to_use];
++	first->skb = skb;
++	first->bytecount = skb->len;
++	first->gso_segs = 1;
++
+ 	/* prepare the xmit flags */
+ 	if (i40evf_tx_prepare_vlan_flags(skb, tx_ring, &tx_flags))
+ 		goto out_drop;
+@@ -2175,16 +2184,13 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	/* obtain protocol of skb */
+ 	protocol = vlan_get_protocol(skb);
+ 
+-	/* record the location of the first descriptor for this packet */
+-	first = &tx_ring->tx_bi[tx_ring->next_to_use];
+-
+ 	/* setup IPv4/IPv6 offloads */
+ 	if (protocol == htons(ETH_P_IP))
+ 		tx_flags |= I40E_TX_FLAGS_IPV4;
+ 	else if (protocol == htons(ETH_P_IPV6))
+ 		tx_flags |= I40E_TX_FLAGS_IPV6;
+ 
+-	tso = i40e_tso(skb, &hdr_len, &cd_type_cmd_tso_mss);
++	tso = i40e_tso(first, &hdr_len, &cd_type_cmd_tso_mss);
+ 
+ 	if (tso < 0)
+ 		goto out_drop;
+@@ -2211,7 +2217,8 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	return NETDEV_TX_OK;
+ 
+ out_drop:
+-	dev_kfree_skb_any(skb);
++	dev_kfree_skb_any(first->skb);
++	first->skb = NULL;
+ 	return NETDEV_TX_OK;
+ }
+ 
 -- 
 2.4.11
 
