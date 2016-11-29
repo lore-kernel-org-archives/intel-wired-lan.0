@@ -1,205 +1,55 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 29 Nov 2016 07:28:22 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 9f4736069c995041e35b2dbd3d0162097393dcfe
-Message-ID: <583cbd96.hXmMi2FJ66nD5UKT%fengguang.wu@intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Mon, 28 Nov 2016 16:05:57 -0800
+Subject: [Intel-wired-lan] [next PATCH S55 00/14] i40e/i40evf updates
+Message-ID: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-9f4736069c995041e35b2dbd3d0162097393dcfe  igb/igbvf: Don't use lco_csum to compute IPv4 checksum
+Alan Brady adds code to refactor macro INTRL_USEC_TO_REG and adds code
+to add interrupt rate limit verbosity.
 
-elapsed time: 96m
+Alexander Duyck adds code for quick refactor to start moving data off
+stack and into Tx buffer info.
 
-configs tested: 181
+Bimmy Pujari changes version from 1.6.25 to 1.6.27.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Faisal Latif adds code to fix client warnings.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                       aspeed_g5_defconfig
-arm                    vt8500_v6_v7_defconfig
-powerpc                  iss476-smp_defconfig
-i386                     randconfig-a0-201648
-x86_64                 randconfig-a0-11290519
-blackfin                   CM-BF561_defconfig
-s390                       zfcpdump_defconfig
-sparc64                          allyesconfig
-arm                        raumfeld_defconfig
-blackfin                   CM-BF548_defconfig
-sparc                             allnoconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11290605
-i386                   randconfig-c0-11290707
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                      acs5k_tiny_defconfig
-arm                           h3600_defconfig
-arm                          pxa3xx_defconfig
-mips                      bmips_stb_defconfig
-arm                     davinci_all_defconfig
-m68k                           sun3_defconfig
-mips                          ath25_defconfig
-sh                             sh03_defconfig
-x86_64                 randconfig-x015-201648
-x86_64                 randconfig-x017-201648
-x86_64                 randconfig-x014-201648
-x86_64                 randconfig-x011-201648
-x86_64                 randconfig-x012-201648
-x86_64                 randconfig-x019-201648
-x86_64                 randconfig-x018-201648
-x86_64                 randconfig-x016-201648
-x86_64                 randconfig-x010-201648
-x86_64                 randconfig-x013-201648
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-i386                     randconfig-s0-201648
-i386                     randconfig-s1-201648
-x86_64                 randconfig-s0-11290555
-x86_64                 randconfig-s1-11290555
-x86_64                 randconfig-s2-11290555
-x86_64                 randconfig-s3-11290549
-x86_64                 randconfig-s4-11290549
-x86_64                 randconfig-s5-11290549
-i386                               tinyconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201648
-i386                   randconfig-b0-11290554
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                           h5000_defconfig
-ia64                             allmodconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201648
-i386                     randconfig-i1-201648
-x86_64                           allmodconfig
-x86_64                 randconfig-u0-11290529
-x86_64                 randconfig-u0-11290712
-arm                          prima2_defconfig
-powerpc                         wii_defconfig
-x86_64                randconfig-ne0-11290604
-arm                       netwinder_defconfig
-arm                        realview_defconfig
-arm                            xcep_defconfig
-avr32                        merisc_defconfig
-i386                   randconfig-x019-201648
-i386                   randconfig-x014-201648
-i386                   randconfig-x015-201648
-i386                   randconfig-x018-201648
-i386                   randconfig-x017-201648
-i386                   randconfig-x012-201648
-i386                   randconfig-x016-201648
-i386                   randconfig-x010-201648
-i386                   randconfig-x013-201648
-i386                   randconfig-x011-201648
-i386                     randconfig-n0-201648
-i386                   randconfig-h0-11290531
-i386                   randconfig-h1-11290531
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                randconfig-ws0-11290452
-powerpc                 mpc836x_mds_defconfig
-sh                          polaris_defconfig
-sh                           se7751_defconfig
-x86_64                 randconfig-x001-201648
-x86_64                 randconfig-x008-201648
-x86_64                 randconfig-x009-201648
-x86_64                 randconfig-x005-201648
-x86_64                 randconfig-x003-201648
-x86_64                 randconfig-x000-201648
-x86_64                 randconfig-x006-201648
-x86_64                 randconfig-x004-201648
-x86_64                 randconfig-x007-201648
-x86_64                 randconfig-x002-201648
-i386                     randconfig-r0-201648
-i386                             allmodconfig
-i386                   randconfig-x007-201648
-i386                   randconfig-x004-201648
-i386                   randconfig-x006-201648
-i386                   randconfig-x008-201648
-i386                   randconfig-x003-201648
-i386                   randconfig-x009-201648
-i386                   randconfig-x002-201648
-i386                   randconfig-x000-201648
-i386                   randconfig-x005-201648
-i386                   randconfig-x001-201648
-i386                   randconfig-x0-11290513
+Filip Sadowski adds code to disable ntuple filters to clean Cloud 
+Filters.
 
-Thanks,
-Fengguang
+Jacob Keller adds code to not check params until after checking for 
+client instance and updates comment explaining where FDIR buffers 
+are freed.
+
+Jayaprakash Shanmugam removes FPK HyperV VF device ID.
+
+Mitch Williams removes unused function and adds code to track
+outstanding client request.
+
+Scott Peterson adds code to limit dma sync of RX buffers to actual
+packet size, moves skb from i40e_rx_buffer to i40e_ring and eliminates
+i40e_pull_tail().
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |  40 ++-
+ drivers/net/ethernet/intel/i40e/i40e_client.c      |  39 +--
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  18 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |  25 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 270 ++++++++++++---------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |  24 +-
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    |   1 -
+ drivers/net/ethernet/intel/i40evf/i40e_devids.h    |   1 -
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 262 +++++++++++---------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |   9 +-
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h  |   1 +
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |   8 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |   2 +-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |   4 +
+ 14 files changed, 416 insertions(+), 288 deletions(-)
+
+-- 
+2.4.11
+
