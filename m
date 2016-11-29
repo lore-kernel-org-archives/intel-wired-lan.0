@@ -1,109 +1,91 @@
-From: Jakub Kicinski <kubakici@wp.pl>
-Date: Tue, 29 Nov 2016 15:21:44 +0000
-Subject: [Intel-wired-lan] [PATCH RFC v2] ethtool: implement helper to
-	get flow_type value
-In-Reply-To: <20161128230343.19110-1-jacob.e.keller@intel.com>
-References: <20161128230343.19110-1-jacob.e.keller@intel.com>
-Message-ID: <20161129152144.484bea62@jkicinski-Precision-T1700>
+From: Matwey V. Kornilov <matwey@sai.msu.ru>
+Date: Tue, 29 Nov 2016 20:56:00 +0300
+Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the
+	PHY ID
+In-Reply-To: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
+References: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
+Message-ID: <CAJs94EbDpHK5WoS=nFow=-yNH6G9+nV1USPdP1VGtUfvKh3bEg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 28 Nov 2016 15:03:43 -0800, Jacob Keller wrote:
-> Often a driver wants to store the flow type and thus it must mask the
-> extra fields. This is a task that could grow more complex as more flags
-> are added in the future. Add a helper function that masks the flags for
-> marking additional fields.
-> 
-> Modify drivers in drivers/net/ethernet that currently check for FLOW_EXT
-> and FLOW_MAC_EXT to use the helper. Currently this is only the mellanox
-> drivers.
-> 
-> I chose not to modify other drivers as I'm actually unsure whether we
-> should always mask the flow type even for drivers which don't recognize
-> the newer flags. On the one hand, today's drivers (generally)
-> automatically fail when a new flag is used because they won't mask it
-> and their checks against flow_type will not match. On the other hand, it
-> means another place that you have to update when you begin implementing
-> a flag.
-> 
-> An alternative is to have the driver store a set of flags that it knows
-> about, and then have ethtool core do the check for us to discard frames.
-> I haven't implemented this quite yet.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/mellanox/mlx4/en_ethtool.c         | 4 ++--
->  drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c | 6 +++---
->  include/uapi/linux/ethtool.h                            | 5 +++++
->  3 files changed, 10 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c b/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-> index 487a58f9c192..d8f9839ce2a3 100644
-> --- a/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-> +++ b/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-> @@ -1270,7 +1270,7 @@ static int mlx4_en_validate_flow(struct net_device *dev,
->  			return -EINVAL;
->  	}
->  
-> -	switch (cmd->fs.flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-> +	switch (ethtool_get_flow_spec_type(cmd->fs.flow_type)) {
->  	case TCP_V4_FLOW:
->  	case UDP_V4_FLOW:
->  		if (cmd->fs.m_u.tcp_ip4_spec.tos)
-> @@ -1493,7 +1493,7 @@ static int mlx4_en_ethtool_to_net_trans_rule(struct net_device *dev,
->  	if (err)
->  		return err;
->  
-> -	switch (cmd->fs.flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-> +	switch (ethtool_get_flow_spec_type(cmd->fs.flow_type)) {
->  	case ETHER_FLOW:
->  		spec_l2 = kzalloc(sizeof(*spec_l2), GFP_KERNEL);
->  		if (!spec_l2)
-> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c b/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-> index 3691451c728c..066e6c5cf38b 100644
-> --- a/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-> @@ -63,7 +63,7 @@ static struct mlx5e_ethtool_table *get_flow_table(struct mlx5e_priv *priv,
->  	int table_size;
->  	int prio;
->  
-> -	switch (fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-> +	switch (ethtool_get_flow_spec_type(fs->flow_type)) {
->  	case TCP_V4_FLOW:
->  	case UDP_V4_FLOW:
->  		max_tuples = ETHTOOL_NUM_L3_L4_FTS;
-> @@ -147,7 +147,7 @@ static int set_flow_attrs(u32 *match_c, u32 *match_v,
->  					     outer_headers);
->  	void *outer_headers_v = MLX5_ADDR_OF(fte_match_param, match_v,
->  					     outer_headers);
-> -	u32 flow_type = fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT);
-> +	u32 flow_type = ethtool_get_flow_spec_type(fs->flow_type);
->  	struct ethtool_tcpip4_spec *l4_mask;
->  	struct ethtool_tcpip4_spec *l4_val;
->  	struct ethtool_usrip4_spec *l3_mask;
-> @@ -393,7 +393,7 @@ static int validate_flow(struct mlx5e_priv *priv,
->  	    fs->ring_cookie != RX_CLS_FLOW_DISC)
->  		return -EINVAL;
->  
-> -	switch (fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-> +	switch (ethtool_get_flow_spec_type(fs->flow_type)) {
->  	case ETHER_FLOW:
->  		eth_mask = &fs->m_u.ether_spec;
->  		if (!is_zero_ether_addr(eth_mask->h_dest))
-> diff --git a/include/uapi/linux/ethtool.h b/include/uapi/linux/ethtool.h
-> index f0db7788f887..e92ad725c9d0 100644
-> --- a/include/uapi/linux/ethtool.h
-> +++ b/include/uapi/linux/ethtool.h
-> @@ -1583,6 +1583,11 @@ static inline int ethtool_validate_duplex(__u8 duplex)
->  #define	FLOW_EXT	0x80000000
->  #define	FLOW_MAC_EXT	0x40000000
->  
-> +static inline __u32 ethtool_get_flow_spec_type(__u32 flow_type)
-> +{
-> +	return flow_type & (FLOW_EXT | FLOW_MAC_EXT);
+2016-11-29 19:03 GMT+03:00 Aaron Sierra <asierra@xes-inc.com>:
+> Several people have reported firmware leaving the I210/I211 PHY's page
+> select register set to something other than the default of zero. This
+> causes the first accesses, PHY_IDx register reads, to access something
+> else, resulting in device probe failure:
+>
+>     igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
+>     igb: Copyright (c) 2007-2014 Intel Corporation.
+>     igb: probe of 0000:01:00.0 failed with error -2
+>
+> This problem began for them after a previous patch I submitted was
+> applied:
+>
+>     commit 2a3cdead8b408351fa1e3079b220fa331480ffbc
+>     Author: Aaron Sierra <asierra@xes-inc.com>
+>     Date:   Tue Nov 3 12:37:09 2015 -0600
+>
+>         igb: Remove GS40G specific defines/functions
+>
+> I personally experienced this problem after attempting to PXE boot from
+> I210 devices using this firmware:
+>
+>     Intel(R) Boot Agent GE v1.5.78
+>     Copyright (C) 1997-2014, Intel Corporation
 
-I don't have anything of substance to say but I think you are missing a
-negation (~) here compared to the code you are replacing ;)
+Indeed! I use Boot Agent GE v1.5.53. When I disable PCIe Boot ROM the
+kernel works without this patch.
+The patch fixes kernel even with PXE boot enabled.
+
+>
+> Resetting the PHY before reading from it, ensures the page select
+> register is in its default state and doesn't make assumptions about
+> the PHY's register set before the PHY has been probed.
+>
+> Cc: Matwey V. Kornilov <matwey@sai.msu.ru>
+
+Tested-By: Matwey V. Kornilov <matwey@sai.msu.ru>
+
+> Cc: Chris Arges <carges@vectranetworks.com>
+> Cc: Jochen Henneberg <jh@henneberg-systemdesign.com>
+> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
+> ---
+>  drivers/net/ethernet/intel/igb/e1000_82575.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+>
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+> index a61447f..ee44398 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
+> +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+> @@ -245,6 +245,17 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+>         hw->bus.func = (rd32(E1000_STATUS) & E1000_STATUS_FUNC_MASK) >>
+>                         E1000_STATUS_FUNC_SHIFT;
+>
+> +       /* Make sure the PHY is in a good state. Several people have reported
+> +        * firmware leaving the PHY's page select register set to something
+> +        * other than the default of zero, which causes the PHY ID read to
+> +        * access something other than the intended register.
+> +        */
+> +       ret_val = hw->phy.ops.reset(hw);
+> +       if (ret_val) {
+> +               hw_dbg("Error resetting the PHY.\n");
+> +               goto out;
+> +       }
+> +
+>         /* Set phy->phy_addr and phy->id. */
+>         ret_val = igb_get_phy_id_82575(hw);
+>         if (ret_val)
+> --
+> 1.9.1
+>
+
+
+
+-- 
+With best regards,
+Matwey V. Kornilov.
+Sternberg Astronomical Institute, Lomonosov Moscow State University, Russia
+119991, Moscow, Universitetsky pr-k 13, +7 (495) 9392382
