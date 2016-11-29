@@ -1,111 +1,71 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 29 Nov 2016 10:45:28 -0800
-Subject: [Intel-wired-lan] [PATCH RFC v3] ethtool: implement helper to get
-	flow_type value
-Message-ID: <20161129184528.13486-1-jacob.e.keller@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 29 Nov 2016 20:33:28 +0000
+Subject: [Intel-wired-lan] [next PATCH S54 06/15] i40e:
+	use	(add|rm)_vlan_all_mac helper functions when changing PVID
+In-Reply-To: <1478896779-13697-7-git-send-email-bimmy.pujari@intel.com>
+References: <1478896779-13697-1-git-send-email-bimmy.pujari@intel.com>
+ <1478896779-13697-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38D1E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Often a driver wants to store the flow type and thus it must mask the
-extra fields. This is a task that could grow more complex as more flags
-are added in the future. Add a helper function that masks the flags for
-marking additional fields.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Friday, November 11, 2016 12:40 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S54 06/15] i40e: use
+> (add|rm)_vlan_all_mac helper functions when changing PVID
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> The current flow for adding or updating the PVID for a VF uses
+> i40e_vsi_add_vlan and i40e_vsi_kill_vlan which each take, then release the
+> hash lock. In addition the two functions also must take special care that they
+> do not perform VLAN mode changes as this will make the code in
+> i40e_ndo_set_vf_port_vlan behave incorrectly.
+> 
+> Fix these issues by using the new helper functions i40e_add_vlan_all_mac
+> and i40e_rm_vlan_all_mac which expect the hash lock to already be taken.
+> Additionally these functions do not perform any state updates in regards to
+> vlan mode, so they are safe to use in the PVID update flow.
+> 
+> It should be noted that we don't need the VLAN mode update code here,
+> because there are only a few flows here.
+> 
+> (a) we're adding a new PVID
+>   In this case, if we already had VLAN filters the VSI is knocked
+>   offline so we don't need to worry about pre-existing VLAN filters
+> 
+> (b) we're replacing an existing PVID
+>   In this case, we can't have any VLAN filters except those with the old
+>   PVID which we already take care of manually.
+> 
+> (c) we're removing an existing PVID
+>   Similarly to above, we can't have any existing VLAN filters except
+>   those with the old PVID which we already take care of correctly.
+> 
+> Because of this, we do not need (or even want) the special accounting done
+> in i40e_vsi_add_vlan, so use of the helpers is a saner alternative.
+> It also opens the door for a future patch which will refactor the flow of
+> i40e_vsi_add_vlan now that it is not needed in this function.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: Ia841f63da94e12b106f41cf7d28ce8ce92f2ad99
+> ---
+> Testing-hints:
+>   Ensure that adding and removing PVID for a VF works as expected, and
+>   that the PVID is enforced correctly.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h             |  2 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        |  4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 43 ++++++++++++++---
+> -----
+>  3 files changed, 32 insertions(+), 17 deletions(-)
 
-Modify drivers in drivers/net/ethernet that currently check for FLOW_EXT
-and FLOW_MAC_EXT to use the helper. Currently this is only the mellanox
-drivers.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-I chose not to modify other drivers as I'm actually unsure whether we
-should always mask the flow type even for drivers which don't recognize
-the newer flags. On the one hand, today's drivers (generally)
-automatically fail when a new flag is used because they won't mask it
-and their checks against flow_type will not match. On the other hand, it
-means another place that you have to update when you begin implementing
-a flag.
-
-An alternative is to have the driver store a set of flags that it knows
-about, and then have ethtool core do the check for us to discard frames.
-I haven't implemented this quite yet.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/mellanox/mlx4/en_ethtool.c         | 4 ++--
- drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c | 6 +++---
- include/uapi/linux/ethtool.h                            | 5 +++++
- 3 files changed, 10 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c b/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-index 487a58f9c192..d8f9839ce2a3 100644
---- a/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
-@@ -1270,7 +1270,7 @@ static int mlx4_en_validate_flow(struct net_device *dev,
- 			return -EINVAL;
- 	}
- 
--	switch (cmd->fs.flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(cmd->fs.flow_type)) {
- 	case TCP_V4_FLOW:
- 	case UDP_V4_FLOW:
- 		if (cmd->fs.m_u.tcp_ip4_spec.tos)
-@@ -1493,7 +1493,7 @@ static int mlx4_en_ethtool_to_net_trans_rule(struct net_device *dev,
- 	if (err)
- 		return err;
- 
--	switch (cmd->fs.flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(cmd->fs.flow_type)) {
- 	case ETHER_FLOW:
- 		spec_l2 = kzalloc(sizeof(*spec_l2), GFP_KERNEL);
- 		if (!spec_l2)
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c b/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-index 3691451c728c..066e6c5cf38b 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en_fs_ethtool.c
-@@ -63,7 +63,7 @@ static struct mlx5e_ethtool_table *get_flow_table(struct mlx5e_priv *priv,
- 	int table_size;
- 	int prio;
- 
--	switch (fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(fs->flow_type)) {
- 	case TCP_V4_FLOW:
- 	case UDP_V4_FLOW:
- 		max_tuples = ETHTOOL_NUM_L3_L4_FTS;
-@@ -147,7 +147,7 @@ static int set_flow_attrs(u32 *match_c, u32 *match_v,
- 					     outer_headers);
- 	void *outer_headers_v = MLX5_ADDR_OF(fte_match_param, match_v,
- 					     outer_headers);
--	u32 flow_type = fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT);
-+	u32 flow_type = ethtool_get_flow_spec_type(fs->flow_type);
- 	struct ethtool_tcpip4_spec *l4_mask;
- 	struct ethtool_tcpip4_spec *l4_val;
- 	struct ethtool_usrip4_spec *l3_mask;
-@@ -393,7 +393,7 @@ static int validate_flow(struct mlx5e_priv *priv,
- 	    fs->ring_cookie != RX_CLS_FLOW_DISC)
- 		return -EINVAL;
- 
--	switch (fs->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT)) {
-+	switch (ethtool_get_flow_spec_type(fs->flow_type)) {
- 	case ETHER_FLOW:
- 		eth_mask = &fs->m_u.ether_spec;
- 		if (!is_zero_ether_addr(eth_mask->h_dest))
-diff --git a/include/uapi/linux/ethtool.h b/include/uapi/linux/ethtool.h
-index f0db7788f887..ed650eef9e54 100644
---- a/include/uapi/linux/ethtool.h
-+++ b/include/uapi/linux/ethtool.h
-@@ -1583,6 +1583,11 @@ static inline int ethtool_validate_duplex(__u8 duplex)
- #define	FLOW_EXT	0x80000000
- #define	FLOW_MAC_EXT	0x40000000
- 
-+static inline __u32 ethtool_get_flow_spec_type(__u32 flow_type)
-+{
-+	return flow_type & ~(FLOW_EXT | FLOW_MAC_EXT);
-+}
-+
- /* L3-L4 network traffic flow hash options */
- #define	RXH_L2DA	(1 << 1)
- #define	RXH_VLAN	(1 << 2)
--- 
-2.11.0.rc2.152.g4d04e67
 
