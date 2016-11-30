@@ -1,38 +1,47 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 30 Nov 2016 20:25:42 +0000
-Subject: [Intel-wired-lan] [PATCH] [PATCH v2] igb: close/suspend race
-	in	netif_device_detach
-In-Reply-To: <1479228866-15506-1-git-send-email-todd.fujinaka@intel.com>
-References: <1479228866-15506-1-git-send-email-todd.fujinaka@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81FE2C9A@ORSMSX101.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 30 Nov 2016 13:15:22 -0800
+Subject: [Intel-wired-lan] [net PATCH 0/2] Don't use lco_csum to compute
+	IPv4 checksum
+In-Reply-To: <20161130.094746.724735454244491985.davem@davemloft.net>
+References: <20161128153927.15466.99193.stgit@ahduyck-blue-test.jf.intel.com>
+ <20161130.094746.724735454244491985.davem@davemloft.net>
+Message-ID: <1480540522.2377.18.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Todd Fujinaka
-> Sent: Tuesday, November 15, 2016 8:54 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] [PATCH v2] igb: close/suspend race in
-> netif_device_detach
+On Wed, 2016-11-30 at 09:47 -0500, David Miller wrote:
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> Date: Mon, 28 Nov 2016 10:42:18 -0500
 > 
-> Similar to ixgbe, when an interface is part of a namespace it is
-> possible that igb_close() may be called while __igb_shutdown() is
-> running which ends up in a double free WARN and/or a BUG in
-> free_msi_irqs().
+> > When I implemented the GSO partial support in the Intel drivers I was
+> using
+> > lco_csum to compute the checksum that we needed to plug into the IPv4
+> > checksum field in order to cancel out the data that was not a part of
+> the
+> > IPv4 header.? However this didn't take into account that the transport
+> > offset might be pointing to the inner transport header.
+> >?
+> > Instead of using lco_csum I have just coded around it so that we can
+> use
+> > the outer IP header plus the IP header length to determine where we
+> need to
+> > start our checksum and then just call csum_partial ourselves.
+> >?
+> > This should fix the SIT issue reported on igb interfaces as well as
+> simliar
+> > issues that would pop up on other Intel NICs.
 > 
-> Extend the rtnl_lock() to protect the call to netif_device_detach() and
-> igb_clear_interrupt_scheme() in __igb_shutdown() and check for
-> netif_device_present() to avoid calling igb_clear_interrupt_scheme() a
-> second time in igb_close().
-> 
-> Also extend the rtnl lock in igb_resume() to netif_device_attach().
-> 
-> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 21 ++++++++++++---------
->  1 file changed, 12 insertions(+), 9 deletions(-)
+> Jeff, are you going to send me a pull request with this stuff or would
+> you be OK with my applying these directly to 'net'?
 
-Tested-by Aaron Brown <aaron.f.brown@intel.com>
+Go ahead and apply those to your net tree, I do not want to hold this up.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161130/a9607036/attachment.asc>
