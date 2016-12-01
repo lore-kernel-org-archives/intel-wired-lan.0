@@ -1,42 +1,43 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Dec 2016 21:50:58 +0000
-Subject: [Intel-wired-lan] [next PATCH S55 10/14] i40e/i40evf: Limit
-	dma	sync of RX buffers to actual packet size
-In-Reply-To: <1480377971-23412-11-git-send-email-bimmy.pujari@intel.com>
-References: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
- <1480377971-23412-11-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39024@ORSMSX104.amr.corp.intel.com>
+From: Souptick Joarder <jrdr.linux@gmail.com>
+Date: Fri, 2 Dec 2016 00:34:27 +0530
+Subject: [Intel-wired-lan] [PATCH v2] ethernet: intel: Replace
+	pci_pool_alloc by pci_pool_zalloc
+Message-ID: <20161201190427.GA3357@jordon-HP-15-Notebook-PC>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Monday, November 28, 2016 4:06 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S55 10/14] i40e/i40evf: Limit dma sync
-> of RX buffers to actual packet size
-> 
-> From: "Scott Peterson" <scott.d.peterson@intel.com>
-> 
-> On packet RX, we perform a dma sync for cpu before passing the packet up.
-> Here we limit that sync to the actual length of the incoming packet, rather
-> than always syncing the entire buffer.
-> 
-> Signed-off-by: Scott Peterson <scott.d.peterson@intel.com>
-> Change-ID: I626aaf6c37275a8ce9e81efcaa773f327b331487
-> ---
-> Testing Hints:
-> Verify traffic is still passed correctly with the same or better performance as
-> before this patch
-> 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 16 +++++++++-------
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 16 +++++++++-------
->  2 files changed, 18 insertions(+), 14 deletions(-)
+In e100_alloc_cbs(), pci_pool_alloc() followed by memset will be
+replaced by pci_pool_zalloc()
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Souptick joarder <jrdr.linux@gmail.com>
+---
+v2:
+  - Alignment changes
 
+ drivers/net/ethernet/intel/e100.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index 068789e..0cf338f 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -1910,11 +1910,10 @@ static int e100_alloc_cbs(struct nic *nic)
+ 	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = NULL;
+ 	nic->cbs_avail = 0;
+
+-	nic->cbs = pci_pool_alloc(nic->cbs_pool, GFP_KERNEL,
+-				  &nic->cbs_dma_addr);
++	nic->cbs = pci_pool_zalloc(nic->cbs_pool, GFP_KERNEL,
++				   &nic->cbs_dma_addr);
+ 	if (!nic->cbs)
+ 		return -ENOMEM;
+-	memset(nic->cbs, 0, count * sizeof(struct cb));
+
+ 	for (cb = nic->cbs, i = 0; i < count; cb++, i++) {
+ 		cb->next = (i + 1 < count) ? cb + 1 : nic->cbs;
+--
+1.9.1
 
