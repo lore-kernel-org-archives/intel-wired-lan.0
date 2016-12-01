@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Dec 2016 18:56:09 +0000
-Subject: [Intel-wired-lan] [next PATCH S55 04/14] i40e: remove
-	unused	function
-In-Reply-To: <1480377971-23412-5-git-send-email-bimmy.pujari@intel.com>
+Date: Thu, 1 Dec 2016 19:38:18 +0000
+Subject: [Intel-wired-lan] [next PATCH S55 06/14] i40e: add interrupt
+ rate	limit verbosity
+In-Reply-To: <1480377971-23412-7-git-send-email-bimmy.pujari@intel.com>
 References: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
- <1480377971-23412-5-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38F04@ORSMSX104.amr.corp.intel.com>
+ <1480377971-23412-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38F2A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,18 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, November 28, 2016 4:06 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S55 04/14] i40e: remove unused
-> function
+> Cc: Brady, Alan <alan.brady@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S55 06/14] i40e: add interrupt rate
+> limit verbosity
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Alan Brady <alan.brady@intel.com>
 > 
-> After refactoring the client open and close code, this is no longer needed.
-> Remove it.
+> Due to the resolution of the register controlling interrupt rate limiting, setting
+> certain values for the interrupt rate limit make it appear as though the
+> limiting is not completely accurate.  The problem is that the interrupt rate
+> limit is getting rounded down to the nearest multiple of 4.  This patch fixes
+> the problem by adding some feedback to the user as to the actual interrupt
+> rate limit being used when it differs from the requested limit.  Without this
+> patch setting interrupt rate limits may appear to behave inaccurately.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: If8e6e32baa354d857c2fd8b2f19404f1786011c4
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
+> Change-ID: I3093cf3f2d437d35a4c4f4bb5af5ce1b85ab21b7
 > ---
-> Testing Hints : No functional change, just dead code.
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
