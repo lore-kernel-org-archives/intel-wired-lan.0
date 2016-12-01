@@ -1,51 +1,68 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Dec 2016 23:09:02 +0000
-Subject: [Intel-wired-lan] [next PATCH S55 11/14] i40e/i40evf: Moves
-	skb	from i40e_rx_buffer to i40e_ring
-In-Reply-To: <1480377971-23412-12-git-send-email-bimmy.pujari@intel.com>
-References: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
- <1480377971-23412-12-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA390A3@ORSMSX104.amr.corp.intel.com>
+From: Chris Arges <carges@vectranetworks.com>
+Date: Thu, 1 Dec 2016 23:17:52 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the
+	PHY ID
+In-Reply-To: <1279201741.206062.1480609194012.JavaMail.zimbra@xes-inc.com>
+References: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
+ <20161201031318.GA6368@outlook.office365.com>,
+ <1279201741.206062.1480609194012.JavaMail.zimbra@xes-inc.com>
+Message-ID: <CO2PR0801MB6475BDA6E8A945DEC51B1B1AE8F0@CO2PR0801MB647.namprd08.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Monday, November 28, 2016 4:06 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S55 11/14] i40e/i40evf: Moves skb
-> from i40e_rx_buffer to i40e_ring
-> 
-> From: "Scott Peterson" <scott.d.peterson@intel.com>
-> 
-> This patch reduces the size of struct i40e_rx_buffer by one pointer, and
-> makes the i40e driver a little more consistent with the igb driver in terms of
-> packets that span buffers.
-> 
-> We do this by moving the skb field from struct i40e_rx_buffer to struct
-> i40e_ring. We pass the skb we already have (or NULL if we
-> don't) to i40e_fetch_rx_buffer(), which skips the skb allocation if we already
-> have one for this packet.
-> 
-> Signed-off-by: Scott Peterson <scott.d.peterson@intel.com>
-> Change-ID: I4ad48a531844494ba0c5d8e1a62209a057f661b0
-> ---
-> Testing Hints:
-> Generate traffic with jumbo frames (e.g. netperf), and observe
-> "non_eop_segs" stat increases on receiver.  That confirms the path changed
-> here was taken.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 31 +++++++++++++------------
-> --
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  9 +++++++-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 30 +++++++++++++----------
-> ---  drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  9 +++++++-
->  4 files changed, 46 insertions(+), 33 deletions(-)
+________________________________________
+From: Aaron Sierra <asierra@xes-inc.com>
+Sent: Thursday, December 1, 2016 10:19 AM
+To: Chris Arges
+Cc: Jeffrey T Kirsher; Matwey V. Kornilov; Jochen Henneberg; intel-wired-lan
+Subject: Re: [PATCH] igb: reset the PHY before reading the PHY ID
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+----- Original Message -----
+> From: "Chris Arges" <carges@vectranetworks.com>
+> Sent: Wednesday, November 30, 2016 9:13:18 PM
+>
+> Hi,
+> I could not get this patch to fix the original issue I had.
+> The patch I submitted a while back fixed the issue for me:
+> https://patchwork.ozlabs.org/patch/690464/
+>
+> Let me know if there is something else I can get check here. To reproduce
+> I have to fully power off the server which contains this NIC.
+> --chris
+>
 
+Chris,
+Can you provide any more information about your environment than you
+already have? I've only found that you're using an I210. Is it embedded
+in the baseboard or an add-in device? Please share very verbose lspci
+output for this device:
 
+    lspci -vvv -n -s <[bus]:[device].[function]>
+
+What kernel version did you use in your testing? Did my patch apply
+cleanly or with "fuzz" reported by the patch command?
+
+-Aaron S.
+
+Aaron,
+I applied your patch cleanly against 4.4 (testing this on Ubuntu 16.04 fwiw) which I think didn't backport well. Using mainline 4.9rcX I was able to get your patch working. Would there be a recommended modification for a stable patch?
+
+For completeness,
+$ lspci -vvv -n -s 07:00.0
+07:00.0 0200: 8086:1533 (rev 03)
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 16
+	Region 0: Memory at 91200000 (32-bit, non-prefetchable) [size=512K]
+	Region 2: I/O ports at 3000 [size=32]
+	Region 3: Memory@91280000 (32-bit, non-prefetchable) [size=16K]
+	Capabilities: <access denied>
+	Kernel driver in use: igb
+	Kernel modules: igb
+
+Thanks,
+--chris
