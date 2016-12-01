@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Dec 2016 18:26:16 +0000
-Subject: [Intel-wired-lan] [next PATCH S55 01/14] i40e: Disabling
-	ntuple	filters cleans Cloud Filters up
-In-Reply-To: <1480377971-23412-2-git-send-email-bimmy.pujari@intel.com>
+Date: Thu, 1 Dec 2016 18:50:42 +0000
+Subject: [Intel-wired-lan] [next PATCH S55 02/14] i40e: Quick refactor
+ to	start moving data off stack and into Tx buffer info
+In-Reply-To: <1480377971-23412-3-git-send-email-bimmy.pujari@intel.com>
 References: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
- <1480377971-23412-2-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38ED0@ORSMSX104.amr.corp.intel.com>
+ <1480377971-23412-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38EE4@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, November 28, 2016 4:06 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Sadowski, Filip <filip.sadowski@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S55 01/14] i40e: Disabling ntuple filters
-> cleans Cloud Filters up
+> Subject: [Intel-wired-lan] [next PATCH S55 02/14] i40e: Quick refactor to start
+> moving data off stack and into Tx buffer info
 > 
-> From: Filip Sadowski <filip.sadowski@intel.com>
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> This patch resolves the issue with Cloud Filters not being flushed from driver
-> memory and HW when ntuple filters get disabled. Additionally it was possible
-> to add Cloud Filters with ntuple mechanism off. Now Cloud Filters can be
-> added only with ntuple enabled. Error code is returned otherwise.
+> This patch does some quick work to pull some of the data off of the stack and
+> hopefully start storing it in the Tx buffer info section of the Tx ring.  Ideally
+> we should be moving away from having to store much of anything on the
+> stack and can just maintain it all in the descriptor rings.
 > 
-> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
-> Change-ID: I7bbc43ead41ead59be89ae2ca440a5c77fef2086
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> Change-ID: I4b4715ea1920e122502482b3f9e56a9a6cb1e9fe
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h         | 39
-> ++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  3 ++
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 21 ++++++++++++++
->  3 files changed, 63 insertions(+)
+> Testing Hints:
+>         This should not break the transmit path and should have no
+>         signficant impact on Tx performance.  It brings us closer to what
+>         is already in ixgbe and enables us to add support for a workaround
+>         needed to deal with gso_size less than 64.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 47 +++++++++++++++--------
+> ----
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 47 +++++++++++++++-------
+> -----
+>  2 files changed, 54 insertions(+), 40 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
