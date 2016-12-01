@@ -1,41 +1,42 @@
-From: Aaron Sierra <asierra@xes-inc.com>
-Date: Thu, 1 Dec 2016 10:19:54 -0600 (CST)
-Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the
-	PHY ID
-In-Reply-To: <20161201031318.GA6368@outlook.office365.com>
-References: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
- <20161201031318.GA6368@outlook.office365.com>
-Message-ID: <1279201741.206062.1480609194012.JavaMail.zimbra@xes-inc.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 1 Dec 2016 18:26:16 +0000
+Subject: [Intel-wired-lan] [next PATCH S55 01/14] i40e: Disabling
+	ntuple	filters cleans Cloud Filters up
+In-Reply-To: <1480377971-23412-2-git-send-email-bimmy.pujari@intel.com>
+References: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
+ <1480377971-23412-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38ED0@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
------ Original Message -----
-> From: "Chris Arges" <carges@vectranetworks.com>
-> Sent: Wednesday, November 30, 2016 9:13:18 PM
->
-> Hi,
-> I could not get this patch to fix the original issue I had.
-> The patch I submitted a while back fixed the issue for me:
-> https://patchwork.ozlabs.org/patch/690464/
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Monday, November 28, 2016 4:06 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Sadowski, Filip <filip.sadowski@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S55 01/14] i40e: Disabling ntuple filters
+> cleans Cloud Filters up
 > 
-> Let me know if there is something else I can get check here. To reproduce
-> I have to fully power off the server which contains this NIC.
-> --chris
+> From: Filip Sadowski <filip.sadowski@intel.com>
 > 
+> This patch resolves the issue with Cloud Filters not being flushed from driver
+> memory and HW when ntuple filters get disabled. Additionally it was possible
+> to add Cloud Filters with ntuple mechanism off. Now Cloud Filters can be
+> added only with ntuple enabled. Error code is returned otherwise.
+> 
+> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+> Change-ID: I7bbc43ead41ead59be89ae2ca440a5c77fef2086
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h         | 39
+> ++++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  3 ++
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 21 ++++++++++++++
+>  3 files changed, 63 insertions(+)
 
-Chris,
-Can you provide any more information about your environment than you
-already have? I've only found that you're using an I210. Is it embedded
-in the baseboard or an add-in device? Please share very verbose lspci
-output for this device:
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-    lspci -vvv -n -s <[bus]:[device].[function]>
-
-What kernel version did you use in your testing? Did my patch apply
-cleanly or with "fuzz" reported by the patch command?
-
--Aaron S.
 
