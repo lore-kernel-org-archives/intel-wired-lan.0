@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Dec 2016 21:49:42 +0000
-Subject: [Intel-wired-lan] [next PATCH S55 13/14] i40e: update
-	comment	explaining where FDIR buffers are freed
-In-Reply-To: <1480377971-23412-14-git-send-email-bimmy.pujari@intel.com>
+Date: Thu, 1 Dec 2016 21:50:05 +0000
+Subject: [Intel-wired-lan] [next PATCH S55 14/14] i40e/i40evf :
+	Changed	version from 1.6.25 to 1.6.27
+In-Reply-To: <1480377971-23412-15-git-send-email-bimmy.pujari@intel.com>
 References: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
- <1480377971-23412-14-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39002@ORSMSX104.amr.corp.intel.com>
+ <1480377971-23412-15-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA3900F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,14 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, November 28, 2016 4:06 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S55 13/14] i40e: update comment
-> explaining where FDIR buffers are freed
+> Subject: [Intel-wired-lan] [next PATCH S55 14/14] i40e/i40evf : Changed
+> version from 1.6.25 to 1.6.27
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> The original comment implies that the only location where the raw_packet
-> buffer will be freed is in i40e_clean_tx_ring() which is incorrect. In fact this
-> isn't even the normal case. Update the comment explaining where the
-> memory is freed.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: Ie0defc35ed1c3af183f81fdc60b6d783707a5595
+> Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
