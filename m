@@ -1,46 +1,41 @@
-From: David Miller <davem@davemloft.net>
-Date: Thu, 01 Dec 2016 15:41:31 -0500 (EST)
-Subject: [Intel-wired-lan] [net PATCH 0/2] Don't use lco_csum to compute
-	IPv4 checksum
-In-Reply-To: <1480540522.2377.18.camel@intel.com>
-References: <20161128153927.15466.99193.stgit@ahduyck-blue-test.jf.intel.com>
- <20161130.094746.724735454244491985.davem@davemloft.net>
- <1480540522.2377.18.camel@intel.com>
-Message-ID: <20161201.154131.440872706184192948.davem@davemloft.net>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 1 Dec 2016 20:58:48 +0000
+Subject: [Intel-wired-lan] [next PATCH S55 09/14] i40evf: track
+ outstanding	client request
+In-Reply-To: <1480377971-23412-10-git-send-email-bimmy.pujari@intel.com>
+References: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
+ <1480377971-23412-10-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38FAA@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 30 Nov 2016 13:15:22 -0800
-
-> On Wed, 2016-11-30 at 09:47 -0500, David Miller wrote:
->> From: Alexander Duyck <alexander.h.duyck@intel.com>
->> Date: Mon, 28 Nov 2016 10:42:18 -0500
->> 
->> > When I implemented the GSO partial support in the Intel drivers I was
->> using
->> > lco_csum to compute the checksum that we needed to plug into the IPv4
->> > checksum field in order to cancel out the data that was not a part of
->> the
->> > IPv4 header.? However this didn't take into account that the transport
->> > offset might be pointing to the inner transport header.
->> >?
->> > Instead of using lco_csum I have just coded around it so that we can
->> use
->> > the outer IP header plus the IP header length to determine where we
->> need to
->> > start our checksum and then just call csum_partial ourselves.
->> >?
->> > This should fix the SIT issue reported on igb interfaces as well as
->> simliar
->> > issues that would pop up on other Intel NICs.
->> 
->> Jeff, are you going to send me a pull request with this stuff or would
->> you be OK with my applying these directly to 'net'?
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Monday, November 28, 2016 4:06 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S55 09/14] i40evf: track outstanding
+> client request
 > 
-> Go ahead and apply those to your net tree, I do not want to hold this up.
+> From: Mitch Williams <mitch.a.williams@intel.com>
+> 
+> The iWarp client cannot continue until this operation has been completed by
+> the PF driver. Sleep (with timeout) until the reply from the PF driver has
+> been received.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: I5dc41b857bba32d0218b7ce167b5da122dadf349
+> ---
+> Testing Hints : Load up VF RDMA with > 2 active VFs.
+> 
+>  drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h   | 1 +
+>  drivers/net/ethernet/intel/i40evf/i40evf.h          | 1 +
+>  drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 4 ++++
+>  3 files changed, 6 insertions(+)
 
-Ok, done, thanks Jeff.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
