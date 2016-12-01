@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Dec 2016 19:39:46 +0000
-Subject: [Intel-wired-lan] [next PATCH S55 07/14] i40e: don't check
- params	until after checking for client instance
-In-Reply-To: <1480377971-23412-8-git-send-email-bimmy.pujari@intel.com>
+Date: Thu, 1 Dec 2016 19:46:15 +0000
+Subject: [Intel-wired-lan] [next PATCH S55 08/14] i40evf: fix client
+ warnings
+In-Reply-To: <1480377971-23412-9-git-send-email-bimmy.pujari@intel.com>
 References: <1480377971-23412-1-git-send-email-bimmy.pujari@intel.com>
- <1480377971-23412-8-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38F3A@ORSMSX104.amr.corp.intel.com>
+ <1480377971-23412-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA38F4D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, November 28, 2016 4:06 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S55 07/14] i40e: don't check params
-> until after checking for client instance
+> Cc: Latif, Faisal <faisal.latif@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S55 08/14] i40evf: fix client warnings
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Faisal Latif <faisal.latif@intel.com>
 > 
-> We can avoid the minor bit of work by calling check params after we check
-> for the client instance, since we're about to return early in cases where we
-> do not have a client.
+> The function prototype in i40evf_client.h are giving warnings while compiling
+> i40iwvf module. Move these function prototypes to i40evf.h.
+> Also fix return code from u32 to int and this return code is consistent with
+> i40e_client.h
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: I56f8ea2ba48d4f571fa331c9ace50819a022fa1c
+> Signed-off-by: Faisal Latif <faisal.latif@intel.com>
+> Change-Id: Ie3757f844993aabc27654aaf02ec14fb985ad2c4
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_client.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf.h | 7 +++++++
+>  1 file changed, 7 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
