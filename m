@@ -1,190 +1,41 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 01 Dec 2016 09:38:18 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- fb706301cc68b3f205a3b6c6c249aa398c3a5d7c
-Message-ID: <583f7f0a.9mjYpOMyYoadzFXo%fengguang.wu@intel.com>
+From: Aaron Sierra <asierra@xes-inc.com>
+Date: Thu, 1 Dec 2016 10:19:54 -0600 (CST)
+Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the
+	PHY ID
+In-Reply-To: <20161201031318.GA6368@outlook.office365.com>
+References: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
+ <20161201031318.GA6368@outlook.office365.com>
+Message-ID: <1279201741.206062.1480609194012.JavaMail.zimbra@xes-inc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-fb706301cc68b3f205a3b6c6c249aa398c3a5d7c  i40e/i40evf : Changed version from 1.6.25 to 1.6.27
+----- Original Message -----
+> From: "Chris Arges" <carges@vectranetworks.com>
+> Sent: Wednesday, November 30, 2016 9:13:18 PM
+>
+> Hi,
+> I could not get this patch to fix the original issue I had.
+> The patch I submitted a while back fixed the issue for me:
+> https://patchwork.ozlabs.org/patch/690464/
+> 
+> Let me know if there is something else I can get check here. To reproduce
+> I have to fully power off the server which contains this NIC.
+> --chris
+> 
 
-elapsed time: 170m
+Chris,
+Can you provide any more information about your environment than you
+already have? I've only found that you're using an I210. Is it embedded
+in the baseboard or an add-in device? Please share very verbose lspci
+output for this device:
 
-configs tested: 166
+    lspci -vvv -n -s <[bus]:[device].[function]>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+What kernel version did you use in your testing? Did my patch apply
+cleanly or with "fuzz" reported by the patch command?
 
-arm                         s3c2410_defconfig
-mips                      loongson3_defconfig
-sh                           se7343_defconfig
-i386                     randconfig-a0-201648
-x86_64                 randconfig-a0-12010742
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                            qcom_defconfig
-avr32                  atngw100mkii_defconfig
-mips                         db1xxx_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-12010745
-x86_64                           allmodconfig
-x86_64                 randconfig-v0-12010641
-arm                          nuc910_defconfig
-blackfin                       SRV1_defconfig
-sh                        sh7763rdp_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x010-201648
-x86_64                 randconfig-x011-201648
-x86_64                 randconfig-x012-201648
-x86_64                 randconfig-x013-201648
-x86_64                 randconfig-x014-201648
-x86_64                 randconfig-x015-201648
-x86_64                 randconfig-x016-201648
-x86_64                 randconfig-x017-201648
-x86_64                 randconfig-x018-201648
-x86_64                 randconfig-x019-201648
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201648
-i386                     randconfig-s1-201648
-x86_64                 randconfig-s0-12010753
-x86_64                 randconfig-s1-12010753
-x86_64                 randconfig-s2-12010753
-x86_64                 randconfig-s3-12010658
-x86_64                 randconfig-s4-12010658
-x86_64                 randconfig-s5-12010658
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-arm                         lpc18xx_defconfig
-m68k                          sun3x_defconfig
-sparc                            allyesconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201648
-i386                   randconfig-b0-12010645
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                         hackkit_defconfig
-arm                            pleb_defconfig
-blackfin                 BlackStamp_defconfig
-mips                          malta_defconfig
-i386                     randconfig-i0-201648
-i386                     randconfig-i1-201648
-x86_64                 randconfig-b0-12010750
-x86_64                 randconfig-u0-12010728
-arm                              allmodconfig
-cris                       artpec_3_defconfig
-x86_64                randconfig-ne0-12010807
-ia64                              allnoconfig
-mips                           ci20_defconfig
-mips                        nlm_xlp_defconfig
-sh                     sh7710voipgw_defconfig
-i386                   randconfig-x010-201648
-i386                   randconfig-x011-201648
-i386                   randconfig-x012-201648
-i386                   randconfig-x013-201648
-i386                   randconfig-x014-201648
-i386                   randconfig-x015-201648
-i386                   randconfig-x016-201648
-i386                   randconfig-x017-201648
-i386                   randconfig-x018-201648
-i386                   randconfig-x019-201648
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201648
-i386                   randconfig-h0-12010636
-i386                   randconfig-h1-12010636
-arm                       versatile_defconfig
-s390                                defconfig
-s390                    performance_defconfig
-ia64                             alldefconfig
-ia64                                defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x000-201648
-x86_64                 randconfig-x001-201648
-x86_64                 randconfig-x002-201648
-x86_64                 randconfig-x003-201648
-x86_64                 randconfig-x004-201648
-x86_64                 randconfig-x005-201648
-x86_64                 randconfig-x006-201648
-x86_64                 randconfig-x007-201648
-x86_64                 randconfig-x008-201648
-x86_64                 randconfig-x009-201648
-i386                     randconfig-r0-201648
-x86_64                 randconfig-r0-12010742
-powerpc                         wii_defconfig
-i386                   randconfig-x000-201648
-i386                   randconfig-x001-201648
-i386                   randconfig-x002-201648
-i386                   randconfig-x003-201648
-i386                   randconfig-x004-201648
-i386                   randconfig-x005-201648
-i386                   randconfig-x006-201648
-i386                   randconfig-x007-201648
-i386                   randconfig-x008-201648
-i386                   randconfig-x009-201648
-i386                   randconfig-x0-12010701
+-Aaron S.
 
-Thanks,
-Fengguang
