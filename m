@@ -1,41 +1,72 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri,  2 Dec 2016 12:32:54 -0800
-Subject: [Intel-wired-lan] [next PATCH S56 0/8] i40e/i40evf updates
-Message-ID: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
+Date: Fri,  2 Dec 2016 12:32:55 -0800
+Subject: [Intel-wired-lan] [next PATCH S56 1/8] i40e: Clean up dead code
+In-Reply-To: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
+References: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1480710782-9195-2-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Aaron Salter changes code to acquire NVM lock before reads on all
-devices.
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Henry Tieman adds code to save link FEC info from link up event and
-adds code to save more link abilities when using ethtool.
+The function i40e_client_prepare() can never return an error. So make it
+void and quit checking its return value.
 
-Jacob Keller adds code to not warn every time we clear an Rx timestamp
-register, adds code to fix i40e_update_filter_state to skip broadcast
-filters and adds code to avoid race condition when sending filters to
-firmware for addition.
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I9ff311e2324dde329eb68648efb2c94aaff856db
+---
+Testing Hints : Found by static code analysis. Not
+possible to test, just code cleanup.
 
-Mitch Williams removes dead code.
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
 
-Sudheer Mogilappagari adds bus number info to i40e_bus_info struct.
-
- drivers/net/ethernet/intel/i40e/i40e.h          |  16 ++
- drivers/net/ethernet/intel/i40e/i40e_client.c   |  29 ++--
- drivers/net/ethernet/intel/i40e/i40e_common.c   |   2 +
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c  |   3 +
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 190 +++++++++++++++++-------
- drivers/net/ethernet/intel/i40e/i40e_nvm.c      |  12 +-
- drivers/net/ethernet/intel/i40e/i40e_osdep.h    |  12 +-
- drivers/net/ethernet/intel/i40e/i40e_ptp.c      |  21 ++-
- drivers/net/ethernet/intel/i40e/i40e_type.h     |   2 +
- drivers/net/ethernet/intel/i40evf/i40e_type.h   |   2 +
- drivers/net/ethernet/intel/i40evf/i40evf_main.c |   1 +
- 11 files changed, 203 insertions(+), 87 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+index f6409f9..337d417 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+@@ -653,13 +653,11 @@ static int i40e_client_release(struct i40e_client *client)
+  * i40e_client_prepare - prepare client specific resources
+  * @client: pointer to the registered client
+  *
+- * Return 0 on success or < 0 on error
+  **/
+-static int i40e_client_prepare(struct i40e_client *client)
++static void i40e_client_prepare(struct i40e_client *client)
+ {
+ 	struct i40e_device *ldev;
+ 	struct i40e_pf *pf;
+-	int ret = 0;
+ 
+ 	mutex_lock(&i40e_device_mutex);
+ 	list_for_each_entry(ldev, &i40e_devices, list) {
+@@ -669,7 +667,6 @@ static int i40e_client_prepare(struct i40e_client *client)
+ 		i40e_service_event_schedule(pf);
+ 	}
+ 	mutex_unlock(&i40e_device_mutex);
+-	return ret;
+ }
+ 
+ /**
+@@ -926,13 +923,9 @@ int i40e_register_client(struct i40e_client *client)
+ 	set_bit(__I40E_CLIENT_REGISTERED, &client->state);
+ 	mutex_unlock(&i40e_client_mutex);
+ 
+-	if (i40e_client_prepare(client)) {
+-		ret = -EIO;
+-		goto out;
+-	}
++	i40e_client_prepare(client);
+ 
+-	pr_info("i40e: Registered client %s with return code %d\n",
+-		client->name, ret);
++	pr_info("i40e: Registered client %s\n",	client->name);
+ out:
+ 	return ret;
+ }
 -- 
 2.4.11
 
