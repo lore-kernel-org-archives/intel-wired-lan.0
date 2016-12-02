@@ -1,64 +1,37 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 2 Dec 2016 14:32:23 -0800
-Subject: [Intel-wired-lan] Question about ixgbe RESET due to lost link
-In-Reply-To: <FA04B483-9533-4732-9EA5-F2EF7EC3BCDD@purestorage.com>
-References: <CAKgT0UeieA6wirnTwV+Wj1_jZxvAOVJeugQ-mnkCdt7fWx_Ebg@mail.gmail.com>
- <FA04B483-9533-4732-9EA5-F2EF7EC3BCDD@purestorage.com>
-Message-ID: <CAKgT0Uc+h_x8fHpZDP5J6kNxyNuymtcnTAzv9Q-hFhyj851+2g@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 2 Dec 2016 22:36:56 +0000
+Subject: [Intel-wired-lan] [next PATCH S56 1/8] i40e: Clean up dead code
+In-Reply-To: <1480710782-9195-2-git-send-email-bimmy.pujari@intel.com>
+References: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
+ <1480710782-9195-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39222@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Dec 2, 2016 at 2:15 PM, Ruslan Nikolaev <ruslan@purestorage.com> wrote:
-> Thanks! I have one more question below.
->
->>
->>
->>> Thank you for your response! I still have questions below.
->>>
->>>>
->>>>> While working with ixgbe (PF) and dpdk (VF), I have noticed that sometimes
->>>>> we get ?Reset adapter? message 'due to lost link with pending Tx work?.
->>>>>
->>>>> The problem is that when handling the VF reset message that arrives through
->>>>> a mailbox (in the corresponding dpdk handler), the link may already be down.
->>>>> Therefore, we are unable to properly reset the device. While looking at the
->>>>> ixgbe code, I have noticed that IXGBE_FLAG2_RESET_REQUESTED (in this case,
->>>>> set in ixgbe_watchdog_flush_tx) is checked in ixgbe_reset_subtask. The
->>>>> latter will only do anything if the link is not already down.
->>>>
->>>> Why can't you properly reset the device?  The PF should have already
->>>> taken care of resetting the queues when it did the reset itself.  All
->>>> that should be left to do is for the VF to reinitialize the queues so
->>>> that they are re-enabled after the reset.
->>>>
->>>
->>> I guess, the problem is that we can stop a device but we are unable to start the device properly (because some registers are unavailable?) Particularly, in the patch for DPDK:
->>> http://dpdk.org/dev/patchwork/patch/14009/
->>>
->>> I see error messages ?Failed to update link.? If I understand correctly, this patch introduced a delay (1000 ms) to make sure that the link is up again. It also checks one register in a busy-wait loop (see comment: "When the PF link is down? VF cannot operate its registers?). But the problem here is that there might be completely arbitrary time between link going down and up again (minutes, hours, etc), so I cannot be sitting in a busy-wait loop like this.
->>
->> This doesn't sound right to me.  So DPDK is expecting the link to
->> always be up?  That isn't always going to be the case.  It seems like
->> DPDK should figure out a way to enable interrupts and wait for the
->> mailbox notification that the link has come back up.
->>
->
-> Are you proposing to split reset logic (from the patch) into 2 parts?
-> 1. Always stop the device on the reset adapter notification
-> 2. Start the device on the link up notification or if it is already up
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Friday, December 02, 2016 12:33 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S56 1/8] i40e: Clean up dead code
+> 
+> From: Mitch Williams <mitch.a.williams@intel.com>
+> 
+> The function i40e_client_prepare() can never return an error. So make it void
+> and quit checking its return value.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: I9ff311e2324dde329eb68648efb2c94aaff856db
+> ---
+> Testing Hints : Found by static code analysis. Not possible to test, just code
+> cleanup.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_client.c | 13 +++----------
+>  1 file changed, 3 insertions(+), 10 deletions(-)
 
-I can't say for certain as I haven't worked in DPDK all that much.
-However all of our kernel based VF drivers basically work on that kind
-of logic.  They will receive the reset notification but they will wait
-until the link up notification is received before they decide to
-reset.  The trick is we do the reset notifcation based on the call to
-ixgbevf_check_mac_link_vf() instead of just resetting if the link goes
-down.  The PF takes care of the reset on its end if it is resetting
-things due to the link going down, then the VF should reset when the
-link comes back up.  When the link goes down though we need to make
-certain to turn off all the watchdogs and such.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-- Alex
+
