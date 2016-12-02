@@ -1,72 +1,147 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri,  2 Dec 2016 12:32:55 -0800
-Subject: [Intel-wired-lan] [next PATCH S56 1/8] i40e: Clean up dead code
+Date: Fri,  2 Dec 2016 12:32:56 -0800
+Subject: [Intel-wired-lan] [next PATCH S56 2/8] i40e: Add bus number info to
+	i40e_bus_info struct
 In-Reply-To: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
 References: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1480710782-9195-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1480710782-9195-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 
-The function i40e_client_prepare() can never return an error. So make it
-void and quit checking its return value.
+Currently i40e_bus_info has PCI device and function info only and log
+messages print device number as bus number. Added field to provide bus
+number info and modified log statements to print bus, device and
+function information.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I9ff311e2324dde329eb68648efb2c94aaff856db
+Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+Change-ID: I811617cee2714cc0d6bade8d369f57040990756f
 ---
-Testing Hints : Found by static code analysis. Not
-possible to test, just code cleanup.
-
- drivers/net/ethernet/intel/i40e/i40e_client.c | 13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_client.c   | 16 +++++++++-------
+ drivers/net/ethernet/intel/i40e/i40e_main.c     |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_osdep.h    | 12 ++++++------
+ drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
+ drivers/net/ethernet/intel/i40evf/i40e_type.h   |  1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c |  1 +
+ 6 files changed, 19 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index f6409f9..337d417 100644
+index 337d417..09110d3 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_client.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -653,13 +653,11 @@ static int i40e_client_release(struct i40e_client *client)
-  * i40e_client_prepare - prepare client specific resources
-  * @client: pointer to the registered client
-  *
-- * Return 0 on success or < 0 on error
-  **/
--static int i40e_client_prepare(struct i40e_client *client)
-+static void i40e_client_prepare(struct i40e_client *client)
- {
- 	struct i40e_device *ldev;
- 	struct i40e_pf *pf;
--	int ret = 0;
+@@ -510,9 +510,10 @@ void i40e_client_subtask(struct i40e_pf *pf)
+ 			continue;
  
+ 		if (!existing) {
+-			dev_info(&pf->pdev->dev, "Added instance of Client %s to PF%d bus=0x%02x func=0x%02x\n",
++			dev_info(&pf->pdev->dev, "Added instance of Client %s to PF%d bus=0x%02x dev=0x%02x func=0x%02x\n",
+ 				 client->name, pf->hw.pf_id,
+-				 pf->hw.bus.device, pf->hw.bus.func);
++				 pf->hw.bus.bus_id, pf->hw.bus.device,
++				 pf->hw.bus.func);
+ 		}
+ 
+ 		mutex_lock(&i40e_client_instance_mutex);
+@@ -561,8 +562,9 @@ int i40e_lan_add_device(struct i40e_pf *pf)
+ 	ldev->pf = pf;
+ 	INIT_LIST_HEAD(&ldev->list);
+ 	list_add(&ldev->list, &i40e_devices);
+-	dev_info(&pf->pdev->dev, "Added LAN device PF%d bus=0x%02x func=0x%02x\n",
+-		 pf->hw.pf_id, pf->hw.bus.device, pf->hw.bus.func);
++	dev_info(&pf->pdev->dev, "Added LAN device PF%d bus=0x%02x dev=0x%02x func=0x%02x\n",
++		 pf->hw.pf_id, pf->hw.bus.bus_id,
++		 pf->hw.bus.device, pf->hw.bus.func);
+ 
+ 	/* Since in some cases register may have happened before a device gets
+ 	 * added, we can schedule a subtask to go initiate the clients if
+@@ -590,9 +592,9 @@ int i40e_lan_del_device(struct i40e_pf *pf)
  	mutex_lock(&i40e_device_mutex);
- 	list_for_each_entry(ldev, &i40e_devices, list) {
-@@ -669,7 +667,6 @@ static int i40e_client_prepare(struct i40e_client *client)
- 		i40e_service_event_schedule(pf);
- 	}
- 	mutex_unlock(&i40e_device_mutex);
--	return ret;
- }
+ 	list_for_each_entry_safe(ldev, tmp, &i40e_devices, list) {
+ 		if (ldev->pf == pf) {
+-			dev_info(&pf->pdev->dev, "Deleted LAN device PF%d bus=0x%02x func=0x%02x\n",
+-				 pf->hw.pf_id, pf->hw.bus.device,
+-				 pf->hw.bus.func);
++			dev_info(&pf->pdev->dev, "Deleted LAN device PF%d bus=0x%02x dev=0x%02x func=0x%02x\n",
++				 pf->hw.pf_id, pf->hw.bus.bus_id,
++				 pf->hw.bus.device, pf->hw.bus.func);
+ 			list_del(&ldev->list);
+ 			kfree(ldev);
+ 			ret = 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 7351361..a0689f1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -11006,6 +11006,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	hw->subsystem_device_id = pdev->subsystem_device;
+ 	hw->bus.device = PCI_SLOT(pdev->devfn);
+ 	hw->bus.func = PCI_FUNC(pdev->devfn);
++	hw->bus.bus_id = pdev->bus->number;
+ 	pf->instance = pfs_found;
  
- /**
-@@ -926,13 +923,9 @@ int i40e_register_client(struct i40e_client *client)
- 	set_bit(__I40E_CLIENT_REGISTERED, &client->state);
- 	mutex_unlock(&i40e_client_mutex);
+ 	/* set up the locks for the AQ, do this only once in probe
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_osdep.h b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
+index be74bcf..fea81ed 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_osdep.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
+@@ -69,12 +69,12 @@ struct i40e_virt_mem {
+ #define i40e_allocate_virt_mem(h, m, s) i40e_allocate_virt_mem_d(h, m, s)
+ #define i40e_free_virt_mem(h, m) i40e_free_virt_mem_d(h, m)
  
--	if (i40e_client_prepare(client)) {
--		ret = -EIO;
--		goto out;
--	}
-+	i40e_client_prepare(client);
+-#define i40e_debug(h, m, s, ...)                                \
+-do {                                                            \
+-	if (((m) & (h)->debug_mask))                            \
+-		pr_info("i40e %02x.%x " s,                      \
+-			(h)->bus.device, (h)->bus.func,         \
+-			##__VA_ARGS__);                         \
++#define i40e_debug(h, m, s, ...)				\
++do {								\
++	if (((m) & (h)->debug_mask))				\
++		pr_info("i40e %02x:%02x.%x " s,			\
++			(h)->bus.bus_id, (h)->bus.device,	\
++			(h)->bus.func, ##__VA_ARGS__);		\
+ } while (0)
  
--	pr_info("i40e: Registered client %s with return code %d\n",
--		client->name, ret);
-+	pr_info("i40e: Registered client %s\n",	client->name);
- out:
- 	return ret;
- }
+ typedef enum i40e_status_code i40e_status;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 167244b..be7b611 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -469,6 +469,7 @@ struct i40e_bus_info {
+ 	u16 func;
+ 	u16 device;
+ 	u16 lan_id;
++	u16 bus_id;
+ };
+ 
+ /* Flow control (FC) parameters */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index 92ac60d..3f19dff 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -442,6 +442,7 @@ struct i40e_bus_info {
+ 	u16 func;
+ 	u16 device;
+ 	u16 lan_id;
++	u16 bus_id;
+ };
+ 
+ /* Flow control (FC) parameters */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 729d8fa..920c1cb 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2726,6 +2726,7 @@ static int i40evf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	hw->subsystem_device_id = pdev->subsystem_device;
+ 	hw->bus.device = PCI_SLOT(pdev->devfn);
+ 	hw->bus.func = PCI_FUNC(pdev->devfn);
++	hw->bus.bus_id = pdev->bus->number;
+ 
+ 	/* set up the locks for the AQ, do this only once in probe
+ 	 * and destroy them only once in remove
 -- 
 2.4.11
 
