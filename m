@@ -1,110 +1,53 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri,  2 Dec 2016 12:32:59 -0800
-Subject: [Intel-wired-lan] [next PATCH S56 5/8] i40e: allow
-	i40e_update_filter_state to skip broadcast filters
+Date: Fri,  2 Dec 2016 12:33:02 -0800
+Subject: [Intel-wired-lan] [next PATCH S56 8/8] Acquire NVM lock before
+	reads on all devices
 In-Reply-To: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
 References: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1480710782-9195-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1480710782-9195-9-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Aaron Salter <aaron.k.salter@intel.com>
 
-Fix a bug where we modified the mac_filter_hash while outside a lock,
-when handling addition of broadcast filters.
+Acquire NVM lock before reads on all devices.  Previously, locks were
+only used for X722 and later.  Fixes an issue where simultaneous X710
+NVM accesses were interfering with each other.
 
-Normally, we add filters to firmware by batching the additions into
-lists and issuing 1 update for every few filters. Broadcast filters are
-handled differently, by instead setting the broadcast promiscuous mode
-flags. In order to make sure the 1<->1 mapping of filters in our
-addition array lined up with filters in the hlist tmp_add_list, we had
-to remove the filter and move it back to the main hash. However, we
-didn't do this under lock, which could cause consistency problems for
-the list.
-
-Fix this by updating i40e_update_filter_state logic so that it knows to
-avoid broadcast filters. This ensures that we don't have to remove the
-filter separately, and can put it back using the normal flow.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: Id288fade80b3e3a9a54b68cc249188cb95147518
+Signed-off-by: Aaron Salter <aaron.k.salter@intel.com>
+Change-ID: If570bb7acf958cef58725ec2a2011cead6f80638
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 37 ++++++++++++++++++++++-------
- 1 file changed, 29 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 951976b..827676e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1849,6 +1849,31 @@ static void i40e_undo_filter_entries(struct i40e_vsi *vsi,
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 38ee18f..800bd55 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -292,14 +292,14 @@ i40e_status i40e_read_nvm_word(struct i40e_hw *hw, u16 offset,
+ {
+ 	enum i40e_status_code ret_code = 0;
  
- /**
-+ * i40e_next_entry - Get the next non-broadcast filter from a list
-+ * @f: pointer to filter in list
-+ *
-+ * Returns the next non-broadcast filter in the list. Required so that we
-+ * ignore broadcast filters within the list, since these are not handled via
-+ * the normal firmware update path.
-+ */
-+static struct i40e_mac_filter *i40e_next_filter(struct i40e_mac_filter *f)
-+{
-+	while (f) {
-+		f = hlist_entry(f->hlist.next,
-+				typeof(struct i40e_mac_filter),
-+				hlist);
-+
-+		/* keep going if we found a broadcast filter */
-+		if (f && is_broadcast_ether_addr(f->macaddr))
-+			continue;
-+
-+		break;
-+	}
-+
-+	return f;
-+}
-+
-+/**
-  * i40e_update_filter_state - Update filter state based on return data
-  * from firmware
-  * @count: Number of filters added
-@@ -1880,9 +1905,9 @@ i40e_update_filter_state(int count,
- 			retval++;
+-	if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE) {
+-		ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
+-		if (!ret_code) {
++	ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
++	if (!ret_code) {
++		if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE) {
+ 			ret_code = i40e_read_nvm_word_aq(hw, offset, data);
+-			i40e_release_nvm(hw);
++		} else {
++			ret_code = i40e_read_nvm_word_srctl(hw, offset, data);
  		}
- 
--		add_head = hlist_entry(add_head->hlist.next,
--				       typeof(struct i40e_mac_filter),
--				       hlist);
-+		add_head = i40e_next_filter(add_head);
-+		if (!add_head)
-+			break;
+-	} else {
+-		ret_code = i40e_read_nvm_word_srctl(hw, offset, data);
++		i40e_release_nvm(hw);
  	}
- 
- 	return retval;
-@@ -2101,7 +2126,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 			cmd_flags = 0;
- 
- 			/* handle broadcast filters by updating the broadcast
--			 * promiscuous flag instead of deleting a MAC filter.
-+			 * promiscuous flag and release filter list.
- 			 */
- 			if (is_broadcast_ether_addr(f->macaddr)) {
- 				i40e_aqc_broadcast_filter(vsi, vsi_name, f);
-@@ -2170,11 +2195,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 			 * promiscuous flag instead of adding a MAC filter.
- 			 */
- 			if (is_broadcast_ether_addr(f->macaddr)) {
--				u64 key = i40e_addr_to_hkey(f->macaddr);
- 				i40e_aqc_broadcast_filter(vsi, vsi_name, f);
--
--				hlist_del(&f->hlist);
--				hash_add(vsi->mac_filter_hash, &f->hlist, key);
- 				continue;
- 			}
- 
+ 	return ret_code;
+ }
 -- 
 2.4.11
 
