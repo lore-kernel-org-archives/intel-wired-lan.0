@@ -1,147 +1,109 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri,  2 Dec 2016 12:32:56 -0800
-Subject: [Intel-wired-lan] [next PATCH S56 2/8] i40e: Add bus number info to
-	i40e_bus_info struct
+Date: Fri,  2 Dec 2016 12:32:57 -0800
+Subject: [Intel-wired-lan] [next PATCH S56 3/8] i40e: Save link FEC info
+	from link up event
 In-Reply-To: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
 References: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1480710782-9195-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1480710782-9195-4-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+From: Henry Tieman <henry.w.tieman@intel.com>
 
-Currently i40e_bus_info has PCI device and function info only and log
-messages print device number as bus number. Added field to provide bus
-number info and modified log statements to print bus, device and
-function information.
+Store the FEC status bits from the link up event into the
+hw_link_info structure.
 
-Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
-Change-ID: I811617cee2714cc0d6bade8d369f57040990756f
+Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+Change-ID: I9a7b256f6dfb0dce89c2f503075d0d383526832e
 ---
- drivers/net/ethernet/intel/i40e/i40e_client.c   | 16 +++++++++-------
- drivers/net/ethernet/intel/i40e/i40e_main.c     |  1 +
- drivers/net/ethernet/intel/i40e/i40e_osdep.h    | 12 ++++++------
- drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_type.h   |  1 +
- drivers/net/ethernet/intel/i40evf/i40evf_main.c |  1 +
- 6 files changed, 19 insertions(+), 13 deletions(-)
+Testing Hints: In support of DCR 2228, this commit stores the FEC
+data for later display in the "link up" kernel log message.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 337d417..09110d3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -510,9 +510,10 @@ void i40e_client_subtask(struct i40e_pf *pf)
- 			continue;
- 
- 		if (!existing) {
--			dev_info(&pf->pdev->dev, "Added instance of Client %s to PF%d bus=0x%02x func=0x%02x\n",
-+			dev_info(&pf->pdev->dev, "Added instance of Client %s to PF%d bus=0x%02x dev=0x%02x func=0x%02x\n",
- 				 client->name, pf->hw.pf_id,
--				 pf->hw.bus.device, pf->hw.bus.func);
-+				 pf->hw.bus.bus_id, pf->hw.bus.device,
-+				 pf->hw.bus.func);
- 		}
- 
- 		mutex_lock(&i40e_client_instance_mutex);
-@@ -561,8 +562,9 @@ int i40e_lan_add_device(struct i40e_pf *pf)
- 	ldev->pf = pf;
- 	INIT_LIST_HEAD(&ldev->list);
- 	list_add(&ldev->list, &i40e_devices);
--	dev_info(&pf->pdev->dev, "Added LAN device PF%d bus=0x%02x func=0x%02x\n",
--		 pf->hw.pf_id, pf->hw.bus.device, pf->hw.bus.func);
-+	dev_info(&pf->pdev->dev, "Added LAN device PF%d bus=0x%02x dev=0x%02x func=0x%02x\n",
-+		 pf->hw.pf_id, pf->hw.bus.bus_id,
-+		 pf->hw.bus.device, pf->hw.bus.func);
- 
- 	/* Since in some cases register may have happened before a device gets
- 	 * added, we can schedule a subtask to go initiate the clients if
-@@ -590,9 +592,9 @@ int i40e_lan_del_device(struct i40e_pf *pf)
- 	mutex_lock(&i40e_device_mutex);
- 	list_for_each_entry_safe(ldev, tmp, &i40e_devices, list) {
- 		if (ldev->pf == pf) {
--			dev_info(&pf->pdev->dev, "Deleted LAN device PF%d bus=0x%02x func=0x%02x\n",
--				 pf->hw.pf_id, pf->hw.bus.device,
--				 pf->hw.bus.func);
-+			dev_info(&pf->pdev->dev, "Deleted LAN device PF%d bus=0x%02x dev=0x%02x func=0x%02x\n",
-+				 pf->hw.pf_id, pf->hw.bus.bus_id,
-+				 pf->hw.bus.device, pf->hw.bus.func);
- 			list_del(&ldev->list);
- 			kfree(ldev);
- 			ret = 0;
+ drivers/net/ethernet/intel/i40e/i40e_common.c |  2 ++
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 21 +++++++++++++++++++--
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 +
+ drivers/net/ethernet/intel/i40evf/i40e_type.h |  1 +
+ 4 files changed, 23 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 59e766c..549fdca 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1838,6 +1838,8 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
+ 	hw_link_info->link_speed = (enum i40e_aq_link_speed)resp->link_speed;
+ 	hw_link_info->link_info = resp->link_info;
+ 	hw_link_info->an_info = resp->an_info;
++	hw_link_info->fec_info = resp->config & (I40E_AQ_CONFIG_FEC_KR_ENA |
++						 I40E_AQ_CONFIG_FEC_RS_ENA);
+ 	hw_link_info->ext_info = resp->ext_info;
+ 	hw_link_info->loopback = resp->loopback;
+ 	hw_link_info->max_frame_size = le16_to_cpu(resp->max_frame_size);
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 7351361..a0689f1 100644
+index a0689f1..951976b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11006,6 +11006,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	hw->subsystem_device_id = pdev->subsystem_device;
- 	hw->bus.device = PCI_SLOT(pdev->devfn);
- 	hw->bus.func = PCI_FUNC(pdev->devfn);
-+	hw->bus.bus_id = pdev->bus->number;
- 	pf->instance = pfs_found;
+@@ -5267,6 +5267,8 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
+ 	enum i40e_aq_link_speed new_speed;
+ 	char *speed = "Unknown";
+ 	char *fc = "Unknown";
++	char *fec = "";
++	char *an = "";
  
- 	/* set up the locks for the AQ, do this only once in probe
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_osdep.h b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
-index be74bcf..fea81ed 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_osdep.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
-@@ -69,12 +69,12 @@ struct i40e_virt_mem {
- #define i40e_allocate_virt_mem(h, m, s) i40e_allocate_virt_mem_d(h, m, s)
- #define i40e_free_virt_mem(h, m) i40e_free_virt_mem_d(h, m)
+ 	new_speed = vsi->back->hw.phy.link_info.link_speed;
  
--#define i40e_debug(h, m, s, ...)                                \
--do {                                                            \
--	if (((m) & (h)->debug_mask))                            \
--		pr_info("i40e %02x.%x " s,                      \
--			(h)->bus.device, (h)->bus.func,         \
--			##__VA_ARGS__);                         \
-+#define i40e_debug(h, m, s, ...)				\
-+do {								\
-+	if (((m) & (h)->debug_mask))				\
-+		pr_info("i40e %02x:%02x.%x " s,			\
-+			(h)->bus.bus_id, (h)->bus.device,	\
-+			(h)->bus.func, ##__VA_ARGS__);		\
- } while (0)
+@@ -5326,8 +5328,23 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
+ 		break;
+ 	}
  
- typedef enum i40e_status_code i40e_status;
+-	netdev_info(vsi->netdev, "NIC Link is Up %sbps Full Duplex, Flow Control: %s\n",
+-		    speed, fc);
++	if (vsi->back->hw.phy.link_info.link_speed == I40E_LINK_SPEED_25GB) {
++		fec = ", FEC: None";
++		an = ", Autoneg: False";
++
++		if (vsi->back->hw.phy.link_info.an_info & I40E_AQ_AN_COMPLETED)
++			an = ", Autoneg: True";
++
++		if (vsi->back->hw.phy.link_info.fec_info &
++		    I40E_AQ_CONFIG_FEC_KR_ENA)
++			fec = ", FEC: CL74 FC-FEC/BASE-R";
++		else if (vsi->back->hw.phy.link_info.fec_info &
++			 I40E_AQ_CONFIG_FEC_RS_ENA)
++			fec = ", FEC: CL108 RS-FEC";
++	}
++
++	netdev_info(vsi->netdev, "NIC Link is Up, %sbps Full Duplex%s%s, Flow Control: %s\n",
++		    speed, fec, an, fc);
+ }
+ 
+ /**
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 167244b..be7b611 100644
+index be7b611..df7914e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -469,6 +469,7 @@ struct i40e_bus_info {
- 	u16 func;
- 	u16 device;
- 	u16 lan_id;
-+	u16 bus_id;
- };
- 
- /* Flow control (FC) parameters */
+@@ -184,6 +184,7 @@ struct i40e_link_status {
+ 	enum i40e_aq_link_speed link_speed;
+ 	u8 link_info;
+ 	u8 an_info;
++	u8 fec_info;
+ 	u8 ext_info;
+ 	u8 loopback;
+ 	/* is Link Status Event notification to SW enabled */
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 92ac60d..3f19dff 100644
+index 3f19dff..16bb880 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -442,6 +442,7 @@ struct i40e_bus_info {
- 	u16 func;
- 	u16 device;
- 	u16 lan_id;
-+	u16 bus_id;
- };
- 
- /* Flow control (FC) parameters */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 729d8fa..920c1cb 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2726,6 +2726,7 @@ static int i40evf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	hw->subsystem_device_id = pdev->subsystem_device;
- 	hw->bus.device = PCI_SLOT(pdev->devfn);
- 	hw->bus.func = PCI_FUNC(pdev->devfn);
-+	hw->bus.bus_id = pdev->bus->number;
- 
- 	/* set up the locks for the AQ, do this only once in probe
- 	 * and destroy them only once in remove
+@@ -158,6 +158,7 @@ struct i40e_link_status {
+ 	enum i40e_aq_link_speed link_speed;
+ 	u8 link_info;
+ 	u8 an_info;
++	u8 fec_info;
+ 	u8 ext_info;
+ 	u8 loopback;
+ 	/* is Link Status Event notification to SW enabled */
 -- 
 2.4.11
 
