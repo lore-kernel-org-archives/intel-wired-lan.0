@@ -1,82 +1,67 @@
-From: Chris J Arges <carges@vectranetworks.com>
-Date: Fri, 2 Dec 2016 15:26:11 -0600
-Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the
-	PHY ID
-In-Reply-To: <1327348432.729242.1480711590904.JavaMail.zimbra@xes-inc.com>
-References: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
- <20161201031318.GA6368@outlook.office365.com>
- <1279201741.206062.1480609194012.JavaMail.zimbra@xes-inc.com>
- <CO2PR0801MB6475BDA6E8A945DEC51B1B1AE8F0@CO2PR0801MB647.namprd08.prod.outlook.com>
- <1327348432.729242.1480711590904.JavaMail.zimbra@xes-inc.com>
-Message-ID: <20161202212611.GA11822@outlook.office365.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 2 Dec 2016 13:48:46 -0800
+Subject: [Intel-wired-lan] Question about ixgbe RESET due to lost link
+In-Reply-To: <4AF47DE6-A757-4EB0-A31F-48138E12C178@purestorage.com>
+References: <8DAE8844-E419-473E-9033-8CB3CAB0D3A5@purestorage.com>
+ <CAKgT0UdOoTn77DM_KHkS=tkDW19dxJGrSUv9tn=ZvGy+bR=Dcw@mail.gmail.com>
+ <4AF47DE6-A757-4EB0-A31F-48138E12C178@purestorage.com>
+Message-ID: <CAKgT0UeieA6wirnTwV+Wj1_jZxvAOVJeugQ-mnkCdt7fWx_Ebg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Dec 02, 2016 at 02:46:30PM -0600, Aaron Sierra wrote:
-> ----- Original Message -----
-> > From: "Chris Arges" <carges@vectranetworks.com>
-> > Sent: Thursday, December 1, 2016 5:17:52 PM
-> 
-> >> ________________________________________
-> >> From: Aaron Sierra <asierra@xes-inc.com>
-> >> Sent: Thursday, December 1, 2016 10:19 AM
-> >> To: Chris Arges
-> >> Cc: Jeffrey T Kirsher; Matwey V. Kornilov; Jochen Henneberg; intel-wired-lan
-> >> Subject: Re: [PATCH] igb: reset the PHY before reading the PHY ID
-> >> 
-> >> Chris,
-> >> Can you provide any more information about your environment than you
-> >> already have? I've only found that you're using an I210. Is it embedded
-> >> in the baseboard or an add-in device? Please share very verbose lspci
-> >> output for this device:
-> >> 
-> >>    lspci -vvv -n -s <[bus]:[device].[function]>
-> >> 
-> >> What kernel version did you use in your testing? Did my patch apply
-> >> cleanly or with "fuzz" reported by the patch command?
-> >> 
-> >> -Aaron S.
-> > 
-> > Aaron,
-> > I applied your patch cleanly against 4.4 (testing this on Ubuntu 16.04 fwiw)
-> > which I think didn't backport well. Using mainline 4.9rcX I was able to get
-> > your patch working. Would there be a recommended modification for a stable
-> > patch?
-> > 
-> > For completeness,
-> > $ lspci -vvv -n -s 07:00.0
-> > 07:00.0 0200: 8086:1533 (rev 03)
-> >	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping-
-> >	SERR- FastB2B- DisINTx+
-> >	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort-
-> >	>SERR- <PERR- INTx-
-> >	Latency: 0, Cache Line Size: 128 bytes
-> >	Interrupt: pin A routed to IRQ 16
-> >	Region 0: Memory at 91200000 (32-bit, non-prefetchable) [size=512K]
-> >	Region 2: I/O ports at 3000 [size=32]
-> >	Region 3: Memory at 91280000 (32-bit, non-prefetchable) [size=16K]
-> >	Capabilities: <access denied>
-> >	Kernel driver in use: igb
-> >	Kernel modules: igb
-> > 
-> 
-> Chris,
-> Thanks for double-checking. You've got a copper NIC and I'm testing with a
-> "flashless copper" NIC (8086:157b).
-> 
-> The patch that caused things to break for you doesn't seem to be in linux-stable's
-> linux-4.4.y branch, so this patch shouldn't be needed there. Though it does apply
-> cleanly like you said.
-> 
-> I did another sanity check against linux-4.5.y and found that this patch applies
-> cleanly there and also still solves the problem for me.
-> 
-> -Aaron S.
+On Thu, Dec 1, 2016 at 6:31 PM, Ruslan Nikolaev <ruslan@purestorage.com> wrote:
+> Thank you for your response! I still have questions below.
+>
+>>
+>>> While working with ixgbe (PF) and dpdk (VF), I have noticed that sometimes
+>>> we get ?Reset adapter? message 'due to lost link with pending Tx work?.
+>>>
+>>> The problem is that when handling the VF reset message that arrives through
+>>> a mailbox (in the corresponding dpdk handler), the link may already be down.
+>>> Therefore, we are unable to properly reset the device. While looking at the
+>>> ixgbe code, I have noticed that IXGBE_FLAG2_RESET_REQUESTED (in this case,
+>>> set in ixgbe_watchdog_flush_tx) is checked in ixgbe_reset_subtask. The
+>>> latter will only do anything if the link is not already down.
+>>
+>> Why can't you properly reset the device?  The PF should have already
+>> taken care of resetting the queues when it did the reset itself.  All
+>> that should be left to do is for the VF to reinitialize the queues so
+>> that they are re-enabled after the reset.
+>>
+>
+> I guess, the problem is that we can stop a device but we are unable to start the device properly (because some registers are unavailable?) Particularly, in the patch for DPDK:
+> http://dpdk.org/dev/patchwork/patch/14009/
+>
+> I see error messages ?Failed to update link.? If I understand correctly, this patch introduced a delay (1000 ms) to make sure that the link is up again. It also checks one register in a busy-wait loop (see comment: "When the PF link is down? VF cannot operate its registers?). But the problem here is that there might be completely arbitrary time between link going down and up again (minutes, hours, etc), so I cannot be sitting in a busy-wait loop like this.
 
-Yes, sorry for the confusion. This patch works for me 4.5+ and I can verify it.
-Tested-by: Chris J Arges <christopherarges@gmail.com>
+This doesn't sound right to me.  So DPDK is expecting the link to
+always be up?  That isn't always going to be the case.  It seems like
+DPDK should figure out a way to enable interrupts and wait for the
+mailbox notification that the link has come back up.
 
---chris
+>>> I guess, my question is why we are setting it when detecting that the link
+>>> is down. It is going to be down anyway. Can the actual reset take place when
+>>> the link is up again?
+>>>
+>>> Thank you!
+>>
+>> The short answer to this is "no".
+>>
+>> What it all comes down to is that we have to flush the Tx queues when
+>> the link goes down to get rid of stale data.  We need to go through
+>> and clean out the Tx rings so that the Tx and Rx FIFOs are cleared and
+>> ready to go when the link comes back up.  We can't reset the part
+>> after link up because by that point the link has already come back up
+>> and the stale data is likely already moving through queues.
+>
+> Ok, I see. What happens if the stale data (Tx) moves through queues and is actually sent. Is that a problem? Why do we need to reset queues? (Sorry if it is a silly question but just trying to understand why we are doing it in the first place.)
+>
+
+There ends up being a few different things that could happen depending
+on the hardware.  In some cases it can get as bad as Tx hangs or data
+corruptions.  Generally you don't want the driver sitting on the
+memory in the Tx rings.  You want it to flush the memory and just wait
+until the link has come back before we start queuing packets again.
