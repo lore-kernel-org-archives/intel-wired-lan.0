@@ -1,109 +1,100 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri,  2 Dec 2016 12:32:57 -0800
-Subject: [Intel-wired-lan] [next PATCH S56 3/8] i40e: Save link FEC info
-	from link up event
+Date: Fri,  2 Dec 2016 12:32:58 -0800
+Subject: [Intel-wired-lan] [next PATCH S56 4/8] i40e: don't warn every time
+	we clear an Rx timestamp register
 In-Reply-To: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
 References: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1480710782-9195-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1480710782-9195-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Henry Tieman <henry.w.tieman@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Store the FEC status bits from the link up event into the
-hw_link_info structure.
+The intent of this message was to indicate to a user that we might have
+missed a timestamp event for a valid packet. The original method of
+detecting the missed events relied on waiting until all 4 registers were
+filled.
 
-Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
-Change-ID: I9a7b256f6dfb0dce89c2f503075d0d383526832e
+A recent commit d55458c0cd7a5 ("i40e: replace PTP Rx timestamp hang
+logic") replaced this logic with much better detection
+scheme that could detect a stalled Rx timestamp register even when other
+registers were still functional.
+
+The new logic means that a message will be displayed almost as soon as
+a timestamp for a dropped frame occurs. This new logic highlights that
+the hardware will attempt timestamp for frames which it later decides to
+drop. The most prominent example is when a multicast PTP frame is
+received on a multicast address that we are not subscribed to.
+
+Because the hardware initiates the Rx timestamp as soon as possible, it
+will latch an RXTIME register, but then drop the packet.
+
+This results in users being confused by the message as they are not
+expecting to see dropped timestamp messages unless their application
+also indicates that timestamps were missing.
+
+Resolve this by reducing the severity and frequency of the displayed
+message. We now only print the message if 3 or 4 of the RXTIME registers
+are stalled and get cleared within the same watchdog event. This ensures
+that the common case does not constantly display the message.
+Additionally, since the message is likely not as meaningful to most
+users, reduce the message to a dev_dbg instead of a dev_warn.
+
+Users can still get a count of the number of timestamps dropped by
+reading the ethtool statistics value, if necessary.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: I35494442226a444c418dfb4f91a3070d06c8435c
 ---
-Testing Hints: In support of DCR 2228, this commit stores the FEC
-data for later display in the "link up" kernel log message.
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c | 21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
 
- drivers/net/ethernet/intel/i40e/i40e_common.c |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c   | 21 +++++++++++++++++++--
- drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_type.h |  1 +
- 4 files changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 59e766c..549fdca 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1838,6 +1838,8 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
- 	hw_link_info->link_speed = (enum i40e_aq_link_speed)resp->link_speed;
- 	hw_link_info->link_info = resp->link_info;
- 	hw_link_info->an_info = resp->an_info;
-+	hw_link_info->fec_info = resp->config & (I40E_AQ_CONFIG_FEC_KR_ENA |
-+						 I40E_AQ_CONFIG_FEC_RS_ENA);
- 	hw_link_info->ext_info = resp->ext_info;
- 	hw_link_info->loopback = resp->loopback;
- 	hw_link_info->max_frame_size = le16_to_cpu(resp->max_frame_size);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a0689f1..951976b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5267,6 +5267,8 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 	enum i40e_aq_link_speed new_speed;
- 	char *speed = "Unknown";
- 	char *fc = "Unknown";
-+	char *fec = "";
-+	char *an = "";
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+index 9e49ffa..2caee35 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+@@ -280,7 +280,7 @@ void i40e_ptp_rx_hang(struct i40e_vsi *vsi)
+ {
+ 	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
+-	int i;
++	unsigned int i, cleared = 0;
  
- 	new_speed = vsi->back->hw.phy.link_info.link_speed;
- 
-@@ -5326,8 +5328,23 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 		break;
+ 	/* Since we cannot turn off the Rx timestamp logic if the device is
+ 	 * configured for Tx timestamping, we check if Rx timestamping is
+@@ -306,14 +306,25 @@ void i40e_ptp_rx_hang(struct i40e_vsi *vsi)
+ 		    time_is_before_jiffies(pf->latch_events[i] + HZ)) {
+ 			rd32(hw, I40E_PRTTSYN_RXTIME_H(i));
+ 			pf->latch_event_flags &= ~BIT(i);
+-			pf->rx_hwtstamp_cleared++;
+-			dev_warn(&pf->pdev->dev,
+-				 "Clearing a missed Rx timestamp event for RXTIME[%d]\n",
+-				 i);
++			cleared++;
+ 		}
  	}
  
--	netdev_info(vsi->netdev, "NIC Link is Up %sbps Full Duplex, Flow Control: %s\n",
--		    speed, fc);
-+	if (vsi->back->hw.phy.link_info.link_speed == I40E_LINK_SPEED_25GB) {
-+		fec = ", FEC: None";
-+		an = ", Autoneg: False";
+ 	spin_unlock_bh(&pf->ptp_rx_lock);
 +
-+		if (vsi->back->hw.phy.link_info.an_info & I40E_AQ_AN_COMPLETED)
-+			an = ", Autoneg: True";
++	/* Log a warning if more than 2 timestamps got dropped in the same
++	 * check. We don't want to warn about all drops because it can occur
++	 * in normal scenarios such as PTP frames on multicast addresses we
++	 * aren't listening to. However, administrator should know if this is
++	 * the reason packets aren't receiving timestamps.
++	 */
++	if (cleared > 2)
++		dev_dbg(&pf->pdev->dev,
++			"Dropped %d missed RXTIME timestamp events\n",
++			cleared);
 +
-+		if (vsi->back->hw.phy.link_info.fec_info &
-+		    I40E_AQ_CONFIG_FEC_KR_ENA)
-+			fec = ", FEC: CL74 FC-FEC/BASE-R";
-+		else if (vsi->back->hw.phy.link_info.fec_info &
-+			 I40E_AQ_CONFIG_FEC_RS_ENA)
-+			fec = ", FEC: CL108 RS-FEC";
-+	}
-+
-+	netdev_info(vsi->netdev, "NIC Link is Up, %sbps Full Duplex%s%s, Flow Control: %s\n",
-+		    speed, fec, an, fc);
++	/* Finally, update the rx_hwtstamp_cleared counter */
++	pf->rx_hwtstamp_cleared += cleared;
  }
  
  /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index be7b611..df7914e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -184,6 +184,7 @@ struct i40e_link_status {
- 	enum i40e_aq_link_speed link_speed;
- 	u8 link_info;
- 	u8 an_info;
-+	u8 fec_info;
- 	u8 ext_info;
- 	u8 loopback;
- 	/* is Link Status Event notification to SW enabled */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 3f19dff..16bb880 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -158,6 +158,7 @@ struct i40e_link_status {
- 	enum i40e_aq_link_speed link_speed;
- 	u8 link_info;
- 	u8 an_info;
-+	u8 fec_info;
- 	u8 ext_info;
- 	u8 loopback;
- 	/* is Link Status Event notification to SW enabled */
 -- 
 2.4.11
 
