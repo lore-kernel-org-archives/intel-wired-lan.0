@@ -1,56 +1,65 @@
-From: Ruslan Nikolaev <ruslan@purestorage.com>
-Date: Thu, 1 Dec 2016 18:31:55 -0800
-Subject: [Intel-wired-lan] Question about ixgbe RESET due to lost link
-In-Reply-To: <CAKgT0UdOoTn77DM_KHkS=tkDW19dxJGrSUv9tn=ZvGy+bR=Dcw@mail.gmail.com>
-References: <8DAE8844-E419-473E-9033-8CB3CAB0D3A5@purestorage.com>
- <CAKgT0UdOoTn77DM_KHkS=tkDW19dxJGrSUv9tn=ZvGy+bR=Dcw@mail.gmail.com>
-Message-ID: <4AF47DE6-A757-4EB0-A31F-48138E12C178@purestorage.com>
+From: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+Date: Fri, 2 Dec 2016 10:55:56 -0200
+Subject: [Intel-wired-lan] [PATCH net v2] igb: re-assign hw address
+ pointer on reset after PCI error
+In-Reply-To: <1478803603-30306-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+References: <1478803603-30306-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Message-ID: <58416F5C.20602@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thank you for your response! I still have questions below.
-
+On 11/10/2016 04:46 PM, Guilherme G. Piccoli wrote:
+> Whenever the igb driver detects the result of a read operation returns
+> a value composed only by F's (like 0xFFFFFFFF), it will detach the
+> net_device, clear the hw_addr pointer and warn to the user that adapter's
+> link is lost - those steps happen on igb_rd32().
 > 
->> While working with ixgbe (PF) and dpdk (VF), I have noticed that sometimes
->> we get ?Reset adapter? message 'due to lost link with pending Tx work?.
->> 
->> The problem is that when handling the VF reset message that arrives through
->> a mailbox (in the corresponding dpdk handler), the link may already be down.
->> Therefore, we are unable to properly reset the device. While looking at the
->> ixgbe code, I have noticed that IXGBE_FLAG2_RESET_REQUESTED (in this case,
->> set in ixgbe_watchdog_flush_tx) is checked in ixgbe_reset_subtask. The
->> latter will only do anything if the link is not already down.
+> In case a PCI error happens on Power architecture, there's a recovery
+> mechanism called EEH, that will reset the PCI slot and call driver's
+> handlers to reset the adapter and network functionality as well.
 > 
-> Why can't you properly reset the device?  The PF should have already
-> taken care of resetting the queues when it did the reset itself.  All
-> that should be left to do is for the VF to reinitialize the queues so
-> that they are re-enabled after the reset.
+> We observed that once hw_addr is NULL after the error is detected on
+> igb_rd32(), it's never assigned back, so in the process of resetting
+> the network functionality we got a NULL pointer dereference in both
+> igb_configure_tx_ring() and igb_configure_rx_ring(). In order to avoid
+> such bug, this patch re-assigns the hw_addr value in the slot_reset
+> handler.
+> 
+> Reported-by: Anthony H. Thai <ahthai@us.ibm.com>
+> Reported-by: Harsha Thyagaraja <hathyaga@in.ibm.com>
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index edc9a6a..136ee9e 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -7878,6 +7878,11 @@ static pci_ers_result_t igb_io_slot_reset(struct pci_dev *pdev)
+>  		pci_enable_wake(pdev, PCI_D3hot, 0);
+>  		pci_enable_wake(pdev, PCI_D3cold, 0);
+> 
+> +		/* In case of PCI error, adapter lose its HW address
+> +		 * so we should re-assign it here.
+> +		 */
+> +		hw->hw_addr = adapter->io_addr;
+> +
+>  		igb_reset(adapter);
+>  		wr32(E1000_WUS, ~0);
+>  		result = PCI_ERS_RESULT_RECOVERED;
 > 
 
-I guess, the problem is that we can stop a device but we are unable to start the device properly (because some registers are unavailable?) Particularly, in the patch for DPDK:
-http://dpdk.org/dev/patchwork/patch/14009/
+Ping?
 
-I see error messages ?Failed to update link.? If I understand correctly, this patch introduced a delay (1000 ms) to make sure that the link is up again. It also checks one register in a busy-wait loop (see comment: "When the PF link is down? VF cannot operate its registers?). But the problem here is that there might be completely arbitrary time between link going down and up again (minutes, hours, etc), so I cannot be sitting in a busy-wait loop like this.
+Sorry to annoy, any news on this?
+Thanks in advance!
+
+Cheers,
 
 
->> I guess, my question is why we are setting it when detecting that the link
->> is down. It is going to be down anyway. Can the actual reset take place when
->> the link is up again?
->> 
->> Thank you!
-> 
-> The short answer to this is "no".
-> 
-> What it all comes down to is that we have to flush the Tx queues when
-> the link goes down to get rid of stale data.  We need to go through
-> and clean out the Tx rings so that the Tx and Rx FIFOs are cleared and
-> ready to go when the link comes back up.  We can't reset the part
-> after link up because by that point the link has already come back up
-> and the stale data is likely already moving through queues.
-
-Ok, I see. What happens if the stale data (Tx) moves through queues and is actually sent. Is that a problem? Why do we need to reset queues? (Sorry if it is a silly question but just trying to understand why we are doing it in the first place.)
-
+Guilherme
 
