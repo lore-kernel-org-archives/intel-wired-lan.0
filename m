@@ -1,70 +1,205 @@
-From: Ruslan Nikolaev <ruslan@purestorage.com>
-Date: Fri, 2 Dec 2016 18:03:03 -0800
-Subject: [Intel-wired-lan] Question about ixgbe RESET due to lost link
-In-Reply-To: <CAKgT0Uc+h_x8fHpZDP5J6kNxyNuymtcnTAzv9Q-hFhyj851+2g@mail.gmail.com>
-References: <CAKgT0UeieA6wirnTwV+Wj1_jZxvAOVJeugQ-mnkCdt7fWx_Ebg@mail.gmail.com>
- <FA04B483-9533-4732-9EA5-F2EF7EC3BCDD@purestorage.com>
- <CAKgT0Uc+h_x8fHpZDP5J6kNxyNuymtcnTAzv9Q-hFhyj851+2g@mail.gmail.com>
-Message-ID: <AEBBD07E-1E50-40A6-9F74-8DBF30D53589@purestorage.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 03 Dec 2016 11:06:15 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 6bc9786b8d8883979b5231535277f7e7a4d6de8d
+Message-ID: <584236a7.jeLof+CXKh1bYYid%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks! Do you rely on the mailbox reset notification at all in the ixgbevf? Or is it just resetting it when the link seems to be down? 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+6bc9786b8d8883979b5231535277f7e7a4d6de8d  i40e: Acquire NVM lock before reads on all devices
 
-Also, do you mean that the reset procedure is completely postponed for VFs (including stopping the corresponding device per DPDK terminology) until after the link comes back up?
+elapsed time: 334m
 
+configs tested: 182
 
->> Thanks! I have one more question below.
->> 
->>> 
->>> 
->>>> Thank you for your response! I still have questions below.
->>>> 
->>>>> 
->>>>>> While working with ixgbe (PF) and dpdk (VF), I have noticed that sometimes
->>>>>> we get ?Reset adapter? message 'due to lost link with pending Tx work?.
->>>>>> 
->>>>>> The problem is that when handling the VF reset message that arrives through
->>>>>> a mailbox (in the corresponding dpdk handler), the link may already be down.
->>>>>> Therefore, we are unable to properly reset the device. While looking at the
->>>>>> ixgbe code, I have noticed that IXGBE_FLAG2_RESET_REQUESTED (in this case,
->>>>>> set in ixgbe_watchdog_flush_tx) is checked in ixgbe_reset_subtask. The
->>>>>> latter will only do anything if the link is not already down.
->>>>> 
->>>>> Why can't you properly reset the device?  The PF should have already
->>>>> taken care of resetting the queues when it did the reset itself.  All
->>>>> that should be left to do is for the VF to reinitialize the queues so
->>>>> that they are re-enabled after the reset.
->>>>> 
->>>> 
->>>> I guess, the problem is that we can stop a device but we are unable to start the device properly (because some registers are unavailable?) Particularly, in the patch for DPDK:
->>>> http://dpdk.org/dev/patchwork/patch/14009/
->>>> 
->>>> I see error messages ?Failed to update link.? If I understand correctly, this patch introduced a delay (1000 ms) to make sure that the link is up again. It also checks one register in a busy-wait loop (see comment: "When the PF link is down? VF cannot operate its registers?). But the problem here is that there might be completely arbitrary time between link going down and up again (minutes, hours, etc), so I cannot be sitting in a busy-wait loop like this.
->>> 
->>> This doesn't sound right to me.  So DPDK is expecting the link to
->>> always be up?  That isn't always going to be the case.  It seems like
->>> DPDK should figure out a way to enable interrupts and wait for the
->>> mailbox notification that the link has come back up.
->>> 
->> 
->> Are you proposing to split reset logic (from the patch) into 2 parts?
->> 1. Always stop the device on the reset adapter notification
->> 2. Start the device on the link up notification or if it is already up
-> 
-> I can't say for certain as I haven't worked in DPDK all that much.
-> However all of our kernel based VF drivers basically work on that kind
-> of logic.  They will receive the reset notification but they will wait
-> until the link up notification is received before they decide to
-> reset.  The trick is we do the reset notifcation based on the call to
-> ixgbevf_check_mac_link_vf() instead of just resetting if the link goes
-> down.  The PF takes care of the reset on its end if it is resetting
-> things due to the link going down, then the VF should reset when the
-> link comes back up.  When the link goes down though we need to make
-> certain to turn off all the watchdogs and such.
-> 
-> - Alex
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF609-EZKIT_defconfig
+powerpc                     powernv_defconfig
+powerpc                     rainier_defconfig
+i386                     randconfig-a0-201648
+x86_64                 randconfig-a0-12030612
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+x86_64                randconfig-it0-12030534
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-v0-12030656
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                            pleb_defconfig
+arm                         s3c2410_defconfig
+blackfin                BF527-EZKIT_defconfig
+mips                      loongson3_defconfig
+mips                  maltasmvp_eva_defconfig
+powerpc                 mpc8560_ads_defconfig
+sh                        dreamcast_defconfig
+sh                     sh7710voipgw_defconfig
+sh                  sh7785lcr_32bit_defconfig
+arm                         mv78xx0_defconfig
+m68k                             alldefconfig
+m68k                        m5307c3_defconfig
+powerpc                      pmac32_defconfig
+powerpc                      ppc6xx_defconfig
+x86_64                 randconfig-x010-201648
+x86_64                 randconfig-x011-201648
+x86_64                 randconfig-x012-201648
+x86_64                 randconfig-x013-201648
+x86_64                 randconfig-x014-201648
+x86_64                 randconfig-x015-201648
+x86_64                 randconfig-x016-201648
+x86_64                 randconfig-x017-201648
+x86_64                 randconfig-x018-201648
+x86_64                 randconfig-x019-201648
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201648
+i386                     randconfig-s1-201648
+x86_64                 randconfig-s0-12030658
+x86_64                 randconfig-s1-12030658
+x86_64                 randconfig-s2-12030658
+x86_64                 randconfig-s0-12030820
+x86_64                 randconfig-s1-12030820
+x86_64                 randconfig-s2-12030820
+x86_64                 randconfig-s0-12031031
+x86_64                 randconfig-s1-12031031
+x86_64                 randconfig-s2-12031031
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-12030704
+x86_64                 randconfig-s4-12030704
+x86_64                 randconfig-s5-12030704
+x86_64                 randconfig-s3-12030822
+x86_64                 randconfig-s4-12030822
+x86_64                 randconfig-s5-12030822
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201648
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                      integrator_defconfig
+blackfin                BF533-STAMP_defconfig
+mips                        workpad_defconfig
+powerpc               mpc834x_itxgp_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201648
+i386                     randconfig-i1-201648
+x86_64                 randconfig-b0-12030742
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                           sunxi_defconfig
+blackfin                  TCM-BF518_defconfig
+mn10300                          allyesconfig
+i386                   randconfig-x010-201648
+i386                   randconfig-x011-201648
+i386                   randconfig-x012-201648
+i386                   randconfig-x013-201648
+i386                   randconfig-x014-201648
+i386                   randconfig-x015-201648
+i386                   randconfig-x016-201648
+i386                   randconfig-x017-201648
+i386                   randconfig-x018-201648
+i386                   randconfig-x019-201648
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-n0-201648
+i386                   randconfig-h0-12030606
+i386                   randconfig-h1-12030606
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x000-201648
+x86_64                 randconfig-x001-201648
+x86_64                 randconfig-x002-201648
+x86_64                 randconfig-x003-201648
+x86_64                 randconfig-x004-201648
+x86_64                 randconfig-x005-201648
+x86_64                 randconfig-x006-201648
+x86_64                 randconfig-x007-201648
+x86_64                 randconfig-x008-201648
+x86_64                 randconfig-x009-201648
+x86_64                                  kexec
+i386                     randconfig-r0-201648
+i386                   randconfig-x000-201648
+i386                   randconfig-x001-201648
+i386                   randconfig-x002-201648
+i386                   randconfig-x003-201648
+i386                   randconfig-x004-201648
+i386                   randconfig-x005-201648
+i386                   randconfig-x006-201648
+i386                   randconfig-x007-201648
+i386                   randconfig-x008-201648
+i386                   randconfig-x009-201648
+
+Thanks,
+Fengguang
