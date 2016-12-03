@@ -1,44 +1,70 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 2 Dec 2016 22:41:43 +0000
-Subject: [Intel-wired-lan] [next PATCH S56 3/8] i40e: Save link FEC
-	info	from link up event
-In-Reply-To: <1480710782-9195-4-git-send-email-bimmy.pujari@intel.com>
-References: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
- <1480710782-9195-4-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39242@ORSMSX104.amr.corp.intel.com>
+From: Ruslan Nikolaev <ruslan@purestorage.com>
+Date: Fri, 2 Dec 2016 18:03:03 -0800
+Subject: [Intel-wired-lan] Question about ixgbe RESET due to lost link
+In-Reply-To: <CAKgT0Uc+h_x8fHpZDP5J6kNxyNuymtcnTAzv9Q-hFhyj851+2g@mail.gmail.com>
+References: <CAKgT0UeieA6wirnTwV+Wj1_jZxvAOVJeugQ-mnkCdt7fWx_Ebg@mail.gmail.com>
+ <FA04B483-9533-4732-9EA5-F2EF7EC3BCDD@purestorage.com>
+ <CAKgT0Uc+h_x8fHpZDP5J6kNxyNuymtcnTAzv9Q-hFhyj851+2g@mail.gmail.com>
+Message-ID: <AEBBD07E-1E50-40A6-9F74-8DBF30D53589@purestorage.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Friday, December 02, 2016 12:33 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Tieman, Henry W <henry.w.tieman@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S56 3/8] i40e: Save link FEC info from
-> link up event
-> 
-> From: Henry Tieman <henry.w.tieman@intel.com>
-> 
-> Store the FEC status bits from the link up event into the hw_link_info
-> structure.
-> 
-> Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
-> Change-ID: I9a7b256f6dfb0dce89c2f503075d0d383526832e
-> ---
-> Testing Hints: In support of DCR 2228, this commit stores the FEC data for
-> later display in the "link up" kernel log message.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_common.c |  2 ++
->  drivers/net/ethernet/intel/i40e/i40e_main.c   | 21 +++++++++++++++++++-
-> -
->  drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 +
->  drivers/net/ethernet/intel/i40evf/i40e_type.h |  1 +
->  4 files changed, 23 insertions(+), 2 deletions(-)
+Thanks! Do you rely on the mailbox reset notification at all in the ixgbevf? Or is it just resetting it when the link seems to be down? 
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Also, do you mean that the reset procedure is completely postponed for VFs (including stopping the corresponding device per DPDK terminology) until after the link comes back up?
 
+
+>> Thanks! I have one more question below.
+>> 
+>>> 
+>>> 
+>>>> Thank you for your response! I still have questions below.
+>>>> 
+>>>>> 
+>>>>>> While working with ixgbe (PF) and dpdk (VF), I have noticed that sometimes
+>>>>>> we get ?Reset adapter? message 'due to lost link with pending Tx work?.
+>>>>>> 
+>>>>>> The problem is that when handling the VF reset message that arrives through
+>>>>>> a mailbox (in the corresponding dpdk handler), the link may already be down.
+>>>>>> Therefore, we are unable to properly reset the device. While looking at the
+>>>>>> ixgbe code, I have noticed that IXGBE_FLAG2_RESET_REQUESTED (in this case,
+>>>>>> set in ixgbe_watchdog_flush_tx) is checked in ixgbe_reset_subtask. The
+>>>>>> latter will only do anything if the link is not already down.
+>>>>> 
+>>>>> Why can't you properly reset the device?  The PF should have already
+>>>>> taken care of resetting the queues when it did the reset itself.  All
+>>>>> that should be left to do is for the VF to reinitialize the queues so
+>>>>> that they are re-enabled after the reset.
+>>>>> 
+>>>> 
+>>>> I guess, the problem is that we can stop a device but we are unable to start the device properly (because some registers are unavailable?) Particularly, in the patch for DPDK:
+>>>> http://dpdk.org/dev/patchwork/patch/14009/
+>>>> 
+>>>> I see error messages ?Failed to update link.? If I understand correctly, this patch introduced a delay (1000 ms) to make sure that the link is up again. It also checks one register in a busy-wait loop (see comment: "When the PF link is down? VF cannot operate its registers?). But the problem here is that there might be completely arbitrary time between link going down and up again (minutes, hours, etc), so I cannot be sitting in a busy-wait loop like this.
+>>> 
+>>> This doesn't sound right to me.  So DPDK is expecting the link to
+>>> always be up?  That isn't always going to be the case.  It seems like
+>>> DPDK should figure out a way to enable interrupts and wait for the
+>>> mailbox notification that the link has come back up.
+>>> 
+>> 
+>> Are you proposing to split reset logic (from the patch) into 2 parts?
+>> 1. Always stop the device on the reset adapter notification
+>> 2. Start the device on the link up notification or if it is already up
+> 
+> I can't say for certain as I haven't worked in DPDK all that much.
+> However all of our kernel based VF drivers basically work on that kind
+> of logic.  They will receive the reset notification but they will wait
+> until the link up notification is received before they decide to
+> reset.  The trick is we do the reset notifcation based on the call to
+> ixgbevf_check_mac_link_vf() instead of just resetting if the link goes
+> down.  The PF takes care of the reset on its end if it is resetting
+> things due to the link going down, then the VF should reset when the
+> link comes back up.  When the link goes down though we need to make
+> certain to turn off all the watchdogs and such.
+> 
+> - Alex
 
