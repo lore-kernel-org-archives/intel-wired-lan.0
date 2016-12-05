@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 5 Dec 2016 18:37:22 +0000
-Subject: [Intel-wired-lan] [next PATCH S56 6/8] i40e: avoid race
- condition	when sending filters to firmware for addition
-In-Reply-To: <1480710782-9195-7-git-send-email-bimmy.pujari@intel.com>
+Date: Mon, 5 Dec 2016 18:45:09 +0000
+Subject: [Intel-wired-lan] [next PATCH S56 8/8] Acquire NVM lock
+	before	reads on all devices
+In-Reply-To: <1480710782-9195-9-git-send-email-bimmy.pujari@intel.com>
 References: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
- <1480710782-9195-7-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA393BB@ORSMSX104.amr.corp.intel.com>
+ <1480710782-9195-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA393DB@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,87 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Friday, December 02, 2016 12:33 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S56 6/8] i40e: avoid race condition
-> when sending filters to firmware for addition
+> Cc: Salter, Aaron K <aaron.k.salter@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S56 8/8] Acquire NVM lock before
+> reads on all devices
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Aaron Salter <aaron.k.salter@intel.com>
 > 
-> Refactor how we add new filters to firmware to avoid a race condition that
-> can occur due to removing filters from the hash temporarily.
+> Acquire NVM lock before reads on all devices.  Previously, locks were only
+> used for X722 and later.  Fixes an issue where simultaneous X710 NVM
+> accesses were interfering with each other.
 > 
-> To understand the race condition, suppose that you have a number of MAC
-> filters, but have not yet added any VLANs. Now, add two VLANs in rapid
-> succession. A possible resulting flow would look something like the
-> following:
-> 
-> (1) lock hash for add VLAN
-> (2) add the new MAC/VLAN combos for each current MAC filter
-> (3) unlock hash
-> (4) lock hash for filter sync
-> (5) notice that we have a VLAN, so prepare to update all MAC filters
->     with VLAN=-1 to be VLAN=0.
-> (6) move NEW and REMOVE filters to temporary list
-> (7) unlock hash
-> (8) lock hash for add VLAN
-> (9) add new MAC/VLAN combos. Notice that no MAC filters are currently in
->     the hash list, so we don't add any VLANs <--- BUG!
-> (10) unlock hash
-> (11) sync the temporary lists to firmware
-> (12) lock hash for post-sync
-> (13) move the temporary elements back to the main list ....
-> 
-> Because we take filters out of the main hash into temporary lists, we
-> introduce a narrow window where it is possible that other callers to the list
-> will not see some of the filters which were previously added but have not yet
-> been finalized. This results in sometimes dropping VLAN additions, and could
-> also result in failing to add a MAC address on the newly added VLAN.
-> 
-> One obvious way to avoid this race condition would be to lock the entire
-> firmware process. Unfortunately this does not work because adminq
-> firmware commands take a mutex which results in a sleep while atomic
-> BUG(). So, we can't use the simplest approach.
-> 
-> An alternative approach is to simply not remove the filters from the hash list
-> while adding. Instead, add an i40e_new_mac_filter structure which we will
-> use to track added filters. This avoids the need to remove the filter from the
-> hash list. We'll store a pointer to the original i40e_mac_filter, along with our
-> own copy of the state.
-> 
-> We won't update the state directly, so as to avoid race with other code that
-> may modify the state while under the lock. We are safe to read
-> f->macaddr and f->vlan since these only change in two locations. The
-> first is on filter creation, which must have already occurred. The second is
-> inside i40e_correct_vlan_filters which was previously run after creation of
-> this object and can't be run again until after. Thus, we should be safe to read
-> the MAC address and VLAN while outside the lock.
-> 
-> We also aren't going to run into a use-after-free issue because the only place
-> where we free filters is when they are marked FAILED or when we remove
-> them inside the sync subtask. Since the subtask has its own critical flag to
-> prevent duplicate runs, we know this won't happen. We also know that the
-> only location to transition a filter from NEW to FAILED is inside the subtask
-> also, so we aren't worried about that either.
-> 
-> Use the wrapper i40e_new_mac_filter for additions, and once we've
-> finalized the addition to firmware, we will update the filter state inside a lock,
-> and then free the wrapper structure.
-> 
-> In order to avoid a possible race condition with filter deletion, we won't
-> update the original filter state unless it is still I40E_FILTER_NEW when we
-> finish the firmware sync.
-> 
-> This approach is more complex, but avoids race conditions related to filters
-> being temporarily removed from the list. We do not need the same behavior
-> for deletion because we always unconditionally removed the filters from the
-> list regardless of the firmware status.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-Id: I14b74bc2301f8e69433fbe77ebca532db20c5317
+> Signed-off-by: Aaron Salter <aaron.k.salter@intel.com>
+> Change-ID: If570bb7acf958cef58725ec2a2011cead6f80638
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h      |  16 +++
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 147 ++++++++++++++++++--
-> --------
->  2 files changed, 112 insertions(+), 51 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
