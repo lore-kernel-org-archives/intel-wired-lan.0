@@ -1,38 +1,56 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 5 Dec 2016 18:45:09 +0000
-Subject: [Intel-wired-lan] [next PATCH S56 8/8] Acquire NVM lock
-	before	reads on all devices
-In-Reply-To: <1480710782-9195-9-git-send-email-bimmy.pujari@intel.com>
-References: <1480710782-9195-1-git-send-email-bimmy.pujari@intel.com>
- <1480710782-9195-9-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA393DB@ORSMSX104.amr.corp.intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Mon, 5 Dec 2016 11:44:47 +0100
+Subject: [Intel-wired-lan] e1000e on Thinkpad x60: gigabit not available
+	due to "SmartSpeed"
+In-Reply-To: <20160902165735.GJ14311@csclub.uwaterloo.ca>
+References: <20160901201408.GA5061@amd> <1472767093.3889.4.camel@gmail.com>
+ <20160902165735.GJ14311@csclub.uwaterloo.ca>
+Message-ID: <20161205104447.GA7536@amd>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Friday, December 02, 2016 12:33 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Salter, Aaron K <aaron.k.salter@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S56 8/8] Acquire NVM lock before
-> reads on all devices
+On Fri 2016-09-02 12:57:35, Lennart Sorensen wrote:
+> On Thu, Sep 01, 2016 at 02:58:13PM -0700, Greg wrote:
+> > On Thu, 2016-09-01 at 22:14 +0200, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > I have trouble getting 1000mbit out of my ethernet card.
+> > > 
+> > > I tried direct connection between two PCs with different cables, and
+> > > no luck.
+> > > 
+> > > Today I tried connection to 1000mbit switch, and no luck, either. (Two
+> > > cables, one was cat6, both short).
+> > > 
+> > > My computer sees 1000mbit being advertised by the other side, but does
+> > > not advertise 1000mbit, "Link Speed was downgraded by SmartSpeed".
+> > 
+> > Check your cables?
+> > 
+> > https://vmxp.wordpress.com/2015/01/06/1gbe-intel-nic-throttled-to-100mbit-by-smartspeed/
 > 
-> From: Aaron Salter <aaron.k.salter@intel.com>
-> 
-> Acquire NVM lock before reads on all devices.  Previously, locks were only
-> used for X722 and later.  Fixes an issue where simultaneous X710 NVM
-> accesses were interfering with each other.
-> 
-> Signed-off-by: Aaron Salter <aaron.k.salter@intel.com>
-> Change-ID: If570bb7acf958cef58725ec2a2011cead6f80638
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_nvm.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+> Of course if it isn't the cable, then it could even be a broken pin in
+> the port.  As far as I can tell, anything that causes one of the 3rd
+> or 4th pairs of wires to not work will degrade to 100Mbit on just the
+> first 2 pairs of wires and give that message.  Some badly implemented
+> switches can also cause it of course.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Ok, so it seems like broken pin in the port. I realized I had docking
+station available for the machine, and when connecting using that
+connector (not internal notebook one), I get gigabit speed.
 
-
+Thanks and best regards,
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 181 bytes
+Desc: Digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161205/bdef978f/attachment.asc>
