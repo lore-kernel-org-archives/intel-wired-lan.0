@@ -1,45 +1,60 @@
-From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Wed, 07 Dec 2016 11:10:37 -0500
-Subject: [Intel-wired-lan] [next-queue PATCH] i40e: Update driver to support
- napi_complete_done changes
-Message-ID: <20161207161037.83528.61516.stgit@ahduyck-blue-test.jf.intel.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Wed, 7 Dec 2016 22:22:15 +0000
+Subject: [Intel-wired-lan] [PATCH V2 0/4] ixgbe: Firmware-controlled
+	PHY	enablement
+In-Reply-To: <148114788660.130011.4413036825097860499.stgit@mdrustad-wks.jf.intel.com>
+References: <148114788660.130011.4413036825097860499.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <5AFBB3C5-8114-4E9F-B628-BEA33EF0F141@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Recently napi_complete_done was updated so that it will return zero if we
-are using the queue vector for busy polling.  When this is the case we
-don't need to re-enable interrupts as the busy polling will reschedule the
-NAPI instance when it is finally done polling.
+Mark D Rustad <mark.d.rustad@intel.com> wrote:
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+> The following patches enable firmware-controlled PHYs. The first two
+> patches resolve some issues uncovered while working on the other
+> patches. The third adds the firmware interface for controlling PHYs.
+> The last patch implements everything else for the new devices.
+>
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+>
+> ---
+> Changes in V2:
+> - Fixed some oversights related to the 10M link speed
+>
+> ---
+>
+> Mark D Rustad (4):
+>       ixgbe: Fix issues with EEPROM access
+>       ixgbe: Remove unused firmware version functions and method
+>       ixgbe: Implement firmware interface to access some PHYs
+>       ixgbe: Implement support for firmware-controlled PHYs
+>
+>
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    4
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c   |    2
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |    2
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |  104 +++--
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.h  |    3
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  156 +++++++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   45 ++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     |   37 --
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     |    4
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   74 +++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c    |    1
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |  508 ++++++++++++++++++++--
+>  12 files changed, 807 insertions(+), 133 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index e88e335..52f2c45 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2033,12 +2033,15 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
- 		}
- 	}
- 
-+	/* Work is done so exit the polling mode,
-+	 * if not busy polling re-enable interrupts.
-+	 */
-+	if (!napi_complete_done(napi, work_done))
-+		return 0;
-+
- 	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
- 		q_vector->arm_wb_state = false;
- 
--	/* Work is done so exit the polling mode and re-enable the interrupt */
--	napi_complete_done(napi, work_done);
--
- 	/* If we're prematurely stopping polling to fix the interrupt
- 	 * affinity we want to make sure polling starts back up so we
- 	 * issue a call to i40e_force_wb which triggers a SW interrupt.
+Sorry. Just found another problem, so a V3 will be coming.
 
+--
+Mark Rustad, Networking Division, Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161207/c9762027/attachment.asc>
