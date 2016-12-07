@@ -1,64 +1,70 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 6 Dec 2016 22:51:17 +0000
-Subject: [Intel-wired-lan] [PATCH] [PATCH v2] igb:
-	close/suspend	race	in	netif_device_detach
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81FE72A4@ORSMSX101.amr.corp.intel.com>
-References: <1479228866-15506-1-git-send-email-todd.fujinaka@intel.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81FE2C9A@ORSMSX101.amr.corp.intel.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81FE72A4@ORSMSX101.amr.corp.intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81FE7313@ORSMSX101.amr.corp.intel.com>
+From: zhuyj <zyjzyj2000@gmail.com>
+Date: Wed, 7 Dec 2016 11:05:20 +0800
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: write flush vfta registers
+In-Reply-To: <CAD=hENfbWUobVvUOKhjRi+7fNCj=87R3GFeGjXg+zd_zez_SpQ@mail.gmail.com>
+References: <1479300041-3436-1-git-send-email-zyjzyj2000@gmail.com>
+ <trinity-ec3a2e6f-7310-41aa-8743-61bc62ccf663-1479305144399@3capp-gmx-bs59>
+ <CAD=hENfbWUobVvUOKhjRi+7fNCj=87R3GFeGjXg+zd_zez_SpQ@mail.gmail.com>
+Message-ID: <CAD=hENcE58xM4hBm-8N-eNREhBbP4gC-Vm89krQ6aj_8bDZmJg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Brown, Aaron F
-> Sent: Tuesday, December 6, 2016 2:14 PM
-> To: Fujinaka, Todd <todd.fujinaka@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH] [PATCH v2] igb: close/suspend race in
-> netif_device_detach
-> 
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> > Behalf Of Brown, Aaron F
-> > Sent: Wednesday, November 30, 2016 12:26 PM
-> > To: Fujinaka, Todd <todd.fujinaka@intel.com>; intel-wired-
-> > lan at lists.osuosl.org
-> > Subject: Re: [Intel-wired-lan] [PATCH] [PATCH v2] igb: close/suspend race in
-> > netif_device_detach
-> >
-> > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
-> On
-> > > Behalf Of Todd Fujinaka
-> > > Sent: Tuesday, November 15, 2016 8:54 AM
-> > > To: intel-wired-lan at lists.osuosl.org
-> > > Subject: [Intel-wired-lan] [PATCH] [PATCH v2] igb: close/suspend race in
-> > > netif_device_detach
-> > >
-> > > Similar to ixgbe, when an interface is part of a namespace it is
-> > > possible that igb_close() may be called while __igb_shutdown() is
-> > > running which ends up in a double free WARN and/or a BUG in
-> > > free_msi_irqs().
-> > >
-> > > Extend the rtnl_lock() to protect the call to netif_device_detach() and
-> > > igb_clear_interrupt_scheme() in __igb_shutdown() and check for
-> > > netif_device_present() to avoid calling igb_clear_interrupt_scheme() a
-> > > second time in igb_close().
-> > >
-> > > Also extend the rtnl lock in igb_resume() to netif_device_attach().
-> > >
-> > > Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
-> > > ---
-> > >  drivers/net/ethernet/intel/igb/igb_main.c | 21 ++++++++++++---------
-> > >  1 file changed, 12 insertions(+), 9 deletions(-)
-> >
-> > Tested-by Aaron Brown <aaron.f.brown@intel.com>
-> 
-> Patchwork did not pick this Tested-by, probably because I left out the colon.
-> Try again...
-> Tested-by: Aaron Brown <aaron.f.brown at intel.com<
-D'OH!
+After several week tests, your advice still make this bug appear. But
+my patch make this bug disappear.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Zhu Yanjun
+
+On Thu, Nov 17, 2016 at 5:33 PM, zhuyj <zyjzyj2000@gmail.com> wrote:
+> Sure. From the following.
+> "
+> VLAN Filter. Each bit ?i? in register ?n? affects packets with VLAN
+> tags equal to 32*n+i.
+> 128 VLAN Filter registers compose a table of 4096 bits that cover all
+> possible VLAN
+> tags.
+> Each bit when set, enables packets with the associated VLAN tags to
+> pass. Each bit
+> when cleared, blocks packets with this VLAN tag.
+> "
+> Your suggestions seems reasonable. Please wait. I will make tests to
+> vefiry your suggestions.
+>
+> I will keep you update.
+>
+> On Wed, Nov 16, 2016 at 10:05 PM, Lino Sanfilippo <LinoSanfilippo@gmx.de> wrote:
+>>
+>>
+>> Hi,
+>>
+>>>
+>>> Sometimes vfta registers can not be written successfully in dcb mode.
+>>> This is very occassional. When the ixgbe nic runs for a very long time,
+>>> sometimes this bug occurs. But after IXGBE_WRITE_FLUSH is executed,
+>>> this bug never occurs.
+>>>
+>>> Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
+>>> ---
+>>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 5 ++++-
+>>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> index bd93d82..1221cfb 100644
+>>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> @@ -4138,8 +4138,10 @@ static void ixgbe_vlan_promisc_enable(struct ixgbe_adapter *adapter)
+>>>       }
+>>>
+>>>       /* Set all bits in the VLAN filter table array */
+>>> -     for (i = hw->mac.vft_size; i--;)
+>>> +     for (i = hw->mac.vft_size; i--;) {
+>>>               IXGBE_WRITE_REG(hw, IXGBE_VFTA(i), ~0U);
+>>> +             IXGBE_WRITE_FLUSH(hw);
+>>> +     }
+>>
+>> Should it not be sufficient to do the flush only once, at the end of the function?
+>>
+>> Regards,
+>> Lino
