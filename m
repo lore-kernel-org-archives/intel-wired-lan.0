@@ -1,59 +1,68 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 7 Dec 2016 23:24:28 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the
- PHY	ID
-In-Reply-To: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
-References: <1589605144.308560.1480435436440.JavaMail.zimbra@xes-inc.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81FE7D3D@ORSMSX101.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 07 Dec 2016 15:43:55 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v2] i40e: Update driver to
+ support napi_complete_done changes
+Message-ID: <20161207234355.15561.26727.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Aaron Sierra
-> Sent: Tuesday, November 29, 2016 8:04 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: Chris Arges <carges@vectranetworks.com>; intel-wired-lan <intel-wired-
-> lan at lists.osuosl.org>; Matwey V. Kornilov <matwey@sai.msu.ru>
-> Subject: [Intel-wired-lan] [PATCH] igb: reset the PHY before reading the PHY
-> ID
-> 
-> Several people have reported firmware leaving the I210/I211 PHY's page
-> select register set to something other than the default of zero. This
-> causes the first accesses, PHY_IDx register reads, to access something
-> else, resulting in device probe failure:
-> 
->     igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
->     igb: Copyright (c) 2007-2014 Intel Corporation.
->     igb: probe of 0000:01:00.0 failed with error -2
-> 
-> This problem began for them after a previous patch I submitted was
-> applied:
-> 
->     commit 2a3cdead8b408351fa1e3079b220fa331480ffbc
->     Author: Aaron Sierra <asierra@xes-inc.com>
->     Date:   Tue Nov 3 12:37:09 2015 -0600
-> 
->         igb: Remove GS40G specific defines/functions
-> 
-> I personally experienced this problem after attempting to PXE boot from
-> I210 devices using this firmware:
-> 
->     Intel(R) Boot Agent GE v1.5.78
->     Copyright (C) 1997-2014, Intel Corporation
-> 
-> Resetting the PHY before reading from it, ensures the page select
-> register is in its default state and doesn't make assumptions about
-> the PHY's register set before the PHY has been probed.
-> 
-> Cc: Matwey V. Kornilov <matwey@sai.msu.ru>
-> Cc: Chris Arges <carges@vectranetworks.com>
-> Cc: Jochen Henneberg <jh@henneberg-systemdesign.com>
-> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
-> ---
->  drivers/net/ethernet/intel/igb/e1000_82575.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Recently napi_complete_done was updated so that it will return zero if we
+are using the queue vector for busy polling.  When this is the case we
+don't need to re-enable interrupts as the busy polling will reschedule the
+NAPI instance when it is finally done polling.
+
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c |   32 ++++++++++++++-------------
+ 1 file changed, 17 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index e88e335c34ef..f9ef8c2676e2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2033,22 +2033,24 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+ 		}
+ 	}
+ 
+-	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
+-		q_vector->arm_wb_state = false;
+-
+-	/* Work is done so exit the polling mode and re-enable the interrupt */
+-	napi_complete_done(napi, work_done);
+-
+-	/* If we're prematurely stopping polling to fix the interrupt
+-	 * affinity we want to make sure polling starts back up so we
+-	 * issue a call to i40e_force_wb which triggers a SW interrupt.
++	/* Work is done so exit the polling mode,
++	 * if not busy polling re-enable interrupts.
+ 	 */
+-	if (!clean_complete)
+-		i40e_force_wb(vsi, q_vector);
+-	else if (!(vsi->back->flags & I40E_FLAG_MSIX_ENABLED))
+-		i40e_irq_dynamic_enable_icr0(vsi->back, false);
+-	else
+-		i40e_update_enable_itr(vsi, q_vector);
++	if (napi_complete_done(napi, work_done)) {
++		if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
++			q_vector->arm_wb_state = false;
++
++		/* If we're prematurely stopping polling to fix the interrupt
++		 * affinity we want to make sure polling starts back up so we
++		 * issue a call to i40e_force_wb which triggers a SW interrupt.
++		 */
++		if (!clean_complete)
++			i40e_force_wb(vsi, q_vector);
++		else if (!(vsi->back->flags & I40E_FLAG_MSIX_ENABLED))
++			i40e_irq_dynamic_enable_icr0(vsi->back, false);
++		else
++			i40e_update_enable_itr(vsi, q_vector);
++	}
+ 
+ 	return min(work_done, budget - 1);
+ }
+
