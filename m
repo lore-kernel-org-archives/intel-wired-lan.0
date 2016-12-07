@@ -1,194 +1,54 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 07 Dec 2016 15:37:13 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- fd67bcfe1d14d25d6a98491c34d8ef6cafb84cce
-Message-ID: <5847bc29./3opgAZaR1e3+MqL%fengguang.wu@intel.com>
+From: Zhouyi Zhou <zhouzhouyi@gmail.com>
+Date: Wed,  7 Dec 2016 15:43:34 +0800
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: fcoe: return value of
+	skb_linearize should be handled
+Message-ID: <1481096614-25295-1-git-send-email-zhouzhouyi@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-fd67bcfe1d14d25d6a98491c34d8ef6cafb84cce  i40e: Acquire NVM lock before reads on all devices
+Signed-off-by: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+Reviewed-by: Cong Wang <xiyou.wangcong@gmail.com>
+Reviewed-by: Yuval Shaia <yuval.shaia@oracle.com> 
+Reviewed-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 6 +++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 +--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-elapsed time: 192m
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+index 2a653ec..7b6bdb7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+@@ -490,7 +490,11 @@ int ixgbe_fcoe_ddp(struct ixgbe_adapter *adapter,
+ 	 */
+ 	if ((fh->fh_r_ctl == FC_RCTL_DD_SOL_DATA) &&
+ 	    (fctl & FC_FC_END_SEQ)) {
+-		skb_linearize(skb);
++		int err;
++
++		err = skb_linearize(skb);
++		if (err)
++			return err;
+ 		crc = (struct fcoe_crc_eof *)skb_put(skb, sizeof(*crc));
+ 		crc->fcoe_eof = FC_EOF_T;
+ 	}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index fee1f29..4926d48 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2173,8 +2173,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 				total_rx_bytes += ddp_bytes;
+ 				total_rx_packets += DIV_ROUND_UP(ddp_bytes,
+ 								 mss);
+-			}
+-			if (!ddp_bytes) {
++			} else {
+ 				dev_kfree_skb_any(skb);
+ 				continue;
+ 			}
+-- 
+1.9.1
 
-configs tested: 170
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                         cm_x2xx_defconfig
-powerpc                     ep8248e_defconfig
-powerpc                     sequoia_defconfig
-i386                     randconfig-a0-201649
-x86_64                 randconfig-a0-12071331
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-12071326
-x86_64                           allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-arm                       cns3420vb_defconfig
-arm                         em_x270_defconfig
-arm                            lart_defconfig
-ia64                            zx1_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-x015-201649
-x86_64                 randconfig-x017-201649
-x86_64                 randconfig-x014-201649
-x86_64                 randconfig-x011-201649
-x86_64                 randconfig-x012-201649
-x86_64                 randconfig-x019-201649
-x86_64                 randconfig-x018-201649
-x86_64                 randconfig-x016-201649
-x86_64                 randconfig-x010-201649
-x86_64                 randconfig-x013-201649
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-i386                     randconfig-s0-201649
-i386                     randconfig-s1-201649
-x86_64                 randconfig-s0-12071328
-x86_64                 randconfig-s1-12071328
-x86_64                 randconfig-s2-12071328
-x86_64                 randconfig-s3-12071354
-x86_64                 randconfig-s4-12071354
-x86_64                 randconfig-s5-12071354
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-avr32            atngw100_evklcd101_defconfig
-powerpc                   motionpro_defconfig
-powerpc                 mpc832x_mds_defconfig
-sh                          polaris_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201649
-i386                     randconfig-i1-201649
-x86_64                 randconfig-b0-12071344
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                         socfpga_defconfig
-avr32                    hammerhead_defconfig
-c6x                        evmc6457_defconfig
-x86_64                 randconfig-u0-12071308
-i386                               tinyconfig
-i386                   randconfig-x019-201649
-i386                   randconfig-x014-201649
-i386                   randconfig-x015-201649
-i386                   randconfig-x017-201649
-i386                   randconfig-x018-201649
-i386                   randconfig-x012-201649
-i386                   randconfig-x016-201649
-i386                   randconfig-x010-201649
-i386                   randconfig-x013-201649
-i386                   randconfig-x011-201649
-i386                     randconfig-n0-201649
-ia64                      gensparse_defconfig
-powerpc                       maple_defconfig
-sh                           se7705_defconfig
-x86_64                 randconfig-h0-12071349
-arm                          ks8695_defconfig
-tile                             allyesconfig
-x86_64                 randconfig-n0-12071401
-avr32                     atstk1002_defconfig
-mips                        nlm_xlp_defconfig
-powerpc                 mpc8540_ads_defconfig
-x86_64                 randconfig-x001-201649
-x86_64                 randconfig-x008-201649
-x86_64                 randconfig-x009-201649
-x86_64                 randconfig-x005-201649
-x86_64                 randconfig-x003-201649
-x86_64                 randconfig-x000-201649
-x86_64                 randconfig-x006-201649
-x86_64                 randconfig-x004-201649
-x86_64                 randconfig-x007-201649
-x86_64                 randconfig-x002-201649
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-i386                     randconfig-r0-201649
-x86_64                 randconfig-r0-12071358
-i386                   randconfig-x000-201649
-i386                   randconfig-x001-201649
-i386                   randconfig-x002-201649
-i386                   randconfig-x003-201649
-i386                   randconfig-x004-201649
-i386                   randconfig-x005-201649
-i386                   randconfig-x006-201649
-i386                   randconfig-x007-201649
-i386                   randconfig-x008-201649
-i386                   randconfig-x009-201649
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-
-Thanks,
-Fengguang
