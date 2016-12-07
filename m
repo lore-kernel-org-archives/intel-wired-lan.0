@@ -1,39 +1,47 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 7 Dec 2016 21:16:05 +0000
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Reduce I2C retry count on
- X550	devices
-In-Reply-To: <1478800649-22831-1-git-send-email-anthony.l.nguyen@intel.com>
-References: <1478800649-22831-1-git-send-email-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39806@ORSMSX104.amr.corp.intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Wed, 07 Dec 2016 13:59:18 -0800
+Subject: [Intel-wired-lan] [PATCH V2 0/4] ixgbe: Firmware-controlled PHY
+	enablement
+Message-ID: <148114788660.130011.4413036825097860499.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Thursday, November 10, 2016 9:57 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Reduce I2C retry count on X550
-> devices
-> 
-> A retry count of 10 is likely to run into problems on X550 devices that have to
-> detect and reset unresponsive CS4227 devices. So, reduce the I2C retry
-> count to 3 for X550 and above. This should avoid any possible regressions in
-> existing devices.
-> 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
-> 
-> v2 -
->   Removed mac check in ixgbe_read_i2c_combined_generic_int(); set initial
->   max_retry value to 3 instead.
-> 
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+The following patches enable firmware-controlled PHYs. The first two
+patches resolve some issues uncovered while working on the other
+patches. The third adds the firmware interface for controlling PHYs.
+The last patch implements everything else for the new devices.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+
+---
+Changes in V2:
+- Fixed some oversights related to the 10M link speed
+
+---
+
+Mark D Rustad (4):
+      ixgbe: Fix issues with EEPROM access
+      ixgbe: Remove unused firmware version functions and method
+      ixgbe: Implement firmware interface to access some PHYs
+      ixgbe: Implement support for firmware-controlled PHYs
 
 
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    4 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c   |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |  104 +++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h  |    3 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  156 +++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   45 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     |   37 --
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     |    4 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   74 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c    |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |  508 ++++++++++++++++++++--
+ 12 files changed, 807 insertions(+), 133 deletions(-)
+
+-- 
+Mark Rustad, Network Division, Intel Corporation
