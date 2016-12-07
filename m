@@ -1,32 +1,33 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 7 Dec 2016 19:14:21 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Correct X550 phy ID
-In-Reply-To: <1478292376-38601-1-git-send-email-donald.c.skidmore@intel.com>
-References: <1478292376-38601-1-git-send-email-donald.c.skidmore@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA397BC@ORSMSX104.amr.corp.intel.com>
+From: Lino Sanfilippo <LinoSanfilippo@gmx.de>
+Date: Wed, 7 Dec 2016 20:24:50 +0100
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: write flush vfta registers
+In-Reply-To: <CAD=hENcE58xM4hBm-8N-eNREhBbP4gC-Vm89krQ6aj_8bDZmJg@mail.gmail.com>
+References: <1479300041-3436-1-git-send-email-zyjzyj2000@gmail.com>
+ <trinity-ec3a2e6f-7310-41aa-8743-61bc62ccf663-1479305144399@3capp-gmx-bs59>
+ <CAD=hENfbWUobVvUOKhjRi+7fNCj=87R3GFeGjXg+zd_zez_SpQ@mail.gmail.com>
+ <CAD=hENcE58xM4hBm-8N-eNREhBbP4gC-Vm89krQ6aj_8bDZmJg@mail.gmail.com>
+Message-ID: <7c5c0227-04a1-fed9-9b56-4e2755f9a005@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Donald C Skidmore
-> Sent: Friday, November 04, 2016 1:46 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Correct X550 phy ID
+Hi Zhu,
+
+On 07.12.2016 04:05, zhuyj wrote:
+> After several week tests, your advice still make this bug appear. But
+> my patch make this bug disappear.
 > 
-> We were using an old Alpha version of the X550 phy ID.  This was leading to
-> unnecessary queries of the PHY.  I removed the old ID (which shouldn't be on
-> any HW) and add the two that are.
+> Zhu Yanjun
 > 
-> Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 3 ++-
-> drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 3 ++-
->  2 files changed, 4 insertions(+), 2 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+In your commit message you wrote
+"Sometimes vfta registers can not be written successfully in dcb mode." 
+Do you mean that the writes to the registers dont seem to have any effect at all? Or is the
+effect only delayed? What exactly is your test case?
 
+(BTW: please dont top-post).
 
+Regards,
+Lino
