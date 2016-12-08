@@ -1,37 +1,44 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 8 Dec 2016 17:43:01 +0000
-Subject: [Intel-wired-lan] [PATCH V3 2/4] ixgbe: Remove unused firmware
- version functions and method
-In-Reply-To: <148115000557.19165.7238944461091717770.stgit@mdrustad-wks.jf.intel.com>
-References: <148114991608.19165.8749732086590634860.stgit@mdrustad-wks.jf.intel.com>
- <148115000557.19165.7238944461091717770.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39AEC@ORSMSX104.amr.corp.intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Thu, 8 Dec 2016 09:52:41 -0800
+Subject: [Intel-wired-lan] [PATCH 0/3] i40e: Support for XDP
+In-Reply-To: <20161208170022.11555-1-bjorn.topel@gmail.com>
+References: <20161208170022.11555-1-bjorn.topel@gmail.com>
+Message-ID: <58499DE9.3060908@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Mark D Rustad
-> Sent: Wednesday, December 07, 2016 2:33 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH V3 2/4] ixgbe: Remove unused firmware
-> version functions and method
+On 16-12-08 09:00 AM, Bj?rn T?pel wrote:
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
 > 
-> The firmware version method and functions are not used anywhere, so
-> remove them all.
+> This series adds XDP support for i40e-based NICs.
 > 
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c |    2 -
->  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c |    2 -
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c   |   34 ------------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h   |    4 ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |    1 -
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c  |    1 -
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c  |    3 +-
->  7 files changed, 1 insertion(+), 46 deletions(-)
+> The first patch adds XDP_RX support, the second XDP_TX support and the
+> last patch makes it possible to change an XDP program without
+> rebuilding the rings.
+> 
+> 
+> Bj?rn
+> 
+> 
+> Bj?rn T?pel (3):
+>   i40e: Initial support for XDP
+>   i40e: Add XDP_TX support
+>   i40e: Don't reset/rebuild rings on XDP program swap
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h         |  18 +
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |   3 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 358 +++++++++++++++++---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 445 +++++++++++++++++++++----
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h    |   7 +
+>  5 files changed, 715 insertions(+), 116 deletions(-)
+> 
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Hi Jeff,
+
+These are for the Intel driver net-next tree per our offlist email.
+
+Thanks!
+John
