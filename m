@@ -1,35 +1,45 @@
-From: Zhouyi Zhou <zhouzhouyi@gmail.com>
-Date: Thu, 8 Dec 2016 09:21:00 +0800
-Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: fcoe: return value of
-	skb_linearize should be handled
-In-Reply-To: <1481131804.2404.10.camel@intel.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Thu, 8 Dec 2016 01:32:47 +0000
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: fcoe: return value
+	of	skb_linearize should be handled
+In-Reply-To: <1481096614-25295-1-git-send-email-zhouzhouyi@gmail.com>
 References: <1481096614-25295-1-git-send-email-zhouzhouyi@gmail.com>
- <1481131804.2404.10.camel@intel.com>
-Message-ID: <CAABZP2y9arBT2axpU8yP8r_YzoWD8KdUntRMjbNCJiBE7wFwXg@mail.gmail.com>
+Message-ID: <1C8B930C-8697-41FA-BFCF-22168963C252@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks Jeff for your advice,
-Sorry for the  my innocence as a Linux kernel rookie.
+Zhouyi Zhou <zhouzhouyi@gmail.com> wrote:
 
-Zhouyi
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index fee1f29..4926d48 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -2173,8 +2173,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector  
+> *q_vector,
+>  				total_rx_bytes += ddp_bytes;
+>  				total_rx_packets += DIV_ROUND_UP(ddp_bytes,
+>  								 mss);
+> -			}
+> -			if (!ddp_bytes) {
+> +			} else {
+>  				dev_kfree_skb_any(skb);
+>  				continue;
+>  			}
 
-On Thu, Dec 8, 2016 at 1:30 AM, Jeff Kirsher
-<jeffrey.t.kirsher@intel.com> wrote:
-> On Wed, 2016-12-07 at 15:43 +0800, Zhouyi Zhou wrote:
->> Signed-off-by: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
->> Reviewed-by: Cong Wang <xiyou.wangcong@gmail.com>
->> Reviewed-by: Yuval Shaia <yuval.shaia@oracle.com>
->> Reviewed-by: Eric Dumazet <eric.dumazet@gmail.com>
->> ---
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 6 +++++-
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 +--
->>  2 files changed, 6 insertions(+), 3 deletions(-)
->
-> Did Cong, Yuval and Eric give their Reviewed-by offline?  I see they made
-> comments and suggests, but never saw them actually give you their Reviewed-
-> by.  You cannot automatically add their Reviewed-by, Signed-off-by, etc
-> just because someone provides feedback on your patch.
+This is changing the logic by treating a negative ddp_bytes value (an error  
+return) the same as a 0 value. This is probably wrong and inappropriate for  
+this patch in any case.
+
+--
+Mark Rustad, Networking Division, Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161208/ff572904/attachment.asc>
