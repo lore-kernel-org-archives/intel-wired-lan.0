@@ -1,53 +1,50 @@
-From: Denny Page <dennypage@me.com>
-Date: Wed, 07 Dec 2016 22:37:24 -0800
-Subject: [Intel-wired-lan] igb: fix adjusting ptp timestamps for tx/rx
-	latency
-Message-ID: <05243125-DE22-414C-83CA-D73445F50CF6@me.com>
+From: David Laight <David.Laight@ACULAB.COM>
+Date: Thu, 8 Dec 2016 10:31:21 +0000
+Subject: [Intel-wired-lan] [RFC PATCH] i40e: enable PCIe relax ordering
+ for SPARC
+In-Reply-To: <CAKgT0UcyRSub0NCi7oHX2Vf+N4vQxzwdWmcc+V+jOX_J=RYgfg@mail.gmail.com>
+References: <1480957627-16825-1-git-send-email-tushar.n.dave@oracle.com>
+ <CAKgT0UcyRSub0NCi7oHX2Vf+N4vQxzwdWmcc+V+jOX_J=RYgfg@mail.gmail.com>
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB02382B2@AcuExch.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hey gents,
+From: Alexander Duyck
+> Sent: 05 December 2016 21:55
+...
+> > @@ -1010,6 +1018,11 @@ int i40e_setup_tx_descriptors(struct i40e_ring *tx_ring)
+> >          */
+> >         tx_ring->size += sizeof(u32);
+> >         tx_ring->size = ALIGN(tx_ring->size, 4096);
+> > +#ifdef CONFIG_SPARC
+> > +       tx_ring->dma_attrs = DMA_ATTR_WEAK_ORDERING;
+> > +#else
+> > +       tx_ring->dma_attrs = 0;
+> > +#endif
+> >         tx_ring->desc = dma_alloc_coherent(dev, tx_ring->size,
+> >                                            &tx_ring->dma, GFP_KERNEL);
+> >         if (!tx_ring->desc) {
+> 
+> Also not a fan of adding yet ring attribute.  Is there any reason why
+> you couldn't simply add a set of inline functions at the start of
+> i40e_txrx.c that could replace the DMA map/unmap operations in this
+> code but pass either 0 or DMA_ATTR_WEAK_ORDERING as needed for the
+> drivers?  Then the x86 code doesn't have to change while the SPARC
+> code will be able to be passed the attribute.
 
-Earlier in the year, there was a change introduced to the igb driver to compensate for for hardware timestamp latency in the Intel i210. The commit has this comment:
+Or use something like:
+#ifdef CONFIG_SPARC
+       #define RING_DMA_ATTR DMA_ATTR_WEAK_ORDERING
+#else
+       #define RING_DMA_ATTR 0
+#endif
+and pass the constant to the function calls.
 
-    Table 7-62 on page 338 of the i210 datasheet lists TX and RX latencies
-    for the various speeds the chip supports.  To give better ptp timestamp
-    accuracy, adjust the timestamps by the amounts Intel gives based on
-    current link speed.
+Is there actually ever a problem passing DMA_ATTR_WEAK_ORDERING?
+I'd guess that it will be ignored if it can't be implemented (or isn't needed).
 
-And the values used were:
-
-    IGB_I210_TX_LATENCY_10		9542
-    IGB_I210_TX_LATENCY_100		1024
-    IGB_I210_TX_LATENCY_1000	178
-    IGB_I210_RX_LATENCY_10		20662
-    IGB_I210_RX_LATENCY_100		2213
-    IGB_I210_RX_LATENCY_1000	448
-
-I have been chasing an issue with timestamps on the i211 and i354, and it has led me to several questions related to this commit:
-
-* In the current data sheet, table 7-62 offers values for 100Mb only. Are the compensation values for 10Mb and 1Gb still documented anywhere?
-
-* The adjustment for the Tx timestamp at 100Mb (IGB_I210_TX_LATENCY_100) corresponds to the maximum latency value in table 7-62, but the adjustment for the Rx timestamp at 100Mb differs from the maximum value in table 7-62, 2213 vs 2133. Is this intentional?
-
-* The data sheet for the i211 contains the same content regarding timestamps (table 7-59), with the same values for Tx/Rx latency, but the driver applies the compensation to the i210 only, with no compensation for the i211. Should compensation be applied to the i211 as well?
-
-And one last tangent question:
-
-* There is no compensation listed in the i350 data sheet, and no compensation in the driver. Does this mean that the i350/i354 requires no compensation?
-
-Appreciate any thoughts you might have on this.
-
-Thanks,
-Denny
-
-??
-
-Refs:
-http://www.intel.com/content/dam/www/public/us/en/documents/datasheets/i210-ethernet-controller-datasheet.pdf
-http://www.intel.com/content/dam/www/public/us/en/documents/datasheets/i211-ethernet-controller-datasheet.pdf
-http://www.intel.com/content/dam/www/public/us/en/documents/datasheets/ethernet-controller-i350-datasheet.pdf
+	David
 
