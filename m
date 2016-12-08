@@ -1,44 +1,30 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Thu, 8 Dec 2016 09:52:41 -0800
-Subject: [Intel-wired-lan] [PATCH 0/3] i40e: Support for XDP
-In-Reply-To: <20161208170022.11555-1-bjorn.topel@gmail.com>
-References: <20161208170022.11555-1-bjorn.topel@gmail.com>
-Message-ID: <58499DE9.3060908@gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 8 Dec 2016 18:14:53 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: add mask for 64 RSS queues
+In-Reply-To: <20161104210303.10489.64989.stgit@localhost6.localdomain6>
+References: <20161104210303.10489.64989.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39B1C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-12-08 09:00 AM, Bj?rn T?pel wrote:
-> From: Bj?rn T?pel <bjorn.topel@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Emil Tantilov
+> Sent: Friday, November 04, 2016 2:03 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: add mask for 64 RSS queues
 > 
-> This series adds XDP support for i40e-based NICs.
+> The indirection table was reported incorrectly for X550 and newer where we
+> can support up to 64 RSS queues.
 > 
-> The first patch adds XDP_RX support, the second XDP_TX support and the
-> last patch makes it possible to change an XDP program without
-> rebuilding the rings.
-> 
-> 
-> Bj?rn
-> 
-> 
-> Bj?rn T?pel (3):
->   i40e: Initial support for XDP
->   i40e: Add XDP_TX support
->   i40e: Don't reset/rebuild rings on XDP program swap
-> 
->  drivers/net/ethernet/intel/i40e/i40e.h         |  18 +
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |   3 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 358 +++++++++++++++++---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 445 +++++++++++++++++++++----
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h    |   7 +
->  5 files changed, 715 insertions(+), 116 deletions(-)
-> 
+> Reported-by Krishneil Singh <krishneil.k.singh@intel.com>
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c |    8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
 
-Hi Jeff,
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-These are for the Intel driver net-next tree per our offlist email.
-
-Thanks!
-John
