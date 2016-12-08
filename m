@@ -1,55 +1,32 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Thu, 8 Dec 2016 10:43:15 +0000
-Subject: [Intel-wired-lan] [RFC PATCH] i40e: enable PCIe relax ordering
- for SPARC
-In-Reply-To: <CAKgT0UfTP+BrvDBzUJAVr9-DRCKgM7T3aS=LgRic8UZz8x82eg@mail.gmail.com>
-References: <1480957627-16825-1-git-send-email-tushar.n.dave@oracle.com>
- <CAKgT0UcyRSub0NCi7oHX2Vf+N4vQxzwdWmcc+V+jOX_J=RYgfg@mail.gmail.com>
- <ec140d5d-3eec-5fc6-6417-11bacc55b807@oracle.com>
- <CAKgT0UfTP+BrvDBzUJAVr9-DRCKgM7T3aS=LgRic8UZz8x82eg@mail.gmail.com>
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB02382BD@AcuExch.aculab.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 8 Dec 2016 15:37:04 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix reporting of 100Mb
+ capability
+In-Reply-To: <1478822433-29791-1-git-send-email-anthony.l.nguyen@intel.com>
+References: <1478822433-29791-1-git-send-email-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39A11@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck
-> Sent: 06 December 2016 17:10
-...
-> I was thinking about it and I realized we can probably simplify this
-> even further.  In the case of most other architectures the
-> DMA_ATTR_WEAK_ORDERING has no effect anyway.  So from what I can tell
-> there is probably no reason not to just always pass that attribute
-> with the DMA mappings.  From what I can tell the only other
-> architecture that uses this is the PowerPC Cell architecture.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Thursday, November 10, 2016 4:01 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix reporting of 100Mb capability
+> 
+> BaseT adapters that are capable of supporting 100Mb are not reporting this
+> capability.  This patch corrects the reporting so that 100Mb is shown as
+> supported on those adapters.
+> 
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-And I should have read all the thread :-(
-
-> Also I was wondering if you actually needed to enable this attribute
-> for both Rx and Tx buffers or just Rx buffers?  The patch that enabled
-> DMA_ATTR_WEAK_ORDERING for Sparc64 seems to call out writes, but I
-> didn't see anything about reads.  I'm just wondering if changing the
-> code for Tx has any effect?  If not you could probably drop those
-> changes and just focus on Rx.
-
-'Weak ordering' only applies to PCIe read transfers, so can only have
-an effect on descriptor reads and transmit buffer reads.
-
-Basically PCIe is a comms protocol and an endpoint (or the host) can
-have multiple outstanding read requests (each of which might generate
-multiple response messages.
-The responses for each request must arrive in order, but responses for
-different requests can be interleaved.
-Setting 'not weak ordering' lets the host interwork with broken endpoints.
-(Or, like we did, you fix the fpga's PCIe implementation.)
-
-In this case you need the reads of both transmit and receive rings to
-'overtake' reads of transmit data.
-
-I'm not at all clear how this 'flag' can be set on dma_map().
-It is a property of the PCIe subsystem.
-
-	David
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
