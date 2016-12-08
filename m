@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 8 Dec 2016 17:36:45 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: prefix Data Center
- Bridge	ops struct
-In-Reply-To: <20161121095240.529ed49d@samsung9>
-References: <20161121095240.529ed49d@samsung9>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39AD5@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 8 Dec 2016 17:43:01 +0000
+Subject: [Intel-wired-lan] [PATCH V3 2/4] ixgbe: Remove unused firmware
+ version functions and method
+In-Reply-To: <148115000557.19165.7238944461091717770.stgit@mdrustad-wks.jf.intel.com>
+References: <148114991608.19165.8749732086590634860.stgit@mdrustad-wks.jf.intel.com>
+ <148115000557.19165.7238944461091717770.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39AEC@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,24 +14,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Stephen Hemminger
-> Sent: Monday, November 21, 2016 9:53 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: prefix Data Center Bridge
-> ops struct
+> Behalf Of Mark D Rustad
+> Sent: Wednesday, December 07, 2016 2:33 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH V3 2/4] ixgbe: Remove unused firmware
+> version functions and method
 > 
-> From: Stephen Hemminger <sthemmin@microsoft.com>
+> The firmware version method and functions are not used anywhere, so
+> remove them all.
 > 
-> Since dcbnl_ops is global, it should be prefixed by ixgbe_
-> 
-> Signed-off-by: Stephen Hemminger <sthemmin@microsoft.com>
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h        | 2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c | 2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   | 2 +-
->  3 files changed, 3 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c |    2 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c |    2 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c   |   34 ------------------------
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h   |    4 ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |    1 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c  |    1 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c  |    3 +-
+>  7 files changed, 1 insertion(+), 46 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
