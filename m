@@ -1,58 +1,85 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Thu, 8 Dec 2016 19:10:57 +0000
-Subject: [Intel-wired-lan] [PATCH V3 4/4] ixgbe: Implement
-	support	for	firmware-controlled PHYs
-In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39B49@ORSMSX104.amr.corp.intel.com>
-References: <148114991608.19165.8749732086590634860.stgit@mdrustad-wks.jf.intel.com>
- <148115001582.19165.14130485235692814435.stgit@mdrustad-wks.jf.intel.com>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39B49@ORSMSX104.amr.corp.intel.com>
-Message-ID: <FAF30666-433A-4E38-95A5-2081A7DF63D6@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 9 Dec 2016 03:20:35 +0800
+Subject: [Intel-wired-lan] [PATCH 2/3] i40e: Add XDP_TX support
+In-Reply-To: <20161208170022.11555-3-bjorn.topel@gmail.com>
+Message-ID: <201612090331.1UJP1l3g%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-AndrewX <andrewx.bowers@intel.com> wrote:
+Hi Bj?rn,
 
->> -----Original Message-----
->> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
->> Behalf Of Mark D Rustad
->> Sent: Wednesday, December 07, 2016 2:34 PM
->> To: intel-wired-lan at lists.osuosl.org
->> Subject: [Intel-wired-lan] [PATCH V3 4/4] ixgbe: Implement support for
->> firmware-controlled PHYs
->>
->> Implement support for devices that have firmware-controlled PHYs.
->>
->> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
->> ---
->> Changes in V2:
->> - Fixed some oversights primarily related to 10M support Changes in V3:
->> - Use the correct ops to blink the LED
->> ---
->>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    4
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |    7
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  156 +++++++++
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   45 +++
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     |    3
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |    7
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |  387
->> ++++++++++++++++++++++
->>  7 files changed, 603 insertions(+), 6 deletions(-)
->
-> Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+[auto build test ERROR on next-20161208]
+[cannot apply to jkirsher-next-queue/dev-queue v4.9-rc8 v4.9-rc7 v4.9-rc6 v4.9-rc8]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-I just sent a V4 because I found that V3 did not actually include the fix  
-for the LED blink that was intended. Please test with ethtool -p next time.  
-Thanks.
+url:    https://github.com/0day-ci/linux/commits/Bj-rn-T-pel/i40e-Support-for-XDP/20161209-013138
+config: sparc64-allmodconfig (attached as .config)
+compiler: sparc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=sparc64 
 
---
-Mark Rustad, Networking Division, Intel Corporation
+All error/warnings (new ones prefixed by >>):
+
+   In file included from include/linux/cache.h:4:0,
+                    from include/linux/printk.h:8,
+                    from include/linux/kernel.h:13,
+                    from include/linux/list.h:8,
+                    from include/linux/timer.h:4,
+                    from include/linux/workqueue.h:8,
+                    from include/linux/bpf.h:11,
+                    from drivers/net/ethernet/intel/i40e/i40e_txrx.c:27:
+   drivers/net/ethernet/intel/i40e/i40e_txrx.c: In function 'i40e_try_flip_rx_page':
+>> drivers/net/ethernet/intel/i40e/i40e_txrx.c:1613:32: error: 'size' undeclared (first use in this function)
+     unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
+                                   ^
+   include/uapi/linux/kernel.h:10:41: note: in definition of macro '__ALIGN_KERNEL_MASK'
+    #define __ALIGN_KERNEL_MASK(x, mask) (((x) + (mask)) & ~(mask))
+                                            ^
+   include/linux/kernel.h:49:22: note: in expansion of macro '__ALIGN_KERNEL'
+    #define ALIGN(x, a)  __ALIGN_KERNEL((x), (a))
+                         ^~~~~~~~~~~~~~
+>> drivers/net/ethernet/intel/i40e/i40e_txrx.c:1613:26: note: in expansion of macro 'ALIGN'
+     unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
+                             ^~~~~
+   drivers/net/ethernet/intel/i40e/i40e_txrx.c:1613:32: note: each undeclared identifier is reported only once for each function it appears in
+     unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
+                                   ^
+   include/uapi/linux/kernel.h:10:41: note: in definition of macro '__ALIGN_KERNEL_MASK'
+    #define __ALIGN_KERNEL_MASK(x, mask) (((x) + (mask)) & ~(mask))
+                                            ^
+   include/linux/kernel.h:49:22: note: in expansion of macro '__ALIGN_KERNEL'
+    #define ALIGN(x, a)  __ALIGN_KERNEL((x), (a))
+                         ^~~~~~~~~~~~~~
+>> drivers/net/ethernet/intel/i40e/i40e_txrx.c:1613:26: note: in expansion of macro 'ALIGN'
+     unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
+                             ^~~~~
+
+vim +/size +1613 drivers/net/ethernet/intel/i40e/i40e_txrx.c
+
+  1607	 */
+  1608	static bool i40e_try_flip_rx_page(struct i40e_rx_buffer *rx_buffer)
+  1609	{
+  1610	#if (PAGE_SIZE < 8192)
+  1611		unsigned int truesize = I40E_RXBUFFER_2048;
+  1612	#else
+> 1613		unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
+  1614		unsigned int last_offset = PAGE_SIZE - I40E_RXBUFFER_2048;
+  1615	#endif
+  1616	
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 -------------- next part --------------
 A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161208/4a8ce3f0/attachment.asc>
+Name: .config.gz
+Type: application/gzip
+Size: 48617 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161209/4ec083e8/attachment-0001.bin>
