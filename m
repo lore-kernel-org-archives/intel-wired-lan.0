@@ -1,115 +1,35 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 07 Dec 2016 16:14:29 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v3] i40e/i40evf: Update driver
- to support napi_complete_done changes
-Message-ID: <20161208001248.13098.93773.stgit@localhost.localdomain>
+From: Zhouyi Zhou <zhouzhouyi@gmail.com>
+Date: Thu, 8 Dec 2016 09:21:00 +0800
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: fcoe: return value of
+	skb_linearize should be handled
+In-Reply-To: <1481131804.2404.10.camel@intel.com>
+References: <1481096614-25295-1-git-send-email-zhouzhouyi@gmail.com>
+ <1481131804.2404.10.camel@intel.com>
+Message-ID: <CAABZP2y9arBT2axpU8yP8r_YzoWD8KdUntRMjbNCJiBE7wFwXg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+Thanks Jeff for your advice,
+Sorry for the  my innocence as a Linux kernel rookie.
 
-Recently napi_complete_done was updated so that it will return zero if we
-are using the queue vector for busy polling.  When this is the case we
-don't need to re-enable interrupts as the busy polling will reschedule the
-NAPI instance when it is finally done polling.
+Zhouyi
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
-
-v2: Updated code to place the IRQ enabling inside the if statment
-    This made it so that we are consistent with the recent return value changes
-
-v3: Added i40evf changes as well
-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   32 +++++++++++++------------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   28 ++++++++++++----------
- 2 files changed, 32 insertions(+), 28 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index e88e335c34ef..f9ef8c2676e2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2033,22 +2033,24 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
- 		}
- 	}
- 
--	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
--		q_vector->arm_wb_state = false;
--
--	/* Work is done so exit the polling mode and re-enable the interrupt */
--	napi_complete_done(napi, work_done);
--
--	/* If we're prematurely stopping polling to fix the interrupt
--	 * affinity we want to make sure polling starts back up so we
--	 * issue a call to i40e_force_wb which triggers a SW interrupt.
-+	/* Work is done so exit the polling mode,
-+	 * if not busy polling re-enable interrupts.
- 	 */
--	if (!clean_complete)
--		i40e_force_wb(vsi, q_vector);
--	else if (!(vsi->back->flags & I40E_FLAG_MSIX_ENABLED))
--		i40e_irq_dynamic_enable_icr0(vsi->back, false);
--	else
--		i40e_update_enable_itr(vsi, q_vector);
-+	if (napi_complete_done(napi, work_done)) {
-+		if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
-+			q_vector->arm_wb_state = false;
-+
-+		/* If we're prematurely stopping polling to fix the interrupt
-+		 * affinity we want to make sure polling starts back up so we
-+		 * issue a call to i40e_force_wb which triggers a SW interrupt.
-+		 */
-+		if (!clean_complete)
-+			i40e_force_wb(vsi, q_vector);
-+		else if (!(vsi->back->flags & I40E_FLAG_MSIX_ENABLED))
-+			i40e_irq_dynamic_enable_icr0(vsi->back, false);
-+		else
-+			i40e_update_enable_itr(vsi, q_vector);
-+	}
- 
- 	return min(work_done, budget - 1);
- }
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 4870cb50dc33..3097a91bd4aa 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1494,20 +1494,22 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
- 		}
- 	}
- 
--	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
--		q_vector->arm_wb_state = false;
--
--	/* Work is done so exit the polling mode and re-enable the interrupt */
--	napi_complete_done(napi, work_done);
--
--	/* If we're prematurely stopping polling to fix the interrupt
--	 * affinity we want to make sure polling starts back up so we
--	 * issue a call to i40evf_force_wb which triggers a SW interrupt.
-+	/* Work is done so exit the polling mode,
-+	 * if not busy polling re-enable interrupts.
- 	 */
--	if (!clean_complete)
--		i40evf_force_wb(vsi, q_vector);
--	else
--		i40e_update_enable_itr(vsi, q_vector);
-+	if (napi_complete_done(napi, work_done)) {
-+		if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
-+			q_vector->arm_wb_state = false;
-+
-+		/* If we're prematurely stopping polling to fix the interrupt
-+		 * affinity we want to make sure polling starts back up so we
-+		 * issue a call to i40evf_force_wb which triggers a SW interrupt.
-+		 */
-+		if (!clean_complete)
-+			i40evf_force_wb(vsi, q_vector);
-+		else
-+			i40e_update_enable_itr(vsi, q_vector);
-+	}
- 
- 	return min(work_done, budget - 1);
- }
-
+On Thu, Dec 8, 2016 at 1:30 AM, Jeff Kirsher
+<jeffrey.t.kirsher@intel.com> wrote:
+> On Wed, 2016-12-07 at 15:43 +0800, Zhouyi Zhou wrote:
+>> Signed-off-by: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+>> Reviewed-by: Cong Wang <xiyou.wangcong@gmail.com>
+>> Reviewed-by: Yuval Shaia <yuval.shaia@oracle.com>
+>> Reviewed-by: Eric Dumazet <eric.dumazet@gmail.com>
+>> ---
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 6 +++++-
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 +--
+>>  2 files changed, 6 insertions(+), 3 deletions(-)
+>
+> Did Cong, Yuval and Eric give their Reviewed-by offline?  I see they made
+> comments and suggests, but never saw them actually give you their Reviewed-
+> by.  You cannot automatically add their Reviewed-by, Signed-off-by, etc
+> just because someone provides feedback on your patch.
