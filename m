@@ -1,8 +1,8 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 07 Dec 2016 15:43:55 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v2] i40e: Update driver to
- support napi_complete_done changes
-Message-ID: <20161207234355.15561.26727.stgit@localhost.localdomain>
+Date: Wed, 07 Dec 2016 16:14:29 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v3] i40e/i40evf: Update driver
+ to support napi_complete_done changes
+Message-ID: <20161208001248.13098.93773.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,8 +18,15 @@ NAPI instance when it is finally done polling.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |   32 ++++++++++++++-------------
- 1 file changed, 17 insertions(+), 15 deletions(-)
+
+v2: Updated code to place the IRQ enabling inside the if statment
+    This made it so that we are consistent with the recent return value changes
+
+v3: Added i40evf changes as well
+
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   32 +++++++++++++------------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   28 ++++++++++++----------
+ 2 files changed, 32 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 index e88e335c34ef..f9ef8c2676e2 100644
@@ -59,6 +66,46 @@ index e88e335c34ef..f9ef8c2676e2 100644
 +			i40e_force_wb(vsi, q_vector);
 +		else if (!(vsi->back->flags & I40E_FLAG_MSIX_ENABLED))
 +			i40e_irq_dynamic_enable_icr0(vsi->back, false);
++		else
++			i40e_update_enable_itr(vsi, q_vector);
++	}
+ 
+ 	return min(work_done, budget - 1);
+ }
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 4870cb50dc33..3097a91bd4aa 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1494,20 +1494,22 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
+ 		}
+ 	}
+ 
+-	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
+-		q_vector->arm_wb_state = false;
+-
+-	/* Work is done so exit the polling mode and re-enable the interrupt */
+-	napi_complete_done(napi, work_done);
+-
+-	/* If we're prematurely stopping polling to fix the interrupt
+-	 * affinity we want to make sure polling starts back up so we
+-	 * issue a call to i40evf_force_wb which triggers a SW interrupt.
++	/* Work is done so exit the polling mode,
++	 * if not busy polling re-enable interrupts.
+ 	 */
+-	if (!clean_complete)
+-		i40evf_force_wb(vsi, q_vector);
+-	else
+-		i40e_update_enable_itr(vsi, q_vector);
++	if (napi_complete_done(napi, work_done)) {
++		if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
++			q_vector->arm_wb_state = false;
++
++		/* If we're prematurely stopping polling to fix the interrupt
++		 * affinity we want to make sure polling starts back up so we
++		 * issue a call to i40evf_force_wb which triggers a SW interrupt.
++		 */
++		if (!clean_complete)
++			i40evf_force_wb(vsi, q_vector);
 +		else
 +			i40e_update_enable_itr(vsi, q_vector);
 +	}
