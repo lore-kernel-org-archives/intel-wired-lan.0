@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 8 Dec 2016 15:37:04 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix reporting of 100Mb
- capability
-In-Reply-To: <1478822433-29791-1-git-send-email-anthony.l.nguyen@intel.com>
-References: <1478822433-29791-1-git-send-email-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39A11@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 8 Dec 2016 15:55:23 +0000
+Subject: [Intel-wired-lan] [PATCH v4] ixgbevf: handle race between close
+ and suspend on shutdown
+In-Reply-To: <20161111181251.17498.91161.stgit@localhost6.localdomain6>
+References: <20161111181251.17498.91161.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39A3B@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,19 +13,35 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Thursday, November 10, 2016 4:01 PM
+> Behalf Of Emil Tantilov
+> Sent: Friday, November 11, 2016 10:13 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix reporting of 100Mb capability
+> Subject: [Intel-wired-lan] [PATCH v4] ixgbevf: handle race between close and
+> suspend on shutdown
 > 
-> BaseT adapters that are capable of supporting 100Mb are not reporting this
-> capability.  This patch corrects the reporting so that 100Mb is shown as
-> supported on those adapters.
+> When an interface is part of a namespace it is possible that
+> ixgbevf_close() may be called while ixgbevf_suspend() is running which ends
+> up in a double free WARN and/or a BUG in free_msi_irqs()
 > 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> To handle this situation we extend the rtnl_lock() to protect the call to
+> netif_device_detach() and check for !netif_device_present() to avoid
+> entering close while in suspend.
+> 
+> Also added rtnl locks to ixgbevf_queue_reset_subtask().
+> 
+> -v2 handle the race with netif_device_detach/present() and rtnl locks as
+> suggested by Alex Duyck
+> 
+> -v3 add rtnl locks and check in ixgbevf_remove()
+> 
+> -v4 revert the ixgbevf_remove() changes from v3, I will submit a separate
+> patch to deal with the PCIe AER issue on failed recovery
+> 
+> CC: Alexander Duyck <alexander.h.duyck@intel.com>
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
