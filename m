@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 8 Dec 2016 15:55:23 +0000
-Subject: [Intel-wired-lan] [PATCH v4] ixgbevf: handle race between close
- and suspend on shutdown
-In-Reply-To: <20161111181251.17498.91161.stgit@localhost6.localdomain6>
-References: <20161111181251.17498.91161.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39A3B@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 8 Dec 2016 15:55:06 +0000
+Subject: [Intel-wired-lan] [PATCH v3] ixgbe: handle close/suspend race
+ with netif_device_detach/present
+In-Reply-To: <20161111180747.17123.27924.stgit@localhost6.localdomain6>
+References: <20161111180747.17123.27924.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39A2E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,34 +14,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Emil Tantilov
-> Sent: Friday, November 11, 2016 10:13 AM
+> Sent: Friday, November 11, 2016 10:08 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v4] ixgbevf: handle race between close and
-> suspend on shutdown
+> Subject: [Intel-wired-lan] [PATCH v3] ixgbe: handle close/suspend race with
+> netif_device_detach/present
 > 
 > When an interface is part of a namespace it is possible that
-> ixgbevf_close() may be called while ixgbevf_suspend() is running which ends
-> up in a double free WARN and/or a BUG in free_msi_irqs()
+> ixgbe_close() may be called while __ixgbe_shutdown() is running which ends
+> up in a double free WARN and/or a BUG in free_msi_irqs().
 > 
 > To handle this situation we extend the rtnl_lock() to protect the call to
-> netif_device_detach() and check for !netif_device_present() to avoid
-> entering close while in suspend.
+> netif_device_detach() and ixgbe_clear_interrupt_scheme() in
+> __ixgbe_shutdown() and check for netif_device_present() to avoid clearing
+> the interrupts second time in ixgbe_close();
 > 
-> Also added rtnl locks to ixgbevf_queue_reset_subtask().
+> Also extend the rtnl lock in ixgbe_resume() to netif_device_attach().
 > 
-> -v2 handle the race with netif_device_detach/present() and rtnl locks as
-> suggested by Alex Duyck
+> v2 - add rtnl locks and a check in ixgbe_remove()
 > 
-> -v3 add rtnl locks and check in ixgbevf_remove()
+> v3 - remove the check in ixgbe_remove(), I will submit a separate patch to
+> address the case of failed PCIe error recovery
 > 
-> -v4 revert the ixgbevf_remove() changes from v3, I will submit a separate
-> patch to deal with the PCIe AER issue on failed recovery
-> 
-> CC: Alexander Duyck <alexander.h.duyck@intel.com>
 > Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   17 ++++++++---------
+>  1 file changed, 8 insertions(+), 9 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
