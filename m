@@ -1,39 +1,37 @@
-From: Ryan Schaefer <ryanschaefer23@gmail.com>
-Date: Thu, 8 Dec 2016 08:31:59 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix reporting of 100Mb capability
-Message-ID: <CAN1OqpxmGiiMEwm_E+GNQCCJOns8-DEG7cgoBWVs9XGoziXdrw@mail.gmail.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Thu,  8 Dec 2016 18:00:19 +0100
+Subject: [Intel-wired-lan] [PATCH 0/3] i40e: Support for XDP
+Message-ID: <20161208170022.11555-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> BaseT adapters that are capable of supporting 100Mb are not reporting this
-> capability.  This patch corrects the reporting so that 100Mb is shown as
-> supported on those adapters.
->
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> index fd192bf..8789f21 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> @@ -199,7 +199,7 @@ static int ixgbe_get_settings(struct net_device *netdev,
->   if (supported_link & IXGBE_LINK_SPEED_100_FULL)
->   ecmd->supported |= ixgbe_isbackplane(hw->phy.media_type) ?
->     SUPPORTED_1000baseKX_Full :
-> -   SUPPORTED_1000baseT_Full;
-> +   SUPPORTED_100baseT_Full;
->
->   /* default advertised speed if phy.autoneg_advertised isn't set */
->   ecmd->advertising = ecmd->supported;
-> --
-> 2.4.0
+From: Bj?rn T?pel <bjorn.topel@intel.com>
+
+This series adds XDP support for i40e-based NICs.
+
+The first patch adds XDP_RX support, the second XDP_TX support and the
+last patch makes it possible to change an XDP program without
+rebuilding the rings.
 
 
-This patch should also remove the erroneously set
-SUPPORTED_1000baseKX_Full bit as well. [PATCH] ixgbe: Switch to
-ETHTOOL_xLINKSETTINGS API adds this fix.
+Bj?rn
+
+
+Bj?rn T?pel (3):
+  i40e: Initial support for XDP
+  i40e: Add XDP_TX support
+  i40e: Don't reset/rebuild rings on XDP program swap
+
+ drivers/net/ethernet/intel/i40e/i40e.h         |  18 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |   3 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 358 +++++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 445 +++++++++++++++++++++----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h    |   7 +
+ 5 files changed, 715 insertions(+), 116 deletions(-)
+
+-- 
+2.9.3
+
