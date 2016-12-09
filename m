@@ -1,87 +1,105 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Thu, 8 Dec 2016 21:22:31 +0100
-Subject: [Intel-wired-lan] [PATCH 2/3] i40e: Add XDP_TX support
-In-Reply-To: <201612090331.1UJP1l3g%fengguang.wu@intel.com>
-References: <20161208170022.11555-3-bjorn.topel@gmail.com>
- <201612090331.1UJP1l3g%fengguang.wu@intel.com>
-Message-ID: <CAJ+HfNhG=XegU2Qyj6brL2o0X+KHUg=Q1LnwaQcXVxunS-HN3g@mail.gmail.com>
+From: tndave <tushar.n.dave@oracle.com>
+Date: Thu, 8 Dec 2016 16:45:35 -0800
+Subject: [Intel-wired-lan] [RFC PATCH] i40e: enable PCIe relax ordering
+ for SPARC
+In-Reply-To: <CAKgT0Uf3aZBoziv7B0tFMovYe9JNWEYZAZhe9iof2XcuRJD+uw@mail.gmail.com>
+References: <1480957627-16825-1-git-send-email-tushar.n.dave@oracle.com>
+ <CAKgT0UcyRSub0NCi7oHX2Vf+N4vQxzwdWmcc+V+jOX_J=RYgfg@mail.gmail.com>
+ <ec140d5d-3eec-5fc6-6417-11bacc55b807@oracle.com>
+ <CAKgT0UfTP+BrvDBzUJAVr9-DRCKgM7T3aS=LgRic8UZz8x82eg@mail.gmail.com>
+ <063D6719AE5E284EB5DD2968C1650D6DB02382BD@AcuExch.aculab.com>
+ <CAKgT0Uf3aZBoziv7B0tFMovYe9JNWEYZAZhe9iof2XcuRJD+uw@mail.gmail.com>
+Message-ID: <fc3fc99a-ff53-d895-ec06-56f9cf8a0d13@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-2016-12-08 20:20 GMT+01:00 kbuild test robot <lkp@intel.com>:
-> Hi Bj?rn,
->
-> [auto build test ERROR on next-20161208]
-> [cannot apply to jkirsher-next-queue/dev-queue v4.9-rc8 v4.9-rc7 v4.9-rc6 v4.9-rc8]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Bj-rn-T-pel/i40e-Support-for-XDP/20161209-013138
-> config: sparc64-allmodconfig (attached as .config)
-> compiler: sparc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> reproduce:
->         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=sparc64
->
-> All error/warnings (new ones prefixed by >>):
->
->    In file included from include/linux/cache.h:4:0,
->                     from include/linux/printk.h:8,
->                     from include/linux/kernel.h:13,
->                     from include/linux/list.h:8,
->                     from include/linux/timer.h:4,
->                     from include/linux/workqueue.h:8,
->                     from include/linux/bpf.h:11,
->                     from drivers/net/ethernet/intel/i40e/i40e_txrx.c:27:
->    drivers/net/ethernet/intel/i40e/i40e_txrx.c: In function 'i40e_try_flip_rx_page':
->>> drivers/net/ethernet/intel/i40e/i40e_txrx.c:1613:32: error: 'size' undeclared (first use in this function)
->      unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
->                                    ^
->    include/uapi/linux/kernel.h:10:41: note: in definition of macro '__ALIGN_KERNEL_MASK'
->     #define __ALIGN_KERNEL_MASK(x, mask) (((x) + (mask)) & ~(mask))
->                                             ^
->    include/linux/kernel.h:49:22: note: in expansion of macro '__ALIGN_KERNEL'
->     #define ALIGN(x, a)  __ALIGN_KERNEL((x), (a))
->                          ^~~~~~~~~~~~~~
->>> drivers/net/ethernet/intel/i40e/i40e_txrx.c:1613:26: note: in expansion of macro 'ALIGN'
->      unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
->                              ^~~~~
->    drivers/net/ethernet/intel/i40e/i40e_txrx.c:1613:32: note: each undeclared identifier is reported only once for each function it appears in
->      unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
->                                    ^
->    include/uapi/linux/kernel.h:10:41: note: in definition of macro '__ALIGN_KERNEL_MASK'
->     #define __ALIGN_KERNEL_MASK(x, mask) (((x) + (mask)) & ~(mask))
->                                             ^
->    include/linux/kernel.h:49:22: note: in expansion of macro '__ALIGN_KERNEL'
->     #define ALIGN(x, a)  __ALIGN_KERNEL((x), (a))
->                          ^~~~~~~~~~~~~~
->>> drivers/net/ethernet/intel/i40e/i40e_txrx.c:1613:26: note: in expansion of macro 'ALIGN'
->      unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
->                              ^~~~~
->
-> vim +/size +1613 drivers/net/ethernet/intel/i40e/i40e_txrx.c
->
->   1607   */
->   1608  static bool i40e_try_flip_rx_page(struct i40e_rx_buffer *rx_buffer)
->   1609  {
->   1610  #if (PAGE_SIZE < 8192)
->   1611          unsigned int truesize = I40E_RXBUFFER_2048;
->   1612  #else
->> 1613          unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
->   1614          unsigned int last_offset = PAGE_SIZE - I40E_RXBUFFER_2048;
->   1615  #endif
->   1616
->
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
 
-Ick. I'll respin this.
+On 12/08/2016 08:05 AM, Alexander Duyck wrote:
+> On Thu, Dec 8, 2016 at 2:43 AM, David Laight
+> <David.Laight@aculab.com> wrote:
+>> From: Alexander Duyck
+>>> Sent: 06 December 2016 17:10
+>> ...
+>>> I was thinking about it and I realized we can probably simplify
+>>> this even further.  In the case of most other architectures the
+>>> DMA_ATTR_WEAK_ORDERING has no effect anyway.  So from what I can
+>>> tell there is probably no reason not to just always pass that
+>>> attribute with the DMA mappings.  From what I can tell the only
+>>> other architecture that uses this is the PowerPC Cell
+>>> architecture.
+>>
+>> And I should have read all the thread :-(
+>>
+>>> Also I was wondering if you actually needed to enable this
+>>> attribute for both Rx and Tx buffers or just Rx buffers?  The
+>>> patch that enabled DMA_ATTR_WEAK_ORDERING for Sparc64 seems to
+>>> call out writes, but I didn't see anything about reads.  I'm just
+>>> wondering if changing the code for Tx has any effect?  If not you
+>>> could probably drop those changes and just focus on Rx.
+>>
+>> 'Weak ordering' only applies to PCIe read transfers, so can only
+>> have an effect on descriptor reads and transmit buffer reads.
+>>
+>> Basically PCIe is a comms protocol and an endpoint (or the host)
+>> can have multiple outstanding read requests (each of which might
+>> generate multiple response messages. The responses for each request
+>> must arrive in order, but responses for different requests can be
+>> interleaved. Setting 'not weak ordering' lets the host interwork
+>> with broken endpoints. (Or, like we did, you fix the fpga's PCIe
+>> implementation.)
+>
+> I get the basics of relaxed ordering.  The question is how does the
+> Sparc64 IOMMU translate DMA_ATTR_WEAK_ORDERING into relaxed ordering
+> messages, and at what level the ordering is relaxed.  Odds are the
+> wording in the description where this attribute was added to Sparc
+> is just awkward, but I was wanting to verify if this only applies to
+> writes, or also read completions.
+In Sparc64, passing DMA_ATTR_WEAK_ORDERING in dma map/unmap only affects 
+PCIe root complex (Hostbridge). Using DMA_ATTR_WEAK_ORDERING, requested 
+DMA transaction can be relaxed ordered within the PCIe root complex.
 
+In Sparc64, memory writes can be held at PCIe root complex not letting
+other memory writes to go through. By passing DMA_ATTR_WEAK_ORDERING in
+dma map/unmap allows memory writes to bypass other memory writes in PCIe
+root complex. (This applies to only PCIe root complex and does not 
+affect at any other level of PCIe hierarchy e.g. PCIe bridges et al. 
+Also the PCIe root complex when bypassing memory writes does follow PCIe 
+relax ordering rules as per PCIe specification.
 
-Bj?rn
+For reference [old but still relevant write-up]: PCI-Express Relaxed 
+Ordering and the Sun SPARC Enterprise M-class Servers
+https://blogs.oracle.com/olympus/entry/relaxed_ordering
+
+>
+>> In this case you need the reads of both transmit and receive rings
+>> to 'overtake' reads of transmit data.
+>
+> Actually that isn't quite right.  With relaxed ordering completions
+> and writes can pass each other if I recall correctly, but reads will
+> always force all writes ahead of them to be completed before you can
+> begin generating the read completions.
+That is my understanding as well.
+
+>
+>> I'm not at all clear how this 'flag' can be set on dma_map(). It is
+>> a property of the PCIe subsystem.
+Because in Sparc64, passing DMA_ATTR_WEAK_ORDERING flag in DMA map/unmap 
+adds an entry in IOMMU/ATU table so that an access to requested DMA 
+address from PCIe root complex can be relaxed ordered.
+>
+> That was where my original question on this came in.  We can do a
+> blanket enable of relaxed ordering for Tx and Rx data buffers, but
+> if we only need it on Rx then there isn't any need for us to make
+> unnecessary changes.
+I ran some quick test and it is likely that we don't need
+DMA_ATTR_WEAK_ORDERING for any TX dma buffer (because in case of TX dma
+buffers, its all memory reads from device).
+
+-Tushar
+>
+> - Alex
+>
