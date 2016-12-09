@@ -1,50 +1,46 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Fri, 9 Dec 2016 10:06:41 -0800
-Subject: [Intel-wired-lan] [PATCH v2 2/3] i40e: Add XDP_TX support
-In-Reply-To: <20161209082212.29549-3-bjorn.topel@gmail.com>
-References: <20161209082212.29549-1-bjorn.topel@gmail.com>
- <20161209082212.29549-3-bjorn.topel@gmail.com>
-Message-ID: <584AF2B1.1090908@gmail.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Fri,  9 Dec 2016 13:39:21 -0800
+Subject: [Intel-wired-lan] [PATCH] i40e: don't truncate match_method
+	assignment
+Message-ID: <20161209213921.26451-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-12-09 12:22 AM, Bj?rn T?pel wrote:
-> From: Bj?rn T?pel <bjorn.topel@intel.com>
-> 
-> This patch adds proper XDP_TX support.
-> 
-> Acked-by: John Fastabend <john.r.fastabend@intel.com>
-> Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h      |   5 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 273 ++++++++++++++++++++-----
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 303 +++++++++++++++++++++++-----
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h |   5 +
->  4 files changed, 490 insertions(+), 96 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-> index 05d805f439e6..adc1f3f32729 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-> @@ -545,6 +545,10 @@ struct i40e_vsi {
->  	struct i40e_ring **rx_rings;
->  	struct i40e_ring **tx_rings;
->  
-> +	/* The XDP rings are Tx only, and follows the count of the
-> +	 * regular rings, i.e. alloc_queue_pairs/num_queue_pairs
-> +	 */
-> +	struct i40e_ring **xdp_rings;
+The .match_method field is a u8, so we shouldn't be casting to a u16,
+and because it is only one byte, we do not need to byte swap anything.
+Just assign the value directly. This avoids issues on Big Endian
+architectures which would have byte swapped and then incorrectly
+truncated the value.
 
-hmm not really a complaint about your patch but these _rings are using
-something like rcu because of the kfree_rcu being called but I don't
-see any rcu_dereference_bh() usage or rcu_assign_pointer() :/
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Bimmy Pujari <bimmy.pujari@intel.com>
+---
+Not sure if this was already in Jeff's queue, but since it's an obvious
+fix for the issue found by Stephen, I thought I'd send it out now just
+to make sure. Thanks for catching this, and sorry we didn't find the fix
+earlier.
 
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-I know you just copied the existing pattern. Maybe an i40e dev can
-comment.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 69a51a4119d6..6ccf18464339 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2257,8 +2257,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 			}
+ 			add_list[num_add].queue_number = 0;
+ 			/* set invalid match method for later detection */
+-			add_list[num_add].match_method =
+-				cpu_to_le16((u16)I40E_AQC_MM_ERR_NO_RES);
++			add_list[num_add].match_method = I40E_AQC_MM_ERR_NO_RES;
+ 			cmd_flags |= I40E_AQC_MACVLAN_ADD_PERFECT_MATCH;
+ 			add_list[num_add].flags = cpu_to_le16(cmd_flags);
+ 			num_add++;
+-- 
+2.11.0.rc2.152.g4d04e67
 
-Thanks,
-John
