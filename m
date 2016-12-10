@@ -1,41 +1,60 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Sat, 10 Dec 2016 00:12:33 +0000
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Report driver version
-	to	firmware for x550 devices
-In-Reply-To: <1477524318-17574-1-git-send-email-anthony.l.nguyen@intel.com>
-References: <1477524318-17574-1-git-send-email-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA39DA1@ORSMSX104.amr.corp.intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Sat, 10 Dec 2016 00:39:17 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix reporting of 100Mb
+ capability
+In-Reply-To: <CAN1OqpxmGiiMEwm_E+GNQCCJOns8-DEG7cgoBWVs9XGoziXdrw@mail.gmail.com>
+References: <CAN1OqpxmGiiMEwm_E+GNQCCJOns8-DEG7cgoBWVs9XGoziXdrw@mail.gmail.com>
+Message-ID: <4C5EDC162D52824D9E7FB1446983F3EE9AFAA0A6@ORSMSX116.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+
+
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Wednesday, October 26, 2016 4:25 PM
+> Behalf Of Ryan Schaefer
+> Sent: Thursday, December 08, 2016 8:32 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Report driver version to
-> firmware for x550 devices
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix reporting of 100Mb capability
 > 
-> Some x550 devices require the driver version reported to its firmware; this
-> patch sends the driver version string to the firmware through the host
-> interface command for x550 devices.
+> > BaseT adapters that are capable of supporting 100Mb are not reporting
+> > this capability.  This patch corrects the reporting so that 100Mb is
+> > shown as supported on those adapters.
+> >
+> > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> > ---
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> > b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> > index fd192bf..8789f21 100644
+> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> > @@ -199,7 +199,7 @@ static int ixgbe_get_settings(struct net_device
+> *netdev,
+> >   if (supported_link & IXGBE_LINK_SPEED_100_FULL)
+> >   ecmd->supported |= ixgbe_isbackplane(hw->phy.media_type) ?
+> >     SUPPORTED_1000baseKX_Full :
+> > -   SUPPORTED_1000baseT_Full;
+> > +   SUPPORTED_100baseT_Full;
+> >
+> >   /* default advertised speed if phy.autoneg_advertised isn't set */
+> >   ecmd->advertising = ecmd->supported;
+> > --
+> > 2.4.0
 > 
-> v2:
->   Set ixgbe_set_fw_drv_ver_x550() to static
 > 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |  7 ++-
-> drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |  3 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |  5 ++-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   | 14 +++++-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   | 58
-> ++++++++++++++++++++++++-
->  5 files changed, 80 insertions(+), 7 deletions(-)
+> This patch should also remove the erroneously set
+> SUPPORTED_1000baseKX_Full bit as well. [PATCH] ixgbe: Switch to
+> ETHTOOL_xLINKSETTINGS API adds this fix.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Jeff,
 
+Can you drop this patch?  Ryan's patch contains both fixes so I'll drop mine instead of doing a v2.
 
+Thanks,
+Tony
