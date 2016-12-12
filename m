@@ -1,76 +1,171 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 12 Dec 2016 15:44:16 -0800
-Subject: [Intel-wired-lan] [next PATCH S57 10/11] i40e: Error handling for
-	link event
+Date: Mon, 12 Dec 2016 15:44:08 -0800
+Subject: [Intel-wired-lan] [next PATCH S57 02/11] i40e: enable mc magic pkt
+	wakeup during power down
 In-Reply-To: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
 References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1481586257-28872-11-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1481586257-28872-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+From: "Joshua Hay" <joshua.a.hay@intel.com>
 
-There exists an intermittent bug which causes the 'Link Detected'
-field reported by the 'ethtool <iface>' command to be 'Yes' when
-in fact, there is no link. This patch fixes the problem by
-enabling temporary link polling when i40e_get_link_status returns
-an error. This causes the driver to remember that an admin queue
-command failed and polls, until the function returns with a success.
+This patch adds a call to the mac_address_write admin q function during
+power down to update the PRTPM_SAH/SAL registers with the MC_MAG_EN bit
+thus enabling multicast magic packet wakeup.
+    
+A FW workaround is needed to write the multicast magic wake up enable 
+bit in the PRTPM_SAH register. The FW expects the mac address write  
+admin q cmd to be called first with one of the WRITE_TYPE_LAA flags 
+and then with the multicast relevant flags.
 
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Change-Id: I64c69b008db4017b8729f3fc27b8f65c8fe2eaa0
+*Note: This solution only works for X722 devices currently. A PFR will
+clear the previously mentioned bit by default, but X722 has support for a
+WOL_PRESERVE_ON_PFR flag which prevents the bit from being cleared. Once
+other devices support this flag, this solution should work as well.
+
+Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+Change-ID: I51bd5b8535bd9051c2676e27c999c1657f786827
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c | 14 ++++++++++++--
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h            |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h |  2 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c       | 74 ++++++++++++++++++++---
+ 3 files changed, 67 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 0f13d19..19a296d 100644
+index 0f2bf241..0f13d19 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -388,6 +388,7 @@ struct i40e_pf {
+@@ -387,6 +387,7 @@ struct i40e_pf {
+ #define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(51)
  #define I40E_FLAG_HAVE_CRT_RETIMER		BIT_ULL(52)
  #define I40E_FLAG_PTP_L4_CAPABLE		BIT_ULL(53)
- #define I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE		BIT_ULL(54)
-+#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(55)
++#define I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE		BIT_ULL(54)
  
  	/* tracks features that get auto disabled by errors */
  	u64 auto_disable_flags;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index b2101a5..451f48b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -538,6 +538,8 @@ I40E_CHECK_STRUCT_LEN(24, i40e_aqc_mac_address_read_data);
+ /* Manage MAC Address Write Command (0x0108) */
+ struct i40e_aqc_mac_address_write {
+ 	__le16	command_flags;
++#define I40E_AQC_MC_MAG_EN		0x0100
++#define I40E_AQC_WOL_PRESERVE_ON_PFR	0x0200
+ #define I40E_AQC_WRITE_TYPE_LAA_ONLY	0x0000
+ #define I40E_AQC_WRITE_TYPE_LAA_WOL	0x4000
+ #define I40E_AQC_WRITE_TYPE_PORT	0x8000
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 99ea5652..ef8dc28 100644
+index cb62a1e..51a962c 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6367,7 +6367,16 @@ static void i40e_link_event(struct i40e_pf *pf)
- 	old_link = (pf->hw.phy.link_info_old.link_info & I40E_AQ_LINK_UP);
+@@ -8830,16 +8830,17 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 	}
+ #endif /* CONFIG_PCI_IOV */
+ 	if (pf->hw.mac.type == I40E_MAC_X722) {
+-		pf->flags |= I40E_FLAG_RSS_AQ_CAPABLE |
+-			     I40E_FLAG_128_QP_RSS_CAPABLE |
+-			     I40E_FLAG_HW_ATR_EVICT_CAPABLE |
+-			     I40E_FLAG_OUTER_UDP_CSUM_CAPABLE |
+-			     I40E_FLAG_WB_ON_ITR_CAPABLE |
+-			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE |
+-			     I40E_FLAG_NO_PCI_LINK_CHECK |
+-			     I40E_FLAG_USE_SET_LLDP_MIB |
+-			     I40E_FLAG_GENEVE_OFFLOAD_CAPABLE |
+-			     I40E_FLAG_PTP_L4_CAPABLE;
++		pf->flags |= I40E_FLAG_RSS_AQ_CAPABLE
++			     | I40E_FLAG_128_QP_RSS_CAPABLE
++			     | I40E_FLAG_HW_ATR_EVICT_CAPABLE
++			     | I40E_FLAG_OUTER_UDP_CSUM_CAPABLE
++			     | I40E_FLAG_WB_ON_ITR_CAPABLE
++			     | I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE
++			     | I40E_FLAG_NO_PCI_LINK_CHECK
++			     | I40E_FLAG_USE_SET_LLDP_MIB
++			     | I40E_FLAG_GENEVE_OFFLOAD_CAPABLE
++			     | I40E_FLAG_PTP_L4_CAPABLE
++			     | I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE;
+ 	} else if ((pf->hw.aq.api_maj_ver > 1) ||
+ 		   ((pf->hw.aq.api_maj_ver == 1) &&
+ 		    (pf->hw.aq.api_min_ver > 4))) {
+@@ -11757,6 +11758,53 @@ static void i40e_pci_error_resume(struct pci_dev *pdev)
+ }
  
- 	status = i40e_get_link_status(&pf->hw, &new_link);
--	if (status) {
+ /**
++ * i40e_enable_mc_magic_wake - enable multicast magic packet wake up
++ * using the mac_address_write admin q function
++ * @pf: pointer to i40e_pf struct
++ **/
++static void i40e_enable_mc_magic_wake(struct i40e_pf *pf)
++{
++	struct i40e_hw *hw = &pf->hw;
++	i40e_status ret;
++	u8 mac_addr[6];
++	u16 flags = 0;
 +
-+	/* On success, disable temp link polling */
-+	if (status == I40E_SUCCESS) {
-+		if (pf->flags & I40E_FLAG_TEMP_LINK_POLLING)
-+			pf->flags &= ~I40E_FLAG_TEMP_LINK_POLLING;
++	/* Get current MAC address in case it's an LAA */
++	if (pf->vsi[pf->lan_vsi] && pf->vsi[pf->lan_vsi]->netdev) {
++		ether_addr_copy(mac_addr,
++				pf->vsi[pf->lan_vsi]->netdev->dev_addr);
 +	} else {
-+		/* Enable link polling temporarily until i40e_get_link_status
-+		 * returns I40E_SUCCESS
-+		 */
-+		pf->flags |= I40E_FLAG_TEMP_LINK_POLLING;
- 		dev_dbg(&pf->pdev->dev, "couldn't get link state, status: %d\n",
- 			status);
- 		return;
-@@ -6419,7 +6428,8 @@ static void i40e_watchdog_subtask(struct i40e_pf *pf)
- 		return;
- 	pf->service_timer_previous = jiffies;
++		dev_err(&pf->pdev->dev,
++			"Failed to retrieve MAC address; using default\n");
++		ether_addr_copy(mac_addr, hw->mac.addr);
++	}
++
++	/* The FW expects the mac address write cmd to first be called with
++	 * one of these flags before calling it again with the multicast
++	 * enable flags.
++	 */
++	flags = I40E_AQC_WRITE_TYPE_LAA_WOL;
++
++	if (hw->func_caps.flex10_enable && hw->partition_id != 1)
++		flags = I40E_AQC_WRITE_TYPE_LAA_ONLY;
++
++	ret = i40e_aq_mac_address_write(hw, flags, mac_addr, NULL);
++	if (ret) {
++		dev_err(&pf->pdev->dev,
++			"Failed to update MAC address registers; cannot enable Multicast Magic packet wake up");
++		return;
++	}
++
++	flags = I40E_AQC_MC_MAG_EN
++			| I40E_AQC_WOL_PRESERVE_ON_PFR
++			| I40E_AQC_WRITE_TYPE_UPDATE_MC_MAG;
++	ret = i40e_aq_mac_address_write(hw, flags, mac_addr, NULL);
++	if (ret)
++		dev_err(&pf->pdev->dev,
++			"Failed to enable Multicast Magic Packet wake up\n");
++}
++
++/**
+  * i40e_shutdown - PCI callback for shutting down
+  * @pdev: PCI device information struct
+  **/
+@@ -11778,6 +11826,9 @@ static void i40e_shutdown(struct pci_dev *pdev)
+ 	cancel_work_sync(&pf->service_task);
+ 	i40e_fdir_teardown(pf);
  
--	if (pf->flags & I40E_FLAG_LINK_POLLING_ENABLED)
-+	if ((pf->flags & I40E_FLAG_LINK_POLLING_ENABLED) ||
-+	    (pf->flags & I40E_FLAG_TEMP_LINK_POLLING))
- 		i40e_link_event(pf);
++	if (pf->wol_en && (pf->flags & I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE))
++		i40e_enable_mc_magic_wake(pf);
++
+ 	rtnl_lock();
+ 	i40e_prep_for_reset(pf);
+ 	rtnl_unlock();
+@@ -11809,6 +11860,9 @@ static int i40e_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	set_bit(__I40E_SUSPENDED, &pf->state);
+ 	set_bit(__I40E_DOWN, &pf->state);
  
- 	/* Update the stats for active netdevs so the network stack
++	if (pf->wol_en && (pf->flags & I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE))
++		i40e_enable_mc_magic_wake(pf);
++
+ 	rtnl_lock();
+ 	i40e_prep_for_reset(pf);
+ 	rtnl_unlock();
 -- 
 2.4.11
 
