@@ -1,28 +1,33 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 12 Dec 2016 17:51:52 +0000
-Subject: [Intel-wired-lan] [PATCH 2/4] fm10k: remove extraneous
-	variable	definition in fm10k_ethtool.c
-In-Reply-To: <20161102234447.17181-2-jacob.e.keller@intel.com>
-References: <20161102234447.17181-1-jacob.e.keller@intel.com>
- <20161102234447.17181-2-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E490F5339@ORSMSX103.amr.corp.intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Mon, 12 Dec 2016 15:08:13 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Update version to reflect added
+	functionality
+Message-ID: <148158409334.90549.5346919048080456278.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Update the driver version to reflect the new devices that it
+supports.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
-Sent: Wednesday, November 2, 2016 4:45 PM
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [Intel-wired-lan] [PATCH 2/4] fm10k: remove extraneous variable definition in fm10k_ethtool.c
-
-We don't need to typecast a u8 * into a char *, so just remove the extra variable.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 0da6381ca800..3450d48d79ed 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -72,7 +72,7 @@ char ixgbe_default_device_descr[] =
+ static char ixgbe_default_device_descr[] =
+ 			      "Intel(R) 10 Gigabit Network Connection";
+ #endif
+-#define DRV_VERSION "4.4.0-k"
++#define DRV_VERSION "5.0.0-k"
+ const char ixgbe_driver_version[] = DRV_VERSION;
+ static const char ixgbe_copyright[] =
+ 				"Copyright (c) 1999-2016 Intel Corporation.";
 
