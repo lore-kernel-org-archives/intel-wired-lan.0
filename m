@@ -1,108 +1,46 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 12 Dec 2016 15:44:12 -0800
-Subject: [Intel-wired-lan] [next PATCH S57 06/11] i40e: Fix Adaptive ITR
-	enabling
+Date: Mon, 12 Dec 2016 15:44:10 -0800
+Subject: [Intel-wired-lan] [next PATCH S57 04/11] i40evf: free rings in
+	remove function
 In-Reply-To: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
 References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1481586257-28872-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1481586257-28872-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-This patch fixes a bug introduced with the addition of the per queue
-ITR feature support in ethtool.  With that addition, there were
-functions added which converted the ITR settings to binary values.
-The IS_ENABLED macros that run on those values check whether a bit
-is set or not and with the value being binary, the bit check always
-returned ITR disabled which prevents any updating of the ITR rate.
-This patch fixes the problem by changing the functions to return the
-current ITR value instead and renaming it to better reflect
-its function.  These functions now provide a value which will be
-accurately asessed and update the ITR as intended.
+When the i40evf_remove() calls netdev close, the device doesn't actually
+close - it schedules the work for the watchdog to perform. Since we're
+stopping the watchdog, this work doesn't get done. However, we're
+resetting the part, so we can free resources after the reset request has
+gone through. This plugs a memory leak.
 
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Change-ID: I14f1d088d052e27f652aaa3113e186415ddea1fc
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Id5335dcaf76ce00d2a4c3d26e9faf711d7f051cf
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 12 ++++++------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 12 ++++++------
- 2 files changed, 12 insertions(+), 12 deletions(-)
+Testing Hints : Load/unload test
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index e88e335..8531f4b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1864,14 +1864,14 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
- 
- /* a small macro to shorten up some long lines */
- #define INTREG I40E_PFINT_DYN_CTLN
--static inline int get_rx_itr_enabled(struct i40e_vsi *vsi, int idx)
-+static inline int get_rx_itr(struct i40e_vsi *vsi, int idx)
- {
--	return !!(vsi->rx_rings[idx]->rx_itr_setting);
-+	return vsi->rx_rings[idx]->rx_itr_setting;
- }
- 
--static inline int get_tx_itr_enabled(struct i40e_vsi *vsi, int idx)
-+static inline int get_tx_itr(struct i40e_vsi *vsi, int idx)
- {
--	return !!(vsi->tx_rings[idx]->tx_itr_setting);
-+	return vsi->tx_rings[idx]->tx_itr_setting;
- }
- 
- /**
-@@ -1897,8 +1897,8 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
- 	 */
- 	rxval = txval = i40e_buildreg_itr(I40E_ITR_NONE, 0);
- 
--	rx_itr_setting = get_rx_itr_enabled(vsi, idx);
--	tx_itr_setting = get_tx_itr_enabled(vsi, idx);
-+	rx_itr_setting = get_rx_itr(vsi, idx);
-+	tx_itr_setting = get_tx_itr(vsi, idx);
- 
- 	if (q_vector->itr_countdown > 0 ||
- 	    (!ITR_IS_DYNAMIC(rx_itr_setting) &&
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 4870cb5..45792dd 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1324,18 +1324,18 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
- 
- /* a small macro to shorten up some long lines */
- #define INTREG I40E_VFINT_DYN_CTLN1
--static inline int get_rx_itr_enabled(struct i40e_vsi *vsi, int idx)
-+static inline int get_rx_itr(struct i40e_vsi *vsi, int idx)
- {
- 	struct i40evf_adapter *adapter = vsi->back;
- 
--	return !!(adapter->rx_rings[idx].rx_itr_setting);
-+	return adapter->rx_rings[idx].rx_itr_setting;
- }
- 
--static inline int get_tx_itr_enabled(struct i40e_vsi *vsi, int idx)
-+static inline int get_tx_itr(struct i40e_vsi *vsi, int idx)
- {
- 	struct i40evf_adapter *adapter = vsi->back;
- 
--	return !!(adapter->tx_rings[idx].tx_itr_setting);
-+	return adapter->tx_rings[idx].tx_itr_setting;
- }
- 
- /**
-@@ -1361,8 +1361,8 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
- 	 */
- 	rxval = txval = i40e_buildreg_itr(I40E_ITR_NONE, 0);
- 
--	rx_itr_setting = get_rx_itr_enabled(vsi, idx);
--	tx_itr_setting = get_tx_itr_enabled(vsi, idx);
-+	rx_itr_setting = get_rx_itr(vsi, idx);
-+	tx_itr_setting = get_tx_itr(vsi, idx);
- 
- 	if (q_vector->itr_countdown > 0 ||
- 	    (!ITR_IS_DYNAMIC(rx_itr_setting) &&
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 920c1cb..5673dbd 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2871,7 +2871,8 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 		i40evf_request_reset(adapter);
+ 		msleep(50);
+ 	}
+-
++	i40evf_free_all_tx_resources(adapter);
++	i40evf_free_all_rx_resources(adapter);
+ 	i40evf_misc_irq_disable(adapter);
+ 	i40evf_free_misc_irq(adapter);
+ 	i40evf_reset_interrupt_capability(adapter);
 -- 
 2.4.11
 
