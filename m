@@ -1,67 +1,43 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 12 Dec 2016 15:44:07 -0800
-Subject: [Intel-wired-lan] [next PATCH S57 01/11] i40e: fix disable overflow
-	promiscuous mode
+Date: Mon, 12 Dec 2016 15:44:11 -0800
+Subject: [Intel-wired-lan] [next PATCH S57 05/11] i40evf: add comment
 In-Reply-To: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
 References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1481586257-28872-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1481586257-28872-6-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-There exists a bug in which the driver is unable to exit overflow
-promiscuous mode after having added "too many" mac filters.  It is
-expected that after triggering overflow promiscuous, removing the
-failed/extra filters should then disable overflow promiscuous mode.
+Add a comment to reduce confusion.
 
-The bug exists because we were intentionally skipping the sync_vsi_filter
-path in cases where we were removing failed filters since they shouldn't
-have been added to the firmware in the first place, however we still
-need to go through the sync_vsi_filter code path to determine whether or
-not it is ok to exit overflow promiscuous mode.  This patch fixes the
-bug by making sure we go through the sync_vsi_filter path in cases of
-failed filters.
-
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Change-ID: I634d249ca3e5fa50729553137c295e73e7722143
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I3d5819c0f3f5174680442ae54398a073d4a61f4f
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+Testing Hints : No code change, just a comment
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 69a51a4..cb62a1e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1453,18 +1453,20 @@ void __i40e_del_filter(struct i40e_vsi *vsi, struct i40e_mac_filter *f)
- 	if (!f)
- 		return;
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 5673dbd..f35dcaa 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2153,6 +2153,11 @@ static int i40evf_close(struct net_device *netdev)
+ 	adapter->state = __I40EVF_DOWN_PENDING;
+ 	i40evf_free_traffic_irqs(adapter);
  
-+	/* If the filter was never added to firmware then we can just delete it
-+	 * directly and we don't want to set the status to remove or else an
-+	 * admin queue command will unnecessarily fire.
++	/* We explicitly don't free resources here because the hardware is
++	 * still active and can DMA into memory. Resources are cleared in
++	 * i40evf_virtchnl_completion() after we get confirmation from the PF
++	 * driver that the rings have been stopped.
 +	 */
- 	if ((f->state == I40E_FILTER_FAILED) ||
- 	    (f->state == I40E_FILTER_NEW)) {
--		/* this one never got added by the FW. Just remove it,
--		 * no need to sync anything.
--		 */
- 		hash_del(&f->hlist);
- 		kfree(f);
- 	} else {
- 		f->state = I40E_FILTER_REMOVE;
--		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
--		vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
- 	}
-+
-+	vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
-+	vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
+ 	return 0;
  }
  
- /**
 -- 
 2.4.11
 
