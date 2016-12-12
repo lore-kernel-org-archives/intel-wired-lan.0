@@ -1,51 +1,108 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 12 Dec 2016 15:44:14 -0800
-Subject: [Intel-wired-lan] [next PATCH S57 08/11] i40e: convert to cpu from
-	le16 to generate switch_id correctly
+Date: Mon, 12 Dec 2016 15:44:12 -0800
+Subject: [Intel-wired-lan] [next PATCH S57 06/11] i40e: Fix Adaptive ITR
+	enabling
 In-Reply-To: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
 References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1481586257-28872-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1481586257-28872-7-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 
-On Big Endian platforms we would incorrectly calculate the wrong switch
-id since we did not properly convert the le16 value into CPU format.
-Caught by sparse.
+This patch fixes a bug introduced with the addition of the per queue
+ITR feature support in ethtool.  With that addition, there were
+functions added which converted the ITR settings to binary values.
+The IS_ENABLED macros that run on those values check whether a bit
+is set or not and with the value being binary, the bit check always
+returned ITR disabled which prevents any updating of the ITR rate.
+This patch fixes the problem by changing the functions to return the
+current ITR value instead and renaming it to better reflect
+its function.  These functions now provide a value which will be
+accurately asessed and update the ITR as intended.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I69a2f9fa064a0a91691f7d0e6fcc206adceb8e36
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Change-ID: I14f1d088d052e27f652aaa3113e186415ddea1fc
 ---
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 12 ++++++------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 12 ++++++------
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index f1f41f1..267ad25 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -974,7 +974,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 			struct i40e_dcbx_config *r_cfg =
- 						&pf->hw.remote_dcbx_config;
- 			int i, ret;
--			u32 switch_id;
-+			u16 switch_id;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index e88e335..8531f4b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1864,14 +1864,14 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
  
- 			bw_data = kzalloc(sizeof(
- 				    struct i40e_aqc_query_port_ets_config_resp),
-@@ -986,7 +986,8 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+ /* a small macro to shorten up some long lines */
+ #define INTREG I40E_PFINT_DYN_CTLN
+-static inline int get_rx_itr_enabled(struct i40e_vsi *vsi, int idx)
++static inline int get_rx_itr(struct i40e_vsi *vsi, int idx)
+ {
+-	return !!(vsi->rx_rings[idx]->rx_itr_setting);
++	return vsi->rx_rings[idx]->rx_itr_setting;
+ }
  
- 			vsi = pf->vsi[pf->lan_vsi];
- 			switch_id =
--				vsi->info.switch_id & I40E_AQ_VSI_SW_ID_MASK;
-+				le16_to_cpu(vsi->info.switch_id) &
-+					    I40E_AQ_VSI_SW_ID_MASK;
+-static inline int get_tx_itr_enabled(struct i40e_vsi *vsi, int idx)
++static inline int get_tx_itr(struct i40e_vsi *vsi, int idx)
+ {
+-	return !!(vsi->tx_rings[idx]->tx_itr_setting);
++	return vsi->tx_rings[idx]->tx_itr_setting;
+ }
  
- 			ret = i40e_aq_query_port_ets_config(&pf->hw,
- 							    switch_id,
+ /**
+@@ -1897,8 +1897,8 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+ 	 */
+ 	rxval = txval = i40e_buildreg_itr(I40E_ITR_NONE, 0);
+ 
+-	rx_itr_setting = get_rx_itr_enabled(vsi, idx);
+-	tx_itr_setting = get_tx_itr_enabled(vsi, idx);
++	rx_itr_setting = get_rx_itr(vsi, idx);
++	tx_itr_setting = get_tx_itr(vsi, idx);
+ 
+ 	if (q_vector->itr_countdown > 0 ||
+ 	    (!ITR_IS_DYNAMIC(rx_itr_setting) &&
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 4870cb5..45792dd 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1324,18 +1324,18 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
+ 
+ /* a small macro to shorten up some long lines */
+ #define INTREG I40E_VFINT_DYN_CTLN1
+-static inline int get_rx_itr_enabled(struct i40e_vsi *vsi, int idx)
++static inline int get_rx_itr(struct i40e_vsi *vsi, int idx)
+ {
+ 	struct i40evf_adapter *adapter = vsi->back;
+ 
+-	return !!(adapter->rx_rings[idx].rx_itr_setting);
++	return adapter->rx_rings[idx].rx_itr_setting;
+ }
+ 
+-static inline int get_tx_itr_enabled(struct i40e_vsi *vsi, int idx)
++static inline int get_tx_itr(struct i40e_vsi *vsi, int idx)
+ {
+ 	struct i40evf_adapter *adapter = vsi->back;
+ 
+-	return !!(adapter->tx_rings[idx].tx_itr_setting);
++	return adapter->tx_rings[idx].tx_itr_setting;
+ }
+ 
+ /**
+@@ -1361,8 +1361,8 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+ 	 */
+ 	rxval = txval = i40e_buildreg_itr(I40E_ITR_NONE, 0);
+ 
+-	rx_itr_setting = get_rx_itr_enabled(vsi, idx);
+-	tx_itr_setting = get_tx_itr_enabled(vsi, idx);
++	rx_itr_setting = get_rx_itr(vsi, idx);
++	tx_itr_setting = get_tx_itr(vsi, idx);
+ 
+ 	if (q_vector->itr_countdown > 0 ||
+ 	    (!ITR_IS_DYNAMIC(rx_itr_setting) &&
 -- 
 2.4.11
 
