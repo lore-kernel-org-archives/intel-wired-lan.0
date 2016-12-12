@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 12 Dec 2016 15:44:17 -0800
-Subject: [Intel-wired-lan] [next PATCH S57 11/11] i40e: mark the value
-	passed to csum_replace_by_diff as __wsum
+Date: Mon, 12 Dec 2016 15:44:15 -0800
+Subject: [Intel-wired-lan] [next PATCH S57 09/11] i40e: properly convert
+	le16 value to CPU format
 In-Reply-To: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
 References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1481586257-28872-12-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1481586257-28872-10-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,69 +13,55 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-Fix, or rather, avoid a sparse warning caused by the fact that
-csum_replace_by_diff expects to receive a __wsum value. Since the
-calculation appears to work, simply typecast the passed paylen value to
-__wsum to avoid the warning.
-
-This seems pretty fishy since __wsum was obviously annotated as
-a separate type on purpose, so this throws the entire calculation into
-question. Since it currently appears to behave as expected, the typecast
-is probably safe.
+This ensures that the pvid which is stored in __le16 format is converted
+to the CPU format. This will fix comparison issues on Big Endian
+platforms.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I4fdc5cddd589abc16098176e8a61127e761488f4
+Change-ID: I92c80d1315dc2a0f9f095d5a0c48d461beb052ed
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 5 +++--
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 5 +++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 8531f4b..a623de9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2335,7 +2335,8 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 128a21e..99ea5652 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1260,6 +1260,7 @@ static int i40e_correct_mac_vlan_filters(struct i40e_vsi *vsi,
+ 					 struct hlist_head *tmp_del_list,
+ 					 int vlan_filters)
+ {
++	s16 pvid = le16_to_cpu(vsi->info.pvid);
+ 	struct i40e_mac_filter *f, *add_head;
+ 	struct i40e_new_mac_filter *new;
+ 	struct hlist_node *h;
+@@ -1281,8 +1282,8 @@ static int i40e_correct_mac_vlan_filters(struct i40e_vsi *vsi,
  
- 			/* remove payload length from outer checksum */
- 			paylen = skb->len - l4_offset;
--			csum_replace_by_diff(&l4.udp->check, htonl(paylen));
-+			csum_replace_by_diff(&l4.udp->check,
-+					     (__force __wsum)htonl(paylen));
- 		}
- 
- 		/* reset pointers to inner headers */
-@@ -2356,7 +2357,7 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
- 
- 	/* remove payload length from inner checksum */
- 	paylen = skb->len - l4_offset;
--	csum_replace_by_diff(&l4.tcp->check, htonl(paylen));
-+	csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
- 
- 	/* compute length of segmentation header */
- 	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 45792dd..cd0e28f 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1629,7 +1629,8 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
- 
- 			/* remove payload length from outer checksum */
- 			paylen = skb->len - l4_offset;
--			csum_replace_by_diff(&l4.udp->check, htonl(paylen));
-+			csum_replace_by_diff(&l4.udp->check,
-+					     (__force __wsum)htonl(paylen));
- 		}
- 
- 		/* reset pointers to inner headers */
-@@ -1650,7 +1651,7 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
- 
- 	/* remove payload length from inner checksum */
- 	paylen = skb->len - l4_offset;
--	csum_replace_by_diff(&l4.tcp->check, htonl(paylen));
-+	csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
- 
- 	/* compute length of segmentation header */
- 	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
+ 	/* Update the filters about to be added in place */
+ 	hlist_for_each_entry(new, tmp_add_list, hlist) {
+-		if (vsi->info.pvid && new->f->vlan != vsi->info.pvid)
+-			new->f->vlan = vsi->info.pvid;
++		if (pvid && new->f->vlan != pvid)
++			new->f->vlan = pvid;
+ 		else if (vlan_filters && new->f->vlan == I40E_VLAN_ANY)
+ 			new->f->vlan = 0;
+ 		else if (!vlan_filters && new->f->vlan == 0)
+@@ -1296,12 +1297,12 @@ static int i40e_correct_mac_vlan_filters(struct i40e_vsi *vsi,
+ 		 * order to avoid duplicating code for adding the new filter
+ 		 * then deleting the old filter.
+ 		 */
+-		if ((vsi->info.pvid && f->vlan != vsi->info.pvid) ||
++		if ((pvid && f->vlan != pvid) ||
+ 		    (vlan_filters && f->vlan == I40E_VLAN_ANY) ||
+ 		    (!vlan_filters && f->vlan == 0)) {
+ 			/* Determine the new vlan we will be adding */
+-			if (vsi->info.pvid)
+-				new_vlan = vsi->info.pvid;
++			if (pvid)
++				new_vlan = pvid;
+ 			else if (vlan_filters)
+ 				new_vlan = 0;
+ 			else
 -- 
 2.4.11
 
