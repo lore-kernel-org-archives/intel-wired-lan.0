@@ -1,67 +1,42 @@
-From: Denny Page <dennypage@me.com>
-Date: Mon, 12 Dec 2016 15:09:32 -0800
-Subject: [Intel-wired-lan] Latency compensation for hardware timestamps
-In-Reply-To: <05243125-DE22-414C-83CA-D73445F50CF6@me.com>
-References: <05243125-DE22-414C-83CA-D73445F50CF6@me.com>
-Message-ID: <9BD3C68A-4B46-4820-8804-7CBCE596D4E5@me.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Mon, 12 Dec 2016 15:44:09 -0800
+Subject: [Intel-wired-lan] [next PATCH S57 03/11] i40e: remove unnecessary
+	call to i40e_update_link_info
+In-Reply-To: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
+References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1481586257-28872-4-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-[Apologies if I?m asking in the wrong place. If so, please redirect.]
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-I?ve been testing the i211 and i354, and it does appear that there should be latency compensation for these units similar to what is done for the i210. The i211 looks close to the i210, but the i354 looks quite a bit different.
+This call is made just prior to running i40e_link_event. In
+i40e_link_event, we set hw->phy.get_link_info to true just prior to
+calling i40e_get_link_status, which conveniently runs
+i40e_update_link_info for us. Thus, we are running i40e_update_link_info
+twice, which seems like something we don't need to do...
 
-Is there anyone that can offer information on appropriate compensation values for the i211 and i354?
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: I36467a570f44b7546d218c99e134ff97c2709315
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Many thanks,
-Denny
-
-
-
-> On Dec 07, 2016, at 22:37, Denny Page <dennypage@me.com> wrote:
-> 
-> Hey gents,
-> 
-> Earlier in the year, there was a change introduced to the igb driver to compensate for for hardware timestamp latency in the Intel i210. The commit has this comment:
-> 
->    Table 7-62 on page 338 of the i210 datasheet lists TX and RX latencies
->    for the various speeds the chip supports.  To give better ptp timestamp
->    accuracy, adjust the timestamps by the amounts Intel gives based on
->    current link speed.
-> 
-> And the values used were:
-> 
->    IGB_I210_TX_LATENCY_10		9542
->    IGB_I210_TX_LATENCY_100		1024
->    IGB_I210_TX_LATENCY_1000	178
->    IGB_I210_RX_LATENCY_10		20662
->    IGB_I210_RX_LATENCY_100		2213
->    IGB_I210_RX_LATENCY_1000	448
-> 
-> I have been chasing an issue with timestamps on the i211 and i354, and it has led me to several questions related to this commit:
-> 
-> * In the current data sheet, table 7-62 offers values for 100Mb only. Are the compensation values for 10Mb and 1Gb still documented anywhere?
-> 
-> * The adjustment for the Tx timestamp at 100Mb (IGB_I210_TX_LATENCY_100) corresponds to the maximum latency value in table 7-62, but the adjustment for the Rx timestamp at 100Mb differs from the maximum value in table 7-62, 2213 vs 2133. Is this intentional?
-> 
-> * The data sheet for the i211 contains the same content regarding timestamps (table 7-59), with the same values for Tx/Rx latency, but the driver applies the compensation to the i210 only, with no compensation for the i211. Should compensation be applied to the i211 as well?
-> 
-> And one last tangent question:
-> 
-> * There is no compensation listed in the i350 data sheet, and no compensation in the driver. Does this mean that the i350/i354 requires no compensation?
-> 
-> Appreciate any thoughts you might have on this.
-> 
-> Thanks,
-> Denny
-> 
-> ??
-> 
-> Refs:
-> http://www.intel.com/content/dam/www/public/us/en/documents/datasheets/i210-ethernet-controller-datasheet.pdf
-> http://www.intel.com/content/dam/www/public/us/en/documents/datasheets/i211-ethernet-controller-datasheet.pdf
-> http://www.intel.com/content/dam/www/public/us/en/documents/datasheets/ethernet-controller-i350-datasheet.pdf
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 51a962c..128a21e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10777,7 +10777,6 @@ static int i40e_setup_pf_switch(struct i40e_pf *pf, bool reinit)
+ 		i40e_pf_config_rss(pf);
+ 
+ 	/* fill in link information and enable LSE reporting */
+-	i40e_update_link_info(&pf->hw);
+ 	i40e_link_event(pf);
+ 
+ 	/* Initialize user-specific link properties */
+-- 
+2.4.11
 
