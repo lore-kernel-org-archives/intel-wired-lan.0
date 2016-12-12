@@ -1,41 +1,101 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 12 Dec 2016 15:44:11 -0800
-Subject: [Intel-wired-lan] [next PATCH S57 05/11] i40evf: add comment
+Date: Mon, 12 Dec 2016 15:44:13 -0800
+Subject: [Intel-wired-lan] [next PATCH S57 07/11] i40e: refactor AQ CMD
+	buffer debug printing
 In-Reply-To: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
 References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1481586257-28872-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1481586257-28872-8-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Alan Brady <alan.brady@intel.com>
 
-Add a comment to reduce confusion.
+This patch refactors the '%*ph' printk format specifier to instead use
+the print_hex_dump function, as recommended by the '%*ph' documentation.
+This produces better/more standardized output.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I3d5819c0f3f5174680442ae54398a073d4a61f4f
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+Change-ID: Id56700b4e8abc40ff8c04bc8379e7df04cb4d6fd
 ---
-Testing Hints : No code change, just a comment
+ drivers/net/ethernet/intel/i40e/i40e_common.c   | 19 ++++++++++++-------
+ drivers/net/ethernet/intel/i40evf/i40e_common.c | 19 ++++++++++++-------
+ 2 files changed, 24 insertions(+), 14 deletions(-)
 
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 5673dbd..f35dcaa 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2153,6 +2153,11 @@ static int i40evf_close(struct net_device *netdev)
- 	adapter->state = __I40EVF_DOWN_PENDING;
- 	i40evf_free_traffic_irqs(adapter);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index a5d0028..ed5d328 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -300,7 +300,6 @@ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
+ 	struct i40e_aq_desc *aq_desc = (struct i40e_aq_desc *)desc;
+ 	u16 len;
+ 	u8 *buf = (u8 *)buffer;
+-	u16 i = 0;
  
-+	/* We explicitly don't free resources here because the hardware is
-+	 * still active and can DMA into memory. Resources are cleared in
-+	 * i40evf_virtchnl_completion() after we get confirmation from the PF
-+	 * driver that the rings have been stopped.
-+	 */
- 	return 0;
+ 	if ((!(mask & hw->debug_mask)) || (desc == NULL))
+ 		return;
+@@ -328,12 +327,18 @@ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
+ 		if (buf_len < len)
+ 			len = buf_len;
+ 		/* write the full 16-byte chunks */
+-		for (i = 0; i < (len - 16); i += 16)
+-			i40e_debug(hw, mask, "\t0x%04X  %16ph\n", i, buf + i);
+-		/* write whatever's left over without overrunning the buffer */
+-		if (i < len)
+-			i40e_debug(hw, mask, "\t0x%04X  %*ph\n",
+-					     i, len - i, buf + i);
++		if (hw->debug_mask & mask) {
++			char prefix[20];
++
++			snprintf(prefix, 20,
++				 "i40e %02x:%02x.%x: \t0x",
++				 hw->bus.bus_id,
++				 hw->bus.device,
++				 hw->bus.func);
++
++			print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_OFFSET,
++				       16, 1, buf, len, false);
++		}
+ 	}
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index b5a59dd..89dfdbc 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -304,7 +304,6 @@ void i40evf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
+ {
+ 	struct i40e_aq_desc *aq_desc = (struct i40e_aq_desc *)desc;
+ 	u8 *buf = (u8 *)buffer;
+-	u16 i = 0;
+ 
+ 	if ((!(mask & hw->debug_mask)) || (desc == NULL))
+ 		return;
+@@ -332,12 +331,18 @@ void i40evf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
+ 		if (buf_len < len)
+ 			len = buf_len;
+ 		/* write the full 16-byte chunks */
+-		for (i = 0; i < (len - 16); i += 16)
+-			i40e_debug(hw, mask, "\t0x%04X  %16ph\n", i, buf + i);
+-		/* write whatever's left over without overrunning the buffer */
+-		if (i < len)
+-			i40e_debug(hw, mask, "\t0x%04X  %*ph\n",
+-					     i, len - i, buf + i);
++		if (hw->debug_mask & mask) {
++			char prefix[20];
++
++			snprintf(prefix, 20,
++				 "i40evf %02x:%02x.%x: \t0x",
++				 hw->bus.bus_id,
++				 hw->bus.device,
++				 hw->bus.func);
++
++			print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_OFFSET,
++				       16, 1, buf, len, false);
++		}
+ 	}
  }
  
 -- 
