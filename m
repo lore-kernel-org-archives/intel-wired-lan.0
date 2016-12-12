@@ -1,103 +1,81 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 12 Dec 2016 15:44:13 -0800
-Subject: [Intel-wired-lan] [next PATCH S57 07/11] i40e: refactor AQ CMD
-	buffer debug printing
+Date: Mon, 12 Dec 2016 15:44:17 -0800
+Subject: [Intel-wired-lan] [next PATCH S57 11/11] i40e: mark the value
+	passed to csum_replace_by_diff as __wsum
 In-Reply-To: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
 References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1481586257-28872-8-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1481586257-28872-12-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-This patch refactors the '%*ph' printk format specifier to instead use
-the print_hex_dump function, as recommended by the '%*ph' documentation.
-This produces better/more standardized output.
+Fix, or rather, avoid a sparse warning caused by the fact that
+csum_replace_by_diff expects to receive a __wsum value. Since the
+calculation appears to work, simply typecast the passed paylen value to
+__wsum to avoid the warning.
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Change-ID: Id56700b4e8abc40ff8c04bc8379e7df04cb4d6fd
+This seems pretty fishy since __wsum was obviously annotated as
+a separate type on purpose, so this throws the entire calculation into
+question. Since it currently appears to behave as expected, the typecast
+is probably safe.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: I4fdc5cddd589abc16098176e8a61127e761488f4
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c   | 19 ++++++++++++-------
- drivers/net/ethernet/intel/i40evf/i40e_common.c | 19 ++++++++++++-------
- 2 files changed, 24 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 5 +++--
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 5 +++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index a5d0028..ed5d328 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -300,7 +300,6 @@ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
- 	struct i40e_aq_desc *aq_desc = (struct i40e_aq_desc *)desc;
- 	u16 len;
- 	u8 *buf = (u8 *)buffer;
--	u16 i = 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 8531f4b..a623de9 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2335,7 +2335,8 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
  
- 	if ((!(mask & hw->debug_mask)) || (desc == NULL))
- 		return;
-@@ -328,12 +327,18 @@ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
- 		if (buf_len < len)
- 			len = buf_len;
- 		/* write the full 16-byte chunks */
--		for (i = 0; i < (len - 16); i += 16)
--			i40e_debug(hw, mask, "\t0x%04X  %16ph\n", i, buf + i);
--		/* write whatever's left over without overrunning the buffer */
--		if (i < len)
--			i40e_debug(hw, mask, "\t0x%04X  %*ph\n",
--					     i, len - i, buf + i);
-+		if (hw->debug_mask & mask) {
-+			char prefix[20];
-+
-+			snprintf(prefix, 20,
-+				 "i40e %02x:%02x.%x: \t0x",
-+				 hw->bus.bus_id,
-+				 hw->bus.device,
-+				 hw->bus.func);
-+
-+			print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_OFFSET,
-+				       16, 1, buf, len, false);
-+		}
- 	}
- }
+ 			/* remove payload length from outer checksum */
+ 			paylen = skb->len - l4_offset;
+-			csum_replace_by_diff(&l4.udp->check, htonl(paylen));
++			csum_replace_by_diff(&l4.udp->check,
++					     (__force __wsum)htonl(paylen));
+ 		}
  
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-index b5a59dd..89dfdbc 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-@@ -304,7 +304,6 @@ void i40evf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
- {
- 	struct i40e_aq_desc *aq_desc = (struct i40e_aq_desc *)desc;
- 	u8 *buf = (u8 *)buffer;
--	u16 i = 0;
+ 		/* reset pointers to inner headers */
+@@ -2356,7 +2357,7 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
  
- 	if ((!(mask & hw->debug_mask)) || (desc == NULL))
- 		return;
-@@ -332,12 +331,18 @@ void i40evf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
- 		if (buf_len < len)
- 			len = buf_len;
- 		/* write the full 16-byte chunks */
--		for (i = 0; i < (len - 16); i += 16)
--			i40e_debug(hw, mask, "\t0x%04X  %16ph\n", i, buf + i);
--		/* write whatever's left over without overrunning the buffer */
--		if (i < len)
--			i40e_debug(hw, mask, "\t0x%04X  %*ph\n",
--					     i, len - i, buf + i);
-+		if (hw->debug_mask & mask) {
-+			char prefix[20];
-+
-+			snprintf(prefix, 20,
-+				 "i40evf %02x:%02x.%x: \t0x",
-+				 hw->bus.bus_id,
-+				 hw->bus.device,
-+				 hw->bus.func);
-+
-+			print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_OFFSET,
-+				       16, 1, buf, len, false);
-+		}
- 	}
- }
+ 	/* remove payload length from inner checksum */
+ 	paylen = skb->len - l4_offset;
+-	csum_replace_by_diff(&l4.tcp->check, htonl(paylen));
++	csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
  
+ 	/* compute length of segmentation header */
+ 	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 45792dd..cd0e28f 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1629,7 +1629,8 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
+ 
+ 			/* remove payload length from outer checksum */
+ 			paylen = skb->len - l4_offset;
+-			csum_replace_by_diff(&l4.udp->check, htonl(paylen));
++			csum_replace_by_diff(&l4.udp->check,
++					     (__force __wsum)htonl(paylen));
+ 		}
+ 
+ 		/* reset pointers to inner headers */
+@@ -1650,7 +1651,7 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
+ 
+ 	/* remove payload length from inner checksum */
+ 	paylen = skb->len - l4_offset;
+-	csum_replace_by_diff(&l4.tcp->check, htonl(paylen));
++	csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
+ 
+ 	/* compute length of segmentation header */
+ 	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
 -- 
 2.4.11
 
