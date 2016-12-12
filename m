@@ -1,67 +1,41 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 12 Dec 2016 15:44:15 -0800
-Subject: [Intel-wired-lan] [next PATCH S57 09/11] i40e: properly convert
-	le16 value to CPU format
-In-Reply-To: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
-References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1481586257-28872-10-git-send-email-bimmy.pujari@intel.com>
+Date: Mon, 12 Dec 2016 15:44:06 -0800
+Subject: [Intel-wired-lan] [next PATCH S57 00/11] i40e/i40evf updates
+Message-ID: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+Alan Brady adds code to fix disable overflow promiscuous mode and
+adds code to refactor AQ CMD buffer debug printing.
 
-This ensures that the pvid which is stored in __le16 format is converted
-to the CPU format. This will fix comparison issues on Big Endian
-platforms.
+Carolyn Wyborny adds code to fix Adaptive ITR enabling.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I92c80d1315dc2a0f9f095d5a0c48d461beb052ed
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+Harshitha Ramamurthy adds code for error handling for link event.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 128a21e..99ea5652 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1260,6 +1260,7 @@ static int i40e_correct_mac_vlan_filters(struct i40e_vsi *vsi,
- 					 struct hlist_head *tmp_del_list,
- 					 int vlan_filters)
- {
-+	s16 pvid = le16_to_cpu(vsi->info.pvid);
- 	struct i40e_mac_filter *f, *add_head;
- 	struct i40e_new_mac_filter *new;
- 	struct hlist_node *h;
-@@ -1281,8 +1282,8 @@ static int i40e_correct_mac_vlan_filters(struct i40e_vsi *vsi,
- 
- 	/* Update the filters about to be added in place */
- 	hlist_for_each_entry(new, tmp_add_list, hlist) {
--		if (vsi->info.pvid && new->f->vlan != vsi->info.pvid)
--			new->f->vlan = vsi->info.pvid;
-+		if (pvid && new->f->vlan != pvid)
-+			new->f->vlan = pvid;
- 		else if (vlan_filters && new->f->vlan == I40E_VLAN_ANY)
- 			new->f->vlan = 0;
- 		else if (!vlan_filters && new->f->vlan == 0)
-@@ -1296,12 +1297,12 @@ static int i40e_correct_mac_vlan_filters(struct i40e_vsi *vsi,
- 		 * order to avoid duplicating code for adding the new filter
- 		 * then deleting the old filter.
- 		 */
--		if ((vsi->info.pvid && f->vlan != vsi->info.pvid) ||
-+		if ((pvid && f->vlan != pvid) ||
- 		    (vlan_filters && f->vlan == I40E_VLAN_ANY) ||
- 		    (!vlan_filters && f->vlan == 0)) {
- 			/* Determine the new vlan we will be adding */
--			if (vsi->info.pvid)
--				new_vlan = vsi->info.pvid;
-+			if (pvid)
-+				new_vlan = pvid;
- 			else if (vlan_filters)
- 				new_vlan = 0;
- 			else
+Joshua Hay adds code to enable mc magic pkt wakeup during power down.
+
+Jacob Keller  removes unnecessary call to i40e_update_link_info, 
+converts to cpu from le16 to generate switch_id, adds code to 
+properly convert le16 value to CPU format and marks the value passed 
+to csum_replace_by_diff as __wsum.
+
+Mitch Williams adds code to free rings in remove function and adds one
+comment.
+
+ drivers/net/ethernet/intel/i40e/i40e.h            |   2 +
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h |   2 +
+ drivers/net/ethernet/intel/i40e/i40e_common.c     |  19 ++--
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c    |   5 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c       | 112 +++++++++++++++++-----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c       |  17 ++--
+ drivers/net/ethernet/intel/i40evf/i40e_common.c   |  19 ++--
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c     |  17 ++--
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c   |   8 +-
+ 9 files changed, 145 insertions(+), 56 deletions(-)
+
 -- 
 2.4.11
 
