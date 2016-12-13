@@ -1,34 +1,53 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 13 Dec 2016 17:01:24 +0000
-Subject: [Intel-wired-lan] [PATCH 4/4] fm10k: do not clear global
- mailbox	interrupt bits
-In-Reply-To: <20161102234447.17181-4-jacob.e.keller@intel.com>
-References: <20161102234447.17181-1-jacob.e.keller@intel.com>
- <20161102234447.17181-4-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E490F59B5@ORSMSX103.amr.corp.intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Tue, 13 Dec 2016 11:16:06 -0800
+Subject: [Intel-wired-lan] [PATCH V5 0/4] ixgbe: Firmware-controlled PHY
+	enablement
+Message-ID: <148165652623.18335.5542391508119084017.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+The following patches enable firmware-controlled PHYs. The first two
+patches resolve some issues uncovered while working on the other
+patches. The third adds the firmware interface for controlling PHYs.
+The last patch implements everything else for the new devices.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
-Sent: Wednesday, November 2, 2016 4:45 PM
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Cc: Kwan, Ngai-mint <ngai-mint.kwan@intel.com>
-Subject: [Intel-wired-lan] [PATCH 4/4] fm10k: do not clear global mailbox interrupt bits
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 
-From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+---
+Changes in V2:
+- Fixed some oversights related to the 10M link speed
+Changes in V3:
+- Use correct ops for LED control
+Changes in V4:
+- Actually get the V3 changes into the patch. Sorry for the error.
+Changes in V5:
+- Properly indicate FC autoneg support
 
-Partially revert commit 5e93cbadd3e9 ("fm10k: Reset mailbox global interrupts", 2016-06-07)
-
-The register bits related to this commit are now solely being handled by the IES API. Recent changes in the IES API will allow an automatic recovery from improper handling of these bits.
-
-Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 
-Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
+Mark D Rustad (4):
+      ixgbe: Fix issues with EEPROM access
+      ixgbe: Remove unused firmware version functions and method
+      ixgbe: Implement firmware interface to access some PHYs
+      ixgbe: Implement support for firmware-controlled PHYs
 
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    4 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c   |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |  106 +++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h  |    3 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  156 ++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   45 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     |   37 --
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     |    4 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   74 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c    |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |  529 ++++++++++++++++++++--
+ 12 files changed, 830 insertions(+), 133 deletions(-)
+
+-- 
+Mark Rustad, Network Division, Intel Corporation
