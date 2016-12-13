@@ -1,41 +1,56 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 12 Dec 2016 15:44:06 -0800
-Subject: [Intel-wired-lan] [next PATCH S57 00/11] i40e/i40evf updates
-Message-ID: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Tue, 13 Dec 2016 14:40:03 +0100
+Subject: [Intel-wired-lan] [PATCH v3 0/4] i40e: Support for XDP
+Message-ID: <20161213134007.14707-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Alan Brady adds code to fix disable overflow promiscuous mode and
-adds code to refactor AQ CMD buffer debug printing.
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Carolyn Wyborny adds code to fix Adaptive ITR enabling.
+This series adds XDP support for i40e-based NICs.
 
-Harshitha Ramamurthy adds code for error handling for link event.
+The first patch prepares i40e_fetch_rx_buffer() for upcoming changes,
+followed by XDP_RX support, the third adds XDP_TX support and the last
+patch validates bpf_xdp_adjust_head() support.
 
-Joshua Hay adds code to enable mc magic pkt wakeup during power down.
+Thanks to Alex, Daniel and John for all the feedback!
 
-Jacob Keller  removes unnecessary call to i40e_update_link_info, 
-converts to cpu from le16 to generate switch_id, adds code to 
-properly convert le16 value to CPU format and marks the value passed 
-to csum_replace_by_diff as __wsum.
+v3:
+  * Rebased patch set on Jeff's dev-queue branch
+  * MSI-X is no longer a prerequisite for XDP
+  * RCU locking for the XDP program and XDP_RX support is introduced
+    in the same patch
+  * Rx bytes is now bumped for XDP
+  * Removed pointer-to-pointer clunkiness
+  * Added comments to XDP preconditions in ndo_xdp
+  * When a non-EOF is received, log once, and drop the frame
 
-Mitch Williams adds code to free rings in remove function and adds one
-comment.
+v2:
+  * Fixed kbuild error for PAGE_SIZE >= 8192.
+  * Renamed i40e_try_flip_rx_page to i40e_can_reuse_rx_page, which is
+    more in line to the other Intel Ethernet drivers (igb/fm10k).
+  * Validate xdp_adjust_head support in ndo_xdp/XDP_SETUP_PROG.
 
- drivers/net/ethernet/intel/i40e/i40e.h            |   2 +
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h |   2 +
- drivers/net/ethernet/intel/i40e/i40e_common.c     |  19 ++--
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c    |   5 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c       | 112 +++++++++++++++++-----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c       |  17 ++--
- drivers/net/ethernet/intel/i40evf/i40e_common.c   |  19 ++--
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c     |  17 ++--
- drivers/net/ethernet/intel/i40evf/i40evf_main.c   |   8 +-
- 9 files changed, 145 insertions(+), 56 deletions(-)
+
+Bj?rn
+
+
+Bj?rn T?pel (4):
+  i40e: Sync DMA region prior skbuff allocation
+  i40e: Initial support for XDP
+  i40e: Add XDP_TX support
+  i40e: Validate xdp_adjust_head support
+
+ drivers/net/ethernet/intel/i40e/i40e.h         |  18 ++
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |   4 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 380 ++++++++++++++++++++----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 391 ++++++++++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h    |   7 +
+ 5 files changed, 711 insertions(+), 89 deletions(-)
 
 -- 
-2.4.11
+2.9.3
 
