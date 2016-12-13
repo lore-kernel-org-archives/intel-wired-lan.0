@@ -1,314 +1,152 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Tue, 13 Dec 2016 14:50:56 -0800
-Subject: [Intel-wired-lan] [PATCH V6 1/4] ixgbe: Fix issues with EEPROM
-	access
+Date: Tue, 13 Dec 2016 14:51:01 -0800
+Subject: [Intel-wired-lan] [PATCH V6 2/4] ixgbe: Remove unused firmware
+ version functions and method
 In-Reply-To: <148166935971.47119.18406082006668540084.stgit@mdrustad-wks.jf.intel.com>
 References: <148166935971.47119.18406082006668540084.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <148166945619.47119.11718919548789509606.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <148166946136.47119.4205382492424840248.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There are two problems with EEPROM access. One is that it needs to
-hold the semaphore until the entire response is read or else the
-response can be corrupted by other firmware accesses. The second
-problem is that acquiring and releasing the semaphore is slow, so
-it should be taken and released once when multiple EEPROM accesses
-will be done.
-
-Both of these issues can be solved by adding a new function,
-ixgbe_hic_unlocked, to issue firmware commands that will assume
-that the caller has acquired the needed semaphore.
+The firmware version method and functions are not used anywhere, so
+remove them all.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   97 +++++++++++++++--------
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    1 
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |   75 +++++++-----------
- 3 files changed, 91 insertions(+), 82 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c |    2 -
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c |    2 -
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c   |   34 ------------------------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h   |    4 ---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |    1 -
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c  |    1 -
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c  |    3 +-
+ 7 files changed, 1 insertion(+), 46 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 8832df3eba25..743be6af49fb 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3593,43 +3593,29 @@ static u8 ixgbe_calculate_checksum(u8 *buffer, u32 length)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+index 805ab319e578..523f9d05a810 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+@@ -139,8 +139,6 @@ static s32 ixgbe_init_phy_ops_82598(struct ixgbe_hw *hw)
+ 	case ixgbe_phy_tn:
+ 		phy->ops.setup_link = &ixgbe_setup_phy_link_tnx;
+ 		phy->ops.check_link = &ixgbe_check_phy_link_tnx;
+-		phy->ops.get_firmware_version =
+-			     &ixgbe_get_phy_firmware_version_tnx;
+ 		break;
+ 	case ixgbe_phy_nl:
+ 		phy->ops.reset = &ixgbe_reset_phy_nl;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+index e00aaeb91827..30535e6b68f0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+@@ -331,8 +331,6 @@ static s32 ixgbe_init_phy_ops_82599(struct ixgbe_hw *hw)
+ 	case ixgbe_phy_tn:
+ 		phy->ops.check_link = &ixgbe_check_phy_link_tnx;
+ 		phy->ops.setup_link = &ixgbe_setup_phy_link_tnx;
+-		phy->ops.get_firmware_version =
+-			     &ixgbe_get_phy_firmware_version_tnx;
+ 		break;
+ 	default:
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 3b8362085f57..65b527928c92 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -960,40 +960,6 @@ s32 ixgbe_setup_phy_link_tnx(struct ixgbe_hw *hw)
  }
  
  /**
-- *  ixgbe_host_interface_command - Issue command to manageability block
-+ *  ixgbe_hic_unlocked - Issue command to manageability block unlocked
-  *  @hw: pointer to the HW structure
-- *  @buffer: contains the command to write and where the return status will
-- *           be placed
-+ *  @buffer: command to write and where the return status will be placed
-  *  @length: length of buffer, must be multiple of 4 bytes
-  *  @timeout: time in ms to wait for command completion
-- *  @return_data: read and return data from the buffer (true) or not (false)
-- *  Needed because FW structures are big endian and decoding of
-- *  these fields can be 8 bit or 16 bit based on command. Decoding
-- *  is not easily understood without making a table of commands.
-- *  So we will leave this up to the caller to read back the data
-- *  in these cases.
-  *
-- *  Communicates with the manageability block.  On success return 0
-- *  else return IXGBE_ERR_HOST_INTERFACE_COMMAND.
-+ *  Communicates with the manageability block. On success return 0
-+ *  else returns semaphore error when encountering an error acquiring
-+ *  semaphore or IXGBE_ERR_HOST_INTERFACE_COMMAND when command fails.
-+ *
-+ *  This function assumes that the IXGBE_GSSR_SW_MNG_SM semaphore is held
-+ *  by the caller.
-  **/
--s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
--				 u32 length, u32 timeout,
--				 bool return_data)
-+s32 ixgbe_hic_unlocked(struct ixgbe_hw *hw, u32 *buffer, u32 length,
-+		       u32 timeout)
- {
--	u32 hdr_size = sizeof(struct ixgbe_hic_hdr);
--	u32 hicr, i, bi, fwsts;
--	u16 buf_len, dword_len;
--	union {
--		struct ixgbe_hic_hdr hdr;
--		u32 u32arr[1];
--	} *bp = buffer;
--	s32 status;
-+	u32 hicr, i, fwsts;
-+	u16 dword_len;
- 
- 	if (!length || length > IXGBE_HI_MAX_BLOCK_BYTE_LENGTH) {
- 		hw_dbg(hw, "Buffer length failure buffersize-%d.\n", length);
- 		return IXGBE_ERR_HOST_INTERFACE_COMMAND;
- 	}
--	/* Take management host interface semaphore */
--	status = hw->mac.ops.acquire_swfw_sync(hw, IXGBE_GSSR_SW_MNG_SM);
--	if (status)
--		return status;
- 
- 	/* Set bit 9 of FWSTS clearing FW reset indication */
- 	fwsts = IXGBE_READ_REG(hw, IXGBE_FWSTS);
-@@ -3639,15 +3625,13 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 	hicr = IXGBE_READ_REG(hw, IXGBE_HICR);
- 	if (!(hicr & IXGBE_HICR_EN)) {
- 		hw_dbg(hw, "IXGBE_HOST_EN bit disabled.\n");
--		status = IXGBE_ERR_HOST_INTERFACE_COMMAND;
--		goto rel_out;
-+		return IXGBE_ERR_HOST_INTERFACE_COMMAND;
- 	}
- 
- 	/* Calculate length in DWORDs. We must be DWORD aligned */
- 	if (length % sizeof(u32)) {
- 		hw_dbg(hw, "Buffer length failure, not aligned to dword");
--		status = IXGBE_ERR_INVALID_ARGUMENT;
--		goto rel_out;
-+		return IXGBE_ERR_INVALID_ARGUMENT;
- 	}
- 
- 	dword_len = length >> 2;
-@@ -3657,7 +3641,7 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 	 */
- 	for (i = 0; i < dword_len; i++)
- 		IXGBE_WRITE_REG_ARRAY(hw, IXGBE_FLEX_MNG,
--				      i, cpu_to_le32(bp->u32arr[i]));
-+				      i, cpu_to_le32(buffer[i]));
- 
- 	/* Setting this bit tells the ARC that a new command is pending. */
- 	IXGBE_WRITE_REG(hw, IXGBE_HICR, hicr | IXGBE_HICR_C);
-@@ -3671,11 +3655,54 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 
- 	/* Check command successful completion. */
- 	if ((timeout && i == timeout) ||
--	    !(IXGBE_READ_REG(hw, IXGBE_HICR) & IXGBE_HICR_SV)) {
--		hw_dbg(hw, "Command has failed with no status valid.\n");
--		status = IXGBE_ERR_HOST_INTERFACE_COMMAND;
--		goto rel_out;
-+	    !(IXGBE_READ_REG(hw, IXGBE_HICR) & IXGBE_HICR_SV))
-+		return IXGBE_ERR_HOST_INTERFACE_COMMAND;
-+
-+	return 0;
-+}
-+
-+/**
-+ *  ixgbe_host_interface_command - Issue command to manageability block
-+ *  @hw: pointer to the HW structure
-+ *  @buffer: contains the command to write and where the return status will
-+ *           be placed
-+ *  @length: length of buffer, must be multiple of 4 bytes
-+ *  @timeout: time in ms to wait for command completion
-+ *  @return_data: read and return data from the buffer (true) or not (false)
-+ *  Needed because FW structures are big endian and decoding of
-+ *  these fields can be 8 bit or 16 bit based on command. Decoding
-+ *  is not easily understood without making a table of commands.
-+ *  So we will leave this up to the caller to read back the data
-+ *  in these cases.
-+ *
-+ *  Communicates with the manageability block.  On success return 0
-+ *  else return IXGBE_ERR_HOST_INTERFACE_COMMAND.
-+ **/
-+s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
-+				 u32 length, u32 timeout,
-+				 bool return_data)
-+{
-+	u32 hdr_size = sizeof(struct ixgbe_hic_hdr);
-+	union {
-+		struct ixgbe_hic_hdr hdr;
-+		u32 u32arr[1];
-+	} *bp = buffer;
-+	u16 buf_len, dword_len;
-+	s32 status;
-+	u32 bi;
-+
-+	if (!length || length > IXGBE_HI_MAX_BLOCK_BYTE_LENGTH) {
-+		hw_dbg(hw, "Buffer length failure buffersize-%d.\n", length);
-+		return IXGBE_ERR_HOST_INTERFACE_COMMAND;
- 	}
-+	/* Take management host interface semaphore */
-+	status = hw->mac.ops.acquire_swfw_sync(hw, IXGBE_GSSR_SW_MNG_SM);
-+	if (status)
-+		return status;
-+
-+	status = ixgbe_hic_unlocked(hw, buffer, length, timeout);
-+	if (status)
-+		goto rel_out;
- 
- 	if (!return_data)
- 		goto rel_out;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-index 5b3e3c65927e..1d3434ce3ddc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-@@ -114,6 +114,7 @@ s32 ixgbe_set_fw_drv_ver_generic(struct ixgbe_hw *hw, u8 maj, u8 min,
- 				 u8 build, u8 ver);
- s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *, u32 length,
- 				 u32 timeout, bool return_data);
-+s32 ixgbe_hic_unlocked(struct ixgbe_hw *hw, u32 *buffer, u32 len, u32 timeout);
- void ixgbe_clear_tx_pending(struct ixgbe_hw *hw);
- bool ixgbe_mng_present(struct ixgbe_hw *hw);
- bool ixgbe_mng_enabled(struct ixgbe_hw *hw);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 11fb433eb924..acb2be945215 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -624,41 +624,6 @@ static s32 ixgbe_read_iosf_sb_reg_x550a(struct ixgbe_hw *hw, u32 reg_addr,
- 	return status;
- }
- 
--/** ixgbe_read_ee_hostif_data_X550 - Read EEPROM word using a host interface
-- *  command assuming that the semaphore is already obtained.
+- *  ixgbe_get_phy_firmware_version_tnx - Gets the PHY Firmware Version
 - *  @hw: pointer to hardware structure
-- *  @offset: offset of  word in the EEPROM to read
-- *  @data: word read from the EEPROM
-- *
-- *  Reads a 16 bit word from the EEPROM using the hostif.
+- *  @firmware_version: pointer to the PHY Firmware Version
 - **/
--static s32 ixgbe_read_ee_hostif_data_X550(struct ixgbe_hw *hw, u16 offset,
--					  u16 *data)
+-s32 ixgbe_get_phy_firmware_version_tnx(struct ixgbe_hw *hw,
+-				       u16 *firmware_version)
 -{
 -	s32 status;
--	struct ixgbe_hic_read_shadow_ram buffer;
 -
--	buffer.hdr.req.cmd = FW_READ_SHADOW_RAM_CMD;
--	buffer.hdr.req.buf_lenh = 0;
--	buffer.hdr.req.buf_lenl = FW_READ_SHADOW_RAM_LEN;
--	buffer.hdr.req.checksum = FW_DEFAULT_CHECKSUM;
+-	status = hw->phy.ops.read_reg(hw, TNX_FW_REV,
+-				      MDIO_MMD_VEND1,
+-				      firmware_version);
 -
--	/* convert offset from words to bytes */
--	buffer.address = cpu_to_be32(offset * 2);
--	/* one word */
--	buffer.length = cpu_to_be16(sizeof(u16));
--
--	status = ixgbe_host_interface_command(hw, &buffer, sizeof(buffer),
--					      IXGBE_HI_COMMAND_TIMEOUT, false);
--	if (status)
--		return status;
--
--	*data = (u16)IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG,
--					  FW_NVM_DATA_OFFSET);
--
--	return 0;
+-	return status;
 -}
 -
- /** ixgbe_read_ee_hostif_buffer_X550- Read EEPROM word(s) using hostif
+-/**
+- *  ixgbe_get_phy_firmware_version_generic - Gets the PHY Firmware Version
+- *  @hw: pointer to hardware structure
+- *  @firmware_version: pointer to the PHY Firmware Version
+- **/
+-s32 ixgbe_get_phy_firmware_version_generic(struct ixgbe_hw *hw,
+-					   u16 *firmware_version)
+-{
+-	s32 status;
+-
+-	status = hw->phy.ops.read_reg(hw, AQ_FW_REV,
+-				      MDIO_MMD_VEND1,
+-				      firmware_version);
+-
+-	return status;
+-}
+-
+-/**
+  *  ixgbe_reset_phy_nl - Performs a PHY reset
   *  @hw: pointer to hardware structure
-  *  @offset: offset of  word in the EEPROM to read
-@@ -670,6 +635,7 @@ static s32 ixgbe_read_ee_hostif_data_X550(struct ixgbe_hw *hw, u16 offset,
- static s32 ixgbe_read_ee_hostif_buffer_X550(struct ixgbe_hw *hw,
- 					    u16 offset, u16 words, u16 *data)
- {
-+	const u32 mask = IXGBE_GSSR_SW_MNG_SM | IXGBE_GSSR_EEP_SM;
- 	struct ixgbe_hic_read_shadow_ram buffer;
- 	u32 current_word = 0;
- 	u16 words_to_read;
-@@ -677,7 +643,7 @@ static s32 ixgbe_read_ee_hostif_buffer_X550(struct ixgbe_hw *hw,
- 	u32 i;
- 
- 	/* Take semaphore for the entire operation. */
--	status = hw->mac.ops.acquire_swfw_sync(hw, IXGBE_GSSR_EEP_SM);
-+	status = hw->mac.ops.acquire_swfw_sync(hw, mask);
- 	if (status) {
- 		hw_dbg(hw, "EEPROM read buffer - semaphore failed\n");
- 		return status;
-@@ -698,10 +664,8 @@ static s32 ixgbe_read_ee_hostif_buffer_X550(struct ixgbe_hw *hw,
- 		buffer.address = cpu_to_be32((offset + current_word) * 2);
- 		buffer.length = cpu_to_be16(words_to_read * 2);
- 
--		status = ixgbe_host_interface_command(hw, &buffer,
--						      sizeof(buffer),
--						      IXGBE_HI_COMMAND_TIMEOUT,
--						      false);
-+		status = ixgbe_hic_unlocked(hw, (u32 *)&buffer, sizeof(buffer),
-+					    IXGBE_HI_COMMAND_TIMEOUT);
- 		if (status) {
- 			hw_dbg(hw, "Host interface command failed\n");
- 			goto out;
-@@ -725,7 +689,7 @@ static s32 ixgbe_read_ee_hostif_buffer_X550(struct ixgbe_hw *hw,
- 	}
- 
- out:
--	hw->mac.ops.release_swfw_sync(hw, IXGBE_GSSR_EEP_SM);
-+	hw->mac.ops.release_swfw_sync(hw, mask);
- 	return status;
- }
- 
-@@ -896,15 +860,32 @@ static s32 ixgbe_calc_eeprom_checksum_X550(struct ixgbe_hw *hw)
   **/
- static s32 ixgbe_read_ee_hostif_X550(struct ixgbe_hw *hw, u16 offset, u16 *data)
- {
--	s32 status = 0;
-+	const u32 mask = IXGBE_GSSR_SW_MNG_SM | IXGBE_GSSR_EEP_SM;
-+	struct ixgbe_hic_read_shadow_ram buffer;
-+	s32 status;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
+index ecf05f838fc5..5aa2c3cf7aec 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
+@@ -168,10 +168,6 @@ s32 ixgbe_check_phy_link_tnx(struct ixgbe_hw *hw,
+ 			     ixgbe_link_speed *speed,
+ 			     bool *link_up);
+ s32 ixgbe_setup_phy_link_tnx(struct ixgbe_hw *hw);
+-s32 ixgbe_get_phy_firmware_version_tnx(struct ixgbe_hw *hw,
+-				       u16 *firmware_version);
+-s32 ixgbe_get_phy_firmware_version_generic(struct ixgbe_hw *hw,
+-					   u16 *firmware_version);
  
--	if (hw->mac.ops.acquire_swfw_sync(hw, IXGBE_GSSR_EEP_SM) == 0) {
--		status = ixgbe_read_ee_hostif_data_X550(hw, offset, data);
--		hw->mac.ops.release_swfw_sync(hw, IXGBE_GSSR_EEP_SM);
--	} else {
--		status = IXGBE_ERR_SWFW_SYNC;
-+	buffer.hdr.req.cmd = FW_READ_SHADOW_RAM_CMD;
-+	buffer.hdr.req.buf_lenh = 0;
-+	buffer.hdr.req.buf_lenl = FW_READ_SHADOW_RAM_LEN;
-+	buffer.hdr.req.checksum = FW_DEFAULT_CHECKSUM;
-+
-+	/* convert offset from words to bytes */
-+	buffer.address = cpu_to_be32(offset * 2);
-+	/* one word */
-+	buffer.length = cpu_to_be16(sizeof(u16));
-+
-+	status = hw->mac.ops.acquire_swfw_sync(hw, mask);
-+	if (status)
-+		return status;
-+
-+	status = ixgbe_hic_unlocked(hw, (u32 *)&buffer, sizeof(buffer),
-+				    IXGBE_HI_COMMAND_TIMEOUT);
-+	if (!status) {
-+		*data = (u16)IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG,
-+						  FW_NVM_DATA_OFFSET);
- 	}
+ s32 ixgbe_reset_phy_nl(struct ixgbe_hw *hw);
+ s32 ixgbe_set_copper_phy_power(struct ixgbe_hw *hw, bool on);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index cf21273db201..3898458ab264 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -3392,7 +3392,6 @@ struct ixgbe_phy_operations {
+ 	s32 (*setup_internal_link)(struct ixgbe_hw *);
+ 	s32 (*setup_link_speed)(struct ixgbe_hw *, ixgbe_link_speed, bool);
+ 	s32 (*check_link)(struct ixgbe_hw *, ixgbe_link_speed *, bool *);
+-	s32 (*get_firmware_version)(struct ixgbe_hw *, u16 *);
+ 	s32 (*read_i2c_byte)(struct ixgbe_hw *, u8, u8, u8 *);
+ 	s32 (*write_i2c_byte)(struct ixgbe_hw *, u8, u8, u8);
+ 	s32 (*read_i2c_sff8472)(struct ixgbe_hw *, u8 , u8 *);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+index e2ff823ee202..72049fa23616 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+@@ -913,7 +913,6 @@ static const struct ixgbe_phy_operations phy_ops_X540 = {
+ 	.write_i2c_eeprom       = &ixgbe_write_i2c_eeprom_generic,
+ 	.check_overtemp         = &ixgbe_tn_check_overtemp,
+ 	.set_phy_power          = &ixgbe_set_copper_phy_power,
+-	.get_firmware_version   = &ixgbe_get_phy_firmware_version_generic,
+ };
  
-+	hw->mac.ops.release_swfw_sync(hw, mask);
- 	return status;
- }
+ static const u32 ixgbe_mvals_X540[IXGBE_MVALS_IDX_LIMIT] = {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index acb2be945215..23365d287080 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -3366,8 +3366,7 @@ static const struct ixgbe_eeprom_operations eeprom_ops_X550EM_x = {
+ 	.write_i2c_eeprom	= &ixgbe_write_i2c_eeprom_generic, \
+ 	.setup_link		= &ixgbe_setup_phy_link_generic, \
+ 	.set_phy_power		= NULL, \
+-	.check_overtemp		= &ixgbe_tn_check_overtemp, \
+-	.get_firmware_version	= &ixgbe_get_phy_firmware_version_generic,
++	.check_overtemp		= &ixgbe_tn_check_overtemp,
  
+ static const struct ixgbe_phy_operations phy_ops_X550 = {
+ 	X550_COMMON_PHY
 
