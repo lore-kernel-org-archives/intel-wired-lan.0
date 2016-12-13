@@ -1,40 +1,34 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue, 13 Dec 2016 14:40:07 +0100
-Subject: [Intel-wired-lan] [PATCH v3 4/4] i40e: Validate xdp_adjust_head
-	support
-In-Reply-To: <20161213134007.14707-1-bjorn.topel@gmail.com>
-References: <20161213134007.14707-1-bjorn.topel@gmail.com>
-Message-ID: <20161213134007.14707-5-bjorn.topel@gmail.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Tue, 13 Dec 2016 17:01:24 +0000
+Subject: [Intel-wired-lan] [PATCH 4/4] fm10k: do not clear global
+ mailbox	interrupt bits
+In-Reply-To: <20161102234447.17181-4-jacob.e.keller@intel.com>
+References: <20161102234447.17181-1-jacob.e.keller@intel.com>
+ <20161102234447.17181-4-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E490F59B5@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-This patch will tell the user that bpf_xdp_adjust_head() is currently
-not supported.
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
+Sent: Wednesday, November 2, 2016 4:45 PM
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Cc: Kwan, Ngai-mint <ngai-mint.kwan@intel.com>
+Subject: [Intel-wired-lan] [PATCH 4/4] fm10k: do not clear global mailbox interrupt bits
 
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+
+Partially revert commit 5e93cbadd3e9 ("fm10k: Reset mailbox global interrupts", 2016-06-07)
+
+The register bits related to this commit are now solely being handled by the IES API. Recent changes in the IES API will allow an automatic recovery from improper handling of these bits.
+
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index f7e627a540cc..f22cfa385b75 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9532,6 +9532,9 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
- 	bool need_reset;
- 	struct bpf_prog *old_prog;
- 
-+	if (prog && prog->xdp_adjust_head)
-+		return -EOPNOTSUPP;
-+
- 	/* The Rx frame has to fit in 2k */
- 	if (frame_size > I40E_RXBUFFER_2048)
- 		return -EINVAL;
--- 
-2.9.3
+Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
 
