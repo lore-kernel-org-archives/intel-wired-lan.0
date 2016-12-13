@@ -1,1059 +1,1348 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Tue, 13 Dec 2016 14:51:11 -0800
-Subject: [Intel-wired-lan] [PATCH V6 4/4] ixgbe: Implement support for
-	firmware-controlled PHYs
-In-Reply-To: <148166935971.47119.18406082006668540084.stgit@mdrustad-wks.jf.intel.com>
-References: <148166935971.47119.18406082006668540084.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <148166947181.47119.5216462984257137622.stgit@mdrustad-wks.jf.intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
+Date: Tue, 13 Dec 2016 15:13:02 -0800
+Subject: [Intel-wired-lan] [PATCH v2] ethtool: stop the line wrapping madness
+Message-ID: <20161213231302.32061-1-mitch.a.williams@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Implement support for devices that have firmware-controlled PHYs.
+Folks, we have a hard limit of 80 characters per line in the kernel,
+mostly due to Linus' insistence on printing out each release on greenbar
+with his Decwriter. So why do we have function and macro names that are
+over 30 characters long? Add a tab or two and a few parameters and boom!
+you're wrapping lines.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
-Changes in V2:
-- Fixed some oversights primarily related to 10M support
-Changes in V3:
-- Use the correct ops to blink the LED
-Changes in V4:
-- Actually get the right content into the patch
-Changes in V5:
-- Properly indicate FC autoneg support
-Changes in V6:
-- Add missing thermal interrupt support
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    4 
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |    9 
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  156 ++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   64 +++
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     |    3 
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |    7 
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |  408 ++++++++++++++++++++++
- 7 files changed, 645 insertions(+), 6 deletions(-)
+This patch is a search-n-replace of the newly-added ethtool link
+settings API with shorter names. In general, I replaced 'ksettings' with
+'ks' and elided some unnecessary verbiage. In nearly every instance I
+unwrapped lines and made the code easier to read, especially on a VT102.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index ef81c3d8c295..53fb427b1c29 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -661,6 +661,8 @@ struct ixgbe_adapter {
- #define IXGBE_FLAG2_PHY_INTERRUPT		BIT(11)
- #define IXGBE_FLAG2_UDP_TUN_REREG_NEEDED	BIT(12)
- #define IXGBE_FLAG2_VLAN_PROMISC		BIT(13)
-+#define IXGBE_FLAG2_EEE_CAPABLE			BIT(14)
-+#define IXGBE_FLAG2_EEE_ENABLED			BIT(15)
- 
- 	/* Tx fast path data */
- 	int num_tx_queues;
-@@ -862,6 +864,7 @@ enum ixgbe_boards {
- 	board_X550,
- 	board_X550EM_x,
- 	board_x550em_a,
-+	board_x550em_a_fw,
- };
- 
- extern const struct ixgbe_info ixgbe_82598_info;
-@@ -870,6 +873,7 @@ extern const struct ixgbe_info ixgbe_X540_info;
- extern const struct ixgbe_info ixgbe_X550_info;
- extern const struct ixgbe_info ixgbe_X550EM_x_info;
- extern const struct ixgbe_info ixgbe_x550em_a_info;
-+extern const struct ixgbe_info ixgbe_x550em_a_fw_info;
- #ifdef CONFIG_IXGBE_DCB
- extern const struct dcbnl_rtnl_ops dcbnl_ops;
- #endif
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 743be6af49fb..18dc591a290a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -100,6 +100,8 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
- 		case IXGBE_DEV_ID_X550T1:
- 		case IXGBE_DEV_ID_X550EM_X_10G_T:
- 		case IXGBE_DEV_ID_X550EM_A_10G_T:
-+		case IXGBE_DEV_ID_X550EM_A_1G_T:
-+		case IXGBE_DEV_ID_X550EM_A_1G_T_L:
- 			supported = true;
- 			break;
- 		default:
-@@ -3382,6 +3384,13 @@ s32 ixgbe_check_mac_link_generic(struct ixgbe_hw *hw, ixgbe_link_speed *speed,
- 		else
- 			*speed = IXGBE_LINK_SPEED_100_FULL;
- 		break;
-+	case IXGBE_LINKS_SPEED_10_X550EM_A:
-+		*speed = IXGBE_LINK_SPEED_UNKNOWN;
-+		if (hw->device_id == IXGBE_DEV_ID_X550EM_A_1G_T ||
-+		    hw->device_id == IXGBE_DEV_ID_X550EM_A_1G_T_L) {
-+			*speed = IXGBE_LINK_SPEED_10_FULL;
-+		}
-+		break;
- 	default:
- 		*speed = IXGBE_LINK_SPEED_UNKNOWN;
+In the case of the Amazon Ethernet driver, I found a bug where they were
+setting bits in the the 'settings' field twice. Almost certainly this
+was supposed to set bits in the 'advertising' field instead. So I fixed
+it.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+---
+v2: missed one - add Cavium Thunder VF driver
+
+ drivers/net/ethernet/3com/3c509.c                  |   3 +-
+ drivers/net/ethernet/3com/typhoon.c                |   6 +-
+ drivers/net/ethernet/alteon/acenic.c               |   3 +-
+ drivers/net/ethernet/amazon/ena/ena_ethtool.c      |   6 +-
+ drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c       |  13 +--
+ .../net/ethernet/apm/xgene/xgene_enet_ethtool.c    |  16 +---
+ drivers/net/ethernet/atheros/alx/ethtool.c         |   9 +-
+ drivers/net/ethernet/atheros/atl1c/atl1c_ethtool.c |   6 +-
+ drivers/net/ethernet/atheros/atl1e/atl1e_ethtool.c |   9 +-
+ drivers/net/ethernet/atheros/atlx/atl1.c           |   6 +-
+ drivers/net/ethernet/atheros/atlx/atl2.c           |   9 +-
+ drivers/net/ethernet/broadcom/b44.c                |   9 +-
+ drivers/net/ethernet/broadcom/bcm63xx_enet.c       |   6 +-
+ drivers/net/ethernet/broadcom/bnx2.c               |   9 +-
+ drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c  | 102 ++++++++-------------
+ drivers/net/ethernet/broadcom/tg3.c                |  14 +--
+ drivers/net/ethernet/brocade/bna/bnad_ethtool.c    |   6 +-
+ drivers/net/ethernet/calxeda/xgmac.c               |   4 +-
+ drivers/net/ethernet/cavium/liquidio/lio_ethtool.c |   6 +-
+ .../net/ethernet/cavium/thunder/nicvf_ethtool.c    |   6 +-
+ drivers/net/ethernet/chelsio/cxgb4/cxgb4_ethtool.c |  12 +--
+ .../net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c    |  12 +--
+ drivers/net/ethernet/cisco/enic/enic_ethtool.c     |  10 +-
+ drivers/net/ethernet/hisilicon/hns/hns_ethtool.c   |  12 +--
+ drivers/net/ethernet/marvell/mv643xx_eth.c         |  24 ++---
+ drivers/net/ethernet/marvell/pxa168_eth.c          |   3 +-
+ drivers/net/ethernet/mellanox/mlx4/en_ethtool.c    |  49 ++++------
+ .../net/ethernet/mellanox/mlx5/core/en_ethtool.c   |  25 +++--
+ drivers/net/ethernet/mellanox/mlxsw/spectrum.c     |  14 +--
+ drivers/net/ethernet/qlogic/qede/qede_ethtool.c    |   6 +-
+ .../net/ethernet/stmicro/stmmac/stmmac_ethtool.c   |  20 ++--
+ drivers/net/ethernet/ti/netcp_ethss.c              |   6 +-
+ drivers/net/mii.c                                  |  12 +--
+ drivers/net/phy/phy.c                              |  13 +--
+ drivers/net/usb/lan78xx.c                          |   6 +-
+ include/linux/ethtool.h                            |  21 ++---
+ net/core/ethtool.c                                 |  40 ++++----
+ 37 files changed, 199 insertions(+), 334 deletions(-)
+
+diff --git a/drivers/net/ethernet/3com/3c509.c b/drivers/net/ethernet/3com/3c509.c
+index a753378..4cf0a1f 100644
+--- a/drivers/net/ethernet/3com/3c509.c
++++ b/drivers/net/ethernet/3com/3c509.c
+@@ -1078,8 +1078,7 @@ el3_netdev_get_ecmd(struct net_device *dev, struct ethtool_link_ksettings *cmd)
+ 			cmd->base.duplex = DUPLEX_FULL;
  	}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index fd192bf29b26..f19cbc761748 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -197,15 +197,17 @@ static int ixgbe_get_settings(struct net_device *netdev,
- 				   SUPPORTED_1000baseKX_Full :
- 				   SUPPORTED_1000baseT_Full;
- 	if (supported_link & IXGBE_LINK_SPEED_100_FULL)
--		ecmd->supported |= ixgbe_isbackplane(hw->phy.media_type) ?
--				   SUPPORTED_1000baseKX_Full :
--				   SUPPORTED_1000baseT_Full;
-+		ecmd->supported |= SUPPORTED_100baseT_Full;
-+	if (supported_link & IXGBE_LINK_SPEED_10_FULL)
-+		ecmd->supported |= SUPPORTED_10baseT_Full;
  
- 	/* default advertised speed if phy.autoneg_advertised isn't set */
- 	ecmd->advertising = ecmd->supported;
- 	/* set the advertised speeds */
- 	if (hw->phy.autoneg_advertised) {
- 		ecmd->advertising = 0;
-+		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_10_FULL)
-+			ecmd->advertising |= ADVERTISED_10baseT_Full;
- 		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_100_FULL)
- 			ecmd->advertising |= ADVERTISED_100baseT_Full;
- 		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_10GB_FULL)
-@@ -237,6 +239,7 @@ static int ixgbe_get_settings(struct net_device *netdev,
- 	case ixgbe_phy_tn:
- 	case ixgbe_phy_aq:
- 	case ixgbe_phy_x550em_ext_t:
-+	case ixgbe_phy_fw:
- 	case ixgbe_phy_cu_unknown:
- 		ecmd->supported |= SUPPORTED_TP;
- 		ecmd->advertising |= ADVERTISED_TP;
-@@ -337,6 +340,9 @@ static int ixgbe_get_settings(struct net_device *netdev,
- 		case IXGBE_LINK_SPEED_10GB_FULL:
- 			ethtool_cmd_speed_set(ecmd, SPEED_10000);
- 			break;
-+		case IXGBE_LINK_SPEED_5GB_FULL:
-+			ethtool_cmd_speed_set(ecmd, SPEED_5000);
-+			break;
- 		case IXGBE_LINK_SPEED_2_5GB_FULL:
- 			ethtool_cmd_speed_set(ecmd, SPEED_2500);
- 			break;
-@@ -346,6 +352,9 @@ static int ixgbe_get_settings(struct net_device *netdev,
- 		case IXGBE_LINK_SPEED_100_FULL:
- 			ethtool_cmd_speed_set(ecmd, SPEED_100);
- 			break;
-+		case IXGBE_LINK_SPEED_10_FULL:
-+			ethtool_cmd_speed_set(ecmd, SPEED_10);
-+			break;
- 		default:
- 			break;
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
+ 	cmd->base.speed = SPEED_10;
+ 	EL3WINDOW(1);
+ 	return 0;
+diff --git a/drivers/net/ethernet/3com/typhoon.c b/drivers/net/ethernet/3com/typhoon.c
+index a0cacbe..8d45fdb 100644
+--- a/drivers/net/ethernet/3com/typhoon.c
++++ b/drivers/net/ethernet/3com/typhoon.c
+@@ -1049,10 +1049,8 @@ typhoon_get_link_ksettings(struct net_device *dev,
+ 	else
+ 		cmd->base.autoneg = AUTONEG_DISABLE;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/alteon/acenic.c b/drivers/net/ethernet/alteon/acenic.c
+index 16f0c70..ccc39c3 100644
+--- a/drivers/net/ethernet/alteon/acenic.c
++++ b/drivers/net/ethernet/alteon/acenic.c
+@@ -2630,8 +2630,7 @@ static int ace_get_link_ksettings(struct net_device *dev,
+ 	ecmd->rxcoal = readl(&regs->TuneRxCoalTicks);
+ #endif
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/amazon/ena/ena_ethtool.c b/drivers/net/ethernet/amazon/ena/ena_ethtool.c
+index 67b2338f..369c2d8 100644
+--- a/drivers/net/ethernet/amazon/ena/ena_ethtool.c
++++ b/drivers/net/ethernet/amazon/ena/ena_ethtool.c
+@@ -280,10 +280,8 @@ static int ena_get_link_ksettings(struct net_device *netdev,
+ 	link_ksettings->base.speed = link->speed;
+ 
+ 	if (link->flags & ENA_ADMIN_GET_FEATURE_LINK_DESC_AUTONEG_MASK) {
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     supported, Autoneg);
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     supported, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, supported, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, advertising, Autoneg);
+ 	}
+ 
+ 	link_ksettings->base.autoneg =
+diff --git a/drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c b/drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c
+index 920566a..9475777 100644
+--- a/drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c
++++ b/drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c
+@@ -279,12 +279,10 @@ static int xgbe_get_link_ksettings(struct net_device *netdev,
+ 
+ 	cmd->base.phy_address = pdata->phy.address;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						pdata->phy.supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						pdata->phy.advertising);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.lp_advertising,
+-						pdata->phy.lp_advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, pdata->phy.supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, pdata->phy.advertising);
++	ethtool_u32_to_ks(cmd->link_modes.lp_advertising,
++			  pdata->phy.lp_advertising);
+ 
+ 	cmd->base.autoneg = pdata->phy.autoneg;
+ 	cmd->base.speed = pdata->phy.speed;
+@@ -331,8 +329,7 @@ static int xgbe_set_link_ksettings(struct net_device *netdev,
  		}
-@@ -394,6 +403,9 @@ static int ixgbe_set_settings(struct net_device *netdev,
- 		if (ecmd->advertising & ADVERTISED_100baseT_Full)
- 			advertised |= IXGBE_LINK_SPEED_100_FULL;
+ 	}
  
-+		if (ecmd->advertising & ADVERTISED_10baseT_Full)
-+			advertised |= IXGBE_LINK_SPEED_10_FULL;
-+
- 		if (old == advertised)
- 			return err;
- 		/* this sets the link speed and restarts auto-neg */
-@@ -3173,6 +3185,9 @@ static int ixgbe_get_module_info(struct net_device *dev,
- 	u8 sff8472_rev, addr_mode;
- 	bool page_swap = false;
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						cmd->link_modes.advertising);
++	ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
  
-+	if (hw->phy.type == ixgbe_phy_fw)
-+		return -ENXIO;
-+
- 	/* Check whether we support SFF-8472 or not */
- 	status = hw->phy.ops.read_i2c_eeprom(hw,
- 					     IXGBE_SFF_SFF_8472_COMP,
-@@ -3218,6 +3233,9 @@ static int ixgbe_get_module_eeprom(struct net_device *dev,
- 	if (ee->len == 0)
+ 	netif_dbg(pdata, link, netdev,
+ 		  "requested advertisement %#x, phy supported %#x\n",
+diff --git a/drivers/net/ethernet/apm/xgene/xgene_enet_ethtool.c b/drivers/net/ethernet/apm/xgene/xgene_enet_ethtool.c
+index 28fdedc..bf5ac14 100644
+--- a/drivers/net/ethernet/apm/xgene/xgene_enet_ethtool.c
++++ b/drivers/net/ethernet/apm/xgene/xgene_enet_ethtool.c
+@@ -76,12 +76,8 @@ static int xgene_get_link_ksettings(struct net_device *ndev,
+ 
+ 		supported = SUPPORTED_1000baseT_Full | SUPPORTED_Autoneg |
+ 			SUPPORTED_MII;
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			cmd->link_modes.supported,
+-			supported);
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			cmd->link_modes.advertising,
+-			supported);
++		ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++		ethtool_u32_to_ks(cmd->link_modes.advertising, supported);
+ 
+ 		cmd->base.speed = SPEED_1000;
+ 		cmd->base.duplex = DUPLEX_FULL;
+@@ -89,12 +85,8 @@ static int xgene_get_link_ksettings(struct net_device *ndev,
+ 		cmd->base.autoneg = AUTONEG_ENABLE;
+ 	} else {
+ 		supported = SUPPORTED_10000baseT_Full | SUPPORTED_FIBRE;
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			cmd->link_modes.supported,
+-			supported);
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			cmd->link_modes.advertising,
+-			supported);
++		ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++		ethtool_u32_to_ks(cmd->link_modes.advertising, supported);
+ 
+ 		cmd->base.speed = SPEED_10000;
+ 		cmd->base.duplex = DUPLEX_FULL;
+diff --git a/drivers/net/ethernet/atheros/alx/ethtool.c b/drivers/net/ethernet/atheros/alx/ethtool.c
+index 2f4eabf..f339500 100644
+--- a/drivers/net/ethernet/atheros/alx/ethtool.c
++++ b/drivers/net/ethernet/atheros/alx/ethtool.c
+@@ -166,10 +166,8 @@ static int alx_get_link_ksettings(struct net_device *netdev,
+ 	cmd->base.speed = hw->link_speed;
+ 	cmd->base.duplex = hw->duplex;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	return 0;
+ }
+@@ -184,8 +182,7 @@ static int alx_set_link_ksettings(struct net_device *netdev,
+ 
+ 	ASSERT_RTNL();
+ 
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						cmd->link_modes.advertising);
++	ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
+ 
+ 	if (cmd->base.autoneg == AUTONEG_ENABLE) {
+ 		if (advertising & ~alx_get_supported_speeds(hw))
+diff --git a/drivers/net/ethernet/atheros/atl1c/atl1c_ethtool.c b/drivers/net/ethernet/atheros/atl1c/atl1c_ethtool.c
+index cfe86a2..9f67af1 100644
+--- a/drivers/net/ethernet/atheros/atl1c/atl1c_ethtool.c
++++ b/drivers/net/ethernet/atheros/atl1c/atl1c_ethtool.c
+@@ -62,10 +62,8 @@ static int atl1c_get_link_ksettings(struct net_device *netdev,
+ 
+ 	cmd->base.autoneg = AUTONEG_ENABLE;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/atheros/atl1e/atl1e_ethtool.c b/drivers/net/ethernet/atheros/atl1e/atl1e_ethtool.c
+index cb489e7..d31c169 100644
+--- a/drivers/net/ethernet/atheros/atl1e/atl1e_ethtool.c
++++ b/drivers/net/ethernet/atheros/atl1e/atl1e_ethtool.c
+@@ -63,10 +63,8 @@ static int atl1e_get_link_ksettings(struct net_device *netdev,
+ 
+ 	cmd->base.autoneg = AUTONEG_ENABLE;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	return 0;
+ }
+@@ -78,8 +76,7 @@ static int atl1e_set_link_ksettings(struct net_device *netdev,
+ 	struct atl1e_hw *hw = &adapter->hw;
+ 	u32 advertising;
+ 
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						cmd->link_modes.advertising);
++	ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
+ 
+ 	while (test_and_set_bit(__AT_RESETTING, &adapter->flags))
+ 		msleep(1);
+diff --git a/drivers/net/ethernet/atheros/atlx/atl1.c b/drivers/net/ethernet/atheros/atlx/atl1.c
+index 7dad8e4..004184b 100644
+--- a/drivers/net/ethernet/atheros/atlx/atl1.c
++++ b/drivers/net/ethernet/atheros/atlx/atl1.c
+@@ -3263,10 +3263,8 @@ static int atl1_get_link_ksettings(struct net_device *netdev,
+ 	else
+ 		cmd->base.autoneg = AUTONEG_DISABLE;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/atheros/atlx/atl2.c b/drivers/net/ethernet/atheros/atlx/atl2.c
+index 63f2dee..7aaac50 100644
+--- a/drivers/net/ethernet/atheros/atlx/atl2.c
++++ b/drivers/net/ethernet/atheros/atlx/atl2.c
+@@ -1771,10 +1771,8 @@ static int atl2_get_link_ksettings(struct net_device *netdev,
+ 
+ 	cmd->base.autoneg = AUTONEG_ENABLE;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	return 0;
+ }
+@@ -1786,8 +1784,7 @@ static int atl2_set_link_ksettings(struct net_device *netdev,
+ 	struct atl2_hw *hw = &adapter->hw;
+ 	u32 advertising;
+ 
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						cmd->link_modes.advertising);
++	ethtool_ks_to_u32(&advertising,	cmd->link_modes.advertising);
+ 
+ 	while (test_and_set_bit(__ATL2_RESETTING, &adapter->flags))
+ 		msleep(1);
+diff --git a/drivers/net/ethernet/broadcom/b44.c b/drivers/net/ethernet/broadcom/b44.c
+index 1df3048..5758cfc 100644
+--- a/drivers/net/ethernet/broadcom/b44.c
++++ b/drivers/net/ethernet/broadcom/b44.c
+@@ -1868,10 +1868,8 @@ static int b44_get_link_ksettings(struct net_device *dev,
+ 	if (cmd->base.autoneg == AUTONEG_ENABLE)
+ 		advertising |= ADVERTISED_Autoneg;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	if (!netif_running(dev)){
+ 		cmd->base.speed = 0;
+@@ -1904,8 +1902,7 @@ static int b44_set_link_ksettings(struct net_device *dev,
+ 
+ 	speed = cmd->base.speed;
+ 
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						cmd->link_modes.advertising);
++	ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
+ 
+ 	/* We do not support gigabit. */
+ 	if (cmd->base.autoneg == AUTONEG_ENABLE) {
+diff --git a/drivers/net/ethernet/broadcom/bcm63xx_enet.c b/drivers/net/ethernet/broadcom/bcm63xx_enet.c
+index 3b14d51..6e5bd3a 100644
+--- a/drivers/net/ethernet/broadcom/bcm63xx_enet.c
++++ b/drivers/net/ethernet/broadcom/bcm63xx_enet.c
+@@ -1463,10 +1463,8 @@ static int bcm_enet_get_link_ksettings(struct net_device *dev,
+ 			ADVERTISED_100baseT_Half |
+ 			ADVERTISED_100baseT_Full;
+ 		advertising = 0;
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			cmd->link_modes.supported, supported);
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			cmd->link_modes.advertising, advertising);
++		ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++		ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 		cmd->base.port = PORT_MII;
+ 	}
+ 	return 0;
+diff --git a/drivers/net/ethernet/broadcom/bnx2.c b/drivers/net/ethernet/broadcom/bnx2.c
+index d5d1026..dce4716 100644
+--- a/drivers/net/ethernet/broadcom/bnx2.c
++++ b/drivers/net/ethernet/broadcom/bnx2.c
+@@ -6956,10 +6956,8 @@ bnx2_get_link_ksettings(struct net_device *dev,
+ 
+ 	cmd->base.phy_address = bp->phy_addr;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	return 0;
+ }
+@@ -6993,8 +6991,7 @@ bnx2_set_link_ksettings(struct net_device *dev,
+ 	if (cmd->base.autoneg == AUTONEG_ENABLE) {
+ 		autoneg |= AUTONEG_SPEED;
+ 
+-		ethtool_convert_link_mode_to_legacy_u32(
+-			&advertising, cmd->link_modes.advertising);
++		ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
+ 
+ 		if (cmd->base.port == PORT_TP) {
+ 			advertising &= ETHTOOL_ALL_COPPER_SPEED;
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c b/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
+index 784aa77..237a7e4 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
+@@ -832,61 +832,44 @@ u32 _bnxt_fw_to_ethtool_adv_spds(u16 fw_speeds, u8 fw_pause)
+ 	return speed_mask;
+ }
+ 
+-#define BNXT_FW_TO_ETHTOOL_SPDS(fw_speeds, fw_pause, lk_ksettings, name)\
+-{									\
+-	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_100MB)			\
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, name,\
+-						     100baseT_Full);	\
+-	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_1GB)			\
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, name,\
+-						     1000baseT_Full);	\
+-	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_10GB)			\
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, name,\
+-						     10000baseT_Full);	\
+-	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_25GB)			\
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, name,\
+-						     25000baseCR_Full);	\
+-	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_40GB)			\
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, name,\
+-						     40000baseCR4_Full);\
+-	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_50GB)			\
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, name,\
+-						     50000baseCR2_Full);\
+-	if ((fw_pause) & BNXT_LINK_PAUSE_RX) {				\
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, name,\
+-						     Pause);		\
+-		if (!((fw_pause) & BNXT_LINK_PAUSE_TX))			\
+-			ethtool_link_ksettings_add_link_mode(		\
+-					lk_ksettings, name, Asym_Pause);\
+-	} else if ((fw_pause) & BNXT_LINK_PAUSE_TX) {			\
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, name,\
+-						     Asym_Pause);	\
+-	}								\
++#define BNXT_FW_TO_ETHTOOL_SPDS(fw_speeds, fw_pause, lk_ksettings, name)     \
++{									     \
++	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_100MB)			     \
++		ethtool_ks_add_mode(lk_ksettings, name, 100baseT_Full);	     \
++	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_1GB)			     \
++		ethtool_ks_add_mode(lk_ksettings, name, 1000baseT_Full);     \
++	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_10GB)			     \
++		ethtool_ks_add_mode(lk_ksettings, name, 10000baseT_Full);    \
++	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_25GB)			     \
++		ethtool_ks_add_mode(lk_ksettings, name, 25000baseCR_Full);   \
++	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_40GB)			     \
++		ethtool_ks_add_mode(lk_ksettings, name, 40000baseCR4_Full);  \
++	if ((fw_speeds) & BNXT_LINK_SPEED_MSK_50GB)			     \
++		ethtool_ks_add_mode(lk_ksettings, name, 50000baseCR2_Full);  \
++	if ((fw_pause) & BNXT_LINK_PAUSE_RX) {				     \
++		ethtool_ks_add_mode(lk_ksettings, name, Pause);		     \
++		if (!((fw_pause) & BNXT_LINK_PAUSE_TX))			     \
++			ethtool_ks_add_mode(lk_ksettings, name, Asym_Pause); \
++	} else if ((fw_pause) & BNXT_LINK_PAUSE_TX) {			     \
++		ethtool_ks_add_mode(lk_ksettings, name, Asym_Pause);	     \
++	}								     \
+ }
+ 
+ #define BNXT_ETHTOOL_TO_FW_SPDS(fw_speeds, lk_ksettings, name)		\
+ {									\
+-	if (ethtool_link_ksettings_test_link_mode(lk_ksettings, name,	\
+-						  100baseT_Full) ||	\
+-	    ethtool_link_ksettings_test_link_mode(lk_ksettings, name,	\
+-						  100baseT_Half))	\
++	if (ethtool_ks_test(lk_ksettings, name, 100baseT_Full) ||	\
++	    ethtool_ks_test(lk_ksettings, name, 100baseT_Half))		\
+ 		(fw_speeds) |= BNXT_LINK_SPEED_MSK_100MB;		\
+-	if (ethtool_link_ksettings_test_link_mode(lk_ksettings, name,	\
+-						  1000baseT_Full) ||	\
+-	    ethtool_link_ksettings_test_link_mode(lk_ksettings, name,	\
+-						  1000baseT_Half))	\
++	if (ethtool_ks_test(lk_ksettings, name, 1000baseT_Full) ||	\
++	    ethtool_ks_test(lk_ksettings, name, 1000baseT_Half))	\
+ 		(fw_speeds) |= BNXT_LINK_SPEED_MSK_1GB;			\
+-	if (ethtool_link_ksettings_test_link_mode(lk_ksettings, name,	\
+-						  10000baseT_Full))	\
++	if (ethtool_ks_test(lk_ksettings, name, 10000baseT_Full))	\
+ 		(fw_speeds) |= BNXT_LINK_SPEED_MSK_10GB;		\
+-	if (ethtool_link_ksettings_test_link_mode(lk_ksettings, name,	\
+-						  25000baseCR_Full))	\
++	if (ethtool_ks_test(lk_ksettings, name, 25000baseCR_Full))	\
+ 		(fw_speeds) |= BNXT_LINK_SPEED_MSK_25GB;		\
+-	if (ethtool_link_ksettings_test_link_mode(lk_ksettings, name,	\
+-						  40000baseCR4_Full))	\
++	if (ethtool_ks_test(lk_ksettings, name, 40000baseCR4_Full))	\
+ 		(fw_speeds) |= BNXT_LINK_SPEED_MSK_40GB;		\
+-	if (ethtool_link_ksettings_test_link_mode(lk_ksettings, name,	\
+-						  50000baseCR2_Full))	\
++	if (ethtool_ks_test(lk_ksettings, name, 50000baseCR2_Full))	\
+ 		(fw_speeds) |= BNXT_LINK_SPEED_MSK_50GB;		\
+ }
+ 
+@@ -922,13 +905,11 @@ static void bnxt_fw_to_ethtool_support_spds(struct bnxt_link_info *link_info,
+ 
+ 	BNXT_FW_TO_ETHTOOL_SPDS(fw_speeds, 0, lk_ksettings, supported);
+ 
+-	ethtool_link_ksettings_add_link_mode(lk_ksettings, supported, Pause);
+-	ethtool_link_ksettings_add_link_mode(lk_ksettings, supported,
+-					     Asym_Pause);
++	ethtool_ks_add_mode(lk_ksettings, supported, Pause);
++	ethtool_ks_add_mode(lk_ksettings, supported, Asym_Pause);
+ 
+ 	if (link_info->support_auto_speeds)
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, supported,
+-						     Autoneg);
++		ethtool_ks_add_mode(lk_ksettings, supported, Autoneg);
+ }
+ 
+ u32 bnxt_fw_to_ethtool_speed(u16 fw_link_speed)
+@@ -963,14 +944,13 @@ static int bnxt_get_link_ksettings(struct net_device *dev,
+ 	struct ethtool_link_settings *base = &lk_ksettings->base;
+ 	u32 ethtool_speed;
+ 
+-	ethtool_link_ksettings_zero_link_mode(lk_ksettings, supported);
++	ethtool_ks_clear(lk_ksettings, supported);
+ 	bnxt_fw_to_ethtool_support_spds(link_info, lk_ksettings);
+ 
+-	ethtool_link_ksettings_zero_link_mode(lk_ksettings, advertising);
++	ethtool_ks_clear(lk_ksettings, advertising);
+ 	if (link_info->autoneg) {
+ 		bnxt_fw_to_ethtool_advertised_spds(link_info, lk_ksettings);
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings,
+-						     advertising, Autoneg);
++		ethtool_ks_add_mode(lk_ksettings, advertising, Autoneg);
+ 		base->autoneg = AUTONEG_ENABLE;
+ 		if (link_info->phy_link_status == BNXT_LINK_LINK)
+ 			bnxt_fw_to_ethtool_lp_adv(link_info, lk_ksettings);
+@@ -994,15 +974,11 @@ static int bnxt_get_link_ksettings(struct net_device *dev,
+ 	base->port = PORT_NONE;
+ 	if (link_info->media_type == PORT_PHY_QCFG_RESP_MEDIA_TYPE_TP) {
+ 		base->port = PORT_TP;
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, supported,
+-						     TP);
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, advertising,
+-						     TP);
++		ethtool_ks_add_mode(lk_ksettings, supported, TP);
++		ethtool_ks_add_mode(lk_ksettings, advertising, TP);
+ 	} else {
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, supported,
+-						     FIBRE);
+-		ethtool_link_ksettings_add_link_mode(lk_ksettings, advertising,
+-						     FIBRE);
++		ethtool_ks_add_mode(lk_ksettings, supported, FIBRE);
++		ethtool_ks_add_mode(lk_ksettings, advertising, FIBRE);
+ 
+ 		if (link_info->media_type == PORT_PHY_QCFG_RESP_MEDIA_TYPE_DAC)
+ 			base->port = PORT_DA;
+diff --git a/drivers/net/ethernet/broadcom/tg3.c b/drivers/net/ethernet/broadcom/tg3.c
+index 185e9e0..27fc248 100644
+--- a/drivers/net/ethernet/broadcom/tg3.c
++++ b/drivers/net/ethernet/broadcom/tg3.c
+@@ -12110,8 +12110,7 @@ static int tg3_get_link_ksettings(struct net_device *dev,
+ 		supported |= SUPPORTED_FIBRE;
+ 		cmd->base.port = PORT_FIBRE;
+ 	}
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
+ 
+ 	advertising = tp->link_config.advertising;
+ 	if (tg3_flag(tp, PAUSE_AUTONEG)) {
+@@ -12126,15 +12125,13 @@ static int tg3_get_link_ksettings(struct net_device *dev,
+ 			advertising |= ADVERTISED_Asym_Pause;
+ 		}
+ 	}
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	if (netif_running(dev) && tp->link_up) {
+ 		cmd->base.speed = tp->link_config.active_speed;
+ 		cmd->base.duplex = tp->link_config.active_duplex;
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			cmd->link_modes.lp_advertising,
+-			tp->link_config.rmt_adv);
++		ethtool_u32_to_ks(cmd->link_modes.lp_advertising,
++				  tp->link_config.rmt_adv);
+ 
+ 		if (!(tp->phy_flags & TG3_PHYFLG_ANY_SERDES)) {
+ 			if (tp->phy_flags & TG3_PHYFLG_MDIX_STATE)
+@@ -12176,8 +12173,7 @@ static int tg3_set_link_ksettings(struct net_device *dev,
+ 	    cmd->base.duplex != DUPLEX_HALF)
  		return -EINVAL;
  
-+	if (hw->phy.type == ixgbe_phy_fw)
-+		return -ENXIO;
-+
- 	for (i = ee->offset; i < ee->offset + ee->len; i++) {
- 		/* I2C reads can take long time */
- 		if (test_bit(__IXGBE_IN_SFP_INIT, &adapter->state))
-@@ -3237,6 +3255,136 @@ static int ixgbe_get_module_eeprom(struct net_device *dev,
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						cmd->link_modes.advertising);
++	ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
+ 
+ 	if (cmd->base.autoneg == AUTONEG_ENABLE) {
+ 		u32 mask = ADVERTISED_Autoneg |
+diff --git a/drivers/net/ethernet/brocade/bna/bnad_ethtool.c b/drivers/net/ethernet/brocade/bna/bnad_ethtool.c
+index 2865939..34872a98 100644
+--- a/drivers/net/ethernet/brocade/bna/bnad_ethtool.c
++++ b/drivers/net/ethernet/brocade/bna/bnad_ethtool.c
+@@ -261,10 +261,8 @@ bnad_get_link_ksettings(struct net_device *netdev,
+ 		cmd->base.duplex = DUPLEX_UNKNOWN;
+ 	}
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/calxeda/xgmac.c b/drivers/net/ethernet/calxeda/xgmac.c
+index ce7de6f..725af98 100644
+--- a/drivers/net/ethernet/calxeda/xgmac.c
++++ b/drivers/net/ethernet/calxeda/xgmac.c
+@@ -1536,8 +1536,8 @@ static int xgmac_ethtool_get_link_ksettings(struct net_device *dev,
+ 	cmd->base.autoneg = 0;
+ 	cmd->base.duplex = DUPLEX_FULL;
+ 	cmd->base.speed = 10000;
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported, 0);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising, 0);
++	ethtool_u32_to_ks(cmd->link_modes.supported, 0);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, 0);
  	return 0;
  }
  
-+static const struct {
-+	ixgbe_link_speed mac_speed;
-+	u32 supported;
-+} ixgbe_ls_map[] = {
-+	{ IXGBE_LINK_SPEED_10_FULL, SUPPORTED_10baseT_Full },
-+	{ IXGBE_LINK_SPEED_100_FULL, SUPPORTED_100baseT_Full },
-+	{ IXGBE_LINK_SPEED_1GB_FULL, SUPPORTED_1000baseT_Full },
-+	{ IXGBE_LINK_SPEED_2_5GB_FULL, SUPPORTED_2500baseX_Full },
-+	{ IXGBE_LINK_SPEED_10GB_FULL, SUPPORTED_10000baseT_Full },
-+};
-+
-+static const struct {
-+	u32 lp_advertised;
-+	u32 mac_speed;
-+} ixgbe_lp_map[] = {
-+	{ FW_PHY_ACT_UD_2_100M_TX_EEE, SUPPORTED_100baseT_Full },
-+	{ FW_PHY_ACT_UD_2_1G_T_EEE, SUPPORTED_1000baseT_Full },
-+	{ FW_PHY_ACT_UD_2_10G_T_EEE, SUPPORTED_10000baseT_Full },
-+	{ FW_PHY_ACT_UD_2_1G_KX_EEE, SUPPORTED_1000baseKX_Full },
-+	{ FW_PHY_ACT_UD_2_10G_KX4_EEE, SUPPORTED_10000baseKX4_Full },
-+	{ FW_PHY_ACT_UD_2_10G_KR_EEE, SUPPORTED_10000baseKR_Full},
-+};
-+
-+static int
-+ixgbe_get_eee_fw(struct ixgbe_adapter *adapter, struct ethtool_eee *edata)
-+{
-+	u32 info[FW_PHY_ACT_DATA_COUNT] = { 0 };
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	s32 rc;
-+	u16 i;
-+
-+	rc = ixgbe_fw_phy_activity(hw, FW_PHY_ACT_UD_2, &info);
-+	if (rc)
-+		return rc;
-+
-+	edata->lp_advertised = 0;
-+	for (i = 0; i < ARRAY_SIZE(ixgbe_lp_map); ++i) {
-+		if (info[0] & ixgbe_lp_map[i].lp_advertised)
-+			edata->lp_advertised |= ixgbe_lp_map[i].mac_speed;
-+	}
-+
-+	edata->supported = 0;
-+	for (i = 0; i < ARRAY_SIZE(ixgbe_ls_map); ++i) {
-+		if (hw->phy.eee_speeds_supported & ixgbe_ls_map[i].mac_speed)
-+			edata->supported |= ixgbe_ls_map[i].supported;
-+	}
-+
-+	edata->advertised = 0;
-+	for (i = 0; i < ARRAY_SIZE(ixgbe_ls_map); ++i) {
-+		if (hw->phy.eee_speeds_advertised & ixgbe_ls_map[i].mac_speed)
-+			edata->advertised |= ixgbe_ls_map[i].supported;
-+	}
-+
-+	edata->eee_enabled = !!edata->advertised;
-+	edata->tx_lpi_enabled = edata->eee_enabled;
-+	if (edata->advertised & edata->lp_advertised)
-+		edata->eee_active = true;
-+
-+	return 0;
-+}
-+
-+static int ixgbe_get_eee(struct net_device *netdev, struct ethtool_eee *edata)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+	struct ixgbe_hw *hw = &adapter->hw;
-+
-+	if (!(adapter->flags2 & IXGBE_FLAG2_EEE_CAPABLE))
-+		return -EOPNOTSUPP;
-+
-+	if (hw->phy.eee_speeds_supported && hw->phy.type == ixgbe_phy_fw)
-+		return ixgbe_get_eee_fw(adapter, edata);
-+
-+	return -EOPNOTSUPP;
-+}
-+
-+static int ixgbe_set_eee(struct net_device *netdev, struct ethtool_eee *edata)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	struct ethtool_eee eee_data;
-+	s32 ret_val;
-+
-+	if (!(adapter->flags2 & IXGBE_FLAG2_EEE_CAPABLE))
-+		return -EOPNOTSUPP;
-+
-+	memset(&eee_data, 0, sizeof(struct ethtool_eee));
-+
-+	ret_val = ixgbe_get_eee(netdev, &eee_data);
-+	if (ret_val)
-+		return ret_val;
-+
-+	if (eee_data.eee_enabled && !edata->eee_enabled) {
-+		if (eee_data.tx_lpi_enabled != edata->tx_lpi_enabled) {
-+			e_err(drv, "Setting EEE tx-lpi is not supported\n");
-+			return -EINVAL;
-+		}
-+
-+		if (eee_data.tx_lpi_timer != edata->tx_lpi_timer) {
-+			e_err(drv,
-+			      "Setting EEE Tx LPI timer is not supported\n");
-+			return -EINVAL;
-+		}
-+
-+		if (eee_data.advertised != edata->advertised) {
-+			e_err(drv,
-+			      "Setting EEE advertised speeds is not supported\n");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (eee_data.eee_enabled != edata->eee_enabled) {
-+		if (edata->eee_enabled) {
-+			adapter->flags2 |= IXGBE_FLAG2_EEE_ENABLED;
-+			hw->phy.eee_speeds_advertised =
-+						   hw->phy.eee_speeds_supported;
-+		} else {
-+			adapter->flags2 &= ~IXGBE_FLAG2_EEE_ENABLED;
-+			hw->phy.eee_speeds_advertised = 0;
-+		}
-+
-+		/* reset link */
-+		if (netif_running(netdev))
-+			ixgbe_reinit_locked(adapter);
-+		else
-+			ixgbe_reset(adapter);
-+	}
-+
-+	return 0;
-+}
-+
- static const struct ethtool_ops ixgbe_ethtool_ops = {
- 	.get_settings           = ixgbe_get_settings,
- 	.set_settings           = ixgbe_set_settings,
-@@ -3269,6 +3417,8 @@ static const struct ethtool_ops ixgbe_ethtool_ops = {
- 	.get_rxfh_key_size	= ixgbe_get_rxfh_key_size,
- 	.get_rxfh		= ixgbe_get_rxfh,
- 	.set_rxfh		= ixgbe_set_rxfh,
-+	.get_eee		= ixgbe_get_eee,
-+	.set_eee		= ixgbe_set_eee,
- 	.get_channels		= ixgbe_get_channels,
- 	.set_channels		= ixgbe_set_channels,
- 	.get_ts_info		= ixgbe_get_ts_info,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 1e2f39ebd824..a5cf10de9636 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -86,6 +86,7 @@ static const struct ixgbe_info *ixgbe_info_tbl[] = {
- 	[board_X550]		= &ixgbe_X550_info,
- 	[board_X550EM_x]	= &ixgbe_X550EM_x_info,
- 	[board_x550em_a]	= &ixgbe_x550em_a_info,
-+	[board_x550em_a_fw]	= &ixgbe_x550em_a_fw_info,
- };
+diff --git a/drivers/net/ethernet/cavium/liquidio/lio_ethtool.c b/drivers/net/ethernet/cavium/liquidio/lio_ethtool.c
+index b00c300..94eb1d2 100644
+--- a/drivers/net/ethernet/cavium/liquidio/lio_ethtool.c
++++ b/drivers/net/ethernet/cavium/liquidio/lio_ethtool.c
+@@ -224,10 +224,8 @@ static int lio_get_link_ksettings(struct net_device *netdev,
+ 		supported = (SUPPORTED_10000baseT_Full | SUPPORTED_FIBRE |
+ 			     SUPPORTED_Pause);
+ 		advertising = (ADVERTISED_10000baseT_Full | ADVERTISED_Pause);
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			ecmd->link_modes.supported, supported);
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			ecmd->link_modes.advertising, advertising);
++		ethtool_u32_to_ks(ecmd->link_modes.supported, supported);
++		ethtool_u32_to_ks(ecmd->link_modes.advertising, advertising);
+ 		ecmd->base.autoneg = AUTONEG_DISABLE;
  
- /* ixgbe_pci_tbl - PCI Device ID Table
-@@ -140,6 +141,8 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII_L), board_x550em_a },
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_10G_T), board_x550em_a},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP), board_x550em_a },
-+	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_1G_T), board_x550em_a_fw },
-+	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_1G_T_L), board_x550em_a_fw },
- 	/* required last entry */
- 	{0, }
- };
-@@ -180,6 +183,7 @@ MODULE_VERSION(DRV_VERSION);
- static struct workqueue_struct *ixgbe_wq;
+ 	} else {
+diff --git a/drivers/net/ethernet/cavium/thunder/nicvf_ethtool.c b/drivers/net/ethernet/cavium/thunder/nicvf_ethtool.c
+index 2e74bba..4ca6516 100644
+--- a/drivers/net/ethernet/cavium/thunder/nicvf_ethtool.c
++++ b/drivers/net/ethernet/cavium/thunder/nicvf_ethtool.c
+@@ -171,10 +171,8 @@ static int nicvf_get_link_ksettings(struct net_device *netdev,
+ 	cmd->base.duplex = nic->duplex;
+ 	cmd->base.speed = nic->speed;
  
- static bool ixgbe_check_cfg_remove(struct ixgbe_hw *hw, struct pci_dev *pdev);
-+static void ixgbe_watchdog_link_is_down(struct ixgbe_adapter *);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
  
- static int ixgbe_read_pci_cfg_word_parent(struct ixgbe_adapter *adapter,
- 					  u32 reg, u16 *value)
-@@ -2447,6 +2451,7 @@ static void ixgbe_check_overtemp_subtask(struct ixgbe_adapter *adapter)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	u32 eicr = adapter->interrupt_event;
-+	s32 rc;
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_ethtool.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_ethtool.c
+index 02f80fe..6b7df8a 100644
+--- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_ethtool.c
++++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_ethtool.c
+@@ -677,9 +677,9 @@ static int get_link_ksettings(struct net_device *dev,
+ 	const struct port_info *pi = netdev_priv(dev);
+ 	struct ethtool_link_settings *base = &link_ksettings->base;
  
- 	if (test_bit(__IXGBE_DOWN, &adapter->state))
- 		return;
-@@ -2485,6 +2490,12 @@ static void ixgbe_check_overtemp_subtask(struct ixgbe_adapter *adapter)
- 			return;
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, advertising);
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, lp_advertising);
++	ethtool_ks_clear(link_ksettings, supported);
++	ethtool_ks_clear(link_ksettings, advertising);
++	ethtool_ks_clear(link_ksettings, lp_advertising);
  
- 		break;
-+	case IXGBE_DEV_ID_X550EM_A_1G_T:
-+	case IXGBE_DEV_ID_X550EM_A_1G_T_L:
-+		rc = hw->phy.ops.check_overtemp(hw);
-+		if (rc != IXGBE_ERR_OVERTEMP)
-+			return;
-+		break;
- 	default:
- 		if (adapter->hw.mac.type >= ixgbe_mac_X540)
- 			return;
-@@ -2531,6 +2542,18 @@ static void ixgbe_check_overtemp_event(struct ixgbe_adapter *adapter, u32 eicr)
- 			return;
- 		}
- 		return;
-+	case ixgbe_mac_x550em_a:
-+		if (eicr & IXGBE_EICR_GPI_SDP0_X550EM_a) {
-+			adapter->interrupt_event = eicr;
-+			adapter->flags2 |= IXGBE_FLAG2_TEMP_SENSOR_EVENT;
-+			ixgbe_service_event_schedule(adapter);
-+			IXGBE_WRITE_REG(&adapter->hw, IXGBE_EIMC,
-+					IXGBE_EICR_GPI_SDP0_X550EM_a);
-+			IXGBE_WRITE_REG(&adapter->hw, IXGBE_EICR,
-+					IXGBE_EICR_GPI_SDP0_X550EM_a);
-+		}
-+		break;
-+	case ixgbe_mac_X550:
- 	case ixgbe_mac_X540:
- 		if (!(eicr & IXGBE_EICR_TS))
- 			return;
-@@ -5294,6 +5317,8 @@ void ixgbe_reinit_locked(struct ixgbe_adapter *adapter)
+ 	base->port = from_fw_port_mod_type(pi->port_type, pi->mod_type);
  
- 	while (test_and_set_bit(__IXGBE_RESETTING, &adapter->state))
- 		usleep_range(1000, 2000);
-+	if (adapter->hw.phy.type == ixgbe_phy_fw)
-+		ixgbe_watchdog_link_is_down(adapter);
- 	ixgbe_down(adapter);
+@@ -710,11 +710,9 @@ static int get_link_ksettings(struct net_device *dev,
+ 
+ 	base->autoneg = pi->link_cfg.autoneg;
+ 	if (pi->link_cfg.supported & FW_PORT_CAP_ANEG)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     supported, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, supported, Autoneg);
+ 	if (pi->link_cfg.autoneg)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     advertising, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, advertising, Autoneg);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c b/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
+index 0d1a134..1e35e28 100644
+--- a/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
++++ b/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
+@@ -1332,9 +1332,9 @@ static int cxgb4vf_get_link_ksettings(struct net_device *dev,
+ 	const struct port_info *pi = netdev_priv(dev);
+ 	struct ethtool_link_settings *base = &link_ksettings->base;
+ 
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, advertising);
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, lp_advertising);
++	ethtool_ks_clear(link_ksettings, supported);
++	ethtool_ks_clear(link_ksettings, advertising);
++	ethtool_ks_clear(link_ksettings, lp_advertising);
+ 
+ 	base->port = from_fw_port_mod_type(pi->port_type, pi->mod_type);
+ 
+@@ -1365,11 +1365,9 @@ static int cxgb4vf_get_link_ksettings(struct net_device *dev,
+ 
+ 	base->autoneg = pi->link_cfg.autoneg;
+ 	if (pi->link_cfg.supported & FW_PORT_CAP_ANEG)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     supported, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, supported, Autoneg);
+ 	if (pi->link_cfg.autoneg)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     advertising, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, advertising, Autoneg);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/cisco/enic/enic_ethtool.c b/drivers/net/ethernet/cisco/enic/enic_ethtool.c
+index fd3980c..509b73f 100644
+--- a/drivers/net/ethernet/cisco/enic/enic_ethtool.c
++++ b/drivers/net/ethernet/cisco/enic/enic_ethtool.c
+@@ -109,12 +109,10 @@ static int enic_get_ksettings(struct net_device *netdev,
+ 	struct enic *enic = netdev_priv(netdev);
+ 	struct ethtool_link_settings *base = &ecmd->base;
+ 
+-	ethtool_link_ksettings_add_link_mode(ecmd, supported,
+-					     10000baseT_Full);
+-	ethtool_link_ksettings_add_link_mode(ecmd, supported, FIBRE);
+-	ethtool_link_ksettings_add_link_mode(ecmd, advertising,
+-					     10000baseT_Full);
+-	ethtool_link_ksettings_add_link_mode(ecmd, advertising, FIBRE);
++	ethtool_ks_add_mode(ecmd, supported, 10000baseT_Full);
++	ethtool_ks_add_mode(ecmd, supported, FIBRE);
++	ethtool_ks_add_mode(ecmd, advertising, 10000baseT_Full);
++	ethtool_ks_add_mode(ecmd, advertising, FIBRE);
+ 	base->port = PORT_FIBRE;
+ 
+ 	if (netif_carrier_ok(netdev)) {
+diff --git a/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c b/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c
+index 3ac2183..cb3dbc6 100644
+--- a/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c
++++ b/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c
+@@ -139,10 +139,8 @@ static int hns_nic_get_link_ksettings(struct net_device *net_dev,
+ 		return -EINVAL;
+ 	}
+ 
+-	ethtool_convert_link_mode_to_legacy_u32(&supported,
+-						cmd->link_modes.supported);
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						cmd->link_modes.advertising);
++	ethtool_ks_to_u32(&supported, cmd->link_modes.supported);
++	ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
+ 
+ 	/* When there is no phy, autoneg is off. */
+ 	cmd->base.autoneg = false;
+@@ -185,10 +183,8 @@ static int hns_nic_get_link_ksettings(struct net_device *net_dev,
+ 	if (!(AE_IS_VER1(priv->enet_ver) && h->port_type == HNAE_PORT_DEBUG))
+ 		supported |= SUPPORTED_Pause;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	cmd->base.mdio_support = ETH_MDIO_SUPPORTS_C45 | ETH_MDIO_SUPPORTS_C22;
+ 	hns_get_mdix_mode(net_dev, cmd);
+diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
+index 5f62c3d..b4de8fd 100644
+--- a/drivers/net/ethernet/marvell/mv643xx_eth.c
++++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
+@@ -1511,16 +1511,12 @@ mv643xx_eth_get_link_ksettings_phy(struct mv643xx_eth_private *mp,
  	/*
- 	 * If SR-IOV enabled then wait a bit before bringing the adapter
-@@ -5554,6 +5579,31 @@ void ixgbe_down(struct ixgbe_adapter *adapter)
+ 	 * The MAC does not support 1000baseT_Half.
+ 	 */
+-	ethtool_convert_link_mode_to_legacy_u32(&supported,
+-						cmd->link_modes.supported);
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						cmd->link_modes.advertising);
++	ethtool_ks_to_u32(&supported, cmd->link_modes.supported);
++	ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
+ 	supported &= ~SUPPORTED_1000baseT_Half;
+ 	advertising &= ~ADVERTISED_1000baseT_Half;
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	return err;
+ }
+@@ -1556,10 +1552,8 @@ mv643xx_eth_get_link_ksettings_phyless(struct mv643xx_eth_private *mp,
+ 	cmd->base.phy_address = 0;
+ 	cmd->base.autoneg = AUTONEG_DISABLE;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
+ 
+ 	return 0;
+ }
+@@ -1616,11 +1610,9 @@ mv643xx_eth_set_link_ksettings(struct net_device *dev,
+ 	/*
+ 	 * The MAC does not support 1000baseT_Half.
+ 	 */
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						c.link_modes.advertising);
++	ethtool_ks_to_u32(&advertising, c.link_modes.advertising);
+ 	advertising &= ~ADVERTISED_1000baseT_Half;
+-	ethtool_convert_legacy_u32_to_link_mode(c.link_modes.advertising,
+-						advertising);
++	ethtool_u32_to_ks(c.link_modes.advertising, advertising);
+ 
+ 	ret = phy_ethtool_ksettings_set(dev->phydev, &c);
+ 	if (!ret)
+diff --git a/drivers/net/ethernet/marvell/pxa168_eth.c b/drivers/net/ethernet/marvell/pxa168_eth.c
+index 3af2814..cf72108 100644
+--- a/drivers/net/ethernet/marvell/pxa168_eth.c
++++ b/drivers/net/ethernet/marvell/pxa168_eth.c
+@@ -994,8 +994,7 @@ static int pxa168_init_phy(struct net_device *dev)
+ 	cmd.base.phy_address = pep->phy_addr;
+ 	cmd.base.speed = pep->phy_speed;
+ 	cmd.base.duplex = pep->phy_duplex;
+-	ethtool_convert_legacy_u32_to_link_mode(cmd.link_modes.advertising,
+-						PHY_BASIC_FEATURES);
++	ethtool_u32_to_ks(cmd.link_modes.advertising, PHY_BASIC_FEATURES);
+ 	cmd.base.autoneg = AUTONEG_ENABLE;
+ 
+ 	if (cmd.base.speed != 0)
+diff --git a/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c b/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
+index d9c9f86..c248cab 100644
+--- a/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
++++ b/drivers/net/ethernet/mellanox/mlx4/en_ethtool.c
+@@ -755,8 +755,8 @@ ethtool_get_ptys_link_ksettings(struct net_device *dev,
+ 	       be32_to_cpu(ptys_reg.eth_proto_lp_adv));
+ 
+ 	/* reset supported/advertising masks */
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, advertising);
++	ethtool_ks_clear(link_ksettings, supported);
++	ethtool_ks_clear(link_ksettings, advertising);
+ 
+ 	ptys2ethtool_update_supported_port(link_ksettings->link_modes.supported,
+ 					   &ptys_reg);
+@@ -769,25 +769,19 @@ ethtool_get_ptys_link_ksettings(struct net_device *dev,
+ 	ptys2ethtool_update_link_modes(link_ksettings->link_modes.advertising,
+ 				       eth_proto, ADVERTISED);
+ 
+-	ethtool_link_ksettings_add_link_mode(link_ksettings, supported,
+-					     Pause);
+-	ethtool_link_ksettings_add_link_mode(link_ksettings, supported,
+-					     Asym_Pause);
++	ethtool_ks_add_mode(link_ksettings, supported, Pause);
++	ethtool_ks_add_mode(link_ksettings, supported, Asym_Pause);
+ 
+ 	if (priv->prof->tx_pause)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     advertising, Pause);
++		ethtool_ks_add_mode(link_ksettings, advertising, Pause);
+ 	if (priv->prof->tx_pause ^ priv->prof->rx_pause)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     advertising, Asym_Pause);
++		ethtool_ks_add_mode(link_ksettings, advertising, Asym_Pause);
+ 
+ 	link_ksettings->base.port = ptys_get_active_port(&ptys_reg);
+ 
+ 	if (mlx4_en_autoneg_get(dev)) {
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     supported, Autoneg);
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     advertising, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, supported, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, advertising, Autoneg);
+ 	}
+ 
+ 	link_ksettings->base.autoneg
+@@ -796,13 +790,12 @@ ethtool_get_ptys_link_ksettings(struct net_device *dev,
+ 
+ 	eth_proto = be32_to_cpu(ptys_reg.eth_proto_lp_adv);
+ 
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, lp_advertising);
++	ethtool_ks_clear(link_ksettings, lp_advertising);
+ 	ptys2ethtool_update_link_modes(
+ 		link_ksettings->link_modes.lp_advertising,
+ 		eth_proto, ADVERTISED);
+ 	if (priv->port_state.flags & MLX4_EN_PORT_ANC)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     lp_advertising, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, lp_advertising, Autoneg);
+ 
+ 	link_ksettings->base.phy_address = 0;
+ 	link_ksettings->base.mdio_support = 0;
+@@ -821,27 +814,21 @@ ethtool_get_default_link_ksettings(
+ 
+ 	link_ksettings->base.autoneg = AUTONEG_DISABLE;
+ 
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
+-	ethtool_link_ksettings_add_link_mode(link_ksettings, supported,
+-					     10000baseT_Full);
++	ethtool_ks_clear(link_ksettings, supported);
++	ethtool_ks_add_mode(link_ksettings, supported, 10000baseT_Full);
+ 
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, advertising);
+-	ethtool_link_ksettings_add_link_mode(link_ksettings, advertising,
+-					     10000baseT_Full);
++	ethtool_ks_clear(link_ksettings, advertising);
++	ethtool_ks_add_mode(link_ksettings, advertising, 10000baseT_Full);
+ 
+ 	trans_type = priv->port_state.transceiver;
+ 	if (trans_type > 0 && trans_type <= 0xC) {
+ 		link_ksettings->base.port = PORT_FIBRE;
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     supported, FIBRE);
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     advertising, FIBRE);
++		ethtool_ks_add_mode(link_ksettings, supported, FIBRE);
++		ethtool_ks_add_mode(link_ksettings, advertising, FIBRE);
+ 	} else if (trans_type == 0x80 || trans_type == 0) {
+ 		link_ksettings->base.port = PORT_TP;
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     supported, TP);
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     advertising, TP);
++		ethtool_ks_add_mode(link_ksettings, supported, TP);
++		ethtool_ks_add_mode(link_ksettings, advertising, TP);
+ 	} else  {
+ 		link_ksettings->base.port = -1;
+ 	}
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c b/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c
+index 352462a..da758a5 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c
+@@ -722,7 +722,7 @@ static void ptys2ethtool_supported_port(struct ethtool_link_ksettings *link_kset
+ 			   | MLX5E_PROT_MASK(MLX5E_40GBASE_SR4)
+ 			   | MLX5E_PROT_MASK(MLX5E_100GBASE_SR4)
+ 			   | MLX5E_PROT_MASK(MLX5E_1000BASE_CX_SGMII))) {
+-		ethtool_link_ksettings_add_link_mode(link_ksettings, supported, FIBRE);
++		ethtool_ks_add_mode(link_ksettings, supported, FIBRE);
+ 	}
+ 
+ 	if (eth_proto_cap & (MLX5E_PROT_MASK(MLX5E_100GBASE_KR4)
+@@ -730,7 +730,7 @@ static void ptys2ethtool_supported_port(struct ethtool_link_ksettings *link_kset
+ 			   | MLX5E_PROT_MASK(MLX5E_10GBASE_KR)
+ 			   | MLX5E_PROT_MASK(MLX5E_10GBASE_KX4)
+ 			   | MLX5E_PROT_MASK(MLX5E_1000BASE_KX))) {
+-		ethtool_link_ksettings_add_link_mode(link_ksettings, supported, Backplane);
++		ethtool_ks_add_mode(link_ksettings, supported, Backplane);
+ 	}
  }
  
- /**
-+ * ixgbe_eee_capable - helper function to determine EEE support on X550
-+ * @adapter: board private structure
-+ */
-+static void ixgbe_set_eee_capable(struct ixgbe_adapter *adapter)
-+{
-+	struct ixgbe_hw *hw = &adapter->hw;
-+
-+	switch (hw->device_id) {
-+	case IXGBE_DEV_ID_X550EM_A_1G_T:
-+	case IXGBE_DEV_ID_X550EM_A_1G_T_L:
-+		if (!hw->phy.eee_speeds_supported)
-+			break;
-+		adapter->flags2 |= IXGBE_FLAG2_EEE_CAPABLE;
-+		if (!hw->phy.eee_speeds_advertised)
-+			break;
-+		adapter->flags2 |= IXGBE_FLAG2_EEE_ENABLED;
-+		break;
-+	default:
-+		adapter->flags2 &= ~IXGBE_FLAG2_EEE_CAPABLE;
-+		adapter->flags2 &= ~IXGBE_FLAG2_EEE_ENABLED;
-+		break;
-+	}
-+}
-+
-+/**
-  * ixgbe_tx_timeout - Respond to a Tx Hang
-  * @netdev: network interface device structure
-  **/
-@@ -5717,6 +5767,14 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
- 		break;
- 	case ixgbe_mac_x550em_a:
- 		adapter->flags |= IXGBE_FLAG_GENEVE_OFFLOAD_CAPABLE;
-+		switch (hw->device_id) {
-+		case IXGBE_DEV_ID_X550EM_A_1G_T:
-+		case IXGBE_DEV_ID_X550EM_A_1G_T_L:
-+			adapter->flags2 |= IXGBE_FLAG2_TEMP_SENSOR_CAPABLE;
-+			break;
-+		default:
-+			break;
-+		}
- 	/* fall through */
- 	case ixgbe_mac_X550EM_x:
- #ifdef CONFIG_IXGBE_DCB
-@@ -5730,6 +5788,8 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
- #endif /* IXGBE_FCOE */
- 	/* Fall Through */
- 	case ixgbe_mac_X550:
-+		if (hw->mac.type == ixgbe_mac_X550)
-+			adapter->flags2 |= IXGBE_FLAG2_TEMP_SENSOR_CAPABLE;
- #ifdef CONFIG_IXGBE_DCA
- 		adapter->flags &= ~IXGBE_FLAG_DCA_CAPABLE;
- #endif
-@@ -6808,6 +6868,9 @@ static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *adapter)
- 	case IXGBE_LINK_SPEED_100_FULL:
- 		speed_str = "100 Mbps";
- 		break;
-+	case IXGBE_LINK_SPEED_10_FULL:
-+		speed_str = "10 Mbps";
-+		break;
- 	default:
- 		speed_str = "unknown speed";
- 		break;
-@@ -9596,6 +9659,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	hw->phy.reset_if_overtemp = true;
- 	err = hw->mac.ops.reset_hw(hw);
- 	hw->phy.reset_if_overtemp = false;
-+	ixgbe_set_eee_capable(adapter);
- 	if (err == IXGBE_ERR_SFP_NOT_PRESENT) {
- 		err = 0;
- 	} else if (err == IXGBE_ERR_SFP_NOT_SUPPORTED) {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 65b527928c92..6c9cb8657d19 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -767,6 +767,9 @@ s32 ixgbe_setup_phy_link_speed_generic(struct ixgbe_hw *hw,
- 	if (speed & IXGBE_LINK_SPEED_100_FULL)
- 		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_100_FULL;
+@@ -783,8 +783,8 @@ static void get_supported(u32 eth_proto_cap,
  
-+	if (speed & IXGBE_LINK_SPEED_10_FULL)
-+		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_10_FULL;
-+
- 	/* Setup link based on the new speed settings */
- 	hw->phy.ops.setup_link(hw);
+ 	ptys2ethtool_supported_port(link_ksettings, eth_proto_cap);
+ 	ptys2ethtool_supported_link(supported, eth_proto_cap);
+-	ethtool_link_ksettings_add_link_mode(link_ksettings, supported, Pause);
+-	ethtool_link_ksettings_add_link_mode(link_ksettings, supported, Asym_Pause);
++	ethtool_ks_add_mode(link_ksettings, supported, Pause);
++	ethtool_ks_add_mode(link_ksettings, supported, Asym_Pause);
+ }
  
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 69cb6c10eb03..42813fc94f4a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -92,6 +92,8 @@
- #define IXGBE_DEV_ID_X550EM_A_SGMII_L	0x15C7
- #define IXGBE_DEV_ID_X550EM_A_10G_T	0x15C8
- #define IXGBE_DEV_ID_X550EM_A_SFP	0x15CE
-+#define IXGBE_DEV_ID_X550EM_A_1G_T	0x15E4
-+#define IXGBE_DEV_ID_X550EM_A_1G_T_L	0x15E5
+ static void get_advertising(u32 eth_proto_cap, u8 tx_pause,
+@@ -795,9 +795,9 @@ static void get_advertising(u32 eth_proto_cap, u8 tx_pause,
  
- /* VF Device IDs */
- #define IXGBE_DEV_ID_82599_VF		0x10ED
-@@ -1914,6 +1916,7 @@ enum {
- #define IXGBE_LINKS_SPEED_10G_82599 0x30000000
- #define IXGBE_LINKS_SPEED_1G_82599  0x20000000
- #define IXGBE_LINKS_SPEED_100_82599 0x10000000
-+#define IXGBE_LINKS_SPEED_10_X550EM_A 0
- #define IXGBE_LINK_UP_TIME      90 /* 9.0 Seconds */
- #define IXGBE_AUTO_NEG_TIME     45 /* 4.5 Seconds */
+ 	ptys2ethtool_adver_link(advertising, eth_proto_cap);
+ 	if (tx_pause)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings, advertising, Pause);
++		ethtool_ks_add_mode(link_ksettings, advertising, Pause);
+ 	if (tx_pause ^ rx_pause)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings, advertising, Asym_Pause);
++		ethtool_ks_add_mode(link_ksettings, advertising, Asym_Pause);
+ }
  
-@@ -2915,6 +2918,7 @@ typedef u32 ixgbe_autoneg_advertised;
- /* Link speed */
- typedef u32 ixgbe_link_speed;
- #define IXGBE_LINK_SPEED_UNKNOWN	0
-+#define IXGBE_LINK_SPEED_10_FULL	0x0002
- #define IXGBE_LINK_SPEED_100_FULL	0x0008
- #define IXGBE_LINK_SPEED_1GB_FULL	0x0020
- #define IXGBE_LINK_SPEED_2_5GB_FULL	0x0400
-@@ -3130,6 +3134,7 @@ enum ixgbe_phy_type {
- 	ixgbe_phy_qsfp_unknown,
- 	ixgbe_phy_sfp_unsupported,
- 	ixgbe_phy_sgmii,
-+	ixgbe_phy_fw,
- 	ixgbe_phy_generic
+ static u8 get_connector_port(u32 eth_proto)
+@@ -861,8 +861,8 @@ static int mlx5e_get_link_ksettings(struct net_device *netdev,
+ 	an_disable_admin = MLX5_GET(ptys_reg, out, an_disable_admin);
+ 	an_status        = MLX5_GET(ptys_reg, out, an_status);
+ 
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
+-	ethtool_link_ksettings_zero_link_mode(link_ksettings, advertising);
++	ethtool_ks_clear(link_ksettings, supported);
++	ethtool_ks_clear(link_ksettings, advertising);
+ 
+ 	get_supported(eth_proto_cap, link_ksettings);
+ 	get_advertising(eth_proto_admin, 0, 0, link_ksettings);
+@@ -874,16 +874,13 @@ static int mlx5e_get_link_ksettings(struct net_device *netdev,
+ 	get_lp_advertising(eth_proto_lp, link_ksettings);
+ 
+ 	if (an_status == MLX5_AN_COMPLETE)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     lp_advertising, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, lp_advertising, Autoneg);
+ 
+ 	link_ksettings->base.autoneg = an_disable_admin ? AUTONEG_DISABLE :
+ 							  AUTONEG_ENABLE;
+-	ethtool_link_ksettings_add_link_mode(link_ksettings, supported,
+-					     Autoneg);
++	ethtool_ks_add_mode(link_ksettings, supported, Autoneg);
+ 	if (!an_disable_admin)
+-		ethtool_link_ksettings_add_link_mode(link_ksettings,
+-						     advertising, Autoneg);
++		ethtool_ks_add_mode(link_ksettings, advertising, Autoneg);
+ 
+ err_query_ptys:
+ 	return err;
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/spectrum.c b/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
+index fece974..deaf611 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
+@@ -1857,14 +1857,14 @@ mlxsw_sp_from_ptys_supported_port(u32 ptys_eth_proto,
+ 			      MLXSW_REG_PTYS_ETH_SPEED_40GBASE_SR4 |
+ 			      MLXSW_REG_PTYS_ETH_SPEED_100GBASE_SR4 |
+ 			      MLXSW_REG_PTYS_ETH_SPEED_SGMII))
+-		ethtool_link_ksettings_add_link_mode(cmd, supported, FIBRE);
++		ethtool_ks_add_mode(cmd, supported, FIBRE);
+ 
+ 	if (ptys_eth_proto & (MLXSW_REG_PTYS_ETH_SPEED_10GBASE_KR |
+ 			      MLXSW_REG_PTYS_ETH_SPEED_10GBASE_KX4 |
+ 			      MLXSW_REG_PTYS_ETH_SPEED_40GBASE_KR4 |
+ 			      MLXSW_REG_PTYS_ETH_SPEED_100GBASE_KR4 |
+ 			      MLXSW_REG_PTYS_ETH_SPEED_1000BASE_KX))
+-		ethtool_link_ksettings_add_link_mode(cmd, supported, Backplane);
++		ethtool_ks_add_mode(cmd, supported, Backplane);
+ }
+ 
+ static void mlxsw_sp_from_ptys_link(u32 ptys_eth_proto, unsigned long *mode)
+@@ -1963,9 +1963,9 @@ static u32 mlxsw_sp_to_ptys_upper_speed(u32 upper_speed)
+ static void mlxsw_sp_port_get_link_supported(u32 eth_proto_cap,
+ 					     struct ethtool_link_ksettings *cmd)
+ {
+-	ethtool_link_ksettings_add_link_mode(cmd, supported, Asym_Pause);
+-	ethtool_link_ksettings_add_link_mode(cmd, supported, Autoneg);
+-	ethtool_link_ksettings_add_link_mode(cmd, supported, Pause);
++	ethtool_ks_add_mode(cmd, supported, Asym_Pause);
++	ethtool_ks_add_mode(cmd, supported, Autoneg);
++	ethtool_ks_add_mode(cmd, supported, Pause);
+ 
+ 	mlxsw_sp_from_ptys_supported_port(eth_proto_cap, cmd);
+ 	mlxsw_sp_from_ptys_link(eth_proto_cap, cmd->link_modes.supported);
+@@ -1977,7 +1977,7 @@ static void mlxsw_sp_port_get_link_advertise(u32 eth_proto_admin, bool autoneg,
+ 	if (!autoneg)
+ 		return;
+ 
+-	ethtool_link_ksettings_add_link_mode(cmd, advertising, Autoneg);
++	ethtool_ks_add_mode(cmd, advertising, Autoneg);
+ 	mlxsw_sp_from_ptys_link(eth_proto_admin, cmd->link_modes.advertising);
+ }
+ 
+@@ -1988,7 +1988,7 @@ mlxsw_sp_port_get_link_lp_advertise(u32 eth_proto_lp, u8 autoneg_status,
+ 	if (autoneg_status != MLXSW_REG_PTYS_AN_STATUS_OK || !eth_proto_lp)
+ 		return;
+ 
+-	ethtool_link_ksettings_add_link_mode(cmd, lp_advertising, Autoneg);
++	ethtool_ks_add_mode(cmd, lp_advertising, Autoneg);
+ 	mlxsw_sp_from_ptys_link(eth_proto_lp, cmd->link_modes.lp_advertising);
+ }
+ 
+diff --git a/drivers/net/ethernet/qlogic/qede/qede_ethtool.c b/drivers/net/ethernet/qlogic/qede/qede_ethtool.c
+index 1c48f44..8a9c27e 100644
+--- a/drivers/net/ethernet/qlogic/qede/qede_ethtool.c
++++ b/drivers/net/ethernet/qlogic/qede/qede_ethtool.c
+@@ -396,13 +396,13 @@ static int qede_get_link_ksettings(struct net_device *dev,
+ 	memset(&current_link, 0, sizeof(current_link));
+ 	edev->ops->common->get_link(edev->cdev, &current_link);
+ 
+-	ethtool_link_ksettings_zero_link_mode(cmd, supported);
++	ethtool_ks_clear(cmd, supported);
+ 	QEDE_DRV_TO_ETHTOOL_CAPS(current_link.supported_caps, cmd, supported)
+ 
+-	ethtool_link_ksettings_zero_link_mode(cmd, advertising);
++	ethtool_ks_clear(cmd, advertising);
+ 	QEDE_DRV_TO_ETHTOOL_CAPS(current_link.advertised_caps, cmd, advertising)
+ 
+-	ethtool_link_ksettings_zero_link_mode(cmd, lp_advertising);
++	ethtool_ks_clear(cmd, lp_advertising);
+ 	QEDE_DRV_TO_ETHTOOL_CAPS(current_link.lp_caps, cmd, lp_advertising)
+ 
+ 	if ((edev->state == QEDE_STATE_OPEN) && (current_link.link_up)) {
+diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_ethtool.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_ethtool.c
+index 699ee1d..fab5a1e 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/stmmac_ethtool.c
++++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_ethtool.c
+@@ -301,12 +301,10 @@ static int stmmac_ethtool_get_link_ksettings(struct net_device *dev,
+ 
+ 		/* Encoding of PSE bits is defined in 802.3z, 37.2.1.4 */
+ 
+-		ethtool_convert_link_mode_to_legacy_u32(
+-			&supported, cmd->link_modes.supported);
+-		ethtool_convert_link_mode_to_legacy_u32(
+-			&advertising, cmd->link_modes.advertising);
+-		ethtool_convert_link_mode_to_legacy_u32(
+-			&lp_advertising, cmd->link_modes.lp_advertising);
++		ethtool_ks_to_u32(&supported, cmd->link_modes.supported);
++		ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
++		ethtool_ks_to_u32(&lp_advertising,
++				  cmd->link_modes.lp_advertising);
+ 
+ 		if (adv.pause & STMMAC_PCS_PAUSE)
+ 			advertising |= ADVERTISED_Pause;
+@@ -348,12 +346,10 @@ static int stmmac_ethtool_get_link_ksettings(struct net_device *dev,
+ 					   ADVERTISED_10baseT_Half);
+ 		cmd->base.port = PORT_OTHER;
+ 
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			cmd->link_modes.supported, supported);
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			cmd->link_modes.advertising, advertising);
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			cmd->link_modes.lp_advertising, lp_advertising);
++		ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++		ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
++		ethtool_u32_to_ks(cmd->link_modes.lp_advertising,
++				  lp_advertising);
+ 
+ 		return 0;
+ 	}
+diff --git a/drivers/net/ethernet/ti/netcp_ethss.c b/drivers/net/ethernet/ti/netcp_ethss.c
+index c7e547e..b3fd7dc 100644
+--- a/drivers/net/ethernet/ti/netcp_ethss.c
++++ b/drivers/net/ethernet/ti/netcp_ethss.c
+@@ -1944,10 +1944,8 @@ static int keystone_set_link_ksettings(struct net_device *ndev,
+ 	u32 advertising, supported;
+ 	u32 features;
+ 
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						cmd->link_modes.advertising);
+-	ethtool_convert_link_mode_to_legacy_u32(&supported,
+-						cmd->link_modes.supported);
++	ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
++	ethtool_ks_to_u32(&supported, cmd->link_modes.supported);
+ 	features = advertising & supported;
+ 
+ 	if (!phy)
+diff --git a/drivers/net/mii.c b/drivers/net/mii.c
+index 6d953c5..f36f2ac 100644
+--- a/drivers/net/mii.c
++++ b/drivers/net/mii.c
+@@ -219,12 +219,9 @@ int mii_ethtool_get_link_ksettings(struct mii_if_info *mii,
+ 
+ 	mii->full_duplex = cmd->base.duplex;
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						supported);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						advertising);
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.lp_advertising,
+-						lp_advertising);
++	ethtool_u32_to_ks(cmd->link_modes.supported, supported);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, advertising);
++	ethtool_u32_to_ks(cmd->link_modes.lp_advertising, lp_advertising);
+ 
+ 	/* ignore maxtxpkt, maxrxpkt for now */
+ 
+@@ -359,8 +356,7 @@ int mii_ethtool_set_link_ksettings(struct mii_if_info *mii,
+ 		u32 advert2 = 0, tmp2 = 0;
+ 		u32 advertising;
+ 
+-		ethtool_convert_link_mode_to_legacy_u32(
+-			&advertising, cmd->link_modes.advertising);
++		ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
+ 
+ 		if ((advertising & (ADVERTISED_10baseT_Half |
+ 				    ADVERTISED_10baseT_Full |
+diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
+index 25f93a9..5af791a 100644
+--- a/drivers/net/phy/phy.c
++++ b/drivers/net/phy/phy.c
+@@ -409,8 +409,7 @@ int phy_ethtool_ksettings_set(struct phy_device *phydev,
+ 	if (cmd->base.phy_address != phydev->mdio.addr)
+ 		return -EINVAL;
+ 
+-	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+-						cmd->link_modes.advertising);
++	ethtool_ks_to_u32(&advertising, cmd->link_modes.advertising);
+ 
+ 	/* We make sure that we don't pass unsupported values in to the PHY */
+ 	advertising &= phydev->supported;
+@@ -479,14 +478,12 @@ EXPORT_SYMBOL(phy_ethtool_gset);
+ int phy_ethtool_ksettings_get(struct phy_device *phydev,
+ 			      struct ethtool_link_ksettings *cmd)
+ {
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+-						phydev->supported);
++	ethtool_u32_to_ks(cmd->link_modes.supported, phydev->supported);
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+-						phydev->advertising);
++	ethtool_u32_to_ks(cmd->link_modes.advertising, phydev->advertising);
+ 
+-	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.lp_advertising,
+-						phydev->lp_advertising);
++	ethtool_u32_to_ks(cmd->link_modes.lp_advertising,
++			  phydev->lp_advertising);
+ 
+ 	cmd->base.speed = phydev->speed;
+ 	cmd->base.duplex = phydev->duplex;
+diff --git a/drivers/net/usb/lan78xx.c b/drivers/net/usb/lan78xx.c
+index 08f8703..b8015e4 100644
+--- a/drivers/net/usb/lan78xx.c
++++ b/drivers/net/usb/lan78xx.c
+@@ -1567,15 +1567,13 @@ static int lan78xx_set_pause(struct net_device *net,
+ 		u32 mii_adv;
+ 		u32 advertising;
+ 
+-		ethtool_convert_link_mode_to_legacy_u32(
+-			&advertising, ecmd.link_modes.advertising);
++		ethtool_ks_to_u32(&advertising, ecmd.link_modes.advertising);
+ 
+ 		advertising &= ~(ADVERTISED_Pause | ADVERTISED_Asym_Pause);
+ 		mii_adv = (u32)mii_advertise_flowctrl(dev->fc_request_control);
+ 		advertising |= mii_adv_to_ethtool_adv_t(mii_adv);
+ 
+-		ethtool_convert_legacy_u32_to_link_mode(
+-			ecmd.link_modes.advertising, advertising);
++		ethtool_u32_to_ks(ecmd.link_modes.advertising, advertising);
+ 
+ 		phy_ethtool_ksettings_set(phydev, &ecmd);
+ 	}
+diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
+index 9ded8c6..90bb86b 100644
+--- a/include/linux/ethtool.h
++++ b/include/linux/ethtool.h
+@@ -116,26 +116,25 @@ struct ethtool_link_ksettings {
  };
  
-@@ -3543,6 +3548,8 @@ struct ixgbe_phy_info {
- 	bool                            reset_disable;
- 	ixgbe_autoneg_advertised        autoneg_advertised;
- 	ixgbe_link_speed		speeds_supported;
-+	ixgbe_link_speed		eee_speeds_supported;
-+	ixgbe_link_speed		eee_speeds_advertised;
- 	enum ixgbe_smart_speed          smart_speed;
- 	bool                            smart_speed_active;
- 	bool                            multispeed_fiber;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index f8ebd30eb8ee..09e8645bf764 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -63,6 +63,18 @@ static s32 ixgbe_get_invariants_X550_a(struct ixgbe_hw *hw)
+ /**
+- * ethtool_link_ksettings_zero_link_mode - clear link_ksettings link mode mask
++ * ethtool_ks_clear - clear link_ksettings link mode mask
+  *   @ptr : pointer to struct ethtool_link_ksettings
+  *   @name : one of supported/advertising/lp_advertising
+  */
+-#define ethtool_link_ksettings_zero_link_mode(ptr, name)		\
++#define ethtool_ks_clear(ptr, name)		\
+ 	bitmap_zero((ptr)->link_modes.name, __ETHTOOL_LINK_MODE_MASK_NBITS)
+ 
+ /**
+- * ethtool_link_ksettings_add_link_mode - set bit in link_ksettings
++ * ethtool_ks_add_mode - set bit in link_ksettings
+  * link mode mask
+  *   @ptr : pointer to struct ethtool_link_ksettings
+  *   @name : one of supported/advertising/lp_advertising
+  *   @mode : one of the ETHTOOL_LINK_MODE_*_BIT
+  * (not atomic, no bound checking)
+  */
+-#define ethtool_link_ksettings_add_link_mode(ptr, name, mode)		\
++#define ethtool_ks_add_mode(ptr, name, mode)		\
+ 	__set_bit(ETHTOOL_LINK_MODE_ ## mode ## _BIT, (ptr)->link_modes.name)
+-
+ /**
+- * ethtool_link_ksettings_test_link_mode - test bit in ksettings link mode mask
++ * ethtool_ks_test - test bit in ksettings link mode mask
+  *   @ptr : pointer to struct ethtool_link_ksettings
+  *   @name : one of supported/advertising/lp_advertising
+  *   @mode : one of the ETHTOOL_LINK_MODE_*_BIT
+@@ -143,19 +142,15 @@ struct ethtool_link_ksettings {
+  *
+  * Returns true/false.
+  */
+-#define ethtool_link_ksettings_test_link_mode(ptr, name, mode)		\
++#define ethtool_ks_test(ptr, name, mode)		\
+ 	test_bit(ETHTOOL_LINK_MODE_ ## mode ## _BIT, (ptr)->link_modes.name)
+-
+ extern int
+ __ethtool_get_link_ksettings(struct net_device *dev,
+ 			     struct ethtool_link_ksettings *link_ksettings);
+-
+-void ethtool_convert_legacy_u32_to_link_mode(unsigned long *dst,
+-					     u32 legacy_u32);
++void ethtool_u32_to_ks(unsigned long *dst, u32 legacy_u32);
+ 
+ /* return false if src had higher bits set. lower bits always updated. */
+-bool ethtool_convert_link_mode_to_legacy_u32(u32 *legacy_u32,
+-				     const unsigned long *src);
++bool ethtool_ks_to_u32(u32 *legacy_u32, const unsigned long *src);
+ 
+ /**
+  * struct ethtool_ops - optional netdev operations
+diff --git a/net/core/ethtool.c b/net/core/ethtool.c
+index e23766c..0924a0c 100644
+--- a/net/core/ethtool.c
++++ b/net/core/ethtool.c
+@@ -403,17 +403,15 @@ static int __ethtool_set_flags(struct net_device *dev, u32 data)
  	return 0;
  }
  
-+static s32 ixgbe_get_invariants_X550_a_fw(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_phy_info *phy = &hw->phy;
-+
-+	/* Start with X540 invariants, since so similar */
-+	ixgbe_get_invariants_X540(hw);
-+
-+	phy->ops.set_phy_power = NULL;
-+
-+	return 0;
-+}
-+
- /** ixgbe_setup_mux_ctl - Setup ESDP register for I2C mux control
-  *  @hw: pointer to hardware structure
-  **/
-@@ -447,6 +459,159 @@ s32 ixgbe_fw_phy_activity(struct ixgbe_hw *hw, u16 activity,
- 	return IXGBE_ERR_HOST_INTERFACE_COMMAND;
- }
- 
-+static const struct {
-+	u16 fw_speed;
-+	ixgbe_link_speed phy_speed;
-+} ixgbe_fw_map[] = {
-+	{ FW_PHY_ACT_LINK_SPEED_10, IXGBE_LINK_SPEED_10_FULL },
-+	{ FW_PHY_ACT_LINK_SPEED_100, IXGBE_LINK_SPEED_100_FULL },
-+	{ FW_PHY_ACT_LINK_SPEED_1G, IXGBE_LINK_SPEED_1GB_FULL },
-+	{ FW_PHY_ACT_LINK_SPEED_2_5G, IXGBE_LINK_SPEED_2_5GB_FULL },
-+	{ FW_PHY_ACT_LINK_SPEED_5G, IXGBE_LINK_SPEED_5GB_FULL },
-+	{ FW_PHY_ACT_LINK_SPEED_10G, IXGBE_LINK_SPEED_10GB_FULL },
-+};
-+
-+/**
-+ * ixgbe_get_phy_id_fw - Get the phy ID via firmware command
-+ * @hw: pointer to hardware structure
-+ *
-+ * Returns error code
-+ */
-+static s32 ixgbe_get_phy_id_fw(struct ixgbe_hw *hw)
-+{
-+	u32 info[FW_PHY_ACT_DATA_COUNT] = { 0 };
-+	u16 phy_speeds;
-+	u16 phy_id_lo;
-+	s32 rc;
-+	u16 i;
-+
-+	if (hw->phy.id)
-+		return 0;
-+
-+	rc = ixgbe_fw_phy_activity(hw, FW_PHY_ACT_GET_PHY_INFO, &info);
-+	if (rc)
-+		return rc;
-+
-+	hw->phy.speeds_supported = 0;
-+	phy_speeds = info[0] & FW_PHY_INFO_SPEED_MASK;
-+	for (i = 0; i < ARRAY_SIZE(ixgbe_fw_map); ++i) {
-+		if (phy_speeds & ixgbe_fw_map[i].fw_speed)
-+			hw->phy.speeds_supported |= ixgbe_fw_map[i].phy_speed;
-+	}
-+
-+	hw->phy.id = info[0] & FW_PHY_INFO_ID_HI_MASK;
-+	phy_id_lo = info[1] & FW_PHY_INFO_ID_LO_MASK;
-+	hw->phy.id |= phy_id_lo & IXGBE_PHY_REVISION_MASK;
-+	hw->phy.revision = phy_id_lo & ~IXGBE_PHY_REVISION_MASK;
-+	if (!hw->phy.id || hw->phy.id == IXGBE_PHY_REVISION_MASK)
-+		return IXGBE_ERR_PHY_ADDR_INVALID;
-+
-+	hw->phy.autoneg_advertised = hw->phy.speeds_supported;
-+	hw->phy.eee_speeds_supported = IXGBE_LINK_SPEED_100_FULL |
-+				       IXGBE_LINK_SPEED_1GB_FULL;
-+	hw->phy.eee_speeds_advertised = hw->phy.eee_speeds_supported;
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_identify_phy_fw - Get PHY type based on firmware command
-+ * @hw: pointer to hardware structure
-+ *
-+ * Returns error code
-+ */
-+static s32 ixgbe_identify_phy_fw(struct ixgbe_hw *hw)
-+{
-+	if (hw->bus.lan_id)
-+		hw->phy.phy_semaphore_mask = IXGBE_GSSR_PHY1_SM;
-+	else
-+		hw->phy.phy_semaphore_mask = IXGBE_GSSR_PHY0_SM;
-+
-+	hw->phy.type = ixgbe_phy_fw;
-+	hw->phy.ops.read_reg = NULL;
-+	hw->phy.ops.write_reg = NULL;
-+	return ixgbe_get_phy_id_fw(hw);
-+}
-+
-+/**
-+ * ixgbe_shutdown_fw_phy - Shutdown a firmware-controlled PHY
-+ * @hw: pointer to hardware structure
-+ *
-+ * Returns error code
-+ */
-+static s32 ixgbe_shutdown_fw_phy(struct ixgbe_hw *hw)
-+{
-+	u32 setup[FW_PHY_ACT_DATA_COUNT] = { 0 };
-+
-+	setup[0] = FW_PHY_ACT_FORCE_LINK_DOWN_OFF;
-+	return ixgbe_fw_phy_activity(hw, FW_PHY_ACT_FORCE_LINK_DOWN, &setup);
-+}
-+
-+/**
-+ * ixgbe_setup_fw_link - Setup firmware-controlled PHYs
-+ * @hw: pointer to hardware structure
-+ */
-+static s32 ixgbe_setup_fw_link(struct ixgbe_hw *hw)
-+{
-+	u32 setup[FW_PHY_ACT_DATA_COUNT] = { 0 };
-+	s32 rc;
-+	u16 i;
-+
-+	if (hw->phy.reset_disable || ixgbe_check_reset_blocked(hw))
-+		return 0;
-+
-+	if (hw->fc.strict_ieee && hw->fc.requested_mode == ixgbe_fc_rx_pause) {
-+		hw_err(hw, "rx_pause not valid in strict IEEE mode\n");
-+		return IXGBE_ERR_INVALID_LINK_SETTINGS;
-+	}
-+
-+	switch (hw->fc.requested_mode) {
-+	case ixgbe_fc_full:
-+		setup[0] |= FW_PHY_ACT_SETUP_LINK_PAUSE_RXTX <<
-+			    FW_PHY_ACT_SETUP_LINK_PAUSE_SHIFT;
-+		break;
-+	case ixgbe_fc_rx_pause:
-+		setup[0] |= FW_PHY_ACT_SETUP_LINK_PAUSE_RX <<
-+			    FW_PHY_ACT_SETUP_LINK_PAUSE_SHIFT;
-+		break;
-+	case ixgbe_fc_tx_pause:
-+		setup[0] |= FW_PHY_ACT_SETUP_LINK_PAUSE_TX <<
-+			    FW_PHY_ACT_SETUP_LINK_PAUSE_SHIFT;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(ixgbe_fw_map); ++i) {
-+		if (hw->phy.autoneg_advertised & ixgbe_fw_map[i].phy_speed)
-+			setup[0] |= ixgbe_fw_map[i].fw_speed;
-+	}
-+	setup[0] |= FW_PHY_ACT_SETUP_LINK_HP | FW_PHY_ACT_SETUP_LINK_AN;
-+
-+	if (hw->phy.eee_speeds_advertised)
-+		setup[0] |= FW_PHY_ACT_SETUP_LINK_EEE;
-+
-+	rc = ixgbe_fw_phy_activity(hw, FW_PHY_ACT_SETUP_LINK, &setup);
-+	if (rc)
-+		return rc;
-+	if (setup[0] == FW_PHY_ACT_SETUP_LINK_RSP_DOWN)
-+		return IXGBE_ERR_OVERTEMP;
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_fc_autoneg_fw - Set up flow control for FW-controlled PHYs
-+ * @hw: pointer to hardware structure
-+ *
-+ * Called at init time to set up flow control.
-+ */
-+static s32 ixgbe_fc_autoneg_fw(struct ixgbe_hw *hw)
-+{
-+	if (hw->fc.requested_mode == ixgbe_fc_default)
-+		hw->fc.requested_mode = ixgbe_fc_full;
-+
-+	return ixgbe_setup_fw_link(hw);
-+}
-+
- /** ixgbe_init_eeprom_params_X550 - Initialize EEPROM params
-  *  @hw: pointer to hardware structure
-  *
-@@ -1794,6 +1959,125 @@ ixgbe_setup_sgmii(struct ixgbe_hw *hw, __always_unused ixgbe_link_speed speed,
- 	return rc;
- }
- 
-+/**
-+ * ixgbe_setup_sgmii_fw - Set up link for sgmii with firmware-controlled PHYs
-+ * @hw: pointer to hardware structure
-+ */
-+static s32 ixgbe_setup_sgmii_fw(struct ixgbe_hw *hw, ixgbe_link_speed speed,
-+				bool autoneg_wait)
-+{
-+	struct ixgbe_mac_info *mac = &hw->mac;
-+	u32 lval, sval, flx_val;
-+	s32 rc;
-+
-+	rc = mac->ops.read_iosf_sb_reg(hw,
-+				       IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+				       IXGBE_SB_IOSF_TARGET_KR_PHY, &lval);
-+	if (rc)
-+		return rc;
-+
-+	lval &= ~IXGBE_KRM_LINK_CTRL_1_TETH_AN_ENABLE;
-+	lval &= ~IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_MASK;
-+	lval |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_SGMII_EN;
-+	lval |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_CLAUSE_37_EN;
-+	lval &= ~IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_1G;
-+	rc = mac->ops.write_iosf_sb_reg(hw,
-+					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+					IXGBE_SB_IOSF_TARGET_KR_PHY, lval);
-+	if (rc)
-+		return rc;
-+
-+	rc = mac->ops.read_iosf_sb_reg(hw,
-+				       IXGBE_KRM_SGMII_CTRL(hw->bus.lan_id),
-+				       IXGBE_SB_IOSF_TARGET_KR_PHY, &sval);
-+	if (rc)
-+		return rc;
-+
-+	sval &= ~IXGBE_KRM_SGMII_CTRL_MAC_TAR_FORCE_10_D;
-+	sval &= ~IXGBE_KRM_SGMII_CTRL_MAC_TAR_FORCE_100_D;
-+	rc = mac->ops.write_iosf_sb_reg(hw,
-+					IXGBE_KRM_SGMII_CTRL(hw->bus.lan_id),
-+					IXGBE_SB_IOSF_TARGET_KR_PHY, sval);
-+	if (rc)
-+		return rc;
-+
-+	rc = mac->ops.write_iosf_sb_reg(hw,
-+					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+					IXGBE_SB_IOSF_TARGET_KR_PHY, lval);
-+	if (rc)
-+		return rc;
-+
-+	rc = mac->ops.read_iosf_sb_reg(hw,
-+				    IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				    IXGBE_SB_IOSF_TARGET_KR_PHY, &flx_val);
-+	if (rc)
-+		return rc;
-+
-+	flx_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_MASK;
-+	flx_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_AN;
-+	flx_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_AN_EN;
-+	flx_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SGMII_EN;
-+	flx_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_AN37_EN;
-+
-+	rc = mac->ops.write_iosf_sb_reg(hw,
-+				    IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
-+				    IXGBE_SB_IOSF_TARGET_KR_PHY, flx_val);
-+	if (rc)
-+		return rc;
-+
-+	ixgbe_restart_an_internal_phy_x550em(hw);
-+
-+	return hw->phy.ops.setup_link_speed(hw, speed, autoneg_wait);
-+}
-+
-+/**
-+ * ixgbe_fc_autoneg_sgmii_x550em_a - Enable flow control IEEE clause 37
-+ * @hw: pointer to hardware structure
-+ *
-+ * Enable flow control according to IEEE clause 37.
-+ */
-+static void ixgbe_fc_autoneg_sgmii_x550em_a(struct ixgbe_hw *hw)
-+{
-+	s32 status = IXGBE_ERR_FC_NOT_NEGOTIATED;
-+	u32 info[FW_PHY_ACT_DATA_COUNT] = { 0 };
-+	ixgbe_link_speed speed;
-+	bool link_up;
-+
-+	/* AN should have completed when the cable was plugged in.
-+	 * Look for reasons to bail out.  Bail out if:
-+	 * - FC autoneg is disabled, or if
-+	 * - link is not up.
-+	 */
-+	if (hw->fc.disable_fc_autoneg)
-+		goto out;
-+
-+	hw->mac.ops.check_link(hw, &speed, &link_up, false);
-+	if (!link_up)
-+		goto out;
-+
-+	/* Check if auto-negotiation has completed */
-+	status = ixgbe_fw_phy_activity(hw, FW_PHY_ACT_GET_LINK_INFO, &info);
-+	if (status || !(info[0] & FW_PHY_ACT_GET_LINK_INFO_AN_COMPLETE)) {
-+		status = IXGBE_ERR_FC_NOT_NEGOTIATED;
-+		goto out;
-+	}
-+
-+	/* Negotiate the flow control */
-+	status = ixgbe_negotiate_fc(hw, info[0], info[0],
-+				    FW_PHY_ACT_GET_LINK_INFO_FC_RX,
-+				    FW_PHY_ACT_GET_LINK_INFO_FC_TX,
-+				    FW_PHY_ACT_GET_LINK_INFO_LP_FC_RX,
-+				    FW_PHY_ACT_GET_LINK_INFO_LP_FC_TX);
-+
-+out:
-+	if (!status) {
-+		hw->fc.fc_was_autonegged = true;
-+	} else {
-+		hw->fc.fc_was_autonegged = false;
-+		hw->fc.current_mode = hw->fc.requested_mode;
-+	}
-+}
-+
- /** ixgbe_init_mac_link_ops_X550em_a - Init mac link function pointers
-  *  @hw: pointer to hardware structure
-  **/
-@@ -1806,6 +2090,17 @@ static void ixgbe_init_mac_link_ops_X550em_a(struct ixgbe_hw *hw)
- 		mac->ops.setup_fc = NULL;
- 		mac->ops.fc_autoneg = ixgbe_fc_autoneg_fiber_x550em_a;
- 		break;
-+	case ixgbe_media_type_copper:
-+		if (hw->device_id != IXGBE_DEV_ID_X550EM_A_1G_T &&
-+		    hw->device_id != IXGBE_DEV_ID_X550EM_A_1G_T_L) {
-+			mac->ops.setup_link = ixgbe_setup_mac_link_t_X550em;
-+			break;
-+		}
-+		mac->ops.fc_autoneg = ixgbe_fc_autoneg_sgmii_x550em_a;
-+		mac->ops.setup_fc = ixgbe_fc_autoneg_fw;
-+		mac->ops.setup_link = ixgbe_setup_sgmii_fw;
-+		mac->ops.check_link = ixgbe_check_mac_link_generic;
-+		break;
- 	case ixgbe_media_type_backplane:
- 		mac->ops.fc_autoneg = ixgbe_fc_autoneg_backplane_x550em_a;
- 		mac->ops.setup_fc = ixgbe_setup_fc_backplane_x550em_a;
-@@ -1853,7 +2148,7 @@ static void ixgbe_init_mac_link_ops_X550em(struct ixgbe_hw *hw)
- 		mac->ops.setup_link = ixgbe_setup_mac_link_t_X550em;
- 		mac->ops.setup_fc = ixgbe_setup_fc_generic;
- 		mac->ops.check_link = ixgbe_check_link_t_X550em;
--		return;
-+		break;
- 	case ixgbe_media_type_backplane:
- 		if (hw->device_id == IXGBE_DEV_ID_X550EM_A_SGMII ||
- 		    hw->device_id == IXGBE_DEV_ID_X550EM_A_SGMII_L)
-@@ -1896,6 +2191,12 @@ static s32 ixgbe_get_link_capabilities_X550em(struct ixgbe_hw *hw,
- 					      ixgbe_link_speed *speed,
- 					      bool *autoneg)
+-void ethtool_convert_legacy_u32_to_link_mode(unsigned long *dst,
+-					     u32 legacy_u32)
++void ethtool_u32_to_ks(unsigned long *dst, u32 legacy_u32)
  {
-+	if (hw->phy.type == ixgbe_phy_fw) {
-+		*autoneg = true;
-+		*speed = hw->phy.speeds_supported;
-+		return 0;
-+	}
-+
- 	/* SFP */
- 	if (hw->phy.media_type == ixgbe_media_type_fiber) {
- 		/* CS4227 SFP must not enable auto-negotiation */
-@@ -2681,6 +2982,50 @@ static s32 ixgbe_enter_lplu_t_x550em(struct ixgbe_hw *hw)
+ 	bitmap_zero(dst, __ETHTOOL_LINK_MODE_MASK_NBITS);
+ 	dst[0] = legacy_u32;
  }
+-EXPORT_SYMBOL(ethtool_convert_legacy_u32_to_link_mode);
++EXPORT_SYMBOL(ethtool_u32_to_ks);
  
- /**
-+ * ixgbe_reset_phy_fw - Reset firmware-controlled PHYs
-+ * @hw: pointer to hardware structure
-+ */
-+static s32 ixgbe_reset_phy_fw(struct ixgbe_hw *hw)
-+{
-+	u32 store[FW_PHY_ACT_DATA_COUNT] = { 0 };
-+	s32 rc;
-+
-+	if (hw->phy.reset_disable || ixgbe_check_reset_blocked(hw))
-+		return 0;
-+
-+	rc = ixgbe_fw_phy_activity(hw, FW_PHY_ACT_PHY_SW_RESET, &store);
-+	if (rc)
-+		return rc;
-+	memset(store, 0, sizeof(store));
-+
-+	rc = ixgbe_fw_phy_activity(hw, FW_PHY_ACT_INIT_PHY, &store);
-+	if (rc)
-+		return rc;
-+
-+	return ixgbe_setup_fw_link(hw);
-+}
-+
-+/**
-+ * ixgbe_check_overtemp_fw - Check firmware-controlled PHYs for overtemp
-+ * @hw: pointer to hardware structure
-+ */
-+static s32 ixgbe_check_overtemp_fw(struct ixgbe_hw *hw)
-+{
-+	u32 store[FW_PHY_ACT_DATA_COUNT] = { 0 };
-+	s32 rc;
-+
-+	rc = ixgbe_fw_phy_activity(hw, FW_PHY_ACT_GET_LINK_INFO, &store);
-+	if (rc)
-+		return rc;
-+
-+	if (store[0] & FW_PHY_ACT_GET_LINK_INFO_TEMP) {
-+		ixgbe_shutdown_fw_phy(hw);
-+		return IXGBE_ERR_OVERTEMP;
-+	}
-+	return 0;
-+}
-+
-+/**
-  * ixgbe_read_mng_if_sel_x550em - Read NW_MNG_IF_SEL register
-  * @hw: pointer to hardware structure
-  *
-@@ -2766,6 +3111,10 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
- 		phy->ops.handle_lasi = ixgbe_handle_lasi_ext_t_x550em;
- 		phy->ops.reset = ixgbe_reset_phy_t_X550em;
- 		break;
-+	case ixgbe_phy_fw:
-+		phy->ops.setup_link = ixgbe_setup_fw_link;
-+		phy->ops.reset = ixgbe_reset_phy_fw;
-+		break;
- 	default:
- 		break;
- 	}
-@@ -2803,6 +3152,8 @@ static enum ixgbe_media_type ixgbe_get_media_type_X550em(struct ixgbe_hw *hw)
- 	case IXGBE_DEV_ID_X550EM_X_1G_T:
- 	case IXGBE_DEV_ID_X550EM_X_10G_T:
- 	case IXGBE_DEV_ID_X550EM_A_10G_T:
-+	case IXGBE_DEV_ID_X550EM_A_1G_T:
-+	case IXGBE_DEV_ID_X550EM_A_1G_T_L:
- 		media_type = ixgbe_media_type_copper;
- 		break;
- 	default:
-@@ -2870,6 +3221,13 @@ static void ixgbe_set_mdio_speed(struct ixgbe_hw *hw)
- 		hlreg0 &= ~IXGBE_HLREG0_MDCSPD;
- 		IXGBE_WRITE_REG(hw, IXGBE_HLREG0, hlreg0);
- 		break;
-+	case IXGBE_DEV_ID_X550EM_A_1G_T:
-+	case IXGBE_DEV_ID_X550EM_A_1G_T_L:
-+		/* Select fast MDIO clock speed for these devices */
-+		hlreg0 = IXGBE_READ_REG(hw, IXGBE_HLREG0);
-+		hlreg0 |= IXGBE_HLREG0_MDCSPD;
-+		IXGBE_WRITE_REG(hw, IXGBE_HLREG0, hlreg0);
-+		break;
- 	default:
- 		break;
- 	}
-@@ -3381,6 +3739,27 @@ static struct ixgbe_mac_operations mac_ops_x550em_a = {
- 	.write_iosf_sb_reg	= ixgbe_write_iosf_sb_reg_x550a,
- };
+ /* return false if src had higher bits set. lower bits always updated. */
+-bool ethtool_convert_link_mode_to_legacy_u32(u32 *legacy_u32,
+-					     const unsigned long *src)
++bool ethtool_ks_to_u32(u32 *legacy_u32, const unsigned long *src)
+ {
+ 	bool retval = true;
  
-+static struct ixgbe_mac_operations mac_ops_x550em_a_fw = {
-+	X550_COMMON_MAC
-+	.led_on			= ixgbe_led_on_generic,
-+	.led_off		= ixgbe_led_off_generic,
-+	.init_led_link_act	= ixgbe_init_led_link_act_generic,
-+	.reset_hw		= ixgbe_reset_hw_X550em,
-+	.get_media_type		= ixgbe_get_media_type_X550em,
-+	.get_san_mac_addr	= NULL,
-+	.get_wwn_prefix		= NULL,
-+	.setup_link		= NULL, /* defined later */
-+	.get_link_capabilities	= ixgbe_get_link_capabilities_X550em,
-+	.get_bus_info		= ixgbe_get_bus_info_X550em,
-+	.setup_sfp		= ixgbe_setup_sfp_modules_X550em,
-+	.acquire_swfw_sync	= ixgbe_acquire_swfw_sync_x550em_a,
-+	.release_swfw_sync	= ixgbe_release_swfw_sync_x550em_a,
-+	.setup_fc		= ixgbe_setup_fc_x550em,
-+	.fc_autoneg		= ixgbe_fc_autoneg,
-+	.read_iosf_sb_reg	= ixgbe_read_iosf_sb_reg_x550a,
-+	.write_iosf_sb_reg	= ixgbe_write_iosf_sb_reg_x550a,
-+};
-+
- #define X550_COMMON_EEP \
- 	.read			= &ixgbe_read_ee_hostif_X550, \
- 	.read_buffer		= &ixgbe_read_ee_hostif_buffer_X550, \
-@@ -3410,11 +3789,11 @@ static const struct ixgbe_eeprom_operations eeprom_ops_X550EM_x = {
- 	.read_i2c_eeprom	= &ixgbe_read_i2c_eeprom_generic, \
- 	.write_i2c_eeprom	= &ixgbe_write_i2c_eeprom_generic, \
- 	.setup_link		= &ixgbe_setup_phy_link_generic, \
--	.set_phy_power		= NULL, \
--	.check_overtemp		= &ixgbe_tn_check_overtemp,
-+	.set_phy_power		= NULL,
+@@ -433,7 +431,7 @@ bool ethtool_convert_link_mode_to_legacy_u32(u32 *legacy_u32,
+ 	*legacy_u32 = src[0];
+ 	return retval;
+ }
+-EXPORT_SYMBOL(ethtool_convert_link_mode_to_legacy_u32);
++EXPORT_SYMBOL(ethtool_ks_to_u32);
  
- static const struct ixgbe_phy_operations phy_ops_X550 = {
- 	X550_COMMON_PHY
-+	.check_overtemp		= &ixgbe_tn_check_overtemp,
- 	.init			= NULL,
- 	.identify		= &ixgbe_identify_phy_generic,
- 	.read_reg		= &ixgbe_read_phy_reg_generic,
-@@ -3423,6 +3802,7 @@ static const struct ixgbe_phy_operations phy_ops_X550 = {
+ /* return false if legacy contained non-0 deprecated fields
+  * transceiver/maxtxpkt/maxrxpkt. rest of ksettings always updated
+@@ -456,15 +454,12 @@ convert_legacy_settings_to_link_ksettings(
+ 	    legacy_settings->maxrxpkt)
+ 		retval = false;
  
- static const struct ixgbe_phy_operations phy_ops_X550EM_x = {
- 	X550_COMMON_PHY
-+	.check_overtemp		= &ixgbe_tn_check_overtemp,
- 	.init			= &ixgbe_init_phy_ops_X550em,
- 	.identify		= &ixgbe_identify_phy_x550em,
- 	.read_reg		= &ixgbe_read_phy_reg_generic,
-@@ -3431,6 +3811,7 @@ static const struct ixgbe_phy_operations phy_ops_X550EM_x = {
+-	ethtool_convert_legacy_u32_to_link_mode(
+-		link_ksettings->link_modes.supported,
+-		legacy_settings->supported);
+-	ethtool_convert_legacy_u32_to_link_mode(
+-		link_ksettings->link_modes.advertising,
+-		legacy_settings->advertising);
+-	ethtool_convert_legacy_u32_to_link_mode(
+-		link_ksettings->link_modes.lp_advertising,
+-		legacy_settings->lp_advertising);
++	ethtool_u32_to_ks(link_ksettings->link_modes.supported,
++			  legacy_settings->supported);
++	ethtool_u32_to_ks(link_ksettings->link_modes.advertising,
++			  legacy_settings->advertising);
++	ethtool_u32_to_ks(link_ksettings->link_modes.lp_advertising,
++			  legacy_settings->lp_advertising);
+ 	link_ksettings->base.speed
+ 		= ethtool_cmd_speed(legacy_settings);
+ 	link_ksettings->base.duplex
+@@ -501,15 +496,12 @@ convert_link_ksettings_to_legacy_settings(
+ 	 * __u32	maxrxpkt;
+ 	 */
  
- static const struct ixgbe_phy_operations phy_ops_x550em_a = {
- 	X550_COMMON_PHY
-+	.check_overtemp		= &ixgbe_tn_check_overtemp,
- 	.init			= &ixgbe_init_phy_ops_X550em,
- 	.identify		= &ixgbe_identify_phy_x550em,
- 	.read_reg		= &ixgbe_read_phy_reg_x550a,
-@@ -3439,6 +3820,17 @@ static const struct ixgbe_phy_operations phy_ops_x550em_a = {
- 	.write_reg_mdi		= &ixgbe_write_phy_reg_mdi,
- };
- 
-+static const struct ixgbe_phy_operations phy_ops_x550em_a_fw = {
-+	X550_COMMON_PHY
-+	.check_overtemp		= ixgbe_check_overtemp_fw,
-+	.init			= ixgbe_init_phy_ops_X550em,
-+	.identify		= ixgbe_identify_phy_fw,
-+	.read_reg		= NULL,
-+	.write_reg		= NULL,
-+	.read_reg_mdi		= NULL,
-+	.write_reg_mdi		= NULL,
-+};
-+
- static const struct ixgbe_link_operations link_ops_x550em_x = {
- 	.read_link		= &ixgbe_read_i2c_combined_generic,
- 	.read_link_unlocked	= &ixgbe_read_i2c_combined_generic_unlocked,
-@@ -3488,3 +3880,13 @@ const struct ixgbe_info ixgbe_x550em_a_info = {
- 	.mbx_ops		= &mbx_ops_generic,
- 	.mvals			= ixgbe_mvals_x550em_a,
- };
-+
-+const struct ixgbe_info ixgbe_x550em_a_fw_info = {
-+	.mac			= ixgbe_mac_x550em_a,
-+	.get_invariants		= ixgbe_get_invariants_X550_a_fw,
-+	.mac_ops		= &mac_ops_x550em_a_fw,
-+	.eeprom_ops		= &eeprom_ops_X550EM_x,
-+	.phy_ops		= &phy_ops_x550em_a_fw,
-+	.mbx_ops		= &mbx_ops_generic,
-+	.mvals			= ixgbe_mvals_x550em_a,
-+};
+-	retval &= ethtool_convert_link_mode_to_legacy_u32(
+-		&legacy_settings->supported,
+-		link_ksettings->link_modes.supported);
+-	retval &= ethtool_convert_link_mode_to_legacy_u32(
+-		&legacy_settings->advertising,
+-		link_ksettings->link_modes.advertising);
+-	retval &= ethtool_convert_link_mode_to_legacy_u32(
+-		&legacy_settings->lp_advertising,
+-		link_ksettings->link_modes.lp_advertising);
++	retval &= ethtool_ks_to_u32(&legacy_settings->supported,
++				    link_ksettings->link_modes.supported);
++	retval &= ethtool_ks_to_u32(&legacy_settings->advertising,
++				    link_ksettings->link_modes.advertising);
++	retval &= ethtool_ks_to_u32(&legacy_settings->lp_advertising,
++				    link_ksettings->link_modes.lp_advertising);
+ 	ethtool_cmd_speed_set(legacy_settings, link_ksettings->base.speed);
+ 	legacy_settings->duplex
+ 		= link_ksettings->base.duplex;
+-- 
+2.9.3
 
