@@ -1,54 +1,57 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 13 Dec 2016 15:56:14 -0800
-Subject: [Intel-wired-lan] [PATCH V6 1/4] ixgbe: Fix issues with EEPROM
- access
-In-Reply-To: <148166945619.47119.11718919548789509606.stgit@mdrustad-wks.jf.intel.com>
-References: <148166935971.47119.18406082006668540084.stgit@mdrustad-wks.jf.intel.com>
- <148166945619.47119.11718919548789509606.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <1481673374.2406.13.camel@intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Tue, 13 Dec 2016 16:16:27 -0800
+Subject: [Intel-wired-lan] [PATCH V7 0/4] ixgbe: Firmware-controlled PHY
+	enablement
+Message-ID: <148167450737.100113.5506383673737911262.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-12-13 at 14:50 -0800, Mark D Rustad wrote:
-> There are two problems with EEPROM access. One is that it needs to
-> hold the semaphore until the entire response is read or else the
-> response can be corrupted by other firmware accesses. The second
-> problem is that acquiring and releasing the semaphore is slow, so
-> it should be taken and released once when multiple EEPROM accesses
-> will be done.
-> 
-> Both of these issues can be solved by adding a new function,
-> ixgbe_hic_unlocked, to issue firmware commands that will assume
-> that the caller has acquired the needed semaphore.
-> 
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> ---
-> ?drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |?? 97 +++++++++++++++
-> --------
-> ?drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |??? 1?
-> ?drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c?? |?? 75 +++++++--------
-> ---
-> ?3 files changed, 91 insertions(+), 82 deletions(-)
+The following patches enable firmware-controlled PHYs. The first two
+patches resolve some issues uncovered while working on the other
+patches. The third adds the firmware interface for controlling PHYs.
+The last patch implements everything else for the new devices.
 
-I am unable to apply the first patch of the series:
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 
-?Applying .apply/V6-1-4-ixgbe-Fix-issues-with-EEPROM-access.patch ...
-Checking for changes in the working directory ... done
-Importing patch "V6-1-4-ixgbe-Fix-issues-with-EEPROM-access.patch" ...
-error: patch failed: drivers/net/ethernet/intel/ixgbe/ixgbe_common.h:114
-error: drivers/net/ethernet/intel/ixgbe/ixgbe_common.h: patch does not
-apply
-stg import: Diff does not apply cleanly
+---
+Changes in V2:
+- Fixed some oversights related to the 10M link speed
+Changes in V3:
+- Use correct ops for LED control
+Changes in V4:
+- Actually get the V3 changes into the patch. Sorry for the error.
+Changes in V5:
+- Properly indicate FC autoneg support
+Changes in V6:
+- Add missing thermal interrupt support
+Changes in V7:
+- Rebase and resolve conflict
 
-Looks like, v7 is needed to update the patches so they will actually apply
-to my next-queue tree (please make sure you are using my dev-queue branch).
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161213/1d0b75ed/attachment.asc>
+---
+
+Mark D Rustad (4):
+      ixgbe: Fix issues with EEPROM access
+      ixgbe: Remove unused firmware version functions and method
+      ixgbe: Implement firmware interface to access some PHYs
+      ixgbe: Implement support for firmware-controlled PHYs
+
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    4 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c   |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |  106 +++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h  |    3 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  153 ++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   64 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     |   37 --
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     |    4 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   74 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c    |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |  529 ++++++++++++++++++++--
+ 12 files changed, 846 insertions(+), 133 deletions(-)
+
+-- 
+Mark Rustad, Network Division, Intel Corporation
