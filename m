@@ -1,152 +1,176 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Tue, 13 Dec 2016 16:16:38 -0800
-Subject: [Intel-wired-lan] [PATCH V7 2/4] ixgbe: Remove unused firmware
- version functions and method
+Date: Tue, 13 Dec 2016 16:16:43 -0800
+Subject: [Intel-wired-lan] [PATCH V7 3/4] ixgbe: Implement firmware
+ interface to access some PHYs
 In-Reply-To: <148167450737.100113.5506383673737911262.stgit@mdrustad-wks.jf.intel.com>
 References: <148167450737.100113.5506383673737911262.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <148167459825.100113.435187169117180706.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <148167460358.100113.4250492914764774244.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The firmware version method and functions are not used anywhere, so
-remove them all.
+Implement new interface for firmware commands to access some PHYs.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c |    2 -
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c |    2 -
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c   |   34 ------------------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h   |    4 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |    1 -
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c  |    1 -
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c  |    3 +-
- 7 files changed, 1 insertion(+), 46 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    2 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |   66 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |   45 ++++++++++++++++
+ 3 files changed, 113 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-index 805ab319e578..523f9d05a810 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-@@ -139,8 +139,6 @@ static s32 ixgbe_init_phy_ops_82598(struct ixgbe_hw *hw)
- 	case ixgbe_phy_tn:
- 		phy->ops.setup_link = &ixgbe_setup_phy_link_tnx;
- 		phy->ops.check_link = &ixgbe_check_phy_link_tnx;
--		phy->ops.get_firmware_version =
--			     &ixgbe_get_phy_firmware_version_tnx;
- 		break;
- 	case ixgbe_phy_nl:
- 		phy->ops.reset = &ixgbe_reset_phy_nl;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-index e00aaeb91827..30535e6b68f0 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-@@ -331,8 +331,6 @@ static s32 ixgbe_init_phy_ops_82599(struct ixgbe_hw *hw)
- 	case ixgbe_phy_tn:
- 		phy->ops.check_link = &ixgbe_check_phy_link_tnx;
- 		phy->ops.setup_link = &ixgbe_setup_phy_link_tnx;
--		phy->ops.get_firmware_version =
--			     &ixgbe_get_phy_firmware_version_tnx;
- 		break;
- 	default:
- 		break;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index a9a98b27cabf..3f2d671ce6cc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -982,40 +982,6 @@ s32 ixgbe_setup_phy_link_tnx(struct ixgbe_hw *hw)
- }
- 
- /**
-- *  ixgbe_get_phy_firmware_version_tnx - Gets the PHY Firmware Version
-- *  @hw: pointer to hardware structure
-- *  @firmware_version: pointer to the PHY Firmware Version
-- **/
--s32 ixgbe_get_phy_firmware_version_tnx(struct ixgbe_hw *hw,
--				       u16 *firmware_version)
--{
--	s32 status;
--
--	status = hw->phy.ops.read_reg(hw, TNX_FW_REV,
--				      MDIO_MMD_VEND1,
--				      firmware_version);
--
--	return status;
--}
--
--/**
-- *  ixgbe_get_phy_firmware_version_generic - Gets the PHY Firmware Version
-- *  @hw: pointer to hardware structure
-- *  @firmware_version: pointer to the PHY Firmware Version
-- **/
--s32 ixgbe_get_phy_firmware_version_generic(struct ixgbe_hw *hw,
--					   u16 *firmware_version)
--{
--	s32 status;
--
--	status = hw->phy.ops.read_reg(hw, AQ_FW_REV,
--				      MDIO_MMD_VEND1,
--				      firmware_version);
--
--	return status;
--}
--
--/**
-  *  ixgbe_reset_phy_nl - Performs a PHY reset
-  *  @hw: pointer to hardware structure
-  **/
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-index ecf05f838fc5..5aa2c3cf7aec 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-@@ -168,10 +168,6 @@ s32 ixgbe_check_phy_link_tnx(struct ixgbe_hw *hw,
- 			     ixgbe_link_speed *speed,
- 			     bool *link_up);
- s32 ixgbe_setup_phy_link_tnx(struct ixgbe_hw *hw);
--s32 ixgbe_get_phy_firmware_version_tnx(struct ixgbe_hw *hw,
--				       u16 *firmware_version);
--s32 ixgbe_get_phy_firmware_version_generic(struct ixgbe_hw *hw,
--					   u16 *firmware_version);
- 
- s32 ixgbe_reset_phy_nl(struct ixgbe_hw *hw);
- s32 ixgbe_set_copper_phy_power(struct ixgbe_hw *hw, bool on);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+index 671a0cdf6935..e083732adf64 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+@@ -116,6 +116,8 @@ u8 ixgbe_calculate_checksum(u8 *buffer, u32 length);
+ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *, u32 length,
+ 				 u32 timeout, bool return_data);
+ s32 ixgbe_hic_unlocked(struct ixgbe_hw *hw, u32 *buffer, u32 len, u32 timeout);
++s32 ixgbe_fw_phy_activity(struct ixgbe_hw *hw, u16 activity,
++			  u32 (*data)[FW_PHY_ACT_DATA_COUNT]);
+ void ixgbe_clear_tx_pending(struct ixgbe_hw *hw);
+ bool ixgbe_mng_present(struct ixgbe_hw *hw);
+ bool ixgbe_mng_enabled(struct ixgbe_hw *hw);
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index bfa5d190efe7..2b590fcb82b5 100644
+index 2b590fcb82b5..acdbd81df3a4 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -3404,7 +3404,6 @@ struct ixgbe_phy_operations {
- 	s32 (*setup_internal_link)(struct ixgbe_hw *);
- 	s32 (*setup_link_speed)(struct ixgbe_hw *, ixgbe_link_speed, bool);
- 	s32 (*check_link)(struct ixgbe_hw *, ixgbe_link_speed *, bool *);
--	s32 (*get_firmware_version)(struct ixgbe_hw *, u16 *);
- 	s32 (*read_i2c_byte)(struct ixgbe_hw *, u8, u8, u8 *);
- 	s32 (*write_i2c_byte)(struct ixgbe_hw *, u8, u8, u8);
- 	s32 (*read_i2c_sff8472)(struct ixgbe_hw *, u8 , u8 *);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-index afc4d16b0b8b..84a467a8ed3d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-@@ -918,7 +918,6 @@ static const struct ixgbe_phy_operations phy_ops_X540 = {
- 	.write_i2c_eeprom       = &ixgbe_write_i2c_eeprom_generic,
- 	.check_overtemp         = &ixgbe_tn_check_overtemp,
- 	.set_phy_power          = &ixgbe_set_copper_phy_power,
--	.get_firmware_version   = &ixgbe_get_phy_firmware_version_generic,
+@@ -2645,6 +2645,59 @@ enum ixgbe_fdir_pballoc_type {
+ #define FW_INT_PHY_REQ_LEN		10
+ #define FW_INT_PHY_REQ_READ		0
+ #define FW_INT_PHY_REQ_WRITE		1
++#define FW_PHY_ACT_REQ_CMD		5
++#define FW_PHY_ACT_DATA_COUNT		4
++#define FW_PHY_ACT_REQ_LEN		(4 + 4 * FW_PHY_ACT_DATA_COUNT)
++#define FW_PHY_ACT_INIT_PHY		1
++#define FW_PHY_ACT_SETUP_LINK		2
++#define FW_PHY_ACT_LINK_SPEED_10	BIT(0)
++#define FW_PHY_ACT_LINK_SPEED_100	BIT(1)
++#define FW_PHY_ACT_LINK_SPEED_1G	BIT(2)
++#define FW_PHY_ACT_LINK_SPEED_2_5G	BIT(3)
++#define FW_PHY_ACT_LINK_SPEED_5G	BIT(4)
++#define FW_PHY_ACT_LINK_SPEED_10G	BIT(5)
++#define FW_PHY_ACT_LINK_SPEED_20G	BIT(6)
++#define FW_PHY_ACT_LINK_SPEED_25G	BIT(7)
++#define FW_PHY_ACT_LINK_SPEED_40G	BIT(8)
++#define FW_PHY_ACT_LINK_SPEED_50G	BIT(9)
++#define FW_PHY_ACT_LINK_SPEED_100G	BIT(10)
++#define FW_PHY_ACT_SETUP_LINK_PAUSE_SHIFT 16
++#define FW_PHY_ACT_SETUP_LINK_PAUSE_MASK (3 << \
++					  HW_PHY_ACT_SETUP_LINK_PAUSE_SHIFT)
++#define FW_PHY_ACT_SETUP_LINK_PAUSE_NONE 0u
++#define FW_PHY_ACT_SETUP_LINK_PAUSE_TX	1u
++#define FW_PHY_ACT_SETUP_LINK_PAUSE_RX	2u
++#define FW_PHY_ACT_SETUP_LINK_PAUSE_RXTX 3u
++#define FW_PHY_ACT_SETUP_LINK_LP	BIT(18)
++#define FW_PHY_ACT_SETUP_LINK_HP	BIT(19)
++#define FW_PHY_ACT_SETUP_LINK_EEE	BIT(20)
++#define FW_PHY_ACT_SETUP_LINK_AN	BIT(22)
++#define FW_PHY_ACT_SETUP_LINK_RSP_DOWN	BIT(0)
++#define FW_PHY_ACT_GET_LINK_INFO	3
++#define FW_PHY_ACT_GET_LINK_INFO_EEE	BIT(19)
++#define FW_PHY_ACT_GET_LINK_INFO_FC_TX	BIT(20)
++#define FW_PHY_ACT_GET_LINK_INFO_FC_RX	BIT(21)
++#define FW_PHY_ACT_GET_LINK_INFO_POWER	BIT(22)
++#define FW_PHY_ACT_GET_LINK_INFO_AN_COMPLETE	BIT(24)
++#define FW_PHY_ACT_GET_LINK_INFO_TEMP	BIT(25)
++#define FW_PHY_ACT_GET_LINK_INFO_LP_FC_TX	BIT(28)
++#define FW_PHY_ACT_GET_LINK_INFO_LP_FC_RX	BIT(29)
++#define FW_PHY_ACT_FORCE_LINK_DOWN	4
++#define FW_PHY_ACT_FORCE_LINK_DOWN_OFF	BIT(0)
++#define FW_PHY_ACT_PHY_SW_RESET		5
++#define FW_PHY_ACT_PHY_HW_RESET		6
++#define FW_PHY_ACT_GET_PHY_INFO		7
++#define FW_PHY_ACT_UD_2			0x1002
++#define FW_PHY_ACT_UD_2_10G_KR_EEE	BIT(6)
++#define FW_PHY_ACT_UD_2_10G_KX4_EEE	BIT(5)
++#define FW_PHY_ACT_UD_2_1G_KX_EEE	BIT(4)
++#define FW_PHY_ACT_UD_2_10G_T_EEE	BIT(3)
++#define FW_PHY_ACT_UD_2_1G_T_EEE	BIT(2)
++#define FW_PHY_ACT_UD_2_100M_TX_EEE	BIT(1)
++#define FW_PHY_ACT_RETRIES		50
++#define FW_PHY_INFO_SPEED_MASK		0xFFFu
++#define FW_PHY_INFO_ID_HI_MASK		0xFFFF0000u
++#define FW_PHY_INFO_ID_LO_MASK		0x0000FFFFu
+ 
+ /* Host Interface Command Structures */
+ struct ixgbe_hic_hdr {
+@@ -2745,6 +2798,19 @@ struct ixgbe_hic_internal_phy_resp {
+ 	__be32 read_data;
  };
  
- static const u32 ixgbe_mvals_X540[IXGBE_MVALS_IDX_LIMIT] = {
++struct ixgbe_hic_phy_activity_req {
++	struct ixgbe_hic_hdr hdr;
++	u8 port_number;
++	u8 pad;
++	__le16 activity_id;
++	__be32 data[FW_PHY_ACT_DATA_COUNT];
++};
++
++struct ixgbe_hic_phy_activity_resp {
++	struct ixgbe_hic_hdr hdr;
++	__be32 data[FW_PHY_ACT_DATA_COUNT];
++};
++
+ /* Transmit Descriptor - Advanced */
+ union ixgbe_adv_tx_desc {
+ 	struct {
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 16e1aaf74a63..e58bd77d9197 100644
+index e58bd77d9197..9284b8f0178d 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -3382,8 +3382,7 @@ static const struct ixgbe_eeprom_operations eeprom_ops_X550EM_x = {
- 	.write_i2c_eeprom	= &ixgbe_write_i2c_eeprom_generic, \
- 	.setup_link		= &ixgbe_setup_phy_link_generic, \
- 	.set_phy_power		= NULL, \
--	.check_overtemp		= &ixgbe_tn_check_overtemp, \
--	.get_firmware_version	= &ixgbe_get_phy_firmware_version_generic,
-+	.check_overtemp		= &ixgbe_tn_check_overtemp,
+@@ -402,6 +402,51 @@ ixgbe_write_i2c_combined_generic_unlocked(struct ixgbe_hw *hw,
+ 	return ixgbe_write_i2c_combined_generic_int(hw, addr, reg, val, false);
+ }
  
- static const struct ixgbe_phy_operations phy_ops_X550 = {
- 	X550_COMMON_PHY
++/**
++ * ixgbe_fw_phy_activity - Perform an activity on a PHY
++ * @hw: pointer to hardware structure
++ * @activity: activity to perform
++ * @data: Pointer to 4 32-bit words of data
++ */
++s32 ixgbe_fw_phy_activity(struct ixgbe_hw *hw, u16 activity,
++			  u32 (*data)[FW_PHY_ACT_DATA_COUNT])
++{
++	union {
++		struct ixgbe_hic_phy_activity_req cmd;
++		struct ixgbe_hic_phy_activity_resp rsp;
++	} hic;
++	u16 retries = FW_PHY_ACT_RETRIES;
++	s32 rc;
++	u32 i;
++
++	do {
++		memset(&hic, 0, sizeof(hic));
++		hic.cmd.hdr.cmd = FW_PHY_ACT_REQ_CMD;
++		hic.cmd.hdr.buf_len = FW_PHY_ACT_REQ_LEN;
++		hic.cmd.hdr.checksum = FW_DEFAULT_CHECKSUM;
++		hic.cmd.port_number = hw->bus.lan_id;
++		hic.cmd.activity_id = cpu_to_le16(activity);
++		for (i = 0; i < ARRAY_SIZE(hic.cmd.data); ++i)
++			hic.cmd.data[i] = cpu_to_be32((*data)[i]);
++
++		rc = ixgbe_host_interface_command(hw, &hic.cmd, sizeof(hic.cmd),
++						  IXGBE_HI_COMMAND_TIMEOUT,
++						  true);
++		if (rc)
++			return rc;
++		if (hic.rsp.hdr.cmd_or_resp.ret_status ==
++		    FW_CEM_RESP_STATUS_SUCCESS) {
++			for (i = 0; i < FW_PHY_ACT_DATA_COUNT; ++i)
++				(*data)[i] = be32_to_cpu(hic.rsp.data[i]);
++			return 0;
++		}
++		usleep_range(20, 30);
++		--retries;
++	} while (retries > 0);
++
++	return IXGBE_ERR_HOST_INTERFACE_COMMAND;
++}
++
+ /** ixgbe_init_eeprom_params_X550 - Initialize EEPROM params
+  *  @hw: pointer to hardware structure
+  *
 
