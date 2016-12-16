@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 16 Dec 2016 22:40:55 +0000
-Subject: [Intel-wired-lan] [next PATCH S57 09/11] i40e: properly
-	convert	le16 value to CPU format
-In-Reply-To: <1481586257-28872-10-git-send-email-bimmy.pujari@intel.com>
+Date: Fri, 16 Dec 2016 22:47:44 +0000
+Subject: [Intel-wired-lan] [next PATCH S57 10/11] i40e: Error handling
+ for	link event
+In-Reply-To: <1481586257-28872-11-git-send-email-bimmy.pujari@intel.com>
 References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
- <1481586257-28872-10-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA499FA@ORSMSX104.amr.corp.intel.com>
+ <1481586257-28872-11-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA49A0E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, December 12, 2016 3:44 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S57 09/11] i40e: properly convert le16
-> value to CPU format
+> Subject: [Intel-wired-lan] [next PATCH S57 10/11] i40e: Error handling for link
+> event
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 > 
-> This ensures that the pvid which is stored in __le16 format is converted to
-> the CPU format. This will fix comparison issues on Big Endian platforms.
+> There exists an intermittent bug which causes the 'Link Detected'
+> field reported by the 'ethtool <iface>' command to be 'Yes' when in fact,
+> there is no link. This patch fixes the problem by enabling temporary link
+> polling when i40e_get_link_status returns an error. This causes the driver to
+> remember that an admin queue command failed and polls, until the function
+> returns with a success.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: I92c80d1315dc2a0f9f095d5a0c48d461beb052ed
+> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> Change-Id: I64c69b008db4017b8729f3fc27b8f65c8fe2eaa0
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 11 ++++++-----
->  1 file changed, 6 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 14 ++++++++++++--
+>  2 files changed, 13 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
