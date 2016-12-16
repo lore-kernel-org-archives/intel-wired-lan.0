@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 16 Dec 2016 22:48:40 +0000
-Subject: [Intel-wired-lan] [next PATCH S57 11/11] i40e: mark the
-	value	passed to csum_replace_by_diff as __wsum
-In-Reply-To: <1481586257-28872-12-git-send-email-bimmy.pujari@intel.com>
-References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
- <1481586257-28872-12-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA49A1E@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 16 Dec 2016 22:55:25 +0000
+Subject: [Intel-wired-lan] [PATCH v2] i40e: don't
+	allow	i40e_vsi_(add|kill)_vlan to operate when VID<1
+In-Reply-To: <20161207220534.21018-1-jacob.e.keller@intel.com>
+References: <20161207220534.21018-1-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA49A50@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,30 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Monday, December 12, 2016 3:44 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S57 11/11] i40e: mark the value
-> passed to csum_replace_by_diff as __wsum
+> Behalf Of Jacob Keller
+> Sent: Wednesday, December 07, 2016 2:06 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [PATCH v2] i40e: don't allow
+> i40e_vsi_(add|kill)_vlan to operate when VID<1
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> Fix, or rather, avoid a sparse warning caused by the fact that
-> csum_replace_by_diff expects to receive a __wsum value. Since the
-> calculation appears to work, simply typecast the passed paylen value to
-> __wsum to avoid the warning.
-> 
-> This seems pretty fishy since __wsum was obviously annotated as a separate
-> type on purpose, so this throws the entire calculation into question. Since it
-> currently appears to behave as expected, the typecast is probably safe.
+> Now that we have the separate i40e_(add|rm)_vlan_all_mac functions, we
+> should not be using the i40e_vsi_kill_vlan or i40e_vsi_add_vlan functions
+> when PVID is set or when VID is less than 1. This allows us to remove some
+> checks in i40e_vsi_add_vlan and ensures that callers which need to handle
+> VID=0 or VID=-1 don't accidentally invoke the VLAN mode handling used to
+> convert filters when entering VLAN mode. We also update the functions to
+> take u16 instead of s16 as well since they no longer expect to be called with
+> VID=I40E_VLAN_ANY.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: I4fdc5cddd589abc16098176e8a61127e761488f4
+> Change-ID: Ibddf44a8bb840dde8ceef2a4fdb92fd953b05a57
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 5 +++--
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 5 +++--
->  2 files changed, 6 insertions(+), 4 deletions(-)
+> v2
+> * Use !vid instead of !(vid > 0)
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h      |  4 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 14 ++++++++++----
+>  2 files changed, 12 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
