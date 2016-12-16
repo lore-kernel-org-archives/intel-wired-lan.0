@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 16 Dec 2016 21:54:38 +0000
-Subject: [Intel-wired-lan] [next PATCH S57 03/11] i40e: remove
- unnecessary	call to i40e_update_link_info
-In-Reply-To: <1481586257-28872-4-git-send-email-bimmy.pujari@intel.com>
+Date: Fri, 16 Dec 2016 22:10:30 +0000
+Subject: [Intel-wired-lan] [next PATCH S57 04/11] i40evf: free rings
+	in	remove function
+In-Reply-To: <1481586257-28872-5-git-send-email-bimmy.pujari@intel.com>
 References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
- <1481586257-28872-4-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA49991@ORSMSX104.amr.corp.intel.com>
+ <1481586257-28872-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA499A4@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, December 12, 2016 3:44 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S57 03/11] i40e: remove unnecessary
-> call to i40e_update_link_info
+> Subject: [Intel-wired-lan] [next PATCH S57 04/11] i40evf: free rings in remove
+> function
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> This call is made just prior to running i40e_link_event. In i40e_link_event, we
-> set hw->phy.get_link_info to true just prior to calling i40e_get_link_status,
-> which conveniently runs i40e_update_link_info for us. Thus, we are running
-> i40e_update_link_info twice, which seems like something we don't need to
-> do...
+> When the i40evf_remove() calls netdev close, the device doesn't actually
+> close - it schedules the work for the watchdog to perform. Since we're
+> stopping the watchdog, this work doesn't get done. However, we're
+> resetting the part, so we can free resources after the reset request has gone
+> through. This plugs a memory leak.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: I36467a570f44b7546d218c99e134ff97c2709315
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: Id5335dcaf76ce00d2a4c3d26e9faf711d7f051cf
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 1 -
->  1 file changed, 1 deletion(-)
+> Testing Hints : Load/unload test
+> 
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
