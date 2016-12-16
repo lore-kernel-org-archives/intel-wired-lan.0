@@ -1,57 +1,46 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 16 Dec 2016 19:31:39 +0100
-Subject: [Intel-wired-lan] [PATCH v3 2/4] i40e: Initial support for XDP
-In-Reply-To: <58542D64.2070801@gmail.com>
-References: <20161213134007.14707-1-bjorn.topel@gmail.com>
- <20161213134007.14707-3-bjorn.topel@gmail.com>
- <58542D64.2070801@gmail.com>
-Message-ID: <CAJ+HfNipwVAGYPs69Wa4MqhZeXfcRjp0sU84kBHQQ=rxNpHz1Q@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 16 Dec 2016 20:06:53 +0000
+Subject: [Intel-wired-lan] [next PATCH S57 01/11] i40e: fix disable
+ overflow	promiscuous mode
+In-Reply-To: <1481586257-28872-2-git-send-email-bimmy.pujari@intel.com>
+References: <1481586257-28872-1-git-send-email-bimmy.pujari@intel.com>
+ <1481586257-28872-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA49970@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-2016-12-16 19:07 GMT+01:00 John Fastabend <john.fastabend@gmail.com>:
-[...]
->>
->>  /**
->> + * i40e_run_xdp - Runs an XDP program for an Rx ring
->> + * @rx_ring: Rx ring used for XDP
->> + * @rx_buffer: current Rx buffer
->> + * @rx_desc: current Rx descriptor
->> + * @size: buffer size
->> + * @xdp_prog: the XDP program to run
->> + *
->> + * Returns true if the XDP program consumed the incoming frame. False
->> + * means pass the frame to the good old stack.
->> + **/
->> +static bool i40e_run_xdp(struct i40e_ring *rx_ring,
->> +                      struct i40e_rx_buffer *rx_buffer,
->> +                      union i40e_rx_desc *rx_desc,
->> +                      unsigned int size,
->> +                      struct bpf_prog *xdp_prog)
->> +{
->> +     struct xdp_buff xdp;
->> +     u32 xdp_action;
->> +
->> +     if (unlikely(!i40e_test_staterr(rx_desc,
->> +                                     BIT(I40E_RX_DESC_STATUS_EOF_SHIFT)))) {
->> +             dev_warn_once(&rx_ring->vsi->back->pdev->dev,
->> +                           "Received unexpected RXD_EOF!\n");
->> +             goto do_drop;
->> +     }
->> +
->> +     xdp.data = page_address(rx_buffer->page) + rx_buffer->page_offset;
->> +     xdp.data_end = xdp.data + size;
->
-> We need to set the xdp.data_hard_start as well here.
->
->         xdp.data_hard_start = xdp.data
->
-> should be good enough for now.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Monday, December 12, 2016 3:44 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Brady, Alan <alan.brady@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S57 01/11] i40e: fix disable overflow
+> promiscuous mode
+> 
+> From: Alan Brady <alan.brady@intel.com>
+> 
+> There exists a bug in which the driver is unable to exit overflow promiscuous
+> mode after having added "too many" mac filters.  It is expected that after
+> triggering overflow promiscuous, removing the failed/extra filters should
+> then disable overflow promiscuous mode.
+> 
+> The bug exists because we were intentionally skipping the sync_vsi_filter
+> path in cases where we were removing failed filters since they shouldn't
+> have been added to the firmware in the first place, however we still need to
+> go through the sync_vsi_filter code path to determine whether or not it is ok
+> to exit overflow promiscuous mode.  This patch fixes the bug by making sure
+> we go through the sync_vsi_filter path in cases of failed filters.
+> 
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
+> Change-ID: I634d249ca3e5fa50729553137c295e73e7722143
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
 
-OK! Thanks for pointing that out. I'll address that in v4!
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
-Bj?rn
