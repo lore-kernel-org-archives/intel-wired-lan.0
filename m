@@ -1,181 +1,53 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Thu, 15 Dec 2016 21:18:32 -0500
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: Add PF support for VF
-	promiscuous mode
-In-Reply-To: <1481854712-29454-1-git-send-email-donald.c.skidmore@intel.com>
-References: <1481854712-29454-1-git-send-email-donald.c.skidmore@intel.com>
-Message-ID: <1481854712-29454-2-git-send-email-donald.c.skidmore@intel.com>
+From: henrik@austad.us <henrik@austad.us>
+Date: Fri, 16 Dec 2016 18:59:05 +0100
+Subject: [Intel-wired-lan] [TSN RFC v2 1/9] igb: add missing fields to
+	TXDCTL-register
+In-Reply-To: <1481911153-549-1-git-send-email-henrik@austad.us>
+References: <1481911153-549-1-git-send-email-henrik@austad.us>
+Message-ID: <1481911153-549-2-git-send-email-henrik@austad.us>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch extends the xcast mailbox message to include support for
-unicast promiscuous mode.  To allow a VF to enter this mode the PF
-must be in promiscuous mode.
+From: Henrik Austad <henrik@austad.us>
 
-A later patch will add the support needed in the VF driver (ixgbevf)
+The current list of E1000_TXDCTL-registers is incomplete. This adds the
+missing parts for the Transmit Descriptor Control (TXDCTL) register.
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+The rest of these values (threshold for descriptor read/write) for
+TXDCTL seems to be defined in igb/igb.h, not sure why this is split
+though.
+
+It seems that this was left out in the commit that added support for
+82575 Gigabit Ethernet driver 9d5c8243 (igb: PCI-Express 82575 Gigabit
+Ethernet driver).
+
+Cc: linux-kernel at vger.kernel.org
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+Signed-off-by: Henrik Austad <haustad@cisco.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h   |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 47 ++++++++++++++++++++++----
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |  2 ++
- 4 files changed, 45 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/igb/e1000_82575.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 0b1bcb1..9c6ccfc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -159,6 +159,7 @@ enum ixgbevf_xcast_modes {
- 	IXGBEVF_XCAST_MODE_NONE = 0,
- 	IXGBEVF_XCAST_MODE_MULTI,
- 	IXGBEVF_XCAST_MODE_ALLMULTI,
-+	IXGBEVF_XCAST_MODE_PROMISC,
- };
+diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.h b/drivers/net/ethernet/intel/igb/e1000_82575.h
+index acf0605..7faa482 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_82575.h
++++ b/drivers/net/ethernet/intel/igb/e1000_82575.h
+@@ -158,7 +158,11 @@ struct e1000_adv_tx_context_desc {
  
- struct vf_macvlans {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
-index 01c2667..811cb4f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
-@@ -74,6 +74,7 @@ enum ixgbe_pfvf_api_rev {
- 	ixgbe_mbox_api_20,	/* API version 2.0, solaris Phase1 VF driver */
- 	ixgbe_mbox_api_11,	/* API version 1.1, linux/freebsd VF driver */
- 	ixgbe_mbox_api_12,	/* API version 1.2, linux/freebsd VF driver */
-+	ixgbe_mbox_api_13,	/* API version 1.3, linux/freebsd VF driver */
- 	/* This value should always be last */
- 	ixgbe_mbox_api_unknown,	/* indicates that API version is not known */
- };
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index dd1187c..044cb44 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -512,6 +512,7 @@ static s32 ixgbe_set_vf_lpe(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
- 		switch (adapter->vfinfo[vf].vf_api) {
- 		case ixgbe_mbox_api_11:
- 		case ixgbe_mbox_api_12:
-+		case ixgbe_mbox_api_13:
- 			/*
- 			 * Version 1.1 supports jumbo frames on VFs if PF has
- 			 * jumbo frames enabled which means legacy VFs are
-@@ -979,6 +980,7 @@ static int ixgbe_negotiate_vf_api(struct ixgbe_adapter *adapter,
- 	case ixgbe_mbox_api_10:
- 	case ixgbe_mbox_api_11:
- 	case ixgbe_mbox_api_12:
-+	case ixgbe_mbox_api_13:
- 		adapter->vfinfo[vf].vf_api = api;
- 		return 0;
- 	default:
-@@ -1003,6 +1005,7 @@ static int ixgbe_get_vf_queues(struct ixgbe_adapter *adapter,
- 	case ixgbe_mbox_api_20:
- 	case ixgbe_mbox_api_11:
- 	case ixgbe_mbox_api_12:
-+	case ixgbe_mbox_api_13:
- 		break;
- 	default:
- 		return -1;
-@@ -1042,8 +1045,13 @@ static int ixgbe_get_vf_reta(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
- 		return -EPERM;
- 
- 	/* verify the PF is supporting the correct API */
--	if (adapter->vfinfo[vf].vf_api != ixgbe_mbox_api_12)
-+	switch (adapter->vfinfo[vf].vf_api) {
-+	case ixgbe_mbox_api_13:
-+	case ixgbe_mbox_api_12:
-+		break;
-+	default:
- 		return -EOPNOTSUPP;
-+	}
- 
- 	/* This mailbox command is supported (required) only for 82599 and x540
- 	 * VFs which support up to 4 RSS queues. Therefore we will compress the
-@@ -1069,8 +1077,13 @@ static int ixgbe_get_vf_rss_key(struct ixgbe_adapter *adapter,
- 		return -EPERM;
- 
- 	/* verify the PF is supporting the correct API */
--	if (adapter->vfinfo[vf].vf_api != ixgbe_mbox_api_12)
-+	switch (adapter->vfinfo[vf].vf_api) {
-+	case ixgbe_mbox_api_13:
-+	case ixgbe_mbox_api_12:
-+		break;
-+	default:
- 		return -EOPNOTSUPP;
-+	}
- 
- 	memcpy(rss_key, adapter->rss_key, sizeof(adapter->rss_key));
- 
-@@ -1082,11 +1095,16 @@ static int ixgbe_update_vf_xcast_mode(struct ixgbe_adapter *adapter,
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	int xcast_mode = msgbuf[1];
--	u32 vmolr, disable, enable;
-+	u32 vmolr, fctrl, disable, enable;
- 
- 	/* verify the PF is supporting the correct APIs */
- 	switch (adapter->vfinfo[vf].vf_api) {
- 	case ixgbe_mbox_api_12:
-+		/* promisc introduced in 1.3 version */
-+		if (xcast_mode == IXGBEVF_XCAST_MODE_PROMISC)
-+			return -EOPNOTSUPP;
-+		/* Fall threw */
-+	case ixgbe_mbox_api_13:
- 		break;
- 	default:
- 		return -EOPNOTSUPP;
-@@ -1102,17 +1120,34 @@ static int ixgbe_update_vf_xcast_mode(struct ixgbe_adapter *adapter,
- 
- 	switch (xcast_mode) {
- 	case IXGBEVF_XCAST_MODE_NONE:
--		disable = IXGBE_VMOLR_BAM | IXGBE_VMOLR_ROMPE | IXGBE_VMOLR_MPE;
-+		disable = IXGBE_VMOLR_BAM | IXGBE_VMOLR_ROMPE |
-+			  IXGBE_VMOLR_MPE | IXGBE_VMOLR_UPE | IXGBE_VMOLR_VPE;
- 		enable = 0;
- 		break;
- 	case IXGBEVF_XCAST_MODE_MULTI:
--		disable = IXGBE_VMOLR_MPE;
-+		disable = IXGBE_VMOLR_MPE | IXGBE_VMOLR_UPE | IXGBE_VMOLR_VPE;
- 		enable = IXGBE_VMOLR_BAM | IXGBE_VMOLR_ROMPE;
- 		break;
- 	case IXGBEVF_XCAST_MODE_ALLMULTI:
--		disable = 0;
-+		disable = IXGBE_VMOLR_UPE | IXGBE_VMOLR_VPE;
- 		enable = IXGBE_VMOLR_BAM | IXGBE_VMOLR_ROMPE | IXGBE_VMOLR_MPE;
- 		break;
-+	case IXGBEVF_XCAST_MODE_PROMISC:
-+		if (hw->mac.type <= ixgbe_mac_82599EB)
-+			return -EOPNOTSUPP;
+ /* Additional Transmit Descriptor Control definitions */
+ #define E1000_TXDCTL_QUEUE_ENABLE  0x02000000 /* Enable specific Tx Queue */
 +
-+		fctrl = IXGBE_READ_REG(hw, IXGBE_FCTRL);
-+		if (!(fctrl & IXGBE_FCTRL_UPE)) {
-+			/* VF promisc requires PF in promisc */
-+			e_warn(drv,
-+			       "Enabling VF promisc requires PF in promisc\n");
-+			return -EPERM;
-+		}
-+
-+		disable = 0;
-+		enable = IXGBE_VMOLR_BAM | IXGBE_VMOLR_ROMPE |
-+			 IXGBE_VMOLR_MPE | IXGBE_VMOLR_UPE | IXGBE_VMOLR_VPE;
-+		break;
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 4200f74..c0f6b95 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -1501,6 +1501,8 @@ enum {
- #define IXGBE_VT_CTL_POOL_MASK  (0x3F << IXGBE_VT_CTL_POOL_SHIFT)
++/* Transmit Software Flush, sw-triggered desc writeback */
++#define E1000_TXDCTL_SWFLSH        0x04000000
+ /* Tx Queue Arbitration Priority 0=low, 1=high */
++#define E1000_TXDCTL_PRIORITY      0x08000000
  
- /* VMOLR bitmasks */
-+#define IXGBE_VMOLR_UPE		0x00400000 /* unicast promiscuous */
-+#define IXGBE_VMOLR_VPE		0x00800000 /* VLAN promiscuous */
- #define IXGBE_VMOLR_AUPE        0x01000000 /* accept untagged packets */
- #define IXGBE_VMOLR_ROMPE       0x02000000 /* accept packets in MTA tbl */
- #define IXGBE_VMOLR_ROPE        0x04000000 /* accept packets in UC tbl */
+ /* Additional Receive Descriptor Control definitions */
+ #define E1000_RXDCTL_QUEUE_ENABLE  0x02000000 /* Enable specific Rx Queue */
 -- 
-2.4.3
+2.7.4
 
