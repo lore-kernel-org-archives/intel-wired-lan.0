@@ -1,124 +1,61 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 17 Dec 2016 12:10:09 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 0ac589828a16b93d46b963eff658a97befdd8c73
-Message-ID: <5854baa1./5F8b0peMy/zbns+%fengguang.wu@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Sat, 17 Dec 2016 14:39:56 +0100
+Subject: [Intel-wired-lan] [PATCH v4 0/4] i40e: Support for XDP
+Message-ID: <20161217134000.31640-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-0ac589828a16b93d46b963eff658a97befdd8c73  i40e: Validate xdp_adjust_head support
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-elapsed time: 221m
+This series adds XDP support for i40e-based NICs.
 
-configs tested: 100
+The first patch prepares i40e_fetch_rx_buffer() for upcoming changes,
+followed by XDP_RX support, the third adds XDP_TX support and the last
+patch validates bpf_xdp_adjust_head() support.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thanks to Alex, Daniel, John and Scott for all the feedback!
 
-i386                     randconfig-a0-201650
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201650
-i386                     randconfig-i1-201650
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                            dove_defconfig
-arm                        magician_defconfig
-mips                      loongson3_defconfig
-mips                malta_qemu_32r6_defconfig
-powerpc                     ppa8548_defconfig
-m68k                            q40_defconfig
-powerpc                   bluestone_defconfig
-sh                            migor_defconfig
-sparc64                          alldefconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-h0-12171042
-i386                   randconfig-h1-12171042
-i386                   randconfig-h0-12171131
-i386                   randconfig-h1-12171131
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-12171136
-x86_64                 randconfig-x007-201650
-x86_64                 randconfig-x001-201650
-x86_64                 randconfig-x000-201650
-x86_64                 randconfig-x008-201650
-x86_64                 randconfig-x002-201650
-x86_64                 randconfig-x006-201650
-x86_64                 randconfig-x004-201650
-x86_64                 randconfig-x005-201650
-x86_64                 randconfig-x003-201650
-x86_64                 randconfig-x009-201650
-i386                     randconfig-r0-201650
-i386                   randconfig-x003-201650
-i386                   randconfig-x005-201650
-i386                   randconfig-x006-201650
-i386                   randconfig-x009-201650
-i386                   randconfig-x001-201650
-i386                   randconfig-x008-201650
-i386                   randconfig-x004-201650
-i386                   randconfig-x000-201650
-i386                   randconfig-x002-201650
-i386                   randconfig-x007-201650
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
+v4:
+  * Removed unused i40e_page_is_reserved function
+  * Prior running the XDP program, set the struct xdp_buff
+    data_hard_start member
 
-Thanks,
-Fengguang
+v3:
+  * Rebased patch set on Jeff's dev-queue branch
+  * MSI-X is no longer a prerequisite for XDP
+  * RCU locking for the XDP program and XDP_RX support is introduced
+    in the same patch
+  * Rx bytes is now bumped for XDP
+  * Removed pointer-to-pointer clunkiness
+  * Added comments to XDP preconditions in ndo_xdp
+  * When a non-EOF is received, log once, and drop the frame
+
+v2:
+  * Fixed kbuild error for PAGE_SIZE >= 8192.
+  * Renamed i40e_try_flip_rx_page to i40e_can_reuse_rx_page, which is
+    more in line to the other Intel Ethernet drivers (igb/fm10k).
+  * Validate xdp_adjust_head support in ndo_xdp/XDP_SETUP_PROG.
+
+
+Bj?rn
+
+
+Bj?rn T?pel (4):
+  i40e: Sync DMA region prior skbuff allocation
+  i40e: Initial support for XDP
+  i40e: Add XDP_TX support
+  i40e: Validate xdp_adjust_head support
+
+ drivers/net/ethernet/intel/i40e/i40e.h         |  18 ++
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |   4 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 380 ++++++++++++++++++++----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 383 ++++++++++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h    |   7 +
+ 5 files changed, 703 insertions(+), 89 deletions(-)
+
+-- 
+2.9.3
+
