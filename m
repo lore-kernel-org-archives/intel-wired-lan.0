@@ -1,104 +1,69 @@
-From: Vasiliy Tolstov <v.tolstov@selfip.ru>
-Date: Mon, 19 Dec 2016 14:06:25 +0300
-Subject: [Intel-wired-lan] ixgbe 4.2.1-k initiating reset due to tx timeout
-Message-ID: <CACaajQsSFcuMDNVrEbCAkJQABLCKO+LRPrZwb=T9ahqhRpVNrg@mail.gmail.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 19 Dec 2016 12:10:39 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 00/20] Enable the use of build_skb in
+	igb/ixgbe
+Message-ID: <20161219200456.27116.28900.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi! I'm using 4.4.x stable kernel and have errors in SFP+ network card
-on two servers.
+This patch series is based off of Dave Miller's latest net tree.  The plan
+is to submit it for next-queue once net has been merged back into net-next.
 
-filename:
-/lib/modules/4.4.x/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
-version:        4.2.1-k
-license:        GPL
-description:    Intel(R) 10 Gigabit PCI Express Network Driver
-author:         Intel Corporation, <linux.nics@intel.com>
+The first 3 patches are in a bit of limbo.  They have been accepted for
+linux-mm, however I haven't seen them submitted to Linus's tree as of yet.
+According to Andrew Morton they are on his list to pull in post 4.9.
 
-Does Intel own driver already have fix for this issue? What i need to
-do to fix this?
+The remaining patches implement the changes to support build_skb and
+various other performance improvements.  So far I am doing most of my
+performance testing on ixgbe with this patch set and the results are
+promising.  I am seeing throughput improvements of 10% with netperf
+TCP_STREAM tests w/o LRO.  With VXLAN tunnels I am seeing improvements of
+as much as 30% when out checksums are enabled.
 
-Full log:
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: tx hang 12
-detected on queue 6, resetting adapter
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: initiating reset
-due to tx timeout
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: Detected Tx Unit Hang
-  Tx Queue             <8>
-  TDH, TDT             <0>, <16c>
-  next_to_use          <0>
-  next_to_clean        <0>
-tx_buffer_info[next_to_clean]
-  time_stamp           <0>
-  jiffies              <10f8de392>
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: tx hang 12
-detected on queue 8, resetting adapter
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: initiating reset
-due to tx timeout
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: Detected Tx Unit Hang
-  Tx Queue             <9>
-  TDH, TDT             <0>, <4>
-  next_to_use          <4>
-  next_to_clean        <0>
-tx_buffer_info[next_to_clean]
-  time_stamp           <10f8de364>
-  jiffies              <10f8de392>
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: Detected Tx Unit Hang
-  Tx Queue             <10>
-  TDH, TDT             <0>, <82>
-  next_to_use          <2>
-  next_to_clean        <0>
-tx_buffer_info[next_to_clean]
-  time_stamp           <10f8de270>
-  jiffies              <10f8de392>
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: tx hang 12
-detected on queue 9, resetting adapter
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: initiating reset
-due to tx timeout
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: tx hang 12
-detected on queue 10, resetting adapter
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: initiating reset
-due to tx timeout
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: Reset adapter
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: tx hang 13
-detected on queue 4, resetting adapter
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: Detected Tx Unit Hang
-  Tx Queue             <21>
-  TDH, TDT             <21>, <1022>
-  next_to_use          <c2>
-  next_to_clean        <c2>
-tx_buffer_info[next_to_clean]
-  time_stamp           <1095cdc2f>
-  jiffies              <10f8de3ad>
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: Detected Tx Unit Hang
-  Tx Queue             <22>
-  TDH, TDT             <8f>, <90>
-  next_to_use          <db>
-  next_to_clean        <db>
-tx_buffer_info[next_to_clean]
-  time_stamp           <10b77e84c>
-  jiffies              <10f8de3ad>
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: tx hang 1 detected
-on queue 22, resetting adapter
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: initiating reset
-due to tx timeout
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: Reset adapter
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: tx hang 2 detected
-on queue 21, resetting adapter
-[Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: initiating reset
-due to tx timeout
-[Sat Dec 17 05:41:34 2016] ixgbe 0000:05:00.0 eth0: detected SFP+: 5
-[Sat Dec 17 05:41:34 2016] ixgbe 0000:05:00.1 eth2: detected SFP+: 6
-[Sat Dec 17 05:41:34 2016] ixgbe 0000:05:00.0 eth0: NIC Link is Up 10
-Gbps, Flow Control: RX/TX
-[Sat Dec 17 05:41:34 2016] ixgbe 0000:05:00.1 eth2: NIC Link is Up 10
-Gbps, Flow Control: RX/TX
+Any initial feedback would be useful.  My next steps for this is to look at
+generating changes for i40e and adding support to out-of-tree drivers for
+these features.
+
+---
+
+Alexander Duyck (20):
+      mm: Rename __alloc_page_frag to page_frag_alloc and __free_page_frag to page_frag_free
+      mm: Rename __page_frag functions to __page_frag_cache, drop order from drain
+      mm: Add documentation for page fragment APIs
+      igb: Add support for DMA_ATTR_WEAK_ORDERING
+      igb: Use length to determine if descriptor is done
+      igb: Limit maximum frame Rx based on MTU
+      igb: Add support for padding packet
+      igb: Add support for ethtool private flag to allow use of legacy Rx
+      igb: Break out Rx buffer page management
+      igb: Revert "igb: Revert support for build_skb in igb"
+      ixgbe: Add function for checking to see if we can reuse page
+      ixgbe: Only DMA sync frame length
+      ixgbe: Update driver to make use of DMA attributes in Rx path
+      ixgbe: Update code to better handle incrementing page count
+      ixgbe: Make use of order 1 pages and 3K buffers independent of FCoE
+      ixgbe: Use length to determine if descriptor is done
+      ixgbe: Break out Rx buffer page management
+      ixgbe: Add support for padding packet
+      ixgbe: Add private flag to control buffer mode
+      ixgbe: Add support for build_skb
 
 
+ Documentation/vm/page_frags                      |   42 ++
+ drivers/net/ethernet/intel/igb/igb.h             |   55 +++
+ drivers/net/ethernet/intel/igb/igb_ethtool.c     |   52 +++
+ drivers/net/ethernet/intel/igb/igb_main.c        |  357 ++++++++++++-------
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   45 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   47 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  414 +++++++++++++++-------
+ include/linux/gfp.h                              |    9 
+ include/linux/skbuff.h                           |    2 
+ mm/page_alloc.c                                  |   33 +-
+ net/core/skbuff.c                                |    8 
+ 11 files changed, 758 insertions(+), 306 deletions(-)
+ create mode 100644 Documentation/vm/page_frags
 
--- 
-Vasiliy Tolstov,
-e-mail: v.tolstov at selfip.ru
+--
