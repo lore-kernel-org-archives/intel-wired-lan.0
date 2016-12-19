@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 19 Dec 2016 12:11:40 -0800
-Subject: [Intel-wired-lan] [RFC PATCH 10/20] igb: Revert "igb: Revert
- support for build_skb in igb"
+Date: Mon, 19 Dec 2016 12:11:46 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 11/20] ixgbe: Add function for
+ checking to see if we can reuse page
 In-Reply-To: <20161219200456.27116.28900.stgit@localhost.localdomain>
 References: <20161219200456.27116.28900.stgit@localhost.localdomain>
-Message-ID: <20161219201140.27116.98146.stgit@localhost.localdomain>
+Message-ID: <20161219201146.27116.75266.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,81 +13,120 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This reverts commit f9d40f6a9921 ("igb: Revert support for build_skb in
-igb") and adds a few changes to update it to work with the latest version
-of igb. We are now able to revert the removal of this due to the fact
-that with the recent changes to the page count and the use of
-DMA_ATTR_SKIP_CPU_SYNC we can make the pages writable so we should not be
-invalidating the additional data added when we call build_skb.
+This patch consolidates the code for the ixgbe driver so that it is more
+inline with what is already in igb.  The general idea is to just
+consolidate functions that represent logical steps in the Rx process so we
+can later update them more easily.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c |   47 +++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   70 +++++++++++++++----------
+ 1 file changed, 41 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index cea252fc7582..ffafb50f458f 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -6990,6 +6990,51 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
- 	return skb;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 1e2f39ebd824..f62191f7d080 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -1931,6 +1931,41 @@ static inline bool ixgbe_page_is_reserved(struct page *page)
+ 	return (page_to_nid(page) != numa_mem_id()) || page_is_pfmemalloc(page);
  }
  
-+static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
-+				     struct igb_rx_buffer *rx_buffer,
-+				     union e1000_adv_rx_desc *rx_desc,
-+				     unsigned int size)
++static bool ixgbe_can_reuse_rx_page(struct ixgbe_rx_buffer *rx_buffer,
++				    struct page *page,
++				    const unsigned int truesize)
 +{
-+	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+#if (PAGE_SIZE < 8192)
-+	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
-+#else
-+	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
-+				SKB_DATA_ALIGN(IGB_SKB_PAD + size);
++#if (PAGE_SIZE >= 8192)
++	unsigned int last_offset = ixgbe_rx_pg_size(rx_ring) -
++				   ixgbe_rx_bufsz(rx_ring);
 +#endif
-+	struct sk_buff *skb;
++	/* avoid re-using remote pages */
++	if (unlikely(ixgbe_page_is_reserved(page)))
++		return false;
 +
-+	/* prefetch first cache line of first page */
-+	prefetch(va);
-+#if L1_CACHE_BYTES < 128
-+	prefetch(va + L1_CACHE_BYTES);
-+#endif
-+
-+	/* build an skb to around the page buffer */
-+	skb = build_skb(va - IGB_SKB_PAD, truesize);
-+	if (unlikely(!skb))
-+		return NULL;
-+
-+	/* update pointers within the skb to store the data */
-+	skb_reserve(skb, IGB_SKB_PAD);
-+	__skb_put(skb, size);
-+
-+	/* pull timestamp out of packet data */
-+	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
-+		igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb);
-+		__skb_pull(skb, IGB_TS_HDR_LEN);
-+	}
-+
-+	/* update buffer offset */
 +#if (PAGE_SIZE < 8192)
++	/* if we are only owner of page we can reuse it */
++	if (unlikely(page_count(page) != 1))
++		return false;
++
++	/* flip page offset to other buffer */
 +	rx_buffer->page_offset ^= truesize;
 +#else
++	/* move offset up to the next cache line */
 +	rx_buffer->page_offset += truesize;
++
++	if (rx_buffer->page_offset > last_offset)
++		return false;
 +#endif
 +
-+	return skb;
++	/* Even if we own the page, we are not allowed to use atomic_set()
++	 * This would break get_page_unless_zero() users.
++	 */
++	page_ref_inc(page);
++
++	return true;
 +}
 +
- static inline void igb_rx_checksum(struct igb_ring *ring,
- 				   union e1000_adv_rx_desc *rx_desc,
- 				   struct sk_buff *skb)
-@@ -7219,6 +7264,8 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 		/* retrieve a buffer from the ring */
- 		if (skb)
- 			igb_add_rx_frag(rx_ring, rx_buffer, skb, size);
-+		else if (ring_uses_build_skb(rx_ring))
-+			skb = igb_build_skb(rx_ring, rx_buffer, rx_desc, size);
- 		else
- 			skb = igb_construct_skb(rx_ring, rx_buffer,
- 						rx_desc, size);
+ /**
+  * ixgbe_add_rx_frag - Add contents of Rx buffer to sk_buff
+  * @rx_ring: rx descriptor ring to transact packets on
+@@ -1952,18 +1987,18 @@ static bool ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
+ 			      struct sk_buff *skb)
+ {
+ 	struct page *page = rx_buffer->page;
++	unsigned char *va = page_address(page) + rx_buffer->page_offset;
+ 	unsigned int size = le16_to_cpu(rx_desc->wb.upper.length);
+ #if (PAGE_SIZE < 8192)
+ 	unsigned int truesize = ixgbe_rx_bufsz(rx_ring);
+ #else
+ 	unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
+-	unsigned int last_offset = ixgbe_rx_pg_size(rx_ring) -
+-				   ixgbe_rx_bufsz(rx_ring);
+ #endif
+ 
+-	if ((size <= IXGBE_RX_HDR_SIZE) && !skb_is_nonlinear(skb)) {
+-		unsigned char *va = page_address(page) + rx_buffer->page_offset;
++	if (unlikely(skb_is_nonlinear(skb)))
++		goto add_tail_frag;
+ 
++	if (size <= IXGBE_RX_HDR_SIZE) {
+ 		memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
+ 
+ 		/* page is not reserved, we can reuse buffer as-is */
+@@ -1975,34 +2010,11 @@ static bool ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
+ 		return false;
+ 	}
+ 
++add_tail_frag:
+ 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, page,
+ 			rx_buffer->page_offset, size, truesize);
+ 
+-	/* avoid re-using remote pages */
+-	if (unlikely(ixgbe_page_is_reserved(page)))
+-		return false;
+-
+-#if (PAGE_SIZE < 8192)
+-	/* if we are only owner of page we can reuse it */
+-	if (unlikely(page_count(page) != 1))
+-		return false;
+-
+-	/* flip page offset to other buffer */
+-	rx_buffer->page_offset ^= truesize;
+-#else
+-	/* move offset up to the next cache line */
+-	rx_buffer->page_offset += truesize;
+-
+-	if (rx_buffer->page_offset > last_offset)
+-		return false;
+-#endif
+-
+-	/* Even if we own the page, we are not allowed to use atomic_set()
+-	 * This would break get_page_unless_zero() users.
+-	 */
+-	page_ref_inc(page);
+-
+-	return true;
++	return ixgbe_can_reuse_rx_page(rx_buffer, page, truesize);
+ }
+ 
+ static struct sk_buff *ixgbe_fetch_rx_buffer(struct ixgbe_ring *rx_ring,
 
