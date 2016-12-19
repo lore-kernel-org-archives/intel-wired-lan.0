@@ -1,40 +1,116 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Sat, 17 Dec 2016 14:40:00 +0100
-Subject: [Intel-wired-lan] [PATCH v4 4/4] i40e: Validate xdp_adjust_head
-	support
-In-Reply-To: <20161217134000.31640-1-bjorn.topel@gmail.com>
-References: <20161217134000.31640-1-bjorn.topel@gmail.com>
-Message-ID: <20161217134000.31640-5-bjorn.topel@gmail.com>
+From: Vasiliy Tolstov <v.tolstov@selfip.ru>
+Date: Mon, 19 Dec 2016 14:07:30 +0300
+Subject: [Intel-wired-lan] ixgbe 4.2.1-k initiating reset due to tx
+	timeout
+In-Reply-To: <CACaajQsSFcuMDNVrEbCAkJQABLCKO+LRPrZwb=T9ahqhRpVNrg@mail.gmail.com>
+References: <CACaajQsSFcuMDNVrEbCAkJQABLCKO+LRPrZwb=T9ahqhRpVNrg@mail.gmail.com>
+Message-ID: <CACaajQvkdzPM=SfXEJfidc72qOJ5UdO0a8kAL7hpCKu3LK2uWw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
+Also note that in time of this error i have packet rate is about 200000 pps
 
-This patch will tell the user that bpf_xdp_adjust_head() is currently
-not supported.
+2016-12-19 14:06 GMT+03:00 Vasiliy Tolstov <v.tolstov@selfip.ru>:
+> Hi! I'm using 4.4.x stable kernel and have errors in SFP+ network card
+> on two servers.
+>
+> filename:
+> /lib/modules/4.4.x/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
+> version:        4.2.1-k
+> license:        GPL
+> description:    Intel(R) 10 Gigabit PCI Express Network Driver
+> author:         Intel Corporation, <linux.nics@intel.com>
+>
+> Does Intel own driver already have fix for this issue? What i need to
+> do to fix this?
+>
+> Full log:
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: tx hang 12
+> detected on queue 6, resetting adapter
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: initiating reset
+> due to tx timeout
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: Detected Tx Unit Hang
+>   Tx Queue             <8>
+>   TDH, TDT             <0>, <16c>
+>   next_to_use          <0>
+>   next_to_clean        <0>
+> tx_buffer_info[next_to_clean]
+>   time_stamp           <0>
+>   jiffies              <10f8de392>
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: tx hang 12
+> detected on queue 8, resetting adapter
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: initiating reset
+> due to tx timeout
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: Detected Tx Unit Hang
+>   Tx Queue             <9>
+>   TDH, TDT             <0>, <4>
+>   next_to_use          <4>
+>   next_to_clean        <0>
+> tx_buffer_info[next_to_clean]
+>   time_stamp           <10f8de364>
+>   jiffies              <10f8de392>
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: Detected Tx Unit Hang
+>   Tx Queue             <10>
+>   TDH, TDT             <0>, <82>
+>   next_to_use          <2>
+>   next_to_clean        <0>
+> tx_buffer_info[next_to_clean]
+>   time_stamp           <10f8de270>
+>   jiffies              <10f8de392>
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: tx hang 12
+> detected on queue 9, resetting adapter
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: initiating reset
+> due to tx timeout
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: tx hang 12
+> detected on queue 10, resetting adapter
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: initiating reset
+> due to tx timeout
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: Reset adapter
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.0 eth0: tx hang 13
+> detected on queue 4, resetting adapter
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: Detected Tx Unit Hang
+>   Tx Queue             <21>
+>   TDH, TDT             <21>, <1022>
+>   next_to_use          <c2>
+>   next_to_clean        <c2>
+> tx_buffer_info[next_to_clean]
+>   time_stamp           <1095cdc2f>
+>   jiffies              <10f8de3ad>
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: Detected Tx Unit Hang
+>   Tx Queue             <22>
+>   TDH, TDT             <8f>, <90>
+>   next_to_use          <db>
+>   next_to_clean        <db>
+> tx_buffer_info[next_to_clean]
+>   time_stamp           <10b77e84c>
+>   jiffies              <10f8de3ad>
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: tx hang 1 detected
+> on queue 22, resetting adapter
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: initiating reset
+> due to tx timeout
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: Reset adapter
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: tx hang 2 detected
+> on queue 21, resetting adapter
+> [Sat Dec 17 05:41:33 2016] ixgbe 0000:05:00.1 eth2: initiating reset
+> due to tx timeout
+> [Sat Dec 17 05:41:34 2016] ixgbe 0000:05:00.0 eth0: detected SFP+: 5
+> [Sat Dec 17 05:41:34 2016] ixgbe 0000:05:00.1 eth2: detected SFP+: 6
+> [Sat Dec 17 05:41:34 2016] ixgbe 0000:05:00.0 eth0: NIC Link is Up 10
+> Gbps, Flow Control: RX/TX
+> [Sat Dec 17 05:41:34 2016] ixgbe 0000:05:00.1 eth2: NIC Link is Up 10
+> Gbps, Flow Control: RX/TX
+>
+>
+>
+> --
+> Vasiliy Tolstov,
+> e-mail: v.tolstov at selfip.ru
 
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index efb95fb851f4..94eed585a01b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9545,6 +9545,9 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
- 	bool need_reset;
- 	struct bpf_prog *old_prog;
- 
-+	if (prog && prog->xdp_adjust_head)
-+		return -EOPNOTSUPP;
-+
- 	/* The Rx frame has to fit in 2k */
- 	if (frame_size > I40E_RXBUFFER_2048)
- 		return -EINVAL;
+
 -- 
-2.9.3
-
+Vasiliy Tolstov,
+e-mail: v.tolstov at selfip.ru
