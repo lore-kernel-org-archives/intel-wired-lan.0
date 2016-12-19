@@ -1,69 +1,153 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 19 Dec 2016 12:10:39 -0800
-Subject: [Intel-wired-lan] [RFC PATCH 00/20] Enable the use of build_skb in
-	igb/ixgbe
-Message-ID: <20161219200456.27116.28900.stgit@localhost.localdomain>
+Date: Mon, 19 Dec 2016 12:10:45 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 01/20] mm: Rename __alloc_page_frag to
+ page_frag_alloc and __free_page_frag to page_frag_free
+In-Reply-To: <20161219200456.27116.28900.stgit@localhost.localdomain>
+References: <20161219200456.27116.28900.stgit@localhost.localdomain>
+Message-ID: <20161219201045.27116.42513.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch series is based off of Dave Miller's latest net tree.  The plan
-is to submit it for next-queue once net has been merged back into net-next.
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-The first 3 patches are in a bit of limbo.  They have been accepted for
-linux-mm, however I haven't seen them submitted to Linus's tree as of yet.
-According to Andrew Morton they are on his list to pull in post 4.9.
+This patch renames the page frag functions to be more consistent with other
+APIs.  Specifically we place the name page_frag first in the name and then
+have either an alloc or free call name that we append as the suffix.  This
+makes it a bit clearer in terms of naming.
 
-The remaining patches implement the changes to support build_skb and
-various other performance improvements.  So far I am doing most of my
-performance testing on ixgbe with this patch set and the results are
-promising.  I am seeing throughput improvements of 10% with netperf
-TCP_STREAM tests w/o LRO.  With VXLAN tunnels I am seeing improvements of
-as much as 30% when out checksums are enabled.
+In addition we drop the leading double underscores since we are technically
+no longer a backing interface and instead the front end that is called from
+the networking APIs.
 
-Any initial feedback would be useful.  My next steps for this is to look at
-generating changes for i40e and adding support to out-of-tree drivers for
-these features.
+The last bit I changed is I rebased page_frag_free to actually function
+very similar to the function free_pages, the only real difference now is
+the fact that we have to get the page order by calling compound page
+instead of having it passed as a part of the function call.
 
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
+ include/linux/gfp.h    |    6 +++---
+ include/linux/skbuff.h |    2 +-
+ mm/page_alloc.c        |   20 ++++++++++++--------
+ net/core/skbuff.c      |    8 ++++----
+ 4 files changed, 20 insertions(+), 16 deletions(-)
 
-Alexander Duyck (20):
-      mm: Rename __alloc_page_frag to page_frag_alloc and __free_page_frag to page_frag_free
-      mm: Rename __page_frag functions to __page_frag_cache, drop order from drain
-      mm: Add documentation for page fragment APIs
-      igb: Add support for DMA_ATTR_WEAK_ORDERING
-      igb: Use length to determine if descriptor is done
-      igb: Limit maximum frame Rx based on MTU
-      igb: Add support for padding packet
-      igb: Add support for ethtool private flag to allow use of legacy Rx
-      igb: Break out Rx buffer page management
-      igb: Revert "igb: Revert support for build_skb in igb"
-      ixgbe: Add function for checking to see if we can reuse page
-      ixgbe: Only DMA sync frame length
-      ixgbe: Update driver to make use of DMA attributes in Rx path
-      ixgbe: Update code to better handle incrementing page count
-      ixgbe: Make use of order 1 pages and 3K buffers independent of FCoE
-      ixgbe: Use length to determine if descriptor is done
-      ixgbe: Break out Rx buffer page management
-      ixgbe: Add support for padding packet
-      ixgbe: Add private flag to control buffer mode
-      ixgbe: Add support for build_skb
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index 4175dca4ac39..6238c74e0a01 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -508,9 +508,9 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
+ struct page_frag_cache;
+ extern void __page_frag_drain(struct page *page, unsigned int order,
+ 			      unsigned int count);
+-extern void *__alloc_page_frag(struct page_frag_cache *nc,
+-			       unsigned int fragsz, gfp_t gfp_mask);
+-extern void __free_page_frag(void *addr);
++extern void *page_frag_alloc(struct page_frag_cache *nc,
++			     unsigned int fragsz, gfp_t gfp_mask);
++extern void page_frag_free(void *addr);
+ 
+ #define __free_page(page) __free_pages((page), 0)
+ #define free_page(addr) free_pages((addr), 0)
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index ac7fa34db8a7..e0b7f492b628 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -2480,7 +2480,7 @@ static inline struct sk_buff *netdev_alloc_skb_ip_align(struct net_device *dev,
+ 
+ static inline void skb_free_frag(void *addr)
+ {
+-	__free_page_frag(addr);
++	page_frag_free(addr);
+ }
+ 
+ void *napi_alloc_frag(unsigned int fragsz);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 2c6d5f64feca..4fccadbcdab9 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -3939,8 +3939,8 @@ void __page_frag_drain(struct page *page, unsigned int order,
+ }
+ EXPORT_SYMBOL(__page_frag_drain);
+ 
+-void *__alloc_page_frag(struct page_frag_cache *nc,
+-			unsigned int fragsz, gfp_t gfp_mask)
++void *page_frag_alloc(struct page_frag_cache *nc,
++		      unsigned int fragsz, gfp_t gfp_mask)
+ {
+ 	unsigned int size = PAGE_SIZE;
+ 	struct page *page;
+@@ -3991,19 +3991,23 @@ void *__alloc_page_frag(struct page_frag_cache *nc,
+ 
+ 	return nc->va + offset;
+ }
+-EXPORT_SYMBOL(__alloc_page_frag);
++EXPORT_SYMBOL(page_frag_alloc);
+ 
+ /*
+  * Frees a page fragment allocated out of either a compound or order 0 page.
+  */
+-void __free_page_frag(void *addr)
++void page_frag_free(void *addr)
+ {
+-	struct page *page = virt_to_head_page(addr);
++	struct page *page;
++
++	if (addr != 0) {
++		VM_BUG_ON(!virt_addr_valid(addr));
++		page = virt_to_head_page(addr);
+ 
+-	if (unlikely(put_page_testzero(page)))
+-		__free_pages_ok(page, compound_order(page));
++		__free_pages(page, compound_order(page));
++	}
+ }
+-EXPORT_SYMBOL(__free_page_frag);
++EXPORT_SYMBOL(page_frag_free);
+ 
+ static void *make_alloc_exact(unsigned long addr, unsigned int order,
+ 		size_t size)
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 65a74e13c45b..df4598ad6473 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -369,7 +369,7 @@ static void *__netdev_alloc_frag(unsigned int fragsz, gfp_t gfp_mask)
+ 
+ 	local_irq_save(flags);
+ 	nc = this_cpu_ptr(&netdev_alloc_cache);
+-	data = __alloc_page_frag(nc, fragsz, gfp_mask);
++	data = page_frag_alloc(nc, fragsz, gfp_mask);
+ 	local_irq_restore(flags);
+ 	return data;
+ }
+@@ -391,7 +391,7 @@ static void *__napi_alloc_frag(unsigned int fragsz, gfp_t gfp_mask)
+ {
+ 	struct napi_alloc_cache *nc = this_cpu_ptr(&napi_alloc_cache);
+ 
+-	return __alloc_page_frag(&nc->page, fragsz, gfp_mask);
++	return page_frag_alloc(&nc->page, fragsz, gfp_mask);
+ }
+ 
+ void *napi_alloc_frag(unsigned int fragsz)
+@@ -441,7 +441,7 @@ struct sk_buff *__netdev_alloc_skb(struct net_device *dev, unsigned int len,
+ 	local_irq_save(flags);
+ 
+ 	nc = this_cpu_ptr(&netdev_alloc_cache);
+-	data = __alloc_page_frag(nc, len, gfp_mask);
++	data = page_frag_alloc(nc, len, gfp_mask);
+ 	pfmemalloc = nc->pfmemalloc;
+ 
+ 	local_irq_restore(flags);
+@@ -505,7 +505,7 @@ struct sk_buff *__napi_alloc_skb(struct napi_struct *napi, unsigned int len,
+ 	if (sk_memalloc_socks())
+ 		gfp_mask |= __GFP_MEMALLOC;
+ 
+-	data = __alloc_page_frag(&nc->page, len, gfp_mask);
++	data = page_frag_alloc(&nc->page, len, gfp_mask);
+ 	if (unlikely(!data))
+ 		return NULL;
+ 
 
-
- Documentation/vm/page_frags                      |   42 ++
- drivers/net/ethernet/intel/igb/igb.h             |   55 +++
- drivers/net/ethernet/intel/igb/igb_ethtool.c     |   52 +++
- drivers/net/ethernet/intel/igb/igb_main.c        |  357 ++++++++++++-------
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   45 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   47 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  414 +++++++++++++++-------
- include/linux/gfp.h                              |    9 
- include/linux/skbuff.h                           |    2 
- mm/page_alloc.c                                  |   33 +-
- net/core/skbuff.c                                |    8 
- 11 files changed, 758 insertions(+), 306 deletions(-)
- create mode 100644 Documentation/vm/page_frags
-
---
