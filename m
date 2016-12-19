@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 19 Dec 2016 12:12:28 -0800
-Subject: [Intel-wired-lan] [RFC PATCH 18/20] ixgbe: Add support for padding
-	packet
+Date: Mon, 19 Dec 2016 12:12:34 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 19/20] ixgbe: Add private flag to
+	control buffer mode
 In-Reply-To: <20161219200456.27116.28900.stgit@localhost.localdomain>
 References: <20161219200456.27116.28900.stgit@localhost.localdomain>
-Message-ID: <20161219201228.27116.26836.stgit@localhost.localdomain>
+Message-ID: <20161219201234.27116.38972.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,173 +13,111 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This patch adds support for providing a buffer with headroom and tailroom
-to allow for shared info, NET_SKB_PAD, and NET_IP_ALIGN.  With this
-combined with the DMA changes we can start using build_skb to build frames
-around an incoming Rx buffer instead of having to memcpy the headers.
+Since there are potential drawbacks to the new Rx allocation approach I
+thought it best to add a "chicken bit" so that we can turn the feature off
+if in the event that a problem is found.
+
+It also provides a means of validating the legacy Rx path in the event that
+we are forced to fall back.  At some point int he future when we are
+convinced we don't need it anymore we might be able to drop the legacy-rx
+flag.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   17 ++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   43 +++++++++++++++++++++++--
- 2 files changed, 56 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   47 ++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index cb1e8d4c10bb..a535b538ad9e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -94,6 +94,14 @@
- #define IXGBE_RXBUFFER_4K    4096
- #define IXGBE_MAX_RXBUFFER  16384  /* largest size for a single descriptor */
- 
-+#define IXGBE_SKB_PAD		(NET_SKB_PAD + NET_IP_ALIGN)
-+#if (PAGE_SIZE < 8192)
-+#define IXGBE_MAX_FRAME_BUILD_SKB \
-+	(SKB_WITH_OVERHEAD(IXGBE_RXBUFFER_2K) - IXGBE_SKB_PAD)
-+#else
-+#define IGB_MAX_FRAME_BUILD_SKB IXGBE_RXBUFFER_2K
-+#endif
-+
- /*
-  * NOTE: netdev_alloc_skb reserves up to 64 bytes, NET_IP_ALIGN means we
-  * reserve 64 more, and skb_shared_info adds an additional 320 bytes more,
-@@ -234,6 +242,7 @@ struct ixgbe_rx_queue_stats {
- 
- enum ixgbe_ring_state_t {
- 	__IXGBE_RX_3K_BUFFER,
-+	__IXGBE_RX_BUILD_SKB_ENABLED,
- 	__IXGBE_RX_RSC_ENABLED,
- 	__IXGBE_RX_CSUM_UDP_ZERO_ERR,
- 	__IXGBE_RX_FCOE,
-@@ -243,6 +252,9 @@ enum ixgbe_ring_state_t {
- 	__IXGBE_HANG_CHECK_ARMED,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index fd192bf29b26..5117c1845b35 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -151,6 +151,13 @@ struct ixgbe_stats {
  };
+ #define IXGBE_TEST_LEN sizeof(ixgbe_gstrings_test) / ETH_GSTRING_LEN
  
-+#define ring_uses_build_skb(ring) \
-+	test_bit(__IXGBE_RX_BUILD_SKB_ENABLED, &(ring)->state)
++static const char ixgbe_priv_flags_strings[][ETH_GSTRING_LEN] = {
++#define IXGBE_PRIV_FLAGS_LEGACY_RX	BIT(0)
++	"legacy-rx",
++};
 +
- struct ixgbe_fwd_adapter {
- 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
- 	struct net_device *netdev;
-@@ -354,6 +366,10 @@ static inline unsigned int ixgbe_rx_bufsz(struct ixgbe_ring *ring)
- {
- 	if (test_bit(__IXGBE_RX_3K_BUFFER, &ring->state))
- 		return IXGBE_RXBUFFER_3K;
-+#if (PAGE_SIZE < 8192)
-+	if (ring_uses_build_skb(ring))
-+		return IXGBE_MAX_FRAME_BUILD_SKB;
-+#endif
- 	return IXGBE_RXBUFFER_2K;
++#define IXGBE_PRIV_FLAGS_STR_LEN ARRAY_SIZE(ixgbe_priv_flags_strings)
++
+ /* currently supported speeds for 10G */
+ #define ADVRTSD_MSK_10G (SUPPORTED_10000baseT_Full | \
+ 			 SUPPORTED_10000baseKX4_Full | \
+@@ -989,6 +996,8 @@ static void ixgbe_get_drvinfo(struct net_device *netdev,
+ 
+ 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev),
+ 		sizeof(drvinfo->bus_info));
++
++	drvinfo->n_priv_flags = IXGBE_PRIV_FLAGS_STR_LEN;
  }
  
-@@ -667,6 +683,7 @@ struct ixgbe_adapter {
- #define IXGBE_FLAG2_PHY_INTERRUPT		BIT(11)
- #define IXGBE_FLAG2_UDP_TUN_REREG_NEEDED	BIT(12)
- #define IXGBE_FLAG2_VLAN_PROMISC		BIT(13)
-+#define IXGBE_FLAG2_RX_LEGACY			BIT(14)
- 
- 	/* Tx fast path data */
- 	int num_tx_queues;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 3f94cad1fdc8..d509b6842b9a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1549,6 +1549,11 @@ static inline void ixgbe_rx_checksum(struct ixgbe_ring *ring,
+ static void ixgbe_get_ringparam(struct net_device *netdev,
+@@ -1128,6 +1137,8 @@ static int ixgbe_get_sset_count(struct net_device *netdev, int sset)
+ 		return IXGBE_TEST_LEN;
+ 	case ETH_SS_STATS:
+ 		return IXGBE_STATS_LEN;
++	case ETH_SS_PRIV_FLAGS:
++		return IXGBE_PRIV_FLAGS_STR_LEN;
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+@@ -1292,6 +1303,9 @@ static void ixgbe_get_strings(struct net_device *netdev, u32 stringset,
+ 		}
+ 		/* BUG_ON(p - data != IXGBE_STATS_LEN * ETH_GSTRING_LEN); */
+ 		break;
++	case ETH_SS_PRIV_FLAGS:
++		memcpy(data, ixgbe_priv_flags_strings,
++		       IXGBE_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
  	}
  }
  
-+static inline unsigned int ixgbe_rx_offset(struct ixgbe_ring *rx_ring)
+@@ -3237,6 +3251,37 @@ static int ixgbe_get_module_eeprom(struct net_device *dev,
+ 	return 0;
+ }
+ 
++static u32 ixgbe_get_priv_flags(struct net_device *netdev)
 +{
-+	return ring_uses_build_skb(rx_ring) ? IXGBE_SKB_PAD : 0;
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
++	u32 priv_flags = 0;
++
++	if (adapter->flags2 & IXGBE_FLAG2_RX_LEGACY)
++		priv_flags |= IXGBE_PRIV_FLAGS_LEGACY_RX;
++
++	return priv_flags;
 +}
 +
- static bool ixgbe_alloc_mapped_page(struct ixgbe_ring *rx_ring,
- 				    struct ixgbe_rx_buffer *bi)
- {
-@@ -1585,7 +1590,7 @@ static bool ixgbe_alloc_mapped_page(struct ixgbe_ring *rx_ring,
- 
- 	bi->dma = dma;
- 	bi->page = page;
--	bi->page_offset = 0;
-+	bi->page_offset = ixgbe_rx_offset(rx_ring);
- 	bi->pagecnt_bias = 1;
- 
- 	return true;
-@@ -1996,7 +2001,9 @@ static void ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = ixgbe_rx_pg_size(rx_ring) / 2;
- #else
--	unsigned int truesize = SKB_DATA_ALIGN(size);
-+	unsigned int truesize = ring_uses_build_skb(rx_ring) ?
-+				SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) :
-+				SKB_DATA_ALIGN(size);
- #endif
- 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
- 			rx_buffer->page_offset, size, truesize);
-@@ -2078,7 +2085,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = ixgbe_rx_pg_size(rx_ring) / 2;
- #else
--	unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
-+	unsigned int truesize = SKB_DATA_ALIGN(size);
- #endif
- 	struct sk_buff *skb;
- 
-@@ -3421,7 +3428,10 @@ static void ixgbe_configure_srrctl(struct ixgbe_adapter *adapter,
- 	srrctl = IXGBE_RX_HDR_SIZE << IXGBE_SRRCTL_BSIZEHDRSIZE_SHIFT;
- 
- 	/* configure the packet buffer length */
--	srrctl |= ixgbe_rx_bufsz(rx_ring) >> IXGBE_SRRCTL_BSIZEPKT_SHIFT;
-+	if (test_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state))
-+		srrctl |= IXGBE_RXBUFFER_3K >> IXGBE_SRRCTL_BSIZEPKT_SHIFT;
-+	else
-+		srrctl |= IXGBE_RXBUFFER_2K >> IXGBE_SRRCTL_BSIZEPKT_SHIFT;
- 
- 	/* configure descriptor type */
- 	srrctl |= IXGBE_SRRCTL_DESCTYPE_ADV_ONEBUF;
-@@ -3754,6 +3764,17 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
- 		 */
- 		rxdctl &= ~0x3FFFFF;
- 		rxdctl |=  0x080420;
-+#if (PAGE_SIZE < 8192)
-+	} else {
-+		rxdctl &= ~(IXGBE_RXDCTL_RLPMLMASK |
-+			    IXGBE_RXDCTL_RLPML_EN);
++static int ixgbe_set_priv_flags(struct net_device *netdev, u32 priv_flags)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
++	unsigned int flags2 = adapter->flags2;
 +
-+		/* Limit the maximum frame size so we don't overrun the skb */
-+		if (ring_uses_build_skb(ring) &&
-+		    !test_bit(__IXGBE_RX_3K_BUFFER, &ring->state))
-+			rxdctl |= IXGBE_MAX_FRAME_BUILD_SKB |
-+				  IXGBE_RXDCTL_RLPML_EN;
-+#endif
- 	}
- 
- 	/* enable receive descriptor ring */
-@@ -3895,12 +3916,26 @@ static void ixgbe_set_rx_buffer_len(struct ixgbe_adapter *adapter)
- 
- 		clear_ring_rsc_enabled(rx_ring);
- 		clear_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
-+		clear_bit(__IXGBE_RX_BUILD_SKB_ENABLED, &rx_ring->state);
- 
- 		if (adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED)
- 			set_ring_rsc_enabled(rx_ring);
- 
- 		if (test_bit(__IXGBE_RX_FCOE, &rx_ring->state))
- 			set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
++	flags2 &= ~IXGBE_FLAG2_RX_LEGACY;
++	if (priv_flags & IXGBE_PRIV_FLAGS_LEGACY_RX)
++		flags2 |= IXGBE_FLAG2_RX_LEGACY;
 +
-+		if (adapter->flags2 & IXGBE_FLAG2_RX_LEGACY)
-+			continue;
++	if (flags2 != adapter->flags2) {
++		adapter->flags2 = flags2;
 +
-+		set_bit(__IXGBE_RX_BUILD_SKB_ENABLED, &rx_ring->state);
++		/* reset interface to repopulate queues */
++		if (netif_running(netdev))
++			ixgbe_reinit_locked(adapter);
++	}
 +
-+#if (PAGE_SIZE < 8192)
-+		if (adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED)
-+			set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
++	return 0;
++}
 +
-+		if (max_frame > (ETH_FRAME_LEN + ETH_FCS_LEN))
-+			set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
-+#endif
- 	}
- }
- 
+ static const struct ethtool_ops ixgbe_ethtool_ops = {
+ 	.get_settings           = ixgbe_get_settings,
+ 	.set_settings           = ixgbe_set_settings,
+@@ -3271,6 +3316,8 @@ static int ixgbe_get_module_eeprom(struct net_device *dev,
+ 	.set_rxfh		= ixgbe_set_rxfh,
+ 	.get_channels		= ixgbe_get_channels,
+ 	.set_channels		= ixgbe_set_channels,
++	.get_priv_flags		= ixgbe_get_priv_flags,
++	.set_priv_flags		= ixgbe_set_priv_flags,
+ 	.get_ts_info		= ixgbe_get_ts_info,
+ 	.get_module_info	= ixgbe_get_module_info,
+ 	.get_module_eeprom	= ixgbe_get_module_eeprom,
 
