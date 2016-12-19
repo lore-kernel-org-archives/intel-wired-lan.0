@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 19 Dec 2016 12:10:58 -0800
-Subject: [Intel-wired-lan] [RFC PATCH 03/20] mm: Add documentation for page
-	fragment APIs
+Date: Mon, 19 Dec 2016 12:11:04 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 04/20] igb: Add support for
+	DMA_ATTR_WEAK_ORDERING
 In-Reply-To: <20161219200456.27116.28900.stgit@localhost.localdomain>
 References: <20161219200456.27116.28900.stgit@localhost.localdomain>
-Message-ID: <20161219201058.27116.89821.stgit@localhost.localdomain>
+Message-ID: <20161219201104.27116.72125.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,63 +13,59 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This is a first pass at trying to add documentation for the page_frag APIs.
-They may still change over time but for now I thought I would try to get
-these documented so that as more network drivers and stack calls make use
-of them we have one central spot to document how they are meant to be used.
+Since we are already using DMA attributes in igb for Rx there is no reason
+why we can't also apply DMA_ATTR_WEAK_ORDERING which is needed on some
+platforms to improve performance.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- Documentation/vm/page_frags |   42 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 42 insertions(+)
- create mode 100644 Documentation/vm/page_frags
+ drivers/net/ethernet/intel/igb/igb.h      |    3 +++
+ drivers/net/ethernet/intel/igb/igb_main.c |    6 +++---
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/vm/page_frags b/Documentation/vm/page_frags
-new file mode 100644
-index 000000000000..a6714565dbf9
---- /dev/null
-+++ b/Documentation/vm/page_frags
-@@ -0,0 +1,42 @@
-+Page fragments
-+--------------
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index acbc3abe2ddd..87c9fe9d6f18 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -148,6 +148,9 @@ struct vf_data_storage {
+ /* How many Rx Buffers do we bundle into one write to the hardware ? */
+ #define IGB_RX_BUFFER_WRITE	16 /* Must be power of 2 */
+ 
++#define IGB_RX_DMA_ATTR \
++	(DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_WEAK_ORDERING)
 +
-+A page fragment is an arbitrary-length arbitrary-offset area of memory
-+which resides within a 0 or higher order compound page.  Multiple
-+fragments within that page are individually refcounted, in the page's
-+reference counter.
-+
-+The page_frag functions, page_frag_alloc and page_frag_free, provide a
-+simple allocation framework for page fragments.  This is used by the
-+network stack and network device drivers to provide a backing region of
-+memory for use as either an sk_buff->head, or to be used in the "frags"
-+portion of skb_shared_info.
-+
-+In order to make use of the page fragment APIs a backing page fragment
-+cache is needed.  This provides a central point for the fragment allocation
-+and tracks allows multiple calls to make use of a cached page.  The
-+advantage to doing this is that multiple calls to get_page can be avoided
-+which can be expensive at allocation time.  However due to the nature of
-+this caching it is required that any calls to the cache be protected by
-+either a per-cpu limitation, or a per-cpu limitation and forcing interrupts
-+to be disabled when executing the fragment allocation.
-+
-+The network stack uses two separate caches per CPU to handle fragment
-+allocation.  The netdev_alloc_cache is used by callers making use of the
-+__netdev_alloc_frag and __netdev_alloc_skb calls.  The napi_alloc_cache is
-+used by callers of the __napi_alloc_frag and __napi_alloc_skb calls.  The
-+main difference between these two calls is the context in which they may be
-+called.  The "netdev" prefixed functions are usable in any context as these
-+functions will disable interrupts, while the "napi" prefixed functions are
-+only usable within the softirq context.
-+
-+Many network device drivers use a similar methodology for allocating page
-+fragments, but the page fragments are cached at the ring or descriptor
-+level.  In order to enable these cases it is necessary to provide a generic
-+way of tearing down a page cache.  For this reason __page_frag_cache_drain
-+was implemented.  It allows for freeing multiple references from a single
-+page via a single call.  The advantage to doing this is that it allows for
-+cleaning up the multiple references that were added to a page in order to
-+avoid calling get_page per allocation.
-+
-+Alexander Duyck, Nov 29, 2016.
+ #define AUTO_ALL_MODES		0
+ #define IGB_EEPROM_APME		0x0400
+ 
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 1515abaa5ac9..7e21cdbde948 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3961,7 +3961,7 @@ static void igb_clean_rx_ring(struct igb_ring *rx_ring)
+ 				     buffer_info->dma,
+ 				     PAGE_SIZE,
+ 				     DMA_FROM_DEVICE,
+-				     DMA_ATTR_SKIP_CPU_SYNC);
++				     IGB_RX_DMA_ATTR);
+ 		__page_frag_cache_drain(buffer_info->page,
+ 					buffer_info->pagecnt_bias);
+ 
+@@ -6990,7 +6990,7 @@ static struct sk_buff *igb_fetch_rx_buffer(struct igb_ring *rx_ring,
+ 		 */
+ 		dma_unmap_page_attrs(rx_ring->dev, rx_buffer->dma,
+ 				     PAGE_SIZE, DMA_FROM_DEVICE,
+-				     DMA_ATTR_SKIP_CPU_SYNC);
++				     IGB_RX_DMA_ATTR);
+ 		__page_frag_cache_drain(page, rx_buffer->pagecnt_bias);
+ 	}
+ 
+@@ -7250,7 +7250,7 @@ static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
+ 
+ 	/* map page for use */
+ 	dma = dma_map_page_attrs(rx_ring->dev, page, 0, PAGE_SIZE,
+-				 DMA_FROM_DEVICE, DMA_ATTR_SKIP_CPU_SYNC);
++				 DMA_FROM_DEVICE, IGB_RX_DMA_ATTR);
+ 
+ 	/* if mapping failed free memory back to system since
+ 	 * there isn't much point in holding memory we can't use
 
