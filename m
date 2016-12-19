@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 19 Dec 2016 12:11:10 -0800
-Subject: [Intel-wired-lan] [RFC PATCH 05/20] igb: Use length to determine if
-	descriptor is done
+Date: Mon, 19 Dec 2016 12:11:16 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 06/20] igb: Limit maximum frame Rx
+	based on MTU
 In-Reply-To: <20161219200456.27116.28900.stgit@localhost.localdomain>
 References: <20161219200456.27116.28900.stgit@localhost.localdomain>
-Message-ID: <20161219201110.27116.9226.stgit@localhost.localdomain>
+Message-ID: <20161219201116.27116.86869.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,39 +13,82 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This change makes it so that we use the length of the packet instead of the
-DD status bit to determine if a new descriptor is ready to be processed.
-The obvious advantage is that it cuts down on reads as we don't really even
-need the DD bit if going from a 0 to a non-zero value on size is enough to
-inform us that the packet has been completed.
+In order to support the use of build_skb going forward it will be necessary
+to place a maximum limit on the amount of data we can receive when jumbo
+frames is not enabled.  In order to do this I am adding a new upper limit
+for receive based on the size of a 2K buffer minus padding.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/igb/igb.h      |   10 +++++++++-
+ drivers/net/ethernet/intel/igb/igb_main.c |   16 ++++++++++++----
+ 2 files changed, 21 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index 87c9fe9d6f18..390c2a6a98aa 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -143,8 +143,17 @@ struct vf_data_storage {
+ #define IGB_RXBUFFER_256	256
+ #define IGB_RXBUFFER_2048	2048
+ #define IGB_RX_HDR_LEN		IGB_RXBUFFER_256
++#define IGB_TS_HDR_LEN		16
+ #define IGB_RX_BUFSZ		IGB_RXBUFFER_2048
+ 
++#define IGB_SKB_PAD		(NET_SKB_PAD + NET_IP_ALIGN)
++#if (PAGE_SIZE < 8192)
++#define IGB_MAX_FRAME_BUILD_SKB \
++	(SKB_WITH_OVERHEAD(IGB_RXBUFFER_2048) - IGB_SKB_PAD - IGB_TS_HDR_LEN)
++#else
++#define IGB_MAX_FRAME_BUILD_SKB (IGB_RXBUFFER_2048 - IGB_TS_HDR_LEN)
++#endif
++
+ /* How many Rx Buffers do we bundle into one write to the hardware ? */
+ #define IGB_RX_BUFFER_WRITE	16 /* Must be power of 2 */
+ 
+@@ -561,7 +570,6 @@ struct igb_adapter {
+ #define IGB_DMCTLX_DCFLUSH_DIS	0x80000000  /* Disable DMA Coal Flush */
+ 
+ #define IGB_82576_TSYNC_SHIFT	19
+-#define IGB_TS_HDR_LEN		16
+ enum e1000_state_t {
+ 	__IGB_TESTING,
+ 	__IGB_RESETTING,
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 7e21cdbde948..7c3c3abc72bb 100644
+index 7c3c3abc72bb..da6219c37f05 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -7172,7 +7172,7 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
+@@ -4238,7 +4238,7 @@ static void igb_set_rx_mode(struct net_device *netdev)
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	unsigned int vfn = adapter->vfs_allocated_count;
+-	u32 rctl = 0, vmolr = 0;
++	u32 rctl = 0, vmolr = 0, rlpml = MAX_JUMBO_FRAME_SIZE;
+ 	int count;
  
- 		rx_desc = IGB_RX_DESC(rx_ring, rx_ring->next_to_clean);
+ 	/* Check for Promiscuous and All Multicast modes */
+@@ -4310,12 +4310,20 @@ static void igb_set_rx_mode(struct net_device *netdev)
+ 	vmolr |= rd32(E1000_VMOLR(vfn)) &
+ 		 ~(E1000_VMOLR_ROPE | E1000_VMOLR_MPME | E1000_VMOLR_ROMPE);
  
--		if (!rx_desc->wb.upper.status_error)
-+		if (!rx_desc->wb.upper.length)
- 			break;
+-	/* enable Rx jumbo frames, no need for restriction */
++	/* enable Rx jumbo frames, restrict as needed to support build_skb */
+ 	vmolr &= ~E1000_VMOLR_RLPML_MASK;
+-	vmolr |= MAX_JUMBO_FRAME_SIZE | E1000_VMOLR_LPE;
++#if (PAGE_SIZE < 8192)
++	if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB) {
++		if (!adapter->vfs_allocated_count)
++			rlpml = IGB_MAX_FRAME_BUILD_SKB;
++		vmolr |= IGB_MAX_FRAME_BUILD_SKB;
++	} else
++#endif
++		vmolr |= MAX_JUMBO_FRAME_SIZE;
++	vmolr |= E1000_VMOLR_LPE;
  
- 		/* This memory barrier is needed to keep us from reading
-@@ -7312,8 +7312,8 @@ void igb_alloc_rx_buffers(struct igb_ring *rx_ring, u16 cleaned_count)
- 			i -= rx_ring->count;
- 		}
+ 	wr32(E1000_VMOLR(vfn), vmolr);
+-	wr32(E1000_RLPML, MAX_JUMBO_FRAME_SIZE);
++	wr32(E1000_RLPML, rlpml);
  
--		/* clear the status bits for the next_to_use descriptor */
--		rx_desc->wb.upper.status_error = 0;
-+		/* clear the length for the next_to_use descriptor */
-+		rx_desc->wb.upper.length = 0;
- 
- 		cleaned_count--;
- 	} while (cleaned_count);
+ 	igb_restore_vf_multicasts(adapter);
+ }
 
