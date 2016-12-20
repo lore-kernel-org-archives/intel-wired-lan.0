@@ -1,57 +1,105 @@
-From: Martin Kraus <lists_mk@wujiman.net>
-Date: Tue, 20 Dec 2016 14:56:11 +0100
-Subject: [Intel-wired-lan] i40e, macvlan interface,
-	interface blocks incoming vrrp multicasts
-Message-ID: <20161220135611.clpmpq2y6jja4bfg@finrod>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 20 Dec 2016 08:36:05 -0800
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbevf: fix 'Etherleak' in
+	ixgbevf
+In-Reply-To: <5c942aba-f7fb-ede6-b6a2-e591025f53a5@huawei.com>
+References: <1481802034-77729-1-git-send-email-chenweilong@huawei.com>
+ <CAKgT0UfA9VG4NQZLLxXvobtfp22yPpPssSM4Ge94KFa1RVnhyg@mail.gmail.com>
+ <5c942aba-f7fb-ede6-b6a2-e591025f53a5@huawei.com>
+Message-ID: <CAKgT0Uf_HXtJiZJsEYm9L19cZ+deVX=E+Y8JvU5+u0=bggpAqw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi.
-We got intel XL710 card using i40e driver running on debian with kernel 4.9.0-rc8-amd64
-(from experimental repo) and we are trying to get vrrp version 3 working using uvrrpd. 
+The limit of 17 is just based on the hardware.  Specifically the
+olinfo field in the Tx descriptor has a minimum length of 17 has a
+requirement.  The hardware itself is supposed to be capable of padding
+short frames that are supposed to be transmitted.  The drivers are
+supposed to pad short frames on receive to get them up to 60 bytes.
 
-The problem we are having is that after a macvlan interface is created to
-simulate the virtual mac address the interface stops accepting incoming frames
-with this source mac address which stops vrrp from finding out that a higher
-priority router came online and thus has a potential to create two vrrp masters in
-the network. 
+When you are seeing this issue are you sending frames from the VF to
+one of the local interfaces on the same port or to an external
+interface?  Also are you receiving on another linux ixgbevf driver or
+are you receiving the packet using a different driver interface such
+as DPDK?  I'm just wanting to verify this as it is possible that the
+memory leak you are seeing is on the receiver and not on the source if
+you are transmitting to a local VF or the PF as the receiver will have
+to pad the frame in such a case to get it up to 60 bytes.
 
-We are using this setup on gigabit ethernets (both intel and broadcom) and on
-X520 Intel chipsets and it has been working ok so far so this must be some new
-feature of the X710 chipset/drivers.
+- Alex
 
-This is the normal input without macvlan:
-
-root at gw-b-01:/home/mkraus#> tcpdump -i eth5 -ne proto 112 and ip6 -Q in
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode 
-listening on eth5, link-type EN10MB (Ethernet), capture size 262144 bytes
-13:42:12.536913 00:00:5e:00:02:67 > 33:33:00:00:00:12, ethertype IPv6 (0x86dd), length 94: fe80::6e9c:edff:fe1d:164b > ff02::12: ip-proto-112 40
-13:42:13.496924 00:00:5e:00:02:67 > 33:33:00:00:00:12, ethertype IPv6 (0x86dd), length 94: fe80::6e9c:edff:fe1d:164b > ff02::12: ip-proto-112 40
-13:42:14.356490 00:00:5e:00:02:67 > 33:33:00:00:00:12, ethertype IPv6 (0x86dd), length 94: fe80::6e9c:edff:fe1d:164b > ff02::12: ip-proto-112 40
-
-where 00:00:5e:00:02:67 is the vrrp virtual mac address and 33:33:00:00:00:12
-the multicast to which ipv6 vrrp multicasts.
-
-Adding macvlan still ok
-
-ip link add link eth5 name vip address 00:00:5e:00:02:67 type macvlan
-
-Bringing macvlan vip up will start filtering the incoming vrrp multicasts for
-the particular vrid which has a unique source mac address 00:00:5e:00:02:67
-(other vrrp instances with different vrids still work ok).
-
-The only way we found that works around this problem is using bridge interfaces
-which I assume the driver detects and doesn't set hardware filters on the
-interface.
-
-However we'll be using X710 a lot in the coming years and would like to
-resolve this issue without being forced to run bridge interfaces everywhere we
-need vrrp.
-
-Am I right in assuming that the current behaviour is incorrect? 
-Thanks for your help
-regards
-Martin
+On Tue, Dec 20, 2016 at 3:50 AM, Weilong Chen <chenweilong@huawei.com> wrote:
+> Hi,
+>
+> Thanks for you reply.
+> We test you patch, but the problem is still there, it seems do not work.
+>
+> I'm not sure why ixgbe use the limit 17. The kenel use ETH_ZLEN (60) with
+> out FCS. A lot of drivers such as e1000 use it. Any explaination?
+>
+> Thanks.
+>
+>
+> On 2016/12/16 0:13, Alexander Duyck wrote:
+>>
+>> On Thu, Dec 15, 2016 at 3:40 AM, Weilong Chen <chenweilong@huawei.com>
+>> wrote:
+>>>
+>>> Nessus report the vf appears to leak memory in network packets.
+>>> Fix this by padding all small packets manually.
+>>>
+>>> And the CVE-2003-0001.
+>>>
+>>> https://ofirarkin.files.wordpress.com/2008/11/atstake_etherleak_report.pdf
+>>>
+>>> Signed-off-by: Weilong Chen <chenweilong@huawei.com>
+>>> ---
+>>>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 7 +++++++
+>>>  1 file changed, 7 insertions(+)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+>>> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+>>> index 6d4bef5..137a154 100644
+>>> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+>>> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+>>> @@ -3654,6 +3654,13 @@ static int ixgbevf_xmit_frame(struct sk_buff *skb,
+>>> struct net_device *netdev)
+>>>                 return NETDEV_TX_OK;
+>>>         }
+>>>
+>>> +       /* On PCI/PCI-X HW, if packet size is less than ETH_ZLEN,
+>>> +        * packets may get corrupted during padding by HW.
+>>> +        * To WA this issue, pad all small packets manually.
+>>> +        */
+>>> +       if (eth_skb_pad(skb))
+>>> +               return NETDEV_TX_OK;
+>>> +
+>>
+>>
+>> So the patch description for this probably isn't correct.  It looks
+>> like the problem isn't leaking data it is the fact that the frames
+>> aren't being padded to prevent malicious events.  The only issue is
+>> the patch is padding by a bit too much.  I would recommend replacing
+>> this with the following from ixgbe:
+>>
+>>         /*
+>>          * The minimum packet size for olinfo paylen is 17 so pad the skb
+>>          * in order to meet this minimum size requirement.
+>>          */
+>>         if (skb_put_padto(skb, 17))
+>>                 return NETDEV_TX_OK;
+>>
+>>
+>>>         tx_ring = adapter->tx_ring[skb->queue_mapping];
+>>>
+>>>         /* need: 1 descriptor per page *
+>>> PAGE_SIZE/IXGBE_MAX_DATA_PER_TXD,
+>>> --
+>>> 1.7.12
+>>>
+>>
+>> .
+>>
+>
