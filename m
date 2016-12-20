@@ -1,111 +1,57 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 19 Dec 2016 12:12:40 -0800
-Subject: [Intel-wired-lan] [RFC PATCH 20/20] ixgbe: Add support for build_skb
-In-Reply-To: <20161219200456.27116.28900.stgit@localhost.localdomain>
-References: <20161219200456.27116.28900.stgit@localhost.localdomain>
-Message-ID: <20161219201240.27116.6362.stgit@localhost.localdomain>
+From: Martin Kraus <lists_mk@wujiman.net>
+Date: Tue, 20 Dec 2016 14:56:11 +0100
+Subject: [Intel-wired-lan] i40e, macvlan interface,
+	interface blocks incoming vrrp multicasts
+Message-ID: <20161220135611.clpmpq2y6jja4bfg@finrod>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+Hi.
+We got intel XL710 card using i40e driver running on debian with kernel 4.9.0-rc8-amd64
+(from experimental repo) and we are trying to get vrrp version 3 working using uvrrpd. 
 
-This patch adds build_skb support to the Rx path.  There are several
-advantages to this change.
+The problem we are having is that after a macvlan interface is created to
+simulate the virtual mac address the interface stops accepting incoming frames
+with this source mac address which stops vrrp from finding out that a higher
+priority router came online and thus has a potential to create two vrrp masters in
+the network. 
 
-1.  It avoids the memcpy and skb->head allocation for small packets which
-    improves performance by about 5% in my tests.
-2.  It avoids the memcpy, skb->head allocation, and eth_get_headlen
-    for larger packets improving performance by about 10% in my tests.
-3.  For VXLAN packets it allows the full header to be in skb->data which
-    improves the performance by as much as 30% in some of my tests.
+We are using this setup on gigabit ethernets (both intel and broadcom) and on
+X520 Intel chipsets and it has been working ok so far so this must be some new
+feature of the X710 chipset/drivers.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   49 ++++++++++++++++++++++++-
- 1 file changed, 48 insertions(+), 1 deletion(-)
+This is the normal input without macvlan:
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index d509b6842b9a..06a97b003639 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1897,7 +1897,7 @@ static bool ixgbe_cleanup_headers(struct ixgbe_ring *rx_ring,
- 	}
- 
- 	/* place header in linear portion of buffer */
--	if (skb_is_nonlinear(skb))
-+	if (!skb_headlen(skb))
- 		ixgbe_pull_tail(rx_ring, skb);
- 
- #ifdef IXGBE_FCOE
-@@ -2120,6 +2120,49 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- 	return skb;
- }
- 
-+static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
-+				       struct ixgbe_rx_buffer *rx_buffer,
-+				       union ixgbe_adv_rx_desc *rx_desc,
-+				       unsigned int size)
-+{
-+	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+#if (PAGE_SIZE < 8192)
-+	unsigned int truesize = ixgbe_rx_pg_size(rx_ring) / 2;
-+#else
-+	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
-+				SKB_DATA_ALIGN(IXGBE_SKB_PAD + size);
-+#endif
-+	struct sk_buff *skb;
-+
-+	/* prefetch first cache line of first page */
-+	prefetch(va);
-+#if L1_CACHE_BYTES < 128
-+	prefetch(va + L1_CACHE_BYTES);
-+#endif
-+
-+	/* build an skb to around the page buffer */
-+	skb = build_skb(va - IXGBE_SKB_PAD, truesize);
-+	if (unlikely(!skb))
-+		return NULL;
-+
-+	/* update pointers within the skb to store the data */
-+	skb_reserve(skb, IXGBE_SKB_PAD);
-+	__skb_put(skb, size);
-+
-+	/* record DMA address if this is the start of a chain of buffers */
-+	if (!ixgbe_test_staterr(rx_desc, IXGBE_RXD_STAT_EOP))
-+		IXGBE_CB(skb)->dma = rx_buffer->dma;
-+
-+	/* update buffer offset */
-+#if (PAGE_SIZE < 8192)
-+	rx_buffer->page_offset ^= truesize;
-+#else
-+	rx_buffer->page_offset += truesize;
-+#endif
-+
-+	return skb;
-+}
-+
- /**
-  * ixgbe_clean_rx_irq - Clean completed descriptors from Rx ring - bounce buf
-  * @q_vector: structure containing interrupt and ring information
-@@ -2173,6 +2216,9 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- 		/* retrieve a buffer from the ring */
- 		if (skb)
- 			ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
-+		else if (ring_uses_build_skb(rx_ring))
-+			skb = ixgbe_build_skb(rx_ring, rx_buffer,
-+					      rx_desc, size);
- 		else
- 			skb = ixgbe_construct_skb(rx_ring, rx_buffer,
- 						  rx_desc, size);
-@@ -3924,6 +3970,7 @@ static void ixgbe_set_rx_buffer_len(struct ixgbe_adapter *adapter)
- 		if (test_bit(__IXGBE_RX_FCOE, &rx_ring->state))
- 			set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
- 
-+		clear_bit(__IXGBE_RX_BUILD_SKB_ENABLED, &rx_ring->state);
- 		if (adapter->flags2 & IXGBE_FLAG2_RX_LEGACY)
- 			continue;
- 
+root at gw-b-01:/home/mkraus#> tcpdump -i eth5 -ne proto 112 and ip6 -Q in
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode 
+listening on eth5, link-type EN10MB (Ethernet), capture size 262144 bytes
+13:42:12.536913 00:00:5e:00:02:67 > 33:33:00:00:00:12, ethertype IPv6 (0x86dd), length 94: fe80::6e9c:edff:fe1d:164b > ff02::12: ip-proto-112 40
+13:42:13.496924 00:00:5e:00:02:67 > 33:33:00:00:00:12, ethertype IPv6 (0x86dd), length 94: fe80::6e9c:edff:fe1d:164b > ff02::12: ip-proto-112 40
+13:42:14.356490 00:00:5e:00:02:67 > 33:33:00:00:00:12, ethertype IPv6 (0x86dd), length 94: fe80::6e9c:edff:fe1d:164b > ff02::12: ip-proto-112 40
 
+where 00:00:5e:00:02:67 is the vrrp virtual mac address and 33:33:00:00:00:12
+the multicast to which ipv6 vrrp multicasts.
+
+Adding macvlan still ok
+
+ip link add link eth5 name vip address 00:00:5e:00:02:67 type macvlan
+
+Bringing macvlan vip up will start filtering the incoming vrrp multicasts for
+the particular vrid which has a unique source mac address 00:00:5e:00:02:67
+(other vrrp instances with different vrids still work ok).
+
+The only way we found that works around this problem is using bridge interfaces
+which I assume the driver detects and doesn't set hardware filters on the
+interface.
+
+However we'll be using X710 a lot in the coming years and would like to
+resolve this issue without being forced to run bridge interfaces everywhere we
+need vrrp.
+
+Am I right in assuming that the current behaviour is incorrect? 
+Thanks for your help
+regards
+Martin
