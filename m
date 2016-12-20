@@ -1,147 +1,77 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 21 Dec 2016 08:46:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 803b6b86ad574b0cde0ff70c89e525a9e09e7906
-Message-ID: <5859d0ff.KLIRUt+Wi2gzTRSW%fengguang.wu@intel.com>
+From: Weilong Chen <chenweilong@huawei.com>
+Date: Tue, 20 Dec 2016 19:50:30 +0800
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbevf: fix 'Etherleak' in
+	ixgbevf
+In-Reply-To: <CAKgT0UfA9VG4NQZLLxXvobtfp22yPpPssSM4Ge94KFa1RVnhyg@mail.gmail.com>
+References: <1481802034-77729-1-git-send-email-chenweilong@huawei.com>
+ <CAKgT0UfA9VG4NQZLLxXvobtfp22yPpPssSM4Ge94KFa1RVnhyg@mail.gmail.com>
+Message-ID: <5c942aba-f7fb-ede6-b6a2-e591025f53a5@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-803b6b86ad574b0cde0ff70c89e525a9e09e7906  ethtool: stop the line wrapping madness
+Hi,
 
-elapsed time: 87m
+Thanks for you reply.
+We test you patch, but the problem is still there, it seems do not work.
 
-configs tested: 124
+I'm not sure why ixgbe use the limit 17. The kenel use ETH_ZLEN (60) 
+with out FCS. A lot of drivers such as e1000 use it. Any explaination?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thanks.
 
-i386                     randconfig-a0-201651
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-powerpc                           allnoconfig
-s390                        default_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x016-201651
-x86_64                 randconfig-x010-201651
-x86_64                 randconfig-x014-201651
-x86_64                 randconfig-x019-201651
-x86_64                 randconfig-x012-201651
-x86_64                 randconfig-x013-201651
-x86_64                 randconfig-x018-201651
-x86_64                 randconfig-x011-201651
-x86_64                 randconfig-x015-201651
-x86_64                 randconfig-x017-201651
-i386                             alldefconfig
-i386                              allnoconfig
-i386                     randconfig-s1-201651
-i386                     randconfig-s0-201651
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                   randconfig-i0-201651
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201651
-i386                     randconfig-i1-201651
-i386                   randconfig-x012-201651
-i386                   randconfig-x011-201651
-i386                   randconfig-x018-201651
-i386                   randconfig-x016-201651
-i386                   randconfig-x019-201651
-i386                   randconfig-x013-201651
-i386                   randconfig-x017-201651
-i386                   randconfig-x015-201651
-i386                   randconfig-x010-201651
-i386                   randconfig-x014-201651
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-n0-201651
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x007-201651
-x86_64                 randconfig-x001-201651
-x86_64                 randconfig-x000-201651
-x86_64                 randconfig-x008-201651
-x86_64                 randconfig-x002-201651
-x86_64                 randconfig-x006-201651
-x86_64                 randconfig-x004-201651
-x86_64                 randconfig-x005-201651
-x86_64                 randconfig-x003-201651
-x86_64                 randconfig-x009-201651
-i386                     randconfig-r0-201651
-i386                             allmodconfig
-i386                   randconfig-x003-201651
-i386                   randconfig-x005-201651
-i386                   randconfig-x006-201651
-i386                   randconfig-x009-201651
-i386                   randconfig-x001-201651
-i386                   randconfig-x008-201651
-i386                   randconfig-x004-201651
-i386                   randconfig-x000-201651
-i386                   randconfig-x002-201651
-i386                   randconfig-x007-201651
-i386                                defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
+On 2016/12/16 0:13, Alexander Duyck wrote:
+> On Thu, Dec 15, 2016 at 3:40 AM, Weilong Chen <chenweilong@huawei.com> wrote:
+>> Nessus report the vf appears to leak memory in network packets.
+>> Fix this by padding all small packets manually.
+>>
+>> And the CVE-2003-0001.
+>> https://ofirarkin.files.wordpress.com/2008/11/atstake_etherleak_report.pdf
+>>
+>> Signed-off-by: Weilong Chen <chenweilong@huawei.com>
+>> ---
+>>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 7 +++++++
+>>  1 file changed, 7 insertions(+)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+>> index 6d4bef5..137a154 100644
+>> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+>> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+>> @@ -3654,6 +3654,13 @@ static int ixgbevf_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+>>                 return NETDEV_TX_OK;
+>>         }
+>>
+>> +       /* On PCI/PCI-X HW, if packet size is less than ETH_ZLEN,
+>> +        * packets may get corrupted during padding by HW.
+>> +        * To WA this issue, pad all small packets manually.
+>> +        */
+>> +       if (eth_skb_pad(skb))
+>> +               return NETDEV_TX_OK;
+>> +
+>
+> So the patch description for this probably isn't correct.  It looks
+> like the problem isn't leaking data it is the fact that the frames
+> aren't being padded to prevent malicious events.  The only issue is
+> the patch is padding by a bit too much.  I would recommend replacing
+> this with the following from ixgbe:
+>
+>         /*
+>          * The minimum packet size for olinfo paylen is 17 so pad the skb
+>          * in order to meet this minimum size requirement.
+>          */
+>         if (skb_put_padto(skb, 17))
+>                 return NETDEV_TX_OK;
+>
+>
+>>         tx_ring = adapter->tx_ring[skb->queue_mapping];
+>>
+>>         /* need: 1 descriptor per page * PAGE_SIZE/IXGBE_MAX_DATA_PER_TXD,
+>> --
+>> 1.7.12
+>>
+>
+> .
+>
 
-Thanks,
-Fengguang
