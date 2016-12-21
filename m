@@ -1,18 +1,18 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 21 Dec 2016 09:48:34 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 4ae14a5babec3ae14c32b2d0d6a67cbd50f01856
-Message-ID: <5859df72.uGI0knlIszl2rM8l%fengguang.wu@intel.com>
+Date: Wed, 21 Dec 2016 09:48:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 759caea8ff796d04abb14b0d5e197ed7ced16dc4
+Message-ID: <5859df6a.rKBdzCBsruIggip6%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-4ae14a5babec3ae14c32b2d0d6a67cbd50f01856  i40e: Validate xdp_adjust_head support
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+759caea8ff796d04abb14b0d5e197ed7ced16dc4  igb: re-assign hw address pointer on reset after PCI error
 
-elapsed time: 96m
+elapsed time: 97m
 
 configs tested: 124
 
@@ -59,7 +59,6 @@ m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201651
 i386                     randconfig-s1-201651
-i386                               tinyconfig
 x86_64                   randconfig-i0-201651
 sparc                               defconfig
 sparc64                           allnoconfig
@@ -78,6 +77,7 @@ nios2                         10m50_defconfig
 score                      spct6600_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
+i386                               tinyconfig
 i386                   randconfig-x012-201651
 i386                   randconfig-x011-201651
 i386                   randconfig-x018-201651
