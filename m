@@ -1,149 +1,89 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 22 Dec 2016 08:25:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- c9878a7b7ce4d4941d669f8ce5849872d8cb3003
-Message-ID: <585b1d61.TGDnH2kh6ijj8dna%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 22 Dec 2016 09:55:03 -0800
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbevf: fix 'Etherleak' in
+	ixgbevf
+In-Reply-To: <74e1e76d-40f6-db8e-74ac-90b0474d4e11@huawei.com>
+References: <1481802034-77729-1-git-send-email-chenweilong@huawei.com>
+ <CAKgT0UfA9VG4NQZLLxXvobtfp22yPpPssSM4Ge94KFa1RVnhyg@mail.gmail.com>
+ <5c942aba-f7fb-ede6-b6a2-e591025f53a5@huawei.com>
+ <CAKgT0Uf_HXtJiZJsEYm9L19cZ+deVX=E+Y8JvU5+u0=bggpAqw@mail.gmail.com>
+ <ee9ad90d-1c4b-7358-a172-8369a0c7da8b@huawei.com>
+ <CAKgT0Uf+hV=TDvNTqFz0aiKQ+iio7VhBc5pusc4aDtFAVbREpA@mail.gmail.com>
+ <74e1e76d-40f6-db8e-74ac-90b0474d4e11@huawei.com>
+Message-ID: <CAKgT0Uffy-PEqTEKdFDeb_v=vF24wpn8JkKQdUhOPTKNuTuBkw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-c9878a7b7ce4d4941d669f8ce5849872d8cb3003  i40e: remove duplicate device id from pci table
+Yes that is much more helpful.  So looking at it things are being
+padded but the last 4 bytes always have this extra data in them.  I've
+been trying to recreate the issue on an 82599 with an SR-IOV VF and I
+haven't been having much luck reproducing the problem.
 
-elapsed time: 44m
+In your test environment is the 82599 connected directly to the
+Windows machine or are there any
+switches/routers/gateways/tunnels/vlans in between?  I've tried
+several iterations but with the 82599 connected directly to another
+NIC I have I am not able to get it to produce the garbage padding you
+are seeing. It makes me wonder if there might be something that is
+manipulating the packets in between the two systems.  For example if
+there was a VLAN being associated with the VF that is later stripped
+and then the packet handed raw to the test system it might explain
+what is introducing the extra padding and reason for pulling in the
+CRC, and your patch would mask the issue since it would push the
+minimum frame size with a VLAN to 68 instead of 64.
 
-configs tested: 125
+- Alex
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-i386                     randconfig-a0-201651
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x010-201651
-x86_64                 randconfig-x011-201651
-x86_64                 randconfig-x012-201651
-x86_64                 randconfig-x013-201651
-x86_64                 randconfig-x014-201651
-x86_64                 randconfig-x015-201651
-x86_64                 randconfig-x016-201651
-x86_64                 randconfig-x017-201651
-x86_64                 randconfig-x018-201651
-x86_64                 randconfig-x019-201651
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201651
-i386         randconfig-s0-201651+CONFIG_DEBUG_INFO_REDUCED
-i386                     randconfig-s1-201651
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201651
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201651
-i386                     randconfig-i1-201651
-i386                               tinyconfig
-i386                   randconfig-x012-201651
-i386                   randconfig-x011-201651
-i386                   randconfig-x018-201651
-i386                   randconfig-x016-201651
-i386                   randconfig-x019-201651
-i386                   randconfig-x013-201651
-i386                   randconfig-x017-201651
-i386                   randconfig-x015-201651
-i386                   randconfig-x010-201651
-i386                   randconfig-x014-201651
-i386                     randconfig-n0-201651
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                                  kexec
-x86_64                               rhel-7.2
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x007-201651
-x86_64                 randconfig-x001-201651
-x86_64                 randconfig-x000-201651
-x86_64                 randconfig-x008-201651
-x86_64                 randconfig-x002-201651
-x86_64                 randconfig-x006-201651
-x86_64                 randconfig-x004-201651
-x86_64                 randconfig-x005-201651
-x86_64                 randconfig-x003-201651
-x86_64                 randconfig-x009-201651
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201651
-i386         randconfig-r0-201651+CONFIG_DEBUG_INFO_REDUCED
-i386                             allmodconfig
-i386                   randconfig-x003-201651
-i386                   randconfig-x005-201651
-i386                   randconfig-x006-201651
-i386                   randconfig-x009-201651
-i386                   randconfig-x001-201651
-i386                   randconfig-x008-201651
-i386                   randconfig-x004-201651
-i386                   randconfig-x000-201651
-i386                   randconfig-x002-201651
-i386                   randconfig-x007-201651
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-
-Thanks,
-Fengguang
+On Wed, Dec 21, 2016 at 6:00 PM, Kefeng Wang <wangkefeng.wang@huawei.com> wrote:
+>
+>
+> On 2016/12/21 10:20, Alexander Duyck wrote:
+>> I find it curious that only the last 4 bytes have data in them.  I'm
+>> wondering if the NIC/driver in the Windows/Nessus system is
+>> interpreting the 4 byte CRC on the end of the frame as padding instead
+>> of stripping it.
+>>
+>> Is there any chance you could capture the entire frame instead of just
+>> the padding?  Maybe you could run something like wireshark without
+>> enabling promiscuous mode on the VF and capture the frames it is
+>> trying to send and receive.  What I want to verify is what the actual
+>> amount of padding is that is needed to get to 60 bytes and where the
+>> CRC should start.
+>>
+>> - Alex
+>
+> Here is the verbose output, is this useful?
+> Or we will try according to your advice, thanks,
+>
+> D:\Program Files\Tenable\Nessus>nasl.exe -aX -t 192.169.0.151 etherleak.nasl
+> --------------------------
+>  ---[ ICMP ]---
+> 0x00:  45 00 00 1D 20 81 00 00 40 01 D7 F3 C0 A9 00 97    E... ... at .......
+> 0x10:  C0 A9 00 82 00 00 87 FD 00 01 00 01 78 00 00 00    ............x...
+> 0x20:  00 00 00 00 00 00 00 00 00 00 98 E4 75 DF          ............u.
+> --------------------------
+>  ---[ ICMP ]---
+> 0x00:  45 00 00 1D 20 85 00 00 40 01 D7 EF C0 A9 00 97    E... ... at .......
+> 0x10:  C0 A9 00 82 00 00 87 FD 00 01 00 01 78 00 00 00    ............x...
+> 0x20:  00 00 00 00 00 00 00 00 00 00 FB DA F8 13          ..............
+> ---[ ether1 ]---
+> 0x00:  00 00 00 00 00 00 00 00 00 00 00 00 00 98 E4 75    ...............u
+> 0x10:  DF                                                 .
+> ---[ ether2 ]---
+> 0x00:  00 00 00 00 00 00 00 00 00 00 00 00 00 FB DA F8    ................
+> 0x10:  13                                                 .
+>
+> Padding observed in one frame :
+>
+>   0x00:  00 00 00 00 00 00 00 00 00 00 00 00 00 98 E4 75    ...............u
+>   0x10:  DF                                                 .
+>
+> Padding observed in another frame :
+>
+>   0x00:  00 00 00 00 00 00 00 00 00 00 00 00 00 FB DA F8    ................
+>   0x10:  13
+>
+>
