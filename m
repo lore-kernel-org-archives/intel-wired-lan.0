@@ -1,44 +1,67 @@
-From: Denny Page <dennypage@me.com>
-Date: Thu, 22 Dec 2016 10:24:34 -0800
-Subject: [Intel-wired-lan] [PATCH v3] ethtool: stop the line wrapping
- madness
-In-Reply-To: <AAEA33E297BCAC4B9BB20A7C2DF0AB8D804AC48A@FMSMSX113.amr.corp.intel.com>
-References: <20161221003528.4483-1-mitch.a.williams@intel.com>
- <CAKgT0UfAg5aOfi07ZBiHqjCMhGKL9kh-fmUWQSP3L0vfHOTBqw@mail.gmail.com>
- <AAEA33E297BCAC4B9BB20A7C2DF0AB8D804AC48A@FMSMSX113.amr.corp.intel.com>
-Message-ID: <F9736926-F45F-4F70-A6B4-2DFE46AE40BF@me.com>
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Date: Thu, 22 Dec 2016 10:00:50 +0800
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbevf: fix 'Etherleak' in
+	ixgbevf
+In-Reply-To: <CAKgT0Uf+hV=TDvNTqFz0aiKQ+iio7VhBc5pusc4aDtFAVbREpA@mail.gmail.com>
+References: <1481802034-77729-1-git-send-email-chenweilong@huawei.com>
+ <CAKgT0UfA9VG4NQZLLxXvobtfp22yPpPssSM4Ge94KFa1RVnhyg@mail.gmail.com>
+ <5c942aba-f7fb-ede6-b6a2-e591025f53a5@huawei.com>
+ <CAKgT0Uf_HXtJiZJsEYm9L19cZ+deVX=E+Y8JvU5+u0=bggpAqw@mail.gmail.com>
+ <ee9ad90d-1c4b-7358-a172-8369a0c7da8b@huawei.com>
+ <CAKgT0Uf+hV=TDvNTqFz0aiKQ+iio7VhBc5pusc4aDtFAVbREpA@mail.gmail.com>
+Message-ID: <74e1e76d-40f6-db8e-74ac-90b0474d4e11@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I personally found this to be amusing. A little bit of lightheartedness is a good thing. The only serious problem I have with it is that Decwriters are 132 columns wide so I have difficulty viewing this as a justification for an 80 column limit.
-
-Denny
 
 
-> On Dec 21, 2016, at 09:39, Williams, Mitch A <mitch.a.williams@intel.com> wrote:
+On 2016/12/21 10:20, Alexander Duyck wrote:
+> I find it curious that only the last 4 bytes have data in them.  I'm
+> wondering if the NIC/driver in the Windows/Nessus system is
+> interpreting the 4 byte CRC on the end of the frame as padding instead
+> of stripping it.
 > 
->> 
->> On Tue, Dec 20, 2016 at 4:35 PM, Mitch Williams
->> <mitch.a.williams@intel.com> wrote:
->>> Folks, we have a hard limit of 80 characters per line in the kernel,
->>> mostly due to Linus' insistence on printing out each release on greenbar
->>> with his Decwriter. So why do we have function and macro names that are
->>> over 30 characters long? Add a tab or two and a few parameters and boom!
->>> you're wrapping lines.
->> 
->> Get rid of the sarcasm, it comes across as unprofessional.  There are
->> those out there who don't grok it (myself included), and worse yet
->> there are those who will interpret it as being some passive aggressive
->> slight towards Linus.  Best to just leave it out and not have it in
->> there as a reason for the patch to be rejected.  If you need to
->> mention the 80 character limit feel free to quote chunks out of
->> "Documentation/CodingStyle".
+> Is there any chance you could capture the entire frame instead of just
+> the padding?  Maybe you could run something like wireshark without
+> enabling promiscuous mode on the VF and capture the frames it is
+> trying to send and receive.  What I want to verify is what the actual
+> amount of padding is that is needed to get to 60 bytes and where the
+> CRC should start.
 > 
-> I disagree with you comprehensively. I have been sending out humorous commit messages for years and people (including Dave Miller) have come to expect this from me. Just because you don't get the joke doesn't mean it's unprofessional.
+> - Alex
 
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161222/847cbe96/attachment.html>
+Here is the verbose output, is this useful?
+Or we will try according to your advice, thanks,
+
+D:\Program Files\Tenable\Nessus>nasl.exe -aX -t 192.169.0.151 etherleak.nasl
+--------------------------
+ ---[ ICMP ]---
+0x00:  45 00 00 1D 20 81 00 00 40 01 D7 F3 C0 A9 00 97    E... ... at .......
+0x10:  C0 A9 00 82 00 00 87 FD 00 01 00 01 78 00 00 00    ............x...
+0x20:  00 00 00 00 00 00 00 00 00 00 98 E4 75 DF          ............u.
+--------------------------
+ ---[ ICMP ]---
+0x00:  45 00 00 1D 20 85 00 00 40 01 D7 EF C0 A9 00 97    E... ... at .......
+0x10:  C0 A9 00 82 00 00 87 FD 00 01 00 01 78 00 00 00    ............x...
+0x20:  00 00 00 00 00 00 00 00 00 00 FB DA F8 13          ..............
+---[ ether1 ]---
+0x00:  00 00 00 00 00 00 00 00 00 00 00 00 00 98 E4 75    ...............u
+0x10:  DF                                                 .
+---[ ether2 ]---
+0x00:  00 00 00 00 00 00 00 00 00 00 00 00 00 FB DA F8    ................
+0x10:  13                                                 .
+
+Padding observed in one frame :
+
+  0x00:  00 00 00 00 00 00 00 00 00 00 00 00 00 98 E4 75    ...............u
+  0x10:  DF                                                 .
+
+Padding observed in another frame :
+
+  0x00:  00 00 00 00 00 00 00 00 00 00 00 00 00 FB DA F8    ................
+  0x10:  13
+
+
