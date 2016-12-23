@@ -1,31 +1,29 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 23 Dec 2016 17:38:56 +0000
-Subject: [Intel-wired-lan] [net-next PATCH] i40e: remove duplicate
- device id	from pci table
-In-Reply-To: <148236148499.10903.15465421636550463922.stgit@cmw-ivy.jf.intel.com>
-References: <148236148499.10903.15465421636550463922.stgit@cmw-ivy.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA4C215@ORSMSX104.amr.corp.intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Fri, 23 Dec 2016 20:46:43 +0000
+Subject: [Intel-wired-lan] [PATCH V9 1/4] ixgbe: Fix issues with
+	EEPROM	access
+In-Reply-To: <148174212080.48405.5004281387054679857.stgit@mdrustad-wks.jf.intel.com>
+References: <148174202018.48405.9935418150415224529.stgit@mdrustad-wks.jf.intel.com>
+ <148174212080.48405.5004281387054679857.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E49103684@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Carolyn Wyborny
-> Sent: Wednesday, December 21, 2016 3:05 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net-next PATCH] i40e: remove duplicate device id
-> from pci table
-> 
-> Testing Hints (Required if no HSD): No testing, code review.
-> 
-> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c |    1 -
->  1 file changed, 1 deletion(-)
-
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Mark D Rustad
+Sent: Wednesday, December 14, 2016 11:02 AM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [PATCH V9 1/4] ixgbe: Fix issues with EEPROM access
+
+There are two problems with EEPROM access. One is that it needs to hold the semaphore until the entire response is read or else the response can be corrupted by other firmware accesses. The second problem is that acquiring and releasing the semaphore is slow, so it should be taken and released once when multiple EEPROM accesses will be done.
+
+Both of these issues can be solved by adding a new function, ixgbe_hic_unlocked, to issue firmware commands that will assume that the caller has acquired the needed semaphore.
+
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+---
+Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
