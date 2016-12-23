@@ -1,27 +1,86 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Fri, 23 Dec 2016 20:59:59 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: do not disable FEC from the
- driver
-In-Reply-To: <20160928230148.7162.97867.stgit@localhost6.localdomain6>
-References: <20160928230148.7162.97867.stgit@localhost6.localdomain6>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E491036EC@ORSMSX103.amr.corp.intel.com>
+From: Usha Ketineni <usha.k.ketineni@intel.com>
+Date: Fri, 23 Dec 2016 10:08:14 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Avoid Tx hang by not allowing more
+ than the number of VFs supported.
+Message-ID: <20161223180814.6949.16530.stgit@ukketine.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+When DCB is enabled, add checks to ensure creation of number of VF's is
+valid based on the traffic classes configured by the device.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Emil Tantilov
-Sent: Wednesday, September 28, 2016 4:02 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH] ixgbe: do not disable FEC from the driver
-
-FEC is configured by the NVM and the driver should not be overriding it.
-
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
 ---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |   26 +++++++++++++++++++++---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h |    3 +++
+ 2 files changed, 26 insertions(+), 3 deletions(-)
 
-Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index 7e5d985..fa603bd 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -298,6 +298,7 @@ static int ixgbe_pci_sriov_enable(struct pci_dev *dev, int num_vfs)
+ #ifdef CONFIG_PCI_IOV
+ 	struct ixgbe_adapter *adapter = pci_get_drvdata(dev);
+ 	int err = 0;
++	u8 num_tc;
+ 	int i;
+ 	int pre_existing_vfs = pci_num_vf(dev);
+ 
+@@ -310,16 +311,35 @@ static int ixgbe_pci_sriov_enable(struct pci_dev *dev, int num_vfs)
+ 		return err;
+ 
+ 	/* While the SR-IOV capability structure reports total VFs to be 64,
+-	 * we have to limit the actual number allocated based on two factors.
++	 * we limit the actual number allocated as below based on two factors.
++	 *    Num_TCs	MAX_VFs
++	 *	1	  63
++	 *	<=4	  31
++	 *	>4	  15
+ 	 * First, we reserve some transmit/receive resources for the PF.
+ 	 * Second, VMDQ also uses the same pools that SR-IOV does. We need to
+ 	 * account for this, so that we don't accidentally allocate more VFs
+ 	 * than we have available pools. The PCI bus driver already checks for
+ 	 * other values out of range.
+ 	 */
+-	if ((num_vfs + adapter->num_rx_pools) > IXGBE_MAX_VF_FUNCTIONS)
+-		return -EPERM;
++	num_tc = netdev_get_num_tc(adapter->netdev);
+ 
++	if (num_tc > 4) {
++		if ((num_vfs + adapter->num_rx_pools) > IXGBE_MAX_VFS_8TC) {
++			e_dev_err("Currently the device is configured with %d TCs, Creating more than %d VFs is not allowed\n", num_tc, IXGBE_MAX_VFS_8TC);
++			return -EPERM;
++		}
++	} else if ((num_tc > 1) && (num_tc <= 4)) {
++		if ((num_vfs + adapter->num_rx_pools) > IXGBE_MAX_VFS_4TC) {
++			e_dev_err("Currently the device is configured with %d TCs, Creating more than %d VFs is not allowed\n", num_tc, IXGBE_MAX_VFS_4TC);
++			return -EPERM;
++		}
++	} else {
++		if ((num_vfs + adapter->num_rx_pools) > IXGBE_MAX_VFS_1TC) {
++			e_dev_err("Currently the device is configured with %d TCs, Creating more than %d VFs is not allowed\n", num_tc, IXGBE_MAX_VFS_1TC);
++			return -EPERM;
++		}
++	}
+ 	adapter->num_vfs = num_vfs;
+ 
+ 	err = __ixgbe_enable_sriov(adapter);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
+index 0c7977d..9bf2b13 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
+@@ -33,6 +33,9 @@
+  *  63 (IXGBE_MAX_VF_FUNCTIONS - 1)
+  */
+ #define IXGBE_MAX_VFS_DRV_LIMIT  (IXGBE_MAX_VF_FUNCTIONS - 1)
++#define IXGBE_MAX_VFS_1TC		 IXGBE_MAX_VF_FUNCTIONS
++#define IXGBE_MAX_VFS_4TC		 32
++#define IXGBE_MAX_VFS_8TC		 16
+ 
+ #ifdef CONFIG_PCI_IOV
+ void ixgbe_restore_vf_multicasts(struct ixgbe_adapter *adapter);
 
