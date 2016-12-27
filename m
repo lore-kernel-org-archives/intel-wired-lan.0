@@ -1,324 +1,308 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 27 Dec 2016 10:32:02 -0800
-Subject: [Intel-wired-lan] [RFC PATCH] i40e: enable PCIe relax ordering
- for SPARC
-In-Reply-To: <F95AC9340317A84688A5F0DF0246F3F2015209E7@szxeml504-mbs.china.huawei.com>
-References: <1480957627-16825-1-git-send-email-tushar.n.dave@oracle.com>
- <F95AC9340317A84688A5F0DF0246F3F2015209E7@szxeml504-mbs.china.huawei.com>
-Message-ID: <CAKgT0UdHM5D3=u=MPZiO80tpnMmr2z9_YDu42RC+=WpuAoosFQ@mail.gmail.com>
+From: Pujari, Bimmy <bimmy.pujari@intel.com>
+Date: Tue, 27 Dec 2016 18:37:21 +0000
+Subject: [Intel-wired-lan] [next PATCH S58 1/5] i40e-shared: fix up
+ recent	proxy and wol bits for X722_SUPPORT
+In-Reply-To: <1482861359-2352-1-git-send-email-bimmy.pujari@intel.com>
+References: <1482861359-2352-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <B759292EEECB5C46AEDF3EC46470BC94AF1992@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Dec 26, 2016 at 3:39 AM, maowenan <maowenan@huawei.com> wrote:
->
->
->> -----Original Message-----
->> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org]
->> On Behalf Of Tushar Dave
->> Sent: Tuesday, December 06, 2016 1:07 AM
->> To: jeffrey.t.kirsher at intel.com; intel-wired-lan at lists.osuosl.org
->> Cc: netdev at vger.kernel.org
->> Subject: [RFC PATCH] i40e: enable PCIe relax ordering for SPARC
->>
->> Unlike previous generation NIC (e.g. ixgbe) i40e doesn't seem to have standard
->> CSR where PCIe relaxed ordering can be set. Without PCIe relax ordering
->> enabled, i40e performance is significantly low on SPARC.
->>
-> [Mao Wenan]Hi Tushar, you have referred to i40e doesn't seem to have standard CSR
-> to set PCIe relaxed ordering, this CSR like TX&Rx DCA Control Register in 82599, right?
-> Is DMA_ATTR_WEAK_ORDERING the same as TX&RX control register in 82599?
->
-> And to enable relax ordering mode in 82599 for SPARC using below codes:
-> s32 ixgbe_start_hw_gen2(struct ixgbe_hw *hw)
-> {
->         u32 i;
->
->         /* Clear the rate limiters */
->         for (i = 0; i < hw->mac.max_tx_queues; i++) {
->                 IXGBE_WRITE_REG(hw, IXGBE_RTTDQSEL, i);
->                 IXGBE_WRITE_REG(hw, IXGBE_RTTBCNRC, 0);
->         }
->         IXGBE_WRITE_FLUSH(hw);
->
-> #ifndef CONFIG_SPARC
->         /* Disable relaxed ordering */
->         for (i = 0; i < hw->mac.max_tx_queues; i++) {
->                 u32 regval;
->
->                 regval = IXGBE_READ_REG(hw, IXGBE_DCA_TXCTRL_82599(i));
->                 regval &= ~IXGBE_DCA_TXCTRL_DESC_WRO_EN;
->                 IXGBE_WRITE_REG(hw, IXGBE_DCA_TXCTRL_82599(i), regval);
->         }
->
->         for (i = 0; i < hw->mac.max_rx_queues; i++) {
->                 u32 regval;
->
->                 regval = IXGBE_READ_REG(hw, IXGBE_DCA_RXCTRL(i));
->                 regval &= ~(IXGBE_DCA_RXCTRL_DATA_WRO_EN |
->                             IXGBE_DCA_RXCTRL_HEAD_WRO_EN);
->                 IXGBE_WRITE_REG(hw, IXGBE_DCA_RXCTRL(i), regval);
->         }
-> #endif
->         return 0;
-> }
->
->
->
+Hi
 
-He isn't changing anything on the device itself.  The patches were
-just added recently that support this for SPARC.  The IOMMU on some
-SPARC platforms can indicate memory ordering rules, and by doing this
-they get the goodness of relaxed ordering without having true relaxed
-ordering enabled on the PCIe bus.
+I requested Jeff to remove this series from Intel-wired-lan.
+Please ignore this one. I will be uploading correct series soon.
 
->> This patch sets PCIe relax ordering for SPARC arch by setting dma attr
->> DMA_ATTR_WEAK_ORDERING for every tx and rx DMA map/unmap.
->> This has shown 10x increase in performance numbers.
->>
->> e.g.
->> iperf TCP test with 10 threads on SPARC S7
->>
->> Test 1: Without this patch
->>
->> [root at brm-snt1-03 net]# iperf -s
->> ------------------------------------------------------------
->> Server listening on TCP port 5001
->> TCP window size: 85.3 KByte (default)
->> ------------------------------------------------------------
->> [  4] local 16.0.0.7 port 5001 connected with 16.0.0.1 port 40926 [  5] local
->> 16.0.0.7 port 5001 connected with 16.0.0.1 port 40934 [  6] local 16.0.0.7 port
->> 5001 connected with 16.0.0.1 port 40930 [  7] local 16.0.0.7 port 5001
->> connected with 16.0.0.1 port 40928 [  8] local 16.0.0.7 port 5001 connected
->> with 16.0.0.1 port 40922 [  9] local 16.0.0.7 port 5001 connected with 16.0.0.1
->> port 40932 [ 10] local 16.0.0.7 port 5001 connected with 16.0.0.1 port 40920
->> [ 11] local 16.0.0.7 port 5001 connected with 16.0.0.1 port 40924 [ 14] local
->> 16.0.0.7 port 5001 connected with 16.0.0.1 port 40982 [ 12] local 16.0.0.7 port
->> 5001 connected with 16.0.0.1 port 40980
->> [ ID] Interval       Transfer     Bandwidth
->> [  4]  0.0-20.0 sec   566 MBytes   237 Mbits/sec
->> [  5]  0.0-20.0 sec   532 MBytes   223 Mbits/sec
->> [  6]  0.0-20.0 sec   537 MBytes   225 Mbits/sec
->> [  8]  0.0-20.0 sec   546 MBytes   229 Mbits/sec
->> [ 11]  0.0-20.0 sec   592 MBytes   248 Mbits/sec
->> [  7]  0.0-20.0 sec   539 MBytes   226 Mbits/sec
->> [  9]  0.0-20.0 sec   572 MBytes   240 Mbits/sec
->> [ 10]  0.0-20.0 sec   604 MBytes   253 Mbits/sec
->> [ 14]  0.0-20.0 sec   567 MBytes   238 Mbits/sec
->> [ 12]  0.0-20.0 sec   511 MBytes   214 Mbits/sec
->> [SUM]  0.0-20.0 sec  5.44 GBytes  2.33 Gbits/sec
->>
->> Test 2: with this patch:
->>
->> [root at brm-snt1-03 net]# iperf -s
->> ------------------------------------------------------------
->> Server listening on TCP port 5001
->> TCP window size: 85.3 KByte (default)
->> ------------------------------------------------------------
->> TCP: request_sock_TCP: Possible SYN flooding on port 5001. Sending cookies.
->> Check SNMP counters.
->> [  4] local 16.0.0.7 port 5001 connected with 16.0.0.1 port 46876 [  5] local
->> 16.0.0.7 port 5001 connected with 16.0.0.1 port 46874 [  6] local 16.0.0.7 port
->> 5001 connected with 16.0.0.1 port 46872 [  7] local 16.0.0.7 port 5001
->> connected with 16.0.0.1 port 46880 [  8] local 16.0.0.7 port 5001 connected
->> with 16.0.0.1 port 46878 [  9] local 16.0.0.7 port 5001 connected with 16.0.0.1
->> port 46884 [ 10] local 16.0.0.7 port 5001 connected with 16.0.0.1 port 46886
->> [ 11] local 16.0.0.7 port 5001 connected with 16.0.0.1 port 46890 [ 12] local
->> 16.0.0.7 port 5001 connected with 16.0.0.1 port 46888 [ 13] local 16.0.0.7 port
->> 5001 connected with 16.0.0.1 port 46882
->> [ ID] Interval       Transfer     Bandwidth
->> [  4]  0.0-20.0 sec  7.45 GBytes  3.19 Gbits/sec [  5]  0.0-20.0 sec  7.48
->> GBytes  3.21 Gbits/sec [  7]  0.0-20.0 sec  7.34 GBytes  3.15 Gbits/sec
->> [  8]  0.0-20.0 sec  7.42 GBytes  3.18 Gbits/sec [  9]  0.0-20.0 sec  7.24
->> GBytes  3.11 Gbits/sec [ 10]  0.0-20.0 sec  7.40 GBytes  3.17 Gbits/sec
->> [ 12]  0.0-20.0 sec  7.49 GBytes  3.21 Gbits/sec [  6]  0.0-20.0 sec  7.30
->> GBytes  3.13 Gbits/sec [ 11]  0.0-20.0 sec  7.44 GBytes  3.19 Gbits/sec
->> [ 13]  0.0-20.0 sec  7.22 GBytes  3.10 Gbits/sec [SUM]  0.0-20.0 sec  73.8
->> GBytes  31.6 Gbits/sec
->>
->> NOTE: In my testing, this patch does _not_ show any harm to i40e performance
->> numbers on x86.
->>
->> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
->> ---
->>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 69
->> ++++++++++++++++++++---------  drivers/net/ethernet/intel/i40e/i40e_txrx.h |
->> 1 +
->>  2 files changed, 49 insertions(+), 21 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->> b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->> index 6287bf6..800dca7 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->> @@ -551,15 +551,17 @@ static void
->> i40e_unmap_and_free_tx_resource(struct i40e_ring *ring,
->>               else
->>                       dev_kfree_skb_any(tx_buffer->skb);
->>               if (dma_unmap_len(tx_buffer, len))
->> -                     dma_unmap_single(ring->dev,
->> -                                      dma_unmap_addr(tx_buffer, dma),
->> -                                      dma_unmap_len(tx_buffer, len),
->> -                                      DMA_TO_DEVICE);
->> +                     dma_unmap_single_attrs(ring->dev,
->> +                                            dma_unmap_addr(tx_buffer, dma),
->> +                                            dma_unmap_len(tx_buffer, len),
->> +                                            DMA_TO_DEVICE,
->> +                                            ring->dma_attrs);
->>       } else if (dma_unmap_len(tx_buffer, len)) {
->> -             dma_unmap_page(ring->dev,
->> -                            dma_unmap_addr(tx_buffer, dma),
->> -                            dma_unmap_len(tx_buffer, len),
->> -                            DMA_TO_DEVICE);
->> +             dma_unmap_single_attrs(ring->dev,
->> +                                    dma_unmap_addr(tx_buffer, dma),
->> +                                    dma_unmap_len(tx_buffer, len),
->> +                                    DMA_TO_DEVICE,
->> +                                    ring->dma_attrs);
->>       }
->>
->>       tx_buffer->next_to_watch = NULL;
->> @@ -662,6 +664,8 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
->>       struct i40e_tx_buffer *tx_buf;
->>       struct i40e_tx_desc *tx_head;
->>       struct i40e_tx_desc *tx_desc;
->> +     dma_addr_t addr;
->> +     size_t size;
->>       unsigned int total_bytes = 0, total_packets = 0;
->>       unsigned int budget = vsi->work_limit;
->>
->> @@ -696,10 +700,11 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
->>               napi_consume_skb(tx_buf->skb, napi_budget);
->>
->>               /* unmap skb header data */
->> -             dma_unmap_single(tx_ring->dev,
->> -                              dma_unmap_addr(tx_buf, dma),
->> -                              dma_unmap_len(tx_buf, len),
->> -                              DMA_TO_DEVICE);
->> +             dma_unmap_single_attrs(tx_ring->dev,
->> +                                    dma_unmap_addr(tx_buf, dma),
->> +                                    dma_unmap_len(tx_buf, len),
->> +                                    DMA_TO_DEVICE,
->> +                                    tx_ring->dma_attrs);
->>
->>               /* clear tx_buffer data */
->>               tx_buf->skb = NULL;
->> @@ -717,12 +722,15 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
->>                               tx_desc = I40E_TX_DESC(tx_ring, 0);
->>                       }
->>
->> +                     addr = dma_unmap_addr(tx_buf, dma);
->> +                     size = dma_unmap_len(tx_buf, len);
->>                       /* unmap any remaining paged data */
->>                       if (dma_unmap_len(tx_buf, len)) {
->> -                             dma_unmap_page(tx_ring->dev,
->> -                                            dma_unmap_addr(tx_buf, dma),
->> -                                            dma_unmap_len(tx_buf, len),
->> -                                            DMA_TO_DEVICE);
->> +                             dma_unmap_single_attrs(tx_ring->dev,
->> +                                                    addr,
->> +                                                    size,
->> +                                                    DMA_TO_DEVICE,
->> +                                                    tx_ring->dma_attrs);
->>                               dma_unmap_len_set(tx_buf, len, 0);
->>                       }
->>               }
->> @@ -1010,6 +1018,11 @@ int i40e_setup_tx_descriptors(struct i40e_ring
->> *tx_ring)
->>        */
->>       tx_ring->size += sizeof(u32);
->>       tx_ring->size = ALIGN(tx_ring->size, 4096);
->> +#ifdef CONFIG_SPARC
->> +     tx_ring->dma_attrs = DMA_ATTR_WEAK_ORDERING; #else
->> +     tx_ring->dma_attrs = 0;
->> +#endif
->>       tx_ring->desc = dma_alloc_coherent(dev, tx_ring->size,
->>                                          &tx_ring->dma, GFP_KERNEL);
->>       if (!tx_ring->desc) {
->> @@ -1053,7 +1066,11 @@ void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
->>               if (!rx_bi->page)
->>                       continue;
->>
->> -             dma_unmap_page(dev, rx_bi->dma, PAGE_SIZE,
->> DMA_FROM_DEVICE);
->> +             dma_unmap_single_attrs(dev,
->> +                                    rx_bi->dma,
->> +                                    PAGE_SIZE,
->> +                                    DMA_FROM_DEVICE,
->> +                                    rx_ring->dma_attrs);
->>               __free_pages(rx_bi->page, 0);
->>
->>               rx_bi->page = NULL;
->> @@ -1113,6 +1130,11 @@ int i40e_setup_rx_descriptors(struct i40e_ring
->> *rx_ring)
->>       /* Round up to nearest 4K */
->>       rx_ring->size = rx_ring->count * sizeof(union i40e_32byte_rx_desc);
->>       rx_ring->size = ALIGN(rx_ring->size, 4096);
->> +#ifdef CONFIG_SPARC
->> +     rx_ring->dma_attrs = DMA_ATTR_WEAK_ORDERING; #else
->> +     rx_ring->dma_attrs = 0;
->> +#endif
->>       rx_ring->desc = dma_alloc_coherent(dev, rx_ring->size,
->>                                          &rx_ring->dma, GFP_KERNEL);
->>
->> @@ -1182,7 +1204,8 @@ static bool i40e_alloc_mapped_page(struct
->> i40e_ring *rx_ring,
->>       }
->>
->>       /* map page for use */
->> -     dma = dma_map_page(rx_ring->dev, page, 0, PAGE_SIZE,
->> DMA_FROM_DEVICE);
->> +     dma = dma_map_single_attrs(rx_ring->dev, page_address(page),
->> PAGE_SIZE,
->> +                                DMA_FROM_DEVICE, rx_ring->dma_attrs);
->>
->>       /* if mapping failed free memory back to system since
->>        * there isn't much point in holding memory we can't use @@ -1695,8
->> +1718,11 @@ struct sk_buff *i40e_fetch_rx_buffer(struct i40e_ring *rx_ring,
->>               rx_ring->rx_stats.page_reuse_count++;
->>       } else {
->>               /* we are not reusing the buffer so unmap it */
->> -             dma_unmap_page(rx_ring->dev, rx_buffer->dma, PAGE_SIZE,
->> -                            DMA_FROM_DEVICE);
->> +             dma_unmap_single_attrs(rx_ring->dev,
->> +                                    rx_buffer->dma,
->> +                                    PAGE_SIZE,
->> +                                    DMA_FROM_DEVICE,
->> +                                    rx_ring->dma_attrs);
->>       }
->>
->>       /* clear contents of buffer_info */
->> @@ -2737,7 +2763,8 @@ static inline void i40e_tx_map(struct i40e_ring
->> *tx_ring, struct sk_buff *skb,
->>       first->skb = skb;
->>       first->tx_flags = tx_flags;
->>
->> -     dma = dma_map_single(tx_ring->dev, skb->data, size, DMA_TO_DEVICE);
->> +     dma = dma_map_single_attrs(tx_ring->dev, skb->data, size,
->> +                                DMA_TO_DEVICE, tx_ring->dma_attrs);
->>
->>       tx_desc = I40E_TX_DESC(tx_ring, i);
->>       tx_bi = first;
->> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
->> b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
->> index 5088405..9a86212 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
->> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
->> @@ -327,6 +327,7 @@ struct i40e_ring {
->>
->>       unsigned int size;              /* length of descriptor ring in bytes */
->>       dma_addr_t dma;                 /* physical address of ring */
->> +     unsigned long dma_attrs;        /* DMA attributes */
->>
->>       struct i40e_vsi *vsi;           /* Backreference to associated VSI */
->>       struct i40e_q_vector *q_vector; /* Backreference to associated vector
->> */
->> --
->> 1.9.1
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Thanks
+Bimmy
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Bimmy Pujari
+Sent: Tuesday, December 27, 2016 9:56 AM
+To: intel-wired-lan@lists.osuosl.org
+Cc: Shannon Nelson <shannon.nelson@intel.com>
+Subject: [Intel-wired-lan] [next PATCH S58 1/5] i40e-shared: fix up recent proxy and wol bits for X722_SUPPORT
+
+From: Shannon Nelson <shannon.nelson@intel.com>
+
+Some opcodes added & reordered to be in numerical order with the
+rest of the opcodes.  Several structs that were added are unnecessary,
+so they are removed here. This patch adds admin queue structs to
+support Wake on LAN feature for X722.
+
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+---
+Testing Hints :
+        Apply and compile cleanly
+
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 71 +++++++++++++++++++++-
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 71 +++++++++++++++++++++-
+ 2 files changed, 140 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 451f48b..95171c2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -132,6 +132,12 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_list_func_capabilities	= 0x000A,
+ 	i40e_aqc_opc_list_dev_capabilities	= 0x000B,
+ 
++#ifdef X722_SUPPORT
++	/* Proxy commands */
++	i40e_aqc_opc_set_proxy_config		= 0x0104,
++	i40e_aqc_opc_set_ns_proxy_table_entry	= 0x0105,
++
++#endif
+ 	/* LAA */
+ 	i40e_aqc_opc_mac_address_read	= 0x0107,
+ 	i40e_aqc_opc_mac_address_write	= 0x0108,
+@@ -139,6 +145,12 @@ enum i40e_admin_queue_opc {
+ 	/* PXE */
+ 	i40e_aqc_opc_clear_pxe_mode	= 0x0110,
+ 
++#ifdef X722_SUPPORT
++	/* WoL commands */
++	i40e_aqc_opc_set_wol_filter	= 0x0120,
++	i40e_aqc_opc_get_wake_reason	= 0x0121,
++
++#endif
+ 	/* internal switch commands */
+ 	i40e_aqc_opc_get_switch_config		= 0x0200,
+ 	i40e_aqc_opc_add_statistics		= 0x0201,
+@@ -177,6 +189,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_remove_control_packet_filter	= 0x025B,
+ 	i40e_aqc_opc_add_cloud_filters		= 0x025C,
+ 	i40e_aqc_opc_remove_cloud_filters	= 0x025D,
++	i40e_aqc_opc_clear_wol_switch_filters	= 0x025E,
+ 
+ 	i40e_aqc_opc_add_mirror_rule	= 0x0260,
+ 	i40e_aqc_opc_delete_mirror_rule	= 0x0261,
+@@ -563,6 +576,58 @@ struct i40e_aqc_clear_pxe {
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_clear_pxe);
+ 
++#ifdef X722_SUPPORT
++/* Set WoL Filter (0x0120) */
++
++struct i40e_aqc_set_wol_filter {
++	__le16 filter_index;
++#define I40E_AQC_MAX_NUM_WOL_FILTERS	8
++#define I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_SHIFT	15
++#define I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_MASK	(0x1 << \
++		I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_SHIFT)
++
++#define I40E_AQC_SET_WOL_FILTER_INDEX_SHIFT		0
++#define I40E_AQC_SET_WOL_FILTER_INDEX_MASK	(0x7 << \
++		I40E_AQC_SET_WOL_FILTER_INDEX_SHIFT)
++	__le16 cmd_flags;
++#define I40E_AQC_SET_WOL_FILTER				0x8000
++#define I40E_AQC_SET_WOL_FILTER_NO_TCO_WOL		0x4000
++#define I40E_AQC_SET_WOL_FILTER_ACTION_CLEAR		0
++#define I40E_AQC_SET_WOL_FILTER_ACTION_SET		1
++	__le16 valid_flags;
++#define I40E_AQC_SET_WOL_FILTER_ACTION_VALID		0x8000
++#define I40E_AQC_SET_WOL_FILTER_NO_TCO_ACTION_VALID	0x4000
++	u8 reserved[2];
++	__le32	address_high;
++	__le32	address_low;
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_set_wol_filter);
++
++struct i40e_aqc_set_wol_filter_data {
++	u8 filter[128];
++	u8 mask[16];
++};
++
++I40E_CHECK_STRUCT_LEN(0x90, i40e_aqc_set_wol_filter_data);
++
++/* Get Wake Reason (0x0121) */
++
++struct i40e_aqc_get_wake_reason_completion {
++	u8 reserved_1[2];
++	__le16 wake_reason;
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_SHIFT	0
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_MASK (0xFF << \
++		I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_SHIFT)
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_SHIFT	8
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_MASK	(0xFF << \
++		I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_SHIFT)
++	u8 reserved_2[12];
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_get_wake_reason_completion);
++
++#endif /* X722_SUPPORT */
+ /* Switch configuration commands (0x02xx) */
+ 
+ /* Used by many indirect commands that only pass an seid and a buffer in the
+@@ -645,6 +710,8 @@ struct i40e_aqc_set_port_parameters {
+ #define I40E_AQ_SET_P_PARAMS_PAD_SHORT_PACKETS	2 /* must set! */
+ #define I40E_AQ_SET_P_PARAMS_DOUBLE_VLAN_ENA	4
+ 	__le16	bad_frame_vsi;
++#define I40E_AQ_SET_P_PARAMS_BFRAME_SEID_SHIFT	0x0
++#define I40E_AQ_SET_P_PARAMS_BFRAME_SEID_MASK	0x3FF
+ 	__le16	default_seid;        /* reserved for command */
+ 	u8	reserved[10];
+ };
+@@ -696,6 +763,7 @@ I40E_CHECK_STRUCT_LEN(0x10, i40e_aqc_switch_resource_alloc_element_resp);
+ /* Set Switch Configuration (direct 0x0205) */
+ struct i40e_aqc_set_switch_config {
+ 	__le16	flags;
++/* flags used for both fields below */
+ #define I40E_AQ_SET_SWITCH_CFG_PROMISC		0x0001
+ #define I40E_AQ_SET_SWITCH_CFG_L2_FILTER	0x0002
+ 	__le16	valid_flags;
+@@ -1844,11 +1912,12 @@ struct i40e_aqc_get_link_status {
+ #define I40E_AQ_CONFIG_FEC_RS_ENA	0x02
+ #define I40E_AQ_CONFIG_CRC_ENA		0x04
+ #define I40E_AQ_CONFIG_PACING_MASK	0x78
+-	u8	external_power_ability;
++	u8	power_desc;
+ #define I40E_AQ_LINK_POWER_CLASS_1	0x00
+ #define I40E_AQ_LINK_POWER_CLASS_2	0x01
+ #define I40E_AQ_LINK_POWER_CLASS_3	0x02
+ #define I40E_AQ_LINK_POWER_CLASS_4	0x03
++#define I40E_AQ_PWR_CLASS_MASK		0x03
+ 	u8	reserved[4];
+ };
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index eeb9864..b763e3c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -132,6 +132,12 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_list_func_capabilities	= 0x000A,
+ 	i40e_aqc_opc_list_dev_capabilities	= 0x000B,
+ 
++#ifdef X722_SUPPORT
++	/* Proxy commands */
++	i40e_aqc_opc_set_proxy_config		= 0x0104,
++	i40e_aqc_opc_set_ns_proxy_table_entry	= 0x0105,
++
++#endif
+ 	/* LAA */
+ 	i40e_aqc_opc_mac_address_read	= 0x0107,
+ 	i40e_aqc_opc_mac_address_write	= 0x0108,
+@@ -139,6 +145,12 @@ enum i40e_admin_queue_opc {
+ 	/* PXE */
+ 	i40e_aqc_opc_clear_pxe_mode	= 0x0110,
+ 
++#ifdef X722_SUPPORT
++	/* WoL commands */
++	i40e_aqc_opc_set_wol_filter	= 0x0120,
++	i40e_aqc_opc_get_wake_reason	= 0x0121,
++
++#endif
+ 	/* internal switch commands */
+ 	i40e_aqc_opc_get_switch_config		= 0x0200,
+ 	i40e_aqc_opc_add_statistics		= 0x0201,
+@@ -177,6 +189,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_remove_control_packet_filter	= 0x025B,
+ 	i40e_aqc_opc_add_cloud_filters		= 0x025C,
+ 	i40e_aqc_opc_remove_cloud_filters	= 0x025D,
++	i40e_aqc_opc_clear_wol_switch_filters	= 0x025E,
+ 
+ 	i40e_aqc_opc_add_mirror_rule	= 0x0260,
+ 	i40e_aqc_opc_delete_mirror_rule	= 0x0261,
+@@ -558,6 +571,58 @@ struct i40e_aqc_clear_pxe {
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_clear_pxe);
+ 
++#ifdef X722_SUPPORT
++/* Set WoL Filter (0x0120) */
++
++struct i40e_aqc_set_wol_filter {
++	__le16 filter_index;
++#define I40E_AQC_MAX_NUM_WOL_FILTERS	8
++#define I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_SHIFT	15
++#define I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_MASK	(0x1 << \
++		I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_SHIFT)
++
++#define I40E_AQC_SET_WOL_FILTER_INDEX_SHIFT		0
++#define I40E_AQC_SET_WOL_FILTER_INDEX_MASK	(0x7 << \
++		I40E_AQC_SET_WOL_FILTER_INDEX_SHIFT)
++	__le16 cmd_flags;
++#define I40E_AQC_SET_WOL_FILTER				0x8000
++#define I40E_AQC_SET_WOL_FILTER_NO_TCO_WOL		0x4000
++#define I40E_AQC_SET_WOL_FILTER_ACTION_CLEAR		0
++#define I40E_AQC_SET_WOL_FILTER_ACTION_SET		1
++	__le16 valid_flags;
++#define I40E_AQC_SET_WOL_FILTER_ACTION_VALID		0x8000
++#define I40E_AQC_SET_WOL_FILTER_NO_TCO_ACTION_VALID	0x4000
++	u8 reserved[2];
++	__le32	address_high;
++	__le32	address_low;
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_set_wol_filter);
++
++struct i40e_aqc_set_wol_filter_data {
++	u8 filter[128];
++	u8 mask[16];
++};
++
++I40E_CHECK_STRUCT_LEN(0x90, i40e_aqc_set_wol_filter_data);
++
++/* Get Wake Reason (0x0121) */
++
++struct i40e_aqc_get_wake_reason_completion {
++	u8 reserved_1[2];
++	__le16 wake_reason;
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_SHIFT	0
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_MASK (0xFF << \
++		I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_SHIFT)
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_SHIFT	8
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_MASK	(0xFF << \
++		I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_SHIFT)
++	u8 reserved_2[12];
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_get_wake_reason_completion);
++
++#endif /* X722_SUPPORT */
+ /* Switch configuration commands (0x02xx) */
+ 
+ /* Used by many indirect commands that only pass an seid and a buffer in the
+@@ -640,6 +705,8 @@ struct i40e_aqc_set_port_parameters {
+ #define I40E_AQ_SET_P_PARAMS_PAD_SHORT_PACKETS	2 /* must set! */
+ #define I40E_AQ_SET_P_PARAMS_DOUBLE_VLAN_ENA	4
+ 	__le16	bad_frame_vsi;
++#define I40E_AQ_SET_P_PARAMS_BFRAME_SEID_SHIFT	0x0
++#define I40E_AQ_SET_P_PARAMS_BFRAME_SEID_MASK	0x3FF
+ 	__le16	default_seid;        /* reserved for command */
+ 	u8	reserved[10];
+ };
+@@ -691,6 +758,7 @@ I40E_CHECK_STRUCT_LEN(0x10, i40e_aqc_switch_resource_alloc_element_resp);
+ /* Set Switch Configuration (direct 0x0205) */
+ struct i40e_aqc_set_switch_config {
+ 	__le16	flags;
++/* flags used for both fields below */
+ #define I40E_AQ_SET_SWITCH_CFG_PROMISC		0x0001
+ #define I40E_AQ_SET_SWITCH_CFG_L2_FILTER	0x0002
+ 	__le16	valid_flags;
+@@ -1839,11 +1907,12 @@ struct i40e_aqc_get_link_status {
+ #define I40E_AQ_CONFIG_FEC_RS_ENA	0x02
+ #define I40E_AQ_CONFIG_CRC_ENA		0x04
+ #define I40E_AQ_CONFIG_PACING_MASK	0x78
+-	u8	external_power_ability;
++	u8	power_desc;
+ #define I40E_AQ_LINK_POWER_CLASS_1	0x00
+ #define I40E_AQ_LINK_POWER_CLASS_2	0x01
+ #define I40E_AQ_LINK_POWER_CLASS_3	0x02
+ #define I40E_AQ_LINK_POWER_CLASS_4	0x03
++#define I40E_AQ_PWR_CLASS_MASK		0x03
+ 	u8	reserved[4];
+ };
+ 
+-- 
+2.4.11
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
