@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 27 Dec 2016 09:55:58 -0800
-Subject: [Intel-wired-lan] [next PATCH S58 4/5] i40e/i40evf: don't open code
-	pci_enable_msix_range
+Date: Tue, 27 Dec 2016 09:55:59 -0800
+Subject: [Intel-wired-lan] [next PATCH S58 5/5] i40e: don't add more vectors
+	to num_lan_msix than number of CPUs
 In-Reply-To: <1482861359-2352-1-git-send-email-bimmy.pujari@intel.com>
 References: <1482861359-2352-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1482861359-2352-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1482861359-2352-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,130 +13,85 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-Make use of the available kernel facility and don't re-write
-pci_enable_msix_range function in the driver.
+This is a solution to avoid adding too many queues to num_lan_msix.
+A recent refactor of queue pairs accidentally added all remaining
+vectors to the num_lan_msix which can have adverse performance issues,
+due to enabling more queues than the number of CPU cores.
+
+This patch removes the old calculation, and replaces it with a simple
+algorithm.
+
+1) add queue pairs up to num_online_cpus(), but capped at half of total
+   vectors
+2) then add alternative features such as flow directory and similar
+3) finally, add the remaining vectors back to queue pairs, but capped
+   such that the total number of queue pairs does not exceed
+   num_online_cpus().
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-Id: I3d2dd7fdb0ea7c3029f2ddafee3240ae21104e8b
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Change-ID: I668abf67d5011a1248866daba8885f4ff00cb8d9
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 28 ++++++++++++----------
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 32 +++++++++++++------------
- 2 files changed, 33 insertions(+), 27 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 30 ++++++++++++++++++++++++++---
+ 1 file changed, 27 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 227a06c..d87677d 100644
+index d87677d..b1ae843 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7804,21 +7804,26 @@ static int i40e_alloc_rings(struct i40e_vsi *vsi)
- /**
-  * i40e_reserve_msix_vectors - Reserve MSI-X vectors in the kernel
-  * @pf: board private structure
-- * @vectors: the number of MSI-X vectors to request
-+ * @v_budget: the number of MSI-X vectors to request
-  *
-  * Returns the number of vectors reserved, or error
-  **/
--static int i40e_reserve_msix_vectors(struct i40e_pf *pf, int vectors)
-+static int i40e_reserve_msix_vectors(struct i40e_pf *pf, int v_budget)
+@@ -7837,6 +7837,7 @@ static int i40e_reserve_msix_vectors(struct i40e_pf *pf, int v_budget)
+ static int i40e_init_msix(struct i40e_pf *pf)
  {
--	vectors = pci_enable_msix_range(pf->pdev, pf->msix_entries,
--					I40E_MIN_MSIX, vectors);
--	if (vectors < 0) {
-+	int v_actual = 0;
-+
-+	v_actual = pci_enable_msix_range(pf->pdev,
-+					 pf->msix_entries,
-+					 I40E_MIN_MSIX,
-+					 v_budget);
-+	if (v_actual < 0)
- 		dev_info(&pf->pdev->dev,
--			 "MSI-X vector reservation failed: %d\n", vectors);
--		vectors = 0;
--	}
-+			 "MSI-X vector reservation failed: %d\n", v_actual);
-+	dev_info(&pf->pdev->dev,
-+		 "%s: MSI-X vectors reserved: %d\n",
-+		 __func__, v_actual);
- 
--	return vectors;
-+	return v_actual;
- }
- 
- /**
-@@ -7941,15 +7946,14 @@ static int i40e_init_msix(struct i40e_pf *pf)
- 	for (i = 0; i < v_budget; i++)
- 		pf->msix_entries[i].entry = i;
- 	v_actual = i40e_reserve_msix_vectors(pf, v_budget);
--
- 	if (v_actual < I40E_MIN_MSIX) {
- 		pf->flags &= ~I40E_FLAG_MSIX_ENABLED;
- 		kfree(pf->msix_entries);
- 		pf->msix_entries = NULL;
--		pci_disable_msix(pf->pdev);
- 		return -ENODEV;
-+	}
- 
--	} else if (v_actual == I40E_MIN_MSIX) {
-+	if (v_actual == I40E_MIN_MSIX) {
- 		/* Adjust for minimal MSIX use */
- 		pf->num_vmdq_vsis = 0;
- 		pf->num_vmdq_qps = 0;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 9492b20..71e2c90 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1122,34 +1122,36 @@ void i40evf_down(struct i40evf_adapter *adapter)
- static int
- i40evf_acquire_msix_vectors(struct i40evf_adapter *adapter, int vectors)
- {
--	int err, vector_threshold;
-+	int v_actual;
- 
- 	/* We'll want at least 3 (vector_threshold):
- 	 * 0) Other (Admin Queue and link, mostly)
- 	 * 1) TxQ[0] Cleanup
- 	 * 2) RxQ[0] Cleanup
--	 */
--	vector_threshold = MIN_MSIX_COUNT;
--
--	/* The more we get, the more we will assign to Tx/Rx Cleanup
-+	 *
-+	 * The more we get, the more we will assign to Tx/Rx Cleanup
- 	 * for the separate queues...where Rx Cleanup >= Tx Cleanup.
- 	 * Right now, we simply care about how many we'll get; we'll
- 	 * set them up later while requesting irq's.
- 	 */
--	err = pci_enable_msix_range(adapter->pdev, adapter->msix_entries,
--				    vector_threshold, vectors);
--	if (err < 0) {
--		dev_err(&adapter->pdev->dev, "Unable to allocate MSI-X interrupts\n");
-+	v_actual = pci_enable_msix_range(adapter->pdev, adapter->msix_entries,
-+					 MIN_MSIX_COUNT, vectors);
-+	if (v_actual < 0) {
-+		dev_err(&adapter->pdev->dev, "Unable to allocate MSI-X interrupts: %d\n",
-+			v_actual);
- 		kfree(adapter->msix_entries);
- 		adapter->msix_entries = NULL;
--		return err;
-+		return v_actual;
+ 	struct i40e_hw *hw = &pf->hw;
++	int cpus, extra_vectors;
+ 	int vectors_left;
+ 	int v_budget, i;
+ 	int v_actual;
+@@ -7872,10 +7873,16 @@ static int i40e_init_msix(struct i40e_pf *pf)
+ 		vectors_left--;
  	}
  
--	/* Adjust for only the vectors we'll use, which is minimum
--	 * of max_msix_q_vectors + NONQ_VECS, or the number of
--	 * vectors we were allocated.
--	 */
--	adapter->num_msix_vectors = err;
-+	if (CLIENT_ENABLED(adapter)) {
-+		adapter->num_iwarp_msix = (v_actual - 1) / 2;
-+		adapter->num_msix_vectors = v_actual - adapter->num_iwarp_msix;
-+		adapter->iwarp_base_vector = adapter->num_msix_vectors;
-+	} else {
-+		adapter->num_msix_vectors = v_actual;
-+	}
-+	adapter->num_msix_vectors = v_actual;
- 	return 0;
- }
+-	/* reserve vectors for the main PF traffic queues */
+-	pf->num_lan_msix = min_t(int, num_online_cpus(), vectors_left);
++	/* reserve some vectors for the main PF traffic queues. Initially we
++	 * only reserve at most 50% of the available vectors, in the case that
++	 * the number of online CPUs is large. This ensures that we can enable
++	 * extra features as well. Once we've enabled the other features, we
++	 * will use any remaining vectors to reach as close as we can to the
++	 * number of online CPUs.
++	 */
++	cpus = num_online_cpus();
++	pf->num_lan_msix = min_t(int, cpus, vectors_left / 2);
+ 	vectors_left -= pf->num_lan_msix;
+-	v_budget += pf->num_lan_msix;
  
+ 	/* reserve one vector for sideband flow director */
+ 	if (pf->flags & I40E_FLAG_FD_SB_ENABLED) {
+@@ -7938,6 +7945,23 @@ static int i40e_init_msix(struct i40e_pf *pf)
+ 		}
+ 	}
+ 
++	/* On systems with a large number of SMP cores, we previously limited
++	 * the number of vectors for num_lan_msix to be at most 50% of the
++	 * available vectors, to allow for other features. Now, we add back
++	 * the remaining vectors. However, we ensure that the total
++	 * num_lan_msix will not exceed num_online_cpus(). To do this, we
++	 * calculate the number of vectors we can add without going over the
++	 * cap of CPUs. For systems with a small number of CPUs this will be
++	 * zero.
++	 */
++	extra_vectors = min_t(int, cpus - pf->num_lan_msix, vectors_left);
++	pf->num_lan_msix += extra_vectors;
++	vectors_left -= extra_vectors;
++
++	WARN(vectors_left < 0,
++	     "Calculation of remaining vectors underflowed. This is an accounting bug when determining total MSI-X vectors.\n");
++
++	v_budget += pf->num_lan_msix;
+ 	pf->msix_entries = kcalloc(v_budget, sizeof(struct msix_entry),
+ 				   GFP_KERNEL);
+ 	if (!pf->msix_entries)
 -- 
 2.4.11
 
