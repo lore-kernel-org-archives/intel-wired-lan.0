@@ -1,117 +1,371 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 28 Dec 2016 18:46:26 +0000
-Subject: [Intel-wired-lan] [next PATCH S58 5/5] i40e: don't add more
- vectors to num_lan_msix than number of CPUs
-In-Reply-To: <1482861359-2352-5-git-send-email-bimmy.pujari@intel.com>
-References: <1482861359-2352-1-git-send-email-bimmy.pujari@intel.com>
- <1482861359-2352-5-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5857D16797@ORSMSX115.amr.corp.intel.com>
+From: tndave <tushar.n.dave@oracle.com>
+Date: Wed, 28 Dec 2016 13:55:20 -0800
+Subject: [Intel-wired-lan] [RFC PATCH] i40e: enable PCIe relax ordering
+	for SPARC
+In-Reply-To: <F95AC9340317A84688A5F0DF0246F3F201521164@szxeml504-mbs.china.huawei.com>
+References: <1480957627-16825-1-git-send-email-tushar.n.dave@oracle.com>
+ <F95AC9340317A84688A5F0DF0246F3F2015209E7@szxeml504-mbs.china.huawei.com>
+ <67edcc8a-93d2-8245-f24b-47dc13244879@oracle.com>
+ <F95AC9340317A84688A5F0DF0246F3F201521164@szxeml504-mbs.china.huawei.com>
+Message-ID: <d6df1e2c-c6a0-f7f5-deea-bd92844603a1@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Looks good.. Thanks Bimmy!
 
-Regards,
-Jake
 
-> -----Original Message-----
-> From: Pujari, Bimmy
-> Sent: Tuesday, December 27, 2016 9:56 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Keller, Jacob E <jacob.e.keller@intel.com>; Ramamurthy, Harshitha
-> <harshitha.ramamurthy@intel.com>; Wyborny, Carolyn
-> <carolyn.wyborny@intel.com>
-> Subject: [next PATCH S58 5/5] i40e: don't add more vectors to num_lan_msix
-> than number of CPUs
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> This is a solution to avoid adding too many queues to num_lan_msix.
-> A recent refactor of queue pairs accidentally added all remaining
-> vectors to the num_lan_msix which can have adverse performance issues,
-> due to enabling more queues than the number of CPU cores.
-> 
-> This patch removes the old calculation, and replaces it with a simple
-> algorithm.
-> 
-> 1) add queue pairs up to num_online_cpus(), but capped at half of total
->    vectors
-> 2) then add alternative features such as flow directory and similar
-> 3) finally, add the remaining vectors back to queue pairs, but capped
->    such that the total number of queue pairs does not exceed
->    num_online_cpus().
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> Change-ID: I668abf67d5011a1248866daba8885f4ff00cb8d9
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 30
-> ++++++++++++++++++++++++++---
->  1 file changed, 27 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index d87677d..b1ae843 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -7837,6 +7837,7 @@ static int i40e_reserve_msix_vectors(struct i40e_pf *pf,
-> int v_budget)
->  static int i40e_init_msix(struct i40e_pf *pf)
->  {
->  	struct i40e_hw *hw = &pf->hw;
-> +	int cpus, extra_vectors;
->  	int vectors_left;
->  	int v_budget, i;
->  	int v_actual;
-> @@ -7872,10 +7873,16 @@ static int i40e_init_msix(struct i40e_pf *pf)
->  		vectors_left--;
->  	}
-> 
-> -	/* reserve vectors for the main PF traffic queues */
-> -	pf->num_lan_msix = min_t(int, num_online_cpus(), vectors_left);
-> +	/* reserve some vectors for the main PF traffic queues. Initially we
-> +	 * only reserve at most 50% of the available vectors, in the case that
-> +	 * the number of online CPUs is large. This ensures that we can enable
-> +	 * extra features as well. Once we've enabled the other features, we
-> +	 * will use any remaining vectors to reach as close as we can to the
-> +	 * number of online CPUs.
-> +	 */
-> +	cpus = num_online_cpus();
-> +	pf->num_lan_msix = min_t(int, cpus, vectors_left / 2);
->  	vectors_left -= pf->num_lan_msix;
-> -	v_budget += pf->num_lan_msix;
-> 
->  	/* reserve one vector for sideband flow director */
->  	if (pf->flags & I40E_FLAG_FD_SB_ENABLED) {
-> @@ -7938,6 +7945,23 @@ static int i40e_init_msix(struct i40e_pf *pf)
->  		}
->  	}
-> 
-> +	/* On systems with a large number of SMP cores, we previously limited
-> +	 * the number of vectors for num_lan_msix to be at most 50% of the
-> +	 * available vectors, to allow for other features. Now, we add back
-> +	 * the remaining vectors. However, we ensure that the total
-> +	 * num_lan_msix will not exceed num_online_cpus(). To do this, we
-> +	 * calculate the number of vectors we can add without going over the
-> +	 * cap of CPUs. For systems with a small number of CPUs this will be
-> +	 * zero.
-> +	 */
-> +	extra_vectors = min_t(int, cpus - pf->num_lan_msix, vectors_left);
-> +	pf->num_lan_msix += extra_vectors;
-> +	vectors_left -= extra_vectors;
-> +
-> +	WARN(vectors_left < 0,
-> +	     "Calculation of remaining vectors underflowed. This is an accounting
-> bug when determining total MSI-X vectors.\n");
-> +
-> +	v_budget += pf->num_lan_msix;
->  	pf->msix_entries = kcalloc(v_budget, sizeof(struct msix_entry),
->  				   GFP_KERNEL);
->  	if (!pf->msix_entries)
-> --
-> 2.4.11
+On 12/27/2016 04:40 PM, maowenan wrote:
+>
+>
+>> -----Original Message-----
+>> From: tndave [mailto:tushar.n.dave at oracle.com]
+>> Sent: Wednesday, December 28, 2016 6:28 AM
+>> To: maowenan; jeffrey.t.kirsher at intel.com; intel-wired-lan at lists.osuosl.org
+>> Cc: netdev at vger.kernel.org; weiyongjun (A); Dingtianhong
+>> Subject: Re: [RFC PATCH] i40e: enable PCIe relax ordering for SPARC
+>>
+>>
+>>
+>> On 12/26/2016 03:39 AM, maowenan wrote:
+>>>
+>>>
+>>>> -----Original Message-----
+>>>> From: netdev-owner at vger.kernel.org
+>>>> [mailto:netdev-owner at vger.kernel.org]
+>>>> On Behalf Of Tushar Dave
+>>>> Sent: Tuesday, December 06, 2016 1:07 AM
+>>>> To: jeffrey.t.kirsher at intel.com; intel-wired-lan at lists.osuosl.org
+>>>> Cc: netdev at vger.kernel.org
+>>>> Subject: [RFC PATCH] i40e: enable PCIe relax ordering for SPARC
+>>>>
+>>>> Unlike previous generation NIC (e.g. ixgbe) i40e doesn't seem to have
+>>>> standard CSR where PCIe relaxed ordering can be set. Without PCIe
+>>>> relax ordering enabled, i40e performance is significantly low on SPARC.
+>>>>
+>>> [Mao Wenan]Hi Tushar, you have referred to i40e doesn't seem to have
+>>> standard CSR to set PCIe relaxed ordering, this CSR like TX&Rx DCA Control
+>> Register in 82599, right?
+>> Yes.
+>> i40e datasheet mentions some CSR that can be used to enable/disable PCIe
+>> relaxed ordering in device; however I don't see the exact definition of those
+>> register in datasheet.
+>> (https://www.mail-archive.com/netdev at vger.kernel.org/msg117219.html).
+>>
+>>> Is DMA_ATTR_WEAK_ORDERING the same as TX&RX control register in
+>> 82599?
+>> No.
+>> DMA_ATTR_WEAK_ORDERING applies to the PCIe root complex of the system.
+>>
+>> -Tushar
+>
+> I understand that the PCIe Root Complex is the Host Bridge in the CPU that
+> connects the CPU and memory to the PCIe architecture. So this attribute
+> DMA_ATTR_WEAK_ORDERING is only applied on CPU side(the SPARC in you
+> system), it can't apply on i40e, is it right?
+Yes.
+> And it is not the same as 82599 DCA control register's relax ordering bits.
+It is not same as 82599 DCA control register's relax ordering bits.
 
+-Tushar
+
+> -Mao Wenan
+>
+>>>
+>>> And to enable relax ordering mode in 82599 for SPARC using below codes:
+>>> s32 ixgbe_start_hw_gen2(struct ixgbe_hw *hw) {
+>>> 	u32 i;
+>>>
+>>> 	/* Clear the rate limiters */
+>>> 	for (i = 0; i < hw->mac.max_tx_queues; i++) {
+>>> 		IXGBE_WRITE_REG(hw, IXGBE_RTTDQSEL, i);
+>>> 		IXGBE_WRITE_REG(hw, IXGBE_RTTBCNRC, 0);
+>>> 	}
+>>> 	IXGBE_WRITE_FLUSH(hw);
+>>>
+>>> #ifndef CONFIG_SPARC
+>>> 	/* Disable relaxed ordering */
+>>> 	for (i = 0; i < hw->mac.max_tx_queues; i++) {
+>>> 		u32 regval;
+>>>
+>>> 		regval = IXGBE_READ_REG(hw, IXGBE_DCA_TXCTRL_82599(i));
+>>> 		regval &= ~IXGBE_DCA_TXCTRL_DESC_WRO_EN;
+>>> 		IXGBE_WRITE_REG(hw, IXGBE_DCA_TXCTRL_82599(i), regval);
+>>> 	}
+>>>
+>>> 	for (i = 0; i < hw->mac.max_rx_queues; i++) {
+>>> 		u32 regval;
+>>>
+>>> 		regval = IXGBE_READ_REG(hw, IXGBE_DCA_RXCTRL(i));
+>>> 		regval &= ~(IXGBE_DCA_RXCTRL_DATA_WRO_EN |
+>>> 			    IXGBE_DCA_RXCTRL_HEAD_WRO_EN);
+>>> 		IXGBE_WRITE_REG(hw, IXGBE_DCA_RXCTRL(i), regval);
+>>> 	}
+>>> #endif
+>>> 	return 0;
+>>> }
+>>>
+>>>
+>>>
+>>>> This patch sets PCIe relax ordering for SPARC arch by setting dma
+>>>> attr DMA_ATTR_WEAK_ORDERING for every tx and rx DMA map/unmap.
+>>>> This has shown 10x increase in performance numbers.
+>>>>
+>>>> e.g.
+>>>> iperf TCP test with 10 threads on SPARC S7
+>>>>
+>>>> Test 1: Without this patch
+>>>>
+>>>> [root at brm-snt1-03 net]# iperf -s
+>>>> ------------------------------------------------------------
+>>>> Server listening on TCP port 5001
+>>>> TCP window size: 85.3 KByte (default)
+>>>> ------------------------------------------------------------
+>>>> [  4] local 16.0.0.7 port 5001 connected with 16.0.0.1 port 40926 [
+>>>> 5] local
+>>>> 16.0.0.7 port 5001 connected with 16.0.0.1 port 40934 [  6] local
+>>>> 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 40930 [  7] local 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 40928 [  8] local 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 40922 [  9] local 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 40932 [ 10] local 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 40920 [ 11] local 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 40924 [ 14] local
+>>>> 16.0.0.7 port 5001 connected with 16.0.0.1 port 40982 [ 12] local
+>>>> 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 40980
+>>>> [ ID] Interval       Transfer     Bandwidth
+>>>> [  4]  0.0-20.0 sec   566 MBytes   237 Mbits/sec
+>>>> [  5]  0.0-20.0 sec   532 MBytes   223 Mbits/sec
+>>>> [  6]  0.0-20.0 sec   537 MBytes   225 Mbits/sec
+>>>> [  8]  0.0-20.0 sec   546 MBytes   229 Mbits/sec
+>>>> [ 11]  0.0-20.0 sec   592 MBytes   248 Mbits/sec
+>>>> [  7]  0.0-20.0 sec   539 MBytes   226 Mbits/sec
+>>>> [  9]  0.0-20.0 sec   572 MBytes   240 Mbits/sec
+>>>> [ 10]  0.0-20.0 sec   604 MBytes   253 Mbits/sec
+>>>> [ 14]  0.0-20.0 sec   567 MBytes   238 Mbits/sec
+>>>> [ 12]  0.0-20.0 sec   511 MBytes   214 Mbits/sec
+>>>> [SUM]  0.0-20.0 sec  5.44 GBytes  2.33 Gbits/sec
+>>>>
+>>>> Test 2: with this patch:
+>>>>
+>>>> [root at brm-snt1-03 net]# iperf -s
+>>>> ------------------------------------------------------------
+>>>> Server listening on TCP port 5001
+>>>> TCP window size: 85.3 KByte (default)
+>>>> ------------------------------------------------------------
+>>>> TCP: request_sock_TCP: Possible SYN flooding on port 5001. Sending
+>> cookies.
+>>>> Check SNMP counters.
+>>>> [  4] local 16.0.0.7 port 5001 connected with 16.0.0.1 port 46876 [
+>>>> 5] local
+>>>> 16.0.0.7 port 5001 connected with 16.0.0.1 port 46874 [  6] local
+>>>> 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 46872 [  7] local 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 46880 [  8] local 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 46878 [  9] local 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 46884 [ 10] local 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 46886 [ 11] local 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 46890 [ 12] local
+>>>> 16.0.0.7 port 5001 connected with 16.0.0.1 port 46888 [ 13] local
+>>>> 16.0.0.7 port
+>>>> 5001 connected with 16.0.0.1 port 46882
+>>>> [ ID] Interval       Transfer     Bandwidth
+>>>> [  4]  0.0-20.0 sec  7.45 GBytes  3.19 Gbits/sec [  5]  0.0-20.0 sec
+>>>> 7.48 GBytes  3.21 Gbits/sec [  7]  0.0-20.0 sec  7.34 GBytes  3.15
+>>>> Gbits/sec [  8]  0.0-20.0 sec  7.42 GBytes  3.18 Gbits/sec [  9]
+>>>> 0.0-20.0 sec  7.24 GBytes  3.11 Gbits/sec [ 10]  0.0-20.0 sec  7.40
+>>>> GBytes  3.17 Gbits/sec [ 12]  0.0-20.0 sec  7.49 GBytes  3.21
+>>>> Gbits/sec [  6]  0.0-20.0 sec  7.30 GBytes  3.13 Gbits/sec [ 11]
+>>>> 0.0-20.0 sec  7.44 GBytes  3.19 Gbits/sec [ 13]  0.0-20.0 sec  7.22
+>>>> GBytes  3.10 Gbits/sec [SUM]  0.0-20.0 sec  73.8 GBytes  31.6
+>>>> Gbits/sec
+>>>>
+>>>> NOTE: In my testing, this patch does _not_ show any harm to i40e
+>>>> performance numbers on x86.
+>>>>
+>>>> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
+>>>> ---
+>>>>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 69
+>>>> ++++++++++++++++++++---------
+>>>> ++++++++++++++++++++drivers/net/ethernet/intel/i40e/i40e_txrx.h |
+>>>> 1 +
+>>>>  2 files changed, 49 insertions(+), 21 deletions(-)
+>>>>
+>>>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>>>> b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>>>> index 6287bf6..800dca7 100644
+>>>> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>>>> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>>>> @@ -551,15 +551,17 @@ static void
+>>>> i40e_unmap_and_free_tx_resource(struct i40e_ring *ring,
+>>>>  		else
+>>>>  			dev_kfree_skb_any(tx_buffer->skb);
+>>>>  		if (dma_unmap_len(tx_buffer, len))
+>>>> -			dma_unmap_single(ring->dev,
+>>>> -					 dma_unmap_addr(tx_buffer, dma),
+>>>> -					 dma_unmap_len(tx_buffer, len),
+>>>> -					 DMA_TO_DEVICE);
+>>>> +			dma_unmap_single_attrs(ring->dev,
+>>>> +					       dma_unmap_addr(tx_buffer, dma),
+>>>> +					       dma_unmap_len(tx_buffer, len),
+>>>> +					       DMA_TO_DEVICE,
+>>>> +					       ring->dma_attrs);
+>>>>  	} else if (dma_unmap_len(tx_buffer, len)) {
+>>>> -		dma_unmap_page(ring->dev,
+>>>> -			       dma_unmap_addr(tx_buffer, dma),
+>>>> -			       dma_unmap_len(tx_buffer, len),
+>>>> -			       DMA_TO_DEVICE);
+>>>> +		dma_unmap_single_attrs(ring->dev,
+>>>> +				       dma_unmap_addr(tx_buffer, dma),
+>>>> +				       dma_unmap_len(tx_buffer, len),
+>>>> +				       DMA_TO_DEVICE,
+>>>> +				       ring->dma_attrs);
+>>>>  	}
+>>>>
+>>>>  	tx_buffer->next_to_watch = NULL;
+>>>> @@ -662,6 +664,8 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+>>>>  	struct i40e_tx_buffer *tx_buf;
+>>>>  	struct i40e_tx_desc *tx_head;
+>>>>  	struct i40e_tx_desc *tx_desc;
+>>>> +	dma_addr_t addr;
+>>>> +	size_t size;
+>>>>  	unsigned int total_bytes = 0, total_packets = 0;
+>>>>  	unsigned int budget = vsi->work_limit;
+>>>>
+>>>> @@ -696,10 +700,11 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+>>>>  		napi_consume_skb(tx_buf->skb, napi_budget);
+>>>>
+>>>>  		/* unmap skb header data */
+>>>> -		dma_unmap_single(tx_ring->dev,
+>>>> -				 dma_unmap_addr(tx_buf, dma),
+>>>> -				 dma_unmap_len(tx_buf, len),
+>>>> -				 DMA_TO_DEVICE);
+>>>> +		dma_unmap_single_attrs(tx_ring->dev,
+>>>> +				       dma_unmap_addr(tx_buf, dma),
+>>>> +				       dma_unmap_len(tx_buf, len),
+>>>> +				       DMA_TO_DEVICE,
+>>>> +				       tx_ring->dma_attrs);
+>>>>
+>>>>  		/* clear tx_buffer data */
+>>>>  		tx_buf->skb = NULL;
+>>>> @@ -717,12 +722,15 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+>>>>  				tx_desc = I40E_TX_DESC(tx_ring, 0);
+>>>>  			}
+>>>>
+>>>> +			addr = dma_unmap_addr(tx_buf, dma);
+>>>> +			size = dma_unmap_len(tx_buf, len);
+>>>>  			/* unmap any remaining paged data */
+>>>>  			if (dma_unmap_len(tx_buf, len)) {
+>>>> -				dma_unmap_page(tx_ring->dev,
+>>>> -					       dma_unmap_addr(tx_buf, dma),
+>>>> -					       dma_unmap_len(tx_buf, len),
+>>>> -					       DMA_TO_DEVICE);
+>>>> +				dma_unmap_single_attrs(tx_ring->dev,
+>>>> +						       addr,
+>>>> +						       size,
+>>>> +						       DMA_TO_DEVICE,
+>>>> +						       tx_ring->dma_attrs);
+>>>>  				dma_unmap_len_set(tx_buf, len, 0);
+>>>>  			}
+>>>>  		}
+>>>> @@ -1010,6 +1018,11 @@ int i40e_setup_tx_descriptors(struct i40e_ring
+>>>> *tx_ring)
+>>>>  	 */
+>>>>  	tx_ring->size += sizeof(u32);
+>>>>  	tx_ring->size = ALIGN(tx_ring->size, 4096);
+>>>> +#ifdef CONFIG_SPARC
+>>>> +	tx_ring->dma_attrs = DMA_ATTR_WEAK_ORDERING; #else
+>>>> +	tx_ring->dma_attrs = 0;
+>>>> +#endif
+>>>>  	tx_ring->desc = dma_alloc_coherent(dev, tx_ring->size,
+>>>>  					   &tx_ring->dma, GFP_KERNEL);
+>>>>  	if (!tx_ring->desc) {
+>>>> @@ -1053,7 +1066,11 @@ void i40e_clean_rx_ring(struct i40e_ring
+>> *rx_ring)
+>>>>  		if (!rx_bi->page)
+>>>>  			continue;
+>>>>
+>>>> -		dma_unmap_page(dev, rx_bi->dma, PAGE_SIZE,
+>>>> DMA_FROM_DEVICE);
+>>>> +		dma_unmap_single_attrs(dev,
+>>>> +				       rx_bi->dma,
+>>>> +				       PAGE_SIZE,
+>>>> +				       DMA_FROM_DEVICE,
+>>>> +				       rx_ring->dma_attrs);
+>>>>  		__free_pages(rx_bi->page, 0);
+>>>>
+>>>>  		rx_bi->page = NULL;
+>>>> @@ -1113,6 +1130,11 @@ int i40e_setup_rx_descriptors(struct i40e_ring
+>>>> *rx_ring)
+>>>>  	/* Round up to nearest 4K */
+>>>>  	rx_ring->size = rx_ring->count * sizeof(union i40e_32byte_rx_desc);
+>>>>  	rx_ring->size = ALIGN(rx_ring->size, 4096);
+>>>> +#ifdef CONFIG_SPARC
+>>>> +	rx_ring->dma_attrs = DMA_ATTR_WEAK_ORDERING; #else
+>>>> +	rx_ring->dma_attrs = 0;
+>>>> +#endif
+>>>>  	rx_ring->desc = dma_alloc_coherent(dev, rx_ring->size,
+>>>>  					   &rx_ring->dma, GFP_KERNEL);
+>>>>
+>>>> @@ -1182,7 +1204,8 @@ static bool i40e_alloc_mapped_page(struct
+>>>> i40e_ring *rx_ring,
+>>>>  	}
+>>>>
+>>>>  	/* map page for use */
+>>>> -	dma = dma_map_page(rx_ring->dev, page, 0, PAGE_SIZE,
+>>>> DMA_FROM_DEVICE);
+>>>> +	dma = dma_map_single_attrs(rx_ring->dev, page_address(page),
+>>>> PAGE_SIZE,
+>>>> +				   DMA_FROM_DEVICE, rx_ring->dma_attrs);
+>>>>
+>>>>  	/* if mapping failed free memory back to system since
+>>>>  	 * there isn't much point in holding memory we can't use @@
+>> -1695,8
+>>>> +1718,11 @@ struct sk_buff *i40e_fetch_rx_buffer(struct i40e_ring
+>>>> +*rx_ring,
+>>>>  		rx_ring->rx_stats.page_reuse_count++;
+>>>>  	} else {
+>>>>  		/* we are not reusing the buffer so unmap it */
+>>>> -		dma_unmap_page(rx_ring->dev, rx_buffer->dma, PAGE_SIZE,
+>>>> -			       DMA_FROM_DEVICE);
+>>>> +		dma_unmap_single_attrs(rx_ring->dev,
+>>>> +				       rx_buffer->dma,
+>>>> +				       PAGE_SIZE,
+>>>> +				       DMA_FROM_DEVICE,
+>>>> +				       rx_ring->dma_attrs);
+>>>>  	}
+>>>>
+>>>>  	/* clear contents of buffer_info */ @@ -2737,7 +2763,8 @@ static
+>>>> inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff
+>>>> *skb,
+>>>>  	first->skb = skb;
+>>>>  	first->tx_flags = tx_flags;
+>>>>
+>>>> -	dma = dma_map_single(tx_ring->dev, skb->data, size, DMA_TO_DEVICE);
+>>>> +	dma = dma_map_single_attrs(tx_ring->dev, skb->data, size,
+>>>> +				   DMA_TO_DEVICE, tx_ring->dma_attrs);
+>>>>
+>>>>  	tx_desc = I40E_TX_DESC(tx_ring, i);
+>>>>  	tx_bi = first;
+>>>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+>>>> b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+>>>> index 5088405..9a86212 100644
+>>>> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+>>>> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+>>>> @@ -327,6 +327,7 @@ struct i40e_ring {
+>>>>
+>>>>  	unsigned int size;		/* length of descriptor ring in bytes */
+>>>>  	dma_addr_t dma;			/* physical address of ring */
+>>>> +	unsigned long dma_attrs;	/* DMA attributes */
+>>>>
+>>>>  	struct i40e_vsi *vsi;		/* Backreference to associated VSI */
+>>>>  	struct i40e_q_vector *q_vector;	/* Backreference to associated
+>> vector
+>>>> */
+>>>> --
+>>>> 1.9.1
+>>>
+>>>
+>
