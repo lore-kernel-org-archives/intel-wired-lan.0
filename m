@@ -1,371 +1,139 @@
-From: tndave <tushar.n.dave@oracle.com>
-Date: Wed, 28 Dec 2016 13:55:20 -0800
-Subject: [Intel-wired-lan] [RFC PATCH] i40e: enable PCIe relax ordering
-	for SPARC
-In-Reply-To: <F95AC9340317A84688A5F0DF0246F3F201521164@szxeml504-mbs.china.huawei.com>
-References: <1480957627-16825-1-git-send-email-tushar.n.dave@oracle.com>
- <F95AC9340317A84688A5F0DF0246F3F2015209E7@szxeml504-mbs.china.huawei.com>
- <67edcc8a-93d2-8245-f24b-47dc13244879@oracle.com>
- <F95AC9340317A84688A5F0DF0246F3F201521164@szxeml504-mbs.china.huawei.com>
-Message-ID: <d6df1e2c-c6a0-f7f5-deea-bd92844603a1@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 29 Dec 2016 20:15:48 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 4feb5ab11d96dd2cd07d2a7cfa9b7594537aadb3
+Message-ID: <5864fe74.zbZ7eUWYLXNYBZKG%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+4feb5ab11d96dd2cd07d2a7cfa9b7594537aadb3  ixgbe: update the rss key on h/w, when ethtool ask for it.
 
+elapsed time: 56m
 
-On 12/27/2016 04:40 PM, maowenan wrote:
->
->
->> -----Original Message-----
->> From: tndave [mailto:tushar.n.dave at oracle.com]
->> Sent: Wednesday, December 28, 2016 6:28 AM
->> To: maowenan; jeffrey.t.kirsher at intel.com; intel-wired-lan at lists.osuosl.org
->> Cc: netdev at vger.kernel.org; weiyongjun (A); Dingtianhong
->> Subject: Re: [RFC PATCH] i40e: enable PCIe relax ordering for SPARC
->>
->>
->>
->> On 12/26/2016 03:39 AM, maowenan wrote:
->>>
->>>
->>>> -----Original Message-----
->>>> From: netdev-owner at vger.kernel.org
->>>> [mailto:netdev-owner at vger.kernel.org]
->>>> On Behalf Of Tushar Dave
->>>> Sent: Tuesday, December 06, 2016 1:07 AM
->>>> To: jeffrey.t.kirsher at intel.com; intel-wired-lan at lists.osuosl.org
->>>> Cc: netdev at vger.kernel.org
->>>> Subject: [RFC PATCH] i40e: enable PCIe relax ordering for SPARC
->>>>
->>>> Unlike previous generation NIC (e.g. ixgbe) i40e doesn't seem to have
->>>> standard CSR where PCIe relaxed ordering can be set. Without PCIe
->>>> relax ordering enabled, i40e performance is significantly low on SPARC.
->>>>
->>> [Mao Wenan]Hi Tushar, you have referred to i40e doesn't seem to have
->>> standard CSR to set PCIe relaxed ordering, this CSR like TX&Rx DCA Control
->> Register in 82599, right?
->> Yes.
->> i40e datasheet mentions some CSR that can be used to enable/disable PCIe
->> relaxed ordering in device; however I don't see the exact definition of those
->> register in datasheet.
->> (https://www.mail-archive.com/netdev at vger.kernel.org/msg117219.html).
->>
->>> Is DMA_ATTR_WEAK_ORDERING the same as TX&RX control register in
->> 82599?
->> No.
->> DMA_ATTR_WEAK_ORDERING applies to the PCIe root complex of the system.
->>
->> -Tushar
->
-> I understand that the PCIe Root Complex is the Host Bridge in the CPU that
-> connects the CPU and memory to the PCIe architecture. So this attribute
-> DMA_ATTR_WEAK_ORDERING is only applied on CPU side(the SPARC in you
-> system), it can't apply on i40e, is it right?
-Yes.
-> And it is not the same as 82599 DCA control register's relax ordering bits.
-It is not same as 82599 DCA control register's relax ordering bits.
+configs tested: 115
 
--Tushar
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> -Mao Wenan
->
->>>
->>> And to enable relax ordering mode in 82599 for SPARC using below codes:
->>> s32 ixgbe_start_hw_gen2(struct ixgbe_hw *hw) {
->>> 	u32 i;
->>>
->>> 	/* Clear the rate limiters */
->>> 	for (i = 0; i < hw->mac.max_tx_queues; i++) {
->>> 		IXGBE_WRITE_REG(hw, IXGBE_RTTDQSEL, i);
->>> 		IXGBE_WRITE_REG(hw, IXGBE_RTTBCNRC, 0);
->>> 	}
->>> 	IXGBE_WRITE_FLUSH(hw);
->>>
->>> #ifndef CONFIG_SPARC
->>> 	/* Disable relaxed ordering */
->>> 	for (i = 0; i < hw->mac.max_tx_queues; i++) {
->>> 		u32 regval;
->>>
->>> 		regval = IXGBE_READ_REG(hw, IXGBE_DCA_TXCTRL_82599(i));
->>> 		regval &= ~IXGBE_DCA_TXCTRL_DESC_WRO_EN;
->>> 		IXGBE_WRITE_REG(hw, IXGBE_DCA_TXCTRL_82599(i), regval);
->>> 	}
->>>
->>> 	for (i = 0; i < hw->mac.max_rx_queues; i++) {
->>> 		u32 regval;
->>>
->>> 		regval = IXGBE_READ_REG(hw, IXGBE_DCA_RXCTRL(i));
->>> 		regval &= ~(IXGBE_DCA_RXCTRL_DATA_WRO_EN |
->>> 			    IXGBE_DCA_RXCTRL_HEAD_WRO_EN);
->>> 		IXGBE_WRITE_REG(hw, IXGBE_DCA_RXCTRL(i), regval);
->>> 	}
->>> #endif
->>> 	return 0;
->>> }
->>>
->>>
->>>
->>>> This patch sets PCIe relax ordering for SPARC arch by setting dma
->>>> attr DMA_ATTR_WEAK_ORDERING for every tx and rx DMA map/unmap.
->>>> This has shown 10x increase in performance numbers.
->>>>
->>>> e.g.
->>>> iperf TCP test with 10 threads on SPARC S7
->>>>
->>>> Test 1: Without this patch
->>>>
->>>> [root at brm-snt1-03 net]# iperf -s
->>>> ------------------------------------------------------------
->>>> Server listening on TCP port 5001
->>>> TCP window size: 85.3 KByte (default)
->>>> ------------------------------------------------------------
->>>> [  4] local 16.0.0.7 port 5001 connected with 16.0.0.1 port 40926 [
->>>> 5] local
->>>> 16.0.0.7 port 5001 connected with 16.0.0.1 port 40934 [  6] local
->>>> 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 40930 [  7] local 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 40928 [  8] local 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 40922 [  9] local 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 40932 [ 10] local 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 40920 [ 11] local 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 40924 [ 14] local
->>>> 16.0.0.7 port 5001 connected with 16.0.0.1 port 40982 [ 12] local
->>>> 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 40980
->>>> [ ID] Interval       Transfer     Bandwidth
->>>> [  4]  0.0-20.0 sec   566 MBytes   237 Mbits/sec
->>>> [  5]  0.0-20.0 sec   532 MBytes   223 Mbits/sec
->>>> [  6]  0.0-20.0 sec   537 MBytes   225 Mbits/sec
->>>> [  8]  0.0-20.0 sec   546 MBytes   229 Mbits/sec
->>>> [ 11]  0.0-20.0 sec   592 MBytes   248 Mbits/sec
->>>> [  7]  0.0-20.0 sec   539 MBytes   226 Mbits/sec
->>>> [  9]  0.0-20.0 sec   572 MBytes   240 Mbits/sec
->>>> [ 10]  0.0-20.0 sec   604 MBytes   253 Mbits/sec
->>>> [ 14]  0.0-20.0 sec   567 MBytes   238 Mbits/sec
->>>> [ 12]  0.0-20.0 sec   511 MBytes   214 Mbits/sec
->>>> [SUM]  0.0-20.0 sec  5.44 GBytes  2.33 Gbits/sec
->>>>
->>>> Test 2: with this patch:
->>>>
->>>> [root at brm-snt1-03 net]# iperf -s
->>>> ------------------------------------------------------------
->>>> Server listening on TCP port 5001
->>>> TCP window size: 85.3 KByte (default)
->>>> ------------------------------------------------------------
->>>> TCP: request_sock_TCP: Possible SYN flooding on port 5001. Sending
->> cookies.
->>>> Check SNMP counters.
->>>> [  4] local 16.0.0.7 port 5001 connected with 16.0.0.1 port 46876 [
->>>> 5] local
->>>> 16.0.0.7 port 5001 connected with 16.0.0.1 port 46874 [  6] local
->>>> 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 46872 [  7] local 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 46880 [  8] local 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 46878 [  9] local 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 46884 [ 10] local 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 46886 [ 11] local 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 46890 [ 12] local
->>>> 16.0.0.7 port 5001 connected with 16.0.0.1 port 46888 [ 13] local
->>>> 16.0.0.7 port
->>>> 5001 connected with 16.0.0.1 port 46882
->>>> [ ID] Interval       Transfer     Bandwidth
->>>> [  4]  0.0-20.0 sec  7.45 GBytes  3.19 Gbits/sec [  5]  0.0-20.0 sec
->>>> 7.48 GBytes  3.21 Gbits/sec [  7]  0.0-20.0 sec  7.34 GBytes  3.15
->>>> Gbits/sec [  8]  0.0-20.0 sec  7.42 GBytes  3.18 Gbits/sec [  9]
->>>> 0.0-20.0 sec  7.24 GBytes  3.11 Gbits/sec [ 10]  0.0-20.0 sec  7.40
->>>> GBytes  3.17 Gbits/sec [ 12]  0.0-20.0 sec  7.49 GBytes  3.21
->>>> Gbits/sec [  6]  0.0-20.0 sec  7.30 GBytes  3.13 Gbits/sec [ 11]
->>>> 0.0-20.0 sec  7.44 GBytes  3.19 Gbits/sec [ 13]  0.0-20.0 sec  7.22
->>>> GBytes  3.10 Gbits/sec [SUM]  0.0-20.0 sec  73.8 GBytes  31.6
->>>> Gbits/sec
->>>>
->>>> NOTE: In my testing, this patch does _not_ show any harm to i40e
->>>> performance numbers on x86.
->>>>
->>>> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
->>>> ---
->>>>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 69
->>>> ++++++++++++++++++++---------
->>>> ++++++++++++++++++++drivers/net/ethernet/intel/i40e/i40e_txrx.h |
->>>> 1 +
->>>>  2 files changed, 49 insertions(+), 21 deletions(-)
->>>>
->>>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->>>> b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->>>> index 6287bf6..800dca7 100644
->>>> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->>>> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->>>> @@ -551,15 +551,17 @@ static void
->>>> i40e_unmap_and_free_tx_resource(struct i40e_ring *ring,
->>>>  		else
->>>>  			dev_kfree_skb_any(tx_buffer->skb);
->>>>  		if (dma_unmap_len(tx_buffer, len))
->>>> -			dma_unmap_single(ring->dev,
->>>> -					 dma_unmap_addr(tx_buffer, dma),
->>>> -					 dma_unmap_len(tx_buffer, len),
->>>> -					 DMA_TO_DEVICE);
->>>> +			dma_unmap_single_attrs(ring->dev,
->>>> +					       dma_unmap_addr(tx_buffer, dma),
->>>> +					       dma_unmap_len(tx_buffer, len),
->>>> +					       DMA_TO_DEVICE,
->>>> +					       ring->dma_attrs);
->>>>  	} else if (dma_unmap_len(tx_buffer, len)) {
->>>> -		dma_unmap_page(ring->dev,
->>>> -			       dma_unmap_addr(tx_buffer, dma),
->>>> -			       dma_unmap_len(tx_buffer, len),
->>>> -			       DMA_TO_DEVICE);
->>>> +		dma_unmap_single_attrs(ring->dev,
->>>> +				       dma_unmap_addr(tx_buffer, dma),
->>>> +				       dma_unmap_len(tx_buffer, len),
->>>> +				       DMA_TO_DEVICE,
->>>> +				       ring->dma_attrs);
->>>>  	}
->>>>
->>>>  	tx_buffer->next_to_watch = NULL;
->>>> @@ -662,6 +664,8 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
->>>>  	struct i40e_tx_buffer *tx_buf;
->>>>  	struct i40e_tx_desc *tx_head;
->>>>  	struct i40e_tx_desc *tx_desc;
->>>> +	dma_addr_t addr;
->>>> +	size_t size;
->>>>  	unsigned int total_bytes = 0, total_packets = 0;
->>>>  	unsigned int budget = vsi->work_limit;
->>>>
->>>> @@ -696,10 +700,11 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
->>>>  		napi_consume_skb(tx_buf->skb, napi_budget);
->>>>
->>>>  		/* unmap skb header data */
->>>> -		dma_unmap_single(tx_ring->dev,
->>>> -				 dma_unmap_addr(tx_buf, dma),
->>>> -				 dma_unmap_len(tx_buf, len),
->>>> -				 DMA_TO_DEVICE);
->>>> +		dma_unmap_single_attrs(tx_ring->dev,
->>>> +				       dma_unmap_addr(tx_buf, dma),
->>>> +				       dma_unmap_len(tx_buf, len),
->>>> +				       DMA_TO_DEVICE,
->>>> +				       tx_ring->dma_attrs);
->>>>
->>>>  		/* clear tx_buffer data */
->>>>  		tx_buf->skb = NULL;
->>>> @@ -717,12 +722,15 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
->>>>  				tx_desc = I40E_TX_DESC(tx_ring, 0);
->>>>  			}
->>>>
->>>> +			addr = dma_unmap_addr(tx_buf, dma);
->>>> +			size = dma_unmap_len(tx_buf, len);
->>>>  			/* unmap any remaining paged data */
->>>>  			if (dma_unmap_len(tx_buf, len)) {
->>>> -				dma_unmap_page(tx_ring->dev,
->>>> -					       dma_unmap_addr(tx_buf, dma),
->>>> -					       dma_unmap_len(tx_buf, len),
->>>> -					       DMA_TO_DEVICE);
->>>> +				dma_unmap_single_attrs(tx_ring->dev,
->>>> +						       addr,
->>>> +						       size,
->>>> +						       DMA_TO_DEVICE,
->>>> +						       tx_ring->dma_attrs);
->>>>  				dma_unmap_len_set(tx_buf, len, 0);
->>>>  			}
->>>>  		}
->>>> @@ -1010,6 +1018,11 @@ int i40e_setup_tx_descriptors(struct i40e_ring
->>>> *tx_ring)
->>>>  	 */
->>>>  	tx_ring->size += sizeof(u32);
->>>>  	tx_ring->size = ALIGN(tx_ring->size, 4096);
->>>> +#ifdef CONFIG_SPARC
->>>> +	tx_ring->dma_attrs = DMA_ATTR_WEAK_ORDERING; #else
->>>> +	tx_ring->dma_attrs = 0;
->>>> +#endif
->>>>  	tx_ring->desc = dma_alloc_coherent(dev, tx_ring->size,
->>>>  					   &tx_ring->dma, GFP_KERNEL);
->>>>  	if (!tx_ring->desc) {
->>>> @@ -1053,7 +1066,11 @@ void i40e_clean_rx_ring(struct i40e_ring
->> *rx_ring)
->>>>  		if (!rx_bi->page)
->>>>  			continue;
->>>>
->>>> -		dma_unmap_page(dev, rx_bi->dma, PAGE_SIZE,
->>>> DMA_FROM_DEVICE);
->>>> +		dma_unmap_single_attrs(dev,
->>>> +				       rx_bi->dma,
->>>> +				       PAGE_SIZE,
->>>> +				       DMA_FROM_DEVICE,
->>>> +				       rx_ring->dma_attrs);
->>>>  		__free_pages(rx_bi->page, 0);
->>>>
->>>>  		rx_bi->page = NULL;
->>>> @@ -1113,6 +1130,11 @@ int i40e_setup_rx_descriptors(struct i40e_ring
->>>> *rx_ring)
->>>>  	/* Round up to nearest 4K */
->>>>  	rx_ring->size = rx_ring->count * sizeof(union i40e_32byte_rx_desc);
->>>>  	rx_ring->size = ALIGN(rx_ring->size, 4096);
->>>> +#ifdef CONFIG_SPARC
->>>> +	rx_ring->dma_attrs = DMA_ATTR_WEAK_ORDERING; #else
->>>> +	rx_ring->dma_attrs = 0;
->>>> +#endif
->>>>  	rx_ring->desc = dma_alloc_coherent(dev, rx_ring->size,
->>>>  					   &rx_ring->dma, GFP_KERNEL);
->>>>
->>>> @@ -1182,7 +1204,8 @@ static bool i40e_alloc_mapped_page(struct
->>>> i40e_ring *rx_ring,
->>>>  	}
->>>>
->>>>  	/* map page for use */
->>>> -	dma = dma_map_page(rx_ring->dev, page, 0, PAGE_SIZE,
->>>> DMA_FROM_DEVICE);
->>>> +	dma = dma_map_single_attrs(rx_ring->dev, page_address(page),
->>>> PAGE_SIZE,
->>>> +				   DMA_FROM_DEVICE, rx_ring->dma_attrs);
->>>>
->>>>  	/* if mapping failed free memory back to system since
->>>>  	 * there isn't much point in holding memory we can't use @@
->> -1695,8
->>>> +1718,11 @@ struct sk_buff *i40e_fetch_rx_buffer(struct i40e_ring
->>>> +*rx_ring,
->>>>  		rx_ring->rx_stats.page_reuse_count++;
->>>>  	} else {
->>>>  		/* we are not reusing the buffer so unmap it */
->>>> -		dma_unmap_page(rx_ring->dev, rx_buffer->dma, PAGE_SIZE,
->>>> -			       DMA_FROM_DEVICE);
->>>> +		dma_unmap_single_attrs(rx_ring->dev,
->>>> +				       rx_buffer->dma,
->>>> +				       PAGE_SIZE,
->>>> +				       DMA_FROM_DEVICE,
->>>> +				       rx_ring->dma_attrs);
->>>>  	}
->>>>
->>>>  	/* clear contents of buffer_info */ @@ -2737,7 +2763,8 @@ static
->>>> inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff
->>>> *skb,
->>>>  	first->skb = skb;
->>>>  	first->tx_flags = tx_flags;
->>>>
->>>> -	dma = dma_map_single(tx_ring->dev, skb->data, size, DMA_TO_DEVICE);
->>>> +	dma = dma_map_single_attrs(tx_ring->dev, skb->data, size,
->>>> +				   DMA_TO_DEVICE, tx_ring->dma_attrs);
->>>>
->>>>  	tx_desc = I40E_TX_DESC(tx_ring, i);
->>>>  	tx_bi = first;
->>>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
->>>> b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
->>>> index 5088405..9a86212 100644
->>>> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
->>>> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
->>>> @@ -327,6 +327,7 @@ struct i40e_ring {
->>>>
->>>>  	unsigned int size;		/* length of descriptor ring in bytes */
->>>>  	dma_addr_t dma;			/* physical address of ring */
->>>> +	unsigned long dma_attrs;	/* DMA attributes */
->>>>
->>>>  	struct i40e_vsi *vsi;		/* Backreference to associated VSI */
->>>>  	struct i40e_q_vector *q_vector;	/* Backreference to associated
->> vector
->>>> */
->>>> --
->>>> 1.9.1
->>>
->>>
->
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201652
+i386                               tinyconfig
+arm                          nuc960_defconfig
+mips                      malta_kvm_defconfig
+powerpc                     kmeter1_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x016-201652
+x86_64                 randconfig-x010-201652
+x86_64                 randconfig-x014-201652
+x86_64                 randconfig-x019-201652
+x86_64                 randconfig-x012-201652
+x86_64                 randconfig-x013-201652
+x86_64                 randconfig-x011-201652
+x86_64                 randconfig-x018-201652
+x86_64                 randconfig-x015-201652
+x86_64                 randconfig-x017-201652
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                            eywa-module
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-s0-201652
+i386                     randconfig-s1-201652
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201652
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201652
+i386                     randconfig-i1-201652
+x86_64                           allmodconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x007-201652
+x86_64                 randconfig-x001-201652
+x86_64                 randconfig-x000-201652
+x86_64                 randconfig-x008-201652
+x86_64                 randconfig-x002-201652
+x86_64                 randconfig-x006-201652
+x86_64                 randconfig-x004-201652
+x86_64                 randconfig-x005-201652
+x86_64                 randconfig-x009-201652
+x86_64                 randconfig-x003-201652
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201652
+i386                   randconfig-x003-201652
+i386                   randconfig-x005-201652
+i386                   randconfig-x006-201652
+i386                   randconfig-x009-201652
+i386                   randconfig-x001-201652
+i386                   randconfig-x008-201652
+i386                   randconfig-x004-201652
+i386                   randconfig-x000-201652
+i386                   randconfig-x002-201652
+i386                   randconfig-x007-201652
+
+Thanks,
+Fengguang
