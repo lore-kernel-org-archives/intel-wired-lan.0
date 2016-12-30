@@ -1,293 +1,328 @@
 From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Thu, 29 Dec 2016 22:20:59 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 2/6] i40e: Introduce VF Port
-	Representator(VFPR) netdevs.
+Date: Thu, 29 Dec 2016 22:21:03 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 6/6] i40e: Add support for
+	exposing VF port statistics via VFPR netdev on the host.
 In-Reply-To: <1483078863-22026-1-git-send-email-sridhar.samudrala@intel.com>
 References: <1483078863-22026-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <1483078863-22026-3-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <1483078863-22026-7-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-VF Port Representator netdevs are created for each VF if the switch mode
-is set to 'switchdev'. These netdevs can be used to control and configure
-VFs from PFs namespace. They enable exposing VF statistics, configure and
-monitor link state, mtu, filters, fdb/vlan entries etc. of VFs.
-Broadcast filters are not enabled in switchdev mode.
+By default stats counted by HW are returned via the original ndo_get_stats64()
+api. Stats counted in SW are returned via ndo_get_offload_stats() api.
 
-Sample script to create VF port representors
+Small script to demonstrate vfpr stats in switchdev mode.
+PF: enp5s0f0, VFs: enp5s2,enp5s2f1 VFPRs:enp5s0f0-vf0, enp5s0f0-vf1
+
 # rmmod i40e; modprobe i40e
 # devlink dev eswitch set pci/0000:05:00.0 mode switchdev
 # echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
-# ip l show
-297: enp5s0f0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop portid 6805ca2e7268 state DOWN mode DEFAULT group default qlen 1000
-     link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
-     vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state auto, trust off
-     vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state auto, trust off
-299: enp5s0f0-vf0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-     link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff
-300: enp5s0f0-vf1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-     link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff
+# ip link set enp5s0f0 vf 0 mac 00:11:22:33:44:55
+# ip link set enp5s0f0 vf 1 mac 00:11:22:33:44:56
+# rmmod i40evf; modprobe i40evf
+
+/* Create 2 namespaces and move the VFs to
+# ip netns add ns0
+# ip link set enp5s2 netns ns0
+# ip netns exec ns0 ip addr add 192.168.1.10/24 dev enp5s2
+# ip netns exec ns0 ip link set enp5s2 up
+# ip netns add ns1
+# ip link set enp5s2f1 netns ns1
+# ip netns exec ns1 ip addr add 192.168.1.11/24 dev enp5s2f1
+# ip netns exec ns1 ip link set enp5s2f1 up
+
+/* bring up pf and vfpr netdevs */
+# ip link set enp5s0f0 up
+# ip link set enp5s0f0-vf0 up
+# ip link set enp5s0f0-vf1 up
+
+/* Create a linux bridge and add vfpr netdevs to it. */
+# ip link add vfpr-br type bridge
+# ip link set enp5s0f0-vf0 master vfpr-br
+# ip link set enp5s0f0-vf1 master vfpr-br
+# ip addr add 192.168.1.1/24 dev vfpr-br
+# ip link set vfpr-br up
+
+# ip netns exec ns0 ping -c3 192.168.1.11
+# ip netns exec ns1 ping -c3 192.168.1.10
+
+# ip netns exec ns0 ip -s l show enp5s2
+56: enp5s2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether 00:11:22:33:44:55 brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    1468       18       0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    1398       17       0       0       0       0
+# ip -s l show enp5s0f0-vf0
+52: enp5s0f0-vf0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel master vfpr-br state UP mode DEFAULT group default qlen 1000
+    link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    1398       17       0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    1468       18       0       0       0       0
+# ip netns exec ns1 ip -s l show enp5s2f1
+57: enp5s2f1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether 00:11:22:33:44:56 brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    1486       18       0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    1538       19       0       0       0       0
+# ip -s l show enp5s0f0-vf1
+53: enp5s0f0-vf1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel master vfpr-br state UP mode DEFAULT group default qlen 1000
+    link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    1538       19       0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    1486       18       0       0       0       0
 
 Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c        |  14 +-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 151 ++++++++++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  14 ++
- 3 files changed, 172 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  44 +++++++-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 111 +++++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  10 ++
+ 3 files changed, 163 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index c01a620..03d07dd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10938,15 +10938,27 @@ static int i40e_devlink_eswitch_mode_get(struct devlink *devlink, u16 *mode)
- static int i40e_devlink_eswitch_mode_set(struct devlink *devlink, u16 mode)
- {
- 	struct i40e_pf *pf = devlink_priv(devlink);
--	int err = 0;
-+	struct i40e_vf *vf;
-+	int i, err = 0;
- 
- 	if (mode == pf->eswitch_mode)
- 		goto done;
- 
- 	switch (mode) {
- 	case DEVLINK_ESWITCH_MODE_LEGACY:
-+		for (i = 0; i < pf->num_alloc_vfs; i++) {
-+			vf = &(pf->vf[i]);
-+			i40e_free_vfpr_netdev(vf);
-+		}
- 		pf->eswitch_mode = mode;
- 		break;
-+	case DEVLINK_ESWITCH_MODE_SWITCHDEV:
-+		for (i = 0; i < pf->num_alloc_vfs; i++) {
-+			vf = &(pf->vf[i]);
-+			i40e_alloc_vfpr_netdev(vf, i);
-+		}
-+                pf->eswitch_mode = mode;
-+		break;
- 	default:
- 		err = -EOPNOTSUPP;
- 		break;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index a6198b7..6c5b296 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -697,12 +697,16 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, enum i40e_vsi_type type)
- 					 "Could not add MAC filter %pM for VF %d\n",
- 					vf->default_lan_addr.addr, vf->vf_id);
- 		}
--		eth_broadcast_addr(broadcast);
--		f = i40e_add_filter(vsi, broadcast,
--				    vf->port_vlan_id ? vf->port_vlan_id : -1);
--		if (!f)
--			dev_info(&pf->pdev->dev,
--				 "Could not allocate VF broadcast filter\n");
-+
-+		/* Add VF broadcast filter only in 'legacy' mode */
-+		if (vsi->back->eswitch_mode == DEVLINK_ESWITCH_MODE_LEGACY) {
-+			eth_broadcast_addr(broadcast);
-+			f = i40e_add_filter(vsi, broadcast,
-+					    vf->port_vlan_id ? vf->port_vlan_id : -1);
-+			if (!f)
-+				dev_info(&pf->pdev->dev,
-+					 "Could not allocate VF broadcast filter\n");
-+		}
- 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
- 		i40e_write_rx_ctl(&pf->hw, I40E_VFQF_HENA1(0, vf->vf_id),
- 				  (u32)hena);
-@@ -1020,6 +1024,136 @@ void i40e_reset_vf(struct i40e_vf *vf, bool flr)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index b46ddaa..9f04337 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1172,6 +1172,32 @@ static bool i40e_alloc_mapped_page(struct i40e_ring *rx_ring,
  }
  
  /**
-+ * i40e_vfpr_netdev_open
-+ * @dev: network interface device structure
++ * i40e_vfpr_receive_skb
++ * @vf: pointer to VF
++ * @skb: packet to send up
 + *
-+ * Called when vfpr netdevice is brought up.
++ * Update skb dev to vfpr netdev and rx stats.
 + **/
-+static int i40e_vfpr_netdev_open(struct net_device *dev)
++static void i40e_vfpr_receive_skb(struct i40e_vf *vf, struct sk_buff *skb)
 +{
-+	return 0;
-+}
-+
-+/**
-+ * i40e_vfpr_netdev_stop
-+ * @dev: network interface device structure
-+ *
-+ * Called when vfpr netdevice is brought down.
-+ **/
-+static int i40e_vfpr_netdev_stop(struct net_device *dev)
-+{
-+	return 0;
-+}
-+
-+static const struct net_device_ops i40e_vfpr_netdev_ops = {
-+	.ndo_open       	= i40e_vfpr_netdev_open,
-+	.ndo_stop       	= i40e_vfpr_netdev_stop,
-+};
-+
-+/**
-+ * i40e_update_vf_broadcast_filter
-+ * @vf: pointer to the VF structure
-+ * @enable: boolean flag indicating add/delete
-+ *
-+ * add/delete VFs broadcast filter
-+ **/
-+void i40e_update_vf_broadcast_filter(struct i40e_vf *vf, bool enable)
-+{
-+	struct i40e_pf *pf = vf->pf;
-+	struct i40e_vsi *vsi = pf->vsi[vf->lan_vsi_idx];
-+	u8 broadcast[ETH_ALEN];
-+	int err;
-+
-+	spin_lock_bh(&vsi->mac_filter_hash_lock);
-+	eth_broadcast_addr(broadcast);
-+	if (enable)
-+		i40e_add_filter(vsi, broadcast, vf->port_vlan_id ? vf->port_vlan_id : -1);
-+	else
-+		i40e_del_filter(vsi, broadcast, vf->port_vlan_id ? vf->port_vlan_id : -1);
-+	spin_unlock_bh(&vsi->mac_filter_hash_lock);
-+
-+	/* update broadcast filter */
-+	err = i40e_sync_vsi_filters(vsi);
-+	if (err)
-+		dev_err(&pf->pdev->dev, "Unable to program bcast filter\n");
-+}
-+
-+/**
-+ * i40e_alloc_vfpr_netdev
-+ * @vf: pointer to the VF structure
-+ * @vf_num: VF number
-+ *
-+ * Create VF Port representor netdev
-+ **/
-+int i40e_alloc_vfpr_netdev(struct i40e_vf *vf, u16 vf_num)
-+{
-+	struct net_device *vfpr_netdev;
-+	char netdev_name[IFNAMSIZ];
 +	struct i40e_vfpr_netdev_priv *priv;
-+	struct i40e_pf *pf = vf->pf;
-+	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
-+	int err;
-+
-+	snprintf(netdev_name, IFNAMSIZ, "%s-vf%d", vsi->netdev->name, vf_num);
-+	vfpr_netdev = alloc_netdev(sizeof(struct i40e_vfpr_netdev_priv),
-+				   netdev_name, NET_NAME_UNKNOWN, ether_setup);
-+	if (!vfpr_netdev) {
-+		dev_err(&pf->pdev->dev, "alloc_netdev failed for vf:%d\n",
-+			vf_num);
-+		return -ENOMEM;
-+	}
-+
-+	pf->vf[vf_num].vfpr_netdev = vfpr_netdev;
-+
-+	priv = netdev_priv(vfpr_netdev);
-+	priv->vf = &(pf->vf[vf_num]);
-+
-+	vfpr_netdev->netdev_ops = &i40e_vfpr_netdev_ops;
-+
-+	netif_carrier_off(vfpr_netdev);
-+	netif_tx_disable(vfpr_netdev);
-+
-+	err = register_netdev(vfpr_netdev);
-+	if (err) {
-+		dev_err(&pf->pdev->dev, "register_netdev failed for vf: %s\n",
-+			vf->vfpr_netdev->name);
-+		free_netdev(vfpr_netdev);
-+		return err;
-+	}
-+
-+	dev_info(&pf->pdev->dev, "VF Port representor(%s) created for VF %d\n",
-+		 vf->vfpr_netdev->name, vf_num);
-+
-+	/* Delete broadcast filter for VF */
-+	i40e_update_vf_broadcast_filter(vf, false);
-+
-+	return 0;
-+}
-+
-+/**
-+ * i40e_free_vfpr_netdev
-+ * @vf: pointer to the VF structure
-+ *
-+ * Free VF Port representor netdev
-+ **/
-+void i40e_free_vfpr_netdev(struct i40e_vf *vf)
-+{
-+	struct i40e_pf *pf = vf->pf;
++	struct vfpr_pcpu_stats *vfpr_stats;
 +
 +	if (!vf->vfpr_netdev)
 +		return;
 +
-+	dev_info(&pf->pdev->dev, "Freeing VF Port representor(%s)\n",
-+		 vf->vfpr_netdev->name);
++	skb->dev = vf->vfpr_netdev;
 +
-+	unregister_netdev(vf->vfpr_netdev);
-+	free_netdev(vf->vfpr_netdev);
++	priv = netdev_priv(vf->vfpr_netdev);
++	vfpr_stats = this_cpu_ptr(priv->vfpr_stats);
 +
-+	/* Add broadcast filter to VF */
-+	i40e_update_vf_broadcast_filter(vf, true);
++	u64_stats_update_begin(&vfpr_stats->syncp);
++	vfpr_stats->rx_packets++;
++	vfpr_stats->rx_bytes += skb->len;
++	u64_stats_update_end(&vfpr_stats->syncp);
 +}
 +
 +/**
-  * i40e_free_vfs
-  * @pf: pointer to the PF structure
-  *
-@@ -1060,6 +1194,9 @@ void i40e_free_vfs(struct i40e_pf *pf)
- 			i40e_free_vf_res(&pf->vf[i]);
- 		/* disable qp mappings */
- 		i40e_disable_vf_mappings(&pf->vf[i]);
+  * i40e_receive_skb - Send a completed packet up the stack
+  * @rx_ring:  rx ring in play
+  * @skb: packet to send up
+@@ -1201,7 +1227,7 @@ static void i40e_receive_skb(struct i40e_ring *rx_ring,
+ 	for (vf_id = 0; vf_id < pf->num_alloc_vfs; vf_id++) {
+ 		vf = &pf->vf[vf_id];
+ 		if (ether_addr_equal(eth->h_source, vf->default_lan_addr.addr)) {
+-			skb->dev = vf->vfpr_netdev;
++			i40e_vfpr_receive_skb(vf, skb);
+ 			break;
+ 		}
+ 	}
+@@ -3072,11 +3098,25 @@ netdev_tx_t i40e_vfpr_netdev_start_xmit(struct sk_buff *skb,
+ 	struct i40e_vf *vf = priv->vf;
+ 	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
++	int ret;
+ 
+ 	skb_dst_drop(skb);
+ 	dst_hold(&priv->vfpr_dst->dst);
+ 	skb_dst_set(skb, &priv->vfpr_dst->dst);
+ 	skb->dev = vsi->netdev;
+ 
+-	return dev_queue_xmit(skb);
++	ret = dev_queue_xmit(skb);
 +
-+		if (pf->eswitch_mode == DEVLINK_ESWITCH_MODE_SWITCHDEV)
-+			i40e_free_vfpr_netdev(&pf->vf[i]);
- 	}
++	if (likely(ret == NET_XMIT_SUCCESS || ret == NET_XMIT_CN)) {
++		struct vfpr_pcpu_stats *vfpr_stats = this_cpu_ptr(priv->vfpr_stats);
++
++		u64_stats_update_begin(&vfpr_stats->syncp);
++		vfpr_stats->tx_packets++;
++		vfpr_stats->tx_bytes += skb->len;
++		u64_stats_update_end(&vfpr_stats->syncp);
++	} else {
++		this_cpu_inc(priv->vfpr_stats->tx_drops);
++	}
++
++	return ret;
+ }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index e3fded1..d4a1763 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1059,10 +1059,113 @@ static int i40e_vfpr_netdev_stop(struct net_device *dev)
+ 	return 0;
+ }
  
- 	kfree(pf->vf);
-@@ -1127,6 +1264,8 @@ int i40e_alloc_vfs(struct i40e_pf *pf, u16 num_alloc_vfs)
- 		/* VF resources get allocated during reset */
- 		i40e_reset_vf(&vfs[i], false);
++/**
++ * i40e_vfpr_netdev_get_stats64
++ * @dev: network interface device structure
++ * @stats: netlink stats structure
++ *
++ * Returns the hw statistics from the VSI corresponding to the associated VFPR
++ **/
++static struct rtnl_link_stats64 *
++i40e_vfpr_netdev_get_stats64(struct net_device *netdev,
++			     struct rtnl_link_stats64 *stats)
++{
++	struct i40e_vfpr_netdev_priv *priv = netdev_priv(netdev);
++	struct i40e_vf *vf = priv->vf;
++	struct i40e_pf *pf = vf->pf;
++	struct i40e_vsi *vsi;
++	struct i40e_eth_stats *estats;
++
++	vsi = pf->vsi[vf->lan_vsi_idx];
++	i40e_update_stats(vsi);
++
++	estats = &vsi->eth_stats;
++
++	/* TX and RX stats are flipped as we are returning the stats as seen
++	 * at the switch port correspoding to the VF.
++	 */
++	stats->rx_packets = estats->tx_unicast + estats->tx_multicast +
++			    estats->tx_broadcast;
++	stats->tx_packets = estats->rx_unicast + estats->rx_multicast +
++			    estats->rx_broadcast;
++	stats->rx_bytes = estats->tx_bytes;
++	stats->tx_bytes = estats->rx_bytes;
++	stats->rx_dropped = estats->tx_discards;
++	stats->tx_dropped = estats->rx_discards;
++
++	return stats;
++}
++
++
++/**
++ * i40e_vfpr_get_cpu_hit_stats64
++ * @dev: network interface device structure
++ * @stats: netlink stats structure
++ *
++ * stats are filled from the priv structure. correspond to the packets
++ * that are seen by the cpu and sent/received via vfpr netdev.
++ **/
++static int
++i40e_vfpr_get_cpu_hit_stats64(const struct net_device *dev,
++			      struct rtnl_link_stats64 *stats)
++{
++	struct i40e_vfpr_netdev_priv *priv = netdev_priv(dev);
++	int i;
++
++	for_each_possible_cpu(i) {
++		struct vfpr_pcpu_stats *vfpr_stats;
++		u64 tbytes, tpkts, tdrops, rbytes, rpkts;
++		unsigned int start;
++
++		vfpr_stats = per_cpu_ptr(priv->vfpr_stats, i);
++		do {
++			start = u64_stats_fetch_begin_irq(&vfpr_stats->syncp);
++			tbytes = vfpr_stats->tx_bytes;
++			tpkts = vfpr_stats->tx_packets;
++			tdrops = vfpr_stats->tx_drops;
++			rbytes = vfpr_stats->rx_bytes;
++			rpkts = vfpr_stats->rx_packets;
++		} while (u64_stats_fetch_retry_irq(&vfpr_stats->syncp, start));
++		stats->tx_bytes += tbytes;
++		stats->tx_packets += tpkts;
++		stats->tx_dropped += tdrops;
++		stats->rx_bytes += rbytes;
++		stats->rx_packets += rpkts;
++	}
++
++	return 0;
++}
++
++static bool
++i40e_vfpr_netdev_has_offload_stats(const struct net_device *dev, int attr_id)
++{
++	switch (attr_id) {
++	case IFLA_OFFLOAD_XSTATS_CPU_HIT:
++		return true;
++	}
++
++	return false;
++}
++
++static int
++i40e_vfpr_netdev_get_offload_stats(int attr_id, const struct net_device *dev,
++				   void *sp)
++{
++	switch (attr_id) {
++	case IFLA_OFFLOAD_XSTATS_CPU_HIT:
++		return i40e_vfpr_get_cpu_hit_stats64(dev, sp);
++	}
++
++	return -EINVAL;
++}
++
+ static const struct net_device_ops i40e_vfpr_netdev_ops = {
+ 	.ndo_open       	= i40e_vfpr_netdev_open,
+ 	.ndo_stop       	= i40e_vfpr_netdev_stop,
+ 	.ndo_start_xmit		= i40e_vfpr_netdev_start_xmit,
++	.ndo_get_stats64	= i40e_vfpr_netdev_get_stats64,
++	.ndo_has_offload_stats	= i40e_vfpr_netdev_has_offload_stats,
++	.ndo_get_offload_stats	= i40e_vfpr_netdev_get_offload_stats,
+ };
  
-+		if (pf->eswitch_mode == DEVLINK_ESWITCH_MODE_SWITCHDEV)
-+			i40e_alloc_vfpr_netdev(&vfs[i], i);
- 	}
- 	pf->num_alloc_vfs = num_alloc_vfs;
+ /**
+@@ -1121,6 +1224,13 @@ int i40e_alloc_vfpr_netdev(struct i40e_vf *vf, u16 vf_num)
+ 	pf->vf[vf_num].vfpr_netdev = vfpr_netdev;
+ 
+ 	priv = netdev_priv(vfpr_netdev);
++	priv->vfpr_stats = netdev_alloc_pcpu_stats(struct vfpr_pcpu_stats);
++	if (!priv->vfpr_stats) {
++		dev_err(&pf->pdev->dev, "alloc_pcpu_stats failed for vf:%d\n",
++			vf_num);
++		free_netdev(vfpr_netdev);
++		return -ENOMEM;
++	}
+ 	priv->vf = &(pf->vf[vf_num]);
+ 	priv->vfpr_dst = metadata_dst_alloc(0, METADATA_HW_PORT_MUX, GFP_KERNEL);
+ 	priv->vfpr_dst->u.port_info.lower_dev = vsi->netdev;
+@@ -1178,6 +1288,7 @@ void i40e_free_vfpr_netdev(struct i40e_vf *vf)
+ 		 vf->vfpr_netdev->name);
+ 
+ 	dst_release((struct dst_entry *)priv->vfpr_dst);
++	free_percpu(priv->vfpr_stats);
+ 	unregister_netdev(vf->vfpr_netdev);
+ 	free_netdev(vf->vfpr_netdev);
  
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 4012d06..1e5def1 100644
+index 3c3db8a..faa6ea7 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -72,10 +72,21 @@ enum i40e_vf_capabilities {
+@@ -72,10 +72,20 @@ enum i40e_vf_capabilities {
  	I40E_VIRTCHNL_VF_CAP_IWARP,
  };
  
-+/* VF Port representor netdev private structure */
-+struct i40e_vfpr_netdev_priv {
-+	struct i40e_vf *vf;
++struct vfpr_pcpu_stats {
++	u64			tx_packets;
++	u64			tx_bytes;
++	u64			tx_drops;
++	u64			rx_packets;
++	u64 			rx_bytes;
++	struct u64_stats_sync	syncp;
 +};
 +
+ /* VF Port representor netdev private structure */
+ struct i40e_vfpr_netdev_priv {
+ 	struct metadata_dst *vfpr_dst;
+ 	struct i40e_vf *vf;
++	struct vfpr_pcpu_stats *vfpr_stats;
+ };
+ 
  /* VF information structure */
- struct i40e_vf {
- 	struct i40e_pf *pf;
- 
-+	/* VF Port representor netdev that allows control and configuration
-+	 * of VFs from the host. Enables returning VF stats, configuring link
-+	 * state, mtu, fdb/vlans etc.
-+	 */
-+	struct net_device *vfpr_netdev;
-+
- 	/* VF id in the PF space */
- 	s16 vf_id;
- 	/* all VF vsis connect to the same parent */
-@@ -142,4 +153,7 @@ int i40e_ndo_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool enable);
- void i40e_vc_notify_link_state(struct i40e_pf *pf);
- void i40e_vc_notify_reset(struct i40e_pf *pf);
- 
-+int i40e_alloc_vfpr_netdev(struct i40e_vf *vf, u16 vf_num);
-+void i40e_free_vfpr_netdev(struct i40e_vf *vf);
-+
- #endif /* _I40E_VIRTCHNL_PF_H_ */
 -- 
 2.5.5
 
