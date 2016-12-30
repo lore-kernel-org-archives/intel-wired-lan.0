@@ -1,20 +1,20 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 30 Dec 2016 12:42:14 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 9e793392cb56872627285d9f97fff56af00836a4
-Message-ID: <5865e5a6.ZsNwSWXxDDEhSs+3%fengguang.wu@intel.com>
+Date: Fri, 30 Dec 2016 13:13:28 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 8b4589de52aeedb2ecb1e1e86f6a204dc0ccb330
+Message-ID: <5865ecf8.KeoU5skCR2h3hBvF%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-9e793392cb56872627285d9f97fff56af00836a4  ixgbe: update the rss key on h/w, when ethtool ask for it.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+8b4589de52aeedb2ecb1e1e86f6a204dc0ccb330  i40e: remove duplicate device id from pci table
 
-elapsed time: 33m
+elapsed time: 64m
 
-configs tested: 117
+configs tested: 114
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -56,9 +56,6 @@ x86_64                 randconfig-x019-201652
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
 i386                     randconfig-s0-201652
 i386                     randconfig-s1-201652
 avr32                      atngw100_defconfig
@@ -96,12 +93,12 @@ nios2                         10m50_defconfig
 score                      spct6600_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
-arm                          pcm027_defconfig
-m68k                        m5272c3_defconfig
-powerpc                      ep88xc_defconfig
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -112,16 +109,16 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                             allnoconfig
 arm64                               defconfig
-x86_64                 randconfig-x007-201652
-x86_64                 randconfig-x001-201652
 x86_64                 randconfig-x000-201652
-x86_64                 randconfig-x008-201652
+x86_64                 randconfig-x001-201652
 x86_64                 randconfig-x002-201652
-x86_64                 randconfig-x006-201652
+x86_64                 randconfig-x003-201652
 x86_64                 randconfig-x004-201652
 x86_64                 randconfig-x005-201652
+x86_64                 randconfig-x006-201652
+x86_64                 randconfig-x007-201652
+x86_64                 randconfig-x008-201652
 x86_64                 randconfig-x009-201652
-x86_64                 randconfig-x003-201652
 x86_64                                  kexec
 x86_64                                   rhel
 x86_64                               rhel-7.2
