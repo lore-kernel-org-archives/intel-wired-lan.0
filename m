@@ -1,36 +1,30 @@
-From: Jakub Kicinski <jakub.kicinski@netronome.com>
-Date: Tue, 3 Jan 2017 20:45:03 +0000
-Subject: [Intel-wired-lan] [net-next PATCH v2 0/6] i40e: Add VF Port
- representator support for SR-IOV VFs
-In-Reply-To: <586C0868.2090007@intel.com>
-References: <1483466874-2962-1-git-send-email-sridhar.samudrala@intel.com>
- <CAJ3xEMhcVnGH52rkyYbDOox89=+DNShDcPS-wr2a8VAgBZYMWw@mail.gmail.com>
- <CAKgT0UeKO+2jfnPQwGE6DbzxgLCLGPt+6WxduGhBXgBZz_14eQ@mail.gmail.com>
- <586C0868.2090007@intel.com>
-Message-ID: <CAJpBn1x5ZqmG+a2hpTpS918XD8Rrj5c3UFAgm=Eu8aYv1TmnLA@mail.gmail.com>
+From: Or Gerlitz <gerlitz.or@gmail.com>
+Date: Wed, 4 Jan 2017 01:03:54 +0200
+Subject: [Intel-wired-lan] [net-next PATCH 5/6] i40e: Add TX and RX
+	support in switchdev mode.
+In-Reply-To: <586693A6.5090105@intel.com>
+References: <1483078863-22026-1-git-send-email-sridhar.samudrala@intel.com>
+ <1483078863-22026-6-git-send-email-sridhar.samudrala@intel.com>
+ <CAJ3xEMgDAUSE2gVD3dU4UuXFb7k_W-9QgHpg-0c7b5kxRC2=FQ@mail.gmail.com>
+ <586693A6.5090105@intel.com>
+Message-ID: <CAJ3xEMjGuKKge+_hqZPOg2fp3f50TdxGtbKFXwnCZ70rPxmuyw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jan 3, 2017 at 8:24 PM, Samudrala, Sridhar
+On Fri, Dec 30, 2016 at 7:04 PM, Samudrala, Sridhar
 <sridhar.samudrala@intel.com> wrote:
-> On 1/3/2017 12:04 PM, Alexander Duyck wrote:
->> On Tue, Jan 3, 2017 at 11:48 AM, Or Gerlitz <gerlitz.or@gmail.com> wrote:
->>> On Tue, Jan 3, 2017 at 8:07 PM, Sridhar Samudrala
->>> <sridhar.samudrala@intel.com> wrote:
->>>>
->>>> - Patch 4 adds a new type to metadata_dst to allow passing VF id to
->>>> lower device.
->>>
->>> again... I didn't get this one on my subscription, nor I see it in the
->>> archives
->>
->> It looks like netdev was on the list of email addresses for that
->> patch.  It might just be that the mail server has delayed it.
->
-> That patch author is Jakub Kicinski. Is netdev blocking mails from
-> jakub.kicinski at netronome.com?
+> On 12/30/2016 7:31 AM, Or Gerlitz wrote:
 
-I never had problems with sending emails or patches from this address, strange.
+>> Are you exposing switchdev ops for the representators? didn't see that
+>> or maybe it's in the 4th patch which didn't make it to the list?
+
+> Not at this time. In the future patches when we offload fdb/vlan
+> functionality, we could use switchdev ops.
+
+but wait, this is the switchdev mode... even before doing any
+offloading, you want (need) your representor netdevices to have the
+same HW ID marking they are all ports of the same ASIC, this you can
+do with the switchdev parent ID attribute.
