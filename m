@@ -1,25 +1,24 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 03 Jan 2017 09:36:55 -0500 (EST)
-Subject: [Intel-wired-lan] [PATCH 1/1] igb: Fix hw_dbg logging in
-	igb_update_flash_i210
-In-Reply-To: <14a3078ac22994d9c3dcd56c822555acfdb53b91.1483377891.git.peter.senna@collabora.com>
-References: <14a3078ac22994d9c3dcd56c822555acfdb53b91.1483377891.git.peter.senna@collabora.com>
-Message-ID: <20170103.093655.1063644056873145777.davem@davemloft.net>
+From: Bynoe, Ronald J <ronald.j.bynoe@intel.com>
+Date: Tue, 3 Jan 2017 15:49:02 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Avoid Tx hang by not allowing
+ more than the number of VFs supported.
+In-Reply-To: <20161223180814.6949.16530.stgit@ukketine.jf.intel.com>
+References: <20161223180814.6949.16530.stgit@ukketine.jf.intel.com>
+Message-ID: <1483458539.2894.3.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Peter Senna Tschudin <peter.senna@collabora.com>
-Date: Mon,  2 Jan 2017 18:26:06 +0100
-
-> From: Hannu Lounento <hannu.lounento@ge.com>
+On Fri, 2016-12-23 at 10:08 -0800, Usha Ketineni wrote:
+> When DCB is enabled, add checks to ensure creation of number of VF's is
+> valid based on the traffic classes configured by the device.
 > 
-> Fix an if statement with hw_dbg lines where the logic was inverted with
-> regards to the corresponding return value used in the if statement.
-> 
-> Signed-off-by: Hannu Lounento <hannu.lounento@ge.com>
-> Signed-off-by: Peter Senna Tschudin <peter.senna@collabora.com>
+> Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |   26 +++++++++++++++++++++---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h |    3 +++
+>  2 files changed, 26 insertions(+), 3 deletions(-)
 
-I'm assuming I'll get this from the upstream Intel folks.
+Tested-by: Ronald Bynoe <ronald.j.bynoe@intel.com>
