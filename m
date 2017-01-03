@@ -1,78 +1,53 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 03 Jan 2017 09:12:51 -0800
-Subject: [Intel-wired-lan] [next PATCH v3 3/3] mm: Add documentation for
-	page fragment APIs
-In-Reply-To: <20170103170057.5144.17621.stgit@localhost.localdomain>
-References: <20170103170057.5144.17621.stgit@localhost.localdomain>
-Message-ID: <20170103171242.5144.20890.stgit@localhost.localdomain>
+From: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Date: Tue,  3 Jan 2017 10:07:48 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v2 0/6] i40e: Add VF Port
+	representator support for SR-IOV VFs
+Message-ID: <1483466874-2962-1-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+- Patch 1 introduces devlink interface to get/set the mode of SRIOV switch.
+- Patch 2 adds support to create VF port representor(VFPR) netdevs associated
+  with SR-IOV VFs that can be used to control/configure VFs from PF name space.
+- Patch 3 enables syncing link state between VFs and VFPRs.
+- Patch 4 adds a new type to metadata_dst to allow passing VF id to lower device.
+- Patch 5 adds TX and RX support to VFPR netdevs.
+- Patch 6 enables HW and SW VFPR statistics to be exposed via netlink on VFPR
+  netdevs.
 
-This is a first pass at trying to add documentation for the page_frag APIs.
-They may still change over time but for now I thought I would try to get
-these documented so that as more network drivers and stack calls make use
-of them we have one central spot to document how they are meant to be used.
+v2:
+- handle i40e_alloc_vfpr_netdev() failures.
+- minor comment/commit msg updates.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
+Jakub Kicinski (1):
+  net: store port/representator id in metadata_dst
 
-v2,v3: No change
+Sridhar Samudrala (5):
+  i40e: Introduce devlink interface.
+  i40e: Introduce VF Port Representator(VFPR) netdevs.
+  i40e: Sync link state between VFs and VFPRs
+  i40e: Add TX and RX support in switchdev mode.
+  i40e: Add support for exposing VF port statistics via VFPR netdev on
+    the host.
 
- Documentation/vm/page_frags |   42 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 42 insertions(+)
- create mode 100644 Documentation/vm/page_frags
+ drivers/net/ethernet/intel/Kconfig                 |   1 +
+ drivers/net/ethernet/intel/i40e/i40e.h             |   4 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 103 ++++++-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 132 ++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |   1 +
+ drivers/net/ethernet/intel/i40e/i40e_type.h        |   3 +
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 324 ++++++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  25 ++
+ include/net/dst_metadata.h                         |  35 ++-
+ net/core/dst.c                                     |  15 +-
+ net/core/filter.c                                  |   1 +
+ net/ipv4/ip_tunnel_core.c                          |   6 +-
+ net/openvswitch/flow_netlink.c                     |   4 +-
+ 13 files changed, 620 insertions(+), 34 deletions(-)
 
-diff --git a/Documentation/vm/page_frags b/Documentation/vm/page_frags
-new file mode 100644
-index 000000000000..a6714565dbf9
---- /dev/null
-+++ b/Documentation/vm/page_frags
-@@ -0,0 +1,42 @@
-+Page fragments
-+--------------
-+
-+A page fragment is an arbitrary-length arbitrary-offset area of memory
-+which resides within a 0 or higher order compound page.  Multiple
-+fragments within that page are individually refcounted, in the page's
-+reference counter.
-+
-+The page_frag functions, page_frag_alloc and page_frag_free, provide a
-+simple allocation framework for page fragments.  This is used by the
-+network stack and network device drivers to provide a backing region of
-+memory for use as either an sk_buff->head, or to be used in the "frags"
-+portion of skb_shared_info.
-+
-+In order to make use of the page fragment APIs a backing page fragment
-+cache is needed.  This provides a central point for the fragment allocation
-+and tracks allows multiple calls to make use of a cached page.  The
-+advantage to doing this is that multiple calls to get_page can be avoided
-+which can be expensive at allocation time.  However due to the nature of
-+this caching it is required that any calls to the cache be protected by
-+either a per-cpu limitation, or a per-cpu limitation and forcing interrupts
-+to be disabled when executing the fragment allocation.
-+
-+The network stack uses two separate caches per CPU to handle fragment
-+allocation.  The netdev_alloc_cache is used by callers making use of the
-+__netdev_alloc_frag and __netdev_alloc_skb calls.  The napi_alloc_cache is
-+used by callers of the __napi_alloc_frag and __napi_alloc_skb calls.  The
-+main difference between these two calls is the context in which they may be
-+called.  The "netdev" prefixed functions are usable in any context as these
-+functions will disable interrupts, while the "napi" prefixed functions are
-+only usable within the softirq context.
-+
-+Many network device drivers use a similar methodology for allocating page
-+fragments, but the page fragments are cached at the ring or descriptor
-+level.  In order to enable these cases it is necessary to provide a generic
-+way of tearing down a page cache.  For this reason __page_frag_cache_drain
-+was implemented.  It allows for freeing multiple references from a single
-+page via a single call.  The advantage to doing this is that it allows for
-+cleaning up the multiple references that were added to a page in order to
-+avoid calling get_page per allocation.
-+
-+Alexander Duyck, Nov 29, 2016.
+-- 
+2.5.5
 
