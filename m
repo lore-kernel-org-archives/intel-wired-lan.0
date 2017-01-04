@@ -1,285 +1,121 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 04 Jan 2017 15:05:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- 6b07d327da8258671ea0bff784d884c4d30949d9
-Message-ID: <586c9e9c./qfVMjArWt4yTkaL%fengguang.wu@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 4 Jan 2017 21:37:36 +0800
+Subject: [Intel-wired-lan] [PATCH 1/2] PCI: introduce locked
+ pci_add/remove_virtfn
+In-Reply-To: <20170104004826.17866.77074.stgit@localhost6.localdomain6>
+Message-ID: <201701042115.UtFyvd0F%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-6b07d327da8258671ea0bff784d884c4d30949d9  i40e: remove duplicate device id from pci table
+Hi Emil,
 
-drivers/net/ethernet/dec/tulip/uli526x.c:948:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/dlink/dl2k.c:1296:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/mdio.c:496:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/mdio.c:496: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode'
+[auto build test ERROR on pci/next]
+[also build test ERROR on v4.10-rc2 next-20170104]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-Error ids grouped by kconfigs:
+url:    https://github.com/0day-ci/linux/commits/Emil-Tantilov/PCI-introduce-locked-pci_add-remove_virtfn/20170104-193518
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git next
+config: powerpc-defconfig (attached as .config)
+compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=powerpc 
 
-recent_errors
-??? arm64-allmodconfig
-??? ??? drivers-net-ethernet-dec-tulip-uli526x.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-dlink-dl2k.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-mdio.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? i386-allyesconfig
-??? ??? drivers-net-ethernet-dec-tulip-uli526x.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-dlink-dl2k.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-mdio.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ia64-allyesconfig
-??? ??? drivers-net-ethernet-dec-tulip-uli526x.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-dlink-dl2k.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-mdio.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? mips-ip27_defconfig
-??? ??? drivers-net-mdio.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? x86_64-lkp
-??? ??? drivers-net-ethernet-dec-tulip-uli526x.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-dlink-dl2k.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-mdio.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? x86_64-randconfig-a0-01041127
-    ??? drivers-net-mdio.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+All errors (new ones prefixed by >>):
 
-TIMEOUT after 604m
+   arch/powerpc/kernel/eeh_driver.c: In function 'eeh_add_virt_device':
+>> arch/powerpc/kernel/eeh_driver.c:444:2: error: implicit declaration of function 'pci_iov_add_virtfn_locked' [-Werror=implicit-function-declaration]
+     pci_iov_add_virtfn_locked(edev->physfn, pdn->vf_index, 0);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~
+   arch/powerpc/kernel/eeh_driver.c: In function 'eeh_rmv_device':
+>> arch/powerpc/kernel/eeh_driver.c:502:3: error: implicit declaration of function 'pci_iov_remove_virtfn_locked' [-Werror=implicit-function-declaration]
+      pci_iov_remove_virtfn_locked(edev->physfn, pdn->vf_index, 0);
+      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   cc1: all warnings being treated as errors
 
+vim +/pci_iov_add_virtfn_locked +444 arch/powerpc/kernel/eeh_driver.c
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+   438			eeh_pcid_put(dev);
+   439			if (driver->err_handler)
+   440				return NULL;
+   441		}
+   442	
+   443	#ifdef CONFIG_PPC_POWERNV
+ > 444		pci_iov_add_virtfn_locked(edev->physfn, pdn->vf_index, 0);
+   445	#endif
+   446		return NULL;
+   447	}
+   448	
+   449	static void *eeh_rmv_device(void *data, void *userdata)
+   450	{
+   451		struct pci_driver *driver;
+   452		struct eeh_dev *edev = (struct eeh_dev *)data;
+   453		struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+   454		struct eeh_rmv_data *rmv_data = (struct eeh_rmv_data *)userdata;
+   455		int *removed = rmv_data ? &rmv_data->removed : NULL;
+   456	
+   457		/*
+   458		 * Actually, we should remove the PCI bridges as well.
+   459		 * However, that's lots of complexity to do that,
+   460		 * particularly some of devices under the bridge might
+   461		 * support EEH. So we just care about PCI devices for
+   462		 * simplicity here.
+   463		 */
+   464		if (!dev || (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE))
+   465			return NULL;
+   466	
+   467		/*
+   468		 * We rely on count-based pcibios_release_device() to
+   469		 * detach permanently offlined PEs. Unfortunately, that's
+   470		 * not reliable enough. We might have the permanently
+   471		 * offlined PEs attached, but we needn't take care of
+   472		 * them and their child devices.
+   473		 */
+   474		if (eeh_dev_removed(edev))
+   475			return NULL;
+   476	
+   477		driver = eeh_pcid_get(dev);
+   478		if (driver) {
+   479			eeh_pcid_put(dev);
+   480			if (removed &&
+   481			    eeh_pe_passed(edev->pe))
+   482				return NULL;
+   483			if (removed &&
+   484			    driver->err_handler &&
+   485			    driver->err_handler->error_detected &&
+   486			    driver->err_handler->slot_reset)
+   487				return NULL;
+   488		}
+   489	
+   490		/* Remove it from PCI subsystem */
+   491		pr_debug("EEH: Removing %s without EEH sensitive driver\n",
+   492			 pci_name(dev));
+   493		edev->bus = dev->bus;
+   494		edev->mode |= EEH_DEV_DISCONNECTED;
+   495		if (removed)
+   496			(*removed)++;
+   497	
+   498		if (edev->physfn) {
+   499	#ifdef CONFIG_PPC_POWERNV
+   500			struct pci_dn *pdn = eeh_dev_to_pdn(edev);
+   501	
+ > 502			pci_iov_remove_virtfn_locked(edev->physfn, pdn->vf_index, 0);
+   503			edev->pdev = NULL;
+   504	
+   505			/*
 
-configs tested: 228
-
-powerpc                      acadia_defconfig
-powerpc                   motionpro_defconfig
-sh                             shx3_defconfig
-arm                       imx_v6_v7_defconfig
-mips                            e55_defconfig
-mn10300                     asb2303_defconfig
-avr32                       favr-32_defconfig
-c6x                         dsk6455_defconfig
-sh                  sh7785lcr_32bit_defconfig
-i386                     randconfig-a0-201701
-x86_64                 randconfig-a0-01040544
-x86_64                 randconfig-a0-01041127
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-m68k                       m5249evb_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                     tqm5200_defconfig
-i386                   randconfig-c0-01040546
-i386                   randconfig-c0-01041119
-arm                           acs5k_defconfig
-m32r                    mappi.nommu_defconfig
-tile                             allyesconfig
-x86_64                randconfig-in0-01040346
-arm                       omap2plus_defconfig
-powerpc               mpc834x_itxgp_defconfig
-sh                          landisk_defconfig
-x86_64                randconfig-it0-01040452
-x86_64                 randconfig-v0-01040430
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-m68k                       m5475evb_defconfig
-powerpc                 linkstation_defconfig
-s390                                defconfig
-sh                           se7750_defconfig
-x86_64                 randconfig-x011-201701
-x86_64                 randconfig-x017-201701
-x86_64                 randconfig-x014-201701
-x86_64                 randconfig-x016-201701
-x86_64                 randconfig-x012-201701
-x86_64                 randconfig-x019-201701
-x86_64                 randconfig-x013-201701
-x86_64                 randconfig-x010-201701
-x86_64                 randconfig-x018-201701
-x86_64                 randconfig-x015-201701
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-s0-201701
-i386                     randconfig-s1-201701
-x86_64                 randconfig-s0-01040449
-x86_64                 randconfig-s1-01040449
-x86_64                 randconfig-s2-01040449
-x86_64                 randconfig-s3-01040508
-x86_64                 randconfig-s4-01040508
-x86_64                 randconfig-s5-01040508
-arm                        multi_v7_defconfig
-s390                    performance_defconfig
-sh                                allnoconfig
-um                                  defconfig
-arm                        clps711x_defconfig
-arm                         s3c6400_defconfig
-arm                         vf610m4_defconfig
-h8300                    h8300h-sim_defconfig
-blackfin                BF561-EZKIT_defconfig
-mips                         mpc30x_defconfig
-powerpc                  mpc885_ads_defconfig
-sh                                  defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201701
-i386                   randconfig-b0-01040538
-i386                   randconfig-b0-01041118
-arm                            qcom_defconfig
-powerpc                      ppc64e_defconfig
-sh                 kfr2r09-romimage_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201701
-i386                     randconfig-i0-201701
-i386                             allyesconfig
-x86_64                 randconfig-b0-01040452
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-mips                        jmr3927_defconfig
-arm                           efm32_defconfig
-mips                           ip27_defconfig
-powerpc                     tqm8540_defconfig
-x86_64                 randconfig-u0-01040525
-x86_64                 randconfig-u0-01041137
-arm                              zx_defconfig
-mips                             allyesconfig
-x86_64                randconfig-ne0-01040556
-x86_64                randconfig-ne0-01041049
-x86_64                randconfig-ne0-01041128
-arm                        cerfcube_defconfig
-arm                           u8500_defconfig
-powerpc                      pasemi_defconfig
-powerpc                    socrates_defconfig
-arm                          iop32x_defconfig
-m32r                             allyesconfig
-mips                      pic32mzda_defconfig
-mips                         tb0287_defconfig
-i386                   randconfig-x010-201701
-i386                   randconfig-x011-201701
-i386                   randconfig-x012-201701
-i386                   randconfig-x013-201701
-i386                   randconfig-x014-201701
-i386                   randconfig-x015-201701
-i386                   randconfig-x016-201701
-i386                   randconfig-x017-201701
-i386                   randconfig-x018-201701
-i386                   randconfig-x019-201701
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-n0-201701
-i386                   randconfig-h0-01040525
-i386                   randconfig-h1-01040525
-i386                   randconfig-h0-01041042
-i386                   randconfig-h1-01041042
-i386                   randconfig-h0-01041127
-i386                   randconfig-h1-01041127
-blackfin             BF527-EZKIT-V2_defconfig
-cris                             allmodconfig
-powerpc                     ep8248e_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-01041155
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-m32r                             allmodconfig
-mips                           ci20_defconfig
-arm                         hackkit_defconfig
-arm                          pcm027_defconfig
-x86_64                 randconfig-n0-01041108
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                          rsk7269_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                    DNP5370_defconfig
-m32r                    m32700ut.up_defconfig
-um                               allmodconfig
-x86_64                randconfig-ws0-01040351
-c6x                        evmc6678_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-powerpc                  iss476-smp_defconfig
-mips                        generic_defconfig
-sh                        sh7763rdp_defconfig
-x86_64                 randconfig-x008-201701
-x86_64                 randconfig-x001-201701
-x86_64                 randconfig-x009-201701
-x86_64                 randconfig-x000-201701
-x86_64                 randconfig-x003-201701
-x86_64                 randconfig-x006-201701
-x86_64                 randconfig-x002-201701
-x86_64                 randconfig-x004-201701
-x86_64                 randconfig-x007-201701
-x86_64                 randconfig-x005-201701
-i386                     randconfig-r0-201701
-arm                         bcm2835_defconfig
-arm                          imote2_defconfig
-ia64                            sim_defconfig
-arm                    vt8500_v6_v7_defconfig
-ia64                             allyesconfig
-sh                           se7343_defconfig
-i386                   randconfig-x003-201701
-i386                   randconfig-x004-201701
-i386                   randconfig-x007-201701
-i386                   randconfig-x001-201701
-i386                   randconfig-x006-201701
-i386                   randconfig-x009-201701
-i386                   randconfig-x008-201701
-i386                   randconfig-x002-201701
-i386                   randconfig-x000-201701
-i386                   randconfig-x005-201701
-i386                   randconfig-x0-01040541
-i386                   randconfig-x0-01041139
-
-Thanks,
-Fengguang
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 22266 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170104/faa65774/attachment-0001.bin>
