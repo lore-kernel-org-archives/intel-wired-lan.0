@@ -1,121 +1,184 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 4 Jan 2017 21:37:36 +0800
-Subject: [Intel-wired-lan] [PATCH 1/2] PCI: introduce locked
- pci_add/remove_virtfn
-In-Reply-To: <20170104004826.17866.77074.stgit@localhost6.localdomain6>
-Message-ID: <201701042115.UtFyvd0F%fengguang.wu@intel.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Wed, 4 Jan 2017 16:00:20 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2] PCI: lock each enable/disable
+ num_vfs operation in sysfs
+In-Reply-To: <20170104021531.GA567@gwshan>
+References: <20170104004826.17866.77074.stgit@localhost6.localdomain6>
+ <20170104004831.17866.11537.stgit@localhost6.localdomain6>
+ <20170104021531.GA567@gwshan>
+Message-ID: <87618083B2453E4A8714035B62D67992507430EB@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Emil,
+>-----Original Message-----
+>From: Gavin Shan [mailto:gwshan at linux.vnet.ibm.com]
+>Sent: Tuesday, January 03, 2017 6:16 PM
+>To: Tantilov, Emil S <emil.s.tantilov@intel.com>
+>Cc: linux-pci at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Duyck,
+>Alexander H <alexander.h.duyck@intel.com>; netdev at vger.kernel.org; linux-
+>kernel at vger.kernel.org
+>Subject: Re: [PATCH 2/2] PCI: lock each enable/disable num_vfs operation in
+>sysfs
+>
+>On Tue, Jan 03, 2017 at 04:48:31PM -0800, Emil Tantilov wrote:
+>>Enabling/disabling SRIOV via sysfs by echo-ing multiple values
+>>simultaneously:
+>>
+>>echo 63 > /sys/class/net/ethX/device/sriov_numvfs&
+>>echo 63 > /sys/class/net/ethX/device/sriov_numvfs
+>>
+>>sleep 5
+>>
+>>echo 0 > /sys/class/net/ethX/device/sriov_numvfs&
+>>echo 0 > /sys/class/net/ethX/device/sriov_numvfs
+>>
+>>Results in the following bug:
+>>
+>>kernel BUG at drivers/pci/iov.c:495!
+>>invalid opcode: 0000 [#1] SMP
+>>CPU: 1 PID: 8050 Comm: bash Tainted: G   W   4.9.0-rc7-net-next #2092
+>>RIP: 0010:[<ffffffff813b1647>]
+>>	  [<ffffffff813b1647>] pci_iov_release+0x57/0x60
+>>
+>>Call Trace:
+>> [<ffffffff81391726>] pci_release_dev+0x26/0x70
+>> [<ffffffff8155be6e>] device_release+0x3e/0xb0
+>> [<ffffffff81365ee7>] kobject_cleanup+0x67/0x180
+>> [<ffffffff81365d9d>] kobject_put+0x2d/0x60
+>> [<ffffffff8155bc27>] put_device+0x17/0x20
+>> [<ffffffff8139c08a>] pci_dev_put+0x1a/0x20
+>> [<ffffffff8139cb6b>] pci_get_dev_by_id+0x5b/0x90
+>> [<ffffffff8139cca5>] pci_get_subsys+0x35/0x40
+>> [<ffffffff8139ccc8>] pci_get_device+0x18/0x20
+>> [<ffffffff8139ccfb>] pci_get_domain_bus_and_slot+0x2b/0x60
+>> [<ffffffff813b09e7>] pci_iov_remove_virtfn+0x57/0x180
+>> [<ffffffff813b0b95>] pci_disable_sriov+0x65/0x140
+>> [<ffffffffa00a1af7>] ixgbe_disable_sriov+0xc7/0x1d0 [ixgbe]
+>> [<ffffffffa00a1e9d>] ixgbe_pci_sriov_configure+0x3d/0x170 [ixgbe]
+>> [<ffffffff8139d28c>] sriov_numvfs_store+0xdc/0x130
+>>...
+>>RIP  [<ffffffff813b1647>] pci_iov_release+0x57/0x60
+>>
+>>Use the existing mutex lock to protect each enable/disable operation.
+>>
+>>CC: Alexander Duyck <alexander.h.duyck@intel.com>
+>>Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+>
+>Emil, It's going to change semantics of pci_enable_sriov() and pci_disable_sriov().
+>They can be invoked when writing to the sysfs entry, or loading PF's
+>driver. With the change applied, the lock (pf->sriov->lock) isn't acquired and released
+>in the PF's driver loading path.
 
-[auto build test ERROR on pci/next]
-[also build test ERROR on v4.10-rc2 next-20170104]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+The enablement of SRIOV on driver load is done via deprecated module parameter.
+Perhaps we can just remove it, although there are probably still people that use it
+and may not be happy if we get rid of it. 
 
-url:    https://github.com/0day-ci/linux/commits/Emil-Tantilov/PCI-introduce-locked-pci_add-remove_virtfn/20170104-193518
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git next
-config: powerpc-defconfig (attached as .config)
-compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-reproduce:
-        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=powerpc 
+>I think the reasonable way would be adding a flag in "struct sriov", to
+>indicate someone is accessing the IOV capability through sysfs file. With this, the
+>code returns with "-EBUSY" immediately for contenders. With it, nothing is going
+>to be changed in PF's driver loading path.
 
-All errors (new ones prefixed by >>):
+Flag is what I initially had in mind, but did not want to add extra locking if we 
+can make use of the existing.
 
-   arch/powerpc/kernel/eeh_driver.c: In function 'eeh_add_virt_device':
->> arch/powerpc/kernel/eeh_driver.c:444:2: error: implicit declaration of function 'pci_iov_add_virtfn_locked' [-Werror=implicit-function-declaration]
-     pci_iov_add_virtfn_locked(edev->physfn, pdn->vf_index, 0);
-     ^~~~~~~~~~~~~~~~~~~~~~~~~
-   arch/powerpc/kernel/eeh_driver.c: In function 'eeh_rmv_device':
->> arch/powerpc/kernel/eeh_driver.c:502:3: error: implicit declaration of function 'pci_iov_remove_virtfn_locked' [-Werror=implicit-function-declaration]
-      pci_iov_remove_virtfn_locked(edev->physfn, pdn->vf_index, 0);
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   cc1: all warnings being treated as errors
+>Also, there are some minor comments as below and I guess most of them won't
+>be applied if you take my suggestion eventually. However, I'm trying to make
+>the comments complete.
 
-vim +/pci_iov_add_virtfn_locked +444 arch/powerpc/kernel/eeh_driver.c
+Thanks a lot for reviewing!
 
-   438			eeh_pcid_put(dev);
-   439			if (driver->err_handler)
-   440				return NULL;
-   441		}
-   442	
-   443	#ifdef CONFIG_PPC_POWERNV
- > 444		pci_iov_add_virtfn_locked(edev->physfn, pdn->vf_index, 0);
-   445	#endif
-   446		return NULL;
-   447	}
-   448	
-   449	static void *eeh_rmv_device(void *data, void *userdata)
-   450	{
-   451		struct pci_driver *driver;
-   452		struct eeh_dev *edev = (struct eeh_dev *)data;
-   453		struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
-   454		struct eeh_rmv_data *rmv_data = (struct eeh_rmv_data *)userdata;
-   455		int *removed = rmv_data ? &rmv_data->removed : NULL;
-   456	
-   457		/*
-   458		 * Actually, we should remove the PCI bridges as well.
-   459		 * However, that's lots of complexity to do that,
-   460		 * particularly some of devices under the bridge might
-   461		 * support EEH. So we just care about PCI devices for
-   462		 * simplicity here.
-   463		 */
-   464		if (!dev || (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE))
-   465			return NULL;
-   466	
-   467		/*
-   468		 * We rely on count-based pcibios_release_device() to
-   469		 * detach permanently offlined PEs. Unfortunately, that's
-   470		 * not reliable enough. We might have the permanently
-   471		 * offlined PEs attached, but we needn't take care of
-   472		 * them and their child devices.
-   473		 */
-   474		if (eeh_dev_removed(edev))
-   475			return NULL;
-   476	
-   477		driver = eeh_pcid_get(dev);
-   478		if (driver) {
-   479			eeh_pcid_put(dev);
-   480			if (removed &&
-   481			    eeh_pe_passed(edev->pe))
-   482				return NULL;
-   483			if (removed &&
-   484			    driver->err_handler &&
-   485			    driver->err_handler->error_detected &&
-   486			    driver->err_handler->slot_reset)
-   487				return NULL;
-   488		}
-   489	
-   490		/* Remove it from PCI subsystem */
-   491		pr_debug("EEH: Removing %s without EEH sensitive driver\n",
-   492			 pci_name(dev));
-   493		edev->bus = dev->bus;
-   494		edev->mode |= EEH_DEV_DISCONNECTED;
-   495		if (removed)
-   496			(*removed)++;
-   497	
-   498		if (edev->physfn) {
-   499	#ifdef CONFIG_PPC_POWERNV
-   500			struct pci_dn *pdn = eeh_dev_to_pdn(edev);
-   501	
- > 502			pci_iov_remove_virtfn_locked(edev->physfn, pdn->vf_index, 0);
-   503			edev->pdev = NULL;
-   504	
-   505			/*
+>
+>>---
+>> drivers/pci/pci-sysfs.c |   24 +++++++++++++++++-------
+>> 1 file changed, 17 insertions(+), 7 deletions(-)
+>>
+>>diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+>>index 0666287..5b54cf5 100644
+>>--- a/drivers/pci/pci-sysfs.c
+>>+++ b/drivers/pci/pci-sysfs.c
+>>@@ -472,7 +472,9 @@ static ssize_t sriov_numvfs_store(struct device *dev,
+>> 				  const char *buf, size_t count)
+>> {
+>> 	struct pci_dev *pdev = to_pci_dev(dev);
+>>+	struct pci_sriov *iov = pdev->sriov;
+>> 	int ret;
+>>+
+>
+>Unnecessary change.
+>
+>> 	u16 num_vfs;
+>>
+>> 	ret = kstrtou16(buf, 0, &num_vfs);
+>>@@ -482,38 +484,46 @@ static ssize_t sriov_numvfs_store(struct device
+>*dev,
+>> 	if (num_vfs > pci_sriov_get_totalvfs(pdev))
+>> 		return -ERANGE;
+>>
+>>+	mutex_lock(&iov->dev->sriov->lock);
+>>+
+>> 	if (num_vfs == pdev->sriov->num_VFs)
+>>-		return count;		/* no change */
+>>+		goto exit;
+>>
+>> 	/* is PF driver loaded w/callback */
+>> 	if (!pdev->driver || !pdev->driver->sriov_configure) {
+>> 		dev_info(&pdev->dev, "Driver doesn't support SRIOV
+>configuration via sysfs\n");
+>>-		return -ENOSYS;
+>>+		ret = -EINVAL;
+>>+		goto exit;
+>
+>Why we need change the error code here?
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 22266 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170104/faa65774/attachment-0001.bin>
+checkpatch was complaining about the use of the ENOSYS error code being specific
+and even though it was not my patch introducing it I had to change it to shut it up.
+
+>> 	}
+>>
+>> 	if (num_vfs == 0) {
+>> 		/* disable VFs */
+>> 		ret = pdev->driver->sriov_configure(pdev, 0);
+>>-		if (ret < 0)
+>>-			return ret;
+>>-		return count;
+>>+		goto exit;
+>> 	}
+>>
+>> 	/* enable VFs */
+>> 	if (pdev->sriov->num_VFs) {
+>> 		dev_warn(&pdev->dev, "%d VFs already enabled. Disable before enabling %d VFs\n",
+>> 			 pdev->sriov->num_VFs, num_vfs);
+>>-		return -EBUSY;
+>>+		ret = -EBUSY;
+>>+		goto exit;
+>> 	}
+>>
+>> 	ret = pdev->driver->sriov_configure(pdev, num_vfs);
+>> 	if (ret < 0)
+>>-		return ret;
+>>+		goto exit;
+>>
+>> 	if (ret != num_vfs)
+>> 		dev_warn(&pdev->dev, "%d VFs requested; only %d enabled\n",
+>> 			 num_vfs, ret);
+>>
+>>+exit:
+>>+	mutex_unlock(&iov->dev->sriov->lock);
+>>+
+>>+	if (ret < 0)
+>>+		return ret;
+>>+
+>> 	return count;
+>
+>The code might be clearer if @ret is returned here. In that case, We need
+>set it properly in error paths.
+
+I played with different ways to handle this and this seemed the least intrusive.
+
+Thanks,
+Emil
+
+
