@@ -1,128 +1,97 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Tue, 03 Jan 2017 16:48:31 -0800
-Subject: [Intel-wired-lan] [PATCH 2/2] PCI: lock each enable/disable num_vfs
-	operation in sysfs
-In-Reply-To: <20170104004826.17866.77074.stgit@localhost6.localdomain6>
-References: <20170104004826.17866.77074.stgit@localhost6.localdomain6>
-Message-ID: <20170104004831.17866.11537.stgit@localhost6.localdomain6>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 4 Jan 2017 08:58:26 +0800
+Subject: [Intel-wired-lan] [next PATCH v3 1/3] mm: Rename
+ __alloc_page_frag to page_frag_alloc and __free_page_frag to page_frag_free
+In-Reply-To: <20170103171024.5144.17036.stgit@localhost.localdomain>
+Message-ID: <201701040815.YtW6y7i3%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Enabling/disabling SRIOV via sysfs by echo-ing multiple values
-simultaneously:
+Hi Alexander,
 
-echo 63 > /sys/class/net/ethX/device/sriov_numvfs&
-echo 63 > /sys/class/net/ethX/device/sriov_numvfs
+[auto build test ERROR on mmotm/master]
+[also build test ERROR on v4.10-rc2 next-20170103]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-sleep 5
+url:    https://github.com/0day-ci/linux/commits/Alexander-Duyck/Page-fragment-updates/20170104-080239
+base:   git://git.cmpxchg.org/linux-mmotm.git master
+config: i386-randconfig-x003-201701 (attached as .config)
+compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+reproduce:
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-echo 0 > /sys/class/net/ethX/device/sriov_numvfs&
-echo 0 > /sys/class/net/ethX/device/sriov_numvfs
+Note: the linux-review/Alexander-Duyck/Page-fragment-updates/20170104-080239 HEAD 81fa8f8a69c1b7187ae789eb536cdfcb3263d366 builds fine.
+      It only hurts bisectibility.
 
-Results in the following bug:
+All error/warnings (new ones prefixed by >>):
 
-kernel BUG at drivers/pci/iov.c:495!
-invalid opcode: 0000 [#1] SMP
-CPU: 1 PID: 8050 Comm: bash Tainted: G   W   4.9.0-rc7-net-next #2092
-RIP: 0010:[<ffffffff813b1647>]
-	  [<ffffffff813b1647>] pci_iov_release+0x57/0x60
+   net/core/skbuff.c: In function '__netdev_alloc_frag':
+>> net/core/skbuff.c:372:9: error: implicit declaration of function 'page_frag_alloc' [-Werror=implicit-function-declaration]
+     data = page_frag_alloc(nc, fragsz, gfp_mask);
+            ^~~~~~~~~~~~~~~
+>> net/core/skbuff.c:372:7: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+     data = page_frag_alloc(nc, fragsz, gfp_mask);
+          ^
+   net/core/skbuff.c: In function '__napi_alloc_frag':
+>> net/core/skbuff.c:394:9: warning: return makes pointer from integer without a cast [-Wint-conversion]
+     return page_frag_alloc(&nc->page, fragsz, gfp_mask);
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   net/core/skbuff.c: In function '__netdev_alloc_skb':
+   net/core/skbuff.c:444:7: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+     data = page_frag_alloc(nc, len, gfp_mask);
+          ^
+   net/core/skbuff.c: In function '__napi_alloc_skb':
+   net/core/skbuff.c:508:7: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+     data = page_frag_alloc(&nc->page, len, gfp_mask);
+          ^
+   cc1: some warnings being treated as errors
 
-Call Trace:
- [<ffffffff81391726>] pci_release_dev+0x26/0x70
- [<ffffffff8155be6e>] device_release+0x3e/0xb0
- [<ffffffff81365ee7>] kobject_cleanup+0x67/0x180
- [<ffffffff81365d9d>] kobject_put+0x2d/0x60
- [<ffffffff8155bc27>] put_device+0x17/0x20
- [<ffffffff8139c08a>] pci_dev_put+0x1a/0x20
- [<ffffffff8139cb6b>] pci_get_dev_by_id+0x5b/0x90
- [<ffffffff8139cca5>] pci_get_subsys+0x35/0x40
- [<ffffffff8139ccc8>] pci_get_device+0x18/0x20
- [<ffffffff8139ccfb>] pci_get_domain_bus_and_slot+0x2b/0x60
- [<ffffffff813b09e7>] pci_iov_remove_virtfn+0x57/0x180
- [<ffffffff813b0b95>] pci_disable_sriov+0x65/0x140
- [<ffffffffa00a1af7>] ixgbe_disable_sriov+0xc7/0x1d0 [ixgbe]
- [<ffffffffa00a1e9d>] ixgbe_pci_sriov_configure+0x3d/0x170 [ixgbe]
- [<ffffffff8139d28c>] sriov_numvfs_store+0xdc/0x130
-...
-RIP  [<ffffffff813b1647>] pci_iov_release+0x57/0x60
+vim +/page_frag_alloc +372 net/core/skbuff.c
 
-Use the existing mutex lock to protect each enable/disable operation.
+   366		struct page_frag_cache *nc;
+   367		unsigned long flags;
+   368		void *data;
+   369	
+   370		local_irq_save(flags);
+   371		nc = this_cpu_ptr(&netdev_alloc_cache);
+ > 372		data = page_frag_alloc(nc, fragsz, gfp_mask);
+   373		local_irq_restore(flags);
+   374		return data;
+   375	}
+   376	
+   377	/**
+   378	 * netdev_alloc_frag - allocate a page fragment
+   379	 * @fragsz: fragment size
+   380	 *
+   381	 * Allocates a frag from a page for receive buffer.
+   382	 * Uses GFP_ATOMIC allocations.
+   383	 */
+   384	void *netdev_alloc_frag(unsigned int fragsz)
+   385	{
+   386		return __netdev_alloc_frag(fragsz, GFP_ATOMIC | __GFP_COLD);
+   387	}
+   388	EXPORT_SYMBOL(netdev_alloc_frag);
+   389	
+   390	static void *__napi_alloc_frag(unsigned int fragsz, gfp_t gfp_mask)
+   391	{
+   392		struct napi_alloc_cache *nc = this_cpu_ptr(&napi_alloc_cache);
+   393	
+ > 394		return page_frag_alloc(&nc->page, fragsz, gfp_mask);
+   395	}
+   396	
+   397	void *napi_alloc_frag(unsigned int fragsz)
 
-CC: Alexander Duyck <alexander.h.duyck@intel.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/pci/pci-sysfs.c |   24 +++++++++++++++++-------
- 1 file changed, 17 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 0666287..5b54cf5 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -472,7 +472,9 @@ static ssize_t sriov_numvfs_store(struct device *dev,
- 				  const char *buf, size_t count)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct pci_sriov *iov = pdev->sriov;
- 	int ret;
-+
- 	u16 num_vfs;
- 
- 	ret = kstrtou16(buf, 0, &num_vfs);
-@@ -482,38 +484,46 @@ static ssize_t sriov_numvfs_store(struct device *dev,
- 	if (num_vfs > pci_sriov_get_totalvfs(pdev))
- 		return -ERANGE;
- 
-+	mutex_lock(&iov->dev->sriov->lock);
-+
- 	if (num_vfs == pdev->sriov->num_VFs)
--		return count;		/* no change */
-+		goto exit;
- 
- 	/* is PF driver loaded w/callback */
- 	if (!pdev->driver || !pdev->driver->sriov_configure) {
- 		dev_info(&pdev->dev, "Driver doesn't support SRIOV configuration via sysfs\n");
--		return -ENOSYS;
-+		ret = -EINVAL;
-+		goto exit;
- 	}
- 
- 	if (num_vfs == 0) {
- 		/* disable VFs */
- 		ret = pdev->driver->sriov_configure(pdev, 0);
--		if (ret < 0)
--			return ret;
--		return count;
-+		goto exit;
- 	}
- 
- 	/* enable VFs */
- 	if (pdev->sriov->num_VFs) {
- 		dev_warn(&pdev->dev, "%d VFs already enabled. Disable before enabling %d VFs\n",
- 			 pdev->sriov->num_VFs, num_vfs);
--		return -EBUSY;
-+		ret = -EBUSY;
-+		goto exit;
- 	}
- 
- 	ret = pdev->driver->sriov_configure(pdev, num_vfs);
- 	if (ret < 0)
--		return ret;
-+		goto exit;
- 
- 	if (ret != num_vfs)
- 		dev_warn(&pdev->dev, "%d VFs requested; only %d enabled\n",
- 			 num_vfs, ret);
- 
-+exit:
-+	mutex_unlock(&iov->dev->sriov->lock);
-+
-+	if (ret < 0)
-+		return ret;
-+
- 	return count;
- }
- 
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 25575 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170104/905cc418/attachment-0001.bin>
