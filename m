@@ -1,56 +1,69 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 05 Jan 2017 14:26:19 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v3] i40e/i40evf: Update
- driver to support napi_complete_done changes
-In-Reply-To: <CAKgT0UeScCSh0uJBNRzQ9V-yrdqQFq1mU1PdE4xwFpYwWxSWNA@mail.gmail.com>
-References: <20161208001248.13098.93773.stgit@localhost.localdomain>
- <CAKgT0UeScCSh0uJBNRzQ9V-yrdqQFq1mU1PdE4xwFpYwWxSWNA@mail.gmail.com>
-Message-ID: <1483655179.25700.42.camel@intel.com>
+From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
+Date: Thu, 05 Jan 2017 14:32:54 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 5/6] i40e: Add TX and RX
+ support in switchdev mode.
+In-Reply-To: <CAJ3xEMgAaXNbvaP0=GcuTsVOOGwPHuSMQf-SeLKpxB8WrbEvng@mail.gmail.com>
+References: <1483078863-22026-1-git-send-email-sridhar.samudrala@intel.com>
+ <1483078863-22026-6-git-send-email-sridhar.samudrala@intel.com>
+ <CAJ3xEMgDAUSE2gVD3dU4UuXFb7k_W-9QgHpg-0c7b5kxRC2=FQ@mail.gmail.com>
+ <586693A6.5090105@intel.com>
+ <CAJ3xEMjGuKKge+_hqZPOg2fp3f50TdxGtbKFXwnCZ70rPxmuyw@mail.gmail.com>
+ <586D7B4E.2010308@intel.com>
+ <CAJ3xEMgAaXNbvaP0=GcuTsVOOGwPHuSMQf-SeLKpxB8WrbEvng@mail.gmail.com>
+Message-ID: <586EC996.9080205@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2017-01-05 at 14:05 -0800, Alexander Duyck wrote:
-> On Wed, Dec 7, 2016 at 4:14 PM, Alexander Duyck
-> <alexander.duyck@gmail.com> wrote:
-> > From: Alexander Duyck <alexander.h.duyck@intel.com>
-> > 
-> > Recently napi_complete_done was updated so that it will return zero if
-> > we
-> > are using the queue vector for busy polling.? When this is the case we
-> > don't need to re-enable interrupts as the busy polling will reschedule
-> > the
-> > NAPI instance when it is finally done polling.
-> > 
-> > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> > ---
-> > 
-> > v2: Updated code to place the IRQ enabling inside the if statment
-> > ???? This made it so that we are consistent with the recent return
-> > value changes
-> > 
-> > v3: Added i40evf changes as well
-> > 
-> > ? drivers/net/ethernet/intel/i40e/i40e_txrx.c?? |?? 32 +++++++++++++---
-> > ---------
-> > ? drivers/net/ethernet/intel/i40evf/i40e_txrx.c |?? 28 ++++++++++++--
-> > --------
-> > ? 2 files changed, 32 insertions(+), 28 deletions(-)
-> > 
-> 
-> Jeff,
-> 
-> This patch causes a performance regression due to the way it interacts
-> with the i40e WB on ITR behavior.? Can you please drop it from the
-> dev-queue.
 
-I have dropped the patch from my queue/tree.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170105/d9e4cb64/attachment.asc>
+
+On 1/5/2017 3:50 AM, Or Gerlitz wrote:
+> On Thu, Jan 5, 2017 at 12:46 AM, Samudrala, Sridhar
+> <sridhar.samudrala@intel.com> wrote:
+>>
+>> On 1/3/2017 3:03 PM, Or Gerlitz wrote:
+>>> On Fri, Dec 30, 2016 at 7:04 PM, Samudrala, Sridhar
+>>> <sridhar.samudrala@intel.com> wrote:
+>>>> On 12/30/2016 7:31 AM, Or Gerlitz wrote:
+>>>>> Are you exposing switchdev ops for the representators? didn't see that
+>>>>> or maybe it's in the 4th patch which didn't make it to the list?
+>>>> Not at this time. In the future patches when we offload fdb/vlan
+>>>> functionality, we could use switchdev ops.
+>>> but wait, this is the switchdev mode... even before doing any
+>>> offloading, you want (need) your representor netdevices to have the
+>>> same HW ID marking they are all ports of the same ASIC, this you can
+>>> do with the switchdev parent ID attribute.
+>> OK. I will add switchdev_port_attr_get() with PORT_PARENT_ID support in v3.
+> Good, I made this comment, b/c we want to create a well defined user-experience
+> to be taken into account also by upper virtualization layers.
+>
+> Another piece there to add is have your VF reps implement the
+> get_phys_port_name ndo,
+
+It looks like you are returning the VF port number as phys_port_name() 
+for a VF rep in en_rep.c.
+Is this correct?
+
+By default i am creating VFPR netdev with name as <pf_name>_VF<vf_num>
+For ex; if enp5s0f0 is the pf name, VFPR netdev for VF0 will be enp5s0f0_vf0
+
+If we want udev to follow this syntax should i return '_vf0'  as 
+get_phys_port_name() for VF rep 0?
+
+> where as we explain in commit cb67b832921cfa20ad79bafdc51f1745339d0557 is used
+> as follows:
+>
+>      Port phys name (ndo_get_phys_port_name) is implemented to allow exporting
+>      to user-space the VF vport number and along with the switchdev port parent
+>      id (phys_switch_id) enable a udev base consistent naming scheme:
+>
+>      SUBSYSTEM=="net", ACTION=="add", ATTR{phys_switch_id}=="<phys_switch_id>", \
+>              ATTR{phys_port_name}!="", NAME="$PF_NIC$attr{phys_port_name}"
+>
+>      where phys_switch_id is exposed by the PF (and VF reps) and $PF_NIC is
+>      the name of the PF netdevice.
+>
+> Or.
+
