@@ -1,69 +1,52 @@
-From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
-Date: Thu, 05 Jan 2017 14:32:54 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 5/6] i40e: Add TX and RX
- support in switchdev mode.
-In-Reply-To: <CAJ3xEMgAaXNbvaP0=GcuTsVOOGwPHuSMQf-SeLKpxB8WrbEvng@mail.gmail.com>
-References: <1483078863-22026-1-git-send-email-sridhar.samudrala@intel.com>
- <1483078863-22026-6-git-send-email-sridhar.samudrala@intel.com>
- <CAJ3xEMgDAUSE2gVD3dU4UuXFb7k_W-9QgHpg-0c7b5kxRC2=FQ@mail.gmail.com>
- <586693A6.5090105@intel.com>
- <CAJ3xEMjGuKKge+_hqZPOg2fp3f50TdxGtbKFXwnCZ70rPxmuyw@mail.gmail.com>
- <586D7B4E.2010308@intel.com>
- <CAJ3xEMgAaXNbvaP0=GcuTsVOOGwPHuSMQf-SeLKpxB8WrbEvng@mail.gmail.com>
-Message-ID: <586EC996.9080205@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 5 Jan 2017 23:26:27 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove pr_cont uses
+In-Reply-To: <7be510fd79f67969fc03be24dea68b9f198e486b.1483457249.git.joe@perches.com>
+References: <7be510fd79f67969fc03be24dea68b9f198e486b.1483457249.git.joe@perches.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA589E0@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Joe Perches
+> Sent: Tuesday, January 03, 2017 7:28 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove pr_cont uses
+> 
+> As pr_cont output can be interleaved by other processes, using pr_cont
+> should be avoided where possible.
+> 
+> Miscellanea:
+> 
+> o Use a temporary pointer to hold the next descriptions and
+>   consolidate the pr_cont uses
+> o Use the temporary buffer to hold the 8 u32 register values and
+>   emit those in a single go
+> o Coalesce formats and logging neatening around those changes o Fix a
+> defective output for the rx ring entry description when
+>   also emitting rx_buffer_info data
+> 
+> This reduces overall object size a tiny bit too.
+> 
+> $ size drivers/net/ethernet/intel/ixgbe/*.o*
+>    text	   data	    bss	    dec	    hex	filename
+>   62167	    728	     12	  62907	   f5bb
+> 	drivers/net/ethernet/intel/ixgbe/ixgbe_main.o.new
+>   62273	    728	     12	  63013	   f625
+> 	drivers/net/ethernet/intel/ixgbe/ixgbe_main.o.old
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 84 +++++++++++++++-----
+> -------
+>  1 file changed, 47 insertions(+), 37 deletions(-)
 
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-On 1/5/2017 3:50 AM, Or Gerlitz wrote:
-> On Thu, Jan 5, 2017 at 12:46 AM, Samudrala, Sridhar
-> <sridhar.samudrala@intel.com> wrote:
->>
->> On 1/3/2017 3:03 PM, Or Gerlitz wrote:
->>> On Fri, Dec 30, 2016 at 7:04 PM, Samudrala, Sridhar
->>> <sridhar.samudrala@intel.com> wrote:
->>>> On 12/30/2016 7:31 AM, Or Gerlitz wrote:
->>>>> Are you exposing switchdev ops for the representators? didn't see that
->>>>> or maybe it's in the 4th patch which didn't make it to the list?
->>>> Not at this time. In the future patches when we offload fdb/vlan
->>>> functionality, we could use switchdev ops.
->>> but wait, this is the switchdev mode... even before doing any
->>> offloading, you want (need) your representor netdevices to have the
->>> same HW ID marking they are all ports of the same ASIC, this you can
->>> do with the switchdev parent ID attribute.
->> OK. I will add switchdev_port_attr_get() with PORT_PARENT_ID support in v3.
-> Good, I made this comment, b/c we want to create a well defined user-experience
-> to be taken into account also by upper virtualization layers.
->
-> Another piece there to add is have your VF reps implement the
-> get_phys_port_name ndo,
-
-It looks like you are returning the VF port number as phys_port_name() 
-for a VF rep in en_rep.c.
-Is this correct?
-
-By default i am creating VFPR netdev with name as <pf_name>_VF<vf_num>
-For ex; if enp5s0f0 is the pf name, VFPR netdev for VF0 will be enp5s0f0_vf0
-
-If we want udev to follow this syntax should i return '_vf0'  as 
-get_phys_port_name() for VF rep 0?
-
-> where as we explain in commit cb67b832921cfa20ad79bafdc51f1745339d0557 is used
-> as follows:
->
->      Port phys name (ndo_get_phys_port_name) is implemented to allow exporting
->      to user-space the VF vport number and along with the switchdev port parent
->      id (phys_switch_id) enable a udev base consistent naming scheme:
->
->      SUBSYSTEM=="net", ACTION=="add", ATTR{phys_switch_id}=="<phys_switch_id>", \
->              ATTR{phys_port_name}!="", NAME="$PF_NIC$attr{phys_port_name}"
->
->      where phys_switch_id is exposed by the PF (and VF reps) and $PF_NIC is
->      the name of the PF netdevice.
->
-> Or.
 
