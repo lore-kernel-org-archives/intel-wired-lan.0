@@ -1,207 +1,61 @@
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Thu, 5 Jan 2017 10:11:39 +1100
-Subject: [Intel-wired-lan] [PATCH 2/2] PCI: lock each enable/disable
- num_vfs operation in sysfs
-In-Reply-To: <87618083B2453E4A8714035B62D67992507430EB@FMSMSX105.amr.corp.intel.com>
-References: <20170104004826.17866.77074.stgit@localhost6.localdomain6>
- <20170104004831.17866.11537.stgit@localhost6.localdomain6>
- <20170104021531.GA567@gwshan>
- <87618083B2453E4A8714035B62D67992507430EB@FMSMSX105.amr.corp.intel.com>
-Message-ID: <20170104231139.GA3726@gwshan>
+From: Or Gerlitz <gerlitz.or@gmail.com>
+Date: Thu, 5 Jan 2017 13:50:27 +0200
+Subject: [Intel-wired-lan] [net-next PATCH 5/6] i40e: Add TX and RX
+	support in switchdev mode.
+In-Reply-To: <586D7B4E.2010308@intel.com>
+References: <1483078863-22026-1-git-send-email-sridhar.samudrala@intel.com>
+ <1483078863-22026-6-git-send-email-sridhar.samudrala@intel.com>
+ <CAJ3xEMgDAUSE2gVD3dU4UuXFb7k_W-9QgHpg-0c7b5kxRC2=FQ@mail.gmail.com>
+ <586693A6.5090105@intel.com>
+ <CAJ3xEMjGuKKge+_hqZPOg2fp3f50TdxGtbKFXwnCZ70rPxmuyw@mail.gmail.com>
+ <586D7B4E.2010308@intel.com>
+Message-ID: <CAJ3xEMgAaXNbvaP0=GcuTsVOOGwPHuSMQf-SeLKpxB8WrbEvng@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 04, 2017 at 04:00:20PM +0000, Tantilov, Emil S wrote:
->>On Tue, Jan 03, 2017 at 04:48:31PM -0800, Emil Tantilov wrote:
->>>Enabling/disabling SRIOV via sysfs by echo-ing multiple values
->>>simultaneously:
->>>
->>>echo 63 > /sys/class/net/ethX/device/sriov_numvfs&
->>>echo 63 > /sys/class/net/ethX/device/sriov_numvfs
->>>
->>>sleep 5
->>>
->>>echo 0 > /sys/class/net/ethX/device/sriov_numvfs&
->>>echo 0 > /sys/class/net/ethX/device/sriov_numvfs
->>>
->>>Results in the following bug:
->>>
->>>kernel BUG at drivers/pci/iov.c:495!
->>>invalid opcode: 0000 [#1] SMP
->>>CPU: 1 PID: 8050 Comm: bash Tainted: G   W   4.9.0-rc7-net-next #2092
->>>RIP: 0010:[<ffffffff813b1647>]
->>>	  [<ffffffff813b1647>] pci_iov_release+0x57/0x60
->>>
->>>Call Trace:
->>> [<ffffffff81391726>] pci_release_dev+0x26/0x70
->>> [<ffffffff8155be6e>] device_release+0x3e/0xb0
->>> [<ffffffff81365ee7>] kobject_cleanup+0x67/0x180
->>> [<ffffffff81365d9d>] kobject_put+0x2d/0x60
->>> [<ffffffff8155bc27>] put_device+0x17/0x20
->>> [<ffffffff8139c08a>] pci_dev_put+0x1a/0x20
->>> [<ffffffff8139cb6b>] pci_get_dev_by_id+0x5b/0x90
->>> [<ffffffff8139cca5>] pci_get_subsys+0x35/0x40
->>> [<ffffffff8139ccc8>] pci_get_device+0x18/0x20
->>> [<ffffffff8139ccfb>] pci_get_domain_bus_and_slot+0x2b/0x60
->>> [<ffffffff813b09e7>] pci_iov_remove_virtfn+0x57/0x180
->>> [<ffffffff813b0b95>] pci_disable_sriov+0x65/0x140
->>> [<ffffffffa00a1af7>] ixgbe_disable_sriov+0xc7/0x1d0 [ixgbe]
->>> [<ffffffffa00a1e9d>] ixgbe_pci_sriov_configure+0x3d/0x170 [ixgbe]
->>> [<ffffffff8139d28c>] sriov_numvfs_store+0xdc/0x130
->>>...
->>>RIP  [<ffffffff813b1647>] pci_iov_release+0x57/0x60
->>>
->>>Use the existing mutex lock to protect each enable/disable operation.
->>>
->>>CC: Alexander Duyck <alexander.h.duyck@intel.com>
->>>Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+On Thu, Jan 5, 2017 at 12:46 AM, Samudrala, Sridhar
+<sridhar.samudrala@intel.com> wrote:
+>
+>
+> On 1/3/2017 3:03 PM, Or Gerlitz wrote:
 >>
->>Emil, It's going to change semantics of pci_enable_sriov() and pci_disable_sriov().
->>They can be invoked when writing to the sysfs entry, or loading PF's
->>driver. With the change applied, the lock (pf->sriov->lock) isn't acquired and released
->>in the PF's driver loading path.
->
->The enablement of SRIOV on driver load is done via deprecated module parameter.
->Perhaps we can just remove it, although there are probably still people that use it
->and may not be happy if we get rid of it. 
->
-
-Yeah, some drivers are still using the interface. So we cannot affect it until
-it can be droped.
-
->>I think the reasonable way would be adding a flag in "struct sriov", to
->>indicate someone is accessing the IOV capability through sysfs file. With this, the
->>code returns with "-EBUSY" immediately for contenders. With it, nothing is going
->>to be changed in PF's driver loading path.
->
->Flag is what I initially had in mind, but did not want to add extra locking if we 
->can make use of the existing.
->
-
-The problem is sriov->lock wasn't introduced to protect the whole IOV capability.
-Instead, it protects the allocation of virtual bus (if needed). In your patch,
-it will be used to protect the whole IOV capability, ensure accessing the IOV
-capability exclusively. So the usage of this lock is changed. 
-
-     code extracted from pci.h:
-
-     struct pci_sriov {
-            :
-            struct mutex lock;      /* lock for VF bus */
-            :
-     }
-
-The lock was introduced by commit d1b054da8 ("PCI: initialize and release SR-IOV
-capability"). If I'm correct enough, I don't think this lock is needed when
-pci_enable_sriov() or pci_disable_sriov() are called in driver because of module
-parameters. I don't see the usage case calling pci_disable_sriov() while previous
-pci_enable_sriov() isn't finished yet. Also, it's not needed in EEH subsystem.
-So I think the lock can be dropped, then it can be used to protect sysfs path. 
-
->>Also, there are some minor comments as below and I guess most of them won't
->>be applied if you take my suggestion eventually. However, I'm trying to make
->>the comments complete.
->
->Thanks a lot for reviewing!
->
+>> On Fri, Dec 30, 2016 at 7:04 PM, Samudrala, Sridhar
+>> <sridhar.samudrala@intel.com> wrote:
+>>>
+>>> On 12/30/2016 7:31 AM, Or Gerlitz wrote:
+>>>>
+>>>> Are you exposing switchdev ops for the representators? didn't see that
+>>>> or maybe it's in the 4th patch which didn't make it to the list?
+>>>
+>>> Not at this time. In the future patches when we offload fdb/vlan
+>>> functionality, we could use switchdev ops.
 >>
->>>---
->>> drivers/pci/pci-sysfs.c |   24 +++++++++++++++++-------
->>> 1 file changed, 17 insertions(+), 7 deletions(-)
->>>
->>>diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
->>>index 0666287..5b54cf5 100644
->>>--- a/drivers/pci/pci-sysfs.c
->>>+++ b/drivers/pci/pci-sysfs.c
->>>@@ -472,7 +472,9 @@ static ssize_t sriov_numvfs_store(struct device *dev,
->>> 				  const char *buf, size_t count)
->>> {
->>> 	struct pci_dev *pdev = to_pci_dev(dev);
->>>+	struct pci_sriov *iov = pdev->sriov;
->>> 	int ret;
->>>+
->>
->>Unnecessary change.
->>
->>> 	u16 num_vfs;
->>>
->>> 	ret = kstrtou16(buf, 0, &num_vfs);
->>>@@ -482,38 +484,46 @@ static ssize_t sriov_numvfs_store(struct device
->>*dev,
->>> 	if (num_vfs > pci_sriov_get_totalvfs(pdev))
->>> 		return -ERANGE;
->>>
->>>+	mutex_lock(&iov->dev->sriov->lock);
->>>+
->>> 	if (num_vfs == pdev->sriov->num_VFs)
->>>-		return count;		/* no change */
->>>+		goto exit;
->>>
->>> 	/* is PF driver loaded w/callback */
->>> 	if (!pdev->driver || !pdev->driver->sriov_configure) {
->>> 		dev_info(&pdev->dev, "Driver doesn't support SRIOV
->>configuration via sysfs\n");
->>>-		return -ENOSYS;
->>>+		ret = -EINVAL;
->>>+		goto exit;
->>
->>Why we need change the error code here?
+>> but wait, this is the switchdev mode... even before doing any
+>> offloading, you want (need) your representor netdevices to have the
+>> same HW ID marking they are all ports of the same ASIC, this you can
+>> do with the switchdev parent ID attribute.
 >
->checkpatch was complaining about the use of the ENOSYS error code being specific
->and even though it was not my patch introducing it I had to change it to shut it up.
->
+> OK. I will add switchdev_port_attr_get() with PORT_PARENT_ID support in v3.
 
-Right, it's reserved for attempt to call nonexisting syscall, but I think ENOENT
-might be more indicative than EINVAL in this specific case?
+Good, I made this comment, b/c we want to create a well defined user-experience
+to be taken into account also by upper virtualization layers.
 
->>> 	}
->>>
->>> 	if (num_vfs == 0) {
->>> 		/* disable VFs */
->>> 		ret = pdev->driver->sriov_configure(pdev, 0);
->>>-		if (ret < 0)
->>>-			return ret;
->>>-		return count;
->>>+		goto exit;
->>> 	}
->>>
->>> 	/* enable VFs */
->>> 	if (pdev->sriov->num_VFs) {
->>> 		dev_warn(&pdev->dev, "%d VFs already enabled. Disable before enabling %d VFs\n",
->>> 			 pdev->sriov->num_VFs, num_vfs);
->>>-		return -EBUSY;
->>>+		ret = -EBUSY;
->>>+		goto exit;
->>> 	}
->>>
->>> 	ret = pdev->driver->sriov_configure(pdev, num_vfs);
->>> 	if (ret < 0)
->>>-		return ret;
->>>+		goto exit;
->>>
->>> 	if (ret != num_vfs)
->>> 		dev_warn(&pdev->dev, "%d VFs requested; only %d enabled\n",
->>> 			 num_vfs, ret);
->>>
->>>+exit:
->>>+	mutex_unlock(&iov->dev->sriov->lock);
->>>+
->>>+	if (ret < 0)
->>>+		return ret;
->>>+
->>> 	return count;
->>
->>The code might be clearer if @ret is returned here. In that case, We need
->>set it properly in error paths.
->
->I played with different ways to handle this and this seemed the least intrusive.
->
+Another piece there to add is have your VF reps implement the
+get_phys_port_name ndo,
+where as we explain in commit cb67b832921cfa20ad79bafdc51f1745339d0557 is used
+as follows:
 
-Ok, both should be fine.
+    Port phys name (ndo_get_phys_port_name) is implemented to allow exporting
+    to user-space the VF vport number and along with the switchdev port parent
+    id (phys_switch_id) enable a udev base consistent naming scheme:
 
-Thanks,
-Gavin
+    SUBSYSTEM=="net", ACTION=="add", ATTR{phys_switch_id}=="<phys_switch_id>", \
+            ATTR{phys_port_name}!="", NAME="$PF_NIC$attr{phys_port_name}"
 
+    where phys_switch_id is exposed by the PF (and VF reps) and $PF_NIC is
+    the name of the PF netdevice.
+
+Or.
