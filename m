@@ -1,45 +1,197 @@
-From: Or Gerlitz <gerlitz.or@gmail.com>
-Date: Fri, 6 Jan 2017 11:24:45 +0200
-Subject: [Intel-wired-lan] [net-next PATCH 5/6] i40e: Add TX and RX
-	support in switchdev mode.
-In-Reply-To: <586EC996.9080205@intel.com>
-References: <1483078863-22026-1-git-send-email-sridhar.samudrala@intel.com>
- <1483078863-22026-6-git-send-email-sridhar.samudrala@intel.com>
- <CAJ3xEMgDAUSE2gVD3dU4UuXFb7k_W-9QgHpg-0c7b5kxRC2=FQ@mail.gmail.com>
- <586693A6.5090105@intel.com>
- <CAJ3xEMjGuKKge+_hqZPOg2fp3f50TdxGtbKFXwnCZ70rPxmuyw@mail.gmail.com>
- <586D7B4E.2010308@intel.com>
- <CAJ3xEMgAaXNbvaP0=GcuTsVOOGwPHuSMQf-SeLKpxB8WrbEvng@mail.gmail.com>
- <586EC996.9080205@intel.com>
-Message-ID: <CAJ3xEMh7hjPQX1xm9+CRKYjCRp0XzqjA9+YML9+aC2iZ5FhL2A@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 06 Jan 2017 20:25:59 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 53a99cd29c44811b768256dc412533a1a3a6582c
+Message-ID: <586f8cd7.G1kkHZqMxqM9eOF5%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jan 6, 2017 at 12:32 AM, Samudrala, Sridhar
-<sridhar.samudrala@intel.com> wrote:
-> On 1/5/2017 3:50 AM, Or Gerlitz wrote:
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+53a99cd29c44811b768256dc412533a1a3a6582c  ixgbe: update the rss key on h/w, when ethtool ask for it.
 
-> It looks like you are returning the VF port number as phys_port_name() for a
-> VF rep in en_rep.c. Is this correct?
+elapsed time: 198m
 
-yeah, correct, what we all call the VF rep actually represents the
-eswitch vport the VF is connected to. The most flexible input for user
-space would be just to get this port number along with the switchdev
-ID which tells them to which switch this port belongs.
+configs tested: 173
 
-> By default i am creating VFPR netdev with name as <pf_name>_VF<vf_num>
-> For ex; if enp5s0f0 is the pf name, VFPR netdev for VF0 will be enp5s0f0_vf0
->
-> If we want udev to follow this syntax should i return '_vf0'  as
-> get_phys_port_name() for VF rep 0?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-just return a number. Typically the PF is vport #0, so for vf0 you
-would return 1, this is aligned with the kernel switchdev
-documentation [1]
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                          collie_defconfig
+cris                          dev88_defconfig
+s390                             allyesconfig
+i386                     randconfig-a0-201701
+x86_64                 randconfig-a0-01061710
+x86_64                 randconfig-a0-01061832
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+i386                   randconfig-c0-01061805
+x86_64                randconfig-it0-01060806
+parisc                           alldefconfig
+powerpc                       holly_defconfig
+powerpc                      ppc6xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                             allyesconfig
+x86_64                 randconfig-v0-01061700
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201701
+x86_64                 randconfig-x011-201701
+x86_64                 randconfig-x012-201701
+x86_64                 randconfig-x013-201701
+x86_64                 randconfig-x014-201701
+x86_64                 randconfig-x015-201701
+x86_64                 randconfig-x016-201701
+x86_64                 randconfig-x017-201701
+x86_64                 randconfig-x018-201701
+x86_64                 randconfig-x019-201701
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201701
+i386                     randconfig-s1-201701
+x86_64                 randconfig-s3-01061915
+x86_64                 randconfig-s4-01061915
+x86_64                 randconfig-s5-01061915
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           alldefconfig
+powerpc                    sam440ep_defconfig
+powerpc                     tqm5200_defconfig
+sh                          kfr2r09_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201701
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                              allnoconfig
+mips                          lasat_defconfig
+parisc                          712_defconfig
+sparc64                          alldefconfig
+x86_64                 randconfig-b0-01061922
+x86_64                           allmodconfig
+x86_64                 randconfig-u0-01061801
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                      jornada720_defconfig
+xtensa                generic_kc705_defconfig
+arm                            mmp2_defconfig
+powerpc                     asp8347_defconfig
+mips                         tb0219_defconfig
+openrisc                         allyesconfig
+x86_64                randconfig-ne0-01061922
+x86_64                randconfig-ne0-01061944
+x86_64                randconfig-ne0-01062003
+i386                   randconfig-x010-201701
+i386                   randconfig-x011-201701
+i386                   randconfig-x012-201701
+i386                   randconfig-x013-201701
+i386                   randconfig-x014-201701
+i386                   randconfig-x015-201701
+i386                   randconfig-x016-201701
+i386                   randconfig-x017-201701
+i386                   randconfig-x018-201701
+i386                   randconfig-x019-201701
+x86_64                                    lkp
+x86_64          lkp+CONFIG_DEBUG_INFO_REDUCED
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201701
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                               rhel-7.2
+x86_64                 randconfig-h0-01061850
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+mips                         bigsur_defconfig
+mips                           ip27_defconfig
+sh                           se7619_defconfig
+x86_64                randconfig-ws0-01061904
+x86_64                randconfig-ws0-01061955
+x86_64                 randconfig-x000-201701
+x86_64                 randconfig-x001-201701
+x86_64                 randconfig-x002-201701
+x86_64                 randconfig-x003-201701
+x86_64                 randconfig-x004-201701
+x86_64                 randconfig-x005-201701
+x86_64                 randconfig-x006-201701
+x86_64                 randconfig-x007-201701
+x86_64                 randconfig-x008-201701
+x86_64                 randconfig-x009-201701
+x86_64                                  kexec
+i386                     randconfig-r0-201701
+x86_64                 randconfig-r0-01061751
+x86_64                 randconfig-r0-01061907
+mips                        jmr3927_defconfig
+powerpc               mpc85xx_basic_defconfig
+mips                  maltasmvp_eva_defconfig
+sh                           se7206_defconfig
+i386                   randconfig-x003-201701
+i386                   randconfig-x004-201701
+i386                   randconfig-x007-201701
+i386                   randconfig-x001-201701
+i386                   randconfig-x006-201701
+i386                   randconfig-x009-201701
+i386                   randconfig-x008-201701
+i386                   randconfig-x002-201701
+i386                   randconfig-x000-201701
+i386                   randconfig-x005-201701
+i386                   randconfig-x0-01061828
+i386                   randconfig-x0-01061942
+i386                   randconfig-x0-01062009
 
-Or.
-
-[1] http://lxr.free-electrons.com/source/Documentation/networking/switchdev.txt#L104
+Thanks,
+Fengguang
