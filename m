@@ -1,112 +1,42 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 06 Jan 2017 08:07:45 -0800
-Subject: [Intel-wired-lan] [next PATCH 10/11] ixgbe: Add support for
-	build_skb
-In-Reply-To: <20170106155448.1501.31298.stgit@localhost.localdomain>
-References: <20170106155448.1501.31298.stgit@localhost.localdomain>
-Message-ID: <20170106160743.1501.31101.stgit@localhost.localdomain>
+Date: Fri, 6 Jan 2017 08:15:27 -0800
+Subject: [Intel-wired-lan] [next PATCH 0/9] igb: Add support for writable
+	pages and build_skb
+Message-ID: <CAKgT0UcRmn-utuTJemjQysox0ZJUNLAQGWAH8MDegJjPbSH57w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+On Fri, Jan 6, 2017 at 8:10 AM, Alexander Duyck
+<alexander.duyck@gmail.com> wrote:
+> This patch set enables support for using the recent changes that allow for
+> unmapping pages without invalidating their contents via
+> DMA_ATTR_SKIP_CPU_SYNC.  With this change DMA pages should be writable and
+> as a result we should be able to make use of build_skb which can be used to
+> drop the skb->head memory allocation, header parsing, and memcpy from the
+> receive path which can greatly help to improve performance.
+>
+> My main concern at this point is that there might be an architecture where
+> I didn't get DMA_ATTR_SKIP_CPU_SYNC implemented that might still need it.
+> For that reason I have also added a ethtool private flag called out as
+> "legacy-rx".  If a platform encounters an issue where the Rx can possibly
+> corrupt data it can be enbled by running:
+>         ethtool --set-priv-flags DEVNAME legacy-rx on
+>
+> The testing matrix for all of these patches is going to be pretty
+> extensive.  Basically we want to test these patches on as many platforms
+> and architectures as possible with as many features being toggled as
+> possible including SR-IOV and Jumbo Frames all while receiving traffic.
+>
+> Within the patches there is also some initialization changes.  Specifically
+> I have updated the code paths to defer clearing the rings until we are
+> about to initialize them and give them to hardware.  By doing this we are
+> able to avoid having to dirty memory we don't need to which should help to
+> improve suspend/resume times for when we start looking at possibly using
+> the suspend/resume approach for migration of interface in VMs.
 
-This patch adds build_skb support to the Rx path.  There are several
-advantages to this change.
-
-1.  It avoids the memcpy and skb->head allocation for small packets which
-    improves performance by about 5% in my tests.
-2.  It avoids the memcpy, skb->head allocation, and eth_get_headlen
-    for larger packets improving performance by about 10% in my tests.
-3.  For VXLAN packets it allows the full header to be in skb->data which
-    improves the performance by as much as 30% in some of my tests.
-
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   49 ++++++++++++++++++++++++-
- 1 file changed, 48 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 8529eafb9717..dd04b76ae0bd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1913,7 +1913,7 @@ static bool ixgbe_cleanup_headers(struct ixgbe_ring *rx_ring,
- 	}
- 
- 	/* place header in linear portion of buffer */
--	if (skb_is_nonlinear(skb))
-+	if (!skb_headlen(skb))
- 		ixgbe_pull_tail(rx_ring, skb);
- 
- #ifdef IXGBE_FCOE
-@@ -2142,6 +2142,49 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- 	return skb;
- }
- 
-+static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
-+				       struct ixgbe_rx_buffer *rx_buffer,
-+				       union ixgbe_adv_rx_desc *rx_desc,
-+				       unsigned int size)
-+{
-+	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+#if (PAGE_SIZE < 8192)
-+	unsigned int truesize = ixgbe_rx_pg_size(rx_ring) / 2;
-+#else
-+	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
-+				SKB_DATA_ALIGN(IXGBE_SKB_PAD + size);
-+#endif
-+	struct sk_buff *skb;
-+
-+	/* prefetch first cache line of first page */
-+	prefetch(va);
-+#if L1_CACHE_BYTES < 128
-+	prefetch(va + L1_CACHE_BYTES);
-+#endif
-+
-+	/* build an skb to around the page buffer */
-+	skb = build_skb(va - IXGBE_SKB_PAD, truesize);
-+	if (unlikely(!skb))
-+		return NULL;
-+
-+	/* update pointers within the skb to store the data */
-+	skb_reserve(skb, IXGBE_SKB_PAD);
-+	__skb_put(skb, size);
-+
-+	/* record DMA address if this is the start of a chain of buffers */
-+	if (!ixgbe_test_staterr(rx_desc, IXGBE_RXD_STAT_EOP))
-+		IXGBE_CB(skb)->dma = rx_buffer->dma;
-+
-+	/* update buffer offset */
-+#if (PAGE_SIZE < 8192)
-+	rx_buffer->page_offset ^= truesize;
-+#else
-+	rx_buffer->page_offset += truesize;
-+#endif
-+
-+	return skb;
-+}
-+
- /**
-  * ixgbe_clean_rx_irq - Clean completed descriptors from Rx ring - bounce buf
-  * @q_vector: structure containing interrupt and ring information
-@@ -2195,6 +2238,9 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- 		/* retrieve a buffer from the ring */
- 		if (skb)
- 			ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
-+		else if (ring_uses_build_skb(rx_ring))
-+			skb = ixgbe_build_skb(rx_ring, rx_buffer,
-+					      rx_desc, size);
- 		else
- 			skb = ixgbe_construct_skb(rx_ring, rx_buffer,
- 						  rx_desc, size);
-@@ -3970,6 +4016,7 @@ static void ixgbe_set_rx_buffer_len(struct ixgbe_adapter *adapter)
- 		if (test_bit(__IXGBE_RX_FCOE, &rx_ring->state))
- 			set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
- 
-+		clear_bit(__IXGBE_RX_BUILD_SKB_ENABLED, &rx_ring->state);
- 		if (adapter->flags2 & IXGBE_FLAG2_RX_LEGACY)
- 			continue;
- 
-
+In my hurry to just copy/paste the ixgbe patch description over and
+make a few changes it looks like I left a few typos, my appologies.
+This should have been 0/9, not 00/11.
