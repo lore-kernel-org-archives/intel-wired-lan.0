@@ -1,58 +1,85 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 06 Jan 2017 08:10:37 -0800
-Subject: [Intel-wired-lan] [next PATCH 00/11] igb: Add support for writable
-	pages and build_skb
-Message-ID: <20170106160850.2030.39073.stgit@localhost.localdomain>
+Date: Fri, 06 Jan 2017 08:10:49 -0800
+Subject: [Intel-wired-lan] [next PATCH 2/9] igb: Use length to determine if
+	descriptor is done
+In-Reply-To: <20170106160850.2030.39073.stgit@localhost.localdomain>
+References: <20170106160850.2030.39073.stgit@localhost.localdomain>
+Message-ID: <20170106161049.2030.71315.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch set enables support for using the recent changes that allow for
-unmapping pages without invalidating their contents via
-DMA_ATTR_SKIP_CPU_SYNC.  With this change DMA pages should be writable and
-as a result we should be able to make use of build_skb which can be used to
-drop the skb->head memory allocation, header parsing, and memcpy from the
-receive path which can greatly help to improve performance.
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-My main concern at this point is that there might be an architecture where
-I didn't get DMA_ATTR_SKIP_CPU_SYNC implemented that might still need it.
-For that reason I have also added a ethtool private flag called out as
-"legacy-rx".  If a platform encounters an issue where the Rx can possibly
-corrupt data it can be enbled by running:
-	ethtool --set-priv-flags DEVNAME legacy-rx on
+This change makes it so that we use the length of the packet instead of the
+DD status bit to determine if a new descriptor is ready to be processed.
+The obvious advantage is that it cuts down on reads as we don't really even
+need the DD bit if going from a 0 to a non-zero value on size is enough to
+inform us that the packet has been completed.
 
-The testing matrix for all of these patches is going to be pretty
-extensive.  Basically we want to test these patches on as many platforms
-and architectures as possible with as many features being toggled as
-possible including SR-IOV and Jumbo Frames all while receiving traffic.
+In addition I have updated the code so that we only reset the Rx descriptor
+length for descriptor zero when resetting a ring instead of having to do a
+memset with 0 over the entire ring.  By doing this we can save some time on
+initialization.
 
-Within the patches there is also some intialization changes.  Specifically
-I have updated the code paths to defer clearing the rings until we are
-about to initialize them and give them to hardware.  By doing this we are
-able to avoid having to dirty memory we don't need to which should help to
-improve suspend/resume times for when we start looking at possibly using
-the suspend/resume approach for migration of interface in VMs.
-Subject: [next PATCH 0/9] Series short description
-
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
+ drivers/net/ethernet/intel/igb/igb_main.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-Alexander Duyck (9):
-      igb: Add support for DMA_ATTR_WEAK_ORDERING
-      igb: Use length to determine if descriptor is done
-      igb: Clear Rx buffer_info in configure instead of clean
-      igb: Don't bother clearing Tx buffer_info in igb_clean_tx_ring
-      igb: Limit maximum frame Rx based on MTU
-      igb: Add support for padding packet
-      igb: Add support for ethtool private flag to allow use of legacy Rx
-      igb: Break out Rx buffer page management
-      igb: Revert "igb: Revert support for build_skb in igb"
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index eede6db6037c..91a524b155ce 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3720,6 +3720,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 			   struct igb_ring *ring)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
++	union e1000_adv_rx_desc *rx_desc;
+ 	u64 rdba = ring->dma;
+ 	int reg_idx = ring->reg_idx;
+ 	u32 srrctl = 0, rxdctl = 0;
+@@ -3758,6 +3759,10 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 	rxdctl |= IGB_RX_HTHRESH << 8;
+ 	rxdctl |= IGB_RX_WTHRESH << 16;
+ 
++	/* initialize Rx descriptor 0 */
++	rx_desc = IGB_RX_DESC(ring, 0);
++	rx_desc->wb.upper.length = 0;
++
+ 	/* enable receive descriptor fetching */
+ 	rxdctl |= E1000_RXDCTL_QUEUE_ENABLE;
+ 	wr32(E1000_RXDCTL(reg_idx), rxdctl);
+@@ -3973,9 +3978,6 @@ static void igb_clean_rx_ring(struct igb_ring *rx_ring)
+ 	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
+ 	memset(rx_ring->rx_buffer_info, 0, size);
+ 
+-	/* Zero out the descriptor ring */
+-	memset(rx_ring->desc, 0, rx_ring->size);
+-
+ 	rx_ring->next_to_alloc = 0;
+ 	rx_ring->next_to_clean = 0;
+ 	rx_ring->next_to_use = 0;
+@@ -7174,7 +7176,7 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
+ 
+ 		rx_desc = IGB_RX_DESC(rx_ring, rx_ring->next_to_clean);
+ 
+-		if (!rx_desc->wb.upper.status_error)
++		if (!rx_desc->wb.upper.length)
+ 			break;
+ 
+ 		/* This memory barrier is needed to keep us from reading
+@@ -7314,8 +7316,8 @@ void igb_alloc_rx_buffers(struct igb_ring *rx_ring, u16 cleaned_count)
+ 			i -= rx_ring->count;
+ 		}
+ 
+-		/* clear the status bits for the next_to_use descriptor */
+-		rx_desc->wb.upper.status_error = 0;
++		/* clear the length for the next_to_use descriptor */
++		rx_desc->wb.upper.length = 0;
+ 
+ 		cleaned_count--;
+ 	} while (cleaned_count);
 
-
- drivers/net/ethernet/intel/igb/igb.h         |   56 +++
- drivers/net/ethernet/intel/igb/igb_ethtool.c |   63 +++
- drivers/net/ethernet/intel/igb/igb_main.c    |  510 ++++++++++++++++----------
- 3 files changed, 431 insertions(+), 198 deletions(-)
-
---
