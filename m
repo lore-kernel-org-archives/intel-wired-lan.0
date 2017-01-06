@@ -1,42 +1,97 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 6 Jan 2017 08:15:27 -0800
-Subject: [Intel-wired-lan] [next PATCH 0/9] igb: Add support for writable
-	pages and build_skb
-Message-ID: <CAKgT0UcRmn-utuTJemjQysox0ZJUNLAQGWAH8MDegJjPbSH57w@mail.gmail.com>
+Date: Fri, 06 Jan 2017 08:10:55 -0800
+Subject: [Intel-wired-lan] [next PATCH 3/9] igb: Clear Rx buffer_info in
+ configure instead of clean
+In-Reply-To: <20170106160850.2030.39073.stgit@localhost.localdomain>
+References: <20170106160850.2030.39073.stgit@localhost.localdomain>
+Message-ID: <20170106161055.2030.91525.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jan 6, 2017 at 8:10 AM, Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
-> This patch set enables support for using the recent changes that allow for
-> unmapping pages without invalidating their contents via
-> DMA_ATTR_SKIP_CPU_SYNC.  With this change DMA pages should be writable and
-> as a result we should be able to make use of build_skb which can be used to
-> drop the skb->head memory allocation, header parsing, and memcpy from the
-> receive path which can greatly help to improve performance.
->
-> My main concern at this point is that there might be an architecture where
-> I didn't get DMA_ATTR_SKIP_CPU_SYNC implemented that might still need it.
-> For that reason I have also added a ethtool private flag called out as
-> "legacy-rx".  If a platform encounters an issue where the Rx can possibly
-> corrupt data it can be enbled by running:
->         ethtool --set-priv-flags DEVNAME legacy-rx on
->
-> The testing matrix for all of these patches is going to be pretty
-> extensive.  Basically we want to test these patches on as many platforms
-> and architectures as possible with as many features being toggled as
-> possible including SR-IOV and Jumbo Frames all while receiving traffic.
->
-> Within the patches there is also some initialization changes.  Specifically
-> I have updated the code paths to defer clearing the rings until we are
-> about to initialize them and give them to hardware.  By doing this we are
-> able to avoid having to dirty memory we don't need to which should help to
-> improve suspend/resume times for when we start looking at possibly using
-> the suspend/resume approach for migration of interface in VMs.
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-In my hurry to just copy/paste the ixgbe patch description over and
-make a few changes it looks like I left a few typos, my appologies.
-This should have been 0/9, not 00/11.
+This change makes it so that instead of going through the entire ring on Rx
+cleanup we only go through the region that was designated to be cleaned up
+and stop when we reach the region where new allocations should start.
+
+In addition we can avoid having to perform a memset on the Rx buffer_info
+structures until we are about to start using the ring again.  By deferring
+this we can avoid dirtying the cache any more than we have to which can
+help to improve the time needed to bring the interface down and then back
+up again in a reset or suspend/resume cycle.
+
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c |   24 ++++++++++--------------
+ 1 file changed, 10 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 91a524b155ce..79a8f3a3356e 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3435,7 +3435,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+ 
+ 	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
+ 
+-	rx_ring->rx_buffer_info = vzalloc(size);
++	rx_ring->rx_buffer_info = vmalloc(size);
+ 	if (!rx_ring->rx_buffer_info)
+ 		goto err;
+ 
+@@ -3759,6 +3759,10 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 	rxdctl |= IGB_RX_HTHRESH << 8;
+ 	rxdctl |= IGB_RX_WTHRESH << 16;
+ 
++	/* initialize rx_buffer_info */
++	memset(ring->rx_buffer_info, 0,
++	       sizeof(struct igb_rx_buffer) * ring->count);
++
+ 	/* initialize Rx descriptor 0 */
+ 	rx_desc = IGB_RX_DESC(ring, 0);
+ 	rx_desc->wb.upper.length = 0;
+@@ -3937,23 +3941,16 @@ static void igb_free_all_rx_resources(struct igb_adapter *adapter)
+  **/
+ static void igb_clean_rx_ring(struct igb_ring *rx_ring)
+ {
+-	unsigned long size;
+-	u16 i;
++	u16 i = rx_ring->next_to_clean;
+ 
+ 	if (rx_ring->skb)
+ 		dev_kfree_skb(rx_ring->skb);
+ 	rx_ring->skb = NULL;
+ 
+-	if (!rx_ring->rx_buffer_info)
+-		return;
+-
+ 	/* Free all the Rx ring sk_buffs */
+-	for (i = 0; i < rx_ring->count; i++) {
++	while (i != rx_ring->next_to_alloc) {
+ 		struct igb_rx_buffer *buffer_info = &rx_ring->rx_buffer_info[i];
+ 
+-		if (!buffer_info->page)
+-			continue;
+-
+ 		/* Invalidate cache lines that may have been written to by
+ 		 * device so that we avoid corrupting memory.
+ 		 */
+@@ -3972,12 +3969,11 @@ static void igb_clean_rx_ring(struct igb_ring *rx_ring)
+ 		__page_frag_cache_drain(buffer_info->page,
+ 					buffer_info->pagecnt_bias);
+ 
+-		buffer_info->page = NULL;
++		i++;
++		if (i == rx_ring->count)
++			i = 0;
+ 	}
+ 
+-	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
+-	memset(rx_ring->rx_buffer_info, 0, size);
+-
+ 	rx_ring->next_to_alloc = 0;
+ 	rx_ring->next_to_clean = 0;
+ 	rx_ring->next_to_use = 0;
+
