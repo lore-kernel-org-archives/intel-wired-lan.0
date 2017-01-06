@@ -1,59 +1,202 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 5 Jan 2017 16:07:54 -0800
-Subject: [Intel-wired-lan] [next PATCH v4 0/3] Page fragment updates
-In-Reply-To: <20170105160202.baa14f400bfd906466a915db@linux-foundation.org>
-References: <20170104023620.13451.80691.stgit@localhost.localdomain>
- <20170105160202.baa14f400bfd906466a915db@linux-foundation.org>
-Message-ID: <CAKgT0UddTYqrje-FSJAcicsDC4oAjgOaPmADk=g+W272+MUeow@mail.gmail.com>
+From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
+Date: Thu, 05 Jan 2017 16:27:13 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v2 5/6] i40e: Add TX and RX
+ support in switchdev mode.
+In-Reply-To: <20170105125656.GB2211@nanopsycho>
+References: <1483466874-2962-1-git-send-email-sridhar.samudrala@intel.com>
+ <1483466874-2962-6-git-send-email-sridhar.samudrala@intel.com>
+ <20170105125656.GB2211@nanopsycho>
+Message-ID: <586EE461.2000801@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Jan 5, 2017 at 4:02 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 03 Jan 2017 18:38:48 -0800 Alexander Duyck <alexander.duyck@gmail.com> wrote:
+
+
+On 1/5/2017 4:56 AM, Jiri Pirko wrote:
+> Tue, Jan 03, 2017 at 07:07:53PM CET, sridhar.samudrala at intel.com wrote:
+>> In switchdev mode, broadcast filter is not enabled on VFs. The broadcasts and
+>> unknown frames from VFs are received by the PF and passed to corresponding VF
+>> port representator netdev.
+>> A host based switching entity like a linux bridge or OVS redirects these frames
+>> to the right VFs via VFPR netdevs. Any frames sent via VFPR netdevs are sent as
+>> directed transmits to the corresponding VFs. To enable directed transmit, skb
+>> metadata dst is used to pass the VF id and the frame is requeued to call the PFs
+>> transmit routine.
+>>
+>> Small script to demonstrate inter VF pings in switchdev mode.
+>> PF: enp5s0f0, VFs: enp5s2,enp5s2f1 VFPRs:enp5s0f0-vf0, enp5s0f0-vf1
+>>
+>> # rmmod i40e; modprobe i40e
+>> # devlink dev eswitch set pci/0000:05:00.0 mode switchdev
+>> # echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
+>> # ip link set enp5s0f0 vf 0 mac 00:11:22:33:44:55
+>> # ip link set enp5s0f0 vf 1 mac 00:11:22:33:44:56
+>> # rmmod i40evf; modprobe i40evf
+>>
+>> /* Create 2 namespaces and move the VFs to the corresponding ns. */
+>> # ip netns add ns0
+>> # ip link set enp5s2 netns ns0
+>> # ip netns exec ns0 ip addr add 192.168.1.10/24 dev enp5s2
+>> # ip netns exec ns0 ip link set enp5s2 up
+>> # ip netns add ns1
+>> # ip link set enp5s2f1 netns ns1
+>> # ip netns exec ns1 ip addr add 192.168.1.11/24 dev enp5s2f1
+>> # ip netns exec ns1 ip link set enp5s2f1 up
+>>
+>> /* bring up pf and vfpr netdevs */
+>> # ip link set enp5s0f0 up
+>> # ip link set enp5s0f0-vf0 up
+>> # ip link set enp5s0f0-vf1 up
+>>
+>> /* Create a linux bridge and add vfpr netdevs to it. */
+>> # ip link add vfpr-br type bridge
+>> # ip link set enp5s0f0-vf0 master vfpr-br
+>> # ip link set enp5s0f0-vf1 master vfpr-br
+>> # ip addr add 192.168.1.1/24 dev vfpr-br
+>> # ip link set vfpr-br up
+>>
+>> # ip netns exec ns0 ping -c3 192.168.1.11
+>> # ip netns exec ns1 ping -c3 192.168.1.10
+>>
+>> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> [...]
 >
->> This patch series takes care of a few cleanups for the page fragments API.
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>> index 352cf7c..b46ddaa 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>> @@ -1176,16 +1176,37 @@ static bool i40e_alloc_mapped_page(struct i40e_ring *rx_ring,
+>>   * @rx_ring:  rx ring in play
+>>   * @skb: packet to send up
+>>   * @vlan_tag: vlan tag for packet
+>> + * @lpbk: is it a loopback frame?
+>>   **/
+>> static void i40e_receive_skb(struct i40e_ring *rx_ring,
+>> -			     struct sk_buff *skb, u16 vlan_tag)
+>> +			     struct sk_buff *skb, u16 vlan_tag, bool lpbk)
+>> {
+>> 	struct i40e_q_vector *q_vector = rx_ring->q_vector;
+>> +	struct i40e_pf *pf = rx_ring->vsi->back;
+>> +	struct i40e_vf *vf;
+>> +	struct ethhdr *eth;
+>> +	int vf_id;
 >>
->> First we do some renames so that things are much more consistent.  First we
->> move the page_frag_ portion of the name to the front of the functions
->> names.  Secondly we split out the cache specific functions from the other
->> page fragment functions by adding the word "cache" to the name.
+>> 	if ((rx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_RX) &&
+>> 	    (vlan_tag & VLAN_VID_MASK))
+>> 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan_tag);
 >>
->> Finally I added a bit of documentation that will hopefully help to explain
->> some of this.  I plan to revisit this later as we get things more ironed
->> out in the near future with the changes planned for the DMA setup to
->> support eXpress Data Path.
->>
->> ---
->>
->> v2: Fixed a comparison between a void* and 0 due to copy/paste from free_pages
->> v3: Updated first rename patch so that it is just a rename and doesn't impact
->>     the actual functionality to avoid performance regression.
->> v4: Fix mangling that occured due to a bad merge fix when patches 1 and 2
->>     were swapped and then swapped back.
->>
->> I'm submitting this to Intel Wired Lan and Jeff Kirsher's "next-queue" for
->> acceptance as I have a series of other patches for igb that are blocked by
->> by these patches since I had to rename the functionality fo draining extra
->> references.
->>
->> This series was going to be accepted for mmotm back when it was v1, however
->> since then I found a few minor issues that needed to be fixed.
->>
->> I am hoping to get an Acked-by from Andrew Morton for these patches and
->> then have them submitted to David Miller as he has said he will accept them
->> if I get the Acked-by.  In the meantime if these can be applied to
->> next-queue while waiting on that Acked-by then I can submit the other
->> patches for igb and ixgbe for testing.
+>> +	if ((pf->eswitch_mode == DEVLINK_ESWITCH_MODE_LEGACY) || !lpbk)
+>> +		goto gro_receive;
+>> +
+>> +	/* If a loopback packet is received from a VF in switchdev mode, pass the
+>> +	 * frame to the corresponding VFPR netdev based on the source MAC in the frame.
+>> +	 */
+>> +	eth = (struct ethhdr *)skb_mac_header(skb);
+>> +	for (vf_id = 0; vf_id < pf->num_alloc_vfs; vf_id++) {
+>> +		vf = &pf->vf[vf_id];
+>> +		if (ether_addr_equal(eth->h_source, vf->default_lan_addr.addr)) {
+>> +			skb->dev = vf->vfpr_netdev;
+> This sucks :( Is't there any identification coming from rx ring that
+> would tell you what vf this is? To match vrpr according to a single MAC
+> address seems a bit awkward. What if there is a macvlan configured
+> on the VF?
+Unfortunately, with the current HW, RX descriptor only indicates if it 
+is a loopback packet from a VF,
+but not the specific id of the VF.
+Multiple macs on VF are not supported with the current patchset.
+At this point we are not making switchdev as the default mode because of 
+these limitations.
+
 >
-> The patches look fine.  How about I just scoot them straight into
-> mainline next week?  I do that occasionally, just to simplify ongoing
-> development and these patches are safe enough.
+>
+>
+>> +			break;
+>> +		}
+>> +	}
+>> +
+>> +gro_receive:
+>> 	napi_gro_receive(&q_vector->napi, skb);
+>> }
+>>
+> [...]
+>
+>> @@ -2998,3 +3064,19 @@ netdev_tx_t i40e_lan_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+>>
+>> 	return i40e_xmit_frame_ring(skb, tx_ring);
+>> }
+>> +
+>> +netdev_tx_t i40e_vfpr_netdev_start_xmit(struct sk_buff *skb,
+>> +				        struct net_device *dev)
+>> +{
+>> +	struct i40e_vfpr_netdev_priv *priv = netdev_priv(dev);
+>> +	struct i40e_vf *vf = priv->vf;
+>> +	struct i40e_pf *pf = vf->pf;
+>> +	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
+>> +
+>> +	skb_dst_drop(skb);
+>> +	dst_hold(&priv->vfpr_dst->dst);
+>> +	skb_dst_set(skb, &priv->vfpr_dst->dst);
+>> +	skb->dev = vsi->netdev;
+> This dst dance seems a bit odd to me. Why don't you just call
+> i40e_xmit_frame_ring with an extra arg holding the needed metadata?
 
-That should work for me.
+We don't have TX/RX queues associated with VFPR netdevs, so we need to 
+set the dev to PF netdev and requeue the skb.
 
-Thanks.
+>
+>
+>> +
+>> +	return dev_queue_xmit(skb);
+>> +}
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+>> index e065321..850723f 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+>> @@ -366,6 +366,7 @@ struct i40e_ring_container {
+>>
+>> bool i40e_alloc_rx_buffers(struct i40e_ring *rxr, u16 cleaned_count);
+>> netdev_tx_t i40e_lan_xmit_frame(struct sk_buff *skb, struct net_device *netdev);
+>> +netdev_tx_t i40e_vfpr_netdev_start_xmit(struct sk_buff *skb, struct net_device *netdev);
+>> void i40e_clean_tx_ring(struct i40e_ring *tx_ring);
+>> void i40e_clean_rx_ring(struct i40e_ring *rx_ring);
+>> int i40e_setup_tx_descriptors(struct i40e_ring *tx_ring);
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+>> index edc0abd..c136cc9 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+>> @@ -728,6 +728,9 @@ enum i40e_rx_desc_status_bits {
+>> #define I40E_RXD_QW1_STATUS_TSYNVALID_SHIFT  I40E_RX_DESC_STATUS_TSYNVALID_SHIFT
+>> #define I40E_RXD_QW1_STATUS_TSYNVALID_MASK \
+>> 				    BIT_ULL(I40E_RXD_QW1_STATUS_TSYNVALID_SHIFT)
+>> +#define I40E_RXD_QW1_STATUS_LPBK_SHIFT  I40E_RX_DESC_STATUS_LPBK_SHIFT
+>> +#define I40E_RXD_QW1_STATUS_LPBK_MASK \
+>> +				BIT_ULL(I40E_RXD_QW1_STATUS_LPBK_SHIFT)
+>>
+>> enum i40e_rx_desc_fltstat_values {
+>> 	I40E_RX_DESC_FLTSTAT_NO_DATA	= 0,
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+>> index 0c8687d..f0860ef 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+>> @@ -1062,6 +1062,7 @@ static int i40e_vfpr_netdev_stop(struct net_device *dev)
+>> static const struct net_device_ops i40e_vfpr_netdev_ops = {
+>> 	.ndo_open       	= i40e_vfpr_netdev_open,
+>> 	.ndo_stop       	= i40e_vfpr_netdev_stop,
+>> +	.ndo_start_xmit		= i40e_vfpr_netdev_start_xmit,
+>> };
+>>
+>> /**
+>> @@ -1121,16 +1122,22 @@ int i40e_alloc_vfpr_netdev(struct i40e_vf *vf, u16 vf_num)
+>>
+>> 	priv = netdev_priv(vfpr_netdev);
+>> 	priv->vf = &(pf->vf[vf_num]);
+>> +	priv->vfpr_dst = metadata_dst_alloc(0, METADATA_HW_PORT_MUX, GFP_KERNEL);
+> I'm missing a patch here. In net-next, metadata_dst_alloc has 2 args.
 
-- Alex
+Somehow that patch didn't make it to netdev. You can find it here on 
+intel-wired-lan archives.
+http://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20170102/007723.html
+I will CC you when i submit V3.
