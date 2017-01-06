@@ -1,41 +1,64 @@
-From: Duyck, Alexander H <alexander.h.duyck@intel.com>
-Date: Fri, 6 Jan 2017 17:10:02 +0000
-Subject: [Intel-wired-lan] [next PATCH 9/9] igb: Revert "igb: Revert
- support for build_skb in igb"
-In-Reply-To: <1483720797.25700.60.camel@intel.com>
-References: <20170106160850.2030.39073.stgit@localhost.localdomain>
- <20170106161131.2030.4342.stgit@localhost.localdomain>
- <1483720797.25700.60.camel@intel.com>
-Message-ID: <1483722600.13286.18.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 7 Jan 2017 02:30:49 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 85/85]
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:1955:46: error: 'rx_ring'
+ undeclared
+Message-ID: <201701070247.g4y7cmDF%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2017-01-06 at 08:39 -0800, Jeff Kirsher wrote:
-> On Fri, 2017-01-06 at 08:11 -0800, Alexander Duyck wrote:
-> > 
-> > From: Alexander Duyck <alexander.h.duyck@intel.com>
-> > 
-> > This reverts commit f9d40f6a9921 ("igb: Revert support for build_skb in
-> > igb") and adds a few changes to update it to work with the latest version
-> > of igb. We are now able to revert the removal of this due to the fact
-> > that with the recent changes to the page count and the use of
-> > DMA_ATTR_SKIP_CPU_SYNC we can make the pages writable so we should not be
-> > invalidating the additional data added when we call build_skb.
-> > 
-> > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> > ---
-> > ?drivers/net/ethernet/intel/igb/igb_main.c |?? 47
-> > +++++++++++++++++++++++++++++
-> > ?1 file changed, 47 insertions(+)
-> 
-> Weird, this patch is not showing up in patchworks.  I will get this patch
-> added as well to my tree and work on getting it to show up in patchworks.
-> 
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   95e7fea4a31500cf82efff684e242990951c2d8e
+commit: 95e7fea4a31500cf82efff684e242990951c2d8e [85/85] ixgbe: Add function for checking to see if we can reuse page
+config: alpha-allyesconfig (attached as .config)
+compiler: alpha-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 95e7fea4a31500cf82efff684e242990951c2d8e
+        # save the attached .config to linux build tree
+        make.cross ARCH=alpha 
 
-Maybe it is the quotes in the patch description? ?If so feel free to
-replace them with some other form of punctuation if needed.
+All errors (new ones prefixed by >>):
 
-- Alex
+   In file included from drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:60:0:
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_can_reuse_rx_page':
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:1955:46: error: 'rx_ring' undeclared (first use in this function)
+     unsigned int last_offset = ixgbe_rx_pg_size(rx_ring) -
+                                                 ^
+   drivers/net/ethernet/intel/ixgbe/ixgbe.h:363:65: note: in definition of macro 'ixgbe_rx_pg_size'
+    #define ixgbe_rx_pg_size(_ring) (PAGE_SIZE << ixgbe_rx_pg_order(_ring))
+                                                                    ^~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:1955:46: note: each undeclared identifier is reported only once for each function it appears in
+     unsigned int last_offset = ixgbe_rx_pg_size(rx_ring) -
+                                                 ^
+   drivers/net/ethernet/intel/ixgbe/ixgbe.h:363:65: note: in definition of macro 'ixgbe_rx_pg_size'
+    #define ixgbe_rx_pg_size(_ring) (PAGE_SIZE << ixgbe_rx_pg_order(_ring))
+                                                                    ^~~~~
+
+vim +/rx_ring +1955 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+
+  1949	
+  1950	static bool ixgbe_can_reuse_rx_page(struct ixgbe_rx_buffer *rx_buffer,
+  1951					    struct page *page,
+  1952					    const unsigned int truesize)
+  1953	{
+  1954	#if (PAGE_SIZE >= 8192)
+> 1955		unsigned int last_offset = ixgbe_rx_pg_size(rx_ring) -
+  1956					   ixgbe_rx_bufsz(rx_ring);
+  1957	#endif
+  1958		/* avoid re-using remote pages */
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 48633 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170107/48370dfa/attachment-0001.bin>
