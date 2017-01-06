@@ -1,52 +1,52 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 5 Jan 2017 23:26:27 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove pr_cont uses
-In-Reply-To: <7be510fd79f67969fc03be24dea68b9f198e486b.1483457249.git.joe@perches.com>
-References: <7be510fd79f67969fc03be24dea68b9f198e486b.1483457249.git.joe@perches.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA589E0@ORSMSX104.amr.corp.intel.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 5 Jan 2017 16:02:02 -0800
+Subject: [Intel-wired-lan] [next PATCH v4 0/3] Page fragment updates
+In-Reply-To: <20170104023620.13451.80691.stgit@localhost.localdomain>
+References: <20170104023620.13451.80691.stgit@localhost.localdomain>
+Message-ID: <20170105160202.baa14f400bfd906466a915db@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Joe Perches
-> Sent: Tuesday, January 03, 2017 7:28 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove pr_cont uses
+On Tue, 03 Jan 2017 18:38:48 -0800 Alexander Duyck <alexander.duyck@gmail.com> wrote:
+
+> This patch series takes care of a few cleanups for the page fragments API.
 > 
-> As pr_cont output can be interleaved by other processes, using pr_cont
-> should be avoided where possible.
+> First we do some renames so that things are much more consistent.  First we
+> move the page_frag_ portion of the name to the front of the functions
+> names.  Secondly we split out the cache specific functions from the other
+> page fragment functions by adding the word "cache" to the name.
 > 
-> Miscellanea:
+> Finally I added a bit of documentation that will hopefully help to explain
+> some of this.  I plan to revisit this later as we get things more ironed
+> out in the near future with the changes planned for the DMA setup to
+> support eXpress Data Path.
 > 
-> o Use a temporary pointer to hold the next descriptions and
->   consolidate the pr_cont uses
-> o Use the temporary buffer to hold the 8 u32 register values and
->   emit those in a single go
-> o Coalesce formats and logging neatening around those changes o Fix a
-> defective output for the rx ring entry description when
->   also emitting rx_buffer_info data
-> 
-> This reduces overall object size a tiny bit too.
-> 
-> $ size drivers/net/ethernet/intel/ixgbe/*.o*
->    text	   data	    bss	    dec	    hex	filename
->   62167	    728	     12	  62907	   f5bb
-> 	drivers/net/ethernet/intel/ixgbe/ixgbe_main.o.new
->   62273	    728	     12	  63013	   f625
-> 	drivers/net/ethernet/intel/ixgbe/ixgbe_main.o.old
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 84 +++++++++++++++-----
-> -------
->  1 file changed, 47 insertions(+), 37 deletions(-)
+> 
+> v2: Fixed a comparison between a void* and 0 due to copy/paste from free_pages
+> v3: Updated first rename patch so that it is just a rename and doesn't impact
+>     the actual functionality to avoid performance regression.
+> v4: Fix mangling that occured due to a bad merge fix when patches 1 and 2
+>     were swapped and then swapped back.
+> 
+> I'm submitting this to Intel Wired Lan and Jeff Kirsher's "next-queue" for
+> acceptance as I have a series of other patches for igb that are blocked by
+> by these patches since I had to rename the functionality fo draining extra
+> references.
+> 
+> This series was going to be accepted for mmotm back when it was v1, however
+> since then I found a few minor issues that needed to be fixed.
+> 
+> I am hoping to get an Acked-by from Andrew Morton for these patches and
+> then have them submitted to David Miller as he has said he will accept them
+> if I get the Acked-by.  In the meantime if these can be applied to
+> next-queue while waiting on that Acked-by then I can submit the other
+> patches for igb and ixgbe for testing.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
+The patches look fine.  How about I just scoot them straight into
+mainline next week?  I do that occasionally, just to simplify ongoing
+development and these patches are safe enough.
 
