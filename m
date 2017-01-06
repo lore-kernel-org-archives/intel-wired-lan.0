@@ -1,97 +1,272 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri,  6 Jan 2017 13:53:09 -0800
-Subject: [Intel-wired-lan] [next PATCH S58-V2 4/4] i40e: don't add more
-	vectors to num_lan_msix than number of CPUs
-In-Reply-To: <1483739589-15480-1-git-send-email-bimmy.pujari@intel.com>
-References: <1483739589-15480-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1483739589-15480-4-git-send-email-bimmy.pujari@intel.com>
+Date: Fri,  6 Jan 2017 13:53:06 -0800
+Subject: [Intel-wired-lan] [next PATCH S58-V2 1/4] i40e-shared: fix up
+	recent proxy and wol bits for X722_SUPPORT
+Message-ID: <1483739589-15480-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-This is a solution to avoid adding too many queues to num_lan_msix.
-A recent refactor of queue pairs accidentally added all remaining
-vectors to the num_lan_msix which can have adverse performance issues,
-due to enabling more queues than the number of CPU cores.
+Some opcodes added & reordered to be in numerical order with the
+rest of the opcodes.
+This patch adds admin queue structs to support Wake on LAN feature
+for X722.
 
-This patch removes the old calculation, and replaces it with a simple
-algorithm.
-
-1) add queue pairs up to num_online_cpus(), but capped at half of total
-   vectors
-2) then add alternative features such as flow directory and similar
-3) finally, add the remaining vectors back to queue pairs, but capped
-   such that the total number of queue pairs does not exceed
-   num_online_cpus().
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Change-ID: I668abf67d5011a1248866daba8885f4ff00cb8d9
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 30 ++++++++++++++++++++++++++---
- 1 file changed, 27 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 65 +++++++++++++++++++++-
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 65 +++++++++++++++++++++-
+ 2 files changed, 128 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 2e22b6c..a210844 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8021,6 +8021,7 @@ static int i40e_reserve_msix_vectors(struct i40e_pf *pf, int vectors)
- static int i40e_init_msix(struct i40e_pf *pf)
- {
- 	struct i40e_hw *hw = &pf->hw;
-+	int cpus, extra_vectors;
- 	int vectors_left;
- 	int v_budget, i;
- 	int v_actual;
-@@ -8056,10 +8057,16 @@ static int i40e_init_msix(struct i40e_pf *pf)
- 		vectors_left--;
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 451f48b..251074c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -132,6 +132,10 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_list_func_capabilities	= 0x000A,
+ 	i40e_aqc_opc_list_dev_capabilities	= 0x000B,
  
--	/* reserve vectors for the main PF traffic queues */
--	pf->num_lan_msix = min_t(int, num_online_cpus(), vectors_left);
-+	/* reserve some vectors for the main PF traffic queues. Initially we
-+	 * only reserve at most 50% of the available vectors, in the case that
-+	 * the number of online CPUs is large. This ensures that we can enable
-+	 * extra features as well. Once we've enabled the other features, we
-+	 * will use any remaining vectors to reach as close as we can to the
-+	 * number of online CPUs.
-+	 */
-+	cpus = num_online_cpus();
-+	pf->num_lan_msix = min_t(int, cpus, vectors_left / 2);
- 	vectors_left -= pf->num_lan_msix;
--	v_budget += pf->num_lan_msix;
- 
- 	/* reserve one vector for sideband flow director */
- 	if (pf->flags & I40E_FLAG_FD_SB_ENABLED) {
-@@ -8122,6 +8129,23 @@ static int i40e_init_msix(struct i40e_pf *pf)
- 		}
- 	}
- 
-+	/* On systems with a large number of SMP cores, we previously limited
-+	 * the number of vectors for num_lan_msix to be at most 50% of the
-+	 * available vectors, to allow for other features. Now, we add back
-+	 * the remaining vectors. However, we ensure that the total
-+	 * num_lan_msix will not exceed num_online_cpus(). To do this, we
-+	 * calculate the number of vectors we can add without going over the
-+	 * cap of CPUs. For systems with a small number of CPUs this will be
-+	 * zero.
-+	 */
-+	extra_vectors = min_t(int, cpus - pf->num_lan_msix, vectors_left);
-+	pf->num_lan_msix += extra_vectors;
-+	vectors_left -= extra_vectors;
++	/* Proxy commands */
++	i40e_aqc_opc_set_proxy_config		= 0x0104,
++	i40e_aqc_opc_set_ns_proxy_table_entry	= 0x0105,
 +
-+	WARN(vectors_left < 0,
-+	     "Calculation of remaining vectors underflowed. This is an accounting bug when determining total MSI-X vectors.\n");
+ 	/* LAA */
+ 	i40e_aqc_opc_mac_address_read	= 0x0107,
+ 	i40e_aqc_opc_mac_address_write	= 0x0108,
+@@ -139,6 +143,10 @@ enum i40e_admin_queue_opc {
+ 	/* PXE */
+ 	i40e_aqc_opc_clear_pxe_mode	= 0x0110,
+ 
++	/* WoL commands */
++	i40e_aqc_opc_set_wol_filter	= 0x0120,
++	i40e_aqc_opc_get_wake_reason	= 0x0121,
 +
-+	v_budget += pf->num_lan_msix;
- 	pf->msix_entries = kcalloc(v_budget, sizeof(struct msix_entry),
- 				   GFP_KERNEL);
- 	if (!pf->msix_entries)
+ 	/* internal switch commands */
+ 	i40e_aqc_opc_get_switch_config		= 0x0200,
+ 	i40e_aqc_opc_add_statistics		= 0x0201,
+@@ -177,6 +185,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_remove_control_packet_filter	= 0x025B,
+ 	i40e_aqc_opc_add_cloud_filters		= 0x025C,
+ 	i40e_aqc_opc_remove_cloud_filters	= 0x025D,
++	i40e_aqc_opc_clear_wol_switch_filters	= 0x025E,
+ 
+ 	i40e_aqc_opc_add_mirror_rule	= 0x0260,
+ 	i40e_aqc_opc_delete_mirror_rule	= 0x0261,
+@@ -563,6 +572,56 @@ struct i40e_aqc_clear_pxe {
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_clear_pxe);
+ 
++/* Set WoL Filter (0x0120) */
++
++struct i40e_aqc_set_wol_filter {
++	__le16 filter_index;
++#define I40E_AQC_MAX_NUM_WOL_FILTERS	8
++#define I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_SHIFT	15
++#define I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_MASK	(0x1 << \
++		I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_SHIFT)
++
++#define I40E_AQC_SET_WOL_FILTER_INDEX_SHIFT		0
++#define I40E_AQC_SET_WOL_FILTER_INDEX_MASK	(0x7 << \
++		I40E_AQC_SET_WOL_FILTER_INDEX_SHIFT)
++	__le16 cmd_flags;
++#define I40E_AQC_SET_WOL_FILTER				0x8000
++#define I40E_AQC_SET_WOL_FILTER_NO_TCO_WOL		0x4000
++#define I40E_AQC_SET_WOL_FILTER_ACTION_CLEAR		0
++#define I40E_AQC_SET_WOL_FILTER_ACTION_SET		1
++	__le16 valid_flags;
++#define I40E_AQC_SET_WOL_FILTER_ACTION_VALID		0x8000
++#define I40E_AQC_SET_WOL_FILTER_NO_TCO_ACTION_VALID	0x4000
++	u8 reserved[2];
++	__le32	address_high;
++	__le32	address_low;
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_set_wol_filter);
++
++struct i40e_aqc_set_wol_filter_data {
++	u8 filter[128];
++	u8 mask[16];
++};
++
++I40E_CHECK_STRUCT_LEN(0x90, i40e_aqc_set_wol_filter_data);
++
++/* Get Wake Reason (0x0121) */
++
++struct i40e_aqc_get_wake_reason_completion {
++	u8 reserved_1[2];
++	__le16 wake_reason;
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_SHIFT	0
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_MASK (0xFF << \
++		I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_SHIFT)
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_SHIFT	8
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_MASK	(0xFF << \
++		I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_SHIFT)
++	u8 reserved_2[12];
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_get_wake_reason_completion);
++
+ /* Switch configuration commands (0x02xx) */
+ 
+ /* Used by many indirect commands that only pass an seid and a buffer in the
+@@ -645,6 +704,8 @@ struct i40e_aqc_set_port_parameters {
+ #define I40E_AQ_SET_P_PARAMS_PAD_SHORT_PACKETS	2 /* must set! */
+ #define I40E_AQ_SET_P_PARAMS_DOUBLE_VLAN_ENA	4
+ 	__le16	bad_frame_vsi;
++#define I40E_AQ_SET_P_PARAMS_BFRAME_SEID_SHIFT	0x0
++#define I40E_AQ_SET_P_PARAMS_BFRAME_SEID_MASK	0x3FF
+ 	__le16	default_seid;        /* reserved for command */
+ 	u8	reserved[10];
+ };
+@@ -696,6 +757,7 @@ I40E_CHECK_STRUCT_LEN(0x10, i40e_aqc_switch_resource_alloc_element_resp);
+ /* Set Switch Configuration (direct 0x0205) */
+ struct i40e_aqc_set_switch_config {
+ 	__le16	flags;
++/* flags used for both fields below */
+ #define I40E_AQ_SET_SWITCH_CFG_PROMISC		0x0001
+ #define I40E_AQ_SET_SWITCH_CFG_L2_FILTER	0x0002
+ 	__le16	valid_flags;
+@@ -1844,11 +1906,12 @@ struct i40e_aqc_get_link_status {
+ #define I40E_AQ_CONFIG_FEC_RS_ENA	0x02
+ #define I40E_AQ_CONFIG_CRC_ENA		0x04
+ #define I40E_AQ_CONFIG_PACING_MASK	0x78
+-	u8	external_power_ability;
++	u8	power_desc;
+ #define I40E_AQ_LINK_POWER_CLASS_1	0x00
+ #define I40E_AQ_LINK_POWER_CLASS_2	0x01
+ #define I40E_AQ_LINK_POWER_CLASS_3	0x02
+ #define I40E_AQ_LINK_POWER_CLASS_4	0x03
++#define I40E_AQ_PWR_CLASS_MASK		0x03
+ 	u8	reserved[4];
+ };
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index eeb9864..c28cb8f 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -132,6 +132,10 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_list_func_capabilities	= 0x000A,
+ 	i40e_aqc_opc_list_dev_capabilities	= 0x000B,
+ 
++	/* Proxy commands */
++	i40e_aqc_opc_set_proxy_config		= 0x0104,
++	i40e_aqc_opc_set_ns_proxy_table_entry	= 0x0105,
++
+ 	/* LAA */
+ 	i40e_aqc_opc_mac_address_read	= 0x0107,
+ 	i40e_aqc_opc_mac_address_write	= 0x0108,
+@@ -139,6 +143,10 @@ enum i40e_admin_queue_opc {
+ 	/* PXE */
+ 	i40e_aqc_opc_clear_pxe_mode	= 0x0110,
+ 
++	/* WoL commands */
++	i40e_aqc_opc_set_wol_filter	= 0x0120,
++	i40e_aqc_opc_get_wake_reason	= 0x0121,
++
+ 	/* internal switch commands */
+ 	i40e_aqc_opc_get_switch_config		= 0x0200,
+ 	i40e_aqc_opc_add_statistics		= 0x0201,
+@@ -177,6 +185,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_remove_control_packet_filter	= 0x025B,
+ 	i40e_aqc_opc_add_cloud_filters		= 0x025C,
+ 	i40e_aqc_opc_remove_cloud_filters	= 0x025D,
++	i40e_aqc_opc_clear_wol_switch_filters	= 0x025E,
+ 
+ 	i40e_aqc_opc_add_mirror_rule	= 0x0260,
+ 	i40e_aqc_opc_delete_mirror_rule	= 0x0261,
+@@ -558,6 +567,56 @@ struct i40e_aqc_clear_pxe {
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_clear_pxe);
+ 
++/* Set WoL Filter (0x0120) */
++
++struct i40e_aqc_set_wol_filter {
++	__le16 filter_index;
++#define I40E_AQC_MAX_NUM_WOL_FILTERS	8
++#define I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_SHIFT	15
++#define I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_MASK	(0x1 << \
++		I40E_AQC_SET_WOL_FILTER_TYPE_MAGIC_SHIFT)
++
++#define I40E_AQC_SET_WOL_FILTER_INDEX_SHIFT		0
++#define I40E_AQC_SET_WOL_FILTER_INDEX_MASK	(0x7 << \
++		I40E_AQC_SET_WOL_FILTER_INDEX_SHIFT)
++	__le16 cmd_flags;
++#define I40E_AQC_SET_WOL_FILTER				0x8000
++#define I40E_AQC_SET_WOL_FILTER_NO_TCO_WOL		0x4000
++#define I40E_AQC_SET_WOL_FILTER_ACTION_CLEAR		0
++#define I40E_AQC_SET_WOL_FILTER_ACTION_SET		1
++	__le16 valid_flags;
++#define I40E_AQC_SET_WOL_FILTER_ACTION_VALID		0x8000
++#define I40E_AQC_SET_WOL_FILTER_NO_TCO_ACTION_VALID	0x4000
++	u8 reserved[2];
++	__le32	address_high;
++	__le32	address_low;
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_set_wol_filter);
++
++struct i40e_aqc_set_wol_filter_data {
++	u8 filter[128];
++	u8 mask[16];
++};
++
++I40E_CHECK_STRUCT_LEN(0x90, i40e_aqc_set_wol_filter_data);
++
++/* Get Wake Reason (0x0121) */
++
++struct i40e_aqc_get_wake_reason_completion {
++	u8 reserved_1[2];
++	__le16 wake_reason;
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_SHIFT	0
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_MASK (0xFF << \
++		I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_MATCHED_INDEX_SHIFT)
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_SHIFT	8
++#define I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_MASK	(0xFF << \
++		I40E_AQC_GET_WAKE_UP_REASON_WOL_REASON_RESERVED_SHIFT)
++	u8 reserved_2[12];
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_get_wake_reason_completion);
++
+ /* Switch configuration commands (0x02xx) */
+ 
+ /* Used by many indirect commands that only pass an seid and a buffer in the
+@@ -640,6 +699,8 @@ struct i40e_aqc_set_port_parameters {
+ #define I40E_AQ_SET_P_PARAMS_PAD_SHORT_PACKETS	2 /* must set! */
+ #define I40E_AQ_SET_P_PARAMS_DOUBLE_VLAN_ENA	4
+ 	__le16	bad_frame_vsi;
++#define I40E_AQ_SET_P_PARAMS_BFRAME_SEID_SHIFT	0x0
++#define I40E_AQ_SET_P_PARAMS_BFRAME_SEID_MASK	0x3FF
+ 	__le16	default_seid;        /* reserved for command */
+ 	u8	reserved[10];
+ };
+@@ -691,6 +752,7 @@ I40E_CHECK_STRUCT_LEN(0x10, i40e_aqc_switch_resource_alloc_element_resp);
+ /* Set Switch Configuration (direct 0x0205) */
+ struct i40e_aqc_set_switch_config {
+ 	__le16	flags;
++/* flags used for both fields below */
+ #define I40E_AQ_SET_SWITCH_CFG_PROMISC		0x0001
+ #define I40E_AQ_SET_SWITCH_CFG_L2_FILTER	0x0002
+ 	__le16	valid_flags;
+@@ -1839,11 +1901,12 @@ struct i40e_aqc_get_link_status {
+ #define I40E_AQ_CONFIG_FEC_RS_ENA	0x02
+ #define I40E_AQ_CONFIG_CRC_ENA		0x04
+ #define I40E_AQ_CONFIG_PACING_MASK	0x78
+-	u8	external_power_ability;
++	u8	power_desc;
+ #define I40E_AQ_LINK_POWER_CLASS_1	0x00
+ #define I40E_AQ_LINK_POWER_CLASS_2	0x01
+ #define I40E_AQ_LINK_POWER_CLASS_3	0x02
+ #define I40E_AQ_LINK_POWER_CLASS_4	0x03
++#define I40E_AQ_PWR_CLASS_MASK		0x03
+ 	u8	reserved[4];
+ };
+ 
 -- 
 2.4.11
 
