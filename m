@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 06 Jan 2017 08:06:48 -0800
-Subject: [Intel-wired-lan] [next PATCH 03/11] ixgbe: Update driver to make
- use of DMA attributes in Rx path
+Date: Fri, 06 Jan 2017 08:07:37 -0800
+Subject: [Intel-wired-lan] [next PATCH 09/11] ixgbe: Add private flag to
+	control buffer mode
 In-Reply-To: <20170106155448.1501.31298.stgit@localhost.localdomain>
 References: <20170106155448.1501.31298.stgit@localhost.localdomain>
-Message-ID: <20170106160647.1501.24838.stgit@localhost.localdomain>
+Message-ID: <20170106160735.1501.50042.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,142 +13,111 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This patch adds support for DMA_ATTR_SKIP_CPU_SYNC and
-DMA_ATTR_WEAK_ORDERING.  By enabling both of these for the Rx path we are
-able to see performance improvements on architectures that implement either
-one due to the fact that page mapping and unmapping only has to sync what
-is actually being used instead of the entire buffer.  In addition by
-enabling the weak ordering attribute enables a performance improvement for
-architectures that can associate a memory ordering with a DMA buffer such
-as Sparc.
+Since there are potential drawbacks to the new Rx allocation approach I
+thought it best to add a "chicken bit" so that we can turn the feature off
+if in the event that a problem is found.
+
+It also provides a means of validating the legacy Rx path in the event that
+we are forced to fall back.  At some point in the future when we are
+convinced we don't need it anymore we might be able to drop the legacy-rx
+flag.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    3 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   56 +++++++++++++++++--------
- 2 files changed, 40 insertions(+), 19 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   47 ++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 9c6ccfc34177..97e74deecae2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -107,6 +107,9 @@
- /* How many Rx Buffers do we bundle into one write to the hardware ? */
- #define IXGBE_RX_BUFFER_WRITE	16	/* Must be power of 2 */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index aa80ece9ea96..6466d828bc6f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -151,6 +151,13 @@ struct ixgbe_stats {
+ };
+ #define IXGBE_TEST_LEN sizeof(ixgbe_gstrings_test) / ETH_GSTRING_LEN
  
-+#define IXGBE_RX_DMA_ATTR \
-+	(DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_WEAK_ORDERING)
++static const char ixgbe_priv_flags_strings[][ETH_GSTRING_LEN] = {
++#define IXGBE_PRIV_FLAGS_LEGACY_RX	BIT(0)
++	"legacy-rx",
++};
 +
- enum ixgbe_tx_flags {
- 	/* cmd_type flags */
- 	IXGBE_TX_FLAGS_HW_VLAN	= 0x01,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index dbbf5223ace2..062b984ffdf4 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1583,8 +1583,10 @@ static bool ixgbe_alloc_mapped_page(struct ixgbe_ring *rx_ring,
- 	}
- 
- 	/* map page for use */
--	dma = dma_map_page(rx_ring->dev, page, 0,
--			   ixgbe_rx_pg_size(rx_ring), DMA_FROM_DEVICE);
-+	dma = dma_map_page_attrs(rx_ring->dev, page, 0,
-+				 ixgbe_rx_pg_size(rx_ring),
-+				 DMA_FROM_DEVICE,
-+				 IXGBE_RX_DMA_ATTR);
- 
- 	/*
- 	 * if mapping failed free memory back to system since
-@@ -1627,6 +1629,12 @@ void ixgbe_alloc_rx_buffers(struct ixgbe_ring *rx_ring, u16 cleaned_count)
- 		if (!ixgbe_alloc_mapped_page(rx_ring, bi))
- 			break;
- 
-+		/* sync the buffer for use by the device */
-+		dma_sync_single_range_for_device(rx_ring->dev, bi->dma,
-+						 bi->page_offset,
-+						 ixgbe_rx_bufsz(rx_ring),
-+						 DMA_FROM_DEVICE);
++#define IXGBE_PRIV_FLAGS_STR_LEN ARRAY_SIZE(ixgbe_priv_flags_strings)
 +
- 		/*
- 		 * Refresh the desc even if buffer_addrs didn't change
- 		 * because each write-back erases this info.
-@@ -1849,8 +1857,10 @@ static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
- {
- 	/* if the page was released unmap it, else just sync our portion */
- 	if (unlikely(IXGBE_CB(skb)->page_released)) {
--		dma_unmap_page(rx_ring->dev, IXGBE_CB(skb)->dma,
--			       ixgbe_rx_pg_size(rx_ring), DMA_FROM_DEVICE);
-+		dma_unmap_page_attrs(rx_ring->dev, IXGBE_CB(skb)->dma,
-+				     ixgbe_rx_pg_size(rx_ring),
-+				     DMA_FROM_DEVICE,
-+				     IXGBE_RX_DMA_ATTR);
- 		IXGBE_CB(skb)->page_released = false;
- 	} else {
- 		struct skb_frag_struct *frag = &skb_shinfo(skb)->frags[0];
-@@ -1934,12 +1944,6 @@ static void ixgbe_reuse_rx_page(struct ixgbe_ring *rx_ring,
+ /* currently supported speeds for 10G */
+ #define ADVRTSD_MSK_10G (SUPPORTED_10000baseT_Full | \
+ 			 SUPPORTED_10000baseKX4_Full | \
+@@ -1002,6 +1009,8 @@ static void ixgbe_get_drvinfo(struct net_device *netdev,
  
- 	/* transfer page from old buffer to new buffer */
- 	*new_buff = *old_buff;
--
--	/* sync the buffer for use by the device */
--	dma_sync_single_range_for_device(rx_ring->dev, new_buff->dma,
--					 new_buff->page_offset,
--					 ixgbe_rx_bufsz(rx_ring),
--					 DMA_FROM_DEVICE);
+ 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev),
+ 		sizeof(drvinfo->bus_info));
++
++	drvinfo->n_priv_flags = IXGBE_PRIV_FLAGS_STR_LEN;
  }
  
- static inline bool ixgbe_page_is_reserved(struct page *page)
-@@ -2105,9 +2109,10 @@ static struct sk_buff *ixgbe_fetch_rx_buffer(struct ixgbe_ring *rx_ring,
- 		IXGBE_CB(skb)->page_released = true;
- 	} else {
- 		/* we are not reusing the buffer so unmap it */
--		dma_unmap_page(rx_ring->dev, rx_buffer->dma,
--			       ixgbe_rx_pg_size(rx_ring),
--			       DMA_FROM_DEVICE);
-+		dma_unmap_page_attrs(rx_ring->dev, rx_buffer->dma,
-+				     ixgbe_rx_pg_size(rx_ring),
-+				     DMA_FROM_DEVICE,
-+				     IXGBE_RX_DMA_ATTR);
+ static void ixgbe_get_ringparam(struct net_device *netdev,
+@@ -1141,6 +1150,8 @@ static int ixgbe_get_sset_count(struct net_device *netdev, int sset)
+ 		return IXGBE_TEST_LEN;
+ 	case ETH_SS_STATS:
+ 		return IXGBE_STATS_LEN;
++	case ETH_SS_PRIV_FLAGS:
++		return IXGBE_PRIV_FLAGS_STR_LEN;
+ 	default:
+ 		return -EOPNOTSUPP;
  	}
- 
- 	/* clear contents of buffer_info */
-@@ -4941,10 +4946,11 @@ static void ixgbe_clean_rx_ring(struct ixgbe_ring *rx_ring)
- 		if (rx_buffer->skb) {
- 			struct sk_buff *skb = rx_buffer->skb;
- 			if (IXGBE_CB(skb)->page_released)
--				dma_unmap_page(dev,
--					       IXGBE_CB(skb)->dma,
--					       ixgbe_rx_bufsz(rx_ring),
--					       DMA_FROM_DEVICE);
-+				dma_unmap_page_attrs(dev,
-+						     IXGBE_CB(skb)->dma,
-+						     ixgbe_rx_pg_size(rx_ring),
-+						     DMA_FROM_DEVICE,
-+						     IXGBE_RX_DMA_ATTR);
- 			dev_kfree_skb(skb);
- 			rx_buffer->skb = NULL;
+@@ -1305,6 +1316,9 @@ static void ixgbe_get_strings(struct net_device *netdev, u32 stringset,
  		}
-@@ -4952,8 +4958,20 @@ static void ixgbe_clean_rx_ring(struct ixgbe_ring *rx_ring)
- 		if (!rx_buffer->page)
- 			continue;
+ 		/* BUG_ON(p - data != IXGBE_STATS_LEN * ETH_GSTRING_LEN); */
+ 		break;
++	case ETH_SS_PRIV_FLAGS:
++		memcpy(data, ixgbe_priv_flags_strings,
++		       IXGBE_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
+ 	}
+ }
  
--		dma_unmap_page(dev, rx_buffer->dma,
--			       ixgbe_rx_pg_size(rx_ring), DMA_FROM_DEVICE);
-+		/* Invalidate cache lines that may have been written to by
-+		 * device so that we avoid corrupting memory.
-+		 */
-+		dma_sync_single_range_for_cpu(rx_ring->dev,
-+					      rx_buffer->dma,
-+					      rx_buffer->page_offset,
-+					      ixgbe_rx_bufsz(rx_ring),
-+					      DMA_FROM_DEVICE);
+@@ -3386,6 +3400,37 @@ static int ixgbe_set_eee(struct net_device *netdev, struct ethtool_eee *edata)
+ 	return 0;
+ }
+ 
++static u32 ixgbe_get_priv_flags(struct net_device *netdev)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
++	u32 priv_flags = 0;
 +
-+		/* free resources associated with mapping */
-+		dma_unmap_page_attrs(dev, rx_buffer->dma,
-+				     ixgbe_rx_pg_size(rx_ring),
-+				     DMA_FROM_DEVICE,
-+				     IXGBE_RX_DMA_ATTR);
- 		__free_pages(rx_buffer->page, ixgbe_rx_pg_order(rx_ring));
- 
- 		rx_buffer->page = NULL;
++	if (adapter->flags2 & IXGBE_FLAG2_RX_LEGACY)
++		priv_flags |= IXGBE_PRIV_FLAGS_LEGACY_RX;
++
++	return priv_flags;
++}
++
++static int ixgbe_set_priv_flags(struct net_device *netdev, u32 priv_flags)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
++	unsigned int flags2 = adapter->flags2;
++
++	flags2 &= ~IXGBE_FLAG2_RX_LEGACY;
++	if (priv_flags & IXGBE_PRIV_FLAGS_LEGACY_RX)
++		flags2 |= IXGBE_FLAG2_RX_LEGACY;
++
++	if (flags2 != adapter->flags2) {
++		adapter->flags2 = flags2;
++
++		/* reset interface to repopulate queues */
++		if (netif_running(netdev))
++			ixgbe_reinit_locked(adapter);
++	}
++
++	return 0;
++}
++
+ static const struct ethtool_ops ixgbe_ethtool_ops = {
+ 	.get_settings           = ixgbe_get_settings,
+ 	.set_settings           = ixgbe_set_settings,
+@@ -3422,6 +3467,8 @@ static int ixgbe_set_eee(struct net_device *netdev, struct ethtool_eee *edata)
+ 	.set_eee		= ixgbe_set_eee,
+ 	.get_channels		= ixgbe_get_channels,
+ 	.set_channels		= ixgbe_set_channels,
++	.get_priv_flags		= ixgbe_get_priv_flags,
++	.set_priv_flags		= ixgbe_set_priv_flags,
+ 	.get_ts_info		= ixgbe_get_ts_info,
+ 	.get_module_info	= ixgbe_get_module_info,
+ 	.get_module_eeprom	= ixgbe_get_module_eeprom,
 
