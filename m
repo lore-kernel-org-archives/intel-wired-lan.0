@@ -1,70 +1,55 @@
-From: Philippe Reynes <tremyfr@gmail.com>
-Date: Sat,  7 Jan 2017 23:18:07 +0100
-Subject: [Intel-wired-lan] [PATCH] net: intel: e100: use new api
-	ethtool_{get|set}_link_ksettings
-Message-ID: <1483827487-20355-1-git-send-email-tremyfr@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sun, 8 Jan 2017 17:34:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 91/94]
+ drivers/net/ethernet/intel/igb/igb_main.c:6999:7: error: invalid operands
+ to binary - (have 'unsigned char *' and 'void *')
+Message-ID: <201701081738.B9cF5dao%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ethtool api {get|set}_settings is deprecated.
-We move this driver to new api {get|set}_link_ksettings.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   9411d80b16a0693f4e3557cdfeddb61dac150dc3
+commit: 621f9f6c3a16b125e7adc91987ba4dad5b9f912e [91/94] igb: Add support for padding packet
+config: i386-randconfig-x007-201702 (attached as .config)
+compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+reproduce:
+        git checkout 621f9f6c3a16b125e7adc91987ba4dad5b9f912e
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
+Note: the jkirsher-next-queue/dev-queue HEAD 9411d80b16a0693f4e3557cdfeddb61dac150dc3 builds fine.
+      It only hurts bisectibility.
+
+All errors (new ones prefixed by >>):
+
+   drivers/net/ethernet/intel/igb/igb_main.c: In function 'igb_add_rx_frag':
+>> drivers/net/ethernet/intel/igb/igb_main.c:6999:7: error: invalid operands to binary - (have 'unsigned char *' and 'void *')
+       va - page_address(page), size, truesize);
+          ^
+
+vim +6999 drivers/net/ethernet/intel/igb/igb_main.c
+
+  6993		/* update all of the pointers */
+  6994		va += pull_len;
+  6995		size -= pull_len;
+  6996	
+  6997	add_tail_frag:
+  6998		skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, page,
+> 6999				va - page_address(page), size, truesize);
+  7000	
+  7001		return igb_can_reuse_rx_page(rx_buffer, page, truesize);
+  7002	}
+
 ---
- drivers/net/ethernet/intel/e100.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 25c6dfd..04e9392 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -2426,19 +2426,21 @@ static int e100_loopback_test(struct nic *nic, enum loopback loopback_mode)
- #define E100_82552_LED_ON       0x000F /* LEDTX and LED_RX both on */
- #define E100_82552_LED_OFF      0x000A /* LEDTX and LED_RX both off */
- 
--static int e100_get_settings(struct net_device *netdev, struct ethtool_cmd *cmd)
-+static int e100_get_link_ksettings(struct net_device *netdev,
-+				   struct ethtool_link_ksettings *cmd)
- {
- 	struct nic *nic = netdev_priv(netdev);
--	return mii_ethtool_gset(&nic->mii, cmd);
-+	return mii_ethtool_get_link_ksettings(&nic->mii, cmd);
- }
- 
--static int e100_set_settings(struct net_device *netdev, struct ethtool_cmd *cmd)
-+static int e100_set_link_ksettings(struct net_device *netdev,
-+				   const struct ethtool_link_ksettings *cmd)
- {
- 	struct nic *nic = netdev_priv(netdev);
- 	int err;
- 
- 	mdio_write(netdev, nic->mii.phy_id, MII_BMCR, BMCR_RESET);
--	err = mii_ethtool_sset(&nic->mii, cmd);
-+	err = mii_ethtool_set_link_ksettings(&nic->mii, cmd);
- 	e100_exec_cb(nic, NULL, e100_configure);
- 
- 	return err;
-@@ -2741,8 +2743,6 @@ static void e100_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
- }
- 
- static const struct ethtool_ops e100_ethtool_ops = {
--	.get_settings		= e100_get_settings,
--	.set_settings		= e100_set_settings,
- 	.get_drvinfo		= e100_get_drvinfo,
- 	.get_regs_len		= e100_get_regs_len,
- 	.get_regs		= e100_get_regs,
-@@ -2763,6 +2763,8 @@ static void e100_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
- 	.get_ethtool_stats	= e100_get_ethtool_stats,
- 	.get_sset_count		= e100_get_sset_count,
- 	.get_ts_info		= ethtool_op_get_ts_info,
-+	.get_link_ksettings	= e100_get_link_ksettings,
-+	.set_link_ksettings	= e100_set_link_ksettings,
- };
- 
- static int e100_do_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
--- 
-1.7.4.4
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 29745 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170108/81fbb7ba/attachment-0001.bin>
