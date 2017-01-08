@@ -1,55 +1,137 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sun, 8 Jan 2017 17:34:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 91/94]
- drivers/net/ethernet/intel/igb/igb_main.c:6999:7: error: invalid operands
- to binary - (have 'unsigned char *' and 'void *')
-Message-ID: <201701081738.B9cF5dao%fengguang.wu@intel.com>
+Date: Sun, 08 Jan 2017 18:15:22 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 74c8bd3ec96e80e0e9022da4142ae32d3732893e
+Message-ID: <5872113a.fgX871ZMZUTyyOUS%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   9411d80b16a0693f4e3557cdfeddb61dac150dc3
-commit: 621f9f6c3a16b125e7adc91987ba4dad5b9f912e [91/94] igb: Add support for padding packet
-config: i386-randconfig-x007-201702 (attached as .config)
-compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
-reproduce:
-        git checkout 621f9f6c3a16b125e7adc91987ba4dad5b9f912e
-        # save the attached .config to linux build tree
-        make ARCH=i386 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+74c8bd3ec96e80e0e9022da4142ae32d3732893e  igb: Clear Rx buffer_info in configure instead of clean
 
-Note: the jkirsher-next-queue/dev-queue HEAD 9411d80b16a0693f4e3557cdfeddb61dac150dc3 builds fine.
-      It only hurts bisectibility.
+elapsed time: 72m
 
-All errors (new ones prefixed by >>):
+configs tested: 113
 
-   drivers/net/ethernet/intel/igb/igb_main.c: In function 'igb_add_rx_frag':
->> drivers/net/ethernet/intel/igb/igb_main.c:6999:7: error: invalid operands to binary - (have 'unsigned char *' and 'void *')
-       va - page_address(page), size, truesize);
-          ^
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-vim +6999 drivers/net/ethernet/intel/igb/igb_main.c
+i386                     randconfig-a0-201702
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x011-201702
+x86_64                 randconfig-x014-201702
+x86_64                 randconfig-x017-201702
+x86_64                 randconfig-x016-201702
+x86_64                 randconfig-x012-201702
+x86_64                 randconfig-x010-201702
+x86_64                 randconfig-x013-201702
+x86_64                 randconfig-x019-201702
+x86_64                 randconfig-x018-201702
+x86_64                 randconfig-x015-201702
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201702
+i386                     randconfig-s1-201702
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201702
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-01081531
+i386                   randconfig-i1-01081531
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x010-201702
+i386                   randconfig-x011-201702
+i386                   randconfig-x012-201702
+i386                   randconfig-x013-201702
+i386                   randconfig-x014-201702
+i386                   randconfig-x015-201702
+i386                   randconfig-x016-201702
+i386                   randconfig-x017-201702
+i386                   randconfig-x018-201702
+i386                   randconfig-x019-201702
+i386                     randconfig-n0-201702
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                               rhel-7.2
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x008-201702
+x86_64                 randconfig-x001-201702
+x86_64                 randconfig-x009-201702
+x86_64                 randconfig-x003-201702
+x86_64                 randconfig-x000-201702
+x86_64                 randconfig-x006-201702
+x86_64                 randconfig-x002-201702
+x86_64                 randconfig-x007-201702
+x86_64                 randconfig-x004-201702
+x86_64                 randconfig-x005-201702
+i386                     randconfig-r0-201702
 
-  6993		/* update all of the pointers */
-  6994		va += pull_len;
-  6995		size -= pull_len;
-  6996	
-  6997	add_tail_frag:
-  6998		skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, page,
-> 6999				va - page_address(page), size, truesize);
-  7000	
-  7001		return igb_can_reuse_rx_page(rx_buffer, page, truesize);
-  7002	}
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 29745 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170108/81fbb7ba/attachment-0001.bin>
+Thanks,
+Fengguang
