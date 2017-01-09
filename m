@@ -1,35 +1,53 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Mon, 9 Jan 2017 12:55:43 +0000
+From: Joe Perches <joe@perches.com>
+Date: Mon, 09 Jan 2017 05:33:10 -0800
 Subject: [Intel-wired-lan] [RFC PATCH] intel: Use upper_32_bits and
 	lower_32_bits
-In-Reply-To: <7a5cfe63cad3ef4badc30cbc2185a5bfb9250fd8.1483813334.git.joe@perches.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DB025AC14@AcuExch.aculab.com>
 References: <7a5cfe63cad3ef4badc30cbc2185a5bfb9250fd8.1483813334.git.joe@perches.com>
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB025AC14@AcuExch.aculab.com>
+ <063D6719AE5E284EB5DD2968C1650D6DB025AC14@AcuExch.aculab.com>
+Message-ID: <1483968790.2106.10.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Joe Perches
-> Sent: 07 January 2017 18:33
-> Shifting and masking various types can be made a bit
-> simpler to read by using the available kernel macros.
-...
-> -		ew32(TDBAH, (tdba >> 32));
-> -		ew32(TDBAL, (tdba & 0x00000000ffffffffULL));
-> +		ew32(TDBAH, upper_32_bits(tdba));
-> +		ew32(TDBAL, lower_32_bits(tdba));
+On Mon, 2017-01-09 at 12:55 +0000, David Laight wrote:
+> From: Joe Perches
+> > Sent: 07 January 2017 18:33
+> > Shifting and masking various types can be made a bit
+> > simpler to read by using the available kernel macros.
+> 
+> ...
+> > -		ew32(TDBAH, (tdba >> 32));
+> > -		ew32(TDBAL, (tdba & 0x00000000ffffffffULL));
+> > +		ew32(TDBAH, upper_32_bits(tdba));
+> > +		ew32(TDBAL, lower_32_bits(tdba));
+> 
+> Personally I find the original code easier to understand
+> since I don't have to look up another silly macro.
 
-Personally I find the original code easier to understand
-since I don't have to look up another silly macro.
+It's already a pretty common usage and I believe
+the naming is fairly obvious.  Also you don't have
+to count the "f" characters to see how many bits
+are being used.  After about 6 consecutive chars,
+it can be error prone.
 
-I'd normally not even explicitly mask the low bits
-relying on the implicit truncation of the assignment.
+The leading zeros?  ugh.  The ULL too.
 
-At least modern compilers aren't stupid enough to add two
-'mask with 0xff' instructions for:
-	*uchar_ptr = (unsigned char)(foo & 0xff);
+$ git grep -w -E "upper_32_bits|lower_32_bits" | wc -l
+1569
 
-	David
+> I'd normally not even explicitly mask the low bits
+> relying on the implicit truncation of the assignment.
+
+Relying on implicit behaviors can be noisy when
+compilers complain about implicit conversions and
+truncations.
+
+> At least modern compilers aren't stupid enough to add two
+> 'mask with 0xff' instructions for:
+> 	*uchar_ptr = (unsigned char)(foo & 0xff);
+
+I agree it's visual noise.
 
