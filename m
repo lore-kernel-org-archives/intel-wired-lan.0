@@ -1,20 +1,20 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 10 Jan 2017 00:48:59 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
- 76ed5a8f47476e4984cc8c0c1bc4cee62650f7fd
-Message-ID: <5873befb.YrmNmAtAOS2JYNob%fengguang.wu@intel.com>
+Date: Tue, 10 Jan 2017 00:59:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE] BUILD SUCCESS
+ 07eea570acccbc0f9402357d652868571fdbb2b9
+Message-ID: <5873c179.VbXgJ3zvytZ7qlT0%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
-76ed5a8f47476e4984cc8c0c1bc4cee62650f7fd  igb: Fix hw_dbg logging in igb_update_flash_i210
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
+07eea570acccbc0f9402357d652868571fdbb2b9  ixgbe: Add PF support for VF promiscuous mode
 
-elapsed time: 2537m
+elapsed time: 2549m
 
-configs tested: 1793
+configs tested: 1799
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -420,6 +420,7 @@ i386                   randconfig-c0-01092007
 i386                   randconfig-c0-01092138
 i386                   randconfig-c0-01092246
 i386                   randconfig-c0-01092334
+i386                   randconfig-c0-01100007
 powerpc                     tqm8548_defconfig
 sh                        sh7785lcr_defconfig
 mips                        maltaup_defconfig
@@ -474,6 +475,7 @@ x86_64                randconfig-in0-01091749
 x86_64                randconfig-in0-01092005
 x86_64                randconfig-in0-01092056
 x86_64                randconfig-in0-01092254
+powerpc                      mgcoge_defconfig
 arm                           h3600_defconfig
 sparc64                           allnoconfig
 arm                              allyesconfig
@@ -511,6 +513,7 @@ m32r                    m32700ut.up_defconfig
 blackfin                BF561-EZKIT_defconfig
 xtensa                generic_kc705_defconfig
 arm                        shmobile_defconfig
+arm                          nuc950_defconfig
 x86_64                randconfig-it0-01080636
 x86_64                randconfig-it0-01080855
 x86_64                randconfig-it0-01080935
@@ -748,7 +751,6 @@ sh                           se7712_defconfig
 avr32            atngw100_evklcd100_defconfig
 powerpc64                        alldefconfig
 score                      spct6600_defconfig
-powerpc                      mgcoge_defconfig
 arm                          iop33x_defconfig
 blackfin                       IP0X_defconfig
 c6x                        evmc6474_defconfig
@@ -1421,6 +1423,7 @@ x86_64                randconfig-ne0-01092040
 x86_64                randconfig-ne0-01092246
 x86_64                randconfig-ne0-01092300
 x86_64                randconfig-ne0-01100034
+x86_64                randconfig-ne0-01100048
 mips                         tb0287_defconfig
 blackfin                       SRV1_defconfig
 m32r                             alldefconfig
@@ -1653,6 +1656,7 @@ x86_64                 randconfig-n0-01092333
 x86_64                 randconfig-n0-01100009
 powerpc                 canyonlands_defconfig
 avr32            atngw100_evklcd101_defconfig
+i386                  randconfig-sb0-01080339
 i386                  randconfig-sb0-01080703
 i386                  randconfig-sb0-01080931
 i386                  randconfig-sb0-01081053
@@ -1711,6 +1715,7 @@ x86_64                randconfig-ws0-01091647
 x86_64                randconfig-ws0-01091833
 x86_64                randconfig-ws0-01091952
 x86_64                randconfig-ws0-01092142
+x86_64                randconfig-ws0-01092350
 powerpc                     rainier_defconfig
 i386                     randconfig-r0-201702
 x86_64                 randconfig-r0-01080620
@@ -1811,6 +1816,7 @@ i386                   randconfig-x0-01091651
 i386                   randconfig-x0-01091723
 i386                   randconfig-x0-01092050
 i386                   randconfig-x0-01092153
+i386                   randconfig-x0-01092346
 
 Thanks,
 Fengguang
