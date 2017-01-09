@@ -1,65 +1,35 @@
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Mon, 9 Jan 2017 10:45:10 +1100
-Subject: [Intel-wired-lan] [PATCH v2] PCI: lock each enable/disable
- num_vfs operation in sysfs
-In-Reply-To: <20170106215908.20736.34632.stgit@localhost6.localdomain6>
-References: <20170106215908.20736.34632.stgit@localhost6.localdomain6>
-Message-ID: <20170108234510.GA14008@gwshan>
+From: David Laight <David.Laight@ACULAB.COM>
+Date: Mon, 9 Jan 2017 12:55:43 +0000
+Subject: [Intel-wired-lan] [RFC PATCH] intel: Use upper_32_bits and
+	lower_32_bits
+In-Reply-To: <7a5cfe63cad3ef4badc30cbc2185a5bfb9250fd8.1483813334.git.joe@perches.com>
+References: <7a5cfe63cad3ef4badc30cbc2185a5bfb9250fd8.1483813334.git.joe@perches.com>
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB025AC14@AcuExch.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jan 06, 2017 at 01:59:08PM -0800, Emil Tantilov wrote:
->Enabling/disabling SRIOV via sysfs by echo-ing multiple values
->simultaneously:
->
->echo 63 > /sys/class/net/ethX/device/sriov_numvfs&
->echo 63 > /sys/class/net/ethX/device/sriov_numvfs
->
->sleep 5
->
->echo 0 > /sys/class/net/ethX/device/sriov_numvfs&
->echo 0 > /sys/class/net/ethX/device/sriov_numvfs
->
->Results in the following bug:
->
->kernel BUG at drivers/pci/iov.c:495!
->invalid opcode: 0000 [#1] SMP
->CPU: 1 PID: 8050 Comm: bash Tainted: G   W   4.9.0-rc7-net-next #2092
->RIP: 0010:[<ffffffff813b1647>]
->	  [<ffffffff813b1647>] pci_iov_release+0x57/0x60
->
->Call Trace:
-> [<ffffffff81391726>] pci_release_dev+0x26/0x70
-> [<ffffffff8155be6e>] device_release+0x3e/0xb0
-> [<ffffffff81365ee7>] kobject_cleanup+0x67/0x180
-> [<ffffffff81365d9d>] kobject_put+0x2d/0x60
-> [<ffffffff8155bc27>] put_device+0x17/0x20
-> [<ffffffff8139c08a>] pci_dev_put+0x1a/0x20
-> [<ffffffff8139cb6b>] pci_get_dev_by_id+0x5b/0x90
-> [<ffffffff8139cca5>] pci_get_subsys+0x35/0x40
-> [<ffffffff8139ccc8>] pci_get_device+0x18/0x20
-> [<ffffffff8139ccfb>] pci_get_domain_bus_and_slot+0x2b/0x60
-> [<ffffffff813b09e7>] pci_iov_remove_virtfn+0x57/0x180
-> [<ffffffff813b0b95>] pci_disable_sriov+0x65/0x140
-> [<ffffffffa00a1af7>] ixgbe_disable_sriov+0xc7/0x1d0 [ixgbe]
-> [<ffffffffa00a1e9d>] ixgbe_pci_sriov_configure+0x3d/0x170 [ixgbe]
-> [<ffffffff8139d28c>] sriov_numvfs_store+0xdc/0x130
->...
->RIP  [<ffffffff813b1647>] pci_iov_release+0x57/0x60
->
->Use the existing mutex lock to protect each enable/disable operation.
->
->-v2: move the existing lock from protecting the config of the IOV bus
->to protecting the writes to sriov_numvfs in sysfs without maintaining
->a "locked" version of pci_iov_add/remove_virtfn().
->As suggested by Gavin Shan <gwshan@linux.vnet.ibm.com>
->
->CC: Alexander Duyck <alexander.h.duyck@intel.com>
->Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
->---
+From: Joe Perches
+> Sent: 07 January 2017 18:33
+> Shifting and masking various types can be made a bit
+> simpler to read by using the available kernel macros.
+...
+> -		ew32(TDBAH, (tdba >> 32));
+> -		ew32(TDBAL, (tdba & 0x00000000ffffffffULL));
+> +		ew32(TDBAH, upper_32_bits(tdba));
+> +		ew32(TDBAL, lower_32_bits(tdba));
 
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Personally I find the original code easier to understand
+since I don't have to look up another silly macro.
+
+I'd normally not even explicitly mask the low bits
+relying on the implicit truncation of the assignment.
+
+At least modern compilers aren't stupid enough to add two
+'mask with 0xff' instructions for:
+	*uchar_ptr = (unsigned char)(foo & 0xff);
+
+	David
 
