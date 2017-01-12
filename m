@@ -1,445 +1,431 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 12 Jan 2017 15:59:39 -0800
-Subject: [Intel-wired-lan] [PATCH 2/5] fm10k: future-proof state bitmaps
-	using DECLARE_BITMAP
-In-Reply-To: <20170112235942.5767-1-jacob.e.keller@intel.com>
-References: <20170112235942.5767-1-jacob.e.keller@intel.com>
-Message-ID: <20170112235942.5767-2-jacob.e.keller@intel.com>
+Date: Thu, 12 Jan 2017 15:59:38 -0800
+Subject: [Intel-wired-lan] [PATCH 1/5] fm10k: use a BITMAP for flags to
+	avoid race conditions
+Message-ID: <20170112235942.5767-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This ensures that future programmers do not have to remember to re-size
-the bitmaps due to adding new values. Although this is unlikely for this
-driver, it may happen and it's best to prevent it from ever being an
-issue.
+Replace bitwise operators and #defines with a BITMAP and enumeration
+values. This is similar to how we handle the "state" values as well.
+
+This has two distinct advantages over the old method. First, we ensure
+correctness of operations which are currently problematic due to race
+conditions. Suppose that two kernel threads are running, such as the
+watchdog and an ethtool ioctl, and both modify flags. We'll say that the
+watchdog is CPU A, and the ethtool ioctl is CPU B.
+
+CPU A sets FLAG_1, which can be seen as
+  CPU A read FLAGS
+  CPU A write FLAGS | FLAG_1
+
+CPU B sets FLAG_2, which can be seen as
+  CPU B read FLAGS
+  CPU A write FLAGS | FLAG_2
+
+However, "|=" and "&=" operators are not actually atomic. So this could
+be ordered like the following:
+
+CPU A read FLAGS -> variable
+CPU B read FLAGS -> variable
+CPU A write FLAGS (variable | FLAG_1)
+CPU B write FLAGS (variable | FLAG_2)
+
+Notice how the 2nd write from CPU B could actually undo the write from
+CPU A because it isn't guaranteed that the |= operation is atomic.
+
+In practice the race windows for most flag writes is incredibly narrow
+so it is not easy to isolate issues. However, the more flags we have,
+the more likely they will cause problems. Additionally, if such
+a problem were to arise, it would be incredibly difficult to track down.
+
+Second, there is an additional advantage beyond code correctness. We can
+now automatically size the BITMAP if more flags were added, so that we
+do not need to remember that flags is u32 and thus if we added too many
+flags we would over-run the variable. This is not a likely occurrence
+for fm10k driver, but this patch can serve as an example for other
+drivers which have many more flags.
+
+This particular change does have a bit of trouble converting some of the
+idioms previously used with the #defines for flags. Specifically, when
+converting FM10K_FLAG_RSS_FIELD_IPV[46]_UDP flags. This whole operation
+was actually quite problematic, because we actually stored flags
+separately. This could more easily show the problem of the above
+re-ordering issue.
+
+This is really difficult to test whether atomics make a difference in
+practical scenarios, but you can ensure that basic functionality remains
+the same. This patch has a lot of code coverage, but most of it is
+relatively simple.
+
+While we are modifying these files, update their copyright year.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k.h         | 40 ++++++++-------
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |  4 +-
- drivers/net/ethernet/intel/fm10k/fm10k_main.c    | 10 ++--
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c  |  2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c     | 62 ++++++++++++------------
- 5 files changed, 61 insertions(+), 57 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k.h         | 27 ++++++++---
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 62 ++++++++++++++++--------
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c    |  6 +--
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c  |  4 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c     | 31 ++++++------
+ 5 files changed, 82 insertions(+), 48 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index d6db1c48d4dc..b496300d0268 100644
+index 52b979443cde..d6db1c48d4dc 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -65,14 +65,16 @@ enum fm10k_ring_state_t {
- 	__FM10K_TX_DETECT_HANG,
- 	__FM10K_HANG_CHECK_ARMED,
- 	__FM10K_TX_XPS_INIT_DONE,
-+	/* This must be last and is used to calculate BITMAP size */
-+	__FM10K_TX_STATE_SIZE__,
- };
+@@ -1,5 +1,5 @@
+ /* Intel(R) Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -249,6 +249,23 @@ struct fm10k_udp_port {
+ /* one work queue for entire driver */
+ extern struct workqueue_struct *fm10k_workqueue;
  
- #define check_for_tx_hang(ring) \
--	test_bit(__FM10K_TX_DETECT_HANG, &(ring)->state)
-+	test_bit(__FM10K_TX_DETECT_HANG, (ring)->state)
- #define set_check_for_tx_hang(ring) \
--	set_bit(__FM10K_TX_DETECT_HANG, &(ring)->state)
-+	set_bit(__FM10K_TX_DETECT_HANG, (ring)->state)
- #define clear_check_for_tx_hang(ring) \
--	clear_bit(__FM10K_TX_DETECT_HANG, &(ring)->state)
-+	clear_bit(__FM10K_TX_DETECT_HANG, (ring)->state)
- 
- struct fm10k_tx_buffer {
- 	struct fm10k_tx_desc *next_to_watch;
-@@ -126,7 +128,7 @@ struct fm10k_ring {
- 		struct fm10k_rx_buffer *rx_buffer;
- 	};
- 	u32 __iomem *tail;
--	unsigned long state;
-+	DECLARE_BITMAP(state, __FM10K_TX_STATE_SIZE__);
- 	dma_addr_t dma;			/* phys. address of descriptor ring */
- 	unsigned int size;		/* length in bytes */
- 
-@@ -266,12 +268,24 @@ enum fm10k_flags_t {
- 	__FM10K_FLAGS_SIZE__
- };
- 
-+enum fm10k_state_t {
-+	__FM10K_RESETTING,
-+	__FM10K_DOWN,
-+	__FM10K_SERVICE_SCHED,
-+	__FM10K_SERVICE_DISABLE,
-+	__FM10K_MBX_LOCK,
-+	__FM10K_LINK_DOWN,
-+	__FM10K_UPDATING_STATS,
-+	/* This value must be last and determines the BITMAP size */
-+	__FM10K_STATE_SIZE__,
++/* The following enumeration contains flags which indicate or enable modified
++ * driver behaviors. To avoid race conditions, the flags are stored in
++ * a BITMAP in the fm10k_intfc structure. The BITMAP should be accessed using
++ * atomic *_bit() operations.
++ */
++enum fm10k_flags_t {
++	FM10K_FLAG_RESET_REQUESTED,
++	FM10K_FLAG_RSS_FIELD_IPV4_UDP,
++	FM10K_FLAG_RSS_FIELD_IPV6_UDP,
++	FM10K_FLAG_SWPRI_CONFIG,
++	/* __FM10K_FLAGS_SIZE__ is used to calculate the size of
++	 * interface->flags and must be the last value in this
++	 * enumeration.
++	 */
++	__FM10K_FLAGS_SIZE__
 +};
 +
  struct fm10k_intfc {
  	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
  	struct net_device *netdev;
- 	struct fm10k_l2_accel *l2_accel; /* pointer to L2 acceleration list */
+@@ -256,11 +273,9 @@ struct fm10k_intfc {
  	struct pci_dev *pdev;
--	unsigned long state;
-+	DECLARE_BITMAP(state, __FM10K_STATE_SIZE__);
+ 	unsigned long state;
  
- 	/* Access flag values using atomic *_bit() operations */
- 	DECLARE_BITMAP(flags, __FM10K_FLAGS_SIZE__);
-@@ -367,22 +381,12 @@ struct fm10k_intfc {
- 	u16 vid;
- };
+-	u32 flags;
+-#define FM10K_FLAG_RESET_REQUESTED		(u32)(BIT(0))
+-#define FM10K_FLAG_RSS_FIELD_IPV4_UDP		(u32)(BIT(1))
+-#define FM10K_FLAG_RSS_FIELD_IPV6_UDP		(u32)(BIT(2))
+-#define FM10K_FLAG_SWPRI_CONFIG			(u32)(BIT(3))
++	/* Access flag values using atomic *_bit() operations */
++	DECLARE_BITMAP(flags, __FM10K_FLAGS_SIZE__);
++
+ 	int xcast_mode;
  
--enum fm10k_state_t {
--	__FM10K_RESETTING,
--	__FM10K_DOWN,
--	__FM10K_SERVICE_SCHED,
--	__FM10K_SERVICE_DISABLE,
--	__FM10K_MBX_LOCK,
--	__FM10K_LINK_DOWN,
--	__FM10K_UPDATING_STATS,
--};
--
- static inline void fm10k_mbx_lock(struct fm10k_intfc *interface)
- {
- 	/* busy loop if we cannot obtain the lock as some calls
- 	 * such as ndo_set_rx_mode may be made in atomic context
- 	 */
--	while (test_and_set_bit(__FM10K_MBX_LOCK, &interface->state))
-+	while (test_and_set_bit(__FM10K_MBX_LOCK, interface->state))
- 		udelay(20);
- }
- 
-@@ -390,12 +394,12 @@ static inline void fm10k_mbx_unlock(struct fm10k_intfc *interface)
- {
- 	/* flush memory to make sure state is correct */
- 	smp_mb__before_atomic();
--	clear_bit(__FM10K_MBX_LOCK, &interface->state);
-+	clear_bit(__FM10K_MBX_LOCK, interface->state);
- }
- 
- static inline int fm10k_mbx_trylock(struct fm10k_intfc *interface)
- {
--	return !test_and_set_bit(__FM10K_MBX_LOCK, &interface->state);
-+	return !test_and_set_bit(__FM10K_MBX_LOCK, interface->state);
- }
- 
- /* fm10k_test_staterr - test bits in Rx descriptor status and error fields */
+ 	/* Tx fast path data */
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index 557966749174..dfa5c2a4efd8 100644
+index 0c84fef750f4..557966749174 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -562,7 +562,7 @@ static int fm10k_set_ringparam(struct net_device *netdev,
- 		return 0;
- 	}
- 
--	while (test_and_set_bit(__FM10K_RESETTING, &interface->state))
-+	while (test_and_set_bit(__FM10K_RESETTING, interface->state))
- 		usleep_range(1000, 2000);
- 
- 	if (!netif_running(interface->netdev)) {
-@@ -648,7 +648,7 @@ static int fm10k_set_ringparam(struct net_device *netdev,
- 	fm10k_up(interface);
- 	vfree(temp_ring);
- clear_reset:
--	clear_bit(__FM10K_RESETTING, &interface->state);
-+	clear_bit(__FM10K_RESETTING, interface->state);
- 	return err;
+@@ -1,5 +1,5 @@
+ /* Intel(R) Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -716,7 +716,8 @@ static int fm10k_get_rss_hash_opts(struct fm10k_intfc *interface,
+ 		cmd->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
+ 		/* fall through */
+ 	case UDP_V4_FLOW:
+-		if (interface->flags & FM10K_FLAG_RSS_FIELD_IPV4_UDP)
++		if (test_bit(FM10K_FLAG_RSS_FIELD_IPV4_UDP,
++			     interface->flags))
+ 			cmd->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
+ 		/* fall through */
+ 	case SCTP_V4_FLOW:
+@@ -732,7 +733,8 @@ static int fm10k_get_rss_hash_opts(struct fm10k_intfc *interface,
+ 		cmd->data |= RXH_IP_SRC | RXH_IP_DST;
+ 		break;
+ 	case UDP_V6_FLOW:
+-		if (interface->flags & FM10K_FLAG_RSS_FIELD_IPV6_UDP)
++		if (test_bit(FM10K_FLAG_RSS_FIELD_IPV6_UDP,
++			     interface->flags))
+ 			cmd->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
+ 		cmd->data |= RXH_IP_SRC | RXH_IP_DST;
+ 		break;
+@@ -764,12 +766,13 @@ static int fm10k_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd,
+ 	return ret;
  }
  
+-#define UDP_RSS_FLAGS (FM10K_FLAG_RSS_FIELD_IPV4_UDP | \
+-		       FM10K_FLAG_RSS_FIELD_IPV6_UDP)
+ static int fm10k_set_rss_hash_opt(struct fm10k_intfc *interface,
+ 				  struct ethtool_rxnfc *nfc)
+ {
+-	u32 flags = interface->flags;
++	int rss_ipv4_udp = test_bit(FM10K_FLAG_RSS_FIELD_IPV4_UDP,
++				    interface->flags);
++	int rss_ipv6_udp = test_bit(FM10K_FLAG_RSS_FIELD_IPV6_UDP,
++				    interface->flags);
+ 
+ 	/* RSS does not support anything other than hashing
+ 	 * to queues on src and dst IPs and ports
+@@ -793,10 +796,12 @@ static int fm10k_set_rss_hash_opt(struct fm10k_intfc *interface,
+ 			return -EINVAL;
+ 		switch (nfc->data & (RXH_L4_B_0_1 | RXH_L4_B_2_3)) {
+ 		case 0:
+-			flags &= ~FM10K_FLAG_RSS_FIELD_IPV4_UDP;
++			clear_bit(FM10K_FLAG_RSS_FIELD_IPV4_UDP,
++				  interface->flags);
+ 			break;
+ 		case (RXH_L4_B_0_1 | RXH_L4_B_2_3):
+-			flags |= FM10K_FLAG_RSS_FIELD_IPV4_UDP;
++			set_bit(FM10K_FLAG_RSS_FIELD_IPV4_UDP,
++				interface->flags);
+ 			break;
+ 		default:
+ 			return -EINVAL;
+@@ -808,10 +813,12 @@ static int fm10k_set_rss_hash_opt(struct fm10k_intfc *interface,
+ 			return -EINVAL;
+ 		switch (nfc->data & (RXH_L4_B_0_1 | RXH_L4_B_2_3)) {
+ 		case 0:
+-			flags &= ~FM10K_FLAG_RSS_FIELD_IPV6_UDP;
++			clear_bit(FM10K_FLAG_RSS_FIELD_IPV6_UDP,
++				  interface->flags);
+ 			break;
+ 		case (RXH_L4_B_0_1 | RXH_L4_B_2_3):
+-			flags |= FM10K_FLAG_RSS_FIELD_IPV6_UDP;
++			set_bit(FM10K_FLAG_RSS_FIELD_IPV6_UDP,
++				interface->flags);
+ 			break;
+ 		default:
+ 			return -EINVAL;
+@@ -835,28 +842,41 @@ static int fm10k_set_rss_hash_opt(struct fm10k_intfc *interface,
+ 		return -EINVAL;
+ 	}
+ 
+-	/* if we changed something we need to update flags */
+-	if (flags != interface->flags) {
++	/* If something changed we need to update the MRQC register. Note that
++	 * test_bit() is guaranteed to return strictly 0 or 1, so testing for
++	 * equality is safe.
++	 */
++	if ((rss_ipv4_udp != test_bit(FM10K_FLAG_RSS_FIELD_IPV4_UDP,
++				      interface->flags)) ||
++	    (rss_ipv6_udp != test_bit(FM10K_FLAG_RSS_FIELD_IPV6_UDP,
++				      interface->flags))) {
+ 		struct fm10k_hw *hw = &interface->hw;
++		bool warn = false;
+ 		u32 mrqc;
+ 
+-		if ((flags & UDP_RSS_FLAGS) &&
+-		    !(interface->flags & UDP_RSS_FLAGS))
+-			netif_warn(interface, drv, interface->netdev,
+-				   "enabling UDP RSS: fragmented packets may arrive out of order to the stack above\n");
+-
+-		interface->flags = flags;
+-
+ 		/* Perform hash on these packet types */
+ 		mrqc = FM10K_MRQC_IPV4 |
+ 		       FM10K_MRQC_TCP_IPV4 |
+ 		       FM10K_MRQC_IPV6 |
+ 		       FM10K_MRQC_TCP_IPV6;
+ 
+-		if (flags & FM10K_FLAG_RSS_FIELD_IPV4_UDP)
++		if (test_bit(FM10K_FLAG_RSS_FIELD_IPV4_UDP,
++			     interface->flags)) {
+ 			mrqc |= FM10K_MRQC_UDP_IPV4;
+-		if (flags & FM10K_FLAG_RSS_FIELD_IPV6_UDP)
++			warn = true;
++		}
++		if (test_bit(FM10K_FLAG_RSS_FIELD_IPV6_UDP,
++			     interface->flags)) {
+ 			mrqc |= FM10K_MRQC_UDP_IPV6;
++			warn = true;
++		}
++
++		/* If we enable UDP RSS display a warning that this may cause
++		 * fragmented UDP packets to arrive out of order.
++		 */
++		if (warn)
++			netif_warn(interface, drv, interface->netdev,
++				   "enabling UDP RSS: fragmented packets may arrive out of order to the stack above\n");
+ 
+ 		fm10k_write_reg(hw, FM10K_MRQC(0), mrqc);
+ 	}
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index f9612a6b8524..9dffaba85ae6 100644
+index 5bb233a9614c..f9612a6b8524 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1175,13 +1175,13 @@ bool fm10k_check_tx_hang(struct fm10k_ring *tx_ring)
- 		/* update completed stats and continue */
- 		tx_ring->tx_stats.tx_done_old = tx_done;
- 		/* reset the countdown */
--		clear_bit(__FM10K_HANG_CHECK_ARMED, &tx_ring->state);
-+		clear_bit(__FM10K_HANG_CHECK_ARMED, tx_ring->state);
+@@ -1,5 +1,5 @@
+ /* Intel(R) Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -34,7 +34,7 @@ const char fm10k_driver_version[] = DRV_VERSION;
+ char fm10k_driver_name[] = "fm10k";
+ static const char fm10k_driver_string[] = DRV_SUMMARY;
+ static const char fm10k_copyright[] =
+-	"Copyright (c) 2013 - 2016 Intel Corporation.";
++	"Copyright(c) 2013 - 2017 Intel Corporation.";
  
- 		return false;
- 	}
- 
- 	/* make sure it is true for two checks in a row */
--	return test_and_set_bit(__FM10K_HANG_CHECK_ARMED, &tx_ring->state);
-+	return test_and_set_bit(__FM10K_HANG_CHECK_ARMED, tx_ring->state);
- }
- 
- /**
-@@ -1191,7 +1191,7 @@ bool fm10k_check_tx_hang(struct fm10k_ring *tx_ring)
- void fm10k_tx_timeout_reset(struct fm10k_intfc *interface)
- {
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION(DRV_SUMMARY);
+@@ -1193,7 +1193,7 @@ void fm10k_tx_timeout_reset(struct fm10k_intfc *interface)
  	/* Do the reset outside of interrupt context */
--	if (!test_bit(__FM10K_DOWN, &interface->state)) {
-+	if (!test_bit(__FM10K_DOWN, interface->state)) {
+ 	if (!test_bit(__FM10K_DOWN, &interface->state)) {
  		interface->tx_timeout_count++;
- 		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
+-		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
++		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
  		fm10k_service_event_schedule(interface);
-@@ -1214,7 +1214,7 @@ static bool fm10k_clean_tx_irq(struct fm10k_q_vector *q_vector,
- 	unsigned int budget = q_vector->tx.work_limit;
- 	unsigned int i = tx_ring->next_to_clean;
- 
--	if (test_bit(__FM10K_DOWN, &interface->state))
-+	if (test_bit(__FM10K_DOWN, interface->state))
- 		return true;
- 
- 	tx_buffer = &tx_ring->tx_buffer[i];
-@@ -1344,7 +1344,7 @@ static bool fm10k_clean_tx_irq(struct fm10k_q_vector *q_vector,
- 		smp_mb();
- 		if (__netif_subqueue_stopped(tx_ring->netdev,
- 					     tx_ring->queue_index) &&
--		    !test_bit(__FM10K_DOWN, &interface->state)) {
-+		    !test_bit(__FM10K_DOWN, interface->state)) {
- 			netif_wake_subqueue(tx_ring->netdev,
- 					    tx_ring->queue_index);
- 			++tx_ring->tx_stats.restart_queue;
+ 	}
+ }
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 0d220f1ab5d0..5e10296b1723 100644
+index 01db688cf539..0d220f1ab5d0 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -822,7 +822,7 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
- 	/* Do not throw an error if the interface is down. We will sync once
- 	 * we come up
- 	 */
--	if (test_bit(__FM10K_DOWN, &interface->state))
-+	if (test_bit(__FM10K_DOWN, interface->state))
- 		return 0;
+@@ -1,5 +1,5 @@
+ /* Intel(R) Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -1207,7 +1207,7 @@ int fm10k_setup_tc(struct net_device *dev, u8 tc)
+ 		goto err_open;
  
- 	fm10k_mbx_lock(interface);
+ 	/* flag to indicate SWPRI has yet to be updated */
+-	interface->flags |= FM10K_FLAG_SWPRI_CONFIG;
++	set_bit(FM10K_FLAG_SWPRI_CONFIG, interface->flags);
+ 
+ 	return 0;
+ err_open:
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 8fe4f861e195..68a265ac09f4 100644
+index e372a5823480..8fe4f861e195 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -92,18 +92,18 @@ static int fm10k_hw_ready(struct fm10k_intfc *interface)
+@@ -1,5 +1,5 @@
+ /* Intel(R) Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -136,7 +136,7 @@ static void fm10k_detach_subtask(struct fm10k_intfc *interface)
+ 	if (~value) {
+ 		interface->hw.hw_addr = interface->uc_addr;
+ 		netif_device_attach(netdev);
+-		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
++		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
+ 		netdev_warn(netdev, "PCIe link restored, device now attached\n");
+ 		return;
+ 	}
+@@ -272,11 +272,10 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
  
- void fm10k_service_event_schedule(struct fm10k_intfc *interface)
+ static void fm10k_reset_subtask(struct fm10k_intfc *interface)
  {
--	if (!test_bit(__FM10K_SERVICE_DISABLE, &interface->state) &&
--	    !test_and_set_bit(__FM10K_SERVICE_SCHED, &interface->state))
-+	if (!test_bit(__FM10K_SERVICE_DISABLE, interface->state) &&
-+	    !test_and_set_bit(__FM10K_SERVICE_SCHED, interface->state))
- 		queue_work(fm10k_workqueue, &interface->service_task);
- }
+-	if (!(interface->flags & FM10K_FLAG_RESET_REQUESTED))
++	if (!test_and_clear_bit(FM10K_FLAG_RESET_REQUESTED,
++				interface->flags))
+ 		return;
  
- static void fm10k_service_event_complete(struct fm10k_intfc *interface)
- {
--	WARN_ON(!test_bit(__FM10K_SERVICE_SCHED, &interface->state));
-+	WARN_ON(!test_bit(__FM10K_SERVICE_SCHED, interface->state));
+-	interface->flags &= ~FM10K_FLAG_RESET_REQUESTED;
+-
+ 	netdev_err(interface->netdev, "Reset interface\n");
  
- 	/* flush memory to make sure state is correct before next watchog */
- 	smp_mb__before_atomic();
--	clear_bit(__FM10K_SERVICE_SCHED, &interface->state);
-+	clear_bit(__FM10K_SERVICE_SCHED, interface->state);
- }
+ 	fm10k_reinit(interface);
+@@ -295,7 +294,7 @@ static void fm10k_configure_swpri_map(struct fm10k_intfc *interface)
+ 	int i;
  
- /**
-@@ -158,7 +158,7 @@ static void fm10k_prepare_for_reset(struct fm10k_intfc *interface)
- 	/* put off any impending NetWatchDogTimeout */
- 	netif_trans_update(netdev);
+ 	/* clear flag indicating update is needed */
+-	interface->flags &= ~FM10K_FLAG_SWPRI_CONFIG;
++	clear_bit(FM10K_FLAG_SWPRI_CONFIG, interface->flags);
  
--	while (test_and_set_bit(__FM10K_RESETTING, &interface->state))
-+	while (test_and_set_bit(__FM10K_RESETTING, interface->state))
- 		usleep_range(1000, 2000);
- 
- 	rtnl_lock();
-@@ -241,7 +241,7 @@ static int fm10k_handle_reset(struct fm10k_intfc *interface)
- 
- 	rtnl_unlock();
- 
--	clear_bit(__FM10K_RESETTING, &interface->state);
-+	clear_bit(__FM10K_RESETTING, interface->state);
- 
- 	return err;
- err_open:
-@@ -253,7 +253,7 @@ static int fm10k_handle_reset(struct fm10k_intfc *interface)
- 
- 	rtnl_unlock();
- 
--	clear_bit(__FM10K_RESETTING, &interface->state);
-+	clear_bit(__FM10K_RESETTING, interface->state);
- 
- 	return err;
- }
-@@ -315,11 +315,11 @@ static void fm10k_watchdog_update_host_state(struct fm10k_intfc *interface)
- 	struct fm10k_hw *hw = &interface->hw;
- 	s32 err;
- 
--	if (test_bit(__FM10K_LINK_DOWN, &interface->state)) {
-+	if (test_bit(__FM10K_LINK_DOWN, interface->state)) {
- 		interface->host_ready = false;
- 		if (time_is_after_jiffies(interface->link_down_event))
- 			return;
--		clear_bit(__FM10K_LINK_DOWN, &interface->state);
-+		clear_bit(__FM10K_LINK_DOWN, interface->state);
+ 	/* these registers are only available on the PF */
+ 	if (hw->mac.type != fm10k_mac_pf)
+@@ -323,7 +322,7 @@ static void fm10k_watchdog_update_host_state(struct fm10k_intfc *interface)
+ 		clear_bit(__FM10K_LINK_DOWN, &interface->state);
  	}
  
- 	if (test_bit(FM10K_FLAG_SWPRI_CONFIG, interface->flags)) {
-@@ -410,7 +410,7 @@ void fm10k_update_stats(struct fm10k_intfc *interface)
- 	int i;
+-	if (interface->flags & FM10K_FLAG_SWPRI_CONFIG) {
++	if (test_bit(FM10K_FLAG_SWPRI_CONFIG, interface->flags)) {
+ 		if (rtnl_trylock()) {
+ 			fm10k_configure_swpri_map(interface);
+ 			rtnl_unlock();
+@@ -335,7 +334,7 @@ static void fm10k_watchdog_update_host_state(struct fm10k_intfc *interface)
  
- 	/* ensure only one thread updates stats at a time */
--	if (test_and_set_bit(__FM10K_UPDATING_STATS, &interface->state))
-+	if (test_and_set_bit(__FM10K_UPDATING_STATS, interface->state))
- 		return;
+ 	err = hw->mac.ops.get_host_state(hw, &interface->host_ready);
+ 	if (err && time_is_before_jiffies(interface->last_reset))
+-		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
++		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
  
- 	/* do not allow stats update via service task for next second */
-@@ -491,7 +491,7 @@ void fm10k_update_stats(struct fm10k_intfc *interface)
- 	net_stats->rx_errors = rx_errors;
- 	net_stats->rx_dropped = interface->stats.nodesc_drop.count;
- 
--	clear_bit(__FM10K_UPDATING_STATS, &interface->state);
-+	clear_bit(__FM10K_UPDATING_STATS, interface->state);
+ 	/* free the lock */
+ 	fm10k_mbx_unlock(interface);
+@@ -522,7 +521,7 @@ static void fm10k_watchdog_flush_tx(struct fm10k_intfc *interface)
+ 	 * controller to flush Tx.
+ 	 */
+ 	if (some_tx_pending)
+-		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
++		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
  }
  
  /**
-@@ -531,8 +531,8 @@ static void fm10k_watchdog_flush_tx(struct fm10k_intfc *interface)
- static void fm10k_watchdog_subtask(struct fm10k_intfc *interface)
- {
- 	/* if interface is down do nothing */
--	if (test_bit(__FM10K_DOWN, &interface->state) ||
--	    test_bit(__FM10K_RESETTING, &interface->state))
-+	if (test_bit(__FM10K_DOWN, interface->state) ||
-+	    test_bit(__FM10K_RESETTING, interface->state))
- 		return;
+@@ -863,9 +862,9 @@ static void fm10k_configure_dglort(struct fm10k_intfc *interface)
+ 	       FM10K_MRQC_IPV6 |
+ 	       FM10K_MRQC_TCP_IPV6;
  
- 	if (interface->host_ready)
-@@ -562,8 +562,8 @@ static void fm10k_check_hang_subtask(struct fm10k_intfc *interface)
- 	int i;
+-	if (interface->flags & FM10K_FLAG_RSS_FIELD_IPV4_UDP)
++	if (test_bit(FM10K_FLAG_RSS_FIELD_IPV4_UDP, interface->flags))
+ 		mrqc |= FM10K_MRQC_UDP_IPV4;
+-	if (interface->flags & FM10K_FLAG_RSS_FIELD_IPV6_UDP)
++	if (test_bit(FM10K_FLAG_RSS_FIELD_IPV6_UDP, interface->flags))
+ 		mrqc |= FM10K_MRQC_UDP_IPV6;
  
- 	/* If we're down or resetting, just bail */
--	if (test_bit(__FM10K_DOWN, &interface->state) ||
--	    test_bit(__FM10K_RESETTING, &interface->state))
-+	if (test_bit(__FM10K_DOWN, interface->state) ||
-+	    test_bit(__FM10K_RESETTING, interface->state))
- 		return;
+ 	fm10k_write_reg(hw, FM10K_MRQC(0), mrqc);
+@@ -1167,7 +1166,7 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
+ 	}
  
- 	/* rate limit tx hang checks to only once every 2 seconds */
-@@ -662,7 +662,7 @@ static void fm10k_configure_tx_ring(struct fm10k_intfc *interface,
- 			FM10K_PFVTCTL_FTAG_DESC_ENABLE);
+ 	if (err == FM10K_ERR_RESET_REQUESTED)
+-		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
++		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
  
- 	/* Initialize XPS */
--	if (!test_and_set_bit(__FM10K_TX_XPS_INIT_DONE, &ring->state) &&
-+	if (!test_and_set_bit(__FM10K_TX_XPS_INIT_DONE, ring->state) &&
- 	    ring->q_vector)
- 		netif_set_xps_queue(ring->netdev,
- 				    &ring->q_vector->affinity_mask,
-@@ -979,7 +979,7 @@ void fm10k_netpoll(struct net_device *netdev)
- 	int i;
- 
- 	/* if interface is down do nothing */
--	if (test_bit(__FM10K_DOWN, &interface->state))
-+	if (test_bit(__FM10K_DOWN, interface->state))
- 		return;
- 
- 	for (i = 0; i < interface->num_q_vectors; i++)
-@@ -1172,7 +1172,7 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
+ 	/* if switch toggled state we should reset GLORTs */
  	if (eicr & FM10K_EICR_SWITCHNOTREADY) {
- 		/* force link down for at least 4 seconds */
- 		interface->link_down_event = jiffies + (4 * HZ);
--		set_bit(__FM10K_LINK_DOWN, &interface->state);
-+		set_bit(__FM10K_LINK_DOWN, interface->state);
+@@ -1246,12 +1245,12 @@ static s32 fm10k_mbx_mac_addr(struct fm10k_hw *hw, u32 **results,
+ 	/* MAC was changed so we need reset */
+ 	if (is_valid_ether_addr(hw->mac.perm_addr) &&
+ 	    !ether_addr_equal(hw->mac.perm_addr, hw->mac.addr))
+-		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
++		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
  
- 		/* reset dglort_map back to no config */
- 		hw->mac.dglort_map = FM10K_DGLORTMAP_NONE;
-@@ -1324,7 +1324,7 @@ static s32 fm10k_lport_map(struct fm10k_hw *hw, u32 **results,
- 	if (!err && hw->swapi.status) {
- 		/* force link down for a reasonable delay */
- 		interface->link_down_event = jiffies + (2 * HZ);
--		set_bit(__FM10K_LINK_DOWN, &interface->state);
-+		set_bit(__FM10K_LINK_DOWN, interface->state);
- 
- 		/* reset dglort_map back to no config */
- 		hw->mac.dglort_map = FM10K_DGLORTMAP_NONE;
-@@ -1622,10 +1622,10 @@ void fm10k_up(struct fm10k_intfc *interface)
- 	hw->mac.ops.update_int_moderator(hw);
- 
- 	/* enable statistics capture again */
--	clear_bit(__FM10K_UPDATING_STATS, &interface->state);
-+	clear_bit(__FM10K_UPDATING_STATS, interface->state);
- 
- 	/* clear down bit to indicate we are ready to go */
--	clear_bit(__FM10K_DOWN, &interface->state);
-+	clear_bit(__FM10K_DOWN, interface->state);
- 
- 	/* enable polling cleanups */
- 	fm10k_napi_enable_all(interface);
-@@ -1659,7 +1659,7 @@ void fm10k_down(struct fm10k_intfc *interface)
- 	int err, i = 0, count = 0;
- 
- 	/* signal that we are down to the interrupt handler and service task */
--	if (test_and_set_bit(__FM10K_DOWN, &interface->state))
-+	if (test_and_set_bit(__FM10K_DOWN, interface->state))
- 		return;
- 
- 	/* call carrier off first to avoid false dev_watchdog timeouts */
-@@ -1679,7 +1679,7 @@ void fm10k_down(struct fm10k_intfc *interface)
- 	fm10k_update_stats(interface);
- 
- 	/* prevent updating statistics while we're down */
--	while (test_and_set_bit(__FM10K_UPDATING_STATS, &interface->state))
-+	while (test_and_set_bit(__FM10K_UPDATING_STATS, interface->state))
- 		usleep_range(1000, 2000);
- 
- 	/* skip waiting for TX DMA if we lost PCIe link */
-@@ -1848,8 +1848,8 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
- 	memcpy(interface->rssrk, rss_key, sizeof(rss_key));
- 
- 	/* Start off interface as being down */
--	set_bit(__FM10K_DOWN, &interface->state);
--	set_bit(__FM10K_UPDATING_STATS, &interface->state);
-+	set_bit(__FM10K_DOWN, interface->state);
-+	set_bit(__FM10K_UPDATING_STATS, interface->state);
+ 	/* VLAN override was changed, or default VLAN changed */
+ 	if ((vlan_override != hw->mac.vlan_override) ||
+ 	    (default_vid != hw->mac.default_vid))
+-		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
++		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
  
  	return 0;
  }
-@@ -2026,7 +2026,7 @@ static int fm10k_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	 * must ensure it is disabled since we haven't yet requested the timer
- 	 * or work item.
- 	 */
--	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
-+	set_bit(__FM10K_SERVICE_DISABLE, interface->state);
+@@ -1356,7 +1355,7 @@ static s32 fm10k_lport_map(struct fm10k_hw *hw, u32 **results,
  
- 	err = fm10k_mbx_request_irq(interface);
- 	if (err)
-@@ -2067,7 +2067,7 @@ static int fm10k_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	fm10k_iov_configure(pdev, 0);
- 
- 	/* clear the service task disable bit to allow service task to start */
--	clear_bit(__FM10K_SERVICE_DISABLE, &interface->state);
-+	clear_bit(__FM10K_SERVICE_DISABLE, interface->state);
+ 	/* we need to reset if port count was just updated */
+ 	if (dglort_map != hw->mac.dglort_map)
+-		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
++		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
  
  	return 0;
+ }
+@@ -1395,7 +1394,7 @@ static s32 fm10k_update_pvid(struct fm10k_hw *hw, u32 **results,
  
-@@ -2105,7 +2105,7 @@ static void fm10k_remove(struct pci_dev *pdev)
+ 	/* we need to reset if default VLAN was just updated */
+ 	if (pvid != hw->mac.default_vid)
+-		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
++		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
  
- 	del_timer_sync(&interface->service_timer);
+ 	hw->mac.default_vid = pvid;
  
--	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
-+	set_bit(__FM10K_SERVICE_DISABLE, interface->state);
- 	cancel_work_sync(&interface->service_task);
- 
- 	/* free netdev, this may bounce the interrupts due to setup_tc */
-@@ -2144,7 +2144,7 @@ static void fm10k_prepare_suspend(struct fm10k_intfc *interface)
- 	 * stopped. We stop the watchdog task until after we resume software
- 	 * activity.
- 	 */
--	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
-+	set_bit(__FM10K_SERVICE_DISABLE, interface->state);
- 	cancel_work_sync(&interface->service_task);
- 
- 	fm10k_prepare_for_reset(interface);
-@@ -2170,10 +2170,10 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
- 
- 	/* force link to stay down for a second to prevent link flutter */
- 	interface->link_down_event = jiffies + (HZ);
--	set_bit(__FM10K_LINK_DOWN, &interface->state);
-+	set_bit(__FM10K_LINK_DOWN, interface->state);
- 
- 	/* clear the service task disable bit to allow service task to start */
--	clear_bit(__FM10K_SERVICE_DISABLE, &interface->state);
-+	clear_bit(__FM10K_SERVICE_DISABLE, interface->state);
- 	fm10k_service_event_schedule(interface);
- 
- 	return err;
 -- 
 2.11.0.403.g196674b8396b
 
