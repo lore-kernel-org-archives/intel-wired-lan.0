@@ -1,77 +1,205 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 12 Jan 2017 10:19:29 +1100
-Subject: [Intel-wired-lan] [net PATCH 0/2] Don't use lco_csum to compute
-	IPv4 checksum
-In-Reply-To: <20161129200708.3490344a@canb.auug.org.au>
-References: <20161128153927.15466.99193.stgit@ahduyck-blue-test.jf.intel.com>
- <1480371962.2402.36.camel@intel.com>
- <20161129104253.00ada847@canb.auug.org.au>
- <20161129200708.3490344a@canb.auug.org.au>
-Message-ID: <20170112101929.66c575f0@canb.auug.org.au>
+From: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Date: Thu, 12 Jan 2017 14:35:04 -0800
+Subject: [Intel-wired-lan] [next-queue v4 PATCH 1/7] i40e: Introduce devlink
+	interface.
+In-Reply-To: <1484260510-9162-1-git-send-email-sridhar.samudrala@intel.com>
+References: <1484260510-9162-1-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <1484260510-9162-2-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Dave,
+Add initial devlink support to get/set the mode of SRIOV switch.
+This patch sets the default mode as 'legacy' and enables getting the mode
+and and setting it to 'legacy'.
 
-On Tue, 29 Nov 2016 20:07:08 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> Hi Jeff,
-> 
-> On Tue, 29 Nov 2016 10:43:04 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > On Mon, 28 Nov 2016 14:26:02 -0800 Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:  
-> > >
-> > > On Mon, 2016-11-28 at 10:42 -0500, Alexander Duyck wrote:    
-> > > > When I implemented the GSO partial support in the Intel drivers I was
-> > > > using
-> > > > lco_csum to compute the checksum that we needed to plug into the IPv4
-> > > > checksum field in order to cancel out the data that was not a part of the
-> > > > IPv4 header.? However this didn't take into account that the transport
-> > > > offset might be pointing to the inner transport header.
-> > > > 
-> > > > Instead of using lco_csum I have just coded around it so that we can use
-> > > > the outer IP header plus the IP header length to determine where we need
-> > > > to
-> > > > start our checksum and then just call csum_partial ourselves.
-> > > > 
-> > > > This should fix the SIT issue reported on igb interfaces as well as
-> > > > simliar
-> > > > issues that would pop up on other Intel NICs.
-> > > > 
-> > > > ---
-> > > > 
-> > > > Alexander Duyck (2):
-> > > > ????? igb/igbvf: Don't use lco_csum to compute IPv4 checksum
-> > > > ????? ixgbe/ixgbevf: Don't use lco_csum to compute IPv4 checksum      
-> > > 
-> > > Stephen, I have applied Alex's patches to my net-queue tree. ?Can you
-> > > confirm they resolve the bug seen?    
-> > 
-> > Its a bit tricky because the origin problem only happens on my
-> > production server (ozlabs.org), but I will see if I can manage to just
-> > remove and reload the driver ...  though, the server is running a 4.7.8
-> > kernel and I am wondering how well these patches will apply?  
-> 
-> We have a winner!  This fixes my problem, so I can run at full speed
-> with gso and tso enabled in the sit interface and tx-gso-partial
-> enabled on the underlying ethernet.
-> 
-> Thanks to everyone for diagnosis and solution.
-> 
-> It would be nice if this fix went into the stable kernels as well so it
-> will turn up in the distro kernels eventually.
+The switch mode can be get/set via following 'devlink' commands.
 
-It looks like these 2 commits:
+# devlink dev eswitch show pci/0000:05:00.0
+pci/0000:05:00.0: mode legacy
+# devlink dev eswitch set pci/0000:05:00.0 mode switchdev
+devlink answers: Operation not supported
+# devlink dev eswitch set pci/0000:05:00.0 mode legacy
+# devlink dev eswitch show pci/0000:05:00.0
+pci/0000:05:00.0: mode legacy
 
-516165a1e2f2	igb/igbvf: Don't use lco_csum to compute IPv4 checksum
-c54cdc316dbd	ixgbe/ixgbevf: Don't use lco_csum to compute IPv4 checksum
+Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+---
+ drivers/net/ethernet/intel/Kconfig          |  1 +
+ drivers/net/ethernet/intel/i40e/i40e.h      |  3 ++
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 80 ++++++++++++++++++++++++++---
+ 3 files changed, 76 insertions(+), 8 deletions(-)
 
-have not been sent to stable.  They fix a bug introduced in v4.7-rc1
-and so need to go into 4.7 and 4.8 stable trees.
-
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 1349b45..0dbb87e 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -215,6 +215,7 @@ config I40E
+ 	tristate "Intel(R) Ethernet Controller XL710 Family support"
+ 	imply PTP_1588_CLOCK
+ 	depends on PCI
++	depends on MAY_USE_DEVLINK
+ 	---help---
+ 	  This driver supports Intel(R) Ethernet Controller XL710 Family of
+ 	  devices.  For more information on how to identify your adapter, go
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 9b51026..331a1e0 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -54,6 +54,8 @@
+ #include <linux/clocksource.h>
+ #include <linux/net_tstamp.h>
+ #include <linux/ptp_clock_kernel.h>
++#include <net/devlink.h>
++
+ #include "i40e_type.h"
+ #include "i40e_prototype.h"
+ #ifdef I40E_FCOE
+@@ -476,6 +478,7 @@ struct i40e_pf {
+ 	u32 ioremap_len;
+ 	u32 fd_inv;
+ 	u16 phy_led_val;
++	enum devlink_eswitch_mode eswitch_mode;
+ };
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b685b55..ac49f89 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -11294,6 +11294,57 @@ static void i40e_get_platform_mac_addr(struct pci_dev *pdev, struct i40e_pf *pf)
+ }
+ 
+ /**
++ * i40e_devlink_eswitch_mode_get
++ *
++ * @devlink: pointer to devlink struct
++ * @mode: sr-iov switch mode pointer
++ *
++ * Returns the switch mode of the associated PF in the @mode pointer.
++ */
++static int i40e_devlink_eswitch_mode_get(struct devlink *devlink, u16 *mode)
++{
++	struct i40e_pf *pf = devlink_priv(devlink);
++
++	*mode = pf->eswitch_mode;
++
++	return 0;
++}
++
++/**
++ * i40e_devlink_eswitch_mode_set
++ *
++ * @devlink: pointer to devlink struct
++ * @mode: sr-iov switch mode
++ *
++ * Set the switch mode of the associated PF.
++ * Returns 0 on success and -EOPNOTSUPP on error.
++ */
++static int i40e_devlink_eswitch_mode_set(struct devlink *devlink, u16 mode)
++{
++	struct i40e_pf *pf = devlink_priv(devlink);
++	int err = 0;
++
++	if (mode == pf->eswitch_mode)
++		goto done;
++
++	switch (mode) {
++	case DEVLINK_ESWITCH_MODE_LEGACY:
++		pf->eswitch_mode = mode;
++		break;
++	default:
++		err = -EOPNOTSUPP;
++		break;
++	}
++done:
++	return err;
++}
++
++static const struct devlink_ops i40e_devlink_ops = {
++	.eswitch_mode_get = i40e_devlink_eswitch_mode_get,
++	.eswitch_mode_set = i40e_devlink_eswitch_mode_set,
++};
++
++/**
+  * i40e_probe - Device initialization routine
+  * @pdev: PCI device information struct
+  * @ent: entry in i40e_pci_tbl
+@@ -11310,6 +11361,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	struct i40e_pf *pf;
+ 	struct i40e_hw *hw;
+ 	static u16 pfs_found;
++	struct devlink *devlink;
+ 	u16 wol_nvm_bits;
+ 	u16 link_status;
+ 	int err;
+@@ -11343,20 +11395,28 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	pci_enable_pcie_error_reporting(pdev);
+ 	pci_set_master(pdev);
+ 
++	devlink = devlink_alloc(&i40e_devlink_ops, sizeof(*pf));
++	if (!devlink) {
++		dev_err(&pdev->dev, "devlink_alloc failed\n");
++		err = -ENOMEM;
++		goto err_devlink_alloc;
++	}
++
+ 	/* Now that we have a PCI connection, we need to do the
+ 	 * low level device setup.  This is primarily setting up
+ 	 * the Admin Queue structures and then querying for the
+ 	 * device's current profile information.
+ 	 */
+-	pf = kzalloc(sizeof(*pf), GFP_KERNEL);
+-	if (!pf) {
+-		err = -ENOMEM;
+-		goto err_pf_alloc;
+-	}
++	pf = devlink_priv(devlink);
+ 	pf->next_vsi = 0;
+ 	pf->pdev = pdev;
+ 	set_bit(__I40E_DOWN, &pf->state);
+ 
++	pf->eswitch_mode = DEVLINK_ESWITCH_MODE_LEGACY;
++	err = devlink_register(devlink, &pdev->dev);
++	if (err)
++		goto err_devlink_register;
++
+ 	hw = &pf->hw;
+ 	hw->back = pf;
+ 
+@@ -11830,8 +11890,10 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ err_pf_reset:
+ 	iounmap(hw->hw_addr);
+ err_ioremap:
+-	kfree(pf);
+-err_pf_alloc:
++	devlink_unregister(devlink);
++err_devlink_register:
++	devlink_free(devlink);
++err_devlink_alloc:
+ 	pci_disable_pcie_error_reporting(pdev);
+ 	pci_release_mem_regions(pdev);
+ err_pci_reg:
+@@ -11853,6 +11915,7 @@ static void i40e_remove(struct pci_dev *pdev)
+ {
+ 	struct i40e_pf *pf = pci_get_drvdata(pdev);
+ 	struct i40e_hw *hw = &pf->hw;
++	struct devlink *devlink = priv_to_devlink(pf);
+ 	i40e_status ret_code;
+ 	int i;
+ 
+@@ -11941,7 +12004,8 @@ static void i40e_remove(struct pci_dev *pdev)
+ 	kfree(pf->vsi);
+ 
+ 	iounmap(hw->hw_addr);
+-	kfree(pf);
++	devlink_unregister(devlink);
++	devlink_free(devlink);
+ 	pci_release_mem_regions(pdev);
+ 
+ 	pci_disable_pcie_error_reporting(pdev);
 -- 
-Cheers,
-Stephen Rothwell
+2.5.5
+
