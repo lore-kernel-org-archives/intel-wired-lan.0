@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 17 Jan 2017 08:33:03 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 9/9] igb: Re-add support for
-	build_skb in igb
+Date: Tue, 17 Jan 2017 08:31:31 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 1/9] igb: Add support for
+	DMA_ATTR_WEAK_ORDERING
 In-Reply-To: <20170117163010.5184.65449.stgit@localhost.localdomain>
 References: <20170117163010.5184.65449.stgit@localhost.localdomain>
-Message-ID: <20170117163300.5184.46569.stgit@localhost.localdomain>
+Message-ID: <20170117163123.5184.33585.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,81 +13,59 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This reverts commit f9d40f6a9921 ("igb: Revert support for build_skb in
-igb") and adds a few changes to update it to work with the latest version
-of igb. We are now able to revert the removal of this due to the fact
-that with the recent changes to the page count and the use of
-DMA_ATTR_SKIP_CPU_SYNC we can make the pages writable so we should not be
-invalidating the additional data added when we call build_skb.
+Since we are already using DMA attributes in igb for Rx there is no reason
+why we can't also apply DMA_ATTR_WEAK_ORDERING which is needed on some
+platforms to improve performance.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c |   47 +++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+ drivers/net/ethernet/intel/igb/igb.h      |    3 +++
+ drivers/net/ethernet/intel/igb/igb_main.c |    6 +++---
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index acbc3abe2ddd..87c9fe9d6f18 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -148,6 +148,9 @@ struct vf_data_storage {
+ /* How many Rx Buffers do we bundle into one write to the hardware ? */
+ #define IGB_RX_BUFFER_WRITE	16 /* Must be power of 2 */
+ 
++#define IGB_RX_DMA_ATTR \
++	(DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_WEAK_ORDERING)
++
+ #define AUTO_ALL_MODES		0
+ #define IGB_EEPROM_APME		0x0400
+ 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index dc70ff07a1de..a211abc8999c 100644
+index cb08900c9cf2..eede6db6037c 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -7020,6 +7020,51 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
- 	return skb;
- }
+@@ -3963,7 +3963,7 @@ static void igb_clean_rx_ring(struct igb_ring *rx_ring)
+ 				     buffer_info->dma,
+ 				     PAGE_SIZE,
+ 				     DMA_FROM_DEVICE,
+-				     DMA_ATTR_SKIP_CPU_SYNC);
++				     IGB_RX_DMA_ATTR);
+ 		__page_frag_cache_drain(buffer_info->page,
+ 					buffer_info->pagecnt_bias);
  
-+static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
-+				     struct igb_rx_buffer *rx_buffer,
-+				     union e1000_adv_rx_desc *rx_desc,
-+				     unsigned int size)
-+{
-+	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+#if (PAGE_SIZE < 8192)
-+	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
-+#else
-+	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
-+				SKB_DATA_ALIGN(IGB_SKB_PAD + size);
-+#endif
-+	struct sk_buff *skb;
-+
-+	/* prefetch first cache line of first page */
-+	prefetch(va);
-+#if L1_CACHE_BYTES < 128
-+	prefetch(va + L1_CACHE_BYTES);
-+#endif
-+
-+	/* build an skb to around the page buffer */
-+	skb = build_skb(va - IGB_SKB_PAD, truesize);
-+	if (unlikely(!skb))
-+		return NULL;
-+
-+	/* update pointers within the skb to store the data */
-+	skb_reserve(skb, IGB_SKB_PAD);
-+	__skb_put(skb, size);
-+
-+	/* pull timestamp out of packet data */
-+	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
-+		igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb);
-+		__skb_pull(skb, IGB_TS_HDR_LEN);
-+	}
-+
-+	/* update buffer offset */
-+#if (PAGE_SIZE < 8192)
-+	rx_buffer->page_offset ^= truesize;
-+#else
-+	rx_buffer->page_offset += truesize;
-+#endif
-+
-+	return skb;
-+}
-+
- static inline void igb_rx_checksum(struct igb_ring *ring,
- 				   union e1000_adv_rx_desc *rx_desc,
- 				   struct sk_buff *skb)
-@@ -7249,6 +7294,8 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 		/* retrieve a buffer from the ring */
- 		if (skb)
- 			igb_add_rx_frag(rx_ring, rx_buffer, skb, size);
-+		else if (ring_uses_build_skb(rx_ring))
-+			skb = igb_build_skb(rx_ring, rx_buffer, rx_desc, size);
- 		else
- 			skb = igb_construct_skb(rx_ring, rx_buffer,
- 						rx_desc, size);
+@@ -6992,7 +6992,7 @@ static struct sk_buff *igb_fetch_rx_buffer(struct igb_ring *rx_ring,
+ 		 */
+ 		dma_unmap_page_attrs(rx_ring->dev, rx_buffer->dma,
+ 				     PAGE_SIZE, DMA_FROM_DEVICE,
+-				     DMA_ATTR_SKIP_CPU_SYNC);
++				     IGB_RX_DMA_ATTR);
+ 		__page_frag_cache_drain(page, rx_buffer->pagecnt_bias);
+ 	}
+ 
+@@ -7252,7 +7252,7 @@ static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
+ 
+ 	/* map page for use */
+ 	dma = dma_map_page_attrs(rx_ring->dev, page, 0, PAGE_SIZE,
+-				 DMA_FROM_DEVICE, DMA_ATTR_SKIP_CPU_SYNC);
++				 DMA_FROM_DEVICE, IGB_RX_DMA_ATTR);
+ 
+ 	/* if mapping failed free memory back to system since
+ 	 * there isn't much point in holding memory we can't use
 
