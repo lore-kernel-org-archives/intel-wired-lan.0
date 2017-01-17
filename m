@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 17 Jan 2017 08:37:03 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 09/11] ixgbe: Add private flag to
-	control buffer mode
+Date: Tue, 17 Jan 2017 08:36:28 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 06/11] ixgbe: Use length to
+ determine if descriptor is done
 In-Reply-To: <20170117163401.5423.37993.stgit@localhost.localdomain>
 References: <20170117163401.5423.37993.stgit@localhost.localdomain>
-Message-ID: <20170117163700.5423.65006.stgit@localhost.localdomain>
+Message-ID: <20170117163620.5423.4591.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,111 +13,85 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Since there are potential drawbacks to the new Rx allocation approach I
-thought it best to add a "chicken bit" so that we can turn the feature off
-if in the event that a problem is found.
-
-It also provides a means of validating the legacy Rx path in the event that
-we are forced to fall back.  At some point in the future when we are
-convinced we don't need it anymore we might be able to drop the legacy-rx
-flag.
+This change makes it so that we use the length of the packet instead of the
+DD status bit to determine if a new descriptor is ready to be processed.
+The obvious advantage is that it cuts down on reads as we don't really even
+need the DD bit if going from a 0 to a non-zero value on size is enough to
+inform us that the packet has been completed.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   47 ++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+
+v2: Update ethtool loopback test to use length check instead of DD check
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   14 ++++++++------
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index ab189fc09298..616e47982755 100644
+index aa80ece9ea96..ab189fc09298 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -151,6 +151,13 @@ struct ixgbe_stats {
- };
- #define IXGBE_TEST_LEN sizeof(ixgbe_gstrings_test) / ETH_GSTRING_LEN
+@@ -1909,7 +1909,7 @@ static u16 ixgbe_clean_test_rings(struct ixgbe_ring *rx_ring,
+ 	tx_ntc = tx_ring->next_to_clean;
+ 	rx_desc = IXGBE_RX_DESC(rx_ring, rx_ntc);
  
-+static const char ixgbe_priv_flags_strings[][ETH_GSTRING_LEN] = {
-+#define IXGBE_PRIV_FLAGS_LEGACY_RX	BIT(0)
-+	"legacy-rx",
-+};
-+
-+#define IXGBE_PRIV_FLAGS_STR_LEN ARRAY_SIZE(ixgbe_priv_flags_strings)
-+
- /* currently supported speeds for 10G */
- #define ADVRTSD_MSK_10G (SUPPORTED_10000baseT_Full | \
- 			 SUPPORTED_10000baseKX4_Full | \
-@@ -1002,6 +1009,8 @@ static void ixgbe_get_drvinfo(struct net_device *netdev,
+-	while (ixgbe_test_staterr(rx_desc, IXGBE_RXD_STAT_DD)) {
++	while (rx_desc->wb.upper.length) {
+ 		/* check Rx buffer */
+ 		rx_buffer = &rx_ring->rx_buffer_info[rx_ntc];
  
- 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev),
- 		sizeof(drvinfo->bus_info));
-+
-+	drvinfo->n_priv_flags = IXGBE_PRIV_FLAGS_STR_LEN;
- }
- 
- static void ixgbe_get_ringparam(struct net_device *netdev,
-@@ -1141,6 +1150,8 @@ static int ixgbe_get_sset_count(struct net_device *netdev, int sset)
- 		return IXGBE_TEST_LEN;
- 	case ETH_SS_STATS:
- 		return IXGBE_STATS_LEN;
-+	case ETH_SS_PRIV_FLAGS:
-+		return IXGBE_PRIV_FLAGS_STR_LEN;
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-@@ -1305,6 +1316,9 @@ static void ixgbe_get_strings(struct net_device *netdev, u32 stringset,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 5e210fb71366..c93921256f2e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -1653,8 +1653,8 @@ void ixgbe_alloc_rx_buffers(struct ixgbe_ring *rx_ring, u16 cleaned_count)
+ 			i -= rx_ring->count;
  		}
- 		/* BUG_ON(p - data != IXGBE_STATS_LEN * ETH_GSTRING_LEN); */
- 		break;
-+	case ETH_SS_PRIV_FLAGS:
-+		memcpy(data, ixgbe_priv_flags_strings,
-+		       IXGBE_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
+ 
+-		/* clear the status bits for the next_to_use descriptor */
+-		rx_desc->wb.upper.status_error = 0;
++		/* clear the length for the next_to_use descriptor */
++		rx_desc->wb.upper.length = 0;
+ 
+ 		cleaned_count--;
+ 	} while (cleaned_count);
+@@ -2171,7 +2171,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 
+ 		rx_desc = IXGBE_RX_DESC(rx_ring, rx_ring->next_to_clean);
+ 
+-		if (!rx_desc->wb.upper.status_error)
++		if (!rx_desc->wb.upper.length)
+ 			break;
+ 
+ 		/* This memory barrier is needed to keep us from reading
+@@ -3750,6 +3750,7 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
+ 			     struct ixgbe_ring *ring)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
++	union ixgbe_adv_rx_desc *rx_desc;
+ 	u64 rdba = ring->dma;
+ 	u32 rxdctl;
+ 	u8 reg_idx = ring->reg_idx;
+@@ -3784,6 +3785,10 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
+ 		rxdctl |=  0x080420;
  	}
- }
  
-@@ -3386,6 +3400,37 @@ static int ixgbe_set_eee(struct net_device *netdev, struct ethtool_eee *edata)
- 	return 0;
- }
++	/* initialize Rx descriptor 0 */
++	rx_desc = IXGBE_RX_DESC(ring, 0);
++	rx_desc->wb.upper.length = 0;
++
+ 	/* enable receive descriptor ring */
+ 	rxdctl |= IXGBE_RXDCTL_ENABLE;
+ 	IXGBE_WRITE_REG(hw, IXGBE_RXDCTL(reg_idx), rxdctl);
+@@ -4999,9 +5004,6 @@ static void ixgbe_clean_rx_ring(struct ixgbe_ring *rx_ring)
+ 	size = sizeof(struct ixgbe_rx_buffer) * rx_ring->count;
+ 	memset(rx_ring->rx_buffer_info, 0, size);
  
-+static u32 ixgbe_get_priv_flags(struct net_device *netdev)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+	u32 priv_flags = 0;
-+
-+	if (adapter->flags2 & IXGBE_FLAG2_RX_LEGACY)
-+		priv_flags |= IXGBE_PRIV_FLAGS_LEGACY_RX;
-+
-+	return priv_flags;
-+}
-+
-+static int ixgbe_set_priv_flags(struct net_device *netdev, u32 priv_flags)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+	unsigned int flags2 = adapter->flags2;
-+
-+	flags2 &= ~IXGBE_FLAG2_RX_LEGACY;
-+	if (priv_flags & IXGBE_PRIV_FLAGS_LEGACY_RX)
-+		flags2 |= IXGBE_FLAG2_RX_LEGACY;
-+
-+	if (flags2 != adapter->flags2) {
-+		adapter->flags2 = flags2;
-+
-+		/* reset interface to repopulate queues */
-+		if (netif_running(netdev))
-+			ixgbe_reinit_locked(adapter);
-+	}
-+
-+	return 0;
-+}
-+
- static const struct ethtool_ops ixgbe_ethtool_ops = {
- 	.get_settings           = ixgbe_get_settings,
- 	.set_settings           = ixgbe_set_settings,
-@@ -3422,6 +3467,8 @@ static int ixgbe_set_eee(struct net_device *netdev, struct ethtool_eee *edata)
- 	.set_eee		= ixgbe_set_eee,
- 	.get_channels		= ixgbe_get_channels,
- 	.set_channels		= ixgbe_set_channels,
-+	.get_priv_flags		= ixgbe_get_priv_flags,
-+	.set_priv_flags		= ixgbe_set_priv_flags,
- 	.get_ts_info		= ixgbe_get_ts_info,
- 	.get_module_info	= ixgbe_get_module_info,
- 	.get_module_eeprom	= ixgbe_get_module_eeprom,
+-	/* Zero out the descriptor ring */
+-	memset(rx_ring->desc, 0, rx_ring->size);
+-
+ 	rx_ring->next_to_alloc = 0;
+ 	rx_ring->next_to_clean = 0;
+ 	rx_ring->next_to_use = 0;
 
