@@ -1,59 +1,94 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 17 Jan 2017 08:31:17 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 0/9] Add support for writable
-	pages and build_skb
-Message-ID: <20170117163010.5184.65449.stgit@localhost.localdomain>
+Date: Tue, 17 Jan 2017 08:32:26 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 5/9] igb: Limit maximum frame Rx
+	based on MTU
+In-Reply-To: <20170117163010.5184.65449.stgit@localhost.localdomain>
+References: <20170117163010.5184.65449.stgit@localhost.localdomain>
+Message-ID: <20170117163222.5184.92903.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch set enables support for using the recent changes that allow for
-unmapping pages without invalidating their contents via
-DMA_ATTR_SKIP_CPU_SYNC.  With this change DMA pages should be writable and
-as a result we should be able to make use of build_skb which can be used to
-drop the skb->head memory allocation, header parsing, and memcpy from the
-receive path which can greatly help to improve performance.
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-My main concern at this point is that there might be an architecture where
-I didn't get DMA_ATTR_SKIP_CPU_SYNC implemented that might still need it.
-For that reason I have also added a ethtool private flag called out as
-"legacy-rx".  If a platform encounters an issue where the Rx can possibly
-corrupt data it can be enbled by running:
-        ethtool --set-priv-flags DEVNAME legacy-rx on
+In order to support the use of build_skb going forward it will be necessary
+to place a maximum limit on the amount of data we can receive when jumbo
+frames is not enabled.  In order to do this I am adding a new upper limit
+for receive based on the size of a 2K buffer minus padding.
 
-The testing matrix for all of these patches is going to be pretty
-extensive.  Basically we want to test these patches on as many platforms
-and architectures as possible with as many features being toggled as
-possible including SR-IOV and Jumbo Frames all while receiving traffic.
-
-Within the patches there is also some intialization changes.  Specifically
-I have updated the code paths to defer clearing the rings until we are
-about to initialize them and give them to hardware.  By doing this we are
-able to avoid having to dirty memory we don't need to which should help to
-improve suspend/resume times for when we start looking at possibly using
-the suspend/resume approach for migration of interface in VMs.
-
-v2: Minor fixes to address a few issues found in testing
-
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
+ drivers/net/ethernet/intel/igb/igb.h      |   10 +++++++++-
+ drivers/net/ethernet/intel/igb/igb_main.c |   16 ++++++++++++----
+ 2 files changed, 21 insertions(+), 5 deletions(-)
 
-Alexander Duyck (9):
-      igb: Add support for DMA_ATTR_WEAK_ORDERING
-      igb: Use length to determine if descriptor is done
-      igb: Clear Rx buffer_info in configure instead of clean
-      igb: Don't bother clearing Tx buffer_info in igb_clean_tx_ring
-      igb: Limit maximum frame Rx based on MTU
-      igb: Add support for padding packet
-      igb: Add support for ethtool private flag to allow use of legacy Rx
-      igb: Break out Rx buffer page management
-      igb: Re-add support for build_skb in igb
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index a638254f4e06..a74928cc0e58 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -143,8 +143,17 @@ struct vf_data_storage {
+ #define IGB_RXBUFFER_256	256
+ #define IGB_RXBUFFER_2048	2048
+ #define IGB_RX_HDR_LEN		IGB_RXBUFFER_256
++#define IGB_TS_HDR_LEN		16
+ #define IGB_RX_BUFSZ		IGB_RXBUFFER_2048
+ 
++#define IGB_SKB_PAD		(NET_SKB_PAD + NET_IP_ALIGN)
++#if (PAGE_SIZE < 8192)
++#define IGB_MAX_FRAME_BUILD_SKB \
++	(SKB_WITH_OVERHEAD(IGB_RXBUFFER_2048) - IGB_SKB_PAD - IGB_TS_HDR_LEN)
++#else
++#define IGB_MAX_FRAME_BUILD_SKB (IGB_RXBUFFER_2048 - IGB_TS_HDR_LEN)
++#endif
++
+ /* How many Rx Buffers do we bundle into one write to the hardware ? */
+ #define IGB_RX_BUFFER_WRITE	16 /* Must be power of 2 */
+ 
+@@ -561,7 +570,6 @@ struct igb_adapter {
+ #define IGB_DMCTLX_DCFLUSH_DIS	0x80000000  /* Disable DMA Coal Flush */
+ 
+ #define IGB_82576_TSYNC_SHIFT	19
+-#define IGB_TS_HDR_LEN		16
+ enum e1000_state_t {
+ 	__IGB_TESTING,
+ 	__IGB_RESETTING,
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 3f3ae098e39a..d881c51ef162 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -4250,7 +4250,7 @@ static void igb_set_rx_mode(struct net_device *netdev)
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	unsigned int vfn = adapter->vfs_allocated_count;
+-	u32 rctl = 0, vmolr = 0;
++	u32 rctl = 0, vmolr = 0, rlpml = MAX_JUMBO_FRAME_SIZE;
+ 	int count;
+ 
+ 	/* Check for Promiscuous and All Multicast modes */
+@@ -4322,12 +4322,20 @@ static void igb_set_rx_mode(struct net_device *netdev)
+ 	vmolr |= rd32(E1000_VMOLR(vfn)) &
+ 		 ~(E1000_VMOLR_ROPE | E1000_VMOLR_MPME | E1000_VMOLR_ROMPE);
+ 
+-	/* enable Rx jumbo frames, no need for restriction */
++	/* enable Rx jumbo frames, restrict as needed to support build_skb */
+ 	vmolr &= ~E1000_VMOLR_RLPML_MASK;
+-	vmolr |= MAX_JUMBO_FRAME_SIZE | E1000_VMOLR_LPE;
++#if (PAGE_SIZE < 8192)
++	if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB) {
++		if (!adapter->vfs_allocated_count)
++			rlpml = IGB_MAX_FRAME_BUILD_SKB;
++		vmolr |= IGB_MAX_FRAME_BUILD_SKB;
++	} else
++#endif
++		vmolr |= MAX_JUMBO_FRAME_SIZE;
++	vmolr |= E1000_VMOLR_LPE;
+ 
+ 	wr32(E1000_VMOLR(vfn), vmolr);
+-	wr32(E1000_RLPML, MAX_JUMBO_FRAME_SIZE);
++	wr32(E1000_RLPML, rlpml);
+ 
+ 	igb_restore_vf_multicasts(adapter);
+ }
 
-
- drivers/net/ethernet/intel/igb/igb.h         |   56 +++
- drivers/net/ethernet/intel/igb/igb_ethtool.c |   65 +++
- drivers/net/ethernet/intel/igb/igb_main.c    |  511 ++++++++++++++++----------
- 3 files changed, 433 insertions(+), 199 deletions(-)
-
---
