@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 17 Jan 2017 08:32:26 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 5/9] igb: Limit maximum frame Rx
-	based on MTU
-In-Reply-To: <20170117163010.5184.65449.stgit@localhost.localdomain>
-References: <20170117163010.5184.65449.stgit@localhost.localdomain>
-Message-ID: <20170117163222.5184.92903.stgit@localhost.localdomain>
+Date: Tue, 17 Jan 2017 08:37:03 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 09/11] ixgbe: Add private flag to
+	control buffer mode
+In-Reply-To: <20170117163401.5423.37993.stgit@localhost.localdomain>
+References: <20170117163401.5423.37993.stgit@localhost.localdomain>
+Message-ID: <20170117163700.5423.65006.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,82 +13,111 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-In order to support the use of build_skb going forward it will be necessary
-to place a maximum limit on the amount of data we can receive when jumbo
-frames is not enabled.  In order to do this I am adding a new upper limit
-for receive based on the size of a 2K buffer minus padding.
+Since there are potential drawbacks to the new Rx allocation approach I
+thought it best to add a "chicken bit" so that we can turn the feature off
+if in the event that a problem is found.
+
+It also provides a means of validating the legacy Rx path in the event that
+we are forced to fall back.  At some point in the future when we are
+convinced we don't need it anymore we might be able to drop the legacy-rx
+flag.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb.h      |   10 +++++++++-
- drivers/net/ethernet/intel/igb/igb_main.c |   16 ++++++++++++----
- 2 files changed, 21 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   47 ++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index a638254f4e06..a74928cc0e58 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -143,8 +143,17 @@ struct vf_data_storage {
- #define IGB_RXBUFFER_256	256
- #define IGB_RXBUFFER_2048	2048
- #define IGB_RX_HDR_LEN		IGB_RXBUFFER_256
-+#define IGB_TS_HDR_LEN		16
- #define IGB_RX_BUFSZ		IGB_RXBUFFER_2048
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index ab189fc09298..616e47982755 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -151,6 +151,13 @@ struct ixgbe_stats {
+ };
+ #define IXGBE_TEST_LEN sizeof(ixgbe_gstrings_test) / ETH_GSTRING_LEN
  
-+#define IGB_SKB_PAD		(NET_SKB_PAD + NET_IP_ALIGN)
-+#if (PAGE_SIZE < 8192)
-+#define IGB_MAX_FRAME_BUILD_SKB \
-+	(SKB_WITH_OVERHEAD(IGB_RXBUFFER_2048) - IGB_SKB_PAD - IGB_TS_HDR_LEN)
-+#else
-+#define IGB_MAX_FRAME_BUILD_SKB (IGB_RXBUFFER_2048 - IGB_TS_HDR_LEN)
-+#endif
++static const char ixgbe_priv_flags_strings[][ETH_GSTRING_LEN] = {
++#define IXGBE_PRIV_FLAGS_LEGACY_RX	BIT(0)
++	"legacy-rx",
++};
 +
- /* How many Rx Buffers do we bundle into one write to the hardware ? */
- #define IGB_RX_BUFFER_WRITE	16 /* Must be power of 2 */
++#define IXGBE_PRIV_FLAGS_STR_LEN ARRAY_SIZE(ixgbe_priv_flags_strings)
++
+ /* currently supported speeds for 10G */
+ #define ADVRTSD_MSK_10G (SUPPORTED_10000baseT_Full | \
+ 			 SUPPORTED_10000baseKX4_Full | \
+@@ -1002,6 +1009,8 @@ static void ixgbe_get_drvinfo(struct net_device *netdev,
  
-@@ -561,7 +570,6 @@ struct igb_adapter {
- #define IGB_DMCTLX_DCFLUSH_DIS	0x80000000  /* Disable DMA Coal Flush */
- 
- #define IGB_82576_TSYNC_SHIFT	19
--#define IGB_TS_HDR_LEN		16
- enum e1000_state_t {
- 	__IGB_TESTING,
- 	__IGB_RESETTING,
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 3f3ae098e39a..d881c51ef162 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -4250,7 +4250,7 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
- 	unsigned int vfn = adapter->vfs_allocated_count;
--	u32 rctl = 0, vmolr = 0;
-+	u32 rctl = 0, vmolr = 0, rlpml = MAX_JUMBO_FRAME_SIZE;
- 	int count;
- 
- 	/* Check for Promiscuous and All Multicast modes */
-@@ -4322,12 +4322,20 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	vmolr |= rd32(E1000_VMOLR(vfn)) &
- 		 ~(E1000_VMOLR_ROPE | E1000_VMOLR_MPME | E1000_VMOLR_ROMPE);
- 
--	/* enable Rx jumbo frames, no need for restriction */
-+	/* enable Rx jumbo frames, restrict as needed to support build_skb */
- 	vmolr &= ~E1000_VMOLR_RLPML_MASK;
--	vmolr |= MAX_JUMBO_FRAME_SIZE | E1000_VMOLR_LPE;
-+#if (PAGE_SIZE < 8192)
-+	if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB) {
-+		if (!adapter->vfs_allocated_count)
-+			rlpml = IGB_MAX_FRAME_BUILD_SKB;
-+		vmolr |= IGB_MAX_FRAME_BUILD_SKB;
-+	} else
-+#endif
-+		vmolr |= MAX_JUMBO_FRAME_SIZE;
-+	vmolr |= E1000_VMOLR_LPE;
- 
- 	wr32(E1000_VMOLR(vfn), vmolr);
--	wr32(E1000_RLPML, MAX_JUMBO_FRAME_SIZE);
-+	wr32(E1000_RLPML, rlpml);
- 
- 	igb_restore_vf_multicasts(adapter);
+ 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev),
+ 		sizeof(drvinfo->bus_info));
++
++	drvinfo->n_priv_flags = IXGBE_PRIV_FLAGS_STR_LEN;
  }
+ 
+ static void ixgbe_get_ringparam(struct net_device *netdev,
+@@ -1141,6 +1150,8 @@ static int ixgbe_get_sset_count(struct net_device *netdev, int sset)
+ 		return IXGBE_TEST_LEN;
+ 	case ETH_SS_STATS:
+ 		return IXGBE_STATS_LEN;
++	case ETH_SS_PRIV_FLAGS:
++		return IXGBE_PRIV_FLAGS_STR_LEN;
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+@@ -1305,6 +1316,9 @@ static void ixgbe_get_strings(struct net_device *netdev, u32 stringset,
+ 		}
+ 		/* BUG_ON(p - data != IXGBE_STATS_LEN * ETH_GSTRING_LEN); */
+ 		break;
++	case ETH_SS_PRIV_FLAGS:
++		memcpy(data, ixgbe_priv_flags_strings,
++		       IXGBE_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
+ 	}
+ }
+ 
+@@ -3386,6 +3400,37 @@ static int ixgbe_set_eee(struct net_device *netdev, struct ethtool_eee *edata)
+ 	return 0;
+ }
+ 
++static u32 ixgbe_get_priv_flags(struct net_device *netdev)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
++	u32 priv_flags = 0;
++
++	if (adapter->flags2 & IXGBE_FLAG2_RX_LEGACY)
++		priv_flags |= IXGBE_PRIV_FLAGS_LEGACY_RX;
++
++	return priv_flags;
++}
++
++static int ixgbe_set_priv_flags(struct net_device *netdev, u32 priv_flags)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
++	unsigned int flags2 = adapter->flags2;
++
++	flags2 &= ~IXGBE_FLAG2_RX_LEGACY;
++	if (priv_flags & IXGBE_PRIV_FLAGS_LEGACY_RX)
++		flags2 |= IXGBE_FLAG2_RX_LEGACY;
++
++	if (flags2 != adapter->flags2) {
++		adapter->flags2 = flags2;
++
++		/* reset interface to repopulate queues */
++		if (netif_running(netdev))
++			ixgbe_reinit_locked(adapter);
++	}
++
++	return 0;
++}
++
+ static const struct ethtool_ops ixgbe_ethtool_ops = {
+ 	.get_settings           = ixgbe_get_settings,
+ 	.set_settings           = ixgbe_set_settings,
+@@ -3422,6 +3467,8 @@ static int ixgbe_set_eee(struct net_device *netdev, struct ethtool_eee *edata)
+ 	.set_eee		= ixgbe_set_eee,
+ 	.get_channels		= ixgbe_get_channels,
+ 	.set_channels		= ixgbe_set_channels,
++	.get_priv_flags		= ixgbe_get_priv_flags,
++	.set_priv_flags		= ixgbe_set_priv_flags,
+ 	.get_ts_info		= ixgbe_get_ts_info,
+ 	.get_module_info	= ixgbe_get_module_info,
+ 	.get_module_eeprom	= ixgbe_get_module_eeprom,
 
