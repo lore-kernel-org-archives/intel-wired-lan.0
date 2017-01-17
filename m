@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 17 Jan 2017 08:36:54 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 08/11] ixgbe: Add support for
-	padding packet
-In-Reply-To: <20170117163401.5423.37993.stgit@localhost.localdomain>
-References: <20170117163401.5423.37993.stgit@localhost.localdomain>
-Message-ID: <20170117163651.5423.70434.stgit@localhost.localdomain>
+Date: Tue, 17 Jan 2017 08:31:48 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 2/9] igb: Use length to determine
+ if descriptor is done
+In-Reply-To: <20170117163010.5184.65449.stgit@localhost.localdomain>
+References: <20170117163010.5184.65449.stgit@localhost.localdomain>
+Message-ID: <20170117163137.5184.23469.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,173 +13,90 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This patch adds support for providing a buffer with headroom and tailroom
-to allow for shared info, NET_SKB_PAD, and NET_IP_ALIGN.  With this
-combined with the DMA changes we can start using build_skb to build frames
-around an incoming Rx buffer instead of having to memcpy the headers.
+This change makes it so that we use the length of the packet instead of the
+DD status bit to determine if a new descriptor is ready to be processed.
+The obvious advantage is that it cuts down on reads as we don't really even
+need the DD bit if going from a 0 to a non-zero value on size is enough to
+inform us that the packet has been completed.
+
+In addition I have updated the code so that we only reset the Rx descriptor
+length for descriptor zero when resetting a ring instead of having to do a
+memset with 0 over the entire ring.  By doing this we can save some time on
+initialization.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   17 ++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   43 +++++++++++++++++++++++--
- 2 files changed, 56 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 80328e657d6a..3537d07b4807 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -94,6 +94,14 @@
- #define IXGBE_RXBUFFER_4K    4096
- #define IXGBE_MAX_RXBUFFER  16384  /* largest size for a single descriptor */
+v2: Update ethtool loopback test to use length check instead of DD check
+
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |    2 +-
+ drivers/net/ethernet/intel/igb/igb_main.c    |   14 ++++++++------
+ 2 files changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 737b664d004c..3f5f7744c90f 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -1811,7 +1811,7 @@ static int igb_clean_test_rings(struct igb_ring *rx_ring,
+ 	tx_ntc = tx_ring->next_to_clean;
+ 	rx_desc = IGB_RX_DESC(rx_ring, rx_ntc);
  
-+#define IXGBE_SKB_PAD		(NET_SKB_PAD + NET_IP_ALIGN)
-+#if (PAGE_SIZE < 8192)
-+#define IXGBE_MAX_FRAME_BUILD_SKB \
-+	(SKB_WITH_OVERHEAD(IXGBE_RXBUFFER_2K) - IXGBE_SKB_PAD)
-+#else
-+#define IGB_MAX_FRAME_BUILD_SKB IXGBE_RXBUFFER_2K
-+#endif
-+
- /*
-  * NOTE: netdev_alloc_skb reserves up to 64 bytes, NET_IP_ALIGN means we
-  * reserve 64 more, and skb_shared_info adds an additional 320 bytes more,
-@@ -235,6 +243,7 @@ struct ixgbe_rx_queue_stats {
+-	while (igb_test_staterr(rx_desc, E1000_RXD_STAT_DD)) {
++	while (rx_desc->wb.upper.length) {
+ 		/* check Rx buffer */
+ 		rx_buffer_info = &rx_ring->rx_buffer_info[rx_ntc];
  
- enum ixgbe_ring_state_t {
- 	__IXGBE_RX_3K_BUFFER,
-+	__IXGBE_RX_BUILD_SKB_ENABLED,
- 	__IXGBE_RX_RSC_ENABLED,
- 	__IXGBE_RX_CSUM_UDP_ZERO_ERR,
- 	__IXGBE_RX_FCOE,
-@@ -244,6 +253,9 @@ enum ixgbe_ring_state_t {
- 	__IXGBE_HANG_CHECK_ARMED,
- };
- 
-+#define ring_uses_build_skb(ring) \
-+	test_bit(__IXGBE_RX_BUILD_SKB_ENABLED, &(ring)->state)
-+
- struct ixgbe_fwd_adapter {
- 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
- 	struct net_device *netdev;
-@@ -355,6 +367,10 @@ static inline unsigned int ixgbe_rx_bufsz(struct ixgbe_ring *ring)
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index eede6db6037c..91a524b155ce 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3720,6 +3720,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 			   struct igb_ring *ring)
  {
- 	if (test_bit(__IXGBE_RX_3K_BUFFER, &ring->state))
- 		return IXGBE_RXBUFFER_3K;
-+#if (PAGE_SIZE < 8192)
-+	if (ring_uses_build_skb(ring))
-+		return IXGBE_MAX_FRAME_BUILD_SKB;
-+#endif
- 	return IXGBE_RXBUFFER_2K;
- }
+ 	struct e1000_hw *hw = &adapter->hw;
++	union e1000_adv_rx_desc *rx_desc;
+ 	u64 rdba = ring->dma;
+ 	int reg_idx = ring->reg_idx;
+ 	u32 srrctl = 0, rxdctl = 0;
+@@ -3758,6 +3759,10 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 	rxdctl |= IGB_RX_HTHRESH << 8;
+ 	rxdctl |= IGB_RX_WTHRESH << 16;
  
-@@ -670,6 +686,7 @@ struct ixgbe_adapter {
- #define IXGBE_FLAG2_VLAN_PROMISC		BIT(13)
- #define IXGBE_FLAG2_EEE_CAPABLE			BIT(14)
- #define IXGBE_FLAG2_EEE_ENABLED			BIT(15)
-+#define IXGBE_FLAG2_RX_LEGACY			BIT(16)
- 
- 	/* Tx fast path data */
- 	int num_tx_queues;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 79495cc990c2..8529eafb9717 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1565,6 +1565,11 @@ static inline void ixgbe_rx_checksum(struct ixgbe_ring *ring,
- 	}
- }
- 
-+static inline unsigned int ixgbe_rx_offset(struct ixgbe_ring *rx_ring)
-+{
-+	return ring_uses_build_skb(rx_ring) ? IXGBE_SKB_PAD : 0;
-+}
++	/* initialize Rx descriptor 0 */
++	rx_desc = IGB_RX_DESC(ring, 0);
++	rx_desc->wb.upper.length = 0;
 +
- static bool ixgbe_alloc_mapped_page(struct ixgbe_ring *rx_ring,
- 				    struct ixgbe_rx_buffer *bi)
- {
-@@ -1601,7 +1606,7 @@ static bool ixgbe_alloc_mapped_page(struct ixgbe_ring *rx_ring,
+ 	/* enable receive descriptor fetching */
+ 	rxdctl |= E1000_RXDCTL_QUEUE_ENABLE;
+ 	wr32(E1000_RXDCTL(reg_idx), rxdctl);
+@@ -3973,9 +3978,6 @@ static void igb_clean_rx_ring(struct igb_ring *rx_ring)
+ 	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
+ 	memset(rx_ring->rx_buffer_info, 0, size);
  
- 	bi->dma = dma;
- 	bi->page = page;
--	bi->page_offset = 0;
-+	bi->page_offset = ixgbe_rx_offset(rx_ring);
- 	bi->pagecnt_bias = 1;
+-	/* Zero out the descriptor ring */
+-	memset(rx_ring->desc, 0, rx_ring->size);
+-
+ 	rx_ring->next_to_alloc = 0;
+ 	rx_ring->next_to_clean = 0;
+ 	rx_ring->next_to_use = 0;
+@@ -7174,7 +7176,7 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
  
- 	return true;
-@@ -2018,7 +2023,9 @@ static void ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = ixgbe_rx_pg_size(rx_ring) / 2;
- #else
--	unsigned int truesize = SKB_DATA_ALIGN(size);
-+	unsigned int truesize = ring_uses_build_skb(rx_ring) ?
-+				SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) :
-+				SKB_DATA_ALIGN(size);
- #endif
- 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
- 			rx_buffer->page_offset, size, truesize);
-@@ -2100,7 +2107,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = ixgbe_rx_pg_size(rx_ring) / 2;
- #else
--	unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
-+	unsigned int truesize = SKB_DATA_ALIGN(size);
- #endif
- 	struct sk_buff *skb;
+ 		rx_desc = IGB_RX_DESC(rx_ring, rx_ring->next_to_clean);
  
-@@ -3462,7 +3469,10 @@ static void ixgbe_configure_srrctl(struct ixgbe_adapter *adapter,
- 	srrctl = IXGBE_RX_HDR_SIZE << IXGBE_SRRCTL_BSIZEHDRSIZE_SHIFT;
+-		if (!rx_desc->wb.upper.status_error)
++		if (!rx_desc->wb.upper.length)
+ 			break;
  
- 	/* configure the packet buffer length */
--	srrctl |= ixgbe_rx_bufsz(rx_ring) >> IXGBE_SRRCTL_BSIZEPKT_SHIFT;
-+	if (test_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state))
-+		srrctl |= IXGBE_RXBUFFER_3K >> IXGBE_SRRCTL_BSIZEPKT_SHIFT;
-+	else
-+		srrctl |= IXGBE_RXBUFFER_2K >> IXGBE_SRRCTL_BSIZEPKT_SHIFT;
+ 		/* This memory barrier is needed to keep us from reading
+@@ -7314,8 +7316,8 @@ void igb_alloc_rx_buffers(struct igb_ring *rx_ring, u16 cleaned_count)
+ 			i -= rx_ring->count;
+ 		}
  
- 	/* configure descriptor type */
- 	srrctl |= IXGBE_SRRCTL_DESCTYPE_ADV_ONEBUF;
-@@ -3796,6 +3806,17 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
- 		 */
- 		rxdctl &= ~0x3FFFFF;
- 		rxdctl |=  0x080420;
-+#if (PAGE_SIZE < 8192)
-+	} else {
-+		rxdctl &= ~(IXGBE_RXDCTL_RLPMLMASK |
-+			    IXGBE_RXDCTL_RLPML_EN);
-+
-+		/* Limit the maximum frame size so we don't overrun the skb */
-+		if (ring_uses_build_skb(ring) &&
-+		    !test_bit(__IXGBE_RX_3K_BUFFER, &ring->state))
-+			rxdctl |= IXGBE_MAX_FRAME_BUILD_SKB |
-+				  IXGBE_RXDCTL_RLPML_EN;
-+#endif
- 	}
+-		/* clear the status bits for the next_to_use descriptor */
+-		rx_desc->wb.upper.status_error = 0;
++		/* clear the length for the next_to_use descriptor */
++		rx_desc->wb.upper.length = 0;
  
- 	/* initialize Rx descriptor 0 */
-@@ -3941,12 +3962,26 @@ static void ixgbe_set_rx_buffer_len(struct ixgbe_adapter *adapter)
- 
- 		clear_ring_rsc_enabled(rx_ring);
- 		clear_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
-+		clear_bit(__IXGBE_RX_BUILD_SKB_ENABLED, &rx_ring->state);
- 
- 		if (adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED)
- 			set_ring_rsc_enabled(rx_ring);
- 
- 		if (test_bit(__IXGBE_RX_FCOE, &rx_ring->state))
- 			set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
-+
-+		if (adapter->flags2 & IXGBE_FLAG2_RX_LEGACY)
-+			continue;
-+
-+		set_bit(__IXGBE_RX_BUILD_SKB_ENABLED, &rx_ring->state);
-+
-+#if (PAGE_SIZE < 8192)
-+		if (adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED)
-+			set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
-+
-+		if (max_frame > (ETH_FRAME_LEN + ETH_FCS_LEN))
-+			set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
-+#endif
- 	}
- }
- 
+ 		cleaned_count--;
+ 	} while (cleaned_count);
 
