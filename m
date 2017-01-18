@@ -1,67 +1,39 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 19 Jan 2017 00:49:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 65/85]
- drivers/net/ethernet/ibm/ibmveth.c:747:2: error: implicit declaration of
- function 'ethtool_convert_legacy_u32_to_link_mode'
-Message-ID: <201701190002.fiDHwHhl%fengguang.wu@intel.com>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Wed, 18 Jan 2017 09:23:44 -0800
+Subject: [Intel-wired-lan] [PATCH net-next] net: Remove usage of
+	net_device last_rx member
+In-Reply-To: <20170118164501.1934-1-tklauser@distanz.ch>
+References: <20170118164501.1934-1-tklauser@distanz.ch>
+Message-ID: <1484760224.13165.108.camel@edumazet-glaptop3.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   25758d6a51d92584debd9a863b4acd91193238f3
-commit: c4da46aa003bb0e58cbcc80914affed8db0dc745 [65/85] ethtool: stop the line wrapping madness
-config: powerpc-defconfig (attached as .config)
-compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-reproduce:
-        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout c4da46aa003bb0e58cbcc80914affed8db0dc745
-        # save the attached .config to linux build tree
-        make.cross ARCH=powerpc 
+On Wed, 2017-01-18 at 17:45 +0100, Tobias Klauser wrote:
+> The network stack no longer uses the last_rx member of struct net_device
+> since the bonding driver switched to use its own private last_rx in
+> commit 9f242738376d ("bonding: use last_arp_rx in slave_last_rx()").
+> 
+> However, some drivers still (ab)use the field for their own purposes and
+> some driver just update it without actually using it.
+> 
+> Previously, there was an accompanying comment for the last_rx member
+> added in commit 4dc89133f49b ("net: add a comment on netdev->last_rx")
+> which asked drivers not to update is, unless really needed. However,
+> this commend was removed in commit f8ff080dacec ("bonding: remove
+> useless updating of slave->dev->last_rx"), so some drivers added later
+> on still did update last_rx.
+> 
+> Remove all usage of last_rx and switch three drivers (sky2, atp and
+> smc91c92_cs) which actually read and write it to use their own private
+> copy in netdev_priv.
+> 
+> Compile-tested with allyesconfig and allmodconfig on x86 and arm.
 
-All errors (new ones prefixed by >>):
+SGTM, thanks a lot for doing this Tobias.
 
-   drivers/net/ethernet/ibm/ibmveth.c: In function 'netdev_get_link_ksettings':
->> drivers/net/ethernet/ibm/ibmveth.c:747:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-     ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   cc1: some warnings being treated as errors
---
-   drivers/net/ethernet/ibm/ehea/ehea_ethtool.c: In function 'ehea_get_link_ksettings':
->> drivers/net/ethernet/ibm/ehea/ehea_ethtool.c:90:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-     ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   cc1: some warnings being treated as errors
+Acked-by: Eric Dumazet <edumazet@google.com>
 
-vim +/ethtool_convert_legacy_u32_to_link_mode +747 drivers/net/ethernet/ibm/ibmveth.c
 
-9ce8c2df Philippe Reynes 2017-01-07  741  	cmd->base.speed = SPEED_1000;
-9ce8c2df Philippe Reynes 2017-01-07  742  	cmd->base.duplex = DUPLEX_FULL;
-9ce8c2df Philippe Reynes 2017-01-07  743  	cmd->base.port = PORT_FIBRE;
-9ce8c2df Philippe Reynes 2017-01-07  744  	cmd->base.phy_address = 0;
-9ce8c2df Philippe Reynes 2017-01-07  745  	cmd->base.autoneg = AUTONEG_ENABLE;
-9ce8c2df Philippe Reynes 2017-01-07  746  
-9ce8c2df Philippe Reynes 2017-01-07 @747  	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-9ce8c2df Philippe Reynes 2017-01-07  748  						supported);
-9ce8c2df Philippe Reynes 2017-01-07  749  	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
-9ce8c2df Philippe Reynes 2017-01-07  750  						advertising);
-
-:::::: The code at line 747 was first introduced by commit
-:::::: 9ce8c2dfceaec82e3cde57934b6cc69d24c42e95 net: ibm: ibmveth: use new api ethtool_{get|set}_link_ksettings
-
-:::::: TO: Philippe Reynes <tremyfr@gmail.com>
-:::::: CC: David S. Miller <davem@davemloft.net>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 22532 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170119/74d2c371/attachment-0001.bin>
