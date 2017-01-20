@@ -1,8 +1,8 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Fri, 20 Jan 2017 14:10:58 -0800
+Date: Fri, 20 Jan 2017 14:11:45 -0800
 Subject: [Intel-wired-lan] [PATCH 1/3] ixgbe: move num_vfs_macvlans
  allocation into separate function
-Message-ID: <20170120221058.7572.92313.stgit@localhost6.localdomain6>
+Message-ID: <20170120221145.7616.93906.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
