@@ -1,203 +1,61 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 23 Jan 2017 11:48:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- b5c90f3b454d813f16a3c4abe4df9ea0b60e7947
-Message-ID: <58857d1f.qSwnOCOUJunm8tv3%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 23 Jan 2017 08:57:55 -0800
+Subject: [Intel-wired-lan] [next PATCH v3 0/9] igb: Add support for writable
+ pages and build_skb
+Message-ID: <20170123165647.13402.1254.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-b5c90f3b454d813f16a3c4abe4df9ea0b60e7947  igb: Revert "igb: Revert support for build_skb in igb"
+This patch set enables support for using the recent changes that allow for
+unmapping pages without invalidating their contents via
+DMA_ATTR_SKIP_CPU_SYNC.  With this change DMA pages should be writable and
+as a result we should be able to make use of build_skb which can be used to
+drop the skb->head memory allocation, header parsing, and memcpy from the
+receive path which can greatly help to improve performance.
 
-drivers/net/ethernet/ibm/ehea/ehea_ethtool.c:90:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/ibm/ibmveth.c:747:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_main.c:6997:7: error: invalid operands to binary - (have 'unsigned char *' and 'void *')
-drivers/net/ethernet/marvell/skge.c:323:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/marvell/skge.c:340:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/marvell/sky2.c:3616:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode'
-drivers/net/ethernet/marvell/sky2.c:3616:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/marvell/sky2.c:3632:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32'
-drivers/net/ethernet/marvell/sky2.c:3632:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
+My main concern at this point is that there might be an architecture where
+I didn't get DMA_ATTR_SKIP_CPU_SYNC implemented that might still need it.
+For that reason I have also added a ethtool private flag called out as
+"legacy-rx".  If a platform encounters an issue where the Rx can possibly
+corrupt data it can be enbled by running:
+        ethtool --set-priv-flags DEVNAME legacy-rx on
 
-Error ids grouped by kconfigs:
+The testing matrix for all of these patches is going to be pretty
+extensive.  Basically we want to test these patches on as many platforms
+and architectures as possible with as many features being toggled as
+possible including SR-IOV and Jumbo Frames all while receiving traffic.
 
-recent_errors
-??? arm64-defconfig
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ia64-allmodconfig
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-ibm-ehea-ehea_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-ibm-ibmveth.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-ibm-ehea-ehea_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-ibm-ibmveth.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? tile-tilegx_defconfig
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-allyesdebian
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-lkp
-    ??? drivers-net-ethernet-intel-igb-igb_main.c:error:invalid-operands-to-binary-(have-unsigned-char-and-void-)
+Within the patches there is also some intialization changes.  Specifically
+I have updated the code paths to defer clearing the rings until we are
+about to initialize them and give them to hardware.  By doing this we are
+able to avoid having to dirty memory we don't need to which should help to
+improve suspend/resume times for when we start looking at possibly using
+the suspend/resume approach for migration of interface in VMs.
 
-elapsed time: 127m
+v2: Minor fixes to address a few issues found in testing
+v3: Fix minor build issues reported by kbuild test robot
 
-configs tested: 134
+---
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201704
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-01230936
-x86_64                randconfig-in0-01222002
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-01230347
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
-x86_64                   randconfig-i0-201704
-i386                   randconfig-b0-01230927
-i386                   randconfig-b0-01231015
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-01230650
-i386                   randconfig-i1-01230650
-x86_64                           allmodconfig
-x86_64                 randconfig-u0-01230930
-arm                     eseries_pxa_defconfig
-sh                           se7712_defconfig
-m68k                        mvme16x_defconfig
-mips                      pistachio_defconfig
-x86_64                randconfig-ne0-01230920
-x86_64                randconfig-ne0-01231013
-ia64                        generic_defconfig
-powerpc                          alldefconfig
-powerpc                      virtex_defconfig
-sh                           se7721_defconfig
-i386                   randconfig-x011-201704
-i386                   randconfig-x018-201704
-i386                   randconfig-x015-201704
-i386                   randconfig-x017-201704
-i386                   randconfig-x012-201704
-i386                   randconfig-x013-201704
-i386                   randconfig-x014-201704
-i386                   randconfig-x016-201704
-i386                   randconfig-x010-201704
-i386                   randconfig-x019-201704
-i386                     randconfig-n0-201704
-i386                   randconfig-h0-01230933
-i386                   randconfig-h1-01230933
-i386                             allmodconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-h0-01230805
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-x86_64                 randconfig-x008-201704
-x86_64                 randconfig-x001-201704
-x86_64                 randconfig-x009-201704
-x86_64                 randconfig-x003-201704
-x86_64                 randconfig-x000-201704
-x86_64                 randconfig-x006-201704
-x86_64                 randconfig-x007-201704
-x86_64                 randconfig-x004-201704
-x86_64                 randconfig-x002-201704
-x86_64                 randconfig-x005-201704
-ia64                             alldefconfig
-ia64                              allnoconfig
-i386                   randconfig-r0-01230558
-i386                   randconfig-x000-201704
-i386                   randconfig-x001-201704
-i386                   randconfig-x002-201704
-i386                   randconfig-x003-201704
-i386                   randconfig-x004-201704
-i386                   randconfig-x005-201704
-i386                   randconfig-x006-201704
-i386                   randconfig-x007-201704
-i386                   randconfig-x008-201704
-i386                   randconfig-x009-201704
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-01230857
-i386                   randconfig-x0-01231046
+Alexander Duyck (9):
+      igb: Add support for DMA_ATTR_WEAK_ORDERING
+      igb: Use length to determine if descriptor is done
+      igb: Clear Rx buffer_info in configure instead of clean
+      igb: Don't bother clearing Tx buffer_info in igb_clean_tx_ring
+      igb: Limit maximum frame Rx based on MTU
+      igb: Add support for padding packet
+      igb: Add support for ethtool private flag to allow use of legacy Rx
+      igb: Break out Rx buffer page management
+      igb: Re-add support for build_skb in igb
 
-Thanks,
-Fengguang
+
+ drivers/net/ethernet/intel/igb/igb.h         |   58 +++
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |   65 +++
+ drivers/net/ethernet/intel/igb/igb_main.c    |  511 ++++++++++++++++----------
+ drivers/net/ethernet/intel/igb/igb_ptp.c     |    3 
+ 4 files changed, 435 insertions(+), 202 deletions(-)
+
+--
