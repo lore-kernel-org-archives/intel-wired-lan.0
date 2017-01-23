@@ -1,67 +1,203 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 23 Jan 2017 11:20:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 62/82]
- drivers/net/ethernet/ibm/ibmveth.c:747:2: error: implicit declaration of
- function 'ethtool_convert_legacy_u32_to_link_mode'
-Message-ID: <201701231155.8BvhhDsa%fengguang.wu@intel.com>
+Date: Mon, 23 Jan 2017 11:48:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ b5c90f3b454d813f16a3c4abe4df9ea0b60e7947
+Message-ID: <58857d1f.qSwnOCOUJunm8tv3%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   b5c90f3b454d813f16a3c4abe4df9ea0b60e7947
-commit: b3a8d73a299c5fa60b7acf61cc1079b1f1c0893c [62/82] ethtool: stop the line wrapping madness
-config: powerpc-defconfig (attached as .config)
-compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-reproduce:
-        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout b3a8d73a299c5fa60b7acf61cc1079b1f1c0893c
-        # save the attached .config to linux build tree
-        make.cross ARCH=powerpc 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b5c90f3b454d813f16a3c4abe4df9ea0b60e7947  igb: Revert "igb: Revert support for build_skb in igb"
 
-All errors (new ones prefixed by >>):
+drivers/net/ethernet/ibm/ehea/ehea_ethtool.c:90:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/ibm/ibmveth.c:747:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/igb/igb_main.c:6997:7: error: invalid operands to binary - (have 'unsigned char *' and 'void *')
+drivers/net/ethernet/marvell/skge.c:323:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/marvell/skge.c:340:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/marvell/sky2.c:3616:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode'
+drivers/net/ethernet/marvell/sky2.c:3616:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/marvell/sky2.c:3632:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32'
+drivers/net/ethernet/marvell/sky2.c:3632:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
 
-   drivers/net/ethernet/ibm/ibmveth.c: In function 'netdev_get_link_ksettings':
->> drivers/net/ethernet/ibm/ibmveth.c:747:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-     ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   cc1: some warnings being treated as errors
---
-   drivers/net/ethernet/ibm/ehea/ehea_ethtool.c: In function 'ehea_get_link_ksettings':
->> drivers/net/ethernet/ibm/ehea/ehea_ethtool.c:90:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-     ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   cc1: some warnings being treated as errors
+Error ids grouped by kconfigs:
 
-vim +/ethtool_convert_legacy_u32_to_link_mode +747 drivers/net/ethernet/ibm/ibmveth.c
+recent_errors
+??? arm64-defconfig
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ia64-allmodconfig
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? powerpc-defconfig
+??? ??? drivers-net-ethernet-ibm-ehea-ehea_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-ibm-ibmveth.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? powerpc-ppc64_defconfig
+??? ??? drivers-net-ethernet-ibm-ehea-ehea_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-ibm-ibmveth.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? tile-tilegx_defconfig
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-allyesdebian
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-lkp
+    ??? drivers-net-ethernet-intel-igb-igb_main.c:error:invalid-operands-to-binary-(have-unsigned-char-and-void-)
 
-9ce8c2df Philippe Reynes 2017-01-07  741  	cmd->base.speed = SPEED_1000;
-9ce8c2df Philippe Reynes 2017-01-07  742  	cmd->base.duplex = DUPLEX_FULL;
-9ce8c2df Philippe Reynes 2017-01-07  743  	cmd->base.port = PORT_FIBRE;
-9ce8c2df Philippe Reynes 2017-01-07  744  	cmd->base.phy_address = 0;
-9ce8c2df Philippe Reynes 2017-01-07  745  	cmd->base.autoneg = AUTONEG_ENABLE;
-9ce8c2df Philippe Reynes 2017-01-07  746  
-9ce8c2df Philippe Reynes 2017-01-07 @747  	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-9ce8c2df Philippe Reynes 2017-01-07  748  						supported);
-9ce8c2df Philippe Reynes 2017-01-07  749  	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
-9ce8c2df Philippe Reynes 2017-01-07  750  						advertising);
+elapsed time: 127m
 
-:::::: The code at line 747 was first introduced by commit
-:::::: 9ce8c2dfceaec82e3cde57934b6cc69d24c42e95 net: ibm: ibmveth: use new api ethtool_{get|set}_link_ksettings
+configs tested: 134
 
-:::::: TO: Philippe Reynes <tremyfr@gmail.com>
-:::::: CC: David S. Miller <davem@davemloft.net>
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201704
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-01230936
+x86_64                randconfig-in0-01222002
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-g0-01230347
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+x86_64                   randconfig-i0-201704
+i386                   randconfig-b0-01230927
+i386                   randconfig-b0-01231015
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-01230650
+i386                   randconfig-i1-01230650
+x86_64                           allmodconfig
+x86_64                 randconfig-u0-01230930
+arm                     eseries_pxa_defconfig
+sh                           se7712_defconfig
+m68k                        mvme16x_defconfig
+mips                      pistachio_defconfig
+x86_64                randconfig-ne0-01230920
+x86_64                randconfig-ne0-01231013
+ia64                        generic_defconfig
+powerpc                          alldefconfig
+powerpc                      virtex_defconfig
+sh                           se7721_defconfig
+i386                   randconfig-x011-201704
+i386                   randconfig-x018-201704
+i386                   randconfig-x015-201704
+i386                   randconfig-x017-201704
+i386                   randconfig-x012-201704
+i386                   randconfig-x013-201704
+i386                   randconfig-x014-201704
+i386                   randconfig-x016-201704
+i386                   randconfig-x010-201704
+i386                   randconfig-x019-201704
+i386                     randconfig-n0-201704
+i386                   randconfig-h0-01230933
+i386                   randconfig-h1-01230933
+i386                             allmodconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-h0-01230805
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+x86_64                 randconfig-x008-201704
+x86_64                 randconfig-x001-201704
+x86_64                 randconfig-x009-201704
+x86_64                 randconfig-x003-201704
+x86_64                 randconfig-x000-201704
+x86_64                 randconfig-x006-201704
+x86_64                 randconfig-x007-201704
+x86_64                 randconfig-x004-201704
+x86_64                 randconfig-x002-201704
+x86_64                 randconfig-x005-201704
+ia64                             alldefconfig
+ia64                              allnoconfig
+i386                   randconfig-r0-01230558
+i386                   randconfig-x000-201704
+i386                   randconfig-x001-201704
+i386                   randconfig-x002-201704
+i386                   randconfig-x003-201704
+i386                   randconfig-x004-201704
+i386                   randconfig-x005-201704
+i386                   randconfig-x006-201704
+i386                   randconfig-x007-201704
+i386                   randconfig-x008-201704
+i386                   randconfig-x009-201704
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-01230857
+i386                   randconfig-x0-01231046
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 22510 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170123/ecd616f1/attachment-0001.bin>
+Thanks,
+Fengguang
