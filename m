@@ -1,9 +1,9 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 23 Jan 2017 10:15:57 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 79/82]
- drivers/net/ethernet/intel/igb/igb_main.c:6997:7: error: invalid operands
- to binary - (have 'unsigned char *' and 'void *')
-Message-ID: <201701231055.iNzp1w9o%fengguang.wu@intel.com>
+Date: Mon, 23 Jan 2017 11:20:00 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 62/82]
+ drivers/net/ethernet/ibm/ibmveth.c:747:2: error: implicit declaration of
+ function 'ethtool_convert_legacy_u32_to_link_mode'
+Message-ID: <201701231155.8BvhhDsa%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,36 +12,48 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
 head:   b5c90f3b454d813f16a3c4abe4df9ea0b60e7947
-commit: 3115d9a0076859df620c7dbab4cb0323db31ab3c [79/82] igb: Add support for padding packet
-config: x86_64-lkp (attached as .config)
-compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+commit: b3a8d73a299c5fa60b7acf61cc1079b1f1c0893c [62/82] ethtool: stop the line wrapping madness
+config: powerpc-defconfig (attached as .config)
+compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
 reproduce:
-        git checkout 3115d9a0076859df620c7dbab4cb0323db31ab3c
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout b3a8d73a299c5fa60b7acf61cc1079b1f1c0893c
         # save the attached .config to linux build tree
-        make ARCH=x86_64 
-
-Note: the jkirsher-next-queue/dev-queue HEAD b5c90f3b454d813f16a3c4abe4df9ea0b60e7947 builds fine.
-      It only hurts bisectibility.
+        make.cross ARCH=powerpc 
 
 All errors (new ones prefixed by >>):
 
-   drivers/net/ethernet/intel/igb/igb_main.c: In function 'igb_add_rx_frag':
->> drivers/net/ethernet/intel/igb/igb_main.c:6997:7: error: invalid operands to binary - (have 'unsigned char *' and 'void *')
-       va - page_address(page), size, truesize);
-          ^
+   drivers/net/ethernet/ibm/ibmveth.c: In function 'netdev_get_link_ksettings':
+>> drivers/net/ethernet/ibm/ibmveth.c:747:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+     ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   cc1: some warnings being treated as errors
+--
+   drivers/net/ethernet/ibm/ehea/ehea_ethtool.c: In function 'ehea_get_link_ksettings':
+>> drivers/net/ethernet/ibm/ehea/ehea_ethtool.c:90:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+     ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   cc1: some warnings being treated as errors
 
-vim +6997 drivers/net/ethernet/intel/igb/igb_main.c
+vim +/ethtool_convert_legacy_u32_to_link_mode +747 drivers/net/ethernet/ibm/ibmveth.c
 
-  6991		/* update all of the pointers */
-  6992		va += pull_len;
-  6993		size -= pull_len;
-  6994	
-  6995	add_tail_frag:
-  6996		skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, page,
-> 6997				va - page_address(page), size, truesize);
-  6998	
-  6999		return igb_can_reuse_rx_page(rx_buffer, page, truesize);
-  7000	}
+9ce8c2df Philippe Reynes 2017-01-07  741  	cmd->base.speed = SPEED_1000;
+9ce8c2df Philippe Reynes 2017-01-07  742  	cmd->base.duplex = DUPLEX_FULL;
+9ce8c2df Philippe Reynes 2017-01-07  743  	cmd->base.port = PORT_FIBRE;
+9ce8c2df Philippe Reynes 2017-01-07  744  	cmd->base.phy_address = 0;
+9ce8c2df Philippe Reynes 2017-01-07  745  	cmd->base.autoneg = AUTONEG_ENABLE;
+9ce8c2df Philippe Reynes 2017-01-07  746  
+9ce8c2df Philippe Reynes 2017-01-07 @747  	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+9ce8c2df Philippe Reynes 2017-01-07  748  						supported);
+9ce8c2df Philippe Reynes 2017-01-07  749  	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+9ce8c2df Philippe Reynes 2017-01-07  750  						advertising);
+
+:::::: The code at line 747 was first introduced by commit
+:::::: 9ce8c2dfceaec82e3cde57934b6cc69d24c42e95 net: ibm: ibmveth: use new api ethtool_{get|set}_link_ksettings
+
+:::::: TO: Philippe Reynes <tremyfr@gmail.com>
+:::::: CC: David S. Miller <davem@davemloft.net>
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
@@ -50,6 +62,6 @@ https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 A non-text attachment was scrubbed...
 Name: .config.gz
 Type: application/gzip
-Size: 24661 bytes
+Size: 22510 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170123/6241ebb0/attachment-0001.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170123/ecd616f1/attachment-0001.bin>
