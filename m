@@ -1,25 +1,72 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 24 Jan 2017 13:50:06 -0500 (EST)
-Subject: [Intel-wired-lan] [PATCH] net: intel: e1000: use new api
- ethtool_{get|set}_link_ksettings
-In-Reply-To: <1485011163-7402-1-git-send-email-tremyfr@gmail.com>
-References: <1485011163-7402-1-git-send-email-tremyfr@gmail.com>
-Message-ID: <20170124.135006.1371369423527179260.davem@davemloft.net>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 24 Jan 2017 19:15:15 +0000
+Subject: [Intel-wired-lan] [next-queue v4 PATCH 4/7] net:
+	store	port/representator id in metadata_dst
+In-Reply-To: <1484260510-9162-5-git-send-email-sridhar.samudrala@intel.com>
+References: <1484260510-9162-1-git-send-email-sridhar.samudrala@intel.com>
+ <1484260510-9162-5-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5BEF1@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Philippe Reynes <tremyfr@gmail.com>
-Date: Sat, 21 Jan 2017 16:06:03 +0100
-
-> The ethtool api {get|set}_settings is deprecated.
-> We move this driver to new api {get|set}_link_ksettings.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Sridhar Samudrala
+> Sent: Thursday, January 12, 2017 2:35 PM
+> To: Duyck, Alexander H <alexander.h.duyck@intel.com>; Fastabend, John R
+> <john.r.fastabend@intel.com>; Singhai, Anjali <anjali.singhai@intel.com>;
+> jakub.kicinski at netronome.com; davem at davemloft.net; Peterson, Scott D
+> <scott.d.peterson@intel.com>; gerlitz.or at gmail.com; jiri at resnulli.us; intel-
+> wired-lan at lists.osuosl.org; netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [next-queue v4 PATCH 4/7] net: store
+> port/representator id in metadata_dst
 > 
-> As I don't have the hardware, I'd be very pleased if
-> someone may test this patch.
+> From: Jakub Kicinski <jakub.kicinski@netronome.com>
 > 
-> Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
+> Switches and modern SR-IOV enabled NICs may multiplex traffic from Port
+> representators and control messages over single set of hardware queues.
+> Control messages and muxed traffic may need ordered delivery.
+> 
+> Those requirements make it hard to comfortably use TC infrastructure today
+> unless we have a way of attaching metadata to skbs at the upper device.
+> Because single set of queues is used for many netdevs stopping TC/sched
+> queues of all of them reliably is impossible and lower device has to retreat to
+> returning NETDEV_TX_BUSY and usually has to take extra locks on the
+> fastpath.
+> 
+> This patch attempts to enable port/representative devs to attach metadata
+> to skbs which carry port id.  This way representatives can be queueless and
+> all queuing can be performed at the lower netdev in the usual way.
+> 
+> Traffic arriving on the port/representative interfaces will be have metadata
+> attached and will subsequently be queued to the lower device for
+> transmission.
+> The lower device should recognize the metadata and translate it to HW
+> specific format which is most likely either a special header inserted before
+> the network headers or descriptor/metadata fields.
+> 
+> Metadata is associated with the lower device by storing the netdev pointer
+> along with port id so that if TC decides to redirect or mirror the new netdev
+> will not try to interpret it.
+> 
+> This is mostly for SR-IOV devices since switches don't have lower netdevs
+> today.
+> 
+> Signed-off-by: Jakub Kicinski <jakub.kicinski@netronome.com>
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> ---
+>  include/net/dst_metadata.h     | 41
+> ++++++++++++++++++++++++++++++++---------
+>  net/core/dst.c                 | 15 ++++++++++-----
+>  net/core/filter.c              |  1 +
+>  net/ipv4/ip_tunnel_core.c      |  6 ++++--
+>  net/openvswitch/flow_netlink.c |  4 +++-
+>  5 files changed, 50 insertions(+), 17 deletions(-)
 
-I am expecting the upstream Intel NIC folks to pick this up.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Does not break i40e/i40evf
+
+
