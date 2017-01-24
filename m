@@ -1,93 +1,148 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 23 Jan 2017 08:59:52 -0800
-Subject: [Intel-wired-lan] [next PATCH v3 9/9] igb: Re-add support for
-	build_skb in igb
-In-Reply-To: <20170123165647.13402.1254.stgit@localhost.localdomain>
-References: <20170123165647.13402.1254.stgit@localhost.localdomain>
-Message-ID: <20170123165944.13402.33476.stgit@localhost.localdomain>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 24 Jan 2017 11:19:02 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 3b63bb224ee876c34fcbc5a891978382f8a106d4
+Message-ID: <5886c7a6.H6Cx2l3lnTbV184c%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+3b63bb224ee876c34fcbc5a891978382f8a106d4  i40e: Add support to get switch id and port number for VFPR netdevs
 
-This reverts commit f9d40f6a9921 ("igb: Revert support for build_skb in
-igb") and adds a few changes to update it to work with the latest version
-of igb. We are now able to revert the removal of this due to the fact
-that with the recent changes to the page count and the use of
-DMA_ATTR_SKIP_CPU_SYNC we can make the pages writable so we should not be
-invalidating the additional data added when we call build_skb.
+elapsed time: 95m
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c |   47 +++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+configs tested: 124
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index dc70ff07a1de..a211abc8999c 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -7020,6 +7020,51 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
- 	return skb;
- }
- 
-+static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
-+				     struct igb_rx_buffer *rx_buffer,
-+				     union e1000_adv_rx_desc *rx_desc,
-+				     unsigned int size)
-+{
-+	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+#if (PAGE_SIZE < 8192)
-+	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
-+#else
-+	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
-+				SKB_DATA_ALIGN(IGB_SKB_PAD + size);
-+#endif
-+	struct sk_buff *skb;
-+
-+	/* prefetch first cache line of first page */
-+	prefetch(va);
-+#if L1_CACHE_BYTES < 128
-+	prefetch(va + L1_CACHE_BYTES);
-+#endif
-+
-+	/* build an skb to around the page buffer */
-+	skb = build_skb(va - IGB_SKB_PAD, truesize);
-+	if (unlikely(!skb))
-+		return NULL;
-+
-+	/* update pointers within the skb to store the data */
-+	skb_reserve(skb, IGB_SKB_PAD);
-+	__skb_put(skb, size);
-+
-+	/* pull timestamp out of packet data */
-+	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
-+		igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb);
-+		__skb_pull(skb, IGB_TS_HDR_LEN);
-+	}
-+
-+	/* update buffer offset */
-+#if (PAGE_SIZE < 8192)
-+	rx_buffer->page_offset ^= truesize;
-+#else
-+	rx_buffer->page_offset += truesize;
-+#endif
-+
-+	return skb;
-+}
-+
- static inline void igb_rx_checksum(struct igb_ring *ring,
- 				   union e1000_adv_rx_desc *rx_desc,
- 				   struct sk_buff *skb)
-@@ -7249,6 +7294,8 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 		/* retrieve a buffer from the ring */
- 		if (skb)
- 			igb_add_rx_frag(rx_ring, rx_buffer, skb, size);
-+		else if (ring_uses_build_skb(rx_ring))
-+			skb = igb_build_skb(rx_ring, rx_buffer, rx_desc, size);
- 		else
- 			skb = igb_construct_skb(rx_ring, rx_buffer,
- 						rx_desc, size);
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+i386                     randconfig-a0-201704
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x014-201704
+x86_64                 randconfig-x017-201704
+x86_64                 randconfig-x011-201704
+x86_64                 randconfig-x016-201704
+x86_64                 randconfig-x012-201704
+x86_64                 randconfig-x019-201704
+x86_64                 randconfig-x010-201704
+x86_64                 randconfig-x013-201704
+x86_64                 randconfig-x018-201704
+x86_64                 randconfig-x015-201704
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201704
+i386                     randconfig-s1-201704
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201704
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-01230650
+i386                   randconfig-i1-01230650
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x011-201704
+i386                   randconfig-x018-201704
+i386                   randconfig-x015-201704
+i386                   randconfig-x017-201704
+i386                   randconfig-x012-201704
+i386                   randconfig-x013-201704
+i386                   randconfig-x014-201704
+i386                   randconfig-x016-201704
+i386                   randconfig-x010-201704
+i386                   randconfig-x019-201704
+i386                     randconfig-n0-201704
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                               rhel-7.2
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x008-201704
+x86_64                 randconfig-x001-201704
+x86_64                 randconfig-x009-201704
+x86_64                 randconfig-x003-201704
+x86_64                 randconfig-x000-201704
+x86_64                 randconfig-x006-201704
+x86_64                 randconfig-x007-201704
+x86_64                 randconfig-x004-201704
+x86_64                 randconfig-x002-201704
+x86_64                 randconfig-x005-201704
+x86_64                                   rhel
+i386                   randconfig-r0-01230558
+i386                   randconfig-x004-201704
+i386                   randconfig-x003-201704
+i386                   randconfig-x001-201704
+i386                   randconfig-x007-201704
+i386                   randconfig-x006-201704
+i386                   randconfig-x009-201704
+i386                   randconfig-x002-201704
+i386                   randconfig-x008-201704
+i386                   randconfig-x000-201704
+i386                   randconfig-x005-201704
+
+Thanks,
+Fengguang
