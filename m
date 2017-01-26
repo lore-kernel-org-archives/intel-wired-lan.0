@@ -1,172 +1,168 @@
 From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Wed, 25 Jan 2017 16:54:13 -0800
-Subject: [Intel-wired-lan] [next-queue v5 PATCH 3/7] i40e: Sync link state
-	between VFs and VFPRs
+Date: Wed, 25 Jan 2017 16:54:17 -0800
+Subject: [Intel-wired-lan] [next-queue v5 PATCH 7/7] i40e: Add support to
+	get switch id and port number for VFPR netdevs
 In-Reply-To: <1485392057-3261-1-git-send-email-sridhar.samudrala@intel.com>
 References: <1485392057-3261-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <1485392057-3261-4-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <1485392057-3261-8-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch enables
-- reflecting the link state of VFPR based on VF admin state & link state
-  of VF based on admin state of VFPR.
-- bringing up/down the VFPR sends a notification to update VF link state.
-- bringing up/down the VF will cause the link state update of VFPR.
-- enable/disable VF link state via ndo_set_vf_link_state will update the
-  admin state of associated VFPR.
+Introduce switchdev_ops to PF and VFPR netdevs to return the switch id
+via SWITCHDEV_ATTR_ID_PORT_PARENT_ID attribute.
+Also, ndo_get_phys_port_name() support is added to VFPR netdevs to
+return the port number.
 
 PF: enp5s0f0, VFs: enp5s2,enp5s2f1 VFPRs:enp5s0f0-vf0, enp5s0f0-vf1
 # rmmod i40e; modprobe i40e
 # devlink dev eswitch set pci/0000:05:00.0 mode switchdev
 # echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
-
-# ip link set enp5s2 up
-# ip link set enp5s0f0-vf0 up
-# ip link set enp5s0f0-vf1 up
-
-/* enp5s2 UP -> enp5s0f0-vf0 CARRIER ON */
-# ip link show enp5s0f0-vf0
-215: enp5s0f0-vf0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
-     link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
-
-/* enp5s0f0-vf0 UP -> enp5s2 CARRIER ON */
-# ip link show enp5s2
-218: enp5s2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
-     link/ether ea:4d:60:bc:6f:85 brd ff:ff:ff:ff:ff:ff
-
-/* enp5s2f1 DOWN -> enp5s0f0-vf1 NO-CARRIER */
-# ip link show enp5s0f0-vf1
-216: enp5s0f0-vf1: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc fq_codel state DOWN mode DEFAULT group default qlen 1000
-     link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
-
-# ip link set enp5s0f0-vf0 down
-# ip link set enp5s2f1 up
-
-/* enp5s0-vf0 DOWN -> enp5s2 NO_CARRIER */
-# ip link show enp5s2
-218: enp5s2: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN mode DEFAULT group default qlen 1000
-     link/ether ea:4d:60:bc:6f:85 brd ff:ff:ff:ff:ff:ff
-
-# ip -d link show enp5s0f0
-213: enp5s0f0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop portid 6805ca27268 state DOWN mode DEFAULT group default qlen 1000
-     link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64
-     vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state disable, trust off
-     vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state enable, trust off
+# ip -d l show enp5s0f0
+32: enp5s0f0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64 numtxqueues 72 numrxqueues 72 gso_max_size 65536 gso_max_segs 65535 portid 6805ca2e7268 switchid 6805ca2e7268
+    vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state disable, trust off
+    vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state disable, trust off
+# ip -d l show enp5s0f0-vf0
+34: enp5s0f0-vf0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 portname 0 switchid 6805ca2e7268
+# ip -d l show enp5s0f0-vf1
+35: enp5s0f0-vf1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 portname 1 switchid 6805ca2e7268
 
 Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Signed-off-by: Anjali Singhai <anjali.singhai@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 44 ++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e.h             |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 28 +++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 40 ++++++++++++++++++++++
+ 3 files changed, 69 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 3d45ef2..63c9fdf 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1029,6 +1029,13 @@ void i40e_reset_vf(struct i40e_vf *vf, bool flr)
-  **/
- static int i40e_vfpr_netdev_open(struct net_device *dev)
- {
-+	struct i40e_vfpr_netdev_priv *priv = netdev_priv(dev);
-+	struct i40e_vf *vf = priv->vf;
-+
-+	vf->link_forced = true;
-+	vf->link_up = true;
-+	i40e_vc_notify_vf_link_state(vf);
-+
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 081154a..1edd351 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -56,6 +56,7 @@
+ #include <linux/ptp_clock_kernel.h>
+ #include <net/devlink.h>
+ #include <net/dst_metadata.h>
++#include <net/switchdev.h>
  
-@@ -1040,6 +1047,13 @@ static int i40e_vfpr_netdev_open(struct net_device *dev)
-  **/
- static int i40e_vfpr_netdev_stop(struct net_device *dev)
- {
-+	struct i40e_vfpr_netdev_priv *priv = netdev_priv(dev);
-+	struct i40e_vf *vf = priv->vf;
-+
-+	vf->link_forced = true;
-+	vf->link_up = false;
-+	i40e_vc_notify_vf_link_state(vf);
-+
- 	return 0;
- }
+ #include "i40e_type.h"
+ #include "i40e_prototype.h"
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 19f373e..8249d50 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -9686,6 +9686,31 @@ static const struct net_device_ops i40e_netdev_ops = {
+ 	.ndo_xdp                = i40e_xdp,
+ };
  
-@@ -1126,6 +1140,13 @@ int i40e_alloc_vfpr_netdev(struct i40e_vf *vf, u16 vf_num)
- 	/* Delete broadcast filter for VF */
- 	i40e_update_vf_broadcast_filter(vf, false);
- 
-+	/* Reset VF link as we are changing the mode to 'switchdev'. VFPR netdev
-+	 * needs to be brought up to enable VF link.
-+	 */
-+	vf->link_forced = true;
-+	vf->link_up = false;
-+	i40e_vc_notify_vf_link_state(vf);
++static int i40e_pf_attr_get(struct net_device *dev, struct switchdev_attr *attr)
++{
++	struct i40e_netdev_priv *np = netdev_priv(dev);
++	struct i40e_vsi *vsi = np->vsi;
++	struct i40e_pf *pf = vsi->back;
 +
- 	return 0;
- }
- 
-@@ -1150,6 +1171,10 @@ void i40e_free_vfpr_netdev(struct i40e_vf *vf)
- 
- 	/* Add broadcast filter to VF */
- 	i40e_update_vf_broadcast_filter(vf, true);
++	if (pf->eswitch_mode == DEVLINK_ESWITCH_MODE_LEGACY)
++		return -EOPNOTSUPP;
 +
-+	/* In legacy mode, VF link is not controlled by VFPR */
-+	vf->link_forced = false;
-+	i40e_vc_notify_vf_link_state(vf);
- }
- 
- /**
-@@ -1909,6 +1934,10 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 
- 	if (i40e_vsi_start_rings(pf->vsi[vf->lan_vsi_idx]))
- 		aq_ret = I40E_ERR_TIMEOUT;
-+
-+	if ((aq_ret == 0) && vf->vfpr_netdev)
-+		netif_carrier_on(vf->vfpr_netdev);
-+
- error_param:
- 	/* send the response to the VF */
- 	return i40e_vc_send_resp_to_vf(vf, I40E_VIRTCHNL_OP_ENABLE_QUEUES,
-@@ -1948,6 +1977,9 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 
- 	i40e_vsi_stop_rings(pf->vsi[vf->lan_vsi_idx]);
- 
-+	if ((aq_ret == 0) && vf->vfpr_netdev)
-+		netif_carrier_off(vf->vfpr_netdev);
-+
- error_param:
- 	/* send the response to the VF */
- 	return i40e_vc_send_resp_to_vf(vf, I40E_VIRTCHNL_OP_DISABLE_QUEUES,
-@@ -3183,6 +3215,7 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_pf *pf = np->vsi->back;
- 	struct i40e_virtchnl_pf_event pfe;
-+	struct net_device *vfpr_netdev;
- 	struct i40e_hw *hw = &pf->hw;
- 	struct i40e_vf *vf;
- 	int abs_vf_id;
-@@ -3225,6 +3258,17 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
- 		ret = -EINVAL;
- 		goto error_out;
- 	}
-+
-+	vfpr_netdev = vf->vfpr_netdev;
-+	if (vfpr_netdev) {
-+		unsigned int flags = vfpr_netdev->flags;
-+
-+		if (vf->link_up)
-+			dev_change_flags(vfpr_netdev, flags | IFF_UP);
-+		else
-+			dev_change_flags(vfpr_netdev, flags & ~IFF_UP);
++	switch (attr->id) {
++	case SWITCHDEV_ATTR_ID_PORT_PARENT_ID:
++		attr->u.ppid.id_len = ETH_ALEN;
++		ether_addr_copy(attr->u.ppid.id, dev->dev_addr);
++		break;
++	default:
++		return -EOPNOTSUPP;
 +	}
 +
- 	/* Notify the VF of its new link state */
- 	i40e_aq_send_msg_to_vf(hw, abs_vf_id, I40E_VIRTCHNL_OP_EVENT,
- 			       0, (u8 *)&pfe, sizeof(pfe), NULL);
++	return 0;
++}
++
++static const struct switchdev_ops i40e_pf_switchdev_ops = {
++	.switchdev_port_attr_get        = i40e_pf_attr_get,
++};
++
+ /**
+  * i40e_config_netdev - Setup the netdev flags
+  * @vsi: the VSI being configured
+@@ -9805,6 +9830,9 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ #ifdef I40E_FCOE
+ 	i40e_fcoe_config_netdev(netdev, vsi);
+ #endif
++#ifdef CONFIG_NET_SWITCHDEV
++	netdev->switchdev_ops = &i40e_pf_switchdev_ops;
++#endif
+ 
+ 	/* MTU range: 68 - 9706 */
+ 	netdev->min_mtu = ETH_MIN_MTU;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 98336c4..c531045 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1154,6 +1154,22 @@ i40e_vfpr_netdev_get_offload_stats(int attr_id, const struct net_device *dev,
+ 	return -EINVAL;
+ }
+ 
++static int
++i40e_vfpr_netdev_get_phys_port_name(struct net_device *dev, char *buf,
++				    size_t len)
++{
++	struct i40e_vfpr_netdev_priv *priv = netdev_priv(dev);
++	struct i40e_vf *vf = priv->vf;
++
++	int ret;
++
++	ret = snprintf(buf, len, "%d", vf->vf_id);
++	if (ret >= len)
++		return -EOPNOTSUPP;
++
++	return 0;
++}
++
+ static const struct net_device_ops i40e_vfpr_netdev_ops = {
+ 	.ndo_open		= i40e_vfpr_netdev_open,
+ 	.ndo_stop		= i40e_vfpr_netdev_stop,
+@@ -1161,6 +1177,26 @@ static const struct net_device_ops i40e_vfpr_netdev_ops = {
+ 	.ndo_get_stats64        = i40e_vfpr_netdev_get_stats64,
+ 	.ndo_has_offload_stats  = i40e_vfpr_netdev_has_offload_stats,
+ 	.ndo_get_offload_stats  = i40e_vfpr_netdev_get_offload_stats,
++	.ndo_get_phys_port_name	= i40e_vfpr_netdev_get_phys_port_name,
++};
++
++static int i40e_vfpr_attr_get(struct net_device *dev,
++			      struct switchdev_attr *attr)
++{
++	switch (attr->id) {
++	case SWITCHDEV_ATTR_ID_PORT_PARENT_ID:
++		attr->u.ppid.id_len = ETH_ALEN;
++		ether_addr_copy(attr->u.ppid.id, dev->dev_addr);
++		break;
++	default:
++		return -EOPNOTSUPP;
++	}
++
++	return 0;
++}
++
++static const struct switchdev_ops i40e_vfpr_switchdev_ops = {
++	.switchdev_port_attr_get        = i40e_vfpr_attr_get,
+ };
+ 
+ /**
+@@ -1235,6 +1271,10 @@ int i40e_alloc_vfpr_netdev(struct i40e_vf *vf, u16 vf_num)
+ 	vfpr_netdev->netdev_ops = &i40e_vfpr_netdev_ops;
+ 	eth_hw_addr_inherit(vfpr_netdev, vsi->netdev);
+ 
++#ifdef CONFIG_NET_SWITCHDEV
++	vfpr_netdev->switchdev_ops = &i40e_vfpr_switchdev_ops;
++#endif
++
+ 	netif_carrier_off(vfpr_netdev);
+ 	netif_tx_disable(vfpr_netdev);
+ 
 -- 
 2.5.5
 
