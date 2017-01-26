@@ -1,206 +1,172 @@
 From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Wed, 25 Jan 2017 16:54:11 -0800
-Subject: [Intel-wired-lan] [next-queue v5 PATCH 1/7] i40e: Introduce devlink
-	interface
+Date: Wed, 25 Jan 2017 16:54:13 -0800
+Subject: [Intel-wired-lan] [next-queue v5 PATCH 3/7] i40e: Sync link state
+	between VFs and VFPRs
 In-Reply-To: <1485392057-3261-1-git-send-email-sridhar.samudrala@intel.com>
 References: <1485392057-3261-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <1485392057-3261-2-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <1485392057-3261-4-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add initial devlink support to get/set the mode of SRIOV switch.
-This patch sets the default mode as 'legacy' and enables getting the mode
-and and setting it to 'legacy'.
+This patch enables
+- reflecting the link state of VFPR based on VF admin state & link state
+  of VF based on admin state of VFPR.
+- bringing up/down the VFPR sends a notification to update VF link state.
+- bringing up/down the VF will cause the link state update of VFPR.
+- enable/disable VF link state via ndo_set_vf_link_state will update the
+  admin state of associated VFPR.
 
-The switch mode can be get/set via following 'devlink' commands.
-
-# devlink dev eswitch show pci/0000:05:00.0
-pci/0000:05:00.0: mode legacy
+PF: enp5s0f0, VFs: enp5s2,enp5s2f1 VFPRs:enp5s0f0-vf0, enp5s0f0-vf1
+# rmmod i40e; modprobe i40e
 # devlink dev eswitch set pci/0000:05:00.0 mode switchdev
-devlink answers: Operation not supported
-# devlink dev eswitch set pci/0000:05:00.0 mode legacy
-# devlink dev eswitch show pci/0000:05:00.0
-pci/0000:05:00.0: mode legacy
+# echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
+
+# ip link set enp5s2 up
+# ip link set enp5s0f0-vf0 up
+# ip link set enp5s0f0-vf1 up
+
+/* enp5s2 UP -> enp5s0f0-vf0 CARRIER ON */
+# ip link show enp5s0f0-vf0
+215: enp5s0f0-vf0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+     link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
+
+/* enp5s0f0-vf0 UP -> enp5s2 CARRIER ON */
+# ip link show enp5s2
+218: enp5s2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+     link/ether ea:4d:60:bc:6f:85 brd ff:ff:ff:ff:ff:ff
+
+/* enp5s2f1 DOWN -> enp5s0f0-vf1 NO-CARRIER */
+# ip link show enp5s0f0-vf1
+216: enp5s0f0-vf1: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc fq_codel state DOWN mode DEFAULT group default qlen 1000
+     link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
+
+# ip link set enp5s0f0-vf0 down
+# ip link set enp5s2f1 up
+
+/* enp5s0-vf0 DOWN -> enp5s2 NO_CARRIER */
+# ip link show enp5s2
+218: enp5s2: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN mode DEFAULT group default qlen 1000
+     link/ether ea:4d:60:bc:6f:85 brd ff:ff:ff:ff:ff:ff
+
+# ip -d link show enp5s0f0
+213: enp5s0f0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop portid 6805ca27268 state DOWN mode DEFAULT group default qlen 1000
+     link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64
+     vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state disable, trust off
+     vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state enable, trust off
 
 Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Signed-off-by: Anjali Singhai <anjali.singhai@intel.com>
 ---
- drivers/net/ethernet/intel/Kconfig          |  1 +
- drivers/net/ethernet/intel/i40e/i40e.h      |  3 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c | 80 ++++++++++++++++++++++++++---
- 3 files changed, 76 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 44 ++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 1349b45..0dbb87e 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -215,6 +215,7 @@ config I40E
- 	tristate "Intel(R) Ethernet Controller XL710 Family support"
- 	imply PTP_1588_CLOCK
- 	depends on PCI
-+	depends on MAY_USE_DEVLINK
- 	---help---
- 	  This driver supports Intel(R) Ethernet Controller XL710 Family of
- 	  devices.  For more information on how to identify your adapter, go
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index e0668d4..0786f78 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -54,6 +54,8 @@
- #include <linux/clocksource.h>
- #include <linux/net_tstamp.h>
- #include <linux/ptp_clock_kernel.h>
-+#include <net/devlink.h>
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 3d45ef2..63c9fdf 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1029,6 +1029,13 @@ void i40e_reset_vf(struct i40e_vf *vf, bool flr)
+  **/
+ static int i40e_vfpr_netdev_open(struct net_device *dev)
+ {
++	struct i40e_vfpr_netdev_priv *priv = netdev_priv(dev);
++	struct i40e_vf *vf = priv->vf;
 +
- #include "i40e_type.h"
- #include "i40e_prototype.h"
- #ifdef I40E_FCOE
-@@ -479,6 +481,7 @@ struct i40e_pf {
- 	u32 ioremap_len;
- 	u32 fd_inv;
- 	u16 phy_led_val;
-+	enum devlink_eswitch_mode eswitch_mode;
- };
++	vf->link_forced = true;
++	vf->link_up = true;
++	i40e_vc_notify_vf_link_state(vf);
++
+ 	return 0;
+ }
  
- /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5dfcb73..699ba1e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11330,6 +11330,57 @@ static void i40e_get_platform_mac_addr(struct pci_dev *pdev, struct i40e_pf *pf)
+@@ -1040,6 +1047,13 @@ static int i40e_vfpr_netdev_open(struct net_device *dev)
+  **/
+ static int i40e_vfpr_netdev_stop(struct net_device *dev)
+ {
++	struct i40e_vfpr_netdev_priv *priv = netdev_priv(dev);
++	struct i40e_vf *vf = priv->vf;
++
++	vf->link_forced = true;
++	vf->link_up = false;
++	i40e_vc_notify_vf_link_state(vf);
++
+ 	return 0;
+ }
+ 
+@@ -1126,6 +1140,13 @@ int i40e_alloc_vfpr_netdev(struct i40e_vf *vf, u16 vf_num)
+ 	/* Delete broadcast filter for VF */
+ 	i40e_update_vf_broadcast_filter(vf, false);
+ 
++	/* Reset VF link as we are changing the mode to 'switchdev'. VFPR netdev
++	 * needs to be brought up to enable VF link.
++	 */
++	vf->link_forced = true;
++	vf->link_up = false;
++	i40e_vc_notify_vf_link_state(vf);
++
+ 	return 0;
+ }
+ 
+@@ -1150,6 +1171,10 @@ void i40e_free_vfpr_netdev(struct i40e_vf *vf)
+ 
+ 	/* Add broadcast filter to VF */
+ 	i40e_update_vf_broadcast_filter(vf, true);
++
++	/* In legacy mode, VF link is not controlled by VFPR */
++	vf->link_forced = false;
++	i40e_vc_notify_vf_link_state(vf);
  }
  
  /**
-+ * i40e_devlink_eswitch_mode_get
-+ *
-+ * @devlink: pointer to devlink struct
-+ * @mode: sr-iov switch mode pointer
-+ *
-+ * Returns the switch mode of the associated PF in the @mode pointer.
-+ */
-+static int i40e_devlink_eswitch_mode_get(struct devlink *devlink, u16 *mode)
-+{
-+	struct i40e_pf *pf = devlink_priv(devlink);
-+
-+	*mode = pf->eswitch_mode;
-+
-+	return 0;
-+}
-+
-+/**
-+ * i40e_devlink_eswitch_mode_set
-+ *
-+ * @devlink: pointer to devlink struct
-+ * @mode: sr-iov switch mode
-+ *
-+ * Set the switch mode of the associated PF.
-+ * Returns 0 on success and -EOPNOTSUPP on error.
-+ */
-+static int i40e_devlink_eswitch_mode_set(struct devlink *devlink, u16 mode)
-+{
-+	struct i40e_pf *pf = devlink_priv(devlink);
-+	int err = 0;
-+
-+	if (mode == pf->eswitch_mode)
-+		goto done;
-+
-+	switch (mode) {
-+	case DEVLINK_ESWITCH_MODE_LEGACY:
-+		pf->eswitch_mode = mode;
-+		break;
-+	default:
-+		err = -EOPNOTSUPP;
-+		break;
-+	}
-+done:
-+	return err;
-+}
-+
-+static const struct devlink_ops i40e_devlink_ops = {
-+	.eswitch_mode_get = i40e_devlink_eswitch_mode_get,
-+	.eswitch_mode_set = i40e_devlink_eswitch_mode_set,
-+};
-+
-+/**
-  * i40e_probe - Device initialization routine
-  * @pdev: PCI device information struct
-  * @ent: entry in i40e_pci_tbl
-@@ -11346,6 +11397,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	struct i40e_pf *pf;
- 	struct i40e_hw *hw;
- 	static u16 pfs_found;
-+	struct devlink *devlink;
- 	u16 wol_nvm_bits;
- 	u16 link_status;
- 	int err;
-@@ -11379,20 +11431,28 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	pci_enable_pcie_error_reporting(pdev);
- 	pci_set_master(pdev);
+@@ -1909,6 +1934,10 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
  
-+	devlink = devlink_alloc(&i40e_devlink_ops, sizeof(*pf));
-+	if (!devlink) {
-+		dev_err(&pdev->dev, "devlink_alloc failed\n");
-+		err = -ENOMEM;
-+		goto err_devlink_alloc;
-+	}
+ 	if (i40e_vsi_start_rings(pf->vsi[vf->lan_vsi_idx]))
+ 		aq_ret = I40E_ERR_TIMEOUT;
 +
- 	/* Now that we have a PCI connection, we need to do the
- 	 * low level device setup.  This is primarily setting up
- 	 * the Admin Queue structures and then querying for the
- 	 * device's current profile information.
- 	 */
--	pf = kzalloc(sizeof(*pf), GFP_KERNEL);
--	if (!pf) {
--		err = -ENOMEM;
--		goto err_pf_alloc;
--	}
-+	pf = devlink_priv(devlink);
- 	pf->next_vsi = 0;
- 	pf->pdev = pdev;
- 	set_bit(__I40E_DOWN, &pf->state);
- 
-+	pf->eswitch_mode = DEVLINK_ESWITCH_MODE_LEGACY;
-+	err = devlink_register(devlink, &pdev->dev);
-+	if (err)
-+		goto err_devlink_register;
++	if ((aq_ret == 0) && vf->vfpr_netdev)
++		netif_carrier_on(vf->vfpr_netdev);
 +
- 	hw = &pf->hw;
- 	hw->back = pf;
+ error_param:
+ 	/* send the response to the VF */
+ 	return i40e_vc_send_resp_to_vf(vf, I40E_VIRTCHNL_OP_ENABLE_QUEUES,
+@@ -1948,6 +1977,9 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
  
-@@ -11866,8 +11926,10 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- err_pf_reset:
- 	iounmap(hw->hw_addr);
- err_ioremap:
--	kfree(pf);
--err_pf_alloc:
-+	devlink_unregister(devlink);
-+err_devlink_register:
-+	devlink_free(devlink);
-+err_devlink_alloc:
- 	pci_disable_pcie_error_reporting(pdev);
- 	pci_release_mem_regions(pdev);
- err_pci_reg:
-@@ -11889,6 +11951,7 @@ static void i40e_remove(struct pci_dev *pdev)
- {
- 	struct i40e_pf *pf = pci_get_drvdata(pdev);
+ 	i40e_vsi_stop_rings(pf->vsi[vf->lan_vsi_idx]);
+ 
++	if ((aq_ret == 0) && vf->vfpr_netdev)
++		netif_carrier_off(vf->vfpr_netdev);
++
+ error_param:
+ 	/* send the response to the VF */
+ 	return i40e_vc_send_resp_to_vf(vf, I40E_VIRTCHNL_OP_DISABLE_QUEUES,
+@@ -3183,6 +3215,7 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_pf *pf = np->vsi->back;
+ 	struct i40e_virtchnl_pf_event pfe;
++	struct net_device *vfpr_netdev;
  	struct i40e_hw *hw = &pf->hw;
-+	struct devlink *devlink = priv_to_devlink(pf);
- 	i40e_status ret_code;
- 	int i;
- 
-@@ -11977,7 +12040,8 @@ static void i40e_remove(struct pci_dev *pdev)
- 	kfree(pf->vsi);
- 
- 	iounmap(hw->hw_addr);
--	kfree(pf);
-+	devlink_unregister(devlink);
-+	devlink_free(devlink);
- 	pci_release_mem_regions(pdev);
- 
- 	pci_disable_pcie_error_reporting(pdev);
+ 	struct i40e_vf *vf;
+ 	int abs_vf_id;
+@@ -3225,6 +3258,17 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+ 		ret = -EINVAL;
+ 		goto error_out;
+ 	}
++
++	vfpr_netdev = vf->vfpr_netdev;
++	if (vfpr_netdev) {
++		unsigned int flags = vfpr_netdev->flags;
++
++		if (vf->link_up)
++			dev_change_flags(vfpr_netdev, flags | IFF_UP);
++		else
++			dev_change_flags(vfpr_netdev, flags & ~IFF_UP);
++	}
++
+ 	/* Notify the VF of its new link state */
+ 	i40e_aq_send_msg_to_vf(hw, abs_vf_id, I40E_VIRTCHNL_OP_EVENT,
+ 			       0, (u8 *)&pfe, sizeof(pfe), NULL);
 -- 
 2.5.5
 
