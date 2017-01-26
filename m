@@ -1,192 +1,245 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 26 Jan 2017 09:53:54 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 50775a0fad126bd006c835a3fb08cea81e0d3e25
-Message-ID: <588956b2.YdldY026hMWiNj2d%fengguang.wu@intel.com>
+From: Philippe Reynes <tremyfr@gmail.com>
+Date: Thu, 26 Jan 2017 22:19:53 +0100
+Subject: [Intel-wired-lan] [PATCH] net: intel: e1000e: use new api
+	ethtool_{get|set}_link_ksettings
+Message-ID: <1485465593-12561-1-git-send-email-tremyfr@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-50775a0fad126bd006c835a3fb08cea81e0d3e25  ixgbe: Don't bother clearing buffer memory for descriptor rings
+The ethtool api {get|set}_settings is deprecated.
+We move this driver to new api {get|set}_link_ksettings.
 
-elapsed time: 163m
+As I don't have the hardware, I'd be very pleased if
+someone may test this patch.
 
-configs tested: 168
+Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
+---
+ drivers/net/ethernet/intel/e1000e/ethtool.c |   91 ++++++++++++++------------
+ 1 files changed, 49 insertions(+), 42 deletions(-)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+index 7aff68a..3768a5c 100644
+--- a/drivers/net/ethernet/intel/e1000e/ethtool.c
++++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+@@ -117,15 +117,15 @@ struct e1000_stats {
+ 
+ #define E1000_TEST_LEN ARRAY_SIZE(e1000_gstrings_test)
+ 
+-static int e1000_get_settings(struct net_device *netdev,
+-			      struct ethtool_cmd *ecmd)
++static int e1000_get_link_ksettings(struct net_device *netdev,
++				    struct ethtool_link_ksettings *cmd)
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+-	u32 speed;
++	u32 speed, supported, advertising;
+ 
+ 	if (hw->phy.media_type == e1000_media_type_copper) {
+-		ecmd->supported = (SUPPORTED_10baseT_Half |
++		supported = (SUPPORTED_10baseT_Half |
+ 				   SUPPORTED_10baseT_Full |
+ 				   SUPPORTED_100baseT_Half |
+ 				   SUPPORTED_100baseT_Full |
+@@ -133,39 +133,36 @@ static int e1000_get_settings(struct net_device *netdev,
+ 				   SUPPORTED_Autoneg |
+ 				   SUPPORTED_TP);
+ 		if (hw->phy.type == e1000_phy_ife)
+-			ecmd->supported &= ~SUPPORTED_1000baseT_Full;
+-		ecmd->advertising = ADVERTISED_TP;
++			supported &= ~SUPPORTED_1000baseT_Full;
++		advertising = ADVERTISED_TP;
+ 
+ 		if (hw->mac.autoneg == 1) {
+-			ecmd->advertising |= ADVERTISED_Autoneg;
++			advertising |= ADVERTISED_Autoneg;
+ 			/* the e1000 autoneg seems to match ethtool nicely */
+-			ecmd->advertising |= hw->phy.autoneg_advertised;
++			advertising |= hw->phy.autoneg_advertised;
+ 		}
+ 
+-		ecmd->port = PORT_TP;
+-		ecmd->phy_address = hw->phy.addr;
+-		ecmd->transceiver = XCVR_INTERNAL;
+-
++		cmd->base.port = PORT_TP;
++		cmd->base.phy_address = hw->phy.addr;
+ 	} else {
+-		ecmd->supported   = (SUPPORTED_1000baseT_Full |
++		supported   = (SUPPORTED_1000baseT_Full |
+ 				     SUPPORTED_FIBRE |
+ 				     SUPPORTED_Autoneg);
+ 
+-		ecmd->advertising = (ADVERTISED_1000baseT_Full |
++		advertising = (ADVERTISED_1000baseT_Full |
+ 				     ADVERTISED_FIBRE |
+ 				     ADVERTISED_Autoneg);
+ 
+-		ecmd->port = PORT_FIBRE;
+-		ecmd->transceiver = XCVR_EXTERNAL;
++		cmd->base.port = PORT_FIBRE;
+ 	}
+ 
+ 	speed = SPEED_UNKNOWN;
+-	ecmd->duplex = DUPLEX_UNKNOWN;
++	cmd->base.duplex = DUPLEX_UNKNOWN;
+ 
+ 	if (netif_running(netdev)) {
+ 		if (netif_carrier_ok(netdev)) {
+ 			speed = adapter->link_speed;
+-			ecmd->duplex = adapter->link_duplex - 1;
++			cmd->base.duplex = adapter->link_duplex - 1;
+ 		}
+ 	} else if (!pm_runtime_suspended(netdev->dev.parent)) {
+ 		u32 status = er32(STATUS);
+@@ -179,30 +176,36 @@ static int e1000_get_settings(struct net_device *netdev,
+ 				speed = SPEED_10;
+ 
+ 			if (status & E1000_STATUS_FD)
+-				ecmd->duplex = DUPLEX_FULL;
++				cmd->base.duplex = DUPLEX_FULL;
+ 			else
+-				ecmd->duplex = DUPLEX_HALF;
++				cmd->base.duplex = DUPLEX_HALF;
+ 		}
+ 	}
+ 
+-	ethtool_cmd_speed_set(ecmd, speed);
+-	ecmd->autoneg = ((hw->phy.media_type == e1000_media_type_fiber) ||
++	cmd->base.speed = speed;
++	cmd->base.autoneg = ((hw->phy.media_type == e1000_media_type_fiber) ||
+ 			 hw->mac.autoneg) ? AUTONEG_ENABLE : AUTONEG_DISABLE;
+ 
+ 	/* MDI-X => 2; MDI =>1; Invalid =>0 */
+ 	if ((hw->phy.media_type == e1000_media_type_copper) &&
+ 	    netif_carrier_ok(netdev))
+-		ecmd->eth_tp_mdix = hw->phy.is_mdix ? ETH_TP_MDI_X : ETH_TP_MDI;
++		cmd->base.eth_tp_mdix = hw->phy.is_mdix ?
++			ETH_TP_MDI_X : ETH_TP_MDI;
+ 	else
+-		ecmd->eth_tp_mdix = ETH_TP_MDI_INVALID;
++		cmd->base.eth_tp_mdix = ETH_TP_MDI_INVALID;
+ 
+ 	if (hw->phy.mdix == AUTO_ALL_MODES)
+-		ecmd->eth_tp_mdix_ctrl = ETH_TP_MDI_AUTO;
++		cmd->base.eth_tp_mdix_ctrl = ETH_TP_MDI_AUTO;
+ 	else
+-		ecmd->eth_tp_mdix_ctrl = hw->phy.mdix;
++		cmd->base.eth_tp_mdix_ctrl = hw->phy.mdix;
+ 
+ 	if (hw->phy.media_type != e1000_media_type_copper)
+-		ecmd->eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
++		cmd->base.eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
++
++	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
++						supported);
++	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
++						advertising);
+ 
+ 	return 0;
+ }
+@@ -262,12 +265,16 @@ static int e1000_set_spd_dplx(struct e1000_adapter *adapter, u32 spd, u8 dplx)
+ 	return -EINVAL;
+ }
+ 
+-static int e1000_set_settings(struct net_device *netdev,
+-			      struct ethtool_cmd *ecmd)
++static int e1000_set_link_ksettings(struct net_device *netdev,
++				    const struct ethtool_link_ksettings *cmd)
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	int ret_val = 0;
++	u32 advertising;
++
++	ethtool_convert_link_mode_to_legacy_u32(&advertising,
++						cmd->link_modes.advertising);
+ 
+ 	pm_runtime_get_sync(netdev->dev.parent);
+ 
+@@ -285,14 +292,14 @@ static int e1000_set_settings(struct net_device *netdev,
+ 	 * some hardware doesn't allow MDI setting when speed or
+ 	 * duplex is forced.
+ 	 */
+-	if (ecmd->eth_tp_mdix_ctrl) {
++	if (cmd->base.eth_tp_mdix_ctrl) {
+ 		if (hw->phy.media_type != e1000_media_type_copper) {
+ 			ret_val = -EOPNOTSUPP;
+ 			goto out;
+ 		}
+ 
+-		if ((ecmd->eth_tp_mdix_ctrl != ETH_TP_MDI_AUTO) &&
+-		    (ecmd->autoneg != AUTONEG_ENABLE)) {
++		if ((cmd->base.eth_tp_mdix_ctrl != ETH_TP_MDI_AUTO) &&
++		    (cmd->base.autoneg != AUTONEG_ENABLE)) {
+ 			e_err("forcing MDI/MDI-X state is not supported when link speed and/or duplex are forced\n");
+ 			ret_val = -EINVAL;
+ 			goto out;
+@@ -302,35 +309,35 @@ static int e1000_set_settings(struct net_device *netdev,
+ 	while (test_and_set_bit(__E1000_RESETTING, &adapter->state))
+ 		usleep_range(1000, 2000);
+ 
+-	if (ecmd->autoneg == AUTONEG_ENABLE) {
++	if (cmd->base.autoneg == AUTONEG_ENABLE) {
+ 		hw->mac.autoneg = 1;
+ 		if (hw->phy.media_type == e1000_media_type_fiber)
+ 			hw->phy.autoneg_advertised = ADVERTISED_1000baseT_Full |
+ 			    ADVERTISED_FIBRE | ADVERTISED_Autoneg;
+ 		else
+-			hw->phy.autoneg_advertised = ecmd->advertising |
++			hw->phy.autoneg_advertised = advertising |
+ 			    ADVERTISED_TP | ADVERTISED_Autoneg;
+-		ecmd->advertising = hw->phy.autoneg_advertised;
++		advertising = hw->phy.autoneg_advertised;
+ 		if (adapter->fc_autoneg)
+ 			hw->fc.requested_mode = e1000_fc_default;
+ 	} else {
+-		u32 speed = ethtool_cmd_speed(ecmd);
++		u32 speed = cmd->base.speed;
+ 		/* calling this overrides forced MDI setting */
+-		if (e1000_set_spd_dplx(adapter, speed, ecmd->duplex)) {
++		if (e1000_set_spd_dplx(adapter, speed, cmd->base.duplex)) {
+ 			ret_val = -EINVAL;
+ 			goto out;
+ 		}
+ 	}
+ 
+ 	/* MDI-X => 2; MDI => 1; Auto => 3 */
+-	if (ecmd->eth_tp_mdix_ctrl) {
++	if (cmd->base.eth_tp_mdix_ctrl) {
+ 		/* fix up the value for auto (3 => 0) as zero is mapped
+ 		 * internally to auto
+ 		 */
+-		if (ecmd->eth_tp_mdix_ctrl == ETH_TP_MDI_AUTO)
++		if (cmd->base.eth_tp_mdix_ctrl == ETH_TP_MDI_AUTO)
+ 			hw->phy.mdix = AUTO_ALL_MODES;
+ 		else
+-			hw->phy.mdix = ecmd->eth_tp_mdix_ctrl;
++			hw->phy.mdix = cmd->base.eth_tp_mdix_ctrl;
+ 	}
+ 
+ 	/* reset the link */
+@@ -2313,8 +2320,6 @@ static int e1000e_get_ts_info(struct net_device *netdev,
+ }
+ 
+ static const struct ethtool_ops e1000_ethtool_ops = {
+-	.get_settings		= e1000_get_settings,
+-	.set_settings		= e1000_set_settings,
+ 	.get_drvinfo		= e1000_get_drvinfo,
+ 	.get_regs_len		= e1000_get_regs_len,
+ 	.get_regs		= e1000_get_regs,
+@@ -2342,6 +2347,8 @@ static int e1000e_get_ts_info(struct net_device *netdev,
+ 	.get_ts_info		= e1000e_get_ts_info,
+ 	.get_eee		= e1000e_get_eee,
+ 	.set_eee		= e1000e_set_eee,
++	.get_link_ksettings	= e1000_get_link_ksettings,
++	.set_link_ksettings	= e1000_set_link_ksettings,
+ };
+ 
+ void e1000e_set_ethtool_ops(struct net_device *netdev)
+-- 
+1.7.4.4
 
-openrisc                         alldefconfig
-powerpc                     redwood_defconfig
-sh                          rsk7203_defconfig
-i386                     randconfig-a0-201704
-x86_64                 randconfig-a0-01260659
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-01260749
-x86_64                           allmodconfig
-avr32                 atngw100_mrmt_defconfig
-s390                             alldefconfig
-xtensa                          iss_defconfig
-x86_64                randconfig-it0-01260620
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-01260354
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-i386                             allmodconfig
-arm                            zeus_defconfig
-blackfin                  CM-BF537U_defconfig
-m68k                           sun3_defconfig
-mips                    maltaup_xpa_defconfig
-um                             i386_defconfig
-x86_64                 randconfig-x014-201704
-x86_64                 randconfig-x017-201704
-x86_64                 randconfig-x011-201704
-x86_64                 randconfig-x016-201704
-x86_64                 randconfig-x012-201704
-x86_64                 randconfig-x019-201704
-x86_64                 randconfig-x010-201704
-x86_64                 randconfig-x013-201704
-x86_64                 randconfig-x018-201704
-x86_64                 randconfig-x015-201704
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-i386                     randconfig-s0-201704
-i386                     randconfig-s1-201704
-x86_64                 randconfig-s0-01260753
-x86_64                 randconfig-s1-01260753
-x86_64                 randconfig-s2-01260753
-x86_64                 randconfig-s3-01260750
-x86_64                 randconfig-s4-01260750
-x86_64                 randconfig-s5-01260750
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                           x86_64_defconfig
-arm                         s3c2410_defconfig
-m68k                        mvme16x_defconfig
-nios2                         3c120_defconfig
-sh                         ecovec24_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201704
-i386                   randconfig-b0-01260647
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-01230650
-i386                   randconfig-i1-01230650
-x86_64                 randconfig-b0-01260802
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-mips                          rb532_defconfig
-openrisc                         allmodconfig
-arm                        spear3xx_defconfig
-powerpc                         wii_defconfig
-x86_64                 randconfig-u0-01260740
-x86_64                randconfig-ne0-01260809
-i386                               tinyconfig
-arm                             rpc_defconfig
-ia64                                defconfig
-powerpc                 mpc8540_ads_defconfig
-powerpc                        warp_defconfig
-arm                           u8500_defconfig
-powerpc                     sbc834x_defconfig
-sh                     sh7710voipgw_defconfig
-i386                   randconfig-x010-201704
-i386                   randconfig-x011-201704
-i386                   randconfig-x012-201704
-i386                   randconfig-x013-201704
-i386                   randconfig-x014-201704
-i386                   randconfig-x015-201704
-i386                   randconfig-x016-201704
-i386                   randconfig-x017-201704
-i386                   randconfig-x018-201704
-i386                   randconfig-x019-201704
-x86_64                                    lkp
-x86_64                               rhel-7.2
-i386                   randconfig-h0-01260802
-i386                   randconfig-h1-01260802
-arm                        magician_defconfig
-powerpc                      walnut_defconfig
-sparc64                          alldefconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-x86_64                 randconfig-h0-01260740
-blackfin                       IP0X_defconfig
-mips                 pnx8335_stb225_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x008-201704
-x86_64                 randconfig-x001-201704
-x86_64                 randconfig-x009-201704
-x86_64                 randconfig-x003-201704
-x86_64                 randconfig-x000-201704
-x86_64                 randconfig-x006-201704
-x86_64                 randconfig-x007-201704
-x86_64                 randconfig-x004-201704
-x86_64                 randconfig-x002-201704
-x86_64                 randconfig-x005-201704
-x86_64                 randconfig-r0-01260605
-i386                   randconfig-x004-201704
-i386                   randconfig-x003-201704
-i386                   randconfig-x001-201704
-i386                   randconfig-x007-201704
-i386                   randconfig-x006-201704
-i386                   randconfig-x009-201704
-i386                   randconfig-x002-201704
-i386                   randconfig-x008-201704
-i386                   randconfig-x000-201704
-i386                   randconfig-x005-201704
-
-Thanks,
-Fengguang
