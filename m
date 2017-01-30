@@ -1,56 +1,47 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 30 Jan 2017 12:29:37 -0800
-Subject: [Intel-wired-lan] [next PATCH S59 6/6] i40e/i40evf: Change version
-	from 1.6.27 to 2.1.7
-In-Reply-To: <1485808177-6333-1-git-send-email-bimmy.pujari@intel.com>
-References: <1485808177-6333-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1485808177-6333-7-git-send-email-bimmy.pujari@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 30 Jan 2017 21:33:16 +0000
+Subject: [Intel-wired-lan] [next-queue v5 PATCH 1/7] i40e: Introduce
+ devlink	interface
+In-Reply-To: <1485392057-3261-2-git-send-email-sridhar.samudrala@intel.com>
+References: <1485392057-3261-1-git-send-email-sridhar.samudrala@intel.com>
+ <1485392057-3261-2-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D49C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 6 +++---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Sridhar Samudrala
+> Sent: Wednesday, January 25, 2017 4:54 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next-queue v5 PATCH 1/7] i40e: Introduce devlink
+> interface
+> 
+> Add initial devlink support to get/set the mode of SRIOV switch.
+> This patch sets the default mode as 'legacy' and enables getting the mode
+> and and setting it to 'legacy'.
+> 
+> The switch mode can be get/set via following 'devlink' commands.
+> 
+> # devlink dev eswitch show pci/0000:05:00.0
+> pci/0000:05:00.0: mode legacy
+> # devlink dev eswitch set pci/0000:05:00.0 mode switchdev devlink answers:
+> Operation not supported # devlink dev eswitch set pci/0000:05:00.0 mode
+> legacy # devlink dev eswitch show pci/0000:05:00.0
+> pci/0000:05:00.0: mode legacy
+> 
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> Signed-off-by: Anjali Singhai <anjali.singhai@intel.com>
+> ---
+>  drivers/net/ethernet/intel/Kconfig          |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e.h      |  3 ++
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 80
+> ++++++++++++++++++++++++++---
+>  3 files changed, 76 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 736746b..840f04b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -40,9 +40,9 @@ static const char i40e_driver_string[] =
- 
- #define DRV_KERN "-k"
- 
--#define DRV_VERSION_MAJOR 1
--#define DRV_VERSION_MINOR 6
--#define DRV_VERSION_BUILD 27
-+#define DRV_VERSION_MAJOR 2
-+#define DRV_VERSION_MINOR 1
-+#define DRV_VERSION_BUILD 7
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 9492b20..6d666bd 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -37,9 +37,9 @@ static const char i40evf_driver_string[] =
- 
- #define DRV_KERN "-k"
- 
--#define DRV_VERSION_MAJOR 1
--#define DRV_VERSION_MINOR 6
--#define DRV_VERSION_BUILD 27
-+#define DRV_VERSION_MAJOR 2
-+#define DRV_VERSION_MINOR 1
-+#define DRV_VERSION_BUILD 7
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD) \
--- 
-2.4.11
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
 
