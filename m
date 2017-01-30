@@ -1,245 +1,35 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 27 Jan 2017 16:39:14 -0800
-Subject: [Intel-wired-lan] [PATCH] ethtool: support queue and vf fields for
-	rxclass filters
-Message-ID: <20170128003914.30854-1-jacob.e.keller@intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Mon, 30 Jan 2017 12:29:31 -0800
+Subject: [Intel-wired-lan] [next PATCH S59 0/6] i40e/i40evf updates
+Message-ID: <1485808177-6333-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Recent kernels have made it possible to specify filters applying to
-a virtual function by partitioning the ring_cookie (action) value. The
-lower 32bits will represent the queue, while the next 8bits represent
-the virtual function.
+Alexander Duyck adds support for mapping pages with DMA attributes.
 
-Add support to view and specify the ring_cookie in this way so that
-users do not have to manually create action values, and don't need to
-understand the underlying layout of the ring_cookie value.
+Bimmy Pujari changes version from 1.6.27 to 2.1.7.
 
-Support using queue and vf fields which will fill in their specific bits
-of the ring_cookie value, using new customized OPT_RING_VF and
-OPT_RING_QUEUE.
+Filip Sadowski adds code to clarify steps in MAC/VLAN filters 
+initialization routine.
 
-Add support to display the ring cookie value as a split VF identifier
-and queue.
+Lihong Yang adds code to fix ethtool to get EEPROM data from X722 
+interface and fixes RSS queues only operating on PF0.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- ethtool.8.in |   7 ++++
- rxclass.c    | 102 +++++++++++++++++++++++++++++++++++++++++++++++++----------
- 2 files changed, 92 insertions(+), 17 deletions(-)
+Mitch Williams adds code to allow untrusted VFs to have more filters.
 
-diff --git a/ethtool.8.in b/ethtool.8.in
-index 5c36c06385f6..738480abd5b9 100644
---- a/ethtool.8.in
-+++ b/ethtool.8.in
-@@ -829,6 +829,13 @@ lB	l.
- 0 or higher	Rx queue to route the flow
- .TE
- .TP
-+.BI vf \ N
-+Specifies the Virtual Function the filter applies to. A value of 0 indicates
-+the PF, and thus the VF index is offset by 1. Not compatible with action.
-+.TP
-+.BI queue \ N
-+Specifies the Rx queue to send packets to. Not compatible with action.
-+.TP
- .BI loc \ N
- Specify the location/ID to insert the rule. This will overwrite
- any rule present in that location and will not go through any
-diff --git a/rxclass.c b/rxclass.c
-index c7bfebaf6e22..ebc3e1a59fb3 100644
---- a/rxclass.c
-+++ b/rxclass.c
-@@ -247,11 +247,19 @@ static void rxclass_print_nfc_rule(struct ethtool_rx_flow_spec *fsp)
- 
- 	rxclass_print_nfc_spec_ext(fsp);
- 
--	if (fsp->ring_cookie != RX_CLS_FLOW_DISC)
--		fprintf(stdout, "\tAction: Direct to queue %llu\n",
--			fsp->ring_cookie);
--	else
-+	if (fsp->ring_cookie != RX_CLS_FLOW_DISC) {
-+		u64 vf = ethtool_get_flow_spec_ring_vf(fsp->ring_cookie);
-+		u64 queue = ethtool_get_flow_spec_ring(fsp->ring_cookie);
-+
-+		if (vf)
-+			fprintf(stdout, "\tAction: Direct to queue %llu\n",
-+				queue);
-+		else
-+			fprintf(stdout, "\tAction: Direct to VF %llu queue %llu\n",
-+				vf, queue);
-+	} else {
- 		fprintf(stdout, "\tAction: Drop\n");
-+	}
- 
- 	fprintf(stdout, "\n");
- }
-@@ -600,6 +608,8 @@ typedef enum {
- 	OPT_U16,
- 	OPT_U32,
- 	OPT_U64,
-+	OPT_RING_VF,
-+	OPT_RING_QUEUE,
- 	OPT_BE16,
- 	OPT_BE32,
- 	OPT_BE64,
-@@ -608,19 +618,21 @@ typedef enum {
- 	OPT_MAC,
- } rule_opt_type_t;
- 
--#define NFC_FLAG_RING		0x001
--#define NFC_FLAG_LOC		0x002
--#define NFC_FLAG_SADDR		0x004
--#define NFC_FLAG_DADDR		0x008
--#define NFC_FLAG_SPORT		0x010
--#define NFC_FLAG_DPORT		0x020
--#define NFC_FLAG_SPI		0x030
--#define NFC_FLAG_TOS		0x040
--#define NFC_FLAG_PROTO		0x080
--#define NTUPLE_FLAG_VLAN	0x100
--#define NTUPLE_FLAG_UDEF	0x200
--#define NTUPLE_FLAG_VETH	0x400
--#define NFC_FLAG_MAC_ADDR	0x800
-+#define NFC_FLAG_RING		0x0001
-+#define NFC_FLAG_LOC		0x0002
-+#define NFC_FLAG_SADDR		0x0004
-+#define NFC_FLAG_DADDR		0x0008
-+#define NFC_FLAG_SPORT		0x0010
-+#define NFC_FLAG_DPORT		0x0020
-+#define NFC_FLAG_SPI		0x0030
-+#define NFC_FLAG_TOS		0x0040
-+#define NFC_FLAG_PROTO		0x0080
-+#define NTUPLE_FLAG_VLAN	0x0100
-+#define NTUPLE_FLAG_UDEF	0x0200
-+#define NTUPLE_FLAG_VETH	0x0400
-+#define NFC_FLAG_MAC_ADDR	0x0800
-+#define NFC_FLAG_RING_VF	0x1000
-+#define NFC_FLAG_RING_QUEUE	0x2000
- 
- struct rule_opts {
- 	const char	*name;
-@@ -648,6 +660,10 @@ static const struct rule_opts rule_nfc_tcp_ip4[] = {
- 	  offsetof(struct ethtool_rx_flow_spec, m_u.tcp_ip4_spec.pdst) },
- 	{ "action", OPT_U64, NFC_FLAG_RING,
- 	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "vf", OPT_RING_VF, NFC_FLAG_RING_VF,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "queue", OPT_RING_QUEUE, NFC_FLAG_RING_QUEUE,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
- 	{ "loc", OPT_U32, NFC_FLAG_LOC,
- 	  offsetof(struct ethtool_rx_flow_spec, location), -1 },
- 	{ "vlan-etype", OPT_BE16, NTUPLE_FLAG_VETH,
-@@ -679,6 +695,10 @@ static const struct rule_opts rule_nfc_esp_ip4[] = {
- 	  offsetof(struct ethtool_rx_flow_spec, m_u.esp_ip4_spec.spi) },
- 	{ "action", OPT_U64, NFC_FLAG_RING,
- 	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "vf", OPT_RING_VF, NFC_FLAG_RING_VF,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "queue", OPT_RING_QUEUE, NFC_FLAG_RING_QUEUE,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
- 	{ "loc", OPT_U32, NFC_FLAG_LOC,
- 	  offsetof(struct ethtool_rx_flow_spec, location), -1 },
- 	{ "vlan-etype", OPT_BE16, NTUPLE_FLAG_VETH,
-@@ -722,6 +742,10 @@ static const struct rule_opts rule_nfc_usr_ip4[] = {
- 	  offsetof(struct ethtool_rx_flow_spec, m_u.usr_ip4_spec.l4_4_bytes) + 2 },
- 	{ "action", OPT_U64, NFC_FLAG_RING,
- 	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "vf", OPT_RING_VF, NFC_FLAG_RING_VF,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "queue", OPT_RING_QUEUE, NFC_FLAG_RING_QUEUE,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
- 	{ "loc", OPT_U32, NFC_FLAG_LOC,
- 	  offsetof(struct ethtool_rx_flow_spec, location), -1 },
- 	{ "vlan-etype", OPT_BE16, NTUPLE_FLAG_VETH,
-@@ -756,6 +780,10 @@ static const struct rule_opts rule_nfc_tcp_ip6[] = {
- 	  offsetof(struct ethtool_rx_flow_spec, m_u.tcp_ip6_spec.pdst) },
- 	{ "action", OPT_U64, NFC_FLAG_RING,
- 	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "vf", OPT_RING_VF, NFC_FLAG_RING_VF,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "queue", OPT_RING_QUEUE, NFC_FLAG_RING_QUEUE,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
- 	{ "loc", OPT_U32, NFC_FLAG_LOC,
- 	  offsetof(struct ethtool_rx_flow_spec, location), -1 },
- 	{ "vlan-etype", OPT_BE16, NTUPLE_FLAG_VETH,
-@@ -787,6 +815,10 @@ static const struct rule_opts rule_nfc_esp_ip6[] = {
- 	  offsetof(struct ethtool_rx_flow_spec, m_u.esp_ip6_spec.spi) },
- 	{ "action", OPT_U64, NFC_FLAG_RING,
- 	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "vf", OPT_RING_VF, NFC_FLAG_RING_VF,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "queue", OPT_RING_QUEUE, NFC_FLAG_RING_QUEUE,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
- 	{ "loc", OPT_U32, NFC_FLAG_LOC,
- 	  offsetof(struct ethtool_rx_flow_spec, location), -1 },
- 	{ "vlan-etype", OPT_BE16, NTUPLE_FLAG_VETH,
-@@ -830,6 +862,10 @@ static const struct rule_opts rule_nfc_usr_ip6[] = {
- 	  offsetof(struct ethtool_rx_flow_spec, m_u.usr_ip6_spec.l4_4_bytes) + 2 },
- 	{ "action", OPT_U64, NFC_FLAG_RING,
- 	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "vf", OPT_RING_VF, NFC_FLAG_RING_VF,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "queue", OPT_RING_QUEUE, NFC_FLAG_RING_QUEUE,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
- 	{ "loc", OPT_U32, NFC_FLAG_LOC,
- 	  offsetof(struct ethtool_rx_flow_spec, location), -1 },
- 	{ "vlan-etype", OPT_BE16, NTUPLE_FLAG_VETH,
-@@ -858,6 +894,10 @@ static const struct rule_opts rule_nfc_ether[] = {
- 	  offsetof(struct ethtool_rx_flow_spec, m_u.ether_spec.h_proto) },
- 	{ "action", OPT_U64, NFC_FLAG_RING,
- 	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "vf", OPT_RING_VF, NFC_FLAG_RING_VF,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
-+	{ "queue", OPT_RING_QUEUE, NFC_FLAG_RING_QUEUE,
-+	  offsetof(struct ethtool_rx_flow_spec, ring_cookie), -1 },
- 	{ "loc", OPT_U32, NFC_FLAG_LOC,
- 	  offsetof(struct ethtool_rx_flow_spec, location), -1 },
- 	{ "vlan-etype", OPT_BE16, NTUPLE_FLAG_VETH,
-@@ -1002,6 +1042,24 @@ static int rxclass_get_val(char *str, unsigned char *p, u32 *flags,
- 			*(u64 *)&p[opt->moffset] = (u64)mask;
- 		break;
- 	}
-+	case OPT_RING_VF: {
-+		unsigned long long val;
-+		err = rxclass_get_ulong(str, &val, 8);
-+		if (err)
-+			return -1;
-+		*(u64 *)&p[opt->offset] &= ~ETHTOOL_RX_FLOW_SPEC_RING_VF;
-+		*(u64 *)&p[opt->offset] = (u64)val << ETHTOOL_RX_FLOW_SPEC_RING_VF_OFF;
-+		break;
-+	}
-+	case OPT_RING_QUEUE: {
-+		unsigned long long val;
-+		err = rxclass_get_ulong(str, &val, 32);
-+		if (err)
-+			return -1;
-+		*(u64 *)&p[opt->offset] &= ~ETHTOOL_RX_FLOW_SPEC_RING;
-+		*(u64 *)&p[opt->offset] |= (u64)val;
-+		break;
-+	}
- 	case OPT_BE16: {
- 		unsigned long long val;
- 		err = rxclass_get_ulong(str, &val, 16);
-@@ -1320,6 +1378,16 @@ int rxclass_parse_ruleopts(struct cmd_context *ctx,
- 		}
- 	}
- 
-+	if ((flags & NFC_FLAG_RING) && (flags & NFC_FLAG_RING_QUEUE)) {
-+		fprintf(stderr, "action and queue are not compatible\n");
-+			return -1;
-+	}
-+
-+	if ((flags & NFC_FLAG_RING) && (flags & NFC_FLAG_RING_VF)) {
-+		fprintf(stderr, "action and vf are not compatible\n");
-+			return -1;
-+	}
-+
- 	if (flow_type == IPV4_USER_FLOW)
- 		fsp->h_u.usr_ip4_spec.ip_ver = ETH_RX_NFC_IP4;
- 	if (flags & (NTUPLE_FLAG_VLAN | NTUPLE_FLAG_UDEF | NTUPLE_FLAG_VETH))
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  5 ++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 25 +++++++----------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 31 ++++++++++++++++++----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |  3 +++
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  8 +++---
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 31 ++++++++++++++++++----
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |  3 +++
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  6 ++---
+ 8 files changed, 79 insertions(+), 33 deletions(-)
+
 -- 
-2.11.0.608.gb2604e8deeff
+2.4.11
 
