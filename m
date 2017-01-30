@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 30 Jan 2017 21:33:16 +0000
-Subject: [Intel-wired-lan] [next-queue v5 PATCH 1/7] i40e: Introduce
- devlink	interface
-In-Reply-To: <1485392057-3261-2-git-send-email-sridhar.samudrala@intel.com>
+Date: Mon, 30 Jan 2017 21:33:36 +0000
+Subject: [Intel-wired-lan] [next-queue v5 PATCH 2/7] i40e: Introduce VF
+ Port	Representator(VFPR) netdevs
+In-Reply-To: <1485392057-3261-3-git-send-email-sridhar.samudrala@intel.com>
 References: <1485392057-3261-1-git-send-email-sridhar.samudrala@intel.com>
- <1485392057-3261-2-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D49C@ORSMSX104.amr.corp.intel.com>
+ <1485392057-3261-3-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D4A8@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,30 +17,40 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Sridhar Samudrala
 > Sent: Wednesday, January 25, 2017 4:54 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next-queue v5 PATCH 1/7] i40e: Introduce devlink
-> interface
+> Subject: [Intel-wired-lan] [next-queue v5 PATCH 2/7] i40e: Introduce VF Port
+> Representator(VFPR) netdevs
 > 
-> Add initial devlink support to get/set the mode of SRIOV switch.
-> This patch sets the default mode as 'legacy' and enables getting the mode
-> and and setting it to 'legacy'.
+> VF Port Representator netdevs are created for each VF if the switch mode is
+> set to 'switchdev'. These netdevs can be used to control and configure VFs
+> from PFs namespace. They enable exposing VF statistics, configure and
+> monitor link state, mtu, filters, fdb/vlan entries etc. of VFs.
+> Broadcast filters are not enabled in switchdev mode.
+> VFPR netdevs inherit the mac address from the PF.
 > 
-> The switch mode can be get/set via following 'devlink' commands.
-> 
-> # devlink dev eswitch show pci/0000:05:00.0
-> pci/0000:05:00.0: mode legacy
-> # devlink dev eswitch set pci/0000:05:00.0 mode switchdev devlink answers:
-> Operation not supported # devlink dev eswitch set pci/0000:05:00.0 mode
-> legacy # devlink dev eswitch show pci/0000:05:00.0
-> pci/0000:05:00.0: mode legacy
+> Sample script to create VF port representors # rmmod i40e; modprobe i40e #
+> devlink dev eswitch set pci/0000:05:00.0 mode switchdev # echo 2 >
+> /sys/class/net/enp5s0f0/device/sriov_numvfs
+> # ip l show
+> 297: enp5s0f0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop portid
+> 6805ca2e7268 state DOWN mode DEFAULT group default qlen 1000
+>      link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
+>      vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state auto, trust off
+>      vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state auto, trust off
+> 299: enp5s0f0-vf0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state
+> DOWN mode DEFAULT group default qlen 1000
+>      link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
+> 300: enp5s0f0-vf1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state
+> DOWN mode DEFAULT group default qlen 1000
+>      link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
 > 
 > Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 > Signed-off-by: Anjali Singhai <anjali.singhai@intel.com>
 > ---
->  drivers/net/ethernet/intel/Kconfig          |  1 +
->  drivers/net/ethernet/intel/i40e/i40e.h      |  3 ++
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 80
-> ++++++++++++++++++++++++++---
->  3 files changed, 76 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        |  21 ++-
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 153
+> ++++++++++++++++++++-
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  14 ++
+>  3 files changed, 182 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
