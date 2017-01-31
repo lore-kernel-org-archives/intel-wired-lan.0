@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 31 Jan 2017 19:28:37 +0000
-Subject: [Intel-wired-lan] [next PATCH S58-V3 3/4] i40e: KISS the
-	client	interface
-In-Reply-To: <1485282241-3579-3-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 31 Jan 2017 19:29:27 +0000
+Subject: [Intel-wired-lan] [next PATCH S58-V3 4/4] i40e: don't add
+	more	vectors to num_lan_msix than number of CPUs
+In-Reply-To: <1485282241-3579-4-git-send-email-bimmy.pujari@intel.com>
 References: <1485282241-3579-1-git-send-email-bimmy.pujari@intel.com>
- <1485282241-3579-3-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D770@ORSMSX104.amr.corp.intel.com>
+ <1485282241-3579-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D781@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,45 +17,34 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, January 24, 2017 10:24 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S58-V3 3/4] i40e: KISS the client
-> interface
+> Subject: [Intel-wired-lan] [next PATCH S58-V3 4/4] i40e: don't add more
+> vectors to num_lan_msix than number of CPUs
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> (KISS is Keep It Simple, Stupid. Or is it?)
+> This is a solution to avoid adding too many queues to num_lan_msix.
+> A recent refactor of queue pairs accidentally added all remaining vectors to
+> the num_lan_msix which can have adverse performance issues, due to
+> enabling more queues than the number of CPU cores.
 > 
-> The client interface vastly overengineered for what it needs to do.
-> It was originally designed to support multiple clients on multiple netdevs,
-> possibly even with multiple drivers. None of this happened, and now we
-> know that there will only ever be one client for i40e
-> (i40iw) and one for i40evf (i40iwvf). So, time for some KISS. Since i40e and
-> i40evf are a Dynasty, we'll simplify this one to match the VF interface.
+> This patch removes the old calculation, and replaces it with a simple
+> algorithm.
 > 
-> First, be a Destroyer and remove all of the lists and locks required to support
-> multiple clients. Keep one static around to keep track of one client, and track
-> the client instances for each netdev in the driver's pf (or adapter) struct. Now
-> it's Almost Human.
+> 1) add queue pairs up to num_online_cpus(), but capped at half of total
+>    vectors
+> 2) then add alternative features such as flow directory and similar
+> 3) finally, add the remaining vectors back to queue pairs, but capped
+>    such that the total number of queue pairs does not exceed
+>    num_online_cpus().
 > 
-> Since we already know the client type is iWarp, get rid of any checks for this.
-> Same for VSI type - it's always going to be the same type, so it's just a
-> Parasite.
-> 
-> While we're at it, fix up some comments. This makes the function headers
-> actually match the functions.
-> 
-> These changes reduce code complexity, simplify maintenance, squash some
-> lurking timing bugs, and allow us to Rock and Roll All Nite.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: I1ea79948ad73b8685272451440a34507f9a9012e
+> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Change-ID: I668abf67d5011a1248866daba8885f4ff00cb8d9
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h             |   8 +-
->  drivers/net/ethernet/intel/i40e/i40e_client.c      | 457 +++++++--------------
->  drivers/net/ethernet/intel/i40e/i40e_client.h      |   8 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c        |  32 +-
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   2 +-
->  5 files changed, 179 insertions(+), 328 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 30
+> ++++++++++++++++++++++++++---
+>  1 file changed, 27 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
