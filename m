@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 31 Jan 2017 17:34:40 +0000
-Subject: [Intel-wired-lan] [next PATCH v2 05/11] ixgbe: Make use of
- order 1 pages and 3K buffers independent of FCoE
-In-Reply-To: <20170117163609.5423.56603.stgit@localhost.localdomain>
+Date: Tue, 31 Jan 2017 17:35:06 +0000
+Subject: [Intel-wired-lan] [next PATCH v2 06/11] ixgbe: Use length to
+ determine if descriptor is done
+In-Reply-To: <20170117163620.5423.4591.stgit@localhost.localdomain>
 References: <20170117163401.5423.37993.stgit@localhost.localdomain>
- <20170117163609.5423.56603.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D68F@ORSMSX104.amr.corp.intel.com>
+ <20170117163620.5423.4591.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D69C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,25 +18,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, January 17, 2017 8:36 AM
 > To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
 > <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH v2 05/11] ixgbe: Make use of order 1
-> pages and 3K buffers independent of FCoE
+> Subject: [Intel-wired-lan] [next PATCH v2 06/11] ixgbe: Use length to
+> determine if descriptor is done
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> In order to support build_skb with jumbo frames it will be necessary to use
-> 3K buffers for the Rx path with 8K pages backing them.  This is needed on
-> architectures that implement 4K pages because we can't support 2K buffers
-> plus padding in a 4K page.
-> 
-> In the case of systems that support page sizes larger than 4K the 3K attribute
-> will only be applied to FCoE as we can fall back to using just 2K buffers and
-> adding the padding.
+> This change makes it so that we use the length of the packet instead of the
+> DD status bit to determine if a new descriptor is ready to be processed.
+> The obvious advantage is that it cuts down on reads as we don't really even
+> need the DD bit if going from a 0 to a non-zero value on size is enough to
+> inform us that the packet has been completed.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   20 +++++++++-----------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   19 +++++++++++++------
->  2 files changed, 22 insertions(+), 17 deletions(-)
+> 
+> v2: Update ethtool loopback test to use length check instead of DD check
+> 
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    2 +-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   14 ++++++++------
+>  2 files changed, 9 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
