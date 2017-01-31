@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 31 Jan 2017 17:26:46 +0000
-Subject: [Intel-wired-lan] [PATCH 2/3] ixgbe: return early instead of
- wrap block in if statement
-In-Reply-To: <20170120221150.7616.59999.stgit@localhost6.localdomain6>
-References: <20170120221145.7616.93906.stgit@localhost6.localdomain6>
- <20170120221150.7616.59999.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D642@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 31 Jan 2017 17:33:11 +0000
+Subject: [Intel-wired-lan] [next PATCH v2 02/11] ixgbe: Only DMA sync
+ frame	length
+In-Reply-To: <20170117163540.5423.43007.stgit@localhost.localdomain>
+References: <20170117163401.5423.37993.stgit@localhost.localdomain>
+ <20170117163540.5423.43007.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D660@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,27 +14,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Friday, January 20, 2017 2:12 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 2/3] ixgbe: return early instead of wrap
-> block in if statement
+> Behalf Of Alexander Duyck
+> Sent: Tuesday, January 17, 2017 8:36 AM
+> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH v2 02/11] ixgbe: Only DMA sync frame
+> length
 > 
-> Since we exit at the end of the block, we can save a level of indentation by
-> performing an early return, and make the next several sections of code more
-> legible, with fewer 80 character line breaks.
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> Also moved allocating vfinfo at the beginning and the notification for
-> enabling SRIOV at the end of the function when we know that it will succeed.
+> On some platforms, syncing a buffer for DMA is expensive. Rather than sync
+> the whole 2K receive buffer, only synchronise the length of the frame, which
+> will typically be the MTU, or a much smaller TCP ACK.
 > 
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |   85 ++++++++++++---------
-> ---
->  1 file changed, 41 insertions(+), 44 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-
- 
 
