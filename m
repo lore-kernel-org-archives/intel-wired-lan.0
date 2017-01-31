@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 31 Jan 2017 17:36:07 +0000
-Subject: [Intel-wired-lan] [next PATCH v2 09/11] ixgbe: Add private flag
- to	control buffer mode
-In-Reply-To: <20170117163700.5423.65006.stgit@localhost.localdomain>
+Date: Tue, 31 Jan 2017 17:36:25 +0000
+Subject: [Intel-wired-lan] [next PATCH v2 10/11] ixgbe: Add support
+	for	build_skb
+In-Reply-To: <20170117163709.5423.61819.stgit@localhost.localdomain>
 References: <20170117163401.5423.37993.stgit@localhost.localdomain>
- <20170117163700.5423.65006.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D6D0@ORSMSX104.amr.corp.intel.com>
+ <20170117163709.5423.61819.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D6DD@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,24 +18,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, January 17, 2017 8:37 AM
 > To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
 > <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH v2 09/11] ixgbe: Add private flag to
-> control buffer mode
+> Subject: [Intel-wired-lan] [next PATCH v2 10/11] ixgbe: Add support for
+> build_skb
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> Since there are potential drawbacks to the new Rx allocation approach I
-> thought it best to add a "chicken bit" so that we can turn the feature off if in
-> the event that a problem is found.
+> This patch adds build_skb support to the Rx path.  There are several
+> advantages to this change.
 > 
-> It also provides a means of validating the legacy Rx path in the event that we
-> are forced to fall back.  At some point in the future when we are convinced
-> we don't need it anymore we might be able to drop the legacy-rx flag.
+> 1.  It avoids the memcpy and skb->head allocation for small packets which
+>     improves performance by about 5% in my tests.
+> 2.  It avoids the memcpy, skb->head allocation, and eth_get_headlen
+>     for larger packets improving performance by about 10% in my tests.
+> 3.  For VXLAN packets it allows the full header to be in skb->data which
+>     improves the performance by as much as 30% in some of my tests.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   47
-> ++++++++++++++++++++++
->  1 file changed, 47 insertions(+)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   49
+> ++++++++++++++++++++++++-
+>  1 file changed, 48 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
