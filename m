@@ -1,77 +1,162 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Sun, 26 Feb 2017 11:08:08 +0200
-Subject: [Intel-wired-lan] [PATCH] e1000e: fix timing for 82579 Gigabit
- Ethernet controller
-In-Reply-To: <923e61cf-5f95-1662-2f4c-fc146359ab48@intel.com>
-References: <1487270527-4549-1-git-send-email-berndfaust@gmail.com>
- <923e61cf-5f95-1662-2f4c-fc146359ab48@intel.com>
-Message-ID: <0a95307e-6683-b9fe-1957-be2b0a3c441e@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 01 Feb 2017 04:06:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 6c98eb2cc5e6066d4dc4909c9d2b2d0436a3150b
+Message-ID: <5890ee4f.YwFCSEIyrrcE9/jd%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/19/2017 14:55, Neftin, Sasha wrote:
-> On 2/16/2017 20:42, Bernd Faust wrote:
->> After an upgrade to Linux kernel v4.x the hardware timestamps of the
->> 82579 Gigabit Ethernet Controller are different than expected.
->> The values that are being read are almost four times as big as before
->> the kernel upgrade.
->>
->> The difference is that after the upgrade the driver sets the clock
->> frequency to 25MHz, where before the upgrade it was set to 96MHz. Intel
->> confirmed that the correct frequency for this network adapter is 96MHz.
->>
->> Signed-off-by: Bernd Faust <berndfaust@gmail.com>
->> ---
->>   drivers/net/ethernet/intel/e1000e/netdev.c | 6 ++++++
->>   1 file changed, 6 insertions(+)
->>
->> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c 
->> b/drivers/net/ethernet/intel/e1000e/netdev.c
->> index 7017281..8b7113d 100644
->> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
->> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
->> @@ -3511,6 +3511,12 @@ s32 e1000e_get_base_timinca(struct 
->> e1000_adapter *adapter, u32 *timinca)
->>
->>       switch (hw->mac.type) {
->>       case e1000_pch2lan:
->> +        /* Stable 96MHz frequency */
->> +        incperiod = INCPERIOD_96MHz;
->> +        incvalue = INCVALUE_96MHz;
->> +        shift = INCVALUE_SHIFT_96MHz;
->> +        adapter->cc.shift = shift + INCPERIOD_SHIFT_96MHz;
->> +        break;
->>       case e1000_pch_lpt:
->>           if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
->>               /* Stable 96MHz frequency */
->> -- 
->> 2.7.4
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at lists.osuosl.org
->> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->
-> Hello,
->
-> e1000_pch2lan mac type corresponds to 82579LM and 82579V network 
-> adapters. System clock frequency indication (SYSCFI) for these devices 
-> supports both 25MHz and 96MHz frequency. By default TSYNCRXCTL.SYSCFI 
-> is set to 1 and that means 96MHz frequency is picked.
->
-> It is better to keep the current implementation as it covers all options.
->
-> Thanks,
->
-> Sasha
->
-Hello,
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+6c98eb2cc5e6066d4dc4909c9d2b2d0436a3150b  i40e: Add support to get switch id and port number for VFPR netdevs
 
-During last couple of weeks I saw few  complaints from community on same 
-timing problem with 82579. I will double check clock definition with HW 
-architecture.
+elapsed time: 107m
 
-Sasha
+configs tested: 138
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                 randconfig-a0-02010127
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+i386                   randconfig-c0-02010100
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-g0-02010147
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                       mainstone_defconfig
+arm                         s3c6400_defconfig
+ia64                              allnoconfig
+powerpc                     sbc8548_defconfig
+x86_64               randconfig-x010-01312321
+x86_64               randconfig-x011-01312321
+x86_64               randconfig-x012-01312321
+x86_64               randconfig-x013-01312321
+x86_64               randconfig-x014-01312321
+x86_64               randconfig-x015-01312321
+x86_64               randconfig-x016-01312321
+x86_64               randconfig-x017-01312321
+x86_64               randconfig-x018-01312321
+x86_64               randconfig-x019-01312321
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                 randconfig-s0-02010129
+x86_64                 randconfig-s1-02010129
+x86_64                 randconfig-s2-02010129
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-i0-01312305
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                          iop32x_defconfig
+c6x                         dsk6455_defconfig
+m32r                        oaks32r_defconfig
+sh                           se7712_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-b0-01312307
+arm                         cm_x300_defconfig
+cris                             alldefconfig
+mips                           xway_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                randconfig-ne0-02010249
+arm                         cm_x2xx_defconfig
+mips                        nlm_xlp_defconfig
+powerpc                 mpc837x_mds_defconfig
+powerpc64                        allmodconfig
+ia64                             alldefconfig
+cris                             allyesconfig
+m68k                          hp300_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                  randconfig-sb0-02010131
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64               randconfig-x000-01312300
+x86_64               randconfig-x001-01312300
+x86_64               randconfig-x002-01312300
+x86_64               randconfig-x003-01312300
+x86_64               randconfig-x004-01312300
+x86_64               randconfig-x005-01312300
+x86_64               randconfig-x006-01312300
+x86_64               randconfig-x007-01312300
+x86_64               randconfig-x008-01312300
+x86_64               randconfig-x009-01312300
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                 randconfig-r0-01312301
+arm                         ebsa110_defconfig
+powerpc                 mpc8315_rdb_defconfig
+powerpc                 mpc834x_itx_defconfig
+i386                   randconfig-x003-201705
+i386                   randconfig-x004-201705
+i386                   randconfig-x001-201705
+i386                   randconfig-x007-201705
+i386                   randconfig-x006-201705
+i386                   randconfig-x009-201705
+i386                   randconfig-x002-201705
+i386                   randconfig-x008-201705
+i386                   randconfig-x000-201705
+i386                   randconfig-x005-201705
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-02010116
+
+Thanks,
+Fengguang
