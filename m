@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 31 Jan 2017 17:33:52 +0000
-Subject: [Intel-wired-lan] [next PATCH v2 03/11] ixgbe: Update driver to
- make use of DMA attributes in Rx path
-In-Reply-To: <20170117163550.5423.60153.stgit@localhost.localdomain>
+Date: Tue, 31 Jan 2017 17:34:18 +0000
+Subject: [Intel-wired-lan] [next PATCH v2 04/11] ixgbe: Update code to
+ better handle incrementing page count
+In-Reply-To: <20170117163600.5423.48511.stgit@localhost.localdomain>
 References: <20170117163401.5423.37993.stgit@localhost.localdomain>
- <20170117163550.5423.60153.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D670@ORSMSX104.amr.corp.intel.com>
+ <20170117163600.5423.48511.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D67F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,26 +18,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, January 17, 2017 8:36 AM
 > To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
 > <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH v2 03/11] ixgbe: Update driver to
-> make use of DMA attributes in Rx path
+> Subject: [Intel-wired-lan] [next PATCH v2 04/11] ixgbe: Update code to
+> better handle incrementing page count
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> This patch adds support for DMA_ATTR_SKIP_CPU_SYNC and
-> DMA_ATTR_WEAK_ORDERING.  By enabling both of these for the Rx path
-> we are able to see performance improvements on architectures that
-> implement either one due to the fact that page mapping and unmapping
-> only has to sync what is actually being used instead of the entire buffer.  In
-> addition by enabling the weak ordering attribute enables a performance
-> improvement for architectures that can associate a memory ordering with a
-> DMA buffer such as Sparc.
+> Batch the page count updates instead of doing them one at a time.  By doing
+> this we can improve the overall performance as the atomic increment
+> operations can be expensive due to the fact that on x86 they are locked
+> operations which can cause stalls.  By doing bulk updates we can consolidate
+> the stall which should help to improve the overall receive performance.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    3 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   56 +++++++++++++++++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    7 ++++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   39 ++++++++++++++++--
 > -------
->  2 files changed, 40 insertions(+), 19 deletions(-)
+>  2 files changed, 31 insertions(+), 15 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
