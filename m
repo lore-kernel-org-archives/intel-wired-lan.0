@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 31 Jan 2017 19:27:50 +0000
-Subject: [Intel-wired-lan] [next PATCH S58-V3 2/4] i40evf: add
+Date: Tue, 31 Jan 2017 19:28:37 +0000
+Subject: [Intel-wired-lan] [next PATCH S58-V3 3/4] i40e: KISS the
 	client	interface
-In-Reply-To: <1485282241-3579-2-git-send-email-bimmy.pujari@intel.com>
+In-Reply-To: <1485282241-3579-3-git-send-email-bimmy.pujari@intel.com>
 References: <1485282241-3579-1-git-send-email-bimmy.pujari@intel.com>
- <1485282241-3579-2-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D75D@ORSMSX104.amr.corp.intel.com>
+ <1485282241-3579-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5D770@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,35 +17,45 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, January 24, 2017 10:24 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S58-V3 2/4] i40evf: add client
+> Subject: [Intel-wired-lan] [next PATCH S58-V3 3/4] i40e: KISS the client
 > interface
 > 
 > From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> In preparation for upcoming RDMA-capable hardware, add a client interface
-> to the VF driver. This is a slightly-simplified version of the PF client interface,
-> with the names changed to protect the innocent.
+> (KISS is Keep It Simple, Stupid. Or is it?)
 > 
-> Due to the nature of the VF<->PF interactions, the client interface
-> sometimes needs to call back into itself to pass messages. Because of this,
-> we can't use the coarse-grained locking like the PF's client interface uses.
-> Instead, we handle all client interactions in a separate thread so the
-> watchdog can still run and process virtual channel messages.
+> The client interface vastly overengineered for what it needs to do.
+> It was originally designed to support multiple clients on multiple netdevs,
+> possibly even with multiple drivers. None of this happened, and now we
+> know that there will only ever be one client for i40e
+> (i40iw) and one for i40evf (i40iwvf). So, time for some KISS. Since i40e and
+> i40evf are a Dynasty, we'll simplify this one to match the VF interface.
+> 
+> First, be a Destroyer and remove all of the lists and locks required to support
+> multiple clients. Keep one static around to keep track of one client, and track
+> the client instances for each netdev in the driver's pf (or adapter) struct. Now
+> it's Almost Human.
+> 
+> Since we already know the client type is iWarp, get rid of any checks for this.
+> Same for VSI type - it's always going to be the same type, so it's just a
+> Parasite.
+> 
+> While we're at it, fix up some comments. This makes the function headers
+> actually match the functions.
+> 
+> These changes reduce code complexity, simplify maintenance, squash some
+> lurking timing bugs, and allow us to Rock and Roll All Nite.
 > 
 > Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: I1ea79948ad73b8685272451440a34507f9a9012e
 > ---
->  drivers/net/ethernet/intel/i40evf/Makefile         |   2 +-
->  drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h  |  33 ++
->  drivers/net/ethernet/intel/i40evf/i40evf.h         |  24 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_client.c  | 563
-> +++++++++++++++++++++
-> drivers/net/ethernet/intel/i40evf/i40evf_client.h  | 166 ++++++
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  83 ++-
->  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  13 +-
->  7 files changed, 873 insertions(+), 11 deletions(-)  create mode 100644
+>  drivers/net/ethernet/intel/i40e/i40e.h             |   8 +-
+>  drivers/net/ethernet/intel/i40e/i40e_client.c      | 457 +++++++--------------
+>  drivers/net/ethernet/intel/i40e/i40e_client.h      |   8 +-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        |  32 +-
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   2 +-
+>  5 files changed, 179 insertions(+), 328 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
