@@ -1,366 +1,272 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 02 Feb 2017 13:04:59 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 8a7fd711f267a59e0fef6e4d1948e0f72f933c54
-Message-ID: <5892bdfb.wk4TavNZhLlIJpc+%fengguang.wu@intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Wed,  1 Feb 2017 22:13:33 -0800
+Subject: [Intel-wired-lan] [next PATCH S60 1/1] i40e: rename
+	auto_disable_flags to hw_disabled_flags
+Message-ID: <1486016013-11773-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-8a7fd711f267a59e0fef6e4d1948e0f72f933c54  i40e: Add support to get switch id and port number for VFPR netdevs
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-elapsed time: 491m
+A previous commit introduced a field that tracks the features
+that are disabled due to HW resource limitations as opposed
+to the featured disabled by the user. This patch changes the
+name of the field to make it more readable since it might get
+confusing when looking at code containing both the flags
+field and the auto_disable_features field together.
 
-configs tested: 343
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Change-ID: Idcc9888659698f6fe3ccff17c8c3f09b5026f708
+---
+ drivers/net/ethernet/intel/i40e/i40e.h         |  8 ++++++--
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 10 ++++-----
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 28 +++++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 20 +++++++++---------
+ 4 files changed, 35 insertions(+), 31 deletions(-)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 1edd351..756595d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -396,8 +396,12 @@ struct i40e_pf {
+ #define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(56)
+ #define I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE		BIT_ULL(57)
+ 
+-	/* tracks features that get auto disabled by errors */
+-	u64 auto_disable_flags;
++       /* Tracks features that are disabled due to hw limitations.
++	* If a bit is set here, it means that the corresponding
++	* bit in the 'flags' field is cleared i.e that feature
++	* is disabled
++	*/
++	u64 hw_disabled_flags;
+ 
+ #ifdef I40E_FCOE
+ 	struct i40e_fcoe fcoe;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index b852ba3..365d855 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2721,7 +2721,7 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
+ 	if (!(pf->flags & I40E_FLAG_FD_SB_ENABLED))
+ 		return -EOPNOTSUPP;
+ 
+-	if (pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED)
++	if (pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED)
+ 		return -ENOSPC;
+ 
+ 	if (!(pf->flags & I40E_FLAG_FD_SB_ENABLED))
+@@ -3066,7 +3066,7 @@ static u32 i40e_get_priv_flags(struct net_device *dev)
+ 		I40E_PRIV_FLAGS_FD_ATR : 0;
+ 	ret_flags |= pf->flags & I40E_FLAG_VEB_STATS_ENABLED ?
+ 		I40E_PRIV_FLAGS_VEB_STATS : 0;
+-	ret_flags |= pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE ?
++	ret_flags |= pf->hw_disabled_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE ?
+ 		0 : I40E_PRIV_FLAGS_HW_ATR_EVICT;
+ 	if (pf->hw.pf_id == 0) {
+ 		ret_flags |= pf->flags & I40E_FLAG_TRUE_PROMISC_SUPPORT ?
+@@ -3106,7 +3106,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 		pf->flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 	} else {
+ 		pf->flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+-		pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
++		pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 
+ 		/* flush current ATR settings */
+ 		set_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state);
+@@ -3151,9 +3151,9 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 
+ 	if ((flags & I40E_PRIV_FLAGS_HW_ATR_EVICT) &&
+ 	    (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))
+-		pf->auto_disable_flags &= ~I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++		pf->hw_disabled_flags &= ~I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 	else
+-		pf->auto_disable_flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++		pf->hw_disabled_flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 
+ 	/* if needed, issue reset to cause things to take effect */
+ 	if (reset_required)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 840f04b..f2e87d07 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1114,13 +1114,13 @@ static void i40e_update_pf_stats(struct i40e_pf *pf)
+ 			   &osd->rx_lpi_count, &nsd->rx_lpi_count);
+ 
+ 	if (pf->flags & I40E_FLAG_FD_SB_ENABLED &&
+-	    !(pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED))
++	    !(pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED))
+ 		nsd->fd_sb_status = true;
+ 	else
+ 		nsd->fd_sb_status = false;
+ 
+ 	if (pf->flags & I40E_FLAG_FD_ATR_ENABLED &&
+-	    !(pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
++	    !(pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED))
+ 		nsd->fd_atr_status = true;
+ 	else
+ 		nsd->fd_atr_status = false;
+@@ -5609,7 +5609,7 @@ static int i40e_up_complete(struct i40e_vsi *vsi)
+ 		/* reset fd counters */
+ 		pf->fd_add_err = pf->fd_atr_cnt = 0;
+ 		if (pf->fd_tcp_rule > 0) {
+-			pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
++			pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 				dev_info(&pf->pdev->dev, "Forcing ATR off, sideband rules for TCP/IPv4 exist\n");
+ 			pf->fd_tcp_rule = 0;
+@@ -6306,8 +6306,8 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+ 	    (pf->fd_add_err == 0) ||
+ 	    (i40e_get_current_atr_cnt(pf) < pf->fd_atr_cnt)) {
+ 		if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
+-		    (pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED)) {
+-			pf->auto_disable_flags &= ~I40E_FLAG_FD_SB_ENABLED;
++		    (pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED)) {
++			pf->hw_disabled_flags &= ~I40E_FLAG_FD_SB_ENABLED;
+ 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 				dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
+ 		}
+@@ -6318,9 +6318,9 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+ 	 */
+ 	if (fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM * 2)) {
+ 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+-		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED) &&
++		    (pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED) &&
+ 		    (pf->fd_tcp_rule == 0)) {
+-			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
++			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+ 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table and there are no conflicting ntuple rules\n");
+ 		}
+@@ -6372,7 +6372,7 @@ static void i40e_fdir_flush_and_replay(struct i40e_pf *pf)
+ 	}
+ 
+ 	pf->fd_flush_timestamp = jiffies;
+-	pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
++	pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 	/* flush all filters */
+ 	wr32(&pf->hw, I40E_PFQF_CTL_1,
+ 	     I40E_PFQF_CTL_1_CLEARFDTABLE_MASK);
+@@ -6392,7 +6392,7 @@ static void i40e_fdir_flush_and_replay(struct i40e_pf *pf)
+ 		/* replay sideband filters */
+ 		i40e_fdir_filter_restore(pf->vsi[pf->lan_vsi]);
+ 		if (!disable_atr)
+-			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
++			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+ 		clear_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state);
+ 		if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 			dev_info(&pf->pdev->dev, "FD Filter table flushed and FD-SB replayed.\n");
+@@ -9082,9 +9082,9 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 		    (pf->hw.aq.api_min_ver > 4))) {
+ 		/* Supported in FW API version higher than 1.4 */
+ 		pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
+-		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++		pf->hw_disabled_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 	} else {
+-		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++		pf->hw_disabled_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 	}
+ 
+ 	pf->eeprom_version = 0xDEAD;
+@@ -9146,14 +9146,14 @@ bool i40e_set_ntuple(struct i40e_pf *pf, netdev_features_t features)
+ 			i40e_cloud_filter_exit(pf);
+ 		}
+ 		pf->flags &= ~I40E_FLAG_FD_SB_ENABLED;
+-		pf->auto_disable_flags &= ~I40E_FLAG_FD_SB_ENABLED;
++		pf->hw_disabled_flags &= ~I40E_FLAG_FD_SB_ENABLED;
+ 		/* reset fd counters */
+ 		pf->fd_add_err = pf->fd_atr_cnt = pf->fd_tcp_rule = 0;
+ 		pf->fdir_pf_active_filters = 0;
+ 		/* if ATR was auto disabled it can be re-enabled. */
+ 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+-		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED)) {
+-			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
++		    (pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED)) {
++			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+ 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 				dev_info(&pf->pdev->dev, "ATR re-enabled.\n");
+ 		}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 012c157..3a2fd66 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -292,7 +292,7 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
+ 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+ 		    I40E_DEBUG_FD & pf->hw.debug_mask)
+ 			dev_info(&pf->pdev->dev, "Forcing ATR off, sideband rules for TCP/IPv4 flow being applied\n");
+-		pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
++		pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 	} else {
+ 		pf->fd_tcp_rule = (pf->fd_tcp_rule > 0) ?
+ 				  (pf->fd_tcp_rule - 1) : 0;
+@@ -300,7 +300,7 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
+ 			if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+ 			    I40E_DEBUG_FD & pf->hw.debug_mask)
+ 				dev_info(&pf->pdev->dev, "ATR re-enabled due to no sideband TCP/IPv4 rules\n");
+-			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
++			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+ 		}
+ 	}
+ 
+@@ -485,8 +485,8 @@ static void i40e_fd_handle_status(struct i40e_ring *rx_ring,
+ 		pf->fd_atr_cnt = i40e_get_current_atr_cnt(pf);
+ 
+ 		if ((rx_desc->wb.qword0.hi_dword.fd_id == 0) &&
+-		    (pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED)) {
+-			pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
++		    (pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED)) {
++			pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 			set_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state);
+ 		}
+ 
+@@ -499,11 +499,11 @@ static void i40e_fd_handle_status(struct i40e_ring *rx_ring,
+ 		 */
+ 		if (fcnt_prog >= (fcnt_avail - I40E_FDIR_BUFFER_FULL_MARGIN)) {
+ 			if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
+-			    !(pf->auto_disable_flags &
++			    !(pf->hw_disabled_flags &
+ 				     I40E_FLAG_FD_SB_ENABLED)) {
+ 				if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 					dev_warn(&pdev->dev, "FD filter space full, new ntuple rules will not be added\n");
+-				pf->auto_disable_flags |=
++				pf->hw_disabled_flags |=
+ 							I40E_FLAG_FD_SB_ENABLED;
+ 			}
+ 		}
+@@ -2465,7 +2465,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	if (!(pf->flags & I40E_FLAG_FD_ATR_ENABLED))
+ 		return;
+ 
+-	if ((pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
++	if ((pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED))
+ 		return;
+ 
+ 	/* if sampling is disabled do nothing */
+@@ -2499,10 +2499,10 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	th = (struct tcphdr *)(hdr.network + hlen);
+ 
+ 	/* Due to lack of space, no more new filters can be programmed */
+-	if (th->syn && (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
++	if (th->syn && (pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED))
+ 		return;
+ 	if ((pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) &&
+-	    (!(pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))) {
++	    (!(pf->hw_disabled_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))) {
+ 		/* HW ATR eviction will take care of removing filters on FIN
+ 		 * and RST packets.
+ 		 */
+@@ -2565,7 +2565,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 			I40E_TXD_FLTR_QW1_CNTINDEX_MASK;
+ 
+ 	if ((pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) &&
+-	    (!(pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)))
++	    (!(pf->hw_disabled_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)))
+ 		dtype_cmd |= I40E_TXD_FLTR_QW1_ATR_MASK;
+ 
+ 	fdir_desc->qindex_flex_ptype_vsi = cpu_to_le32(flex_ptype);
+-- 
+2.4.11
 
-arm                        multi_v7_defconfig
-arm                          pcm027_defconfig
-blackfin                   CM-BF548_defconfig
-arm                         assabet_defconfig
-m68k                              allnoconfig
-powerpc                     tqm8541_defconfig
-m68k                             allmodconfig
-powerpc                  iss476-smp_defconfig
-powerpc                     mpc5200_defconfig
-arm                          imote2_defconfig
-sh                         ecovec24_defconfig
-sh                          landisk_defconfig
-arm                         mv78xx0_defconfig
-m68k                             allyesconfig
-powerpc                    amigaone_defconfig
-i386                   randconfig-a0-01312301
-x86_64                 randconfig-a0-02020442
-x86_64                 randconfig-a0-02020637
-x86_64                 randconfig-a0-02021025
-x86_64                 randconfig-a0-02021101
-x86_64                 randconfig-a0-02021115
-x86_64                 randconfig-a0-02021152
-x86_64                 randconfig-a0-02021228
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                BF527-EZKIT_defconfig
-cris                             allmodconfig
-m68k                         amcore_defconfig
-arm                               allnoconfig
-blackfin                 BlackStamp_defconfig
-mips                        bcm47xx_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-02020443
-i386                   randconfig-c0-02020641
-i386                   randconfig-c0-02021000
-i386                   randconfig-c0-02021034
-x86_64                           allmodconfig
-x86_64                randconfig-it0-02020323
-i386                                defconfig
-arm                        mini2440_defconfig
-sparc                            allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-02020100
-x86_64                 randconfig-v0-02020953
-x86_64                 randconfig-v0-02021200
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-sh                          urquell_defconfig
-arm                       aspeed_g4_defconfig
-powerpc                      arches_defconfig
-powerpc                        warp_defconfig
-x86_64                 randconfig-g0-02020310
-x86_64                 randconfig-g0-02021149
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                        magician_defconfig
-arm64                            allyesconfig
-ia64                         bigsur_defconfig
-m32r                         opsput_defconfig
-arm                           tegra_defconfig
-blackfin                    PNAV-10_defconfig
-ia64                            sim_defconfig
-mips                  cavium_octeon_defconfig
-powerpc64                         allnoconfig
-mips                           ip32_defconfig
-mips                        nlm_xlp_defconfig
-powerpc                 mpc8313_rdb_defconfig
-powerpc64                        alldefconfig
-arm                              alldefconfig
-m68k                        m5272c3_defconfig
-sh                           cayman_defconfig
-sh                        edosk7760_defconfig
-arm                     am200epdkit_defconfig
-arm                            pleb_defconfig
-mips                                defconfig
-powerpc                        icon_defconfig
-arm                        spear6xx_defconfig
-mips                        maltaup_defconfig
-mips                       markeins_defconfig
-mips                        workpad_defconfig
-x86_64                 randconfig-x017-201705
-x86_64                 randconfig-x014-201705
-x86_64                 randconfig-x011-201705
-x86_64                 randconfig-x016-201705
-x86_64                 randconfig-x012-201705
-x86_64                 randconfig-x019-201705
-x86_64                 randconfig-x013-201705
-x86_64                 randconfig-x010-201705
-x86_64                 randconfig-x018-201705
-x86_64                 randconfig-x015-201705
-i386                             alldefconfig
-i386                              allnoconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                            eywa-module
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-s0-02020459
-x86_64                 randconfig-s1-02020459
-x86_64                 randconfig-s2-02020459
-x86_64                 randconfig-s0-02020733
-x86_64                 randconfig-s1-02020733
-x86_64                 randconfig-s2-02020733
-x86_64                 randconfig-s0-02021024
-x86_64                 randconfig-s1-02021024
-x86_64                 randconfig-s2-02021024
-x86_64                 randconfig-s0-02021112
-x86_64                 randconfig-s1-02021112
-x86_64                 randconfig-s2-02021112
-x86_64                 randconfig-s0-02021207
-x86_64                 randconfig-s1-02021207
-x86_64                 randconfig-s2-02021207
-x86_64                 randconfig-s3-02020309
-x86_64                 randconfig-s4-02020309
-x86_64                 randconfig-s5-02020309
-x86_64                 randconfig-s3-02020550
-x86_64                 randconfig-s4-02020550
-x86_64                 randconfig-s5-02020550
-x86_64                 randconfig-s3-02021003
-x86_64                 randconfig-s4-02021003
-x86_64                 randconfig-s5-02021003
-x86_64                 randconfig-s3-02021112
-x86_64                 randconfig-s4-02021112
-x86_64                 randconfig-s5-02021112
-x86_64                 randconfig-s3-02021202
-x86_64                 randconfig-s4-02021202
-x86_64                 randconfig-s5-02021202
-x86_64                 randconfig-i0-01312305
-i386                   randconfig-b0-02020402
-i386                   randconfig-b0-02020556
-i386                   randconfig-b0-02021029
-i386                   randconfig-b0-02021148
-powerpc                      ppc40x_defconfig
-cris                          dev88_defconfig
-powerpc                      walnut_defconfig
-sh                         microdev_defconfig
-avr32                     atstk1003_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                    m32700ut.up_defconfig
-powerpc               mpc834x_itxgp_defconfig
-i386                   randconfig-i0-01312306
-i386                   randconfig-i1-01312306
-i386                             allyesconfig
-x86_64                 randconfig-b0-02020441
-x86_64                 randconfig-b0-02020718
-x86_64                 randconfig-b0-02021032
-x86_64                 randconfig-b0-02021049
-x86_64                 randconfig-b0-02021156
-x86_64                 randconfig-b0-02021220
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-powerpc                  mpc866_ads_defconfig
-sh                           se7343_defconfig
-tile                             allyesconfig
-um                               alldefconfig
-mips                  maltasmvp_eva_defconfig
-powerpc                     stx_gp3_defconfig
-xtensa                  nommu_kc705_defconfig
-mips                          rb532_defconfig
-nios2                         10m50_defconfig
-powerpc                     tqm8555_defconfig
-powerpc                      ppc64e_defconfig
-x86_64                 randconfig-u0-02020506
-x86_64                 randconfig-u0-02020720
-x86_64                 randconfig-u0-02021127
-arm                             ezx_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                      tqm8xx_defconfig
-sh                           se7206_defconfig
-sh                        sh7785lcr_defconfig
-powerpc                    gamecube_defconfig
-mips                             allyesconfig
-powerpc                         ps3_defconfig
-powerpc                     pseries_defconfig
-x86_64                randconfig-ne0-02020352
-x86_64                randconfig-ne0-02020541
-x86_64                randconfig-ne0-02020734
-x86_64                randconfig-ne0-02020918
-x86_64                randconfig-ne0-02021017
-x86_64                randconfig-ne0-02021146
-arm                                 defconfig
-arm                         palmz72_defconfig
-blackfin             BF527-TLL6527M_defconfig
-m68k                             alldefconfig
-powerpc                       eiger_defconfig
-powerpc                      ppc6xx_defconfig
-i386                 randconfig-x010-01312304
-i386                 randconfig-x011-01312304
-i386                 randconfig-x012-01312304
-i386                 randconfig-x013-01312304
-i386                 randconfig-x014-01312304
-i386                 randconfig-x015-01312304
-i386                 randconfig-x016-01312304
-i386                 randconfig-x017-01312304
-i386                 randconfig-x018-01312304
-i386                 randconfig-x019-01312304
-x86_64                                    lkp
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-01312305
-i386                   randconfig-h0-02020508
-i386                   randconfig-h1-02020508
-i386                   randconfig-h0-02020715
-i386                   randconfig-h1-02020715
-i386                   randconfig-h0-02020940
-i386                   randconfig-h1-02020940
-i386                             allmodconfig
-mips                         rt305x_defconfig
-parisc                           allyesconfig
-mips                        generic_defconfig
-um                                  defconfig
-blackfin                BF548-EZKIT_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-02020345
-x86_64                 randconfig-h0-02021104
-x86_64                 randconfig-h0-02021118
-x86_64                 randconfig-h0-02021158
-mn10300                           allnoconfig
-microblaze                        allnoconfig
-powerpc                      virtex_defconfig
-mips                        msp71xx_defconfig
-microblaze                       allmodconfig
-powerpc                 mpc832x_mds_defconfig
-mips                          ath79_defconfig
-sh                        apsh4ad0a_defconfig
-x86_64                                  kexec
-x86_64                 randconfig-n0-02020931
-x86_64                 randconfig-n0-02021035
-x86_64                 randconfig-n0-02021041
-x86_64                 randconfig-n0-02021134
-x86_64                 randconfig-n0-02021150
-i386                  randconfig-sb0-02012017
-i386                  randconfig-sb0-02021013
-powerpc                 mpc834x_itx_defconfig
-sh                          polaris_defconfig
-x86_64                randconfig-ws0-02020505
-c6x                        evmc6678_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                           usrv_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                        realview_defconfig
-arm                        vexpress_defconfig
-avr32            atngw100_evklcd100_defconfig
-cris                        etraxfs_defconfig
-m68k                        m5307c3_defconfig
-parisc                      default_defconfig
-powerpc                 mpc837x_rdb_defconfig
-x86_64                 randconfig-x008-201705
-x86_64                 randconfig-x001-201705
-x86_64                 randconfig-x009-201705
-x86_64                 randconfig-x000-201705
-x86_64                 randconfig-x003-201705
-x86_64                 randconfig-x006-201705
-x86_64                 randconfig-x004-201705
-x86_64                 randconfig-x007-201705
-x86_64                 randconfig-x002-201705
-x86_64                 randconfig-x005-201705
-i386                   randconfig-r0-01312301
-x86_64                 randconfig-r0-02020102
-x86_64                 randconfig-r0-02021043
-x86_64                 randconfig-r0-02021129
-x86_64                 randconfig-r0-02021158
-cris                             allyesconfig
-powerpc                 mpc8272_ads_defconfig
-s390                    performance_defconfig
-mips                           ip27_defconfig
-arm                           stm32_defconfig
-avr32                             allnoconfig
-powerpc                        cell_defconfig
-arm                            mmp2_defconfig
-powerpc                 linkstation_defconfig
-i386                   randconfig-x003-201705
-i386                   randconfig-x004-201705
-i386                   randconfig-x001-201705
-i386                   randconfig-x007-201705
-i386                   randconfig-x006-201705
-i386                   randconfig-x009-201705
-i386                   randconfig-x002-201705
-i386                   randconfig-x008-201705
-i386                   randconfig-x000-201705
-i386                   randconfig-x005-201705
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-02020400
-i386                   randconfig-x0-02020630
-i386                   randconfig-x0-02021034
-i386                   randconfig-x0-02021131
-i386                   randconfig-x0-02021147
-i386                   randconfig-x0-02021204
-
-Thanks,
-Fengguang
