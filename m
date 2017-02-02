@@ -1,54 +1,188 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Thu, 2 Feb 2017 12:34:26 +0100
-Subject: [Intel-wired-lan] [PATCH v4 0/4] i40e: Support for XDP
-In-Reply-To: <CAKgT0UdZiMPPab-2v_0yvVqc7uA+uYNGAfu36WXvfETxah_B_A@mail.gmail.com>
-References: <20161217134000.31640-1-bjorn.topel@gmail.com>
- <CAKgT0Ue5k8YGt1U_9vTM8ZKac-ryiDJ+zapZFuxLkRpdQKTTOw@mail.gmail.com>
- <CAJ+HfNjOBm5MMbAgUk4KRdKdmn66n+M807grhkJ5s+dZi3uAQA@mail.gmail.com>
- <CAKgT0UdZiMPPab-2v_0yvVqc7uA+uYNGAfu36WXvfETxah_B_A@mail.gmail.com>
-Message-ID: <CAJ+HfNjVyCXYjAnXwfw4bR+QwutX34mDQdzbkrQrDVLSTWXzTQ@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 02 Feb 2017 20:41:41 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ d680505f47a7f59cc970671cd4a4dfbed6683423
+Message-ID: <58932905.lw/scNwFQwvQD5nG%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-2017-02-01 22:32 GMT+01:00 Alexander Duyck <alexander.duyck@gmail.com>:
-> On Tue, Jan 31, 2017 at 2:30 PM, Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
->> 2017-01-31 22:37 GMT+01:00 Alexander Duyck <alexander.duyck@gmail.com>:
->>> We probably need to respin this and do a v5 of the XDP code so that we
->>> can reserve some headroom at the start of the frames.  I have patches
->>> I already working on to enable build_skb like I have done for igb and
->>> ixgbe.  I can probably take on respinning this and getting it applied
->>> to our out-of-tree driver.
->>
->> Respinning or an additional patch for the xdp_adjust_head()
->> support? Maybe it's better to respin it, so we get proper
->> xdp_adjust_head() support, prior upstreaming.
->
-> It makes the upstreaming process easier for us since we normally work
-> out of tree and then upstream patches after testing in the case of
-> i40e.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+d680505f47a7f59cc970671cd4a4dfbed6683423  i40e/i40evf: Change version from 1.6.27 to 2.1.7
 
-Makes sense. So, I guess Jeff needs to pull out the XDP patches from the
-dev-queue branch then.
+elapsed time: 145m
 
-Jeff, please remove the XDP patch set from the dev-queue.
+configs tested: 164
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Cheers,
-Bj?rn
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                            u300_defconfig
+sh                                  defconfig
+sh                ecovec24-romimage_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-02021753
+x86_64                randconfig-it0-02021611
+arm                         cm_x2xx_defconfig
+arm                         shannon_defconfig
+x86_64                 randconfig-v0-02021703
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-g0-02021730
+arm                            netx_defconfig
+arm                         palmz72_defconfig
+powerpc                     ep8248e_defconfig
+sh                         microdev_defconfig
+sh                           se7724_defconfig
+x86_64                 randconfig-x017-201705
+x86_64                 randconfig-x014-201705
+x86_64                 randconfig-x011-201705
+x86_64                 randconfig-x016-201705
+x86_64                 randconfig-x012-201705
+x86_64                 randconfig-x019-201705
+x86_64                 randconfig-x013-201705
+x86_64                 randconfig-x010-201705
+x86_64                 randconfig-x018-201705
+x86_64                 randconfig-x015-201705
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-s0-02021759
+x86_64                 randconfig-s1-02021759
+x86_64                 randconfig-s2-02021759
+x86_64                 randconfig-s3-02021857
+x86_64                 randconfig-s4-02021857
+x86_64                 randconfig-s5-02021857
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+arm                          collie_defconfig
+sh                          landisk_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-i0-01312305
+i386                   randconfig-b0-02021656
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-b0-02021847
+x86_64                           allmodconfig
+mips                           ip28_defconfig
+mips                        nlm_xlp_defconfig
+um                                  defconfig
+x86_64                 randconfig-u0-02021903
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                  colibri_pxa300_defconfig
+arm                                 defconfig
+x86_64                randconfig-ne0-02021809
+x86_64                randconfig-ne0-02021932
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-h0-02021737
+i386                   randconfig-h1-02021737
+i386                   randconfig-h0-02021939
+i386                   randconfig-h1-02021939
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-02021716
+frv                              allyesconfig
+m68k                        m5407c3_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x008-201705
+x86_64                 randconfig-x001-201705
+x86_64                 randconfig-x009-201705
+x86_64                 randconfig-x000-201705
+x86_64                 randconfig-x003-201705
+x86_64                 randconfig-x006-201705
+x86_64                 randconfig-x004-201705
+x86_64                 randconfig-x007-201705
+x86_64                 randconfig-x002-201705
+x86_64                 randconfig-x005-201705
+x86_64                                  kexec
+arm                         em_x270_defconfig
+blackfin                  CM-BF537E_defconfig
+sparc                       sparc32_defconfig
+i386                   randconfig-x003-201705
+i386                   randconfig-x004-201705
+i386                   randconfig-x001-201705
+i386                   randconfig-x007-201705
+i386                   randconfig-x006-201705
+i386                   randconfig-x009-201705
+i386                   randconfig-x002-201705
+i386                   randconfig-x008-201705
+i386                   randconfig-x000-201705
+i386                   randconfig-x005-201705
+i386                   randconfig-x0-02021741
 
->
->> If headroom support for XDP aligns nicely into your build_skb
->> patches for i40e, feel free to do that! If not, let me know, and
->> I'll start working on it.
->
-> Yeah, I'll be working on providing headroom in order to support
-> build_skb anyway so I can just combine the efforts.  Then it makes the
-> upstreaming effort easier as well as we will have the headroom added
-> before we actually start work on XDP.
->
-> Thanks.
->
-> - Alex
+Thanks,
+Fengguang
