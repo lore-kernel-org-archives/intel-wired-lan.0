@@ -1,41 +1,54 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 02 Feb 2017 02:18:26 -0800
-Subject: [Intel-wired-lan] [next PATCH S60 1/1] i40e: rename
- auto_disable_flags to hw_disabled_flags
-In-Reply-To: <1486016013-11773-1-git-send-email-bimmy.pujari@intel.com>
-References: <1486016013-11773-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1486030706.2409.14.camel@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Thu, 2 Feb 2017 12:34:26 +0100
+Subject: [Intel-wired-lan] [PATCH v4 0/4] i40e: Support for XDP
+In-Reply-To: <CAKgT0UdZiMPPab-2v_0yvVqc7uA+uYNGAfu36WXvfETxah_B_A@mail.gmail.com>
+References: <20161217134000.31640-1-bjorn.topel@gmail.com>
+ <CAKgT0Ue5k8YGt1U_9vTM8ZKac-ryiDJ+zapZFuxLkRpdQKTTOw@mail.gmail.com>
+ <CAJ+HfNjOBm5MMbAgUk4KRdKdmn66n+M807grhkJ5s+dZi3uAQA@mail.gmail.com>
+ <CAKgT0UdZiMPPab-2v_0yvVqc7uA+uYNGAfu36WXvfETxah_B_A@mail.gmail.com>
+Message-ID: <CAJ+HfNjVyCXYjAnXwfw4bR+QwutX34mDQdzbkrQrDVLSTWXzTQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2017-02-01 at 22:13 -0800, Bimmy Pujari wrote:
-> From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-> 
-> A previous commit introduced a field that tracks the features
-> that are disabled due to HW resource limitations as opposed
-> to the featured disabled by the user. This patch changes the
-> name of the field to make it more readable since it might get
-> confusing when looking at code containing both the flags
-> field and the auto_disable_features field together.
-> 
-> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-> Change-ID: Idcc9888659698f6fe3ccff17c8c3f09b5026f708
-> ---
-> ?drivers/net/ethernet/intel/i40e/i40e.h???????? |? 8 ++++++--
-> ?drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 10 ++++-----
-> ?drivers/net/ethernet/intel/i40e/i40e_main.c??? | 28 +++++++++++++-------
-> ------
-> ?drivers/net/ethernet/intel/i40e/i40e_txrx.c??? | 20 +++++++++---------
-> ?4 files changed, 35 insertions(+), 31 deletions(-)
+2017-02-01 22:32 GMT+01:00 Alexander Duyck <alexander.duyck@gmail.com>:
+> On Tue, Jan 31, 2017 at 2:30 PM, Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
+>> 2017-01-31 22:37 GMT+01:00 Alexander Duyck <alexander.duyck@gmail.com>:
+>>> We probably need to respin this and do a v5 of the XDP code so that we
+>>> can reserve some headroom at the start of the frames.  I have patches
+>>> I already working on to enable build_skb like I have done for igb and
+>>> ixgbe.  I can probably take on respinning this and getting it applied
+>>> to our out-of-tree driver.
+>>
+>> Respinning or an additional patch for the xdp_adjust_head()
+>> support? Maybe it's better to respin it, so we get proper
+>> xdp_adjust_head() support, prior upstreaming.
+>
+> It makes the upstreaming process easier for us since we normally work
+> out of tree and then upstream patches after testing in the case of
+> i40e.
 
-This does not apply cleanly at all, so I am dropping this patch.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170202/0561dda6/attachment.asc>
+Makes sense. So, I guess Jeff needs to pull out the XDP patches from the
+dev-queue branch then.
+
+Jeff, please remove the XDP patch set from the dev-queue.
+
+
+Cheers,
+Bj?rn
+
+>
+>> If headroom support for XDP aligns nicely into your build_skb
+>> patches for i40e, feel free to do that! If not, let me know, and
+>> I'll start working on it.
+>
+> Yeah, I'll be working on providing headroom in order to support
+> build_skb anyway so I can just combine the efforts.  Then it makes the
+> upstreaming effort easier as well as we will have the headroom added
+> before we actually start work on XDP.
+>
+> Thanks.
+>
+> - Alex
