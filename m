@@ -1,220 +1,88 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 04 Feb 2017 00:29:14 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- 687b8e47445053c7fc2d8631612d6853f66f3785
-Message-ID: <5894afda.atkwZZF9/0VXV9s0%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 03 Feb 2017 09:19:40 -0800
+Subject: [Intel-wired-lan] [next PATCH] ixgbe: Limit use of 2K buffers on
+ architectures with 256B or larger cache lines
+Message-ID: <20170203171601.13255.10335.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-687b8e47445053c7fc2d8631612d6853f66f3785  i40e/i40evf: Change version from 1.6.27 to 2.1.7
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-TIMEOUT after 608m
+On architectures that have a cache line size larger than 64 Bytes we start
+running into issues where the amount of headroom for the frame starts
+shrinking.
 
+The size of skb_shared_info on a system with a 64B L1 cache line size is
+320.  This increases to 384 with a 128B cache line, and 512 with a 256B
+cache line.
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+In addition the NET_SKB_PAD value increases as well consistent with the
+cache line size.  As a result when we get to a 256B cache line as seen on
+the s390 we end up 768 bytes used by padding and shared info leaving us
+with only 1280 bytes to use for data storage.  On architectures such as
+this we should default to using 3K Rx buffers out of a 8K page instead of
+trying to do 1.5K buffers out of a 4K page.
 
-configs timed out: 73
+To take all of this into account I have added one small check so that we
+compare the max_frame to the amount of actual data we can store.  This was
+already occurring for igb, but I had overlooked it for ixgbe as it doesn't
+have strict limits for 82599 once we enable jumbo frames.  By adding this
+check we will automatically enable 3K Rx buffers as soon as the maximum
+frame size we can handle drops below the standard Ethernet MTU.
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-alpha                               defconfig
-blackfin                         allmodconfig
-blackfin                         allyesconfig
-cris                             allmodconfig
-cris                             allyesconfig
-customconfig                                0
-customconfig                                1
-customconfig                                2
-customconfig                                3
-customconfig                                4
-customconfig                                5
-customconfig                                6
-customconfig                                7
-customconfig                                8
-customconfig                                9
-i386                            randconfig-a0
-i386                            randconfig-i0
-i386                            randconfig-i1
-i386                            randconfig-n0
-i386                            randconfig-r0
-i386                            randconfig-s0
-i386                            randconfig-s1
-i386                          randconfig-x010
-i386                          randconfig-x011
-i386                          randconfig-x012
-i386                          randconfig-x013
-i386                          randconfig-x014
-i386                          randconfig-x015
-i386                          randconfig-x016
-i386                          randconfig-x017
-i386                          randconfig-x018
-i386                          randconfig-x019
-i386                          randconfig-x070
-i386                          randconfig-x071
-i386                          randconfig-x072
-i386                          randconfig-x073
-i386                          randconfig-x074
-i386                          randconfig-x075
-i386                          randconfig-x076
-i386                          randconfig-x077
-i386                          randconfig-x078
-i386                          randconfig-x079
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-parisc                           allmodconfig
-parisc                            allnoconfig
-parisc                           allyesconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-s390                             allmodconfig
-s390                             allyesconfig
-sh                               allmodconfig
-sh                               allyesconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-tile                             allmodconfig
-tile                             allyesconfig
-x86_64                           allyesconfig
-x86_64                            eywa-module
-x86_64                                    lkp
-xtensa                           allmodconfig
-xtensa                           allyesconfig
+I also went through and fixed one small typo that I found where I had left
+an IGB in a variable name due to a copy/paste error.
 
-configs tested: 115
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+---
 
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                           allmodconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x017-201705
-x86_64                 randconfig-x014-201705
-x86_64                 randconfig-x011-201705
-x86_64                 randconfig-x016-201705
-x86_64                 randconfig-x012-201705
-x86_64                 randconfig-x019-201705
-x86_64                 randconfig-x013-201705
-x86_64                 randconfig-x010-201705
-x86_64                 randconfig-x018-201705
-x86_64                 randconfig-x015-201705
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-i0-01312305
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                                  kexec
-x86_64                               rhel-7.2
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x008-201705
-x86_64                 randconfig-x001-201705
-x86_64                 randconfig-x009-201705
-x86_64                 randconfig-x000-201705
-x86_64                 randconfig-x003-201705
-x86_64                 randconfig-x006-201705
-x86_64                 randconfig-x004-201705
-x86_64                 randconfig-x007-201705
-x86_64                 randconfig-x002-201705
-x86_64                 randconfig-x005-201705
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-i386                   randconfig-x003-201705
-i386                   randconfig-x004-201705
-i386                   randconfig-x001-201705
-i386                   randconfig-x007-201705
-i386                   randconfig-x006-201705
-i386                   randconfig-x009-201705
-i386                   randconfig-x002-201705
-i386                   randconfig-x008-201705
-i386                   randconfig-x000-201705
-i386                   randconfig-x005-201705
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
+Testing Hints:
+	If at all possible it would be best to try testing this patch on
+	some other architectures such as PPC64.  In lieu of that just build
+	testing via the kernel build robot will probably have to do.  The
+	only architecture I can identify that might actually have an issue
+	that this fixes is s390 which last I knew there was none of in the
+	labs at Intel for testing.
 
-Thanks,
-Fengguang
+	Basic Rx testing will suffice otherwise.
+
+	Also I am okay with this patch just being merged into the earlier
+	patch "ixgbe: Add support for padding packet" if you want to go
+	that route.  I just figured it wasn't worth the trouble to resend
+	the entire set for a minor issue.
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 3537d07b4807..77bf71db85af 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -99,7 +99,7 @@
+ #define IXGBE_MAX_FRAME_BUILD_SKB \
+ 	(SKB_WITH_OVERHEAD(IXGBE_RXBUFFER_2K) - IXGBE_SKB_PAD)
+ #else
+-#define IGB_MAX_FRAME_BUILD_SKB IXGBE_RXBUFFER_2K
++#define IXGBE_MAX_FRAME_BUILD_SKB IXGBE_RXBUFFER_2K
+ #endif
+ 
+ /*
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 787cee9c59d3..bfcdc2fdeae4 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -4009,7 +4009,8 @@ static void ixgbe_set_rx_buffer_len(struct ixgbe_adapter *adapter)
+ 		if (adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED)
+ 			set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
+ 
+-		if (max_frame > (ETH_FRAME_LEN + ETH_FCS_LEN))
++		if ((max_frame > (ETH_FRAME_LEN + ETH_FCS_LEN)) ||
++		    (max_frame > IXGBE_MAX_FRAME_BUILD_SKB))
+ 			set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
+ #endif
+ 	}
+
