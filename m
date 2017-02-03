@@ -1,147 +1,272 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 3 Feb 2017 09:58:02 -0800
-Subject: [Intel-wired-lan] [next PATCH v3 6/9] igb: Add support for
- padding packet
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B8C588006@ORSMSX101.amr.corp.intel.com>
-References: <20170123165647.13402.1254.stgit@localhost.localdomain>
- <20170123165906.13402.80385.stgit@localhost.localdomain>
- <309B89C4C689E141A5FF6A0C5FB2118B8C588006@ORSMSX101.amr.corp.intel.com>
-Message-ID: <CAKgT0Uf2uZZOgX_2w7bpBbuFv4_VcTAJ0GnWyZAejEVVvtKBdA@mail.gmail.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Fri,  3 Feb 2017 10:57:42 -0800
+Subject: [Intel-wired-lan] [next PATCH S60-V2 1/1] i40e: rename
+	auto_disable_flags to hw_disabled_flags
+Message-ID: <1486148262-29051-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Feb 2, 2017 at 8:01 PM, Brown, Aaron F <aaron.f.brown@intel.com> wrote:
->> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
->> Behalf Of Alexander Duyck
->> Sent: Monday, January 23, 2017 8:59 AM
->> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
->> <jeffrey.t.kirsher@intel.com>
->> Subject: [Intel-wired-lan] [next PATCH v3 6/9] igb: Add support for padding
->> packet
->>
->> From: Alexander Duyck <alexander.h.duyck@intel.com>
->>
->> With the size of the frame limited we can now write to an offset within the
->> buffer instead of having to write at the very start of the buffer.  The
->> advantage to this is that it allows us to leave padding room for things
->> like supporting XDP in the future.
->>
->> One side effect of this patch is that we can end up using a larger buffer
->> if jumbo frames is enabled.  The impact shouldn't be too great, but it
->> could hurt small packet performance for UDP workloads if jumbo frames is
->> enabled as the truesize of frames will be larger.
->>
->> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
->> ---
->>
->> v3: Fixed "unsigned char *" / "void *" mismatch on pointer arithmetic
->>
->>  drivers/net/ethernet/intel/igb/igb.h         |   44 ++++++++++++-
->>  drivers/net/ethernet/intel/igb/igb_ethtool.c |    4 +
->>  drivers/net/ethernet/intel/igb/igb_main.c    |   91 +++++++++++++++++++--
->> -----
->>  drivers/net/ethernet/intel/igb/igb_ptp.c     |    3 -
->>  4 files changed, 110 insertions(+), 32 deletions(-)
->
-> I am having one (and only one) system dump on me when running netperf_stress (multiple netperf sessions of varying sizes running in looped cycles.)  The system itself is an older SuperMicro system with a pair of 82575EB LOMs.  It's a rather dated system but I managed to locate another box of more or less the same era with 82575EB LOMs and am NOT seeing the dump there.  I stripped off the other patches from this series and the problem does not appear with the first 5, but with this one on I get the system to crash.  Usually it freezes or restarts, sometimes it just locks up the consoles.  When it repeats or restarts it captures the trace to /var/log/messages so I was able to grab this trace from there:
-> ------------------------------------------------------------------------------------------------
-> Feb  2 15:08:00 u1485 xinetd[1866]: START: netperf pid=5528 from=::ffff:190.1.4.85
-> Feb  2 15:08:02 u1485 kernel: swap_free: Bad swap offset entry 1c995c1d195b8
-> Feb  2 15:08:02 u1485 kernel: BUG: Bad page map in process sleep  pte:72657074656e0066 pmd:7be3b067
-> Feb  2 15:08:02 u1485 kernel: addr:00007fdfedc00000 vm_flags:00000070 anon_vma:          (null) mapping:ffff880079436cc0 index:1ba
-> Feb  2 15:08:02 u1485 kernel: file:libc-2.12.so fault:ext4_filemap_fault [ext4] mmap:ext4_file_mmap [ext4] readpage:ext4_readpage [ext4]
-> Feb  2 15:08:02 u1485 kernel: CPU: 5 PID: 5526 Comm: sleep Tainted: G            E   4.10.0-rc4_next-queue_regress #18
-> Feb  2 15:08:02 u1485 kernel: Hardware name: Supermicro X7DW3/X7DWN+, BIOS 1.2c 11/19/2010
-> Feb  2 15:08:02 u1485 kernel: Call Trace:
-> Feb  2 15:08:02 u1485 kernel: dump_stack+0x51/0x78
-> Feb  2 15:08:02 u1485 kernel: ? ext4_bh_unmapped+0x20/0x20 [ext4]
-> Feb  2 15:08:02 u1485 kernel: ? ext4_file_open+0x220/0x220 [ext4]
-> Feb  2 15:08:02 u1485 kernel: print_bad_pte+0x1cd/0x280
-> Feb  2 15:08:02 u1485 kernel: zap_pte_range+0x5ab/0x640
-> Feb  2 15:08:02 u1485 kernel: ? pte_alloc_one_map+0x1c3/0x250
-> Feb  2 15:08:02 u1485 kernel: unmap_page_range+0x1f8/0x300
-> Feb  2 15:08:02 u1485 kernel: unmap_single_vma+0x60/0xe0
-> Feb  2 15:08:02 u1485 kernel: unmap_vmas+0x4b/0xa0
-> Feb  2 15:08:02 u1485 kernel: exit_mmap+0xbb/0x140
-> Feb  2 15:08:02 u1485 kernel: mmput+0x77/0x170
-> Feb  2 15:08:02 u1485 kernel: ? mm_release+0x57/0x140
-> Feb  2 15:08:02 u1485 kernel: ? down_read+0x16/0x40
-> Feb  2 15:08:02 u1485 kernel: exit_mm+0x140/0x1d0
-> Feb  2 15:08:02 u1485 kernel: ? down_read+0x16/0x40
-> Feb  2 15:08:02 u1485 kernel: ? exit_signals+0x150/0x170
-> Feb  2 15:08:02 u1485 kernel: do_exit+0x12e/0x490
-> Feb  2 15:08:02 u1485 kernel: ? handle_mm_fault+0x87/0x190
-> Feb  2 15:08:02 u1485 kernel: ? filp_close+0x65/0x90
-> Feb  2 15:08:02 u1485 kernel: do_group_exit+0x4e/0xc0
-> Feb  2 15:08:02 u1485 kernel: SyS_exit_group+0x17/0x20
-> Feb  2 15:08:02 u1485 kernel: entry_SYSCALL_64_fastpath+0x13/0x94
-> Feb  2 15:08:02 u1485 kernel: RIP: 0033:0x7fdfedaf2df8
-> Feb  2 15:08:02 u1485 kernel: RSP: 002b:00007ffe94402408 EFLAGS: 00000246 ORIG_RAX: 00000000000000e7
-> Feb  2 15:08:02 u1485 kernel: RAX: ffffffffffffffda RBX: 00000000fbad2084 RCX: 00007fdfedaf2df8
-> Feb  2 15:08:02 u1485 kernel: RDX: 0000000000000000 RSI: 000000000000003c RDI: 0000000000000000
-> Feb  2 15:08:02 u1485 kernel: RBP: 00007fdfeddd47a0 R08: 00000000000000e7 R09: ffffffffffffffa8
-> Feb  2 15:08:02 u1485 kernel: R10: 0000000000000004 R11: 0000000000000246 R12: 0000000000000000
-> Feb  2 15:08:02 u1485 kernel: R13: 00007ffe94402468 R14: 0000000000000001 R15: 00007ffe94402460
-> Feb  2 15:08:02 u1485 kernel: Disabling lock debugging due to kernel taint
-> Feb  2 15:08:02 u1485 kernel: swap_free: Bad swap offset entry 1c995c1d195b8
-> Feb  2 15:08:02 u1485 kernel: BUG: Bad page map in process sleep  pte:72657074656e0066 pmd:7be3b067
-> Feb  2 15:08:02 u1485 kernel: addr:00007fdfedc01000 vm_flags:00000070 anon_vma:          (null) mapping:ffff880079436cc0 index:1bb
-> Feb  2 15:08:02 u1485 kernel: file:libc-2.12.so fault:ext4_filemap_fault [ext4] mmap:ext4_file_mmap [ext4] readpage:ext4_readpage [ext4]
-> Feb  2 15:08:02 u1485 kernel: CPU: 5 PID: 5526 Comm: sleep Tainted: G    B       E   4.10.0-rc4_next-queue_regress #18
-> Feb  2 15:08:02 u1485 kernel: Hardware name: Supermicro X7DW3/X7DWN+, BIOS 1.2c 11/19/2010
-> Feb  2 15:08:02 u1485 kernel: Call Trace:
-> Feb  2 15:08:02 u1485 kernel: dump_stack+0x51/0x78
-> Feb  2 15:08:02 u1485 kernel: ? ext4_bh_unmapped+0x20/0x20 [ext4]
-> Feb  2 15:08:02 u1485 kernel: ? ext4_file_open+0x220/0x220 [ext4]
-> Feb  2 15:08:02 u1485 kernel: print_bad_pte+0x1cd/0x280
-> Feb  2 15:08:02 u1485 kernel: zap_pte_range+0x5ab/0x640
-> Feb  2 15:08:02 u1485 kernel: ? pte_alloc_one_map+0x1c3/0x250
-> Feb  2 15:08:02 u1485 kernel: unmap_page_range+0x1f8/0x300
-> Feb  2 15:08:02 u1485 kernel: unmap_single_vma+0x60/0xe0
-> Feb  2 15:08:02 u1485 kernel: unmap_vmas+0x4b/0xa0
-> Feb  2 15:08:02 u1485 kernel: exit_mmap+0xbb/0x140
-> Feb  2 15:08:02 u1485 kernel: mmput+0x77/0x170
-> Feb  2 15:08:02 u1485 kernel: ? mm_release+0x57/0x140
-> Feb  2 15:08:02 u1485 kernel: ? down_read+0x16/0x40
-> Feb  2 15:08:02 u1485 kernel: exit_mm+0x140/0x1d0
-> Feb  2 15:08:02 u1485 kernel: ? down_read+0x16/0x40
-> Feb  2 15:08:02 u1485 kernel: ? exit_signals+0x150/0x170
-> Feb  2 15:08:02 u1485 kernel: do_exit+0x12e/0x490
-> Feb  2 15:08:02 u1485 kernel: ? handle_mm_fault+0x87/0x190
-> Feb  2 15:08:02 u1485 kernel: ? filp_close+0x65/0x90
-> Feb  2 15:08:02 u1485 kernel: do_group_exit+0x4e/0xc0
-> Feb  2 15:08:02 u1485 kernel: SyS_exit_group+0x17/0x20
-> Feb  2 15:08:02 u1485 kernel: entry_SYSCALL_64_fastpath+0x13/0x94
-> Feb  2 15:08:02 u1485 kernel: RIP: 0033:0x7fdfedaf2df8
-> Feb  2 15:08:02 u1485 kernel: RSP: 002b:00007ffe94402408 EFLAGS: 00000246 ORIG_RAX: 00000000000000e7
-> Feb  2 15:08:02 u1485 kernel: RAX: ffffffffffffffda RBX: 00000000fbad2084 RCX: 00007fdfedaf2df8
-> Feb  2 15:08:02 u1485 kernel: RDX: 0000000000000000 RSI: 000000000000003c RDI: 0000000000000000
-> Feb  2 15:08:02 u1485 kernel: RBP: 00007fdfeddd47a0 R08: 00000000000000e7 R09: ffffffffffffffa8
-> Feb  2 15:08:02 u1485 kernel: R10: 0000000000000004 R11: 0000000000000246 R12: 0000000000000000
-> Feb  2 15:08:02 u1485 kernel: R13: 00007ffe94402468 R14: 0000000000000001 R15: 00007ffe94402460
-> Feb  2 15:08:02 u1485 kernel: swap_free: Bad swap offset entry 1c995c1d195b8
-> Feb  2 15:08:02 u1485 kernel: BUG: Bad page map in process sleep  pte:72657074656e0066 pmd:7be3b067
-> Feb  2 15:08:02 u1485 kernel: addr:00007fdfedc02000 vm_flags:00000070 anon_vma:          (null) mapping:ffff880079436cc0 index:1bc
-> Feb  2 15:08:02 u1485 kernel: file:libc-2.12.so fault:ext4_filemap_fault [ext4] mmap:ext4_file_mmap [ext4] readpage:ext4_readpage [ext4]
-> Feb  2 15:08:02 u1485 kernel: CPU: 5 PID: 5526 Comm: sleep Tainted: G    B       E   4.10.0-rc4_next-queue_regress #18
-> Feb  2 15:08:02 u1485 kernel: Hardware name: Supermicro X7DW3/X7DWN+, BIOS 1.2c 11/19/2010
-> ...
-> ------------------------------------------------------------------------------------------------
-> This call trace pattern repeated 7 ot 8 times and then the system either rebooted on its own or simply locked up.
->
-> I am not entirely convinced it is not my hardware as I cannot reproduce the issue on any other system.  This one is very low on disk space and I have been meaning to rebuild it on a larger partition, preferably newer and larger drive for some time.  Given it calls out a bad swap offset at the beginning of the bug / call trace text I suppose I could be running into issues with an overly full disk (though that seems a bit unlikely being different partitions and all.)  I will go ahead and rebuild this system granting new, larger freshly formatted partitions and see if the problem goes away.
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-Well one thing you might try doing is running "ethtool
---set-priv-flags <ethX> legacy-rx on" and seeing if you have the same
-problem or not.  Turning on legacy Rx with this patch applied should
-only have the effect of adding padding to the front of the frame and
-will help to eliminate some of the code as being potentially
-responsible for this.
+A previous commit introduced a field that tracks the features
+that are disabled due to HW resource limitations as opposed
+to the featured disabled by the user. This patch changes the
+name of the field to make it more readable since it might get
+confusing when looking at code containing both the flags
+field and the auto_disable_features field together.
 
-I'll look through this patch several times today and try to see if I
-can find anything that might be causing the issue.
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Change-ID: Idcc9888659698f6fe3ccff17c8c3f09b5026f708
+---
+ drivers/net/ethernet/intel/i40e/i40e.h         |  8 ++++++--
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 10 ++++-----
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 28 +++++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 20 +++++++++---------
+ 4 files changed, 35 insertions(+), 31 deletions(-)
 
-- Alex
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 43c041d..a82fa91 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -357,8 +357,12 @@ struct i40e_pf {
+ #define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(56)
+ #define I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE		BIT_ULL(57)
+ 
+-	/* tracks features that get auto disabled by errors */
+-	u64 auto_disable_flags;
++       /* Tracks features that are disabled due to hw limitations.
++	* If a bit is set here, it means that the corresponding
++	* bit in the 'flags' field is cleared i.e that feature
++	* is disabled
++	*/
++	u64 hw_disabled_flags;
+ 
+ #ifdef I40E_FCOE
+ 	struct i40e_fcoe fcoe;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 4d08f19..382fd2c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2721,7 +2721,7 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
+ 	if (!(pf->flags & I40E_FLAG_FD_SB_ENABLED))
+ 		return -EOPNOTSUPP;
+ 
+-	if (pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED)
++	if (pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED)
+ 		return -ENOSPC;
+ 
+ 	if (test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state) ||
+@@ -3063,7 +3063,7 @@ static u32 i40e_get_priv_flags(struct net_device *dev)
+ 		I40E_PRIV_FLAGS_FD_ATR : 0;
+ 	ret_flags |= pf->flags & I40E_FLAG_VEB_STATS_ENABLED ?
+ 		I40E_PRIV_FLAGS_VEB_STATS : 0;
+-	ret_flags |= pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE ?
++	ret_flags |= pf->hw_disabled_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE ?
+ 		0 : I40E_PRIV_FLAGS_HW_ATR_EVICT;
+ 	if (pf->hw.pf_id == 0) {
+ 		ret_flags |= pf->flags & I40E_FLAG_TRUE_PROMISC_SUPPORT ?
+@@ -3103,7 +3103,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 		pf->flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 	} else {
+ 		pf->flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+-		pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
++		pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 
+ 		/* flush current ATR settings */
+ 		set_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state);
+@@ -3148,9 +3148,9 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 
+ 	if ((flags & I40E_PRIV_FLAGS_HW_ATR_EVICT) &&
+ 	    (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))
+-		pf->auto_disable_flags &= ~I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++		pf->hw_disabled_flags &= ~I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 	else
+-		pf->auto_disable_flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++		pf->hw_disabled_flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 
+ 	/* if needed, issue reset to cause things to take effect */
+ 	if (reset_required)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index d8a10a10..d587237 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1114,13 +1114,13 @@ static void i40e_update_pf_stats(struct i40e_pf *pf)
+ 			   &osd->rx_lpi_count, &nsd->rx_lpi_count);
+ 
+ 	if (pf->flags & I40E_FLAG_FD_SB_ENABLED &&
+-	    !(pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED))
++	    !(pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED))
+ 		nsd->fd_sb_status = true;
+ 	else
+ 		nsd->fd_sb_status = false;
+ 
+ 	if (pf->flags & I40E_FLAG_FD_ATR_ENABLED &&
+-	    !(pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
++	    !(pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED))
+ 		nsd->fd_atr_status = true;
+ 	else
+ 		nsd->fd_atr_status = false;
+@@ -5609,7 +5609,7 @@ static int i40e_up_complete(struct i40e_vsi *vsi)
+ 		/* reset fd counters */
+ 		pf->fd_add_err = pf->fd_atr_cnt = 0;
+ 		if (pf->fd_tcp_rule > 0) {
+-			pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
++			pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 				dev_info(&pf->pdev->dev, "Forcing ATR off, sideband rules for TCP/IPv4 exist\n");
+ 			pf->fd_tcp_rule = 0;
+@@ -6287,8 +6287,8 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+ 	    (pf->fd_add_err == 0) ||
+ 	    (i40e_get_current_atr_cnt(pf) < pf->fd_atr_cnt)) {
+ 		if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
+-		    (pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED)) {
+-			pf->auto_disable_flags &= ~I40E_FLAG_FD_SB_ENABLED;
++		    (pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED)) {
++			pf->hw_disabled_flags &= ~I40E_FLAG_FD_SB_ENABLED;
+ 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 				dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
+ 		}
+@@ -6299,9 +6299,9 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+ 	 */
+ 	if (fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM * 2)) {
+ 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+-		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED) &&
++		    (pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED) &&
+ 		    (pf->fd_tcp_rule == 0)) {
+-			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
++			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+ 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table and there are no conflicting ntuple rules\n");
+ 		}
+@@ -6353,7 +6353,7 @@ static void i40e_fdir_flush_and_replay(struct i40e_pf *pf)
+ 	}
+ 
+ 	pf->fd_flush_timestamp = jiffies;
+-	pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
++	pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 	/* flush all filters */
+ 	wr32(&pf->hw, I40E_PFQF_CTL_1,
+ 	     I40E_PFQF_CTL_1_CLEARFDTABLE_MASK);
+@@ -6373,7 +6373,7 @@ static void i40e_fdir_flush_and_replay(struct i40e_pf *pf)
+ 		/* replay sideband filters */
+ 		i40e_fdir_filter_restore(pf->vsi[pf->lan_vsi]);
+ 		if (!disable_atr)
+-			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
++			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+ 		clear_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state);
+ 		if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 			dev_info(&pf->pdev->dev, "FD Filter table flushed and FD-SB replayed.\n");
+@@ -9062,9 +9062,9 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 		    (pf->hw.aq.api_min_ver > 4))) {
+ 		/* Supported in FW API version higher than 1.4 */
+ 		pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
+-		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++		pf->hw_disabled_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 	} else {
+-		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++		pf->hw_disabled_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 	}
+ 
+ 	pf->eeprom_version = 0xDEAD;
+@@ -9125,14 +9125,14 @@ bool i40e_set_ntuple(struct i40e_pf *pf, netdev_features_t features)
+ 			i40e_fdir_filter_exit(pf);
+ 		}
+ 		pf->flags &= ~I40E_FLAG_FD_SB_ENABLED;
+-		pf->auto_disable_flags &= ~I40E_FLAG_FD_SB_ENABLED;
++		pf->hw_disabled_flags &= ~I40E_FLAG_FD_SB_ENABLED;
+ 		/* reset fd counters */
+ 		pf->fd_add_err = pf->fd_atr_cnt = pf->fd_tcp_rule = 0;
+ 		pf->fdir_pf_active_filters = 0;
+ 		/* if ATR was auto disabled it can be re-enabled. */
+ 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+-		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED)) {
+-			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
++		    (pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED)) {
++			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+ 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 				dev_info(&pf->pdev->dev, "ATR re-enabled.\n");
+ 		}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 012c157..3a2fd66 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -292,7 +292,7 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
+ 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+ 		    I40E_DEBUG_FD & pf->hw.debug_mask)
+ 			dev_info(&pf->pdev->dev, "Forcing ATR off, sideband rules for TCP/IPv4 flow being applied\n");
+-		pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
++		pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 	} else {
+ 		pf->fd_tcp_rule = (pf->fd_tcp_rule > 0) ?
+ 				  (pf->fd_tcp_rule - 1) : 0;
+@@ -300,7 +300,7 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
+ 			if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+ 			    I40E_DEBUG_FD & pf->hw.debug_mask)
+ 				dev_info(&pf->pdev->dev, "ATR re-enabled due to no sideband TCP/IPv4 rules\n");
+-			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
++			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+ 		}
+ 	}
+ 
+@@ -485,8 +485,8 @@ static void i40e_fd_handle_status(struct i40e_ring *rx_ring,
+ 		pf->fd_atr_cnt = i40e_get_current_atr_cnt(pf);
+ 
+ 		if ((rx_desc->wb.qword0.hi_dword.fd_id == 0) &&
+-		    (pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED)) {
+-			pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
++		    (pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED)) {
++			pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 			set_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state);
+ 		}
+ 
+@@ -499,11 +499,11 @@ static void i40e_fd_handle_status(struct i40e_ring *rx_ring,
+ 		 */
+ 		if (fcnt_prog >= (fcnt_avail - I40E_FDIR_BUFFER_FULL_MARGIN)) {
+ 			if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
+-			    !(pf->auto_disable_flags &
++			    !(pf->hw_disabled_flags &
+ 				     I40E_FLAG_FD_SB_ENABLED)) {
+ 				if (I40E_DEBUG_FD & pf->hw.debug_mask)
+ 					dev_warn(&pdev->dev, "FD filter space full, new ntuple rules will not be added\n");
+-				pf->auto_disable_flags |=
++				pf->hw_disabled_flags |=
+ 							I40E_FLAG_FD_SB_ENABLED;
+ 			}
+ 		}
+@@ -2465,7 +2465,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	if (!(pf->flags & I40E_FLAG_FD_ATR_ENABLED))
+ 		return;
+ 
+-	if ((pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
++	if ((pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED))
+ 		return;
+ 
+ 	/* if sampling is disabled do nothing */
+@@ -2499,10 +2499,10 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	th = (struct tcphdr *)(hdr.network + hlen);
+ 
+ 	/* Due to lack of space, no more new filters can be programmed */
+-	if (th->syn && (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
++	if (th->syn && (pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED))
+ 		return;
+ 	if ((pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) &&
+-	    (!(pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))) {
++	    (!(pf->hw_disabled_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))) {
+ 		/* HW ATR eviction will take care of removing filters on FIN
+ 		 * and RST packets.
+ 		 */
+@@ -2565,7 +2565,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 			I40E_TXD_FLTR_QW1_CNTINDEX_MASK;
+ 
+ 	if ((pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) &&
+-	    (!(pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)))
++	    (!(pf->hw_disabled_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)))
+ 		dtype_cmd |= I40E_TXD_FLTR_QW1_ATR_MASK;
+ 
+ 	fdir_desc->qindex_flex_ptype_vsi = cpu_to_le32(flex_ptype);
+-- 
+2.4.11
+
