@@ -1,253 +1,503 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 4 Feb 2017 00:39:11 +0000
-Subject: [Intel-wired-lan] [next PATCH v3 6/9] igb: Add support for
- padding packet
-In-Reply-To: <CAKgT0Uf2uZZOgX_2w7bpBbuFv4_VcTAJ0GnWyZAejEVVvtKBdA@mail.gmail.com>
-References: <20170123165647.13402.1254.stgit@localhost.localdomain>
- <20170123165906.13402.80385.stgit@localhost.localdomain>
- <309B89C4C689E141A5FF6A0C5FB2118B8C588006@ORSMSX101.amr.corp.intel.com>
- <CAKgT0Uf2uZZOgX_2w7bpBbuFv4_VcTAJ0GnWyZAejEVVvtKBdA@mail.gmail.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C5887B6@ORSMSX101.amr.corp.intel.com>
+From: Philippe Reynes <tremyfr@gmail.com>
+Date: Sat,  4 Feb 2017 22:05:06 +0100
+Subject: [Intel-wired-lan] [PATCH] net: intel: i40e: use new api
+	ethtool_{get|set}_link_ksettings
+Message-ID: <1486242306-10111-1-git-send-email-tremyfr@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
-> Sent: Friday, February 3, 2017 9:58 AM
-> To: Brown, Aaron F <aaron.f.brown@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Subject: Re: [Intel-wired-lan] [next PATCH v3 6/9] igb: Add support for
-> padding packet
-> 
-> On Thu, Feb 2, 2017 at 8:01 PM, Brown, Aaron F <aaron.f.brown@intel.com>
-> wrote:
-> >> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
-> On
-> >> Behalf Of Alexander Duyck
-> >> Sent: Monday, January 23, 2017 8:59 AM
-> >> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> >> <jeffrey.t.kirsher@intel.com>
-> >> Subject: [Intel-wired-lan] [next PATCH v3 6/9] igb: Add support for
-> padding
-> >> packet
-> >>
-> >> From: Alexander Duyck <alexander.h.duyck@intel.com>
-> >>
-> >> With the size of the frame limited we can now write to an offset within
-> the
-> >> buffer instead of having to write at the very start of the buffer.  The
-> >> advantage to this is that it allows us to leave padding room for things
-> >> like supporting XDP in the future.
-> >>
-> >> One side effect of this patch is that we can end up using a larger buffer
-> >> if jumbo frames is enabled.  The impact shouldn't be too great, but it
-> >> could hurt small packet performance for UDP workloads if jumbo frames
-> is
-> >> enabled as the truesize of frames will be larger.
-> >>
-> >> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> >> ---
-> >>
-> >> v3: Fixed "unsigned char *" / "void *" mismatch on pointer arithmetic
-> >>
-> >>  drivers/net/ethernet/intel/igb/igb.h         |   44 ++++++++++++-
-> >>  drivers/net/ethernet/intel/igb/igb_ethtool.c |    4 +
-> >>  drivers/net/ethernet/intel/igb/igb_main.c    |   91
-> +++++++++++++++++++--
-> >> -----
-> >>  drivers/net/ethernet/intel/igb/igb_ptp.c     |    3 -
-> >>  4 files changed, 110 insertions(+), 32 deletions(-)
-> >
-> > I am having one (and only one) system dump on me when running
-> netperf_stress (multiple netperf sessions of varying sizes running in looped
-> cycles.)  The system itself is an older SuperMicro system with a pair of
-> 82575EB LOMs.  It's a rather dated system but I managed to locate another
-> box of more or less the same era with 82575EB LOMs and am NOT seeing the
-> dump there.  I stripped off the other patches from this series and the
-> problem does not appear with the first 5, but with this one on I get the
-> system to crash.  Usually it freezes or restarts, sometimes it just locks up the
-> consoles.  When it repeats or restarts it captures the trace to
-> /var/log/messages so I was able to grab this trace from there:
-> > -------------------------------------------------------------------------------------------
-> -----
-> > Feb  2 15:08:00 u1485 xinetd[1866]: START: netperf pid=5528
-> from=::ffff:190.1.4.85
-> > Feb  2 15:08:02 u1485 kernel: swap_free: Bad swap offset entry
-> 1c995c1d195b8
-> > Feb  2 15:08:02 u1485 kernel: BUG: Bad page map in process sleep
-> pte:72657074656e0066 pmd:7be3b067
-> > Feb  2 15:08:02 u1485 kernel: addr:00007fdfedc00000 vm_flags:00000070
-> anon_vma:          (null) mapping:ffff880079436cc0 index:1ba
-> > Feb  2 15:08:02 u1485 kernel: file:libc-2.12.so fault:ext4_filemap_fault
-> [ext4] mmap:ext4_file_mmap [ext4] readpage:ext4_readpage [ext4]
-> > Feb  2 15:08:02 u1485 kernel: CPU: 5 PID: 5526 Comm: sleep Tainted: G
-> E   4.10.0-rc4_next-queue_regress #18
-> > Feb  2 15:08:02 u1485 kernel: Hardware name: Supermicro
-> X7DW3/X7DWN+, BIOS 1.2c 11/19/2010
-> > Feb  2 15:08:02 u1485 kernel: Call Trace:
-> > Feb  2 15:08:02 u1485 kernel: dump_stack+0x51/0x78
-> > Feb  2 15:08:02 u1485 kernel: ? ext4_bh_unmapped+0x20/0x20 [ext4]
-> > Feb  2 15:08:02 u1485 kernel: ? ext4_file_open+0x220/0x220 [ext4]
-> > Feb  2 15:08:02 u1485 kernel: print_bad_pte+0x1cd/0x280
-> > Feb  2 15:08:02 u1485 kernel: zap_pte_range+0x5ab/0x640
-> > Feb  2 15:08:02 u1485 kernel: ? pte_alloc_one_map+0x1c3/0x250
-> > Feb  2 15:08:02 u1485 kernel: unmap_page_range+0x1f8/0x300
-> > Feb  2 15:08:02 u1485 kernel: unmap_single_vma+0x60/0xe0
-> > Feb  2 15:08:02 u1485 kernel: unmap_vmas+0x4b/0xa0
-> > Feb  2 15:08:02 u1485 kernel: exit_mmap+0xbb/0x140
-> > Feb  2 15:08:02 u1485 kernel: mmput+0x77/0x170
-> > Feb  2 15:08:02 u1485 kernel: ? mm_release+0x57/0x140
-> > Feb  2 15:08:02 u1485 kernel: ? down_read+0x16/0x40
-> > Feb  2 15:08:02 u1485 kernel: exit_mm+0x140/0x1d0
-> > Feb  2 15:08:02 u1485 kernel: ? down_read+0x16/0x40
-> > Feb  2 15:08:02 u1485 kernel: ? exit_signals+0x150/0x170
-> > Feb  2 15:08:02 u1485 kernel: do_exit+0x12e/0x490
-> > Feb  2 15:08:02 u1485 kernel: ? handle_mm_fault+0x87/0x190
-> > Feb  2 15:08:02 u1485 kernel: ? filp_close+0x65/0x90
-> > Feb  2 15:08:02 u1485 kernel: do_group_exit+0x4e/0xc0
-> > Feb  2 15:08:02 u1485 kernel: SyS_exit_group+0x17/0x20
-> > Feb  2 15:08:02 u1485 kernel: entry_SYSCALL_64_fastpath+0x13/0x94
-> > Feb  2 15:08:02 u1485 kernel: RIP: 0033:0x7fdfedaf2df8
-> > Feb  2 15:08:02 u1485 kernel: RSP: 002b:00007ffe94402408 EFLAGS:
-> 00000246 ORIG_RAX: 00000000000000e7
-> > Feb  2 15:08:02 u1485 kernel: RAX: ffffffffffffffda RBX: 00000000fbad2084
-> RCX: 00007fdfedaf2df8
-> > Feb  2 15:08:02 u1485 kernel: RDX: 0000000000000000 RSI:
-> 000000000000003c RDI: 0000000000000000
-> > Feb  2 15:08:02 u1485 kernel: RBP: 00007fdfeddd47a0 R08:
-> 00000000000000e7 R09: ffffffffffffffa8
-> > Feb  2 15:08:02 u1485 kernel: R10: 0000000000000004 R11:
-> 0000000000000246 R12: 0000000000000000
-> > Feb  2 15:08:02 u1485 kernel: R13: 00007ffe94402468 R14: 0000000000000001
-> R15: 00007ffe94402460
-> > Feb  2 15:08:02 u1485 kernel: Disabling lock debugging due to kernel taint
-> > Feb  2 15:08:02 u1485 kernel: swap_free: Bad swap offset entry
-> 1c995c1d195b8
-> > Feb  2 15:08:02 u1485 kernel: BUG: Bad page map in process sleep
-> pte:72657074656e0066 pmd:7be3b067
-> > Feb  2 15:08:02 u1485 kernel: addr:00007fdfedc01000 vm_flags:00000070
-> anon_vma:          (null) mapping:ffff880079436cc0 index:1bb
-> > Feb  2 15:08:02 u1485 kernel: file:libc-2.12.so fault:ext4_filemap_fault
-> [ext4] mmap:ext4_file_mmap [ext4] readpage:ext4_readpage [ext4]
-> > Feb  2 15:08:02 u1485 kernel: CPU: 5 PID: 5526 Comm: sleep Tainted: G    B
-> E   4.10.0-rc4_next-queue_regress #18
-> > Feb  2 15:08:02 u1485 kernel: Hardware name: Supermicro
-> X7DW3/X7DWN+, BIOS 1.2c 11/19/2010
-> > Feb  2 15:08:02 u1485 kernel: Call Trace:
-> > Feb  2 15:08:02 u1485 kernel: dump_stack+0x51/0x78
-> > Feb  2 15:08:02 u1485 kernel: ? ext4_bh_unmapped+0x20/0x20 [ext4]
-> > Feb  2 15:08:02 u1485 kernel: ? ext4_file_open+0x220/0x220 [ext4]
-> > Feb  2 15:08:02 u1485 kernel: print_bad_pte+0x1cd/0x280
-> > Feb  2 15:08:02 u1485 kernel: zap_pte_range+0x5ab/0x640
-> > Feb  2 15:08:02 u1485 kernel: ? pte_alloc_one_map+0x1c3/0x250
-> > Feb  2 15:08:02 u1485 kernel: unmap_page_range+0x1f8/0x300
-> > Feb  2 15:08:02 u1485 kernel: unmap_single_vma+0x60/0xe0
-> > Feb  2 15:08:02 u1485 kernel: unmap_vmas+0x4b/0xa0
-> > Feb  2 15:08:02 u1485 kernel: exit_mmap+0xbb/0x140
-> > Feb  2 15:08:02 u1485 kernel: mmput+0x77/0x170
-> > Feb  2 15:08:02 u1485 kernel: ? mm_release+0x57/0x140
-> > Feb  2 15:08:02 u1485 kernel: ? down_read+0x16/0x40
-> > Feb  2 15:08:02 u1485 kernel: exit_mm+0x140/0x1d0
-> > Feb  2 15:08:02 u1485 kernel: ? down_read+0x16/0x40
-> > Feb  2 15:08:02 u1485 kernel: ? exit_signals+0x150/0x170
-> > Feb  2 15:08:02 u1485 kernel: do_exit+0x12e/0x490
-> > Feb  2 15:08:02 u1485 kernel: ? handle_mm_fault+0x87/0x190
-> > Feb  2 15:08:02 u1485 kernel: ? filp_close+0x65/0x90
-> > Feb  2 15:08:02 u1485 kernel: do_group_exit+0x4e/0xc0
-> > Feb  2 15:08:02 u1485 kernel: SyS_exit_group+0x17/0x20
-> > Feb  2 15:08:02 u1485 kernel: entry_SYSCALL_64_fastpath+0x13/0x94
-> > Feb  2 15:08:02 u1485 kernel: RIP: 0033:0x7fdfedaf2df8
-> > Feb  2 15:08:02 u1485 kernel: RSP: 002b:00007ffe94402408 EFLAGS:
-> 00000246 ORIG_RAX: 00000000000000e7
-> > Feb  2 15:08:02 u1485 kernel: RAX: ffffffffffffffda RBX: 00000000fbad2084
-> RCX: 00007fdfedaf2df8
-> > Feb  2 15:08:02 u1485 kernel: RDX: 0000000000000000 RSI:
-> 000000000000003c RDI: 0000000000000000
-> > Feb  2 15:08:02 u1485 kernel: RBP: 00007fdfeddd47a0 R08:
-> 00000000000000e7 R09: ffffffffffffffa8
-> > Feb  2 15:08:02 u1485 kernel: R10: 0000000000000004 R11:
-> 0000000000000246 R12: 0000000000000000
-> > Feb  2 15:08:02 u1485 kernel: R13: 00007ffe94402468 R14: 0000000000000001
-> R15: 00007ffe94402460
-> > Feb  2 15:08:02 u1485 kernel: swap_free: Bad swap offset entry
-> 1c995c1d195b8
-> > Feb  2 15:08:02 u1485 kernel: BUG: Bad page map in process sleep
-> pte:72657074656e0066 pmd:7be3b067
-> > Feb  2 15:08:02 u1485 kernel: addr:00007fdfedc02000 vm_flags:00000070
-> anon_vma:          (null) mapping:ffff880079436cc0 index:1bc
-> > Feb  2 15:08:02 u1485 kernel: file:libc-2.12.so fault:ext4_filemap_fault
-> [ext4] mmap:ext4_file_mmap [ext4] readpage:ext4_readpage [ext4]
-> > Feb  2 15:08:02 u1485 kernel: CPU: 5 PID: 5526 Comm: sleep Tainted: G    B
-> E   4.10.0-rc4_next-queue_regress #18
-> > Feb  2 15:08:02 u1485 kernel: Hardware name: Supermicro
-> X7DW3/X7DWN+, BIOS 1.2c 11/19/2010
-> > ...
-> > -------------------------------------------------------------------------------------------
-> -----
-> > This call trace pattern repeated 7 ot 8 times and then the system either
-> rebooted on its own or simply locked up.
-> >
-> > I am not entirely convinced it is not my hardware as I cannot reproduce the
-> issue on any other system.  This one is very low on disk space and I have
-> been meaning to rebuild it on a larger partition, preferably newer and larger
-> drive for some time.  Given it calls out a bad swap offset at the beginning of
-> the bug / call trace text I suppose I could be running into issues with an overly
-> full disk (though that seems a bit unlikely being different partitions and all.)  I
-> will go ahead and rebuild this system granting new, larger freshly formatted
-> partitions and see if the problem goes away.
-> 
-> Well one thing you might try doing is running "ethtool
-> --set-priv-flags <ethX> legacy-rx on" and seeing if you have the same
-> problem or not.  Turning on legacy Rx with this patch applied should
-> only have the effect of adding padding to the front of the frame and
-> will help to eliminate some of the code as being potentially
-> responsible for this.
+The ethtool api {get|set}_settings is deprecated.
+We move this driver to new api {get|set}_link_ksettings.
 
-Well, I had wiped the old system before I got this message, but after rebuilding I still get a dump from running the same netperf_stress test.  The trace has changed to a GPF and if I turn on legacy RX as you suggested netperf_stress continues to run fine and I do NOT get the dump.  Here is a copy of the latest dump I got when running netperf_stress (and with legacy RX off.):
----------------------------------------------------------------
-Feb  3 16:23:14 u1485 xinetd[2096]: START: netperf pid=4207 from=::ffff:190.2.4.85
-Feb  3 16:23:15 u1485 xinetd[2096]: START: netperf pid=4237 from=::ffff:190.2.4.85
-Feb  3 16:23:20 u1485 kernel: general protection fault: 0000 [#1] SMP
-Feb  3 16:23:20 u1485 kernel: Modules linked in: igb e100 ip6table_filter ip6_tables ebtable_nat ebtables nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT nf_reject_ipv4 xt_CHECKSUM iptable_mangle iptable_filter ip_tables bridge stp llc nfsd lockd grace nfs_acl auth_rpcgss sunrpc autofs4 ipv6 crc_ccitt dm_mirror dm_region_hash dm_log vhost_net macvtap macvlan vhost tun uinput iTCO_wdt iTCO_vendor_support mii sg joydev serio_raw i2c_i801 lpc_ich mfd_core dca ptp pps_core shpchp i5400_edac edac_core i5k_amb dm_mod(E) ext4(E) mbcache(E) jbd2(E) sd_mod(E) sr_mod(E) cdrom(E) pata_acpi(E) ata_generic(E) ata_piix(E) radeon(E) ttm(E) drm_kms_helper(E) drm(E) fb_sys_fops(E) sysimgblt(E) sysfillrect(E) syscopyarea(E) i2c_algo_bit(E) i2c_core(E) [last unloaded: e100]
-Feb  3 16:23:20 u1485 kernel: CPU: 7 PID: 77 Comm: kworker/7:1 Tainted: G            E   4.10.0-rc4_next_dev_8b48872+ #1
-Feb  3 16:23:20 u1485 kernel: Hardware name: Supermicro X7DW3/X7DWN+, BIOS 1.2c 11/19/2010
-Feb  3 16:23:20 u1485 kernel: Workqueue: events_long gc_worker [nf_conntrack]
-Feb  3 16:23:20 u1485 kernel: task: ffff88007c608980 task.stack: ffffc900005bc000
-Feb  3 16:23:20 u1485 kernel: RIP: 0010:gc_worker+0x94/0x1e0 [nf_conntrack]
-Feb  3 16:23:20 u1485 kernel: RSP: 0018:ffffc900005bfc20 EFLAGS: 00010246
-Feb  3 16:23:20 u1485 kernel: RAX: 72657074656e0066 RBX: ffffffffa0290aa0 RCX: 000000000001b118
-Feb  3 16:23:20 u1485 kernel: RDX: ffffc900005bfc40 RSI: 000000010003d572 RDI: ffff88006d0ad000
-Feb  3 16:23:20 u1485 kernel: RBP: ffffc900005bfca0 R08: ffffc900005bfab0 R09: ffffc900005bfa90
-Feb  3 16:23:20 u1485 kernel: R10: 0000000000000a0c R11: 0000000000000001 R12: 0000000000000eb9
-Feb  3 16:23:20 u1485 kernel: R13: 0000000000000000 R14: 0000000000000003 R15: fffffffffffffff0
-Feb  3 16:23:20 u1485 kernel: FS:  0000000000000000(0000) GS:ffff88007fdc0000(0000) knlGS:0000000000000000
-Feb  3 16:23:20 u1485 kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-Feb  3 16:23:20 u1485 kernel: CR2: 00007f6c3623d000 CR3: 0000000069ef3000 CR4: 00000000000006e0
-Feb  3 16:23:20 u1485 kernel: Call Trace:
-Feb  3 16:23:20 u1485 kernel: ? trace_event_raw_event_workqueue_execute_start+0x66/0xa0
-Feb  3 16:23:20 u1485 kernel: process_one_work+0x19e/0x500
-Feb  3 16:23:20 u1485 kernel: ? schedule+0x3a/0xa0
-Feb  3 16:23:20 u1485 kernel: worker_thread+0x186/0x530
-Feb  3 16:23:20 u1485 kernel: ? default_wake_function+0x12/0x20
-Feb  3 16:23:20 u1485 kernel: ? maybe_create_worker+0x110/0x110
-Feb  3 16:23:20 u1485 kernel: ? schedule+0x3a/0xa0
-Feb  3 16:23:20 u1485 kernel: ? maybe_create_worker+0x110/0x110
-Feb  3 16:23:20 u1485 kernel: kthread+0x103/0x140
-Feb  3 16:23:20 u1485 kernel: ? __kthread_init_worker+0x40/0x40
-Feb  3 16:23:20 u1485 kernel: ret_from_fork+0x29/0x40
-Feb  3 16:23:20 u1485 kernel: Code: 75 da 41 39 f4 0f 82 f7 00 00 00 31 c0 45 31 e4 48 8d 04 01 48 8b 00 a8 01 48 89 45 b0 74 0c eb 61 48 8b 00 a8 01 48 89 02 75 57 <0f> b6 48 37 41 83 c6 01 48 8d 34 cd 00 00 00 00 48 c1 e1 06 48
-Feb  3 16:23:20 u1485 kernel: RIP: gc_worker+0x94/0x1e0 [nf_conntrack] RSP: ffffc900005bfc20
-Feb  3 16:23:20 u1485 kernel: ---[ end trace e0cac6f2424f4578 ]---
-Feb  3 16:23:24 u1485 xinetd[2096]: EXIT: netperf status=0 pid=4207 duration=10(sec)
-Feb  3 16:23:25 u1485 xinetd[2096]: EXIT: netperf status=0 pid=4237 duration=10(sec)
----------------------------------------------------------------
-In this case the system rebooted continued to run but rebooted itself shortly afterwards.  An earlier instance it seemed to lock up.
+As I don't have the hardware, I'd be very pleased if
+someone may test this patch.
 
-> 
-> I'll look through this patch several times today and try to see if I
-> can find anything that might be causing the issue.
-> 
-> - Alex
+Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  224 ++++++++++++++----------
+ 1 files changed, 133 insertions(+), 91 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index cc1465a..011f0b8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -387,7 +387,7 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+  *
+  **/
+ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+-				      struct ethtool_cmd *ecmd,
++				      struct ethtool_link_ksettings *cmd,
+ 				      struct net_device *netdev,
+ 				      struct i40e_pf *pf)
+ {
+@@ -395,70 +395,76 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 	u32 link_speed = hw_link_info->link_speed;
+ 	u32 e_advertising = 0x0;
+ 	u32 e_supported = 0x0;
++	u32 supported, advertising;
++
++	ethtool_convert_link_mode_to_legacy_u32(&supported,
++						cmd->link_modes.supported);
++	ethtool_convert_link_mode_to_legacy_u32(&advertising,
++						cmd->link_modes.advertising);
+ 
+ 	/* Initialize supported and advertised settings based on phy settings */
+ 	switch (hw_link_info->phy_type) {
+ 	case I40E_PHY_TYPE_40GBASE_CR4:
+ 	case I40E_PHY_TYPE_40GBASE_CR4_CU:
+-		ecmd->supported = SUPPORTED_Autoneg |
++		supported = SUPPORTED_Autoneg |
+ 				  SUPPORTED_40000baseCR4_Full;
+-		ecmd->advertising = ADVERTISED_Autoneg |
++		advertising = ADVERTISED_Autoneg |
+ 				    ADVERTISED_40000baseCR4_Full;
+ 		break;
+ 	case I40E_PHY_TYPE_XLAUI:
+ 	case I40E_PHY_TYPE_XLPPI:
+ 	case I40E_PHY_TYPE_40GBASE_AOC:
+-		ecmd->supported = SUPPORTED_40000baseCR4_Full;
++		supported = SUPPORTED_40000baseCR4_Full;
+ 		break;
+ 	case I40E_PHY_TYPE_40GBASE_SR4:
+-		ecmd->supported = SUPPORTED_40000baseSR4_Full;
++		supported = SUPPORTED_40000baseSR4_Full;
+ 		break;
+ 	case I40E_PHY_TYPE_40GBASE_LR4:
+-		ecmd->supported = SUPPORTED_40000baseLR4_Full;
++		supported = SUPPORTED_40000baseLR4_Full;
+ 		break;
+ 	case I40E_PHY_TYPE_10GBASE_SR:
+ 	case I40E_PHY_TYPE_10GBASE_LR:
+ 	case I40E_PHY_TYPE_1000BASE_SX:
+ 	case I40E_PHY_TYPE_1000BASE_LX:
+-		ecmd->supported = SUPPORTED_10000baseT_Full;
++		supported = SUPPORTED_10000baseT_Full;
+ 		if (hw_link_info->module_type[2] &
+ 		    I40E_MODULE_TYPE_1000BASE_SX ||
+ 		    hw_link_info->module_type[2] &
+ 		    I40E_MODULE_TYPE_1000BASE_LX) {
+-			ecmd->supported |= SUPPORTED_1000baseT_Full;
++			supported |= SUPPORTED_1000baseT_Full;
+ 			if (hw_link_info->requested_speeds &
+ 			    I40E_LINK_SPEED_1GB)
+-				ecmd->advertising |= ADVERTISED_1000baseT_Full;
++				advertising |= ADVERTISED_1000baseT_Full;
+ 		}
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+-			ecmd->advertising |= ADVERTISED_10000baseT_Full;
++			advertising |= ADVERTISED_10000baseT_Full;
+ 		break;
+ 	case I40E_PHY_TYPE_10GBASE_T:
+ 	case I40E_PHY_TYPE_1000BASE_T:
+ 	case I40E_PHY_TYPE_100BASE_TX:
+-		ecmd->supported = SUPPORTED_Autoneg |
++		supported = SUPPORTED_Autoneg |
+ 				  SUPPORTED_10000baseT_Full |
+ 				  SUPPORTED_1000baseT_Full |
+ 				  SUPPORTED_100baseT_Full;
+-		ecmd->advertising = ADVERTISED_Autoneg;
++		advertising = ADVERTISED_Autoneg;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+-			ecmd->advertising |= ADVERTISED_10000baseT_Full;
++			advertising |= ADVERTISED_10000baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+-			ecmd->advertising |= ADVERTISED_1000baseT_Full;
++			advertising |= ADVERTISED_1000baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
+-			ecmd->advertising |= ADVERTISED_100baseT_Full;
++			advertising |= ADVERTISED_100baseT_Full;
+ 		break;
+ 	case I40E_PHY_TYPE_1000BASE_T_OPTICAL:
+-		ecmd->supported = SUPPORTED_Autoneg |
++		supported = SUPPORTED_Autoneg |
+ 				  SUPPORTED_1000baseT_Full;
+-		ecmd->advertising = ADVERTISED_Autoneg |
++		advertising = ADVERTISED_Autoneg |
+ 				    ADVERTISED_1000baseT_Full;
+ 		break;
+ 	case I40E_PHY_TYPE_10GBASE_CR1_CU:
+ 	case I40E_PHY_TYPE_10GBASE_CR1:
+-		ecmd->supported = SUPPORTED_Autoneg |
++		supported = SUPPORTED_Autoneg |
+ 				  SUPPORTED_10000baseT_Full;
+-		ecmd->advertising = ADVERTISED_Autoneg |
++		advertising = ADVERTISED_Autoneg |
+ 				    ADVERTISED_10000baseT_Full;
+ 		break;
+ 	case I40E_PHY_TYPE_XAUI:
+@@ -466,19 +472,19 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 	case I40E_PHY_TYPE_SFI:
+ 	case I40E_PHY_TYPE_10GBASE_SFPP_CU:
+ 	case I40E_PHY_TYPE_10GBASE_AOC:
+-		ecmd->supported = SUPPORTED_10000baseT_Full;
+-		ecmd->advertising = SUPPORTED_10000baseT_Full;
++		supported = SUPPORTED_10000baseT_Full;
++		advertising = SUPPORTED_10000baseT_Full;
+ 		break;
+ 	case I40E_PHY_TYPE_SGMII:
+-		ecmd->supported = SUPPORTED_Autoneg |
++		supported = SUPPORTED_Autoneg |
+ 				  SUPPORTED_1000baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+-			ecmd->advertising |= ADVERTISED_1000baseT_Full;
++			advertising |= ADVERTISED_1000baseT_Full;
+ 		if (pf->flags & I40E_FLAG_100M_SGMII_CAPABLE) {
+-			ecmd->supported |= SUPPORTED_100baseT_Full;
++			supported |= SUPPORTED_100baseT_Full;
+ 			if (hw_link_info->requested_speeds &
+ 			    I40E_LINK_SPEED_100MB)
+-				ecmd->advertising |= ADVERTISED_100baseT_Full;
++				advertising |= ADVERTISED_100baseT_Full;
+ 		}
+ 		break;
+ 	case I40E_PHY_TYPE_40GBASE_KR4:
+@@ -486,13 +492,13 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 	case I40E_PHY_TYPE_10GBASE_KR:
+ 	case I40E_PHY_TYPE_10GBASE_KX4:
+ 	case I40E_PHY_TYPE_1000BASE_KX:
+-		ecmd->supported |= SUPPORTED_40000baseKR4_Full |
++		supported |= SUPPORTED_40000baseKR4_Full |
+ 				   SUPPORTED_20000baseKR2_Full |
+ 				   SUPPORTED_10000baseKR_Full |
+ 				   SUPPORTED_10000baseKX4_Full |
+ 				   SUPPORTED_1000baseKX_Full |
+ 				   SUPPORTED_Autoneg;
+-		ecmd->advertising |= ADVERTISED_40000baseKR4_Full |
++		advertising |= ADVERTISED_40000baseKR4_Full |
+ 				     ADVERTISED_20000baseKR2_Full |
+ 				     ADVERTISED_10000baseKR_Full |
+ 				     ADVERTISED_10000baseKX4_Full |
+@@ -503,8 +509,8 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 	case I40E_PHY_TYPE_25GBASE_CR:
+ 	case I40E_PHY_TYPE_25GBASE_SR:
+ 	case I40E_PHY_TYPE_25GBASE_LR:
+-		ecmd->supported = SUPPORTED_Autoneg;
+-		ecmd->advertising = ADVERTISED_Autoneg;
++		supported = SUPPORTED_Autoneg;
++		advertising = ADVERTISED_Autoneg;
+ 		/* TODO: add speeds when ethtool is ready to support*/
+ 		break;
+ 	default:
+@@ -520,38 +526,43 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 	i40e_phy_type_to_ethtool(pf, &e_supported,
+ 				 &e_advertising);
+ 
+-	ecmd->supported = ecmd->supported & e_supported;
+-	ecmd->advertising = ecmd->advertising & e_advertising;
++	supported = supported & e_supported;
++	advertising = advertising & e_advertising;
+ 
+ 	/* Set speed and duplex */
+ 	switch (link_speed) {
+ 	case I40E_LINK_SPEED_40GB:
+-		ethtool_cmd_speed_set(ecmd, SPEED_40000);
++		cmd->base.speed = SPEED_40000;
+ 		break;
+ 	case I40E_LINK_SPEED_25GB:
+ #ifdef SPEED_25000
+-		ethtool_cmd_speed_set(ecmd, SPEED_25000);
++		cmd->base.speed = SPEED_25000;
+ #else
+ 		netdev_info(netdev,
+ 			    "Speed is 25G, display not supported by this version of ethtool.\n");
+ #endif
+ 		break;
+ 	case I40E_LINK_SPEED_20GB:
+-		ethtool_cmd_speed_set(ecmd, SPEED_20000);
++		cmd->base.speed = SPEED_20000;
+ 		break;
+ 	case I40E_LINK_SPEED_10GB:
+-		ethtool_cmd_speed_set(ecmd, SPEED_10000);
++		cmd->base.speed = SPEED_10000;
+ 		break;
+ 	case I40E_LINK_SPEED_1GB:
+-		ethtool_cmd_speed_set(ecmd, SPEED_1000);
++		cmd->base.speed = SPEED_1000;
+ 		break;
+ 	case I40E_LINK_SPEED_100MB:
+-		ethtool_cmd_speed_set(ecmd, SPEED_100);
++		cmd->base.speed = SPEED_100;
+ 		break;
+ 	default:
+ 		break;
+ 	}
+-	ecmd->duplex = DUPLEX_FULL;
++	cmd->base.duplex = DUPLEX_FULL;
++
++	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
++						supported);
++	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
++						advertising);
+ }
+ 
+ /**
+@@ -562,18 +573,24 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+  * Reports link settings that can be determined when link is down
+  **/
+ static void i40e_get_settings_link_down(struct i40e_hw *hw,
+-					struct ethtool_cmd *ecmd,
++					struct ethtool_link_ksettings *cmd,
+ 					struct i40e_pf *pf)
+ {
++	u32 supported, advertising;
++
+ 	/* link is down and the driver needs to fall back on
+ 	 * supported phy types to figure out what info to display
+ 	 */
+-	i40e_phy_type_to_ethtool(pf, &ecmd->supported,
+-				 &ecmd->advertising);
++	i40e_phy_type_to_ethtool(pf, &supported, &advertising);
++
++	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
++						supported);
++	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
++						advertising);
+ 
+ 	/* With no link speed and duplex are unknown */
+-	ethtool_cmd_speed_set(ecmd, SPEED_UNKNOWN);
+-	ecmd->duplex = DUPLEX_UNKNOWN;
++	cmd->base.speed = SPEED_UNKNOWN;
++	cmd->base.duplex = DUPLEX_UNKNOWN;
+ }
+ 
+ /**
+@@ -583,74 +600,85 @@ static void i40e_get_settings_link_down(struct i40e_hw *hw,
+  *
+  * Reports speed/duplex settings based on media_type
+  **/
+-static int i40e_get_settings(struct net_device *netdev,
+-			     struct ethtool_cmd *ecmd)
++static int i40e_get_link_ksettings(struct net_device *netdev,
++				   struct ethtool_link_ksettings *cmd)
+ {
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_pf *pf = np->vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	struct i40e_link_status *hw_link_info = &hw->phy.link_info;
+ 	bool link_up = hw_link_info->link_info & I40E_AQ_LINK_UP;
++	u32 advertising;
+ 
+ 	if (link_up)
+-		i40e_get_settings_link_up(hw, ecmd, netdev, pf);
++		i40e_get_settings_link_up(hw, cmd, netdev, pf);
+ 	else
+-		i40e_get_settings_link_down(hw, ecmd, pf);
++		i40e_get_settings_link_down(hw, cmd, pf);
+ 
+ 	/* Now set the settings that don't rely on link being up/down */
+ 	/* Set autoneg settings */
+-	ecmd->autoneg = ((hw_link_info->an_info & I40E_AQ_AN_COMPLETED) ?
++	cmd->base.autoneg = ((hw_link_info->an_info & I40E_AQ_AN_COMPLETED) ?
+ 			  AUTONEG_ENABLE : AUTONEG_DISABLE);
+ 
+ 	switch (hw->phy.media_type) {
+ 	case I40E_MEDIA_TYPE_BACKPLANE:
+-		ecmd->supported |= SUPPORTED_Autoneg |
+-				   SUPPORTED_Backplane;
+-		ecmd->advertising |= ADVERTISED_Autoneg |
+-				     ADVERTISED_Backplane;
+-		ecmd->port = PORT_NONE;
++		ethtool_link_ksettings_add_link_mode(cmd, supported,
++						     Autoneg);
++		ethtool_link_ksettings_add_link_mode(cmd, supported,
++						     Backplane);
++		ethtool_link_ksettings_add_link_mode(cmd, advertising,
++						     Autoneg);
++		ethtool_link_ksettings_add_link_mode(cmd, advertising,
++						     Backplane);
++		cmd->base.port = PORT_NONE;
+ 		break;
+ 	case I40E_MEDIA_TYPE_BASET:
+-		ecmd->supported |= SUPPORTED_TP;
+-		ecmd->advertising |= ADVERTISED_TP;
+-		ecmd->port = PORT_TP;
++		ethtool_link_ksettings_add_link_mode(cmd, supported, TP);
++		ethtool_link_ksettings_add_link_mode(cmd, advertising, TP);
++		cmd->base.port = PORT_TP;
+ 		break;
+ 	case I40E_MEDIA_TYPE_DA:
+ 	case I40E_MEDIA_TYPE_CX4:
+-		ecmd->supported |= SUPPORTED_FIBRE;
+-		ecmd->advertising |= ADVERTISED_FIBRE;
+-		ecmd->port = PORT_DA;
++		ethtool_link_ksettings_add_link_mode(cmd, supported, FIBRE);
++		ethtool_link_ksettings_add_link_mode(cmd, advertising, FIBRE);
++		cmd->base.port = PORT_DA;
+ 		break;
+ 	case I40E_MEDIA_TYPE_FIBER:
+-		ecmd->supported |= SUPPORTED_FIBRE;
+-		ecmd->port = PORT_FIBRE;
++		ethtool_link_ksettings_add_link_mode(cmd, supported, FIBRE);
++		cmd->base.port = PORT_FIBRE;
+ 		break;
+ 	case I40E_MEDIA_TYPE_UNKNOWN:
+ 	default:
+-		ecmd->port = PORT_OTHER;
++		cmd->base.port = PORT_OTHER;
+ 		break;
+ 	}
+ 
+-	/* Set transceiver */
+-	ecmd->transceiver = XCVR_EXTERNAL;
+-
+ 	/* Set flow control settings */
+-	ecmd->supported |= SUPPORTED_Pause;
++	ethtool_link_ksettings_add_link_mode(cmd, supported, Pause);
+ 
+ 	switch (hw->fc.requested_mode) {
+ 	case I40E_FC_FULL:
+-		ecmd->advertising |= ADVERTISED_Pause;
++		ethtool_link_ksettings_add_link_mode(cmd, advertising,
++						     Pause);
+ 		break;
+ 	case I40E_FC_TX_PAUSE:
+-		ecmd->advertising |= ADVERTISED_Asym_Pause;
++		ethtool_link_ksettings_add_link_mode(cmd, advertising,
++						     Asym_Pause);
+ 		break;
+ 	case I40E_FC_RX_PAUSE:
+-		ecmd->advertising |= (ADVERTISED_Pause |
+-				      ADVERTISED_Asym_Pause);
++		ethtool_link_ksettings_add_link_mode(cmd, advertising,
++						     Pause);
++		ethtool_link_ksettings_add_link_mode(cmd, advertising,
++						     Asym_Pause);
+ 		break;
+ 	default:
+-		ecmd->advertising &= ~(ADVERTISED_Pause |
+-				       ADVERTISED_Asym_Pause);
++		ethtool_convert_link_mode_to_legacy_u32(
++			&advertising, cmd->link_modes.advertising);
++
++		advertising &= ~(ADVERTISED_Pause | ADVERTISED_Asym_Pause);
++
++		ethtool_convert_legacy_u32_to_link_mode(
++			cmd->link_modes.advertising, advertising);
+ 		break;
+ 	}
+ 
+@@ -664,8 +692,8 @@ static int i40e_get_settings(struct net_device *netdev,
+  *
+  * Set speed/duplex per media_types advertised/forced
+  **/
+-static int i40e_set_settings(struct net_device *netdev,
+-			     struct ethtool_cmd *ecmd)
++static int i40e_set_link_ksettings(struct net_device *netdev,
++				   const struct ethtool_link_ksettings *cmd)
+ {
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_aq_get_phy_abilities_resp abilities;
+@@ -673,12 +701,14 @@ static int i40e_set_settings(struct net_device *netdev,
+ 	struct i40e_pf *pf = np->vsi->back;
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_hw *hw = &pf->hw;
+-	struct ethtool_cmd safe_ecmd;
++	struct ethtool_link_ksettings safe_cmd;
++	struct ethtool_link_ksettings copy_cmd;
+ 	i40e_status status = 0;
+ 	bool change = false;
+ 	int err = 0;
+-	u8 autoneg;
++	u32 autoneg;
+ 	u32 advertise;
++	u32 tmp;
+ 
+ 	/* Changing port settings is not supported if this isn't the
+ 	 * port's controlling PF
+@@ -706,23 +736,31 @@ static int i40e_set_settings(struct net_device *netdev,
+ 		return -EOPNOTSUPP;
+ 	}
+ 
++	/* copy the cmd to copy_cmd to avoid modifying the origin */
++	memcpy(&copy_cmd, cmd, sizeof(struct ethtool_link_ksettings));
++
+ 	/* get our own copy of the bits to check against */
+-	memset(&safe_ecmd, 0, sizeof(struct ethtool_cmd));
+-	i40e_get_settings(netdev, &safe_ecmd);
++	memset(&safe_cmd, 0, sizeof(struct ethtool_link_ksettings));
++	i40e_get_link_ksettings(netdev, &safe_cmd);
+ 
+-	/* save autoneg and speed out of ecmd */
+-	autoneg = ecmd->autoneg;
+-	advertise = ecmd->advertising;
++	/* save autoneg and speed out of cmd */
++	autoneg = cmd->base.autoneg;
++	ethtool_convert_link_mode_to_legacy_u32(&advertise,
++						cmd->link_modes.advertising);
+ 
+ 	/* set autoneg and speed back to what they currently are */
+-	ecmd->autoneg = safe_ecmd.autoneg;
+-	ecmd->advertising = safe_ecmd.advertising;
++	copy_cmd.base.autoneg = safe_cmd.base.autoneg;
++	ethtool_convert_link_mode_to_legacy_u32(
++		&tmp, safe_cmd.link_modes.advertising);
++	ethtool_convert_legacy_u32_to_link_mode(
++		copy_cmd.link_modes.advertising, tmp);
++
++	copy_cmd.base.cmd = safe_cmd.base.cmd;
+ 
+-	ecmd->cmd = safe_ecmd.cmd;
+-	/* If ecmd and safe_ecmd are not the same now, then they are
++	/* If copy_cmd and safe_cmd are not the same now, then they are
+ 	 * trying to set something that we do not support
+ 	 */
+-	if (memcmp(ecmd, &safe_ecmd, sizeof(struct ethtool_cmd)))
++	if (memcmp(&copy_cmd, &safe_cmd, sizeof(struct ethtool_link_ksettings)))
+ 		return -EOPNOTSUPP;
+ 
+ 	while (test_bit(__I40E_CONFIG_BUSY, &vsi->state))
+@@ -745,7 +783,8 @@ static int i40e_set_settings(struct net_device *netdev,
+ 		/* If autoneg was not already enabled */
+ 		if (!(hw->phy.link_info.an_info & I40E_AQ_AN_COMPLETED)) {
+ 			/* If autoneg is not supported, return error */
+-			if (!(safe_ecmd.supported & SUPPORTED_Autoneg)) {
++			if (!ethtool_link_ksettings_test_link_mode(
++				    &safe_cmd, supported, Autoneg)) {
+ 				netdev_info(netdev, "Autoneg not supported on this phy\n");
+ 				return -EINVAL;
+ 			}
+@@ -760,7 +799,8 @@ static int i40e_set_settings(struct net_device *netdev,
+ 			/* If autoneg is supported 10GBASE_T is the only PHY
+ 			 * that can disable it, so otherwise return error
+ 			 */
+-			if (safe_ecmd.supported & SUPPORTED_Autoneg &&
++			if (ethtool_link_ksettings_test_link_mode(
++				    &safe_cmd, supported, Autoneg) &&
+ 			    hw->phy.link_info.phy_type !=
+ 			    I40E_PHY_TYPE_10GBASE_T) {
+ 				netdev_info(netdev, "Autoneg cannot be disabled on this phy\n");
+@@ -773,7 +813,9 @@ static int i40e_set_settings(struct net_device *netdev,
+ 		}
+ 	}
+ 
+-	if (advertise & ~safe_ecmd.supported)
++	ethtool_convert_link_mode_to_legacy_u32(&tmp,
++						safe_cmd.link_modes.supported);
++	if (advertise & ~tmp)
+ 		return -EINVAL;
+ 
+ 	if (advertise & ADVERTISED_100baseT_Full)
+@@ -3141,8 +3183,6 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ }
+ 
+ static const struct ethtool_ops i40e_ethtool_ops = {
+-	.get_settings		= i40e_get_settings,
+-	.set_settings		= i40e_set_settings,
+ 	.get_drvinfo		= i40e_get_drvinfo,
+ 	.get_regs_len		= i40e_get_regs_len,
+ 	.get_regs		= i40e_get_regs,
+@@ -3179,6 +3219,8 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	.set_priv_flags		= i40e_set_priv_flags,
+ 	.get_per_queue_coalesce	= i40e_get_per_queue_coalesce,
+ 	.set_per_queue_coalesce	= i40e_set_per_queue_coalesce,
++	.get_link_ksettings	= i40e_get_link_ksettings,
++	.set_link_ksettings	= i40e_set_link_ksettings,
+ };
+ 
+ void i40e_set_ethtool_ops(struct net_device *netdev)
+-- 
+1.7.4.4
+
