@@ -1,93 +1,213 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 6 Feb 2017 05:31:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 94/94]
- drivers/net/ethernet/aquantia/atlantic/aq_nic.c:747:2: error: implicit
- declaration of function 'ethtool_convert_link_mode_to_legacy_u32'
-Message-ID: <201702060537.r6NUOEjR%fengguang.wu@intel.com>
+Date: Mon, 06 Feb 2017 06:41:56 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ e1b0e806e081ab4f04d49cea1f8a4ee179a425f8
+Message-ID: <5897aa34.xd2JzbOHc1e25KOf%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   2eb02c2cc7ffa3146fb14aefe92fad7c7f132040
-commit: 2eb02c2cc7ffa3146fb14aefe92fad7c7f132040 [94/94] ethtool: stop the line wrapping madness
-config: x86_64-randconfig-i0-201706 (attached as .config)
-compiler: gcc-4.9 (Debian 4.9.4-2) 4.9.4
-reproduce:
-        git checkout 2eb02c2cc7ffa3146fb14aefe92fad7c7f132040
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+e1b0e806e081ab4f04d49cea1f8a4ee179a425f8  ixgbe: update the rss key on h/w, when ethtool ask for it.
 
-All errors (new ones prefixed by >>):
+elapsed time: 136m
 
-   drivers/net/ethernet/aquantia/atlantic/aq_nic.c: In function 'aq_nic_get_link_ksettings':
->> drivers/net/ethernet/aquantia/atlantic/aq_nic.c:747:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
-     ethtool_convert_link_mode_to_legacy_u32(&supported,
-     ^
->> drivers/net/ethernet/aquantia/atlantic/aq_nic.c:778:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-     ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-     ^
-   cc1: some warnings being treated as errors
+configs tested: 190
 
-vim +/ethtool_convert_link_mode_to_legacy_u32 +747 drivers/net/ethernet/aquantia/atlantic/aq_nic.c
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-f8244ab5 Philippe Reynes 2017-01-30  741  
-f8244ab5 Philippe Reynes 2017-01-30  742  	cmd->base.port = PORT_TP;
-97bde5c4 David VomLehn   2017-01-23  743  	/* This driver supports only 10G capable adapters, so DUPLEX_FULL */
-f8244ab5 Philippe Reynes 2017-01-30  744  	cmd->base.duplex = DUPLEX_FULL;
-f8244ab5 Philippe Reynes 2017-01-30  745  	cmd->base.autoneg = self->aq_nic_cfg.is_autoneg;
-f8244ab5 Philippe Reynes 2017-01-30  746  
-f8244ab5 Philippe Reynes 2017-01-30 @747  	ethtool_convert_link_mode_to_legacy_u32(&supported,
-f8244ab5 Philippe Reynes 2017-01-30  748  						cmd->link_modes.supported);
-f8244ab5 Philippe Reynes 2017-01-30  749  	ethtool_convert_link_mode_to_legacy_u32(&advertising,
-f8244ab5 Philippe Reynes 2017-01-30  750  						cmd->link_modes.advertising);
-97bde5c4 David VomLehn   2017-01-23  751  
-f8244ab5 Philippe Reynes 2017-01-30  752  	supported |= (self->aq_hw_caps.link_speed_msk & AQ_NIC_RATE_10G) ?
-97bde5c4 David VomLehn   2017-01-23  753  				ADVERTISED_10000baseT_Full : 0U;
-f8244ab5 Philippe Reynes 2017-01-30  754  	supported |= (self->aq_hw_caps.link_speed_msk & AQ_NIC_RATE_1G) ?
-97bde5c4 David VomLehn   2017-01-23  755  				ADVERTISED_1000baseT_Full : 0U;
-f8244ab5 Philippe Reynes 2017-01-30  756  	supported |= (self->aq_hw_caps.link_speed_msk & AQ_NIC_RATE_100M) ?
-97bde5c4 David VomLehn   2017-01-23  757  				ADVERTISED_100baseT_Full : 0U;
-f8244ab5 Philippe Reynes 2017-01-30  758  	supported |= self->aq_hw_caps.flow_control ? SUPPORTED_Pause : 0;
-f8244ab5 Philippe Reynes 2017-01-30  759  	supported |= SUPPORTED_Autoneg;
-f8244ab5 Philippe Reynes 2017-01-30  760  	supported |= SUPPORTED_TP;
-97bde5c4 David VomLehn   2017-01-23  761  
-f8244ab5 Philippe Reynes 2017-01-30  762  	advertising = (self->aq_nic_cfg.is_autoneg) ?
-97bde5c4 David VomLehn   2017-01-23  763  							ADVERTISED_Autoneg : 0U;
-f8244ab5 Philippe Reynes 2017-01-30  764  	advertising |=
-97bde5c4 David VomLehn   2017-01-23  765  			(self->aq_nic_cfg.link_speed_msk & AQ_NIC_RATE_10G) ?
-97bde5c4 David VomLehn   2017-01-23  766  			ADVERTISED_10000baseT_Full : 0U;
-f8244ab5 Philippe Reynes 2017-01-30  767  	advertising |=
-97bde5c4 David VomLehn   2017-01-23  768  			(self->aq_nic_cfg.link_speed_msk & AQ_NIC_RATE_1G) ?
-97bde5c4 David VomLehn   2017-01-23  769  			ADVERTISED_1000baseT_Full : 0U;
-97bde5c4 David VomLehn   2017-01-23  770  
-f8244ab5 Philippe Reynes 2017-01-30  771  	advertising |=
-97bde5c4 David VomLehn   2017-01-23  772  			(self->aq_nic_cfg.link_speed_msk & AQ_NIC_RATE_100M) ?
-97bde5c4 David VomLehn   2017-01-23  773  			ADVERTISED_100baseT_Full : 0U;
-f8244ab5 Philippe Reynes 2017-01-30  774  	advertising |= (self->aq_nic_cfg.flow_control) ?
-97bde5c4 David VomLehn   2017-01-23  775  				ADVERTISED_Pause : 0U;
-f8244ab5 Philippe Reynes 2017-01-30  776  	advertising |= ADVERTISED_TP;
-f8244ab5 Philippe Reynes 2017-01-30  777  
-f8244ab5 Philippe Reynes 2017-01-30 @778  	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-f8244ab5 Philippe Reynes 2017-01-30  779  						supported);
-f8244ab5 Philippe Reynes 2017-01-30  780  	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
-f8244ab5 Philippe Reynes 2017-01-30  781  						advertising);
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                      footbridge_defconfig
+mips                         mpc30x_defconfig
+powerpc                 mpc832x_rdb_defconfig
+x86_64                 randconfig-a0-02060430
+x86_64                 randconfig-a0-02060557
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                        spear3xx_defconfig
+parisc                        c8000_defconfig
+xtensa                              defconfig
+blackfin                    PNAV-10_defconfig
+mips                         rt305x_defconfig
+powerpc                     mpc512x_defconfig
+arm                          exynos_defconfig
+blackfin                   CM-BF533_defconfig
+sh                        edosk7705_defconfig
+arm                             ezx_defconfig
+c6x                        evmc6474_defconfig
+powerpc                     tqm5200_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-02060438
+i386                   randconfig-c0-02060524
+i386                   randconfig-c0-02060608
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+x86_64                randconfig-it0-02060456
+x86_64                                  kexec
+x86_64                                   rhel
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+m68k                       m5208evb_defconfig
+microblaze                       allyesconfig
+mips                          ath25_defconfig
+mips                         tb0287_defconfig
+powerpc                     tqm8541_defconfig
+x86_64                 randconfig-x014-201706
+x86_64                 randconfig-x017-201706
+x86_64                 randconfig-x011-201706
+x86_64                 randconfig-x016-201706
+x86_64                 randconfig-x012-201706
+x86_64                 randconfig-x010-201706
+x86_64                 randconfig-x013-201706
+x86_64                 randconfig-x019-201706
+x86_64                 randconfig-x018-201706
+x86_64                 randconfig-x015-201706
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-02060138
+i386                   randconfig-s1-02060138
+x86_64                 randconfig-s0-02060513
+x86_64                 randconfig-s1-02060513
+x86_64                 randconfig-s2-02060513
+x86_64                 randconfig-s3-02060455
+x86_64                 randconfig-s4-02060455
+x86_64                 randconfig-s5-02060455
+arm                            mps2_defconfig
+microblaze                       allmodconfig
+powerpc                    amigaone_defconfig
+powerpc                         ps3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201706
+i386                   randconfig-b0-02060421
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-b0-02060319
+x86_64                           allmodconfig
+x86_64                 randconfig-u0-02060341
+mips                             allmodconfig
+powerpc                      walnut_defconfig
+x86_64                randconfig-ne0-02060519
+x86_64                randconfig-ne0-02060617
+i386                               tinyconfig
+x86_64                                    lkp
+x86_64                               rhel-7.2
+i386                   randconfig-h0-02060510
+i386                   randconfig-h1-02060510
+powerpc                      ppc40x_defconfig
+powerpc                     redwood_defconfig
+sh                 kfr2r09-romimage_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+x86_64                 randconfig-h0-02060437
+blackfin                          allnoconfig
+powerpc64                        allyesconfig
+arm                          prima2_defconfig
+sparc                            alldefconfig
+arm                          nuc950_defconfig
+tile                             alldefconfig
+x86_64                 randconfig-n0-02060605
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                randconfig-ws0-02060438
+arm                          pxa3xx_defconfig
+blackfin                   CM-BF561_defconfig
+powerpc                        icon_defconfig
+x86_64                 randconfig-x008-201706
+x86_64                 randconfig-x001-201706
+x86_64                 randconfig-x009-201706
+x86_64                 randconfig-x003-201706
+x86_64                 randconfig-x000-201706
+x86_64                 randconfig-x006-201706
+x86_64                 randconfig-x007-201706
+x86_64                 randconfig-x004-201706
+x86_64                 randconfig-x002-201706
+x86_64                 randconfig-x005-201706
+i386                   randconfig-r0-02050420
+x86_64                 randconfig-r0-02060348
+mips                  mips_paravirt_defconfig
+sh                               alldefconfig
+i386                   randconfig-x004-201706
+i386                   randconfig-x003-201706
+i386                   randconfig-x001-201706
+i386                   randconfig-x007-201706
+i386                   randconfig-x006-201706
+i386                   randconfig-x009-201706
+i386                   randconfig-x002-201706
+i386                   randconfig-x008-201706
+i386                   randconfig-x005-201706
+i386                   randconfig-x000-201706
+i386                   randconfig-x0-02060451
 
-:::::: The code at line 747 was first introduced by commit
-:::::: f8244ab55200dbe074380c3388804adff03a8a19 net: aquantia: atlantic: use new api ethtool_{get|set}_link_ksettings
-
-:::::: TO: Philippe Reynes <tremyfr@gmail.com>
-:::::: CC: David S. Miller <davem@davemloft.net>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 26847 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170206/107168b3/attachment-0001.bin>
+Thanks,
+Fengguang
