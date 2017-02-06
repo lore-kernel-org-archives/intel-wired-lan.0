@@ -1,108 +1,153 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon,  6 Feb 2017 14:38:52 -0800
-Subject: [Intel-wired-lan] [PART2 PATCH 9/9] i40e: document drivers use of
-	ntuple filters
+Date: Mon,  6 Feb 2017 14:38:44 -0800
+Subject: [Intel-wired-lan] [PART2 PATCH 1/9] i40e: correctly honor the mask
+	fields for ETHTOOL_SRXCLSRLINS
 In-Reply-To: <20170206223852.31177-1-jacob.e.keller@intel.com>
 References: <20170206223852.31177-1-jacob.e.keller@intel.com>
-Message-ID: <20170206223852.31177-10-jacob.e.keller@intel.com>
+Message-ID: <20170206223852.31177-2-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add documentation describing the drivers use of ethtool ntuple filters,
-including the limitations that it has due to hardware, as well as how it
-reads and parses the user-def data block.
+The current implementation of .set_rxnfc does not properly read the mask
+field for filter entries. This results in incorrect driver behavior, as
+we do not reject filters which have masks set to ignore some fields. The
+current implementation simply assumes that every part of the tuple or
+"input set" is specified. This results in filters not behaving as
+expected, and not working correctly.
+
+As a first step in supporting some partial filters, add code which
+checks the mask fields and rejects any filters which do not have an
+acceptable mask. For now, we just assume that all fields must be set.
+
+This will get the driver one step towards allowing some partial filters.
+At a minimum, the ethtool commands which previously installed filters
+that would not function will now return a non-zero exit code indicating
+failure instead.
+
+We should now be meeting the minimum requirements of the .set_rxnfc API,
+by ensuring that all filters we program have a valid mask value for each
+field.
+
+Finally, add code to report the mask correctly so that the ethtool
+command properly reports the mask to the user.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-Id: Ia020149e07c87aa3fcec7b2283621b887ef0546f
 ---
- Documentation/networking/i40e.txt | 72 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 72 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 83 ++++++++++++++++++++++++++
+ 1 file changed, 83 insertions(+)
 
-diff --git a/Documentation/networking/i40e.txt b/Documentation/networking/i40e.txt
-index a251bf4fe9c9..57e616ed10b0 100644
---- a/Documentation/networking/i40e.txt
-+++ b/Documentation/networking/i40e.txt
-@@ -63,6 +63,78 @@ Additional Configurations
-   The latest release of ethtool can be found from
-   https://www.kernel.org/pub/software/network/ethtool
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index f825181ec7c2..772dd234d581 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2371,6 +2371,12 @@ static int i40e_get_ethtool_fdir_entry(struct i40e_pf *pf,
+ 	fsp->h_u.tcp_ip4_spec.ip4src = rule->dst_ip;
+ 	fsp->h_u.tcp_ip4_spec.ip4dst = rule->src_ip;
  
++	/* Set the mask fields */
++	fsp->m_u.tcp_ip4_spec.psrc = htons(0xFFFF);
++	fsp->m_u.tcp_ip4_spec.pdst = htons(0xFFFF);
++	fsp->m_u.tcp_ip4_spec.ip4src = htonl(0xFFFFFFFF);
++	fsp->m_u.tcp_ip4_spec.ip4dst = htonl(0xFFFFFFFF);
 +
-+  Flow Director n-ntuple traffic filters (FDir)
-+  ---------------------------------------------
-+  The driver utilizes the ethtool interface for configuring ntuple filters,
-+  via "ethtool -N <device> <filter>".
+ 	if (rule->dest_ctl == I40E_FILTER_PROGRAM_DESC_DEST_DROP_PACKET)
+ 		fsp->ring_cookie = RX_CLS_FLOW_DISC;
+ 	else
+@@ -2679,6 +2685,79 @@ static int i40e_del_fdir_entry(struct i40e_vsi *vsi,
+ 	return ret;
+ }
+ 
++/**
++ * i40e_check_fdir_input_set - Check that a given rx_flow_spec mask is valid
++ * @fsp: pointer to Rx flow specification
++ *
++ * Ensures that a given ethtool_rx_flow_spec has a valid mask.
++ **/
++static int i40e_check_fdir_input_set(struct ethtool_rx_flow_spec *fsp)
++{
++	struct ethtool_tcpip4_spec *tcp_ip4_spec;
++	struct ethtool_usrip4_spec *usr_ip4_spec;
 +
-+  The sctp4, ip4, udp4, and tcp4 flow types are supported with the standard
-+  fields including src-ip, dst-ip, src-port and dst-port. The driver only
-+  supports fully enabling or fully masking the fields, so use of the mask
-+  fields for partial matches is not supported.
++	/* Verify the provided mask is valid. */
++	switch (fsp->flow_type & ~FLOW_EXT) {
++	case SCTP_V4_FLOW:
++	case TCP_V4_FLOW:
++	case UDP_V4_FLOW:
++		tcp_ip4_spec = &fsp->m_u.tcp_ip4_spec;
 +
-+  Additionally, the driver supports using the action to specify filters for a
-+  Virtual Function. You can specify the action as a 64bit value, where the
-+  lower 32 bits represents the queue number, while the next 8 bits represent
-+  which VF. Note that 0 is the PF, so the VF identifier is offset by 1. For
-+  example:
++		/* IPv4 source address */
++		if (!tcp_ip4_spec->ip4src || ~tcp_ip4_spec->ip4src)
++			return -EOPNOTSUPP;
 +
-+    ... action 0x800000002 ...
++		/* IPv4 destination address */
++		if (!tcp_ip4_spec->ip4dst || ~tcp_ip4_spec->ip4dst)
++			return -EOPNOTSUPP;
 +
-+  Would indicate to direct traffic for Virtual Function 7 (8 minus 1) on queue
-+  2 of that VF.
++		/* L4 source port */
++		if (!tcp_ip4_spec->psrc || ~tcp_ip4_spec->psrc)
++			return -EOPNOTSUPP;
 +
-+  The driver also supports using the user-defined field to specify 2 bytes of
-+  arbitrary data to match within the packet payload in addition to the regular
-+  fields. The data is specified in the lower 32bits of the user-def field in
-+  the following way:
++		/* L4 destination port */
++		if (!tcp_ip4_spec->pdst || ~tcp_ip4_spec->pdst)
++			return -EOPNOTSUPP;
 +
-+  +----------------------------+---------------------------+
-+  | 31    28    24    20    16 | 15    12     8     4     0|
-+  +----------------------------+---------------------------+
-+  | offset into packet payload |  2 bytes of flexible data |
-+  +----------------------------+---------------------------+
++		/* Filtering on Type of Service is not supported. */
++		if (tcp_ip4_spec->tos)
++			return -EOPNOTSUPP;
 +
-+  As an example,
++		break;
++	case IP_USER_FLOW:
++		usr_ip4_spec = &fsp->m_u.usr_ip4_spec;
 +
-+    ... user-def 0x4FFFF ....
++		/* IPv4 source address */
++		if (!usr_ip4_spec->ip4src || ~usr_ip4_spec->ip4src)
++			return -EOPNOTSUPP;
 +
-+  means to match the value 0xFFFF 4 bytes into the packet payload. Note that
-+  the offset is based on the beginning of the payload, and not the beginning
-+  of the packet. Thus
++		/* IPv4 destination address */
++		if (!usr_ip4_spec->ip4dst || ~usr_ip4_spec->ip4dst)
++			return -EOPNOTSUPP;
 +
-+    flow-type tcp4 ... user-def 0x8BEAF ....
++		/* First 4 bytes of L4 header */
++		if (!usr_ip4_spec->l4_4_bytes || ~usr_ip4_spec->l4_4_bytes)
++			return -EOPNOTSUPP;
 +
-+  would match TCP/IPv4 packets which have the value 0xBEAF 8bytes into the
-+  TCP/IPv4 payload.
++		/* Filtering on Type of Service is not supported. */
++		if (usr_ip4_spec->tos)
++			return -EOPNOTSUPP;
 +
-+  For ICMP, the hardware parses the ICMP header as 4 bytes of header and 4
-+  bytes of payload, so if you want to match an ICMP frames payload you may need
-+  to add 4 to the offset in order to match the data.
++		/* IP version does not have a mask field. */
++		if (usr_ip4_spec->ip_ver)
++			return -EINVAL;
 +
-+  Furthermore, the offset can only be up to a value of 64, as the hardware
-+  will only read up to 64 bytes of data from the payload. It must also be even
-+  as the flexible data is 2 bytes long and must be aligned to byte 0 of the
-+  packet payload.
++		/* L4 protocol doesn't have a mask field. */
++		if (usr_ip4_spec->proto)
++			return -EINVAL;
++		break;
++	default:
++		return -EOPNOTSUPP;
++	}
 +
-+  When programming filters, the hardware is limited to using a single input
-+  set for each flow type. This means that it is an error to program two
-+  different filters with the same type that don't match on the same fields.
-+  Thus the second of the following two commands will fail:
++	return 0;
++}
 +
-+    ethtool -N <device> flow-type tcp4 src-ip 192.168.0.7 action 5
-+    ethtool -N <device> flow-type tcp4 dst-ip 192.168.15.18 action 1
+ /**
+  * i40e_add_fdir_ethtool - Add/Remove Flow Director filters
+  * @vsi: pointer to the targeted VSI
+@@ -2719,6 +2798,10 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
+ 	if (fsp->flow_type & FLOW_MAC_EXT)
+ 		return -EINVAL;
+ 
++	ret = i40e_check_fdir_input_set(fsp);
++	if (ret)
++		return ret;
 +
-+  This is because the first filter will be accepted and reprogram the input
-+  set for TCPv4 filters, but the second filter will be unable to reprogram the
-+  input set until all the conflicting TCPv4 filters are first removed.
-+
-+  Note that the user-defined flexible offset is also considered part of the
-+  input set and cannot be programmed separately for multiple filters of the
-+  same type. However, the flexible data is not part of the input set and
-+  multiple filters may use the same offset but match against different data.
-+
-   Data Center Bridging (DCB)
-   --------------------------
-   DCB configuration is not currently supported.
+ 	if (fsp->location >= (pf->hw.func_caps.fd_filters_best_effort +
+ 			      pf->hw.func_caps.fd_filters_guaranteed)) {
+ 		return -EINVAL;
 -- 
 2.12.0.rc0.151.g8a5726c42288
 
