@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Sun, 05 Feb 2017 20:31:37 -0800
-Subject: [Intel-wired-lan] [next PATCH v4 10/12] igb: Add support for
-	padding packet
+Date: Sun, 05 Feb 2017 20:32:24 -0800
+Subject: [Intel-wired-lan] [next PATCH v4 12/12] igb: Re-add support for
+	build_skb in igb
 In-Reply-To: <20170206042508.14635.44702.stgit@localhost.localdomain>
 References: <20170206042508.14635.44702.stgit@localhost.localdomain>
-Message-ID: <20170206043130.14635.94467.stgit@localhost.localdomain>
+Message-ID: <20170206043210.14635.95292.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,102 +13,81 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-With the size of the frame limited we can now write to an offset within the
-buffer instead of having to write at the very start of the buffer.  The
-advantage to this is that it allows us to leave padding room for things
-like supporting XDP in the future.
+This reverts commit f9d40f6a9921 ("igb: Revert support for build_skb in
+igb") and adds a few changes to update it to work with the latest version
+of igb. We are now able to revert the removal of this due to the fact
+that with the recent changes to the page count and the use of
+DMA_ATTR_SKIP_CPU_SYNC we can make the pages writable so we should not be
+invalidating the additional data added when we call build_skb.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
-v4: Split this code out of patch 6 of the original series.
+ drivers/net/ethernet/intel/igb/igb_main.c |   47 +++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
- drivers/net/ethernet/intel/igb/igb.h      |   11 +++++++++++
- drivers/net/ethernet/intel/igb/igb_main.c |   14 ++++++++++++--
- 2 files changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index eb91c87e0c1d..dc6e2980718f 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -314,6 +314,7 @@ struct igb_q_vector {
- 
- enum e1000_ring_flags_t {
- 	IGB_RING_FLAG_RX_3K_BUFFER,
-+	IGB_RING_FLAG_RX_BUILD_SKB_ENABLED,
- 	IGB_RING_FLAG_RX_SCTP_CSUM,
- 	IGB_RING_FLAG_RX_LB_VLAN_BSWAP,
- 	IGB_RING_FLAG_TX_CTX_IDX,
-@@ -327,11 +328,21 @@ enum e1000_ring_flags_t {
- #define clear_ring_uses_large_buffer(ring) \
- 	clear_bit(IGB_RING_FLAG_RX_3K_BUFFER, &(ring)->flags)
- 
-+#define ring_uses_build_skb(ring) \
-+	test_bit(IGB_RING_FLAG_RX_BUILD_SKB_ENABLED, &(ring)->flags)
-+#define set_ring_build_skb_enabled(ring) \
-+	set_bit(IGB_RING_FLAG_RX_BUILD_SKB_ENABLED, &(ring)->flags)
-+#define clear_ring_build_skb_enabled(ring) \
-+	clear_bit(IGB_RING_FLAG_RX_BUILD_SKB_ENABLED, &(ring)->flags)
-+
- static inline unsigned int igb_rx_bufsz(struct igb_ring *ring)
- {
- #if (PAGE_SIZE < 8192)
- 	if (ring_uses_large_buffer(ring))
- 		return IGB_RXBUFFER_3072;
-+
-+	if (ring_uses_build_skb(ring))
-+		return IGB_MAX_FRAME_BUILD_SKB + IGB_TS_HDR_LEN;
- #endif
- 	return IGB_RXBUFFER_2048;
- }
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 761d8d5414c5..94fed36312ab 100644
+index adb9d708aa18..95852a64de26 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3783,11 +3783,14 @@ static void igb_set_rx_buffer_len(struct igb_adapter *adapter,
- 				  struct igb_ring *rx_ring)
- {
- 	/* set build_skb and buffer size flags */
-+	clear_ring_build_skb_enabled(rx_ring);
- 	clear_ring_uses_large_buffer(rx_ring);
- 
- 	if (adapter->flags & IGB_FLAG_RX_LEGACY)
- 		return;
- 
-+	set_ring_build_skb_enabled(rx_ring);
-+
- #if (PAGE_SIZE < 8192)
- 	if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB)
- 		return;
-@@ -6954,7 +6957,9 @@ static bool igb_add_rx_frag(struct igb_ring *rx_ring,
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
- #else
--	unsigned int truesize = SKB_DATA_ALIGN(size);
-+	unsigned int truesize = ring_uses_build_skb(rx_ring) ?
-+				SKB_DATA_ALIGN(IGB_SKB_PAD + size) :
-+				SKB_DATA_ALIGN(size);
- #endif
- 	unsigned int pull_len;
- 
-@@ -7290,6 +7295,11 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 	return total_packets;
+@@ -7020,6 +7020,51 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
+ 	return skb;
  }
  
-+static inline unsigned int igb_rx_offset(struct igb_ring *rx_ring)
++static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
++				     struct igb_rx_buffer *rx_buffer,
++				     union e1000_adv_rx_desc *rx_desc,
++				     unsigned int size)
 +{
-+	return ring_uses_build_skb(rx_ring) ? IGB_SKB_PAD : 0;
++	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
++#if (PAGE_SIZE < 8192)
++	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
++#else
++	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
++				SKB_DATA_ALIGN(IGB_SKB_PAD + size);
++#endif
++	struct sk_buff *skb;
++
++	/* prefetch first cache line of first page */
++	prefetch(va);
++#if L1_CACHE_BYTES < 128
++	prefetch(va + L1_CACHE_BYTES);
++#endif
++
++	/* build an skb to around the page buffer */
++	skb = build_skb(va - IGB_SKB_PAD, truesize);
++	if (unlikely(!skb))
++		return NULL;
++
++	/* update pointers within the skb to store the data */
++	skb_reserve(skb, IGB_SKB_PAD);
++	__skb_put(skb, size);
++
++	/* pull timestamp out of packet data */
++	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
++		igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb);
++		__skb_pull(skb, IGB_TS_HDR_LEN);
++	}
++
++	/* update buffer offset */
++#if (PAGE_SIZE < 8192)
++	rx_buffer->page_offset ^= truesize;
++#else
++	rx_buffer->page_offset += truesize;
++#endif
++
++	return skb;
 +}
 +
- static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
- 				  struct igb_rx_buffer *bi)
- {
-@@ -7325,7 +7335,7 @@ static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
- 
- 	bi->dma = dma;
- 	bi->page = page;
--	bi->page_offset = 0;
-+	bi->page_offset = igb_rx_offset(rx_ring);
- 	bi->pagecnt_bias = 1;
- 
- 	return true;
+ static inline void igb_rx_checksum(struct igb_ring *ring,
+ 				   union e1000_adv_rx_desc *rx_desc,
+ 				   struct sk_buff *skb)
+@@ -7249,6 +7294,8 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
+ 		/* retrieve a buffer from the ring */
+ 		if (skb)
+ 			igb_add_rx_frag(rx_ring, rx_buffer, skb, size);
++		else if (ring_uses_build_skb(rx_ring))
++			skb = igb_build_skb(rx_ring, rx_buffer, rx_desc, size);
+ 		else
+ 			skb = igb_construct_skb(rx_ring, rx_buffer,
+ 						rx_desc, size);
 
