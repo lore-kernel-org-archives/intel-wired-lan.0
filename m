@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Sun, 05 Feb 2017 20:29:19 -0800
-Subject: [Intel-wired-lan] [next PATCH v4 01/12] igb: Add support for
-	DMA_ATTR_WEAK_ORDERING
+Date: Sun, 05 Feb 2017 20:29:56 -0800
+Subject: [Intel-wired-lan] [next PATCH v4 03/12] igb: Clear Rx buffer_info
+ in configure instead of clean
 In-Reply-To: <20170206042508.14635.44702.stgit@localhost.localdomain>
 References: <20170206042508.14635.44702.stgit@localhost.localdomain>
-Message-ID: <20170206042909.14635.73077.stgit@localhost.localdomain>
+Message-ID: <20170206042951.14635.73598.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,59 +13,85 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Since we are already using DMA attributes in igb for Rx there is no reason
-why we can't also apply DMA_ATTR_WEAK_ORDERING which is needed on some
-platforms to improve performance.
+This change makes it so that instead of going through the entire ring on Rx
+cleanup we only go through the region that was designated to be cleaned up
+and stop when we reach the region where new allocations should start.
+
+In addition we can avoid having to perform a memset on the Rx buffer_info
+structures until we are about to start using the ring again.  By deferring
+this we can avoid dirtying the cache any more than we have to which can
+help to improve the time needed to bring the interface down and then back
+up again in a reset or suspend/resume cycle.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb.h      |    3 +++
- drivers/net/ethernet/intel/igb/igb_main.c |    6 +++---
- 2 files changed, 6 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c |   24 ++++++++++--------------
+ 1 file changed, 10 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index acbc3abe2ddd..87c9fe9d6f18 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -148,6 +148,9 @@ struct vf_data_storage {
- /* How many Rx Buffers do we bundle into one write to the hardware ? */
- #define IGB_RX_BUFFER_WRITE	16 /* Must be power of 2 */
- 
-+#define IGB_RX_DMA_ATTR \
-+	(DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_WEAK_ORDERING)
-+
- #define AUTO_ALL_MODES		0
- #define IGB_EEPROM_APME		0x0400
- 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index cb08900c9cf2..eede6db6037c 100644
+index 91a524b155ce..79a8f3a3356e 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3963,7 +3963,7 @@ static void igb_clean_rx_ring(struct igb_ring *rx_ring)
- 				     buffer_info->dma,
- 				     PAGE_SIZE,
- 				     DMA_FROM_DEVICE,
--				     DMA_ATTR_SKIP_CPU_SYNC);
-+				     IGB_RX_DMA_ATTR);
+@@ -3435,7 +3435,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+ 
+ 	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
+ 
+-	rx_ring->rx_buffer_info = vzalloc(size);
++	rx_ring->rx_buffer_info = vmalloc(size);
+ 	if (!rx_ring->rx_buffer_info)
+ 		goto err;
+ 
+@@ -3759,6 +3759,10 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 	rxdctl |= IGB_RX_HTHRESH << 8;
+ 	rxdctl |= IGB_RX_WTHRESH << 16;
+ 
++	/* initialize rx_buffer_info */
++	memset(ring->rx_buffer_info, 0,
++	       sizeof(struct igb_rx_buffer) * ring->count);
++
+ 	/* initialize Rx descriptor 0 */
+ 	rx_desc = IGB_RX_DESC(ring, 0);
+ 	rx_desc->wb.upper.length = 0;
+@@ -3937,23 +3941,16 @@ static void igb_free_all_rx_resources(struct igb_adapter *adapter)
+  **/
+ static void igb_clean_rx_ring(struct igb_ring *rx_ring)
+ {
+-	unsigned long size;
+-	u16 i;
++	u16 i = rx_ring->next_to_clean;
+ 
+ 	if (rx_ring->skb)
+ 		dev_kfree_skb(rx_ring->skb);
+ 	rx_ring->skb = NULL;
+ 
+-	if (!rx_ring->rx_buffer_info)
+-		return;
+-
+ 	/* Free all the Rx ring sk_buffs */
+-	for (i = 0; i < rx_ring->count; i++) {
++	while (i != rx_ring->next_to_alloc) {
+ 		struct igb_rx_buffer *buffer_info = &rx_ring->rx_buffer_info[i];
+ 
+-		if (!buffer_info->page)
+-			continue;
+-
+ 		/* Invalidate cache lines that may have been written to by
+ 		 * device so that we avoid corrupting memory.
+ 		 */
+@@ -3972,12 +3969,11 @@ static void igb_clean_rx_ring(struct igb_ring *rx_ring)
  		__page_frag_cache_drain(buffer_info->page,
  					buffer_info->pagecnt_bias);
  
-@@ -6992,7 +6992,7 @@ static struct sk_buff *igb_fetch_rx_buffer(struct igb_ring *rx_ring,
- 		 */
- 		dma_unmap_page_attrs(rx_ring->dev, rx_buffer->dma,
- 				     PAGE_SIZE, DMA_FROM_DEVICE,
--				     DMA_ATTR_SKIP_CPU_SYNC);
-+				     IGB_RX_DMA_ATTR);
- 		__page_frag_cache_drain(page, rx_buffer->pagecnt_bias);
+-		buffer_info->page = NULL;
++		i++;
++		if (i == rx_ring->count)
++			i = 0;
  	}
  
-@@ -7252,7 +7252,7 @@ static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
- 
- 	/* map page for use */
- 	dma = dma_map_page_attrs(rx_ring->dev, page, 0, PAGE_SIZE,
--				 DMA_FROM_DEVICE, DMA_ATTR_SKIP_CPU_SYNC);
-+				 DMA_FROM_DEVICE, IGB_RX_DMA_ATTR);
- 
- 	/* if mapping failed free memory back to system since
- 	 * there isn't much point in holding memory we can't use
+-	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
+-	memset(rx_ring->rx_buffer_info, 0, size);
+-
+ 	rx_ring->next_to_alloc = 0;
+ 	rx_ring->next_to_clean = 0;
+ 	rx_ring->next_to_use = 0;
 
