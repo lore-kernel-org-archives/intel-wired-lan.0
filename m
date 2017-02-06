@@ -1,104 +1,65 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 28 Feb 2017 21:09:35 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: fix timing for 82579 Gigabit
- Ethernet controller
-In-Reply-To: <3a432931-8b94-4808-78e0-bc459f510ab9@intel.com>
-References: <1487270527-4549-1-git-send-email-berndfaust@gmail.com>
- <923e61cf-5f95-1662-2f4c-fc146359ab48@intel.com>
- <0a95307e-6683-b9fe-1957-be2b0a3c441e@intel.com>
- <3a432931-8b94-4808-78e0-bc459f510ab9@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5857D7F361@ORSMSX115.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Sun, 05 Feb 2017 20:26:51 -0800
+Subject: [Intel-wired-lan] [next PATCH v4 00/12] igb: Add support for
+ writable pages and build_skb
+Message-ID: <20170206042508.14635.44702.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Neftin, Sasha
-> Sent: Monday, February 27, 2017 12:40 AM
-> To: Bernd Faust <berndfaust@gmail.com>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: Re: [Intel-wired-lan] [PATCH] e1000e: fix timing for 82579 Gigabit
-> Ethernet controller
-> 
-> On 2/26/2017 11:08, Neftin, Sasha wrote:
-> > On 2/19/2017 14:55, Neftin, Sasha wrote:
-> >> On 2/16/2017 20:42, Bernd Faust wrote:
-> >>> After an upgrade to Linux kernel v4.x the hardware timestamps of the
-> >>> 82579 Gigabit Ethernet Controller are different than expected.
-> >>> The values that are being read are almost four times as big as before
-> >>> the kernel upgrade.
-> >>>
-> >>> The difference is that after the upgrade the driver sets the clock
-> >>> frequency to 25MHz, where before the upgrade it was set to 96MHz. Intel
-> >>> confirmed that the correct frequency for this network adapter is 96MHz.
-> >>>
-> >>> Signed-off-by: Bernd Faust <berndfaust@gmail.com>
-> >>> ---
-> >>>   drivers/net/ethernet/intel/e1000e/netdev.c | 6 ++++++
-> >>>   1 file changed, 6 insertions(+)
-> >>>
-> >>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
-> >>> b/drivers/net/ethernet/intel/e1000e/netdev.c
-> >>> index 7017281..8b7113d 100644
-> >>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> >>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> >>> @@ -3511,6 +3511,12 @@ s32 e1000e_get_base_timinca(struct
-> >>> e1000_adapter *adapter, u32 *timinca)
-> >>>
-> >>>       switch (hw->mac.type) {
-> >>>       case e1000_pch2lan:
-> >>> +        /* Stable 96MHz frequency */
-> >>> +        incperiod = INCPERIOD_96MHz;
-> >>> +        incvalue = INCVALUE_96MHz;
-> >>> +        shift = INCVALUE_SHIFT_96MHz;
-> >>> +        adapter->cc.shift = shift + INCPERIOD_SHIFT_96MHz;
-> >>> +        break;
-> >>>       case e1000_pch_lpt:
-> >>>           if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
-> >>>               /* Stable 96MHz frequency */
-> >>> --
-> >>> 2.7.4
-> >>> _______________________________________________
-> >>> Intel-wired-lan mailing list
-> >>> Intel-wired-lan at lists.osuosl.org
-> >>> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> >>
-> >> Hello,
-> >>
-> >> e1000_pch2lan mac type corresponds to 82579LM and 82579V network
-> >> adapters. System clock frequency indication (SYSCFI) for these
-> >> devices supports both 25MHz and 96MHz frequency. By default
-> >> TSYNCRXCTL.SYSCFI is set to 1 and that means 96MHz frequency is picked.
-> >>
-> >> It is better to keep the current implementation as it covers all
-> >> options.
-> >>
-> >> Thanks,
-> >>
-> >> Sasha
-> >>
-> > Hello,
-> >
-> > During last couple of weeks I saw few  complaints from community on
-> > same timing problem with 82579. I will double check clock definition
-> > with HW architecture.
-> >
-> > Sasha
-> >
-> I've double checked - 82579 support 96MHz frequency only. So, let's
-> accept this suggestion to upstream.
-> 
-> Ack.
-> 
+This patch set enables support for using the recent changes that allow for
+unmapping pages without invalidating their contents via
+DMA_ATTR_SKIP_CPU_SYNC.  With this change DMA pages should be writable and
+as a result we should be able to make use of build_skb which can be used to
+drop the skb->head memory allocation, header parsing, and memcpy from the
+receive path which can greatly help to improve performance.
 
-This resolves also a complaint from someone on the LinuxPTP development mailing list.
+My main concern at this point is that there might be an architecture where
+I didn't get DMA_ATTR_SKIP_CPU_SYNC implemented that might still need it.
+For that reason I have also added a ethtool private flag called out as
+"legacy-rx".  If a platform encounters an issue where the Rx can possibly
+corrupt data it can be enbled by running:
+        ethtool --set-priv-flags DEVNAME legacy-rx on
 
-ACK.
+The testing matrix for all of these patches is going to be pretty
+extensive.  Basically we want to test these patches on as many platforms
+and architectures as possible with as many features being toggled as
+possible including SR-IOV and Jumbo Frames all while receiving traffic.
 
-Thanks,
-Jake
+Within the patches there is also some intialization changes.  Specifically
+I have updated the code paths to defer clearing the rings until we are
+about to initialize them and give them to hardware.  By doing this we are
+able to avoid having to dirty memory we don't need to which should help to
+improve suspend/resume times for when we start looking at possibly using
+the suspend/resume approach for migration of interface in VMs.
 
+v2: Minor fixes to address a few issues found in testing
+v3: Fix minor build issues reported by kbuild test robot
+v4: Split patch 6 up into 4 separate patches to allow for better bisection
+
+---
+
+Alexander Duyck (12):
+      igb: Add support for DMA_ATTR_WEAK_ORDERING
+      igb: Use length to determine if descriptor is done
+      igb: Clear Rx buffer_info in configure instead of clean
+      igb: Don't bother clearing Tx buffer_info in igb_clean_tx_ring
+      igb: Limit maximum frame Rx based on MTU
+      igb: Only sync size of expected frame in ethtool testing
+      igb: Use page_address offset from page instead of masking virtual address
+      igb: Add support for ethtool private flag to allow use of legacy Rx
+      igb: Add support for using order 1 pages to receive large frames
+      igb: Add support for padding packet
+      igb: Break out Rx buffer page management
+      igb: Re-add support for build_skb in igb
+
+
+ drivers/net/ethernet/intel/igb/igb.h         |   58 +++
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |   65 +++
+ drivers/net/ethernet/intel/igb/igb_main.c    |  509 ++++++++++++++++----------
+ drivers/net/ethernet/intel/igb/igb_ptp.c     |    3 
+ 4 files changed, 434 insertions(+), 201 deletions(-)
+
+--
