@@ -1,128 +1,121 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon,  6 Feb 2017 14:38:38 -0800
-Subject: [Intel-wired-lan] [PART1 PATCH 01/11] i40e: send correct port
-	number to AdminQ when enabling UDP tunnels
+Date: Mon,  6 Feb 2017 14:38:39 -0800
+Subject: [Intel-wired-lan] [PART1 PATCH 02/11] i40e: don't use arrays for
+	(src|dst)_ip
 In-Reply-To: <20170206223846.31052-1-jacob.e.keller@intel.com>
 References: <20170206223846.31052-1-jacob.e.keller@intel.com>
-Message-ID: <20170206223846.31052-2-jacob.e.keller@intel.com>
+Message-ID: <20170206223846.31052-3-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The firmware expects the port numbers for offloaded UDP tunnels in
-Little Endian format. We accidentally sent the value in Big Endian
-format which obviously will cause the wrong port number to be put into
-the UDP tunnels list. This results in VxLAN and Geneve tunnel Rx
-offloads being essentially disabled, unless the port number happens to
-be identical after byte swapping. Note that i40e_aq_add_udp_tunnel()
-will byteswap the parameter from host order into Little Endian so we
-don't need worry about passing strictly a __le16 value to the command.
+The code originally included src_ip and dst_ip with enough space to
+support ipv6 filters. However, no actual support for ipv6 filters has
+been implemented. Thus, remove the arrays and just use __be32 values.
+Should ipv6 support be added in the future, we can replace these with
+a union that has sizes for both values.
 
-This patch essentially reverts b3f5c7bc88ba ("i40e: Fix for extra byte
-swap in tunnel setup", 2016-08-24), but in a way that makes the result
-much more clear to the reader.
-
-Fixes: b3f5c7bc88ba ("i40e: Fix for extra byte swap in tunnel setup", 2016-08-24)
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Williams, Mitch A <mitch.a.williams@intel.com>
+Change-Id: I1bc04032244a80eb6ebc8a4e6c723a4a665c1dd5
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  3 ++-
- drivers/net/ethernet/intel/i40e/i40e_main.c | 17 ++++++++---------
- 2 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h         |  4 ++--
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 ++++++------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 12 ++++++------
+ 3 files changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 43c041d82fe4..8bb6c5c88fce 100644
+index 8bb6c5c88fce..e4ac2b782d80 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -248,7 +248,8 @@ struct i40e_tc_configuration {
- };
+@@ -212,8 +212,8 @@ struct i40e_fdir_filter {
+ 	u8 flow_type;
+ 	u8 ip4_proto;
+ 	/* TX packet view of src and dst */
+-	__be32 dst_ip[4];
+-	__be32 src_ip[4];
++	__be32 dst_ip;
++	__be32 src_ip;
+ 	__be16 src_port;
+ 	__be16 dst_port;
+ 	__be32 sctp_v_tag;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 4d08f1997f69..9ba3f18f2e8b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2368,8 +2368,8 @@ static int i40e_get_ethtool_fdir_entry(struct i40e_pf *pf,
+ 	 */
+ 	fsp->h_u.tcp_ip4_spec.psrc = rule->dst_port;
+ 	fsp->h_u.tcp_ip4_spec.pdst = rule->src_port;
+-	fsp->h_u.tcp_ip4_spec.ip4src = rule->dst_ip[0];
+-	fsp->h_u.tcp_ip4_spec.ip4dst = rule->src_ip[0];
++	fsp->h_u.tcp_ip4_spec.ip4src = rule->dst_ip;
++	fsp->h_u.tcp_ip4_spec.ip4dst = rule->src_ip;
  
- struct i40e_udp_port_config {
--	__be16 index;
-+	/* AdminQ command interface expects port number in Host byte order */
-+	u16 index;
- 	u8 type;
- };
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index d8a10a10da86..8414973cebef 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7494,7 +7494,7 @@ static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
+ 	if (rule->dest_ctl == I40E_FILTER_PROGRAM_DESC_DEST_DROP_PACKET)
+ 		fsp->ring_cookie = RX_CLS_FLOW_DISC;
+@@ -2592,8 +2592,8 @@ static int i40e_set_rss_hash_opt(struct i40e_pf *pf, struct ethtool_rxnfc *nfc)
+ static bool i40e_match_fdir_input_set(struct i40e_fdir_filter *rule,
+ 				      struct i40e_fdir_filter *input)
  {
- 	struct i40e_hw *hw = &pf->hw;
- 	i40e_status ret;
--	__be16 port;
-+	u16 port;
- 	int i;
+-	if ((rule->dst_ip[0] != input->dst_ip[0]) ||
+-	    (rule->src_ip[0] != input->src_ip[0]) ||
++	if ((rule->dst_ip != input->dst_ip) ||
++	    (rule->src_ip != input->src_ip) ||
+ 	    (rule->dst_port != input->dst_port) ||
+ 	    (rule->src_port != input->src_port))
+ 		return false;
+@@ -2769,8 +2769,8 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
+ 	 */
+ 	input->dst_port = fsp->h_u.tcp_ip4_spec.psrc;
+ 	input->src_port = fsp->h_u.tcp_ip4_spec.pdst;
+-	input->dst_ip[0] = fsp->h_u.tcp_ip4_spec.ip4src;
+-	input->src_ip[0] = fsp->h_u.tcp_ip4_spec.ip4dst;
++	input->dst_ip = fsp->h_u.tcp_ip4_spec.ip4src;
++	input->src_ip = fsp->h_u.tcp_ip4_spec.ip4dst;
  
- 	if (!(pf->flags & I40E_FLAG_UDP_FILTER_SYNC))
-@@ -7518,7 +7518,7 @@ static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
- 					"%s %s port %d, index %d failed, err %s aq_err %s\n",
- 					pf->udp_ports[i].type ? "vxlan" : "geneve",
- 					port ? "add" : "delete",
--					ntohs(port), i,
-+					port, i,
- 					i40e_stat_str(&pf->hw, ret),
- 					i40e_aq_str(&pf->hw,
- 						    pf->hw.aq.asq_last_status));
-@@ -9201,7 +9201,7 @@ static int i40e_set_features(struct net_device *netdev,
-  *
-  * Returns the index number or I40E_MAX_PF_UDP_OFFLOAD_PORTS if port not found
-  **/
--static u8 i40e_get_udp_port_idx(struct i40e_pf *pf, __be16 port)
-+static u8 i40e_get_udp_port_idx(struct i40e_pf *pf, u16 port)
- {
- 	u8 i;
+ 	if (ntohl(fsp->m_ext.data[1])) {
+ 		vf_id = ntohl(fsp->h_ext.data[1]);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 329c8d8e64b1..3b0c9364763e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -220,9 +220,9 @@ static int i40e_add_del_fdir_udpv4(struct i40e_vsi *vsi,
+ 	udp = (struct udphdr *)(raw_packet + IP_HEADER_OFFSET
+ 	      + sizeof(struct iphdr));
  
-@@ -9224,7 +9224,7 @@ static void i40e_udp_tunnel_add(struct net_device *netdev,
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
--	__be16 port = ti->port;
-+	u16 port = ntohs(ti->port);
- 	u8 next_idx;
- 	u8 idx;
+-	ip->daddr = fd_data->dst_ip[0];
++	ip->daddr = fd_data->dst_ip;
+ 	udp->dest = fd_data->dst_port;
+-	ip->saddr = fd_data->src_ip[0];
++	ip->saddr = fd_data->src_ip;
+ 	udp->source = fd_data->src_port;
  
-@@ -9232,8 +9232,7 @@ static void i40e_udp_tunnel_add(struct net_device *netdev,
+ 	fd_data->pctype = I40E_FILTER_PCTYPE_NONF_IPV4_UDP;
+@@ -282,9 +282,9 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
+ 	tcp = (struct tcphdr *)(raw_packet + IP_HEADER_OFFSET
+ 	      + sizeof(struct iphdr));
  
- 	/* Check if port already exists */
- 	if (idx < I40E_MAX_PF_UDP_OFFLOAD_PORTS) {
--		netdev_info(netdev, "port %d already offloaded\n",
--			    ntohs(port));
-+		netdev_info(netdev, "port %d already offloaded\n", port);
- 		return;
- 	}
+-	ip->daddr = fd_data->dst_ip[0];
++	ip->daddr = fd_data->dst_ip;
+ 	tcp->dest = fd_data->dst_port;
+-	ip->saddr = fd_data->src_ip[0];
++	ip->saddr = fd_data->src_ip;
+ 	tcp->source = fd_data->src_port;
  
-@@ -9242,7 +9241,7 @@ static void i40e_udp_tunnel_add(struct net_device *netdev,
+ 	if (add) {
+@@ -360,8 +360,8 @@ static int i40e_add_del_fdir_ipv4(struct i40e_vsi *vsi,
+ 		memcpy(raw_packet, packet, I40E_IP_DUMMY_PACKET_LEN);
+ 		ip = (struct iphdr *)(raw_packet + IP_HEADER_OFFSET);
  
- 	if (next_idx == I40E_MAX_PF_UDP_OFFLOAD_PORTS) {
- 		netdev_info(netdev, "maximum number of offloaded UDP ports reached, not adding port %d\n",
--			    ntohs(port));
-+			    port);
- 		return;
- 	}
+-		ip->saddr = fd_data->src_ip[0];
+-		ip->daddr = fd_data->dst_ip[0];
++		ip->saddr = fd_data->src_ip;
++		ip->daddr = fd_data->dst_ip;
+ 		ip->protocol = 0;
  
-@@ -9276,7 +9275,7 @@ static void i40e_udp_tunnel_del(struct net_device *netdev,
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
--	__be16 port = ti->port;
-+	u16 port = ntohs(ti->port);
- 	u8 idx;
- 
- 	idx = i40e_get_udp_port_idx(pf, port);
-@@ -9308,7 +9307,7 @@ static void i40e_udp_tunnel_del(struct net_device *netdev,
- 	return;
- not_found:
- 	netdev_warn(netdev, "UDP port %d was not found, not deleting\n",
--		    ntohs(port));
-+		    port);
- }
- 
- static int i40e_get_phys_port_id(struct net_device *netdev,
+ 		fd_data->pctype = i;
 -- 
 2.12.0.rc0.151.g8a5726c42288
 
