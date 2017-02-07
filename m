@@ -1,93 +1,44 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 06 Feb 2017 18:27:36 -0800
-Subject: [Intel-wired-lan] [next PATCH v5 12/12] igb: Re-add support for
-	build_skb in igb
-In-Reply-To: <20170207022339.9864.87863.stgit@localhost.localdomain>
-References: <20170207022339.9864.87863.stgit@localhost.localdomain>
-Message-ID: <20170207022732.9864.74558.stgit@localhost.localdomain>
+From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
+Date: Mon, 06 Feb 2017 22:30:50 -0800
+Subject: [Intel-wired-lan] [FIXUP PATCH 1/2] fixup! i40e: Introduce VF
+ Port Representator(VFPR) netdevs
+In-Reply-To: <20170206223840.30938-2-jacob.e.keller@intel.com>
+References: <20170206223840.30938-1-jacob.e.keller@intel.com>
+ <20170206223840.30938-2-jacob.e.keller@intel.com>
+Message-ID: <5899699A.70507@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This reverts commit f9d40f6a9921 ("igb: Revert support for build_skb in
-igb") and adds a few changes to update it to work with the latest version
-of igb. We are now able to revert the removal of this due to the fact
-that with the recent changes to the page count and the use of
-DMA_ATTR_SKIP_CPU_SYNC we can make the pages writable so we should not be
-invalidating the additional data added when we call build_skb.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c |   47 +++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+On 2/6/2017 2:38 PM, Jacob Keller wrote:
+> This fixes a warning in commit 6dc77d828f1a ("i40e: Introduce VF Port
+> Representator(VFPR) netdevs", 2017-01-31).
+>
+> Jeff please squash this fix into the mentioned patch, or have the
+> original author re-roll the patch.
+>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Acked-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index cadf91670061..2796e9a2361e 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -7023,6 +7023,51 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
- 	return skb;
- }
- 
-+static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
-+				     struct igb_rx_buffer *rx_buffer,
-+				     union e1000_adv_rx_desc *rx_desc,
-+				     unsigned int size)
-+{
-+	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+#if (PAGE_SIZE < 8192)
-+	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
-+#else
-+	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
-+				SKB_DATA_ALIGN(IGB_SKB_PAD + size);
-+#endif
-+	struct sk_buff *skb;
-+
-+	/* prefetch first cache line of first page */
-+	prefetch(va);
-+#if L1_CACHE_BYTES < 128
-+	prefetch(va + L1_CACHE_BYTES);
-+#endif
-+
-+	/* build an skb to around the page buffer */
-+	skb = build_skb(va - IGB_SKB_PAD, truesize);
-+	if (unlikely(!skb))
-+		return NULL;
-+
-+	/* update pointers within the skb to store the data */
-+	skb_reserve(skb, IGB_SKB_PAD);
-+	__skb_put(skb, size);
-+
-+	/* pull timestamp out of packet data */
-+	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
-+		igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb);
-+		__skb_pull(skb, IGB_TS_HDR_LEN);
-+	}
-+
-+	/* update buffer offset */
-+#if (PAGE_SIZE < 8192)
-+	rx_buffer->page_offset ^= truesize;
-+#else
-+	rx_buffer->page_offset += truesize;
-+#endif
-+
-+	return skb;
-+}
-+
- static inline void igb_rx_checksum(struct igb_ring *ring,
- 				   union e1000_adv_rx_desc *rx_desc,
- 				   struct sk_buff *skb)
-@@ -7252,6 +7297,8 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 		/* retrieve a buffer from the ring */
- 		if (skb)
- 			igb_add_rx_frag(rx_ring, rx_buffer, skb, size);
-+		else if (ring_uses_build_skb(rx_ring))
-+			skb = igb_build_skb(rx_ring, rx_buffer, rx_desc, size);
- 		else
- 			skb = igb_construct_skb(rx_ring, rx_buffer,
- 						rx_desc, size);
+> ---
+>   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index a970ba3a86b1..9efecff9c535 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -1204,7 +1204,7 @@ static const struct switchdev_ops i40e_vfpr_switchdev_ops = {
+>    *
+>    * add/delete VFs broadcast filter
+>    **/
+> -void i40e_update_vf_broadcast_filter(struct i40e_vf *vf, bool enable)
+> +static void i40e_update_vf_broadcast_filter(struct i40e_vf *vf, bool enable)
+>   {
+>   	struct i40e_pf *pf = vf->pf;
+>   	struct i40e_vsi *vsi = pf->vsi[vf->lan_vsi_idx];
 
