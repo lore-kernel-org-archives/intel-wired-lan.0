@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 06 Feb 2017 18:26:15 -0800
-Subject: [Intel-wired-lan] [next PATCH v5 05/12] igb: Limit maximum frame Rx
-	based on MTU
+Date: Mon, 06 Feb 2017 18:26:26 -0800
+Subject: [Intel-wired-lan] [next PATCH v5 06/12] igb: Only sync size of
+ expected frame in ethtool testing
 In-Reply-To: <20170207022339.9864.87863.stgit@localhost.localdomain>
 References: <20170207022339.9864.87863.stgit@localhost.localdomain>
-Message-ID: <20170207022608.9864.26216.stgit@localhost.localdomain>
+Message-ID: <20170207022620.9864.29933.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,96 +13,37 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-In order to support the use of build_skb going forward it will be necessary
-to place a maximum limit on the amount of data we can receive when jumbo
-frames is not enabled.  In order to do this I am adding a new upper limit
-for receive based on the size of a 2K buffer minus padding.
+We only need to sync the size of the frame that is read to test.  We don't
+need to sync the entire Rx buffer.  This way the testing is more consistent
+with how we handle things in the receive path.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
-v5: Fixed bug where RLPML was not set for 82575, i210, and i211 interfaces.
+v4: Split this code out of patch 6 of the original series.
 
- drivers/net/ethernet/intel/igb/igb.h      |   10 +++++++++-
- drivers/net/ethernet/intel/igb/igb_main.c |   21 +++++++++++++++++----
- 2 files changed, 26 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index a638254f4e06..a74928cc0e58 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -143,8 +143,17 @@ struct vf_data_storage {
- #define IGB_RXBUFFER_256	256
- #define IGB_RXBUFFER_2048	2048
- #define IGB_RX_HDR_LEN		IGB_RXBUFFER_256
-+#define IGB_TS_HDR_LEN		16
- #define IGB_RX_BUFSZ		IGB_RXBUFFER_2048
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 612cf13b7a3a..d5966feb7b96 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -1818,7 +1818,7 @@ static int igb_clean_test_rings(struct igb_ring *rx_ring,
+ 		/* sync Rx buffer for CPU read */
+ 		dma_sync_single_for_cpu(rx_ring->dev,
+ 					rx_buffer_info->dma,
+-					IGB_RX_BUFSZ,
++					size,
+ 					DMA_FROM_DEVICE);
  
-+#define IGB_SKB_PAD		(NET_SKB_PAD + NET_IP_ALIGN)
-+#if (PAGE_SIZE < 8192)
-+#define IGB_MAX_FRAME_BUILD_SKB \
-+	(SKB_WITH_OVERHEAD(IGB_RXBUFFER_2048) - IGB_SKB_PAD - IGB_TS_HDR_LEN)
-+#else
-+#define IGB_MAX_FRAME_BUILD_SKB (IGB_RXBUFFER_2048 - IGB_TS_HDR_LEN)
-+#endif
-+
- /* How many Rx Buffers do we bundle into one write to the hardware ? */
- #define IGB_RX_BUFFER_WRITE	16 /* Must be power of 2 */
+ 		/* verify contents of skb */
+@@ -1828,7 +1828,7 @@ static int igb_clean_test_rings(struct igb_ring *rx_ring,
+ 		/* sync Rx buffer for device write */
+ 		dma_sync_single_for_device(rx_ring->dev,
+ 					   rx_buffer_info->dma,
+-					   IGB_RX_BUFSZ,
++					   size,
+ 					   DMA_FROM_DEVICE);
  
-@@ -561,7 +570,6 @@ struct igb_adapter {
- #define IGB_DMCTLX_DCFLUSH_DIS	0x80000000  /* Disable DMA Coal Flush */
- 
- #define IGB_82576_TSYNC_SHIFT	19
--#define IGB_TS_HDR_LEN		16
- enum e1000_state_t {
- 	__IGB_TESTING,
- 	__IGB_RESETTING,
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 3f3ae098e39a..0820fded7331 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -4250,7 +4250,7 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
- 	unsigned int vfn = adapter->vfs_allocated_count;
--	u32 rctl = 0, vmolr = 0;
-+	u32 rctl = 0, vmolr = 0, rlpml = MAX_JUMBO_FRAME_SIZE;
- 	int count;
- 
- 	/* Check for Promiscuous and All Multicast modes */
-@@ -4308,6 +4308,14 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 				     E1000_RCTL_VFE);
- 	wr32(E1000_RCTL, rctl);
- 
-+#if (PAGE_SIZE < 8192)
-+	if (!adapter->vfs_allocated_count) {
-+		if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB)
-+			rlpml = IGB_MAX_FRAME_BUILD_SKB;
-+	}
-+#endif
-+	wr32(E1000_RLPML, rlpml);
-+
- 	/* In order to support SR-IOV and eventually VMDq it is necessary to set
- 	 * the VMOLR to enable the appropriate modes.  Without this workaround
- 	 * we will have issues with VLAN tag stripping not being done for frames
-@@ -4322,12 +4330,17 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	vmolr |= rd32(E1000_VMOLR(vfn)) &
- 		 ~(E1000_VMOLR_ROPE | E1000_VMOLR_MPME | E1000_VMOLR_ROMPE);
- 
--	/* enable Rx jumbo frames, no need for restriction */
-+	/* enable Rx jumbo frames, restrict as needed to support build_skb */
- 	vmolr &= ~E1000_VMOLR_RLPML_MASK;
--	vmolr |= MAX_JUMBO_FRAME_SIZE | E1000_VMOLR_LPE;
-+#if (PAGE_SIZE < 8192)
-+	if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB)
-+		vmolr |= IGB_MAX_FRAME_BUILD_SKB;
-+	else
-+#endif
-+		vmolr |= MAX_JUMBO_FRAME_SIZE;
-+	vmolr |= E1000_VMOLR_LPE;
- 
- 	wr32(E1000_VMOLR(vfn), vmolr);
--	wr32(E1000_RLPML, MAX_JUMBO_FRAME_SIZE);
- 
- 	igb_restore_vf_multicasts(adapter);
- }
+ 		/* unmap buffer on Tx side */
 
