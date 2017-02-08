@@ -1,18 +1,154 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 08 Feb 2017 02:41:25 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
- d001d76ca61d396fc395951b2180af242e6d4e9b
-Message-ID: <589a14d5.MmDDt7590PjPxdvE%fengguang.wu@intel.com>
+Date: Wed, 08 Feb 2017 13:02:03 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ 1d62113199c3131e122d289b1b71de9d4274938f
+Message-ID: <589aa64b.PHtYrx+M9ZgQz1rb%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-d001d76ca61d396fc395951b2180af242e6d4e9b  ixgbe: update the rss key on h/w, when ethtool ask for it.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+1d62113199c3131e122d289b1b71de9d4274938f  ethtool: stop the line wrapping madness
 
-TIMEOUT after 606m
+drivers/net/ethernet/aquantia/atlantic/aq_nic.c:747:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/aquantia/atlantic/aq_nic.c:778:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c:225:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c:347:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/ibm/ehea/ehea_ethtool.c:90:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/ibm/emac/core.c:2011:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/ibm/emac/core.c:2027:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/ibm/ibmveth.c:747:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/marvell/skge.c:323:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/marvell/skge.c:340:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/marvell/sky2.c:3616:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode'
+drivers/net/ethernet/marvell/sky2.c:3616:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/marvell/sky2.c:3632:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32'
+drivers/net/ethernet/marvell/sky2.c:3632:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
+
+Error ids grouped by kconfigs:
+
+recent_errors
+??? alpha-allyesconfig
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? arm64-allmodconfig
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? arm64-defconfig
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? arm-allmodconfig
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? i386-defconfig
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ia64-allmodconfig
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ia64-allyesconfig
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? powerpc-canyonlands_defconfig
+??? ??? drivers-net-ethernet-ibm-emac-core.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-ibm-emac-core.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? powerpc-defconfig
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-ibm-ehea-ehea_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-ibm-ibmveth.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? powerpc-ppc64_defconfig
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-ibm-ehea-ehea_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-ibm-ibmveth.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? tile-tilegx_defconfig
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-aquantia-atlantic-aq_nic.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-aquantia-atlantic-aq_nic.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-allyesdebian
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-lkp
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-nfsroot
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-randconfig-i0-201706
+??? ??? drivers-net-ethernet-aquantia-atlantic-aq_nic.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-aquantia-atlantic-aq_nic.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-randconfig-r0-02080532
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-rhel
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+??? x86_64-rhel-7.2
+    ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+    ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+    ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
+    ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
+
+TIMEOUT after 607m
 
 
 Sorry we cannot finish the testset for your branch within a reasonable time.
@@ -22,21 +158,12 @@ possible error reports when our build infrastructure is restored or catches up.
 There will be no more build success notification for this branch head, but you
 can expect reasonably good test coverage after waiting for 1 day.
 
-configs tested: 311
+configs tested: 156
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                  TCM-BF518_defconfig
-openrisc                            defconfig
-s390                        default_defconfig
-i386                   randconfig-a0-02050220
-x86_64                 randconfig-a0-02071858
-x86_64                 randconfig-a0-02072053
-x86_64                 randconfig-a0-02072114
-x86_64                 randconfig-a0-02072147
+m32r                              allnoconfig
+mips                             allyesconfig
+sh                           se7722_defconfig
+x86_64                 randconfig-a0-02081108
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
@@ -45,50 +172,94 @@ blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
-ia64                        generic_defconfig
-mips                      pic32mzda_defconfig
-powerpc                    socrates_defconfig
-blackfin                   CM-BF527_defconfig
-powerpc                     powernv_defconfig
-sh                           se7724_defconfig
-arm                         lpc18xx_defconfig
-arm                            pleb_defconfig
-powerpc                     akebono_defconfig
-arm                       multi_v4t_defconfig
-m32r                       m32104ut_defconfig
-powerpc                     asp8347_defconfig
+arm                    vt8500_v6_v7_defconfig
+powerpc                 mpc832x_mds_defconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
-i386                   randconfig-c0-02071840
-i386                   randconfig-c0-02072006
-i386                   randconfig-c0-02072113
-i386                   randconfig-c0-02072149
-i386                   randconfig-c0-02072208
-i386                   randconfig-c0-02072317
-i386                   randconfig-c0-02080027
-i386                   randconfig-c0-02080104
-x86_64                           allmodconfig
-x86_64                randconfig-in0-02072229
-x86_64                randconfig-it0-02072143
-alpha                            allyesconfig
-arm                           corgi_defconfig
+i386                   randconfig-c0-02081054
 powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
-i386                             allyesconfig
-x86_64                 randconfig-g0-02071439
+s390                        default_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
 mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
+blackfin                BF561-EZKIT_defconfig
+mips                        bcm47xx_defconfig
+s390                       zfcpdump_defconfig
+sparc                       sparc32_defconfig
+x86_64                 randconfig-x014-201706
+x86_64                 randconfig-x017-201706
+x86_64                 randconfig-x011-201706
+x86_64                 randconfig-x016-201706
+x86_64                 randconfig-x012-201706
+x86_64                 randconfig-x010-201706
+x86_64                 randconfig-x013-201706
+x86_64                 randconfig-x019-201706
+x86_64                 randconfig-x018-201706
+x86_64                 randconfig-x015-201706
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-s0-02081103
+x86_64                 randconfig-s1-02081103
+x86_64                 randconfig-s2-02081103
+x86_64                           allmodconfig
+mips                      bmips_stb_defconfig
+mips                      maltaaprp_defconfig
+powerpc                 canyonlands_defconfig
+powerpc                  storcenter_defconfig
+x86_64                   randconfig-i0-201706
+i386                   randconfig-b0-02080857
+arm                          nuc910_defconfig
+powerpc                     sbc8548_defconfig
+sh                           se7206_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-b0-02081114
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
 c6x                        evmc6678_defconfig
 h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
 m32r                     mappi3.smp_defconfig
 m32r                         opsput_defconfig
 m32r                           usrv_defconfig
@@ -96,231 +267,36 @@ nios2                         10m50_defconfig
 score                      spct6600_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
-arm                        mini2440_defconfig
-arm                            u300_defconfig
-powerpc                     ep8248e_defconfig
-sh                           se7343_defconfig
-arm                               allnoconfig
-avr32        atngw100mkii_evklcd101_defconfig
-mips                           ci20_defconfig
-powerpc                     redwood_defconfig
-sh                           se7619_defconfig
-arm                        spear3xx_defconfig
-arm                            xcep_defconfig
-blackfin                 BlackStamp_defconfig
-powerpc                    ge_imp3a_defconfig
-powerpc                 mpc837x_mds_defconfig
-arm                       versatile_defconfig
-blackfin                   CM-BF548_defconfig
-powerpc                 mpc837x_rdb_defconfig
-s390                                defconfig
-i386                                defconfig
-arm                           h3600_defconfig
-frv                              allyesconfig
-powerpc                    amigaone_defconfig
-powerpc                     mpc512x_defconfig
-ia64                            sim_defconfig
-powerpc                    gamecube_defconfig
-powerpc                     ksi8560_defconfig
-sparc                            allyesconfig
-ia64                          tiger_defconfig
-mips                       bmips_be_defconfig
-parisc                generic-64bit_defconfig
-powerpc                 mpc8272_ads_defconfig
-xtensa                  nommu_kc705_defconfig
-x86_64                 randconfig-x010-201706
-x86_64                 randconfig-x011-201706
-x86_64                 randconfig-x012-201706
-x86_64                 randconfig-x013-201706
-x86_64                 randconfig-x014-201706
-x86_64                 randconfig-x015-201706
-x86_64                 randconfig-x016-201706
-x86_64                 randconfig-x017-201706
-x86_64                 randconfig-x018-201706
-x86_64                 randconfig-x019-201706
-i386                             alldefconfig
-i386                              allnoconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-02060138
-i386                   randconfig-s1-02060138
-x86_64                 randconfig-s0-02071846
-x86_64                 randconfig-s1-02071846
-x86_64                 randconfig-s2-02071846
-x86_64                 randconfig-s0-02072052
-x86_64                 randconfig-s1-02072052
-x86_64                 randconfig-s2-02072052
-x86_64                 randconfig-s0-02072121
-x86_64                 randconfig-s1-02072121
-x86_64                 randconfig-s2-02072121
-x86_64                 randconfig-s0-02080059
-x86_64                 randconfig-s1-02080059
-x86_64                 randconfig-s2-02080059
-x86_64                 randconfig-s3-02071846
-x86_64                 randconfig-s4-02071846
-x86_64                 randconfig-s5-02071846
-x86_64                 randconfig-s3-02072037
-x86_64                 randconfig-s4-02072037
-x86_64                 randconfig-s5-02072037
-x86_64                 randconfig-s3-02072111
-x86_64                 randconfig-s4-02072111
-x86_64                 randconfig-s5-02072111
-x86_64                 randconfig-s3-02072143
-x86_64                 randconfig-s4-02072143
-x86_64                 randconfig-s5-02072143
-x86_64                 randconfig-s3-02080005
-x86_64                 randconfig-s4-02080005
-x86_64                 randconfig-s5-02080005
-i386                             allmodconfig
-x86_64                              defconfig
-arm                            hisi_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201706
-i386                   randconfig-b0-02071902
-i386                   randconfig-b0-02072113
-i386                   randconfig-b0-02080028
-i386                   randconfig-b0-02080058
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                  colibri_pxa270_defconfig
-powerpc                     tqm8560_defconfig
-sparc64                          allmodconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-02051302
-i386                   randconfig-i1-02051302
-x86_64                 randconfig-b0-02072109
-x86_64                 randconfig-b0-02072152
-x86_64                 randconfig-b0-02072338
-x86_64                 randconfig-b0-02080055
-arm                          nuc960_defconfig
-powerpc64                        allyesconfig
-sh                          sdk7780_defconfig
-arm                        spear6xx_defconfig
-arm                           sunxi_defconfig
-arm64                               defconfig
-arm                          pxa168_defconfig
-mips                            gpr_defconfig
-x86_64                 randconfig-u0-02071859
-x86_64                 randconfig-u0-02072033
-x86_64                 randconfig-u0-02072118
-x86_64                 randconfig-u0-02080008
-arm                        multi_v7_defconfig
-mips                        nlm_xlr_defconfig
-sh                          r7785rp_defconfig
-mips                  maltasmvp_eva_defconfig
-blackfin               BF518F-EZBRD_defconfig
-arm                         cm_x300_defconfig
-powerpc                 mpc8560_ads_defconfig
-blackfin                   CM-BF533_defconfig
-mips                          lasat_defconfig
-blackfin                      H8606_defconfig
-sh                          polaris_defconfig
-mips                     loongson1c_defconfig
-nios2                         3c120_defconfig
-openrisc                         allmodconfig
-parisc                         a500_defconfig
-c6x                        evmc6472_defconfig
-powerpc                   currituck_defconfig
-avr32                     atstk1003_defconfig
-m68k                             alldefconfig
-x86_64                randconfig-ne0-02071901
-x86_64                randconfig-ne0-02072004
-x86_64                randconfig-ne0-02072127
-x86_64                randconfig-ne0-02072159
-x86_64                randconfig-ne0-02072318
-x86_64                randconfig-ne0-02080001
-x86_64                randconfig-ne0-02080054
-x86_64                randconfig-ne0-02080145
-arm                              allyesconfig
-avr32                             allnoconfig
-blackfin                BF533-STAMP_defconfig
-arm                    vt8500_v6_v7_defconfig
-blackfin                       IP0X_defconfig
-mips                            e55_defconfig
-sh                         ecovec24_defconfig
-powerpc                     tqm8548_defconfig
-sh                        dreamcast_defconfig
-tile                                defconfig
-arm                        cerfcube_defconfig
-arm                       omap2plus_defconfig
-powerpc                     tqm8555_defconfig
-i386                 randconfig-x010-02052205
-i386                 randconfig-x011-02052205
-i386                 randconfig-x012-02052205
-i386                 randconfig-x013-02052205
-i386                 randconfig-x014-02052205
-i386                 randconfig-x015-02052205
-i386                 randconfig-x016-02052205
-i386                 randconfig-x017-02052205
-i386                 randconfig-x018-02052205
-i386                 randconfig-x019-02052205
+x86_64                 randconfig-u0-02080931
+m68k                        mvme147_defconfig
+sh                        edosk7760_defconfig
+x86_64                randconfig-ne0-02081100
+arm                          pxa3xx_defconfig
+mn10300                     asb2303_defconfig
+powerpc                          alldefconfig
 x86_64                                    lkp
 x86_64                                   rhel
 x86_64                               rhel-7.2
-i386                   randconfig-n0-02052206
-i386                   randconfig-h0-02072056
-i386                   randconfig-h1-02072056
-i386                   randconfig-h0-02072131
-i386                   randconfig-h1-02072131
-i386                   randconfig-h0-02072238
-i386                   randconfig-h1-02072238
-i386                   randconfig-h0-02080126
-i386                   randconfig-h1-02080126
-parisc                           allyesconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-02071804
-x86_64                 randconfig-h0-02072155
-x86_64                 randconfig-h0-02080020
-mips                          ath79_defconfig
-mn10300                          allmodconfig
-mips                        qi_lb60_defconfig
-arm                            mmp2_defconfig
-powerpc                          g5_defconfig
-ia64                            zx1_defconfig
-x86_64                 randconfig-n0-02071832
-x86_64                 randconfig-n0-02071942
-x86_64                 randconfig-n0-02071958
-x86_64                 randconfig-n0-02072103
-x86_64                 randconfig-n0-02072143
-x86_64                 randconfig-n0-02080029
-x86_64                 randconfig-n0-02080120
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        shmobile_defconfig
-arm64                             allnoconfig
-i386                  randconfig-sb0-02071158
-i386                  randconfig-sb0-02072215
-cris                              allnoconfig
-m32r                        oaks32r_defconfig
-sh                            migor_defconfig
-x86_64                randconfig-ws0-02071900
-x86_64                 randconfig-x000-201706
+i386                   randconfig-h0-02081040
+i386                   randconfig-h1-02081040
+i386                             allmodconfig
+x86_64                 randconfig-h0-02081101
+openrisc                    or1ksim_defconfig
+x86_64                 randconfig-n0-02081058
+x86_64                 randconfig-x008-201706
 x86_64                 randconfig-x001-201706
-x86_64                 randconfig-x002-201706
+x86_64                 randconfig-x009-201706
 x86_64                 randconfig-x003-201706
-x86_64                 randconfig-x004-201706
-x86_64                 randconfig-x005-201706
+x86_64                 randconfig-x000-201706
 x86_64                 randconfig-x006-201706
 x86_64                 randconfig-x007-201706
-x86_64                 randconfig-x008-201706
-x86_64                 randconfig-x009-201706
-i386                   randconfig-r0-02050420
-x86_64                 randconfig-r0-02072145
-mips                         bigsur_defconfig
-sh                   secureedge5410_defconfig
+x86_64                 randconfig-x004-201706
+x86_64                 randconfig-x002-201706
+x86_64                 randconfig-x005-201706
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                 randconfig-r0-02080532
 i386                   randconfig-x004-201706
 i386                   randconfig-x003-201706
 i386                   randconfig-x001-201706
@@ -331,9 +307,14 @@ i386                   randconfig-x002-201706
 i386                   randconfig-x008-201706
 i386                   randconfig-x005-201706
 i386                   randconfig-x000-201706
-i386                   randconfig-x0-02071859
-i386                   randconfig-x0-02072054
-i386                   randconfig-x0-02072220
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+i386                   randconfig-x0-02081100
 
 Thanks,
 Fengguang
