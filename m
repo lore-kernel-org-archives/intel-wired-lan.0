@@ -1,152 +1,63 @@
 From: Saber Rezvani <irsaber@gmail.com>
-Date: Fri, 10 Feb 2017 01:36:40 +0330
-Subject: [Intel-wired-lan] [PATCH 1/1] net: ethernet: intel: e1000: add
-	space after close brace
-Message-ID: <1486678000-11468-1-git-send-email-irsaber@gmail.com>
+Date: Fri, 10 Feb 2017 02:07:11 +0330
+Subject: [Intel-wired-lan] [PATCH 1/1] net: ethernet: intel: e1000: msleep()
+	is unreliable for anything <20ms
+Message-ID: <1486679831-5745-1-git-send-email-irsaber@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fixes checkpatch.pl error:
-ERROR: space required after that close brace '}'
+Fix the checkpatch.pl issue:
+WARNING: msleep < 20ms can sleep for up to 20ms; see
+Documentation/timers/timers-howto.txt
 
 Signed-off-by: Saber Rezvani <irsaber@gmail.com>
 ---
- drivers/net/ethernet/intel/e1000/e1000_param.c | 28 +++++++++++++-------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_param.c b/drivers/net/ethernet/intel/e1000/e1000_param.c
-index c9cde35..4a8a38a 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_param.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_param.c
-@@ -291,7 +291,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.arg  = { .r = {
- 				.min = E1000_MIN_TXD,
- 				.max = mac_type < e1000_82544 ? E1000_MAX_TXD : E1000_MAX_82544_TXD
--				}}
-+				} }
- 		};
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 93fc6c6..5403fa2 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -489,7 +489,7 @@ static void e1000_power_down_phy(struct e1000_adapter *adapter)
+ 		e1000_read_phy_reg(hw, PHY_CTRL, &mii_reg);
+ 		mii_reg |= MII_CR_POWER_DOWN;
+ 		e1000_write_phy_reg(hw, PHY_CTRL, mii_reg);
+-		msleep(1);
++		usleep_range(1000, 5000);
+ 	}
+ out:
+ 	return;
+@@ -536,7 +536,7 @@ void e1000_down(struct e1000_adapter *adapter)
+ 	ew32(TCTL, tctl);
+ 	/* flush both disables and wait for them to finish */
+ 	E1000_WRITE_FLUSH();
+-	msleep(10);
++	usleep_range(1000, 5000);
  
- 		if (num_TxDescriptors > bd) {
-@@ -320,7 +320,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 				.min = E1000_MIN_RXD,
- 				.max = mac_type < e1000_82544 ? E1000_MAX_RXD :
- 				       E1000_MAX_82544_RXD
--			}}
-+			} }
- 		};
+ 	napi_disable(&adapter->napi);
  
- 		if (num_RxDescriptors > bd) {
-@@ -366,7 +366,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "reading default settings from EEPROM",
- 			.def  = E1000_FC_DEFAULT,
- 			.arg  = { .l = { .nr = ARRAY_SIZE(fc_list),
--					 .p = fc_list }}
-+					 .p = fc_list } }
- 		};
+@@ -560,7 +560,7 @@ void e1000_reinit_locked(struct e1000_adapter *adapter)
+ {
+ 	WARN_ON(in_interrupt());
+ 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
+-		msleep(1);
++		usleep_range(1000, 5000);
+ 	e1000_down(adapter);
+ 	e1000_up(adapter);
+ 	clear_bit(__E1000_RESETTING, &adapter->flags);
+@@ -3569,7 +3569,7 @@ static int e1000_change_mtu(struct net_device *netdev, int new_mtu)
+ 	}
  
- 		if (num_FlowControl > bd) {
-@@ -384,7 +384,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_TIDV),
- 			.def  = DEFAULT_TIDV,
- 			.arg  = { .r = { .min = MIN_TXDELAY,
--					 .max = MAX_TXDELAY }}
-+					 .max = MAX_TXDELAY } }
- 		};
- 
- 		if (num_TxIntDelay > bd) {
-@@ -402,7 +402,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_TADV),
- 			.def  = DEFAULT_TADV,
- 			.arg  = { .r = { .min = MIN_TXABSDELAY,
--					 .max = MAX_TXABSDELAY }}
-+					 .max = MAX_TXABSDELAY } }
- 		};
- 
- 		if (num_TxAbsIntDelay > bd) {
-@@ -420,7 +420,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_RDTR),
- 			.def  = DEFAULT_RDTR,
- 			.arg  = { .r = { .min = MIN_RXDELAY,
--					 .max = MAX_RXDELAY }}
-+					 .max = MAX_RXDELAY } }
- 		};
- 
- 		if (num_RxIntDelay > bd) {
-@@ -438,7 +438,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_RADV),
- 			.def  = DEFAULT_RADV,
- 			.arg  = { .r = { .min = MIN_RXABSDELAY,
--					 .max = MAX_RXABSDELAY }}
-+					 .max = MAX_RXABSDELAY } }
- 		};
- 
- 		if (num_RxAbsIntDelay > bd) {
-@@ -456,7 +456,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_ITR),
- 			.def  = DEFAULT_ITR,
- 			.arg  = { .r = { .min = MIN_ITR,
--					 .max = MAX_ITR }}
-+					 .max = MAX_ITR } }
- 		};
- 
- 		if (num_InterruptThrottleRate > bd) {
-@@ -570,7 +570,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 			{          0, "" },
- 			{   SPEED_10, "" },
- 			{  SPEED_100, "" },
--			{ SPEED_1000, "" }};
-+			{ SPEED_1000, "" } };
- 
- 		opt = (struct e1000_option) {
- 			.type = list_option,
-@@ -578,7 +578,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 			.err  = "parameter ignored",
- 			.def  = 0,
- 			.arg  = { .l = { .nr = ARRAY_SIZE(speed_list),
--					 .p = speed_list }}
-+					 .p = speed_list } }
- 		};
- 
- 		if (num_Speed > bd) {
-@@ -592,7 +592,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 		static const struct e1000_opt_list dplx_list[] = {
- 			{           0, "" },
- 			{ HALF_DUPLEX, "" },
--			{ FULL_DUPLEX, "" }};
-+			{ FULL_DUPLEX, "" } };
- 
- 		opt = (struct e1000_option) {
- 			.type = list_option,
-@@ -600,7 +600,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 			.err  = "parameter ignored",
- 			.def  = 0,
- 			.arg  = { .l = { .nr = ARRAY_SIZE(dplx_list),
--					 .p = dplx_list }}
-+					 .p = dplx_list } }
- 		};
- 
- 		if (num_Duplex > bd) {
-@@ -648,7 +648,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 			 { 0x2c, AA "1000/FD, 100/FD, 100/HD" },
- 			 { 0x2d, AA "1000/FD, 100/FD, 100/HD, 10/HD" },
- 			 { 0x2e, AA "1000/FD, 100/FD, 100/HD, 10/FD" },
--			 { 0x2f, AA "1000/FD, 100/FD, 100/HD, 10/FD, 10/HD" }};
-+			 { 0x2f, AA "1000/FD, 100/FD, 100/HD, 10/FD, 10/HD" } };
- 
- 		opt = (struct e1000_option) {
- 			.type = list_option,
-@@ -656,7 +656,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 			.err  = "parameter ignored",
- 			.def  = AUTONEG_ADV_DEFAULT,
- 			.arg  = { .l = { .nr = ARRAY_SIZE(an_list),
--					 .p = an_list }}
-+					 .p = an_list } }
- 		};
- 
- 		if (num_AutoNeg > bd) {
+ 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
+-		msleep(1);
++		usleep_range(1000, 5000);
+ 	/* e1000_down has a dependency on max_frame_size */
+ 	hw->max_frame_size = max_frame;
+ 	if (netif_running(netdev)) {
 -- 
 2.7.4
 
