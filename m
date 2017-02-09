@@ -1,466 +1,153 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 10 Feb 2017 04:53:20 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- afa5e6b0818b54d7391a5b182ee8b3005fc03d1e
-Message-ID: <589cd6c0.p64n175BiHitpVza%fengguang.wu@intel.com>
+From: Saber Rezvani <irsaber@gmail.com>
+Date: Fri, 10 Feb 2017 01:36:40 +0330
+Subject: [Intel-wired-lan] [PATCH 1/1] net: ethernet: intel: e1000: add
+	space after close brace
+Message-ID: <1486678000-11468-1-git-send-email-irsaber@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-afa5e6b0818b54d7391a5b182ee8b3005fc03d1e  ixgbe: Limit use of 2K buffers on architectures with 256B or larger cache lines
+Fixes checkpatch.pl error:
+ERROR: space required after that close brace '}'
 
-drivers/net/ethernet/aquantia/atlantic/aq_nic.c:747:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/aquantia/atlantic/aq_nic.c:778:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c:225:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c:347:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/ibm/ehea/ehea_ethtool.c:90:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/ibm/ibmveth.c:747:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/e1000/e1000_ethtool.c:176:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode'
-drivers/net/ethernet/intel/e1000/e1000_ethtool.c:176:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/e1000/e1000_ethtool.c:191:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32'
-drivers/net/ethernet/intel/e1000/e1000_ethtool.c:191:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/e1000e/ethtool.c:205:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode'
-drivers/net/ethernet/intel/e1000e/ethtool.c:205:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/e1000e/ethtool.c:276:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32'
-drivers/net/ethernet/intel/e1000e/ethtool.c:276:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/marvell/skge.c:323:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/marvell/skge.c:340:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/marvell/sky2.c:3616:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode'
-drivers/net/ethernet/marvell/sky2.c:3616:2: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/marvell/sky2.c:3632:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32'
-drivers/net/ethernet/marvell/sky2.c:3632:2: error: implicit declaration of function 'ethtool_convert_link_mode_to_legacy_u32' [-Werror=implicit-function-declaration]
+Signed-off-by: Saber Rezvani <irsaber@gmail.com>
+---
+ drivers/net/ethernet/intel/e1000/e1000_param.c | 28 +++++++++++++-------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
-Error ids grouped by kconfigs:
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_param.c b/drivers/net/ethernet/intel/e1000/e1000_param.c
+index c9cde35..4a8a38a 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_param.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_param.c
+@@ -291,7 +291,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 			.arg  = { .r = {
+ 				.min = E1000_MIN_TXD,
+ 				.max = mac_type < e1000_82544 ? E1000_MAX_TXD : E1000_MAX_82544_TXD
+-				}}
++				} }
+ 		};
+ 
+ 		if (num_TxDescriptors > bd) {
+@@ -320,7 +320,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 				.min = E1000_MIN_RXD,
+ 				.max = mac_type < e1000_82544 ? E1000_MAX_RXD :
+ 				       E1000_MAX_82544_RXD
+-			}}
++			} }
+ 		};
+ 
+ 		if (num_RxDescriptors > bd) {
+@@ -366,7 +366,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 			.err  = "reading default settings from EEPROM",
+ 			.def  = E1000_FC_DEFAULT,
+ 			.arg  = { .l = { .nr = ARRAY_SIZE(fc_list),
+-					 .p = fc_list }}
++					 .p = fc_list } }
+ 		};
+ 
+ 		if (num_FlowControl > bd) {
+@@ -384,7 +384,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 			.err  = "using default of " __MODULE_STRING(DEFAULT_TIDV),
+ 			.def  = DEFAULT_TIDV,
+ 			.arg  = { .r = { .min = MIN_TXDELAY,
+-					 .max = MAX_TXDELAY }}
++					 .max = MAX_TXDELAY } }
+ 		};
+ 
+ 		if (num_TxIntDelay > bd) {
+@@ -402,7 +402,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 			.err  = "using default of " __MODULE_STRING(DEFAULT_TADV),
+ 			.def  = DEFAULT_TADV,
+ 			.arg  = { .r = { .min = MIN_TXABSDELAY,
+-					 .max = MAX_TXABSDELAY }}
++					 .max = MAX_TXABSDELAY } }
+ 		};
+ 
+ 		if (num_TxAbsIntDelay > bd) {
+@@ -420,7 +420,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 			.err  = "using default of " __MODULE_STRING(DEFAULT_RDTR),
+ 			.def  = DEFAULT_RDTR,
+ 			.arg  = { .r = { .min = MIN_RXDELAY,
+-					 .max = MAX_RXDELAY }}
++					 .max = MAX_RXDELAY } }
+ 		};
+ 
+ 		if (num_RxIntDelay > bd) {
+@@ -438,7 +438,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 			.err  = "using default of " __MODULE_STRING(DEFAULT_RADV),
+ 			.def  = DEFAULT_RADV,
+ 			.arg  = { .r = { .min = MIN_RXABSDELAY,
+-					 .max = MAX_RXABSDELAY }}
++					 .max = MAX_RXABSDELAY } }
+ 		};
+ 
+ 		if (num_RxAbsIntDelay > bd) {
+@@ -456,7 +456,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 			.err  = "using default of " __MODULE_STRING(DEFAULT_ITR),
+ 			.def  = DEFAULT_ITR,
+ 			.arg  = { .r = { .min = MIN_ITR,
+-					 .max = MAX_ITR }}
++					 .max = MAX_ITR } }
+ 		};
+ 
+ 		if (num_InterruptThrottleRate > bd) {
+@@ -570,7 +570,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
+ 			{          0, "" },
+ 			{   SPEED_10, "" },
+ 			{  SPEED_100, "" },
+-			{ SPEED_1000, "" }};
++			{ SPEED_1000, "" } };
+ 
+ 		opt = (struct e1000_option) {
+ 			.type = list_option,
+@@ -578,7 +578,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
+ 			.err  = "parameter ignored",
+ 			.def  = 0,
+ 			.arg  = { .l = { .nr = ARRAY_SIZE(speed_list),
+-					 .p = speed_list }}
++					 .p = speed_list } }
+ 		};
+ 
+ 		if (num_Speed > bd) {
+@@ -592,7 +592,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
+ 		static const struct e1000_opt_list dplx_list[] = {
+ 			{           0, "" },
+ 			{ HALF_DUPLEX, "" },
+-			{ FULL_DUPLEX, "" }};
++			{ FULL_DUPLEX, "" } };
+ 
+ 		opt = (struct e1000_option) {
+ 			.type = list_option,
+@@ -600,7 +600,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
+ 			.err  = "parameter ignored",
+ 			.def  = 0,
+ 			.arg  = { .l = { .nr = ARRAY_SIZE(dplx_list),
+-					 .p = dplx_list }}
++					 .p = dplx_list } }
+ 		};
+ 
+ 		if (num_Duplex > bd) {
+@@ -648,7 +648,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
+ 			 { 0x2c, AA "1000/FD, 100/FD, 100/HD" },
+ 			 { 0x2d, AA "1000/FD, 100/FD, 100/HD, 10/HD" },
+ 			 { 0x2e, AA "1000/FD, 100/FD, 100/HD, 10/FD" },
+-			 { 0x2f, AA "1000/FD, 100/FD, 100/HD, 10/FD, 10/HD" }};
++			 { 0x2f, AA "1000/FD, 100/FD, 100/HD, 10/FD, 10/HD" } };
+ 
+ 		opt = (struct e1000_option) {
+ 			.type = list_option,
+@@ -656,7 +656,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
+ 			.err  = "parameter ignored",
+ 			.def  = AUTONEG_ADV_DEFAULT,
+ 			.arg  = { .l = { .nr = ARRAY_SIZE(an_list),
+-					 .p = an_list }}
++					 .p = an_list } }
+ 		};
+ 
+ 		if (num_AutoNeg > bd) {
+-- 
+2.7.4
 
-recent_errors
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? arm64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? arm-multi_v7_defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? i386-defconfig
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? i386-randconfig-x000-201706
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? i386-randconfig-x004-201706
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? i386-randconfig-x006-201706
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? i386-randconfig-x009-201706
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ia64-allmodconfig
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ia64-allyesconfig
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ia64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? parisc-c3000_defconfig
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? powerpc-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-ibm-ehea-ehea_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-ibm-ibmveth.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-ibm-ehea-ehea_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-ibm-ibmveth.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? s390-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? sparc64-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? sparc64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? sparc-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? tile-tilegx_defconfig
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-acpi-redef
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-aquantia-atlantic-aq_nic.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-aquantia-atlantic-aq_nic.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-allyesdebian
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-kexec
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-kexec+CONFIG_DEBUG_INFO_REDUCED
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-nfsroot
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-randconfig-i0-201706
-??? ??? drivers-net-ethernet-aquantia-atlantic-aq_nic.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-aquantia-atlantic-aq_nic.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? x86_64-rhel
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-skge.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-??? ??? drivers-net-ethernet-marvell-sky2.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-??? xtensa-allyesconfig
-    ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-    ??? drivers-net-ethernet-intel-e1000-e1000_ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-    ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_legacy_u32_to_link_mode
-    ??? drivers-net-ethernet-intel-e1000e-ethtool.c:error:implicit-declaration-of-function-ethtool_convert_link_mode_to_legacy_u32
-
-TIMEOUT after 607m
-
-
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
-
-configs timed out: 69
-
-alpha                            allmodconfig
-alpha                            allyesconfig
-blackfin                         allmodconfig
-blackfin                         allyesconfig
-cris                             allmodconfig
-cris                             allyesconfig
-customconfig                                0
-customconfig                                1
-customconfig                                2
-customconfig                                3
-customconfig                                4
-customconfig                                5
-customconfig                                6
-customconfig                                7
-customconfig                                8
-customconfig                                9
-i386                            randconfig-a0
-i386                            randconfig-i0
-i386                            randconfig-i1
-i386                            randconfig-n0
-i386                            randconfig-r0
-i386                            randconfig-s0
-i386                            randconfig-s1
-i386                          randconfig-x010
-i386                          randconfig-x011
-i386                          randconfig-x012
-i386                          randconfig-x013
-i386                          randconfig-x014
-i386                          randconfig-x015
-i386                          randconfig-x016
-i386                          randconfig-x017
-i386                          randconfig-x018
-i386                          randconfig-x019
-i386                          randconfig-x070
-i386                          randconfig-x071
-i386                          randconfig-x072
-i386                          randconfig-x073
-i386                          randconfig-x074
-i386                          randconfig-x075
-i386                          randconfig-x076
-i386                          randconfig-x077
-i386                          randconfig-x078
-i386                          randconfig-x079
-i386                               tinyconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-s390                             allmodconfig
-s390                             allyesconfig
-sh                               allmodconfig
-sh                               allyesconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-tile                             allmodconfig
-tile                             allyesconfig
-x86_64                           allyesconfig
-x86_64                            eywa-module
-x86_64                                    lkp
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-
-configs tested: 106
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                                  kexec
-x86_64        kexec+CONFIG_DEBUG_INFO_REDUCED
-x86_64                                   rhel
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-x014-201706
-x86_64                 randconfig-x017-201706
-x86_64                 randconfig-x011-201706
-x86_64                 randconfig-x016-201706
-x86_64                 randconfig-x012-201706
-x86_64                 randconfig-x010-201706
-x86_64                 randconfig-x013-201706
-x86_64                 randconfig-x019-201706
-x86_64                 randconfig-x018-201706
-x86_64                 randconfig-x015-201706
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-x86_64                           allmodconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201706
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-score                      spct6600_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                             allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x008-201706
-x86_64                 randconfig-x001-201706
-x86_64                 randconfig-x009-201706
-x86_64                 randconfig-x003-201706
-x86_64                 randconfig-x000-201706
-x86_64                 randconfig-x006-201706
-x86_64                 randconfig-x007-201706
-x86_64                 randconfig-x004-201706
-x86_64                 randconfig-x002-201706
-x86_64                 randconfig-x005-201706
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-x004-201706
-i386                   randconfig-x003-201706
-i386                   randconfig-x001-201706
-i386                   randconfig-x007-201706
-i386                   randconfig-x006-201706
-i386                   randconfig-x009-201706
-i386                   randconfig-x002-201706
-i386                   randconfig-x008-201706
-i386                   randconfig-x005-201706
-i386                   randconfig-x000-201706
-
-Thanks,
-Fengguang
 
