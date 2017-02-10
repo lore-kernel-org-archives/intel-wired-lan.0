@@ -1,43 +1,100 @@
-From: Yanjun Zhu <yanjun.zhu@oracle.com>
-Date: Fri, 10 Feb 2017 10:43:59 +0800
-Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: add the external ixgbe
- fiber transceiver status
-In-Reply-To: <87618083B2453E4A8714035B62D679925074E73F@FMSMSX105.amr.corp.intel.com>
-References: <1486609408-6770-1-git-send-email-yanjun.zhu@oracle.com>
- <87618083B2453E4A8714035B62D679925074E73F@FMSMSX105.amr.corp.intel.com>
-Message-ID: <589D28EF.1050602@oracle.com>
+From: Saber Rezvani <irsaber@gmail.com>
+Date: Fri, 10 Feb 2017 12:12:53 +0330
+Subject: [Intel-wired-lan] [PATCH 1/1] net: ethernet: intel: e1000: msleep()
+	is unreliable for anything <20ms
+Message-ID: <1486716173-10891-1-git-send-email-irsaber@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Fix the checkpatch.pl issue:
+WARNING: msleep < 20ms can sleep for up to 20ms; see
+Documentation/timers/timers-howto.txt
 
+Signed-off-by: Saber Rezvani <irsaber@gmail.com>
+---
+ drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-On 2017/2/10 3:08, Tantilov, Emil S wrote:
->> -----Original Message-----
->> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org] On
->> Behalf Of Zhu Yanjun
->> Sent: Wednesday, February 08, 2017 7:03 PM
->> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; broonie at kernel.org;
->> davem at davemloft.net; intel-wired-lan at lists.osuosl.org;
->> netdev at vger.kernel.org
->> Subject: [PATCH 1/1] ixgbe: add the external ixgbe fiber transceiver status
->>
->> When the ixgbe fiber transceiver is external, it is necessary to get
->> the present/absent status of this external ixgbe fiber transceiver.
-> The transceiver field was deprecated in the old ethtool API and is being
-> removed in the new. This patch will not apply at all once those changes are made:
->
-> http://patchwork.ozlabs.org/patch/725081/
-Thanks for your kind reply. I will change this patch based on the above 
-changes.
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+index 975eeb8..fa47eab 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+@@ -207,7 +207,7 @@ static int e1000_set_settings(struct net_device *netdev,
+ 	}
+ 
+ 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
+-		msleep(1);
++		usleep_range(1000, 5000);
+ 
+ 	if (ecmd->autoneg == AUTONEG_ENABLE) {
+ 		hw->autoneg = 1;
+@@ -294,7 +294,7 @@ static int e1000_set_pauseparam(struct net_device *netdev,
+ 	adapter->fc_autoneg = pause->autoneg;
+ 
+ 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
+-		msleep(1);
++		usleep_range(1000, 5000);
+ 
+ 	if (pause->rx_pause && pause->tx_pause)
+ 		hw->fc = E1000_FC_FULL;
+@@ -592,7 +592,7 @@ static int e1000_set_ringparam(struct net_device *netdev,
+ 		return -EINVAL;
+ 
+ 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
+-		msleep(1);
++		usleep_range(1000, 5000);
+ 
+ 	if (netif_running(adapter->netdev))
+ 		e1000_down(adapter);
+@@ -869,7 +869,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
+ 	/* Disable all the interrupts */
+ 	ew32(IMC, 0xFFFFFFFF);
+ 	E1000_WRITE_FLUSH();
+-	msleep(10);
++	usleep_range(10000, 11000);
+ 
+ 	/* Test each interrupt */
+ 	for (; i < 10; i++) {
+@@ -887,7 +887,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
+ 			ew32(IMC, mask);
+ 			ew32(ICS, mask);
+ 			E1000_WRITE_FLUSH();
+-			msleep(10);
++			usleep_range(10000, 11000);
+ 
+ 			if (adapter->test_icr & mask) {
+ 				*data = 3;
+@@ -905,7 +905,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
+ 		ew32(IMS, mask);
+ 		ew32(ICS, mask);
+ 		E1000_WRITE_FLUSH();
+-		msleep(10);
++		usleep_range(10000, 11000);
+ 
+ 		if (!(adapter->test_icr & mask)) {
+ 			*data = 4;
+@@ -923,7 +923,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
+ 			ew32(IMC, ~mask & 0x00007FFF);
+ 			ew32(ICS, ~mask & 0x00007FFF);
+ 			E1000_WRITE_FLUSH();
+-			msleep(10);
++			usleep_range(10000, 11000);
+ 
+ 			if (adapter->test_icr) {
+ 				*data = 5;
+@@ -935,7 +935,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
+ 	/* Disable all the interrupts */
+ 	ew32(IMC, 0xFFFFFFFF);
+ 	E1000_WRITE_FLUSH();
+-	msleep(10);
++	usleep_range(10000, 11000);
+ 
+ 	/* Unhook test interrupt handler */
+ 	free_irq(irq, netdev);
+-- 
+2.7.4
 
-Zhu Yanjun
->
-> Thanks,
-> Emil
->   
->
->
 
