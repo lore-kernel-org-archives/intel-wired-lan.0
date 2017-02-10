@@ -1,64 +1,43 @@
-From: Saber Rezvani <irsaber@gmail.com>
-Date: Fri, 10 Feb 2017 02:07:11 +0330
-Subject: [Intel-wired-lan] [PATCH 1/1] net: ethernet: intel: e1000: msleep()
-	is unreliable for anything <20ms
-Message-ID: <1486679831-5745-1-git-send-email-irsaber@gmail.com>
+From: Yanjun Zhu <yanjun.zhu@oracle.com>
+Date: Fri, 10 Feb 2017 10:43:59 +0800
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: add the external ixgbe
+ fiber transceiver status
+In-Reply-To: <87618083B2453E4A8714035B62D679925074E73F@FMSMSX105.amr.corp.intel.com>
+References: <1486609408-6770-1-git-send-email-yanjun.zhu@oracle.com>
+ <87618083B2453E4A8714035B62D679925074E73F@FMSMSX105.amr.corp.intel.com>
+Message-ID: <589D28EF.1050602@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix the checkpatch.pl issue:
-WARNING: msleep < 20ms can sleep for up to 20ms; see
-Documentation/timers/timers-howto.txt
 
-Signed-off-by: Saber Rezvani <irsaber@gmail.com>
----
- drivers/net/ethernet/intel/e1000/e1000_main.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 93fc6c6..5403fa2 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -489,7 +489,7 @@ static void e1000_power_down_phy(struct e1000_adapter *adapter)
- 		e1000_read_phy_reg(hw, PHY_CTRL, &mii_reg);
- 		mii_reg |= MII_CR_POWER_DOWN;
- 		e1000_write_phy_reg(hw, PHY_CTRL, mii_reg);
--		msleep(1);
-+		usleep_range(1000, 5000);
- 	}
- out:
- 	return;
-@@ -536,7 +536,7 @@ void e1000_down(struct e1000_adapter *adapter)
- 	ew32(TCTL, tctl);
- 	/* flush both disables and wait for them to finish */
- 	E1000_WRITE_FLUSH();
--	msleep(10);
-+	usleep_range(1000, 5000);
- 
- 	napi_disable(&adapter->napi);
- 
-@@ -560,7 +560,7 @@ void e1000_reinit_locked(struct e1000_adapter *adapter)
- {
- 	WARN_ON(in_interrupt());
- 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
--		msleep(1);
-+		usleep_range(1000, 5000);
- 	e1000_down(adapter);
- 	e1000_up(adapter);
- 	clear_bit(__E1000_RESETTING, &adapter->flags);
-@@ -3569,7 +3569,7 @@ static int e1000_change_mtu(struct net_device *netdev, int new_mtu)
- 	}
- 
- 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
--		msleep(1);
-+		usleep_range(1000, 5000);
- 	/* e1000_down has a dependency on max_frame_size */
- 	hw->max_frame_size = max_frame;
- 	if (netif_running(netdev)) {
--- 
-2.7.4
+On 2017/2/10 3:08, Tantilov, Emil S wrote:
+>> -----Original Message-----
+>> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org] On
+>> Behalf Of Zhu Yanjun
+>> Sent: Wednesday, February 08, 2017 7:03 PM
+>> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; broonie at kernel.org;
+>> davem at davemloft.net; intel-wired-lan at lists.osuosl.org;
+>> netdev at vger.kernel.org
+>> Subject: [PATCH 1/1] ixgbe: add the external ixgbe fiber transceiver status
+>>
+>> When the ixgbe fiber transceiver is external, it is necessary to get
+>> the present/absent status of this external ixgbe fiber transceiver.
+> The transceiver field was deprecated in the old ethtool API and is being
+> removed in the new. This patch will not apply at all once those changes are made:
+>
+> http://patchwork.ozlabs.org/patch/725081/
+Thanks for your kind reply. I will change this patch based on the above 
+changes.
 
+Zhu Yanjun
+>
+> Thanks,
+> Emil
+>   
+>
+>
 
