@@ -1,100 +1,192 @@
-From: Saber Rezvani <irsaber@gmail.com>
-Date: Fri, 10 Feb 2017 12:26:28 +0330
-Subject: [Intel-wired-lan] [PATCH 1/1] net: ethernet: intel: e1000: msleep()
-	is unreliable for anything <20ms
-Message-ID: <1486716988-11608-1-git-send-email-irsaber@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 10 Feb 2017 21:55:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 3e0770ced40e93914263cd161be5240a964b27b9
+Message-ID: <589dc646.pqJjBLfeGpyZJh8a%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix the checkpatch.pl issue:
-WARNING: msleep < 20ms can sleep for up to 20ms; see
-Documentation/timers/timers-howto.txt
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+3e0770ced40e93914263cd161be5240a964b27b9  igb: Re-add support for build_skb in igb
 
-Signed-off-by: Saber Rezvani <irsaber@gmail.com>
----
- drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+elapsed time: 389m
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
-index 975eeb8..fa47eab 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
-@@ -207,7 +207,7 @@ static int e1000_set_settings(struct net_device *netdev,
- 	}
- 
- 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
--		msleep(1);
-+		usleep_range(1000, 5000);
- 
- 	if (ecmd->autoneg == AUTONEG_ENABLE) {
- 		hw->autoneg = 1;
-@@ -294,7 +294,7 @@ static int e1000_set_pauseparam(struct net_device *netdev,
- 	adapter->fc_autoneg = pause->autoneg;
- 
- 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
--		msleep(1);
-+		usleep_range(1000, 5000);
- 
- 	if (pause->rx_pause && pause->tx_pause)
- 		hw->fc = E1000_FC_FULL;
-@@ -592,7 +592,7 @@ static int e1000_set_ringparam(struct net_device *netdev,
- 		return -EINVAL;
- 
- 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
--		msleep(1);
-+		usleep_range(1000, 5000);
- 
- 	if (netif_running(adapter->netdev))
- 		e1000_down(adapter);
-@@ -869,7 +869,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
- 	/* Disable all the interrupts */
- 	ew32(IMC, 0xFFFFFFFF);
- 	E1000_WRITE_FLUSH();
--	msleep(10);
-+	usleep_range(10000, 11000);
- 
- 	/* Test each interrupt */
- 	for (; i < 10; i++) {
-@@ -887,7 +887,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
- 			ew32(IMC, mask);
- 			ew32(ICS, mask);
- 			E1000_WRITE_FLUSH();
--			msleep(10);
-+			usleep_range(10000, 11000);
- 
- 			if (adapter->test_icr & mask) {
- 				*data = 3;
-@@ -905,7 +905,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
- 		ew32(IMS, mask);
- 		ew32(ICS, mask);
- 		E1000_WRITE_FLUSH();
--		msleep(10);
-+		usleep_range(10000, 11000);
- 
- 		if (!(adapter->test_icr & mask)) {
- 			*data = 4;
-@@ -923,7 +923,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
- 			ew32(IMC, ~mask & 0x00007FFF);
- 			ew32(ICS, ~mask & 0x00007FFF);
- 			E1000_WRITE_FLUSH();
--			msleep(10);
-+			usleep_range(10000, 11000);
- 
- 			if (adapter->test_icr) {
- 				*data = 5;
-@@ -935,7 +935,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
- 	/* Disable all the interrupts */
- 	ew32(IMC, 0xFFFFFFFF);
- 	E1000_WRITE_FLUSH();
--	msleep(10);
-+	usleep_range(10000, 11000);
- 
- 	/* Unhook test interrupt handler */
- 	free_irq(irq, netdev);
--- 
-2.7.4
+configs tested: 168
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64       acpi-redef+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED+CONFIG_DEBUG_INFO_REDUCED
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x014-201706
+x86_64                 randconfig-x017-201706
+x86_64                 randconfig-x011-201706
+x86_64                 randconfig-x016-201706
+x86_64                 randconfig-x012-201706
+x86_64                 randconfig-x010-201706
+x86_64                 randconfig-x013-201706
+x86_64                 randconfig-x019-201706
+x86_64                 randconfig-x018-201706
+x86_64                 randconfig-x015-201706
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+x86_64                 randconfig-s0-02102015
+x86_64                 randconfig-s1-02102015
+x86_64                 randconfig-s2-02102015
+x86_64                 randconfig-s3-02102036
+x86_64                 randconfig-s4-02102036
+x86_64                 randconfig-s5-02102036
+x86_64                   randconfig-i0-201706
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-u0-02101939
+x86_64                 randconfig-u0-02102025
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+powerpc                  iss476-smp_defconfig
+sparc                            alldefconfig
+powerpc                     ksi8560_defconfig
+sh                   sh7770_generic_defconfig
+x86_64                randconfig-ne0-02101915
+x86_64                randconfig-ne0-02102015
+arm                           sunxi_defconfig
+m32r                        oaks32r_defconfig
+m68k                        mvme147_defconfig
+mips                        maltaup_defconfig
+powerpc                     taishan_defconfig
+sh                         apsh4a3a_defconfig
+sh                            shmin_defconfig
+sh                            titan_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-h0-02101945
+i386                   randconfig-h1-02101945
+i386                   randconfig-h0-02102125
+i386                   randconfig-h1-02102125
+arm                       cns3420vb_defconfig
+s390                              allnoconfig
+sh                                allnoconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-h0-02102024
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+m68k                          atari_defconfig
+powerpc                    amigaone_defconfig
+arm                        multi_v7_defconfig
+x86_64                              defconfig
+sh                 kfr2r09-romimage_defconfig
+arm                        shmobile_defconfig
+sh                          rsk7269_defconfig
+i386                 randconfig-x070-02050830
+i386                 randconfig-x071-02050830
+i386                 randconfig-x072-02050830
+i386                 randconfig-x073-02050830
+i386                 randconfig-x074-02050830
+i386                 randconfig-x075-02050830
+i386                 randconfig-x076-02050830
+i386                 randconfig-x077-02050830
+i386                 randconfig-x078-02050830
+i386                 randconfig-x079-02050830
+x86_64                 randconfig-n0-02101849
+x86_64                 randconfig-n0-02102110
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                  sh7785lcr_32bit_defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x008-201706
+x86_64                 randconfig-x001-201706
+x86_64                 randconfig-x009-201706
+x86_64                 randconfig-x003-201706
+x86_64                 randconfig-x000-201706
+x86_64                 randconfig-x006-201706
+x86_64                 randconfig-x007-201706
+x86_64                 randconfig-x004-201706
+x86_64                 randconfig-x002-201706
+x86_64                 randconfig-x005-201706
+x86_64                                  kexec
+x86_64                 randconfig-r0-02102118
+i386                             allmodconfig
+arm                        mvebu_v5_defconfig
+blackfin             BF527-TLL6527M_defconfig
+powerpc                         wii_defconfig
+i386                   randconfig-x004-201706
+i386                   randconfig-x003-201706
+i386                   randconfig-x001-201706
+i386                   randconfig-x007-201706
+i386                   randconfig-x006-201706
+i386                   randconfig-x009-201706
+i386                   randconfig-x002-201706
+i386                   randconfig-x008-201706
+i386                   randconfig-x005-201706
+i386                   randconfig-x000-201706
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
