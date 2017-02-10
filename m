@@ -1,8 +1,8 @@
 From: Saber Rezvani <irsaber@gmail.com>
-Date: Fri, 10 Feb 2017 12:12:53 +0330
+Date: Fri, 10 Feb 2017 12:26:28 +0330
 Subject: [Intel-wired-lan] [PATCH 1/1] net: ethernet: intel: e1000: msleep()
 	is unreliable for anything <20ms
-Message-ID: <1486716173-10891-1-git-send-email-irsaber@gmail.com>
+Message-ID: <1486716988-11608-1-git-send-email-irsaber@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
