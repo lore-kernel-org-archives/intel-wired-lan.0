@@ -1,192 +1,86 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 10 Feb 2017 21:55:18 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 3e0770ced40e93914263cd161be5240a964b27b9
-Message-ID: <589dc646.pqJjBLfeGpyZJh8a%fengguang.wu@intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Fri, 10 Feb 2017 15:04:32 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 04/11] ixgbe: Update code to
+ better handle incrementing page count
+In-Reply-To: <20170117163600.5423.48511.stgit@localhost.localdomain>
+References: <20170117163401.5423.37993.stgit@localhost.localdomain>
+ <20170117163600.5423.48511.stgit@localhost.localdomain>
+Message-ID: <589E4700.8090907@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-3e0770ced40e93914263cd161be5240a964b27b9  igb: Re-add support for build_skb in igb
+On 17-01-17 08:36 AM, Alexander Duyck wrote:
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> 
+> Batch the page count updates instead of doing them one at a time.  By doing
+> this we can improve the overall performance as the atomic increment
+> operations can be expensive due to the fact that on x86 they are locked
+> operations which can cause stalls.  By doing bulk updates we can
+> consolidate the stall which should help to improve the overall receive
+> performance.
+> 
 
-elapsed time: 389m
+[...]
 
-configs tested: 168
+>  struct ixgbe_queue_stats {
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index 8ee8fcf0fe21..34a5271a7b35 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -1602,6 +1602,7 @@ static bool ixgbe_alloc_mapped_page(struct ixgbe_ring *rx_ring,
+>  	bi->dma = dma;
+>  	bi->page = page;
+>  	bi->page_offset = 0;
+> +	bi->pagecnt_bias = 1;
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I'm curious why set pagecnt_bias to '1' here but in the ixgbe_can_reuse_rx_page
+path set it to USHRT_MAX? Any reason not to just always use the USHRT_MAX
+scheme.
 
-i386                               tinyconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64       acpi-redef+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED+CONFIG_DEBUG_INFO_REDUCED
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x014-201706
-x86_64                 randconfig-x017-201706
-x86_64                 randconfig-x011-201706
-x86_64                 randconfig-x016-201706
-x86_64                 randconfig-x012-201706
-x86_64                 randconfig-x010-201706
-x86_64                 randconfig-x013-201706
-x86_64                 randconfig-x019-201706
-x86_64                 randconfig-x018-201706
-x86_64                 randconfig-x015-201706
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                 randconfig-s0-02102015
-x86_64                 randconfig-s1-02102015
-x86_64                 randconfig-s2-02102015
-x86_64                 randconfig-s3-02102036
-x86_64                 randconfig-s4-02102036
-x86_64                 randconfig-s5-02102036
-x86_64                   randconfig-i0-201706
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-u0-02101939
-x86_64                 randconfig-u0-02102025
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-powerpc                  iss476-smp_defconfig
-sparc                            alldefconfig
-powerpc                     ksi8560_defconfig
-sh                   sh7770_generic_defconfig
-x86_64                randconfig-ne0-02101915
-x86_64                randconfig-ne0-02102015
-arm                           sunxi_defconfig
-m32r                        oaks32r_defconfig
-m68k                        mvme147_defconfig
-mips                        maltaup_defconfig
-powerpc                     taishan_defconfig
-sh                         apsh4a3a_defconfig
-sh                            shmin_defconfig
-sh                            titan_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-h0-02101945
-i386                   randconfig-h1-02101945
-i386                   randconfig-h0-02102125
-i386                   randconfig-h1-02102125
-arm                       cns3420vb_defconfig
-s390                              allnoconfig
-sh                                allnoconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-h0-02102024
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-m68k                          atari_defconfig
-powerpc                    amigaone_defconfig
-arm                        multi_v7_defconfig
-x86_64                              defconfig
-sh                 kfr2r09-romimage_defconfig
-arm                        shmobile_defconfig
-sh                          rsk7269_defconfig
-i386                 randconfig-x070-02050830
-i386                 randconfig-x071-02050830
-i386                 randconfig-x072-02050830
-i386                 randconfig-x073-02050830
-i386                 randconfig-x074-02050830
-i386                 randconfig-x075-02050830
-i386                 randconfig-x076-02050830
-i386                 randconfig-x077-02050830
-i386                 randconfig-x078-02050830
-i386                 randconfig-x079-02050830
-x86_64                 randconfig-n0-02101849
-x86_64                 randconfig-n0-02102110
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                  sh7785lcr_32bit_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x008-201706
-x86_64                 randconfig-x001-201706
-x86_64                 randconfig-x009-201706
-x86_64                 randconfig-x003-201706
-x86_64                 randconfig-x000-201706
-x86_64                 randconfig-x006-201706
-x86_64                 randconfig-x007-201706
-x86_64                 randconfig-x004-201706
-x86_64                 randconfig-x002-201706
-x86_64                 randconfig-x005-201706
-x86_64                                  kexec
-x86_64                 randconfig-r0-02102118
-i386                             allmodconfig
-arm                        mvebu_v5_defconfig
-blackfin             BF527-TLL6527M_defconfig
-powerpc                         wii_defconfig
-i386                   randconfig-x004-201706
-i386                   randconfig-x003-201706
-i386                   randconfig-x001-201706
-i386                   randconfig-x007-201706
-i386                   randconfig-x006-201706
-i386                   randconfig-x009-201706
-i386                   randconfig-x002-201706
-i386                   randconfig-x008-201706
-i386                   randconfig-x005-201706
-i386                   randconfig-x000-201706
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
+>  
+>  	return true;
+>  }
+> @@ -1960,13 +1961,15 @@ static bool ixgbe_can_reuse_rx_page(struct ixgbe_ring *rx_ring,
+>  	unsigned int last_offset = ixgbe_rx_pg_size(rx_ring) -
+>  				   ixgbe_rx_bufsz(rx_ring);
+>  #endif
+> +	unsigned int pagecnt_bias = rx_buffer->pagecnt_bias--;
+> +
+>  	/* avoid re-using remote pages */
+>  	if (unlikely(ixgbe_page_is_reserved(page)))
+>  		return false;
+>  
+>  #if (PAGE_SIZE < 8192)
+>  	/* if we are only owner of page we can reuse it */
+> -	if (unlikely(page_count(page) != 1))
+> +	if (unlikely(page_count(page) != pagecnt_bias))
+>  		return false;
+>  
+>  	/* flip page offset to other buffer */
+> @@ -1979,10 +1982,14 @@ static bool ixgbe_can_reuse_rx_page(struct ixgbe_ring *rx_ring,
+>  		return false;
+>  #endif
+>  
+> -	/* Even if we own the page, we are not allowed to use atomic_set()
+> -	 * This would break get_page_unless_zero() users.
+> +	/* If we have drained the page fragment pool we need to update
+> +	 * the pagecnt_bias and page count so that we fully restock the
+> +	 * number of references the driver holds.
+>  	 */
+> -	page_ref_inc(page);
+> +	if (unlikely(pagecnt_bias == 1)) {
+> +		page_ref_add(page, USHRT_MAX);
+> +		rx_buffer->pagecnt_bias = USHRT_MAX;
+> +	}
+>  
+>  	return true;
+>  }
 
-Thanks,
-Fengguang
+Otherwise patch looks good to me. Although it took me a moment to catch the
+ref_add/pagecnt_bias usage here.
+
+Acked-by: John Fastabend <john.r.fastabend@intel.com>
+
