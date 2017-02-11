@@ -1,9 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Sat, 11 Feb 2017 00:57:31 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove unused define
-In-Reply-To: <1486064326-43511-1-git-send-email-donald.c.skidmore@intel.com>
-References: <1486064326-43511-1-git-send-email-donald.c.skidmore@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5E554@ORSMSX104.amr.corp.intel.com>
+Date: Sat, 11 Feb 2017 00:59:43 +0000
+Subject: [Intel-wired-lan] [next PATCH S60-V2 1/1] i40e:
+	rename	auto_disable_flags to hw_disabled_flags
+In-Reply-To: <1486148262-29051-1-git-send-email-bimmy.pujari@intel.com>
+References: <1486148262-29051-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5E564@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,18 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Donald C Skidmore
-> Sent: Thursday, February 02, 2017 11:39 AM
+> Behalf Of Bimmy Pujari
+> Sent: Friday, February 03, 2017 10:58 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove unused define
+> Subject: [Intel-wired-lan] [next PATCH S60-V2 1/1] i40e: rename
+> auto_disable_flags to hw_disabled_flags
 > 
-> Remove the Marvell 1145 PHY define as we have never had a device that
-> supports it and have no plan to in the future.  The existence of this define
-> has caused confusing on whether or not this PHY was supported by ixgbe.
+> From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 > 
-> Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+> A previous commit introduced a field that tracks the features that are
+> disabled due to HW resource limitations as opposed to the featured disabled
+> by the user. This patch changes the name of the field to make it more
+> readable since it might get confusing when looking at code containing both
+> the flags field and the auto_disable_features field together.
+> 
+> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> Change-ID: Idcc9888659698f6fe3ccff17c8c3f09b5026f708
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 3 ---
->  1 file changed, 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h         |  8 ++++++--
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 10 ++++-----
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 28 +++++++++++++----------
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 20 +++++++++---------
+>  4 files changed, 35 insertions(+), 31 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
