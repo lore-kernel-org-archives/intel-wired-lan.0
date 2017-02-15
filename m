@@ -1,73 +1,59 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 14 Feb 2017 19:40:58 +0000
-Subject: [Intel-wired-lan] [next PATCH] ixgbe: Limit use of 2K buffers
- on architectures with 256B or larger cache lines
-In-Reply-To: <20170203171601.13255.10335.stgit@localhost.localdomain>
-References: <20170203171601.13255.10335.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA5E933@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 15 Feb 2017 09:37:17 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 88/88]
+ drivers/net/ethernet/amd/pcnet32.c:753:3: error: implicit declaration of
+ function 'ethtool_convert_legacy_u32_to_link_mode'
+Message-ID: <201702150958.Guwuta0X%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Friday, February 03, 2017 9:20 AM
-> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH] ixgbe: Limit use of 2K buffers on
-> architectures with 256B or larger cache lines
-> 
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
-> 
-> On architectures that have a cache line size larger than 64 Bytes we start
-> running into issues where the amount of headroom for the frame starts
-> shrinking.
-> 
-> The size of skb_shared_info on a system with a 64B L1 cache line size is 320.
-> This increases to 384 with a 128B cache line, and 512 with a 256B cache line.
-> 
-> In addition the NET_SKB_PAD value increases as well consistent with the
-> cache line size.  As a result when we get to a 256B cache line as seen on the
-> s390 we end up 768 bytes used by padding and shared info leaving us with
-> only 1280 bytes to use for data storage.  On architectures such as this we
-> should default to using 3K Rx buffers out of a 8K page instead of trying to do
-> 1.5K buffers out of a 4K page.
-> 
-> To take all of this into account I have added one small check so that we
-> compare the max_frame to the amount of actual data we can store.  This was
-> already occurring for igb, but I had overlooked it for ixgbe as it doesn't have
-> strict limits for 82599 once we enable jumbo frames.  By adding this check we
-> will automatically enable 3K Rx buffers as soon as the maximum frame size
-> we can handle drops below the standard Ethernet MTU.
-> 
-> I also went through and fixed one small typo that I found where I had left an
-> IGB in a variable name due to a copy/paste error.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> ---
-> 
-> Testing Hints:
-> 	If at all possible it would be best to try testing this patch on
-> 	some other architectures such as PPC64.  In lieu of that just build
-> 	testing via the kernel build robot will probably have to do.  The
-> 	only architecture I can identify that might actually have an issue
-> 	that this fixes is s390 which last I knew there was none of in the
-> 	labs at Intel for testing.
-> 
-> 	Basic Rx testing will suffice otherwise.
-> 
-> 	Also I am okay with this patch just being merged into the earlier
-> 	patch "ixgbe: Add support for padding packet" if you want to go
-> 	that route.  I just figured it wasn't worth the trouble to resend
-> 	the entire set for a minor issue.
-> 
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 ++-
->  2 files changed, 3 insertions(+), 2 deletions(-)
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   39877a07fd355416a6f44dfe20832dfdd4b8bdbf
+commit: 39877a07fd355416a6f44dfe20832dfdd4b8bdbf [88/88] ethtool: stop the line wrapping madness
+config: x86_64-allyesdebian (attached as .config)
+compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+reproduce:
+        git checkout 39877a07fd355416a6f44dfe20832dfdd4b8bdbf
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+All errors (new ones prefixed by >>):
 
+   drivers/net/ethernet/amd/pcnet32.c: In function 'pcnet32_get_link_ksettings':
+>> drivers/net/ethernet/amd/pcnet32.c:753:3: error: implicit declaration of function 'ethtool_convert_legacy_u32_to_link_mode' [-Werror=implicit-function-declaration]
+      ethtool_convert_legacy_u32_to_link_mode(
+      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   cc1: some warnings being treated as errors
 
+vim +/ethtool_convert_legacy_u32_to_link_mode +753 drivers/net/ethernet/amd/pcnet32.c
+
+2be4cb97 drivers/net/ethernet/amd/pcnet32.c Ondrej Zary    2017-02-13  747  		} else {
+2be4cb97 drivers/net/ethernet/amd/pcnet32.c Ondrej Zary    2017-02-13  748  			cmd->base.autoneg = AUTONEG_DISABLE;
+2be4cb97 drivers/net/ethernet/amd/pcnet32.c Ondrej Zary    2017-02-13  749  			cmd->base.port = lp->port_tp ? PORT_TP : PORT_AUI;
+2be4cb97 drivers/net/ethernet/amd/pcnet32.c Ondrej Zary    2017-02-13  750  		}
+2be4cb97 drivers/net/ethernet/amd/pcnet32.c Ondrej Zary    2017-02-13  751  		cmd->base.duplex = lp->fdx ? DUPLEX_FULL : DUPLEX_HALF;
+2be4cb97 drivers/net/ethernet/amd/pcnet32.c Ondrej Zary    2017-02-13  752  		cmd->base.speed = SPEED_10;
+2be4cb97 drivers/net/ethernet/amd/pcnet32.c Ondrej Zary    2017-02-13 @753  		ethtool_convert_legacy_u32_to_link_mode(
+2be4cb97 drivers/net/ethernet/amd/pcnet32.c Ondrej Zary    2017-02-13  754  						cmd->link_modes.supported,
+2be4cb97 drivers/net/ethernet/amd/pcnet32.c Ondrej Zary    2017-02-13  755  						SUPPORTED_TP | SUPPORTED_AUI);
+^1da177e drivers/net/pcnet32.c              Linus Torvalds 2005-04-16  756  		r = 0;
+
+:::::: The code at line 753 was first introduced by commit
+:::::: 2be4cb973f0cfaf051224fa5bc969c71c9fc3d5b pcnet32: fix BNC/AUI port on AM79C970A
+
+:::::: TO: Ondrej Zary <linux@rainbow-software.org>
+:::::: CC: David S. Miller <davem@davemloft.net>
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 38088 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170215/5434c9ad/attachment-0001.bin>
