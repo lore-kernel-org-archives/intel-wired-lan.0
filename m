@@ -1,65 +1,190 @@
-From: Tobias Klauser <tklauser@distanz.ch>
-Date: Wed, 15 Feb 2017 12:08:20 +0100
-Subject: [Intel-wired-lan] [PATCH net-next] ixgb: Omit private ndo_get_stats
-	function
-Message-ID: <20170215110820.30052-1-tklauser@distanz.ch>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 16 Feb 2017 21:11:59 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ a113314b74d58ecd24d322c124b94b0ca0cbde4b
+Message-ID: <58a5a51f.QYX7VuhydqnrZNvO%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ixgb_get_stats() just returns dev->stats so we can leave it
-out altogether and let dev_get_stats() do the job.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+a113314b74d58ecd24d322c124b94b0ca0cbde4b  ixgbe: update the rss key on h/w, when ethtool ask for it.
 
-Suggested-by: Joe Perches <joe@perches.com>
-Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
----
- drivers/net/ethernet/intel/ixgb/ixgb_main.c | 16 ----------------
- 1 file changed, 16 deletions(-)
+elapsed time: 93m
 
-diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-index fbd220d137b3..5a713199653c 100644
---- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-+++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-@@ -86,7 +86,6 @@ static void ixgb_set_multi(struct net_device *netdev);
- static void ixgb_watchdog(unsigned long data);
- static netdev_tx_t ixgb_xmit_frame(struct sk_buff *skb,
- 				   struct net_device *netdev);
--static struct net_device_stats *ixgb_get_stats(struct net_device *netdev);
- static int ixgb_change_mtu(struct net_device *netdev, int new_mtu);
- static int ixgb_set_mac(struct net_device *netdev, void *p);
- static irqreturn_t ixgb_intr(int irq, void *data);
-@@ -367,7 +366,6 @@ static const struct net_device_ops ixgb_netdev_ops = {
- 	.ndo_open 		= ixgb_open,
- 	.ndo_stop		= ixgb_close,
- 	.ndo_start_xmit		= ixgb_xmit_frame,
--	.ndo_get_stats		= ixgb_get_stats,
- 	.ndo_set_rx_mode	= ixgb_set_multi,
- 	.ndo_validate_addr	= eth_validate_addr,
- 	.ndo_set_mac_address	= ixgb_set_mac,
-@@ -1597,20 +1595,6 @@ ixgb_tx_timeout_task(struct work_struct *work)
- }
- 
- /**
-- * ixgb_get_stats - Get System Network Statistics
-- * @netdev: network interface device structure
-- *
-- * Returns the address of the device statistics structure.
-- * The statistics are actually updated from the timer callback.
-- **/
--
--static struct net_device_stats *
--ixgb_get_stats(struct net_device *netdev)
--{
--	return &netdev->stats;
--}
--
--/**
-  * ixgb_change_mtu - Change the Maximum Transfer Unit
-  * @netdev: network interface device structure
-  * @new_mtu: new value for maximum frame size
--- 
-2.11.0
+configs tested: 166
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+mips                     decstation_defconfig
+s390                                defconfig
+um                           x86_64_defconfig
+i386                   randconfig-a0-02131010
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-02161937
+x86_64                           allmodconfig
+x86_64                randconfig-in0-02161705
+x86_64                randconfig-it0-02161740
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-g0-02161752
+i386                             allmodconfig
+cris                             alldefconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+mn10300                           allnoconfig
+powerpc                     kmp204x_defconfig
+x86_64                 randconfig-x017-201707
+x86_64                 randconfig-x014-201707
+x86_64                 randconfig-x011-201707
+x86_64                 randconfig-x016-201707
+x86_64                 randconfig-x012-201707
+x86_64                 randconfig-x013-201707
+x86_64                 randconfig-x010-201707
+x86_64                 randconfig-x019-201707
+x86_64                 randconfig-x018-201707
+x86_64                 randconfig-x015-201707
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201707
+i386                     randconfig-s1-201707
+x86_64                 randconfig-s0-02162003
+x86_64                 randconfig-s1-02162003
+x86_64                 randconfig-s2-02162003
+x86_64                 randconfig-s3-02161746
+x86_64                 randconfig-s4-02161746
+x86_64                 randconfig-s5-02161746
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201707
+i386                   randconfig-b0-02161743
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-02120926
+i386                   randconfig-i1-02120926
+x86_64                 randconfig-b0-02161728
+x86_64                 randconfig-u0-02161819
+c6x                        evmc6678_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+i386                   randconfig-x011-201707
+i386                   randconfig-x018-201707
+i386                   randconfig-x015-201707
+i386                   randconfig-x012-201707
+i386                   randconfig-x017-201707
+i386                   randconfig-x014-201707
+i386                   randconfig-x013-201707
+i386                   randconfig-x016-201707
+i386                   randconfig-x019-201707
+i386                   randconfig-x010-201707
+x86_64                                    lkp
+i386                     randconfig-n0-201707
+i386                   randconfig-h0-02161812
+i386                   randconfig-h1-02161812
+arm                          moxart_defconfig
+powerpc                      ppc44x_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-02161854
+mips                            e55_defconfig
+sh                   sh7770_generic_defconfig
+blackfin                   CM-BF533_defconfig
+m32r                        oaks32r_defconfig
+arm                         nhk8815_defconfig
+arm                       omap2plus_defconfig
+i386                   randconfig-x070-201707
+i386                   randconfig-x071-201707
+i386                   randconfig-x072-201707
+i386                   randconfig-x073-201707
+i386                   randconfig-x074-201707
+i386                   randconfig-x075-201707
+i386                   randconfig-x076-201707
+i386                   randconfig-x077-201707
+i386                   randconfig-x078-201707
+i386                   randconfig-x079-201707
+x86_64                 randconfig-n0-02162004
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                randconfig-ws0-02161830
+x86_64                 randconfig-x008-201707
+x86_64                 randconfig-x001-201707
+x86_64                 randconfig-x009-201707
+x86_64                 randconfig-x000-201707
+x86_64                 randconfig-x003-201707
+x86_64                 randconfig-x006-201707
+x86_64                 randconfig-x004-201707
+x86_64                 randconfig-x007-201707
+x86_64                 randconfig-x002-201707
+x86_64                 randconfig-x005-201707
+i386                     randconfig-r0-201707
+i386                   randconfig-x003-201707
+i386                   randconfig-x004-201707
+i386                   randconfig-x001-201707
+i386                   randconfig-x007-201707
+i386                   randconfig-x006-201707
+i386                   randconfig-x009-201707
+i386                   randconfig-x002-201707
+i386                   randconfig-x008-201707
+i386                   randconfig-x005-201707
+i386                   randconfig-x000-201707
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+
+Thanks,
+Fengguang
