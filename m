@@ -1,175 +1,65 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sun, 19 Feb 2017 17:47:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 83a0c6e589017ce737720b9e05e2fa3fe4f7b860
-Message-ID: <58a96994.LHep8VURLIHGbWmp%fengguang.wu@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Sun, 19 Feb 2017 14:55:06 +0200
+Subject: [Intel-wired-lan] [PATCH] e1000e: fix timing for 82579 Gigabit
+ Ethernet controller
+In-Reply-To: <1487270527-4549-1-git-send-email-berndfaust@gmail.com>
+References: <1487270527-4549-1-git-send-email-berndfaust@gmail.com>
+Message-ID: <923e61cf-5f95-1662-2f4c-fc146359ab48@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-83a0c6e589017ce737720b9e05e2fa3fe4f7b860  i40e: Invoke softirqs after napi_reschedule
+On 2/16/2017 20:42, Bernd Faust wrote:
+> After an upgrade to Linux kernel v4.x the hardware timestamps of the
+> 82579 Gigabit Ethernet Controller are different than expected.
+> The values that are being read are almost four times as big as before
+> the kernel upgrade.
+>
+> The difference is that after the upgrade the driver sets the clock
+> frequency to 25MHz, where before the upgrade it was set to 96MHz. Intel
+> confirmed that the correct frequency for this network adapter is 96MHz.
+>
+> Signed-off-by: Bernd Faust <berndfaust@gmail.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/netdev.c | 6 ++++++
+>   1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 7017281..8b7113d 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -3511,6 +3511,12 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
+>
+>   	switch (hw->mac.type) {
+>   	case e1000_pch2lan:
+> +		/* Stable 96MHz frequency */
+> +		incperiod = INCPERIOD_96MHz;
+> +		incvalue = INCVALUE_96MHz;
+> +		shift = INCVALUE_SHIFT_96MHz;
+> +		adapter->cc.shift = shift + INCPERIOD_SHIFT_96MHz;
+> +		break;
+>   	case e1000_pch_lpt:
+>   		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
+>   			/* Stable 96MHz frequency */
+> --
+> 2.7.4
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
-elapsed time: 191m
+Hello,
 
-configs tested: 151
+e1000_pch2lan mac type corresponds to 82579LM and 82579V network 
+adapters. System clock frequency indication (SYSCFI) for these devices 
+supports both 25MHz and 96MHz frequency. By default TSYNCRXCTL.SYSCFI is 
+set to 1 and that means 96MHz frequency is picked.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201708
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-x016-201708
-x86_64                 randconfig-x011-201708
-x86_64                 randconfig-x014-201708
-x86_64                 randconfig-x017-201708
-x86_64                 randconfig-x012-201708
-x86_64                 randconfig-x019-201708
-x86_64                 randconfig-x010-201708
-x86_64                 randconfig-x013-201708
-x86_64                 randconfig-x015-201708
-x86_64                 randconfig-x018-201708
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-s0-201708
-i386                     randconfig-s1-201708
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201708
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-02191311
-i386                   randconfig-i1-02191311
-i386                     randconfig-i0-201708
-i386                     randconfig-i1-201708
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                randconfig-ne0-02191730
-i386                   randconfig-x011-201708
-i386                   randconfig-x015-201708
-i386                   randconfig-x018-201708
-i386                   randconfig-x017-201708
-i386                   randconfig-x012-201708
-i386                   randconfig-x010-201708
-i386                   randconfig-x019-201708
-i386                   randconfig-x016-201708
-i386                   randconfig-x013-201708
-i386                   randconfig-x014-201708
-i386                     randconfig-n0-201708
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-02191732
-i386                   randconfig-x072-201708
-i386                   randconfig-x078-201708
-i386                   randconfig-x074-201708
-i386                   randconfig-x071-201708
-i386                   randconfig-x076-201708
-i386                   randconfig-x073-201708
-i386                   randconfig-x077-201708
-i386                   randconfig-x079-201708
-i386                   randconfig-x075-201708
-i386                   randconfig-x070-201708
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x001-201708
-x86_64                 randconfig-x008-201708
-x86_64                 randconfig-x003-201708
-x86_64                 randconfig-x000-201708
-x86_64                 randconfig-x009-201708
-x86_64                 randconfig-x006-201708
-x86_64                 randconfig-x005-201708
-x86_64                 randconfig-x002-201708
-x86_64                 randconfig-x007-201708
-x86_64                 randconfig-x004-201708
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-r0-201708
-i386                             allmodconfig
-i386                   randconfig-x007-201708
-i386                   randconfig-x001-201708
-i386                   randconfig-x004-201708
-i386                   randconfig-x003-201708
-i386                   randconfig-x006-201708
-i386                   randconfig-x008-201708
-i386                   randconfig-x002-201708
-i386                   randconfig-x009-201708
-i386                   randconfig-x000-201708
-i386                   randconfig-x005-201708
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
+It is better to keep the current implementation as it covers all options.
 
 Thanks,
-Fengguang
+
+Sasha
+
