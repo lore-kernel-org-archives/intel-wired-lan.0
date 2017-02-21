@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 21 Feb 2017 15:55:46 -0800
-Subject: [Intel-wired-lan] [next PATCH S61 08/10] i40e/i40evf: Clean-up
-	process_skb_fields
+Date: Tue, 21 Feb 2017 15:55:41 -0800
+Subject: [Intel-wired-lan] [next PATCH S61 03/10] i40e/i40evf: Fix use after
+	free in Rx cleanup path
 In-Reply-To: <1487721348-25617-1-git-send-email-bimmy.pujari@intel.com>
 References: <1487721348-25617-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1487721348-25617-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1487721348-25617-4-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,82 +13,46 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This is a minor clean-up to make the i40e/i40evf process_skb_fields
-function look a little more like what we have in igb.  The Rx checksum
-function called out a need for skb->protocol but I can't see where it
-actually needs it.  I am assuming this is something that was likely
-refactored out some time ago as the Rx checksum code has gone through a few
-rewrites.
+We need to reset skb back to NULL when we have freed it in the Rx cleanup
+path.  I found one spot where this wasn't occurring so this patch fixes it.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Change-ID: I0b4668a34d90b61b66ded7c7c26e19a3e2d06251
+Change-ID: Iaca68934200732cd4a63eb0bd83b539c95f8c4dd
 ---
 Testing Hints:
-        Basically just need to verify this builds and processes Rx
-        checksums correctly.
+        The "Fixes" commit ID will need to be updated before this is pushed
+        upstream.  Ideally this patch can be dropped if the patch that
+        introduced the bug has not yet made it upstream, and this fix can
+        be taken care of there.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 8 +++-----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 8 +++-----
- 2 files changed, 6 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 1 +
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 1 +
+ 2 files changed, 2 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 558d7da..a540754 100644
+index f80c76c..558d7da 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1431,8 +1431,6 @@ bool i40e_alloc_rx_buffers(struct i40e_ring *rx_ring, u16 cleaned_count)
-  * @vsi: the VSI we care about
-  * @skb: skb currently being received and modified
-  * @rx_desc: the receive descriptor
-- *
-- * skb->protocol must be set before this function is called
-  **/
- static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 				    struct sk_buff *skb,
-@@ -1598,12 +1596,12 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
+@@ -2183,6 +2183,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		 */
+ 		if (unlikely(i40e_test_staterr(rx_desc, BIT(I40E_RXD_QW1_ERROR_SHIFT)))) {
+ 			dev_kfree_skb_any(skb);
++			skb = NULL;
+ 			continue;
+ 		}
  
- 	i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
- 
--	/* modifies the skb - consumes the enet header */
--	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
--
- 	i40e_rx_checksum(rx_ring->vsi, skb, rx_desc);
- 
- 	skb_record_rx_queue(skb, rx_ring->queue_index);
-+
-+	/* modifies the skb - consumes the enet header */
-+	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
- }
- 
- /**
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 9b9314a..7f02f62 100644
+index 39e2e73..9b9314a 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -764,8 +764,6 @@ bool i40evf_alloc_rx_buffers(struct i40e_ring *rx_ring, u16 cleaned_count)
-  * @vsi: the VSI we care about
-  * @skb: skb currently being received and modified
-  * @rx_desc: the receive descriptor
-- *
-- * skb->protocol must be set before this function is called
-  **/
- static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 				    struct sk_buff *skb,
-@@ -917,12 +915,12 @@ void i40evf_process_skb_fields(struct i40e_ring *rx_ring,
- {
- 	i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
+@@ -1299,6 +1299,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		 */
+ 		if (unlikely(i40e_test_staterr(rx_desc, BIT(I40E_RXD_QW1_ERROR_SHIFT)))) {
+ 			dev_kfree_skb_any(skb);
++			skb = NULL;
+ 			continue;
+ 		}
  
--	/* modifies the skb - consumes the enet header */
--	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
--
- 	i40e_rx_checksum(rx_ring->vsi, skb, rx_desc);
- 
- 	skb_record_rx_queue(skb, rx_ring->queue_index);
-+
-+	/* modifies the skb - consumes the enet header */
-+	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
- }
- 
- /**
 -- 
 2.4.11
 
