@@ -1,7 +1,7 @@
 From: Norbert Lange <nolange79@gmail.com>
-Date: Wed, 22 Feb 2017 15:44:58 +0100
+Date: Thu, 23 Feb 2017 10:07:28 +0100
 Subject: [Intel-wired-lan] Intel 82579LM has totally wrong PTP timer
-Message-ID: <CADYdroMcLExFMSRmux6KW_hvKFU12KHVPvUjXWZtS7hb3GyhBQ@mail.gmail.com>
+Message-ID: <CADYdroOv+pqO=wHbSPXaKt61iS0im2ra_j85NFigukys+5QAVw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
