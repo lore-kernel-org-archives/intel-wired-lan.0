@@ -1,88 +1,68 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sun, 26 Feb 2017 02:18:27 +0800
-Subject: [Intel-wired-lan] [net-next PATCH 1/3] ixgbe: add XDP support
- for pass and drop actions
-In-Reply-To: <20170225173229.32741.12321.stgit@john-Precision-Tower-5810>
-Message-ID: <201702260208.B8iSdiap%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Sat, 25 Feb 2017 10:58:09 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 0/3] XDP for ixgbe
+In-Reply-To: <20170225172422.32741.67877.stgit@john-Precision-Tower-5810>
+References: <20170225172422.32741.67877.stgit@john-Precision-Tower-5810>
+Message-ID: <CAKgT0Ue8q8GJtxq5JO-9ZW8xVN6zgC3pzsej_dKew+ZOqzPdig@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi John,
+On Sat, Feb 25, 2017 at 9:32 AM, John Fastabend
+<john.fastabend@gmail.com> wrote:
+> This series adds support for XDP on ixgbe. We still need to understand
+> adjust head size requirement. If we can compromise at 196B (is this
+> correct Alex?) then we can continue to use normal driver RX path and
 
-[auto build test WARNING on jkirsher-next-queue/dev-queue]
-[also build test WARNING on next-20170224]
-[cannot apply to v4.10]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+In theory on x86 there is 192B of headroom we can reserve since shared
+infor is only 320B.  That leaves us with 1536 for packet storage.
 
-url:    https://github.com/0day-ci/linux/commits/John-Fastabend/XDP-for-ixgbe/20170226-013816
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-config: xtensa-allmodconfig (attached as .config)
-compiler: xtensa-linux-gcc (GCC) 4.9.0
-reproduce:
-        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=xtensa 
+That said the current code is only reserving NET_SKB_PAD +
+NET_IP_ALIGN as I hadn't taken into account the need for more headroom
+than that when I did the ixgbe patches.  I'll try to submit a
+follow-up patch for igb and ixgbe to update the padding.
 
-All warnings (new ones prefixed by >>):
+> avoid having XDP codebase + normal codebase. This is a big win for
+> everyone who has to read this code day to day and work on it. I
+> suggest if more headroom is needed then it should also be needed in
+> the normal stack case and we should provide a generic mechanism to
+> build up more headroom. Plus we already have ndo_set_rx_headroom()
+> can we just use this?
+>
+> If this series can get accepted then we have a series behind it to
+> enable batching on TX to push TX Mpps up to line rates. The gist of
+> the implementation is to run XDP program in a loop, collecting the
+> action results in an array. And then pushing them into the TX routine.
+> For a first gen this will likely abort if we get a XDP_PASS routine
+> but this is just a matter of code wrangling and lazyness. It can be
+> resolved.
+>
+> Future looking some improvements are needed, TX routines should take
+> an array of packets if we believe long trains of packets will be on
+> the RX ring inside a "processing window" (how many descriptors we
+> handle per irq clean). Note with many queues on devices we can ensure
+> this happens with flow director or even RSS in some cases.
+>
+> @Alex, please review. Look at patch 2/3 in paticular and let me know
+> what you think about the trade-offs I made there w.r.t. num_xdp_queues
 
-   In file included from arch/xtensa/include/asm/atomic.h:21:0,
-                    from include/linux/atomic.h:4,
-                    from include/linux/debug_locks.h:5,
-                    from include/linux/lockdep.h:25,
-                    from include/linux/spinlock_types.h:18,
-                    from include/linux/spinlock.h:81,
-                    from include/linux/seqlock.h:35,
-                    from include/linux/time.h:5,
-                    from include/linux/stat.h:18,
-                    from include/linux/module.h:10,
-                    from drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:30:
-   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_setup_xdp_resource':
-   arch/xtensa/include/asm/cmpxchg.h:139:3: warning: value computed is not used [-Wunused-value]
-     ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
-      ^
->> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:6165:2: note: in expansion of macro 'xchg'
-     xchg(&ring->xdp_prog, adapter->xdp_prog);
-     ^
+I'll try to get the set reviewed this weekend.
 
-vim +/xchg +6165 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-
-  6149			goto err;
-  6150	
-  6151		rx_ring->next_to_clean = 0;
-  6152		rx_ring->next_to_use = 0;
-  6153	
-  6154		return 0;
-  6155	err:
-  6156		vfree(rx_ring->rx_buffer_info);
-  6157		rx_ring->rx_buffer_info = NULL;
-  6158		dev_err(dev, "Unable to allocate memory for the Rx descriptor ring\n");
-  6159		return -ENOMEM;
-  6160	}
-  6161	
-  6162	static void ixgbe_setup_xdp_resource(struct ixgbe_adapter *adapter,
-  6163					     struct ixgbe_ring *ring)
-  6164	{
-> 6165		xchg(&ring->xdp_prog, adapter->xdp_prog);
-  6166	}
-  6167	
-  6168	/**
-  6169	 * ixgbe_setup_all_rx_resources - allocate all queues Rx resources
-  6170	 * @adapter: board private structure
-  6171	 *
-  6172	 * If this function returns with an error, then it's possible one or
-  6173	 * more of the rings is populated (while the rest are not).  It is the
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 48209 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170226/3d5a6f37/attachment-0001.bin>
+> ---
+>
+> John Fastabend (3):
+>       ixgbe: add XDP support for pass and drop actions
+>       ixgbe: add support for XDP_TX action
+>       ixgbe: xdp support for adjust head
+>
+>
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   14 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   29 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   85 ++++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  439 ++++++++++++++++++++--
+>  4 files changed, 511 insertions(+), 56 deletions(-)
+>
+> --
+> Signature
