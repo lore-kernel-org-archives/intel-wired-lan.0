@@ -1,35 +1,53 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 25 Feb 2017 02:19:57 +0000
-Subject: [Intel-wired-lan] [PATCH] net: intel: e1000: use new api
- ethtool_{get|set}_link_ksettings
-In-Reply-To: <1485011163-7402-1-git-send-email-tremyfr@gmail.com>
-References: <1485011163-7402-1-git-send-email-tremyfr@gmail.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C5AB2A5@ORSMSX101.amr.corp.intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Sat, 25 Feb 2017 09:32:08 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 0/3] XDP for ixgbe
+Message-ID: <20170225172422.32741.67877.stgit@john-Precision-Tower-5810>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-
-> owner at vger.kernel.org] On Behalf Of Philippe Reynes
-> Sent: Saturday, January 21, 2017 7:06 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net
-> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org; Philippe Reynes <tremyfr@gmail.com>
-> Subject: [PATCH] net: intel: e1000: use new api
-> ethtool_{get|set}_link_ksettings
-> 
-> The ethtool api {get|set}_settings is deprecated.
-> We move this driver to new api {get|set}_link_ksettings.
-> 
-> As I don't have the hardware, I'd be very pleased if
-> someone may test this patch.
-> 
-> Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
-> ---
->  drivers/net/ethernet/intel/e1000/e1000_ethtool.c |   93 +++++++++++---------
-> --
->  1 files changed, 46 insertions(+), 47 deletions(-)
+This series adds support for XDP on ixgbe. We still need to understand
+adjust head size requirement. If we can compromise at 196B (is this
+correct Alex?) then we can continue to use normal driver RX path and
+avoid having XDP codebase + normal codebase. This is a big win for
+everyone who has to read this code day to day and work on it. I
+suggest if more headroom is needed then it should also be needed in
+the normal stack case and we should provide a generic mechanism to
+build up more headroom. Plus we already have ndo_set_rx_headroom()
+can we just use this?
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+If this series can get accepted then we have a series behind it to
+enable batching on TX to push TX Mpps up to line rates. The gist of
+the implementation is to run XDP program in a loop, collecting the
+action results in an array. And then pushing them into the TX routine.
+For a first gen this will likely abort if we get a XDP_PASS routine
+but this is just a matter of code wrangling and lazyness. It can be
+resolved.
+
+Future looking some improvements are needed, TX routines should take
+an array of packets if we believe long trains of packets will be on
+the RX ring inside a "processing window" (how many descriptors we
+handle per irq clean). Note with many queues on devices we can ensure
+this happens with flow director or even RSS in some cases.
+
+@Alex, please review. Look at patch 2/3 in paticular and let me know
+what you think about the trade-offs I made there w.r.t. num_xdp_queues
+
+---
+
+John Fastabend (3):
+      ixgbe: add XDP support for pass and drop actions
+      ixgbe: add support for XDP_TX action
+      ixgbe: xdp support for adjust head
+
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   14 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   29 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   85 ++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  439 ++++++++++++++++++++--
+ 4 files changed, 511 insertions(+), 56 deletions(-)
+
+--
+Signature
