@@ -1,76 +1,171 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 1 Mar 2017 12:19:23 +0100
-Subject: [Intel-wired-lan] Reduce resume times of Ethernet devices
-Message-ID: <bc5745a5-b683-259b-b750-8634c12aee06@molgen.mpg.de>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 02 Mar 2017 06:21:33 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ c0b1aa7888aefa58d992cbb345ac1796f72a3b5e
+Message-ID: <58b7496d.hpiKcjYy3ZyJVVlf%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Linux folks,
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+c0b1aa7888aefa58d992cbb345ac1796f72a3b5e  igb: Explicitly select page 0 at initialization
 
+elapsed time: 84m
 
-I am analyzing the time spent during resume on a Dell OptiPlex 7010 with 
-the script `analyze_suspend.py` [1] in `scripts`.
+configs tested: 148
 
-```
-$ more /proc/version
-Linux version 4.9.0-2-amd64 (debian-kernel at lists.debian.org) (gcc 
-version 6.3.0 20170221 (Debian 6.3.0-8) ) #1 SMP Debian 4.9.13-1 
-(2017-02-27)
-$ lspci -s 00:19.0 -v
-00:19.0 Ethernet controller: Intel Corporation 82579LM Gigabit Network 
-Connection (rev 04)
-         Subsystem: Dell 82579LM Gigabit Network Connection
-         Flags: bus master, fast devsel, latency 0, IRQ 31
-         Memory at f7c00000 (32-bit, non-prefetchable) [size=128K]
-         Memory at f7c39000 (32-bit, non-prefetchable) [size=4K]
-         I/O ports at f080 [size=32]
-         Capabilities: <access denied>
-         Kernel driver in use: e1000e
-         Kernel modules: e1000e
-```
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-The times are quite good already.
+ia64                             alldefconfig
+sh                        edosk7760_defconfig
+xtensa                generic_kc705_defconfig
+i386                   randconfig-a0-03020016
+x86_64                 randconfig-a0-03020548
+x86_64                             acpi-redef
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED+CONFIG_DEBUG_INFO_REDUCED
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x016-201709
+x86_64                 randconfig-x011-201709
+x86_64                 randconfig-x017-201709
+x86_64                 randconfig-x014-201709
+x86_64                 randconfig-x012-201709
+x86_64                 randconfig-x019-201709
+x86_64                 randconfig-x013-201709
+x86_64                 randconfig-x010-201709
+x86_64                 randconfig-x015-201709
+x86_64                 randconfig-x018-201709
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-s0-03020546
+x86_64                 randconfig-s1-03020546
+x86_64                 randconfig-s2-03020546
+microblaze                          defconfig
+powerpc                 mpc837x_mds_defconfig
+sh                             espt_defconfig
+sh                          sdk7780_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-03011718
+i386                   randconfig-i1-03011718
+x86_64       rhel-7.2+CONFIG_DEBUG_INFO_REDUCED
+arm                             rpc_defconfig
+powerpc                         wii_defconfig
+x86_64                randconfig-ne0-03020302
+i386                   randconfig-x011-201709
+i386                   randconfig-x015-201709
+i386                   randconfig-x018-201709
+i386                   randconfig-x017-201709
+i386                   randconfig-x012-201709
+i386                   randconfig-x010-201709
+i386                   randconfig-x019-201709
+i386                   randconfig-x016-201709
+i386                   randconfig-x014-201709
+i386                   randconfig-x013-201709
+i386                             allmodconfig
+m32r                    mappi2.opsp_defconfig
+powerpc                     kilauea_defconfig
+x86_64                 randconfig-h0-03020551
+mips                      maltasmvp_defconfig
+powerpc                 mpc832x_rdb_defconfig
+arm                       multi_v4t_defconfig
+powerpc64                        allyesconfig
+i386                 randconfig-x070-03011718
+i386                 randconfig-x071-03011718
+i386                 randconfig-x072-03011718
+i386                 randconfig-x073-03011718
+i386                 randconfig-x074-03011718
+i386                 randconfig-x075-03011718
+i386                 randconfig-x076-03011718
+i386                 randconfig-x077-03011718
+i386                 randconfig-x078-03011718
+i386                 randconfig-x079-03011718
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x001-201709
+x86_64                 randconfig-x008-201709
+x86_64                 randconfig-x000-201709
+x86_64                 randconfig-x003-201709
+x86_64                 randconfig-x009-201709
+x86_64                 randconfig-x006-201709
+x86_64                 randconfig-x005-201709
+x86_64                 randconfig-x002-201709
+x86_64                 randconfig-x004-201709
+x86_64                 randconfig-x007-201709
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-r0-03011404
+i386                   randconfig-x007-201709
+i386                   randconfig-x001-201709
+i386                   randconfig-x003-201709
+i386                   randconfig-x004-201709
+i386                   randconfig-x006-201709
+i386                   randconfig-x008-201709
+i386                   randconfig-x002-201709
+i386                   randconfig-x009-201709
+i386                   randconfig-x000-201709
+i386                   randconfig-x005-201709
+i386                   randconfig-x0-03020556
 
-> Total Suspend Time: 601 ms	Total Resume Time: 806 ms
-> Kernel Suspend: 600.993 ms	Firmware Suspend: 0.000 ms	Firmware Resume: 554.340 ms	Kernel Resume: 251.898 ms
-
-But the resume time is slowed down by the e1000e module, as it takes 
-longest, and therefore slowing down the resume.
-
-> e1000e @ 0000:00:19.0 {e1000e} async_device (Total Suspend: 100.518 ms Total Resume: 190.209 ms)
-
-Then I created the callgraph with the command below. (The configs are in 
-the upstream suspendresume repository [2].)
-
-```
-sudo ./analyze_suspend.py -config config/suspend-callgraph.cfg \
---filter e1000e
-```
-
-Please find the HTML file attached.
-
-There it can be seen that most of the time is spent in `e1000e_reset`.
-
- > e1000e_reset [e1000e] (109.285 ms @ 3485.092445)
-
-Is a reset necessary during resume? Can this be improved, and certain 
-things be postponed to later stages?
-
-
-Kind regards,
-
-Paul
-
-
-[1] https://01.org/suspendresume/
-[2] https://github.com/01org/suspendresume/
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: plumpsklo_mem.html.7z
-Type: application/x-7z-compressed
-Size: 112195 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170301/24392142/attachment-0001.bin>
+Thanks,
+Fengguang
