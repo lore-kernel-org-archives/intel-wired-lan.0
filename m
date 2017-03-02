@@ -1,232 +1,224 @@
 From: John Fastabend <john.fastabend@gmail.com>
-Date: Wed, 1 Mar 2017 16:23:30 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 3/3] ixgbe: xdp support for
-	adjust head
-In-Reply-To: <CAKgT0UcD640X1GuNj62uT+CAVqE4r2-PoRaX9frbqJX1V1fj8A@mail.gmail.com>
-References: <20170225172422.32741.67877.stgit@john-Precision-Tower-5810>
- <20170225173320.32741.88705.stgit@john-Precision-Tower-5810>
- <CAKgT0UcD640X1GuNj62uT+CAVqE4r2-PoRaX9frbqJX1V1fj8A@mail.gmail.com>
-Message-ID: <58B76602.40705@gmail.com>
+Date: Wed, 01 Mar 2017 16:54:17 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v2 1/3] ixgbe: add XDP support
+ for pass and drop actions
+Message-ID: <20170302005417.30505.14047.stgit@john-Precision-Tower-5810>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 17-02-27 08:32 AM, Alexander Duyck wrote:
-> On Sat, Feb 25, 2017 at 9:33 AM, John Fastabend
-> <john.fastabend@gmail.com> wrote:
->> Add adjust_head support for XDP however at the moment we are only
->> adding IXGBE_SKB_PAD bytes of headroom to align with driver paths.
->>
->> The infrastructure is is such that a follow on patch can extend
->> headroom up to 196B without changing RX path.
-> 
-> So I am really not a fan of the way this is implemented.  I think we
-> can probably just get away with passing size as a pointer, and
-> adjusting page_offset in the rx_buffer_info structure.
-> 
-> Then the only extra bit of work that is needed is that we have to add
-> some code to sanitize the page_offset in ixgbe_build_skb and
-> ixgbe_construct_skb in the 4K case since we can't just use an xor
-> anymore and instead will probably have to do a combination of xor,
-> and, or to clear and reset the page offset back to what it is supposed
-> to be.
+Basic XDP drop support for ixgbe. Uses READ_ONCE/xchg semantics on XDP
+programs instead of rcu primitives as suggested by Daniel Borkmann and
+Alex Duyck.
 
-I think the code now is getting fairly simple without manipulating the
-offset directly.
+Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  114 ++++++++++++++++++++++++-
+ 2 files changed, 113 insertions(+), 3 deletions(-)
 
-> 
->> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
->> ---
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   45 +++++++++++++++++--------
->>  1 file changed, 31 insertions(+), 14 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> index 227caf8..040e469 100644
->> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> @@ -2031,6 +2031,7 @@ static bool ixgbe_can_reuse_rx_page(struct ixgbe_rx_buffer *rx_buffer)
->>  static void ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
->>                               struct ixgbe_rx_buffer *rx_buffer,
->>                               struct sk_buff *skb,
->> +                             unsigned int headroom,
->>                               unsigned int size)
->>  {
->>  #if (PAGE_SIZE < 8192)
->> @@ -2041,7 +2042,8 @@ static void ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
->>                                 SKB_DATA_ALIGN(size);
->>  #endif
->>         skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
->> -                       rx_buffer->page_offset, size, truesize);
->> +                       rx_buffer->page_offset - (IXGBE_SKB_PAD - headroom),
->> +                       size, truesize);
->>  #if (PAGE_SIZE < 8192)
->>         rx_buffer->page_offset ^= truesize;
->>  #else
->> @@ -2114,6 +2116,7 @@ static void ixgbe_put_rx_buffer(struct ixgbe_ring *rx_ring,
->>  static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
->>                                            struct ixgbe_rx_buffer *rx_buffer,
->>                                            union ixgbe_adv_rx_desc *rx_desc,
->> +                                          unsigned int headroom,
->>                                            unsigned int size)
->>  {
->>         void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
->> @@ -2122,6 +2125,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
->>  #else
->>         unsigned int truesize = SKB_DATA_ALIGN(size);
->>  #endif
->> +       unsigned int off_page;
->>         struct sk_buff *skb;
->>
->>         /* prefetch first cache line of first page */
->> @@ -2135,12 +2139,14 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
->>         if (unlikely(!skb))
->>                 return NULL;
->>
->> +       off_page = IXGBE_SKB_PAD - headroom;
->> +
->>         if (size > IXGBE_RX_HDR_SIZE) {
->>                 if (!ixgbe_test_staterr(rx_desc, IXGBE_RXD_STAT_EOP))
->>                         IXGBE_CB(skb)->dma = rx_buffer->dma;
->>
->>                 skb_add_rx_frag(skb, 0, rx_buffer->page,
->> -                               rx_buffer->page_offset,
->> +                               rx_buffer->page_offset - off_page,
->>                                 size, truesize);
->>  #if (PAGE_SIZE < 8192)
->>                 rx_buffer->page_offset ^= truesize;
->> @@ -2148,7 +2154,8 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
->>                 rx_buffer->page_offset += truesize;
->>  #endif
->>         } else {
->> -               memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
->> +               memcpy(__skb_put(skb, size), va - off_page,
->> +                      ALIGN(size, sizeof(long)));
->>                 rx_buffer->pagecnt_bias++;
->>         }
->>
->> @@ -2158,6 +2165,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
->>  static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
->>                                        struct ixgbe_rx_buffer *rx_buffer,
->>                                        union ixgbe_adv_rx_desc *rx_desc,
->> +                                      unsigned int headroom,
->>                                        unsigned int size)
->>  {
->>         void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
->> @@ -2181,7 +2189,7 @@ static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
->>                 return NULL;
->>
->>         /* update pointers within the skb to store the data */
->> -       skb_reserve(skb, IXGBE_SKB_PAD);
->> +       skb_reserve(skb, headroom);
->>         __skb_put(skb, size);
->>
->>         /* record DMA address if this is the start of a chain of buffers */
->> @@ -2202,10 +2210,14 @@ static int ixgbe_xmit_xdp_ring(struct xdp_buff *xdp,
->>                                struct ixgbe_adapter *adapter,
->>                                struct ixgbe_ring *tx_ring);
->>
->> +#define IXGBE_XDP_PASS 0
->> +#define IXGBE_XDP_CONSUMED 1
->> +
-> 
-> Going back to my original suggestions for patch one you would have 3
-> possible return values.  You would return NULL if it is meant to pass,
-> one value wrapped in PTR_ERR if it is meant to be an XMIT, and another
-> value wrapped in PTR_ERR if it is meant to be dropped.  The only real
-> difference between the 3 is that for NULL you do nothing, for XMIT you
-> are going to need to call your xdp_xmit function and update the
-> page_offset, and for drop you add one back to the pagecnt_bias.
-> 
-> I just realized I think my example that I provided for patch one was
-> missing that bit.  We need to add one back to the pagecnt_bias if we
-> are just dropping the buffer.
-> 
-
-hmm I'm looking at this now I'm not sure you save much by doing this.
-All you get to do is avoid using an intermediate variable 'int consumed'
-in this case.
-
-Let me send out the latest version and see what you think.
-
->>  static int ixgbe_run_xdp(struct ixgbe_adapter *adapter,
->>                          struct ixgbe_ring  *rx_ring,
->>                          struct ixgbe_rx_buffer *rx_buffer,
->> -                        unsigned int size)
->> +                        unsigned int *headroom,
->> +                        unsigned int *size)
->>  {
->>         struct ixgbe_ring *xdp_ring;
->>         struct bpf_prog *xdp_prog;
->> @@ -2216,17 +2228,19 @@ static int ixgbe_run_xdp(struct ixgbe_adapter *adapter,
->>         xdp_prog = READ_ONCE(rx_ring->xdp_prog);
->>
->>         if (!xdp_prog)
->> -               return 0;
->> +               return IXGBE_XDP_PASS;
->>
->>         addr = page_address(rx_buffer->page) + rx_buffer->page_offset;
->> -       xdp.data_hard_start = addr;
->> +       xdp.data_hard_start = addr - *headroom;
->>         xdp.data = addr;
->> -       xdp.data_end = addr + size;
->> +       xdp.data_end = addr + *size;
->>
->>         act = bpf_prog_run_xdp(xdp_prog, &xdp);
->>         switch (act) {
->>         case XDP_PASS:
->> -               return 0;
->> +               *headroom = xdp.data - xdp.data_hard_start;
->> +               *size = xdp.data_end - xdp.data;
->> +               return IXGBE_XDP_PASS;
->>         case XDP_TX:
->>                 xdp_ring = adapter->xdp_ring[smp_processor_id()];
->>
->> @@ -2246,7 +2260,7 @@ static int ixgbe_run_xdp(struct ixgbe_adapter *adapter,
->>                 rx_buffer->pagecnt_bias++; /* give page back */
->>                 break;
->>         }
->> -       return size;
->> +       return IXGBE_XDP_CONSUMED;
->>  }
->>
->>  /**
->> @@ -2275,6 +2289,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
->>         u16 cleaned_count = ixgbe_desc_unused(rx_ring);
->>
->>         while (likely(total_rx_packets < budget)) {
->> +               unsigned int headroom = ixgbe_rx_offset(rx_ring);
->>                 union ixgbe_adv_rx_desc *rx_desc;
->>                 struct ixgbe_rx_buffer *rx_buffer;
->>                 struct sk_buff *skb;
->> @@ -2301,7 +2316,8 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
->>                 rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size);
->>
->>                 rcu_read_lock();
->> -               consumed = ixgbe_run_xdp(adapter, rx_ring, rx_buffer, size);
->> +               consumed = ixgbe_run_xdp(adapter, rx_ring, rx_buffer,
->> +                                        &headroom, &size);
->>                 rcu_read_unlock();
->>
->>                 if (consumed) {
->> @@ -2315,13 +2331,14 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
->>
->>                 /* retrieve a buffer from the ring */
->>                 if (skb)
->> -                       ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
->> +                       ixgbe_add_rx_frag(rx_ring, rx_buffer, skb,
->> +                                         headroom, size);
->>                 else if (ring_uses_build_skb(rx_ring))
->>                         skb = ixgbe_build_skb(rx_ring, rx_buffer,
->> -                                             rx_desc, size);
->> +                                             rx_desc, headroom, size);
->>                 else
->>                         skb = ixgbe_construct_skb(rx_ring, rx_buffer,
->> -                                                 rx_desc, size);
->> +                                                 rx_desc, headroom, size);
->>
->>                 /* exit if we failed to retrieve a buffer */
->>                 if (!skb) {
->>
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index b812913..2d12c24 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -273,6 +273,7 @@ struct ixgbe_ring {
+ 	struct ixgbe_ring *next;	/* pointer to next ring in q_vector */
+ 	struct ixgbe_q_vector *q_vector; /* backpointer to host q_vector */
+ 	struct net_device *netdev;	/* netdev ring belongs to */
++	struct bpf_prog *xdp_prog;
+ 	struct device *dev;		/* device for DMA mapping */
+ 	struct ixgbe_fwd_adapter *l2_accel_priv;
+ 	void *desc;			/* descriptor ring memory */
+@@ -510,6 +511,7 @@ struct ixgbe_adapter {
+ 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
+ 	/* OS defined structs */
+ 	struct net_device *netdev;
++	struct bpf_prog *xdp_prog;
+ 	struct pci_dev *pdev;
+ 
+ 	unsigned long state;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index e3da397..0b802b5 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -49,6 +49,9 @@
+ #include <linux/if_macvlan.h>
+ #include <linux/if_bridge.h>
+ #include <linux/prefetch.h>
++#include <linux/bpf.h>
++#include <linux/bpf_trace.h>
++#include <linux/atomic.h>
+ #include <scsi/fc/fc_fcoe.h>
+ #include <net/udp_tunnel.h>
+ #include <net/pkt_cls.h>
+@@ -2051,7 +2054,7 @@ static void ixgbe_put_rx_buffer(struct ixgbe_ring *rx_ring,
+ 		/* hand second half of page back to the ring */
+ 		ixgbe_reuse_rx_page(rx_ring, rx_buffer);
+ 	} else {
+-		if (IXGBE_CB(skb)->dma == rx_buffer->dma) {
++		if (skb && IXGBE_CB(skb)->dma == rx_buffer->dma) {
+ 			/* the page has been released from the ring */
+ 			IXGBE_CB(skb)->page_released = true;
+ 		} else {
+@@ -2157,6 +2160,50 @@ static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
+ 	return skb;
+ }
+ 
++#define IXGBE_XDP_PASS 0
++#define IXGBE_XDP_CONSUMED 1
++
++static int ixgbe_run_xdp(struct ixgbe_ring  *rx_ring,
++			 struct ixgbe_rx_buffer *rx_buffer,
++			 unsigned int size)
++{
++	int result = IXGBE_XDP_PASS;
++	struct bpf_prog *xdp_prog;
++	struct xdp_buff xdp;
++	void *addr;
++	u32 act;
++
++	rcu_read_lock();
++	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
++
++	if (!xdp_prog)
++		goto xdp_out;
++
++	addr = page_address(rx_buffer->page) + rx_buffer->page_offset;
++	xdp.data_hard_start = addr;
++	xdp.data = addr;
++	xdp.data_end = addr + size;
++
++	act = bpf_prog_run_xdp(xdp_prog, &xdp);
++	switch (act) {
++	case XDP_PASS:
++		goto xdp_out;
++	default:
++		bpf_warn_invalid_xdp_action(act);
++	case XDP_TX:
++	case XDP_ABORTED:
++		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
++		/* fallthrough -- handle aborts by dropping packet */
++	case XDP_DROP:
++		rx_buffer->pagecnt_bias++; /* give page back */
++		result = IXGBE_XDP_CONSUMED;
++		break;
++	}
++xdp_out:
++	rcu_read_unlock();
++	return result;
++}
++
+ /**
+  * ixgbe_clean_rx_irq - Clean completed descriptors from Rx ring - bounce buf
+  * @q_vector: structure containing interrupt and ring information
+@@ -2187,6 +2234,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 		struct ixgbe_rx_buffer *rx_buffer;
+ 		struct sk_buff *skb;
+ 		unsigned int size;
++		int consumed;
+ 
+ 		/* return some buffers to hardware, one at a time is too slow */
+ 		if (cleaned_count >= IXGBE_RX_BUFFER_WRITE) {
+@@ -2207,6 +2255,18 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 
+ 		rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size);
+ 
++		consumed = ixgbe_run_xdp(rx_ring, rx_buffer, size);
++		rcu_read_unlock();
++
++		if (consumed) {
++			ixgbe_put_rx_buffer(rx_ring, rx_buffer, skb);
++			cleaned_count++;
++			ixgbe_is_non_eop(rx_ring, rx_desc, skb);
++			total_rx_packets++;
++			total_rx_bytes += size;
++			continue;
++		}
++
+ 		/* retrieve a buffer from the ring */
+ 		if (skb)
+ 			ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
+@@ -6121,9 +6181,13 @@ static int ixgbe_setup_all_rx_resources(struct ixgbe_adapter *adapter)
+ 	int i, err = 0;
+ 
+ 	for (i = 0; i < adapter->num_rx_queues; i++) {
+-		err = ixgbe_setup_rx_resources(adapter->rx_ring[i]);
+-		if (!err)
++		struct ixgbe_ring *rx_ring = adapter->rx_ring[i];
++
++		err = ixgbe_setup_rx_resources(rx_ring);
++		if (!err) {
++			xchg(&rx_ring->xdp_prog, adapter->xdp_prog);
+ 			continue;
++		}
+ 
+ 		e_err(probe, "Allocation for Rx Queue %u failed\n", i);
+ 		goto err_setup_rx;
+@@ -6191,6 +6255,7 @@ void ixgbe_free_rx_resources(struct ixgbe_ring *rx_ring)
+ 
+ 	vfree(rx_ring->rx_buffer_info);
+ 	rx_ring->rx_buffer_info = NULL;
++	xchg(&rx_ring->xdp_prog, NULL);
+ 
+ 	/* if not set, then don't free */
+ 	if (!rx_ring->desc)
+@@ -9455,6 +9520,48 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
+ 	return features;
+ }
+ 
++static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
++{
++	int i, frame_size = dev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
++	struct ixgbe_adapter *adapter = netdev_priv(dev);
++	struct bpf_prog *old_adapter_prog;
++
++	/* verify ixgbe ring attributes are sufficient for XDP */
++	for (i = 0; i < adapter->num_rx_queues; i++) {
++		struct ixgbe_ring *ring = adapter->rx_ring[i];
++
++		if (ring_is_rsc_enabled(ring))
++			return -EINVAL;
++
++		if (frame_size > ixgbe_rx_bufsz(ring))
++			return -EINVAL;
++	}
++
++	old_adapter_prog = xchg(&adapter->xdp_prog, prog);
++	for (i = 0; i < adapter->num_rx_queues; i++)
++		xchg(&adapter->rx_ring[i]->xdp_prog, adapter->xdp_prog);
++
++	if (old_adapter_prog)
++		bpf_prog_put(old_adapter_prog);
++
++	return 0;
++}
++
++static int ixgbe_xdp(struct net_device *dev, struct netdev_xdp *xdp)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(dev);
++
++	switch (xdp->command) {
++	case XDP_SETUP_PROG:
++		return ixgbe_xdp_setup(dev, xdp->prog);
++	case XDP_QUERY_PROG:
++		xdp->prog_attached = !!(adapter->rx_ring[0]->xdp_prog);
++		return 0;
++	default:
++		return -EINVAL;
++	}
++}
++
+ static const struct net_device_ops ixgbe_netdev_ops = {
+ 	.ndo_open		= ixgbe_open,
+ 	.ndo_stop		= ixgbe_close,
+@@ -9500,6 +9607,7 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
+ 	.ndo_udp_tunnel_add	= ixgbe_add_udp_tunnel_port,
+ 	.ndo_udp_tunnel_del	= ixgbe_del_udp_tunnel_port,
+ 	.ndo_features_check	= ixgbe_features_check,
++	.ndo_xdp		= ixgbe_xdp,
+ };
+ 
+ /**
 
