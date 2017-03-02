@@ -1,172 +1,275 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Wed, 01 Mar 2017 16:55:00 -0800
-Subject: [Intel-wired-lan] [net-next PATCH v2 3/3] ixgbe: xdp support for
-	adjust head
-In-Reply-To: <20170302005417.30505.14047.stgit@john-Precision-Tower-5810>
-References: <20170302005417.30505.14047.stgit@john-Precision-Tower-5810>
-Message-ID: <20170302005500.30505.88418.stgit@john-Precision-Tower-5810>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 02 Mar 2017 13:11:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ f4e22b667ae5126b30e923cdbddadebf44bb9367
+Message-ID: <58b7a96c.5HJQzaCemVzWfWAi%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add adjust_head support for XDP however at the moment we are only
-adding IXGBE_SKB_PAD bytes of headroom to align with driver paths.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+f4e22b667ae5126b30e923cdbddadebf44bb9367  i40e: always remove old filter when adding new FDir filter
 
-The infrastructure is is such that a follow on patch can extend
-headroom up to 196B without changing RX path.
+elapsed time: 220m
 
-Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   38 +++++++++++++++++--------
- 1 file changed, 26 insertions(+), 12 deletions(-)
+configs tested: 252
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index e754fe0..c8bf64e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2026,6 +2026,7 @@ static bool ixgbe_can_reuse_rx_page(struct ixgbe_rx_buffer *rx_buffer)
- static void ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
- 			      struct ixgbe_rx_buffer *rx_buffer,
- 			      struct sk_buff *skb,
-+			      unsigned int headroom,
- 			      unsigned int size)
- {
- #if (PAGE_SIZE < 8192)
-@@ -2036,7 +2037,8 @@ static void ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
- 				SKB_DATA_ALIGN(size);
- #endif
- 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
--			rx_buffer->page_offset, size, truesize);
-+			rx_buffer->page_offset - (IXGBE_SKB_PAD - headroom),
-+			size, truesize);
- #if (PAGE_SIZE < 8192)
- 	rx_buffer->page_offset ^= truesize;
- #else
-@@ -2109,6 +2111,7 @@ static void ixgbe_put_rx_buffer(struct ixgbe_ring *rx_ring,
- static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- 					   struct ixgbe_rx_buffer *rx_buffer,
- 					   union ixgbe_adv_rx_desc *rx_desc,
-+					   unsigned int headroom,
- 					   unsigned int size)
- {
- 	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-@@ -2117,6 +2120,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- #else
- 	unsigned int truesize = SKB_DATA_ALIGN(size);
- #endif
-+	unsigned int off_page;
- 	struct sk_buff *skb;
- 
- 	/* prefetch first cache line of first page */
-@@ -2130,12 +2134,14 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- 	if (unlikely(!skb))
- 		return NULL;
- 
-+	off_page = IXGBE_SKB_PAD - headroom;
-+
- 	if (size > IXGBE_RX_HDR_SIZE) {
- 		if (!ixgbe_test_staterr(rx_desc, IXGBE_RXD_STAT_EOP))
- 			IXGBE_CB(skb)->dma = rx_buffer->dma;
- 
- 		skb_add_rx_frag(skb, 0, rx_buffer->page,
--				rx_buffer->page_offset,
-+				rx_buffer->page_offset - off_page,
- 				size, truesize);
- #if (PAGE_SIZE < 8192)
- 		rx_buffer->page_offset ^= truesize;
-@@ -2143,7 +2149,8 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- 		rx_buffer->page_offset += truesize;
- #endif
- 	} else {
--		memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
-+		memcpy(__skb_put(skb, size), va - off_page,
-+		       ALIGN(size, sizeof(long)));
- 		rx_buffer->pagecnt_bias++;
- 	}
- 
-@@ -2153,6 +2160,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
- 				       struct ixgbe_rx_buffer *rx_buffer,
- 				       union ixgbe_adv_rx_desc *rx_desc,
-+				       unsigned int headroom,
- 				       unsigned int size)
- {
- 	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-@@ -2176,7 +2184,7 @@ static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
- 		return NULL;
- 
- 	/* update pointers within the skb to store the data */
--	skb_reserve(skb, IXGBE_SKB_PAD);
-+	skb_reserve(skb, headroom);
- 	__skb_put(skb, size);
- 
- 	/* record DMA address if this is the start of a chain of buffers */
-@@ -2203,7 +2211,8 @@ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
- static int ixgbe_run_xdp(struct ixgbe_adapter *adapter,
- 			 struct ixgbe_ring  *rx_ring,
- 			 struct ixgbe_rx_buffer *rx_buffer,
--			 unsigned int size)
-+			 unsigned int *headroom,
-+			 unsigned int *size)
- {
- 	int result = IXGBE_XDP_PASS;
- 	struct bpf_prog *xdp_prog;
-@@ -2218,14 +2227,16 @@ static int ixgbe_run_xdp(struct ixgbe_adapter *adapter,
- 		goto xdp_out;
- 
- 	addr = page_address(rx_buffer->page) + rx_buffer->page_offset;
--	xdp.data_hard_start = addr;
-+	xdp.data_hard_start = addr - *headroom;
- 	xdp.data = addr;
--	xdp.data_end = addr + size;
-+	xdp.data_end = addr + *size;
- 
- 	act = bpf_prog_run_xdp(xdp_prog, &xdp);
- 	switch (act) {
- 	case XDP_PASS:
--		break;
-+		*headroom = xdp.data - xdp.data_hard_start;
-+		*size = xdp.data_end - xdp.data;
-+		return IXGBE_XDP_PASS;
- 	case XDP_TX:
- 		result = ixgbe_xmit_xdp_ring(adapter, &xdp);
- 		if (result == IXGBE_XDP_TX)
-@@ -2274,6 +2285,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- 	u16 cleaned_count = ixgbe_desc_unused(rx_ring);
- 
- 	while (likely(total_rx_packets < budget)) {
-+		unsigned int headroom = ixgbe_rx_offset(rx_ring);
- 		union ixgbe_adv_rx_desc *rx_desc;
- 		struct ixgbe_rx_buffer *rx_buffer;
- 		struct sk_buff *skb;
-@@ -2299,7 +2311,8 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- 
- 		rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size);
- 
--		consumed = ixgbe_run_xdp(adapter, rx_ring, rx_buffer, size);
-+		consumed = ixgbe_run_xdp(adapter, rx_ring, rx_buffer,
-+					 &headroom, &size);
- 
- 		if (consumed) {
- 			ixgbe_put_rx_buffer(rx_ring, rx_buffer, skb);
-@@ -2312,13 +2325,14 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- 
- 		/* retrieve a buffer from the ring */
- 		if (skb)
--			ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
-+			ixgbe_add_rx_frag(rx_ring, rx_buffer, skb,
-+					  headroom, size);
- 		else if (ring_uses_build_skb(rx_ring))
- 			skb = ixgbe_build_skb(rx_ring, rx_buffer,
--					      rx_desc, size);
-+					      rx_desc, headroom, size);
- 		else
- 			skb = ixgbe_construct_skb(rx_ring, rx_buffer,
--						  rx_desc, size);
-+						  rx_desc, headroom, size);
- 
- 		/* exit if we failed to retrieve a buffer */
- 		if (!skb) {
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+avr32                    hammerhead_defconfig
+sh                        sh7757lcr_defconfig
+sparc                            allyesconfig
+avr32                      atngw100_defconfig
+blackfin                  CM-BF537U_defconfig
+sh                   sh7770_generic_defconfig
+i386                   randconfig-a0-03020016
+x86_64                 randconfig-a0-03020855
+x86_64                 randconfig-a0-03020954
+x86_64                 randconfig-a0-03021032
+x86_64                             acpi-redef
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+powerpc                   lite5200b_defconfig
+powerpc                     tqm8541_defconfig
+sh                             sh03_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-03020806
+i386                   randconfig-c0-03021046
+i386                   randconfig-c0-03021134
+x86_64                           allmodconfig
+x86_64                randconfig-in0-03020156
+x86_64                randconfig-it0-03020915
+x86_64                randconfig-it0-03020957
+arm                                 defconfig
+sh                          landisk_defconfig
+sh                          urquell_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                             allyesconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                        realview_defconfig
+powerpc                    amigaone_defconfig
+x86_64                 randconfig-g0-03020834
+x86_64                 randconfig-g0-03021241
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                         lpc32xx_defconfig
+avr32                            alldefconfig
+m68k                        m5272c3_defconfig
+powerpc                      ppc40x_defconfig
+powerpc                    socrates_defconfig
+arm                        mvebu_v5_defconfig
+mips                         tb0226_defconfig
+powerpc                    klondike_defconfig
+sh                     sh7710voipgw_defconfig
+xtensa                generic_kc705_defconfig
+x86_64                 randconfig-x016-201709
+x86_64                 randconfig-x011-201709
+x86_64                 randconfig-x017-201709
+x86_64                 randconfig-x014-201709
+x86_64                 randconfig-x012-201709
+x86_64                 randconfig-x019-201709
+x86_64                 randconfig-x013-201709
+x86_64                 randconfig-x010-201709
+x86_64                 randconfig-x015-201709
+x86_64                 randconfig-x018-201709
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-s0-03020836
+x86_64                 randconfig-s1-03020836
+x86_64                 randconfig-s2-03020836
+x86_64                 randconfig-s0-03021000
+x86_64                 randconfig-s1-03021000
+x86_64                 randconfig-s2-03021000
+x86_64                 randconfig-s3-03020941
+x86_64                 randconfig-s4-03020941
+x86_64                 randconfig-s5-03020941
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+arm                           corgi_defconfig
+cris                             allmodconfig
+powerpc                     tqm8555_defconfig
+powerpc                     tqm8560_defconfig
+avr32        atngw100mkii_evklcd101_defconfig
+powerpc                        warp_defconfig
+sparc                       sparc32_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-b0-03020854
+i386                   randconfig-b0-03021051
+i386                   randconfig-b0-03021226
+i386                   randconfig-b0-03021301
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+blackfin                  CM-BF537E_defconfig
+mips                     decstation_defconfig
+powerpc                 mpc832x_rdb_defconfig
+tile                             allmodconfig
+blackfin                       IP0X_defconfig
+m68k                        m5307c3_defconfig
+microblaze                          defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-03011718
+i386                   randconfig-i1-03011718
+x86_64                 randconfig-b0-03020651
+x86_64                 randconfig-b0-03021234
+x86_64                 randconfig-u0-03020910
+i386                               tinyconfig
+i386                   randconfig-h0-02270733
+i386                   randconfig-h1-02270733
+arm                           u8500_defconfig
+m32r                              allnoconfig
+mips                    maltaup_xpa_defconfig
+mips                         tb0287_defconfig
+x86_64                randconfig-ne0-03020938
+x86_64                randconfig-ne0-03021200
+i386                   randconfig-x011-201709
+i386                   randconfig-x015-201709
+i386                   randconfig-x018-201709
+i386                   randconfig-x017-201709
+i386                   randconfig-x012-201709
+i386                   randconfig-x010-201709
+i386                   randconfig-x019-201709
+i386                   randconfig-x016-201709
+i386                   randconfig-x014-201709
+i386                   randconfig-x013-201709
+i386                   randconfig-h0-03020900
+i386                   randconfig-h1-03020900
+i386                   randconfig-h0-03021013
+i386                   randconfig-h1-03021013
+i386                   randconfig-h0-03021045
+i386                   randconfig-h1-03021045
+i386                   randconfig-h0-03021235
+i386                   randconfig-h1-03021235
+arm                           viper_defconfig
+arm                            zeus_defconfig
+powerpc                         wii_defconfig
+c6x                        evmc6457_defconfig
+xtensa                              defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-03020944
+x86_64                 randconfig-h0-03021052
+powerpc                  iss476-smp_defconfig
+powerpc                 mpc834x_mds_defconfig
+ia64                          tiger_defconfig
+sh                          r7785rp_defconfig
+blackfin                   CM-BF533_defconfig
+i386                 randconfig-x070-03011718
+i386                 randconfig-x071-03011718
+i386                 randconfig-x072-03011718
+i386                 randconfig-x073-03011718
+i386                 randconfig-x074-03011718
+i386                 randconfig-x075-03011718
+i386                 randconfig-x076-03011718
+i386                 randconfig-x077-03011718
+i386                 randconfig-x078-03011718
+i386                 randconfig-x079-03011718
+x86_64                 randconfig-n0-03021011
+x86_64                 randconfig-n0-03021040
+x86_64                 randconfig-n0-03021225
+i386                  randconfig-sb0-03020829
+x86_64                randconfig-ws0-03021226
+x86_64                randconfig-ws0-03012324
+arm                         cm_x300_defconfig
+mips                        jmr3927_defconfig
+parisc                           allyesconfig
+x86_64                 randconfig-x001-201709
+x86_64                 randconfig-x008-201709
+x86_64                 randconfig-x000-201709
+x86_64                 randconfig-x003-201709
+x86_64                 randconfig-x009-201709
+x86_64                 randconfig-x006-201709
+x86_64                 randconfig-x005-201709
+x86_64                 randconfig-x002-201709
+x86_64                 randconfig-x004-201709
+x86_64                 randconfig-x007-201709
+i386                   randconfig-r0-03011404
+x86_64                 randconfig-r0-03020834
+x86_64                 randconfig-r0-03021016
+arm                         em_x270_defconfig
+arm                       netwinder_defconfig
+mips                         bigsur_defconfig
+powerpc                     kmeter1_defconfig
+powerpc                      makalu_defconfig
+powerpc                     sequoia_defconfig
+arm                        clps711x_defconfig
+i386                   randconfig-x007-201709
+i386                   randconfig-x001-201709
+i386                   randconfig-x003-201709
+i386                   randconfig-x004-201709
+i386                   randconfig-x006-201709
+i386                   randconfig-x008-201709
+i386                   randconfig-x002-201709
+i386                   randconfig-x009-201709
+i386                   randconfig-x000-201709
+i386                   randconfig-x005-201709
+i386                   randconfig-x0-03020753
+i386                   randconfig-x0-03021040
+i386                   randconfig-x0-03021226
+
+Thanks,
+Fengguang
