@@ -1,212 +1,165 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 03 Mar 2017 22:50:03 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- d2b0d577f68e58b955544ca5338fd4e7538fc5b6
-Message-ID: <58b9829b.6Jih6ykmuF/dkire%fengguang.wu@intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Fri, 3 Mar 2017 08:23:30 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v2 1/3] ixgbe: add XDP
+ support for pass and drop actions
+In-Reply-To: <CAKgT0UdoHK-5=pXHGcgbSp5zFSzHuSwiqY=5B2czjkLbN4KuQA@mail.gmail.com>
+References: <20170302005417.30505.14047.stgit@john-Precision-Tower-5810>
+ <CAKgT0UdoHK-5=pXHGcgbSp5zFSzHuSwiqY=5B2czjkLbN4KuQA@mail.gmail.com>
+Message-ID: <58B99882.4080104@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-d2b0d577f68e58b955544ca5338fd4e7538fc5b6  Subject: fm10k: correctly check if interface is removed. Cc: Phil Turnbull <phil.turnbull@oracle.com>
+On 17-03-02 08:22 AM, Alexander Duyck wrote:
+> On Wed, Mar 1, 2017 at 4:54 PM, John Fastabend <john.fastabend@gmail.com> wrote:
+>> Basic XDP drop support for ixgbe. Uses READ_ONCE/xchg semantics on XDP
+>> programs instead of rcu primitives as suggested by Daniel Borkmann and
+>> Alex Duyck.
+>>
+>> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+> 
+> So it still looks like this is doing a bunch of hacking in the Rx
+> path.  I suggested a few items below to streamline this.
+> 
+>> ---
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    2
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  114 ++++++++++++++++++++++++-
+>>  2 files changed, 113 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>> index b812913..2d12c24 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>> @@ -273,6 +273,7 @@ struct ixgbe_ring {
+>>         struct ixgbe_ring *next;        /* pointer to next ring in q_vector */
+>>         struct ixgbe_q_vector *q_vector; /* backpointer to host q_vector */
+>>         struct net_device *netdev;      /* netdev ring belongs to */
+>> +       struct bpf_prog *xdp_prog;
+>>         struct device *dev;             /* device for DMA mapping */
+>>         struct ixgbe_fwd_adapter *l2_accel_priv;
+>>         void *desc;                     /* descriptor ring memory */
+>> @@ -510,6 +511,7 @@ struct ixgbe_adapter {
+>>         unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
+>>         /* OS defined structs */
+>>         struct net_device *netdev;
+>> +       struct bpf_prog *xdp_prog;
+>>         struct pci_dev *pdev;
+>>
+>>         unsigned long state;
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> index e3da397..0b802b5 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> @@ -49,6 +49,9 @@
+>>  #include <linux/if_macvlan.h>
+>>  #include <linux/if_bridge.h>
+>>  #include <linux/prefetch.h>
+>> +#include <linux/bpf.h>
+>> +#include <linux/bpf_trace.h>
+>> +#include <linux/atomic.h>
+>>  #include <scsi/fc/fc_fcoe.h>
+>>  #include <net/udp_tunnel.h>
+>>  #include <net/pkt_cls.h>
+>> @@ -2051,7 +2054,7 @@ static void ixgbe_put_rx_buffer(struct ixgbe_ring *rx_ring,
+>>                 /* hand second half of page back to the ring */
+>>                 ixgbe_reuse_rx_page(rx_ring, rx_buffer);
+>>         } else {
+>> -               if (IXGBE_CB(skb)->dma == rx_buffer->dma) {
+>> +               if (skb && IXGBE_CB(skb)->dma == rx_buffer->dma) {
+>>                         /* the page has been released from the ring */
+>>                         IXGBE_CB(skb)->page_released = true;
+>>                 } else {
+> 
+> So you can probably change this to "if (!IS_ERR(skb) &&
+> IXGBE_CB(skb)->dma == rx_buffer->dma) {" more on why below.
+> 
 
-elapsed time: 2490m
+OK I will go with this. I think using 'int consumed' is a bit easier to read for
+folks not overly familiar with the driver, but I get the point it removes some
+special cases.
 
-configs tested: 189
+should have a v3 shortly.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+[...]
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                        multi_v5_defconfig
-avr32                     atstk1006_defconfig
-powerpc                 linkstation_defconfig
-i386                   randconfig-a0-03020016
-x86_64                 randconfig-a0-03020503
-x86_64                             acpi-redef
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                     kmeter1_defconfig
-powerpc                       maple_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-03020445
-arm                       netwinder_defconfig
-m68k                             allyesconfig
-sh                           se7751_defconfig
-x86_64                randconfig-in0-03020156
-mips                     loongson1c_defconfig
-um                             i386_defconfig
-i386                             allyesconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                 randconfig-g0-03020459
-i386                             allmodconfig
-alpha                            allmodconfig
-m68k                              allnoconfig
-mips                        bcm47xx_defconfig
-mips                        xilfpga_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-x016-201709
-x86_64                 randconfig-x011-201709
-x86_64                 randconfig-x017-201709
-x86_64                 randconfig-x014-201709
-x86_64                 randconfig-x012-201709
-x86_64                 randconfig-x019-201709
-x86_64                 randconfig-x013-201709
-x86_64                 randconfig-x010-201709
-x86_64                 randconfig-x015-201709
-x86_64                 randconfig-x018-201709
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-03031932
-i386                   randconfig-s1-03031932
-x86_64                 randconfig-s0-03020516
-x86_64                 randconfig-s1-03020516
-x86_64                 randconfig-s2-03020516
-x86_64                 randconfig-s3-03020533
-x86_64                 randconfig-s4-03020533
-x86_64                 randconfig-s5-03020533
-avr32                      atngw100_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-tile                         tilegx_defconfig
-i386                               tinyconfig
-arm                          pxa168_defconfig
-blackfin                  CM-BF537E_defconfig
-mips                        maltaup_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-i0-03021655
-i386                   randconfig-b0-03020528
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-03011718
-i386                   randconfig-i1-03011718
-x86_64                 randconfig-b0-03020138
-x86_64                           allmodconfig
-alpha                            allyesconfig
-frv                               allnoconfig
-mips                         cobalt_defconfig
-x86_64                 randconfig-u0-03020205
-i386                   randconfig-x011-201709
-i386                   randconfig-x015-201709
-i386                   randconfig-x018-201709
-i386                   randconfig-x017-201709
-i386                   randconfig-x012-201709
-i386                   randconfig-x010-201709
-i386                   randconfig-x019-201709
-i386                   randconfig-x016-201709
-i386                   randconfig-x014-201709
-i386                   randconfig-x013-201709
-x86_64                randconfig-ne0-03020302
-i386                   randconfig-h0-03020348
-i386                   randconfig-h1-03020348
-arm                       imx_v4_v5_defconfig
-blackfin                  TCM-BF518_defconfig
-c6x                        evmc6472_defconfig
-x86_64                 randconfig-h0-03020501
-arm                            hisi_defconfig
-blackfin               BF518F-EZBRD_defconfig
-i386                 randconfig-x070-03011718
-i386                 randconfig-x071-03011718
-i386                 randconfig-x072-03011718
-i386                 randconfig-x073-03011718
-i386                 randconfig-x074-03011718
-i386                 randconfig-x075-03011718
-i386                 randconfig-x076-03011718
-i386                 randconfig-x077-03011718
-i386                 randconfig-x078-03011718
-i386                 randconfig-x079-03011718
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                randconfig-ws0-03012319
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x001-201709
-x86_64                 randconfig-x008-201709
-x86_64                 randconfig-x000-201709
-x86_64                 randconfig-x003-201709
-x86_64                 randconfig-x009-201709
-x86_64                 randconfig-x006-201709
-x86_64                 randconfig-x005-201709
-x86_64                 randconfig-x002-201709
-x86_64                 randconfig-x004-201709
-x86_64                 randconfig-x007-201709
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-r0-03011404
-x86_64                 randconfig-r0-03020441
-m68k                             allmodconfig
-sh                     sh7710voipgw_defconfig
-i386                   randconfig-x007-201709
-i386                   randconfig-x001-201709
-i386                   randconfig-x003-201709
-i386                   randconfig-x004-201709
-i386                   randconfig-x006-201709
-i386                   randconfig-x008-201709
-i386                   randconfig-x002-201709
-i386                   randconfig-x009-201709
-i386                   randconfig-x000-201709
-i386                   randconfig-x005-201709
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x0-03020328
+>> @@ -2207,6 +2255,18 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>>
+>>                 rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size);
+>>
+>> +               consumed = ixgbe_run_xdp(rx_ring, rx_buffer, size);
+>> +               rcu_read_unlock();
+>> +
+> 
+> Did you leave an rcu_read_unlock here?  I'm assuming you meant to drop this.
+> 
+
+ugh patch sequence error its fixed in v2 as you note.
+
+>> +               if (consumed) {
+>> +                       ixgbe_put_rx_buffer(rx_ring, rx_buffer, skb);
+>> +                       cleaned_count++;
+>> +                       ixgbe_is_non_eop(rx_ring, rx_desc, skb);
+>> +                       total_rx_packets++;
+>> +                       total_rx_bytes += size;
+>> +                       continue;
+>> +               }
+>> +
+> 
+> Looks like this wasn't adding one back to the pagecnt_bias.  That
+> would trigger a memory leak.
+> 
+
+It is done in the ixgbe_run_xdp path. Perhaps its better to do here.
+
+[...]
+
+>>                         ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
+>> @@ -6121,9 +6181,13 @@ static int ixgbe_setup_all_rx_resources(struct ixgbe_adapter *adapter)
+>>         int i, err = 0;
+>>
+>>         for (i = 0; i < adapter->num_rx_queues; i++) {
+>> -               err = ixgbe_setup_rx_resources(adapter->rx_ring[i]);
+>> -               if (!err)
+>> +               struct ixgbe_ring *rx_ring = adapter->rx_ring[i];
+>> +
+>> +               err = ixgbe_setup_rx_resources(rx_ring);
+>> +               if (!err) {
+>> +                       xchg(&rx_ring->xdp_prog, adapter->xdp_prog);
+>>                         continue;
+>> +               }
+>>
+
+Sure done.
+
+>>                 e_err(probe, "Allocation for Rx Queue %u failed\n", i);
+>>                 goto err_setup_rx;
+> 
+> I still think it makes more sense to just place this in
+> ixgbe_setup_rx_resources.  No point in putting here as it just adds
+> more complication.
+> 
+> If I am not mistaken all you would have to add is the xchg line and
+> that would be it.
+> 
+>> @@ -6191,6 +6255,7 @@ void ixgbe_free_rx_resources(struct ixgbe_ring *rx_ring)
+>>
+>>         vfree(rx_ring->rx_buffer_info);
+>>         rx_ring->rx_buffer_info = NULL;
+>> +       xchg(&rx_ring->xdp_prog, NULL);
+>>
+>>         /* if not set, then don't free */
+>>         if (!rx_ring->desc)
+> 
+> Just for the sake of symmetry I would suggest placing the xchg in
+> front of the vfree.  Also this code being here makes a stronger
+> argument for us setting up xdp in setup_rx_resources.
+> 
+
+done.
+
 
 Thanks,
-Fengguang
+John
+
