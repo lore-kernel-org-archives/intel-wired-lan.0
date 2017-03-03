@@ -1,149 +1,188 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Fri, 03 Mar 2017 09:57:46 -0800
-Subject: [Intel-wired-lan] [net-next PATCH v3 3/3] ixgbe: xdp support for
-	adjust head
-In-Reply-To: <20170303175526.25015.12183.stgit@john-Precision-Tower-5810>
-References: <20170303175526.25015.12183.stgit@john-Precision-Tower-5810>
-Message-ID: <20170303175746.25015.22531.stgit@john-Precision-Tower-5810>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 04 Mar 2017 02:49:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 950bcad97ae1314e753fe75a5da3eb8298f683a7
+Message-ID: <58b9bab4.QEjWXs2/Sl82oRxM%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add adjust_head support for XDP however at the moment we are only
-adding IXGBE_SKB_PAD bytes of headroom to align with driver paths.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+950bcad97ae1314e753fe75a5da3eb8298f683a7  i40e: document drivers use of ntuple filters
 
-The infrastructure is is such that a follow on patch can extend
-headroom up to 196B without changing RX path.
+elapsed time: 116m
 
-Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   31 +++++++++++++++++--------
- 1 file changed, 21 insertions(+), 10 deletions(-)
+configs tested: 165
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index fa37d48..1892c42 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2117,6 +2117,7 @@ static void ixgbe_put_rx_buffer(struct ixgbe_ring *rx_ring,
- static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- 					   struct ixgbe_rx_buffer *rx_buffer,
- 					   union ixgbe_adv_rx_desc *rx_desc,
-+					   unsigned int headroom,
- 					   unsigned int size)
- {
- 	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-@@ -2125,6 +2126,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- #else
- 	unsigned int truesize = SKB_DATA_ALIGN(size);
- #endif
-+	unsigned int off_page;
- 	struct sk_buff *skb;
- 
- 	/* prefetch first cache line of first page */
-@@ -2138,12 +2140,14 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- 	if (unlikely(!skb))
- 		return NULL;
- 
-+	off_page = IXGBE_SKB_PAD - headroom;
-+
- 	if (size > IXGBE_RX_HDR_SIZE) {
- 		if (!ixgbe_test_staterr(rx_desc, IXGBE_RXD_STAT_EOP))
- 			IXGBE_CB(skb)->dma = rx_buffer->dma;
- 
- 		skb_add_rx_frag(skb, 0, rx_buffer->page,
--				rx_buffer->page_offset,
-+				rx_buffer->page_offset - off_page,
- 				size, truesize);
- #if (PAGE_SIZE < 8192)
- 		rx_buffer->page_offset ^= truesize;
-@@ -2151,7 +2155,8 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- 		rx_buffer->page_offset += truesize;
- #endif
- 	} else {
--		memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
-+		memcpy(__skb_put(skb, size), va - off_page,
-+		       ALIGN(size, sizeof(long)));
- 		rx_buffer->pagecnt_bias++;
- 	}
- 
-@@ -2161,6 +2166,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
- static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
- 				       struct ixgbe_rx_buffer *rx_buffer,
- 				       union ixgbe_adv_rx_desc *rx_desc,
-+				       unsigned int headroom,
- 				       unsigned int size)
- {
- 	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-@@ -2184,7 +2190,7 @@ static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
- 		return NULL;
- 
- 	/* update pointers within the skb to store the data */
--	skb_reserve(skb, IXGBE_SKB_PAD);
-+	skb_reserve(skb, headroom);
- 	__skb_put(skb, size);
- 
- 	/* record DMA address if this is the start of a chain of buffers */
-@@ -2211,7 +2217,8 @@ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
- static struct sk_buff *ixgbe_run_xdp(struct ixgbe_adapter *adapter,
- 				     struct ixgbe_ring  *rx_ring,
- 				     struct ixgbe_rx_buffer *rx_buffer,
--				     unsigned int size)
-+				     unsigned int *headroom,
-+				     unsigned int *size)
- {
- 	int result = IXGBE_XDP_PASS;
- 	struct bpf_prog *xdp_prog;
-@@ -2226,14 +2233,16 @@ static struct sk_buff *ixgbe_run_xdp(struct ixgbe_adapter *adapter,
- 		goto xdp_out;
- 
- 	addr = page_address(rx_buffer->page) + rx_buffer->page_offset;
--	xdp.data_hard_start = addr;
-+	xdp.data_hard_start = addr - *headroom;
- 	xdp.data = addr;
--	xdp.data_end = addr + size;
-+	xdp.data_end = addr + *size;
- 
- 	act = bpf_prog_run_xdp(xdp_prog, &xdp);
- 	switch (act) {
- 	case XDP_PASS:
--		break;
-+		*headroom = xdp.data - xdp.data_hard_start;
-+		*size = xdp.data_end - xdp.data;
-+		return IXGBE_XDP_PASS;
- 	case XDP_TX:
- 		result = ixgbe_xmit_xdp_ring(adapter, &xdp);
- 		if (result == IXGBE_XDP_TX) {
-@@ -2289,6 +2298,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- 	u16 cleaned_count = ixgbe_desc_unused(rx_ring);
- 
- 	while (likely(total_rx_packets < budget)) {
-+		unsigned int headroom = ixgbe_rx_offset(rx_ring);
- 		union ixgbe_adv_rx_desc *rx_desc;
- 		struct ixgbe_rx_buffer *rx_buffer;
- 		struct sk_buff *skb;
-@@ -2313,7 +2323,8 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- 
- 		rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size);
- 
--		skb = ixgbe_run_xdp(adapter, rx_ring, rx_buffer, size);
-+		skb = ixgbe_run_xdp(adapter, rx_ring, rx_buffer,
-+				    &headroom, &size);
- 		if (IS_ERR(skb)) { /* XDP consumed buffer */
- 			total_rx_packets++;
- 			total_rx_bytes += size;
-@@ -2321,10 +2332,10 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- 			ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
- 		} else if (ring_uses_build_skb(rx_ring)) {
- 			skb = ixgbe_build_skb(rx_ring, rx_buffer,
--					      rx_desc, size);
-+					      rx_desc, headroom, size);
- 		} else {
- 			skb = ixgbe_construct_skb(rx_ring, rx_buffer,
--						  rx_desc, size);
-+						  rx_desc, headroom, size);
- 		}
- 
- 		/* exit if we failed to retrieve a buffer */
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                         cm_x2xx_defconfig
+arm                           corgi_defconfig
+cris                       artpec_3_defconfig
+i386                   randconfig-a0-03031829
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED+CONFIG_DEBUG_INFO_REDUCED
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+i386                   randconfig-c0-03040111
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-g0-03032358
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+arm                       aspeed_g4_defconfig
+arm                           tegra_defconfig
+frv                                 defconfig
+powerpc                 mpc8315_rdb_defconfig
+powerpc                 mpc836x_rdk_defconfig
+powerpc                  iss476-smp_defconfig
+s390                             alldefconfig
+xtensa                            allnoconfig
+x86_64                 randconfig-x016-201709
+x86_64                 randconfig-x011-201709
+x86_64                 randconfig-x017-201709
+x86_64                 randconfig-x014-201709
+x86_64                 randconfig-x012-201709
+x86_64                 randconfig-x019-201709
+x86_64                 randconfig-x013-201709
+x86_64                 randconfig-x010-201709
+x86_64                 randconfig-x015-201709
+x86_64                 randconfig-x018-201709
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-03031932
+i386                   randconfig-s1-03031932
+x86_64                 randconfig-s0-03040146
+x86_64                 randconfig-s1-03040146
+x86_64                 randconfig-s2-03040146
+x86_64                 randconfig-s3-03040113
+x86_64                 randconfig-s4-03040113
+x86_64                 randconfig-s5-03040113
+x86_64                 randconfig-i0-03021655
+i386                   randconfig-b0-03040020
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-03011718
+i386                   randconfig-i1-03011718
+x86_64                           allmodconfig
+x86_64                randconfig-ne0-03040136
+i386                   randconfig-x011-201709
+i386                   randconfig-x015-201709
+i386                   randconfig-x018-201709
+i386                   randconfig-x017-201709
+i386                   randconfig-x012-201709
+i386                   randconfig-x010-201709
+i386                   randconfig-x019-201709
+i386                   randconfig-x016-201709
+i386                   randconfig-x014-201709
+i386                   randconfig-x013-201709
+x86_64                                    lkp
+i386                   randconfig-n0-03031454
+x86_64                 randconfig-h0-03040057
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+m68k                            mac_defconfig
+powerpc                   currituck_defconfig
+i386                 randconfig-x078-03031904
+i386                 randconfig-x076-03031904
+i386                 randconfig-x074-03031904
+i386                 randconfig-x072-03031904
+i386                 randconfig-x077-03031904
+i386                 randconfig-x070-03031904
+i386                 randconfig-x071-03031904
+i386                 randconfig-x079-03031904
+i386                 randconfig-x075-03031904
+i386                 randconfig-x073-03031904
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                randconfig-ws0-03040107
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+m68k                       m5249evb_defconfig
+powerpc                      walnut_defconfig
+sh                          sdk7780_defconfig
+x86_64                 randconfig-x001-201709
+x86_64                 randconfig-x008-201709
+x86_64                 randconfig-x000-201709
+x86_64                 randconfig-x003-201709
+x86_64                 randconfig-x009-201709
+x86_64                 randconfig-x006-201709
+x86_64                 randconfig-x005-201709
+x86_64                 randconfig-x002-201709
+x86_64                 randconfig-x004-201709
+x86_64                 randconfig-x007-201709
+i386                   randconfig-r0-03031452
+i386                   randconfig-x007-201709
+i386                   randconfig-x001-201709
+i386                   randconfig-x003-201709
+i386                   randconfig-x004-201709
+i386                   randconfig-x006-201709
+i386                   randconfig-x008-201709
+i386                   randconfig-x002-201709
+i386                   randconfig-x009-201709
+i386                   randconfig-x000-201709
+i386                   randconfig-x005-201709
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-03032354
+
+Thanks,
+Fengguang
