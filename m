@@ -1,132 +1,226 @@
 From: John Fastabend <john.fastabend@gmail.com>
-Date: Fri, 3 Mar 2017 08:40:02 -0800
-Subject: [Intel-wired-lan] [net-next PATCH v2 2/3] ixgbe: add support
-	for XDP_TX action
-In-Reply-To: <CAKgT0UeaiF7U7JG=f576Nfe39Rn5+qZG4P-dSs12z5XUp+0CJw@mail.gmail.com>
+Date: Fri, 3 Mar 2017 09:07:13 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v2 3/3] ixgbe: xdp support
+	for adjust head
+In-Reply-To: <CAKgT0UefZH-k8tcGiFuEPSQiF+8eh402CLArD2GC16AL+prGYA@mail.gmail.com>
 References: <20170302005417.30505.14047.stgit@john-Precision-Tower-5810>
- <20170302005439.30505.65636.stgit@john-Precision-Tower-5810>
- <CAKgT0UeaiF7U7JG=f576Nfe39Rn5+qZG4P-dSs12z5XUp+0CJw@mail.gmail.com>
-Message-ID: <58B99C62.80506@gmail.com>
+ <20170302005500.30505.88418.stgit@john-Precision-Tower-5810>
+ <CAKgT0UefZH-k8tcGiFuEPSQiF+8eh402CLArD2GC16AL+prGYA@mail.gmail.com>
+Message-ID: <58B9A2C1.5090603@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 17-03-02 08:39 AM, Alexander Duyck wrote:
-> On Wed, Mar 1, 2017 at 4:54 PM, John Fastabend <john.fastabend@gmail.com> wrote:
->> Add support for XDP_TX action.
+On 17-03-02 11:43 AM, Alexander Duyck wrote:
+> On Wed, Mar 1, 2017 at 4:55 PM, John Fastabend <john.fastabend@gmail.com> wrote:
+>> Add adjust_head support for XDP however at the moment we are only
+>> adding IXGBE_SKB_PAD bytes of headroom to align with driver paths.
 >>
->> A couple design choices were made here. First I use a new ring
->> pointer structure xdp_ring[] in the adapter struct instead of
->> pushing the newly allocated xdp TX rings into the tx_ring[]
->> structure. This means we have to duplicate loops around rings
->> in places we want to initialize both TX rings and XDP rings.
->> But by making it explicit it is obvious when we are using XDP
->> rings and when we are using TX rings. Further we don't have
->> to do ring arithmatic which is error prone. As a proof point
->> for doing this my first patches used only a single ring structure
->> and introduced bugs in FCoE code and macvlan code paths.
->>
->> Second I am aware this is not the most optimized version of
->> this code possible. I want to get baseline support in using
->> the most readable format possible and then once this series
->> is included I will optimize the TX path in another series
->> of patches.
->>
+>> The infrastructure is is such that a follow on patch can extend
+>> headroom up to 196B without changing RX path.
+> 
+> I still owe you the 192B headroom patch.  I will hopefully get to it today.
+> 
+
+I see the patch on the list thanks.
+
 >> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
 >> ---
-
-[...]
-
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   38 +++++++++++++++++--------
+>>  1 file changed, 26 insertions(+), 12 deletions(-)
 >>
->> +               for (j = 0; j < adapter->num_xdp_queues; i++, j++) {
->> +                       memcpy(&temp_ring[i], adapter->xdp_ring[j],
->> +                              sizeof(struct ixgbe_ring));
->> +
->> +                       temp_ring[i].count = new_tx_count;
->> +                       err = ixgbe_setup_tx_resources(&temp_ring[i]);
->> +                       if (err) {
->> +                               while (i) {
->> +                                       i--;
->> +                                       ixgbe_free_tx_resources(&temp_ring[i]);
->> +                               }
->> +                               goto err_setup;
->> +                       }
->> +               }
->> +
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> index e754fe0..c8bf64e 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> @@ -2026,6 +2026,7 @@ static bool ixgbe_can_reuse_rx_page(struct ixgbe_rx_buffer *rx_buffer)
+>>  static void ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
+>>                               struct ixgbe_rx_buffer *rx_buffer,
+>>                               struct sk_buff *skb,
+>> +                             unsigned int headroom,
+>>                               unsigned int size)
+>>  {
+>>  #if (PAGE_SIZE < 8192)
 > 
-> It looks like this is broken.  I would say just get rid of j and just
-> use i for all of this like we did for the Tx and Rx rings.  I don't
-> think you need J anymore since you aren't really playing with an
-> offset anyway.
+> You shouldn't need any changes to ixgbe_add_rx_frag since there is no
+> headroom here as this would be the second buffer in a scatter-gather
+> list.
+> 
+>> @@ -2036,7 +2037,8 @@ static void ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
+>>                                 SKB_DATA_ALIGN(size);
+>>  #endif
+>>         skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
+>> -                       rx_buffer->page_offset, size, truesize);
+>> +                       rx_buffer->page_offset - (IXGBE_SKB_PAD - headroom),
+>> +                       size, truesize);
+>>  #if (PAGE_SIZE < 8192)
+>>         rx_buffer->page_offset ^= truesize;
+>>  #else
+> 
+> So as per comment above this could be dropped.
 > 
 
-Yep fixed up the counter usage throughout. This was a holdout from using the
-single tx_ring[] array.
+Yep thanks.
 
-[...]
+>> @@ -2109,6 +2111,7 @@ static void ixgbe_put_rx_buffer(struct ixgbe_ring *rx_ring,
+>>  static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+>>                                            struct ixgbe_rx_buffer *rx_buffer,
+>>                                            union ixgbe_adv_rx_desc *rx_desc,
+>> +                                          unsigned int headroom,
+>>                                            unsigned int size)
+>>  {
+>>         void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
+> 
+> I was thinking. Instead of adding headroom why don't we just replace
+> rx_buffer for construct and build skb with the xdp_buf structure
+> pointer.  Then you just allocate it in ixgbe_clean_rx_irq, populate it
+> in ixgbe_run_xdp, and could pull the needed bits into
+> ixgbe_construct_skb since we are already having to convert the page
+> offsets and such anyway.
 
->>         struct ixgbe_q_vector *q_vector;
->> @@ -909,6 +941,33 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
->>                 ring++;
+Well we use dma pointer and page_offset is handled slightly differently
+in both cases.
+
+Its tempting to go this route with a ixgbe_promote_xdp_to_skb() handler. How
+about pushing this series with headroom, size and playing with this for a bit.
+
+> 
+>> @@ -2117,6 +2120,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+>>  #else
+>>         unsigned int truesize = SKB_DATA_ALIGN(size);
+>>  #endif
+>> +       unsigned int off_page;
+>>         struct sk_buff *skb;
+>>
+>>         /* prefetch first cache line of first page */
+>> @@ -2130,12 +2134,14 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+>>         if (unlikely(!skb))
+>>                 return NULL;
+>>
+>> +       off_page = IXGBE_SKB_PAD - headroom;
+>> +
+>>         if (size > IXGBE_RX_HDR_SIZE) {
+>>                 if (!ixgbe_test_staterr(rx_desc, IXGBE_RXD_STAT_EOP))
+>>                         IXGBE_CB(skb)->dma = rx_buffer->dma;
+>>
+>>                 skb_add_rx_frag(skb, 0, rx_buffer->page,
+>> -                               rx_buffer->page_offset,
+>> +                               rx_buffer->page_offset - off_page,
+>>                                 size, truesize);
+>>  #if (PAGE_SIZE < 8192)
+>>                 rx_buffer->page_offset ^= truesize;
+> 
+> As far as computing the bits needed for skb_add_rx_frag I think you
+> can refer to the code used in igb for how to handle that since I think
+> I was having to get the page address from the page for that anyway.
+> 
+
+Not sure I'm following this comment. Are you suggesting this is not correct
+as is? Or is this related to the xdp and rx_buffer comment.
+
+>> @@ -2143,7 +2149,8 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+>>                 rx_buffer->page_offset += truesize;
+>>  #endif
+>>         } else {
+>> -               memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
+>> +               memcpy(__skb_put(skb, size), va - off_page,
+>> +                      ALIGN(size, sizeof(long)));
+>>                 rx_buffer->pagecnt_bias++;
 >>         }
 >>
->> +       while (xdp_count) {
->> +               /* assign generic ring traits */
->> +               ring->dev = &adapter->pdev->dev;
->> +               ring->netdev = adapter->netdev;
->> +
->> +               /* configure backlink on ring */
->> +               ring->q_vector = q_vector;
->> +
->> +               /* update q_vector Tx values */
->> +               ixgbe_add_ring(ring, &q_vector->tx);
-> 
-> We might want to just add XDP queues as a separate ring container in
-> the q_vector.  Just a thought, though I am not sure what extra
-> complications it would add.
-> 
-
-I'll keep it as is for now.
-
-[...]
-
->> @@ -2255,8 +2299,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>> @@ -2153,6 +2160,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+>>  static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
+>>                                        struct ixgbe_rx_buffer *rx_buffer,
+>>                                        union ixgbe_adv_rx_desc *rx_desc,
+>> +                                      unsigned int headroom,
+>>                                        unsigned int size)
+>>  {
+>>         void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
+>> @@ -2176,7 +2184,7 @@ static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
+>>                 return NULL;
+>>
+>>         /* update pointers within the skb to store the data */
+>> -       skb_reserve(skb, IXGBE_SKB_PAD);
+>> +       skb_reserve(skb, headroom);
+>>         __skb_put(skb, size);
+>>
+>>         /* record DMA address if this is the start of a chain of buffers */
+>> @@ -2203,7 +2211,8 @@ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+>>  static int ixgbe_run_xdp(struct ixgbe_adapter *adapter,
+>>                          struct ixgbe_ring  *rx_ring,
+>>                          struct ixgbe_rx_buffer *rx_buffer,
+>> -                        unsigned int size)
+>> +                        unsigned int *headroom,
+>> +                        unsigned int *size)
+>>  {
+>>         int result = IXGBE_XDP_PASS;
+>>         struct bpf_prog *xdp_prog;
+>> @@ -2218,14 +2227,16 @@ static int ixgbe_run_xdp(struct ixgbe_adapter *adapter,
+>>                 goto xdp_out;
+>>
+>>         addr = page_address(rx_buffer->page) + rx_buffer->page_offset;
+>> -       xdp.data_hard_start = addr;
+>> +       xdp.data_hard_start = addr - *headroom;
+>>         xdp.data = addr;
+>> -       xdp.data_end = addr + size;
+>> +       xdp.data_end = addr + *size;
+>>
+>>         act = bpf_prog_run_xdp(xdp_prog, &xdp);
+>>         switch (act) {
+>>         case XDP_PASS:
+>> -               break;
+>> +               *headroom = xdp.data - xdp.data_hard_start;
+>> +               *size = xdp.data_end - xdp.data;
+>> +               return IXGBE_XDP_PASS;
+>>         case XDP_TX:
+>>                 result = ixgbe_xmit_xdp_ring(adapter, &xdp);
+>>                 if (result == IXGBE_XDP_TX)
+>> @@ -2274,6 +2285,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>>         u16 cleaned_count = ixgbe_desc_unused(rx_ring);
+>>
+>>         while (likely(total_rx_packets < budget)) {
+>> +               unsigned int headroom = ixgbe_rx_offset(rx_ring);
+>>                 union ixgbe_adv_rx_desc *rx_desc;
+>>                 struct ixgbe_rx_buffer *rx_buffer;
+>>                 struct sk_buff *skb;
+>> @@ -2299,7 +2311,8 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
 >>
 >>                 rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size);
 >>
->> -               consumed = ixgbe_run_xdp(rx_ring, rx_buffer, size);
->> -               rcu_read_unlock();
->> +               consumed = ixgbe_run_xdp(adapter, rx_ring, rx_buffer, size);
-> 
-> Okay so this is where you fixed the rcu_read_unlock that you leaked from v1.
-> 
+>> -               consumed = ixgbe_run_xdp(adapter, rx_ring, rx_buffer, size);
+>> +               consumed = ixgbe_run_xdp(adapter, rx_ring, rx_buffer,
+>> +                                        &headroom, &size);
 >>
 >>                 if (consumed) {
 >>                         ixgbe_put_rx_buffer(rx_ring, rx_buffer, skb);
 > 
-> So if you end up going with my suggestions to patch 1/3 you would need
-> to make a slight tweak in the if (IS_ERR(skb)) path.
+> Just looking this over I think passing xdp_buf instead of rx_buffer to
+> the functions below would likely be a much better way to go.
+
+
+much better? In the construct_skb case we need to get the rx_buffer->dma address
+from somewhere.
+
 > 
-> If you are transmitting the buffer you need to update the page_offset
-> by the truesize of the buffer, otherwise you can update pagecnt_bias.
-> So something along the lines of:
->     if (PTR_ERR(skb) == IXGBE_XDP_TX) {
-> #if (PAGE_SIZE < 8192)
->         rx_buffer->page_offset ^= ixgbe_rx_pg_size(rx_ring) / 2;
-> #else
->         rx_buffer->page_offset += ring_uses_build_skb(rx_ring) ?
->                                           SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) :
->                                           SKB_DATA_ALIGN(size);
-> #endif
->     } else {
->         rx_buffer->pagecnt_bias++;
->     }
-> 
+>> @@ -2312,13 +2325,14 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>>
+>>                 /* retrieve a buffer from the ring */
+>>                 if (skb)
+>> -                       ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
+>> +                       ixgbe_add_rx_frag(rx_ring, rx_buffer, skb,
+>> +                                         headroom, size);
+>>                 else if (ring_uses_build_skb(rx_ring))
+>>                         skb = ixgbe_build_skb(rx_ring, rx_buffer,
+>> -                                             rx_desc, size);
+>> +                                             rx_desc, headroom, size);
+>>                 else
+>>                         skb = ixgbe_construct_skb(rx_ring, rx_buffer,
+>> -                                                 rx_desc, size);
+>> +                                                 rx_desc, headroom, size);
+>>
+>>                 /* exit if we failed to retrieve a buffer */
+>>                 if (!skb) {
+>>
 
-Or just do it in ixgbe_run_xdp directly.
-
-
-Thanks,
-John
