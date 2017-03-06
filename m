@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 6 Mar 2017 17:59:19 +0000
-Subject: [Intel-wired-lan] [PART2 PATCH 9/9] i40e: document drivers use
- of	ntuple filters
-In-Reply-To: <20170206223852.31177-10-jacob.e.keller@intel.com>
-References: <20170206223852.31177-1-jacob.e.keller@intel.com>
- <20170206223852.31177-10-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10401D63@ORSMSX101.amr.corp.intel.com>
+Date: Mon, 6 Mar 2017 18:39:05 +0000
+Subject: [Intel-wired-lan] [PATCH] net: intel: ixgbevf: use new
+	api	ethtool_{get|set}_link_ksettings
+In-Reply-To: <1486482993-7818-1-git-send-email-tremyfr@gmail.com>
+References: <1486482993-7818-1-git-send-email-tremyfr@gmail.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10401D90@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,21 +13,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Monday, February 6, 2017 2:39 PM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PART2 PATCH 9/9] i40e: document drivers use of
-> ntuple filters
+> Behalf Of Philippe Reynes
+> Sent: Tuesday, February 7, 2017 7:57 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org; Philippe Reynes <tremyfr@gmail.com>
+> Subject: [Intel-wired-lan] [PATCH] net: intel: ixgbevf: use new api
+> ethtool_{get|set}_link_ksettings
 > 
-> Add documentation describing the drivers use of ethtool ntuple filters,
-> including the limitations that it has due to hardware, as well as how it reads
-> and parses the user-def data block.
+> The ethtool api {get|set}_settings is deprecated.
+> We move this driver to new api {get|set}_link_ksettings.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> As I don't have the hardware, I'd be very pleased if someone may test this
+> patch.
+> 
+> Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
 > ---
->  Documentation/networking/i40e.txt | 72
-> +++++++++++++++++++++++++++++++++++++++
->  1 file changed, 72 insertions(+)
+>  drivers/net/ethernet/intel/ixgbevf/ethtool.c |   22 +++++++++++-----------
+>  1 files changed, 11 insertions(+), 11 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
