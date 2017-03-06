@@ -1,47 +1,197 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Sun, 05 Mar 2017 17:10:51 -0800
-Subject: [Intel-wired-lan] [next PATCH S61 05/10] i40e: Add support for
- 25G in ethtool
-In-Reply-To: <1487721348-25617-6-git-send-email-bimmy.pujari@intel.com>
-References: <1487721348-25617-1-git-send-email-bimmy.pujari@intel.com>
- <1487721348-25617-6-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1488762651.3477.8.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 06 Mar 2017 10:14:03 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ b14758e12cd59c687d2cc3ee1c1ef45602295359
+Message-ID: <58bcc5eb.T84+A0p86n1cvvI5%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2017-02-21 at 15:55 -0800, Bimmy Pujari wrote:
-> From: Henry Tieman <henry.w.tieman@intel.com>
-> 
-> Implemented functions for the updated get and set commands
-> in ethtool: ETHTOOL_GLINKSETTING and ETHTOOL_SLINKSETTINGS.
-> These new commands will replace the existing functionality
-> of ETHTOOL_GSET and ETHTOOL_SSET, which have been deprecated.
-> 
-> Macros for 25G support were added to the include files at the
-> same time as the new ethtool commands. So, 25G support has
-> been implemented in the new functions.
-> 
-> Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
-> Change-ID: I3824ed616cf92bc8bdce3e976277a0cf94d0cd35
-> ---
-> Testing Hints: The kernel macros required by this patch are
-> available in Linux kernels after 4.7. Also, the 25G macros have
-> been back ported into RHEL7.3. This functionality was added in
-> ethtool version 4.5.
-> 
-> ?drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 583
-> +++++++++++++++++++++++++
-> ?1 file changed, 583 insertions(+)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b14758e12cd59c687d2cc3ee1c1ef45602295359  i40e/i40evf: Fix use after free in Rx cleanup path
 
-This patch does not apply and conflicts with changes already in the
-dev-queue.  Please review the changes and resubmit this patch only.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170305/b5e4fad6/attachment.asc>
+elapsed time: 100m
+
+configs tested: 174
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+blackfin                  CM-BF537E_defconfig
+powerpc                        cell_defconfig
+xtensa                  cadence_csp_defconfig
+i386                     randconfig-a0-201709
+x86_64                 randconfig-a0-03060827
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                        multi_v5_defconfig
+arm                         s3c2410_defconfig
+powerpc                      pmac32_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-03060821
+x86_64                randconfig-in0-03060800
+arm                         lpc32xx_defconfig
+arm                          moxart_defconfig
+powerpc                 canyonlands_defconfig
+x86_64                 randconfig-v0-03060555
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-g0-03060549
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+sh                                  defconfig
+x86_64               randconfig-x014-03060607
+x86_64               randconfig-x010-03060607
+x86_64               randconfig-x017-03060607
+x86_64               randconfig-x016-03060607
+x86_64               randconfig-x015-03060607
+x86_64               randconfig-x018-03060607
+x86_64               randconfig-x013-03060607
+x86_64               randconfig-x012-03060607
+x86_64               randconfig-x011-03060607
+x86_64               randconfig-x019-03060607
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-03060609
+i386                   randconfig-s1-03060609
+x86_64                 randconfig-s0-03060609
+x86_64                 randconfig-s1-03060609
+x86_64                 randconfig-s2-03060609
+x86_64                 randconfig-s3-03060609
+x86_64                 randconfig-s4-03060609
+x86_64                 randconfig-s5-03060609
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-i0-03060356
+avr32                 atngw100_mrmt_defconfig
+ia64                            zx1_defconfig
+i386                     randconfig-i0-201710
+i386                     randconfig-i1-201710
+x86_64                 randconfig-b0-03060535
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+tile                             alldefconfig
+x86_64                 randconfig-u0-03060747
+i386                               tinyconfig
+i386                   randconfig-x010-201710
+i386                   randconfig-x011-201710
+i386                   randconfig-x012-201710
+i386                   randconfig-x013-201710
+i386                   randconfig-x014-201710
+i386                   randconfig-x015-201710
+i386                   randconfig-x016-201710
+i386                   randconfig-x017-201710
+i386                   randconfig-x018-201710
+i386                   randconfig-x019-201710
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                 randconfig-x016-03060824
+i386                 randconfig-x017-03060824
+i386                 randconfig-x012-03060824
+i386                 randconfig-x014-03060824
+i386                 randconfig-x011-03060824
+i386                 randconfig-x015-03060824
+i386                 randconfig-x013-03060824
+i386                 randconfig-x019-03060824
+i386                 randconfig-x010-03060824
+i386                 randconfig-x018-03060824
+mips                  maltasmvp_eva_defconfig
+powerpc               mpc86xx_basic_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-h0-03060629
+i386                   randconfig-x070-201710
+i386                   randconfig-x077-201710
+i386                   randconfig-x073-201710
+i386                   randconfig-x076-201710
+i386                   randconfig-x072-201710
+i386                   randconfig-x078-201710
+i386                   randconfig-x074-201710
+i386                   randconfig-x075-201710
+i386                   randconfig-x079-201710
+i386                   randconfig-x071-201710
+x86_64                 randconfig-n0-03060747
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                randconfig-ws0-03060731
+x86_64                 randconfig-x004-201710
+x86_64                 randconfig-x009-201710
+x86_64                 randconfig-x003-201710
+x86_64                 randconfig-x008-201710
+x86_64                 randconfig-x002-201710
+x86_64                 randconfig-x000-201710
+x86_64                 randconfig-x007-201710
+x86_64                 randconfig-x005-201710
+x86_64                 randconfig-x006-201710
+x86_64                 randconfig-x001-201710
+i386                   randconfig-x005-201710
+i386                   randconfig-x002-201710
+i386                   randconfig-x006-201710
+i386                   randconfig-x003-201710
+i386                   randconfig-x007-201710
+i386                   randconfig-x008-201710
+i386                   randconfig-x001-201710
+i386                   randconfig-x000-201710
+i386                   randconfig-x009-201710
+i386                   randconfig-x004-201710
+i386                   randconfig-x0-03060435
+
+Thanks,
+Fengguang
