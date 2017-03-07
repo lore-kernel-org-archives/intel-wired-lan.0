@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 7 Mar 2017 16:31:35 +0000
-Subject: [Intel-wired-lan] [next PATCH S61 09/10] i40e: Drop FCoE code
- from	core driver files
-In-Reply-To: <1487721348-25617-10-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 7 Mar 2017 16:32:20 +0000
+Subject: [Intel-wired-lan] [next PATCH S61 10/10] i40e: Drop FCoE code
+ that	always evaluates to false or 0
+In-Reply-To: <1487721348-25617-11-git-send-email-bimmy.pujari@intel.com>
 References: <1487721348-25617-1-git-send-email-bimmy.pujari@intel.com>
- <1487721348-25617-10-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10401F37@ORSMSX101.amr.corp.intel.com>
+ <1487721348-25617-11-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10401F47@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,44 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, February 21, 2017 3:56 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S61 09/10] i40e: Drop FCoE code from
-> core driver files
+> Subject: [Intel-wired-lan] [next PATCH S61 10/10] i40e: Drop FCoE code that
+> always evaluates to false or 0
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> Looking over the code for FCoE it looks like the Rx path has been broken at
-> least since the last major Rx refactor almost a year ago.  It seems like FCoE
-> isn't supported for any of the Fortville/Fortpark hardware so there isn't much
-> point in carrying the code around, especially if it is broken and untested.
-> 
-> This patch cleans the FCoE code out of the CORE files and permanently sets
-> the build flags so that the FCoE bits are stripped out of the shared code.
-> 
-> It was generated using 2 passes.  First with unifdef, and then manually going
-> through and eliminating any extra #ifdef cruft such as an extra
+> Since FCoE isn't supported by the i40e products there isn't much point in
+> carrying around code that will always evaluate to false. This patch goes
+> through and strips out the code in several spots so that we don't go around
+> carrying variables and/or code that is always going to evaluate to false or 0.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> Change-ID: I892de8fa551cb129ce2361e738ff82ce55fa229e
+> Change-ID: I39d1d779c66c638b75525839db2b6208fdc809d7
 > ---
-> Testing Hints:
->         Driver should function the same as before.  The only real change
->         is that we stripped out code that was either ifdef'ed out or
->         code that was unused since FCoE would never be enabled.
-> 
->  drivers/net/ethernet/intel/Kconfig               |  11 -
->  drivers/net/ethernet/intel/i40e/Makefile         |   1 -
->  drivers/net/ethernet/intel/i40e/i40e.h           |  61 +-----
->  drivers/net/ethernet/intel/i40e/i40e_common.c    |  27 ---
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c   |  19 --
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c   |  35 ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c      | 261 +----------------------
->  drivers/net/ethernet/intel/i40e/i40e_osdep.h     |   3 -
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h |   3 -
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c      |  26 ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h      |  17 --
->  drivers/net/ethernet/intel/i40e/i40e_type.h      | 138 ------------
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.h    |  12 --
->  13 files changed, 2 insertions(+), 612 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h             |  3 ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 17 +++--------------
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  1 -
+>  3 files changed, 3 insertions(+), 18 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
