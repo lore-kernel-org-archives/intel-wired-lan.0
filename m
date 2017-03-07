@@ -1,436 +1,471 @@
 From: Yury Kylulin <yury.kylulin@intel.com>
-Date: Tue,  7 Mar 2017 11:20:25 +0300
-Subject: [Intel-wired-lan] [PATCH 1/2] igb: improve MAC filter handling
+Date: Tue,  7 Mar 2017 11:20:26 +0300
+Subject: [Intel-wired-lan] [PATCH 2/2] igb/igbvf: Add VF MAC filter request
+	capabilities
 In-Reply-To: <1488874826-5978-1-git-send-email-yury.kylulin@intel.com>
 References: <1488874826-5978-1-git-send-email-yury.kylulin@intel.com>
-Message-ID: <1488874826-5978-2-git-send-email-yury.kylulin@intel.com>
+Message-ID: <1488874826-5978-3-git-send-email-yury.kylulin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Using the work which was done for ixgbe driver by Jacob Keller
-commit 5d7daa35b9eb ("ixgbe: improve mac filter handling") and Alexander
-Duyck commit 0f079d22834a ("ixgbe: Use __dev_uc_sync and __dev_uc_unsync
-for unicast addresses") and out-of-tree igb driver add functionality to
-manage (add and delete) MAC filters.
+Add functionality for the VF to request up to 3 additional MAC filters.
+This is done using existing E1000_VF_SET_MAC_ADDR message, but with
+additional message info - E1000_VF_MAC_FILTER_CLR to clear all unicast
+MAC filters previously set for this VF and E1000_VF_MAC_FILTER_ADD to
+add MAC filter.
+
+Additional filters can be added only in case if administrator did not
+set VF MAC explicitly and allowed to change default MAC to the VF.
+
+Due to the limmited number of RAR entries reserve at least 3 MAC filters
+for the PF.
+
+If SRIOV is supported by the NIC after this change RAR entries starting
+from 1 to (RAR MAX ENTRIES - NUM SRIOV VFS) will be used for PF and VF
+MAC filters.
 
 Signed-off-by: Yury Kylulin <yury.kylulin@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb.h      |  11 ++
- drivers/net/ethernet/intel/igb/igb_main.c | 246 ++++++++++++++++++++++--------
- 2 files changed, 192 insertions(+), 65 deletions(-)
+ drivers/net/ethernet/intel/igb/e1000_mbx.h |   4 +
+ drivers/net/ethernet/intel/igb/igb.h       |  12 +++
+ drivers/net/ethernet/intel/igb/igb_main.c  | 147 ++++++++++++++++++++++++++---
+ drivers/net/ethernet/intel/igbvf/igbvf.h   |   2 +
+ drivers/net/ethernet/intel/igbvf/mbx.h     |   4 +
+ drivers/net/ethernet/intel/igbvf/netdev.c  |  44 ++++++++-
+ drivers/net/ethernet/intel/igbvf/vf.c      |  42 +++++++++
+ drivers/net/ethernet/intel/igbvf/vf.h      |   1 +
+ 8 files changed, 241 insertions(+), 15 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igb/e1000_mbx.h b/drivers/net/ethernet/intel/igb/e1000_mbx.h
+index d20af6b..3e7fed7 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_mbx.h
++++ b/drivers/net/ethernet/intel/igb/e1000_mbx.h
+@@ -55,6 +55,10 @@
+ 
+ #define E1000_VF_RESET		0x01 /* VF requests reset */
+ #define E1000_VF_SET_MAC_ADDR	0x02 /* VF requests to set MAC addr */
++/* VF requests to clear all unicast MAC filters */
++#define E1000_VF_MAC_FILTER_CLR	(0x01 << E1000_VT_MSGINFO_SHIFT)
++/* VF requests to add unicast MAC filter */
++#define E1000_VF_MAC_FILTER_ADD	(0x02 << E1000_VT_MSGINFO_SHIFT)
+ #define E1000_VF_SET_MULTICAST	0x03 /* VF requests to set MC addr */
+ #define E1000_VF_SET_VLAN	0x04 /* VF requests to set VLAN */
+ #define E1000_VF_SET_LPE	0x05 /* VF requests to set VMOLR.LPE */
 diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index dc6e298..97f348a 100644
+index 97f348a..bf9bf90 100644
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -449,6 +449,15 @@ struct igb_nfc_filter {
- 	u16 action;
+@@ -111,6 +111,16 @@ struct vf_data_storage {
+ 	bool spoofchk_enabled;
  };
  
-+struct igb_mac_addr {
-+	u8 addr[ETH_ALEN];
-+	u8 queue;
-+	u8 state; /* bitmask */
++/* Number of unicast MAC filters reserved for the PF in the RAR registers */
++#define IGB_PF_MAC_FILTERS_RESERVED	3
++
++struct vf_mac_filter {
++	struct list_head l;
++	int vf;
++	bool free;
++	u8 vf_mac[ETH_ALEN];
 +};
 +
-+#define IGB_MAC_STATE_DEFAULT	0x1
-+#define IGB_MAC_STATE_IN_USE	0x2
-+
- /* board specific private data structure */
- struct igb_adapter {
- 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
-@@ -575,6 +584,8 @@ struct igb_adapter {
- 	/* lock for RX network flow classification filter */
- 	spinlock_t nfc_lock;
+ #define IGB_VF_FLAG_CTS            0x00000001 /* VF is clear to send data */
+ #define IGB_VF_FLAG_UNI_PROMISC    0x00000002 /* VF has unicast promisc */
+ #define IGB_VF_FLAG_MULTI_PROMISC  0x00000004 /* VF has multicast promisc */
+@@ -586,6 +596,8 @@ struct igb_adapter {
  	bool etype_bitmap[MAX_ETYPE_FILTER];
-+
-+	struct igb_mac_addr *mac_table;
+ 
+ 	struct igb_mac_addr *mac_table;
++	struct vf_mac_filter vf_macs;
++	struct vf_mac_filter *vf_mac_list;
  };
  
  /* flags controlling PTP/1588 function */
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 26a821f..bb5d5ac 100644
+index bb5d5ac..53e66c8 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -161,11 +161,16 @@ static void igb_vlan_mode(struct net_device *netdev,
- static int igb_vlan_rx_add_vid(struct net_device *, __be16, u16);
- static int igb_vlan_rx_kill_vid(struct net_device *, __be16, u16);
- static void igb_restore_vlan(struct igb_adapter *);
--static void igb_rar_set_qsel(struct igb_adapter *, u8 *, u32 , u8);
-+static void igb_rar_set_index(struct igb_adapter *, u32);
- static void igb_ping_all_vfs(struct igb_adapter *);
- static void igb_msg_task(struct igb_adapter *);
- static void igb_vmm_control(struct igb_adapter *);
- static int igb_set_vf_mac(struct igb_adapter *, int, unsigned char *);
-+static void igb_flush_mac_table(struct igb_adapter *);
-+static int igb_available_rars(struct igb_adapter *, u8);
-+static void igb_set_default_mac_filter(struct igb_adapter *);
-+static int igb_uc_sync(struct net_device *, const unsigned char *);
-+static int igb_uc_unsync(struct net_device *, const unsigned char *);
- static void igb_restore_vf_multicasts(struct igb_adapter *adapter);
- static int igb_ndo_set_vf_mac(struct net_device *netdev, int vf, u8 *mac);
- static int igb_ndo_set_vf_vlan(struct net_device *netdev,
-@@ -1987,6 +1992,13 @@ void igb_reset(struct igb_adapter *adapter)
- 	if (hw->mac.ops.init_hw(hw))
- 		dev_err(&pdev->dev, "Hardware Error\n");
+@@ -1158,6 +1158,8 @@ static void igb_set_interrupt_capability(struct igb_adapter *adapter, bool msix)
+ 		pci_disable_sriov(adapter->pdev);
+ 		msleep(500);
  
-+	/* RAR registers were cleared during init_hw, clear mac table */
-+	igb_flush_mac_table(adapter);
-+	__dev_uc_unsync(adapter->netdev, NULL);
-+
-+	/* Recover default RAR entry */
-+	igb_set_default_mac_filter(adapter);
-+
- 	/* Flow control settings reset on hardware reset, so guarantee flow
- 	 * control is off when forcing speed.
- 	 */
-@@ -2095,11 +2107,9 @@ static int igb_ndo_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
- 	/* guarantee we can provide a unique filter for the unicast address */
- 	if (is_unicast_ether_addr(addr) || is_link_local_ether_addr(addr)) {
- 		struct igb_adapter *adapter = netdev_priv(dev);
--		struct e1000_hw *hw = &adapter->hw;
- 		int vfn = adapter->vfs_allocated_count;
--		int rar_entries = hw->mac.rar_entry_count - (vfn + 1);
++		kfree(adapter->vf_mac_list);
++		adapter->vf_mac_list = NULL;
+ 		kfree(adapter->vf_data);
+ 		adapter->vf_data = NULL;
+ 		wr32(E1000_IOVCTL, E1000_IOVCTL_REUSE_VFQ);
+@@ -2809,6 +2811,8 @@ static int igb_disable_sriov(struct pci_dev *pdev)
+ 			msleep(500);
+ 		}
  
--		if (netdev_uc_count(dev) >= rar_entries)
-+		if (netdev_uc_count(dev) >= igb_available_rars(adapter, vfn))
- 			return -ENOMEM;
++		kfree(adapter->vf_mac_list);
++		adapter->vf_mac_list = NULL;
+ 		kfree(adapter->vf_data);
+ 		adapter->vf_data = NULL;
+ 		adapter->vfs_allocated_count = 0;
+@@ -2829,8 +2833,9 @@ static int igb_enable_sriov(struct pci_dev *pdev, int num_vfs)
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	int old_vfs = pci_num_vf(pdev);
++	struct vf_mac_filter *mac_list;
+ 	int err = 0;
+-	int i;
++	int num_vf_mac_filters, i;
+ 
+ 	if (!(adapter->flags & IGB_FLAG_HAS_MSIX) || num_vfs > 7) {
+ 		err = -EPERM;
+@@ -2858,6 +2863,38 @@ static int igb_enable_sriov(struct pci_dev *pdev, int num_vfs)
+ 		goto out;
  	}
  
-@@ -2517,6 +2527,8 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		goto err_eeprom;
- 	}
- 
-+	igb_set_default_mac_filter(adapter);
++	/* Due to the limited number of RAR entries calculate potential
++	 * number of MAC filters available for the VFs. Reserve entries
++	 * for PF default MAC, PF MAC filters and at least one RAR entry
++	 * for each VF for VF MAC.
++	 */
++	num_vf_mac_filters = adapter->hw.mac.rar_entry_count -
++			     (1 + IGB_PF_MAC_FILTERS_RESERVED +
++			      adapter->vfs_allocated_count);
 +
- 	/* get firmware version for ethtool -i */
- 	igb_set_fw_version(adapter);
- 
-@@ -2761,6 +2773,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (hw->flash_address)
- 		iounmap(hw->flash_address);
- err_sw_init:
-+	kfree(adapter->mac_table);
- 	kfree(adapter->shadow_vfta);
- 	igb_clear_interrupt_scheme(adapter);
- #ifdef CONFIG_PCI_IOV
-@@ -2937,6 +2950,7 @@ static void igb_remove(struct pci_dev *pdev)
- 		iounmap(hw->flash_address);
- 	pci_release_mem_regions(pdev);
- 
-+	kfree(adapter->mac_table);
- 	kfree(adapter->shadow_vfta);
- 	free_netdev(netdev);
- 
-@@ -3099,6 +3113,11 @@ static int igb_sw_init(struct igb_adapter *adapter)
- 	/* Assume MSI-X interrupts, will be checked during IRQ allocation */
- 	adapter->flags |= IGB_FLAG_HAS_MSIX;
- 
-+	adapter->mac_table = kzalloc(sizeof(struct igb_mac_addr) *
-+				     hw->mac.rar_entry_count, GFP_ATOMIC);
-+	if (!adapter->mac_table)
-+		return -ENOMEM;
++	adapter->vf_mac_list = kcalloc(num_vf_mac_filters,
++				       sizeof(struct vf_mac_filter),
++				       GFP_KERNEL);
 +
- 	igb_probe_vfs(adapter);
++	mac_list = adapter->vf_mac_list;
++	INIT_LIST_HEAD(&adapter->vf_macs.l);
++
++	if (adapter->vf_mac_list) {
++		/* Initialize list of VF MAC filters */
++		for (i = 0; i < num_vf_mac_filters; i++) {
++			mac_list->vf = -1;
++			mac_list->free = true;
++			list_add(&mac_list->l, &adapter->vf_macs.l);
++			mac_list++;
++		}
++	} else {
++		/* If we could not allocate memory for the VF MAC filters
++		 * we can continue without this feature but warn user.
++		 */
++		dev_err(&pdev->dev,
++			"Unable to allocate memory for VF MAC filter list\n");
++	}
++
+ 	/* only call pci_enable_sriov() if no VFs are allocated already */
+ 	if (!old_vfs) {
+ 		err = pci_enable_sriov(pdev, adapter->vfs_allocated_count);
+@@ -2874,6 +2911,8 @@ static int igb_enable_sriov(struct pci_dev *pdev, int num_vfs)
+ 	goto out;
  
- 	igb_init_queue_configuration(adapter);
-@@ -3810,8 +3829,7 @@ static void igb_configure_rx(struct igb_adapter *adapter)
- 	int i;
- 
- 	/* set the correct pool for the PF default MAC address in entry 0 */
--	igb_rar_set_qsel(adapter, adapter->hw.mac.addr, 0,
--			 adapter->vfs_allocated_count);
-+	igb_set_default_mac_filter(adapter);
- 
- 	/* Setup the HW Rx Head and Tail Descriptor Pointers and
- 	 * the Base and Length of the Rx Descriptor Ring
-@@ -4051,8 +4069,7 @@ static int igb_set_mac(struct net_device *netdev, void *p)
- 	memcpy(hw->mac.addr, addr->sa_data, netdev->addr_len);
- 
- 	/* set the correct pool for the new PF MAC address in entry 0 */
--	igb_rar_set_qsel(adapter, hw->mac.addr, 0,
--			 adapter->vfs_allocated_count);
-+	igb_set_default_mac_filter(adapter);
- 
+ err_out:
++	kfree(adapter->vf_mac_list);
++	adapter->vf_mac_list = NULL;
+ 	kfree(adapter->vf_data);
+ 	adapter->vf_data = NULL;
+ 	adapter->vfs_allocated_count = 0;
+@@ -6501,18 +6540,106 @@ static int igb_uc_unsync(struct net_device *netdev, const unsigned char *addr)
  	return 0;
  }
-@@ -4096,49 +4113,6 @@ static int igb_write_mc_addr_list(struct net_device *netdev)
- 	return netdev_mc_count(netdev);
- }
  
--/**
-- *  igb_write_uc_addr_list - write unicast addresses to RAR table
-- *  @netdev: network interface device structure
-- *
-- *  Writes unicast address list to the RAR table.
-- *  Returns: -ENOMEM on failure/insufficient address space
-- *           0 on no addresses written
-- *           X on writing X addresses to the RAR table
-- **/
--static int igb_write_uc_addr_list(struct net_device *netdev)
--{
--	struct igb_adapter *adapter = netdev_priv(netdev);
--	struct e1000_hw *hw = &adapter->hw;
--	unsigned int vfn = adapter->vfs_allocated_count;
--	unsigned int rar_entries = hw->mac.rar_entry_count - (vfn + 1);
--	int count = 0;
--
--	/* return ENOMEM indicating insufficient memory for addresses */
--	if (netdev_uc_count(netdev) > rar_entries)
--		return -ENOMEM;
--
--	if (!netdev_uc_empty(netdev) && rar_entries) {
--		struct netdev_hw_addr *ha;
--
--		netdev_for_each_uc_addr(ha, netdev) {
--			if (!rar_entries)
--				break;
--			igb_rar_set_qsel(adapter, ha->addr,
--					 rar_entries--,
--					 vfn);
--			count++;
--		}
--	}
--	/* write the addresses in reverse order to avoid write combining */
--	for (; rar_entries > 0 ; rar_entries--) {
--		wr32(E1000_RAH(rar_entries), 0);
--		wr32(E1000_RAL(rar_entries), 0);
--	}
--	wrfl();
--
--	return count;
--}
--
- static int igb_vlan_promisc_enable(struct igb_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
-@@ -4311,8 +4285,7 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	 * sufficient space to store all the addresses then enable
- 	 * unicast promiscuous mode
- 	 */
--	count = igb_write_uc_addr_list(netdev);
--	if (count < 0) {
-+	if (__dev_uc_sync(netdev, igb_uc_sync, igb_uc_unsync)) {
- 		rctl |= E1000_RCTL_UPE;
- 		vmolr |= E1000_VMOLR_ROPE;
- 	}
-@@ -6369,7 +6342,6 @@ static void igb_vf_reset_msg(struct igb_adapter *adapter, u32 vf)
- {
- 	struct e1000_hw *hw = &adapter->hw;
- 	unsigned char *vf_mac = adapter->vf_data[vf].vf_mac_addresses;
--	int rar_entry = hw->mac.rar_entry_count - (vf + 1);
- 	u32 reg, msgbuf[3];
- 	u8 *addr = (u8 *)(&msgbuf[1]);
- 
-@@ -6377,7 +6349,7 @@ static void igb_vf_reset_msg(struct igb_adapter *adapter, u32 vf)
- 	igb_vf_reset(adapter, vf);
- 
- 	/* set vf mac address */
--	igb_rar_set_qsel(adapter, vf_mac, rar_entry, vf);
-+	igb_set_vf_mac(adapter, vf, vf_mac);
- 
- 	/* enable transmit and receive for vf */
- 	reg = rd32(E1000_VFTE);
-@@ -6397,6 +6369,138 @@ static void igb_vf_reset_msg(struct igb_adapter *adapter, u32 vf)
- 	igb_write_mbx(hw, msgbuf, 3, vf);
- }
- 
-+static void igb_flush_mac_table(struct igb_adapter *adapter)
++int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
++			  const u32 info, const u8 *addr)
 +{
-+	struct e1000_hw *hw = &adapter->hw;
-+	int i;
++	struct pci_dev *pdev = adapter->pdev;
++	struct vf_data_storage *vf_data = &adapter->vf_data[vf];
++	struct list_head *pos;
++	struct vf_mac_filter *entry = NULL;
++	int ret = 0;
 +
-+	for (i = 0; i < hw->mac.rar_entry_count; i++) {
-+		adapter->mac_table[i].state &= ~IGB_MAC_STATE_IN_USE;
-+		memset(adapter->mac_table[i].addr, 0, ETH_ALEN);
-+		adapter->mac_table[i].queue = 0;
-+		igb_rar_set_index(adapter, i);
-+	}
-+}
++	switch (info) {
++	case E1000_VF_MAC_FILTER_CLR:
++		/* remove all unicast MAC filters related to the current VF */
++		list_for_each(pos, &adapter->vf_macs.l) {
++			entry = list_entry(pos, struct vf_mac_filter, l);
++			if (entry->vf == vf) {
++				entry->vf = -1;
++				entry->free = true;
++				igb_del_mac_filter(adapter, entry->vf_mac, vf);
++			}
++		}
++		break;
++	case E1000_VF_MAC_FILTER_ADD:
++		if (vf_data->flags & IGB_VF_FLAG_PF_SET_MAC) {
++			dev_warn(&pdev->dev,
++				 "VF %d requested MAC filter but is administratively denied\n",
++				 vf);
++			return -EINVAL;
++		}
 +
-+static int igb_available_rars(struct igb_adapter *adapter, u8 queue)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	/* do not count rar entries reserved for VFs MAC addresses */
-+	int rar_entries = hw->mac.rar_entry_count -
-+			  adapter->vfs_allocated_count;
-+	int i, count = 0;
++		if (!is_valid_ether_addr(addr)) {
++			dev_warn(&pdev->dev,
++				 "VF %d attempted to set invalid MAC filter\n",
++				 vf);
++			return -EINVAL;
++		}
 +
-+	for (i = 0; i < rar_entries; i++) {
-+		/* do not count default entries */
-+		if (adapter->mac_table[i].state & IGB_MAC_STATE_DEFAULT)
-+			continue;
++		/* try to find empty slot in the list */
++		list_for_each(pos, &adapter->vf_macs.l) {
++			entry = list_entry(pos, struct vf_mac_filter, l);
++			if (entry->free)
++				break;
++		}
 +
-+		/* do not count "in use" entries for different queues */
-+		if ((adapter->mac_table[i].state & IGB_MAC_STATE_IN_USE) &&
-+		    (adapter->mac_table[i].queue != queue))
-+			continue;
++		if (entry && entry->free) {
++			entry->free = false;
++			entry->vf = vf;
++			ether_addr_copy(entry->vf_mac, addr);
 +
-+		count++;
++			ret = igb_add_mac_filter(adapter, addr, vf);
++			ret = min_t(int, ret, 0);
++		} else {
++			ret = -ENOSPC;
++		}
++
++		if (ret == -ENOSPC)
++			dev_warn(&pdev->dev,
++				 "VF %d has requested MAC filter but there is no space for it\n",
++				 vf);
++		break;
++	default:
++		ret = -EINVAL;
++		break;
 +	}
 +
-+	return count;
-+}
-+
-+/* Set default MAC address for the PF in the first RAR entry */
-+static void igb_set_default_mac_filter(struct igb_adapter *adapter)
-+{
-+	struct igb_mac_addr *mac_table = &adapter->mac_table[0];
-+
-+	ether_addr_copy(mac_table->addr, adapter->hw.mac.addr);
-+	mac_table->queue = adapter->vfs_allocated_count;
-+	mac_table->state = IGB_MAC_STATE_DEFAULT | IGB_MAC_STATE_IN_USE;
-+
-+	igb_rar_set_index(adapter, 0);
-+}
-+
-+int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
-+		       const u8 queue)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	int rar_entries = hw->mac.rar_entry_count -
-+			  adapter->vfs_allocated_count;
-+	int i;
-+
-+	if (is_zero_ether_addr(addr))
-+		return -EINVAL;
-+
-+	/* Search for the first empty entry in the MAC table.
-+	 * Do not touch entries at the end of the table reserved for the VF MAC
-+	 * addresses.
-+	 */
-+	for (i = 0; i < rar_entries; i++) {
-+		if (adapter->mac_table[i].state & IGB_MAC_STATE_IN_USE)
-+			continue;
-+
-+		ether_addr_copy(adapter->mac_table[i].addr, addr);
-+		adapter->mac_table[i].queue = queue;
-+		adapter->mac_table[i].state |= IGB_MAC_STATE_IN_USE;
-+
-+		igb_rar_set_index(adapter, i);
-+		return i;
-+	}
-+
-+	return -ENOSPC;
-+}
-+
-+int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
-+		       const u8 queue)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	int rar_entries = hw->mac.rar_entry_count -
-+			  adapter->vfs_allocated_count;
-+	int i;
-+
-+	if (is_zero_ether_addr(addr))
-+		return -EINVAL;
-+
-+	/* Search for matching entry in the MAC table based on given address
-+	 * and queue. Do not touch entries at the end of the table reserved
-+	 * for the VF MAC addresses.
-+	 */
-+	for (i = 0; i < rar_entries; i++) {
-+		if (!(adapter->mac_table[i].state & IGB_MAC_STATE_IN_USE))
-+			continue;
-+		if (adapter->mac_table[i].queue != queue)
-+			continue;
-+		if (!ether_addr_equal(adapter->mac_table[i].addr, addr))
-+			continue;
-+
-+		adapter->mac_table[i].state &= ~IGB_MAC_STATE_IN_USE;
-+		memset(adapter->mac_table[i].addr, 0, ETH_ALEN);
-+		adapter->mac_table[i].queue = 0;
-+
-+		igb_rar_set_index(adapter, i);
-+		return 0;
-+	}
-+
-+	return -ENOENT;
-+}
-+
-+static int igb_uc_sync(struct net_device *netdev, const unsigned char *addr)
-+{
-+	struct igb_adapter *adapter = netdev_priv(netdev);
-+	int ret;
-+
-+	ret = igb_add_mac_filter(adapter, addr, adapter->vfs_allocated_count);
-+
-+	return min_t(int, ret, 0);
-+}
-+
-+static int igb_uc_unsync(struct net_device *netdev, const unsigned char *addr)
-+{
-+	struct igb_adapter *adapter = netdev_priv(netdev);
-+
-+	igb_del_mac_filter(adapter, addr, adapter->vfs_allocated_count);
-+
-+	return 0;
++	return ret;
 +}
 +
  static int igb_set_vf_mac_addr(struct igb_adapter *adapter, u32 *msg, int vf)
  {
++	struct pci_dev *pdev = adapter->pdev;
++	struct vf_data_storage *vf_data = &adapter->vf_data[vf];
++	u32 info = msg[0] & E1000_VT_MSGINFO_MASK;
++
  	/* The VF MAC Address is stored in a packed array of bytes
-@@ -8078,11 +8182,16 @@ static void igb_io_resume(struct pci_dev *pdev)
- 	igb_get_hw_control(adapter);
- }
- 
--static void igb_rar_set_qsel(struct igb_adapter *adapter, u8 *addr, u32 index,
--			     u8 qsel)
-+/**
-+ *  igb_rar_set_index - Sync RAL[index] and RAH[index] registers with MAC table
-+ *  @adapter: Pointer to adapter structure
-+ *  @index: Index of the RAR entry which need to be synced with MAC table
-+ **/
-+static void igb_rar_set_index(struct igb_adapter *adapter, u32 index)
- {
- 	struct e1000_hw *hw = &adapter->hw;
- 	u32 rar_low, rar_high;
-+	u8 *addr = adapter->mac_table[index].addr;
- 
- 	/* HW expects these to be in network order when they are plugged
- 	 * into the registers which are little endian.  In order to guarantee
-@@ -8093,12 +8202,16 @@ static void igb_rar_set_qsel(struct igb_adapter *adapter, u8 *addr, u32 index,
- 	rar_high = le16_to_cpup((__le16 *)(addr + 4));
- 
- 	/* Indicate to hardware the Address is Valid. */
--	rar_high |= E1000_RAH_AV;
-+	if (adapter->mac_table[index].state & IGB_MAC_STATE_IN_USE) {
-+		rar_high |= E1000_RAH_AV;
- 
--	if (hw->mac.type == e1000_82575)
--		rar_high |= E1000_RAH_POOL_1 * qsel;
--	else
--		rar_high |= E1000_RAH_POOL_1 << qsel;
-+		if (hw->mac.type == e1000_82575)
-+			rar_high |= E1000_RAH_POOL_1 *
-+				    adapter->mac_table[index].queue;
-+		else
-+			rar_high |= E1000_RAH_POOL_1 <<
-+				    adapter->mac_table[index].queue;
-+	}
- 
- 	wr32(E1000_RAL(index), rar_low);
- 	wrfl();
-@@ -8114,10 +8227,13 @@ static int igb_set_vf_mac(struct igb_adapter *adapter,
- 	 * towards the first, as a result a collision should not be possible
+ 	 * starting at the second 32 bit word of the msg array
  	 */
- 	int rar_entry = hw->mac.rar_entry_count - (vf + 1);
-+	unsigned char *vf_mac_addr = adapter->vf_data[vf].vf_mac_addresses;
+-	unsigned char *addr = (char *)&msg[1];
+-	int err = -1;
++	unsigned char *addr = (unsigned char *)&msg[1];
++	int ret = 0;
  
--	memcpy(adapter->vf_data[vf].vf_mac_addresses, mac_addr, ETH_ALEN);
--
--	igb_rar_set_qsel(adapter, mac_addr, rar_entry, vf);
-+	ether_addr_copy(vf_mac_addr, mac_addr);
-+	ether_addr_copy(adapter->mac_table[rar_entry].addr, mac_addr);
-+	adapter->mac_table[rar_entry].queue = vf;
-+	adapter->mac_table[rar_entry].state |= IGB_MAC_STATE_IN_USE;
-+	igb_rar_set_index(adapter, rar_entry);
+-	if (is_valid_ether_addr(addr))
+-		err = igb_set_vf_mac(adapter, vf, addr);
++	if (!info) {
++		if (vf_data->flags & IGB_VF_FLAG_PF_SET_MAC) {
++			dev_warn(&pdev->dev,
++				 "VF %d attempted to override administratively set MAC address\nReload the VF driver to resume operations\n",
++				 vf);
++			return -EINVAL;
++		}
  
- 	return 0;
+-	return err;
++		if (!is_valid_ether_addr(addr)) {
++			dev_warn(&pdev->dev,
++				 "VF %d attempted to set invalid MAC\n",
++				 vf);
++			return -EINVAL;
++		}
++
++		ret = igb_set_vf_mac(adapter, vf, addr);
++	} else {
++		ret = igb_set_vf_mac_filter(adapter, vf, info, addr);
++	}
++
++	return ret;
  }
+ 
+ static void igb_rcv_ack_from_vf(struct igb_adapter *adapter, u32 vf)
+@@ -6569,13 +6696,7 @@ static void igb_rcv_msg_from_vf(struct igb_adapter *adapter, u32 vf)
+ 
+ 	switch ((msgbuf[0] & 0xFFFF)) {
+ 	case E1000_VF_SET_MAC_ADDR:
+-		retval = -EINVAL;
+-		if (!(vf_data->flags & IGB_VF_FLAG_PF_SET_MAC))
+-			retval = igb_set_vf_mac_addr(adapter, msgbuf, vf);
+-		else
+-			dev_warn(&pdev->dev,
+-				 "VF %d attempted to override administratively set MAC address\nReload the VF driver to resume operations\n",
+-				 vf);
++		retval = igb_set_vf_mac_addr(adapter, msgbuf, vf);
+ 		break;
+ 	case E1000_VF_SET_PROMISC:
+ 		retval = igb_set_vf_promisc(adapter, msgbuf, vf);
+diff --git a/drivers/net/ethernet/intel/igbvf/igbvf.h b/drivers/net/ethernet/intel/igbvf/igbvf.h
+index 6f4290d..2a53ed8 100644
+--- a/drivers/net/ethernet/intel/igbvf/igbvf.h
++++ b/drivers/net/ethernet/intel/igbvf/igbvf.h
+@@ -101,6 +101,8 @@ enum latency_range {
+ 
+ #define IGBVF_MNG_VLAN_NONE	(-1)
+ 
++#define IGBVF_MAX_MAC_FILTERS	3
++
+ /* Number of packet split data buffers (not including the header buffer) */
+ #define PS_PAGE_BUFFERS		(MAX_PS_BUFFERS - 1)
+ 
+diff --git a/drivers/net/ethernet/intel/igbvf/mbx.h b/drivers/net/ethernet/intel/igbvf/mbx.h
+index f800bf8..30d58c4 100644
+--- a/drivers/net/ethernet/intel/igbvf/mbx.h
++++ b/drivers/net/ethernet/intel/igbvf/mbx.h
+@@ -62,6 +62,10 @@
+ 
+ #define E1000_VF_RESET		0x01 /* VF requests reset */
+ #define E1000_VF_SET_MAC_ADDR	0x02 /* VF requests PF to set MAC addr */
++/* VF requests PF to clear all unicast MAC filters */
++#define E1000_VF_MAC_FILTER_CLR (0x01 << E1000_VT_MSGINFO_SHIFT)
++/* VF requests PF to add unicast MAC filter */
++#define E1000_VF_MAC_FILTER_ADD (0x02 << E1000_VT_MSGINFO_SHIFT)
+ #define E1000_VF_SET_MULTICAST	0x03 /* VF requests PF to set MC addr */
+ #define E1000_VF_SET_VLAN	0x04 /* VF requests PF to set VLAN */
+ #define E1000_VF_SET_LPE	0x05 /* VF requests PF to set VMOLR.LPE */
+diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
+index 839ba11..6029854 100644
+--- a/drivers/net/ethernet/intel/igbvf/netdev.c
++++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+@@ -1433,12 +1433,52 @@ static void igbvf_set_multi(struct net_device *netdev)
+ }
+ 
+ /**
++ * igbvf_set_uni - Configure unicast MAC filters
++ * @netdev: network interface device structure
++ *
++ * This routine is responsible for configuring the hardware for proper
++ * unicast filters.
++ **/
++static int igbvf_set_uni(struct net_device *netdev)
++{
++	struct igbvf_adapter *adapter = netdev_priv(netdev);
++	struct e1000_hw *hw = &adapter->hw;
++
++	if (netdev_uc_count(netdev) > IGBVF_MAX_MAC_FILTERS) {
++		pr_err("Too many unicast filters - No Space\n");
++		return -ENOSPC;
++	}
++
++	/* Clear all unicast MAC filters */
++	hw->mac.ops.set_uc_addr(hw, E1000_VF_MAC_FILTER_CLR, NULL);
++
++	if (!netdev_uc_empty(netdev)) {
++		struct netdev_hw_addr *ha;
++
++		/* Add MAC filters one by one */
++		netdev_for_each_uc_addr(ha, netdev) {
++			hw->mac.ops.set_uc_addr(hw, E1000_VF_MAC_FILTER_ADD,
++						ha->addr);
++			udelay(200);
++		}
++	}
++
++	return 0;
++}
++
++static void igbvf_set_rx_mode(struct net_device *netdev)
++{
++	igbvf_set_multi(netdev);
++	igbvf_set_uni(netdev);
++}
++
++/**
+  * igbvf_configure - configure the hardware for Rx and Tx
+  * @adapter: private board structure
+  **/
+ static void igbvf_configure(struct igbvf_adapter *adapter)
+ {
+-	igbvf_set_multi(adapter->netdev);
++	igbvf_set_rx_mode(adapter->netdev);
+ 
+ 	igbvf_restore_vlan(adapter);
+ 
+@@ -2636,7 +2676,7 @@ static const struct net_device_ops igbvf_netdev_ops = {
+ 	.ndo_stop		= igbvf_close,
+ 	.ndo_start_xmit		= igbvf_xmit_frame,
+ 	.ndo_get_stats		= igbvf_get_stats,
+-	.ndo_set_rx_mode	= igbvf_set_multi,
++	.ndo_set_rx_mode	= igbvf_set_rx_mode,
+ 	.ndo_set_mac_address	= igbvf_set_mac,
+ 	.ndo_change_mtu		= igbvf_change_mtu,
+ 	.ndo_do_ioctl		= igbvf_ioctl,
+diff --git a/drivers/net/ethernet/intel/igbvf/vf.c b/drivers/net/ethernet/intel/igbvf/vf.c
+index 335ba66..dfa689b 100644
+--- a/drivers/net/ethernet/intel/igbvf/vf.c
++++ b/drivers/net/ethernet/intel/igbvf/vf.c
+@@ -36,6 +36,7 @@ static void e1000_update_mc_addr_list_vf(struct e1000_hw *hw, u8 *,
+ 					 u32, u32, u32);
+ static void e1000_rar_set_vf(struct e1000_hw *, u8 *, u32);
+ static s32 e1000_read_mac_addr_vf(struct e1000_hw *);
++static s32 e1000_set_uc_addr_vf(struct e1000_hw *hw, u32 subcmd, u8 *addr);
+ static s32 e1000_set_vfta_vf(struct e1000_hw *, u16, bool);
+ 
+ /**
+@@ -66,6 +67,8 @@ static s32 e1000_init_mac_params_vf(struct e1000_hw *hw)
+ 	mac->ops.rar_set = e1000_rar_set_vf;
+ 	/* read mac address */
+ 	mac->ops.read_mac_addr = e1000_read_mac_addr_vf;
++	/* set mac filter */
++	mac->ops.set_uc_addr = e1000_set_uc_addr_vf;
+ 	/* set vlan filter table array */
+ 	mac->ops.set_vfta = e1000_set_vfta_vf;
+ 
+@@ -338,6 +341,45 @@ static s32 e1000_read_mac_addr_vf(struct e1000_hw *hw)
+ }
+ 
+ /**
++ *  e1000_set_uc_addr_vf - Set or clear unicast filters
++ *  @hw: pointer to the HW structure
++ *  @sub_cmd: add or clear filters
++ *  @addr: pointer to the filter MAC address
++ **/
++
++static s32 e1000_set_uc_addr_vf(struct e1000_hw *hw, u32 sub_cmd, u8 *addr)
++{
++	struct e1000_mbx_info *mbx = &hw->mbx;
++	u32 msgbuf[3], msgbuf_chk;
++	u8 *msg_addr = (u8 *)(&msgbuf[1]);
++	s32 ret_val;
++
++	memset(msgbuf, 0, sizeof(msgbuf));
++	msgbuf[0] |= sub_cmd;
++	msgbuf[0] |= E1000_VF_SET_MAC_ADDR;
++	msgbuf_chk = msgbuf[0];
++
++	if (addr)
++		memcpy(msg_addr, addr, ETH_ALEN);
++
++	ret_val = mbx->ops.write_posted(hw, msgbuf, 3);
++
++	if (!ret_val)
++		ret_val = mbx->ops.read_posted(hw, msgbuf, 3);
++
++	msgbuf[0] &= ~E1000_VT_MSGTYPE_CTS;
++
++	if (!ret_val) {
++		msgbuf[0] &= ~E1000_VT_MSGTYPE_CTS;
++
++		if (msgbuf[0] == (msgbuf_chk | E1000_VT_MSGTYPE_NACK))
++			return -ENOSPC;
++	}
++
++	return ret_val;
++}
++
++/**
+  *  e1000_check_for_link_vf - Check for link for a virtual interface
+  *  @hw: pointer to the HW structure
+  *
+diff --git a/drivers/net/ethernet/intel/igbvf/vf.h b/drivers/net/ethernet/intel/igbvf/vf.h
+index f00a41d..4cf78b0 100644
+--- a/drivers/net/ethernet/intel/igbvf/vf.h
++++ b/drivers/net/ethernet/intel/igbvf/vf.h
+@@ -179,6 +179,7 @@ struct e1000_mac_operations {
+ 	s32  (*get_bus_info)(struct e1000_hw *);
+ 	s32  (*get_link_up_info)(struct e1000_hw *, u16 *, u16 *);
+ 	void (*update_mc_addr_list)(struct e1000_hw *, u8 *, u32, u32, u32);
++	s32  (*set_uc_addr)(struct e1000_hw *, u32, u8 *);
+ 	s32  (*reset_hw)(struct e1000_hw *);
+ 	s32  (*init_hw)(struct e1000_hw *);
+ 	s32  (*setup_link)(struct e1000_hw *);
 -- 
 2.7.4
 
