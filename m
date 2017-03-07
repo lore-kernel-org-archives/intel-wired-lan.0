@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 7 Mar 2017 16:24:45 +0000
-Subject: [Intel-wired-lan] [next PATCH S61 01/10] i40e/i40evf: Update
- code	to better handle incrementing page count
-In-Reply-To: <1487721348-25617-2-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 7 Mar 2017 16:25:17 +0000
+Subject: [Intel-wired-lan] [next PATCH S61 02/10] i40e: fix
+ configuration of	RSS table with DCB
+In-Reply-To: <1487721348-25617-3-git-send-email-bimmy.pujari@intel.com>
 References: <1487721348-25617-1-git-send-email-bimmy.pujari@intel.com>
- <1487721348-25617-2-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10401EE6@ORSMSX101.amr.corp.intel.com>
+ <1487721348-25617-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10401EF5@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,35 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, February 21, 2017 3:56 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S61 01/10] i40e/i40evf: Update code
-> to better handle incrementing page count
+> Subject: [Intel-wired-lan] [next PATCH S61 02/10] i40e: fix configuration of
+> RSS table with DCB
 > 
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 > 
-> Update the driver code so that we do bulk updates of the page reference
-> count instead of just incrementing it by one reference at a time.  The
-> advantage to doing this is that we cut down on atomic operations and this in
-> turn should give us a slight improvement in cycles per packet.
-> In addition if we eventually move this over to using build_skb the gains will
-> be more noticeable.
+> There exists a bug in the driver where the calculation of the RSS size was not
+> taking into account the number of traffic classes enabled. This patch factors
+> in the traffic classes both in the initial configuration of the table as well as
+> reconfiguration.
 > 
-> I also found and fixed a store forwarding stall from where we were assigning
-> "*new_buff = *old_buff".  By breaking it up into individual copies we can
-> avoid this and as a result the performance is slightly improved.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> Change-ID: I1d3880dece4133eca3c32423b04a5467321ccc52
+> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> Change-ID: I34dcd345ce52faf1d6b9614bea28d450cfd5f621
 > ---
-> Testing Hints: Make certain this doesn't cause any memory leaks or lead
->         to any data corruptions under heavy Rx traffic with a mix of frame
->         sizes.
+> Testing Hints: Change the number of queues and RSS hash table via ethtool
+> and ensure that no packets are dropped.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 25 ++++++++++++++++++----
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  7 ++++++-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 24 ++++++++++++++++++--
-> ----  drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  7 ++++++-
->  4 files changed, 48 insertions(+), 15 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 15 ++++++++++-----
+>  1 file changed, 10 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
