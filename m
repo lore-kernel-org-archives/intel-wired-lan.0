@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 8 Mar 2017 18:51:11 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: add check for VETO bit
-	when	configuring link for KR
-In-Reply-To: <20170301195209.5993-1-anthony.l.nguyen@intel.com>
-References: <20170301195209.5993-1-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10402338@ORSMSX101.amr.corp.intel.com>
+Date: Wed, 8 Mar 2017 18:55:05 +0000
+Subject: [Intel-wired-lan] [next PATCH S61 03/10] i40e/i40evf: Fix use
+ after	free in Rx cleanup path
+In-Reply-To: <1487721348-25617-4-git-send-email-bimmy.pujari@intel.com>
+References: <1487721348-25617-1-git-send-email-bimmy.pujari@intel.com>
+ <1487721348-25617-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10402349@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,23 +14,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Wednesday, March 1, 2017 11:52 AM
+> Behalf Of Bimmy Pujari
+> Sent: Tuesday, February 21, 2017 3:56 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: add check for VETO bit when
-> configuring link for KR
+> Subject: [Intel-wired-lan] [next PATCH S61 03/10] i40e/i40evf: Fix use after
+> free in Rx cleanup path
 > 
-> We did not have a check in place for MMNGC.MNG_VETO when setting up
-> link on X550EM_X KR devices which resulted in link loss for the BMC when
-> loading the driver.
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> This patch adds a check for ixgbe_check_reset_blocked() in setup_link()
-> since in that case there is no PHY reset function.
+> We need to reset skb back to NULL when we have freed it in the Rx cleanup
+> path.  I found one spot where this wasn't occurring so this patch fixes it.
 > 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> Change-ID: Iaca68934200732cd4a63eb0bd83b539c95f8c4dd
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 3 +++
->  1 file changed, 3 insertions(+)
+> Testing Hints:
+>         The "Fixes" commit ID will need to be updated before this is pushed
+>         upstream.  Ideally this patch can be dropped if the patch that
+>         introduced the bug has not yet made it upstream, and this fix can
+>         be taken care of there.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 1 +
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 1 +
+>  2 files changed, 2 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
