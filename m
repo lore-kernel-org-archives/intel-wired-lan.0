@@ -1,43 +1,76 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 8 Mar 2017 18:55:05 +0000
-Subject: [Intel-wired-lan] [next PATCH S61 03/10] i40e/i40evf: Fix use
- after	free in Rx cleanup path
-In-Reply-To: <1487721348-25617-4-git-send-email-bimmy.pujari@intel.com>
-References: <1487721348-25617-1-git-send-email-bimmy.pujari@intel.com>
- <1487721348-25617-4-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10402349@ORSMSX101.amr.corp.intel.com>
+From: tndave <tushar.n.dave@oracle.com>
+Date: Wed, 8 Mar 2017 11:30:54 -0800
+Subject: [Intel-wired-lan] Question on ixgbe flow director
+In-Reply-To: <CAKgT0UfT9zdzPHQawFtGZf9k1mwHG5_jZorXNDsoiOrUfNnZJw@mail.gmail.com>
+References: <c5c170c0-a024-5cb2-cd39-81b8cfffd8e5@oracle.com>
+ <CAKgT0UfT9zdzPHQawFtGZf9k1mwHG5_jZorXNDsoiOrUfNnZJw@mail.gmail.com>
+Message-ID: <5e81301b-f660-43a5-3400-8cbf7d3a77aa@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Tuesday, February 21, 2017 3:56 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S61 03/10] i40e/i40evf: Fix use after
-> free in Rx cleanup path
-> 
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
-> 
-> We need to reset skb back to NULL when we have freed it in the Rx cleanup
-> path.  I found one spot where this wasn't occurring so this patch fixes it.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> Change-ID: Iaca68934200732cd4a63eb0bd83b539c95f8c4dd
-> ---
-> Testing Hints:
->         The "Fixes" commit ID will need to be updated before this is pushed
->         upstream.  Ideally this patch can be dropped if the patch that
->         introduced the bug has not yet made it upstream, and this fix can
->         be taken care of there.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 1 +
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 1 +
->  2 files changed, 2 insertions(+)
-
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
+On 03/08/2017 07:39 AM, Alexander Duyck wrote:
+> On Tue, Mar 7, 2017 at 3:43 PM, tndave <tushar.n.dave@oracle.com>
+> wrote:
+>> Hi,
+>>
+>> I have few questions regarding ixgbe flow director. As per my
+>> understanding flow director in ixgbe can work in 2 exclusive ways,
+>>  a. Using ATR filters - where flow director is setup in HW by
+>> driver identifying transmit traffic. And based on that, receive
+>> traffic of the same flow get assigned/directed to same queue.
+>
+> So ATR for ixgbe uses the Flow Director signature filters. Basically
+> the signature filters are purely hash based filters.  The easiest way
+> to think of it is it is essentially a beefed up version of RSS.
+Alex,
+
+Thanks for the info.
+>
+>> b. Perfect filter, where user can manually program flow director
+>> using ethtool so that receive packets gets directed to specified
+>> rx queue (depending on on how ethtool flow-type and action etc,.);
+>> But with perfect filters there is no intelligence involved alike
+>> ATR has on identifying transit, right?
+>
+> You are right.  The perfect match filters are the ones we configure
+> via ethtool.  You are correct in that ATR logic is not involved so
+> there is no matching up an Rx flow to a Tx flow.
+>
+>> Few question regarding ixgbe ATR, 1. does ATR works in case if
+>> protocol is UDP? (Based on the current ixgbe_atr() it only
+>> supports TCP)
+>
+> It could, but the software for doing ATR flow identification,
+> ixgbe_atr(), only works on TCP.  The reasoning behind it is that Flow
+> Director doesn't filter fragmented frames and UDP can be fragmented.
+So we could just add code in ixgbe_atr() for non-fragmented udp packets!
+However question is if it is going to work w.r.t ATR? TCP is connected
+stream vs udp is stateless and single udp socket can talk to multiple
+endpoints.
+
+>
+>> 2. Does ATR flow director can be programmed using ethtool? (As per
+>> my understanding only perfect filter can be programmed from
+>> ethtool, is that so?)
+>
+> You can enable/disable the ATR filters via the NTUPLE feaure flag.
+> Basically it toggles between ATR mode, and NTUPLE mode.  In NTUPLE
+> mode the perfect filters are enabled and can be configured via
+> ethtool.
+Got it.
+
+Thanks.
+
+-Tushar
+>
+>> Thanks in advance, -Tushar
+>
+> Hope that helps.
+>
+> - Alex
+>
