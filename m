@@ -1,157 +1,103 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 09 Mar 2017 12:57:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 873994391020bcef3e21a55e4fa02455d04680a3
-Message-ID: <58c0e0c6.hHQW6cE6GKX1laPn%fengguang.wu@intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Thu, 9 Mar 2017 08:33:39 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v3 1/3] ixgbe: add XDP
+ support for pass and drop actions
+In-Reply-To: <CAKgT0Uce50xKSYvVdnZxFeKyPoNtUF=kzguMOascwvev5ue5Lw@mail.gmail.com>
+References: <20170303175526.25015.12183.stgit@john-Precision-Tower-5810>
+ <20170303175703.25015.13873.stgit@john-Precision-Tower-5810>
+ <CAKgT0Uce50xKSYvVdnZxFeKyPoNtUF=kzguMOascwvev5ue5Lw@mail.gmail.com>
+Message-ID: <58C183E3.7000300@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-873994391020bcef3e21a55e4fa02455d04680a3  ixgbe: Add support for maximum headroom when using build_skb
+On 17-03-03 12:55 PM, Alexander Duyck wrote:
+> On Fri, Mar 3, 2017 at 9:57 AM, John Fastabend <john.fastabend@gmail.com> wrote:
+>> Basic XDP drop support for ixgbe. Uses READ_ONCE/xchg semantics on XDP
+>> programs instead of rcu primitives as suggested by Daniel Borkmann and
+>> Alex Duyck.
+>>
+>> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+>> ---
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    4 +
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    4 -
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  123 +++++++++++++++++++++-
+>>  3 files changed, 120 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>> index b812913..6eaf506 100644
 
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c:3098:32-37: ERROR: invalid reference to the index variable of the iterator on line 3052
+[...]
 
-Error ids grouped by kconfigs:
+I'll fix style comments in next version.
 
-recent_errors
-??? i386-allmodconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_ethtool.c:ERROR:invalid-reference-to-the-index-variable-of-the-iterator-on-line
+>>                 if (!skb) {
+>> @@ -6061,7 +6120,8 @@ static int ixgbe_setup_all_tx_resources(struct ixgbe_adapter *adapter)
+>>   *
+>>   * Returns 0 on success, negative on failure
+>>   **/
+>> -int ixgbe_setup_rx_resources(struct ixgbe_ring *rx_ring)
+>> +int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
+>> +                            struct ixgbe_ring *rx_ring)
+>>  {
+>>         struct device *dev = rx_ring->dev;
+>>         int orig_node = dev_to_node(dev);
+>> @@ -6098,6 +6158,8 @@ int ixgbe_setup_rx_resources(struct ixgbe_ring *rx_ring)
+>>         rx_ring->next_to_clean = 0;
+>>         rx_ring->next_to_use = 0;
+>>
+>> +       xchg(&rx_ring->xdp_prog, adapter->xdp_prog);
+>> +
+>>         return 0;
+>>  err:
+>>         vfree(rx_ring->rx_buffer_info);
+> 
+> It occurs to me that I am not sure we even need the xchg here.  This
+> should be protected by an the rtnl lock anyway.  So I don't think we
+> need the xchg unless XDP can update things outside the rtnl lock which
+> if it can we have other issues since adapter->xdp_prog could then be
+> updated while this is going on.
+> 
+>> @@ -6121,10 +6183,11 @@ static int ixgbe_setup_all_rx_resources(struct ixgbe_adapter *adapter)
+>>         int i, err = 0;
+>>
+>>         for (i = 0; i < adapter->num_rx_queues; i++) {
+>> -               err = ixgbe_setup_rx_resources(adapter->rx_ring[i]);
+>> +               struct ixgbe_ring *rx_ring = adapter->rx_ring[i];
+>> +
+>> +               err = ixgbe_setup_rx_resources(adapter, rx_ring);
+>>                 if (!err)
+>>                         continue;
+>> -
+> 
+> There is a bunch of noise here.  Don't bother modifying white space,
+> just add the adapter reference to the function call.   It will still
+> be below 80 characters anyway.
+> 
+>>                 e_err(probe, "Allocation for Rx Queue %u failed\n", i);
+>>                 goto err_setup_rx;
+>>         }
+>> @@ -6189,6 +6252,7 @@ void ixgbe_free_rx_resources(struct ixgbe_ring *rx_ring)
+>>  {
+>>         ixgbe_clean_rx_ring(rx_ring);
+>>
+>> +       xchg(&rx_ring->xdp_prog, NULL);
+>>         vfree(rx_ring->rx_buffer_info);
+>>         rx_ring->rx_buffer_info = NULL;
+>>
+> 
+> Same question that I had for the other xchg.  Do we even need it?  The
+> NAPI polling routine should already be unregistered since we are
+> freeing rings at this point.  Odds are we can probably just assign
+> NULL as a value and skip the xchg assuming all callers of this
+> function are holding the rtnl.
+> 
 
-elapsed time: 220m
-
-configs tested: 128
-
-i386                     randconfig-a0-201710
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-x015-201710
-x86_64                 randconfig-x012-201710
-x86_64                 randconfig-x017-201710
-x86_64                 randconfig-x010-201710
-x86_64                 randconfig-x018-201710
-x86_64                 randconfig-x011-201710
-x86_64                 randconfig-x019-201710
-x86_64                 randconfig-x013-201710
-x86_64                 randconfig-x014-201710
-x86_64                 randconfig-x016-201710
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201710
-i386                     randconfig-s1-201710
-i386                               tinyconfig
-i386                             allmodconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201710
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-x014-201710
-i386                   randconfig-x010-201710
-i386                   randconfig-x016-201710
-i386                   randconfig-x017-201710
-i386                   randconfig-x013-201710
-i386                   randconfig-x019-201710
-i386                   randconfig-x012-201710
-i386                   randconfig-x015-201710
-i386                   randconfig-x011-201710
-i386                   randconfig-x018-201710
-i386                     randconfig-n0-201710
-x86_64                                   rhel
-i386                   randconfig-x070-201710
-i386                   randconfig-x077-201710
-i386                   randconfig-x073-201710
-i386                   randconfig-x076-201710
-i386                   randconfig-x072-201710
-i386                   randconfig-x078-201710
-i386                   randconfig-x074-201710
-i386                   randconfig-x075-201710
-i386                   randconfig-x079-201710
-i386                   randconfig-x071-201710
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64       acpi-redef+CONFIG_DEBUG_INFO_REDUCED
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x004-201710
-x86_64                 randconfig-x009-201710
-x86_64                 randconfig-x003-201710
-x86_64                 randconfig-x008-201710
-x86_64                 randconfig-x002-201710
-x86_64                 randconfig-x000-201710
-x86_64                 randconfig-x007-201710
-x86_64                 randconfig-x005-201710
-x86_64                 randconfig-x006-201710
-x86_64                 randconfig-x001-201710
-i386                     randconfig-r0-201710
-i386                   randconfig-x005-201710
-i386                   randconfig-x002-201710
-i386                   randconfig-x006-201710
-i386                   randconfig-x003-201710
-i386                   randconfig-x007-201710
-i386                   randconfig-x008-201710
-i386                   randconfig-x001-201710
-i386                   randconfig-x000-201710
-i386                   randconfig-x009-201710
-i386                   randconfig-x004-201710
+As long as we can guarantee the ring is down and no traffic is being received
+then the xchg is not needed. In both of the above cases.
 
 Thanks,
-Fengguang
+John
+
