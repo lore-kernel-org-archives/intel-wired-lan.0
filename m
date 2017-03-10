@@ -1,160 +1,73 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 10 Mar 2017 16:09:43 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 795b48636b9d0e04c694aad8fd0e86454ffb64f9
-Message-ID: <58c25f47.4j07ny9aFkfYSsev%fengguang.wu@intel.com>
+From: Stefan Kooman <stefan@bit.nl>
+Date: Fri, 10 Mar 2017 14:30:17 +0100
+Subject: [Intel-wired-lan] TX driver issue detected, PF reset issued
+Message-ID: <20170310133017.GA24542@shell.dmz.bit.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-795b48636b9d0e04c694aad8fd0e86454ffb64f9  ixgbe: Add support for maximum headroom when using build_skb
+Hi list,
 
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c:3098:32-37: ERROR: invalid reference to the index variable of the iterator on line 3052
+Today we ran into an issue with our test Ceph cluster:
 
-Error ids grouped by kconfigs:
+Problem: TX driver issue detected, PF reset issued
+Symptoms: LACP bond (openvswitch) not functioning anymore
+Resolution: delete bond from bridge, rmmod i40e, modprobe i40e,
+re-create bond
 
-recent_errors
-??? i386-allmodconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_ethtool.c:ERROR:invalid-reference-to-the-index-variable-of-the-iterator-on-line
+The hypervisor with VM's running with Ceph disk images hit this driver
+issue.  We recently switched network adapters to new Intel X710-DA2
+adapters in this server (see inventory.xml attached to this mail for
+hardware / version info).
 
-elapsed time: 125m
+Our test setup:
 
-configs tested: 131
+Ubuntu 16.04.2 LTS with HWE kernel (currently 4.8.0.39.10).
+Normal openvswitch bond (no DPDK):  (bond_mode=balance-tcp lacp=active
+other_config:lacp-time=fast trunks=a_bunch_of_vlans)
+Linux driver version: 1.6.11-k
+Intel NVM version: firmware-version: 5.05 0x80002928 1.1313.0 (latest
+available)
 
-i386                     randconfig-a0-201710
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-x015-201710
-x86_64                 randconfig-x012-201710
-x86_64                 randconfig-x017-201710
-x86_64                 randconfig-x010-201710
-x86_64                 randconfig-x018-201710
-x86_64                 randconfig-x011-201710
-x86_64                 randconfig-x019-201710
-x86_64                 randconfig-x013-201710
-x86_64                 randconfig-x014-201710
-x86_64                 randconfig-x016-201710
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201710
-i386                     randconfig-s1-201710
-x86_64                           allmodconfig
-i386                               tinyconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201710
-i386                     randconfig-i0-201710
-i386                     randconfig-i1-201710
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-i386                   randconfig-x014-201710
-i386                   randconfig-x010-201710
-i386                   randconfig-x016-201710
-i386                   randconfig-x017-201710
-i386                   randconfig-x013-201710
-i386                   randconfig-x019-201710
-i386                   randconfig-x012-201710
-i386                   randconfig-x015-201710
-i386                   randconfig-x011-201710
-i386                   randconfig-x018-201710
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-n0-201710
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-i386                   randconfig-x070-201710
-i386                   randconfig-x077-201710
-i386                   randconfig-x073-201710
-i386                   randconfig-x076-201710
-i386                   randconfig-x072-201710
-i386                   randconfig-x078-201710
-i386                   randconfig-x074-201710
-i386                   randconfig-x075-201710
-i386                   randconfig-x079-201710
-i386                   randconfig-x071-201710
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                 randconfig-x004-201710
-x86_64                 randconfig-x009-201710
-x86_64                 randconfig-x003-201710
-x86_64                 randconfig-x008-201710
-x86_64                 randconfig-x002-201710
-x86_64                 randconfig-x000-201710
-x86_64                 randconfig-x007-201710
-x86_64                 randconfig-x005-201710
-x86_64                 randconfig-x006-201710
-x86_64                 randconfig-x001-201710
-i386                     randconfig-r0-201710
-i386                             allmodconfig
-i386                   randconfig-x005-201710
-i386                   randconfig-x002-201710
-i386                   randconfig-x006-201710
-i386                   randconfig-x003-201710
-i386                   randconfig-x007-201710
-i386                   randconfig-x008-201710
-i386                   randconfig-x001-201710
-i386                   randconfig-x000-201710
-i386                   randconfig-x009-201710
-i386                   randconfig-x004-201710
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
+This issue seems to be triggered by high load. In this setup this
+particular hypervisor is also the router for the Ceph (IPv6) network
+(routing interfaces are tagged vlan ports on top of this bond). This PF
+reset issue has been brought up earlier in an e-mail thread on this list
+[1]. That issue seems to be related to specific stress testing tools. In
+our setup we are using the linux kernel ip(v6) stack. I would really
+like to find out what's triggering this issue. This type of event seems
+to be called MMD (Malicious Driver Detection). How can one analyse these
+MMD's? We currently have plenty of hardware to perform various (stress)
+tests so if we need to build a special setup in order to analyse this
+issue we have the ability to do so. Any help on this is highly
+appreciated.
 
-Thanks,
-Fengguang
+In the mean time we'll try to find a way to reliably reproduce this
+issue.
+
+Kind regards,
+
+Stefan Kooman
+
+[1]:
+http://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20160314/004395.html
+
+-- 
+| BIT BV  http://www.bit.nl/        Kamer van Koophandel 09090351
+| GPG: 0xD14839C6                   +31 318 648 688 / info at bit.nl
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: inventory.xml
+Type: application/xml
+Size: 4530 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170310/ecc8d658/attachment.xml>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 213 bytes
+Desc: Digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170310/ecc8d658/attachment.asc>
