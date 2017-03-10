@@ -1,47 +1,41 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri, 10 Mar 2017 12:22:03 -0800
-Subject: [Intel-wired-lan] [next PATCH S62 4/6] i40e: Check for new arq
-	elements before leaving the adminq subtask loop
+Date: Fri, 10 Mar 2017 12:22:05 -0800
+Subject: [Intel-wired-lan] [next PATCH S62 6/6] i40e: remove
+	FDIR_REQUIRES_REINIT driver flag
 In-Reply-To: <1489177325-13156-1-git-send-email-bimmy.pujari@intel.com>
 References: <1489177325-13156-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1489177325-13156-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1489177325-13156-7-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: "Christopher Bednarz" <christopher.n.bednarz@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Fix a case where we miss an arq element if a new one is added before we
-enable interrupts and exit the arq subtask loop. This occurs frequently
-with Rdma running on Windows VF and causes long delays that prevent SMB
-from establishing connections.
+This flag hasn't been used since commit 1e1be8f622ee ("i40e: ATR policy
+change to flush the table to clean stale ATR rules").
 
-Signed-off-by: Christopher N Bednarz <christopher.n.bednarz@intel.com>
-Change-ID: I3e1c8b2b960c12857d9b8275bea2c1563674392e
+Lets simplify things and just remove it.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: I76279d84db8a2fd96f445b96aa413059f9256879
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 804f41a..bab9337 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6524,9 +6524,11 @@ static void i40e_clean_adminq_subtask(struct i40e_pf *pf)
- 				 opcode);
- 			break;
- 		}
--	} while (pending && (i++ < pf->adminq_work_limit));
-+	} while (i++ < pf->adminq_work_limit);
-+
-+	if (i < pf->adminq_work_limit)
-+		clear_bit(__I40E_ADMINQ_EVENT_PENDING, &pf->state);
- 
--	clear_bit(__I40E_ADMINQ_EVENT_PENDING, &pf->state);
- 	/* re-enable Admin queue interrupt cause */
- 	val = rd32(hw, I40E_PFINT_ICR0_ENA);
- 	val |=  I40E_PFINT_ICR0_ENA_ADMINQ_MASK;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index e324b6f..dcba258 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -389,7 +389,6 @@ struct i40e_pf {
+ #define I40E_FLAG_MSIX_ENABLED			BIT_ULL(3)
+ #define I40E_FLAG_RSS_ENABLED			BIT_ULL(6)
+ #define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(7)
+-#define I40E_FLAG_FDIR_REQUIRES_REINIT		BIT_ULL(8)
+ #define I40E_FLAG_NEED_LINK_UPDATE		BIT_ULL(9)
+ #define I40E_FLAG_IWARP_ENABLED			BIT_ULL(10)
+ #define I40E_FLAG_CLEAN_ADMINQ			BIT_ULL(14)
 -- 
 2.4.11
 
