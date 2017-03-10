@@ -1,218 +1,47 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri, 10 Mar 2017 12:22:00 -0800
-Subject: [Intel-wired-lan] [next PATCH S62 1/6] i40evf: enforce descriptor
-	write-back mechanism for VF
+Date: Fri, 10 Mar 2017 12:22:03 -0800
+Subject: [Intel-wired-lan] [next PATCH S62 4/6] i40e: Check for new arq
+	elements before leaving the adminq subtask loop
 In-Reply-To: <1489177325-13156-1-git-send-email-bimmy.pujari@intel.com>
 References: <1489177325-13156-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1489177325-13156-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1489177325-13156-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Preethi Banala <preethi.banala@intel.com>
+From: "Christopher Bednarz" <christopher.n.bednarz@intel.com>
 
-The current driver mode is to use a write-back mechanism for the head
-register which indicates transmit completions. The VF driver needs to be
-able to work on hardware that exclusively uses descriptor write-back, so
-change the default driver mode of operation to descriptor write-back for
-VF. In our analysis, performance wasn't significantly different with
-either write-back method.
+Fix a case where we miss an arq element if a new one is added before we
+enable interrupts and exit the arq subtask loop. This occurs frequently
+with Rdma running on Windows VF and causes long delays that prevent SMB
+from establishing connections.
 
-Testing Hints:
-1) load PF driver in host
-2) create two VMs and load VF driver in both
-3) create SRIOV VFs in host and direct attach one VF to each VM
-4) Assign ip address in the same subnet for both VFs.
-5) Use iperf to send TCP/UDP traffic.
-
-Signed-off-by: Preethi Banala <preethi.banala@intel.com>
-Change-ID: Ia92e4ec77c2df8dc4515c71d53746d57d77759af
+Signed-off-by: Christopher N Bednarz <christopher.n.bednarz@intel.com>
+Change-ID: I3e1c8b2b960c12857d9b8275bea2c1563674392e
 ---
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 64 +++-------------------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h      | 14 -----
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  4 --
- 3 files changed, 7 insertions(+), 75 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 8915c55..f1a99a8 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -137,10 +137,7 @@ u32 i40evf_get_tx_pending(struct i40e_ring *ring, bool in_sw)
- {
- 	u32 head, tail;
- 
--	if (!in_sw)
--		head = i40e_get_head(ring);
--	else
--		head = ring->next_to_clean;
-+	head = ring->next_to_clean;
- 	tail = readl(ring->tail);
- 
- 	if (head != tail)
-@@ -165,7 +162,6 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
- {
- 	u16 i = tx_ring->next_to_clean;
- 	struct i40e_tx_buffer *tx_buf;
--	struct i40e_tx_desc *tx_head;
- 	struct i40e_tx_desc *tx_desc;
- 	unsigned int total_bytes = 0, total_packets = 0;
- 	unsigned int budget = vsi->work_limit;
-@@ -174,8 +170,6 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
- 	tx_desc = I40E_TX_DESC(tx_ring, i);
- 	i -= tx_ring->count;
- 
--	tx_head = I40E_TX_DESC(tx_ring, i40e_get_head(tx_ring));
--
- 	do {
- 		struct i40e_tx_desc *eop_desc = tx_buf->next_to_watch;
- 
-@@ -186,8 +180,9 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
- 		/* prevent any other reads prior to eop_desc */
- 		read_barrier_depends();
- 
--		/* we have caught up to head, no work left to do */
--		if (tx_head == tx_desc)
-+		/* if the descriptor isn't done, no work yet to do */
-+		if (!(eop_desc->cmd_type_offset_bsz &
-+		      cpu_to_le64(I40E_TX_DESC_DTYPE_DESC_DONE)))
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 804f41a..bab9337 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6524,9 +6524,11 @@ static void i40e_clean_adminq_subtask(struct i40e_pf *pf)
+ 				 opcode);
  			break;
+ 		}
+-	} while (pending && (i++ < pf->adminq_work_limit));
++	} while (i++ < pf->adminq_work_limit);
++
++	if (i < pf->adminq_work_limit)
++		clear_bit(__I40E_ADMINQ_EVENT_PENDING, &pf->state);
  
- 		/* clear next_to_watch to prevent false hangs */
-@@ -464,10 +459,6 @@ int i40evf_setup_tx_descriptors(struct i40e_ring *tx_ring)
- 
- 	/* round up to nearest 4K */
- 	tx_ring->size = tx_ring->count * sizeof(struct i40e_tx_desc);
--	/* add u32 for head writeback, align after this takes care of
--	 * guaranteeing this is at least one cache line in size
--	 */
--	tx_ring->size += sizeof(u32);
- 	tx_ring->size = ALIGN(tx_ring->size, 4096);
- 	tx_ring->desc = dma_alloc_coherent(dev, tx_ring->size,
- 					   &tx_ring->dma, GFP_KERNEL);
-@@ -2012,7 +2003,6 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	u16 i = tx_ring->next_to_use;
- 	u32 td_tag = 0;
- 	dma_addr_t dma;
--	u16 desc_count = 1;
- 
- 	if (tx_flags & I40E_TX_FLAGS_HW_VLAN) {
- 		td_cmd |= I40E_TX_DESC_CMD_IL2TAG1;
-@@ -2048,7 +2038,6 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 
- 			tx_desc++;
- 			i++;
--			desc_count++;
- 
- 			if (i == tx_ring->count) {
- 				tx_desc = I40E_TX_DESC(tx_ring, 0);
-@@ -2070,7 +2059,6 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 
- 		tx_desc++;
- 		i++;
--		desc_count++;
- 
- 		if (i == tx_ring->count) {
- 			tx_desc = I40E_TX_DESC(tx_ring, 0);
-@@ -2096,46 +2084,8 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 
- 	i40e_maybe_stop_tx(tx_ring, DESC_NEEDED);
- 
--	/* write last descriptor with EOP bit */
--	td_cmd |= I40E_TX_DESC_CMD_EOP;
--
--	/* We can OR these values together as they both are checked against
--	 * 4 below and at this point desc_count will be used as a boolean value
--	 * after this if/else block.
--	 */
--	desc_count |= ++tx_ring->packet_stride;
--
--	/* Algorithm to optimize tail and RS bit setting:
--	 * if queue is stopped
--	 *	mark RS bit
--	 *	reset packet counter
--	 * else if xmit_more is supported and is true
--	 *	advance packet counter to 4
--	 *	reset desc_count to 0
--	 *
--	 * if desc_count >= 4
--	 *	mark RS bit
--	 *	reset packet counter
--	 * if desc_count > 0
--	 *	update tail
--	 *
--	 * Note: If there are less than 4 descriptors
--	 * pending and interrupts were disabled the service task will
--	 * trigger a force WB.
--	 */
--	if (netif_xmit_stopped(txring_txq(tx_ring))) {
--		goto do_rs;
--	} else if (skb->xmit_more) {
--		/* set stride to arm on next packet and reset desc_count */
--		tx_ring->packet_stride = WB_STRIDE;
--		desc_count = 0;
--	} else if (desc_count >= WB_STRIDE) {
--do_rs:
--		/* write last descriptor with RS bit set */
--		td_cmd |= I40E_TX_DESC_CMD_RS;
--		tx_ring->packet_stride = 0;
--	}
--
-+	/* write last descriptor with RS and EOP bits */
-+	td_cmd |= I40E_TXD_CMD;
- 	tx_desc->cmd_type_offset_bsz =
- 			build_ctob(td_cmd, td_offset, size, td_tag);
- 
-@@ -2151,7 +2101,7 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	first->next_to_watch = tx_desc;
- 
- 	/* notify HW of packet */
--	if (desc_count) {
-+	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
- 		writel(i, tx_ring->tail);
- 
- 		/* we need this if more than one processor can write to our tail
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index fc959f9..aba40ed 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -393,20 +393,6 @@ int __i40evf_maybe_stop_tx(struct i40e_ring *tx_ring, int size);
- bool __i40evf_chk_linearize(struct sk_buff *skb);
- 
- /**
-- * i40e_get_head - Retrieve head from head writeback
-- * @tx_ring: Tx ring to fetch head of
-- *
-- * Returns value of Tx ring head based on value stored
-- * in head write-back location
-- **/
--static inline u32 i40e_get_head(struct i40e_ring *tx_ring)
--{
--	void *head = (struct i40e_tx_desc *)tx_ring->desc + tx_ring->count;
--
--	return le32_to_cpu(*(volatile __le32 *)head);
--}
--
--/**
-  * i40e_xmit_descriptor_count - calculate number of Tx descriptors needed
-  * @skb:     send buffer
-  * @tx_ring: ring to send buffer on
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index a2a7354..4bc2488 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -260,10 +260,6 @@ void i40evf_configure_queues(struct i40evf_adapter *adapter)
- 		vqpi->txq.queue_id = i;
- 		vqpi->txq.ring_len = adapter->tx_rings[i].count;
- 		vqpi->txq.dma_ring_addr = adapter->tx_rings[i].dma;
--		vqpi->txq.headwb_enabled = 1;
--		vqpi->txq.dma_headwb_addr = vqpi->txq.dma_ring_addr +
--		    (vqpi->txq.ring_len * sizeof(struct i40e_tx_desc));
--
- 		vqpi->rxq.vsi_id = vqci->vsi_id;
- 		vqpi->rxq.queue_id = i;
- 		vqpi->rxq.ring_len = adapter->rx_rings[i].count;
+-	clear_bit(__I40E_ADMINQ_EVENT_PENDING, &pf->state);
+ 	/* re-enable Admin queue interrupt cause */
+ 	val = rd32(hw, I40E_PFINT_ICR0_ENA);
+ 	val |=  I40E_PFINT_ICR0_ENA_ADMINQ_MASK;
 -- 
 2.4.11
 
