@@ -1,309 +1,405 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Fri, 10 Mar 2017 12:22:01 -0800
-Subject: [Intel-wired-lan] [next PATCH S62 2/6] i40e: Clean up handling of
-	private flags
-In-Reply-To: <1489177325-13156-1-git-send-email-bimmy.pujari@intel.com>
-References: <1489177325-13156-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1489177325-13156-3-git-send-email-bimmy.pujari@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 10 Mar 2017 12:38:26 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v4 1/2] ixgbe: add XDP
+	support for pass and drop actions
+In-Reply-To: <20170310191134.17927.55334.stgit@john-Precision-Tower-5810>
+References: <20170310191134.17927.55334.stgit@john-Precision-Tower-5810>
+Message-ID: <CAKgT0UfUideLMR-8j-RUDee+fMbAsNw=7HdPTk=L3Q8Kc8gxQQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+On Fri, Mar 10, 2017 at 11:11 AM, John Fastabend
+<john.fastabend@gmail.com> wrote:
+> Basic XDP drop support for ixgbe. Uses READ_ONCE/xchg semantics on XDP
+> programs instead of rcu primitives as suggested by Daniel Borkmann and
+> Alex Duyck.
+>
+> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
 
-This patch cleans up and addresses several issues in the way that i40e
-handles private flags. Previously the code was choosing fixed bits and
-trying to match them up with strings in a somewhat haphazard way. This
-resulted in the possibility for adding a new bit and causing a mismatch as
-the private flags are linear bits starting at 0, and the private flags in
-the driver were split up over a group specific to the PF and a group that
-was global.
+Two minor cosmetic complaints below.  However the patch looks good to
+me.  Feel free to add this to both patches for the next revision.
 
-What this change does is define an array of structs used to represent the
-private flags. Contained within the structs are the bits necessary to know
-which flags to set and/or clear depending on the state of the bit. By
-doing this we can add new bits in the future with minimal overhead and
-avoid creating possible mis-matches should we need to remove a flag based
-on compile options.
+Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Change-ID: Ia3214ab04f0ab2f70354ac0997a135f1d01b0acd
----
- drivers/net/ethernet/intel/i40e/i40e.h         |   8 --
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 189 +++++++++++++++----------
- 2 files changed, 112 insertions(+), 85 deletions(-)
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    4 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    4 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  162 +++++++++++++++++++---
+>  3 files changed, 143 insertions(+), 27 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> index b1ecc26..729f84e 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> @@ -273,6 +273,7 @@ struct ixgbe_ring {
+>         struct ixgbe_ring *next;        /* pointer to next ring in q_vector */
+>         struct ixgbe_q_vector *q_vector; /* backpointer to host q_vector */
+>         struct net_device *netdev;      /* netdev ring belongs to */
+> +       struct bpf_prog *xdp_prog;
+>         struct device *dev;             /* device for DMA mapping */
+>         struct ixgbe_fwd_adapter *l2_accel_priv;
+>         void *desc;                     /* descriptor ring memory */
+> @@ -510,6 +511,7 @@ struct ixgbe_adapter {
+>         unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
+>         /* OS defined structs */
+>         struct net_device *netdev;
+> +       struct bpf_prog *xdp_prog;
+>         struct pci_dev *pdev;
+>
+>         unsigned long state;
+> @@ -790,7 +792,7 @@ enum ixgbe_boards {
+>  void ixgbe_reinit_locked(struct ixgbe_adapter *adapter);
+>  void ixgbe_reset(struct ixgbe_adapter *adapter);
+>  void ixgbe_set_ethtool_ops(struct net_device *netdev);
+> -int ixgbe_setup_rx_resources(struct ixgbe_ring *);
+> +int ixgbe_setup_rx_resources(struct ixgbe_adapter *, struct ixgbe_ring *);
+>  int ixgbe_setup_tx_resources(struct ixgbe_ring *);
+>  void ixgbe_free_rx_resources(struct ixgbe_ring *);
+>  void ixgbe_free_tx_resources(struct ixgbe_ring *);
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> index 364c83f..27cf625 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> @@ -1114,7 +1114,7 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
+>                                sizeof(struct ixgbe_ring));
+>
+>                         temp_ring[i].count = new_rx_count;
+> -                       err = ixgbe_setup_rx_resources(&temp_ring[i]);
+> +                       err = ixgbe_setup_rx_resources(adapter, &temp_ring[i]);
+>                         if (err) {
+>                                 while (i) {
+>                                         i--;
+> @@ -1747,7 +1747,7 @@ static int ixgbe_setup_desc_rings(struct ixgbe_adapter *adapter)
+>         rx_ring->netdev = adapter->netdev;
+>         rx_ring->reg_idx = adapter->rx_ring[0]->reg_idx;
+>
+> -       err = ixgbe_setup_rx_resources(rx_ring);
+> +       err = ixgbe_setup_rx_resources(adapter, rx_ring);
+>         if (err) {
+>                 ret_val = 4;
+>                 goto err_nomem;
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index f14d158..ba89d11 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -49,6 +49,9 @@
+>  #include <linux/if_macvlan.h>
+>  #include <linux/if_bridge.h>
+>  #include <linux/prefetch.h>
+> +#include <linux/bpf.h>
+> +#include <linux/bpf_trace.h>
+> +#include <linux/atomic.h>
+>  #include <scsi/fc/fc_fcoe.h>
+>  #include <net/udp_tunnel.h>
+>  #include <net/pkt_cls.h>
+> @@ -1856,6 +1859,10 @@ static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
+>   * @rx_desc: pointer to the EOP Rx descriptor
+>   * @skb: pointer to current skb being fixed
+>   *
+> + * Check if the skb is valid in the XDP case it will be an error pointer.
+> + * Return true in this case to abort processing and advance to next
+> + * descriptor.
+> + *
+>   * Check for corrupted packet headers caused by senders on the local L2
+>   * embedded NIC switch not setting up their Tx Descriptors right.  These
+>   * should be very rare.
+> @@ -1874,6 +1881,10 @@ static bool ixgbe_cleanup_headers(struct ixgbe_ring *rx_ring,
+>  {
+>         struct net_device *netdev = rx_ring->netdev;
+>
+> +       /* XDP packets use error pointer so abort at this point */
+> +       if (IS_ERR(skb))
+> +               return true;
+> +
+>         /* verify that the packet does not have any known errors */
+>         if (unlikely(ixgbe_test_staterr(rx_desc,
+>                                         IXGBE_RXDADV_ERR_FRAME_ERR_MASK) &&
+> @@ -2049,7 +2060,7 @@ static void ixgbe_put_rx_buffer(struct ixgbe_ring *rx_ring,
+>                 /* hand second half of page back to the ring */
+>                 ixgbe_reuse_rx_page(rx_ring, rx_buffer);
+>         } else {
+> -               if (IXGBE_CB(skb)->dma == rx_buffer->dma) {
+> +               if (!IS_ERR(skb) && IXGBE_CB(skb)->dma == rx_buffer->dma) {
+>                         /* the page has been released from the ring */
+>                         IXGBE_CB(skb)->page_released = true;
+>                 } else {
+> @@ -2070,10 +2081,10 @@ static void ixgbe_put_rx_buffer(struct ixgbe_ring *rx_ring,
+>
+>  static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+>                                            struct ixgbe_rx_buffer *rx_buffer,
+> -                                          union ixgbe_adv_rx_desc *rx_desc,
+> -                                          unsigned int size)
+> +                                          struct xdp_buff *xdp,
+> +                                          union ixgbe_adv_rx_desc *rx_desc)
+>  {
+> -       void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
+> +       unsigned int size = xdp->data_end - xdp->data;
+>  #if (PAGE_SIZE < 8192)
+>         unsigned int truesize = ixgbe_rx_pg_size(rx_ring) / 2;
+>  #else
+> @@ -2082,9 +2093,9 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+>         struct sk_buff *skb;
+>
+>         /* prefetch first cache line of first page */
+> -       prefetch(va);
+> +       prefetch(xdp->data);
+>  #if L1_CACHE_BYTES < 128
+> -       prefetch(va + L1_CACHE_BYTES);
+> +       prefetch(xdp->data + L1_CACHE_BYTES);
+>  #endif
+>
+>         /* allocate a skb to store the frags */
+> @@ -2097,7 +2108,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+>                         IXGBE_CB(skb)->dma = rx_buffer->dma;
+>
+>                 skb_add_rx_frag(skb, 0, rx_buffer->page,
+> -                               rx_buffer->page_offset,
+> +                               xdp->data - page_address(rx_buffer->page),
+>                                 size, truesize);
+>  #if (PAGE_SIZE < 8192)
+>                 rx_buffer->page_offset ^= truesize;
+> @@ -2105,7 +2116,8 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+>                 rx_buffer->page_offset += truesize;
+>  #endif
+>         } else {
+> -               memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
+> +               memcpy(__skb_put(skb, size),
+> +                      xdp->data, ALIGN(size, sizeof(long)));
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index be69d7e..e324b6f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -91,14 +91,6 @@
- #define I40E_QUEUE_WAIT_RETRY_LIMIT	10
- #define I40E_INT_NAME_STR_LEN		(IFNAMSIZ + 16)
- 
--/* Ethtool Private Flags */
--#define I40E_PRIV_FLAGS_MFP_FLAG		BIT(0)
--#define I40E_PRIV_FLAGS_LINKPOLL_FLAG		BIT(1)
--#define I40E_PRIV_FLAGS_FD_ATR			BIT(2)
--#define I40E_PRIV_FLAGS_VEB_STATS		BIT(3)
--#define I40E_PRIV_FLAGS_HW_ATR_EVICT		BIT(4)
--#define I40E_PRIV_FLAGS_TRUE_PROMISC_SUPPORT	BIT(5)
--
- #define I40E_NVM_VERSION_LO_SHIFT	0
- #define I40E_NVM_VERSION_LO_MASK	(0xff << I40E_NVM_VERSION_LO_SHIFT)
- #define I40E_NVM_VERSION_HI_SHIFT	12
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 03ffd08..56dccf8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -207,22 +207,36 @@ static const char i40e_gstrings_test[][ETH_GSTRING_LEN] = {
- 
- #define I40E_TEST_LEN (sizeof(i40e_gstrings_test) / ETH_GSTRING_LEN)
- 
--static const char i40e_priv_flags_strings[][ETH_GSTRING_LEN] = {
--	"MFP",
--	"LinkPolling",
--	"flow-director-atr",
--	"veb-stats",
--	"hw-atr-eviction",
-+struct i40e_priv_flags {
-+	char flag_string[ETH_GSTRING_LEN];
-+	u64 flag;
-+	bool read_only;
- };
- 
--#define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings)
-+#define I40E_PRIV_FLAG(_name, _flag, _read_only) { \
-+	.flag_string = _name, \
-+	.flag = _flag, \
-+	.read_only = _read_only, \
-+}
-+
-+static const struct i40e_priv_flags i40e_gstrings_priv_flags[] = {
-+	/* NOTE: MFP setting cannot be changed */
-+	I40E_PRIV_FLAG("MFP", I40E_FLAG_MFP_ENABLED, 1),
-+	I40E_PRIV_FLAG("LinkPolling", I40E_FLAG_LINK_POLLING_ENABLED, 0),
-+	I40E_PRIV_FLAG("flow-director-atr", I40E_FLAG_FD_ATR_ENABLED, 0),
-+	I40E_PRIV_FLAG("veb-stats", I40E_FLAG_VEB_STATS_ENABLED, 0),
-+	I40E_PRIV_FLAG("hw-atr-eviction", I40E_FLAG_HW_ATR_EVICT_CAPABLE, 0),
-+};
-+
-+#define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gstrings_priv_flags)
- 
- /* Private flags with a global effect, restricted to PF 0 */
--static const char i40e_gl_priv_flags_strings[][ETH_GSTRING_LEN] = {
--	"vf-true-promisc-support",
-+static const struct i40e_priv_flags i40e_gl_gstrings_priv_flags[] = {
-+	I40E_PRIV_FLAG("vf-true-promisc-support",
-+		       I40E_FLAG_TRUE_PROMISC_SUPPORT, 0),
- };
- 
--#define I40E_GL_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gl_priv_flags_strings)
-+#define I40E_GL_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gl_gstrings_priv_flags)
- 
- /**
-  * i40e_partition_setting_complaint - generic complaint for MFP restriction
-@@ -1660,12 +1674,18 @@ static void i40e_get_strings(struct net_device *netdev, u32 stringset,
- 		/* BUG_ON(p - data != I40E_STATS_LEN * ETH_GSTRING_LEN); */
- 		break;
- 	case ETH_SS_PRIV_FLAGS:
--		memcpy(data, i40e_priv_flags_strings,
--		       I40E_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
--		data += I40E_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN;
--		if (pf->hw.pf_id == 0)
--			memcpy(data, i40e_gl_priv_flags_strings,
--			       I40E_GL_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
-+		for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
-+			snprintf(p, ETH_GSTRING_LEN, "%s",
-+				 i40e_gstrings_priv_flags[i].flag_string);
-+			p += ETH_GSTRING_LEN;
-+		}
-+		if (pf->hw.pf_id != 0)
-+			break;
-+		for (i = 0; i < I40E_GL_PRIV_FLAGS_STR_LEN; i++) {
-+			snprintf(p, ETH_GSTRING_LEN, "%s",
-+				 i40e_gl_gstrings_priv_flags[i].flag_string);
-+			p += ETH_GSTRING_LEN;
-+		}
- 		break;
- 	default:
- 		break;
-@@ -3945,7 +3965,7 @@ static int i40e_set_rxfh(struct net_device *netdev, const u32 *indir,
-  * @dev: network interface device structure
-  *
-  * The get string set count and the string set should be matched for each
-- * flag returned.  Add new strings for each flag to the i40e_priv_flags_strings
-+ * flag returned.  Add new strings for each flag to the i40e_gstrings_priv_flags
-  * array.
-  *
-  * Returns a u32 bitmap of flags.
-@@ -3955,19 +3975,27 @@ static u32 i40e_get_priv_flags(struct net_device *dev)
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
--	u32 ret_flags = 0;
--
--	ret_flags |= pf->flags & I40E_FLAG_LINK_POLLING_ENABLED ?
--		I40E_PRIV_FLAGS_LINKPOLL_FLAG : 0;
--	ret_flags |= pf->flags & I40E_FLAG_FD_ATR_ENABLED ?
--		I40E_PRIV_FLAGS_FD_ATR : 0;
--	ret_flags |= pf->flags & I40E_FLAG_VEB_STATS_ENABLED ?
--		I40E_PRIV_FLAGS_VEB_STATS : 0;
--	ret_flags |= pf->hw_disabled_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE ?
--		0 : I40E_PRIV_FLAGS_HW_ATR_EVICT;
--	if (pf->hw.pf_id == 0) {
--		ret_flags |= pf->flags & I40E_FLAG_TRUE_PROMISC_SUPPORT ?
--			I40E_PRIV_FLAGS_TRUE_PROMISC_SUPPORT : 0;
-+	u32 i, j, ret_flags = 0;
-+
-+	for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
-+		const struct i40e_priv_flags *priv_flags;
-+
-+		priv_flags = &i40e_gstrings_priv_flags[i];
-+
-+		if (priv_flags->flag & pf->flags)
-+			ret_flags |= BIT(i);
-+	}
-+
-+	if (pf->hw.pf_id != 0)
-+		return ret_flags;
-+
-+	for (j = 0; j < I40E_GL_PRIV_FLAGS_STR_LEN; j++) {
-+		const struct i40e_priv_flags *priv_flags;
-+
-+		priv_flags = &i40e_gl_gstrings_priv_flags[j];
-+
-+		if (priv_flags->flag & pf->flags)
-+			ret_flags |= BIT(i + j);
- 	}
- 
- 	return ret_flags;
-@@ -3983,54 +4011,65 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
--	u16 sw_flags = 0, valid_flags = 0;
--	bool reset_required = false;
--	bool promisc_change = false;
--	int ret;
-+	u64 changed_flags;
-+	u32 i, j;
- 
--	/* NOTE: MFP is not settable */
-+	changed_flags = pf->flags;
- 
--	if (flags & I40E_PRIV_FLAGS_LINKPOLL_FLAG)
--		pf->flags |= I40E_FLAG_LINK_POLLING_ENABLED;
--	else
--		pf->flags &= ~I40E_FLAG_LINK_POLLING_ENABLED;
-+	for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
-+		const struct i40e_priv_flags *priv_flags;
- 
--	/* allow the user to control the state of the Flow
--	 * Director ATR (Application Targeted Routing) feature
--	 * of the driver
--	 */
--	if (flags & I40E_PRIV_FLAGS_FD_ATR) {
--		pf->flags |= I40E_FLAG_FD_ATR_ENABLED;
--	} else {
--		pf->flags &= ~I40E_FLAG_FD_ATR_ENABLED;
--		pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
-+		priv_flags = &i40e_gstrings_priv_flags[i];
- 
--		/* flush current ATR settings */
--		set_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state);
-+		if (priv_flags->read_only)
-+			continue;
-+
-+		if (flags & BIT(i))
-+			pf->flags |= priv_flags->flag;
-+		else
-+			pf->flags &= ~(priv_flags->flag);
- 	}
- 
--	if ((flags & I40E_PRIV_FLAGS_VEB_STATS) &&
--	    !(pf->flags & I40E_FLAG_VEB_STATS_ENABLED)) {
--		pf->flags |= I40E_FLAG_VEB_STATS_ENABLED;
--		reset_required = true;
--	} else if (!(flags & I40E_PRIV_FLAGS_VEB_STATS) &&
--		   (pf->flags & I40E_FLAG_VEB_STATS_ENABLED)) {
--		pf->flags &= ~I40E_FLAG_VEB_STATS_ENABLED;
--		reset_required = true;
-+	if (pf->hw.pf_id != 0)
-+		goto flags_complete;
-+
-+	for (j = 0; j < I40E_GL_PRIV_FLAGS_STR_LEN; j++) {
-+		const struct i40e_priv_flags *priv_flags;
-+
-+		priv_flags = &i40e_gl_gstrings_priv_flags[j];
-+
-+		if (priv_flags->read_only)
-+			continue;
-+
-+		if (flags & BIT(i + j))
-+			pf->flags |= priv_flags->flag;
-+		else
-+			pf->flags &= ~(priv_flags->flag);
- 	}
- 
--	if (pf->hw.pf_id == 0) {
--		if ((flags & I40E_PRIV_FLAGS_TRUE_PROMISC_SUPPORT) &&
--		    !(pf->flags & I40E_FLAG_TRUE_PROMISC_SUPPORT)) {
--			pf->flags |= I40E_FLAG_TRUE_PROMISC_SUPPORT;
--			promisc_change = true;
--		} else if (!(flags & I40E_PRIV_FLAGS_TRUE_PROMISC_SUPPORT) &&
--			   (pf->flags & I40E_FLAG_TRUE_PROMISC_SUPPORT)) {
--			pf->flags &= ~I40E_FLAG_TRUE_PROMISC_SUPPORT;
--			promisc_change = true;
--		}
-+flags_complete:
-+	changed_flags ^= pf->flags;
-+
-+	/* Process any additional changes needed as a result of flag changes.
-+	 * The changed_flags value reflects the list of bits that were
-+	 * changed in the code above.
-+	 */
-+
-+	/* Flush current ATR settings if ATR was disabled */
-+	if ((changed_flags & I40E_FLAG_FD_ATR_ENABLED) &&
-+	    !(pf->flags & I40E_FLAG_FD_ATR_ENABLED)) {
-+		pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
-+		set_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state);
- 	}
--	if (promisc_change) {
-+
-+	/* Only allow ATR evict on hardware that is capable of handling it */
-+	if (pf->hw_disabled_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)
-+		pf->flags &= ~I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-+
-+	if (changed_flags & I40E_FLAG_TRUE_PROMISC_SUPPORT) {
-+		u16 sw_flags = 0, valid_flags = 0;
-+		int ret;
-+
- 		if (!(pf->flags & I40E_FLAG_TRUE_PROMISC_SUPPORT))
- 			sw_flags = I40E_AQ_SET_SWITCH_CFG_PROMISC;
- 		valid_flags = I40E_AQ_SET_SWITCH_CFG_PROMISC;
-@@ -4046,14 +4085,10 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 		}
- 	}
- 
--	if ((flags & I40E_PRIV_FLAGS_HW_ATR_EVICT) &&
--	    (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))
--		pf->hw_disabled_flags &= ~I40E_FLAG_HW_ATR_EVICT_CAPABLE;
--	else
--		pf->hw_disabled_flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
--
--	/* if needed, issue reset to cause things to take effect */
--	if (reset_required)
-+	/* Issue reset to cause things to take effect, as additional bits
-+	 * are added we will need to create a mask of bits requiring reset
-+	 */
-+	if (changed_flags & I40E_FLAG_VEB_STATS_ENABLED)
- 		i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED));
- 
- 	return 0;
--- 
-2.4.11
+I'm not sure what happened here.  Is this line over 80 characters?  If
+not it probably doesn't need to be wrapped.  If it is then you might
+want to fix the line wrapping up since it doesn't look right.
 
+>                 rx_buffer->pagecnt_bias++;
+>         }
+>
+> @@ -2114,10 +2126,9 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+>
+>  static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
+>                                        struct ixgbe_rx_buffer *rx_buffer,
+> -                                      union ixgbe_adv_rx_desc *rx_desc,
+> -                                      unsigned int size)
+> +                                      struct xdp_buff *xdp,
+> +                                      union ixgbe_adv_rx_desc *rx_desc)
+>  {
+> -       void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
+>  #if (PAGE_SIZE < 8192)
+>         unsigned int truesize = ixgbe_rx_pg_size(rx_ring) / 2;
+>  #else
+> @@ -2127,19 +2138,19 @@ static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
+>         struct sk_buff *skb;
+>
+>         /* prefetch first cache line of first page */
+> -       prefetch(va);
+> +       prefetch(xdp->data);
+>  #if L1_CACHE_BYTES < 128
+> -       prefetch(va + L1_CACHE_BYTES);
+> +       prefetch(xdp->data + L1_CACHE_BYTES);
+>  #endif
+>
+>         /* build an skb to around the page buffer */
+> -       skb = build_skb(va - IXGBE_SKB_PAD, truesize);
+> +       skb = build_skb(xdp->data_hard_start, truesize);
+>         if (unlikely(!skb))
+>                 return NULL;
+>
+>         /* update pointers within the skb to store the data */
+> -       skb_reserve(skb, IXGBE_SKB_PAD);
+> -       __skb_put(skb, size);
+> +       skb_reserve(skb, xdp->data - xdp->data_hard_start);
+> +       __skb_put(skb, xdp->data_end - xdp->data);
+>
+>         /* record DMA address if this is the start of a chain of buffers */
+>         if (!ixgbe_test_staterr(rx_desc, IXGBE_RXD_STAT_EOP))
+> @@ -2155,6 +2166,41 @@ static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
+>         return skb;
+>  }
+>
+> +#define IXGBE_XDP_PASS 0
+> +#define IXGBE_XDP_CONSUMED 1
+> +
+> +static struct sk_buff *ixgbe_run_xdp(struct ixgbe_ring  *rx_ring,
+> +                                    struct xdp_buff *xdp)
+> +{
+> +       int result = IXGBE_XDP_PASS;
+> +       struct bpf_prog *xdp_prog;
+> +       u32 act;
+> +
+> +       rcu_read_lock();
+> +       xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+> +
+> +       if (!xdp_prog)
+> +               goto xdp_out;
+> +
+> +       act = bpf_prog_run_xdp(xdp_prog, xdp);
+> +       switch (act) {
+> +       case XDP_PASS:
+> +               break;
+> +       default:
+> +               bpf_warn_invalid_xdp_action(act);
+> +       case XDP_TX:
+> +       case XDP_ABORTED:
+> +               trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
+> +               /* fallthrough -- handle aborts by dropping packet */
+> +       case XDP_DROP:
+> +               result = IXGBE_XDP_CONSUMED;
+> +               break;
+> +       }
+> +xdp_out:
+> +       rcu_read_unlock();
+> +       return ERR_PTR(-result);
+> +}
+> +
+>  /**
+>   * ixgbe_clean_rx_irq - Clean completed descriptors from Rx ring - bounce buf
+>   * @q_vector: structure containing interrupt and ring information
+> @@ -2184,6 +2230,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>                 union ixgbe_adv_rx_desc *rx_desc;
+>                 struct ixgbe_rx_buffer *rx_buffer;
+>                 struct sk_buff *skb;
+> +               struct xdp_buff xdp;
+>                 unsigned int size;
+>
+>                 /* return some buffers to hardware, one at a time is too slow */
+> @@ -2205,15 +2252,29 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>
+>                 rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size);
+>
+> -               /* retrieve a buffer from the ring */
+
+You can probably leave this comment here.  That is my preference anyway.
+
+> -               if (skb)
+> +               if (!skb) {
+> +                       xdp.data = page_address(rx_buffer->page) +
+> +                                               rx_buffer->page_offset;
+> +                       xdp.data_hard_start = xdp.data -
+> +                                               ixgbe_rx_offset(rx_ring);
+> +                       xdp.data_end = xdp.data + size;
+> +
+> +                       skb = ixgbe_run_xdp(rx_ring, &xdp);
+> +               }
+> +
+> +               if (IS_ERR(skb)) {
+> +                       total_rx_packets++;
+> +                       total_rx_bytes += size;
+> +                       rx_buffer->pagecnt_bias++;
+> +               } else if (skb) {
+>                         ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
+> -               else if (ring_uses_build_skb(rx_ring))
+> +               } else if (ring_uses_build_skb(rx_ring)) {
+>                         skb = ixgbe_build_skb(rx_ring, rx_buffer,
+> -                                             rx_desc, size);
+> -               else
+> +                                             &xdp, rx_desc);
+> +               } else {
+>                         skb = ixgbe_construct_skb(rx_ring, rx_buffer,
+> -                                                 rx_desc, size);
+> +                                                 &xdp, rx_desc);
+> +               }
+>
+>                 /* exit if we failed to retrieve a buffer */
+>                 if (!skb) {
+> @@ -6072,7 +6133,8 @@ static int ixgbe_setup_all_tx_resources(struct ixgbe_adapter *adapter)
+>   *
+>   * Returns 0 on success, negative on failure
+>   **/
+> -int ixgbe_setup_rx_resources(struct ixgbe_ring *rx_ring)
+> +int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
+> +                            struct ixgbe_ring *rx_ring)
+>  {
+>         struct device *dev = rx_ring->dev;
+>         int orig_node = dev_to_node(dev);
+> @@ -6109,6 +6171,8 @@ int ixgbe_setup_rx_resources(struct ixgbe_ring *rx_ring)
+>         rx_ring->next_to_clean = 0;
+>         rx_ring->next_to_use = 0;
+>
+> +       rx_ring->xdp_prog = adapter->xdp_prog;
+> +
+>         return 0;
+>  err:
+>         vfree(rx_ring->rx_buffer_info);
+> @@ -6132,7 +6196,7 @@ static int ixgbe_setup_all_rx_resources(struct ixgbe_adapter *adapter)
+>         int i, err = 0;
+>
+>         for (i = 0; i < adapter->num_rx_queues; i++) {
+> -               err = ixgbe_setup_rx_resources(adapter->rx_ring[i]);
+> +               err = ixgbe_setup_rx_resources(adapter, adapter->rx_ring[i]);
+>                 if (!err)
+>                         continue;
+>
+> @@ -6200,6 +6264,7 @@ void ixgbe_free_rx_resources(struct ixgbe_ring *rx_ring)
+>  {
+>         ixgbe_clean_rx_ring(rx_ring);
+>
+> +       rx_ring->xdp_prog = NULL;
+>         vfree(rx_ring->rx_buffer_info);
+>         rx_ring->rx_buffer_info = NULL;
+>
+> @@ -9466,6 +9531,54 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
+>         return features;
+>  }
+>
+> +static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+> +{
+> +       int i, frame_size = dev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
+> +       struct ixgbe_adapter *adapter = netdev_priv(dev);
+> +       struct bpf_prog *old_prog;
+> +
+> +       if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
+> +               return -EINVAL;
+> +
+> +       if (adapter->flags & IXGBE_FLAG_DCB_ENABLED)
+> +               return -EINVAL;
+> +
+> +       /* verify ixgbe ring attributes are sufficient for XDP */
+> +       for (i = 0; i < adapter->num_rx_queues; i++) {
+> +               struct ixgbe_ring *ring = adapter->rx_ring[i];
+> +
+> +               if (ring_is_rsc_enabled(ring))
+> +                       return -EINVAL;
+> +
+> +               if (frame_size > ixgbe_rx_bufsz(ring))
+> +                       return -EINVAL;
+> +       }
+> +
+> +       old_prog = xchg(&adapter->xdp_prog, prog);
+> +       for (i = 0; i < adapter->num_rx_queues; i++)
+> +               xchg(&adapter->rx_ring[i]->xdp_prog, adapter->xdp_prog);
+> +
+> +       if (old_prog)
+> +               bpf_prog_put(old_prog);
+> +
+> +       return 0;
+> +}
+> +
+> +static int ixgbe_xdp(struct net_device *dev, struct netdev_xdp *xdp)
+> +{
+> +       struct ixgbe_adapter *adapter = netdev_priv(dev);
+> +
+> +       switch (xdp->command) {
+> +       case XDP_SETUP_PROG:
+> +               return ixgbe_xdp_setup(dev, xdp->prog);
+> +       case XDP_QUERY_PROG:
+> +               xdp->prog_attached = !!(adapter->rx_ring[0]->xdp_prog);
+> +               return 0;
+> +       default:
+> +               return -EINVAL;
+> +       }
+> +}
+> +
+>  static const struct net_device_ops ixgbe_netdev_ops = {
+>         .ndo_open               = ixgbe_open,
+>         .ndo_stop               = ixgbe_close,
+> @@ -9511,6 +9624,7 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
+>         .ndo_udp_tunnel_add     = ixgbe_add_udp_tunnel_port,
+>         .ndo_udp_tunnel_del     = ixgbe_del_udp_tunnel_port,
+>         .ndo_features_check     = ixgbe_features_check,
+> +       .ndo_xdp                = ixgbe_xdp,
+>  };
+>
+>  /**
+>
