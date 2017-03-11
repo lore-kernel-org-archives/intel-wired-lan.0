@@ -1,18 +1,18 @@
 From: John Fastabend <john.fastabend@gmail.com>
-Date: Fri, 10 Mar 2017 21:39:33 -0800
+Date: Sat, 11 Mar 2017 08:48:18 -0800
 Subject: [Intel-wired-lan] [net-next PATCH v4 1/2] ixgbe: add XDP
  support for pass and drop actions
-In-Reply-To: <CAKgT0UfUideLMR-8j-RUDee+fMbAsNw=7HdPTk=L3Q8Kc8gxQQ@mail.gmail.com>
+In-Reply-To: <CALDO+SY4UH1_qc971_-y5Tn=1Kzy-a8AoxJdyzghm+-_=FnrHg@mail.gmail.com>
 References: <20170310191134.17927.55334.stgit@john-Precision-Tower-5810>
- <CAKgT0UfUideLMR-8j-RUDee+fMbAsNw=7HdPTk=L3Q8Kc8gxQQ@mail.gmail.com>
-Message-ID: <58C38D95.5010000@gmail.com>
+ <CALDO+SY4UH1_qc971_-y5Tn=1Kzy-a8AoxJdyzghm+-_=FnrHg@mail.gmail.com>
+Message-ID: <58C42A52.10609@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 17-03-10 12:38 PM, Alexander Duyck wrote:
+On 17-03-11 07:49 AM, William Tu wrote:
 > On Fri, Mar 10, 2017 at 11:11 AM, John Fastabend
 > <john.fastabend@gmail.com> wrote:
 >> Basic XDP drop support for ixgbe. Uses READ_ONCE/xchg semantics on XDP
@@ -20,44 +20,7 @@ On 17-03-10 12:38 PM, Alexander Duyck wrote:
 >> Alex Duyck.
 >>
 >> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
-> 
-> Two minor cosmetic complaints below.  However the patch looks good to
-> me.  Feel free to add this to both patches for the next revision.
-> 
-> Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> 
-
-
-[...]
-
->>         /* allocate a skb to store the frags */
->> @@ -2097,7 +2108,7 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
->>                         IXGBE_CB(skb)->dma = rx_buffer->dma;
->>
->>                 skb_add_rx_frag(skb, 0, rx_buffer->page,
->> -                               rx_buffer->page_offset,
->> +                               xdp->data - page_address(rx_buffer->page),
->>                                 size, truesize);
->>  #if (PAGE_SIZE < 8192)
->>                 rx_buffer->page_offset ^= truesize;
->> @@ -2105,7 +2116,8 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
->>                 rx_buffer->page_offset += truesize;
->>  #endif
->>         } else {
->> -               memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
->> +               memcpy(__skb_put(skb, size),
->> +                      xdp->data, ALIGN(size, sizeof(long)));
-> 
-> I'm not sure what happened here.  Is this line over 80 characters?  If
-> not it probably doesn't need to be wrapped.  If it is then you might
-> want to fix the line wrapping up since it doesn't look right.
-> 
-
-It is over 80 lines. What is your issue with the line wrapping?
-
->>                 rx_buffer->pagecnt_bias++;
->>         }
->>
+>> ---
 
 [...]
 
@@ -77,12 +40,87 @@ It is over 80 lines. What is your issue with the line wrapping?
 >>                 rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size);
 >>
 >> -               /* retrieve a buffer from the ring */
+>> -               if (skb)
+>> +               if (!skb) {
+>> +                       xdp.data = page_address(rx_buffer->page) +
+>> +                                               rx_buffer->page_offset;
+>> +                       xdp.data_hard_start = xdp.data -
+>> +                                               ixgbe_rx_offset(rx_ring);
+
+We have ixgbe_rx_offset(rx_ring) headroom to support adding headers.
+
+>> +                       xdp.data_end = xdp.data + size;
+>> +
+>> +                       skb = ixgbe_run_xdp(rx_ring, &xdp);
+>> +               }
+>> +
+>> +               if (IS_ERR(skb)) {
+>> +                       total_rx_packets++;
+>> +                       total_rx_bytes += size;
+>> +                       rx_buffer->pagecnt_bias++;
+>> +               } else if (skb) {
+>>                         ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
+>> -               else if (ring_uses_build_skb(rx_ring))
+>> +               } else if (ring_uses_build_skb(rx_ring)) {
+>>                         skb = ixgbe_build_skb(rx_ring, rx_buffer,
+>> -                                             rx_desc, size);
+>> -               else
+>> +                                             &xdp, rx_desc);
+>> +               } else {
+>>                         skb = ixgbe_construct_skb(rx_ring, rx_buffer,
+>> -                                                 rx_desc, size);
+>> +                                                 &xdp, rx_desc);
+>> +               }
+>>
+>>                 /* exit if we failed to retrieve a buffer */
+>>                 if (!skb) {
+
+[...]
+
+>> +static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+>> +{
+>> +       int i, frame_size = dev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
+>> +       struct ixgbe_adapter *adapter = netdev_priv(dev);
+>> +       struct bpf_prog *old_prog;
+>> +
+>> +       if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
+>> +               return -EINVAL;
+>> +
+>> +       if (adapter->flags & IXGBE_FLAG_DCB_ENABLED)
+>> +               return -EINVAL;
+>> +
+>> +       /* verify ixgbe ring attributes are sufficient for XDP */
+>> +       for (i = 0; i < adapter->num_rx_queues; i++) {
+>> +               struct ixgbe_ring *ring = adapter->rx_ring[i];
+>> +
+>> +               if (ring_is_rsc_enabled(ring))
+>> +                       return -EINVAL;
+>> +
+>> +               if (frame_size > ixgbe_rx_bufsz(ring))
+>> +                       return -EINVAL;
+>> +       }
+>> +
+>> +       old_prog = xchg(&adapter->xdp_prog, prog);
+>> +       for (i = 0; i < adapter->num_rx_queues; i++)
+>> +               xchg(&adapter->rx_ring[i]->xdp_prog, adapter->xdp_prog);
+>> +
+>> +       if (old_prog)
+>> +               bpf_prog_put(old_prog);
+>> +
+>> +       return 0;
+>> +}
 > 
-> You can probably leave this comment here.  That is my preference anyway.
+> Since the patch does not support xdp_adjust_head() yet, should we
+> detect and return -EOPNOTSUPP?
 > 
 
-Sure.
+It actually should support xdp_adjust_head() :)
 
-Thanks,
-John
+At least I tested the xdp tunnel program in ./bpf/samples/ and it worked.
+Also I do a standard test where I push the packet up the stack after adding
+headers and that appears to work although I wonder a bit about some of the
+skb metadata. By working in this case I just use tshark and verify the pkt
+is received with the new header by the stack.
+
+> --William
 
