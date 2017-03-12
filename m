@@ -1,126 +1,60 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Sat, 11 Mar 2017 08:48:18 -0800
-Subject: [Intel-wired-lan] [net-next PATCH v4 1/2] ixgbe: add XDP
- support for pass and drop actions
-In-Reply-To: <CALDO+SY4UH1_qc971_-y5Tn=1Kzy-a8AoxJdyzghm+-_=FnrHg@mail.gmail.com>
-References: <20170310191134.17927.55334.stgit@john-Precision-Tower-5810>
- <CALDO+SY4UH1_qc971_-y5Tn=1Kzy-a8AoxJdyzghm+-_=FnrHg@mail.gmail.com>
-Message-ID: <58C42A52.10609@gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Sun, 12 Mar 2017 15:55:08 +0200
+Subject: [Intel-wired-lan] [BUG] 4.11.0-rc1 panic on shutdown X61s
+In-Reply-To: <20170312122621.GA2823@nazgul.tnic>
+References: <20170312053723.GH802@shells.gnugeneration.com>
+ <20170312115703.GA18197@nazgul.tnic> <20170312122621.GA2823@nazgul.tnic>
+Message-ID: <CAHp75Ve7SWivf=TTuq-qA=iM20E==OmSZD2YAmt0LVJQg47Osg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 17-03-11 07:49 AM, William Tu wrote:
-> On Fri, Mar 10, 2017 at 11:11 AM, John Fastabend
-> <john.fastabend@gmail.com> wrote:
->> Basic XDP drop support for ixgbe. Uses READ_ONCE/xchg semantics on XDP
->> programs instead of rcu primitives as suggested by Daniel Borkmann and
->> Alex Duyck.
+On Sun, Mar 12, 2017 at 2:26 PM, Borislav Petkov <bp@alien8.de> wrote:
+> On Sun, Mar 12, 2017 at 12:57:03PM +0100, Borislav Petkov wrote:
+>> On Sat, Mar 11, 2017 at 09:37:23PM -0800, lkml at pengaru.com wrote:
+>> > Hello list,
+>> >
+>> > Here's a photo of the panic, on imgur to be kind to vger:
+>> > http://imgur.com/a/wZI32
+>> >
+>> > I'm out on a sailboat so can't really do much, but had a chance with internet
 >>
->> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
->> ---
+>> So you didn't bring another box with you on the sailboat to connect it to the
+>> laptop over netconsole to catch full dmesg, did you?
+>
+> Hahah, you're so in luck: I just sent this mail and hibernated my laptop
+> and got the same BUG. What's the chance of that happening?! Apparently
+> big enough.
+>
+> But I was able to catch the warning before it too. So the question is,
+> do you have an e1000e eth controller in that machine too?
+>
+> Because the symptoms below are consistent with the observed behavior:
+> e1000e fails to initialize MSI interrupts for whatever reason and falls
+> back to legacy interrupts.
+>
+> Then, PCI core shuts down and BUGs because the msi_list is empty.
+>
+> Anyway, lemme add e1000e people too to the fun thread.
+>
 
-[...]
+The only change that IMHO matters happened between v4.10 and v4.11-rc1 is this:
 
->>  /**
->>   * ixgbe_clean_rx_irq - Clean completed descriptors from Rx ring - bounce buf
->>   * @q_vector: structure containing interrupt and ring information
->> @@ -2184,6 +2230,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
->>                 union ixgbe_adv_rx_desc *rx_desc;
->>                 struct ixgbe_rx_buffer *rx_buffer;
->>                 struct sk_buff *skb;
->> +               struct xdp_buff xdp;
->>                 unsigned int size;
->>
->>                 /* return some buffers to hardware, one at a time is too slow */
->> @@ -2205,15 +2252,29 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
->>
->>                 rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size);
->>
->> -               /* retrieve a buffer from the ring */
->> -               if (skb)
->> +               if (!skb) {
->> +                       xdp.data = page_address(rx_buffer->page) +
->> +                                               rx_buffer->page_offset;
->> +                       xdp.data_hard_start = xdp.data -
->> +                                               ixgbe_rx_offset(rx_ring);
+@@ -6276,8 +6274,8 @@ static int e1000e_pm_freeze(struct device *dev)
+                /* Quiesce the device without resetting the hardware */
+                e1000e_down(adapter, false);
+                e1000_free_irq(adapter);
++               e1000e_reset_interrupt_capability(adapter);
+        }
+-       e1000e_reset_interrupt_capability(adapter);
 
-We have ixgbe_rx_offset(rx_ring) headroom to support adding headers.
+So, it apparently misses something for the other case, like
+pci_disable_msi() call or so.
 
->> +                       xdp.data_end = xdp.data + size;
->> +
->> +                       skb = ixgbe_run_xdp(rx_ring, &xdp);
->> +               }
->> +
->> +               if (IS_ERR(skb)) {
->> +                       total_rx_packets++;
->> +                       total_rx_bytes += size;
->> +                       rx_buffer->pagecnt_bias++;
->> +               } else if (skb) {
->>                         ixgbe_add_rx_frag(rx_ring, rx_buffer, skb, size);
->> -               else if (ring_uses_build_skb(rx_ring))
->> +               } else if (ring_uses_build_skb(rx_ring)) {
->>                         skb = ixgbe_build_skb(rx_ring, rx_buffer,
->> -                                             rx_desc, size);
->> -               else
->> +                                             &xdp, rx_desc);
->> +               } else {
->>                         skb = ixgbe_construct_skb(rx_ring, rx_buffer,
->> -                                                 rx_desc, size);
->> +                                                 &xdp, rx_desc);
->> +               }
->>
->>                 /* exit if we failed to retrieve a buffer */
->>                 if (!skb) {
+P.S. I'm not PCI or e1000e guy :-)
 
-[...]
-
->> +static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
->> +{
->> +       int i, frame_size = dev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
->> +       struct ixgbe_adapter *adapter = netdev_priv(dev);
->> +       struct bpf_prog *old_prog;
->> +
->> +       if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
->> +               return -EINVAL;
->> +
->> +       if (adapter->flags & IXGBE_FLAG_DCB_ENABLED)
->> +               return -EINVAL;
->> +
->> +       /* verify ixgbe ring attributes are sufficient for XDP */
->> +       for (i = 0; i < adapter->num_rx_queues; i++) {
->> +               struct ixgbe_ring *ring = adapter->rx_ring[i];
->> +
->> +               if (ring_is_rsc_enabled(ring))
->> +                       return -EINVAL;
->> +
->> +               if (frame_size > ixgbe_rx_bufsz(ring))
->> +                       return -EINVAL;
->> +       }
->> +
->> +       old_prog = xchg(&adapter->xdp_prog, prog);
->> +       for (i = 0; i < adapter->num_rx_queues; i++)
->> +               xchg(&adapter->rx_ring[i]->xdp_prog, adapter->xdp_prog);
->> +
->> +       if (old_prog)
->> +               bpf_prog_put(old_prog);
->> +
->> +       return 0;
->> +}
-> 
-> Since the patch does not support xdp_adjust_head() yet, should we
-> detect and return -EOPNOTSUPP?
-> 
-
-It actually should support xdp_adjust_head() :)
-
-At least I tested the xdp tunnel program in ./bpf/samples/ and it worked.
-Also I do a standard test where I push the packet up the stack after adding
-headers and that appears to work although I wonder a bit about some of the
-skb metadata. By working in this case I just use tshark and verify the pkt
-is received with the new header by the stack.
-
-> --William
-
+-- 
+With Best Regards,
+Andy Shevchenko
