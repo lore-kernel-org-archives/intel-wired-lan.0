@@ -1,71 +1,79 @@
-From: Borislav Petkov <bp@alien8.de>
-Date: Sun, 12 Mar 2017 23:23:33 +0100
+From: lkml@pengaru.com <lkml@pengaru.com>
+Date: Sun, 12 Mar 2017 11:24:07 -0700
 Subject: [Intel-wired-lan] [BUG] 4.11.0-rc1 panic on shutdown X61s
-In-Reply-To: <CAHp75Ve7SWivf=TTuq-qA=iM20E==OmSZD2YAmt0LVJQg47Osg@mail.gmail.com>
+In-Reply-To: <20170312122621.GA2823@nazgul.tnic>
 References: <20170312053723.GH802@shells.gnugeneration.com>
  <20170312115703.GA18197@nazgul.tnic>
  <20170312122621.GA2823@nazgul.tnic>
- <CAHp75Ve7SWivf=TTuq-qA=iM20E==OmSZD2YAmt0LVJQg47Osg@mail.gmail.com>
-Message-ID: <20170312222333.hm54nl2ul5iuixap@pd.tnic>
+Message-ID: <20170312182407.GJ802@shells.gnugeneration.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Mar 12, 2017 at 03:55:08PM +0200, Andy Shevchenko wrote:
-> On Sun, Mar 12, 2017 at 2:26 PM, Borislav Petkov <bp@alien8.de> wrote:
-> > On Sun, Mar 12, 2017 at 12:57:03PM +0100, Borislav Petkov wrote:
-> >> On Sat, Mar 11, 2017 at 09:37:23PM -0800, lkml at pengaru.com wrote:
-> >> > Hello list,
-> >> >
-> >> > Here's a photo of the panic, on imgur to be kind to vger:
-> >> > http://imgur.com/a/wZI32
-> >> >
-> >> > I'm out on a sailboat so can't really do much, but had a chance with internet
-> >>
-> >> So you didn't bring another box with you on the sailboat to connect it to the
-> >> laptop over netconsole to catch full dmesg, did you?
-> >
-> > Hahah, you're so in luck: I just sent this mail and hibernated my laptop
-> > and got the same BUG. What's the chance of that happening?! Apparently
-> > big enough.
-> >
-> > But I was able to catch the warning before it too. So the question is,
-> > do you have an e1000e eth controller in that machine too?
-> >
-> > Because the symptoms below are consistent with the observed behavior:
-> > e1000e fails to initialize MSI interrupts for whatever reason and falls
-> > back to legacy interrupts.
-> >
-> > Then, PCI core shuts down and BUGs because the msi_list is empty.
-> >
-> > Anyway, lemme add e1000e people too to the fun thread.
-> >
+On Sun, Mar 12, 2017 at 01:26:21PM +0100, Borislav Petkov wrote:
+> On Sun, Mar 12, 2017 at 12:57:03PM +0100, Borislav Petkov wrote:
+> > On Sat, Mar 11, 2017 at 09:37:23PM -0800, lkml at pengaru.com wrote:
+> > > Hello list,
+> > > 
+> > > Here's a photo of the panic, on imgur to be kind to vger:
+> > > http://imgur.com/a/wZI32
+> > > 
+> > > I'm out on a sailboat so can't really do much, but had a chance with internet
+> > 
+> > So you didn't bring another box with you on the sailboat to connect it to the
+> > laptop over netconsole to catch full dmesg, did you?
 > 
-> The only change that IMHO matters happened between v4.10 and v4.11-rc1 is this:
+> Hahah, you're so in luck: I just sent this mail and hibernated my laptop
+> and got the same BUG. What's the chance of that happening?! Apparently
+> big enough.
 > 
-> @@ -6276,8 +6274,8 @@ static int e1000e_pm_freeze(struct device *dev)
->                 /* Quiesce the device without resetting the hardware */
->                 e1000e_down(adapter, false);
->                 e1000_free_irq(adapter);
-> +               e1000e_reset_interrupt_capability(adapter);
->         }
-> -       e1000e_reset_interrupt_capability(adapter);
+> But I was able to catch the warning before it too. So the question is,
+> do you have an e1000e eth controller in that machine too?
 > 
-> So, it apparently misses something for the other case, like
-> pci_disable_msi() call or so.
+> Because the symptoms below are consistent with the observed behavior:
+> e1000e fails to initialize MSI interrupts for whatever reason and falls
+> back to legacy interrupts.
+> 
+> Then, PCI core shuts down and BUGs because the msi_list is empty.
+> 
+> Anyway, lemme add e1000e people too to the fun thread.
+> 
+<snip>
 
-Well, lemme add the people from
+Hihgly likely apparently, this machine does have e1000e and after a single
+suspend+resume cycle this appears in dmesg:
 
-  7e54d9d063fa ("e1000e: driver trying to free already-free irq")
+[28539.220131] ------------[ cut here ]------------
+[28539.220131] WARNING: CPU: 1 PID: 1432 at drivers/pci/msi.c:1052 __pci_enable_msi_range+0x39c/0x3f0
+[28539.220131] CPU: 1 PID: 1432 Comm: kworker/u4:40 Not tainted 4.11.0-rc1 #51
+[28539.220131] Hardware name: LENOVO 7668CTO/7668CTO, BIOS 7NETC2WW (2.22 ) 03/22/2011
+[28539.220131] Workqueue: events_unbound async_run_entry_fn
+[28539.220131] Call Trace:
+[28539.220131]  dump_stack+0x4d/0x72
+[28539.220131]  __warn+0xc7/0xf0
+[28539.220131]  warn_slowpath_null+0x18/0x20
+[28539.220131]  __pci_enable_msi_range+0x39c/0x3f0
+[28539.220131]  ? e1000e_get_phy_info_igp+0x1c/0xf0
+[28539.220131]  pci_enable_msi+0x15/0x30
+[28539.220131]  e1000e_set_interrupt_capability+0xe0/0x130
+[28539.220131]  e1000e_pm_thaw+0x1d/0x50
+[28539.220131]  e1000e_pm_resume+0x20/0x30
+[28539.220131]  pci_pm_resume+0x5f/0x90
+[28539.220131]  dpm_run_callback+0x44/0x170
+[28539.220131]  ? pci_pm_thaw+0x90/0x90
+[28539.220131]  device_resume+0xce/0x1e0
+[28539.220131]  async_resume+0x18/0x40
+[28539.220131]  async_run_entry_fn+0x32/0xe0
+[28539.220131]  process_one_work+0x13b/0x3e0
+[28539.220131]  worker_thread+0x64/0x4a0
+[28539.220131]  kthread+0x10f/0x150
+[28539.220131]  ? process_one_work+0x3e0/0x3e0
+[28539.220131]  ? __kthread_create_on_node+0x150/0x150
+[28539.220131]  ret_from_fork+0x29/0x40
+[28539.220131] ---[ end trace e7beefda13ba724f ]---
+[28539.220131] e1000e 0000:00:19.0 eth3: Failed to initialize MSI interrupts.  Falling back to legacy interrupts.
 
-to CC then. :-)
-
-Thanks.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+Regards,
+Vito Caputo
