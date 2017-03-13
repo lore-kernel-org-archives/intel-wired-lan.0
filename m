@@ -1,85 +1,49 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 13 Mar 2017 10:18:16 -0700
-Subject: [Intel-wired-lan] [RFC PATCH] ixgbe: delay tail write to every
-	'n' packets
-In-Reply-To: <20170313161624.7987.91951.stgit@john-Precision-Tower-5810>
-References: <20170313161624.7987.91951.stgit@john-Precision-Tower-5810>
-Message-ID: <CAKgT0Ufz6W0+1Y4vsKYqcZ_sn+kCie28wKdECbThOeDO_51zKw@mail.gmail.com>
+From: =?unknown-8bit?q?Bj=C3=B8rn?= Mork <bjorn@mork.no>
+Date: Mon, 13 Mar 2017 17:46:06 +0100
+Subject: [Intel-wired-lan] [BUG] 4.11.0-rc1 panic on shutdown X61s
+In-Reply-To: <20170312222333.hm54nl2ul5iuixap@pd.tnic> (Borislav Petkov's
+ message of "Sun, 12 Mar 2017 23:23:33 +0100")
+References: <20170312053723.GH802@shells.gnugeneration.com>
+ <20170312115703.GA18197@nazgul.tnic>
+ <20170312122621.GA2823@nazgul.tnic>
+ <CAHp75Ve7SWivf=TTuq-qA=iM20E==OmSZD2YAmt0LVJQg47Osg@mail.gmail.com>
+ <20170312222333.hm54nl2ul5iuixap@pd.tnic>
+Message-ID: <87shmhjfap.fsf@miraculix.mork.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Mar 13, 2017 at 9:16 AM, John Fastabend
-<john.fastabend@gmail.com> wrote:
-> Current XDP implementation hits the tail on every XDP_TX return
-> code. This patch changes driver behavior to only hit the tail after
-> packet processing is complete.
+Borislav Petkov <bp@alien8.de> writes:
+> On Sun, Mar 12, 2017 at 03:55:08PM +0200, Andy Shevchenko wrote:
 >
-> RFC for now as I test this, it looks promising on my dev box but
-> want to do some more tests before official submission.
+>> The only change that IMHO matters happened between v4.10 and v4.11-rc1 is this:
+>> 
+>> @@ -6276,8 +6274,8 @@ static int e1000e_pm_freeze(struct device *dev)
+>>                 /* Quiesce the device without resetting the hardware */
+>>                 e1000e_down(adapter, false);
+>>                 e1000_free_irq(adapter);
+>> +               e1000e_reset_interrupt_capability(adapter);
+>>         }
+>> -       e1000e_reset_interrupt_capability(adapter);
+>> 
+>> So, it apparently misses something for the other case, like
+>> pci_disable_msi() call or so.
 >
-> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
+> Well, lemme add the people from
 >
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index bef4e24..2c244b6 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -2282,6 +2282,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
->         unsigned int mss = 0;
->  #endif /* IXGBE_FCOE */
->         u16 cleaned_count = ixgbe_desc_unused(rx_ring);
-> +       bool xdp_xmit = false;
+>   7e54d9d063fa ("e1000e: driver trying to free already-free irq")
 >
->         while (likely(total_rx_packets < budget)) {
->                 union ixgbe_adv_rx_desc *rx_desc;
-> @@ -2321,10 +2322,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
->                 }
->
->                 if (IS_ERR(skb)) {
-> -                       if (PTR_ERR(skb) == -IXGBE_XDP_TX)
-> +                       if (PTR_ERR(skb) == -IXGBE_XDP_TX) {
-> +                               xdp_xmit = true;
->                                 ixgbe_rx_buffer_flip(rx_ring, rx_buffer, size);
-> -                       else
-> +                       } else {
->                                 rx_buffer->pagecnt_bias++;
-> +                       }
->                         total_rx_packets++;
->                         total_rx_bytes += size;
->                 } else if (skb) {
-> @@ -2392,6 +2395,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
->                 total_rx_packets++;
->         }
->
-> +       if (xdp_xmit) {
-> +               struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
-> +
-> +               writel(ring->next_to_use, ring->tail);
-> +       }
-> +
+> to CC then. :-)
 
-We will need a wmb here.
+Already did that a week ago:
+https://www.spinics.net/lists/netdev/msg423379.html
 
->         u64_stats_update_begin(&rx_ring->syncp);
->         rx_ring->stats.packets += total_rx_packets;
->         rx_ring->stats.bytes += total_rx_bytes;
-> @@ -8251,7 +8260,6 @@ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
->         tx_buffer->next_to_watch = tx_desc;
->         ring->next_to_use = i;
->
-> -       writel(i, ring->tail);
+Haven't heard anything back yet.  Wondering if they are waiting for
+someone else to submit the pretty obvious revert?  Don't understand why
+that should take more than a minute to figure out.  It's not like they
+are testing these changes anyway...
 
-So you might want to change the barrier setup for all this to use
-smp_wmb instead.  We need the wmb to be paired with the writel.  That
-should give you a slight performance boost since smp_wmb breaks down
-to just a barrier on x86 systems.
 
->         return IXGBE_XDP_TX;
->  }
->
->
+Bj?rn
