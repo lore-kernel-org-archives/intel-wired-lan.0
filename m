@@ -1,84 +1,85 @@
-From: Paul Greenwalt <paul.greenwalt@intel.com>
-Date: Mon, 13 Mar 2017 05:47:56 -0400
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Acquire PHY semaphore before
-	device reset
-Message-ID: <1489398476-15893-1-git-send-email-paul.greenwalt@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 13 Mar 2017 10:18:16 -0700
+Subject: [Intel-wired-lan] [RFC PATCH] ixgbe: delay tail write to every
+	'n' packets
+In-Reply-To: <20170313161624.7987.91951.stgit@john-Precision-Tower-5810>
+References: <20170313161624.7987.91951.stgit@john-Precision-Tower-5810>
+Message-ID: <CAKgT0Ufz6W0+1Y4vsKYqcZ_sn+kCie28wKdECbThOeDO_51zKw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-A recent firmware change fixed an issue to acquire the PHY semaphore before
-accessing PHY registers. This led to a case where  SW can issue a device
-reset clearing the MDIO registers. This patch makes SW acquire the PHY
-semaphore before issuing a device reset.
+On Mon, Mar 13, 2017 at 9:16 AM, John Fastabend
+<john.fastabend@gmail.com> wrote:
+> Current XDP implementation hits the tail on every XDP_TX return
+> code. This patch changes driver behavior to only hit the tail after
+> packet processing is complete.
+>
+> RFC for now as I test this, it looks promising on my dev box but
+> want to do some more tests before official submission.
+>
+> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index bef4e24..2c244b6 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -2282,6 +2282,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>         unsigned int mss = 0;
+>  #endif /* IXGBE_FCOE */
+>         u16 cleaned_count = ixgbe_desc_unused(rx_ring);
+> +       bool xdp_xmit = false;
+>
+>         while (likely(total_rx_packets < budget)) {
+>                 union ixgbe_adv_rx_desc *rx_desc;
+> @@ -2321,10 +2322,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>                 }
+>
+>                 if (IS_ERR(skb)) {
+> -                       if (PTR_ERR(skb) == -IXGBE_XDP_TX)
+> +                       if (PTR_ERR(skb) == -IXGBE_XDP_TX) {
+> +                               xdp_xmit = true;
+>                                 ixgbe_rx_buffer_flip(rx_ring, rx_buffer, size);
+> -                       else
+> +                       } else {
+>                                 rx_buffer->pagecnt_bias++;
+> +                       }
+>                         total_rx_packets++;
+>                         total_rx_bytes += size;
+>                 } else if (skb) {
+> @@ -2392,6 +2395,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>                 total_rx_packets++;
+>         }
+>
+> +       if (xdp_xmit) {
+> +               struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
+> +
+> +               writel(ring->next_to_use, ring->tail);
+> +       }
+> +
 
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c | 8 ++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 8 ++++++++
- 2 files changed, 16 insertions(+)
+We will need a wmb here.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-index 84a467a..6ea0d6a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-@@ -95,6 +95,7 @@ s32 ixgbe_reset_hw_X540(struct ixgbe_hw *hw)
- {
- 	s32 status;
- 	u32 ctrl, i;
-+	u32 swfw_mask = hw->phy.phy_semaphore_mask;
- 
- 	/* Call adapter stop to disable tx/rx and clear interrupts */
- 	status = hw->mac.ops.stop_adapter(hw);
-@@ -105,10 +106,17 @@ s32 ixgbe_reset_hw_X540(struct ixgbe_hw *hw)
- 	ixgbe_clear_tx_pending(hw);
- 
- mac_reset_top:
-+	status = hw->mac.ops.acquire_swfw_sync(hw, swfw_mask);
-+	if (status) {
-+		hw_dbg(hw, "semaphore failed with %d", status);
-+		return IXGBE_ERR_SWFW_SYNC;
-+	}
-+
- 	ctrl = IXGBE_CTRL_RST;
- 	ctrl |= IXGBE_READ_REG(hw, IXGBE_CTRL);
- 	IXGBE_WRITE_REG(hw, IXGBE_CTRL, ctrl);
- 	IXGBE_WRITE_FLUSH(hw);
-+	hw->mac.ops.release_swfw_sync(hw, swfw_mask);
- 	usleep_range(1000, 1200);
- 
- 	/* Poll for reset bit to self-clear indicating reset is complete */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 200f847..c862c6d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -3300,6 +3300,7 @@ static s32 ixgbe_reset_hw_X550em(struct ixgbe_hw *hw)
- 	u32 ctrl = 0;
- 	u32 i;
- 	bool link_up = false;
-+	u32 swfw_mask = hw->phy.phy_semaphore_mask;
- 
- 	/* Call adapter stop to disable Tx/Rx and clear interrupts */
- 	status = hw->mac.ops.stop_adapter(hw);
-@@ -3345,9 +3346,16 @@ static s32 ixgbe_reset_hw_X550em(struct ixgbe_hw *hw)
- 			ctrl = IXGBE_CTRL_RST;
- 	}
- 
-+	status = hw->mac.ops.acquire_swfw_sync(hw, swfw_mask);
-+	if (status) {
-+		hw_dbg(hw, "semaphore failed with %d", status);
-+		return IXGBE_ERR_SWFW_SYNC;
-+	}
-+
- 	ctrl |= IXGBE_READ_REG(hw, IXGBE_CTRL);
- 	IXGBE_WRITE_REG(hw, IXGBE_CTRL, ctrl);
- 	IXGBE_WRITE_FLUSH(hw);
-+	hw->mac.ops.release_swfw_sync(hw, swfw_mask);
- 	usleep_range(1000, 1200);
- 
- 	/* Poll for reset bit to self-clear meaning reset is complete */
--- 
-2.7.4
+>         u64_stats_update_begin(&rx_ring->syncp);
+>         rx_ring->stats.packets += total_rx_packets;
+>         rx_ring->stats.bytes += total_rx_bytes;
+> @@ -8251,7 +8260,6 @@ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+>         tx_buffer->next_to_watch = tx_desc;
+>         ring->next_to_use = i;
+>
+> -       writel(i, ring->tail);
 
+So you might want to change the barrier setup for all this to use
+smp_wmb instead.  We need the wmb to be paired with the writel.  That
+should give you a slight performance boost since smp_wmb breaks down
+to just a barrier on x86 systems.
+
+>         return IXGBE_XDP_TX;
+>  }
+>
+>
