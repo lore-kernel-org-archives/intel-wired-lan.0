@@ -1,353 +1,160 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 14 Mar 2017 17:36:25 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 58f90b91f8d9ef78ec305e1d3db1f94a5f711ff3
-Message-ID: <58c7b999.6terJY5+85Flc9Q7%fengguang.wu@intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Tue, 14 Mar 2017 10:15:22 -0700
+Subject: [Intel-wired-lan] [next PATCH S63 1/6] i40e/i40evf: Use length to
+	determine if descriptor is done
+Message-ID: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-58f90b91f8d9ef78ec305e1d3db1f94a5f711ff3  ixgbe: Add support for maximum headroom when using build_skb
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:17: error: redeclaration of 'advertising' with no linkage
-drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:6: error: redeclaration of 'supported' with no linkage
+This change makes it so that we use the length of the packet instead of the
+DD status bit to determine if a new descriptor is ready to be processed.
+The obvious advantage is that it cuts down on reads as we don't really even
+need the DD bit if going from a 0 to a non-zero value on size is enough to
+inform us that the packet has been completed.
 
-Error ids grouped by kconfigs:
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Change-ID: Iebdf9cdb36c454ef092df27199b92ad09c374231
+---
+Testing Hints:
+        Perform various Rx tests to verify we are not corrupting any Rx data.
 
-recent_errors
-??? alpha-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? arm64-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? arm-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? i386-randconfig-b0-03141716
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? i386-randconfig-i0-201711
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? i386-randconfig-n0-201711
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? i386-randconfig-x0-03141454
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? i386-randconfig-x018-201711
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? ia64-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? ia64-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? mips-ip27_defconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? parisc-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? powerpc-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? powerpc-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? s390-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? s390-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? sparc64-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? sparc64-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? sparc-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? sparc-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? tile-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? x86_64-acpi-redef
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? x86_64-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? x86_64-allyesdebian
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? x86_64-kexec
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? x86_64-nfsroot
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? x86_64-randconfig-b0-03141444
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? x86_64-randconfig-it0-03141417
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? x86_64-rhel
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? x86_64-rhel-7.2
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? xtensa-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
-??? xtensa-allyesconfig
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-advertising-with-no-linkage
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ethtool.c:error:redeclaration-of-supported-with-no-linkage
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 24 ++++++++++++------------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 24 ++++++++++++------------
+ 2 files changed, 24 insertions(+), 24 deletions(-)
 
-elapsed time: 64m
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 9742beb..68936b6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1757,6 +1757,7 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
+  * i40e_fetch_rx_buffer - Allocate skb and populate it
+  * @rx_ring: rx descriptor ring to transact packets on
+  * @rx_desc: descriptor containing info written by hardware
++ * @size: size of buffer to add to skb
+  *
+  * This function allocates an skb on the fly, and populates it with the page
+  * data from the current receive descriptor, taking care to set up the skb
+@@ -1766,13 +1767,9 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
+ static inline
+ struct sk_buff *i40e_fetch_rx_buffer(struct i40e_ring *rx_ring,
+ 				     union i40e_rx_desc *rx_desc,
+-				     struct sk_buff *skb)
++				     struct sk_buff *skb,
++				     unsigned int size)
+ {
+-	u64 local_status_error_len =
+-		le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+-	unsigned int size =
+-		(local_status_error_len & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
+-		I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
+ 	struct i40e_rx_buffer *rx_buffer;
+ 	struct page *page;
+ 
+@@ -1890,6 +1887,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 
+ 	while (likely(total_rx_packets < budget)) {
+ 		union i40e_rx_desc *rx_desc;
++		unsigned int size;
+ 		u16 vlan_tag;
+ 		u8 rx_ptype;
+ 		u64 qword;
+@@ -1906,19 +1904,21 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		/* status_error_len will always be zero for unused descriptors
+ 		 * because it's cleared in cleanup, and overlaps with hdr_addr
+ 		 * which is always zero because packet split isn't used, if the
+-		 * hardware wrote DD then it will be non-zero
++		 * hardware wrote DD then the length will be non-zero
+ 		 */
+-		if (!i40e_test_staterr(rx_desc,
+-				       BIT(I40E_RX_DESC_STATUS_DD_SHIFT)))
++		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
++		size = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
++		       I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
++		if (!size)
+ 			break;
+ 
+ 		/* This memory barrier is needed to keep us from reading
+-		 * any other fields out of the rx_desc until we know the
+-		 * DD bit is set.
++		 * any other fields out of the rx_desc until we have
++		 * verified the descriptor has been written back.
+ 		 */
+ 		dma_rmb();
+ 
+-		skb = i40e_fetch_rx_buffer(rx_ring, rx_desc, skb);
++		skb = i40e_fetch_rx_buffer(rx_ring, rx_desc, skb, size);
+ 		if (!skb)
+ 			break;
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index f1a99a8..e41eb46 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1116,6 +1116,7 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
+  * i40evf_fetch_rx_buffer - Allocate skb and populate it
+  * @rx_ring: rx descriptor ring to transact packets on
+  * @rx_desc: descriptor containing info written by hardware
++ * @size: size of buffer to add to skb
+  *
+  * This function allocates an skb on the fly, and populates it with the page
+  * data from the current receive descriptor, taking care to set up the skb
+@@ -1125,13 +1126,9 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
+ static inline
+ struct sk_buff *i40evf_fetch_rx_buffer(struct i40e_ring *rx_ring,
+ 				       union i40e_rx_desc *rx_desc,
+-				       struct sk_buff *skb)
++				       struct sk_buff *skb,
++				       unsigned int size)
+ {
+-	u64 local_status_error_len =
+-		le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+-	unsigned int size =
+-		(local_status_error_len & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
+-		I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
+ 	struct i40e_rx_buffer *rx_buffer;
+ 	struct page *page;
+ 
+@@ -1244,6 +1241,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 
+ 	while (likely(total_rx_packets < budget)) {
+ 		union i40e_rx_desc *rx_desc;
++		unsigned int size;
+ 		u16 vlan_tag;
+ 		u8 rx_ptype;
+ 		u64 qword;
+@@ -1260,19 +1258,21 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		/* status_error_len will always be zero for unused descriptors
+ 		 * because it's cleared in cleanup, and overlaps with hdr_addr
+ 		 * which is always zero because packet split isn't used, if the
+-		 * hardware wrote DD then it will be non-zero
++		 * hardware wrote DD then the length will be non-zero
+ 		 */
+-		if (!i40e_test_staterr(rx_desc,
+-				       BIT(I40E_RX_DESC_STATUS_DD_SHIFT)))
++		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
++		size = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
++		       I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
++		if (!size)
+ 			break;
+ 
+ 		/* This memory barrier is needed to keep us from reading
+-		 * any other fields out of the rx_desc until we know the
+-		 * DD bit is set.
++		 * any other fields out of the rx_desc until we have
++		 * verified the descriptor has been written back.
+ 		 */
+ 		dma_rmb();
+ 
+-		skb = i40evf_fetch_rx_buffer(rx_ring, rx_desc, skb);
++		skb = i40evf_fetch_rx_buffer(rx_ring, rx_desc, skb, size);
+ 		if (!skb)
+ 			break;
+ 
+-- 
+2.4.11
 
-configs tested: 212
-
-mips                           ip22_defconfig
-powerpc                     tqm8540_defconfig
-sh                          landisk_defconfig
-arm                        shmobile_defconfig
-blackfin                       IP0X_defconfig
-m68k                                defconfig
-i386                     randconfig-a0-201711
-x86_64                 randconfig-a0-03141621
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-03141525
-x86_64                randconfig-it0-03141417
-mips                      bmips_stb_defconfig
-powerpc                     ksi8560_defconfig
-sh                           se7705_defconfig
-x86_64                 randconfig-v0-03141630
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                BF538-EZKIT_defconfig
-frv                              alldefconfig
-mips                          lasat_defconfig
-powerpc64                        alldefconfig
-sh                          r7785rp_defconfig
-sh                           se7343_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-03141531
-x86_64                 randconfig-g0-03141709
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-m68k                           sun3_defconfig
-mips                              allnoconfig
-powerpc                 linkstation_defconfig
-xtensa                  nommu_kc705_defconfig
-arm                         hackkit_defconfig
-cris                                defconfig
-h8300                     edosk2674_defconfig
-mips                         tb0226_defconfig
-xtensa                              defconfig
-arm64                               defconfig
-blackfin                BF533-STAMP_defconfig
-m68k                         apollo_defconfig
-powerpc                 mpc837x_mds_defconfig
-x86_64                 randconfig-x015-201711
-x86_64                 randconfig-x012-201711
-x86_64                 randconfig-x017-201711
-x86_64                 randconfig-x010-201711
-x86_64                 randconfig-x018-201711
-x86_64                 randconfig-x011-201711
-x86_64                 randconfig-x019-201711
-x86_64                 randconfig-x014-201711
-x86_64                 randconfig-x013-201711
-x86_64                 randconfig-x016-201711
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-i386                     randconfig-s0-201711
-i386                     randconfig-s1-201711
-x86_64                 randconfig-s0-03141633
-x86_64                 randconfig-s1-03141633
-x86_64                 randconfig-s2-03141633
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-03141628
-x86_64                 randconfig-s4-03141628
-x86_64                 randconfig-s5-03141628
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201711
-i386                   randconfig-b0-03141511
-i386                   randconfig-b0-03141716
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201711
-i386                     randconfig-i1-201711
-x86_64                 randconfig-b0-03141444
-mips                             allmodconfig
-mips                       markeins_defconfig
-x86_64                 randconfig-u0-03141545
-i386                   randconfig-x014-201711
-i386                   randconfig-x010-201711
-i386                   randconfig-x016-201711
-i386                   randconfig-x017-201711
-i386                   randconfig-x013-201711
-i386                   randconfig-x019-201711
-i386                   randconfig-x015-201711
-i386                   randconfig-x012-201711
-i386                   randconfig-x011-201711
-i386                   randconfig-x018-201711
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                randconfig-ne0-03141534
-x86_64                randconfig-ne0-03141709
-i386                               tinyconfig
-i386                     randconfig-n0-201711
-arm                         lpc32xx_defconfig
-ia64                            sim_defconfig
-sh                        edosk7705_defconfig
-x86_64                 randconfig-h0-03141553
-x86_64                 randconfig-h0-03141715
-mips                           ip27_defconfig
-powerpc                 mpc834x_mds_defconfig
-parisc                generic-64bit_defconfig
-i386                   randconfig-x077-201711
-i386                   randconfig-x070-201711
-i386                   randconfig-x073-201711
-i386                   randconfig-x076-201711
-i386                   randconfig-x072-201711
-i386                   randconfig-x078-201711
-i386                   randconfig-x074-201711
-i386                   randconfig-x075-201711
-i386                   randconfig-x079-201711
-i386                   randconfig-x071-201711
-x86_64                                  kexec
-x86_64                 randconfig-n0-03141631
-x86_64                 randconfig-n0-03141711
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-i386                  randconfig-sb0-03141427
-x86_64                 randconfig-x000-201711
-x86_64                 randconfig-x001-201711
-x86_64                 randconfig-x002-201711
-x86_64                 randconfig-x003-201711
-x86_64                 randconfig-x004-201711
-x86_64                 randconfig-x005-201711
-x86_64                 randconfig-x006-201711
-x86_64                 randconfig-x007-201711
-x86_64                 randconfig-x008-201711
-x86_64                 randconfig-x009-201711
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                randconfig-ws0-03141410
-x86_64                randconfig-ws0-03141404
-i386                     randconfig-r0-201711
-x86_64                 randconfig-r0-03141511
-blackfin                BF561-EZKIT_defconfig
-arm                           h3600_defconfig
-powerpc64                         allnoconfig
-sparc                            alldefconfig
-i386                   randconfig-x002-201711
-i386                   randconfig-x005-201711
-i386                   randconfig-x006-201711
-i386                   randconfig-x003-201711
-i386                   randconfig-x007-201711
-i386                   randconfig-x008-201711
-i386                   randconfig-x001-201711
-i386                   randconfig-x000-201711
-i386                   randconfig-x009-201711
-i386                   randconfig-x004-201711
-i386                   randconfig-x0-03141454
-
-Thanks,
-Fengguang
