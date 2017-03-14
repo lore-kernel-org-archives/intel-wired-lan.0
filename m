@@ -1,8 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 14 Mar 2017 10:15:22 -0700
-Subject: [Intel-wired-lan] [next PATCH S63 1/6] i40e/i40evf: Use length to
-	determine if descriptor is done
-Message-ID: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 14 Mar 2017 10:15:27 -0700
+Subject: [Intel-wired-lan] [next PATCH S63 6/6] i40e/i40evf: Change the way
+	we limit the maximum frame size for Rx
+In-Reply-To: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
+References: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1489511727-10959-6-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,149 +13,204 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This change makes it so that we use the length of the packet instead of the
-DD status bit to determine if a new descriptor is ready to be processed.
-The obvious advantage is that it cuts down on reads as we don't really even
-need the DD bit if going from a 0 to a non-zero value on size is enough to
-inform us that the packet has been completed.
+This patch changes the way we handle the maximum frame size for the Rx
+path.  Previously we were rounding up to 2K for a 1500 MTU and then brining
+the max frame size down to MTU plus a fixed amount.  With this patch
+applied what we now do is limit the maximum frame to 1.5K minus the value
+for NET_IP_ALIGN for standard MTU, and for any MTU greater than 1500 we
+allow up to the maximum frame size.  This makes the behavior more
+consistent with the other drivers such as igb which had similar logic.  In
+addition it reduces the test matrix for MTU since we only have two max
+frame sizes that are handled for Rx now.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Change-ID: Iebdf9cdb36c454ef092df27199b92ad09c374231
+Change-ID: I23a9d3c857e7df04b0ef28c64df63e659c013f3f
 ---
 Testing Hints:
-        Perform various Rx tests to verify we are not corrupting any Rx data.
+        Verify MTU handling for MTU = 1500.  You should be able to receive
+        frames up to 1536 in size on a standard x86 system as NET_IP_ALIGN
+        is 0.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 24 ++++++++++++------------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 24 ++++++++++++------------
- 2 files changed, 24 insertions(+), 24 deletions(-)
+        When jumbo frames are enabled you should be able to receive anything
+        up to the maximum size supported by hardware which is 9.5K or 9726B
+        in size.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 9742beb..68936b6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1757,6 +1757,7 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
-  * i40e_fetch_rx_buffer - Allocate skb and populate it
-  * @rx_ring: rx descriptor ring to transact packets on
-  * @rx_desc: descriptor containing info written by hardware
-+ * @size: size of buffer to add to skb
-  *
-  * This function allocates an skb on the fly, and populates it with the page
-  * data from the current receive descriptor, taking care to set up the skb
-@@ -1766,13 +1767,9 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
- static inline
- struct sk_buff *i40e_fetch_rx_buffer(struct i40e_ring *rx_ring,
- 				     union i40e_rx_desc *rx_desc,
--				     struct sk_buff *skb)
-+				     struct sk_buff *skb,
-+				     unsigned int size)
+        When the "legacy-rx" private flag is set you should be able to
+        receive anything up to 9.5K in size.
+
+        The behavior for MTU mismatches will change.  A failing case is any
+        in which we trigger a kernel panic.  Receiving a frame larger than
+        what was configured for the MTU is not a failure. 
+
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 26 ++++++++++++----------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |  4 +---
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |  4 +---
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  4 ----
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 16 ++++++++++++-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 14 ++++++++----
+ 6 files changed, 41 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 4cfe9491..724a5a4 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -3002,7 +3002,8 @@ static int i40e_configure_rx_ring(struct i40e_ring *ring)
+ 
+ 	ring->rx_buf_len = vsi->rx_buf_len;
+ 
+-	rx_ctx.dbuff = ring->rx_buf_len >> I40E_RXQ_CTX_DBUFF_SHIFT;
++	rx_ctx.dbuff = DIV_ROUND_UP(ring->rx_buf_len,
++				    BIT_ULL(I40E_RXQ_CTX_DBUFF_SHIFT));
+ 
+ 	rx_ctx.base = (ring->dma / 128);
+ 	rx_ctx.qlen = ring->count;
+@@ -3082,17 +3083,18 @@ static int i40e_vsi_configure_rx(struct i40e_vsi *vsi)
+ 	int err = 0;
+ 	u16 i;
+ 
+-	if (vsi->netdev && (vsi->netdev->mtu > ETH_DATA_LEN))
+-		vsi->max_frame = vsi->netdev->mtu + ETH_HLEN
+-			       + ETH_FCS_LEN + VLAN_HLEN;
+-	else
+-		vsi->max_frame = I40E_RXBUFFER_2048;
+-
+-	vsi->rx_buf_len = I40E_RXBUFFER_2048;
+-
+-	/* round up for the chip's needs */
+-	vsi->rx_buf_len = ALIGN(vsi->rx_buf_len,
+-				BIT_ULL(I40E_RXQ_CTX_DBUFF_SHIFT));
++	if (!vsi->netdev || (vsi->back->flags & I40E_FLAG_LEGACY_RX)) {
++		vsi->max_frame = I40E_MAX_RXBUFFER;
++		vsi->rx_buf_len = I40E_RXBUFFER_2048;
++#if (PAGE_SIZE < 8192)
++	} else if (vsi->netdev->mtu <= ETH_DATA_LEN) {
++		vsi->max_frame = I40E_RXBUFFER_1536 - NET_IP_ALIGN;
++		vsi->rx_buf_len = I40E_RXBUFFER_1536 - NET_IP_ALIGN;
++#endif
++	} else {
++		vsi->max_frame = I40E_MAX_RXBUFFER;
++		vsi->rx_buf_len = I40E_RXBUFFER_2048;
++	}
+ 
+ 	/* set up individual rings */
+ 	for (i = 0; i < vsi->num_queue_pairs && !err; i++)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index eb73372..d6609de 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -117,10 +117,8 @@ enum i40e_dyn_idx_t {
+ 
+ /* Supported Rx Buffer Sizes (a multiple of 128) */
+ #define I40E_RXBUFFER_256   256
++#define I40E_RXBUFFER_1536  1536  /* 128B aligned standard Ethernet frame */
+ #define I40E_RXBUFFER_2048  2048
+-#define I40E_RXBUFFER_3072  3072   /* For FCoE MTU of 2158 */
+-#define I40E_RXBUFFER_4096  4096
+-#define I40E_RXBUFFER_8192  8192
+ #define I40E_MAX_RXBUFFER   9728  /* largest size for single descriptor */
+ 
+ /* NOTE: netdev_alloc_skb reserves up to 64 bytes, NET_IP_ALIGN means we
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index aba40ed..3bb4d73 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -104,10 +104,8 @@ enum i40e_dyn_idx_t {
+ 
+ /* Supported Rx Buffer Sizes (a multiple of 128) */
+ #define I40E_RXBUFFER_256   256
++#define I40E_RXBUFFER_1536  1536  /* 128B aligned standard Ethernet frame */
+ #define I40E_RXBUFFER_2048  2048
+-#define I40E_RXBUFFER_3072  3072   /* For FCoE MTU of 2158 */
+-#define I40E_RXBUFFER_4096  4096
+-#define I40E_RXBUFFER_8192  8192
+ #define I40E_MAX_RXBUFFER   9728  /* largest size for single descriptor */
+ 
+ /* NOTE: netdev_alloc_skb reserves up to 64 bytes, NET_IP_ALIGN means we
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index e60cbfa..d61ecf6 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -72,10 +72,6 @@ struct i40e_vsi {
+ #define I40EVF_MAX_RXD		4096
+ #define I40EVF_MIN_RXD		64
+ #define I40EVF_REQ_DESCRIPTOR_MULTIPLE	32
+-
+-/* Supported Rx Buffer Sizes */
+-#define I40EVF_RXBUFFER_2048	2048
+-#define I40EVF_MAX_RXBUFFER	16384  /* largest size for single descriptor */
+ #define I40EVF_MAX_AQ_BUF_SIZE	4096
+ #define I40EVF_AQ_LEN		32
+ #define I40EVF_AQ_MAX_ERR	20 /* times to try before resetting AQ */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 6d666bd..fb2811c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -686,12 +686,26 @@ static void i40evf_configure_tx(struct i40evf_adapter *adapter)
+  **/
+ static void i40evf_configure_rx(struct i40evf_adapter *adapter)
  {
--	u64 local_status_error_len =
--		le64_to_cpu(rx_desc->wb.qword1.status_error_len);
--	unsigned int size =
--		(local_status_error_len & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
--		I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
- 	struct i40e_rx_buffer *rx_buffer;
- 	struct page *page;
++	unsigned int rx_buf_len = I40E_RXBUFFER_2048;
++	struct net_device *netdev = adapter->netdev;
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	int i;
  
-@@ -1890,6 +1887,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
++	/* Legacy Rx will always default to a 2048 buffer size. */
++#if (PAGE_SIZE < 8192)
++	if (!(adapter->flags & I40EVF_FLAG_LEGACY_RX)) {
++		/* We use a 1536 buffer size for configurations with
++		 * standard Ethernet mtu.  On x86 this gives us enough room
++		 * for shared info and 192 bytes of padding.
++		 */
++		if (netdev->mtu <= ETH_DATA_LEN)
++			rx_buf_len = I40E_RXBUFFER_1536 - NET_IP_ALIGN;
++	}
++#endif
++
+ 	for (i = 0; i < adapter->num_active_queues; i++) {
+ 		adapter->rx_rings[i].tail = hw->hw_addr + I40E_QRX_TAIL1(i);
+-		adapter->rx_rings[i].rx_buf_len = I40EVF_RXBUFFER_2048;
++		adapter->rx_rings[i].rx_buf_len = rx_buf_len;
+ 	}
+ }
  
- 	while (likely(total_rx_packets < budget)) {
- 		union i40e_rx_desc *rx_desc;
-+		unsigned int size;
- 		u16 vlan_tag;
- 		u8 rx_ptype;
- 		u64 qword;
-@@ -1906,19 +1904,21 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		/* status_error_len will always be zero for unused descriptors
- 		 * because it's cleared in cleanup, and overlaps with hdr_addr
- 		 * which is always zero because packet split isn't used, if the
--		 * hardware wrote DD then it will be non-zero
-+		 * hardware wrote DD then the length will be non-zero
- 		 */
--		if (!i40e_test_staterr(rx_desc,
--				       BIT(I40E_RX_DESC_STATUS_DD_SHIFT)))
-+		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
-+		size = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
-+		       I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
-+		if (!size)
- 			break;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index 4bc2488..032be8d 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -234,7 +234,7 @@ void i40evf_configure_queues(struct i40evf_adapter *adapter)
+ 	struct i40e_virtchnl_vsi_queue_config_info *vqci;
+ 	struct i40e_virtchnl_queue_pair_info *vqpi;
+ 	int pairs = adapter->num_active_queues;
+-	int i, len;
++	int i, len, max_frame = I40E_MAX_RXBUFFER;
  
- 		/* This memory barrier is needed to keep us from reading
--		 * any other fields out of the rx_desc until we know the
--		 * DD bit is set.
-+		 * any other fields out of the rx_desc until we have
-+		 * verified the descriptor has been written back.
- 		 */
- 		dma_rmb();
+ 	if (adapter->current_op != I40E_VIRTCHNL_OP_UNKNOWN) {
+ 		/* bail because we already have a command pending */
+@@ -249,6 +249,11 @@ void i40evf_configure_queues(struct i40evf_adapter *adapter)
+ 	if (!vqci)
+ 		return;
  
--		skb = i40e_fetch_rx_buffer(rx_ring, rx_desc, skb);
-+		skb = i40e_fetch_rx_buffer(rx_ring, rx_desc, skb, size);
- 		if (!skb)
- 			break;
- 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index f1a99a8..e41eb46 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1116,6 +1116,7 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
-  * i40evf_fetch_rx_buffer - Allocate skb and populate it
-  * @rx_ring: rx descriptor ring to transact packets on
-  * @rx_desc: descriptor containing info written by hardware
-+ * @size: size of buffer to add to skb
-  *
-  * This function allocates an skb on the fly, and populates it with the page
-  * data from the current receive descriptor, taking care to set up the skb
-@@ -1125,13 +1126,9 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
- static inline
- struct sk_buff *i40evf_fetch_rx_buffer(struct i40e_ring *rx_ring,
- 				       union i40e_rx_desc *rx_desc,
--				       struct sk_buff *skb)
-+				       struct sk_buff *skb,
-+				       unsigned int size)
- {
--	u64 local_status_error_len =
--		le64_to_cpu(rx_desc->wb.qword1.status_error_len);
--	unsigned int size =
--		(local_status_error_len & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
--		I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
- 	struct i40e_rx_buffer *rx_buffer;
- 	struct page *page;
- 
-@@ -1244,6 +1241,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 
- 	while (likely(total_rx_packets < budget)) {
- 		union i40e_rx_desc *rx_desc;
-+		unsigned int size;
- 		u16 vlan_tag;
- 		u8 rx_ptype;
- 		u64 qword;
-@@ -1260,19 +1258,21 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		/* status_error_len will always be zero for unused descriptors
- 		 * because it's cleared in cleanup, and overlaps with hdr_addr
- 		 * which is always zero because packet split isn't used, if the
--		 * hardware wrote DD then it will be non-zero
-+		 * hardware wrote DD then the length will be non-zero
- 		 */
--		if (!i40e_test_staterr(rx_desc,
--				       BIT(I40E_RX_DESC_STATUS_DD_SHIFT)))
-+		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
-+		size = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
-+		       I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
-+		if (!size)
- 			break;
- 
- 		/* This memory barrier is needed to keep us from reading
--		 * any other fields out of the rx_desc until we know the
--		 * DD bit is set.
-+		 * any other fields out of the rx_desc until we have
-+		 * verified the descriptor has been written back.
- 		 */
- 		dma_rmb();
- 
--		skb = i40evf_fetch_rx_buffer(rx_ring, rx_desc, skb);
-+		skb = i40evf_fetch_rx_buffer(rx_ring, rx_desc, skb, size);
- 		if (!skb)
- 			break;
++	/* Limit maximum frame size when jumbo frames is not enabled */
++	if (!(adapter->flags & I40EVF_FLAG_LEGACY_RX) &&
++	    (adapter->netdev->mtu <= ETH_DATA_LEN))
++		max_frame = I40E_RXBUFFER_1536 - NET_IP_ALIGN;
++
+ 	vqci->vsi_id = adapter->vsi_res->vsi_id;
+ 	vqci->num_queue_pairs = pairs;
+ 	vqpi = vqci->qpair;
+@@ -264,9 +269,10 @@ void i40evf_configure_queues(struct i40evf_adapter *adapter)
+ 		vqpi->rxq.queue_id = i;
+ 		vqpi->rxq.ring_len = adapter->rx_rings[i].count;
+ 		vqpi->rxq.dma_ring_addr = adapter->rx_rings[i].dma;
+-		vqpi->rxq.max_pkt_size = adapter->netdev->mtu
+-					+ ETH_HLEN + VLAN_HLEN + ETH_FCS_LEN;
+-		vqpi->rxq.databuffer_size = adapter->rx_rings[i].rx_buf_len;
++		vqpi->rxq.max_pkt_size = max_frame;
++		vqpi->rxq.databuffer_size =
++			ALIGN(adapter->rx_rings[i].rx_buf_len,
++			      BIT_ULL(I40E_RXQ_CTX_DBUFF_SHIFT));
+ 		vqpi++;
+ 	}
  
 -- 
 2.4.11
