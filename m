@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 14 Mar 2017 10:15:24 -0700
-Subject: [Intel-wired-lan] [next PATCH S63 3/6] i40e/i40evf: Pull out code
-	for cleaning up Rx buffers
+Date: Tue, 14 Mar 2017 10:15:26 -0700
+Subject: [Intel-wired-lan] [next PATCH S63 5/6] i40e/i40evf: Add legacy-rx
+	private flag to allow fallback to old Rx flow
 In-Reply-To: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
 References: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1489511727-10959-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1489511727-10959-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,396 +13,241 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This patch pulls out the code responsible for handling buffer recycling and
-page counting and distributes it through several functions.  This allows us
-to commonize the bits that handle either freeing or recycling the buffers.
-
-As far as the page count tracking one change to the logic is that
-pagecnt_bias is decremented as soon as we call i40e_get_rx_buffer.  It is
-then the responsibility of the function that pulls the data to either
-increment the pagecnt_bias if the buffer can be recycled as-is, or to
-update page_offset so that we are pointing at the correct location for
-placement of the next buffer.
+This patch adds a control which will allow us to toggle into and out of the
+legacy Rx mode.  The legacy Rx mode is what we currently do when performing
+Rx.  As I make further changes what should happen is that the driver will
+fall back to the behavior for Rx as of this patch should the "legacy-rx"
+flag be set to on.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Change-ID: Ibac576360cb7f0b1627f2a993d13c1a8a2bf60af
+Change-ID: I0342998849bbb31351cce05f6e182c99174e7751
 ---
 Testing Hints:
-        The greatest risk with this patch is a memory leak of some sort.
-        I already caught one spot where I hadn't fully thought things out
-        in regards to the path where we don't support bulk page updates.
-        My advice would be to test on a RHEL 6.X kernel as well as a RHEL
-        7.X kernel as the 6.X won't support bulk page count updates while
-        the 7.3 and later kernels do.
+        This flag should not appear on kernels prior to 4.10.
+        On kernels 4.10 and later the "legacy-rx" flag should appear
+        and can be toggled between on and off. As we add more features the
+        behavior of the driver should change when this value is toggled.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 73 +++++++++++++++++----------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 72 ++++++++++++++++----------
- 2 files changed, 89 insertions(+), 56 deletions(-)
+        Toggling this for now will only cause a reset of the interface.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index d1fc0f0..d7c4e1e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1294,6 +1294,8 @@ static bool i40e_alloc_mapped_page(struct i40e_ring *rx_ring,
- 	bi->dma = dma;
- 	bi->page = page;
- 	bi->page_offset = 0;
-+
-+	/* initialize pagecnt_bias to 1 representing we fully own page */
- 	bi->pagecnt_bias = 1;
+        For the VF we are specifically replacing the define that was
+        stripping the code for the flag needed for the "legacy-rx" flag
+        since it doesn't make sense to have the interface defined when
+        there are no flags present.  In the case of a kernel build the
+        #ifdefs should be stripped and the code will remain.
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |   1 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |   5 +-
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |   2 +
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 104 +++++++++++++++++++++
+ 4 files changed, 111 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index dcba258..561fe1f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -430,6 +430,7 @@ struct i40e_pf {
+ #define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(55)
+ #define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(56)
+ #define I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE		BIT_ULL(57)
++#define I40E_FLAG_LEGACY_RX			BIT_ULL(57)
  
- 	return true;
-@@ -1622,8 +1624,6 @@ static inline bool i40e_page_is_reusable(struct page *page)
-  * the adapter for another receive
-  *
-  * @rx_buffer: buffer containing the page
-- * @page: page address from rx_buffer
-- * @truesize: actual size of the buffer in this page
-  *
-  * If page is reusable, rx_buffer->page_offset is adjusted to point to
-  * an unused region in the page.
-@@ -1646,14 +1646,13 @@ static inline bool i40e_page_is_reusable(struct page *page)
-  *
-  * In either case, if the page is reusable its refcount is increased.
-  **/
--static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
--				   struct page *page,
--				   const unsigned int truesize)
-+static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer)
- {
- #if (PAGE_SIZE >= 8192)
- 	unsigned int last_offset = PAGE_SIZE - I40E_RXBUFFER_2048;
- #endif
--	unsigned int pagecnt_bias = rx_buffer->pagecnt_bias--;
-+	unsigned int pagecnt_bias = rx_buffer->pagecnt_bias;
-+	struct page *page = rx_buffer->page;
+        /* Tracks features that are disabled due to hw limitations.
+ 	* If a bit is set here, it means that the corresponding
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 56dccf8..0db6b36 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -226,6 +226,7 @@ static const struct i40e_priv_flags i40e_gstrings_priv_flags[] = {
+ 	I40E_PRIV_FLAG("flow-director-atr", I40E_FLAG_FD_ATR_ENABLED, 0),
+ 	I40E_PRIV_FLAG("veb-stats", I40E_FLAG_VEB_STATS_ENABLED, 0),
+ 	I40E_PRIV_FLAG("hw-atr-eviction", I40E_FLAG_HW_ATR_EVICT_CAPABLE, 0),
++	I40E_PRIV_FLAG("legacy-rx", I40E_FLAG_LEGACY_RX, 0),
+ };
  
- 	/* Is any reuse possible? */
- 	if (unlikely(!i40e_page_is_reusable(page)))
-@@ -1661,15 +1660,9 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
+ #define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gstrings_priv_flags)
+@@ -4048,6 +4049,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	}
  
- #if (PAGE_SIZE < 8192)
- 	/* if we are only owner of page we can reuse it */
--	if (unlikely(page_count(page) != pagecnt_bias))
-+	if (unlikely((page_count(page) - pagecnt_bias) > 1))
- 		return false;
--
--	/* flip page offset to other buffer */
--	rx_buffer->page_offset ^= truesize;
- #else
--	/* move offset up to the next cache line */
--	rx_buffer->page_offset += truesize;
--
- 	if (rx_buffer->page_offset > last_offset)
- 		return false;
- #endif
-@@ -1678,10 +1671,11 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
- 	 * the pagecnt_bias and page count so that we fully restock the
- 	 * number of references the driver holds.
+ flags_complete:
++	/* check for flags that changed */
+ 	changed_flags ^= pf->flags;
+ 
+ 	/* Process any additional changes needed as a result of flag changes.
+@@ -4088,7 +4090,8 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	/* Issue reset to cause things to take effect, as additional bits
+ 	 * are added we will need to create a mask of bits requiring reset
  	 */
--	if (unlikely(pagecnt_bias == 1)) {
-+	if (unlikely(!pagecnt_bias)) {
- 		page_ref_add(page, USHRT_MAX);
- 		rx_buffer->pagecnt_bias = USHRT_MAX;
- 	}
+-	if (changed_flags & I40E_FLAG_VEB_STATS_ENABLED)
++	if ((changed_flags & I40E_FLAG_VEB_STATS_ENABLED) ||
++	    ((changed_flags & I40E_FLAG_LEGACY_RX) && netif_running(dev)))
+ 		i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED));
+ 
+ 	return 0;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index b2b4851..e60cbfa 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -222,6 +222,7 @@ struct i40evf_adapter {
+ #define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(17)
+ #define I40EVF_FLAG_PROMISC_ON			BIT(18)
+ #define I40EVF_FLAG_ALLMULTI_ON			BIT(19)
++#define I40EVF_FLAG_LEGACY_RX			BIT(20)
+ /* duplicates for common code */
+ #define I40E_FLAG_FDIR_ATR_ENABLED		0
+ #define I40E_FLAG_DCB_ENABLED			0
+@@ -229,6 +230,7 @@ struct i40evf_adapter {
+ #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
+ #define I40E_FLAG_WB_ON_ITR_CAPABLE		I40EVF_FLAG_WB_ON_ITR_CAPABLE
+ #define I40E_FLAG_OUTER_UDP_CSUM_CAPABLE	I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE
++#define I40E_FLAG_LEGACY_RX			I40EVF_FLAG_LEGACY_RX
+ 	/* flags for admin queue service task */
+ 	u32 aq_required;
+ #define I40EVF_FLAG_AQ_ENABLE_QUEUES		BIT(0)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+index 122efbd..9bb2cc7 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+@@ -63,6 +63,29 @@ static const struct i40evf_stats i40evf_gstrings_stats[] = {
+ #define I40EVF_STATS_LEN(_dev) \
+ 	(I40EVF_GLOBAL_STATS_LEN + I40EVF_QUEUE_STATS_LEN(_dev))
+ 
++/* For now we have one and only one private flag and it is only defined
++ * when we have support for the SKIP_CPU_SYNC DMA attribute.  Instead
++ * of leaving all this code sitting around empty we will strip it unless
++ * our one private flag is actually available.
++ */
++struct i40evf_priv_flags {
++	char flag_string[ETH_GSTRING_LEN];
++	u32 flag;
++	bool read_only;
++};
 +
- 	return true;
- }
- 
-@@ -1689,8 +1683,8 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
-  * i40e_add_rx_frag - Add contents of Rx buffer to sk_buff
-  * @rx_ring: rx descriptor ring to transact packets on
-  * @rx_buffer: buffer containing page to add
-- * @size: packet length from rx_desc
-  * @skb: sk_buff to place the data into
-+ * @size: packet length from rx_desc
-  *
-  * This function will add the data contained in rx_buffer->page to the skb.
-  * This is done either through a direct copy if the data in the buffer is
-@@ -1700,10 +1694,10 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
-  * The function will then update the page offset if necessary and return
-  * true if the buffer can be reused by the adapter.
-  **/
--static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
-+static void i40e_add_rx_frag(struct i40e_ring *rx_ring,
- 			     struct i40e_rx_buffer *rx_buffer,
--			     unsigned int size,
--			     struct sk_buff *skb)
-+			     struct sk_buff *skb,
-+			     unsigned int size)
- {
- 	struct page *page = rx_buffer->page;
- 	unsigned char *va = page_address(page) + rx_buffer->page_offset;
-@@ -1723,12 +1717,11 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
- 	if (size <= I40E_RX_HDR_SIZE) {
- 		memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
- 
--		/* page is reusable, we can reuse buffer as-is */
--		if (likely(i40e_page_is_reusable(page)))
--			return true;
--
--		/* this page cannot be reused so discard it */
--		return false;
-+		/* page is to be freed, increase pagecnt_bias instead of
-+		 * decreasing page count.
-+		 */
-+		rx_buffer->pagecnt_bias++;
-+		return;
- 	}
- 
- 	/* we need the header to contain the greater of either
-@@ -1750,7 +1743,12 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
- 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, page,
- 			(unsigned long)va & ~PAGE_MASK, size, truesize);
- 
--	return i40e_can_reuse_rx_page(rx_buffer, page, truesize);
-+	/* page is being used so we must update the page offset */
-+#if (PAGE_SIZE < 8192)
-+	rx_buffer->page_offset ^= truesize;
-+#else
-+	rx_buffer->page_offset += truesize;
-+#endif
- }
- 
++#define I40EVF_PRIV_FLAG(_name, _flag, _read_only) { \
++	.flag_string = _name, \
++	.flag = _flag, \
++	.read_only = _read_only, \
++}
++
++static const struct i40evf_priv_flags i40evf_gstrings_priv_flags[] = {
++	I40EVF_PRIV_FLAG("legacy-rx", I40EVF_FLAG_LEGACY_RX, 0),
++};
++
++#define I40EVF_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40evf_gstrings_priv_flags)
++
  /**
-@@ -1776,6 +1774,9 @@ static struct i40e_rx_buffer *i40e_get_rx_buffer(struct i40e_ring *rx_ring,
- 				      size,
- 				      DMA_FROM_DEVICE);
- 
-+	/* We have pulled a buffer for use, so decrement pagecnt_bias */
-+	rx_buffer->pagecnt_bias--;
-+
- 	return rx_buffer;
+  * i40evf_get_link_ksettings - Get Link Speed and Duplex settings
+  * @netdev: network interface device structure
+@@ -124,6 +147,8 @@ static int i40evf_get_sset_count(struct net_device *netdev, int sset)
+ {
+ 	if (sset == ETH_SS_STATS)
+ 		return I40EVF_STATS_LEN(netdev);
++	else if (sset == ETH_SS_PRIV_FLAGS)
++		return I40EVF_PRIV_FLAGS_STR_LEN;
+ 	else
+ 		return -EINVAL;
  }
- 
-@@ -1812,12 +1813,29 @@ struct sk_buff *i40e_fetch_rx_buffer(struct i40e_ring *rx_ring,
- 				       GFP_ATOMIC | __GFP_NOWARN);
- 		if (unlikely(!skb)) {
- 			rx_ring->rx_stats.alloc_buff_failed++;
-+			rx_buffer->pagecnt_bias++;
- 			return NULL;
+@@ -189,7 +214,83 @@ static void i40evf_get_strings(struct net_device *netdev, u32 sset, u8 *data)
+ 			snprintf(p, ETH_GSTRING_LEN, "rx-%u.bytes", i);
+ 			p += ETH_GSTRING_LEN;
  		}
- 	}
- 
- 	/* pull page into skb */
--	if (i40e_add_rx_frag(rx_ring, rx_buffer, size, skb)) {
-+	i40e_add_rx_frag(rx_ring, rx_buffer, skb, size);
-+
-+	return skb;
++	} else if (sset == ETH_SS_PRIV_FLAGS) {
++		for (i = 0; i < I40EVF_PRIV_FLAGS_STR_LEN; i++) {
++			snprintf(p, ETH_GSTRING_LEN, "%s",
++				 i40evf_gstrings_priv_flags[i].flag_string);
++			p += ETH_GSTRING_LEN;
++		}
++	}
 +}
 +
 +/**
-+ * i40e_put_rx_buffer - Clean up used buffer and either recycle or free
-+ * @rx_ring: rx descriptor ring to transact packets on
-+ * @rx_buffer: rx buffer to pull data from
++ * i40evf_get_priv_flags - report device private flags
++ * @dev: network interface device structure
 + *
-+ * This function will clean up the contents of the rx_buffer.  It will
-+ * either recycle the bufer or unmap it and free the associated resources.
-+ */
-+static void i40e_put_rx_buffer(struct i40e_ring *rx_ring,
-+			       struct i40e_rx_buffer *rx_buffer)
++ * The get string set count and the string set should be matched for each
++ * flag returned.  Add new strings for each flag to the i40e_gstrings_priv_flags
++ * array.
++ *
++ * Returns a u32 bitmap of flags.
++ **/
++static u32 i40evf_get_priv_flags(struct net_device *netdev)
 +{
-+	if (i40e_can_reuse_rx_page(rx_buffer)) {
- 		/* hand second half of page back to the ring */
- 		i40e_reuse_rx_page(rx_ring, rx_buffer);
- 		rx_ring->rx_stats.page_reuse_count++;
-@@ -1831,8 +1849,6 @@ struct sk_buff *i40e_fetch_rx_buffer(struct i40e_ring *rx_ring,
- 
- 	/* clear contents of buffer_info */
- 	rx_buffer->page = NULL;
--
--	return skb;
- }
- 
- /**
-@@ -1932,6 +1948,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		if (!skb)
- 			break;
- 
-+		i40e_put_rx_buffer(rx_ring, rx_buffer);
- 		cleaned_count++;
- 
- 		if (i40e_is_non_eop(rx_ring, rx_desc, skb))
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 2320ec4..06b3779 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -662,6 +662,8 @@ static bool i40e_alloc_mapped_page(struct i40e_ring *rx_ring,
- 	bi->dma = dma;
- 	bi->page = page;
- 	bi->page_offset = 0;
++	struct i40evf_adapter *adapter = netdev_priv(netdev);
++	u32 i, ret_flags = 0;
 +
-+	/* initialize pagecnt_bias to 1 representing we fully own page */
- 	bi->pagecnt_bias = 1;
- 
- 	return true;
-@@ -980,8 +982,6 @@ static inline bool i40e_page_is_reusable(struct page *page)
-  * the adapter for another receive
-  *
-  * @rx_buffer: buffer containing the page
-- * @page: page address from rx_buffer
-- * @truesize: actual size of the buffer in this page
-  *
-  * If page is reusable, rx_buffer->page_offset is adjusted to point to
-  * an unused region in the page.
-@@ -1004,14 +1004,13 @@ static inline bool i40e_page_is_reusable(struct page *page)
-  *
-  * In either case, if the page is reusable its refcount is increased.
-  **/
--static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
--				   struct page *page,
--				   const unsigned int truesize)
-+static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer)
- {
- #if (PAGE_SIZE >= 8192)
- 	unsigned int last_offset = PAGE_SIZE - I40E_RXBUFFER_2048;
- #endif
--	unsigned int pagecnt_bias = rx_buffer->pagecnt_bias--;
-+	unsigned int pagecnt_bias = rx_buffer->pagecnt_bias;
-+	struct page *page = rx_buffer->page;
- 
- 	/* Is any reuse possible? */
- 	if (unlikely(!i40e_page_is_reusable(page)))
-@@ -1019,15 +1018,9 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
- 
- #if (PAGE_SIZE < 8192)
- 	/* if we are only owner of page we can reuse it */
--	if (unlikely(page_count(page) != pagecnt_bias))
-+	if (unlikely((page_count(page) - pagecnt_bias) > 1))
- 		return false;
--
--	/* flip page offset to other buffer */
--	rx_buffer->page_offset ^= truesize;
- #else
--	/* move offset up to the next cache line */
--	rx_buffer->page_offset += truesize;
--
- 	if (rx_buffer->page_offset > last_offset)
- 		return false;
- #endif
-@@ -1036,7 +1029,7 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
- 	 * the pagecnt_bias and page count so that we fully restock the
- 	 * number of references the driver holds.
- 	 */
--	if (unlikely(pagecnt_bias == 1)) {
-+	if (unlikely(!pagecnt_bias)) {
- 		page_ref_add(page, USHRT_MAX);
- 		rx_buffer->pagecnt_bias = USHRT_MAX;
- 	}
-@@ -1048,8 +1041,8 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
-  * i40e_add_rx_frag - Add contents of Rx buffer to sk_buff
-  * @rx_ring: rx descriptor ring to transact packets on
-  * @rx_buffer: buffer containing page to add
-- * @size: packet length from rx_desc
-  * @skb: sk_buff to place the data into
-+ * @size: packet length from rx_desc
-  *
-  * This function will add the data contained in rx_buffer->page to the skb.
-  * This is done either through a direct copy if the data in the buffer is
-@@ -1059,10 +1052,10 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
-  * The function will then update the page offset if necessary and return
-  * true if the buffer can be reused by the adapter.
-  **/
--static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
-+static void i40e_add_rx_frag(struct i40e_ring *rx_ring,
- 			     struct i40e_rx_buffer *rx_buffer,
--			     unsigned int size,
--			     struct sk_buff *skb)
-+			     struct sk_buff *skb,
-+			     unsigned int size)
- {
- 	struct page *page = rx_buffer->page;
- 	unsigned char *va = page_address(page) + rx_buffer->page_offset;
-@@ -1082,12 +1075,11 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
- 	if (size <= I40E_RX_HDR_SIZE) {
- 		memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
- 
--		/* page is reusable, we can reuse buffer as-is */
--		if (likely(i40e_page_is_reusable(page)))
--			return true;
--
--		/* this page cannot be reused so discard it */
--		return false;
-+		/* page is to be freed, increase pagecnt_bias instead of
-+		 * decreasing page count.
-+		 */
-+		rx_buffer->pagecnt_bias++;
-+		return;
- 	}
- 
- 	/* we need the header to contain the greater of either
-@@ -1109,7 +1101,12 @@ static bool i40e_add_rx_frag(struct i40e_ring *rx_ring,
- 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, page,
- 			(unsigned long)va & ~PAGE_MASK, size, truesize);
- 
--	return i40e_can_reuse_rx_page(rx_buffer, page, truesize);
-+	/* page is being used so we must update the page offset */
-+#if (PAGE_SIZE < 8192)
-+	rx_buffer->page_offset ^= truesize;
-+#else
-+	rx_buffer->page_offset += truesize;
-+#endif
- }
- 
- /**
-@@ -1135,6 +1132,9 @@ static struct i40e_rx_buffer *i40e_get_rx_buffer(struct i40e_ring *rx_ring,
- 				      size,
- 				      DMA_FROM_DEVICE);
- 
-+	/* We have pulled a buffer for use, so decrement pagecnt_bias */
-+	rx_buffer->pagecnt_bias--;
++	for (i = 0; i < I40EVF_PRIV_FLAGS_STR_LEN; i++) {
++		const struct i40evf_priv_flags *priv_flags;
 +
- 	return rx_buffer;
- }
- 
-@@ -1171,12 +1171,29 @@ struct sk_buff *i40evf_fetch_rx_buffer(struct i40e_ring *rx_ring,
- 				       GFP_ATOMIC | __GFP_NOWARN);
- 		if (unlikely(!skb)) {
- 			rx_ring->rx_stats.alloc_buff_failed++;
-+			rx_buffer->pagecnt_bias++;
- 			return NULL;
- 		}
- 	}
- 
- 	/* pull page into skb */
--	if (i40e_add_rx_frag(rx_ring, rx_buffer, size, skb)) {
-+	i40e_add_rx_frag(rx_ring, rx_buffer, skb, size);
++		priv_flags = &i40evf_gstrings_priv_flags[i];
 +
-+	return skb;
++		if (priv_flags->flag & adapter->flags)
++			ret_flags |= BIT(i);
++	}
++
++	return ret_flags;
 +}
 +
 +/**
-+ * i40e_put_rx_buffer - Clean up used buffer and either recycle or free
-+ * @rx_ring: rx descriptor ring to transact packets on
-+ * @rx_buffer: rx buffer to pull data from
-+ *
-+ * This function will clean up the contents of the rx_buffer.  It will
-+ * either recycle the bufer or unmap it and free the associated resources.
-+ */
-+static void i40e_put_rx_buffer(struct i40e_ring *rx_ring,
-+			       struct i40e_rx_buffer *rx_buffer)
++ * i40evf_set_priv_flags - set private flags
++ * @dev: network interface device structure
++ * @flags: bit flags to be set
++ **/
++static int i40evf_set_priv_flags(struct net_device *netdev, u32 flags)
 +{
-+	if (i40e_can_reuse_rx_page(rx_buffer)) {
- 		/* hand second half of page back to the ring */
- 		i40e_reuse_rx_page(rx_ring, rx_buffer);
- 		rx_ring->rx_stats.page_reuse_count++;
-@@ -1190,8 +1207,6 @@ struct sk_buff *i40evf_fetch_rx_buffer(struct i40e_ring *rx_ring,
- 
- 	/* clear contents of buffer_info */
- 	rx_buffer->page = NULL;
--
--	return skb;
++	struct i40evf_adapter *adapter = netdev_priv(netdev);
++	u64 changed_flags;
++	u32 i;
++
++	changed_flags = adapter->flags;
++
++	for (i = 0; i < I40EVF_PRIV_FLAGS_STR_LEN; i++) {
++		const struct i40evf_priv_flags *priv_flags;
++
++		priv_flags = &i40evf_gstrings_priv_flags[i];
++
++		if (priv_flags->read_only)
++			continue;
++
++		if (flags & BIT(i))
++			adapter->flags |= priv_flags->flag;
++		else
++			adapter->flags &= ~(priv_flags->flag);
++	}
++
++	/* check for flags that changed */
++	changed_flags ^= adapter->flags;
++
++	/* Process any additional changes needed as a result of flag changes. */
++
++	/* issue a reset to force legacy-rx change to take effect */
++	if (changed_flags & I40EVF_FLAG_LEGACY_RX) {
++		if (netif_running(netdev)) {
++			adapter->flags |= I40EVF_FLAG_RESET_NEEDED;
++			schedule_work(&adapter->reset_task);
++		}
+ 	}
++
++	return 0;
  }
  
  /**
-@@ -1286,6 +1301,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		if (!skb)
- 			break;
+@@ -238,6 +339,7 @@ static void i40evf_get_drvinfo(struct net_device *netdev,
+ 	strlcpy(drvinfo->version, i40evf_driver_version, 32);
+ 	strlcpy(drvinfo->fw_version, "N/A", 4);
+ 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev), 32);
++	drvinfo->n_priv_flags = I40EVF_PRIV_FLAGS_STR_LEN;
+ }
  
-+		i40e_put_rx_buffer(rx_ring, rx_buffer);
- 		cleaned_count++;
- 
- 		if (i40e_is_non_eop(rx_ring, rx_desc, skb))
+ /**
+@@ -649,6 +751,8 @@ static const struct ethtool_ops i40evf_ethtool_ops = {
+ 	.get_strings		= i40evf_get_strings,
+ 	.get_ethtool_stats	= i40evf_get_ethtool_stats,
+ 	.get_sset_count		= i40evf_get_sset_count,
++	.get_priv_flags		= i40evf_get_priv_flags,
++	.set_priv_flags		= i40evf_set_priv_flags,
+ 	.get_msglevel		= i40evf_get_msglevel,
+ 	.set_msglevel		= i40evf_set_msglevel,
+ 	.get_coalesce		= i40evf_get_coalesce,
 -- 
 2.4.11
 
