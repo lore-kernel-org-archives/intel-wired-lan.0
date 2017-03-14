@@ -1,253 +1,108 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 14 Mar 2017 10:15:26 -0700
-Subject: [Intel-wired-lan] [next PATCH S63 5/6] i40e/i40evf: Add legacy-rx
-	private flag to allow fallback to old Rx flow
-In-Reply-To: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
-References: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1489511727-10959-5-git-send-email-bimmy.pujari@intel.com>
+From: Borislav Petkov <bp@alien8.de>
+Date: Tue, 14 Mar 2017 02:43:36 +0100
+Subject: [Intel-wired-lan] [BUG] 4.11.0-rc1 panic on shutdown X61s
+In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B8C5B3F9B@ORSMSX101.amr.corp.intel.com>
+References: <20170312053723.GH802@shells.gnugeneration.com>
+ <20170312115703.GA18197@nazgul.tnic>
+ <20170312122621.GA2823@nazgul.tnic>
+ <CAHp75Ve7SWivf=TTuq-qA=iM20E==OmSZD2YAmt0LVJQg47Osg@mail.gmail.com>
+ <20170312222333.hm54nl2ul5iuixap@pd.tnic>
+ <87shmhjfap.fsf@miraculix.mork.no>
+ <309B89C4C689E141A5FF6A0C5FB2118B8C5B3F9B@ORSMSX101.amr.corp.intel.com>
+Message-ID: <20170314014249.renvu35ne7uhwwaq@pd.tnic>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+On Tue, Mar 14, 2017 at 01:20:27AM +0000, Brown, Aaron F wrote:
+> Believe it or not we actually do test these changes. This one was
+> tested by me and I did not have the same results you and the other
+> people reporting this trace did. I made it back in the lab today and
+> have spent a good part of the day attempting to reproduce this bug
+> without success. Freeze / resume works for me on all the systems I
+> have tried, which includes a sampling of all the current parts and
+> many older ones.
 
-This patch adds a control which will allow us to toggle into and out of the
-legacy Rx mode.  The legacy Rx mode is what we currently do when performing
-Rx.  As I make further changes what should happen is that the driver will
-fall back to the behavior for Rx as of this patch should the "legacy-rx"
-flag be set to on.
+Yeah, tell me about it.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Change-ID: I0342998849bbb31351cce05f6e182c99174e7751
----
-Testing Hints:
-        This flag should not appear on kernels prior to 4.10.
-        On kernels 4.10 and later the "legacy-rx" flag should appear
-        and can be toggled between on and off. As we add more features the
-        behavior of the driver should change when this value is toggled.
+> Given there are several other reports of this it is obviously an issue
+> and I would like to be able to reproduce it in case another patch to
+> resolve the issue this attempts to fix comes back in another form. So
+> I want to know what's different between the systems that hit this and
+> my bank of systems that don't.
 
-        Toggling this for now will only cause a reset of the interface.
+So mine is not the newest anymore: thinkpad x230.
 
-        For the VF we are specifically replacing the define that was
-        stripping the code for the flag needed for the "legacy-rx" flag
-        since it doesn't make sense to have the interface defined when
-        there are no flags present.  In the case of a kernel build the
-        #ifdefs should be stripped and the code will remain.
+> What exact part (or parts) are we looking at (lspci|grep -i eth)
 
- drivers/net/ethernet/intel/i40e/i40e.h             |   1 +
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |   5 +-
- drivers/net/ethernet/intel/i40evf/i40evf.h         |   2 +
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 104 +++++++++++++++++++++
- 4 files changed, 111 insertions(+), 1 deletion(-)
+Lemme give you the gory details (PCI cfg space etc):
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index dcba258..561fe1f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -430,6 +430,7 @@ struct i40e_pf {
- #define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(55)
- #define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(56)
- #define I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE		BIT_ULL(57)
-+#define I40E_FLAG_LEGACY_RX			BIT_ULL(57)
- 
-        /* Tracks features that are disabled due to hw limitations.
- 	* If a bit is set here, it means that the corresponding
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 56dccf8..0db6b36 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -226,6 +226,7 @@ static const struct i40e_priv_flags i40e_gstrings_priv_flags[] = {
- 	I40E_PRIV_FLAG("flow-director-atr", I40E_FLAG_FD_ATR_ENABLED, 0),
- 	I40E_PRIV_FLAG("veb-stats", I40E_FLAG_VEB_STATS_ENABLED, 0),
- 	I40E_PRIV_FLAG("hw-atr-eviction", I40E_FLAG_HW_ATR_EVICT_CAPABLE, 0),
-+	I40E_PRIV_FLAG("legacy-rx", I40E_FLAG_LEGACY_RX, 0),
- };
- 
- #define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gstrings_priv_flags)
-@@ -4048,6 +4049,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	}
- 
- flags_complete:
-+	/* check for flags that changed */
- 	changed_flags ^= pf->flags;
- 
- 	/* Process any additional changes needed as a result of flag changes.
-@@ -4088,7 +4090,8 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	/* Issue reset to cause things to take effect, as additional bits
- 	 * are added we will need to create a mask of bits requiring reset
- 	 */
--	if (changed_flags & I40E_FLAG_VEB_STATS_ENABLED)
-+	if ((changed_flags & I40E_FLAG_VEB_STATS_ENABLED) ||
-+	    ((changed_flags & I40E_FLAG_LEGACY_RX) && netif_running(dev)))
- 		i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED));
- 
- 	return 0;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index b2b4851..e60cbfa 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -222,6 +222,7 @@ struct i40evf_adapter {
- #define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(17)
- #define I40EVF_FLAG_PROMISC_ON			BIT(18)
- #define I40EVF_FLAG_ALLMULTI_ON			BIT(19)
-+#define I40EVF_FLAG_LEGACY_RX			BIT(20)
- /* duplicates for common code */
- #define I40E_FLAG_FDIR_ATR_ENABLED		0
- #define I40E_FLAG_DCB_ENABLED			0
-@@ -229,6 +230,7 @@ struct i40evf_adapter {
- #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
- #define I40E_FLAG_WB_ON_ITR_CAPABLE		I40EVF_FLAG_WB_ON_ITR_CAPABLE
- #define I40E_FLAG_OUTER_UDP_CSUM_CAPABLE	I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE
-+#define I40E_FLAG_LEGACY_RX			I40EVF_FLAG_LEGACY_RX
- 	/* flags for admin queue service task */
- 	u32 aq_required;
- #define I40EVF_FLAG_AQ_ENABLE_QUEUES		BIT(0)
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index 122efbd..9bb2cc7 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -63,6 +63,29 @@ static const struct i40evf_stats i40evf_gstrings_stats[] = {
- #define I40EVF_STATS_LEN(_dev) \
- 	(I40EVF_GLOBAL_STATS_LEN + I40EVF_QUEUE_STATS_LEN(_dev))
- 
-+/* For now we have one and only one private flag and it is only defined
-+ * when we have support for the SKIP_CPU_SYNC DMA attribute.  Instead
-+ * of leaving all this code sitting around empty we will strip it unless
-+ * our one private flag is actually available.
-+ */
-+struct i40evf_priv_flags {
-+	char flag_string[ETH_GSTRING_LEN];
-+	u32 flag;
-+	bool read_only;
-+};
-+
-+#define I40EVF_PRIV_FLAG(_name, _flag, _read_only) { \
-+	.flag_string = _name, \
-+	.flag = _flag, \
-+	.read_only = _read_only, \
-+}
-+
-+static const struct i40evf_priv_flags i40evf_gstrings_priv_flags[] = {
-+	I40EVF_PRIV_FLAG("legacy-rx", I40EVF_FLAG_LEGACY_RX, 0),
-+};
-+
-+#define I40EVF_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40evf_gstrings_priv_flags)
-+
- /**
-  * i40evf_get_link_ksettings - Get Link Speed and Duplex settings
-  * @netdev: network interface device structure
-@@ -124,6 +147,8 @@ static int i40evf_get_sset_count(struct net_device *netdev, int sset)
- {
- 	if (sset == ETH_SS_STATS)
- 		return I40EVF_STATS_LEN(netdev);
-+	else if (sset == ETH_SS_PRIV_FLAGS)
-+		return I40EVF_PRIV_FLAGS_STR_LEN;
- 	else
- 		return -EINVAL;
- }
-@@ -189,7 +214,83 @@ static void i40evf_get_strings(struct net_device *netdev, u32 sset, u8 *data)
- 			snprintf(p, ETH_GSTRING_LEN, "rx-%u.bytes", i);
- 			p += ETH_GSTRING_LEN;
- 		}
-+	} else if (sset == ETH_SS_PRIV_FLAGS) {
-+		for (i = 0; i < I40EVF_PRIV_FLAGS_STR_LEN; i++) {
-+			snprintf(p, ETH_GSTRING_LEN, "%s",
-+				 i40evf_gstrings_priv_flags[i].flag_string);
-+			p += ETH_GSTRING_LEN;
-+		}
-+	}
-+}
-+
-+/**
-+ * i40evf_get_priv_flags - report device private flags
-+ * @dev: network interface device structure
-+ *
-+ * The get string set count and the string set should be matched for each
-+ * flag returned.  Add new strings for each flag to the i40e_gstrings_priv_flags
-+ * array.
-+ *
-+ * Returns a u32 bitmap of flags.
-+ **/
-+static u32 i40evf_get_priv_flags(struct net_device *netdev)
-+{
-+	struct i40evf_adapter *adapter = netdev_priv(netdev);
-+	u32 i, ret_flags = 0;
-+
-+	for (i = 0; i < I40EVF_PRIV_FLAGS_STR_LEN; i++) {
-+		const struct i40evf_priv_flags *priv_flags;
-+
-+		priv_flags = &i40evf_gstrings_priv_flags[i];
-+
-+		if (priv_flags->flag & adapter->flags)
-+			ret_flags |= BIT(i);
-+	}
-+
-+	return ret_flags;
-+}
-+
-+/**
-+ * i40evf_set_priv_flags - set private flags
-+ * @dev: network interface device structure
-+ * @flags: bit flags to be set
-+ **/
-+static int i40evf_set_priv_flags(struct net_device *netdev, u32 flags)
-+{
-+	struct i40evf_adapter *adapter = netdev_priv(netdev);
-+	u64 changed_flags;
-+	u32 i;
-+
-+	changed_flags = adapter->flags;
-+
-+	for (i = 0; i < I40EVF_PRIV_FLAGS_STR_LEN; i++) {
-+		const struct i40evf_priv_flags *priv_flags;
-+
-+		priv_flags = &i40evf_gstrings_priv_flags[i];
-+
-+		if (priv_flags->read_only)
-+			continue;
-+
-+		if (flags & BIT(i))
-+			adapter->flags |= priv_flags->flag;
-+		else
-+			adapter->flags &= ~(priv_flags->flag);
-+	}
-+
-+	/* check for flags that changed */
-+	changed_flags ^= adapter->flags;
-+
-+	/* Process any additional changes needed as a result of flag changes. */
-+
-+	/* issue a reset to force legacy-rx change to take effect */
-+	if (changed_flags & I40EVF_FLAG_LEGACY_RX) {
-+		if (netif_running(netdev)) {
-+			adapter->flags |= I40EVF_FLAG_RESET_NEEDED;
-+			schedule_work(&adapter->reset_task);
-+		}
- 	}
-+
-+	return 0;
- }
- 
- /**
-@@ -238,6 +339,7 @@ static void i40evf_get_drvinfo(struct net_device *netdev,
- 	strlcpy(drvinfo->version, i40evf_driver_version, 32);
- 	strlcpy(drvinfo->fw_version, "N/A", 4);
- 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev), 32);
-+	drvinfo->n_priv_flags = I40EVF_PRIV_FLAGS_STR_LEN;
- }
- 
- /**
-@@ -649,6 +751,8 @@ static const struct ethtool_ops i40evf_ethtool_ops = {
- 	.get_strings		= i40evf_get_strings,
- 	.get_ethtool_stats	= i40evf_get_ethtool_stats,
- 	.get_sset_count		= i40evf_get_sset_count,
-+	.get_priv_flags		= i40evf_get_priv_flags,
-+	.set_priv_flags		= i40evf_set_priv_flags,
- 	.get_msglevel		= i40evf_get_msglevel,
- 	.set_msglevel		= i40evf_set_msglevel,
- 	.get_coalesce		= i40evf_get_coalesce,
+$ lspci -xxx -vvvv | grep -i eth -A 36
+00:19.0 Ethernet controller: Intel Corporation 82579LM Gigabit Network Connection (rev 04)
+        Subsystem: Lenovo 82579LM Gigabit Network Connection
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0
+        Interrupt: pin A routed to IRQ 30
+        Region 0: Memory at f1500000 (32-bit, non-prefetchable) [size=128K]
+        Region 1: Memory at f153b000 (32-bit, non-prefetchable) [size=4K]
+        Region 2: I/O ports@4080 [size=32]
+        Capabilities: [c8] Power Management version 2
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
+                Address: 00000000fee002d8  Data: 0000
+        Capabilities: [e0] PCI Advanced Features
+                AFCap: TP+ FLR+
+                AFCtrl: FLR-
+                AFStatus: TP-
+        Kernel driver in use: e1000e
+        Kernel modules: e1000e
+00: 86 80 02 15 07 04 10 00 04 00 00 02 00 00 00 00
+10: 00 00 50 f1 00 b0 53 f1 81 40 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 aa 17 f3 21
+30: 00 00 00 00 c8 00 00 00 00 00 00 00 07 01 00 00
+40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 01 d0 22 c8 00 20 00 07
+d0: 05 e0 81 00 d8 02 e0 fe 00 00 00 00 00 00 00 00
+e0: 13 00 06 03 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+> that trigger this? Could it be a difference in .config files? The
+
+.config attached.
+
+> trace says it is falling back to legacy interrupts, does the system
+> continue to work and does the network continue to function in that
+> mode?
+
+Not really. I tried halting it after the splat but it started powering
+down and deadlocked on something. Had to cold-reset.
+
+> Any other information you think can help me reproduce the issue would
+> be appreciated.
+
+So the real question is why does it fail setting up MSI interrupts. I'd
+look into that part of the driver...
+
 -- 
-2.4.11
+Regards/Gruss,
+    Boris.
 
+Good mailing practices for 400: avoid top-posting and trim the reply.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: config-4.10.0+.gz
+Type: application/gzip
+Size: 26216 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170314/9e9871ab/attachment-0001.bin>
