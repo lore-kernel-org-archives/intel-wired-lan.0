@@ -1,100 +1,110 @@
-From: Philippe Reynes <tremyfr@gmail.com>
-Date: Tue, 14 Mar 2017 22:42:05 +0100
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 56/91]
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:6: error:
- redeclaration of 'supported' with no linkage
-In-Reply-To: <201703141619.EfULrjB2%fengguang.wu@intel.com>
-References: <201703141619.EfULrjB2%fengguang.wu@intel.com>
-Message-ID: <CAC=8w91fFXcSRHGgiFkJwiPXsB7CihUAa0GHaTo0AkJRO9R2bw@mail.gmail.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Tue, 14 Mar 2017 16:50:47 -0700
+Subject: [Intel-wired-lan] [RFC PATCH] ixgbe: delay tail write to every
+	'n' packets
+In-Reply-To: <CAKgT0Ufz6W0+1Y4vsKYqcZ_sn+kCie28wKdECbThOeDO_51zKw@mail.gmail.com>
+References: <20170313161624.7987.91951.stgit@john-Precision-Tower-5810>
+ <CAKgT0Ufz6W0+1Y4vsKYqcZ_sn+kCie28wKdECbThOeDO_51zKw@mail.gmail.com>
+Message-ID: <58C881D7.3010608@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+On 17-03-13 10:18 AM, Alexander Duyck wrote:
+> On Mon, Mar 13, 2017 at 9:16 AM, John Fastabend
+> <john.fastabend@gmail.com> wrote:
+>> Current XDP implementation hits the tail on every XDP_TX return
+>> code. This patch changes driver behavior to only hit the tail after
+>> packet processing is complete.
+>>
+>> RFC for now as I test this, it looks promising on my dev box but
+>> want to do some more tests before official submission.
+>>
+>> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+>> ---
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   14 +++++++++++---
+>>  1 file changed, 11 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> index bef4e24..2c244b6 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> @@ -2282,6 +2282,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>>         unsigned int mss = 0;
+>>  #endif /* IXGBE_FCOE */
+>>         u16 cleaned_count = ixgbe_desc_unused(rx_ring);
+>> +       bool xdp_xmit = false;
+>>
+>>         while (likely(total_rx_packets < budget)) {
+>>                 union ixgbe_adv_rx_desc *rx_desc;
+>> @@ -2321,10 +2322,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>>                 }
+>>
+>>                 if (IS_ERR(skb)) {
+>> -                       if (PTR_ERR(skb) == -IXGBE_XDP_TX)
+>> +                       if (PTR_ERR(skb) == -IXGBE_XDP_TX) {
+>> +                               xdp_xmit = true;
+>>                                 ixgbe_rx_buffer_flip(rx_ring, rx_buffer, size);
+>> -                       else
+>> +                       } else {
+>>                                 rx_buffer->pagecnt_bias++;
+>> +                       }
+>>                         total_rx_packets++;
+>>                         total_rx_bytes += size;
+>>                 } else if (skb) {
+>> @@ -2392,6 +2395,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>>                 total_rx_packets++;
+>>         }
+>>
+>> +       if (xdp_xmit) {
+>> +               struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
+>> +
+>> +               writel(ring->next_to_use, ring->tail);
+>> +       }
+>> +
+> 
+> We will need a wmb here.
+> 
+>>         u64_stats_update_begin(&rx_ring->syncp);
+>>         rx_ring->stats.packets += total_rx_packets;
+>>         rx_ring->stats.bytes += total_rx_bytes;
+>> @@ -8251,7 +8260,6 @@ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+>>         tx_buffer->next_to_watch = tx_desc;
+>>         ring->next_to_use = i;
+>>
+>> -       writel(i, ring->tail);
+> 
+> So you might want to change the barrier setup for all this to use
+> smp_wmb instead.  We need the wmb to be paired with the writel.  That
+> should give you a slight performance boost since smp_wmb breaks down
+> to just a barrier on x86 systems.
+> 
 
-I don't reproduce this issue on the git net-next.
-I've looked on git jkirsher/next-queue.git, and I
-think that the issue is raised because my patch
-was integrated twice :
+Not sure I grok this description entirely, but I think you are just saying
+replace,
 
-13 hours	ixgbe: use new api ethtool_{get|set}_link_ksettings
-43 hours	net: intel: ixgbe: use new api ethtool_{get|set}_link_ksettings
+	if (xdp_xmit) {
+		...
+		writel(...)
+	}
 
-Regards,
-Philippe
+with
 
+	if (xdp_xmit) {
+		...
+		smp_rmb()
+		writel()
+	}
 
-On 3/14/17, kbuild test robot <fengguang.wu@intel.com> wrote:
-> tree:
-> https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-> dev-queue
-> head:   58f90b91f8d9ef78ec305e1d3db1f94a5f711ff3
-> commit: d758c65b73ae233802b736b12ac77e4b48e58dc3 [56/91] ixgbe: use new api
-> ethtool_{get|set}_link_ksettings
-> config: i386-randconfig-x018-201711 (attached as .config)
-> compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
-> reproduce:
->         git checkout d758c65b73ae233802b736b12ac77e4b48e58dc3
->         # save the attached .config to linux build tree
->         make ARCH=i386
->
-> All errors (new ones prefixed by >>):
->
->    drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c: In function
-> 'ixgbe_set_link_ksettings':
->>> drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:6: error:
->>> redeclaration of 'supported' with no linkage
->      u32 supported, advertising;
->          ^~~~~~~~~
->    drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:390:6: note: previous
-> declaration of 'supported' was here
->      u32 supported, advertising;
->          ^~~~~~~~~
->>> drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:17: error:
->>> redeclaration of 'advertising' with no linkage
->      u32 supported, advertising;
->                     ^~~~~~~~~~~
->    drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:390:17: note: previous
-> declaration of 'advertising' was here
->      u32 supported, advertising;
->                     ^~~~~~~~~~~
->
-> vim +/supported +393 drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
->
-> 9a799d71 drivers/net/ixgbe/ixgbe_ethtool.c                Auke Kok
->       2007-09-15  387  {
-> 9a799d71 drivers/net/ixgbe/ixgbe_ethtool.c                Auke Kok
->       2007-09-15  388  	struct ixgbe_adapter *adapter =
-> netdev_priv(netdev);
-> 735441fb drivers/net/ixgbe/ixgbe_ethtool.c                Ayyappan Veeraiyan
->       2008-02-01  389  	struct ixgbe_hw *hw = &adapter->hw;
-> d758c65b drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes
->       2017-03-14  390  	u32 supported, advertising;
-> 0befdb3e drivers/net/ixgbe/ixgbe_ethtool.c                Jesse Brandeburg
->       2008-10-31  391  	u32 advertised, old;
-> 74766013 drivers/net/ixgbe/ixgbe_ethtool.c                Mallikarjuna R
-> Chilakala 2009-06-04  392  	s32 err = 0;
-> 8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes
->       2017-03-07 @393  	u32 supported, advertising;
-> 8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes
->       2017-03-07  394
-> 8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes
->       2017-03-07  395  	ethtool_convert_link_mode_to_legacy_u32(&supported,
-> 8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes
->       2017-03-07  396  						cmd->link_modes.supported);
->
-> :::::: The code at line 393 was first introduced by commit
-> :::::: 8704f21c8449d4ee0ea22a16014b6af6e757ec81 net: intel: ixgbe: use new
-> api ethtool_{get|set}_link_ksettings
->
-> :::::: TO: Philippe Reynes <tremyfr@gmail.com>
-> :::::: CC: David S. Miller <davem@davemloft.net>
->
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology
-> Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel
-> Corporation
->
+Correct? Did you have some other change in mind ... "for all this"?
+
+Thanks,
+John
+
+>>         return IXGBE_XDP_TX;
+>>  }
+>>
+>>
+
