@@ -1,54 +1,100 @@
-From: =?unknown-8bit?q?Bj=C3=B8rn?= Mork <bjorn@mork.no>
-Date: Tue, 14 Mar 2017 09:40:24 +0100
-Subject: [Intel-wired-lan] [BUG] 4.11.0-rc1 panic on shutdown X61s
-In-Reply-To: <87varci7om.fsf@miraculix.mork.no> (=?utf-8?Q?=22Bj=C3=B8rn?=
- Mork"'s message of "Tue, 14 Mar 2017 09:28:09 +0100")
-References: <20170312053723.GH802@shells.gnugeneration.com>
- <20170312115703.GA18197@nazgul.tnic>
- <20170312122621.GA2823@nazgul.tnic>
- <CAHp75Ve7SWivf=TTuq-qA=iM20E==OmSZD2YAmt0LVJQg47Osg@mail.gmail.com>
- <20170312222333.hm54nl2ul5iuixap@pd.tnic>
- <87shmhjfap.fsf@miraculix.mork.no>
- <309B89C4C689E141A5FF6A0C5FB2118B8C5B3F9B@ORSMSX101.amr.corp.intel.com>
- <87varci7om.fsf@miraculix.mork.no>
-Message-ID: <87pohki747.fsf@miraculix.mork.no>
+From: Philippe Reynes <tremyfr@gmail.com>
+Date: Tue, 14 Mar 2017 22:42:05 +0100
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 56/91]
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:6: error:
+ redeclaration of 'supported' with no linkage
+In-Reply-To: <201703141619.EfULrjB2%fengguang.wu@intel.com>
+References: <201703141619.EfULrjB2%fengguang.wu@intel.com>
+Message-ID: <CAC=8w91fFXcSRHGgiFkJwiPXsB7CihUAa0GHaTo0AkJRO9R2bw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Bj?rn Mork <bjorn@mork.no> writes:
-> "Brown, Aaron F" <aaron.f.brown@intel.com> writes:
->>> From: Bj?rn Mork [mailto:bjorn at mork.no]
->>>
->>> Already did that a week ago:
->>> https://www.spinics.net/lists/netdev/msg423379.html
->>> 
->>> Haven't heard anything back yet.  Wondering if they are waiting for
->>> someone else to submit the pretty obvious revert?  Don't understand why
->>> that should take more than a minute to figure out.  It's not like they
->>> are testing these changes anyway...
->>
->> Believe it or not we actually do test these changes.
+Hi,
+
+I don't reproduce this issue on the git net-next.
+I've looked on git jkirsher/next-queue.git, and I
+think that the issue is raised because my patch
+was integrated twice :
+
+13 hours	ixgbe: use new api ethtool_{get|set}_link_ksettings
+43 hours	net: intel: ixgbe: use new api ethtool_{get|set}_link_ksettings
+
+Regards,
+Philippe
+
+
+On 3/14/17, kbuild test robot <fengguang.wu@intel.com> wrote:
+> tree:
+> https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+> dev-queue
+> head:   58f90b91f8d9ef78ec305e1d3db1f94a5f711ff3
+> commit: d758c65b73ae233802b736b12ac77e4b48e58dc3 [56/91] ixgbe: use new api
+> ethtool_{get|set}_link_ksettings
+> config: i386-randconfig-x018-201711 (attached as .config)
+> compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+> reproduce:
+>         git checkout d758c65b73ae233802b736b12ac77e4b48e58dc3
+>         # save the attached .config to linux build tree
+>         make ARCH=i386
 >
-> Yes, I know you did. Sorry. I should stop throwing such comments around.
-
-So I have made that mistake before, and never learn.  But the good thing
-about that is that it now rang a bell.  I once had suspend issues with a
-completely different Intel device on another Lenovo laptop, which turned
-out to be caused by the Lenovo firmware accessing the device while it is
-in D3: https://lkml.org/lkml/2015/3/2/183
-
-I don't have a clue about how these things work so this might be
-completely unrelated.  Just thought I'd mention it as an example of how
-the Lenovo firmware can do unexpected things.
-
-From the reports so far, it looks like the issue at hand affects most
-(all?)  Lenovo Thinkpads with an e1000e part.  If you haven't tried
-already, it might be interesting to see if you can reproduce it on a
-Thinkpad.
-
-
-
-Bj?rn
+> All errors (new ones prefixed by >>):
+>
+>    drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c: In function
+> 'ixgbe_set_link_ksettings':
+>>> drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:6: error:
+>>> redeclaration of 'supported' with no linkage
+>      u32 supported, advertising;
+>          ^~~~~~~~~
+>    drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:390:6: note: previous
+> declaration of 'supported' was here
+>      u32 supported, advertising;
+>          ^~~~~~~~~
+>>> drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:17: error:
+>>> redeclaration of 'advertising' with no linkage
+>      u32 supported, advertising;
+>                     ^~~~~~~~~~~
+>    drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:390:17: note: previous
+> declaration of 'advertising' was here
+>      u32 supported, advertising;
+>                     ^~~~~~~~~~~
+>
+> vim +/supported +393 drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+>
+> 9a799d71 drivers/net/ixgbe/ixgbe_ethtool.c                Auke Kok
+>       2007-09-15  387  {
+> 9a799d71 drivers/net/ixgbe/ixgbe_ethtool.c                Auke Kok
+>       2007-09-15  388  	struct ixgbe_adapter *adapter =
+> netdev_priv(netdev);
+> 735441fb drivers/net/ixgbe/ixgbe_ethtool.c                Ayyappan Veeraiyan
+>       2008-02-01  389  	struct ixgbe_hw *hw = &adapter->hw;
+> d758c65b drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes
+>       2017-03-14  390  	u32 supported, advertising;
+> 0befdb3e drivers/net/ixgbe/ixgbe_ethtool.c                Jesse Brandeburg
+>       2008-10-31  391  	u32 advertised, old;
+> 74766013 drivers/net/ixgbe/ixgbe_ethtool.c                Mallikarjuna R
+> Chilakala 2009-06-04  392  	s32 err = 0;
+> 8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes
+>       2017-03-07 @393  	u32 supported, advertising;
+> 8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes
+>       2017-03-07  394
+> 8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes
+>       2017-03-07  395  	ethtool_convert_link_mode_to_legacy_u32(&supported,
+> 8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes
+>       2017-03-07  396  						cmd->link_modes.supported);
+>
+> :::::: The code at line 393 was first introduced by commit
+> :::::: 8704f21c8449d4ee0ea22a16014b6af6e757ec81 net: intel: ixgbe: use new
+> api ethtool_{get|set}_link_ksettings
+>
+> :::::: TO: Philippe Reynes <tremyfr@gmail.com>
+> :::::: CC: David S. Miller <davem@davemloft.net>
+>
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology
+> Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel
+> Corporation
+>
