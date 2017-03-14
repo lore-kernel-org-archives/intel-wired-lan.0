@@ -1,78 +1,67 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 14 Mar 2017 09:49:24 +0200
-Subject: [Intel-wired-lan] [BUG] 4.11.0-rc1 panic on shutdown X61s
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B8C5B3F9B@ORSMSX101.amr.corp.intel.com>
-References: <20170312053723.GH802@shells.gnugeneration.com>
- <20170312115703.GA18197@nazgul.tnic> <20170312122621.GA2823@nazgul.tnic>
- <CAHp75Ve7SWivf=TTuq-qA=iM20E==OmSZD2YAmt0LVJQg47Osg@mail.gmail.com>
- <20170312222333.hm54nl2ul5iuixap@pd.tnic> <87shmhjfap.fsf@miraculix.mork.no>
- <309B89C4C689E141A5FF6A0C5FB2118B8C5B3F9B@ORSMSX101.amr.corp.intel.com>
-Message-ID: <985d8ca4-df0a-5eb7-6c43-d57b843cbd18@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 14 Mar 2017 16:58:27 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 56/91]
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:6: error:
+ redeclaration of 'supported' with no linkage
+Message-ID: <201703141619.EfULrjB2%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/14/2017 03:20, Brown, Aaron F wrote:
->> From: Bj?rn Mork [mailto:bjorn at mork.no]
->> Sent: Monday, March 13, 2017 9:46 AM
->> To: Borislav Petkov <bp@alien8.de>
->> Cc: Andy Shevchenko <andy.shevchenko@gmail.com>; lkml at pengaru.com;
->> linux-kernel <linux-kernel@vger.kernel.org>; vcaputo at pengaru.com; linux-
->> pci at vger.kernel.org; intel-wired-lan at lists.osuosl.org; khalidm
->> <khalidm@cisco.com>; David Singleton <davsingl@cisco.com>; Brown, Aaron
->> F <aaron.f.brown@intel.com>; Kirsher, Jeffrey T
->> <jeffrey.t.kirsher@intel.com>
->> Subject: Re: [BUG] 4.11.0-rc1 panic on shutdown X61s
->>
->> Borislav Petkov <bp@alien8.de> writes:
->>> On Sun, Mar 12, 2017 at 03:55:08PM +0200, Andy Shevchenko wrote:
->>>
->>>> The only change that IMHO matters happened between v4.10 and v4.11-
->> rc1 is this:
->>>> @@ -6276,8 +6274,8 @@ static int e1000e_pm_freeze(struct device *dev)
->>>>                  /* Quiesce the device without resetting the hardware */
->>>>                  e1000e_down(adapter, false);
->>>>                  e1000_free_irq(adapter);
->>>> +               e1000e_reset_interrupt_capability(adapter);
->>>>          }
->>>> -       e1000e_reset_interrupt_capability(adapter);
->>>>
->>>> So, it apparently misses something for the other case, like
->>>> pci_disable_msi() call or so.
->>> Well, lemme add the people from
->>>
->>>    7e54d9d063fa ("e1000e: driver trying to free already-free irq")
->>>
->>> to CC then. :-)
->> Already did that a week ago:
->> https://www.spinics.net/lists/netdev/msg423379.html
->>
->> Haven't heard anything back yet.  Wondering if they are waiting for
->> someone else to submit the pretty obvious revert?  Don't understand why
->> that should take more than a minute to figure out.  It's not like they
->> are testing these changes anyway...
-> Believe it or not we actually do test these changes.  This one was tested by me and I did not have the same results you and the other people reporting this trace did.  I made it back in the lab today and have spent a good part of the day attempting to reproduce this bug without success.  Freeze / resume works for me on all the systems I have tried, which includes a sampling of all the current parts and many older ones.  Given there are several other reports of this it is obviously an issue and I would like to be able to reproduce it in case another patch to resolve the issue this attempts to fix comes back in another form.  So I want to know what's different between the systems that hit this and my bank of systems that don't.
->
-> What exact part (or parts) are we looking at (lspci|grep -i eth) that trigger this?  Could it be a difference in .config files?  The trace says it is falling back to legacy interrupts, does the system continue to work and does the network continue to function in that mode?  In case it's related to user space what is the base distro?  Any other information you think can help me reproduce the issue would be appreciated.
->
-> Thanks,
-> Aaron
->
->>
->> Bj?rn
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   58f90b91f8d9ef78ec305e1d3db1f94a5f711ff3
+commit: d758c65b73ae233802b736b12ac77e4b48e58dc3 [56/91] ixgbe: use new api ethtool_{get|set}_link_ksettings
+config: i386-randconfig-x018-201711 (attached as .config)
+compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+reproduce:
+        git checkout d758c65b73ae233802b736b12ac77e4b48e58dc3
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-Hello,
+All errors (new ones prefixed by >>):
 
-I suggest revert commit of this patch. We recommended do not apply this 
-change.
+   drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c: In function 'ixgbe_set_link_ksettings':
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:6: error: redeclaration of 'supported' with no linkage
+     u32 supported, advertising;
+         ^~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:390:6: note: previous declaration of 'supported' was here
+     u32 supported, advertising;
+         ^~~~~~~~~
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:393:17: error: redeclaration of 'advertising' with no linkage
+     u32 supported, advertising;
+                    ^~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c:390:17: note: previous declaration of 'advertising' was here
+     u32 supported, advertising;
+                    ^~~~~~~~~~~
 
-Thanks,
+vim +/supported +393 drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
 
-Sasha
+9a799d71 drivers/net/ixgbe/ixgbe_ethtool.c                Auke Kok                 2007-09-15  387  {
+9a799d71 drivers/net/ixgbe/ixgbe_ethtool.c                Auke Kok                 2007-09-15  388  	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+735441fb drivers/net/ixgbe/ixgbe_ethtool.c                Ayyappan Veeraiyan       2008-02-01  389  	struct ixgbe_hw *hw = &adapter->hw;
+d758c65b drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes          2017-03-14  390  	u32 supported, advertising;
+0befdb3e drivers/net/ixgbe/ixgbe_ethtool.c                Jesse Brandeburg         2008-10-31  391  	u32 advertised, old;
+74766013 drivers/net/ixgbe/ixgbe_ethtool.c                Mallikarjuna R Chilakala 2009-06-04  392  	s32 err = 0;
+8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes          2017-03-07 @393  	u32 supported, advertising;
+8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes          2017-03-07  394  
+8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes          2017-03-07  395  	ethtool_convert_link_mode_to_legacy_u32(&supported,
+8704f21c drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c Philippe Reynes          2017-03-07  396  						cmd->link_modes.supported);
 
+:::::: The code at line 393 was first introduced by commit
+:::::: 8704f21c8449d4ee0ea22a16014b6af6e757ec81 net: intel: ixgbe: use new api ethtool_{get|set}_link_ksettings
+
+:::::: TO: Philippe Reynes <tremyfr@gmail.com>
+:::::: CC: David S. Miller <davem@davemloft.net>
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 32596 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170314/f585dba5/attachment-0001.bin>
