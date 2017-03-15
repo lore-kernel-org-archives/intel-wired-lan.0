@@ -1,37 +1,204 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 15 Mar 2017 03:07:22 +0000
-Subject: [Intel-wired-lan] [next PATCH] igb/ixgbe: Fix typo in
- igb_build_skb and/or ixgbe_build_skb code comment
-In-Reply-To: <20170215171559.4456.38581.stgit@localhost.localdomain>
-References: <20170215171559.4456.38581.stgit@localhost.localdomain>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C5B485E@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 15 Mar 2017 18:19:03 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
+ b77ac975930741f0b6612b18e55d7a72c81ea2ac
+Message-ID: <58c91517.9zuSpaA61Zx5XWhJ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Wednesday, February 15, 2017 9:16 AM
-> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH] igb/ixgbe: Fix typo in igb_build_skb
-> and/or ixgbe_build_skb code comment
-> 
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
-> 
-> There was a typo that I had left in the code comments for the igb and ixgbe
-> functions that enabled build_skb support.  This patch is meant to clean
-> that up since it didn't seem like something worth respinning both series
-> for.  If I end up having to respin the series I will pull this change into
-> the patch and at that time we can drop this one.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c     |    2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+b77ac975930741f0b6612b18e55d7a72c81ea2ac  i40e: rename auto_disable_flags to hw_disabled_flags
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+elapsed time: 72m
+
+configs tested: 180
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                              defconfig
+m68k                        m5272c3_defconfig
+i386                     randconfig-a0-201711
+x86_64                 randconfig-a0-03151650
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                randconfig-in0-03151553
+arm                          tango4_defconfig
+ia64                         bigsur_defconfig
+mips                  maltasmvp_eva_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64       acpi-redef+CONFIG_DEBUG_INFO_REDUCED
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-g0-03151619
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                     eseries_pxa_defconfig
+arm                            xcep_defconfig
+ia64                             allmodconfig
+parisc                generic-64bit_defconfig
+powerpc                    gamecube_defconfig
+x86_64                 randconfig-x015-201711
+x86_64                 randconfig-x012-201711
+x86_64                 randconfig-x017-201711
+x86_64                 randconfig-x010-201711
+x86_64                 randconfig-x018-201711
+x86_64                 randconfig-x011-201711
+x86_64                 randconfig-x019-201711
+x86_64                 randconfig-x014-201711
+x86_64                 randconfig-x013-201711
+x86_64                 randconfig-x016-201711
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201711
+i386                     randconfig-s1-201711
+x86_64                 randconfig-s0-03151712
+x86_64                 randconfig-s1-03151712
+x86_64                 randconfig-s2-03151712
+x86_64                 randconfig-s3-03151634
+x86_64                 randconfig-s4-03151634
+x86_64                 randconfig-s5-03151634
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+x86_64                   randconfig-i0-201711
+i386                   randconfig-b0-03151617
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201711
+i386                     randconfig-i1-201711
+x86_64                 randconfig-u0-03151649
+i386                   randconfig-x010-201711
+i386                   randconfig-x011-201711
+i386                   randconfig-x012-201711
+i386                   randconfig-x013-201711
+i386                   randconfig-x014-201711
+i386                   randconfig-x015-201711
+i386                   randconfig-x016-201711
+i386                   randconfig-x017-201711
+i386                   randconfig-x018-201711
+i386                   randconfig-x019-201711
+x86_64                randconfig-ne0-03151703
+mips                             allmodconfig
+powerpc                  storcenter_defconfig
+sh                           se7780_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201711
+i386                   randconfig-h0-03151633
+i386                   randconfig-h1-03151633
+x86_64                 randconfig-h0-03151608
+x86_64                 randconfig-x004-201711
+x86_64                 randconfig-x009-201711
+x86_64                 randconfig-x003-201711
+x86_64                 randconfig-x008-201711
+x86_64                 randconfig-x002-201711
+x86_64                 randconfig-x007-201711
+x86_64                 randconfig-x000-201711
+x86_64                 randconfig-x005-201711
+x86_64                 randconfig-x006-201711
+x86_64                 randconfig-x001-201711
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                               rhel-7.2
+x86_64                randconfig-ws0-03151556
+i386                   randconfig-x077-201711
+i386                   randconfig-x070-201711
+i386                   randconfig-x073-201711
+i386                   randconfig-x076-201711
+i386                   randconfig-x072-201711
+i386                   randconfig-x078-201711
+i386                   randconfig-x074-201711
+i386                   randconfig-x075-201711
+i386                   randconfig-x079-201711
+i386                   randconfig-x071-201711
+i386                     randconfig-r0-201711
+x86_64                 randconfig-r0-03151555
+i386                   randconfig-x002-201711
+i386                   randconfig-x005-201711
+i386                   randconfig-x006-201711
+i386                   randconfig-x003-201711
+i386                   randconfig-x007-201711
+i386                   randconfig-x008-201711
+i386                   randconfig-x001-201711
+i386                   randconfig-x000-201711
+i386                   randconfig-x009-201711
+i386                   randconfig-x004-201711
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-03151640
+
+Thanks,
+Fengguang
