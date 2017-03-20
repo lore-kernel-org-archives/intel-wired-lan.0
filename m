@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 20 Mar 2017 17:49:37 +0000
-Subject: [Intel-wired-lan] [PART2 PATCH 1/9] i40e: correctly honor the
- mask	fields for ETHTOOL_SRXCLSRLINS
-In-Reply-To: <20170206223852.31177-2-jacob.e.keller@intel.com>
+Date: Mon, 20 Mar 2017 17:50:17 +0000
+Subject: [Intel-wired-lan] [PART2 PATCH 2/9] i40e: check current
+ configured	input set when adding ntuple filters
+In-Reply-To: <20170206223852.31177-3-jacob.e.keller@intel.com>
 References: <20170206223852.31177-1-jacob.e.keller@intel.com>
- <20170206223852.31177-2-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10406376@ORSMSX101.amr.corp.intel.com>
+ <20170206223852.31177-3-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040639E@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,38 +17,42 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jacob Keller
 > Sent: Monday, February 6, 2017 2:39 PM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PART2 PATCH 1/9] i40e: correctly honor the mask
-> fields for ETHTOOL_SRXCLSRLINS
+> Subject: [Intel-wired-lan] [PART2 PATCH 2/9] i40e: check current configured
+> input set when adding ntuple filters
 > 
-> The current implementation of .set_rxnfc does not properly read the mask
-> field for filter entries. This results in incorrect driver behavior, as we do not
-> reject filters which have masks set to ignore some fields. The current
-> implementation simply assumes that every part of the tuple or "input set" is
-> specified. This results in filters not behaving as expected, and not working
-> correctly.
+> Do not assume that hardware has been programmed with the default mask,
+> but instead read the input set registers to determine what is currently
+> programmed. This ensures that all programmed filters match exactly how the
+> hardware will interpret them, avoiding confusion regarding filter behavior.
 > 
-> As a first step in supporting some partial filters, add code which checks the
-> mask fields and rejects any filters which do not have an acceptable mask. For
-> now, we just assume that all fields must be set.
+> This sets the initial ground-work for allowing custom input sets where some
+> fields are disabled. A future patch will fully implement this feature.
 > 
-> This will get the driver one step towards allowing some partial filters.
-> At a minimum, the ethtool commands which previously installed filters that
-> would not function will now return a non-zero exit code indicating failure
-> instead.
+> The use of ntohl and ntohs is not strictly necessary for correctness, but it
+> helps avoid a sparse warning due to the construction of "!~<be16>" degrades
+> the be16 value into an integer when doing negation.
+> This could alternatively be fixed by the following code construction without
+> the byteswaps,
 > 
-> We should now be meeting the minimum requirements of the .set_rxnfc
-> API, by ensuring that all filters we program have a valid mask value for each
-> field.
+>   if (!<value>)
+>     <disable field>
+>   else if (~<value>)
+>     <return error>
+>   else
+>     <enable field>
 > 
-> Finally, add code to report the mask correctly so that the ethtool command
-> properly reports the mask to the user.
+> However, this construction is confusing because the error return occurs in
+> the middle, which is misleading to other readers. Additionally, it makes the
+> condition for the <enable field> much more difficult to process due to it
+> being in an else statement.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-Id: Ia020149e07c87aa3fcec7b2283621b887ef0546f
+> Change-Id: 3d8db46cb28ea0afdaac8c5b31a2bfb90e3a4102
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 83
-> ++++++++++++++++++++++++++
->  1 file changed, 83 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e.h         |  19 ++++
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 117
+> +++++++++++++++++++++----
+>  2 files changed, 121 insertions(+), 15 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
