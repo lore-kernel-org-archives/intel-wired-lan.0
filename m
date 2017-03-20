@@ -1,8 +1,7 @@
 From: Colin King <colin.king@canonical.com>
-Date: Mon, 20 Mar 2017 12:03:03 +0000
-Subject: [Intel-wired-lan] [PATCH] i40evf: dereference vsi after vsi has
-	been null checked
-Message-ID: <20170320120303.32284-1-colin.king@canonical.com>
+Date: Mon, 20 Mar 2017 14:46:27 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: fix memcpy with swapped arguments
+Message-ID: <20170320144627.11524-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,55 +10,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Colin Ian King <colin.king@canonical.com>
 
-vsi is being dereferenced before the vsi null check; if vsi is
-null we end up with a null pointer dereference.  Fix this by
-performing vsi deference after the vsi null check.  Also remove
-the need for using adapter by using vsi->back->cinst.
+The current code copies an uninitialized params into
+cdev->lan_info.params and then passes the uninitialized params
+to the call cdev->client->ops->l2_param_change.  I believe the
+order of the source and destination in the memcpy is the wrong
+way around and should be swapped.
 
-Detected by CoverityScan, CID#1419696, CID#1419697
-("Dereference before null check")
+Detected with static analysis by cppcheck
 
-Fixes: ed0e894de7c133 ("i40evf: add client interface")
+Fixes: 0ef2d5afb12d ("i40e: KISS the client interface")
 Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_client.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_client.c b/drivers/net/ethernet/intel/i40evf/i40evf_client.c
-index 5b43e5b6e2eb..a579b2a5bd37 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_client.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_client.c
-@@ -34,12 +34,12 @@ static struct i40e_ops i40evf_lan_ops = {
-  **/
- void i40evf_notify_client_message(struct i40e_vsi *vsi, u8 *msg, u16 len)
- {
--	struct i40evf_adapter *adapter = vsi->back;
--	struct i40e_client_instance *cinst = adapter->cinst;
-+	struct i40e_client_instance *cinst;
- 
- 	if (!vsi)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+index a9f0d22a7cf4..191580ed946d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+@@ -147,7 +147,7 @@ void i40e_notify_client_of_l2_param_changes(struct i40e_vsi *vsi)
+ 		dev_dbg(&vsi->back->pdev->dev, "Client is not open, abort l2 param change\n");
  		return;
- 
-+	cinst = vsi->back->cinst;
- 	if (!cinst || !cinst->client || !cinst->client->ops ||
- 	    !cinst->client->ops->virtchnl_receive) {
- 		dev_dbg(&vsi->back->pdev->dev,
-@@ -58,12 +58,13 @@ void i40evf_notify_client_message(struct i40e_vsi *vsi, u8 *msg, u16 len)
-  **/
- void i40evf_notify_client_l2_params(struct i40e_vsi *vsi)
- {
--	struct i40evf_adapter *adapter = vsi->back;
--	struct i40e_client_instance *cinst = adapter->cinst;
-+	struct i40e_client_instance *cinst;
- 	struct i40e_params params;
- 
- 	if (!vsi)
- 		return;
-+
-+	cinst = vsi->back->cinst;
- 	memset(&params, 0, sizeof(params));
- 	params.mtu = vsi->netdev->mtu;
- 	params.link_up = vsi->back->link_up;
+ 	}
+-	memcpy(&cdev->lan_info.params, &params, sizeof(struct i40e_params));
++	memcpy(&params, &cdev->lan_info.params, sizeof(struct i40e_params));
+ 	cdev->client->ops->l2_param_change(&cdev->lan_info, cdev->client,
+ 					   &params);
+ }
 -- 
 2.11.0
 
