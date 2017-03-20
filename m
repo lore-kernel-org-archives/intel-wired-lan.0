@@ -1,107 +1,65 @@
-From: Philippe Reynes <tremyfr@gmail.com>
-Date: Mon,  6 Feb 2017 00:11:11 +0100
-Subject: [Intel-wired-lan] [PATCH] net: intel: ixgb: use new api
-	ethtool_{get|set}_link_ksettings
-Message-ID: <1486336271-25336-1-git-send-email-tremyfr@gmail.com>
+From: Colin King <colin.king@canonical.com>
+Date: Mon, 20 Mar 2017 12:03:03 +0000
+Subject: [Intel-wired-lan] [PATCH] i40evf: dereference vsi after vsi has
+	been null checked
+Message-ID: <20170320120303.32284-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ethtool api {get|set}_settings is deprecated.
-We move this driver to new api {get|set}_link_ksettings.
+From: Colin Ian King <colin.king@canonical.com>
 
-As I don't have the hardware, I'd be very pleased if
-someone may test this patch.
+vsi is being dereferenced before the vsi null check; if vsi is
+null we end up with a null pointer dereference.  Fix this by
+performing vsi deference after the vsi null check.  Also remove
+the need for using adapter by using vsi->back->cinst.
 
-Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
+Detected by CoverityScan, CID#1419696, CID#1419697
+("Dereference before null check")
+
+Fixes: ed0e894de7c133 ("i40evf: add client interface")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/net/ethernet/intel/ixgb/ixgb_ethtool.c |   39 ++++++++++++++----------
- 1 files changed, 23 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_client.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_ethtool.c b/drivers/net/ethernet/intel/ixgb/ixgb_ethtool.c
-index e5d7255..d10a0d2 100644
---- a/drivers/net/ethernet/intel/ixgb/ixgb_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgb/ixgb_ethtool.c
-@@ -94,24 +94,30 @@ struct ixgb_stats {
- #define IXGB_STATS_LEN	ARRAY_SIZE(ixgb_gstrings_stats)
- 
- static int
--ixgb_get_settings(struct net_device *netdev, struct ethtool_cmd *ecmd)
-+ixgb_get_link_ksettings(struct net_device *netdev,
-+			struct ethtool_link_ksettings *cmd)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_client.c b/drivers/net/ethernet/intel/i40evf/i40evf_client.c
+index 5b43e5b6e2eb..a579b2a5bd37 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_client.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_client.c
+@@ -34,12 +34,12 @@ static struct i40e_ops i40evf_lan_ops = {
+  **/
+ void i40evf_notify_client_message(struct i40e_vsi *vsi, u8 *msg, u16 len)
  {
- 	struct ixgb_adapter *adapter = netdev_priv(netdev);
+-	struct i40evf_adapter *adapter = vsi->back;
+-	struct i40e_client_instance *cinst = adapter->cinst;
++	struct i40e_client_instance *cinst;
  
--	ecmd->supported = (SUPPORTED_10000baseT_Full | SUPPORTED_FIBRE);
--	ecmd->advertising = (ADVERTISED_10000baseT_Full | ADVERTISED_FIBRE);
--	ecmd->port = PORT_FIBRE;
--	ecmd->transceiver = XCVR_EXTERNAL;
-+	ethtool_link_ksettings_zero_link_mode(cmd, supported);
-+	ethtool_link_ksettings_add_link_mode(cmd, supported, 10000baseT_Full);
-+	ethtool_link_ksettings_add_link_mode(cmd, supported, FIBRE);
-+
-+	ethtool_link_ksettings_zero_link_mode(cmd, advertising);
-+	ethtool_link_ksettings_add_link_mode(cmd, advertising, 10000baseT_Full);
-+	ethtool_link_ksettings_add_link_mode(cmd, advertising, FIBRE);
-+
-+	cmd->base.port = PORT_FIBRE;
+ 	if (!vsi)
+ 		return;
  
- 	if (netif_carrier_ok(adapter->netdev)) {
--		ethtool_cmd_speed_set(ecmd, SPEED_10000);
--		ecmd->duplex = DUPLEX_FULL;
-+		cmd->base.speed = SPEED_10000;
-+		cmd->base.duplex = DUPLEX_FULL;
- 	} else {
--		ethtool_cmd_speed_set(ecmd, SPEED_UNKNOWN);
--		ecmd->duplex = DUPLEX_UNKNOWN;
-+		cmd->base.speed = SPEED_UNKNOWN;
-+		cmd->base.duplex = DUPLEX_UNKNOWN;
- 	}
- 
--	ecmd->autoneg = AUTONEG_DISABLE;
-+	cmd->base.autoneg = AUTONEG_DISABLE;
- 	return 0;
- }
- 
-@@ -126,13 +132,14 @@ void ixgb_set_speed_duplex(struct net_device *netdev)
- }
- 
- static int
--ixgb_set_settings(struct net_device *netdev, struct ethtool_cmd *ecmd)
-+ixgb_set_link_ksettings(struct net_device *netdev,
-+			const struct ethtool_link_ksettings *cmd)
++	cinst = vsi->back->cinst;
+ 	if (!cinst || !cinst->client || !cinst->client->ops ||
+ 	    !cinst->client->ops->virtchnl_receive) {
+ 		dev_dbg(&vsi->back->pdev->dev,
+@@ -58,12 +58,13 @@ void i40evf_notify_client_message(struct i40e_vsi *vsi, u8 *msg, u16 len)
+  **/
+ void i40evf_notify_client_l2_params(struct i40e_vsi *vsi)
  {
- 	struct ixgb_adapter *adapter = netdev_priv(netdev);
--	u32 speed = ethtool_cmd_speed(ecmd);
-+	u32 speed = cmd->base.speed;
+-	struct i40evf_adapter *adapter = vsi->back;
+-	struct i40e_client_instance *cinst = adapter->cinst;
++	struct i40e_client_instance *cinst;
+ 	struct i40e_params params;
  
--	if (ecmd->autoneg == AUTONEG_ENABLE ||
--	    (speed + ecmd->duplex != SPEED_10000 + DUPLEX_FULL))
-+	if (cmd->base.autoneg == AUTONEG_ENABLE ||
-+	    (speed + cmd->base.duplex != SPEED_10000 + DUPLEX_FULL))
- 		return -EINVAL;
- 
- 	if (netif_running(adapter->netdev)) {
-@@ -630,8 +637,6 @@ void ixgb_set_speed_duplex(struct net_device *netdev)
- }
- 
- static const struct ethtool_ops ixgb_ethtool_ops = {
--	.get_settings = ixgb_get_settings,
--	.set_settings = ixgb_set_settings,
- 	.get_drvinfo = ixgb_get_drvinfo,
- 	.get_regs_len = ixgb_get_regs_len,
- 	.get_regs = ixgb_get_regs,
-@@ -649,6 +654,8 @@ void ixgb_set_speed_duplex(struct net_device *netdev)
- 	.set_phys_id = ixgb_set_phys_id,
- 	.get_sset_count = ixgb_get_sset_count,
- 	.get_ethtool_stats = ixgb_get_ethtool_stats,
-+	.get_link_ksettings = ixgb_get_link_ksettings,
-+	.set_link_ksettings = ixgb_set_link_ksettings,
- };
- 
- void ixgb_set_ethtool_ops(struct net_device *netdev)
+ 	if (!vsi)
+ 		return;
++
++	cinst = vsi->back->cinst;
+ 	memset(&params, 0, sizeof(params));
+ 	params.mtu = vsi->netdev->mtu;
+ 	params.link_up = vsi->back->link_up;
 -- 
-1.7.4.4
+2.11.0
 
