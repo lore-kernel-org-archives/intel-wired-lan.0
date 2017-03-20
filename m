@@ -1,42 +1,55 @@
-From: Colin King <colin.king@canonical.com>
-Date: Mon, 20 Mar 2017 14:46:27 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: fix memcpy with swapped arguments
-Message-ID: <20170320144627.11524-1-colin.king@canonical.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 20 Mar 2017 17:49:37 +0000
+Subject: [Intel-wired-lan] [PART2 PATCH 1/9] i40e: correctly honor the
+ mask	fields for ETHTOOL_SRXCLSRLINS
+In-Reply-To: <20170206223852.31177-2-jacob.e.keller@intel.com>
+References: <20170206223852.31177-1-jacob.e.keller@intel.com>
+ <20170206223852.31177-2-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10406376@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jacob Keller
+> Sent: Monday, February 6, 2017 2:39 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [PART2 PATCH 1/9] i40e: correctly honor the mask
+> fields for ETHTOOL_SRXCLSRLINS
+> 
+> The current implementation of .set_rxnfc does not properly read the mask
+> field for filter entries. This results in incorrect driver behavior, as we do not
+> reject filters which have masks set to ignore some fields. The current
+> implementation simply assumes that every part of the tuple or "input set" is
+> specified. This results in filters not behaving as expected, and not working
+> correctly.
+> 
+> As a first step in supporting some partial filters, add code which checks the
+> mask fields and rejects any filters which do not have an acceptable mask. For
+> now, we just assume that all fields must be set.
+> 
+> This will get the driver one step towards allowing some partial filters.
+> At a minimum, the ethtool commands which previously installed filters that
+> would not function will now return a non-zero exit code indicating failure
+> instead.
+> 
+> We should now be meeting the minimum requirements of the .set_rxnfc
+> API, by ensuring that all filters we program have a valid mask value for each
+> field.
+> 
+> Finally, add code to report the mask correctly so that the ethtool command
+> properly reports the mask to the user.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-Id: Ia020149e07c87aa3fcec7b2283621b887ef0546f
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 83
+> ++++++++++++++++++++++++++
+>  1 file changed, 83 insertions(+)
 
-The current code copies an uninitialized params into
-cdev->lan_info.params and then passes the uninitialized params
-to the call cdev->client->ops->l2_param_change.  I believe the
-order of the source and destination in the memcpy is the wrong
-way around and should be swapped.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Detected with static analysis by cppcheck
-
-Fixes: 0ef2d5afb12d ("i40e: KISS the client interface")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/net/ethernet/intel/i40e/i40e_client.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index a9f0d22a7cf4..191580ed946d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -147,7 +147,7 @@ void i40e_notify_client_of_l2_param_changes(struct i40e_vsi *vsi)
- 		dev_dbg(&vsi->back->pdev->dev, "Client is not open, abort l2 param change\n");
- 		return;
- 	}
--	memcpy(&cdev->lan_info.params, &params, sizeof(struct i40e_params));
-+	memcpy(&params, &cdev->lan_info.params, sizeof(struct i40e_params));
- 	cdev->client->ops->l2_param_change(&cdev->lan_info, cdev->client,
- 					   &params);
- }
--- 
-2.11.0
 
