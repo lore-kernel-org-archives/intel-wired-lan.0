@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 20 Mar 2017 19:42:39 +0000
-Subject: [Intel-wired-lan] [PART2 PATCH 6/9] i40e: add parsing of
- flexible	filter fields from userdef
-In-Reply-To: <20170206223852.31177-7-jacob.e.keller@intel.com>
+Date: Mon, 20 Mar 2017 19:43:08 +0000
+Subject: [Intel-wired-lan] [PART2 PATCH 7/9] i40e: implement support
+	for	flexible word payload
+In-Reply-To: <20170206223852.31177-8-jacob.e.keller@intel.com>
 References: <20170206223852.31177-1-jacob.e.keller@intel.com>
- <20170206223852.31177-7-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040655D@ORSMSX101.amr.corp.intel.com>
+ <20170206223852.31177-8-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040656E@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,34 +17,44 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jacob Keller
 > Sent: Monday, February 6, 2017 2:39 PM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PART2 PATCH 6/9] i40e: add parsing of flexible
-> filter fields from userdef
+> Subject: [Intel-wired-lan] [PART2 PATCH 7/9] i40e: implement support for
+> flexible word payload
 > 
-> Add code to parse the user-def field into a data structure format. This code is
-> intended to allow future extensions of the user-def field by keeping all code
-> that actually reads and writes the field into a single location. This ensures that
-> we do not litter the driver with references to the user-def field and
-> minimizes the amount of bitwise operations we need to do on the data.
+> Add support for flexible payloads passed via ethtool user-def field.
+> This support is somewhat limited due to hardware design. The input set can
+> only be programmed once per filter type, and the flexible offset is part of
+> this filter input set. This means that the user cannot program both a regular
+> and a flexible filter at the same time for a given flow type. Additionally, the
+> user may not program two flexible filters of the same flow type with
+> different offsets, although they are allowed to configure different values at
+> that offset location.
 > 
-> Add code which parses the lower 32bits into a flexible word and its offset.
-> This will be used in a future patch to enable flexible filters which can match
-> on some arbitrary data in the packet payload. For now, we just return -
-> EOPNOTSUPP when this is used.
+> We support a single flexible word (2byte) value per protocol type, and we
+> handle the FLX_PIT register using a list of flexible entries so that each flow
+> type may be configured separately.
 > 
-> Add code to fill in the user-def field when reporting the filter back, even
-> though we don't actually implement any user-def fields yet.
+> Due to hardware implementation, the flexible data is offset from the start of
+> the packet payload, and thus may not be in part of the header data. For this
+> reason, the offset provided by the user defined data is interpreted as a byte
+> offset from the start of the matching payload.
+> Previous implementations have tried to represent the offset as from the
+> start of the frame, but this is not feasible because header sizes may change
+> due to options.
 > 
-> Additionally, ensure that we mask the extended FLOW_EXT bit from the
-> flow_type now that we will be accepting filters which have the FLOW_EXT bit
-> set (and thus make use of the user-def field).
+> Testing-hints:
+>   Need to ensure that multiple filters with same flex offset behave
+>   correctly, and ensure that different L4 protocols inter-operate
+>   correctly. README changes for this will be forth-coming.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-Id: 238845035c179380a347baa8db8223304f5f6dd7
+> Change-Id: 36ed27995e97de63f9aea5ade5778ff038d6f811
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h         |   9 +++
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 108
+>  drivers/net/ethernet/intel/i40e/i40e.h         |  83 +++++
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 494
 > ++++++++++++++++++++++++-
->  2 files changed, 116 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    |  16 +
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c    |  27 ++
+>  4 files changed, 608 insertions(+), 12 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
