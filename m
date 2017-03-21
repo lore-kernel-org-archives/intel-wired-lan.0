@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 21 Mar 2017 16:39:14 +0000
-Subject: [Intel-wired-lan] [next PATCH S63 1/6] i40e/i40evf: Use length
- to	determine if descriptor is done
-In-Reply-To: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 21 Mar 2017 16:39:51 +0000
+Subject: [Intel-wired-lan] [next PATCH S63 2/6] i40e/i40evf: Pull code
+ for	grabbing and syncing rx_buffer from fetch_buffer
+In-Reply-To: <1489511727-10959-2-git-send-email-bimmy.pujari@intel.com>
 References: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040682B@ORSMSX101.amr.corp.intel.com>
+ <1489511727-10959-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040683B@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,26 +17,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, March 14, 2017 10:15 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S63 1/6] i40e/i40evf: Use length to
-> determine if descriptor is done
+> Subject: [Intel-wired-lan] [next PATCH S63 2/6] i40e/i40evf: Pull code for
+> grabbing and syncing rx_buffer from fetch_buffer
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> This change makes it so that we use the length of the packet instead of the
-> DD status bit to determine if a new descriptor is ready to be processed.
-> The obvious advantage is that it cuts down on reads as we don't really even
-> need the DD bit if going from a 0 to a non-zero value on size is enough to
-> inform us that the packet has been completed.
+> This patch pulls the code responsible for fetching the Rx buffer and
+> synchronizing DMA into a function, specifically called i40e_get_rx_buffer.
+> 
+> The general idea is to allow for better code reuse by pulling this out of
+> i40e_fetch_rx_buffer.  We dropped a couple of prefetches since the time
+> between the prefetch being called and the data being accessed was too
+> small to be useful.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> Change-ID: Iebdf9cdb36c454ef092df27199b92ad09c374231
+> Change-ID: I4885fce4b2637dbedc8e16431169d23d3d7e79b9
 > ---
 > Testing Hints:
->         Perform various Rx tests to verify we are not corrupting any Rx data.
+>         Basic Rx testing should be enough to verify this is working
+>         correctly.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 24 ++++++++++++------------
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 24 ++++++++++++------------
->  2 files changed, 24 insertions(+), 24 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 58 ++++++++++++++++-------
+> ----
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 58 ++++++++++++++++------
+> -----
+>  2 files changed, 68 insertions(+), 48 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
