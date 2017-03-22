@@ -1,43 +1,155 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 21 Mar 2017 23:31:07 +0000
-Subject: [Intel-wired-lan] [PATCH] i40evf: dereference vsi after vsi
-	has	been null checked
-In-Reply-To: <20170320120303.32284-1-colin.king@canonical.com>
-References: <20170320120303.32284-1-colin.king@canonical.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A104068C1@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 22 Mar 2017 10:36:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
+ f22913d0b5560ae621e8a7391e9547d5a6fd8893
+Message-ID: <58d1e322.TRblUiRdPqrGp932%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Colin King
-> Sent: Monday, March 20, 2017 5:03 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org
-> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] i40evf: dereference vsi after vsi has been
-> null checked
-> 
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> vsi is being dereferenced before the vsi null check; if vsi is null we end up
-> with a null pointer dereference.  Fix this by performing vsi deference after
-> the vsi null check.  Also remove the need for using adapter by using vsi-
-> >back->cinst.
-> 
-> Detected by CoverityScan, CID#1419696, CID#1419697 ("Dereference before
-> null check")
-> 
-> Fixes: ed0e894de7c133 ("i40evf: add client interface")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/net/ethernet/intel/i40evf/i40evf_client.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+f22913d0b5560ae621e8a7391e9547d5a6fd8893  ixgb: use new API ethtool_{get|set}_link_ksettings
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 214m
 
+configs tested: 131
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201712
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                 randconfig-x015-201712
+x86_64                 randconfig-x012-201712
+x86_64                 randconfig-x017-201712
+x86_64                 randconfig-x010-201712
+x86_64                 randconfig-x018-201712
+x86_64                 randconfig-x011-201712
+x86_64                 randconfig-x019-201712
+x86_64                 randconfig-x016-201712
+x86_64                 randconfig-x013-201712
+x86_64                 randconfig-x014-201712
+i386                     randconfig-s0-201712
+i386                     randconfig-s1-201712
+i386                               tinyconfig
+i386                             allmodconfig
+x86_64                   randconfig-i0-201712
+i386                     randconfig-i0-201712
+i386                     randconfig-i1-201712
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x014-201712
+i386                   randconfig-x010-201712
+i386                   randconfig-x016-201712
+i386                   randconfig-x017-201712
+i386                   randconfig-x013-201712
+i386                   randconfig-x019-201712
+i386                   randconfig-x012-201712
+i386                   randconfig-x015-201712
+i386                   randconfig-x011-201712
+i386                   randconfig-x018-201712
+i386                     randconfig-n0-201712
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                   randconfig-x070-201712
+i386                   randconfig-x077-201712
+i386                   randconfig-x073-201712
+i386                   randconfig-x076-201712
+i386                   randconfig-x072-201712
+i386                   randconfig-x078-201712
+i386                   randconfig-x074-201712
+i386                   randconfig-x075-201712
+i386                   randconfig-x079-201712
+i386                   randconfig-x071-201712
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x009-201712
+x86_64                 randconfig-x004-201712
+x86_64                 randconfig-x003-201712
+x86_64                 randconfig-x008-201712
+x86_64                 randconfig-x002-201712
+x86_64                 randconfig-x005-201712
+x86_64                 randconfig-x000-201712
+x86_64                 randconfig-x007-201712
+x86_64                 randconfig-x006-201712
+x86_64                 randconfig-x001-201712
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-r0-201712
+i386                   randconfig-x005-201712
+i386                   randconfig-x002-201712
+i386                   randconfig-x006-201712
+i386                   randconfig-x003-201712
+i386                   randconfig-x007-201712
+i386                   randconfig-x008-201712
+i386                   randconfig-x001-201712
+i386                   randconfig-x000-201712
+i386                   randconfig-x004-201712
+i386                   randconfig-x009-201712
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
