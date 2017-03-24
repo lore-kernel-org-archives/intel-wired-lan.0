@@ -1,80 +1,159 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 23 Mar 2017 23:18:31 -0700
-Subject: [Intel-wired-lan] [BUG] 4.11.0-rc1 panic on shutdown X61s
-In-Reply-To: <20170322190019.GB20697@nazgul.tnic>
-References: <20170312115703.GA18197@nazgul.tnic>
- <20170312122621.GA2823@nazgul.tnic>
- <CAHp75Ve7SWivf=TTuq-qA=iM20E==OmSZD2YAmt0LVJQg47Osg@mail.gmail.com>
- <20170312222333.hm54nl2ul5iuixap@pd.tnic> <87shmhjfap.fsf@miraculix.mork.no>
- <309B89C4C689E141A5FF6A0C5FB2118B8C5B3F9B@ORSMSX101.amr.corp.intel.com>
- <20170314024033.GK802@shells.gnugeneration.com>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A10402F44@ORSMSX101.amr.corp.intel.com>
- <20170322020445.GD802@shells.gnugeneration.com>
- <20170322021343.GE802@shells.gnugeneration.com>
- <20170322190019.GB20697@nazgul.tnic>
-Message-ID: <CAL3LdT6CbZkyngugiPCqhNvT02tsTWsWfMT4KH41hrAEE3evAQ@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 24 Mar 2017 15:23:22 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 167295e8ebf40ddada6d5806bf5df87973d2ceaf
+Message-ID: <58d4c96a.7LEBqglVvMdw2EhW%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Mar 22, 2017 at 12:00 PM, Borislav Petkov <bp@alien8.de> wrote:
-> (Readding Jeff Kirsher who got dropped from the CC-list at some point.)
->
-> On Tue, Mar 21, 2017 at 07:13:43PM -0700, lkml at pengaru.com wrote:
->> > This is still broken as of 4.11.0-rc3 FYI.
->> >
->> > Upon resume:
->> > [   45.828344] ------------[ cut here ]------------
->> > [   45.828352] WARNING: CPU: 0 PID: 807 at drivers/pci/msi.c:1052 __pci_enable_msi_range+0x39c/0x3f0
->> > [   45.828355] CPU: 0 PID: 807 Comm: kworker/u4:29 Not tainted 4.11.0-rc3 #52
->> > [   45.828356] Hardware name: LENOVO 7668CTO/7668CTO, BIOS 7NETC2WW (2.22 ) 03/22/2011
->> > [   45.828360] Workqueue: events_unbound async_run_entry_fn
->> > [   45.828362] Call Trace:
->> > [   45.828366]  dump_stack+0x4d/0x72
->> > [   45.828369]  __warn+0xc7/0xf0
->> > [   45.828371]  warn_slowpath_null+0x18/0x20
->> > [   45.828372]  __pci_enable_msi_range+0x39c/0x3f0
->> > [   45.828375]  ? e1000e_get_phy_info_igp+0x1c/0xf0
->> > [   45.828377]  pci_enable_msi+0x15/0x30
->> > [   45.828379]  e1000e_set_interrupt_capability+0xe0/0x130
->> > [   45.828381]  e1000e_pm_thaw+0x1d/0x50
->> > [   45.828383]  e1000e_pm_resume+0x20/0x30
->> > [   45.828386]  pci_pm_resume+0x5f/0x90
->> > [   45.828389]  dpm_run_callback+0x44/0x170
->> > [   45.828391]  ? pci_pm_thaw+0x90/0x90
->> > [   45.828393]  device_resume+0xce/0x1e0
->> > [   45.828395]  async_resume+0x18/0x40
->> > [   45.828396]  async_run_entry_fn+0x32/0xe0
->> > [   45.828399]  process_one_work+0x13b/0x3e0
->> > [   45.828400]  worker_thread+0x64/0x4a0
->> > [   45.828402]  kthread+0x10f/0x150
->> > [   45.828404]  ? process_one_work+0x3e0/0x3e0
->> > [   45.828406]  ? __kthread_create_on_node+0x150/0x150
->> > [   45.828409]  ret_from_fork+0x29/0x40
->> > [   45.828411] ---[ end trace 56fad2d83af13529 ]---
->> > [   45.828469] e1000e 0000:00:19.0 eth3: Failed to initialize MSI interrupts.  Falling back to legacy interrupts.
->> > [   45.835944] PM: resume of devices complete after 364.406 msecs
->> > [   45.836001] usb 2-1:1.0: rebind failed: -517
->> > [   45.836316] PM: Finishing wakeup.
->> >
->>
->> I never reported back on the results of reverting 7e54d9d063fa, it seems to fix
->> the problem on my machine as well.
->
-> Right, so I think we should revert soonish. That is, if you guys don't
-> have a fix yet. You can always try again during the next merge window.
-> Right now, I'm not testing -rc kernels on this box because of this. I
-> can always blacklist the networking driver but what good is that box
-> then...
->
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+167295e8ebf40ddada6d5806bf5df87973d2ceaf  i40e: Do not enable NAPI on q_vectors that have no rings
 
-I have sent a patch to revert this offending commit through David
-Miller's net tree, sorry for the delay on this, I thought I had seen a
-patch to revert the offending commit earlier which is why I did not
-send this earlier.
+elapsed time: 216m
 
--- 
-Cheers,
-Jeff
+configs tested: 135
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                     randconfig-a0-201712
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x015-201712
+x86_64                 randconfig-x012-201712
+x86_64                 randconfig-x017-201712
+x86_64                 randconfig-x010-201712
+x86_64                 randconfig-x018-201712
+x86_64                 randconfig-x011-201712
+x86_64                 randconfig-x019-201712
+x86_64                 randconfig-x016-201712
+x86_64                 randconfig-x013-201712
+x86_64                 randconfig-x014-201712
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s0-201712
+i386                     randconfig-s1-201712
+x86_64                 randconfig-s3-03241416
+x86_64                 randconfig-s4-03241416
+x86_64                 randconfig-s5-03241416
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                             allmodconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201712
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201712
+i386                     randconfig-i1-201712
+arm                       mainstone_defconfig
+powerpc                     rainier_defconfig
+i386                   randconfig-x014-201712
+i386                   randconfig-x010-201712
+i386                   randconfig-x016-201712
+i386                   randconfig-x017-201712
+i386                   randconfig-x013-201712
+i386                   randconfig-x019-201712
+i386                   randconfig-x012-201712
+i386                   randconfig-x015-201712
+i386                   randconfig-x011-201712
+i386                   randconfig-x018-201712
+i386                     randconfig-n0-201712
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                                  kexec
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                   randconfig-x070-201712
+i386                   randconfig-x077-201712
+i386                   randconfig-x073-201712
+i386                   randconfig-x076-201712
+i386                   randconfig-x072-201712
+i386                   randconfig-x078-201712
+i386                   randconfig-x074-201712
+i386                   randconfig-x075-201712
+i386                   randconfig-x079-201712
+i386                   randconfig-x071-201712
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                 randconfig-x009-201712
+x86_64                 randconfig-x004-201712
+x86_64                 randconfig-x003-201712
+x86_64                 randconfig-x008-201712
+x86_64                 randconfig-x002-201712
+x86_64                 randconfig-x005-201712
+x86_64                 randconfig-x000-201712
+x86_64                 randconfig-x007-201712
+x86_64                 randconfig-x006-201712
+x86_64                 randconfig-x001-201712
+i386                     randconfig-r0-201712
+i386                   randconfig-x005-201712
+i386                   randconfig-x002-201712
+i386                   randconfig-x006-201712
+i386                   randconfig-x003-201712
+i386                   randconfig-x007-201712
+i386                   randconfig-x008-201712
+i386                   randconfig-x001-201712
+i386                   randconfig-x000-201712
+i386                   randconfig-x004-201712
+i386                   randconfig-x009-201712
+
+Thanks,
+Fengguang
