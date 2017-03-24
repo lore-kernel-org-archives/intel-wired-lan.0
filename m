@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 24 Mar 2017 19:02:10 +0000
-Subject: [Intel-wired-lan] [net PATCH] i40e: Do not enable NAPI on
- q_vectors	that have no rings
-In-Reply-To: <20170320213859.13451.3294.stgit@localhost.localdomain>
-References: <20170320213859.13451.3294.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10409FC7@ORSMSX101.amr.corp.intel.com>
+Date: Fri, 24 Mar 2017 19:47:59 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Acquire PHY semaphore
+	before	device reset
+In-Reply-To: <1489398476-15893-1-git-send-email-paul.greenwalt@intel.com>
+References: <1489398476-15893-1-git-send-email-paul.greenwalt@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10409FE2@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,35 +13,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Monday, March 20, 2017 2:43 PM
+> Behalf Of Paul Greenwalt
+> Sent: Monday, March 13, 2017 2:48 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net PATCH] i40e: Do not enable NAPI on q_vectors
-> that have no rings
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Acquire PHY semaphore before
+> device reset
 > 
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> A recent firmware change fixed an issue to acquire the PHY semaphore
+> before accessing PHY registers. This led to a case where  SW can issue a
+> device reset clearing the MDIO registers. This patch makes SW acquire the
+> PHY semaphore before issuing a device reset.
 > 
-> When testing the epoll w/ busy poll code I found that I could get into a state
-> where the i40e driver had q_vectors w/ active NAPI that had no rings.
-> This was resulting in a divide by zero error.  To correct it I am updating the
-> driver code so that we only support NAPI on q_vectors that have 1 or more
-> rings allocated to them.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 > ---
-> 
-> I am submitting this for net, not next-queue since this fixes an issue that can
-> result in a kernel panic using existing kernel interfaces.
-> 
-> Testing Hints:
-> 	I found the issue this fixes while using sockperf with busy poll.
-> 	Basically all I did is run a test with sockperf in which busy
-> 	polling was running, stopped the test, changed the number of
-> 	queues via "ethtool -L" and the system generated a divide by 0
-> 	error.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c |   16 ++++++++++++----
->  1 file changed, 12 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c | 8 ++++++++
+> drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 8 ++++++++
+>  2 files changed, 16 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
