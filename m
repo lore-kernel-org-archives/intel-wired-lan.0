@@ -1,37 +1,76 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 24 Mar 2017 00:43:12 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: fix timing for 82579 Gigabit
-	Ethernet controller
-In-Reply-To: <1487270527-4549-1-git-send-email-berndfaust@gmail.com>
-References: <1487270527-4549-1-git-send-email-berndfaust@gmail.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C5DC96A@ORSMSX101.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 23 Mar 2017 21:23:11 -0700
+Subject: [Intel-wired-lan] [next PATCH S63 5/6] i40e/i40evf: Add
+ legacy-rx private flag to allow fallback to old Rx flow
+In-Reply-To: <CAKgT0UcRcspygmMMK68ZyDouVCu5tBmAd496vuUyYku3xb9jvw@mail.gmail.com>
+References: <1489511727-10959-1-git-send-email-bimmy.pujari@intel.com>
+ <1489511727-10959-5-git-send-email-bimmy.pujari@intel.com>
+ <CAKgT0UcRcspygmMMK68ZyDouVCu5tBmAd496vuUyYku3xb9jvw@mail.gmail.com>
+Message-ID: <CAKgT0Ud_TSJK41zY9xyGmyvURUiO_EW6M17J7hRUYRZDULyPCA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-
-> owner at vger.kernel.org] On Behalf Of Bernd Faust
-> Sent: Thursday, February 16, 2017 10:42 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Lubetkin, YanirX
-> <yanirx.lubetkin@intel.com>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Cc: Bernd Faust <berndfaust@gmail.com>
-> Subject: [PATCH] e1000e: fix timing for 82579 Gigabit Ethernet controller
-> 
-> After an upgrade to Linux kernel v4.x the hardware timestamps of the
-> 82579 Gigabit Ethernet Controller are different than expected.
-> The values that are being read are almost four times as big as before
-> the kernel upgrade.
-> 
-> The difference is that after the upgrade the driver sets the clock
-> frequency to 25MHz, where before the upgrade it was set to 96MHz. Intel
-> confirmed that the correct frequency for this network adapter is 96MHz.
-> 
-> Signed-off-by: Bernd Faust <berndfaust@gmail.com>
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+On Fri, Mar 17, 2017 at 8:57 AM, Alexander Duyck
+<alexander.duyck@gmail.com> wrote:
+> On Tue, Mar 14, 2017 at 10:15 AM, Bimmy Pujari <bimmy.pujari@intel.com> wrote:
+>> From: Alexander Duyck <alexander.h.duyck@intel.com>
+>>
+>> This patch adds a control which will allow us to toggle into and out of the
+>> legacy Rx mode.  The legacy Rx mode is what we currently do when performing
+>> Rx.  As I make further changes what should happen is that the driver will
+>> fall back to the behavior for Rx as of this patch should the "legacy-rx"
+>> flag be set to on.
+>>
+>> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+>> Change-ID: I0342998849bbb31351cce05f6e182c99174e7751
+>> ---
+>> Testing Hints:
+>>         This flag should not appear on kernels prior to 4.10.
+>>         On kernels 4.10 and later the "legacy-rx" flag should appear
+>>         and can be toggled between on and off. As we add more features the
+>>         behavior of the driver should change when this value is toggled.
+>>
+>>         Toggling this for now will only cause a reset of the interface.
+>>
+>>         For the VF we are specifically replacing the define that was
+>>         stripping the code for the flag needed for the "legacy-rx" flag
+>>         since it doesn't make sense to have the interface defined when
+>>         there are no flags present.  In the case of a kernel build the
+>>         #ifdefs should be stripped and the code will remain.
+>>
+>>  drivers/net/ethernet/intel/i40e/i40e.h             |   1 +
+>>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |   5 +-
+>>  drivers/net/ethernet/intel/i40evf/i40evf.h         |   2 +
+>>  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 104 +++++++++++++++++++++
+>>  4 files changed, 111 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+>> index dcba258..561fe1f 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e.h
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+>> @@ -430,6 +430,7 @@ struct i40e_pf {
+>>  #define I40E_FLAG_TEMP_LINK_POLLING            BIT_ULL(55)
+>>  #define I40E_FLAG_CLIENT_L2_CHANGE             BIT_ULL(56)
+>>  #define I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE                BIT_ULL(57)
+>> +#define I40E_FLAG_LEGACY_RX                    BIT_ULL(57)
+>
+> It looks like we lost sync between upstream and out-of-tree at some
+> point.  We are defining both of these using the same bit.  We need to
+> use a different value for the LEGACY_RX bit in the upstream it looks
+> like.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Any chance we can get a fix for this?  It has been almost a week since
+I pointed out that we have a duplicate bit here, and I haven't seen
+any updates.
+
+We either need to submit a new version of this patch with us setting
+I40E_FLAG_LEGACY_RX as bit 58, or if we can just get the tweak made to
+the patch while it is in the tree I would be good with that as well.
+We have some other patches that are going to be adding some more flags
+in the pipeline and I would rather not have to push a fix for this and
+instead have it fixed in the patch.
+
+- Alex
