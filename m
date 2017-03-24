@@ -1,33 +1,42 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 24 Mar 2017 16:43:23 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 584a88709bf4880ba5f8fed72da50512fbd9bdbb
-Message-ID: <58d4dc2b.4LYO8lJYT/ndGpxt%fengguang.wu@intel.com>
+Date: Fri, 24 Mar 2017 17:54:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 1ce58d25ddb7a821ec1cf29a7a3cab13833ce43b
+Message-ID: <58d4ecdd.AXceILT+QWPmQKU7%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-584a88709bf4880ba5f8fed72da50512fbd9bdbb  i40e: make use of hlist_for_each_entry_continue
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+1ce58d25ddb7a821ec1cf29a7a3cab13833ce43b  Subject: i40e: initialize params before notifying of l2_param_changes  Colin Ian King <colin.king@canonical.com>
 
-elapsed time: 208m
+drivers/net/ethernet/intel/i40e/i40e_ethtool.c:3119:32-37: ERROR: invalid reference to the index variable of the iterator on line 3073
 
-configs tested: 144
+Error ids grouped by kconfigs:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_ethtool.c:ERROR:invalid-reference-to-the-index-variable-of-the-iterator-on-line
+
+elapsed time: 266m
+
+configs tested: 168
 
 i386                     randconfig-a0-201712
+x86_64                 randconfig-a0-03241518
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
+i386                               tinyconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
-x86_64                           allmodconfig
+arm                       imx_v4_v5_defconfig
+powerpc                 mpc836x_mds_defconfig
+x86_64                randconfig-in0-03241439
 blackfin                BF526-EZBRD_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
@@ -64,6 +73,19 @@ x86_64                 randconfig-x014-201712
 i386                              allnoconfig
 i386                                defconfig
 i386                             alldefconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
 m68k                           sun3_defconfig
@@ -75,7 +97,7 @@ x86_64                 randconfig-s2-03241447
 x86_64                 randconfig-s3-03241416
 x86_64                 randconfig-s4-03241416
 x86_64                 randconfig-s5-03241416
-i386                               tinyconfig
+i386                             allmodconfig
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                              allnoconfig
@@ -94,16 +116,42 @@ sparc64                           allnoconfig
 sparc64                             defconfig
 i386                     randconfig-i0-201712
 i386                     randconfig-i1-201712
+x86_64                           allmodconfig
 blackfin                   CM-BF533_defconfig
 mips                        bcm47xx_defconfig
 mips                           mtx1_defconfig
 x86_64                 randconfig-u0-03241554
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
 arm                       mainstone_defconfig
 powerpc                     rainier_defconfig
 x86_64                randconfig-ne0-03241455
-i386                             allmodconfig
+x86_64                randconfig-ne0-03241706
+i386                     randconfig-n0-201712
 parisc                        c8000_defconfig
 powerpc                 canyonlands_defconfig
+arm                        spear6xx_defconfig
+blackfin                   CM-BF527_defconfig
+i386                   randconfig-x070-201712
+i386                   randconfig-x071-201712
+i386                   randconfig-x072-201712
+i386                   randconfig-x073-201712
+i386                   randconfig-x074-201712
+i386                   randconfig-x075-201712
+i386                   randconfig-x076-201712
+i386                   randconfig-x077-201712
+i386                   randconfig-x078-201712
+i386                   randconfig-x079-201712
 x86_64                                  kexec
 x86_64                               rhel-7.2
 x86_64                 randconfig-x009-201712
@@ -130,26 +178,7 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                             allnoconfig
 arm64                               defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x070-201712
-i386                   randconfig-x077-201712
-i386                   randconfig-x073-201712
-i386                   randconfig-x076-201712
-i386                   randconfig-x072-201712
-i386                   randconfig-x078-201712
-i386                   randconfig-x074-201712
-i386                   randconfig-x075-201712
-i386                   randconfig-x079-201712
-i386                   randconfig-x071-201712
+sh                           se7705_defconfig
 i386                     randconfig-r0-201712
 x86_64                 randconfig-r0-03241525
 i386                   randconfig-x005-201712
