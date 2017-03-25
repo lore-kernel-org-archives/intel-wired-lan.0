@@ -1,43 +1,63 @@
 From: John Fastabend <john.fastabend@gmail.com>
-Date: Sat, 25 Mar 2017 12:04:04 -0700
-Subject: [Intel-wired-lan] [PATCH v7 1/2] ixgbe: add XDP support for
- pass and drop actions
-In-Reply-To: <1490408627.5679.45.camel@intel.com>
+Date: Sat, 25 Mar 2017 16:55:37 -0700
+Subject: [Intel-wired-lan] [PATCH v7 0/2] XDP support for ixgbe
+In-Reply-To: <CALDO+SYA4a37ePhzSPwbqqnCngU6uudeiCGvGoXMPU3MbX4W2g@mail.gmail.com>
 References: <20170324042949.10293.43329.stgit@john-Precision-Tower-5810>
- <20170324043110.10293.50132.stgit@john-Precision-Tower-5810>
- <1490408627.5679.45.camel@intel.com>
-Message-ID: <58D6BF24.3070503@gmail.com>
+ <CALDO+SYA4a37ePhzSPwbqqnCngU6uudeiCGvGoXMPU3MbX4W2g@mail.gmail.com>
+Message-ID: <58D70379.3030802@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 17-03-24 07:23 PM, Jeff Kirsher wrote:
-> On Thu, 2017-03-23 at 21:31 -0700, John Fastabend wrote:
->> Basic XDP drop support for ixgbe. Uses READ_ONCE/xchg semantics on
->> XDP
->> programs instead of rcu primitives as suggested by Daniel Borkmann
->> and
->> Alex Duyck.
+On 17-03-24 03:22 PM, William Tu wrote:
+> On Thu, Mar 23, 2017 at 9:30 PM, John Fastabend
+> <john.fastabend@gmail.com> wrote:
+>> This version fixes a couple issues with q_vector allocation and query on XDP
+>> program.
 >>
->> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
->> Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
 >> ---
->>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    4 -
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    4 -
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  163
->> +++++++++++++++++++---
->>  3 files changed, 144 insertions(+), 27 deletions(-)
+>>
+>> John Fastabend (2):
+>>       ixgbe: add XDP support for pass and drop actions
+>>       ixgbe: add support for XDP_TX action
+>>
+>>
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   23 +
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   29 +
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   78 +++-
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  434 +++++++++++++++++++---
+>>  4 files changed, 490 insertions(+), 74 deletions(-)
+>>
+>> --
+>> Signature
 > 
-> Does not apply cleanly to my dev-queue branch, what tree did you base
-> these changes on?
+> Thanks. I tested using samples/bpf/xdp1 and xdp2 using ping and dpdk
+> pktgen. Both work OK.
+> 
+> When enabling xdp, dmesg shows:
+> [12270.610462] pps pps0: new PPS source ptp6
+> [12270.610465] ixgbe 0000:05:00.0: registered PHC device on enp5s0f0
+> [12271.619018] ixgbe 0000:05:00.0: removed PHC on enp5s0f0
+> [12271.943334] ixgbe 0000:05:00.0: Multiqueue Enabled: Rx Queue count
+> = 16, Tx Queue count = 16 XDP Queue count = 0
+> [12272.011324] pps pps0: new PPS source ptp6
+> [12272.011326] ixgbe 0000:05:00.0: registered PHC device on enp5s0f0
+> [12276.477066] ixgbe 0000:05:00.0 enp5s0f0: NIC Link is Up 10 Gbps,
+> Flow Control: None
+> 
+> I'm not sure it's important or not.
+> Regards,
+> William
 > 
 
-Did you pop off the v6 series? I see its still in your tree :/ Or do you
-just want fixes to the initial series?
+Well that is a bit odd. When you load the XDP program we should see a
+"XDP Queue count" equal to the cpu count from /proc/cpuinfo. But if this
+is from either after unloading a XDP program or from initial loading the
+module before an XDP program is loaded than zero is expected. The queues
+are only added after the XDP program is loaded.
 
 Thanks,
 John
-
 
