@@ -1,16 +1,16 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 25 Mar 2017 21:03:33 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
- d9809f3f49bfe394715997a2c0e872f1e1ade154
-Message-ID: <58d66aa5.VDLQ5zqGqMDTXTms%fengguang.wu@intel.com>
+Date: Sat, 25 Mar 2017 21:03:35 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD INCOMPLETE
+ c060f74f1aec6709ceca1237f5dd90350e6c436c
+Message-ID: <58d66aa7.nYt/hvWT0/nNo76A%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-d9809f3f49bfe394715997a2c0e872f1e1ade154  checkpatch.pl: seed camelcase from the provided kernel tree root
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+c060f74f1aec6709ceca1237f5dd90350e6c436c  Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
 
 TIMEOUT after 605m
 
@@ -22,7 +22,7 @@ possible error reports when our build infrastructure is restored or catches up.
 There will be no more build success notification for this branch head, but you
 can expect reasonably good test coverage after waiting for 1 day.
 
-configs timed out: 45
+configs timed out: 46
 
 alpha                            allmodconfig
 alpha                            allyesconfig
@@ -40,6 +40,7 @@ customconfig                                6
 customconfig                                7
 customconfig                                8
 customconfig                                9
+i386                               tinyconfig
 ia64                             allmodconfig
 m68k                             allmodconfig
 m68k                             allyesconfig
@@ -70,7 +71,7 @@ x86_64                          randconfig-i0
 xtensa                           allmodconfig
 xtensa                           allyesconfig
 
-configs tested: 274
+configs tested: 273
 
 alpha                               defconfig
 parisc                            allnoconfig
@@ -105,7 +106,6 @@ x86_64                 randconfig-a0-03252025
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
-i386                               tinyconfig
 arm                  colibri_pxa270_defconfig
 blackfin                   CM-BF533_defconfig
 m32r                           usrv_defconfig
@@ -172,6 +172,9 @@ x86_64                 randconfig-x019-201712
 x86_64                 randconfig-x016-201712
 x86_64                 randconfig-x013-201712
 x86_64                 randconfig-x014-201712
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
 arm                       omap2plus_defconfig
 arm                                    sa1100
 arm                              allmodconfig
@@ -185,6 +188,8 @@ arm                                      arm5
 arm64                            alldefconfig
 arm                                        sh
 arm                                     arm67
+x86_64                                   rhel
+x86_64                               rhel-7.2
 m68k                           sun3_defconfig
 m68k                          multi_defconfig
 m68k                       m5475evb_defconfig
@@ -199,7 +204,6 @@ x86_64                 randconfig-s2-03251835
 x86_64                 randconfig-s0-03251909
 x86_64                 randconfig-s1-03251909
 x86_64                 randconfig-s2-03251909
-x86_64                           allmodconfig
 x86_64                 randconfig-s3-03251626
 x86_64                 randconfig-s4-03251626
 x86_64                 randconfig-s5-03251626
@@ -248,6 +252,7 @@ microblaze                    nommu_defconfig
 i386                     randconfig-i0-201712
 i386                     randconfig-i1-201712
 i386                             allyesconfig
+x86_64                           allmodconfig
 arm                                 defconfig
 x86_64                randconfig-ne0-03251729
 x86_64                randconfig-ne0-03252005
@@ -307,7 +312,6 @@ i386                   randconfig-x077-201712
 i386                   randconfig-x078-201712
 i386                   randconfig-x079-201712
 x86_64                                  kexec
-x86_64                               rhel-7.2
 x86_64                 randconfig-n0-03251507
 sh                                allnoconfig
 sh                          rsk7269_defconfig
@@ -322,7 +326,6 @@ x86_64                 randconfig-x006-201712
 x86_64                 randconfig-x007-201712
 x86_64                 randconfig-x008-201712
 x86_64                 randconfig-x009-201712
-x86_64                                   rhel
 c6x                        evmc6678_defconfig
 h8300                    h8300h-sim_defconfig
 m32r                       m32104ut_defconfig
@@ -343,9 +346,6 @@ i386                   randconfig-x001-201712
 i386                   randconfig-x000-201712
 i386                   randconfig-x004-201712
 i386                   randconfig-x009-201712
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
 
 Thanks,
 Fengguang
