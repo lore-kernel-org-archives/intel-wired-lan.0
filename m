@@ -1,284 +1,165 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 27 Mar 2017 14:43:18 -0700
-Subject: [Intel-wired-lan] [next PATCH S64 1/1] i40e/i40evf: Add capability
-	exchange for outer checksum
-Message-ID: <1490650998-14889-1-git-send-email-bimmy.pujari@intel.com>
+From: Duyck, Alexander H <alexander.h.duyck@intel.com>
+Date: Mon, 27 Mar 2017 22:42:34 +0000
+Subject: [Intel-wired-lan] [RFC PATCH] ixgbe: delay tail write to
+	every	'n' packets
+In-Reply-To: <D6BB30FE66EA894C9F13C9E3CDDF00F564FA94F9@fmsmsx115.amr.corp.intel.com>
+References: <20170313161624.7987.91951.stgit@john-Precision-Tower-5810>
+ <CAKgT0Ufz6W0+1Y4vsKYqcZ_sn+kCie28wKdECbThOeDO_51zKw@mail.gmail.com>
+ <58C881D7.3010608@gmail.com>	,
+ <CAKgT0UdgcKk0eOFCTZhjCigbQRVXLpmF=QvRRc7wByt5EdiMkQ@mail.gmail.com>
+ <D6BB30FE66EA894C9F13C9E3CDDF00F564FA94F9@fmsmsx115.amr.corp.intel.com>
+Message-ID: <1490654550.28895.26.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Preethi Banala <preethi.banala@intel.com>
+Sounds good. ?We can probably discuss it tomorrow at our 1pm meeting.
 
-This patch adds a capability negotiation between VF and PF using ENCAP/
-ENCAP_CSUM offload flags in order for the VF to support outer checksum
-and TSO offloads for encapsulated packets. These capabilities were assumed
-by default and enabled in current hardware. Going forward, these features
-needs to be negotiated with PF before advertising to the stack.
-Additionally, strip out the mac.type checks for X722 since outer checksums
-are enabled based on the ENCAP_CSUM offload negotiation flag and maintain
-consistency between drivers in how the features are configured.
+Thanks.
 
-Signed-off-by: Preethi Banala <preethi.banala@intel.com>
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: Ie380a6f57eca557a2bb575b66b12fae36d308920
----
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 52 +++++++++---------
- drivers/net/ethernet/intel/i40e/i40e_virtchnl.h    |  3 +-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  7 +++
- drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h  |  3 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 61 ++++++++++++----------
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  4 +-
- 6 files changed, 74 insertions(+), 56 deletions(-)
+- Alex
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 9ce06e8..a0f7e42 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9240,6 +9240,8 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 	u8 broadcast[ETH_ALEN];
- 	u8 mac_addr[ETH_ALEN];
- 	int etherdev_size;
-+	netdev_features_t hw_enc_features;
-+	netdev_features_t hw_features;
- 
- 	etherdev_size = sizeof(struct i40e_netdev_priv);
- 	netdev = alloc_etherdev_mq(etherdev_size, vsi->alloc_queue_pairs);
-@@ -9250,43 +9252,43 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 	np = netdev_priv(netdev);
- 	np->vsi = vsi;
- 
--	netdev->hw_enc_features |= NETIF_F_SG			|
--				   NETIF_F_IP_CSUM		|
--				   NETIF_F_IPV6_CSUM		|
--				   NETIF_F_HIGHDMA		|
--				   NETIF_F_SOFT_FEATURES	|
--				   NETIF_F_TSO			|
--				   NETIF_F_TSO_ECN		|
--				   NETIF_F_TSO6			|
--				   NETIF_F_GSO_GRE		|
--				   NETIF_F_GSO_GRE_CSUM		|
--				   NETIF_F_GSO_IPXIP4		|
--				   NETIF_F_GSO_IPXIP6		|
--				   NETIF_F_GSO_UDP_TUNNEL	|
--				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
--				   NETIF_F_GSO_PARTIAL		|
--				   NETIF_F_SCTP_CRC		|
--				   NETIF_F_RXHASH		|
--				   NETIF_F_RXCSUM		|
--				   0;
-+	hw_enc_features = NETIF_F_SG			|
-+			  NETIF_F_IP_CSUM		|
-+			  NETIF_F_IPV6_CSUM		|
-+			  NETIF_F_HIGHDMA		|
-+			  NETIF_F_SOFT_FEATURES		|
-+			  NETIF_F_TSO			|
-+			  NETIF_F_TSO_ECN		|
-+			  NETIF_F_TSO6			|
-+			  NETIF_F_GSO_GRE		|
-+			  NETIF_F_GSO_GRE_CSUM		|
-+			  NETIF_F_GSO_PARTIAL		|
-+			  NETIF_F_GSO_UDP_TUNNEL	|
-+			  NETIF_F_GSO_UDP_TUNNEL_CSUM	|
-+			  NETIF_F_SCTP_CRC		|
-+			  NETIF_F_RXHASH		|
-+			  NETIF_F_RXCSUM		|
-+			  0;
- 
- 	if (!(pf->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE))
- 		netdev->gso_partial_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
- 
- 	netdev->gso_partial_features |= NETIF_F_GSO_GRE_CSUM;
- 
-+	netdev->hw_enc_features |= hw_enc_features;
-+
- 	/* record features VLANs can make use of */
--	netdev->vlan_features |= netdev->hw_enc_features |
--				 NETIF_F_TSO_MANGLEID;
-+	netdev->vlan_features |= hw_enc_features | NETIF_F_TSO_MANGLEID;
- 
- 	if (!(pf->flags & I40E_FLAG_MFP_ENABLED))
- 		netdev->hw_features |= NETIF_F_NTUPLE;
-+	hw_features = hw_enc_features		|
-+		      NETIF_F_HW_VLAN_CTAG_TX	|
-+		      NETIF_F_HW_VLAN_CTAG_RX;
- 
--	netdev->hw_features |= netdev->hw_enc_features	|
--			       NETIF_F_HW_VLAN_CTAG_TX	|
--			       NETIF_F_HW_VLAN_CTAG_RX;
-+	netdev->hw_features |= hw_features;
- 
--	netdev->features |= netdev->hw_features | NETIF_F_HW_VLAN_CTAG_FILTER;
-+	netdev->features |= hw_features | NETIF_F_HW_VLAN_CTAG_FILTER;
- 	netdev->hw_enc_features |= NETIF_F_TSO_MANGLEID;
- 
- 	if (vsi->type == I40E_VSI_MAIN) {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
-index 974ba2b..8552192 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
-@@ -163,7 +163,8 @@ struct i40e_virtchnl_vsi_resource {
- #define I40E_VIRTCHNL_VF_OFFLOAD_RX_POLLING	0x00020000
- #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2	0x00040000
- #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
--#define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM	0X00100000
-+#define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP		0X00100000
-+#define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM	0X00200000
- 
- #define I40E_VF_BASE_MODE_OFFLOADS (I40E_VIRTCHNL_VF_OFFLOAD_L2 | \
- 				    I40E_VIRTCHNL_VF_OFFLOAD_VLAN | \
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index d526940..65c95ff 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1408,6 +1408,13 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 				I40E_VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2;
- 	}
- 
-+	if (vf->driver_caps & I40E_VIRTCHNL_VF_OFFLOAD_ENCAP)
-+		vfres->vf_offload_flags |= I40E_VIRTCHNL_VF_OFFLOAD_ENCAP;
-+
-+	if ((pf->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE) &&
-+	    (vf->driver_caps & I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM))
-+		vfres->vf_offload_flags |= I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM;
-+
- 	if (vf->driver_caps & I40E_VIRTCHNL_VF_OFFLOAD_RX_POLLING) {
- 		if (pf->flags & I40E_FLAG_MFP_ENABLED) {
- 			dev_err(&pf->pdev->dev,
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
-index f431fbc..c5ad038 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
-@@ -163,7 +163,8 @@ struct i40e_virtchnl_vsi_resource {
- #define I40E_VIRTCHNL_VF_OFFLOAD_RX_POLLING	0x00020000
- #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2	0x00040000
- #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
--#define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM	0X00100000
-+#define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP		0X00100000
-+#define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM	0X00200000
- 
- #define I40E_VF_BASE_MODE_OFFLOADS (I40E_VIRTCHNL_VF_OFFLOAD_L2 | \
- 				    I40E_VIRTCHNL_VF_OFFLOAD_VLAN | \
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index fb2811c..c690aba 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2401,6 +2401,8 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 	struct net_device *netdev = adapter->netdev;
- 	struct i40e_vsi *vsi = &adapter->vsi;
- 	int i;
-+	netdev_features_t hw_enc_features;
-+	netdev_features_t hw_features;
- 
- 	/* got VF config message back from PF, now we can parse it */
- 	for (i = 0; i < vfres->num_vsis; i++) {
-@@ -2412,46 +2414,52 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 		return -ENODEV;
- 	}
- 
--	netdev->hw_enc_features |= NETIF_F_SG			|
--				   NETIF_F_IP_CSUM		|
--				   NETIF_F_IPV6_CSUM		|
--				   NETIF_F_HIGHDMA		|
--				   NETIF_F_SOFT_FEATURES	|
--				   NETIF_F_TSO			|
--				   NETIF_F_TSO_ECN		|
--				   NETIF_F_TSO6			|
-+	hw_enc_features = NETIF_F_SG			|
-+			  NETIF_F_IP_CSUM		|
-+			  NETIF_F_IPV6_CSUM		|
-+			  NETIF_F_HIGHDMA		|
-+			  NETIF_F_SOFT_FEATURES	|
-+			  NETIF_F_TSO			|
-+			  NETIF_F_TSO_ECN		|
-+			  NETIF_F_TSO6			|
-+			  NETIF_F_SCTP_CRC		|
-+			  NETIF_F_RXHASH		|
-+			  NETIF_F_RXCSUM		|
-+			  0;
-+
-+	/* advertise to stack only if offloads for encapsulated packets is
-+	 * supported
-+	 */
-+	if (vfres->vf_offload_flags & I40E_VIRTCHNL_VF_OFFLOAD_ENCAP) {
-+		hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL	|
- 				   NETIF_F_GSO_GRE		|
- 				   NETIF_F_GSO_GRE_CSUM		|
- 				   NETIF_F_GSO_IPXIP4		|
- 				   NETIF_F_GSO_IPXIP6		|
--				   NETIF_F_GSO_UDP_TUNNEL	|
- 				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
- 				   NETIF_F_GSO_PARTIAL		|
--				   NETIF_F_SCTP_CRC		|
--				   NETIF_F_RXHASH		|
--				   NETIF_F_RXCSUM		|
- 				   0;
- 
--	if (!(adapter->flags & I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE))
--		netdev->gso_partial_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
--
--	netdev->gso_partial_features |= NETIF_F_GSO_GRE_CSUM;
-+		if (!(vfres->vf_offload_flags &
-+		      I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM))
-+			netdev->gso_partial_features |=
-+				NETIF_F_GSO_UDP_TUNNEL_CSUM;
- 
-+		netdev->gso_partial_features |= NETIF_F_GSO_GRE_CSUM;
-+		netdev->hw_enc_features |= NETIF_F_TSO_MANGLEID;
-+		netdev->hw_enc_features |= hw_enc_features;
-+	}
- 	/* record features VLANs can make use of */
--	netdev->vlan_features |= netdev->hw_enc_features |
--				 NETIF_F_TSO_MANGLEID;
-+	netdev->vlan_features |= hw_enc_features | NETIF_F_TSO_MANGLEID;
- 
- 	/* Write features and hw_features separately to avoid polluting
--	 * with, or dropping, features that are set when we registgered.
-+	 * with, or dropping, features that are set when we registered.
- 	 */
--	netdev->hw_features |= netdev->hw_enc_features;
-+	hw_features = hw_enc_features;
- 
--	netdev->features |= netdev->hw_enc_features | I40EVF_VLAN_FEATURES;
--	netdev->hw_enc_features |= NETIF_F_TSO_MANGLEID;
-+	netdev->hw_features |= hw_features;
- 
--	/* disable VLAN features if not supported */
--	if (!(vfres->vf_offload_flags & I40E_VIRTCHNL_VF_OFFLOAD_VLAN))
--		netdev->features ^= I40EVF_VLAN_FEATURES;
-+	netdev->features |= hw_features | I40EVF_VLAN_FEATURES;
- 
- 	adapter->vsi.id = adapter->vsi_res->vsi_id;
- 
-@@ -2592,9 +2600,6 @@ static void i40evf_init_task(struct work_struct *work)
- 		goto err_alloc;
- 	}
- 
--	if (hw->mac.type == I40E_MAC_X722_VF)
--		adapter->flags |= I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE;
--
- 	if (i40evf_process_config(adapter))
- 		goto err_alloc;
- 	adapter->current_op = I40E_VIRTCHNL_OP_UNKNOWN;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 032be8d..3bccfbb 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -159,7 +159,9 @@ int i40evf_send_vf_config_msg(struct i40evf_adapter *adapter)
- 	       I40E_VIRTCHNL_VF_OFFLOAD_RSS_REG |
- 	       I40E_VIRTCHNL_VF_OFFLOAD_VLAN |
- 	       I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR |
--	       I40E_VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2;
-+	       I40E_VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2 |
-+	       I40E_VIRTCHNL_VF_OFFLOAD_ENCAP |
-+	       I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM;
- 
- 	adapter->current_op = I40E_VIRTCHNL_OP_GET_VF_RESOURCES;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_GET_CONFIG;
--- 
-2.4.11
-
+On Mon, 2017-03-27 at 19:28 +0000, Fastabend, John R wrote:
+> FWIW with a revised version of this patch I see 14.6Mpps on RX drop tests and 13.5Mpps on TX test case.
+> 
+> Alex, maybe we can sync up and squeeze the last mpps out of the design.
+> 
+> Thanks,
+> John
+> ________________________________________
+> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Alexander Duyck [alexander.duyck at gmail.com]
+> Sent: Tuesday, March 14, 2017 6:14 PM
+> To: John Fastabend
+> Cc: intel-wired-lan; Alexei Starovoitov; Daniel Borkmann; William Tu
+> Subject: Re: [Intel-wired-lan] [RFC PATCH] ixgbe: delay tail write to every     'n' packets
+> 
+> On Tue, Mar 14, 2017 at 4:50 PM, John Fastabend
+> <john.fastabend@gmail.com> wrote:
+> > 
+> > On 17-03-13 10:18 AM, Alexander Duyck wrote:
+> > > 
+> > > On Mon, Mar 13, 2017 at 9:16 AM, John Fastabend
+> > > <john.fastabend@gmail.com> wrote:
+> > > > 
+> > > > Current XDP implementation hits the tail on every XDP_TX return
+> > > > code. This patch changes driver behavior to only hit the tail after
+> > > > packet processing is complete.
+> > > > 
+> > > > RFC for now as I test this, it looks promising on my dev box but
+> > > > want to do some more tests before official submission.
+> > > > 
+> > > > Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+> > > > ---
+> > > >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   14 +++++++++++---
+> > > >  1 file changed, 11 insertions(+), 3 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > > > index bef4e24..2c244b6 100644
+> > > > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > > > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > > > @@ -2282,6 +2282,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+> > > >         unsigned int mss = 0;
+> > > >  #endif /* IXGBE_FCOE */
+> > > >         u16 cleaned_count = ixgbe_desc_unused(rx_ring);
+> > > > +       bool xdp_xmit = false;
+> > > > 
+> > > >         while (likely(total_rx_packets < budget)) {
+> > > >                 union ixgbe_adv_rx_desc *rx_desc;
+> > > > @@ -2321,10 +2322,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+> > > >                 }
+> > > > 
+> > > >                 if (IS_ERR(skb)) {
+> > > > -                       if (PTR_ERR(skb) == -IXGBE_XDP_TX)
+> > > > +                       if (PTR_ERR(skb) == -IXGBE_XDP_TX) {
+> > > > +                               xdp_xmit = true;
+> > > >                                 ixgbe_rx_buffer_flip(rx_ring, rx_buffer, size);
+> > > > -                       else
+> > > > +                       } else {
+> > > >                                 rx_buffer->pagecnt_bias++;
+> > > > +                       }
+> > > >                         total_rx_packets++;
+> > > >                         total_rx_bytes += size;
+> > > >                 } else if (skb) {
+> > > > @@ -2392,6 +2395,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+> > > >                 total_rx_packets++;
+> > > >         }
+> > > > 
+> > > > +       if (xdp_xmit) {
+> > > > +               struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
+> > > > +
+> > > > +               writel(ring->next_to_use, ring->tail);
+> > > > +       }
+> > > > +
+> > > 
+> > > We will need a wmb here.
+> > > 
+> > > > 
+> > > >         u64_stats_update_begin(&rx_ring->syncp);
+> > > >         rx_ring->stats.packets += total_rx_packets;
+> > > >         rx_ring->stats.bytes += total_rx_bytes;
+> > > > @@ -8251,7 +8260,6 @@ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+> > > >         tx_buffer->next_to_watch = tx_desc;
+> > > >         ring->next_to_use = i;
+> > > > 
+> > > > -       writel(i, ring->tail);
+> > > 
+> > > So you might want to change the barrier setup for all this to use
+> > > smp_wmb instead.  We need the wmb to be paired with the writel.  That
+> > > should give you a slight performance boost since smp_wmb breaks down
+> > > to just a barrier on x86 systems.
+> > > 
+> > 
+> > Not sure I grok this description entirely, but I think you are just saying
+> > replace,
+> > 
+> >         if (xdp_xmit) {
+> >                 ...
+> >                 writel(...)
+> >         }
+> > 
+> > with
+> > 
+> >         if (xdp_xmit) {
+> >                 ...
+> >                 smp_rmb()
+> >                 writel()
+> >         }
+> > 
+> > Correct? Did you have some other change in mind ... "for all this"?
+> > 
+> > Thanks,
+> > John
+> 
+> 
+> No.  Basically what it should be is find and replace wmb with
+> smp_wmb() in ixgbe_xmit_xdp_ring.  That way you won't have to worry
+> about a race between Tx and clean-up.
+> 
+> Then the if statement should be:
+> if (xdp_xmit) {
+>     ...
+>     /* wmb required to flush writes to coherent memory before writing
+> to non-coherent memory*/
+>     wmb();
+>     /* writel is a write to non-coherent memory mapped I/O */
+>     writel();
+> }
+> 
+> > 
+> > > 
+> > > > 
+> > > >         return IXGBE_XDP_TX;
+> > > >  }
+> > > > 
+> > > > 
+> > 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
