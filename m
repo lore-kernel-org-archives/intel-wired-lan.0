@@ -1,94 +1,146 @@
-From: William Tu <u9012063@gmail.com>
-Date: Mon, 27 Mar 2017 11:38:52 -0700
-Subject: [Intel-wired-lan] [PATCH v7 0/2] XDP support for ixgbe
-In-Reply-To: <58D70379.3030802@gmail.com>
-References: <20170324042949.10293.43329.stgit@john-Precision-Tower-5810>
- <CALDO+SYA4a37ePhzSPwbqqnCngU6uudeiCGvGoXMPU3MbX4W2g@mail.gmail.com>
- <58D70379.3030802@gmail.com>
-Message-ID: <CALDO+SZDUycW-zmri1_7H1czTn+5rN3mt3a7qBE=VRqGw+CHNQ@mail.gmail.com>
+From: Fastabend, John R <john.r.fastabend@intel.com>
+Date: Mon, 27 Mar 2017 19:28:52 +0000
+Subject: [Intel-wired-lan] [RFC PATCH] ixgbe: delay tail write to
+	every	'n' packets
+In-Reply-To: <CAKgT0UdgcKk0eOFCTZhjCigbQRVXLpmF=QvRRc7wByt5EdiMkQ@mail.gmail.com>
+References: <20170313161624.7987.91951.stgit@john-Precision-Tower-5810>
+ <CAKgT0Ufz6W0+1Y4vsKYqcZ_sn+kCie28wKdECbThOeDO_51zKw@mail.gmail.com>
+ <58C881D7.3010608@gmail.com>,
+ <CAKgT0UdgcKk0eOFCTZhjCigbQRVXLpmF=QvRRc7wByt5EdiMkQ@mail.gmail.com>
+Message-ID: <D6BB30FE66EA894C9F13C9E3CDDF00F564FA94F9@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, Mar 25, 2017 at 4:55 PM, John Fastabend
+FWIW with a revised version of this patch I see 14.6Mpps on RX drop tests and 13.5Mpps on TX test case.
+
+Alex, maybe we can sync up and squeeze the last mpps out of the design.
+
+Thanks,
+John
+________________________________________
+From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Alexander Duyck [alexander.duyck at gmail.com]
+Sent: Tuesday, March 14, 2017 6:14 PM
+To: John Fastabend
+Cc: intel-wired-lan; Alexei Starovoitov; Daniel Borkmann; William Tu
+Subject: Re: [Intel-wired-lan] [RFC PATCH] ixgbe: delay tail write to every     'n' packets
+
+On Tue, Mar 14, 2017 at 4:50 PM, John Fastabend
 <john.fastabend@gmail.com> wrote:
-> On 17-03-24 03:22 PM, William Tu wrote:
->> On Thu, Mar 23, 2017 at 9:30 PM, John Fastabend
+> On 17-03-13 10:18 AM, Alexander Duyck wrote:
+>> On Mon, Mar 13, 2017 at 9:16 AM, John Fastabend
 >> <john.fastabend@gmail.com> wrote:
->>> This version fixes a couple issues with q_vector allocation and query on XDP
->>> program.
+>>> Current XDP implementation hits the tail on every XDP_TX return
+>>> code. This patch changes driver behavior to only hit the tail after
+>>> packet processing is complete.
 >>>
+>>> RFC for now as I test this, it looks promising on my dev box but
+>>> want to do some more tests before official submission.
+>>>
+>>> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
 >>> ---
+>>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   14 +++++++++++---
+>>>  1 file changed, 11 insertions(+), 3 deletions(-)
 >>>
->>> John Fastabend (2):
->>>       ixgbe: add XDP support for pass and drop actions
->>>       ixgbe: add support for XDP_TX action
+>>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> index bef4e24..2c244b6 100644
+>>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> @@ -2282,6 +2282,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>>>         unsigned int mss = 0;
+>>>  #endif /* IXGBE_FCOE */
+>>>         u16 cleaned_count = ixgbe_desc_unused(rx_ring);
+>>> +       bool xdp_xmit = false;
 >>>
+>>>         while (likely(total_rx_packets < budget)) {
+>>>                 union ixgbe_adv_rx_desc *rx_desc;
+>>> @@ -2321,10 +2322,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>>>                 }
 >>>
->>>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   23 +
->>>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   29 +
->>>  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   78 +++-
->>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  434 +++++++++++++++++++---
->>>  4 files changed, 490 insertions(+), 74 deletions(-)
+>>>                 if (IS_ERR(skb)) {
+>>> -                       if (PTR_ERR(skb) == -IXGBE_XDP_TX)
+>>> +                       if (PTR_ERR(skb) == -IXGBE_XDP_TX) {
+>>> +                               xdp_xmit = true;
+>>>                                 ixgbe_rx_buffer_flip(rx_ring, rx_buffer, size);
+>>> -                       else
+>>> +                       } else {
+>>>                                 rx_buffer->pagecnt_bias++;
+>>> +                       }
+>>>                         total_rx_packets++;
+>>>                         total_rx_bytes += size;
+>>>                 } else if (skb) {
+>>> @@ -2392,6 +2395,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>>>                 total_rx_packets++;
+>>>         }
 >>>
->>> --
->>> Signature
+>>> +       if (xdp_xmit) {
+>>> +               struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
+>>> +
+>>> +               writel(ring->next_to_use, ring->tail);
+>>> +       }
+>>> +
 >>
->> Thanks. I tested using samples/bpf/xdp1 and xdp2 using ping and dpdk
->> pktgen. Both work OK.
+>> We will need a wmb here.
 >>
->> When enabling xdp, dmesg shows:
->> [12270.610462] pps pps0: new PPS source ptp6
->> [12270.610465] ixgbe 0000:05:00.0: registered PHC device on enp5s0f0
->> [12271.619018] ixgbe 0000:05:00.0: removed PHC on enp5s0f0
->> [12271.943334] ixgbe 0000:05:00.0: Multiqueue Enabled: Rx Queue count
->> = 16, Tx Queue count = 16 XDP Queue count = 0
->> [12272.011324] pps pps0: new PPS source ptp6
->> [12272.011326] ixgbe 0000:05:00.0: registered PHC device on enp5s0f0
->> [12276.477066] ixgbe 0000:05:00.0 enp5s0f0: NIC Link is Up 10 Gbps,
->> Flow Control: None
+>>>         u64_stats_update_begin(&rx_ring->syncp);
+>>>         rx_ring->stats.packets += total_rx_packets;
+>>>         rx_ring->stats.bytes += total_rx_bytes;
+>>> @@ -8251,7 +8260,6 @@ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+>>>         tx_buffer->next_to_watch = tx_desc;
+>>>         ring->next_to_use = i;
+>>>
+>>> -       writel(i, ring->tail);
 >>
->> I'm not sure it's important or not.
->> Regards,
->> William
+>> So you might want to change the barrier setup for all this to use
+>> smp_wmb instead.  We need the wmb to be paired with the writel.  That
+>> should give you a slight performance boost since smp_wmb breaks down
+>> to just a barrier on x86 systems.
 >>
 >
-> Well that is a bit odd. When you load the XDP program we should see a
-> "XDP Queue count" equal to the cpu count from /proc/cpuinfo. But if this
-> is from either after unloading a XDP program or from initial loading the
-> module before an XDP program is loaded than zero is expected. The queues
-> are only added after the XDP program is loaded.
+> Not sure I grok this description entirely, but I think you are just saying
+> replace,
+>
+>         if (xdp_xmit) {
+>                 ...
+>                 writel(...)
+>         }
+>
+> with
+>
+>         if (xdp_xmit) {
+>                 ...
+>                 smp_rmb()
+>                 writel()
+>         }
+>
+> Correct? Did you have some other change in mind ... "for all this"?
 >
 > Thanks,
 > John
+
+
+No.  Basically what it should be is find and replace wmb with
+smp_wmb() in ixgbe_xmit_xdp_ring.  That way you won't have to worry
+about a race between Tx and clean-up.
+
+Then the if statement should be:
+if (xdp_xmit) {
+    ...
+    /* wmb required to flush writes to coherent memory before writing
+to non-coherent memory*/
+    wmb();
+    /* writel is a write to non-coherent memory mapped I/O */
+    writel();
+}
+
+>>>         return IXGBE_XDP_TX;
+>>>  }
+>>>
+>>>
 >
-in my case I have 16 cpus. But I saw XDP queues either 0 or 48.
-
-[86079.450650] ixgbe 0000:05:00.1 enp5s0f1: NIC Link is Up 10 Gbps,
-Flow Control: None
-[86940.730799] ixgbe 0000:05:00.0: removed PHC on enp5s0f0
-[86941.052806] ixgbe 0000:05:00.0: Multiqueue Enabled: Rx Queue count
-= 16, Tx Queue count = 16 XDP Queue count = 48
-[86941.216825] pps pps0: new PPS source ptp6
-[86941.216827] ixgbe 0000:05:00.0: registered PHC device on enp5s0f0
-[86945.371094] ixgbe 0000:05:00.0 enp5s0f0: NIC Link is Up 10 Gbps,
-Flow Control: None
-[86954.498885] ixgbe 0000:05:00.1: removed PHC on enp5s0f1
-[86954.824992] ixgbe 0000:05:00.1: Multiqueue Enabled: Rx Queue count
-= 16, Tx Queue count = 16 XDP Queue count = 0
-[86954.893054] pps pps1: new PPS source ptp7
-[86954.893055] ixgbe 0000:05:00.1: registered PHC device on enp5s0f1
-[86959.094568] ixgbe 0000:05:00.1 enp5s0f1: NIC Link is Up 10 Gbps,
-Flow Control: None
-[86991.730721] ixgbe 0000:05:00.1: removed PHC on enp5s0f1
-[86992.052007] ixgbe 0000:05:00.1: Multiqueue Enabled: Rx Queue count
-= 16, Tx Queue count = 16 XDP Queue count = 48
-[86992.216915] pps pps1: new PPS source ptp7
-[86992.216916] ixgbe 0000:05:00.1: registered PHC device on enp5s0f1
-[86992.338119] ixgbe 0000:05:00.1 enp5s0f1: initiating reset to clear
-Tx work after link loss
-
-Thanks,
-William
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
