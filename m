@@ -1,120 +1,94 @@
-From: Chuah, Kim Tatt <kim.tatt.chuah@intel.com>
-Date: Mon, 27 Mar 2017 08:44:35 +0800
-Subject: [Intel-wired-lan] [PATCH] igb: Enable reading of wake up packet
-In-Reply-To: <1490575475-8215-1-git-send-email-kim.tatt.chuah@intel.com>
-References: <1490575475-8215-1-git-send-email-kim.tatt.chuah@intel.com>
-Message-ID: <1490575475-8215-2-git-send-email-kim.tatt.chuah@intel.com>
+From: William Tu <u9012063@gmail.com>
+Date: Mon, 27 Mar 2017 11:38:52 -0700
+Subject: [Intel-wired-lan] [PATCH v7 0/2] XDP support for ixgbe
+In-Reply-To: <58D70379.3030802@gmail.com>
+References: <20170324042949.10293.43329.stgit@john-Precision-Tower-5810>
+ <CALDO+SYA4a37ePhzSPwbqqnCngU6uudeiCGvGoXMPU3MbX4W2g@mail.gmail.com>
+ <58D70379.3030802@gmail.com>
+Message-ID: <CALDO+SZDUycW-zmri1_7H1czTn+5rN3mt3a7qBE=VRqGw+CHNQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently, in igb_resume(), igb driver ignores the Wake Up Status (WUS)
-and Wake Up Packet Memory (WUPM) registers. This patch enables the igb
-driver to read the WUPM if the controller was woken by a wake up packet
-that is not more than 128 bytes long (maximum WUPM size), then pass it
-up the kernel network stack.
+On Sat, Mar 25, 2017 at 4:55 PM, John Fastabend
+<john.fastabend@gmail.com> wrote:
+> On 17-03-24 03:22 PM, William Tu wrote:
+>> On Thu, Mar 23, 2017 at 9:30 PM, John Fastabend
+>> <john.fastabend@gmail.com> wrote:
+>>> This version fixes a couple issues with q_vector allocation and query on XDP
+>>> program.
+>>>
+>>> ---
+>>>
+>>> John Fastabend (2):
+>>>       ixgbe: add XDP support for pass and drop actions
+>>>       ixgbe: add support for XDP_TX action
+>>>
+>>>
+>>>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   23 +
+>>>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   29 +
+>>>  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   78 +++-
+>>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  434 +++++++++++++++++++---
+>>>  4 files changed, 490 insertions(+), 74 deletions(-)
+>>>
+>>> --
+>>> Signature
+>>
+>> Thanks. I tested using samples/bpf/xdp1 and xdp2 using ping and dpdk
+>> pktgen. Both work OK.
+>>
+>> When enabling xdp, dmesg shows:
+>> [12270.610462] pps pps0: new PPS source ptp6
+>> [12270.610465] ixgbe 0000:05:00.0: registered PHC device on enp5s0f0
+>> [12271.619018] ixgbe 0000:05:00.0: removed PHC on enp5s0f0
+>> [12271.943334] ixgbe 0000:05:00.0: Multiqueue Enabled: Rx Queue count
+>> = 16, Tx Queue count = 16 XDP Queue count = 0
+>> [12272.011324] pps pps0: new PPS source ptp6
+>> [12272.011326] ixgbe 0000:05:00.0: registered PHC device on enp5s0f0
+>> [12276.477066] ixgbe 0000:05:00.0 enp5s0f0: NIC Link is Up 10 Gbps,
+>> Flow Control: None
+>>
+>> I'm not sure it's important or not.
+>> Regards,
+>> William
+>>
+>
+> Well that is a bit odd. When you load the XDP program we should see a
+> "XDP Queue count" equal to the cpu count from /proc/cpuinfo. But if this
+> is from either after unloading a XDP program or from initial loading the
+> module before an XDP program is loaded than zero is expected. The queues
+> are only added after the XDP program is loaded.
+>
+> Thanks,
+> John
+>
+in my case I have 16 cpus. But I saw XDP queues either 0 or 48.
 
-Signed-off-by: Chuah, Kim Tatt <kim.tatt.chuah@intel.com>
----
- drivers/net/ethernet/intel/igb/e1000_defines.h | 21 +++++++++++++++
- drivers/net/ethernet/intel/igb/igb_main.c      | 36 +++++++++++++++++++++++++-
- 2 files changed, 56 insertions(+), 1 deletion(-)
+[86079.450650] ixgbe 0000:05:00.1 enp5s0f1: NIC Link is Up 10 Gbps,
+Flow Control: None
+[86940.730799] ixgbe 0000:05:00.0: removed PHC on enp5s0f0
+[86941.052806] ixgbe 0000:05:00.0: Multiqueue Enabled: Rx Queue count
+= 16, Tx Queue count = 16 XDP Queue count = 48
+[86941.216825] pps pps0: new PPS source ptp6
+[86941.216827] ixgbe 0000:05:00.0: registered PHC device on enp5s0f0
+[86945.371094] ixgbe 0000:05:00.0 enp5s0f0: NIC Link is Up 10 Gbps,
+Flow Control: None
+[86954.498885] ixgbe 0000:05:00.1: removed PHC on enp5s0f1
+[86954.824992] ixgbe 0000:05:00.1: Multiqueue Enabled: Rx Queue count
+= 16, Tx Queue count = 16 XDP Queue count = 0
+[86954.893054] pps pps1: new PPS source ptp7
+[86954.893055] ixgbe 0000:05:00.1: registered PHC device on enp5s0f1
+[86959.094568] ixgbe 0000:05:00.1 enp5s0f1: NIC Link is Up 10 Gbps,
+Flow Control: None
+[86991.730721] ixgbe 0000:05:00.1: removed PHC on enp5s0f1
+[86992.052007] ixgbe 0000:05:00.1: Multiqueue Enabled: Rx Queue count
+= 16, Tx Queue count = 16 XDP Queue count = 48
+[86992.216915] pps pps1: new PPS source ptp7
+[86992.216916] ixgbe 0000:05:00.1: registered PHC device on enp5s0f1
+[86992.338119] ixgbe 0000:05:00.1 enp5s0f1: initiating reset to clear
+Tx work after link loss
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index 8aee314..532bc7b 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -39,6 +39,27 @@
- #define E1000_WUFC_MC   0x00000008 /* Directed Multicast Wakeup Enable */
- #define E1000_WUFC_BC   0x00000010 /* Broadcast Wakeup Enable */
- 
-+/* Wake Up Status */
-+#define E1000_WUS_EX    0x00000004 /* Directed Exact */
-+#define E1000_WUS_ARPD  0x00000020 /* Directed ARP Request */
-+#define E1000_WUS_IPV4  0x00000040 /* Directed IPv4 */
-+#define E1000_WUS_IPV6  0x00000080 /* Directed IPv6 */
-+#define E1000_WUS_NSD   0x00000400 /* Directed IPv6 Neighbor Solicitation */
-+
-+/* Packet types that are enabled for wake packet delivery */
-+#define WAKE_PKT_WUS ( \
-+	E1000_WUS_EX   | \
-+	E1000_WUS_ARPD | \
-+	E1000_WUS_IPV4 | \
-+	E1000_WUS_IPV6 | \
-+	E1000_WUS_NSD)
-+
-+/* Wake Up Packet Length */
-+#define E1000_WUPL_MASK 0x00000FFF
-+
-+/* Wake Up Packet Memory stores the first 128 bytes of the wake up packet */
-+#define E1000_WUPM_BYTES 128
-+
- /* Extended Device Control */
- #define E1000_CTRL_EXT_SDP2_DATA 0x00000040 /* Value of SW Defineable Pin 2 */
- #define E1000_CTRL_EXT_SDP3_DATA 0x00000080 /* Value of SW Defineable Pin 3 */
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index be456ba..81e0982 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -7630,6 +7630,36 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
- 	return 0;
- }
- 
-+static void igb_deliver_wake_packet(struct net_device *netdev)
-+{
-+	struct igb_adapter *adapter = netdev_priv(netdev);
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct sk_buff *skb;
-+	u32 wupl;
-+
-+	wupl = rd32(E1000_WUPL) & E1000_WUPL_MASK;
-+
-+	/* WUPM stores only the first 128 bytes of the wake packet.
-+	 * Read the packet only if we have the whole thing.
-+	 */
-+	if ((wupl == 0) || (wupl > E1000_WUPM_BYTES))
-+		return;
-+
-+	skb = netdev_alloc_skb_ip_align(netdev, E1000_WUPM_BYTES);
-+	if (!skb)
-+		return;
-+
-+	skb_put(skb, wupl);
-+
-+	/* Ensure reads are 32-bit aligned */
-+	wupl = roundup(wupl, 4);
-+
-+	memcpy_fromio(skb->data, hw->hw_addr + E1000_WUPM_REG(0), wupl);
-+
-+	skb->protocol = eth_type_trans(skb, netdev);
-+	netif_rx(skb);
-+}
-+
- #ifdef CONFIG_PM
- #ifdef CONFIG_PM_SLEEP
- static int igb_suspend(struct device *dev)
-@@ -7659,7 +7689,7 @@ static int igb_resume(struct device *dev)
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
--	u32 err;
-+	u32 err, val;
- 
- 	pci_set_power_state(pdev, PCI_D0);
- 	pci_restore_state(pdev);
-@@ -7690,6 +7720,10 @@ static int igb_resume(struct device *dev)
- 	 */
- 	igb_get_hw_control(adapter);
- 
-+	val = rd32(E1000_WUS);
-+	if (val & WAKE_PKT_WUS)
-+		igb_deliver_wake_packet(netdev);
-+
- 	wr32(E1000_WUS, ~0);
- 
- 	rtnl_lock();
--- 
-1.9.1
-
+Thanks,
+William
