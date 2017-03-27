@@ -1,25 +1,25 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Mon, 27 Mar 2017 23:44:59 +0000
-Subject: [Intel-wired-lan] [next PATCH S66 3/3] i40e: don't hold RTNL
+Date: Mon, 27 Mar 2017 23:45:14 +0000
+Subject: [Intel-wired-lan] [next PATCH S66 3/4] i40e: don't hold RTNL
  lock for the entire reset
-In-Reply-To: <20170327104208.59737-4-alice.michael@intel.com>
-References: <20170327104208.59737-1-alice.michael@intel.com>
- <20170327104208.59737-4-alice.michael@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5857DE7B1D@ORSMSX115.amr.corp.intel.com>
+In-Reply-To: <20170327130039.62873-4-alice.michael@intel.com>
+References: <20170327130039.62873-1-alice.michael@intel.com>
+ <20170327130039.62873-4-alice.michael@intel.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5857DE7B2D@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+Same commit twice?
 
 > -----Original Message-----
 > From: Michael, Alice
-> Sent: Monday, March 27, 2017 3:42 AM
+> Sent: Monday, March 27, 2017 6:01 AM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Keller, Jacob E <jacob.e.keller@intel.com>
-> Subject: [next PATCH S66 3/3] i40e: don't hold RTNL lock for the entire reset
+> Subject: [next PATCH S66 3/4] i40e: don't hold RTNL lock for the entire reset
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
