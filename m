@@ -1,135 +1,80 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Mon, 27 Mar 2017 23:45:14 +0000
-Subject: [Intel-wired-lan] [next PATCH S66 3/4] i40e: don't hold RTNL
- lock for the entire reset
-In-Reply-To: <20170327130039.62873-4-alice.michael@intel.com>
-References: <20170327130039.62873-1-alice.michael@intel.com>
- <20170327130039.62873-4-alice.michael@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5857DE7B2D@ORSMSX115.amr.corp.intel.com>
+From: Pujari, Bimmy <bimmy.pujari@intel.com>
+Date: Mon, 27 Mar 2017 23:54:50 +0000
+Subject: [Intel-wired-lan] [next PATCH S65 03/13] i40e: display
+	correct	udp tunnel type
+In-Reply-To: <02874ECE860811409154E81DA85FBB5857DE7A9B@ORSMSX115.amr.corp.intel.com>
+References: <20170327094759.58321-1-alice.michael@intel.com>
+ <20170327094759.58321-4-alice.michael@intel.com>
+ <02874ECE860811409154E81DA85FBB5857DE7A9B@ORSMSX115.amr.corp.intel.com>
+Message-ID: <B759292EEECB5C46AEDF3EC46470BC94B1EE66@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Same commit twice?
+This series should be removed from intel-wired-lan .
+
+Thanks
+Bimmy
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Keller, Jacob E
+Sent: Monday, March 27, 2017 4:42 PM
+To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] [next PATCH S65 03/13] i40e: display correct udp tunnel type
+
+This patch is incorrect. It doesn't contain most of the meat of the code. I think the error messages are fixed in a different way in the current upstream. I can create a separate patch to bring them in line or you can fix this one.
+
+We need to change the code in i40e_sync_udp_filters_subtask so that it doesn't do a hard check against "non-zero udp_ports[i].type" means VXLAN and zero means Geneve.
+
+Thanks,
+Jake
 
 > -----Original Message-----
 > From: Michael, Alice
-> Sent: Monday, March 27, 2017 6:01 AM
+> Sent: Monday, March 27, 2017 2:48 AM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Keller, Jacob E <jacob.e.keller@intel.com>
-> Subject: [next PATCH S66 3/4] i40e: don't hold RTNL lock for the entire reset
+> Subject: [next PATCH S65 03/13] i40e: display correct udp tunnel type
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> We recently refactored i40e_do_reset() and its friends to be able to
-> hold the RTNL lock only for the portions that actually need to be
-> protected. However, a separate refactoring added several new callers of
-> these functions during the PCIe error recovery and suspend/resume
-> cycles.
-> 
-> When merging the changes together, it was not noticed that we could
-> reduce the RTNL scope by letting the reset function handle the lock
-> itself, as previously it was not possible.
-> 
-> Fix this by replacing these call sites to indicate that the reset
-> function should handle its own lock. This enables multiple PFs to reset
-> or resume simultaneously without serializing the resets via the RTNL
-> lock. The end result is that on systems with lots of PFs and VFs the
-> resets don't stall waiting for each other to finish.
-> 
-> It is probable that we can also do the same for i40e_do_reset_safe, but
-> this author did not research that change carefully enough to be
-> confident.
+> Do not hardcode vxlan into the error message, and instead check to 
+> determine whether this is a geneve or a vxlan tunnel.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: I33b848e0dd0aee465b604b9ec558b9d7519be3eb
+> Change-ID: I1a8fcdbdb57f7cb9f3723aba2fff5036165f6dc3
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 27 +++++++--------------------
->  1 file changed, 7 insertions(+), 20 deletions(-)
+> Testing-hints:
+>   Partially upstream. The exact way of parsing the tunnel type to
+>   a string was changed.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
+>  1 file changed, 5 insertions(+)
 > 
 > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
 > b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index fcfab36..3d9c898 100644
+> index 9ce06e8..9e665fa 100644
 > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -6343,9 +6343,7 @@ static void i40e_reset_subtask(struct i40e_pf *pf)
->  	if (reset_flags &&
->  	    !test_bit(__I40E_DOWN, &pf->state) &&
->  	    !test_bit(__I40E_CONFIG_BUSY, &pf->state)) {
-> -		rtnl_lock();
-> -		i40e_do_reset(pf, reset_flags, true);
-> -		rtnl_unlock();
-> +		i40e_do_reset(pf, reset_flags, false);
->  	}
+> @@ -7231,6 +7231,11 @@ static void i40e_handle_mdd_event(struct 
+> i40e_pf
+> *pf)
+>  	i40e_flush(hw);
 >  }
 > 
-> @@ -11514,11 +11512,8 @@ static pci_ers_result_t
-> i40e_pci_error_detected(struct pci_dev *pdev,
->  	}
-> 
->  	/* shutdown all operations */
-> -	if (!test_bit(__I40E_SUSPENDED, &pf->state)) {
-> -		rtnl_lock();
-> -		i40e_prep_for_reset(pf, true);
-> -		rtnl_unlock();
-> -	}
-> +	if (!test_bit(__I40E_SUSPENDED, &pf->state))
-> +		i40e_prep_for_reset(pf, false);
-> 
->  	/* Request a slot reset */
->  	return PCI_ERS_RESULT_NEED_RESET;
-> @@ -11584,9 +11579,7 @@ static void i40e_pci_error_resume(struct pci_dev
-> *pdev)
->  	if (test_bit(__I40E_SUSPENDED, &pf->state))
->  		return;
-> 
-> -	rtnl_lock();
-> -	i40e_handle_reset_warning(pf, true);
-> -	rtnl_unlock();
-> +	i40e_handle_reset_warning(pf, false);
->  }
-> 
+> +static const char * const tunnel_types[] = {
+> +	[UDP_TUNNEL_TYPE_VXLAN] = "vxlan",
+> +	[UDP_TUNNEL_TYPE_GENEVE] = "geneve", };
+> +
 >  /**
-> @@ -11661,9 +11654,7 @@ static void i40e_shutdown(struct pci_dev *pdev)
->  	if (pf->wol_en && (pf->flags &
-> I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE))
->  		i40e_enable_mc_magic_wake(pf);
-> 
-> -	rtnl_lock();
-> -	i40e_prep_for_reset(pf, true);
-> -	rtnl_unlock();
-> +	i40e_prep_for_reset(pf, false);
-> 
->  	wr32(hw, I40E_PFPM_APM,
->  	     (pf->wol_en ? I40E_PFPM_APM_APME_MASK : 0));
-> @@ -11695,9 +11686,7 @@ static int i40e_suspend(struct pci_dev *pdev,
-> pm_message_t state)
->  	if (pf->wol_en && (pf->flags &
-> I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE))
->  		i40e_enable_mc_magic_wake(pf);
-> 
-> -	rtnl_lock();
-> -	i40e_prep_for_reset(pf, true);
-> -	rtnl_unlock();
-> +	i40e_prep_for_reset(pf, false);
-> 
->  	wr32(hw, I40E_PFPM_APM, (pf->wol_en ?
-> I40E_PFPM_APM_APME_MASK : 0));
->  	wr32(hw, I40E_PFPM_WUFC, (pf->wol_en ?
-> I40E_PFPM_WUFC_MAG_MASK : 0));
-> @@ -11743,9 +11732,7 @@ static int i40e_resume(struct pci_dev *pdev)
->  	/* handling the reset will rebuild the device state */
->  	if (test_and_clear_bit(__I40E_SUSPENDED, &pf->state)) {
->  		clear_bit(__I40E_DOWN, &pf->state);
-> -		rtnl_lock();
-> -		i40e_reset_and_rebuild(pf, false, true);
-> -		rtnl_unlock();
-> +		i40e_reset_and_rebuild(pf, false, false);
->  	}
-> 
->  	return 0;
+>   * i40e_sync_udp_filters_subtask - Sync the VSI filter list with HW
+>   * @pf: board private structure
 > --
 > 2.9.3
 
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
