@@ -1,34 +1,93 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 28 Mar 2017 16:03:03 +0000
-Subject: [Intel-wired-lan] [PATCH] fm10k: do not enqueue mailbox when
- host	not ready
-In-Reply-To: <20170206222113.14170-1-jacob.e.keller@intel.com>
-References: <20170206222113.14170-1-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E4914660C@ORSMSX103.amr.corp.intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Tue, 28 Mar 2017 09:47:03 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: delay tail write to every 'n'
+	packets
+Message-ID: <20170328164703.12688.90760.stgit@john-Precision-Tower-5810>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Current XDP implementation hits the tail on every XDP_TX return
+code. This patch changes driver behavior to only hit the tail after
+packet processing is complete.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
-Sent: Monday, February 6, 2017 2:21 PM
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Cc: Kwan, Ngai-mint <ngai-mint.kwan@intel.com>
-Subject: [Intel-wired-lan] [PATCH] fm10k: do not enqueue mailbox when host not ready
+With this patch I can run XDP drop programs @ 14+Mpps and XDP_TX
+programs are at ~13.5Mpps.
 
-From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
-
-Interfaces will reset whenever the TX mailbox FIFO has become full. This occurs more frequently whenever the IES API application is not running to process and clear the messages in the FIFO. Thus, this could lead to situations where the interface would enter an infinite reset loop. That
-is: if the interface is trying to synchronize a huge number of unicast and multicast entries with the IES API application, the TX mailbox FIFO will become full and the interface resets. Once the interface exits reset, it'll try to synchronize the unicast and multicast entries again.
-Ergo, this creates an infinite loop. Other actions such as multiple mulitcast mode or up/down transitions will fill the TX mailbox FIFO and induce the interface to reset. To correct these situations, check if the interface's "host_ready" flag is enabled before enqueuing any messages to the TX mailbox FIFO. This check will be conducted by a function call.
-Lastly, this issue mainly affects the PF and, thus, the VF is exempt.
-
-Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
 ---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   28 +++++++++++++++----------
+ 1 file changed, 17 insertions(+), 11 deletions(-)
 
-Tested-by: Krishneil Singh  <krishneil.k.singh@intel.com>
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index cd7eefd..750b204 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2284,6 +2284,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 	unsigned int mss = 0;
+ #endif /* IXGBE_FCOE */
+ 	u16 cleaned_count = ixgbe_desc_unused(rx_ring);
++	bool xdp_xmit = false;
+ 
+ 	while (likely(total_rx_packets < budget)) {
+ 		union ixgbe_adv_rx_desc *rx_desc;
+@@ -2323,10 +2324,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 		}
+ 
+ 		if (IS_ERR(skb)) {
+-			if (PTR_ERR(skb) == -IXGBE_XDP_TX)
++			if (PTR_ERR(skb) == -IXGBE_XDP_TX) {
++				xdp_xmit = true;
+ 				ixgbe_rx_buffer_flip(rx_ring, rx_buffer, size);
+-			else
++			} else {
+ 				rx_buffer->pagecnt_bias++;
++			}
+ 			total_rx_packets++;
+ 			total_rx_bytes += size;
+ 		} else if (skb) {
+@@ -2394,6 +2397,16 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 		total_rx_packets++;
+ 	}
+ 
++	if (xdp_xmit) {
++		struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
++
++		/* Force memory writes to complete before letting h/w
++		 * know there are new descriptors to fetch.
++		 */
++		wmb();
++		writel(ring->next_to_use, ring->tail);
++	}
++
+ 	u64_stats_update_begin(&rx_ring->syncp);
+ 	rx_ring->stats.packets += total_rx_packets;
+ 	rx_ring->stats.bytes += total_rx_bytes;
+@@ -8239,14 +8252,8 @@ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+ 	tx_desc->read.olinfo_status =
+ 		cpu_to_le32(len << IXGBE_ADVTXD_PAYLEN_SHIFT);
+ 
+-	/* Force memory writes to complete before letting h/w know there
+-	 * are new descriptors to fetch.  (Only applicable for weak-ordered
+-	 * memory model archs, such as IA-64).
+-	 *
+-	 * We also need this memory barrier to make certain all of the
+-	 * status bits have been updated before next_to_watch is written.
+-	 */
+-	wmb();
++	/* Avoid any potential race with xdp_xmit and cleanup */
++	smp_wmb();
+ 
+ 	/* set next_to_watch value indicating a packet is present */
+ 	i++;
+@@ -8256,7 +8263,6 @@ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+ 	tx_buffer->next_to_watch = tx_desc;
+ 	ring->next_to_use = i;
+ 
+-	writel(i, ring->tail);
+ 	return IXGBE_XDP_TX;
+ }
+ 
 
