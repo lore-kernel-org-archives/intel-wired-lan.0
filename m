@@ -1,42 +1,31 @@
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Date: Tue, 28 Mar 2017 08:00:48 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v2] i40e: fix for queue timing
-	delays
-Message-ID: <149071317310.43528.16942163405081978511.stgit@cmw-ivy.jf.intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Tue, 28 Mar 2017 15:41:44 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: correctly check if interface
+ is	removed.
+In-Reply-To: <20161123183358.16851-1-phil.turnbull@oracle.com>
+References: <20161123183358.16851-1-phil.turnbull@oracle.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E491464C0@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds a delay to rx queue disables to accommodate hw needs.
 
-v2: Added missing check for disable only, additional details on the
-need for the ugly delay and fixed spacing on comment.
 
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Change-ID: I2864ca667ce5dcc2cc44f8718113b719742a46a1
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Phil Turnbull
+Sent: Wednesday, November 23, 2016 10:34 AM
+To: intel-wired-lan@lists.osuosl.org
+Cc: Phil Turnbull <phil.turnbull@oracle.com>
+Subject: [Intel-wired-lan] [PATCH] fm10k: correctly check if interface is removed.
+
+FM10K_REMOVED expects a hardware address, not a 'struct fm10k_hw'.
+
+Fixes: 5cb8db4a4cbc ("fm10k: Add support for VF")
+Signed-off-by: Phil Turnbull <phil.turnbull@oracle.com>
 ---
-internal v2: fixed length of commit message and end comment
 
- drivers/net/ethernet/intel/i40e/i40e_main.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+Tested-by: Krishneil Singh  <krishneil.k.singh@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4b32b47..3082c7f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -4181,6 +4181,12 @@ static int i40e_vsi_control_rx(struct i40e_vsi *vsi, bool enable)
- 		}
- 	}
- 
-+	/* Due to HW errata, on Rx disable only, the register can indicate done
-+	 * before it really is. Needs 50ms to be sure
-+	 */
-+	if (!enable)
-+		mdelay(50);
-+
- 	return ret;
- }
- 
 
