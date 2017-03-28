@@ -1,31 +1,54 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 28 Mar 2017 15:41:44 +0000
-Subject: [Intel-wired-lan] [PATCH] fm10k: correctly check if interface
- is	removed.
-In-Reply-To: <20161123183358.16851-1-phil.turnbull@oracle.com>
-References: <20161123183358.16851-1-phil.turnbull@oracle.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E491464C0@ORSMSX103.amr.corp.intel.com>
+Date: Tue, 28 Mar 2017 15:54:56 +0000
+Subject: [Intel-wired-lan] [PATCH 1/5] fm10k: use a BITMAP for flags
+	to	avoid race conditions
+In-Reply-To: <20170112235942.5767-1-jacob.e.keller@intel.com>
+References: <20170112235942.5767-1-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E4914655B@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
 -----Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Phil Turnbull
-Sent: Wednesday, November 23, 2016 10:34 AM
-To: intel-wired-lan@lists.osuosl.org
-Cc: Phil Turnbull <phil.turnbull@oracle.com>
-Subject: [Intel-wired-lan] [PATCH] fm10k: correctly check if interface is removed.
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
+Sent: Thursday, January 12, 2017 4:00 PM
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Subject: [Intel-wired-lan] [PATCH 1/5] fm10k: use a BITMAP for flags to avoid race conditions
 
-FM10K_REMOVED expects a hardware address, not a 'struct fm10k_hw'.
+Replace bitwise operators and #defines with a BITMAP and enumeration values. This is similar to how we handle the "state" values as well.
 
-Fixes: 5cb8db4a4cbc ("fm10k: Add support for VF")
-Signed-off-by: Phil Turnbull <phil.turnbull@oracle.com>
+This has two distinct advantages over the old method. First, we ensure correctness of operations which are currently problematic due to race conditions. Suppose that two kernel threads are running, such as the watchdog and an ethtool ioctl, and both modify flags. We'll say that the watchdog is CPU A, and the ethtool ioctl is CPU B.
+
+CPU A sets FLAG_1, which can be seen as
+  CPU A read FLAGS
+  CPU A write FLAGS | FLAG_1
+
+CPU B sets FLAG_2, which can be seen as
+  CPU B read FLAGS
+  CPU A write FLAGS | FLAG_2
+
+However, "|=" and "&=" operators are not actually atomic. So this could be ordered like the following:
+
+CPU A read FLAGS -> variable
+CPU B read FLAGS -> variable
+CPU A write FLAGS (variable | FLAG_1)
+CPU B write FLAGS (variable | FLAG_2)
+
+Notice how the 2nd write from CPU B could actually undo the write from CPU A because it isn't guaranteed that the |= operation is atomic.
+
+In practice the race windows for most flag writes is incredibly narrow so it is not easy to isolate issues. However, the more flags we have, the more likely they will cause problems. Additionally, if such a problem were to arise, it would be incredibly difficult to track down.
+
+Second, there is an additional advantage beyond code correctness. We can now automatically size the BITMAP if more flags were added, so that we do not need to remember that flags is u32 and thus if we added too many flags we would over-run the variable. This is not a likely occurrence for fm10k driver, but this patch can serve as an example for other drivers which have many more flags.
+
+This particular change does have a bit of trouble converting some of the idioms previously used with the #defines for flags. Specifically, when converting FM10K_FLAG_RSS_FIELD_IPV[46]_UDP flags. This whole operation was actually quite problematic, because we actually stored flags separately. This could more easily show the problem of the above re-ordering issue.
+
+This is really difficult to test whether atomics make a difference in practical scenarios, but you can ensure that basic functionality remains the same. This patch has a lot of code coverage, but most of it is relatively simple.
+
+While we are modifying these files, update their copyright year.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-
 Tested-by: Krishneil Singh  <krishneil.k.singh@intel.com>
-
 
