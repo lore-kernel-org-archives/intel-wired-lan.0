@@ -1,81 +1,83 @@
-From: Dmitry Popov <ixaphire@gmail.com>
-Date: Wed, 29 Mar 2017 04:39:10 +0300
-Subject: [Intel-wired-lan] [PATCH v7 2/2] ixgbe: add support for XDP_TX
- action
-In-Reply-To: <20170324043145.10293.75036.stgit@john-Precision-Tower-5810>
-References: <20170324042949.10293.43329.stgit@john-Precision-Tower-5810>
- <20170324043145.10293.75036.stgit@john-Precision-Tower-5810>
-Message-ID: <20170329043910.8db257e04e3833fae5ace8cc@gmail.com>
+From: Vasiliy Tolstov <v.tolstov@selfip.ru>
+Date: Wed, 29 Mar 2017 10:50:21 +0300
+Subject: [Intel-wired-lan] reset 10Gb SPF port on linux 4.4.x LTS
+Message-ID: <CACaajQvMvfvYc7=DAr_C2JW4HeHz9E7SOmD-kimZ3AA13wSLPg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 23 Mar 2017 21:31:45 -0700
-John Fastabend <john.fastabend@gmail.com> wrote:
+I have two port Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network
+Connection adapter
 
-> Add support for XDP_TX action.
-> 
-> A couple design choices were made here. First I use a new ring
-> pointer structure xdp_ring[] in the adapter struct instead of
-> pushing the newly allocated xdp TX rings into the tx_ring[]
-> structure. This means we have to duplicate loops around rings
-> in places we want to initialize both TX rings and XDP rings.
-> But by making it explicit it is obvious when we are using XDP
-> rings and when we are using TX rings. Further we don't have
-> to do ring arithmatic which is error prone. As a proof point
-> for doing this my first patches used only a single ring structure
-> and introduced bugs in FCoE code and macvlan code paths.
-> 
-> Second I am aware this is not the most optimized version of
-> this code possible. I want to get baseline support in using
-> the most readable format possible and then once this series
-> is included I will optimize the TX path in another series
-> of patches.
-> 
-> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   19 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   25 ++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   78 +++++-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  279 +++++++++++++++++++---
->  4 files changed, 350 insertions(+), 51 deletions(-)
+Sometimes when pps goes to 200000 i have errors like below. Also note
+that when i manually generate traffic via hping3 i don't see any
+errors with packet rate is about 600000. How can i fix this issue and
+why it happening?
+Also note that from switch side i don't see any errors, but from
+server side i see packet drops.
 
-Hi there.
+ixgbe 0000:05:00.0 eth0: tx hang 12 detected on queue 6, resetting adapter
+ixgbe 0000:05:00.0 eth0: initiating reset due to tx timeout
+ixgbe 0000:05:00.0 eth0: Detected Tx Unit Hang
+  Tx Queue             <8>
+  TDH, TDT             <0>, <16c>
+  next_to_use          <0>
+  next_to_clean        <0>
+tx_buffer_info[next_to_clean]
+  time_stamp           <0>
+  jiffies              <10f8de392>
+ixgbe 0000:05:00.0 eth0: tx hang 12 detected on queue 8, resetting adapter
+ixgbe 0000:05:00.0 eth0: initiating reset due to tx timeout
+ixgbe 0000:05:00.0 eth0: Detected Tx Unit Hang
+  Tx Queue             <9>
+  TDH, TDT             <0>, <4>
+  next_to_use          <4>
+  next_to_clean        <0>
+tx_buffer_info[next_to_clean]
+  time_stamp           <10f8de364>
+  jiffies              <10f8de392>
+ixgbe 0000:05:00.0 eth0: Detected Tx Unit Hang
+  Tx Queue             <10>
+  TDH, TDT             <0>, <82>
+  next_to_use          <2>
+  next_to_clean        <0>
+tx_buffer_info[next_to_clean]
+  time_stamp           <10f8de270>
+  jiffies              <10f8de392>
+ixgbe 0000:05:00.0 eth0: tx hang 12 detected on queue 9, resetting adapter
+ixgbe 0000:05:00.0 eth0: initiating reset due to tx timeout
+xgbe 0000:05:00.0 eth0: tx hang 12 detected on queue 10, resetting adapter
+ixgbe 0000:05:00.0 eth0: initiating reset due to tx timeout
+ixgbe 0000:05:00.0 eth0: Reset adapter
+ixgbe 0000:05:00.0 eth0: tx hang 13 detected on queue 4, resetting adapter
+ixgbe 0000:05:00.1 eth2: Detected Tx Unit Hang
+  Tx Queue             <21>
+  TDH, TDT             <21>, <1022>
+  next_to_use          <c2>
+  next_to_clean        <c2>
+tx_buffer_info[next_to_clean]
+  time_stamp           <1095cdc2f>
+  jiffies              <10f8de3ad>
+ixgbe 0000:05:00.1 eth2: Detected Tx Unit Hang
+  Tx Queue             <22>
+  TDH, TDT             <8f>, <90>
+  next_to_use          <db>
+  next_to_clean        <db>
+tx_buffer_info[next_to_clean]
+  time_stamp           <10b77e84c>
+  jiffies              <10f8de3ad>
+ixgbe 0000:05:00.1 eth2: tx hang 1 detected on queue 22, resetting adapter
+ixgbe 0000:05:00.1 eth2: initiating reset due to tx timeout
+ixgbe 0000:05:00.1 eth2: Reset adapter
+ixgbe 0000:05:00.1 eth2: tx hang 2 detected on queue 21, resetting adapter
+ixgbe 0000:05:00.1 eth2: initiating reset due to tx timeout
+ixgbe 0000:05:00.0 eth0: detected SFP+: 5
+ixgbe 0000:05:00.1 eth2: detected SFP+: 6
+ixgbe 0000:05:00.0 eth0: NIC Link is Up 10 Gbps, Flow Control: RX/TX
+ixgbe 0000:05:00.1 eth2: NIC Link is Up 10 Gbps, Flow Control: RX/TX
 
-I've been testing&backporting these patches (good job btw) for
-DDoS mitigation solutions and got one question/issue about XDP queues setup:
-
-Briefly, what is being done:
-N_cpus queues are allocated
->+	return adapter->xdp_prog ? nr_cpu_ids : 0;
-and ixgbe_xmit_xdp_ring chooses one of them, based on the cpu it is running on
->+	struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
-
-It's pretty good on ~default setups with one rx queue per each cpu and
-uniformly spread irqs: queue#0 on cpu#0, queue#i on cpu#i etc. It is even
-ok to reduce the number of queues (however then there's going to be some unused
-xdp-only q_vectors/irqs). The real problem arises when one wants to move irqs to
-different cpus: for instance, to handle packets only on cpus #8-15,24-27
-(say, 2x8 NUMA server with HT and NIC bound to 2nd processor). XDP rings are
-going to be shuffled really hard in this scenario: ixgbe_xmit_xdp_ring would
-choose xdp_ring of some other q_vector, and irq of this q_vector would be 
-handled on some other cpu (hence memory pages would walk across cpus etc).
-
-And I'm curious, why not to hard-pair xdp rings with rx rings (placing each
-pair in the same q_vector ofc)? It would save some irqs when n_queues < n_cpus
-and make irq manipulation a lot easier. I couldn't get any real cons against
-this pairing (except it might be a bit harder to implement), and couldn't find
-any discussion about it. Did I miss something?
-
-
-Also, regarding this patch, you might want to initialize q_vector->itr to
-IXGBE_12K_ITR for xdp-only q_vectors.
-Currently, 
-	if (txr_count && !rxr_count) {
-doesn't hit in ixgbe_alloc_q_vectors, and the 'else' branch
-    /* rx or rx/tx vector */
-    if (adapter->rx_itr_setting == 1)
-        q_vector->itr = IXGBE_20K_ITR;
-sets it to IXGBE_20K_ITR.
+-- 
+Vasiliy Tolstov,
+e-mail: v.tolstov at selfip.ru
