@@ -1,152 +1,54 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 29 Mar 2017 21:11:50 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- d08a9f6cd1c8fc58fd57724f45841f77e49e1fa3
-Message-ID: <58dbb296./8wLfxYigakErXYi%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 29 Mar 2017 10:38:46 -0700
+Subject: [Intel-wired-lan] [[next PATCH S66-V2 08/11] i40e: clean up
+ historic deprecated flag definitions
+In-Reply-To: <20170329082230.3869-9-alice.michael@intel.com>
+References: <20170329082230.3869-1-alice.michael@intel.com>
+ <20170329082230.3869-9-alice.michael@intel.com>
+Message-ID: <1490809126.29410.5.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-d08a9f6cd1c8fc58fd57724f45841f77e49e1fa3  i40e: fix for queue timing delays
+On Wed, 2017-03-29 at 04:22 -0400, Alice Michael wrote:
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> Since an early commit a few flags have no longer
+> been used. Remove these definitions to reduce code clutter.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: I3589be4622574e747013cd4dc403e18b039f4965
 
-elapsed time: 179m
+This would be a good chance to actually align the flag values so that
+out-of-tree and kernel match.
 
-configs tested: 128
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-i386                     randconfig-a0-201713
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-x015-201713
-x86_64                 randconfig-x012-201713
-x86_64                 randconfig-x017-201713
-x86_64                 randconfig-x010-201713
-x86_64                 randconfig-x018-201713
-x86_64                 randconfig-x011-201713
-x86_64                 randconfig-x019-201713
-x86_64                 randconfig-x016-201713
-x86_64                 randconfig-x014-201713
-x86_64                 randconfig-x013-201713
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201713
-i386                     randconfig-s1-201713
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                             allmodconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201713
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-i386                               tinyconfig
-i386                   randconfig-x014-201713
-i386                   randconfig-x010-201713
-i386                   randconfig-x016-201713
-i386                   randconfig-x017-201713
-i386                   randconfig-x013-201713
-i386                   randconfig-x019-201713
-i386                   randconfig-x015-201713
-i386                   randconfig-x012-201713
-i386                   randconfig-x011-201713
-i386                   randconfig-x018-201713
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                 randconfig-x009-201713
-x86_64                 randconfig-x004-201713
-x86_64                 randconfig-x003-201713
-x86_64                 randconfig-x008-201713
-x86_64                 randconfig-x002-201713
-x86_64                 randconfig-x005-201713
-x86_64                 randconfig-x007-201713
-x86_64                 randconfig-x000-201713
-x86_64                 randconfig-x006-201713
-x86_64                 randconfig-x001-201713
-i386                   randconfig-x077-201713
-i386                   randconfig-x070-201713
-i386                   randconfig-x073-201713
-i386                   randconfig-x076-201713
-i386                   randconfig-x072-201713
-i386                   randconfig-x078-201713
-i386                   randconfig-x074-201713
-i386                   randconfig-x075-201713
-i386                   randconfig-x079-201713
-i386                   randconfig-x071-201713
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                     randconfig-r0-201713
-i386                   randconfig-x002-201713
-i386                   randconfig-x005-201713
-i386                   randconfig-x006-201713
-i386                   randconfig-x003-201713
-i386                   randconfig-x007-201713
-i386                   randconfig-x008-201713
-i386                   randconfig-x001-201713
-i386                   randconfig-x000-201713
-i386                   randconfig-x004-201713
-i386                   randconfig-x009-201713
-
-Thanks,
-Fengguang
+> ---
+> ?drivers/net/ethernet/intel/i40e/i40e.h | 3 ---
+> ?1 file changed, 3 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h
+> b/drivers/net/ethernet/intel/i40e/i40e.h
+> index ef64dc6..e987503 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+> @@ -390,11 +390,8 @@ struct i40e_pf {
+> ?#define I40E_FLAG_RSS_ENABLED			BIT_ULL(6)
+> ?#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(7)
+> ?#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(10)
+> -#define I40E_FLAG_CLEAN_ADMINQ			BIT_ULL(14)
+> ?#define I40E_FLAG_FILTER_SYNC			BIT_ULL(15)
+> ?#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(16)
+> -#define I40E_FLAG_PROCESS_MDD_EVENT		BIT_ULL(17)
+> -#define I40E_FLAG_PROCESS_VFLR_EVENT		BIT_ULL(18)
+> ?#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(19)
+> ?#define I40E_FLAG_DCB_ENABLED			BIT_ULL(20)
+> ?#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(21)
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170329/2813ec84/attachment.asc>
