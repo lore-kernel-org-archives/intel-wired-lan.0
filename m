@@ -1,364 +1,248 @@
 From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Wed, 29 Mar 2017 17:22:54 -0700
-Subject: [Intel-wired-lan] [next-queue v6 PATCH 6/7] i40e: Add support for
-	exposing switch port statistics via port netdevs
+Date: Wed, 29 Mar 2017 17:22:52 -0700
+Subject: [Intel-wired-lan] [next-queue v6 PATCH 4/7] net: store
+	port/representator id in metadata_dst
 In-Reply-To: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
 References: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <1490833375-2788-7-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <1490833375-2788-5-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-By default stats counted by HW are returned via the original
-ndo_get_stats64() api. Stats counted in SW are returned via
-ndo_get_offload_stats() api.
+From: Jakub Kicinski <jakub.kicinski@netronome.com>
 
-Small script to demonstrate port stats in switchdev mode.
-PF: p4p1, VFs: p4p1_0,p4p1_1 VF Port Reps:p4p1-vf0, p4p1-vf1
-PF Port rep: p4p1-pf
+Switches and modern SR-IOV enabled NICs may multiplex traffic from Port
+representators and control messages over single set of hardware queues.
+Control messages and muxed traffic may need ordered delivery.
 
-# rmmod i40e; modprobe i40e
-# devlink dev eswitch set pci/0000:05:00.0 mode switchdev
-# echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
-# ip link set p4p1 vf 0 mac 00:11:22:33:44:55
-# ip link set p4p1 vf 1 mac 00:11:22:33:44:56
-# rmmod i40evf; modprobe i40evf
+Those requirements make it hard to comfortably use TC infrastructure today
+unless we have a way of attaching metadata to skbs at the upper device.
+Because single set of queues is used for many netdevs stopping TC/sched
+queues of all of them reliably is impossible and lower device has to
+retreat to returning NETDEV_TX_BUSY and usually has to take extra locks
+on the fastpath.
 
-/* Create 2 namespaces and move the VFs to the corresponding ns */
-# ip netns add ns0
-# ip link set p4p1_0 netns ns0
-# ip netns exec ns0 ip addr add 192.168.1.10/24 dev p4p1_0
-# ip netns exec ns0 ip link set p4p1_0 up
-# ip netns add ns1
-# ip link set p4p1_1 netns ns1
-# ip netns exec ns1 ip addr add 192.168.1.11/24 dev p4p1_1
-# ip netns exec ns1 ip link set p4p1_1 up
+This patch attempts to enable port/representative devs to attach metadata
+to skbs which carry port id.  This way representatives can be queueless
+and all queuing can be performed at the lower netdev in the usual way.
 
-/* bring up pf and port netdevs */
-# ip addr add 192.168.1.1/24 dev p4p1
-# ip link set p4p1 up
-# ip link set p4p1-vf0 up
-# ip link set p4p1-vf1 up
-# ip link set p4p1-pf up
+Traffic arriving on the port/representative interfaces will be have
+metadata attached and will subsequently be queued to the lower device
+for transmission. The lower device should recognize the metadata and
+translate it to HW specific format which is most likely either a special
+header inserted before the network headers or descriptor/metadata fields.
 
-# ip netns exec ns0 ping -c3 192.168.1.11  /* VF0 -> VF1 */
-# ip netns exec ns1 ping -c3 192.168.1.10  /* VF1 -> VF0 */
-# ping -c3 192.168.1.10   /* PF -> VF0 */
-# ping -c3 192.168.1.11   /* PF -> VF1 */
+Metadata is associated with the lower device by storing the netdev pointer
+along with port id so that if TC decides to redirect or mirror the new
+netdev will not try to interpret it.
 
-/* VF0 -> IP in same subnet - broadcasts will be seen on p4p1-vf0 */
-# ip netns exec ns0 ping -c1 -W1 192.168.1.200
-/* VF1 -> IP in same subnet-  broadcasts will be seen on p4p1-vf1 */
-# ip netns exec ns0 ping -c1 -W1 192.168.1.200
-/* port rep VF0 -> IP in same subnet - broadcasts will be seen on p4p1_0 */
-# ping -I p4p1-vf0 -c1 -W1 192.168.1.200
-/* port rep VF1 -> IP in same subnet  - broadcasts will be seen on p4p1_1 */
-# ping -I p4p1-vf1 -c1 -W1 192.168.1.200
+This is mostly for SR-IOV devices since switches don't have lower netdevs
+today.
 
-HW STATS
-# ip netns exec ns0 ip -s l show p4p1_0
-41: p4p1_0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT qlen 1000
-    link/ether 00:11:22:33:44:55 brd ff:ff:ff:ff:ff:ff
-    RX: bytes  packets  errors  dropped overrun mcast
-    1274       21       0       0       0       0
-    TX: bytes  packets  errors  dropped carrier collsns
-    980        14       0       0       0       0
-# ip -s l show p4p1-vf0
-37: p4p1-vf0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
-    link/ether f6:07:98:0e:cd:97 brd ff:ff:ff:ff:ff:ff
-    RX: bytes  packets  errors  dropped overrun mcast
-    980        14       0       0       0       0
-    TX: bytes  packets  errors  dropped carrier collsns
-    1274       21       0       0       0       0
-# ip netns exec ns1 ip -s l show p4p1_1
-42: p4p1_1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT qlen 1000
-    link/ether 00:11:22:33:44:56 brd ff:ff:ff:ff:ff:ff
-    RX: bytes  packets  errors  dropped overrun mcast
-    1246       19       0       0       0       0
-    TX: bytes  packets  errors  dropped carrier collsns
-    1078       15       0       0       0       0
-# ip -s l show p4p1-vf1
-38: p4p1-vf1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
-    link/ether 2a:cf:ff:6a:f3:66 brd ff:ff:ff:ff:ff:ff
-    RX: bytes  packets  errors  dropped overrun mcast
-    1078       15       0       0       0       0
-    TX: bytes  packets  errors  dropped carrier collsns
-    1246       19       0       0       0       0
-# ip -s l show p4p1
-34: p4p1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT qlen 1000
-    link/ether 3c:fd:fe:a3:18:f8 brd ff:ff:ff:ff:ff:ff
-    RX: bytes  packets  errors  dropped overrun mcast
-    1134       17       0       0       0       0
-    TX: bytes  packets  errors  dropped carrier collsns
-    966        19       0       0       0       0
-# ip -s l show p4p1-pf
-36: p4p1-pf: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
-    link/ether da:0f:67:fe:2e:66 brd ff:ff:ff:ff:ff:ff
-    RX: bytes  packets  errors  dropped overrun mcast
-    966        19       0       0       0       0
-    TX: bytes  packets  errors  dropped carrier collsns
-    882        17       0       0       0       0
-
-SW STATS
-# ifstat -a -x c
-#kernel
-Interface        RX Pkts/Rate    TX Pkts/Rate    RX Data/Rate    TX Data/Rate
-                 RX Errs/Drop    TX Errs/Drop    RX Over/Rate    TX Coll/Rate
-p4p1-pf                0 0             3 0             0 0           126 0
-                       0 0             0 0             0 0             0 0
-p4p1-vf0               4 0             6 0           184 0           252 0
-                       0 0             0 0             0 0             0 0
-p4p1-vf1               3 0             3 0           138 0           126 0
-                       0 0             0 0             0 0             0 0
-
+Signed-off-by: Jakub Kicinski <jakub.kicinski@netronome.com>
 Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  10 +++
- drivers/net/ethernet/intel/i40e/i40e_main.c | 125 ++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |  24 +++++-
- 3 files changed, 158 insertions(+), 1 deletion(-)
+ include/net/dst_metadata.h     | 41 ++++++++++++++++++++++++++++++++---------
+ net/core/dst.c                 | 15 ++++++++++-----
+ net/core/filter.c              |  1 +
+ net/ipv4/ip_tunnel_core.c      |  6 ++++--
+ net/openvswitch/flow_netlink.c |  4 +++-
+ 5 files changed, 50 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index ac11005..72e11b2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -328,8 +328,18 @@ enum i40e_port_netdev_type {
- 	I40E_PORT_NETDEV_VF
- };
+diff --git a/include/net/dst_metadata.h b/include/net/dst_metadata.h
+index 701fc81..a803129 100644
+--- a/include/net/dst_metadata.h
++++ b/include/net/dst_metadata.h
+@@ -5,10 +5,22 @@
+ #include <net/ip_tunnels.h>
+ #include <net/dst.h>
  
-+struct port_netdev_pcpu_stats {
-+	u64			tx_packets;
-+	u64			tx_bytes;
-+	u64			tx_drops;
-+	u64			rx_packets;
-+	u64			rx_bytes;
-+	struct u64_stats_sync	syncp;
++enum metadata_type {
++	METADATA_IP_TUNNEL,
++	METADATA_HW_PORT_MUX,
 +};
 +
- /* Port representor netdev private structure */
- struct i40e_port_netdev_priv {
-+	struct port_netdev_pcpu_stats __percpu *stats;
- 	enum i40e_port_netdev_type type;	/* type - PF or VF */
- 	struct metadata_dst *dst;		/* port id */
- 	void *f;				/* ptr to PF or VF struct */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index e9c5c6b..4f0eebc 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11001,10 +11001,123 @@ static int i40e_port_netdev_stop(struct net_device *dev)
- 	return err;
- }
- 
-+/**
-+ * i40e_port_netdev_get_stats64
-+ * @dev: network interface device structure
-+ * @stats: netlink stats structure
-+ *
-+ * Fills the hw statistics from the VSI corresponding to the associated port
-+ * netdev
-+ **/
-+static void
-+i40e_port_netdev_get_stats64(struct net_device *netdev,
-+			     struct rtnl_link_stats64 *stats)
-+{
-+	struct i40e_port_netdev_priv *priv = netdev_priv(netdev);
-+	struct i40e_vf *vf;
-+	struct i40e_pf *pf;
-+	struct i40e_vsi *vsi;
-+	struct i40e_eth_stats *estats;
++struct hw_port_info {
++	struct net_device *lower_dev;
++	u32 port_id;
++};
 +
-+	switch (priv->type) {
-+	case I40E_PORT_NETDEV_VF:
-+		vf = (struct i40e_vf *)priv->f;
-+		pf = vf->pf;
-+		vsi = pf->vsi[vf->lan_vsi_idx];
-+		break;
-+	case I40E_PORT_NETDEV_PF:
-+		pf = (struct i40e_pf *)priv->f;
-+		vsi = pf->vsi[pf->lan_vsi];
-+		break;
-+	default:
-+		return;
-+	}
-+
-+	i40e_update_stats(vsi);
-+	estats = &vsi->eth_stats;
-+
-+	/* TX and RX stats are flipped as we are returning the stats as seen
-+	 * at the switch port corresponding to the VF.
-+	 */
-+	stats->rx_packets = estats->tx_unicast + estats->tx_multicast +
-+			    estats->tx_broadcast;
-+	stats->tx_packets = estats->rx_unicast + estats->rx_multicast +
-+			    estats->rx_broadcast;
-+	stats->rx_bytes = estats->tx_bytes;
-+	stats->tx_bytes = estats->rx_bytes;
-+	stats->rx_dropped = estats->tx_discards;
-+	stats->tx_dropped = estats->rx_discards;
-+}
-+
-+/**
-+ * i40e_port_netdev_get_cpu_hit_stats64
-+ * @dev: network interface device structure
-+ * @stats: netlink stats structure
-+ *
-+ * stats are filled from the priv structure. correspond to the packets
-+ * that are seen by the cpu and sent/received via port netdev.
-+ **/
-+static int
-+i40e_port_netdev_get_cpu_hit_stats64(const struct net_device *dev,
-+				     struct rtnl_link_stats64 *stats)
-+{
-+	struct i40e_port_netdev_priv *priv = netdev_priv(dev);
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+		struct port_netdev_pcpu_stats *port_netdev_stats;
-+		u64 tbytes, tpkts, tdrops, rbytes, rpkts;
-+		unsigned int start;
-+
-+		port_netdev_stats = per_cpu_ptr(priv->stats, i);
-+		do {
-+			start = u64_stats_fetch_begin_irq(&port_netdev_stats->syncp);
-+			tbytes = port_netdev_stats->tx_bytes;
-+			tpkts = port_netdev_stats->tx_packets;
-+			tdrops = port_netdev_stats->tx_drops;
-+			rbytes = port_netdev_stats->rx_bytes;
-+			rpkts = port_netdev_stats->rx_packets;
-+		} while (u64_stats_fetch_retry_irq(&port_netdev_stats->syncp, start));
-+		stats->tx_bytes += tbytes;
-+		stats->tx_packets += tpkts;
-+		stats->tx_dropped += tdrops;
-+		stats->rx_bytes += rbytes;
-+		stats->rx_packets += rpkts;
-+	}
-+
-+	return 0;
-+}
-+
-+static bool
-+i40e_port_netdev_has_offload_stats(const struct net_device *dev, int attr_id)
-+{
-+	switch (attr_id) {
-+	case IFLA_OFFLOAD_XSTATS_CPU_HIT:
-+		return true;
-+	}
-+
-+	return false;
-+}
-+
-+static int
-+i40e_port_netdev_get_offload_stats(int attr_id, const struct net_device *dev,
-+				   void *sp)
-+{
-+	switch (attr_id) {
-+	case IFLA_OFFLOAD_XSTATS_CPU_HIT:
-+		return i40e_port_netdev_get_cpu_hit_stats64(dev, sp);
-+	}
-+
-+	return -EINVAL;
-+}
-+
- static const struct net_device_ops i40e_port_netdev_ops = {
- 	.ndo_open		= i40e_port_netdev_open,
- 	.ndo_stop		= i40e_port_netdev_stop,
- 	.ndo_start_xmit		= i40e_port_netdev_start_xmit,
-+	.ndo_get_stats64	= i40e_port_netdev_get_stats64,
-+	.ndo_has_offload_stats	= i40e_port_netdev_has_offload_stats,
-+	.ndo_get_offload_stats	= i40e_port_netdev_get_offload_stats,
+ struct metadata_dst {
+ 	struct dst_entry		dst;
++	enum metadata_type		type;
+ 	union {
+ 		struct ip_tunnel_info	tun_info;
++		struct hw_port_info	port_info;
+ 	} u;
  };
  
- /**
-@@ -11077,6 +11190,16 @@ int i40e_alloc_port_netdev(void *f, enum i40e_port_netdev_type type)
- 		return -EINVAL;
- 	}
+@@ -27,7 +39,7 @@ static inline struct ip_tunnel_info *skb_tunnel_info(struct sk_buff *skb)
+ 	struct metadata_dst *md_dst = skb_metadata_dst(skb);
+ 	struct dst_entry *dst;
  
-+	priv->stats = netdev_alloc_pcpu_stats(struct port_netdev_pcpu_stats);
-+	if (!priv->stats) {
-+		dev_err(&pf->pdev->dev,
-+			"alloc_pcpu_stats failed for port netdev: %s\n",
-+			port_netdev->name);
-+		dst_release((struct dst_entry *)priv->dst);
-+		free_netdev(port_netdev);
-+		return -ENOMEM;
+-	if (md_dst)
++	if (md_dst && md_dst->type == METADATA_IP_TUNNEL)
+ 		return &md_dst->u.tun_info;
+ 
+ 	dst = skb_dst(skb);
+@@ -55,22 +67,33 @@ static inline int skb_metadata_dst_cmp(const struct sk_buff *skb_a,
+ 	a = (const struct metadata_dst *) skb_dst(skb_a);
+ 	b = (const struct metadata_dst *) skb_dst(skb_b);
+ 
+-	if (!a != !b || a->u.tun_info.options_len != b->u.tun_info.options_len)
++	if (!a != !b || a->type != b->type)
+ 		return 1;
+ 
+-	return memcmp(&a->u.tun_info, &b->u.tun_info,
+-		      sizeof(a->u.tun_info) + a->u.tun_info.options_len);
++	switch (a->type) {
++	case METADATA_HW_PORT_MUX:
++		return memcmp(&a->u.port_info, &b->u.port_info,
++			      sizeof(a->u.port_info));
++	case METADATA_IP_TUNNEL:
++		return memcmp(&a->u.tun_info, &b->u.tun_info,
++			      sizeof(a->u.tun_info) +
++					 a->u.tun_info.options_len);
++	default:
++		return 1;
 +	}
-+
- 	port_netdev->netdev_ops = &i40e_port_netdev_ops;
- 	eth_hw_addr_random(port_netdev);
- 
-@@ -11144,6 +11267,7 @@ void i40e_free_port_netdev(void *f, enum i40e_port_netdev_type type)
- 			 pf->port_netdev->name);
- 		priv = netdev_priv(pf->port_netdev);
- 		dst_release((struct dst_entry *)priv->dst);
-+		free_percpu(priv->stats);
- 		unregister_netdev(pf->port_netdev);
- 		free_netdev(pf->port_netdev);
- 		pf->port_netdev = NULL;
-@@ -11163,6 +11287,7 @@ void i40e_free_port_netdev(void *f, enum i40e_port_netdev_type type)
- 			 vf->port_netdev->name);
- 		priv = netdev_priv(vf->port_netdev);
- 		dst_release((struct dst_entry *)priv->dst);
-+		free_percpu(priv->stats);
- 		unregister_netdev(vf->port_netdev);
- 		free_netdev(vf->port_netdev);
- 		vf->port_netdev = NULL;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 86d2510..449a35c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1309,7 +1309,9 @@ static bool i40e_alloc_mapped_page(struct i40e_ring *rx_ring,
- static void i40e_handle_lpbk_skb(struct i40e_ring *rx_ring, struct sk_buff *skb)
- {
- 	struct i40e_q_vector *q_vector = rx_ring->q_vector;
-+	struct port_netdev_pcpu_stats *port_netdev_stats;
- 	struct i40e_pf *pf = rx_ring->vsi->back;
-+	struct i40e_port_netdev_priv *priv;
- 	struct sk_buff *nskb;
- 	struct i40e_vf *vf;
- 	struct ethhdr *eth;
-@@ -1334,6 +1336,12 @@ static void i40e_handle_lpbk_skb(struct i40e_ring *rx_ring, struct sk_buff *skb)
- 				break;
- 			nskb->offload_fwd_mark = 1;
- 			nskb->dev = vf->port_netdev;
-+			priv = netdev_priv(vf->port_netdev);
-+			port_netdev_stats = this_cpu_ptr(priv->stats);
-+			u64_stats_update_begin(&port_netdev_stats->syncp);
-+			port_netdev_stats->rx_packets++;
-+			port_netdev_stats->rx_bytes += nskb->len;
-+			u64_stats_update_end(&port_netdev_stats->syncp);
- 			napi_gro_receive(&q_vector->napi, nskb);
- 			break;
- 		}
-@@ -3283,6 +3291,7 @@ netdev_tx_t i40e_port_netdev_start_xmit(struct sk_buff *skb,
- 	struct i40e_vsi *vsi;
- 	struct i40e_pf *pf;
- 	struct i40e_vf *vf;
-+	int ret;
- 
- 	switch (priv->type) {
- 	case I40E_PORT_NETDEV_VF:
-@@ -3302,5 +3311,18 @@ netdev_tx_t i40e_port_netdev_start_xmit(struct sk_buff *skb,
- 	skb_dst_set(skb, &priv->dst->dst);
- 	skb->dev = vsi->netdev;
- 
--	return dev_queue_xmit(skb);
-+	ret = dev_queue_xmit(skb);
-+	if (likely(ret == NET_XMIT_SUCCESS || ret == NET_XMIT_CN)) {
-+		struct port_netdev_pcpu_stats *port_netdev_stats;
-+
-+		port_netdev_stats = this_cpu_ptr(priv->stats);
-+		u64_stats_update_begin(&port_netdev_stats->syncp);
-+		port_netdev_stats->tx_packets++;
-+		port_netdev_stats->tx_bytes += skb->len;
-+		u64_stats_update_end(&port_netdev_stats->syncp);
-+	} else {
-+		this_cpu_inc(priv->stats->tx_drops);
-+	}
-+
-+	return ret;
  }
+ 
+ void metadata_dst_free(struct metadata_dst *);
+-struct metadata_dst *metadata_dst_alloc(u8 optslen, gfp_t flags);
+-struct metadata_dst __percpu *metadata_dst_alloc_percpu(u8 optslen, gfp_t flags);
++struct metadata_dst *metadata_dst_alloc(u8 optslen, enum metadata_type type,
++					gfp_t flags);
++struct metadata_dst __percpu *
++metadata_dst_alloc_percpu(u8 optslen, enum metadata_type type, gfp_t flags);
+ 
+ static inline struct metadata_dst *tun_rx_dst(int md_size)
+ {
+ 	struct metadata_dst *tun_dst;
+ 
+-	tun_dst = metadata_dst_alloc(md_size, GFP_ATOMIC);
++	tun_dst = metadata_dst_alloc(md_size, METADATA_IP_TUNNEL, GFP_ATOMIC);
+ 	if (!tun_dst)
+ 		return NULL;
+ 
+@@ -85,11 +108,11 @@ static inline struct metadata_dst *tun_dst_unclone(struct sk_buff *skb)
+ 	int md_size;
+ 	struct metadata_dst *new_md;
+ 
+-	if (!md_dst)
++	if (!md_dst || md_dst->type != METADATA_IP_TUNNEL)
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	md_size = md_dst->u.tun_info.options_len;
+-	new_md = metadata_dst_alloc(md_size, GFP_ATOMIC);
++	new_md = metadata_dst_alloc(md_size, METADATA_IP_TUNNEL, GFP_ATOMIC);
+ 	if (!new_md)
+ 		return ERR_PTR(-ENOMEM);
+ 
+diff --git a/net/core/dst.c b/net/core/dst.c
+index 960e503..230e430 100644
+--- a/net/core/dst.c
++++ b/net/core/dst.c
+@@ -366,7 +366,9 @@ static int dst_md_discard(struct sk_buff *skb)
+ 	return 0;
+ }
+ 
+-static void __metadata_dst_init(struct metadata_dst *md_dst, u8 optslen)
++static void __metadata_dst_init(struct metadata_dst *md_dst,
++				enum metadata_type type, u8 optslen)
++
+ {
+ 	struct dst_entry *dst;
+ 
+@@ -378,9 +380,11 @@ static void __metadata_dst_init(struct metadata_dst *md_dst, u8 optslen)
+ 	dst->output = dst_md_discard_out;
+ 
+ 	memset(dst + 1, 0, sizeof(*md_dst) + optslen - sizeof(*dst));
++	md_dst->type = type;
+ }
+ 
+-struct metadata_dst *metadata_dst_alloc(u8 optslen, gfp_t flags)
++struct metadata_dst *metadata_dst_alloc(u8 optslen, enum metadata_type type,
++					gfp_t flags)
+ {
+ 	struct metadata_dst *md_dst;
+ 
+@@ -388,7 +392,7 @@ struct metadata_dst *metadata_dst_alloc(u8 optslen, gfp_t flags)
+ 	if (!md_dst)
+ 		return NULL;
+ 
+-	__metadata_dst_init(md_dst, optslen);
++	__metadata_dst_init(md_dst, type, optslen);
+ 
+ 	return md_dst;
+ }
+@@ -402,7 +406,8 @@ void metadata_dst_free(struct metadata_dst *md_dst)
+ 	kfree(md_dst);
+ }
+ 
+-struct metadata_dst __percpu *metadata_dst_alloc_percpu(u8 optslen, gfp_t flags)
++struct metadata_dst __percpu *
++metadata_dst_alloc_percpu(u8 optslen, enum metadata_type type, gfp_t flags)
+ {
+ 	int cpu;
+ 	struct metadata_dst __percpu *md_dst;
+@@ -413,7 +418,7 @@ struct metadata_dst __percpu *metadata_dst_alloc_percpu(u8 optslen, gfp_t flags)
+ 		return NULL;
+ 
+ 	for_each_possible_cpu(cpu)
+-		__metadata_dst_init(per_cpu_ptr(md_dst, cpu), optslen);
++		__metadata_dst_init(per_cpu_ptr(md_dst, cpu), type, optslen);
+ 
+ 	return md_dst;
+ }
+diff --git a/net/core/filter.c b/net/core/filter.c
+index dfb9f61..ab29297 100644
+--- a/net/core/filter.c
++++ b/net/core/filter.c
+@@ -2531,6 +2531,7 @@ static unsigned short bpf_tunnel_key_af(u64 flags)
+ 		 * that is holding verifier mutex.
+ 		 */
+ 		md_dst = metadata_dst_alloc_percpu(IP_TUNNEL_OPTS_MAX,
++						   METADATA_IP_TUNNEL,
+ 						   GFP_KERNEL);
+ 		if (!md_dst)
+ 			return NULL;
+diff --git a/net/ipv4/ip_tunnel_core.c b/net/ipv4/ip_tunnel_core.c
+index a31f47c..cb1328e 100644
+--- a/net/ipv4/ip_tunnel_core.c
++++ b/net/ipv4/ip_tunnel_core.c
+@@ -134,10 +134,12 @@ struct metadata_dst *iptunnel_metadata_reply(struct metadata_dst *md,
+ 	struct metadata_dst *res;
+ 	struct ip_tunnel_info *dst, *src;
+ 
+-	if (!md || md->u.tun_info.mode & IP_TUNNEL_INFO_TX)
++	if (!md || md->type != METADATA_IP_TUNNEL ||
++	    md->u.tun_info.mode & IP_TUNNEL_INFO_TX)
++
+ 		return NULL;
+ 
+-	res = metadata_dst_alloc(0, flags);
++	res = metadata_dst_alloc(0, METADATA_IP_TUNNEL, flags);
+ 	if (!res)
+ 		return NULL;
+ 
+diff --git a/net/openvswitch/flow_netlink.c b/net/openvswitch/flow_netlink.c
+index df82b81..a36efae 100644
+--- a/net/openvswitch/flow_netlink.c
++++ b/net/openvswitch/flow_netlink.c
+@@ -2202,7 +2202,9 @@ static int validate_and_copy_set_tun(const struct nlattr *attr,
+ 	if (start < 0)
+ 		return start;
+ 
+-	tun_dst = metadata_dst_alloc(key.tun_opts_len, GFP_KERNEL);
++	tun_dst = metadata_dst_alloc(key.tun_opts_len, METADATA_IP_TUNNEL,
++				     GFP_KERNEL);
++
+ 	if (!tun_dst)
+ 		return -ENOMEM;
+ 
 -- 
 1.8.3.1
 
