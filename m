@@ -1,56 +1,72 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 30 Mar 2017 00:46:08 -0700
-Subject: [Intel-wired-lan] [next S65 3/3 v2] i40e: close client on remove
-	and shutdown
-In-Reply-To: <20170330074608.52108-1-jeffrey.t.kirsher@intel.com>
-References: <20170330074608.52108-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20170330074608.52108-3-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 30 Mar 2017 16:59:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 46/50]
+ drivers/net//ethernet/intel/i40e/i40e_main.c:11098:3: warning: 'vf' may be
+ used uninitialized in this function
+Message-ID: <201703301627.jN8fIwun%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   e7ffaffd41256f8039a6cd78092492172b96dc1b
+commit: 328f9ed45d8903aac029a756d6eb5daf553df71f [46/50] i40e: Sync link state between PF/VFs and Port representor netdevs
+config: xtensa-allmodconfig (attached as .config)
+compiler: xtensa-linux-gcc (GCC) 4.9.0
+reproduce:
+        wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 328f9ed45d8903aac029a756d6eb5daf553df71f
+        # save the attached .config to linux build tree
+        make.cross ARCH=xtensa 
 
-When the driver is removed or shut down, close any attached clients
-(i.e. i40iw). This prevents a panic seen sometimes on forced driver
-removal or system shutdown when iWarp is running.
+Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
+http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I4f6161e5a73ffbb2fd5883567b007310302bfcb5
+All warnings (new ones prefixed by >>):
+
+   drivers/net//ethernet/intel/i40e/i40e_main.c: In function 'i40e_alloc_port_netdev':
+>> drivers/net//ethernet/intel/i40e/i40e_main.c:11098:3: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
+      i40e_vc_notify_vf_link_state(vf);
+      ^
+
+vim +/vf +11098 drivers/net//ethernet/intel/i40e/i40e_main.c
+
+ 11082		switch (type) {
+ 11083		case I40E_PORT_NETDEV_PF:
+ 11084			/* Reset PF link as we are changing the mode to 'switchdev'.
+ 11085			 * Port netdev needs to be brought up to enable VF link.
+ 11086			 */
+ 11087			netif_carrier_off(vsi->netdev);
+ 11088			netif_tx_stop_all_queues(vsi->netdev);
+ 11089			if (pf->hw.phy.link_info.link_info & I40E_AQ_LINK_UP)
+ 11090				netif_carrier_on(port_netdev);
+ 11091			break;
+ 11092		case I40E_PORT_NETDEV_VF:
+ 11093			/* Reset VF link as we are changing the mode to 'switchdev'.
+ 11094			 * Port netdev needs to be brought up to enable VF link.
+ 11095			 */
+ 11096			vf->link_forced = true;
+ 11097			vf->link_up = false;
+ 11098			i40e_vc_notify_vf_link_state(vf);
+ 11099			break;
+ 11100		}
+ 11101	
+ 11102		return 0;
+ 11103	}
+ 11104	
+ 11105	/**
+ 11106	 * i40e_free_port_netdev
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index cb087d546a0a..da22850897c2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11392,6 +11392,11 @@ static void i40e_remove(struct pci_dev *pdev)
- 	if (pf->service_task.func)
- 		cancel_work_sync(&pf->service_task);
- 
-+	/* Client close must be called explicitly here because the timer
-+	 * has been stopped.
-+	 */
-+	i40e_notify_client_of_netdev_close(pf->vsi[pf->lan_vsi], false);
-+
- 	if (pf->flags & I40E_FLAG_SRIOV_ENABLED) {
- 		i40e_free_vfs(pf);
- 		pf->flags &= ~I40E_FLAG_SRIOV_ENABLED;
-@@ -11632,6 +11637,11 @@ static void i40e_shutdown(struct pci_dev *pdev)
- 	cancel_work_sync(&pf->service_task);
- 	i40e_fdir_teardown(pf);
- 
-+	/* Client close must be called explicitly here because the timer
-+	 * has been stopped.
-+	 */
-+	i40e_notify_client_of_netdev_close(pf->vsi[pf->lan_vsi], false);
-+
- 	if (pf->wol_en && (pf->flags & I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE))
- 		i40e_enable_mc_magic_wake(pf);
- 
--- 
-2.12.0
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 49104 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170330/c58f6bc5/attachment-0001.bin>
