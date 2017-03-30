@@ -1,195 +1,72 @@
 From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Wed, 29 Mar 2017 17:22:55 -0700
-Subject: [Intel-wired-lan] [next-queue v6 PATCH 7/7] i40e: Add support to
-	get switch id and port number for port netdevs
-In-Reply-To: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
-References: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <1490833375-2788-8-git-send-email-sridhar.samudrala@intel.com>
+Date: Wed, 29 Mar 2017 17:22:48 -0700
+Subject: [Intel-wired-lan] [next-queue v6 PATCH 0/7] i40e: Add port
+	representor and initial switchdev support
+Message-ID: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Introduce switchdev_ops to PF and port netdevs to return the switch id via
-SWITCHDEV_ATTR_ID_PORT_PARENT_ID attribute.
-Also, ndo_get_phys_port_name() support is added to port netdevs to return
-the port number.
+- Patch 1 introduces devlink interface to get/set the mode of switch.
+- Patch 2 adds support to create control plane port representor netdevs
+  associated with dataplane PF and VFs that can be used to control/configure
+  PF/VFs even when they are in a different namespace.
+- Patch 3 enables syncing link state between PF/VFs and associated Port
+  representors.
+- Patch 4 adds a new type to metadata_dst to allow passing port id to lower
+  device.
+- Patch 5 adds TX and RX support to port netdevs.
+- Patch 6 enables HW and SW Port statistics to be exposed via netlink on
+  Port netdevs.
+- Patch 7 adds support to get switch id and port number for Port netdevs.
 
-PF: p4p1, VFs: p4p1_0,p4p1_1, VF port reps:p4p1-vf0, p4p1-vf1,
-PF port rep: p4p1-pf
-# rmmod i40e; modprobe i40e
-# devlink dev eswitch set pci/0000:42:00.0 mode switchdev
-# echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
-# ip -d l show p4p1
-27: p4p1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-    link/ether 3c:fd:fe:a3:18:f8 brd ff:ff:ff:ff:ff:ff promiscuity 0 numtxqueues 64 numrxqueues 64 gso_max_size 65536 gso_max_segs 65535 portid 3cfdfea318f8 switchid 3cfdfea318f8
-    vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state disable, trust off
-    vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state disable, trust off
-# ip -d l show p4p1-pf
-29: p4p1-pf: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-    link/ether 42:7a:b5:dc:85:11 brd ff:ff:ff:ff:ff:ff promiscuity 0 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 portname 65535 switchid 3cfdfea318f8
-# ip -d l show p4p1-vf0
-30: p4p1-vf0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-    link/ether 6e:ff:0b:5a:63:6d brd ff:ff:ff:ff:ff:ff promiscuity 0 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 portname 0 switchid 3cfdfea318f8
-# ip -d l show p4p1-vf1
-31: p4p1-vf1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-    link/ether 92:6e:ff:35:05:d5 brd ff:ff:ff:ff:ff:ff promiscuity 0 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 portname 1 switchid 3cfdfea318f8
+v6:
+- Port representor netdevs are created and supported for PFs too.
+- Broadcast filters are not disabled by default on VFs in switchdev mode.
+  Instead, offload_fwd_mark is set on skb's that are forwarded to Port
+  netdevs to indicate that the HW has done the forwarding.
+- Random mac addresses are assigned to Port netdevs.
+v5:
+- Fix an issue with the link state sync patch.
+v4:
+- Make VFPR ndo_get_stats64 a void function to match with recent upstream
+  change.
+v3:
+- misc. error handling fixes suggested by Scott Peterson
+- introduce switchdev_ops and add support to get switch id and port no.
+  for VFPR netdevs. Suggested by Or Gerlitz
+v2:
+- handle i40e_alloc_vfpr_netdev() failures.
+- minor comment/commit msg updates.
 
-Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c | 97 +++++++++++++++++++++++++++++
- 2 files changed, 98 insertions(+)
+Jakub Kicinski (1):
+  net: store port/representator id in metadata_dst
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 72e11b2..9eb2ba5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -56,6 +56,7 @@
- #include <linux/ptp_clock_kernel.h>
- #include <net/devlink.h>
- #include <net/dst_metadata.h>
-+#include <net/switchdev.h>
- 
- #include "i40e_type.h"
- #include "i40e_prototype.h"
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4f0eebc..85f214d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -4862,6 +4862,32 @@ static int i40e_vsi_configure_bw_alloc(struct i40e_vsi *vsi, u8 enabled_tc,
- 	return 0;
- }
- 
-+static int i40e_switchdev_pf_attr_get(struct net_device *dev,
-+				      struct switchdev_attr *attr)
-+{
-+	struct i40e_netdev_priv *np = netdev_priv(dev);
-+	struct i40e_vsi *vsi = np->vsi;
-+	struct i40e_pf *pf = vsi->back;
-+
-+	if (pf->eswitch_mode == DEVLINK_ESWITCH_MODE_LEGACY)
-+		return -EOPNOTSUPP;
-+
-+	switch (attr->id) {
-+	case SWITCHDEV_ATTR_ID_PORT_PARENT_ID:
-+		attr->u.ppid.id_len = ETH_ALEN;
-+		ether_addr_copy(attr->u.ppid.id, dev->dev_addr);
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct switchdev_ops i40e_switchdev_pf_ops = {
-+	.switchdev_port_attr_get	= i40e_switchdev_pf_attr_get,
-+};
-+
- /**
-  * i40e_vsi_config_netdev_tc - Setup the netdev TC configuration
-  * @vsi: the VSI being configured
-@@ -9364,6 +9390,9 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 	netdev->netdev_ops = &i40e_netdev_ops;
- 	netdev->watchdog_timeo = 5 * HZ;
- 	i40e_set_ethtool_ops(netdev);
-+#ifdef CONFIG_NET_SWITCHDEV
-+	netdev->switchdev_ops = &i40e_switchdev_pf_ops;
-+#endif
- 
- 	/* MTU range: 68 - 9706 */
- 	netdev->min_mtu = ETH_MIN_MTU;
-@@ -11111,6 +11140,32 @@ static int i40e_port_netdev_stop(struct net_device *dev)
- 	return -EINVAL;
- }
- 
-+static int
-+i40e_port_netdev_get_phys_port_name(struct net_device *dev, char *buf,
-+				    size_t len)
-+{
-+	struct i40e_port_netdev_priv *priv = netdev_priv(dev);
-+	struct i40e_vf *vf;
-+	int ret;
-+
-+	switch (priv->type) {
-+	case I40E_PORT_NETDEV_VF:
-+		vf = (struct i40e_vf *)priv->f;
-+		ret = snprintf(buf, len, "%d", vf->vf_id);
-+		break;
-+	case I40E_PORT_NETDEV_PF:
-+		ret = snprintf(buf, len, "%d", I40E_MAIN_VSI_PORT_ID);
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (ret >= len)
-+		return -EOPNOTSUPP;
-+
-+	return 0;
-+}
-+
- static const struct net_device_ops i40e_port_netdev_ops = {
- 	.ndo_open		= i40e_port_netdev_open,
- 	.ndo_stop		= i40e_port_netdev_stop,
-@@ -11118,6 +11173,44 @@ static int i40e_port_netdev_stop(struct net_device *dev)
- 	.ndo_get_stats64	= i40e_port_netdev_get_stats64,
- 	.ndo_has_offload_stats	= i40e_port_netdev_has_offload_stats,
- 	.ndo_get_offload_stats	= i40e_port_netdev_get_offload_stats,
-+	.ndo_get_phys_port_name	= i40e_port_netdev_get_phys_port_name,
-+};
-+
-+static int i40e_switchdev_port_attr_get(struct net_device *dev,
-+					struct switchdev_attr *attr)
-+{
-+	struct i40e_port_netdev_priv *priv = netdev_priv(dev);
-+	struct i40e_vsi *vsi;
-+	struct i40e_pf *pf;
-+	struct i40e_vf *vf;
-+
-+	switch (priv->type) {
-+	case I40E_PORT_NETDEV_VF:
-+		vf = (struct i40e_vf *)priv->f;
-+		pf = vf->pf;
-+		break;
-+	case I40E_PORT_NETDEV_PF:
-+		pf = (struct i40e_pf *)priv->f;
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	vsi = pf->vsi[pf->lan_vsi];
-+	switch (attr->id) {
-+	case SWITCHDEV_ATTR_ID_PORT_PARENT_ID:
-+		attr->u.ppid.id_len = ETH_ALEN;
-+		ether_addr_copy(attr->u.ppid.id, vsi->netdev->dev_addr);
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct switchdev_ops i40e_switchdev_port_ops = {
-+	.switchdev_port_attr_get	= i40e_switchdev_port_attr_get,
- };
- 
- /**
-@@ -11203,6 +11296,10 @@ int i40e_alloc_port_netdev(void *f, enum i40e_port_netdev_type type)
- 	port_netdev->netdev_ops = &i40e_port_netdev_ops;
- 	eth_hw_addr_random(port_netdev);
- 
-+#ifdef CONFIG_NET_SWITCHDEV
-+	port_netdev->switchdev_ops = &i40e_switchdev_port_ops;
-+#endif
-+
- 	netif_carrier_off(port_netdev);
- 	netif_tx_stop_all_queues(port_netdev);
- 
+Sridhar Samudrala (6):
+  i40e: Introduce devlink interface
+  i40e: Introduce Port Representor netdevs and switchdev mode.
+  i40e: Sync link state between PF/VFs and Port representor netdevs
+  i40e: Add TX and RX support over port netdev's in switchdev mode
+  i40e: Add support for exposing switch port statistics via port netdevs
+  i40e: Add support to get switch id and port number for port netdevs
+
+ drivers/net/ethernet/intel/Kconfig                 |   1 +
+ drivers/net/ethernet/intel/i40e/i40e.h             |  37 ++
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 609 ++++++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 170 +++++-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |   2 +
+ drivers/net/ethernet/intel/i40e/i40e_type.h        |   3 +
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  34 +-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   7 +
+ include/net/dst_metadata.h                         |  41 +-
+ net/core/dst.c                                     |  15 +-
+ net/core/filter.c                                  |   1 +
+ net/ipv4/ip_tunnel_core.c                          |   6 +-
+ net/openvswitch/flow_netlink.c                     |   4 +-
+ 13 files changed, 899 insertions(+), 31 deletions(-)
+
 -- 
 1.8.3.1
 
