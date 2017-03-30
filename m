@@ -1,29 +1,42 @@
-From: Or Gerlitz <gerlitz.or@gmail.com>
-Date: Thu, 30 Mar 2017 10:17:35 +0300
-Subject: [Intel-wired-lan] [next-queue v6 PATCH 2/7] i40e: Introduce
- Port Representor netdevs and switchdev mode.
-In-Reply-To: <1490833375-2788-3-git-send-email-sridhar.samudrala@intel.com>
-References: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
- <1490833375-2788-3-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <CAJ3xEMgVeri17KceKhnFUCCFj00yWXKtjwP4r36Pb-CSZiOTng@mail.gmail.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 30 Mar 2017 00:46:06 -0700
+Subject: [Intel-wired-lan] [next S65 1/3 v2] i40e: remove client instance on
+	driver unload
+Message-ID: <20170330074608.52108-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Mar 30, 2017 at 3:22 AM, Sridhar Samudrala <
-sridhar.samudrala@intel.com> wrote:
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-> Port Representator netdevs are created for each PF and VF if the switch
-> mode is set to 'switchdev'. These netdevs can be used to control and
-> configure VFs and PFs when they are moved to a different namespace.
-> They enable exposing statistics, configure and monitor link state, mtu,
-> filters,fdb/vlan entries etc.
->
+When the driver is unloaded, we need to remove the client instance,
+otherwise we leak memory.
 
+Testing Hints (required if no HSD): On OFED 4.x, do "driverctl
+unset-override".
 
-What netdev represents the uplink (wire port) in your impl?
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170330/887c866e/attachment.html>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: If1e7882ac1f6ce15d004722fafbe31afbe0adc9a
+---
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+index 191028b1489b..d05296a7078e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+@@ -459,6 +459,9 @@ int i40e_lan_del_device(struct i40e_pf *pf)
+ 	struct i40e_device *ldev, *tmp;
+ 	int ret = -ENODEV;
+ 
++	/* First, remove any client instance. */
++	i40e_client_del_instance(pf);
++
+ 	mutex_lock(&i40e_device_mutex);
+ 	list_for_each_entry_safe(ldev, tmp, &i40e_devices, list) {
+ 		if (ldev->pf == pf) {
+-- 
+2.12.0
+
