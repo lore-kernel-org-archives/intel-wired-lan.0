@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 31 Mar 2017 19:37:45 +0000
-Subject: [Intel-wired-lan] [next-queue v6 PATCH 3/7] i40e: Sync link
- state	between PF/VFs and Port representor netdevs
-In-Reply-To: <1490833375-2788-4-git-send-email-sridhar.samudrala@intel.com>
+Date: Fri, 31 Mar 2017 19:39:11 +0000
+Subject: [Intel-wired-lan] [next-queue v6 PATCH 6/7] i40e: Add support
+ for	exposing switch port statistics via port netdevs
+In-Reply-To: <1490833375-2788-7-git-send-email-sridhar.samudrala@intel.com>
 References: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
- <1490833375-2788-4-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040A9F8@ORSMSX101.amr.corp.intel.com>
+ <1490833375-2788-7-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040AA09@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,28 +21,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > <anjali.singhai@intel.com>; jakub.kicinski at netronome.com;
 > gerlitz.or at gmail.com; jiri at resnulli.us; Samudrala, Sridhar
 > <sridhar.samudrala@intel.com>
-> Subject: [Intel-wired-lan] [next-queue v6 PATCH 3/7] i40e: Sync link state
-> between PF/VFs and Port representor netdevs
+> Subject: [Intel-wired-lan] [next-queue v6 PATCH 6/7] i40e: Add support for
+> exposing switch port statistics via port netdevs
 > 
-> This patch enables
-> - reflecting the link state of port netdev based on PF/VF admin state &
->   link state of PF/VF based on admin state of the associated port netdev.
-> - bringing up/down the VF port netdev sends a notification to update VF
->   link state.
-> - bringing up/down the VF will cause the link state update of VF port
->   netdev.
-> - enable/disable VF link state via ndo_set_vf_link_state will update the
->   admin state of associated VF port netdev.
-> - bringing up/down the PF port netdev updates the link state of PF based on
->   the hw link info.
-> - bringing up/down the PF will update the link state of PF port netdev.
+> By default stats counted by HW are returned via the original
+> ndo_get_stats64() api. Stats counted in SW are returned via
+> ndo_get_offload_stats() api.
 > 
 > Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 106
-> ++++++++++++++++++++-
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  21 +++-
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   1 +
->  3 files changed, 122 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h      |  10 +++
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 125
+> ++++++++++++++++++++++++++++
+> drivers/net/ethernet/intel/i40e/i40e_txrx.c |  24 +++++-
+>  3 files changed, 158 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
