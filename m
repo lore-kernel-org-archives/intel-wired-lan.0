@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 31 Mar 2017 18:28:19 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: delay tail write to every
-	'n'	packets
-In-Reply-To: <20170328164703.12688.90760.stgit@john-Precision-Tower-5810>
-References: <20170328164703.12688.90760.stgit@john-Precision-Tower-5810>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040A94D@ORSMSX101.amr.corp.intel.com>
+Date: Fri, 31 Mar 2017 18:28:54 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: clean macvlan MAC filter table
+ on	VF reset
+In-Reply-To: <20170328182754.3607.1614.stgit@localhost6.localdomain6>
+References: <20170328182754.3607.1614.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040A959@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,24 +13,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of John Fastabend
-> Sent: Tuesday, March 28, 2017 9:47 AM
-> To: john.fastabend at gmail.com; alexander.duyck at gmail.com
-> Cc: intel-wired-lan at lists.osuosl.org; u9012063 at gmail.com
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: delay tail write to every 'n' packets
+> Behalf Of Emil Tantilov
+> Sent: Tuesday, March 28, 2017 11:28 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: clean macvlan MAC filter table on
+> VF reset
 > 
-> Current XDP implementation hits the tail on every XDP_TX return code. This
-> patch changes driver behavior to only hit the tail after packet processing is
-> complete.
+> Flush the macvlan filters on VF reset to avoid conflict with other VFs that may
+> end up using the same MAC address.
 > 
-> With this patch I can run XDP drop programs @ 14+Mpps and XDP_TX
-> programs are at ~13.5Mpps.
+> The main change here is the call to ixgbe_set_vf_macvlan() with index 0.
 > 
-> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+> Moved ixgbe_set_vf_macvlan() in front of ixgbe_vf_reset_event() to avoid
+> adding a  prototype.
+> 
+> Reported-by: Sritej Kanakadandi Sritej Rama <skanakad@cisco.com>
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   28 +++++++++++++++----
-> ------
->  1 file changed, 17 insertions(+), 11 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |  105 ++++++++++++--------
+> ----
+>  1 file changed, 53 insertions(+), 52 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
