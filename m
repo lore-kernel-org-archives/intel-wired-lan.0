@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 31 Mar 2017 18:28:54 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: clean macvlan MAC filter table
- on	VF reset
-In-Reply-To: <20170328182754.3607.1614.stgit@localhost6.localdomain6>
-References: <20170328182754.3607.1614.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040A959@ORSMSX101.amr.corp.intel.com>
+Date: Fri, 31 Mar 2017 19:01:30 +0000
+Subject: [Intel-wired-lan] [next S65 1/3 v2] i40e: remove client
+ instance on	driver unload
+In-Reply-To: <20170330074608.52108-1-jeffrey.t.kirsher@intel.com>
+References: <20170330074608.52108-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040A99D@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,26 +13,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Tuesday, March 28, 2017 11:28 AM
+> Behalf Of Jeff Kirsher
+> Sent: Thursday, March 30, 2017 12:46 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: clean macvlan MAC filter table on
-> VF reset
+> Subject: [Intel-wired-lan] [next S65 1/3 v2] i40e: remove client instance on
+> driver unload
 > 
-> Flush the macvlan filters on VF reset to avoid conflict with other VFs that may
-> end up using the same MAC address.
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> The main change here is the call to ixgbe_set_vf_macvlan() with index 0.
+> When the driver is unloaded, we need to remove the client instance,
+> otherwise we leak memory.
 > 
-> Moved ixgbe_set_vf_macvlan() in front of ixgbe_vf_reset_event() to avoid
-> adding a  prototype.
+> Testing Hints (required if no HSD): On OFED 4.x, do "driverctl unset-
+> override".
 > 
-> Reported-by: Sritej Kanakadandi Sritej Rama <skanakad@cisco.com>
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: If1e7882ac1f6ce15d004722fafbe31afbe0adc9a
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |  105 ++++++++++++--------
-> ----
->  1 file changed, 53 insertions(+), 52 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_client.c | 3 +++
+>  1 file changed, 3 insertions(+)
+
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
