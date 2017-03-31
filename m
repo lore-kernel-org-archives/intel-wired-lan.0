@@ -1,33 +1,37 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Thu, 30 Mar 2017 20:49:02 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix size of queue stats length
-Message-ID: <20170331034902.6530.34141.stgit@localhost6.localdomain6>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 31 Mar 2017 18:28:19 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: delay tail write to every
+	'n'	packets
+In-Reply-To: <20170328164703.12688.90760.stgit@john-Precision-Tower-5810>
+References: <20170328164703.12688.90760.stgit@john-Precision-Tower-5810>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040A94D@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-IXGBEVF_QUEUE_STATS_LEN is based on ixgebvf_stats, not ixgbe_stats.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of John Fastabend
+> Sent: Tuesday, March 28, 2017 9:47 AM
+> To: john.fastabend at gmail.com; alexander.duyck at gmail.com
+> Cc: intel-wired-lan at lists.osuosl.org; u9012063 at gmail.com
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: delay tail write to every 'n' packets
+> 
+> Current XDP implementation hits the tail on every XDP_TX return code. This
+> patch changes driver behavior to only hit the tail after packet processing is
+> complete.
+> 
+> With this patch I can run XDP drop programs @ 14+Mpps and XDP_TX
+> programs are at ~13.5Mpps.
+> 
+> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   28 +++++++++++++++----
+> ------
+>  1 file changed, 17 insertions(+), 11 deletions(-)
 
-This change fixes a bug where ethtool -S displayed some empty fields.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ethtool.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-index 6bf7409..43b70cd 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-@@ -80,7 +80,7 @@ struct ixgbe_stats {
- #define IXGBEVF_QUEUE_STATS_LEN ( \
- 	(((struct ixgbevf_adapter *)netdev_priv(netdev))->num_tx_queues + \
- 	 ((struct ixgbevf_adapter *)netdev_priv(netdev))->num_rx_queues) * \
--	 (sizeof(struct ixgbe_stats) / sizeof(u64)))
-+	 (sizeof(struct ixgbevf_stats) / sizeof(u64)))
- #define IXGBEVF_GLOBAL_STATS_LEN ARRAY_SIZE(ixgbevf_gstrings_stats)
- 
- #define IXGBEVF_STATS_LEN (IXGBEVF_GLOBAL_STATS_LEN + IXGBEVF_QUEUE_STATS_LEN)
 
