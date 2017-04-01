@@ -1,78 +1,211 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Sun, 23 Apr 2017 10:24:34 -0700
-Subject: [Intel-wired-lan] NFS over NAT causes e1000e transmit hangs
-In-Reply-To: <09a5327d-0cf9-c4ed-5383-2f02c658437e@gmail.com>
-References: <42af0e78-3107-1605-f8e1-d73a8c441ff0@gmail.com>
- <1492542204.10587.138.camel@edumazet-glaptop3.roam.corp.google.com>
- <9fa24846-3a2d-26d3-2963-f5e6ec6808a5@gmail.com>
- <f79d2748-849e-acc6-5e5c-2dc82548fa69@intel.com>
- <50732fb0-d2b6-9395-d982-6eca8c09aedd@gmail.com>
- <81dbcf7d-52f4-4dc0-2355-27198685da7b@intel.com>
- <09a5327d-0cf9-c4ed-5383-2f02c658437e@gmail.com>
-Message-ID: <1492968274.6453.36.camel@edumazet-glaptop3.roam.corp.google.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 01 Apr 2017 15:45:16 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 61133af3415da5d6750a8f32efd1106702c7224e
+Message-ID: <58df5a8c.aW3+3Z2zV362ja2z%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, 2017-04-23 at 10:08 -0700, Florian Fainelli wrote:
-> 
-> On 04/22/2017 11:46 PM, Neftin, Sasha wrote:
-> > On 4/20/2017 00:15, Florian Fainelli wrote:
-> >> On 04/19/2017 01:52 AM, Neftin, Sasha wrote:
-> >>> On 4/18/2017 22:05, Florian Fainelli wrote:
-> >>>> On 04/18/2017 12:03 PM, Eric Dumazet wrote:
-> >>>>> On Tue, 2017-04-18 at 11:18 -0700, Florian Fainelli wrote:
-> >>>>>> Hi,
-> >>>>>>
-> >>>>>> I am using NFS over a NAT with two e1000e adapters and with eth1
-> >>>>>> being
-> >>>>>> the LAN interface and eth0 the WAN interface. The kernel is Ubuntu's
-> >>>>>> 16.10 kernel: 4.8.0-46-generic. The device doing NAT over NFS is just
-> >>>>>> mounting a remote folder and doing normal execution/file accesses.
-> >>>>>> It's
-> >>>>>> enough to untar a file from this device onto a NFS share to expose
-> >>>>>> the
-> >>>>>> problem.
-> >>>>>>
-> >>>>>> The transmit hangs look like the ones below, doing a rmmod/insmod
-> >>>>>> does
-> >>>>>> not help eliminated the problem, nor does a power cycle. Stopping the
-> >>>>>> NFS over NAT definitively does let the adapter recover.
-> >>>>> Is this NFS over TCP or UDP ?
-> >>>> This is NFS over TCP mounted with the following:
-> >>>>
-> >>>> type nfs
-> >>>> (rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,port=2049,timeo=70,retrans=3,sec=sys,local_lock=none,addr=X.X.X.X)
-> >>>>
-> >>>>
-> >>>>
-> >>>> Thanks Eric!
-> >>> Please, try disable TCP segmentation offload: ethtool -K <adapter>
-> >>> tso off.
-> >> I am not able to reproduce the hangs with TSO turned off. Is there a
-> >> specific patch you would want me to try?
-> > 
-> > Please, work with TSO turned off so. There is no patch for this specific
-> > problem.
-> 
-> OK, are not we interested in somehow being able to identify such
-> problematic packets coming from the networking stack and force not using
-> TSO for those? Would an acceptable solution be to force the disabling of
-> TSO for this specific NIC model (provided it is some kind of HW bug)?
-> 
-> NB: I understand this is very old hardware for you at Intel, but
-> conversely, it is very widespread, and chances of people running into
-> similar issues are pretty high, so fixing it once would de-facto lower
-> the amount of support you'd have to provide in the future.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+61133af3415da5d6750a8f32efd1106702c7224e  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-Indeed it is very odd to disable TSO, especially if the problem only
-shows up with NAT.
+elapsed time: 232m
 
-We probably have a nasty bug somewhere, or we might be able to have a
-work around some hardware 'feature'.
+configs tested: 187
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+arm                          ixp4xx_defconfig
+powerpc                     mpc512x_defconfig
+sh                          rsk7201_defconfig
+arm                           acs5k_defconfig
+mips                      fuloong2e_defconfig
+powerpc                       eiger_defconfig
+avr32                 atngw100_mrmt_defconfig
+mips                        generic_defconfig
+powerpc                 mpc8272_ads_defconfig
+i386                     randconfig-a0-201713
+x86_64                 randconfig-a0-04011459
+x86_64                 randconfig-a0-04011528
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+i386                               tinyconfig
+arm                         s3c2410_defconfig
+powerpc                   lite5200b_defconfig
+sh                                  defconfig
+mips                  mips_paravirt_defconfig
+powerpc                 mpc837x_mds_defconfig
+powerpc                     sbc834x_defconfig
+alpha                            allyesconfig
+blackfin               BF518F-EZBRD_defconfig
+m68k                       m5275evb_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-c0-04011444
+i386                   randconfig-c0-04011517
+x86_64                           allmodconfig
+m32r                   m32700ut.smp_defconfig
+m68k                       m5475evb_defconfig
+mips                       markeins_defconfig
+m32r                   mappi2.vdec2_defconfig
+powerpc                   motionpro_defconfig
+powerpc                 mpc837x_rdb_defconfig
+x86_64                 randconfig-v0-04011404
+arm                             ezx_defconfig
+openrisc                         allyesconfig
+x86_64                 randconfig-g0-04011459
+x86_64                 randconfig-g0-04011529
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           alldefconfig
+arm                       imx_v6_v7_defconfig
+arm                           sama5_defconfig
+blackfin                BF527-EZKIT_defconfig
+sh                             sh03_defconfig
+x86_64                 randconfig-x015-201713
+x86_64                 randconfig-x012-201713
+x86_64                 randconfig-x017-201713
+x86_64                 randconfig-x010-201713
+x86_64                 randconfig-x018-201713
+x86_64                 randconfig-x011-201713
+x86_64                 randconfig-x019-201713
+x86_64                 randconfig-x016-201713
+x86_64                 randconfig-x014-201713
+x86_64                 randconfig-x013-201713
+arm                       omap2plus_defconfig
+arm                                    sa1100
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+i386                     randconfig-s0-201713
+i386                     randconfig-s1-201713
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201713
+arm                            mps2_defconfig
+m68k                        mvme16x_defconfig
+m68k                            q40_defconfig
+nios2                         10m50_defconfig
+alpha                            alldefconfig
+blackfin                          allnoconfig
+mips                  maltasmvp_eva_defconfig
+mips                           xway_defconfig
+avr32                  atngw100mkii_defconfig
+m68k                              allnoconfig
+mips                          rb532_defconfig
+arm                          ep93xx_defconfig
+arm                        mvebu_v5_defconfig
+blackfin                       IP0X_defconfig
+sh                            shmin_defconfig
+i386                     randconfig-i0-201713
+i386                     randconfig-i1-201713
+x86_64                 randconfig-b0-04011446
+x86_64                 randconfig-b0-04011519
+x86_64                 randconfig-b0-04011532
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                randconfig-ne0-04011457
+blackfin                  CM-BF537E_defconfig
+mips                          ath79_defconfig
+openrisc                          allnoconfig
+x86_64                           allyesconfig
+powerpc                     akebono_defconfig
+powerpc                     sbc8548_defconfig
+powerpc                     tqm8560_defconfig
+i386                   randconfig-x014-201713
+i386                   randconfig-x010-201713
+i386                   randconfig-x016-201713
+i386                   randconfig-x017-201713
+i386                   randconfig-x013-201713
+i386                   randconfig-x019-201713
+i386                   randconfig-x015-201713
+i386                   randconfig-x012-201713
+i386                   randconfig-x011-201713
+i386                   randconfig-x018-201713
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201713
+i386                   randconfig-h0-04011227
+i386                   randconfig-h1-04011227
+i386                   randconfig-h0-04011452
+i386                   randconfig-h1-04011452
+x86_64                 randconfig-h0-04011501
+sh                          r7785rp_defconfig
+x86_64                 randconfig-n0-04011416
+x86_64                 randconfig-n0-04011507
+i386                  randconfig-sb0-04011259
+x86_64                                  kexec
+i386                   randconfig-x077-201713
+i386                   randconfig-x070-201713
+i386                   randconfig-x073-201713
+i386                   randconfig-x076-201713
+i386                   randconfig-x072-201713
+i386                   randconfig-x078-201713
+i386                   randconfig-x074-201713
+i386                   randconfig-x075-201713
+i386                   randconfig-x079-201713
+i386                   randconfig-x071-201713
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                      H8606_defconfig
+mips                   sb1250_swarm_defconfig
+arm                      acs5k_tiny_defconfig
+m32r                    mappi2.opsp_defconfig
+sh                          rsk7264_defconfig
+x86_64                 randconfig-x009-201713
+x86_64                 randconfig-x004-201713
+x86_64                 randconfig-x003-201713
+x86_64                 randconfig-x008-201713
+x86_64                 randconfig-x002-201713
+x86_64                 randconfig-x005-201713
+x86_64                 randconfig-x007-201713
+x86_64                 randconfig-x000-201713
+x86_64                 randconfig-x006-201713
+x86_64                 randconfig-x001-201713
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201713
+x86_64                 randconfig-r0-04011436
+x86_64                 randconfig-r0-04011528
+i386                             allmodconfig
+i386                   randconfig-x002-201713
+i386                   randconfig-x005-201713
+i386                   randconfig-x006-201713
+i386                   randconfig-x003-201713
+i386                   randconfig-x007-201713
+i386                   randconfig-x008-201713
+i386                   randconfig-x001-201713
+i386                   randconfig-x000-201713
+i386                   randconfig-x004-201713
+i386                   randconfig-x009-201713
+i386                   randconfig-x0-04011408
+i386                   randconfig-x0-04011522
 
-
+Thanks,
+Fengguang
