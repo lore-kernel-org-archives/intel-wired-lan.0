@@ -1,11 +1,10 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Sat,  1 Apr 2017 02:01:36 -0700
+Date: Sat,  1 Apr 2017 02:01:35 -0700
 Subject: [Intel-wired-lan] [net-next,
-	3/4] ixgbe: move IXGBE_ALLOW_RELAXED_ORDER from architecture to
-	driver
+	2/4] ixgbe/ixgbevf: Clear the CONFIG_SPARC for ixgbevf and 82598
 In-Reply-To: <20170401090137.54079-1-jeffrey.t.kirsher@intel.com>
 References: <20170401090137.54079-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20170401090137.54079-3-jeffrey.t.kirsher@intel.com>
+Message-ID: <20170401090137.54079-2-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,55 +13,51 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Ding Tianhong <dingtianhong@huawei.com>
 
-The Relaxed Ordering is an specific PCI option and impact some
-architecture performance just like SPARC and ARM64, so compare to
-drop this to the several architecture folder, put it in driver looks
-more appropriate, it will not impact or be seen for other architectures.
+The CONFIG_SPARC in ixgbevf and ixgbe_82598 is only used
+to enable relaxed ordering, the CONFIG_IXBGE_WANT_RELAXED_ORDER
+already did this, so rename this config for the same setting.
 
 Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
 ---
 Doing what the author could not do, send to the correct mailing list...
 
 ---
- arch/Kconfig                       | 3 ---
- arch/sparc/Kconfig                 | 1 -
- drivers/net/ethernet/intel/Kconfig | 4 ++++
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c    | 4 ++--
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index bc0ab44..e03d354 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -844,7 +844,4 @@ config STRICT_MODULE_RWX
- 	  and non-text memory will be made non-executable. This provides
- 	  protection against certain security exploits (e.g. writing to text)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+index 523f9d0..c7f95ae 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+@@ -175,7 +175,7 @@ static s32 ixgbe_init_phy_ops_82598(struct ixgbe_hw *hw)
+  **/
+ static s32 ixgbe_start_hw_82598(struct ixgbe_hw *hw)
+ {
+-#ifndef CONFIG_SPARC
++#ifndef CONFIG_IXGBE_ALLOW_RELAXED_ORDER
+ 	u32 regval;
+ 	u32 i;
+ #endif
+@@ -183,7 +183,7 @@ static s32 ixgbe_start_hw_82598(struct ixgbe_hw *hw)
  
--config IXGBE_ALLOW_RELAXED_ORDER
--	bool
--
- source "kernel/gcov/Kconfig"
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index f56bcf4..cf4034c 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -44,7 +44,6 @@ config SPARC
- 	select CPU_NO_EFFICIENT_FFS
- 	select HAVE_ARCH_HARDENED_USERCOPY
- 	select PROVE_LOCKING_SMALL if PROVE_LOCKING
--	select IXGBE_ALLOW_RELAXED_ORDER
+ 	ret_val = ixgbe_start_hw_generic(hw);
  
- config SPARC32
- 	def_bool !64BIT
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 1349b45..33ef2b6 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -275,4 +275,8 @@ config FM10K
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called fm10k.  MSI-X interrupt support is required
+-#ifndef CONFIG_SPARC
++#ifndef CONFIG_IXGBE_ALLOW_RELAXED_ORDER
+ 	/* Disable relaxed ordering */
+ 	for (i = 0; ((i < hw->mac.max_tx_queues) &&
+ 	     (i < IXGBE_DCA_MAX_QUEUES_82598)); i++) {
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 80bab26..c27932d 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1713,7 +1713,7 @@ static void ixgbevf_configure_rx_ring(struct ixgbevf_adapter *adapter,
+ 	IXGBE_WRITE_REG(hw, IXGBE_VFRDLEN(reg_idx),
+ 			ring->count * sizeof(union ixgbe_adv_rx_desc));
  
-+config IXGBE_ALLOW_RELAXED_ORDER
-+	bool "Intel(R) 10GbE PCI Express adapters Enable Relaxed Ordering" if SPARC
-+	default y if SPARC
-+
- endif # NET_VENDOR_INTEL
+-#ifndef CONFIG_SPARC
++#ifndef CONFIG_IXGBE_ALLOW_RELAXED_ORDER
+ 	/* enable relaxed ordering */
+ 	IXGBE_WRITE_REG(hw, IXGBE_VFDCA_RXCTRL(reg_idx),
+ 			IXGBE_DCA_RXCTRL_DESC_RRO_EN);
