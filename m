@@ -1,35 +1,40 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 31 Mar 2017 23:22:13 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: Enable reading of wake up packet
-In-Reply-To: <1490575475-8215-2-git-send-email-kim.tatt.chuah@intel.com>
-References: <1490575475-8215-1-git-send-email-kim.tatt.chuah@intel.com>
- <1490575475-8215-2-git-send-email-kim.tatt.chuah@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C5E4536@ORSMSX101.amr.corp.intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Fri, 31 Mar 2017 17:10:15 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Allow disabling VFs when they are
+	pre-existing
+Message-ID: <20170401001015.29245.28963.stgit@mdrustad-mac04.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Chuah, Kim Tatt
-> Sent: Sunday, March 26, 2017 5:45 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Chuah, Kim Tatt <kim.tatt.chuah@intel.com>
-> Subject: [Intel-wired-lan] [PATCH] igb: Enable reading of wake up packet
-> 
-> Currently, in igb_resume(), igb driver ignores the Wake Up Status (WUS)
-> and Wake Up Packet Memory (WUPM) registers. This patch enables the igb
-> driver to read the WUPM if the controller was woken by a wake up packet
-> that is not more than 128 bytes long (maximum WUPM size), then pass it
-> up the kernel network stack.
-> 
-> Signed-off-by: Chuah, Kim Tatt <kim.tatt.chuah@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/e1000_defines.h | 21 +++++++++++++++
->  drivers/net/ethernet/intel/igb/igb_main.c      | 36
-> +++++++++++++++++++++++++-
->  2 files changed, 56 insertions(+), 1 deletion(-)
-> 
+Right now if VFs existing when the driver is loaded, it is not
+possible to destroy those VFs, even though messages from the driver
+suggest doing that when trying to change the number. This change
+permits the disabling of SR-IOV for the case when there are
+pre-existing VFs.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Testing-hints:
+
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+Change-type: DefectResolution
+Title: ixgbe: Allow disabling VFs when they are pre-existing
+---
+ src/CORE/ixgbe_sriov.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/CORE/ixgbe_sriov.c b/src/CORE/ixgbe_sriov.c
+index 9b7d05110fe9..231acf274a70 100644
+--- a/src/CORE/ixgbe_sriov.c
++++ b/src/CORE/ixgbe_sriov.c
+@@ -603,7 +603,7 @@ static int ixgbe_pci_sriov_disable(struct pci_dev *dev)
+ 	u32 current_flags = adapter->flags;
+ #endif
+ 
+-	if (adapter->num_vfs == 0)
++	if (!adapter->num_vfs && !pci_num_vf(dev))
+ 		return -EINVAL;
+ 
+ 	err = ixgbe_disable_sriov(adapter);
+
