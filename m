@@ -1,211 +1,69 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 01 Apr 2017 15:45:16 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 61133af3415da5d6750a8f32efd1106702c7224e
-Message-ID: <58df5a8c.aW3+3Z2zV362ja2z%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Sat,  1 Apr 2017 02:01:34 -0700
+Subject: [Intel-wired-lan] [net-next,
+	1/4] ixgbe: sparc: rename the ARCH_WANT_RELAX_ORDER to
+	IXGBE_ALLOW_RELAXED_ORDER
+Message-ID: <20170401090137.54079-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-61133af3415da5d6750a8f32efd1106702c7224e  checkpatch.pl: seed camelcase from the provided kernel tree root
+From: Ding Tianhong <dingtianhong@huawei.com>
 
-elapsed time: 232m
+Till now only the Intel ixgbe could support enable
+Relaxed ordering in the drivers for special architecture,
+but the ARCH_WANT_RELAX_ORDER is looks like a general name
+for all arch, so rename to a specific name for intel
+card looks more appropriate.
 
-configs tested: 187
+Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
+---
+Doing what the author could not do, send to the correct mailing list...
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+---
+ arch/Kconfig                                    | 2 +-
+ arch/sparc/Kconfig                              | 2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-arm                          ixp4xx_defconfig
-powerpc                     mpc512x_defconfig
-sh                          rsk7201_defconfig
-arm                           acs5k_defconfig
-mips                      fuloong2e_defconfig
-powerpc                       eiger_defconfig
-avr32                 atngw100_mrmt_defconfig
-mips                        generic_defconfig
-powerpc                 mpc8272_ads_defconfig
-i386                     randconfig-a0-201713
-x86_64                 randconfig-a0-04011459
-x86_64                 randconfig-a0-04011528
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-i386                               tinyconfig
-arm                         s3c2410_defconfig
-powerpc                   lite5200b_defconfig
-sh                                  defconfig
-mips                  mips_paravirt_defconfig
-powerpc                 mpc837x_mds_defconfig
-powerpc                     sbc834x_defconfig
-alpha                            allyesconfig
-blackfin               BF518F-EZBRD_defconfig
-m68k                       m5275evb_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c0-04011444
-i386                   randconfig-c0-04011517
-x86_64                           allmodconfig
-m32r                   m32700ut.smp_defconfig
-m68k                       m5475evb_defconfig
-mips                       markeins_defconfig
-m32r                   mappi2.vdec2_defconfig
-powerpc                   motionpro_defconfig
-powerpc                 mpc837x_rdb_defconfig
-x86_64                 randconfig-v0-04011404
-arm                             ezx_defconfig
-openrisc                         allyesconfig
-x86_64                 randconfig-g0-04011459
-x86_64                 randconfig-g0-04011529
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           alldefconfig
-arm                       imx_v6_v7_defconfig
-arm                           sama5_defconfig
-blackfin                BF527-EZKIT_defconfig
-sh                             sh03_defconfig
-x86_64                 randconfig-x015-201713
-x86_64                 randconfig-x012-201713
-x86_64                 randconfig-x017-201713
-x86_64                 randconfig-x010-201713
-x86_64                 randconfig-x018-201713
-x86_64                 randconfig-x011-201713
-x86_64                 randconfig-x019-201713
-x86_64                 randconfig-x016-201713
-x86_64                 randconfig-x014-201713
-x86_64                 randconfig-x013-201713
-arm                       omap2plus_defconfig
-arm                                    sa1100
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-i386                     randconfig-s0-201713
-i386                     randconfig-s1-201713
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201713
-arm                            mps2_defconfig
-m68k                        mvme16x_defconfig
-m68k                            q40_defconfig
-nios2                         10m50_defconfig
-alpha                            alldefconfig
-blackfin                          allnoconfig
-mips                  maltasmvp_eva_defconfig
-mips                           xway_defconfig
-avr32                  atngw100mkii_defconfig
-m68k                              allnoconfig
-mips                          rb532_defconfig
-arm                          ep93xx_defconfig
-arm                        mvebu_v5_defconfig
-blackfin                       IP0X_defconfig
-sh                            shmin_defconfig
-i386                     randconfig-i0-201713
-i386                     randconfig-i1-201713
-x86_64                 randconfig-b0-04011446
-x86_64                 randconfig-b0-04011519
-x86_64                 randconfig-b0-04011532
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                randconfig-ne0-04011457
-blackfin                  CM-BF537E_defconfig
-mips                          ath79_defconfig
-openrisc                          allnoconfig
-x86_64                           allyesconfig
-powerpc                     akebono_defconfig
-powerpc                     sbc8548_defconfig
-powerpc                     tqm8560_defconfig
-i386                   randconfig-x014-201713
-i386                   randconfig-x010-201713
-i386                   randconfig-x016-201713
-i386                   randconfig-x017-201713
-i386                   randconfig-x013-201713
-i386                   randconfig-x019-201713
-i386                   randconfig-x015-201713
-i386                   randconfig-x012-201713
-i386                   randconfig-x011-201713
-i386                   randconfig-x018-201713
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201713
-i386                   randconfig-h0-04011227
-i386                   randconfig-h1-04011227
-i386                   randconfig-h0-04011452
-i386                   randconfig-h1-04011452
-x86_64                 randconfig-h0-04011501
-sh                          r7785rp_defconfig
-x86_64                 randconfig-n0-04011416
-x86_64                 randconfig-n0-04011507
-i386                  randconfig-sb0-04011259
-x86_64                                  kexec
-i386                   randconfig-x077-201713
-i386                   randconfig-x070-201713
-i386                   randconfig-x073-201713
-i386                   randconfig-x076-201713
-i386                   randconfig-x072-201713
-i386                   randconfig-x078-201713
-i386                   randconfig-x074-201713
-i386                   randconfig-x075-201713
-i386                   randconfig-x079-201713
-i386                   randconfig-x071-201713
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                      H8606_defconfig
-mips                   sb1250_swarm_defconfig
-arm                      acs5k_tiny_defconfig
-m32r                    mappi2.opsp_defconfig
-sh                          rsk7264_defconfig
-x86_64                 randconfig-x009-201713
-x86_64                 randconfig-x004-201713
-x86_64                 randconfig-x003-201713
-x86_64                 randconfig-x008-201713
-x86_64                 randconfig-x002-201713
-x86_64                 randconfig-x005-201713
-x86_64                 randconfig-x007-201713
-x86_64                 randconfig-x000-201713
-x86_64                 randconfig-x006-201713
-x86_64                 randconfig-x001-201713
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201713
-x86_64                 randconfig-r0-04011436
-x86_64                 randconfig-r0-04011528
-i386                             allmodconfig
-i386                   randconfig-x002-201713
-i386                   randconfig-x005-201713
-i386                   randconfig-x006-201713
-i386                   randconfig-x003-201713
-i386                   randconfig-x007-201713
-i386                   randconfig-x008-201713
-i386                   randconfig-x001-201713
-i386                   randconfig-x000-201713
-i386                   randconfig-x004-201713
-i386                   randconfig-x009-201713
-i386                   randconfig-x0-04011408
-i386                   randconfig-x0-04011522
-
-Thanks,
-Fengguang
+diff --git a/arch/Kconfig b/arch/Kconfig
+index cd211a1..bc0ab44 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -844,7 +844,7 @@ config STRICT_MODULE_RWX
+ 	  and non-text memory will be made non-executable. This provides
+ 	  protection against certain security exploits (e.g. writing to text)
+ 
+-config ARCH_WANT_RELAX_ORDER
++config IXGBE_ALLOW_RELAXED_ORDER
+ 	bool
+ 
+ source "kernel/gcov/Kconfig"
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 68ac5c7..f56bcf4 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -44,7 +44,7 @@ config SPARC
+ 	select CPU_NO_EFFICIENT_FFS
+ 	select HAVE_ARCH_HARDENED_USERCOPY
+ 	select PROVE_LOCKING_SMALL if PROVE_LOCKING
+-	select ARCH_WANT_RELAX_ORDER
++	select IXGBE_ALLOW_RELAXED_ORDER
+ 
+ config SPARC32
+ 	def_bool !64BIT
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index c38d50c..563ea15 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -350,7 +350,7 @@ s32 ixgbe_start_hw_gen2(struct ixgbe_hw *hw)
+ 	}
+ 	IXGBE_WRITE_FLUSH(hw);
+ 
+-#ifndef CONFIG_ARCH_WANT_RELAX_ORDER
++#ifndef CONFIG_IXGBE_ALLOW_RELAX_ORDER
+ 	/* Disable relaxed ordering */
+ 	for (i = 0; i < hw->mac.max_tx_queues; i++) {
+ 		u32 regval;
