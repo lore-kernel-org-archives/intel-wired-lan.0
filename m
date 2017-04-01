@@ -1,8 +1,8 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 31 Mar 2017 17:10:15 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Allow disabling VFs when they are
-	pre-existing
-Message-ID: <20170401001015.29245.28963.stgit@mdrustad-mac04.local>
+Date: Fri, 31 Mar 2017 17:26:03 -0700
+Subject: [Intel-wired-lan] [PATCH V2] ixgbe: Allow disabling VFs when they
+	are pre-existing
+Message-ID: <20170401002603.29536.93262.stgit@mdrustad-mac04.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,11 +15,10 @@ suggest doing that when trying to change the number. This change
 permits the disabling of SR-IOV for the case when there are
 pre-existing VFs.
 
-Testing-hints:
-
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-Change-type: DefectResolution
-Title: ixgbe: Allow disabling VFs when they are pre-existing
+---
+Changes in V2:
+- Remove unwanted content in the changelog message - sorry about that
 ---
  src/CORE/ixgbe_sriov.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
