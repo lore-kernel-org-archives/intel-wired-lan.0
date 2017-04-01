@@ -1,9 +1,10 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Sat,  1 Apr 2017 02:01:34 -0700
+Date: Sat,  1 Apr 2017 02:01:37 -0700
 Subject: [Intel-wired-lan] [net-next,
-	1/4] ixgbe: sparc: rename the ARCH_WANT_RELAX_ORDER to
-	IXGBE_ALLOW_RELAXED_ORDER
-Message-ID: <20170401090137.54079-1-jeffrey.t.kirsher@intel.com>
+	4/4] ixgbe: enable IXGBE_ALLOW_RELAXED_ORDER for ARM64
+In-Reply-To: <20170401090137.54079-1-jeffrey.t.kirsher@intel.com>
+References: <20170401090137.54079-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20170401090137.54079-4-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,58 +13,35 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Ding Tianhong <dingtianhong@huawei.com>
 
-Till now only the Intel ixgbe could support enable
-Relaxed ordering in the drivers for special architecture,
-but the ARCH_WANT_RELAX_ORDER is looks like a general name
-for all arch, so rename to a specific name for intel
-card looks more appropriate.
+The IXGBE_ALLOW_RELAXED_ORDER will enable Relaxed Ordering (RO) which allows
+transactions that do not have any order of completion requirements to
+complete more efficiently compare to the Stricted Ordering (SO) for ixgbe
+net card. Some architecture will see high write-to-memory performance when RO is
+enabled on the data transactions just like the SPARC did.
+
+The aarch64 could both support Relaxed Ordering (RO) and Stricted Ordering (SO),
+so enable this config could get much more better performance, didn't see any
+adverse effects.
 
 Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
 ---
 Doing what the author could not do, send to the correct mailing list...
 
 ---
- arch/Kconfig                                    | 2 +-
- arch/sparc/Kconfig                              | 2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index cd211a1..bc0ab44 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -844,7 +844,7 @@ config STRICT_MODULE_RWX
- 	  and non-text memory will be made non-executable. This provides
- 	  protection against certain security exploits (e.g. writing to text)
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 33ef2b6..6743b7e 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -276,7 +276,7 @@ config FM10K
+ 	  will be called fm10k.  MSI-X interrupt support is required
  
--config ARCH_WANT_RELAX_ORDER
-+config IXGBE_ALLOW_RELAXED_ORDER
- 	bool
+ config IXGBE_ALLOW_RELAXED_ORDER
+-	bool "Intel(R) 10GbE PCI Express adapters Enable Relaxed Ordering" if SPARC
+-	default y if SPARC
++	bool "Intel(R) 10GbE PCI Express adapters Enable Relaxed Ordering" if (SPARC || ARM64)
++	default y if (SPARC || ARM64)
  
- source "kernel/gcov/Kconfig"
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 68ac5c7..f56bcf4 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -44,7 +44,7 @@ config SPARC
- 	select CPU_NO_EFFICIENT_FFS
- 	select HAVE_ARCH_HARDENED_USERCOPY
- 	select PROVE_LOCKING_SMALL if PROVE_LOCKING
--	select ARCH_WANT_RELAX_ORDER
-+	select IXGBE_ALLOW_RELAXED_ORDER
- 
- config SPARC32
- 	def_bool !64BIT
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index c38d50c..563ea15 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -350,7 +350,7 @@ s32 ixgbe_start_hw_gen2(struct ixgbe_hw *hw)
- 	}
- 	IXGBE_WRITE_FLUSH(hw);
- 
--#ifndef CONFIG_ARCH_WANT_RELAX_ORDER
-+#ifndef CONFIG_IXGBE_ALLOW_RELAX_ORDER
- 	/* Disable relaxed ordering */
- 	for (i = 0; i < hw->mac.max_tx_queues; i++) {
- 		u32 regval;
+ endif # NET_VENDOR_INTEL
