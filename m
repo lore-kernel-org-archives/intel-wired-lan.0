@@ -1,63 +1,56 @@
-From: Duyck, Alexander H <alexander.h.duyck@intel.com>
-Date: Sat, 1 Apr 2017 17:03:43 +0000
-Subject: [Intel-wired-lan] [PATCH V2] ixgbe: Allow disabling VFs when
- they are pre-existing
-In-Reply-To: <20170401002603.29536.93262.stgit@mdrustad-mac04.local>
-References: <20170401002603.29536.93262.stgit@mdrustad-mac04.local>
-Message-ID: <1491066220.7454.72.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sun, 2 Apr 2017 17:08:30 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 48/52]
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c:1335:8: error: 'struct sk_buff'
+ has no member named 'offload_fwd_mark'
+Message-ID: <201704021728.BuNF3iFp%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2017-03-31 at 17:26 -0700, Mark D Rustad wrote:
-> Right now if VFs existing when the driver is loaded, it is not
-> possible to destroy those VFs, even though messages from the driver
-> suggest doing that when trying to change the number. This change
-> permits the disabling of SR-IOV for the case when there are
-> pre-existing VFs.
-> 
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> ---
-> Changes in V2:
-> - Remove unwanted content in the changelog message - sorry about that
-> ---
->  src/CORE/ixgbe_sriov.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/src/CORE/ixgbe_sriov.c b/src/CORE/ixgbe_sriov.c
-> index 9b7d05110fe9..231acf274a70 100644
-> --- a/src/CORE/ixgbe_sriov.c
-> +++ b/src/CORE/ixgbe_sriov.c
-> @@ -603,7 +603,7 @@ static int ixgbe_pci_sriov_disable(struct pci_dev *dev)
->  	u32 current_flags = adapter->flags;
->  #endif
->  
-> -	if (adapter->num_vfs == 0)
-> +	if (!adapter->num_vfs && !pci_num_vf(dev))
->  		return -EINVAL;
->  
->  	err = ixgbe_disable_sriov(adapter);
+Hi Sridhar,
 
-So I assume this patch isn't meant for upstream at all since there
-isn't a CORE folder in the upstream kernel. Also this patch does't
-apply to any existing upstream tree.
+FYI, the error/warning still remains.
 
-On a side note it would probably be best to just drop this check
-entirely. Checking for adapter->num_vfs doesn't tell you anything other
-than the fact that memory is allocated for vfinfo.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   611576e4d243e7f03e7cf5f14546474cad90cfb0
+commit: 7d12ba37fafc0c69d5606f2cdf429efadac331e0 [48/52] i40e: Add TX and RX support over port netdev's in switchdev mode
+config: x86_64-rhel (attached as .config)
+compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+reproduce:
+        git checkout 7d12ba37fafc0c69d5606f2cdf429efadac331e0
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
-In the upstream driver one thing we should probably do is add a check
-against pci_num_vf() in ixgbe_disable_sriov instead of using
-"!(adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)". That way we will try to
-disable SR-IOV if that is what we are actually trying to do instead of
-only if the driver had allocated memory for it.
+All errors (new ones prefixed by >>):
 
-However like I stated on the other patch it would probably be best to
-take a look at fm10k and borrow from that since I think what we really
-should be doing is attempting to resume with the same number of VFs
-that were previously enabled so the VFs can resume operation if the PF
-is reloaded with support for SR-IOV.
+   drivers/net/ethernet/intel/i40e/i40e_txrx.c: In function 'i40e_handle_lpbk_skb':
+>> drivers/net/ethernet/intel/i40e/i40e_txrx.c:1335:8: error: 'struct sk_buff' has no member named 'offload_fwd_mark'
+       nskb->offload_fwd_mark = 1;
+           ^~
 
-- Alex
+vim +1335 drivers/net/ethernet/intel/i40e/i40e_txrx.c
+
+  1329			vf = &pf->vf[vf_id];
+  1330			if (ether_addr_equal(eth->h_source,
+  1331					     vf->default_lan_addr.addr)) {
+  1332				nskb = skb_clone(skb, GFP_ATOMIC);
+  1333				if (!nskb)
+  1334					break;
+> 1335				nskb->offload_fwd_mark = 1;
+  1336				nskb->dev = vf->port_netdev;
+  1337				napi_gro_receive(&q_vector->napi, nskb);
+  1338				break;
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 38876 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170402/bf2b6eb2/attachment-0001.bin>
