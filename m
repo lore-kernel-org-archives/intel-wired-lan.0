@@ -1,65 +1,51 @@
-From: Or Gerlitz <gerlitz.or@gmail.com>
-Date: Tue, 4 Apr 2017 14:58:01 +0300
-Subject: [Intel-wired-lan] [next-queue v6 PATCH 2/7] i40e: Introduce
- Port Representor netdevs and switchdev mode.
-In-Reply-To: <58E2974B.30503@intel.com>
-References: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
- <1490833375-2788-3-git-send-email-sridhar.samudrala@intel.com>
- <CAJ3xEMgVeri17KceKhnFUCCFj00yWXKtjwP4r36Pb-CSZiOTng@mail.gmail.com>
- <58E2974B.30503@intel.com>
-Message-ID: <CAJ3xEMikpx3JX5frn0Hbne6tTR9Vgu6Pv22TkEuaJP0mM1Au=w@mail.gmail.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Tue,  4 Apr 2017 16:34:46 +0200
+Subject: [Intel-wired-lan] [PATCH] i40e: limit client interface to X722
+	hardware
+Message-ID: <20170404143446.16359-1-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Apr 3, 2017 at 9:41 PM, Samudrala, Sridhar
-<sridhar.samudrala@intel.com> wrote:
-> On 3/30/2017 12:17 AM, Or Gerlitz wrote:
->> On Thu, Mar 30, 2017, Sridhar Samudrala wrote:
+The client interface is meant for X722 iWARP support. Modprobing i40iw
+on systems with X710/XL710 NICs currently may crash the system. Adding a
+check which limits client interface access to the appropriate hardware.
 
->>> Port Representator netdevs are created for each PF and VF if the switch
->>> mode is set to 'switchdev'. These netdevs can be used to control and
->>> configure VFs and PFs when they are moved to a different namespace.
->>> They enable exposing statistics, configure and monitor link state, mtu,
->>> filters,fdb/vlan entries etc.
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+---
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
->>> In switchdev mode, broadcasts from VFs are received by the PF and passed
->>> to corresponding port representor netdev.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+index 191028b..6f873449 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+@@ -525,15 +525,17 @@ static void i40e_client_release(struct i40e_client *client)
+ static void i40e_client_prepare(struct i40e_client *client)
+ {
+ 	struct i40e_device *ldev;
+-	struct i40e_pf *pf;
+ 
+ 	mutex_lock(&i40e_device_mutex);
+ 	list_for_each_entry(ldev, &i40e_devices, list) {
+-		pf = ldev->pf;
+-		i40e_client_add_instance(pf);
+-		/* Start the client subtask */
+-		pf->flags |= I40E_FLAG_SERVICE_CLIENT_REQUESTED;
+-		i40e_service_event_schedule(pf);
++		struct i40e_pf *pf = ldev->pf;
++
++		if (pf->hw.mac.type == I40E_MAC_X722) {
++			i40e_client_add_instance(pf);
++			/* Start the client subtask */
++			pf->flags |= I40E_FLAG_SERVICE_CLIENT_REQUESTED;
++			i40e_service_event_schedule(pf);
++		}
+ 	}
+ 	mutex_unlock(&i40e_device_mutex);
+ }
+-- 
+2.9.3
 
->> What netdev represents the uplink (wire port) in your impl?
-
-combining your replies from the two emails:
-
-> We don't have a port netdev representing the uplink in this implementation as we
-> cannot control the frames going out the uplink via sw rules with the current
-> generation of hw/fw.
-
-> fwd to CPU as default rule is not possible with the current generation of hw/fw.
-> So we would like to enable switchdev to expose the port representors and start
-> adding offloads in an incremental way.
-
-I lost you even deeper
-
-I was asking on frames getting in from the uplink and not getting out
-the uplink.
-
-This is about offloading to HW a switching model where the steering
-(matching and actions)
-comes into play on the port ingress. E.g
-
-VF NIC xmit ---> VF vport e-switch rep recv --> SW or HW steering
-
-other node xmit --> UPLINK vport e-switch rep recv --> SW or HW steering
-
-If your current HW can't let you have "send to CPU" as the default
-action on ingress
-for the VFs and uplink ports, I am not clear what use-cases you can do
-in slow path
-(only reps, no offloaded SW rules) and for past path (reps + offloaded
-SW rules)...
-
-Can you please elaborate on such use-cases, so the bigger picture is more clear?
-
-Or.
