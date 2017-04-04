@@ -1,95 +1,93 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Tue,  4 Apr 2017 17:10:55 +0200
-Subject: [Intel-wired-lan] [PATCH] igb: Allow to remove administratively set
-	MAC on VFs
-Message-ID: <20170404151055.21447-1-vinschen@redhat.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 4 Apr 2017 08:29:03 -0700
+Subject: [Intel-wired-lan] [next-queue v6 PATCH 2/7] i40e: Introduce
+ Port Representor netdevs and switchdev mode.
+In-Reply-To: <CAJ3xEMikpx3JX5frn0Hbne6tTR9Vgu6Pv22TkEuaJP0mM1Au=w@mail.gmail.com>
+References: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
+ <1490833375-2788-3-git-send-email-sridhar.samudrala@intel.com>
+ <CAJ3xEMgVeri17KceKhnFUCCFj00yWXKtjwP4r36Pb-CSZiOTng@mail.gmail.com>
+ <58E2974B.30503@intel.com>
+ <CAJ3xEMikpx3JX5frn0Hbne6tTR9Vgu6Pv22TkEuaJP0mM1Au=w@mail.gmail.com>
+Message-ID: <CAKgT0UeMtc4ywGa7wV4bbT7O54dTqpqGGDADfho3tmKTQ7NQ6g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-  Before libvirt modifies the MAC address and vlan tag for an SRIOV VF
-  for use by a virtual machine (either using vfio device assignment or
-  macvtap passthru mode), it saves the current MAC address and vlan tag
-  so that it can reset them to their original value when the guest is
-  done.  Libvirt can't leave the VF MAC set to the value used by the
-  now-defunct guest since it may be started again later using a
-  different VF, but it certainly shouldn't just pick any random value,
-  either. So it saves the state of everything prior to using the VF, and
-  resets it to that.
+On Tue, Apr 4, 2017 at 4:58 AM, Or Gerlitz <gerlitz.or@gmail.com> wrote:
+> On Mon, Apr 3, 2017 at 9:41 PM, Samudrala, Sridhar
+> <sridhar.samudrala@intel.com> wrote:
+>> On 3/30/2017 12:17 AM, Or Gerlitz wrote:
+>>> On Thu, Mar 30, 2017, Sridhar Samudrala wrote:
+>
+>>>> Port Representator netdevs are created for each PF and VF if the switch
+>>>> mode is set to 'switchdev'. These netdevs can be used to control and
+>>>> configure VFs and PFs when they are moved to a different namespace.
+>>>> They enable exposing statistics, configure and monitor link state, mtu,
+>>>> filters,fdb/vlan entries etc.
+>
+>>>> In switchdev mode, broadcasts from VFs are received by the PF and passed
+>>>> to corresponding port representor netdev.
+>
+>>> What netdev represents the uplink (wire port) in your impl?
+>
+> combining your replies from the two emails:
+>
+>> We don't have a port netdev representing the uplink in this implementation as we
+>> cannot control the frames going out the uplink via sw rules with the current
+>> generation of hw/fw.
+>
+>> fwd to CPU as default rule is not possible with the current generation of hw/fw.
+>> So we would like to enable switchdev to expose the port representors and start
+>> adding offloads in an incremental way.
+>
+> I lost you even deeper
+>
+> I was asking on frames getting in from the uplink and not getting out
+> the uplink.
 
-  The igb driver initializes the MAC addresses of all VFs to
-  00:00:00:00:00:00, and reports that when asked (via an RTM_GETLINK
-  netlink message, also visible in the list of VFs in the output of "ip
-  link show"). But when libvirt attempts to restore the MAC address back
-  to 00:00:00:00:00:00 (using an RTM_SETLINK netlink message) the kernel
-  responds with "Invalid argument".
+Frames coming from the uplink will by default be routed to the PF. So
+are you saying you want a representor for the uplink to handle the
+packets that don't have any rules set up for them, correct?
 
-  Forbidding a reset back to the original value leaves the VF MAC at the
-  value set for the now-defunct virtual machine. Especially on a system
-  with NetworkManager enabled, this has very bad consequences, since
-  NetworkManager forces all interfacess to be IFF_UP all the time - if
-  the same virtual machine is restarted using a different VF (or even on
-  a different host), there will be multiple interfaces watching for
-  traffic with the same MAC address.
+I think we could set something like this up as we do have the concept
+of a "default" entity that everything falls back into. It is just a
+bit muddled since that current exists as a part of the PF.
 
-  To allow libvirt to revert to the original state, we need a way to
-  remove the administrative set MAC on a VF, to allow normal host
-  operation again, and to reset/overwrite the VF MAC via VF netdev.
+> This is about offloading to HW a switching model where the steering
+> (matching and actions)
+> comes into play on the port ingress. E.g
+>
+> VF NIC xmit ---> VF vport e-switch rep recv --> SW or HW steering
 
-  This patch implements the outlined scenario by allowing to set the
-  VF MAC to 00:00:00:00:00:00 via RTM_SETLINK on the PF.
-  igb_ndo_set_vf_mac resets the IGB_VF_FLAG_PF_SET_MAC flag to 0,
-  so it's possible to reset the VF MAC back to the original value via
-  the VF netdev.
+So this bit we can't really support very well with the i40e hardware.
+The problem is that unless there is a rule that exists to route it to
+another PF/VF there is a default rule in the hardware that would send
+it out the uplink port. The only data we can really catch on the port
+representors is broadcast/multicast because it does replication.
 
-  Note: Recent patches to libvirt allow for a workaround if the NIC
-  isn't capable of resetting the administrative MAC back to all 0, but
-  in theory the NIC should allow resetting the MAC in the fisr place.
+> other node xmit --> UPLINK vport e-switch rep recv --> SW or HW steering
 
-Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 25 ++++++++++++++++++++-----
- 1 file changed, 20 insertions(+), 5 deletions(-)
+This part I think we can do. The default behavior would be to send a
+packet to the default entity which in this case is the PF.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 26a821f..e7a61b1 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8125,12 +8125,27 @@ static int igb_set_vf_mac(struct igb_adapter *adapter,
- static int igb_ndo_set_vf_mac(struct net_device *netdev, int vf, u8 *mac)
- {
- 	struct igb_adapter *adapter = netdev_priv(netdev);
--	if (!is_valid_ether_addr(mac) || (vf >= adapter->vfs_allocated_count))
-+
-+	if (vf >= adapter->vfs_allocated_count)
-+		return -EINVAL;
-+	/* Setting the VF MAC to 0 reverts the IGB_VF_FLAG_PF_SET_MAC
-+	   flag and allows to overwrite the MAC via VF netdev.  This
-+	   is necessary to allow libvirt a way to restore the original
-+	   MAC after unbinding vfio-pci and reloading igbvf after shutting
-+	   down a VM. */
-+	if (is_zero_ether_addr(mac)) {
-+		adapter->vf_data[vf].flags &= ~IGB_VF_FLAG_PF_SET_MAC;
-+		dev_info(&adapter->pdev->dev,
-+			 "remove administratively set MAC on VF %d\n",
-+			 vf);
-+	} else if (is_valid_ether_addr (mac)) {
-+		adapter->vf_data[vf].flags |= IGB_VF_FLAG_PF_SET_MAC;
-+		dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n",
-+			 mac, vf);
-+		dev_info(&adapter->pdev->dev,
-+			 "Reload the VF driver to make this change effective.");
-+	} else
- 		return -EINVAL;
--	adapter->vf_data[vf].flags |= IGB_VF_FLAG_PF_SET_MAC;
--	dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n", mac, vf);
--	dev_info(&adapter->pdev->dev,
--		 "Reload the VF driver to make this change effective.");
- 	if (test_bit(__IGB_DOWN, &adapter->state)) {
- 		dev_warn(&adapter->pdev->dev,
- 			 "The VF MAC address has been set, but the PF device is not up.\n");
--- 
-2.9.3
+> If your current HW can't let you have "send to CPU" as the default
+> action on ingress
+> for the VFs and uplink ports, I am not clear what use-cases you can do
+> in slow path
+> (only reps, no offloaded SW rules) and for past path (reps + offloaded
+> SW rules)...
+>
+> Can you please elaborate on such use-cases, so the bigger picture is more clear?
 
+So the main goal with all of this is to support TC offloads so that we
+can program filters to route packets from the default entity to the
+VF. I agree that I think we are missing the uplink port. We probably
+just need to add it as the "default" handler for packets that
+originate with a source MAC address that is not the PF or one of the
+VFs.
+
+We can discuss this further at netdev/netconf.
+
+- Alex
