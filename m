@@ -1,93 +1,72 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 4 Apr 2017 08:29:03 -0700
-Subject: [Intel-wired-lan] [next-queue v6 PATCH 2/7] i40e: Introduce
- Port Representor netdevs and switchdev mode.
-In-Reply-To: <CAJ3xEMikpx3JX5frn0Hbne6tTR9Vgu6Pv22TkEuaJP0mM1Au=w@mail.gmail.com>
-References: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
- <1490833375-2788-3-git-send-email-sridhar.samudrala@intel.com>
- <CAJ3xEMgVeri17KceKhnFUCCFj00yWXKtjwP4r36Pb-CSZiOTng@mail.gmail.com>
- <58E2974B.30503@intel.com>
- <CAJ3xEMikpx3JX5frn0Hbne6tTR9Vgu6Pv22TkEuaJP0mM1Au=w@mail.gmail.com>
-Message-ID: <CAKgT0UeMtc4ywGa7wV4bbT7O54dTqpqGGDADfho3tmKTQ7NQ6g@mail.gmail.com>
+From: Williams, Mitch A <mitch.a.williams@intel.com>
+Date: Tue, 4 Apr 2017 16:33:02 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: limit client interface to X722
+	hardware
+In-Reply-To: <20170404143446.16359-1-sassmann@kpanic.de>
+References: <20170404143446.16359-1-sassmann@kpanic.de>
+Message-ID: <AAEA33E297BCAC4B9BB20A7C2DF0AB8D80543C1D@FMSMSX113.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Apr 4, 2017 at 4:58 AM, Or Gerlitz <gerlitz.or@gmail.com> wrote:
-> On Mon, Apr 3, 2017 at 9:41 PM, Samudrala, Sridhar
-> <sridhar.samudrala@intel.com> wrote:
->> On 3/30/2017 12:17 AM, Or Gerlitz wrote:
->>> On Thu, Mar 30, 2017, Sridhar Samudrala wrote:
->
->>>> Port Representator netdevs are created for each PF and VF if the switch
->>>> mode is set to 'switchdev'. These netdevs can be used to control and
->>>> configure VFs and PFs when they are moved to a different namespace.
->>>> They enable exposing statistics, configure and monitor link state, mtu,
->>>> filters,fdb/vlan entries etc.
->
->>>> In switchdev mode, broadcasts from VFs are received by the PF and passed
->>>> to corresponding port representor netdev.
->
->>> What netdev represents the uplink (wire port) in your impl?
->
-> combining your replies from the two emails:
->
->> We don't have a port netdev representing the uplink in this implementation as we
->> cannot control the frames going out the uplink via sw rules with the current
->> generation of hw/fw.
->
->> fwd to CPU as default rule is not possible with the current generation of hw/fw.
->> So we would like to enable switchdev to expose the port representors and start
->> adding offloads in an incremental way.
->
-> I lost you even deeper
->
-> I was asking on frames getting in from the uplink and not getting out
-> the uplink.
 
-Frames coming from the uplink will by default be routed to the PF. So
-are you saying you want a representor for the uplink to handle the
-packets that don't have any rules set up for them, correct?
 
-I think we could set something like this up as we do have the concept
-of a "default" entity that everything falls back into. It is just a
-bit muddled since that current exists as a part of the PF.
+> -----Original Message-----
+> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org] On
+> Behalf Of Stefan Assmann
+> Sent: Tuesday, April 04, 2017 7:35 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; davem at davemloft.net; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; sassmann at kpanic.de
+> Subject: [PATCH] i40e: limit client interface to X722 hardware
+> 
+> The client interface is meant for X722 iWARP support. Modprobing i40iw
+> on systems with X710/XL710 NICs currently may crash the system. Adding a
+> check which limits client interface access to the appropriate hardware.
+> 
+> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_client.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c
+> b/drivers/net/ethernet/intel/i40e/i40e_client.c
+> index 191028b..6f873449 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_client.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+> @@ -525,15 +525,17 @@ static void i40e_client_release(struct i40e_client
+> *client)
+>  static void i40e_client_prepare(struct i40e_client *client)
+>  {
+>  	struct i40e_device *ldev;
+> -	struct i40e_pf *pf;
+> 
+>  	mutex_lock(&i40e_device_mutex);
+>  	list_for_each_entry(ldev, &i40e_devices, list) {
+> -		pf = ldev->pf;
+> -		i40e_client_add_instance(pf);
+> -		/* Start the client subtask */
+> -		pf->flags |= I40E_FLAG_SERVICE_CLIENT_REQUESTED;
+> -		i40e_service_event_schedule(pf);
+> +		struct i40e_pf *pf = ldev->pf;
+> +
+> +		if (pf->hw.mac.type == I40E_MAC_X722) {
+> +			i40e_client_add_instance(pf);
+> +			/* Start the client subtask */
+> +			pf->flags |= I40E_FLAG_SERVICE_CLIENT_REQUESTED;
+> +			i40e_service_event_schedule(pf);
+> +		}
+>  	}
+>  	mutex_unlock(&i40e_device_mutex);
+>  }
+> --
+> 2.9.3
 
-> This is about offloading to HW a switching model where the steering
-> (matching and actions)
-> comes into play on the port ingress. E.g
->
-> VF NIC xmit ---> VF vport e-switch rep recv --> SW or HW steering
+Thanks for pointing this out, Stephan. I think that's not exactly the right way to do this check. Instead, we need to look at the IWARP flag. I'll get a patch out today to take care of it.
 
-So this bit we can't really support very well with the i40e hardware.
-The problem is that unless there is a rule that exists to route it to
-another PF/VF there is a default rule in the hardware that would send
-it out the uplink port. The only data we can really catch on the port
-representors is broadcast/multicast because it does replication.
+So consider this a thankful NAK.
 
-> other node xmit --> UPLINK vport e-switch rep recv --> SW or HW steering
+-Mitch
 
-This part I think we can do. The default behavior would be to send a
-packet to the default entity which in this case is the PF.
-
-> If your current HW can't let you have "send to CPU" as the default
-> action on ingress
-> for the VFs and uplink ports, I am not clear what use-cases you can do
-> in slow path
-> (only reps, no offloaded SW rules) and for past path (reps + offloaded
-> SW rules)...
->
-> Can you please elaborate on such use-cases, so the bigger picture is more clear?
-
-So the main goal with all of this is to support TC offloads so that we
-can program filters to route packets from the default entity to the
-VF. I agree that I think we are missing the uplink port. We probably
-just need to add it as the "default" handler for packets that
-originate with a source MAC address that is not the PF or one of the
-VFs.
-
-We can discuss this further at netdev/netconf.
-
-- Alex
