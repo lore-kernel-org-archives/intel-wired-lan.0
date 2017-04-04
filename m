@@ -1,51 +1,95 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Tue,  4 Apr 2017 16:34:46 +0200
-Subject: [Intel-wired-lan] [PATCH] i40e: limit client interface to X722
-	hardware
-Message-ID: <20170404143446.16359-1-sassmann@kpanic.de>
+From: Corinna Vinschen <vinschen@redhat.com>
+Date: Tue,  4 Apr 2017 17:10:55 +0200
+Subject: [Intel-wired-lan] [PATCH] igb: Allow to remove administratively set
+	MAC on VFs
+Message-ID: <20170404151055.21447-1-vinschen@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The client interface is meant for X722 iWARP support. Modprobing i40iw
-on systems with X710/XL710 NICs currently may crash the system. Adding a
-check which limits client interface access to the appropriate hardware.
+  Before libvirt modifies the MAC address and vlan tag for an SRIOV VF
+  for use by a virtual machine (either using vfio device assignment or
+  macvtap passthru mode), it saves the current MAC address and vlan tag
+  so that it can reset them to their original value when the guest is
+  done.  Libvirt can't leave the VF MAC set to the value used by the
+  now-defunct guest since it may be started again later using a
+  different VF, but it certainly shouldn't just pick any random value,
+  either. So it saves the state of everything prior to using the VF, and
+  resets it to that.
 
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+  The igb driver initializes the MAC addresses of all VFs to
+  00:00:00:00:00:00, and reports that when asked (via an RTM_GETLINK
+  netlink message, also visible in the list of VFs in the output of "ip
+  link show"). But when libvirt attempts to restore the MAC address back
+  to 00:00:00:00:00:00 (using an RTM_SETLINK netlink message) the kernel
+  responds with "Invalid argument".
+
+  Forbidding a reset back to the original value leaves the VF MAC at the
+  value set for the now-defunct virtual machine. Especially on a system
+  with NetworkManager enabled, this has very bad consequences, since
+  NetworkManager forces all interfacess to be IFF_UP all the time - if
+  the same virtual machine is restarted using a different VF (or even on
+  a different host), there will be multiple interfaces watching for
+  traffic with the same MAC address.
+
+  To allow libvirt to revert to the original state, we need a way to
+  remove the administrative set MAC on a VF, to allow normal host
+  operation again, and to reset/overwrite the VF MAC via VF netdev.
+
+  This patch implements the outlined scenario by allowing to set the
+  VF MAC to 00:00:00:00:00:00 via RTM_SETLINK on the PF.
+  igb_ndo_set_vf_mac resets the IGB_VF_FLAG_PF_SET_MAC flag to 0,
+  so it's possible to reset the VF MAC back to the original value via
+  the VF netdev.
+
+  Note: Recent patches to libvirt allow for a workaround if the NIC
+  isn't capable of resetting the administrative MAC back to all 0, but
+  in theory the NIC should allow resetting the MAC in the fisr place.
+
+Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_client.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 25 ++++++++++++++++++++-----
+ 1 file changed, 20 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 191028b..6f873449 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -525,15 +525,17 @@ static void i40e_client_release(struct i40e_client *client)
- static void i40e_client_prepare(struct i40e_client *client)
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 26a821f..e7a61b1 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -8125,12 +8125,27 @@ static int igb_set_vf_mac(struct igb_adapter *adapter,
+ static int igb_ndo_set_vf_mac(struct net_device *netdev, int vf, u8 *mac)
  {
- 	struct i40e_device *ldev;
--	struct i40e_pf *pf;
- 
- 	mutex_lock(&i40e_device_mutex);
- 	list_for_each_entry(ldev, &i40e_devices, list) {
--		pf = ldev->pf;
--		i40e_client_add_instance(pf);
--		/* Start the client subtask */
--		pf->flags |= I40E_FLAG_SERVICE_CLIENT_REQUESTED;
--		i40e_service_event_schedule(pf);
-+		struct i40e_pf *pf = ldev->pf;
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+-	if (!is_valid_ether_addr(mac) || (vf >= adapter->vfs_allocated_count))
 +
-+		if (pf->hw.mac.type == I40E_MAC_X722) {
-+			i40e_client_add_instance(pf);
-+			/* Start the client subtask */
-+			pf->flags |= I40E_FLAG_SERVICE_CLIENT_REQUESTED;
-+			i40e_service_event_schedule(pf);
-+		}
- 	}
- 	mutex_unlock(&i40e_device_mutex);
- }
++	if (vf >= adapter->vfs_allocated_count)
++		return -EINVAL;
++	/* Setting the VF MAC to 0 reverts the IGB_VF_FLAG_PF_SET_MAC
++	   flag and allows to overwrite the MAC via VF netdev.  This
++	   is necessary to allow libvirt a way to restore the original
++	   MAC after unbinding vfio-pci and reloading igbvf after shutting
++	   down a VM. */
++	if (is_zero_ether_addr(mac)) {
++		adapter->vf_data[vf].flags &= ~IGB_VF_FLAG_PF_SET_MAC;
++		dev_info(&adapter->pdev->dev,
++			 "remove administratively set MAC on VF %d\n",
++			 vf);
++	} else if (is_valid_ether_addr (mac)) {
++		adapter->vf_data[vf].flags |= IGB_VF_FLAG_PF_SET_MAC;
++		dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n",
++			 mac, vf);
++		dev_info(&adapter->pdev->dev,
++			 "Reload the VF driver to make this change effective.");
++	} else
+ 		return -EINVAL;
+-	adapter->vf_data[vf].flags |= IGB_VF_FLAG_PF_SET_MAC;
+-	dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n", mac, vf);
+-	dev_info(&adapter->pdev->dev,
+-		 "Reload the VF driver to make this change effective.");
+ 	if (test_bit(__IGB_DOWN, &adapter->state)) {
+ 		dev_warn(&adapter->pdev->dev,
+ 			 "The VF MAC address has been set, but the PF device is not up.\n");
 -- 
 2.9.3
 
