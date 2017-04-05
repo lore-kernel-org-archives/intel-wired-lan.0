@@ -1,121 +1,228 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Wed,  5 Apr 2017 15:46:22 +0200
-Subject: [Intel-wired-lan] [PATCH v2] igb: Allow to remove administratively
-	set MAC on VFs
-In-Reply-To: <CAKgT0UdHbfSL-5QM6sfH=j7adQLAscUss1GzN2oYZsLM1CgV3g@mail.gmail.com>
-References: <CAKgT0UdHbfSL-5QM6sfH=j7adQLAscUss1GzN2oYZsLM1CgV3g@mail.gmail.com>
-Message-ID: <20170405134622.12227-1-vinschen@redhat.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 05 Apr 2017 22:10:33 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 0bdfbcc154ff61352f3385a33bce7edd191329e1
+Message-ID: <58e4fad9.u5QcFC1W/WRho864%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-  Before libvirt modifies the MAC address and vlan tag for an SRIOV VF
-  for use by a virtual machine (either using vfio device assignment or
-  macvtap passthru mode), it saves the current MAC address and vlan tag
-  so that it can reset them to their original value when the guest is
-  done.  Libvirt can't leave the VF MAC set to the value used by the
-  now-defunct guest since it may be started again later using a
-  different VF, but it certainly shouldn't just pick any random value,
-  either. So it saves the state of everything prior to using the VF, and
-  resets it to that.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+0bdfbcc154ff61352f3385a33bce7edd191329e1  i40e: only register client on iWarp-capable devices
 
-  The igb driver initializes the MAC addresses of all VFs to
-  00:00:00:00:00:00, and reports that when asked (via an RTM_GETLINK
-  netlink message, also visible in the list of VFs in the output of "ip
-  link show"). But when libvirt attempts to restore the MAC address back
-  to 00:00:00:00:00:00 (using an RTM_SETLINK netlink message) the kernel
-  responds with "Invalid argument".
+drivers/net/ethernet/intel/i40e/i40e_main.c:11335:15: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_main.c:11336:3: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:1337:8: error: 'struct sk_buff' has no member named 'offload_fwd_mark'
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2171:36: error: 'size' undeclared (first use in this function)
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2171:5: error: 'size' undeclared (first use in this function)
 
-  Forbidding a reset back to the original value leaves the VF MAC at the
-  value set for the now-defunct virtual machine. Especially on a system
-  with NetworkManager enabled, this has very bad consequences, since
-  NetworkManager forces all interfacess to be IFF_UP all the time - if
-  the same virtual machine is restarted using a different VF (or even on
-  a different host), there will be multiple interfaces watching for
-  traffic with the same MAC address.
+Error ids grouped by kconfigs:
 
-  To allow libvirt to revert to the original state, we need a way to
-  remove the administrative set MAC on a VF, to allow normal host
-  operation again, and to reset/overwrite the VF MAC via VF netdev.
+recent_errors
+??? alpha-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? alpha-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? i386-randconfig-x015-04051820
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? ia64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? ia64-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? parisc-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? powerpc-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? powerpc-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? powerpc-defconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? powerpc-ppc64_defconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? s390-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? s390-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? sparc64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? sparc64-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? sparc-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? sparc-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? tile-allmodconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? tile-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? x86_64-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? x86_64-rhel
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? xtensa-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? xtensa-allyesconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
 
-  This patch implements the outlined scenario by allowing to set the
-  VF MAC to 00:00:00:00:00:00 via RTM_SETLINK on the PF.
-  igb_ndo_set_vf_mac resets the IGB_VF_FLAG_PF_SET_MAC flag to 0,
-  so it's possible to reset the VF MAC back to the original value via
-  the VF netdev.
+elapsed time: 180m
 
-  Note: Recent patches to libvirt allow for a workaround if the NIC
-  isn't capable of resetting the administrative MAC back to all 0, but
-  in theory the NIC should allow resetting the MAC in the first place.
+configs tested: 135
 
-Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 42 +++++++++++++++++++++++--------
- 1 file changed, 31 insertions(+), 11 deletions(-)
+alpha                            alldefconfig
+arm                        trizeps4_defconfig
+m32r                        oaks32r_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                           corgi_defconfig
+avr32                      atngw100_defconfig
+avr32                        merisc_defconfig
+powerpc                      acadia_defconfig
+sparc64                          allyesconfig
+x86_64                 randconfig-x010-201714
+x86_64                 randconfig-x011-201714
+x86_64                 randconfig-x012-201714
+x86_64                 randconfig-x013-201714
+x86_64                 randconfig-x014-201714
+x86_64                 randconfig-x015-201714
+x86_64                 randconfig-x016-201714
+x86_64                 randconfig-x017-201714
+x86_64                 randconfig-x018-201714
+x86_64                 randconfig-x019-201714
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                             allmodconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201714
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201714
+i386                     randconfig-i1-201714
+i386                               tinyconfig
+x86_64                randconfig-ne0-04052145
+avr32                       mimc200_defconfig
+frv                                 defconfig
+m68k                          hp300_defconfig
+mips                        bcm47xx_defconfig
+i386                 randconfig-x018-04051820
+i386                 randconfig-x015-04051820
+i386                 randconfig-x012-04051820
+i386                 randconfig-x013-04051820
+i386                 randconfig-x017-04051820
+i386                 randconfig-x010-04051820
+i386                 randconfig-x014-04051820
+i386                 randconfig-x016-04051820
+i386                 randconfig-x011-04051820
+i386                 randconfig-x019-04051820
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-04051821
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+arm                         palmz72_defconfig
+m68k                         amcore_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+x86_64                 randconfig-x004-201714
+x86_64                 randconfig-x009-201714
+x86_64                 randconfig-x003-201714
+x86_64                 randconfig-x008-201714
+x86_64                 randconfig-x002-201714
+x86_64                 randconfig-x000-201714
+x86_64                 randconfig-x007-201714
+x86_64                 randconfig-x005-201714
+x86_64                 randconfig-x001-201714
+x86_64                 randconfig-x006-201714
+x86_64                                  kexec
+mips                  maltasmvp_eva_defconfig
+powerpc                 mpc8313_rdb_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                     randconfig-r0-201714
+i386                   randconfig-x006-201714
+i386                   randconfig-x005-201714
+i386                   randconfig-x002-201714
+i386                   randconfig-x007-201714
+i386                   randconfig-x003-201714
+i386                   randconfig-x001-201714
+i386                   randconfig-x008-201714
+i386                   randconfig-x000-201714
+i386                   randconfig-x009-201714
+i386                   randconfig-x004-201714
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 26a821f..c7673a2 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8093,7 +8093,8 @@ static void igb_rar_set_qsel(struct igb_adapter *adapter, u8 *addr, u32 index,
- 	rar_high = le16_to_cpup((__le16 *)(addr + 4));
- 
- 	/* Indicate to hardware the Address is Valid. */
--	rar_high |= E1000_RAH_AV;
-+	if (is_valid_ether_addr(addr))
-+		rar_high |= E1000_RAH_AV;
- 
- 	if (hw->mac.type == e1000_82575)
- 		rar_high |= E1000_RAH_POOL_1 * qsel;
-@@ -8125,17 +8126,36 @@ static int igb_set_vf_mac(struct igb_adapter *adapter,
- static int igb_ndo_set_vf_mac(struct net_device *netdev, int vf, u8 *mac)
- {
- 	struct igb_adapter *adapter = netdev_priv(netdev);
--	if (!is_valid_ether_addr(mac) || (vf >= adapter->vfs_allocated_count))
-+
-+	if (vf >= adapter->vfs_allocated_count)
-+		return -EINVAL;
-+
-+	/* Setting the VF MAC to 0 reverts the IGB_VF_FLAG_PF_SET_MAC
-+	 * flag and allows to overwrite the MAC via VF netdev.  This
-+	 * is necessary to allow libvirt a way to restore the original
-+	 * MAC after unbinding vfio-pci and reloading igbvf after shutting
-+	 * down a VM.
-+	 */
-+	if (is_zero_ether_addr(mac)) {
-+		adapter->vf_data[vf].flags &= ~IGB_VF_FLAG_PF_SET_MAC;
-+		dev_info(&adapter->pdev->dev,
-+			 "remove administratively set MAC on VF %d\n",
-+			 vf);
-+	} else if (is_valid_ether_addr (mac)) {
-+		adapter->vf_data[vf].flags |= IGB_VF_FLAG_PF_SET_MAC;
-+		dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n",
-+			 mac, vf);
-+		dev_info(&adapter->pdev->dev,
-+			 "Reload the VF driver to make this change effective.");
-+		/* Generate additional warning if PF is down */
-+		if (test_bit(__IGB_DOWN, &adapter->state)) {
-+			dev_warn(&adapter->pdev->dev,
-+				 "The VF MAC address has been set, but the PF device is not up.\n");
-+			dev_warn(&adapter->pdev->dev,
-+				 "Bring the PF device up before attempting to use the VF device.\n");
-+		}
-+	} else {
- 		return -EINVAL;
--	adapter->vf_data[vf].flags |= IGB_VF_FLAG_PF_SET_MAC;
--	dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n", mac, vf);
--	dev_info(&adapter->pdev->dev,
--		 "Reload the VF driver to make this change effective.");
--	if (test_bit(__IGB_DOWN, &adapter->state)) {
--		dev_warn(&adapter->pdev->dev,
--			 "The VF MAC address has been set, but the PF device is not up.\n");
--		dev_warn(&adapter->pdev->dev,
--			 "Bring the PF device up before attempting to use the VF device.\n");
- 	}
- 	return igb_set_vf_mac(adapter, vf, mac);
- }
--- 
-2.9.3
-
+Thanks,
+Fengguang
