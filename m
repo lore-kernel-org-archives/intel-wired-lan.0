@@ -1,64 +1,79 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 05 Apr 2017 12:53:14 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: Allow to remove administratively
- set MAC on VFs
-In-Reply-To: <20170405091327.GA4988@calimero.vinschen.de>
-References: <20170404151055.21447-1-vinschen@redhat.com>
- <B1C1DF2ACD01FD4881736AA51731BAB2B1E1A2@ORSMSX107.amr.corp.intel.com>
- <CAKgT0UdYjzk4worxwfpuCEY7c6+n8x1Uqz5_=Az_y1zeK6gCSg@mail.gmail.com>
- <20170405091327.GA4988@calimero.vinschen.de>
-Message-ID: <CAKgT0UdHbfSL-5QM6sfH=j7adQLAscUss1GzN2oYZsLM1CgV3g@mail.gmail.com>
+From: Or Gerlitz <gerlitz.or@gmail.com>
+Date: Wed, 5 Apr 2017 16:41:34 +0300
+Subject: [Intel-wired-lan] [next-queue v6 PATCH 2/7] i40e: Introduce
+ Port Representor netdevs and switchdev mode.
+In-Reply-To: <CAKgT0UeMtc4ywGa7wV4bbT7O54dTqpqGGDADfho3tmKTQ7NQ6g@mail.gmail.com>
+References: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
+ <1490833375-2788-3-git-send-email-sridhar.samudrala@intel.com>
+ <CAJ3xEMgVeri17KceKhnFUCCFj00yWXKtjwP4r36Pb-CSZiOTng@mail.gmail.com>
+ <58E2974B.30503@intel.com>
+ <CAJ3xEMikpx3JX5frn0Hbne6tTR9Vgu6Pv22TkEuaJP0mM1Au=w@mail.gmail.com>
+ <CAKgT0UeMtc4ywGa7wV4bbT7O54dTqpqGGDADfho3tmKTQ7NQ6g@mail.gmail.com>
+Message-ID: <CAJ3xEMiun=S+QW8PJHKi_wK6d-dJjGu1GwnDqrfUUVkq_WyKcw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 5, 2017 at 5:13 AM Corinna Vinschen <vinschen@redhat.com> wrote:
+On Tue, Apr 4, 2017 at 6:29 PM, Alexander Duyck
+<alexander.duyck@gmail.com> wrote:
+> On Tue, Apr 4, 2017 at 4:58 AM, Or Gerlitz <gerlitz.or@gmail.com> wrote:
 
-> Hi Alex,
->
-> On Apr  4 10:33, Alexander Duyck wrote:
-> > On Tue, Apr 4, 2017 at 10:16 AM, Duyck, Alexander H
-> > <alexander.h.duyck@intel.com> wrote:
-> > >> -----Original Message-----
-> > >> From: Intel-wired-lan [mailto:
-> intel-wired-lan-bounces at lists.osuosl.org] On
-> > >> Behalf Of Corinna Vinschen
-> > >> Sent: Tuesday, April 4, 2017 8:11 AM
-> > >> To: intel-wired-lan at lists.osuosl.org
-> > >> Cc: netdev at vger.kernel.org
-> > >> Subject: [Intel-wired-lan] [PATCH] igb: Allow to remove
-> administratively set MAC
-> > >> on VFs
-> > >> [...]
-> >
-> > So I just realized there is one other minor issue I just found. In
-> > igb_rar_set_qsel you should probably add a check for
-> > "is_valid_ether_addr(addr)" before you set the E1000_RAH_AV bit. For
-> > the zeroed MAC address it should be cleared so that we aren't
-> > filtering on a MAC address of all 0's for the VF.
-> >
-> > - Alex
->
-> I see your point, but I'm a bit reluctant to do that because
-> igb_vf_configure() calls igb_set_vf_mac() with addr set to the
-> zeroed MAC explicitely:
->
->
->   eth_zero_addr(mac_addr);
->   igb_set_vf_mac(adapter, vf, mac_addr);
->
-> So in this case the zero MAC is already treated as valid address
-> and the E1000_RAH_AV bit is set.  Is that just a bug?
->
->
-> Corinna
->
-Yes, that would be a bug. We shouldn't be treatin all 0's as a valid
-address.
+>> I was asking on frames getting in from the uplink and not getting out
+>> the uplink.
 
-- Alex
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170405/57325131/attachment.html>
+> Frames coming from the uplink will by default be routed to the PF. So
+> are you saying you want a representor for the uplink to handle the
+> packets that don't have any rules set up for them, correct?
+
+In our impl, currently the PF serves the uplink representor when we
+are in the switchdev mode.
+
+> I think we could set something like this up as we do have the concept
+> of a "default" entity that everything falls back into. It is just a
+> bit muddled since that current exists as a part of the PF.
+
+>> This is about offloading to HW a switching model where the steering
+>> (matching and actions) comes into play on the port ingress. E.g
+>> VF NIC xmit ---> VF vport e-switch rep recv --> SW or HW steering
+
+> So this bit we can't really support very well with the i40e hardware.
+> The problem is that unless there is a rule that exists to route it to
+> another PF/VF there is a default rule in the hardware that would send
+> it out the uplink port. The only data we can really catch on the port
+> representors is broadcast/multicast because it does replication.
+
+Can't you put a black hole (matching on nothing) rule saying that if
+source is VF send it to the PF RX queues and not to the wire, from
+the PF recv descriptor somehow realize from what VF the packet originated
+and then inject it to the host kernel as it was received from the rep
+of that VF?
+
+Later when you add offloads, you make this rule with the lowest prio.
+
+>> other node xmit --> UPLINK vport e-switch rep recv --> SW or HW steering
+
+> This part I think we can do. The default behavior would be to send a
+> packet to the default entity which in this case is the PF.
+
+good
+
+>> Can you please elaborate on such use-cases, so the bigger picture is more clear?
+
+> So the main goal with all of this is to support TC offloads so that we
+> can program filters to route packets from the default entity to the VF.
+
+This is somehow too limited and I don't see what use case it can serve :(
+
+> I agree that I think we are missing the uplink port. We probably
+> just need to add it as the "default" handler for packets that
+> originate with a source MAC address that is not the PF or one of the VFs.
+
+> We can discuss this further at netdev/netconf.
+
+yeah, but I will not be there (still asked everyone to get me a pack
+of maple cookies),
+so feel free to discuss with the MLNX folks, Rony and Jiri
+
+Or.
