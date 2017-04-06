@@ -1,519 +1,144 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu,  6 Apr 2017 10:26:47 +0300
-Subject: [Intel-wired-lan] [PATCH 2/3] e1000e: Add Support for CannonLake
-Message-ID: <20170406072647.10753-1-sasha.neftin@intel.com>
+Date: Thu,  6 Apr 2017 10:27:03 +0300
+Subject: [Intel-wired-lan] [PATCH 3/3] e1000e: Add Support for 38.4MHZ
+	frequency
+Message-ID: <20170406072703.10810-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Description: propagation of CannonLake mac type to
-driver functionality
+Description: add support for 38.4MHz frequency is required for PTP
+on CannonLake. SYSTIM frequency adjustment attributes for TIMINCA are
+get/set dependent on the hardware clock frequency for a different
+types of adapters. 38.4MHz frequency supported by CannonLake
+and active once time synchronisation mechanism was enabled
+Changed abbreviation from Hz to HZ to be compliant checkpatch code style
 
 Reviewed-by: Raanan Avargil <raanan.avargil@intel.com>
 Reviewed-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/ethtool.c | 10 ++--
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 82 +++++++++++++++--------------
- drivers/net/ethernet/intel/e1000e/netdev.c  | 29 +++++-----
- drivers/net/ethernet/intel/e1000e/ptp.c     |  4 +-
- 4 files changed, 63 insertions(+), 62 deletions(-)
+ drivers/net/ethernet/intel/e1000e/e1000.h  | 28 ++++++++++--------
+ drivers/net/ethernet/intel/e1000e/netdev.c | 47 +++++++++++++++++++++---------
+ 2 files changed, 50 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 7aff68a4a4df..fc97ecc1d704 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -904,19 +904,20 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
- 	case e1000_pch2lan:
- 	case e1000_pch_lpt:
- 	case e1000_pch_spt:
-+		/* fall through */
-+	case e1000_pch_cnp:
- 		mask |= BIT(18);
- 		break;
- 	default:
- 		break;
- 	}
- 
--	if ((mac->type == e1000_pch_lpt) || (mac->type == e1000_pch_spt))
-+	if (mac->type >= e1000_pch_lpt)
- 		wlock_mac = (er32(FWSM) & E1000_FWSM_WLOCK_MAC_MASK) >>
- 		    E1000_FWSM_WLOCK_MAC_SHIFT;
- 
- 	for (i = 0; i < mac->rar_entry_count; i++) {
--		if ((mac->type == e1000_pch_lpt) ||
--		    (mac->type == e1000_pch_spt)) {
-+		if (mac->type >= e1000_pch_lpt) {
- 			/* Cannot test write-protected SHRAL[n] registers */
- 			if ((wlock_mac == 1) || (wlock_mac && (i > wlock_mac)))
- 				continue;
-@@ -1525,7 +1526,7 @@ static int e1000_setup_loopback_test(struct e1000_adapter *adapter)
- 	struct e1000_hw *hw = &adapter->hw;
- 	u32 rctl, fext_nvm11, tarc0;
- 
--	if (hw->mac.type == e1000_pch_spt) {
-+	if (hw->mac.type >= e1000_pch_spt) {
- 		fext_nvm11 = er32(FEXTNVM11);
- 		fext_nvm11 |= E1000_FEXTNVM11_DISABLE_MULR_FIX;
- 		ew32(FEXTNVM11, fext_nvm11);
-@@ -1569,6 +1570,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
- 
- 	switch (hw->mac.type) {
- 	case e1000_pch_spt:
-+	case e1000_pch_cnp:
- 		fext_nvm11 = er32(FEXTNVM11);
- 		fext_nvm11 &= ~E1000_FEXTNVM11_DISABLE_MULR_FIX;
- 		ew32(FEXTNVM11, fext_nvm11);
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index bf55e30f147d..6da4ead628fa 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -237,7 +237,7 @@ static bool e1000_phy_is_accessible_pchlan(struct e1000_hw *hw)
- 	if (ret_val)
- 		return false;
- out:
--	if ((hw->mac.type == e1000_pch_lpt) || (hw->mac.type == e1000_pch_spt)) {
-+	if (hw->mac.type >= e1000_pch_lpt) {
- 		/* Only unforce SMBus if ME is not active */
- 		if (!(er32(FWSM) & E1000_ICH_FWSM_FW_VALID)) {
- 			/* Unforce SMBus mode in PHY */
-@@ -333,6 +333,7 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
- 	switch (hw->mac.type) {
- 	case e1000_pch_lpt:
- 	case e1000_pch_spt:
-+	case e1000_pch_cnp:
- 		if (e1000_phy_is_accessible_pchlan(hw))
- 			break;
- 
-@@ -474,6 +475,7 @@ static s32 e1000_init_phy_params_pchlan(struct e1000_hw *hw)
- 		case e1000_pch2lan:
- 		case e1000_pch_lpt:
- 		case e1000_pch_spt:
-+		case e1000_pch_cnp:
- 			/* In case the PHY needs to be in mdio slow mode,
- 			 * set slow mode and try to get the PHY id again.
- 			 */
-@@ -607,7 +609,7 @@ static s32 e1000_init_nvm_params_ich8lan(struct e1000_hw *hw)
- 
- 	nvm->type = e1000_nvm_flash_sw;
- 
--	if (hw->mac.type == e1000_pch_spt) {
-+	if (hw->mac.type >= e1000_pch_spt) {
- 		/* in SPT, gfpreg doesn't exist. NVM size is taken from the
- 		 * STRAP register. This is because in SPT the GbE Flash region
- 		 * is no longer accessed through the flash registers. Instead,
-@@ -715,6 +717,7 @@ static s32 e1000_init_mac_params_ich8lan(struct e1000_hw *hw)
- 		/* fall-through */
- 	case e1000_pch_lpt:
- 	case e1000_pch_spt:
-+	case e1000_pch_cnp:
- 	case e1000_pchlan:
- 		/* check management mode */
- 		mac->ops.check_mng_mode = e1000_check_mng_mode_pchlan;
-@@ -732,7 +735,7 @@ static s32 e1000_init_mac_params_ich8lan(struct e1000_hw *hw)
- 		break;
- 	}
- 
--	if ((mac->type == e1000_pch_lpt) || (mac->type == e1000_pch_spt)) {
-+	if (mac->type >= e1000_pch_lpt) {
- 		mac->rar_entry_count = E1000_PCH_LPT_RAR_ENTRIES;
- 		mac->ops.rar_set = e1000_rar_set_pch_lpt;
- 		mac->ops.setup_physical_interface =
-@@ -1399,9 +1402,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 	 * aggressive resulting in many collisions. To avoid this, increase
- 	 * the IPG and reduce Rx latency in the PHY.
- 	 */
--	if (((hw->mac.type == e1000_pch2lan) ||
--	     (hw->mac.type == e1000_pch_lpt) ||
--	     (hw->mac.type == e1000_pch_spt)) && link) {
-+	if ((hw->mac.type >= e1000_pch2lan) && link) {
- 		u16 speed, duplex;
- 
- 		e1000e_get_speed_and_duplex_copper(hw, &speed, &duplex);
-@@ -1412,7 +1413,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 			tipg_reg |= 0xFF;
- 			/* Reduce Rx latency in analog PHY */
- 			emi_val = 0;
--		} else if (hw->mac.type == e1000_pch_spt &&
-+		} else if (hw->mac.type >= e1000_pch_spt &&
- 			   duplex == FULL_DUPLEX && speed != SPEED_1000) {
- 			tipg_reg |= 0xC;
- 			emi_val = 1;
-@@ -1435,8 +1436,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 			emi_addr = I217_RX_CONFIG;
- 		ret_val = e1000_write_emi_reg_locked(hw, emi_addr, emi_val);
- 
--		if (hw->mac.type == e1000_pch_lpt ||
--		    hw->mac.type == e1000_pch_spt) {
-+		if (hw->mac.type >= e1000_pch_lpt) {
- 			u16 phy_reg;
- 
- 			e1e_rphy_locked(hw, I217_PLL_CLOCK_GATE_REG, &phy_reg);
-@@ -1452,7 +1452,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 		if (ret_val)
- 			return ret_val;
- 
--		if (hw->mac.type == e1000_pch_spt) {
-+		if (hw->mac.type >= e1000_pch_spt) {
- 			u16 data;
- 			u16 ptr_gap;
- 
-@@ -1502,7 +1502,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 	 * on power up.
- 	 * Set the Beacon Duration for I217 to 8 usec
- 	 */
--	if ((hw->mac.type == e1000_pch_lpt) || (hw->mac.type == e1000_pch_spt)) {
-+	if (hw->mac.type >= e1000_pch_lpt) {
- 		u32 mac_reg;
- 
- 		mac_reg = er32(FEXTNVM4);
-@@ -1520,8 +1520,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 		if (ret_val)
- 			return ret_val;
- 	}
--	if ((hw->mac.type == e1000_pch_lpt) ||
--	    (hw->mac.type == e1000_pch_spt)) {
-+	if (hw->mac.type >= e1000_pch_lpt) {
- 		/* Set platform power management values for
- 		 * Latency Tolerance Reporting (LTR)
- 		 */
-@@ -1533,15 +1532,18 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 	/* Clear link partner's EEE ability */
- 	hw->dev_spec.ich8lan.eee_lp_ability = 0;
- 
--	/* FEXTNVM6 K1-off workaround */
--	if (hw->mac.type == e1000_pch_spt) {
--		u32 pcieanacfg = er32(PCIEANACFG);
-+	if (hw->mac.type >= e1000_pch_lpt) {
- 		u32 fextnvm6 = er32(FEXTNVM6);
- 
--		if (pcieanacfg & E1000_FEXTNVM6_K1_OFF_ENABLE)
--			fextnvm6 |= E1000_FEXTNVM6_K1_OFF_ENABLE;
--		else
--			fextnvm6 &= ~E1000_FEXTNVM6_K1_OFF_ENABLE;
-+		if (hw->mac.type == e1000_pch_spt) {
-+			/* FEXTNVM6 K1-off workaround - for SPT only */
-+			u32 pcieanacfg = er32(PCIEANACFG);
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index f16d9826c66d..c7c994eb410e 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -379,18 +379,22 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca);
+  * INCVALUE_n into the TIMINCA register allowing 32+8+(24-INCVALUE_SHIFT_n)
+  * bits to count nanoseconds leaving the rest for fractional nonseconds.
+  */
+-#define INCVALUE_96MHz		125
+-#define INCVALUE_SHIFT_96MHz	17
+-#define INCPERIOD_SHIFT_96MHz	2
+-#define INCPERIOD_96MHz		(12 >> INCPERIOD_SHIFT_96MHz)
+-
+-#define INCVALUE_25MHz		40
+-#define INCVALUE_SHIFT_25MHz	18
+-#define INCPERIOD_25MHz		1
+-
+-#define INCVALUE_24MHz		125
+-#define INCVALUE_SHIFT_24MHz	14
+-#define INCPERIOD_24MHz		3
++#define INCVALUE_96MHZ		125
++#define INCVALUE_SHIFT_96MHZ	17
++#define INCPERIOD_SHIFT_96MHZ	2
++#define INCPERIOD_96MHZ		(12 >> INCPERIOD_SHIFT_96MHZ)
 +
-+			if (pcieanacfg & E1000_FEXTNVM6_K1_OFF_ENABLE)
-+				fextnvm6 |= E1000_FEXTNVM6_K1_OFF_ENABLE;
-+			else
-+				fextnvm6 &= ~E1000_FEXTNVM6_K1_OFF_ENABLE;
-+		}
++#define INCVALUE_25MHZ		40
++#define INCVALUE_SHIFT_25MHZ	18
++#define INCPERIOD_25MHZ		1
++
++#define INCVALUE_24MHZ		125
++#define INCVALUE_SHIFT_24MHZ	14
++#define INCPERIOD_24MHZ		3
++
++#define INCVALUE_38400KHZ	26
++#define INCVALUE_SHIFT_38400KHZ	19
++#define INCPERIOD_38400KHZ	1
  
- 		ew32(FEXTNVM6, fextnvm6);
- 	}
-@@ -1640,6 +1642,7 @@ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
- 	case e1000_pch2lan:
- 	case e1000_pch_lpt:
- 	case e1000_pch_spt:
-+	case e1000_pch_cnp:
- 		rc = e1000_init_phy_params_pchlan(hw);
- 		break;
- 	default:
-@@ -2091,6 +2094,7 @@ static s32 e1000_sw_lcd_config_ich8lan(struct e1000_hw *hw)
- 	case e1000_pch2lan:
- 	case e1000_pch_lpt:
- 	case e1000_pch_spt:
-+	case e1000_pch_cnp:
- 		sw_cfg_mask = E1000_FEXTNVM_SW_CONFIG_ICH8M;
- 		break;
- 	default:
-@@ -3125,6 +3129,7 @@ static s32 e1000_valid_nvm_bank_detect_ich8lan(struct e1000_hw *hw, u32 *bank)
- 
- 	switch (hw->mac.type) {
- 	case e1000_pch_spt:
-+	case e1000_pch_cnp:
- 		bank1_offset = nvm->flash_bank_size;
- 		act_offset = E1000_ICH_NVM_SIG_WORD;
- 
-@@ -3380,7 +3385,7 @@ static s32 e1000_flash_cycle_init_ich8lan(struct e1000_hw *hw)
- 	/* Clear FCERR and DAEL in hw status by writing 1 */
- 	hsfsts.hsf_status.flcerr = 1;
- 	hsfsts.hsf_status.dael = 1;
--	if (hw->mac.type == e1000_pch_spt)
-+	if (hw->mac.type >= e1000_pch_spt)
- 		ew32flash(ICH_FLASH_HSFSTS, hsfsts.regval & 0xFFFF);
- 	else
- 		ew16flash(ICH_FLASH_HSFSTS, hsfsts.regval);
-@@ -3399,7 +3404,7 @@ static s32 e1000_flash_cycle_init_ich8lan(struct e1000_hw *hw)
- 		 * Begin by setting Flash Cycle Done.
- 		 */
- 		hsfsts.hsf_status.flcdone = 1;
--		if (hw->mac.type == e1000_pch_spt)
-+		if (hw->mac.type >= e1000_pch_spt)
- 			ew32flash(ICH_FLASH_HSFSTS, hsfsts.regval & 0xFFFF);
- 		else
- 			ew16flash(ICH_FLASH_HSFSTS, hsfsts.regval);
-@@ -3423,7 +3428,7 @@ static s32 e1000_flash_cycle_init_ich8lan(struct e1000_hw *hw)
- 			 * now set the Flash Cycle Done.
- 			 */
- 			hsfsts.hsf_status.flcdone = 1;
--			if (hw->mac.type == e1000_pch_spt)
-+			if (hw->mac.type >= e1000_pch_spt)
- 				ew32flash(ICH_FLASH_HSFSTS,
- 					  hsfsts.regval & 0xFFFF);
- 			else
-@@ -3450,13 +3455,13 @@ static s32 e1000_flash_cycle_ich8lan(struct e1000_hw *hw, u32 timeout)
- 	u32 i = 0;
- 
- 	/* Start a cycle by writing 1 in Flash Cycle Go in Hw Flash Control */
--	if (hw->mac.type == e1000_pch_spt)
-+	if (hw->mac.type >= e1000_pch_spt)
- 		hsflctl.regval = er32flash(ICH_FLASH_HSFSTS) >> 16;
- 	else
- 		hsflctl.regval = er16flash(ICH_FLASH_HSFCTL);
- 	hsflctl.hsf_ctrl.flcgo = 1;
- 
--	if (hw->mac.type == e1000_pch_spt)
-+	if (hw->mac.type >= e1000_pch_spt)
- 		ew32flash(ICH_FLASH_HSFSTS, hsflctl.regval << 16);
- 	else
- 		ew16flash(ICH_FLASH_HSFCTL, hsflctl.regval);
-@@ -3527,7 +3532,7 @@ static s32 e1000_read_flash_byte_ich8lan(struct e1000_hw *hw, u32 offset,
- 	/* In SPT, only 32 bits access is supported,
- 	 * so this function should not be called.
- 	 */
--	if (hw->mac.type == e1000_pch_spt)
-+	if (hw->mac.type >= e1000_pch_spt)
- 		return -E1000_ERR_NVM;
- 	else
- 		ret_val = e1000_read_flash_data_ich8lan(hw, offset, 1, &word);
-@@ -3634,8 +3639,7 @@ static s32 e1000_read_flash_data32_ich8lan(struct e1000_hw *hw, u32 offset,
- 	s32 ret_val = -E1000_ERR_NVM;
- 	u8 count = 0;
- 
--	if (offset > ICH_FLASH_LINEAR_ADDR_MASK ||
--	    hw->mac.type != e1000_pch_spt)
-+	if (offset > ICH_FLASH_LINEAR_ADDR_MASK || hw->mac.type < e1000_pch_spt)
- 		return -E1000_ERR_NVM;
- 	flash_linear_addr = ((ICH_FLASH_LINEAR_ADDR_MASK & offset) +
- 			     hw->nvm.flash_base_addr);
-@@ -4068,6 +4072,7 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
- 	switch (hw->mac.type) {
- 	case e1000_pch_lpt:
- 	case e1000_pch_spt:
-+	case e1000_pch_cnp:
- 		word = NVM_COMPAT;
- 		valid_csum_mask = NVM_COMPAT_VALID_CSUM;
- 		break;
-@@ -4153,7 +4158,7 @@ static s32 e1000_write_flash_data_ich8lan(struct e1000_hw *hw, u32 offset,
- 	s32 ret_val;
- 	u8 count = 0;
- 
--	if (hw->mac.type == e1000_pch_spt) {
-+	if (hw->mac.type >= e1000_pch_spt) {
- 		if (size != 4 || offset > ICH_FLASH_LINEAR_ADDR_MASK)
- 			return -E1000_ERR_NVM;
- 	} else {
-@@ -4173,7 +4178,7 @@ static s32 e1000_write_flash_data_ich8lan(struct e1000_hw *hw, u32 offset,
- 		/* In SPT, This register is in Lan memory space, not
- 		 * flash.  Therefore, only 32 bit access is supported
- 		 */
--		if (hw->mac.type == e1000_pch_spt)
-+		if (hw->mac.type >= e1000_pch_spt)
- 			hsflctl.regval = er32flash(ICH_FLASH_HSFSTS) >> 16;
- 		else
- 			hsflctl.regval = er16flash(ICH_FLASH_HSFCTL);
-@@ -4185,7 +4190,7 @@ static s32 e1000_write_flash_data_ich8lan(struct e1000_hw *hw, u32 offset,
- 		 * not flash.  Therefore, only 32 bit access is
- 		 * supported
- 		 */
--		if (hw->mac.type == e1000_pch_spt)
-+		if (hw->mac.type >= e1000_pch_spt)
- 			ew32flash(ICH_FLASH_HSFSTS, hsflctl.regval << 16);
- 		else
- 			ew16flash(ICH_FLASH_HSFCTL, hsflctl.regval);
-@@ -4243,7 +4248,7 @@ static s32 e1000_write_flash_data32_ich8lan(struct e1000_hw *hw, u32 offset,
- 	s32 ret_val;
- 	u8 count = 0;
- 
--	if (hw->mac.type == e1000_pch_spt) {
-+	if (hw->mac.type >= e1000_pch_spt) {
- 		if (offset > ICH_FLASH_LINEAR_ADDR_MASK)
- 			return -E1000_ERR_NVM;
- 	}
-@@ -4259,7 +4264,7 @@ static s32 e1000_write_flash_data32_ich8lan(struct e1000_hw *hw, u32 offset,
- 		/* In SPT, This register is in Lan memory space, not
- 		 * flash.  Therefore, only 32 bit access is supported
- 		 */
--		if (hw->mac.type == e1000_pch_spt)
-+		if (hw->mac.type >= e1000_pch_spt)
- 			hsflctl.regval = er32flash(ICH_FLASH_HSFSTS)
- 			    >> 16;
- 		else
-@@ -4272,7 +4277,7 @@ static s32 e1000_write_flash_data32_ich8lan(struct e1000_hw *hw, u32 offset,
- 		 * not flash.  Therefore, only 32 bit access is
- 		 * supported
- 		 */
--		if (hw->mac.type == e1000_pch_spt)
-+		if (hw->mac.type >= e1000_pch_spt)
- 			ew32flash(ICH_FLASH_HSFSTS, hsflctl.regval << 16);
- 		else
- 			ew16flash(ICH_FLASH_HSFCTL, hsflctl.regval);
-@@ -4464,14 +4469,14 @@ static s32 e1000_erase_flash_bank_ich8lan(struct e1000_hw *hw, u32 bank)
- 			/* Write a value 11 (block Erase) in Flash
- 			 * Cycle field in hw flash control
- 			 */
--			if (hw->mac.type == e1000_pch_spt)
-+			if (hw->mac.type >= e1000_pch_spt)
- 				hsflctl.regval =
- 				    er32flash(ICH_FLASH_HSFSTS) >> 16;
- 			else
- 				hsflctl.regval = er16flash(ICH_FLASH_HSFCTL);
- 
- 			hsflctl.hsf_ctrl.flcycle = ICH_CYCLE_ERASE;
--			if (hw->mac.type == e1000_pch_spt)
-+			if (hw->mac.type >= e1000_pch_spt)
- 				ew32flash(ICH_FLASH_HSFSTS,
- 					  hsflctl.regval << 16);
- 			else
-@@ -4894,8 +4899,7 @@ static void e1000_initialize_hw_bits_ich8lan(struct e1000_hw *hw)
- 	ew32(RFCTL, reg);
- 
- 	/* Enable ECC on Lynxpoint */
--	if ((hw->mac.type == e1000_pch_lpt) ||
--	    (hw->mac.type == e1000_pch_spt)) {
-+	if (hw->mac.type >= e1000_pch_lpt) {
- 		reg = er32(PBECCSTS);
- 		reg |= E1000_PBECCSTS_ECC_ENABLE;
- 		ew32(PBECCSTS, reg);
-@@ -5299,7 +5303,7 @@ void e1000_suspend_workarounds_ich8lan(struct e1000_hw *hw)
- 		    (device_id == E1000_DEV_ID_PCH_LPTLP_I218_V) ||
- 		    (device_id == E1000_DEV_ID_PCH_I218_LM3) ||
- 		    (device_id == E1000_DEV_ID_PCH_I218_V3) ||
--		    (hw->mac.type == e1000_pch_spt)) {
-+		    (hw->mac.type >= e1000_pch_spt)) {
- 			u32 fextnvm6 = er32(FEXTNVM6);
- 
- 			ew32(FEXTNVM6, fextnvm6 & ~E1000_FEXTNVM6_REQ_PLL_CLK);
+ /* Another drawback of scaling the incvalue by a large factor is the
+  * 64-bit SYSTIM register overflows more quickly.  This is dealt with
 diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 4bda1cb97b27..dc83ac92cb67 100644
+index dc83ac92cb67..22e99b0ca24d 100644
 --- a/drivers/net/ethernet/intel/e1000e/netdev.c
 +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1792,8 +1792,7 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
- 	}
+@@ -3508,37 +3508,58 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
  
- 	/* Reset on uncorrectable ECC error */
--	if ((icr & E1000_ICR_ECCER) && ((hw->mac.type == e1000_pch_lpt) ||
--					(hw->mac.type == e1000_pch_spt))) {
-+	if ((icr & E1000_ICR_ECCER) && (hw->mac.type >= e1000_pch_lpt)) {
- 		u32 pbeccsts = er32(PBECCSTS);
- 
- 		adapter->corr_errors +=
-@@ -1873,8 +1872,7 @@ static irqreturn_t e1000_intr(int __always_unused irq, void *data)
- 	}
- 
- 	/* Reset on uncorrectable ECC error */
--	if ((icr & E1000_ICR_ECCER) && ((hw->mac.type == e1000_pch_lpt) ||
--					(hw->mac.type == e1000_pch_spt))) {
-+	if ((icr & E1000_ICR_ECCER) && (hw->mac.type >= e1000_pch_lpt)) {
- 		u32 pbeccsts = er32(PBECCSTS);
- 
- 		adapter->corr_errors +=
-@@ -2242,8 +2240,7 @@ static void e1000_irq_enable(struct e1000_adapter *adapter)
- 	if (adapter->msix_entries) {
- 		ew32(EIAC_82574, adapter->eiac_mask & E1000_EIAC_MASK_82574);
- 		ew32(IMS, adapter->eiac_mask | E1000_IMS_LSC);
--	} else if ((hw->mac.type == e1000_pch_lpt) ||
--		   (hw->mac.type == e1000_pch_spt)) {
-+	} else if (hw->mac.type >= e1000_pch_lpt) {
- 		ew32(IMS, IMS_ENABLE_MASK | E1000_IMS_ECCER);
- 	} else {
- 		ew32(IMS, IMS_ENABLE_MASK);
-@@ -3001,8 +2998,8 @@ static void e1000_configure_tx(struct e1000_adapter *adapter)
- 
- 	hw->mac.ops.config_collision_dist(hw);
- 
--	/* SPT Si errata workaround to avoid data corruption */
--	if (hw->mac.type == e1000_pch_spt) {
-+	/* SPT and CNP Si errata workaround to avoid data corruption */
-+	if (hw->mac.type >= e1000_pch_spt) {
- 		u32 reg_val;
- 
- 		reg_val = er32(IOSFPC);
-@@ -3498,8 +3495,7 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
- 	/* Make sure clock is enabled on I217/I218/I219  before checking
- 	 * the frequency
- 	 */
--	if (((hw->mac.type == e1000_pch_lpt) ||
--	     (hw->mac.type == e1000_pch_spt)) &&
-+	if ((hw->mac.type >= e1000_pch_lpt) &&
- 	    !(er32(TSYNCTXCTL) & E1000_TSYNCTXCTL_ENABLED) &&
- 	    !(er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_ENABLED)) {
- 		u32 fextnvm7 = er32(FEXTNVM7);
-@@ -4033,6 +4029,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
+ 	switch (hw->mac.type) {
  	case e1000_pch2lan:
++		/* Stable 96MHz frequency */
++		incperiod = INCPERIOD_96MHZ;
++		incvalue = INCVALUE_96MHZ;
++		shift = INCVALUE_SHIFT_96MHZ;
++		adapter->cc.shift = shift + INCPERIOD_SHIFT_96MHZ;
++		break;
  	case e1000_pch_lpt:
- 	case e1000_pch_spt:
-+	case e1000_pch_cnp:
- 		fc->refresh_time = 0x0400;
- 
- 		if (adapter->netdev->mtu <= ETH_DATA_LEN) {
-@@ -4077,7 +4074,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
+ 		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
+ 			/* Stable 96MHz frequency */
+-			incperiod = INCPERIOD_96MHz;
+-			incvalue = INCVALUE_96MHz;
+-			shift = INCVALUE_SHIFT_96MHz;
+-			adapter->cc.shift = shift + INCPERIOD_SHIFT_96MHz;
++			incperiod = INCPERIOD_96MHZ;
++			incvalue = INCVALUE_96MHZ;
++			shift = INCVALUE_SHIFT_96MHZ;
++			adapter->cc.shift = shift + INCPERIOD_SHIFT_96MHZ;
+ 		} else {
+ 			/* Stable 25MHz frequency */
+-			incperiod = INCPERIOD_25MHz;
+-			incvalue = INCVALUE_25MHz;
+-			shift = INCVALUE_SHIFT_25MHz;
++			incperiod = INCPERIOD_25MHZ;
++			incvalue = INCVALUE_25MHZ;
++			shift = INCVALUE_SHIFT_25MHZ;
+ 			adapter->cc.shift = shift;
  		}
- 	}
- 
--	if (hw->mac.type == e1000_pch_spt)
-+	if (hw->mac.type >= e1000_pch_spt)
- 		e1000_flush_desc_rings(adapter);
- 	/* Allow time for pending master requests to run */
- 	mac->ops.reset_hw(hw);
-@@ -4152,7 +4149,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
- 		phy_data &= ~IGP02E1000_PM_SPD;
- 		e1e_wphy(hw, IGP02E1000_PHY_POWER_MGMT, phy_data);
- 	}
--	if (hw->mac.type == e1000_pch_spt && adapter->int_mode == 0) {
-+	if (hw->mac.type >= e1000_pch_spt && adapter->int_mode == 0) {
- 		u32 reg;
- 
- 		/* Fextnvm7 @ 0xe4[2] = 1 */
-@@ -4286,7 +4283,7 @@ void e1000e_down(struct e1000_adapter *adapter, bool reset)
- 	if (!pci_channel_offline(adapter->pdev)) {
- 		if (reset)
- 			e1000e_reset(adapter);
--		else if (hw->mac.type == e1000_pch_spt)
-+		else if (hw->mac.type >= e1000_pch_spt)
- 			e1000_flush_desc_rings(adapter);
- 	}
- 	e1000_clean_tx_ring(adapter->tx_ring);
-@@ -4974,8 +4971,7 @@ static void e1000e_update_stats(struct e1000_adapter *adapter)
- 	adapter->stats.mgpdc += er32(MGTPDC);
- 
- 	/* Correctable ECC Errors */
--	if ((hw->mac.type == e1000_pch_lpt) ||
--	    (hw->mac.type == e1000_pch_spt)) {
-+	if (hw->mac.type >= e1000_pch_lpt) {
- 		u32 pbeccsts = er32(PBECCSTS);
- 
- 		adapter->corr_errors +=
-@@ -6349,8 +6345,7 @@ static int __e1000_shutdown(struct pci_dev *pdev, bool runtime)
- 
- 	if (adapter->hw.phy.type == e1000_phy_igp_3) {
- 		e1000e_igp3_phy_powerdown_workaround_ich8lan(&adapter->hw);
--	} else if ((hw->mac.type == e1000_pch_lpt) ||
--		   (hw->mac.type == e1000_pch_spt)) {
-+	} else if (hw->mac.type >= e1000_pch_lpt) {
- 		if (!(wufc & (E1000_WUFC_EX | E1000_WUFC_MC | E1000_WUFC_BC)))
- 			/* ULP does not support wake from unicast, multicast
- 			 * or broadcast.
-diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
-index 34cc3be0df8e..b366885487a8 100644
---- a/drivers/net/ethernet/intel/e1000e/ptp.c
-+++ b/drivers/net/ethernet/intel/e1000e/ptp.c
-@@ -301,8 +301,8 @@ void e1000e_ptp_init(struct e1000_adapter *adapter)
- 	case e1000_pch2lan:
- 	case e1000_pch_lpt:
+ 		break;
  	case e1000_pch_spt:
--		if (((hw->mac.type != e1000_pch_lpt) &&
--		     (hw->mac.type != e1000_pch_spt)) ||
-+	case e1000_pch_cnp:
-+		if ((hw->mac.type < e1000_pch_lpt) ||
- 		    (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI)) {
- 			adapter->ptp_clock_info.max_adj = 24000000 - 1;
+ 		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
+ 			/* Stable 24MHz frequency */
+-			incperiod = INCPERIOD_24MHz;
+-			incvalue = INCVALUE_24MHz;
+-			shift = INCVALUE_SHIFT_24MHz;
++			incperiod = INCPERIOD_24MHZ;
++			incvalue = INCVALUE_24MHZ;
++			shift = INCVALUE_SHIFT_24MHZ;
+ 			adapter->cc.shift = shift;
  			break;
+ 		}
+ 		return -EINVAL;
++	case e1000_pch_cnp:
++		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
++			/* Stable 24MHz frequency */
++			incperiod = INCPERIOD_24MHZ;
++			incvalue = INCVALUE_24MHZ;
++			shift = INCVALUE_SHIFT_24MHZ;
++			adapter->cc.shift = shift;
++		} else {
++			/* Stable 38400KHz frequency */
++			incperiod = INCPERIOD_38400KHZ;
++			incvalue = INCVALUE_38400KHZ;
++			shift = INCVALUE_SHIFT_38400KHZ;
++			adapter->cc.shift = shift;
++		}
++		break;
+ 	case e1000_82574:
+ 	case e1000_82583:
+ 		/* Stable 25MHz frequency */
+-		incperiod = INCPERIOD_25MHz;
+-		incvalue = INCVALUE_25MHz;
+-		shift = INCVALUE_SHIFT_25MHz;
++		incperiod = INCPERIOD_25MHZ;
++		incvalue = INCVALUE_25MHZ;
++		shift = INCVALUE_SHIFT_25MHZ;
+ 		adapter->cc.shift = shift;
+ 		break;
+ 	default:
 -- 
 2.11.0
 
