@@ -1,167 +1,70 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 06 Apr 2017 20:06:11 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
- 7d4fe0d123c318ad4282c9ac731b3383d983bf24
-Message-ID: <58e62f33.aJumolZzQxAFAGjj%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 6 Apr 2017 09:00:01 -0700
+Subject: [Intel-wired-lan] [next S66 v2 06/11] i40e: remove extraneous
+ loop in i40e_vsi_wait_queues_disabled
+In-Reply-To: <20170405115103.67374-6-alice.michael@intel.com>
+References: <20170405115103.67374-1-alice.michael@intel.com>
+ <20170405115103.67374-6-alice.michael@intel.com>
+Message-ID: <1ee98362-a01d-91b8-68a4-9d54ab168ace@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-7d4fe0d123c318ad4282c9ac731b3383d983bf24  fm10k: do not enqueue mailbox when host not ready
+On 4/5/2017 4:50 AM, Alice Michael wrote:
+> From: Jacob Keller <jacob.e.keller@intel.com>
+>
+> We can simply check both Tx and Rx queues in a single loop, rather than
+> repeating the loop twice.
+>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: Ic06f26b0e3c2620e0e33c1a2999edda488e647ad
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++-------
+>  1 file changed, 3 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index bae5628..da9f0be 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -4431,7 +4431,7 @@ static void i40e_pf_unquiesce_all_vsi(struct i40e_pf *pf)
+>   * i40e_vsi_wait_queues_disabled - Wait for VSI's queues to be disabled
+>   * @vsi: the VSI being configured
+>   *
+> - * This function waits for the given VSI's queues to be disabled.
+> + * Wait until all queues on a given VSI have been disabled.
+>   **/
+>  static int i40e_vsi_wait_queues_disabled(struct i40e_vsi *vsi)
+>  {
+> @@ -4440,7 +4440,7 @@ static int i40e_vsi_wait_queues_disabled(struct i40e_vsi *vsi)
+>
+>  	pf_q = vsi->base_queue;
+>  	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
+> -		/* Check and wait for the disable status of the queue */
+> +		/* Check and wait for the Tx queue */
+>  		ret = i40e_pf_txq_wait(pf, pf_q, false);
+>  		if (ret) {
+>  			dev_info(&pf->pdev->dev,
+> @@ -4448,11 +4448,7 @@ static int i40e_vsi_wait_queues_disabled(struct i40e_vsi *vsi)
+>  				 vsi->seid, pf_q);
+>  			return ret;
+>  		}
+> -	}
+> -
+> -	pf_q = vsi->base_queue;
+> -	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
+> -		/* Check and wait for the disable status of the queue */
+> +		/* Check and wait for the Tx queue */
 
-elapsed time: 250m
+s/Tx/Rx/
 
-configs tested: 143
+... but at this point the comments probably aren't even needed as the 
+function name makes it rather obvious.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+sln
 
-i386                     randconfig-a0-201714
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-x012-201714
-x86_64                 randconfig-x015-201714
-x86_64                 randconfig-x017-201714
-x86_64                 randconfig-x010-201714
-x86_64                 randconfig-x018-201714
-x86_64                 randconfig-x011-201714
-x86_64                 randconfig-x019-201714
-x86_64                 randconfig-x013-201714
-x86_64                 randconfig-x014-201714
-x86_64                 randconfig-x016-201714
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201714
-i386                     randconfig-s1-201714
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201714
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201714
-i386                     randconfig-i1-201714
-i386                               tinyconfig
-i386                   randconfig-x010-201714
-i386                   randconfig-x014-201714
-i386                   randconfig-x016-201714
-i386                   randconfig-x017-201714
-i386                   randconfig-x013-201714
-i386                   randconfig-x019-201714
-i386                   randconfig-x011-201714
-i386                   randconfig-x012-201714
-i386                   randconfig-x015-201714
-i386                   randconfig-x018-201714
-i386                     randconfig-n0-201714
-i386                             allmodconfig
-x86_64                                  kexec
-x86_64                               rhel-7.2
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-i386                 randconfig-x071-04050905
-i386                 randconfig-x070-04050905
-i386                 randconfig-x077-04050905
-i386                 randconfig-x072-04050905
-i386                 randconfig-x074-04050905
-i386                 randconfig-x076-04050905
-i386                 randconfig-x073-04050905
-i386                 randconfig-x079-04050905
-i386                 randconfig-x075-04050905
-i386                 randconfig-x078-04050905
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x004-201714
-x86_64                 randconfig-x009-201714
-x86_64                 randconfig-x003-201714
-x86_64                 randconfig-x008-201714
-x86_64                 randconfig-x002-201714
-x86_64                 randconfig-x000-201714
-x86_64                 randconfig-x007-201714
-x86_64                 randconfig-x005-201714
-x86_64                 randconfig-x001-201714
-x86_64                 randconfig-x006-201714
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                     randconfig-r0-201714
-i386                   randconfig-x006-201714
-i386                   randconfig-x005-201714
-i386                   randconfig-x002-201714
-i386                   randconfig-x007-201714
-i386                   randconfig-x003-201714
-i386                   randconfig-x001-201714
-i386                   randconfig-x008-201714
-i386                   randconfig-x000-201714
-i386                   randconfig-x009-201714
-i386                   randconfig-x004-201714
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-
-Thanks,
-Fengguang
+>  		ret = i40e_pf_rxq_wait(pf, pf_q, false);
+>  		if (ret) {
+>  			dev_info(&pf->pdev->dev,
+>
