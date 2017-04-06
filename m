@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 6 Apr 2017 21:44:11 +0000
-Subject: [Intel-wired-lan] [next S66 v2 07/11] i40e:
-	remove	I40E_FLAG_NEED_LINK_UPDATE
-In-Reply-To: <20170405115103.67374-7-alice.michael@intel.com>
+Date: Thu, 6 Apr 2017 21:44:40 +0000
+Subject: [Intel-wired-lan] [next S66 v2 08/11] i40e: clean up
+	historic	deprecated flag definitions
+In-Reply-To: <20170405115103.67374-8-alice.michael@intel.com>
 References: <20170405115103.67374-1-alice.michael@intel.com>
- <20170405115103.67374-7-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040B16E@ORSMSX101.amr.corp.intel.com>
+ <20170405115103.67374-8-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040B17F@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,20 +18,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, April 5, 2017 4:51 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next S66 v2 07/11] i40e: remove
-> I40E_FLAG_NEED_LINK_UPDATE
+> Subject: [Intel-wired-lan] [next S66 v2 08/11] i40e: clean up historic
+> deprecated flag definitions
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> The I40E_FLAG_NEED_LINK_UPDATE was never used. Remove the flag
-> definitions.
+> Since an early commit a few flags have no longer been used. Remove these
+> definitions to reduce code clutter.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: If59d0c6b4af85ca27281f3183c54b055adb439a4
+> Change-ID: I3589be4622574e747013cd4dc403e18b039f4965
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h      | 1 -
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 1 -
-> drivers/net/ethernet/intel/i40evf/i40evf.h  | 1 -
->  3 files changed, 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h | 3 ---
+>  1 file changed, 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
