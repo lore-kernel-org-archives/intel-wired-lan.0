@@ -1,237 +1,102 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 06 Apr 2017 10:10:18 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 6f5a28bbe353e09cf16aedcb9fc44cf6fd4ae3b6
-Message-ID: <58e5a38a.Nel1a4Ec/MTRAacJ%fengguang.wu@intel.com>
+From: Tobias Klauser <tklauser@distanz.ch>
+Date: Thu,  6 Apr 2017 08:45:22 +0200
+Subject: [Intel-wired-lan] [PATCH] net: igbvf: Use net_device_stats from
+	struct net_device
+Message-ID: <20170406064522.13096-1-tklauser@distanz.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-6f5a28bbe353e09cf16aedcb9fc44cf6fd4ae3b6  i40e/i40evf: Use build_skb to build frames
+Instead of using a private copy of struct net_device_stats in
+struct igbvf_adapter, use stats from struct net_device. Also remove the
+now unnecessary .ndo_get_stats function.
 
-drivers/net/ethernet/intel/i40e/i40e_main.c:11361:15: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
-drivers/net/ethernet/intel/i40e/i40e_main.c:11362:3: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:1346:8: error: 'struct sk_buff' has no member named 'offload_fwd_mark'
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2171:36: error: 'size' undeclared (first use in this function)
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2171:5: error: 'size' undeclared (first use in this function)
+Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
+---
+ drivers/net/ethernet/intel/igbvf/igbvf.h  |  1 -
+ drivers/net/ethernet/intel/igbvf/netdev.c | 26 +++++---------------------
+ 2 files changed, 5 insertions(+), 22 deletions(-)
 
-Error ids grouped by kconfigs:
+diff --git a/drivers/net/ethernet/intel/igbvf/igbvf.h b/drivers/net/ethernet/intel/igbvf/igbvf.h
+index 6f4290d6dc9f..11c7238e612c 100644
+--- a/drivers/net/ethernet/intel/igbvf/igbvf.h
++++ b/drivers/net/ethernet/intel/igbvf/igbvf.h
+@@ -241,7 +241,6 @@ struct igbvf_adapter {
+ 	/* OS defined structs */
+ 	struct net_device *netdev;
+ 	struct pci_dev *pdev;
+-	struct net_device_stats net_stats;
+ 	spinlock_t stats_lock; /* prevent concurrent stats updates */
+ 
+ 	/* structs defined in e1000_hw.h */
+diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
+index 839ba110f7fb..0707d08f7d47 100644
+--- a/drivers/net/ethernet/intel/igbvf/netdev.c
++++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+@@ -400,8 +400,8 @@ static bool igbvf_clean_rx_irq(struct igbvf_adapter *adapter,
+ 
+ 	adapter->total_rx_packets += total_packets;
+ 	adapter->total_rx_bytes += total_bytes;
+-	adapter->net_stats.rx_bytes += total_bytes;
+-	adapter->net_stats.rx_packets += total_packets;
++	netdev->stats.rx_bytes += total_bytes;
++	netdev->stats.rx_packets += total_packets;
+ 	return cleaned;
+ }
+ 
+@@ -864,8 +864,8 @@ static bool igbvf_clean_tx_irq(struct igbvf_ring *tx_ring)
+ 		}
+ 	}
+ 
+-	adapter->net_stats.tx_bytes += total_bytes;
+-	adapter->net_stats.tx_packets += total_packets;
++	netdev->stats.tx_bytes += total_bytes;
++	netdev->stats.tx_packets += total_packets;
+ 	return count < tx_ring->count;
+ }
+ 
+@@ -1798,7 +1798,7 @@ void igbvf_update_stats(struct igbvf_adapter *adapter)
+ 	UPDATE_VF_COUNTER(VFGPRLBC, gprlbc);
+ 
+ 	/* Fill out the OS statistics structure */
+-	adapter->net_stats.multicast = adapter->stats.mprc;
++	adapter->netdev->stats.multicast = adapter->stats.mprc;
+ }
+ 
+ static void igbvf_print_link_info(struct igbvf_adapter *adapter)
+@@ -2334,21 +2334,6 @@ static void igbvf_reset_task(struct work_struct *work)
+ }
+ 
+ /**
+- * igbvf_get_stats - Get System Network Statistics
+- * @netdev: network interface device structure
+- *
+- * Returns the address of the device statistics structure.
+- * The statistics are actually updated from the timer callback.
+- **/
+-static struct net_device_stats *igbvf_get_stats(struct net_device *netdev)
+-{
+-	struct igbvf_adapter *adapter = netdev_priv(netdev);
+-
+-	/* only return the current stats */
+-	return &adapter->net_stats;
+-}
+-
+-/**
+  * igbvf_change_mtu - Change the Maximum Transfer Unit
+  * @netdev: network interface device structure
+  * @new_mtu: new value for maximum frame size
+@@ -2635,7 +2620,6 @@ static const struct net_device_ops igbvf_netdev_ops = {
+ 	.ndo_open		= igbvf_open,
+ 	.ndo_stop		= igbvf_close,
+ 	.ndo_start_xmit		= igbvf_xmit_frame,
+-	.ndo_get_stats		= igbvf_get_stats,
+ 	.ndo_set_rx_mode	= igbvf_set_multi,
+ 	.ndo_set_mac_address	= igbvf_set_mac,
+ 	.ndo_change_mtu		= igbvf_change_mtu,
+-- 
+2.12.2.399.g034667a45805
 
-recent_errors
-??? alpha-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? arm64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? arm-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ia64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? ia64-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? parisc-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? powerpc-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? powerpc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
-??? s390-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? s390-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? sparc64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? sparc64-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? sparc-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? sparc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? tile-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? x86_64-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? x86_64-rhel
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
-??? xtensa-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? xtensa-allyesconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
 
-elapsed time: 283m
-
-configs tested: 143
-
-i386                     randconfig-a0-201714
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                                  kexec
-x86_64                                   rhel
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-x012-201714
-x86_64                 randconfig-x015-201714
-x86_64                 randconfig-x017-201714
-x86_64                 randconfig-x010-201714
-x86_64                 randconfig-x018-201714
-x86_64                 randconfig-x011-201714
-x86_64                 randconfig-x019-201714
-x86_64                 randconfig-x013-201714
-x86_64                 randconfig-x014-201714
-x86_64                 randconfig-x016-201714
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201714
-i386                     randconfig-s1-201714
-i386                               tinyconfig
-i386                             allmodconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201714
-i386                     randconfig-i0-201714
-i386                     randconfig-i1-201714
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-i386                   randconfig-x010-201714
-i386                   randconfig-x014-201714
-i386                   randconfig-x016-201714
-i386                   randconfig-x017-201714
-i386                   randconfig-x013-201714
-i386                   randconfig-x019-201714
-i386                   randconfig-x011-201714
-i386                   randconfig-x012-201714
-i386                   randconfig-x015-201714
-i386                   randconfig-x018-201714
-i386                   randconfig-n0-04051821
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-x86_64                           allmodconfig
-i386                 randconfig-x071-04050905
-i386                 randconfig-x070-04050905
-i386                 randconfig-x077-04050905
-i386                 randconfig-x072-04050905
-i386                 randconfig-x074-04050905
-i386                 randconfig-x076-04050905
-i386                 randconfig-x073-04050905
-i386                 randconfig-x079-04050905
-i386                 randconfig-x075-04050905
-i386                 randconfig-x078-04050905
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                 randconfig-x004-201714
-x86_64                 randconfig-x009-201714
-x86_64                 randconfig-x003-201714
-x86_64                 randconfig-x008-201714
-x86_64                 randconfig-x002-201714
-x86_64                 randconfig-x000-201714
-x86_64                 randconfig-x007-201714
-x86_64                 randconfig-x005-201714
-x86_64                 randconfig-x001-201714
-x86_64                 randconfig-x006-201714
-i386                     randconfig-r0-201714
-i386                   randconfig-x006-201714
-i386                   randconfig-x005-201714
-i386                   randconfig-x002-201714
-i386                   randconfig-x007-201714
-i386                   randconfig-x003-201714
-i386                   randconfig-x001-201714
-i386                   randconfig-x008-201714
-i386                   randconfig-x000-201714
-i386                   randconfig-x009-201714
-i386                   randconfig-x004-201714
-
-Thanks,
-Fengguang
