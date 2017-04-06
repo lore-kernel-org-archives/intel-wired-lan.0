@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 6 Apr 2017 21:30:40 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix size of queue stats
- length
-In-Reply-To: <20170331034902.6530.34141.stgit@localhost6.localdomain6>
-References: <20170331034902.6530.34141.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040B0FA@ORSMSX101.amr.corp.intel.com>
+Date: Thu, 6 Apr 2017 21:31:26 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: only register client
+	on	iWarp-capable devices
+In-Reply-To: <1491334816-27356-1-git-send-email-mitch.a.williams@intel.com>
+References: <1491334816-27356-1-git-send-email-mitch.a.williams@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040B10A@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,19 +13,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Thursday, March 30, 2017 8:49 PM
+> Behalf Of Mitch Williams
+> Sent: Tuesday, April 4, 2017 12:40 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix size of queue stats length
+> Cc: netdev at vger.kernel.org; sassmann at kpanic.de
+> Subject: [Intel-wired-lan] [PATCH] i40e: only register client on iWarp-capable
+> devices
 > 
-> IXGBEVF_QUEUE_STATS_LEN is based on ixgebvf_stats, not ixgbe_stats.
+> The client interface is only intended for use on devices that support iWarp).
+> Only register with the client if this is the case.
 > 
-> This change fixes a bug where ethtool -S displayed some empty fields.
+> This fixes a panic when loading i40iw on X710 devices.
 > 
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Reported-by: Stefan Assmann <sassmann@kpanic.de>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ethtool.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 19 +++++++++++--------
+>  1 file changed, 11 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
