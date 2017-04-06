@@ -1,105 +1,124 @@
-From: Tobias Klauser <tklauser@distanz.ch>
-Date: Thu,  6 Apr 2017 08:46:28 +0200
-Subject: [Intel-wired-lan] [PATCH] net: i40evf: Use net_device_stats from
-	struct net_device
-Message-ID: <20170406064628.13459-1-tklauser@distanz.ch>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu,  6 Apr 2017 10:26:32 +0300
+Subject: [Intel-wired-lan] [PATCH 1/3] e1000e: Initial Support for CannonLake
+Message-ID: <20170406072632.10703-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Instead of using a private copy of struct net_device_stats in
-struct i40evf_adapter, use stats from struct net_device. Also remove the
-now unnecessary .ndo_get_stats function.
+Description: i219 (6) and i219 (7) are the next LOM
+generations that will be available on the next
+Intel Client platform (CannonLake)
+This patch provides the initial support for these devices
 
-Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
+Reviewed-by: Raanan Avargil <raanan.avargil@intel.com>
+Reviewed-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 -
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 16 ----------------
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 22 +++++++++++-----------
- 3 files changed, 11 insertions(+), 28 deletions(-)
+ drivers/net/ethernet/intel/e1000e/e1000.h   |  4 +++-
+ drivers/net/ethernet/intel/e1000e/hw.h      |  5 +++++
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 20 ++++++++++++++++++++
+ drivers/net/ethernet/intel/e1000e/netdev.c  |  5 +++++
+ 4 files changed, 33 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index d61ecf655091..66d4880b5c14 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -253,7 +253,6 @@ struct i40evf_adapter {
- 	/* OS defined structs */
- 	struct net_device *netdev;
- 	struct pci_dev *pdev;
--	struct net_device_stats net_stats;
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index a29b12e80855..f16d9826c66d 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -135,7 +135,8 @@ enum e1000_boards {
+ 	board_pchlan,
+ 	board_pch2lan,
+ 	board_pch_lpt,
+-	board_pch_spt
++	board_pch_spt,
++	board_pch_cnp
+ };
  
- 	struct i40e_hw hw; /* defined in i40e_type.h */
+ struct e1000_ps_page {
+@@ -515,6 +516,7 @@ extern const struct e1000_info e1000_pch_info;
+ extern const struct e1000_info e1000_pch2_info;
+ extern const struct e1000_info e1000_pch_lpt_info;
+ extern const struct e1000_info e1000_pch_spt_info;
++extern const struct e1000_info e1000_pch_cnp_info;
+ extern const struct e1000_info e1000_es2_info;
  
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index fb2811c23024..1e36561b428a 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2231,21 +2231,6 @@ static int i40evf_close(struct net_device *netdev)
- }
+ void e1000e_ptp_init(struct e1000_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
+index 4e733bf1a38e..66bd5060a65b 100644
+--- a/drivers/net/ethernet/intel/e1000e/hw.h
++++ b/drivers/net/ethernet/intel/e1000e/hw.h
+@@ -96,6 +96,10 @@ struct e1000_hw;
+ #define E1000_DEV_ID_PCH_SPT_I219_V4		0x15D8
+ #define E1000_DEV_ID_PCH_SPT_I219_LM5		0x15E3
+ #define E1000_DEV_ID_PCH_SPT_I219_V5		0x15D6
++#define E1000_DEV_ID_PCH_CNP_I219_LM6		0x15BD
++#define E1000_DEV_ID_PCH_CNP_I219_V6		0x15BE
++#define E1000_DEV_ID_PCH_CNP_I219_LM7		0x15BB
++#define E1000_DEV_ID_PCH_CNP_I219_V7		0x15BC
  
- /**
-- * i40evf_get_stats - Get System Network Statistics
-- * @netdev: network interface device structure
-- *
-- * Returns the address of the device statistics structure.
-- * The statistics are actually updated from the timer callback.
-- **/
--static struct net_device_stats *i40evf_get_stats(struct net_device *netdev)
--{
--	struct i40evf_adapter *adapter = netdev_priv(netdev);
--
--	/* only return the current stats */
--	return &adapter->net_stats;
--}
--
--/**
-  * i40evf_change_mtu - Change the Maximum Transfer Unit
-  * @netdev: network interface device structure
-  * @new_mtu: new value for maximum frame size
-@@ -2351,7 +2336,6 @@ static const struct net_device_ops i40evf_netdev_ops = {
- 	.ndo_open		= i40evf_open,
- 	.ndo_stop		= i40evf_close,
- 	.ndo_start_xmit		= i40evf_xmit_frame,
--	.ndo_get_stats		= i40evf_get_stats,
- 	.ndo_set_rx_mode	= i40evf_set_rx_mode,
- 	.ndo_validate_addr	= eth_validate_addr,
- 	.ndo_set_mac_address	= i40evf_set_mac,
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 032be8d3928a..91121de0d928 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -958,17 +958,17 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 	case I40E_VIRTCHNL_OP_GET_STATS: {
- 		struct i40e_eth_stats *stats =
- 			(struct i40e_eth_stats *)msg;
--		adapter->net_stats.rx_packets = stats->rx_unicast +
--						 stats->rx_multicast +
--						 stats->rx_broadcast;
--		adapter->net_stats.tx_packets = stats->tx_unicast +
--						 stats->tx_multicast +
--						 stats->tx_broadcast;
--		adapter->net_stats.rx_bytes = stats->rx_bytes;
--		adapter->net_stats.tx_bytes = stats->tx_bytes;
--		adapter->net_stats.tx_errors = stats->tx_errors;
--		adapter->net_stats.rx_dropped = stats->rx_discards;
--		adapter->net_stats.tx_dropped = stats->tx_discards;
-+		netdev->stats.rx_packets = stats->rx_unicast +
-+					   stats->rx_multicast +
-+					   stats->rx_broadcast;
-+		netdev->stats.tx_packets = stats->tx_unicast +
-+					   stats->tx_multicast +
-+					   stats->tx_broadcast;
-+		netdev->stats.rx_bytes = stats->rx_bytes;
-+		netdev->stats.tx_bytes = stats->tx_bytes;
-+		netdev->stats.tx_errors = stats->tx_errors;
-+		netdev->stats.rx_dropped = stats->rx_discards;
-+		netdev->stats.tx_dropped = stats->tx_discards;
- 		adapter->current_stats = *stats;
- 		}
- 		break;
+ #define E1000_REVISION_4	4
+ 
+@@ -118,6 +122,7 @@ enum e1000_mac_type {
+ 	e1000_pch2lan,
+ 	e1000_pch_lpt,
+ 	e1000_pch_spt,
++	e1000_pch_cnp,
+ };
+ 
+ enum e1000_media_type {
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index f3aaca743ea3..bf55e30f147d 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -5914,3 +5914,23 @@ const struct e1000_info e1000_pch_spt_info = {
+ 	.phy_ops		= &ich8_phy_ops,
+ 	.nvm_ops		= &spt_nvm_ops,
+ };
++
++const struct e1000_info e1000_pch_cnp_info = {
++	.mac			= e1000_pch_cnp,
++	.flags			= FLAG_IS_ICH
++				  | FLAG_HAS_WOL
++				  | FLAG_HAS_HW_TIMESTAMP
++				  | FLAG_HAS_CTRLEXT_ON_LOAD
++				  | FLAG_HAS_AMT
++				  | FLAG_HAS_FLASH
++				  | FLAG_HAS_JUMBO_FRAMES
++				  | FLAG_APME_IN_WUC,
++	.flags2			= FLAG2_HAS_PHY_STATS
++				  | FLAG2_HAS_EEE,
++	.pba			= 26,
++	.max_hw_frame_size	= 9022,
++	.get_variants		= e1000_get_variants_ich8lan,
++	.mac_ops		= &ich8_mac_ops,
++	.phy_ops		= &ich8_phy_ops,
++	.nvm_ops		= &spt_nvm_ops,
++};
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 2175cced402f..4bda1cb97b27 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -71,6 +71,7 @@ static const struct e1000_info *e1000_info_tbl[] = {
+ 	[board_pch2lan]		= &e1000_pch2_info,
+ 	[board_pch_lpt]		= &e1000_pch_lpt_info,
+ 	[board_pch_spt]		= &e1000_pch_spt_info,
++	[board_pch_cnp]		= &e1000_pch_cnp_info,
+ };
+ 
+ struct e1000_reg_info {
+@@ -7508,6 +7509,10 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V4), board_pch_spt },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM5), board_pch_spt },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V5), board_pch_spt },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_LM6), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_V6), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_LM7), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_V7), board_pch_cnp },
+ 
+ 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
+ };
 -- 
-2.12.2.399.g034667a45805
-
+2.11.0
 
