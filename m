@@ -1,42 +1,272 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 6 Apr 2017 22:05:05 +0000
-Subject: [Intel-wired-lan] [next S66 v2 03/11] i40e: Decrease the scope
- of	rtnl lock
-In-Reply-To: <20170405115103.67374-3-alice.michael@intel.com>
-References: <20170405115103.67374-1-alice.michael@intel.com>
- <20170405115103.67374-3-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040B1CD@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 07 Apr 2017 20:33:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
+ 921c467c6bf8f6fe5cd139b0535ad42b952330f0
+Message-ID: <58e78731.abFnVVxJ6fdYxE4u%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Wednesday, April 5, 2017 4:51 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Cc: Maciej Sosin <maciej.sosin@intel.com>
-> Subject: [Intel-wired-lan] [next S66 v2 03/11] i40e: Decrease the scope of rtnl
-> lock
-> 
-> From: Maciej Sosin <maciej.sosin@intel.com>
-> 
-> Previously rtnl lock was held during whole reset procedure that was stoping
-> other PFs running their reset procedures. In the result reset was not handled
-> properly and host reset was the only way to recover.
-> 
-> Signed-off-by: Maciej Sosin <maciej.sosin@intel.com>
-> Change-ID: I23c0771c0303caaa7bd64badbf0c667e25142954
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h         |   2 +-
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |   6 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 138 +++++++++++++++++--
-> ------
->  3 files changed, 101 insertions(+), 45 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+921c467c6bf8f6fe5cd139b0535ad42b952330f0  i40e: close client on remove and shutdown
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 549m
 
+configs tested: 249
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+mips                              allnoconfig
+nios2                         10m50_defconfig
+xtensa                    smp_lx200_defconfig
+mips                malta_qemu_32r6_defconfig
+powerpc                          alldefconfig
+sh                        apsh4ad0a_defconfig
+arm                           h3600_defconfig
+blackfin                   CM-BF548_defconfig
+mn10300                           allnoconfig
+i386                     randconfig-a0-201714
+x86_64                 randconfig-a0-04071419
+x86_64                 randconfig-a0-04071949
+arm                       aspeed_g4_defconfig
+arm                      pxa255-idp_defconfig
+powerpc                     rainier_defconfig
+arm                  colibri_pxa270_defconfig
+blackfin              BF561-ACVILON_defconfig
+mips                         mpc30x_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-c0-04071948
+x86_64                randconfig-in0-04072012
+arm                           tegra_defconfig
+m68k                             alldefconfig
+x86_64                 randconfig-v0-04071335
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+arm                        neponset_defconfig
+avr32                               defconfig
+um                           x86_64_defconfig
+alpha                            allmodconfig
+frv                                 defconfig
+powerpc64                         allnoconfig
+arm                              alldefconfig
+sh                             espt_defconfig
+m32r                   mappi2.vdec2_defconfig
+m68k                       bvme6000_defconfig
+m68k                        mvme16x_defconfig
+mips                        bcm63xx_defconfig
+powerpc                 mpc836x_rdk_defconfig
+powerpc                     redwood_defconfig
+mips                           ip22_defconfig
+xtensa                           allyesconfig
+c6x                         dsk6455_defconfig
+powerpc                 mpc8313_rdb_defconfig
+tile                             alldefconfig
+arm                           corgi_defconfig
+avr32                     atstk1004_defconfig
+mips                          ath79_defconfig
+arm                          ep93xx_defconfig
+mips                      maltasmvp_defconfig
+sh                          landisk_defconfig
+blackfin                 BlackStamp_defconfig
+sh                               j2_defconfig
+sh                          rsk7201_defconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                 randconfig-g0-04071942
+x86_64                 randconfig-g0-04072021
+arm                      integrator_defconfig
+arm                         lpc18xx_defconfig
+arm                       netwinder_defconfig
+c6x                        evmc6678_defconfig
+mips                           ci20_defconfig
+arm                          pcm027_defconfig
+powerpc                 mpc834x_itx_defconfig
+sh                           se7780_defconfig
+xtensa                            allnoconfig
+xtensa                generic_kc705_defconfig
+i386                             alldefconfig
+arm                            dove_defconfig
+arm                          ks8695_defconfig
+powerpc                 mpc837x_rdb_defconfig
+powerpc                     pq2fads_defconfig
+mips                                defconfig
+powerpc               mpc85xx_basic_defconfig
+sh                          kfr2r09_defconfig
+sh                           se7722_defconfig
+arm                            lart_defconfig
+arm                           spitz_defconfig
+blackfin                BF537-STAMP_defconfig
+mips                         tb0287_defconfig
+cris                             allmodconfig
+mips                      pistachio_defconfig
+powerpc                      ppc64e_defconfig
+sparc                             allnoconfig
+ia64                          tiger_defconfig
+powerpc                 mpc834x_mds_defconfig
+sh                           se7751_defconfig
+sparc                            alldefconfig
+i386                             allmodconfig
+arm                         s3c6400_defconfig
+mips                 pnx8335_stb225_defconfig
+arm                        multi_v5_defconfig
+s390                       zfcpdump_defconfig
+sh                      rts7751r2d1_defconfig
+sh                   secureedge5410_defconfig
+arm                         hackkit_defconfig
+arm                       imx_v4_v5_defconfig
+arm                        multi_v7_defconfig
+mips                          rm200_defconfig
+powerpc                    ge_imp3a_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                                   samsung
+arm                        mvebu_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       imx_v6_v7_defconfig
+arm64                            allmodconfig
+arm                                      arm5
+arm64                            alldefconfig
+arm                                        sh
+arm                                     arm67
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+x86_64                 randconfig-s0-04071406
+x86_64                 randconfig-s1-04071406
+x86_64                 randconfig-s2-04071406
+x86_64                 randconfig-s0-04072007
+x86_64                 randconfig-s1-04072007
+x86_64                 randconfig-s2-04072007
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-04071345
+x86_64                 randconfig-s4-04071345
+x86_64                 randconfig-s5-04071345
+x86_64                 randconfig-s3-04071930
+x86_64                 randconfig-s4-04071930
+x86_64                 randconfig-s5-04071930
+x86_64                 randconfig-s3-04072009
+x86_64                 randconfig-s4-04072009
+x86_64                 randconfig-s5-04072009
+arm                             ezx_defconfig
+arm                          nuc960_defconfig
+powerpc64                        allmodconfig
+arm                           sunxi_defconfig
+sh                          polaris_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+i386                   randconfig-b0-04071306
+i386                     randconfig-i0-201714
+i386                     randconfig-i1-201714
+x86_64                 randconfig-b0-04071429
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-u0-04071336
+x86_64                 randconfig-u0-04072000
+mips                          malta_defconfig
+powerpc                     asp8347_defconfig
+x86_64                randconfig-ne0-04071359
+s390                             allyesconfig
+i386                   randconfig-x010-201714
+i386                   randconfig-x011-201714
+i386                   randconfig-x012-201714
+i386                   randconfig-x013-201714
+i386                   randconfig-x014-201714
+i386                   randconfig-x015-201714
+i386                   randconfig-x016-201714
+i386                   randconfig-x017-201714
+i386                   randconfig-x018-201714
+i386                   randconfig-x019-201714
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201714
+i386                             allyesconfig
+i386                   randconfig-h0-04071940
+i386                   randconfig-h1-04071940
+arm                          prima2_defconfig
+arm                    vt8500_v6_v7_defconfig
+mips                          rb532_defconfig
+x86_64                 randconfig-h0-04071354
+m68k                          atari_defconfig
+microblaze                       allyesconfig
+arm                          nuc950_defconfig
+x86_64                 randconfig-n0-04071439
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+sh                         microdev_defconfig
+sh                           se7750_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x000-201714
+x86_64                 randconfig-x001-201714
+x86_64                 randconfig-x002-201714
+x86_64                 randconfig-x003-201714
+x86_64                 randconfig-x004-201714
+x86_64                 randconfig-x005-201714
+x86_64                 randconfig-x006-201714
+x86_64                 randconfig-x007-201714
+x86_64                 randconfig-x008-201714
+x86_64                 randconfig-x009-201714
+i386                     randconfig-r0-201714
+x86_64                 randconfig-r0-04071416
+i386                   randconfig-x000-201714
+i386                   randconfig-x001-201714
+i386                   randconfig-x002-201714
+i386                   randconfig-x003-201714
+i386                   randconfig-x004-201714
+i386                   randconfig-x005-201714
+i386                   randconfig-x006-201714
+i386                   randconfig-x007-201714
+i386                   randconfig-x008-201714
+i386                   randconfig-x009-201714
+i386                   randconfig-x0-04071418
+
+Thanks,
+Fengguang
