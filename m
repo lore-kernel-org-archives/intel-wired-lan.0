@@ -1,113 +1,116 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 08 Apr 2017 22:39:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- f8b45b74cc6229d9f8780fd962dab84d810b6f17
-Message-ID: <58e8f63b.A0kCw+wpGn9i83MM%fengguang.wu@intel.com>
+Date: Mon, 10 Apr 2017 07:01:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 14ae478a63d45e2df9ec4e3454d25b330bf1dbc7
+Message-ID: <58eabd40.QnYmzddxw3j1skfH%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-f8b45b74cc6229d9f8780fd962dab84d810b6f17  i40e/i40evf: Use build_skb to build frames
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+14ae478a63d45e2df9ec4e3454d25b330bf1dbc7  i40e/i40evf: Remove VF Rx csum offload for tunneled packets.
 
-elapsed time: 283m
+drivers/net/ethernet/intel/i40e/i40e_main.c:11369:15: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_main.c:11370:3: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:1346:8: error: 'struct sk_buff' has no member named 'offload_fwd_mark'
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2171:36: error: 'size' undeclared (first use in this function)
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2171:5: error: 'size' undeclared (first use in this function)
 
-configs tested: 170
+Error ids grouped by kconfigs:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+recent_errors
+??? alpha-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? alpha-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? i386-randconfig-x074-201715
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? ia64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? ia64-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? parisc-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? powerpc-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? powerpc-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? powerpc-defconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? powerpc-ppc64_defconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? s390-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? s390-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? sparc64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? sparc64-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? sparc-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? sparc-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? tile-allmodconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? tile-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? x86_64-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? x86_64-rhel
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? x86_64-rhel-7.2
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? xtensa-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? xtensa-allyesconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
 
-i386                     randconfig-a0-201714
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
+elapsed time: 67m
+
+configs tested: 105
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
 parisc                        c3000_defconfig
-powerpc                     mpc5200_defconfig
-sh                               allmodconfig
+parisc                              defconfig
+i386                     randconfig-a0-201715
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                            dove_defconfig
+openrisc                         allmodconfig
+sparc64                             defconfig
+alpha                            alldefconfig
+arm                       imx_v4_v5_defconfig
+powerpc                      virtex_defconfig
+arm                          ep93xx_defconfig
+s390                              allnoconfig
 powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 s390                        default_defconfig
-x86_64                 randconfig-g0-04082014
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-alpha                            allmodconfig
-arm                          nuc910_defconfig
-m68k                            q40_defconfig
-mips                         mpc30x_defconfig
-x86_64                 randconfig-x012-201714
-x86_64                 randconfig-x015-201714
-x86_64                 randconfig-x017-201714
-x86_64                 randconfig-x010-201714
-x86_64                 randconfig-x018-201714
-x86_64                 randconfig-x011-201714
-x86_64                 randconfig-x019-201714
-x86_64                 randconfig-x013-201714
-x86_64                 randconfig-x014-201714
-x86_64                 randconfig-x016-201714
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201714
-i386                     randconfig-s1-201714
-x86_64                 randconfig-s0-04081923
-x86_64                 randconfig-s1-04081923
-x86_64                 randconfig-s2-04081923
-x86_64                 randconfig-s3-04082011
-x86_64                 randconfig-s4-04082011
-x86_64                 randconfig-s5-04082011
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201714
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201714
-i386                     randconfig-i1-201714
 c6x                        evmc6678_defconfig
 h8300                    h8300h-sim_defconfig
 m32r                       m32104ut_defconfig
@@ -118,48 +121,42 @@ nios2                         10m50_defconfig
 score                      spct6600_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
+i386                   randconfig-s0-04100537
+i386                   randconfig-s1-04100537
 i386                               tinyconfig
-i386                   randconfig-x010-201714
-i386                   randconfig-x014-201714
-i386                   randconfig-x016-201714
-i386                   randconfig-x017-201714
-i386                   randconfig-x013-201714
-i386                   randconfig-x019-201714
-i386                   randconfig-x011-201714
-i386                   randconfig-x012-201714
-i386                   randconfig-x015-201714
-i386                   randconfig-x018-201714
-x86_64                randconfig-ne0-04082104
-arm                              allyesconfig
-powerpc                      pmac32_defconfig
-um                                  defconfig
-x86_64                                    lkp
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
-i386                     randconfig-n0-201714
-i386                   randconfig-h0-04081204
-i386                   randconfig-h1-04081204
-i386                   randconfig-h0-04082102
-i386                   randconfig-h1-04082102
-cris                        etraxfs_defconfig
-ia64                                defconfig
+arm                           viper_defconfig
+powerpc                        cell_defconfig
 x86_64                                  kexec
-x86_64                           allmodconfig
-i386                   randconfig-x073-201714
-i386                   randconfig-x070-201714
-i386                   randconfig-x077-201714
-i386                   randconfig-x072-201714
-i386                   randconfig-x076-201714
-i386                   randconfig-x074-201714
-i386                   randconfig-x078-201714
-i386                   randconfig-x075-201714
-i386                   randconfig-x079-201714
-i386                   randconfig-x071-201714
+x86_64                               rhel-7.2
+x86_64                 randconfig-n0-04100612
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x073-201715
+i386                   randconfig-x077-201715
+i386                   randconfig-x070-201715
+i386                   randconfig-x072-201715
+i386                   randconfig-x076-201715
+i386                   randconfig-x074-201715
+i386                   randconfig-x078-201715
+i386                   randconfig-x075-201715
+i386                   randconfig-x079-201715
+i386                   randconfig-x071-201715
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
 ia64                             alldefconfig
 ia64                              allnoconfig
+ia64                                defconfig
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
@@ -168,27 +165,36 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
-x86_64                 randconfig-x000-201714
-x86_64                 randconfig-x001-201714
-x86_64                 randconfig-x002-201714
-x86_64                 randconfig-x003-201714
-x86_64                 randconfig-x004-201714
-x86_64                 randconfig-x005-201714
-x86_64                 randconfig-x006-201714
-x86_64                 randconfig-x007-201714
-x86_64                 randconfig-x008-201714
-x86_64                 randconfig-x009-201714
-i386                     randconfig-r0-201714
-i386                   randconfig-x006-201714
-i386                   randconfig-x005-201714
-i386                   randconfig-x002-201714
-i386                   randconfig-x007-201714
-i386                   randconfig-x003-201714
-i386                   randconfig-x001-201714
-i386                   randconfig-x008-201714
-i386                   randconfig-x000-201714
-i386                   randconfig-x009-201714
-i386                   randconfig-x004-201714
+x86_64                 randconfig-x004-201715
+x86_64                 randconfig-x009-201715
+x86_64                 randconfig-x003-201715
+x86_64                 randconfig-x008-201715
+x86_64                 randconfig-x002-201715
+x86_64                 randconfig-x007-201715
+x86_64                 randconfig-x000-201715
+x86_64                 randconfig-x005-201715
+x86_64                 randconfig-x001-201715
+x86_64                 randconfig-x006-201715
+x86_64                                   rhel
+i386                     randconfig-r0-201715
+i386                             allmodconfig
+i386                   randconfig-x006-201715
+i386                   randconfig-x002-201715
+i386                   randconfig-x005-201715
+i386                   randconfig-x007-201715
+i386                   randconfig-x003-201715
+i386                   randconfig-x001-201715
+i386                   randconfig-x008-201715
+i386                   randconfig-x000-201715
+i386                   randconfig-x009-201715
+i386                   randconfig-x004-201715
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
 
 Thanks,
 Fengguang
