@@ -1,121 +1,198 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Mon, 10 Apr 2017 10:58:14 +0200
-Subject: [Intel-wired-lan] [PATCH v3] igb: Allow to remove administratively
-	set MAC on VFs
-In-Reply-To: <1491591975.39459.1.camel@intel.com>
-References: <1491591975.39459.1.camel@intel.com>
-Message-ID: <20170410085814.6998-1-vinschen@redhat.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Mon, 10 Apr 2017 05:18:43 -0400
+Subject: [Intel-wired-lan] [next PATCH S67 v2 1/1] i40e: Fix support for
+	flow director programming status
+Message-ID: <20170410091843.12047-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-  Before libvirt modifies the MAC address and vlan tag for an SRIOV VF
-  for use by a virtual machine (either using vfio device assignment or
-  macvtap passthru mode), it saves the current MAC address and vlan tag
-  so that it can reset them to their original value when the guest is
-  done.  Libvirt can't leave the VF MAC set to the value used by the
-  now-defunct guest since it may be started again later using a
-  different VF, but it certainly shouldn't just pick any random value,
-  either. So it saves the state of everything prior to using the VF, and
-  resets it to that.
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-  The igb driver initializes the MAC addresses of all VFs to
-  00:00:00:00:00:00, and reports that when asked (via an RTM_GETLINK
-  netlink message, also visible in the list of VFs in the output of "ip
-  link show"). But when libvirt attempts to restore the MAC address back
-  to 00:00:00:00:00:00 (using an RTM_SETLINK netlink message) the kernel
-  responds with "Invalid argument".
+This patch fixes an issue I introduced when I converted the code over to
+using the length field to determine if a descriptor was done or not. It
+turns out that we are also processing programming descriptors in the Rx
+path and need to have these processed even though the length field will be
+0 on these packets.  What will happen with a programming descriptor is that
+we will receive a descriptor that has the SPH bit set, and the header
+length and packet length fields cleared.
 
-  Forbidding a reset back to the original value leaves the VF MAC at the
-  value set for the now-defunct virtual machine. Especially on a system
-  with NetworkManager enabled, this has very bad consequences, since
-  NetworkManager forces all interfacess to be IFF_UP all the time - if
-  the same virtual machine is restarted using a different VF (or even on
-  a different host), there will be multiple interfaces watching for
-  traffic with the same MAC address.
+To account for this we should be checking for the bit for split header
+being set even though we aren't actually using header split. This bit is
+set in the length field to indicate if a programming descriptor response is
+contained in the descriptor. Since we don't support header split we don't
+need to perform the extra checks of using a fixed value for the entire
+length field.
 
-  To allow libvirt to revert to the original state, we need a way to
-  remove the administrative set MAC on a VF, to allow normal host
-  operation again, and to reset/overwrite the VF MAC via VF netdev.
+In addition I am moving the function for checking if a filter is a
+programming status filter into the i40e_txrx.c file since there is no
+longer support for FCoE it doesn't make sense to keep this file in i40e.h.
 
-  This patch implements the outlined scenario by allowing to set the
-  VF MAC to 00:00:00:00:00:00 via RTM_SETLINK on the PF.
-  igb_ndo_set_vf_mac resets the IGB_VF_FLAG_PF_SET_MAC flag to 0,
-  so it's possible to reset the VF MAC back to the original value via
-  the VF netdev.
-
-  Note: Recent patches to libvirt allow for a workaround if the NIC
-  isn't capable of resetting the administrative MAC back to all 0, but
-  in theory the NIC should allow resetting the MAC in the first place.
-
-Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Change-ID: I12c359c3dc70adb9d6b92b27324bb2c7f04c1a06
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 42 +++++++++++++++++++++++--------
- 1 file changed, 31 insertions(+), 11 deletions(-)
+Testing Hints:
+	It is necessary to triggger filter configuration failures to see
+	the programming status show up. In order to test it myself I had
+	modified the driver to not evict ATR filters and ran a TCP_CRR
+	test. Without this patch the test hangs, with it the test runs
+	without errors.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 1cf74aa..dbb4e3c 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8358,7 +8358,8 @@ static void igb_rar_set_index(struct igb_adapter *adapter, u32 index)
- 
- 	/* Indicate to hardware the Address is Valid. */
- 	if (adapter->mac_table[index].state & IGB_MAC_STATE_IN_USE) {
--		rar_high |= E1000_RAH_AV;
-+		if (is_valid_ether_addr(addr))
-+			rar_high |= E1000_RAH_AV;
- 
- 		if (hw->mac.type == e1000_82575)
- 			rar_high |= E1000_RAH_POOL_1 *
-@@ -8396,17 +8397,36 @@ static int igb_set_vf_mac(struct igb_adapter *adapter,
- static int igb_ndo_set_vf_mac(struct net_device *netdev, int vf, u8 *mac)
- {
- 	struct igb_adapter *adapter = netdev_priv(netdev);
--	if (!is_valid_ether_addr(mac) || (vf >= adapter->vfs_allocated_count))
-+
-+	if (vf >= adapter->vfs_allocated_count)
-+		return -EINVAL;
-+
-+	/* Setting the VF MAC to 0 reverts the IGB_VF_FLAG_PF_SET_MAC
-+	 * flag and allows to overwrite the MAC via VF netdev.  This
-+	 * is necessary to allow libvirt a way to restore the original
-+	 * MAC after unbinding vfio-pci and reloading igbvf after shutting
-+	 * down a VM.
-+	 */
-+	if (is_zero_ether_addr(mac)) {
-+		adapter->vf_data[vf].flags &= ~IGB_VF_FLAG_PF_SET_MAC;
-+		dev_info(&adapter->pdev->dev,
-+			 "remove administratively set MAC on VF %d\n",
-+			 vf);
-+	} else if (is_valid_ether_addr (mac)) {
-+		adapter->vf_data[vf].flags |= IGB_VF_FLAG_PF_SET_MAC;
-+		dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n",
-+			 mac, vf);
-+		dev_info(&adapter->pdev->dev,
-+			 "Reload the VF driver to make this change effective.");
-+		/* Generate additional warning if PF is down */
-+		if (test_bit(__IGB_DOWN, &adapter->state)) {
-+			dev_warn(&adapter->pdev->dev,
-+				 "The VF MAC address has been set, but the PF device is not up.\n");
-+			dev_warn(&adapter->pdev->dev,
-+				 "Bring the PF device up before attempting to use the VF device.\n");
-+		}
-+	} else {
- 		return -EINVAL;
--	adapter->vf_data[vf].flags |= IGB_VF_FLAG_PF_SET_MAC;
--	dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n", mac, vf);
--	dev_info(&adapter->pdev->dev,
--		 "Reload the VF driver to make this change effective.");
--	if (test_bit(__IGB_DOWN, &adapter->state)) {
--		dev_warn(&adapter->pdev->dev,
--			 "The VF MAC address has been set, but the PF device is not up.\n");
--		dev_warn(&adapter->pdev->dev,
--			 "Bring the PF device up before attempting to use the VF device.\n");
- 	}
- 	return igb_set_vf_mac(adapter, vf, mac);
+ drivers/net/ethernet/intel/i40e/i40e.h        | 15 --------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 50 ++++++++++++++++++++-------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  9 ++---
+ 3 files changed, 43 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index d4afbf1..a33a733 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -798,21 +798,6 @@ static inline void i40e_vsi_setup_irqhandler(struct i40e_vsi *vsi,
  }
+ 
+ /**
+- * i40e_rx_is_programming_status - check for programming status descriptor
+- * @qw: the first quad word of the program status descriptor
+- *
+- * The value of in the descriptor length field indicate if this
+- * is a programming status descriptor for flow director or FCoE
+- * by the value of I40E_RX_PROG_STATUS_DESC_LENGTH, otherwise
+- * it is a packet descriptor.
+- **/
+-static inline bool i40e_rx_is_programming_status(u64 qw)
+-{
+-	return I40E_RX_PROG_STATUS_DESC_LENGTH ==
+-		(qw >> I40E_RX_PROG_STATUS_DESC_LENGTH_SHIFT);
+-}
+-
+-/**
+  * i40e_get_fd_cnt_all - get the total FD filter space available
+  * @pf: pointer to the PF struct
+  **/
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 3f2a39a..5f04929 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1038,9 +1038,29 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
+ }
+ 
+ /**
++ * i40e_rx_is_programming_status - check for programming status descriptor
++ * @qw: qword representing status_error_len in CPU ordering
++ *
++ * The value of in the descriptor length field indicate if this
++ * is a programming status descriptor for flow director or FCoE
++ * by the value of I40E_RX_PROG_STATUS_DESC_LENGTH, otherwise
++ * it is a packet descriptor.
++ **/
++static inline bool i40e_rx_is_programming_status(u64 qw)
++{
++	/* The Rx filter programming status and SPH bit occupy the same
++	 * spot in the descriptor. Since we don't support packet split we
++	 * can just reuse the bit as an indication that this is a
++	 * programming status descriptor.
++	 */
++	return qw & I40E_RXD_QW1_LENGTH_SPH_MASK;
++}
++
++/**
+  * i40e_clean_programming_status - clean the programming status descriptor
+  * @rx_ring: the rx ring that has this descriptor
+  * @rx_desc: the rx descriptor written back by HW
++ * @qw: qword representing status_error_len in CPU ordering
+  *
+  * Flow director should handle FD_FILTER_STATUS to check its filter programming
+  * status being successful or not and take actions accordingly. FCoE should
+@@ -1048,12 +1068,18 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
+  *
+  **/
+ static void i40e_clean_programming_status(struct i40e_ring *rx_ring,
+-					  union i40e_rx_desc *rx_desc)
++					  union i40e_rx_desc *rx_desc,
++					  u64 qw)
+ {
+-	u64 qw;
++	u32 ntc = rx_ring->next_to_clean + 1;
+ 	u8 id;
+ 
+-	qw = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
++	/* fetch, update, and store next to clean */
++	ntc = (ntc < rx_ring->count) ? ntc : 0;
++	rx_ring->next_to_clean = ntc;
++
++	prefetch(I40E_RX_DESC(rx_ring, ntc));
++
+ 	id = (qw & I40E_RX_PROG_STATUS_DESC_QW1_PROGID_MASK) >>
+ 		  I40E_RX_PROG_STATUS_DESC_QW1_PROGID_SHIFT;
+ 
+@@ -1967,11 +1993,6 @@ static bool i40e_is_non_eop(struct i40e_ring *rx_ring,
+ 
+ 	prefetch(I40E_RX_DESC(rx_ring, ntc));
+ 
+-#define staterrlen rx_desc->wb.qword1.status_error_len
+-	if (unlikely(i40e_rx_is_programming_status(le64_to_cpu(staterrlen)))) {
+-		i40e_clean_programming_status(rx_ring, rx_desc);
+-		return true;
+-	}
+ 	/* if we are the last buffer then there is nothing else to do */
+ #define I40E_RXD_EOF BIT(I40E_RX_DESC_STATUS_EOF_SHIFT)
+ 	if (likely(i40e_test_staterr(rx_desc, I40E_RXD_EOF)))
+@@ -2025,10 +2046,6 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		 * hardware wrote DD then the length will be non-zero
+ 		 */
+ 		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+-		size = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
+-		       I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
+-		if (!size)
+-			break;
+ 
+ 		/* This memory barrier is needed to keep us from reading
+ 		 * any other fields out of the rx_desc until we have
+@@ -2036,6 +2053,15 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		 */
+ 		dma_rmb();
+ 
++		if (unlikely(i40e_rx_is_programming_status(qword))) {
++			i40e_clean_programming_status(rx_ring, rx_desc, qword);
++			continue;
++		}
++		size = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
++		       I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
++		if (!size)
++			break;
++
+ 		rx_buffer = i40e_get_rx_buffer(rx_ring, size);
+ 
+ 		/* retrieve a buffer from the ring */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index fc4b14a..80931e3 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1317,10 +1317,6 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		 * hardware wrote DD then the length will be non-zero
+ 		 */
+ 		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+-		size = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
+-		       I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
+-		if (!size)
+-			break;
+ 
+ 		/* This memory barrier is needed to keep us from reading
+ 		 * any other fields out of the rx_desc until we have
+@@ -1328,6 +1324,11 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		 */
+ 		dma_rmb();
+ 
++		size = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
++		       I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
++		if (!size)
++			break;
++
+ 		rx_buffer = i40e_get_rx_buffer(rx_ring, size);
+ 
+ 		/* retrieve a buffer from the ring */
 -- 
 2.9.3
 
