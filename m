@@ -1,29 +1,117 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Wed, 12 Apr 2017 18:20:12 +0000
-Subject: [Intel-wired-lan] [PATCH 3/3] ixgbe: list X553 backplane
-	speeds	correctly
-In-Reply-To: <1483150398-35222-1-git-send-email-donald.c.skidmore@intel.com>
-References: <1483150398-35222-1-git-send-email-donald.c.skidmore@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E50B76E7D@ORSMSX105.amr.corp.intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Wed, 12 Apr 2017 07:16:52 -0400
+Subject: [Intel-wired-lan] [next S69 01/01] i40e: dump VF information in
+	debugfs
+Message-ID: <20170412111652.57301-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+From: Mitch Williams <mitch.a.williams@intel.com>
 
+Dump some internal state about VFs through debugfs. This provides
+information not available with 'ip link show'. To use, write "dump vf
+<id>" to the command file, or just "dump vf" to dump information on all
+of the VFs.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Donald C Skidmore
-Sent: Friday, December 30, 2016 6:13 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH 3/3] ixgbe: list X553 backplane speeds correctly
-
-We forgot to indicate some of the supported speed on the X553 backplane.  This patch attempts to correct for that.
-
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Ibe32b7f4ae55d4358c0b903217475f708ada1ecd
 ---
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 51 ++++++++++++++++++++++++++
+ 1 file changed, 51 insertions(+)
 
-Tested-by: Krishneil Singh  <krishneil.k.singh@intel.com>
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index c5f68cc..a3d7ec6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -384,6 +384,8 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
+ 		 "    base_queue = %d, num_queue_pairs = %d, num_desc = %d\n",
+ 		 vsi->base_queue, vsi->num_queue_pairs, vsi->num_desc);
+ 	dev_info(&pf->pdev->dev, "    type = %i\n", vsi->type);
++	if (vsi->type == I40E_VSI_SRIOV)
++		dev_info(&pf->pdev->dev, "    VF ID = %i\n", vsi->vf_id);
+ 	dev_info(&pf->pdev->dev,
+ 		 "    info: valid_sections = 0x%04x, switch_id = 0x%04x\n",
+ 		 vsi->info.valid_sections, vsi->info.switch_id);
+@@ -694,6 +696,47 @@ static void i40e_dbg_dump_veb_all(struct i40e_pf *pf)
+ 	}
+ }
+ 
++/**
++ * i40e_dbg_dump_vf - dump VF info
++ * @pf: the i40e_pf created in command write
++ * @vf_id: the vf_id from the user
++ **/
++static void i40e_dbg_dump_vf(struct i40e_pf *pf, int vf_id)
++{
++	struct i40e_vf *vf;
++	struct i40e_vsi *vsi;
++
++	if (!pf->num_alloc_vfs) {
++		dev_info(&pf->pdev->dev, "no VFs allocated\n");
++	} else if ((vf_id >= 0) && (vf_id < pf->num_alloc_vfs)) {
++		vf = &pf->vf[vf_id];
++		vsi = pf->vsi[vf->lan_vsi_idx];
++		dev_info(&pf->pdev->dev, "vf %2d: VSI id=%d, seid=%d, qps=%d\n",
++			 vf_id, vf->lan_vsi_id, vsi->seid, vf->num_queue_pairs);
++		dev_info(&pf->pdev->dev, "       num MDD=%lld, invalid msg=%lld, valid msg=%lld\n",
++			 vf->num_mdd_events,
++			 vf->num_invalid_msgs,
++			 vf->num_valid_msgs);
++	} else {
++		dev_info(&pf->pdev->dev, "invalid VF id %d\n", vf_id);
++	}
++}
++
++/**
++ * i40e_dbg_dump_vf_all - dump VF info for all VFs
++ * @pf: the i40e_pf created in command write
++ **/
++static void i40e_dbg_dump_vf_all(struct i40e_pf *pf)
++{
++	int i;
++
++	if (!pf->num_alloc_vfs)
++		dev_info(&pf->pdev->dev, "no VFs enabled!\n");
++	else
++		for (i = 0; i < pf->num_alloc_vfs; i++)
++			i40e_dbg_dump_vf(pf, i);
++}
++
+ #define I40E_MAX_DEBUG_OUT_BUFFER (4096*4)
+ /**
+  * i40e_dbg_command_write - write into command datum
+@@ -712,6 +755,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+ 	struct i40e_vsi *vsi;
+ 	int vsi_seid;
+ 	int veb_seid;
++	int vf_id;
+ 	int cnt;
+ 
+ 	/* don't allow partial writes */
+@@ -914,6 +958,12 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+ 				i40e_dbg_dump_veb_seid(pf, vsi_seid);
+ 			else
+ 				i40e_dbg_dump_veb_all(pf);
++		} else if (strncmp(&cmd_buf[5], "vf", 2) == 0) {
++			cnt = sscanf(&cmd_buf[7], "%i", &vf_id);
++			if (cnt > 0)
++				i40e_dbg_dump_vf(pf, vf_id);
++			else
++				i40e_dbg_dump_vf_all(pf);
+ 		} else if (strncmp(&cmd_buf[5], "desc", 4) == 0) {
+ 			int ring_id, desc_n;
+ 			if (strncmp(&cmd_buf[10], "rx", 2) == 0) {
+@@ -1109,6 +1159,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+ 			dev_info(&pf->pdev->dev, "dump vsi [seid]\n");
+ 			dev_info(&pf->pdev->dev, "dump reset stats\n");
+ 			dev_info(&pf->pdev->dev, "dump port\n");
++			dev_info(&pf->pdev->dev, "dump vf [vf_id]\n");
+ 			dev_info(&pf->pdev->dev,
+ 				 "dump debug fwdata <cluster_id> <table_id> <index>\n");
+ 		}
+-- 
+2.9.3
 
