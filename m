@@ -1,131 +1,62 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 12 Apr 2017 13:21:07 -0700
-Subject: [Intel-wired-lan] [PATCH 3/3] ixgbevf: Check for RSS key before
-	setting value
+Date: Wed, 12 Apr 2017 13:21:06 -0700
+Subject: [Intel-wired-lan] [PATCH 2/3] ixgbevf: Fix errors in retrieving
+	RETA and RSS from PF
 In-Reply-To: <20170412202107.55834-1-anthony.l.nguyen@intel.com>
 References: <20170412202107.55834-1-anthony.l.nguyen@intel.com>
-Message-ID: <20170412202107.55834-3-anthony.l.nguyen@intel.com>
+Message-ID: <20170412202107.55834-2-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The RSS key is being repopulated every time the interface is brought up
-regardless of whether there is an existing value. If the user sets the RSS
-key and the interface is brought up (e.g. reset), the user specified RSS
-key will be overwritten.
+Mailbox support for getting RETA and RSS is available for only 82599 and
+x540; a previous patch reversed the logic and these adapters were
+returning not supported.
 
-This patch changes the rss_key to a pointer so we can check to see if the
-key has been populated and preserve it accordingly.
+Also, the NACK check in ixgbevf_get_rss_key_locked() was checking for the
+command IXGBE_VF_GET_RETA instead of IXGBE_VF_GET_RSS_KEY.
+
+This patch corrects both issues by correcting the logic and checking for
+the right command.
 
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ethtool.c      |  3 ++-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  2 +-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 33 +++++++++++++++++++++--
- 3 files changed, 34 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/vf.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-index 43b70cd..ff9d05f 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-@@ -855,7 +855,8 @@ static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+index 8a5db9d..b6d0c01 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.c
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+@@ -333,7 +333,7 @@ int ixgbevf_get_reta_locked(struct ixgbe_hw *hw, u32 *reta, int num_rx_queues)
+ 	switch (hw->api_version) {
+ 	case ixgbe_mbox_api_13:
+ 	case ixgbe_mbox_api_12:
+-		if (hw->mac.type >= ixgbe_mac_X550_vf)
++		if (hw->mac.type < ixgbe_mac_X550_vf)
+ 			break;
+ 	default:
+ 		return -EOPNOTSUPP;
+@@ -399,7 +399,7 @@ int ixgbevf_get_rss_key_locked(struct ixgbe_hw *hw, u8 *rss_key)
+ 	switch (hw->api_version) {
+ 	case ixgbe_mbox_api_13:
+ 	case ixgbe_mbox_api_12:
+-		if (hw->mac.type >= ixgbe_mac_X550_vf)
++		if (hw->mac.type < ixgbe_mac_X550_vf)
+ 			break;
+ 	default:
+ 		return -EOPNOTSUPP;
+@@ -419,7 +419,7 @@ int ixgbevf_get_rss_key_locked(struct ixgbe_hw *hw, u8 *rss_key)
+ 	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
  
- 	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf) {
- 		if (key)
--			memcpy(key, adapter->rss_key, sizeof(adapter->rss_key));
-+			memcpy(key, adapter->rss_key,
-+			       ixgbevf_get_rxfh_key_size(netdev));
+ 	/* If the operation has been refused by a PF return -EPERM */
+-	if (msgbuf[0] == (IXGBE_VF_GET_RETA | IXGBE_VT_MSGTYPE_NACK))
++	if (msgbuf[0] == (IXGBE_VF_GET_RSS_KEY | IXGBE_VT_MSGTYPE_NACK))
+ 		return -EPERM;
  
- 		if (indir) {
- 			int i;
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-index a8cbc2d..581f44b 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-@@ -319,7 +319,7 @@ struct ixgbevf_adapter {
- 	spinlock_t mbx_lock;
- 	unsigned long last_reset;
- 
--	u32 rss_key[IXGBEVF_VFRSSRK_REGS];
-+	u32 *rss_key;
- 	u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
- };
- 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index d478858..f2cc728 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1661,6 +1661,28 @@ static void ixgbevf_rx_desc_queue_enable(struct ixgbevf_adapter *adapter,
- 		       reg_idx);
- }
- 
-+/**
-+ * ixgbevf_init_rss_key - Initialize adapter RSS key
-+ * @adapter: device handle
-+ *
-+ * Allocates and initializes the RSS key if it is not allocated.
-+ **/
-+static inline bool ixgbevf_init_rss_key(struct ixgbevf_adapter *adapter)
-+{
-+	u32 *rss_key;
-+
-+	if (!adapter->rss_key) {
-+		rss_key = kzalloc(IXGBEVF_RSS_HASH_KEY_SIZE, GFP_KERNEL);
-+		if (unlikely(!rss_key))
-+			return -ENOMEM;
-+
-+		netdev_rss_key_fill(rss_key, IXGBEVF_RSS_HASH_KEY_SIZE);
-+		adapter->rss_key = rss_key;
-+	}
-+
-+	return 0;
-+}
-+
- static void ixgbevf_setup_vfmrqc(struct ixgbevf_adapter *adapter)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
-@@ -1669,9 +1691,8 @@ static void ixgbevf_setup_vfmrqc(struct ixgbevf_adapter *adapter)
- 	u8 i, j;
- 
- 	/* Fill out hash function seeds */
--	netdev_rss_key_fill(adapter->rss_key, sizeof(adapter->rss_key));
- 	for (i = 0; i < IXGBEVF_VFRSSRK_REGS; i++)
--		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), adapter->rss_key[i]);
-+		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), *(adapter->rss_key + i));
- 
- 	for (i = 0, j = 0; i < IXGBEVF_X550_VFRETA_SIZE; i++, j++) {
- 		if (j == rss_i)
-@@ -2612,6 +2633,12 @@ static int ixgbevf_sw_init(struct ixgbevf_adapter *adapter)
- 
- 	hw->mbx.ops.init_params(hw);
- 
-+	if (hw->mac.type >= ixgbe_mac_X550_vf) {
-+		err = ixgbevf_init_rss_key(adapter);
-+		if (err)
-+			goto out;
-+	}
-+
- 	/* assume legacy case in which PF would only give VF 2 queues */
- 	hw->mac.max_tx_queues = 2;
- 	hw->mac.max_rx_queues = 2;
-@@ -4142,6 +4169,7 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- err_sw_init:
- 	ixgbevf_reset_interrupt_capability(adapter);
- 	iounmap(adapter->io_addr);
-+	kfree(adapter->rss_key);
- err_ioremap:
- 	disable_dev = !test_and_set_bit(__IXGBEVF_DISABLED, &adapter->state);
- 	free_netdev(netdev);
-@@ -4188,6 +4216,7 @@ static void ixgbevf_remove(struct pci_dev *pdev)
- 
- 	hw_dbg(&adapter->hw, "Remove complete\n");
- 
-+	kfree(adapter->rss_key);
- 	disable_dev = !test_and_set_bit(__IXGBEVF_DISABLED, &adapter->state);
- 	free_netdev(netdev);
- 
+ 	/* If we didn't get an ACK there must have been
 -- 
 2.9.3
 
