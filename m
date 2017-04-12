@@ -1,8 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 12 Apr 2017 13:21:05 -0700
-Subject: [Intel-wired-lan] [PATCH 1/3] ixgbe: Check for RSS key before
+Date: Wed, 12 Apr 2017 13:21:07 -0700
+Subject: [Intel-wired-lan] [PATCH 3/3] ixgbevf: Check for RSS key before
 	setting value
-Message-ID: <20170412202107.55834-1-anthony.l.nguyen@intel.com>
+In-Reply-To: <20170412202107.55834-1-anthony.l.nguyen@intel.com>
+References: <20170412202107.55834-1-anthony.l.nguyen@intel.com>
+Message-ID: <20170412202107.55834-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,129 +21,111 @@ key has been populated and preserve it accordingly.
 
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  4 +---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 30 ++++++++++++++++++++++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c   |  2 +-
- 4 files changed, 31 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c      |  3 ++-
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  2 +-
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 33 +++++++++++++++++++++--
+ 3 files changed, 34 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index e8cd449..d2df10b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -769,7 +769,7 @@ struct ixgbe_adapter {
- 	u8 rss_indir_tbl[IXGBE_MAX_RETA_ENTRIES];
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+index 43b70cd..ff9d05f 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+@@ -855,7 +855,8 @@ static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
  
- #define IXGBE_RSS_KEY_SIZE     40  /* size of RSS Hash Key in bytes */
--	u32 rss_key[IXGBE_RSS_KEY_SIZE / sizeof(u32)];
+ 	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf) {
+ 		if (key)
+-			memcpy(key, adapter->rss_key, sizeof(adapter->rss_key));
++			memcpy(key, adapter->rss_key,
++			       ixgbevf_get_rxfh_key_size(netdev));
+ 
+ 		if (indir) {
+ 			int i;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index a8cbc2d..581f44b 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -319,7 +319,7 @@ struct ixgbevf_adapter {
+ 	spinlock_t mbx_lock;
+ 	unsigned long last_reset;
+ 
+-	u32 rss_key[IXGBEVF_VFRSSRK_REGS];
 +	u32 *rss_key;
+ 	u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
  };
  
- static inline u8 ixgbe_max_rss_indices(struct ixgbe_adapter *adapter)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index b0fd2f5..7e5e336 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -2967,9 +2967,7 @@ static int ixgbe_rss_indir_tbl_max(struct ixgbe_adapter *adapter)
- 
- static u32 ixgbe_get_rxfh_key_size(struct net_device *netdev)
- {
--	struct ixgbe_adapter *adapter = netdev_priv(netdev);
--
--	return sizeof(adapter->rss_key);
-+	return IXGBE_RSS_KEY_SIZE;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index d478858..f2cc728 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1661,6 +1661,28 @@ static void ixgbevf_rx_desc_queue_enable(struct ixgbevf_adapter *adapter,
+ 		       reg_idx);
  }
  
- static u32 ixgbe_rss_indir_size(struct net_device *netdev)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 750b204..e5a8ae6 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -3638,6 +3638,28 @@ void ixgbe_store_key(struct ixgbe_adapter *adapter)
- }
- 
- /**
-+ * ixgbe_init_rss_key - Initialize adapter RSS key
++/**
++ * ixgbevf_init_rss_key - Initialize adapter RSS key
 + * @adapter: device handle
 + *
 + * Allocates and initializes the RSS key if it is not allocated.
 + **/
-+static inline int ixgbe_init_rss_key(struct ixgbe_adapter *adapter)
++static inline bool ixgbevf_init_rss_key(struct ixgbevf_adapter *adapter)
 +{
 +	u32 *rss_key;
 +
 +	if (!adapter->rss_key) {
-+		rss_key = kzalloc(IXGBE_RSS_KEY_SIZE, GFP_KERNEL);
++		rss_key = kzalloc(IXGBEVF_RSS_HASH_KEY_SIZE, GFP_KERNEL);
 +		if (unlikely(!rss_key))
 +			return -ENOMEM;
 +
-+		netdev_rss_key_fill(rss_key, IXGBE_RSS_KEY_SIZE);
++		netdev_rss_key_fill(rss_key, IXGBEVF_RSS_HASH_KEY_SIZE);
 +		adapter->rss_key = rss_key;
 +	}
 +
 +	return 0;
 +}
 +
-+/**
-  * ixgbe_store_reta - Write the RETA table to HW
-  * @adapter: device handle
-  *
-@@ -3739,7 +3761,7 @@ static void ixgbe_setup_vfreta(struct ixgbe_adapter *adapter)
+ static void ixgbevf_setup_vfmrqc(struct ixgbevf_adapter *adapter)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+@@ -1669,9 +1691,8 @@ static void ixgbevf_setup_vfmrqc(struct ixgbevf_adapter *adapter)
+ 	u8 i, j;
+ 
  	/* Fill out hash function seeds */
- 	for (i = 0; i < 10; i++)
- 		IXGBE_WRITE_REG(hw, IXGBE_PFVFRSSRK(i, pf_pool),
--				adapter->rss_key[i]);
-+				*(adapter->rss_key + i));
- 
- 	/* Fill out the redirection table */
- 	for (i = 0, j = 0; i < 64; i++, j++) {
-@@ -3800,7 +3822,6 @@ static void ixgbe_setup_mrqc(struct ixgbe_adapter *adapter)
- 	if (adapter->flags2 & IXGBE_FLAG2_RSS_FIELD_IPV6_UDP)
- 		rss_field |= IXGBE_MRQC_RSS_FIELD_IPV6_UDP;
- 
 -	netdev_rss_key_fill(adapter->rss_key, sizeof(adapter->rss_key));
- 	if ((hw->mac.type >= ixgbe_mac_X550) &&
- 	    (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)) {
- 		unsigned int pf_pool = adapter->num_vfs;
-@@ -6014,6 +6035,9 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
- 	if (!adapter->mac_table)
- 		return -ENOMEM;
+ 	for (i = 0; i < IXGBEVF_VFRSSRK_REGS; i++)
+-		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), adapter->rss_key[i]);
++		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), *(adapter->rss_key + i));
  
-+	if (ixgbe_init_rss_key(adapter))
-+		return -ENOMEM;
+ 	for (i = 0, j = 0; i < IXGBEVF_X550_VFRETA_SIZE; i++, j++) {
+ 		if (j == rss_i)
+@@ -2612,6 +2633,12 @@ static int ixgbevf_sw_init(struct ixgbevf_adapter *adapter)
+ 
+ 	hw->mbx.ops.init_params(hw);
+ 
++	if (hw->mac.type >= ixgbe_mac_X550_vf) {
++		err = ixgbevf_init_rss_key(adapter);
++		if (err)
++			goto out;
++	}
 +
- 	/* Set MAC specific capability flags and exceptions */
- 	switch (hw->mac.type) {
- 	case ixgbe_mac_82598EB:
-@@ -10400,6 +10424,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	/* assume legacy case in which PF would only give VF 2 queues */
+ 	hw->mac.max_tx_queues = 2;
+ 	hw->mac.max_rx_queues = 2;
+@@ -4142,6 +4169,7 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ err_sw_init:
+ 	ixgbevf_reset_interrupt_capability(adapter);
  	iounmap(adapter->io_addr);
- 	kfree(adapter->jump_tables[0]);
- 	kfree(adapter->mac_table);
 +	kfree(adapter->rss_key);
  err_ioremap:
- 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
+ 	disable_dev = !test_and_set_bit(__IXGBEVF_DISABLED, &adapter->state);
  	free_netdev(netdev);
-@@ -10484,6 +10509,7 @@ static void ixgbe_remove(struct pci_dev *pdev)
- 	}
+@@ -4188,6 +4216,7 @@ static void ixgbevf_remove(struct pci_dev *pdev)
  
- 	kfree(adapter->mac_table);
+ 	hw_dbg(&adapter->hw, "Remove complete\n");
+ 
 +	kfree(adapter->rss_key);
- 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
+ 	disable_dev = !test_and_set_bit(__IXGBEVF_DISABLED, &adapter->state);
  	free_netdev(netdev);
  
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index c45de53..56d8c7e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -1113,7 +1113,7 @@ static int ixgbe_get_vf_rss_key(struct ixgbe_adapter *adapter,
- 		return -EOPNOTSUPP;
- 	}
- 
--	memcpy(rss_key, adapter->rss_key, sizeof(adapter->rss_key));
-+	memcpy(rss_key, adapter->rss_key, IXGBE_RSS_KEY_SIZE);
- 
- 	return 0;
- }
 -- 
 2.9.3
 
