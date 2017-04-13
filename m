@@ -1,18 +1,18 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 13 Apr 2017 17:21:07 +0000
-Subject: [Intel-wired-lan] [next PATCH S70 03/12] i40e: don't hold RTNL
- lock while waiting for VF reset to finish
-In-Reply-To: <20170413084555.6962-3-alice.michael@intel.com>
+Date: Thu, 13 Apr 2017 17:21:59 +0000
+Subject: [Intel-wired-lan] [next PATCH S70 05/12] i40e: fix CONFIG_BUSY
+ checks in i40e_set_settings function
+In-Reply-To: <20170413084555.6962-5-alice.michael@intel.com>
 References: <20170413084555.6962-1-alice.michael@intel.com>
- <20170413084555.6962-3-alice.michael@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5857E014D4@ORSMSX115.amr.corp.intel.com>
+ <20170413084555.6962-5-alice.michael@intel.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5857E014EA@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+You probably need to fixup or remove the commit hashes for the mentioned commits, unless you already did that?
 
 Thanks,
 Jake
@@ -22,57 +22,166 @@ Jake
 > Sent: Thursday, April 13, 2017 1:46 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
 > Cc: Keller, Jacob E <jacob.e.keller@intel.com>
-> Subject: [next PATCH S70 03/12] i40e: don't hold RTNL lock while waiting for VF
-> reset to finish
+> Subject: [next PATCH S70 05/12] i40e: fix CONFIG_BUSY checks in
+> i40e_set_settings function
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> We made some effort to reduce the RTNL lock scope when resetting and
-> rebuilding the PF. Unfortunately we still held the RTNL lock during the
-> VF reset operation, which meant that multiple PFs could not reset in
-> parallel due to the global lock. For now, further reduce the scope by
-> not holding the RTNL lock while resetting VFs. This allows multiple PFs
-> to reset in a timely manner.
+> The check for I40E_CONFIG_BUSY state bit in the i40e_set_link_ksettings
+> function is fishy. First we can notice a few things about the check here.
+> 
+> First a similar check was introduced by commit
+> 'c7d05ca89f8e ("i40e: driver ethtool core")'
+> 
+> Later a commit introducing the link settings was added by commit
+> 'bf9c71417f72 ("i40e: Implement set_settings for ethtool")'
+> 
+> However, this second check was against vsi->state instead of pf->state,
+> and also failed to set the bit, it only checks. That indicates the locking
+> was not quite correct. The only other place that the state bit
+> in vsi->state gets used is to protect the filter list.
+> 
+> Since this code does not care about the mac filter list,  and seems
+> clear the original code should have set the pf->state bit. Fix these
+> issues by using pf->state correctly, and by actually setting the bit
+> so that we properly lock as expected.
+> 
+> Since these checks occur while holding the rtnl_lock(), lets also add a
+> timeout so that we don't potentially softlock the system.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: I2fbf823a0063f24dff67676cad09f0bbf83ee4ce
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 38 ++++++++++++++++++++---
+> ---
+>  1 file changed, 29 insertions(+), 9 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 4b507ce..1c06693 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -7151,6 +7151,10 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit,
-> bool lock_acquired)
->  	/* restart the VSIs that were rebuilt and running before the reset */
->  	i40e_pf_unquiesce_all_vsi(pf);
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+> b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+> index 10325b5..08035c4 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+> @@ -698,6 +698,7 @@ static int i40e_set_link_ksettings(struct net_device
+> *netdev,
+>  	struct ethtool_link_ksettings copy_cmd;
+>  	i40e_status status = 0;
+>  	bool change = false;
+> +	int timeout = 50;
+>  	int err = 0;
+>  	u32 autoneg;
+>  	u32 advertise;
+> @@ -756,14 +757,20 @@ static int i40e_set_link_ksettings(struct net_device
+> *netdev,
+>  	if (memcmp(&copy_cmd, &safe_cmd, sizeof(struct
+> ethtool_link_ksettings)))
+>  		return -EOPNOTSUPP;
 > 
-> +	/* Release the RTNL lock before we start resetting VFs */
-> +	if (!lock_acquired)
-> +		rtnl_unlock();
+> -	while (test_bit(__I40E_CONFIG_BUSY, &vsi->state))
+> +	while (test_and_set_bit(__I40E_CONFIG_BUSY, &pf->state)) {
+> +		timeout--;
+> +		if (!timeout)
+> +			return -EBUSY;
+>  		usleep_range(1000, 2000);
+> +	}
+> 
+>  	/* Get the current phy config */
+>  	status = i40e_aq_get_phy_capabilities(hw, false, false, &abilities,
+>  					      NULL);
+> -	if (status)
+> -		return -EAGAIN;
+> +	if (status) {
+> +		err = -EAGAIN;
+> +		goto done;
+> +	}
+> 
+>  	/* Copy abilities to config in case autoneg is not
+>  	 * set below
+> @@ -779,7 +786,8 @@ static int i40e_set_link_ksettings(struct net_device
+> *netdev,
+>  			if (!ethtool_link_ksettings_test_link_mode(
+>  				    &safe_cmd, supported, Autoneg)) {
+>  				netdev_info(netdev, "Autoneg not supported on
+> this phy\n");
+> -				return -EINVAL;
+> +				err = -EINVAL;
+> +				goto done;
+>  			}
+>  			/* Autoneg is allowed to change */
+>  			config.abilities = abilities.abilities |
+> @@ -797,7 +805,8 @@ static int i40e_set_link_ksettings(struct net_device
+> *netdev,
+>  			    hw->phy.link_info.phy_type !=
+>  			    I40E_PHY_TYPE_10GBASE_T) {
+>  				netdev_info(netdev, "Autoneg cannot be
+> disabled on this phy\n");
+> -				return -EINVAL;
+> +				err = -EINVAL;
+> +				goto done;
+>  			}
+>  			/* Autoneg is allowed to change */
+>  			config.abilities = abilities.abilities &
+> @@ -808,8 +817,10 @@ static int i40e_set_link_ksettings(struct net_device
+> *netdev,
+> 
+>  	ethtool_convert_link_mode_to_legacy_u32(&tmp,
+> 
+> 	safe_cmd.link_modes.supported);
+> -	if (advertise & ~tmp)
+> -		return -EINVAL;
+> +	if (advertise & ~tmp) {
+> +		err = -EINVAL;
+> +		goto done;
+> +	}
+> 
+>  	if (advertise & ADVERTISED_100baseT_Full)
+>  		config.link_speed |= I40E_LINK_SPEED_100MB;
+> @@ -865,7 +876,8 @@ static int i40e_set_link_ksettings(struct net_device
+> *netdev,
+>  			netdev_info(netdev, "Set phy config failed, err %s aq_err
+> %s\n",
+>  				    i40e_stat_str(hw, status),
+>  				    i40e_aq_str(hw, hw->aq.asq_last_status));
+> -			return -EAGAIN;
+> +			err = -EAGAIN;
+> +			goto done;
+>  		}
+> 
+>  		status = i40e_update_link_info(hw);
+> @@ -878,6 +890,9 @@ static int i40e_set_link_ksettings(struct net_device
+> *netdev,
+>  		netdev_info(netdev, "Nothing changed, exiting without setting
+> anything.\n");
+>  	}
+> 
+> +done:
+> +	clear_bit(__I40E_CONFIG_BUSY, &pf->state);
 > +
->  	if (pf->num_alloc_vfs) {
->  		for (v = 0; v < pf->num_alloc_vfs; v++)
->  			i40e_reset_vf(&pf->vf[v], true);
-> @@ -7159,9 +7163,12 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit,
-> bool lock_acquired)
->  	/* tell the firmware that we're starting */
->  	i40e_send_version(pf);
+>  	return err;
+>  }
 > 
-> +	/* We've already released the lock, so don't do it again */
-> +	goto end_core_reset;
-> +
->  end_unlock:
-> -if (!lock_acquired)
-> -	rtnl_unlock();
-> +	if (!lock_acquired)
-> +		rtnl_unlock();
->  end_core_reset:
->  	clear_bit(__I40E_RESET_FAILED, &pf->state);
->  clear_recovery:
+> @@ -1292,6 +1307,7 @@ static int i40e_set_ringparam(struct net_device
+> *netdev,
+>  	struct i40e_vsi *vsi = np->vsi;
+>  	struct i40e_pf *pf = vsi->back;
+>  	u32 new_rx_count, new_tx_count;
+> +	int timeout = 50;
+>  	int i, err = 0;
+> 
+>  	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+> @@ -1316,8 +1332,12 @@ static int i40e_set_ringparam(struct net_device
+> *netdev,
+>  	    (new_rx_count == vsi->rx_rings[0]->count))
+>  		return 0;
+> 
+> -	while (test_and_set_bit(__I40E_CONFIG_BUSY, &pf->state))
+> +	while (test_and_set_bit(__I40E_CONFIG_BUSY, &pf->state)) {
+> +		timeout--;
+> +		if (!timeout)
+> +			return -EBUSY;
+>  		usleep_range(1000, 2000);
+> +	}
+> 
+>  	if (!netif_running(vsi->netdev)) {
+>  		/* simple case - set for the next time the netdev is started */
 > --
 > 2.9.3
 
