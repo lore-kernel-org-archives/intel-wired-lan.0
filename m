@@ -1,18 +1,18 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 13 Apr 2017 17:21:59 +0000
-Subject: [Intel-wired-lan] [next PATCH S70 05/12] i40e: fix CONFIG_BUSY
- checks in i40e_set_settings function
-In-Reply-To: <20170413084555.6962-5-alice.michael@intel.com>
+Date: Thu, 13 Apr 2017 17:22:38 +0000
+Subject: [Intel-wired-lan] [next PATCH S70 04/12] i40e: factor out queue
+ control from i40e_vsi_control_(tx|rx)
+In-Reply-To: <20170413084555.6962-4-alice.michael@intel.com>
 References: <20170413084555.6962-1-alice.michael@intel.com>
- <20170413084555.6962-5-alice.michael@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5857E014EA@ORSMSX115.amr.corp.intel.com>
+ <20170413084555.6962-4-alice.michael@intel.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5857E014FE@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-You probably need to fixup or remove the commit hashes for the mentioned commits, unless you already did that?
+ACK
 
 Thanks,
 Jake
@@ -22,166 +22,217 @@ Jake
 > Sent: Thursday, April 13, 2017 1:46 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
 > Cc: Keller, Jacob E <jacob.e.keller@intel.com>
-> Subject: [next PATCH S70 05/12] i40e: fix CONFIG_BUSY checks in
-> i40e_set_settings function
+> Subject: [next PATCH S70 04/12] i40e: factor out queue control from
+> i40e_vsi_control_(tx|rx)
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> The check for I40E_CONFIG_BUSY state bit in the i40e_set_link_ksettings
-> function is fishy. First we can notice a few things about the check here.
-> 
-> First a similar check was introduced by commit
-> 'c7d05ca89f8e ("i40e: driver ethtool core")'
-> 
-> Later a commit introducing the link settings was added by commit
-> 'bf9c71417f72 ("i40e: Implement set_settings for ethtool")'
-> 
-> However, this second check was against vsi->state instead of pf->state,
-> and also failed to set the bit, it only checks. That indicates the locking
-> was not quite correct. The only other place that the state bit
-> in vsi->state gets used is to protect the filter list.
-> 
-> Since this code does not care about the mac filter list,  and seems
-> clear the original code should have set the pf->state bit. Fix these
-> issues by using pf->state correctly, and by actually setting the bit
-> so that we properly lock as expected.
-> 
-> Since these checks occur while holding the rtnl_lock(), lets also add a
-> timeout so that we don't potentially softlock the system.
+> A future patch will need to be able to handle controlling queues without
+> waiting until all VSIs are handled. Factor out the direct queue
+> modification so that we can easily re-use this code. The result is also
+> a bit easier to read since we don't embed multiple single-letter loop
+> counters.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: Id923cbfa43127b1c24d8ed4f809b1012c736d9ac
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 38 ++++++++++++++++++++---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 139 ++++++++++++++++++-------
 > ---
->  1 file changed, 29 insertions(+), 9 deletions(-)
+>  1 file changed, 89 insertions(+), 50 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> index 10325b5..08035c4 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> @@ -698,6 +698,7 @@ static int i40e_set_link_ksettings(struct net_device
-> *netdev,
->  	struct ethtool_link_ksettings copy_cmd;
->  	i40e_status status = 0;
->  	bool change = false;
-> +	int timeout = 50;
->  	int err = 0;
->  	u32 autoneg;
->  	u32 advertise;
-> @@ -756,14 +757,20 @@ static int i40e_set_link_ksettings(struct net_device
-> *netdev,
->  	if (memcmp(&copy_cmd, &safe_cmd, sizeof(struct
-> ethtool_link_ksettings)))
->  		return -EOPNOTSUPP;
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 1c06693..ebf2ad4 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -3919,6 +3919,8 @@ static void i40e_netpoll(struct net_device *netdev)
+>  }
+>  #endif
 > 
-> -	while (test_bit(__I40E_CONFIG_BUSY, &vsi->state))
-> +	while (test_and_set_bit(__I40E_CONFIG_BUSY, &pf->state)) {
-> +		timeout--;
-> +		if (!timeout)
-> +			return -EBUSY;
->  		usleep_range(1000, 2000);
-> +	}
-> 
->  	/* Get the current phy config */
->  	status = i40e_aq_get_phy_capabilities(hw, false, false, &abilities,
->  					      NULL);
-> -	if (status)
-> -		return -EAGAIN;
-> +	if (status) {
-> +		err = -EAGAIN;
-> +		goto done;
-> +	}
-> 
->  	/* Copy abilities to config in case autoneg is not
->  	 * set below
-> @@ -779,7 +786,8 @@ static int i40e_set_link_ksettings(struct net_device
-> *netdev,
->  			if (!ethtool_link_ksettings_test_link_mode(
->  				    &safe_cmd, supported, Autoneg)) {
->  				netdev_info(netdev, "Autoneg not supported on
-> this phy\n");
-> -				return -EINVAL;
-> +				err = -EINVAL;
-> +				goto done;
->  			}
->  			/* Autoneg is allowed to change */
->  			config.abilities = abilities.abilities |
-> @@ -797,7 +805,8 @@ static int i40e_set_link_ksettings(struct net_device
-> *netdev,
->  			    hw->phy.link_info.phy_type !=
->  			    I40E_PHY_TYPE_10GBASE_T) {
->  				netdev_info(netdev, "Autoneg cannot be
-> disabled on this phy\n");
-> -				return -EINVAL;
-> +				err = -EINVAL;
-> +				goto done;
->  			}
->  			/* Autoneg is allowed to change */
->  			config.abilities = abilities.abilities &
-> @@ -808,8 +817,10 @@ static int i40e_set_link_ksettings(struct net_device
-> *netdev,
-> 
->  	ethtool_convert_link_mode_to_legacy_u32(&tmp,
-> 
-> 	safe_cmd.link_modes.supported);
-> -	if (advertise & ~tmp)
-> -		return -EINVAL;
-> +	if (advertise & ~tmp) {
-> +		err = -EINVAL;
-> +		goto done;
-> +	}
-> 
->  	if (advertise & ADVERTISED_100baseT_Full)
->  		config.link_speed |= I40E_LINK_SPEED_100MB;
-> @@ -865,7 +876,8 @@ static int i40e_set_link_ksettings(struct net_device
-> *netdev,
->  			netdev_info(netdev, "Set phy config failed, err %s aq_err
-> %s\n",
->  				    i40e_stat_str(hw, status),
->  				    i40e_aq_str(hw, hw->aq.asq_last_status));
-> -			return -EAGAIN;
-> +			err = -EAGAIN;
-> +			goto done;
->  		}
-> 
->  		status = i40e_update_link_info(hw);
-> @@ -878,6 +890,9 @@ static int i40e_set_link_ksettings(struct net_device
-> *netdev,
->  		netdev_info(netdev, "Nothing changed, exiting without setting
-> anything.\n");
->  	}
-> 
-> +done:
-> +	clear_bit(__I40E_CONFIG_BUSY, &pf->state);
+> +#define I40E_QTX_ENA_WAIT_COUNT 50
 > +
->  	return err;
+>  /**
+>   * i40e_pf_txq_wait - Wait for a PF's Tx queue to be enabled or disabled
+>   * @pf: the PF being configured
+> @@ -3949,6 +3951,50 @@ static int i40e_pf_txq_wait(struct i40e_pf *pf, int pf_q,
+> bool enable)
 >  }
 > 
-> @@ -1292,6 +1307,7 @@ static int i40e_set_ringparam(struct net_device
-> *netdev,
->  	struct i40e_vsi *vsi = np->vsi;
->  	struct i40e_pf *pf = vsi->back;
->  	u32 new_rx_count, new_tx_count;
-> +	int timeout = 50;
->  	int i, err = 0;
-> 
->  	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
-> @@ -1316,8 +1332,12 @@ static int i40e_set_ringparam(struct net_device
-> *netdev,
->  	    (new_rx_count == vsi->rx_rings[0]->count))
->  		return 0;
-> 
-> -	while (test_and_set_bit(__I40E_CONFIG_BUSY, &pf->state))
-> +	while (test_and_set_bit(__I40E_CONFIG_BUSY, &pf->state)) {
-> +		timeout--;
-> +		if (!timeout)
-> +			return -EBUSY;
->  		usleep_range(1000, 2000);
+>  /**
+> + * i40e_control_tx_q - Start or stop a particular Tx queue
+> + * @pf: the PF structure
+> + * @pf_q: the PF queue to configure
+> + * @enable: start or stop the queue
+> + *
+> + * This function enables or disables a single queue. Note that any delay
+> + * required after the operation is expected to be handled by the caller of
+> + * this function.
+> + **/
+> +static void i40e_control_tx_q(struct i40e_pf *pf, int pf_q, bool enable)
+> +{
+> +	struct i40e_hw *hw = &pf->hw;
+> +	u32 tx_reg;
+> +	int i;
+> +
+> +	/* warn the TX unit of coming changes */
+> +	i40e_pre_tx_queue_cfg(&pf->hw, pf_q, enable);
+> +	if (!enable)
+> +		usleep_range(10, 20);
+> +
+> +	for (i = 0; i < I40E_QTX_ENA_WAIT_COUNT; i++) {
+> +		tx_reg = rd32(hw, I40E_QTX_ENA(pf_q));
+> +		if (((tx_reg >> I40E_QTX_ENA_QENA_REQ_SHIFT) & 1) ==
+> +		    ((tx_reg >> I40E_QTX_ENA_QENA_STAT_SHIFT) & 1))
+> +			break;
+> +		usleep_range(1000, 2000);
 > +	}
+> +
+> +	/* Skip if the queue is already in the requested state */
+> +	if (enable == !!(tx_reg & I40E_QTX_ENA_QENA_STAT_MASK))
+> +		return;
+> +
+> +	/* turn on/off the queue */
+> +	if (enable) {
+> +		wr32(hw, I40E_QTX_HEAD(pf_q), 0);
+> +		tx_reg |= I40E_QTX_ENA_QENA_REQ_MASK;
+> +	} else {
+> +		tx_reg &= ~I40E_QTX_ENA_QENA_REQ_MASK;
+> +	}
+> +
+> +	wr32(hw, I40E_QTX_ENA(pf_q), tx_reg);
+> +}
+> +
+> +/**
+>   * i40e_vsi_control_tx - Start or stop a VSI's rings
+>   * @vsi: the VSI being configured
+>   * @enable: start or stop the rings
+> @@ -3956,39 +4002,13 @@ static int i40e_pf_txq_wait(struct i40e_pf *pf, int
+> pf_q, bool enable)
+>  static int i40e_vsi_control_tx(struct i40e_vsi *vsi, bool enable)
+>  {
+>  	struct i40e_pf *pf = vsi->back;
+> -	struct i40e_hw *hw = &pf->hw;
+> -	int i, j, pf_q, ret = 0;
+> -	u32 tx_reg;
+> +	int i, pf_q, ret = 0;
 > 
->  	if (!netif_running(vsi->netdev)) {
->  		/* simple case - set for the next time the netdev is started */
+>  	pf_q = vsi->base_queue;
+>  	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
+> +		i40e_control_tx_q(pf, pf_q, enable);
+> 
+> -		/* warn the TX unit of coming changes */
+> -		i40e_pre_tx_queue_cfg(&pf->hw, pf_q, enable);
+> -		if (!enable)
+> -			usleep_range(10, 20);
+> -
+> -		for (j = 0; j < 50; j++) {
+> -			tx_reg = rd32(hw, I40E_QTX_ENA(pf_q));
+> -			if (((tx_reg >> I40E_QTX_ENA_QENA_REQ_SHIFT) & 1) ==
+> -			    ((tx_reg >> I40E_QTX_ENA_QENA_STAT_SHIFT) & 1))
+> -				break;
+> -			usleep_range(1000, 2000);
+> -		}
+> -		/* Skip if the queue is already in the requested state */
+> -		if (enable == !!(tx_reg & I40E_QTX_ENA_QENA_STAT_MASK))
+> -			continue;
+> -
+> -		/* turn on/off the queue */
+> -		if (enable) {
+> -			wr32(hw, I40E_QTX_HEAD(pf_q), 0);
+> -			tx_reg |= I40E_QTX_ENA_QENA_REQ_MASK;
+> -		} else {
+> -			tx_reg &= ~I40E_QTX_ENA_QENA_REQ_MASK;
+> -		}
+> -
+> -		wr32(hw, I40E_QTX_ENA(pf_q), tx_reg);
+> -		/* No waiting for the Tx queue to disable */
+> +		/* Don't wait to disable when port Tx is suspended */
+>  		if (!enable && test_bit(__I40E_PORT_TX_SUSPENDED, &pf-
+> >state))
+>  			continue;
+> 
+> @@ -4035,6 +4055,43 @@ static int i40e_pf_rxq_wait(struct i40e_pf *pf, int pf_q,
+> bool enable)
+>  }
+> 
+>  /**
+> + * i40e_control_rx_q - Start or stop a particular Rx queue
+> + * @pf: the PF structure
+> + * @pf_q: the PF queue to configure
+> + * @enable: start or stop the queue
+> + *
+> + * This function enables or disables a single queue. Note that any delay
+> + * required after the operation is expected to be handled by the caller of
+> + * this function.
+> + **/
+> +static void i40e_control_rx_q(struct i40e_pf *pf, int pf_q, bool enable)
+> +{
+> +	struct i40e_hw *hw = &pf->hw;
+> +	u32 rx_reg;
+> +	int i;
+> +
+> +	for (i = 0; i < I40E_QTX_ENA_WAIT_COUNT; i++) {
+> +		rx_reg = rd32(hw, I40E_QRX_ENA(pf_q));
+> +		if (((rx_reg >> I40E_QRX_ENA_QENA_REQ_SHIFT) & 1) ==
+> +		    ((rx_reg >> I40E_QRX_ENA_QENA_STAT_SHIFT) & 1))
+> +			break;
+> +		usleep_range(1000, 2000);
+> +	}
+> +
+> +	/* Skip if the queue is already in the requested state */
+> +	if (enable == !!(rx_reg & I40E_QRX_ENA_QENA_STAT_MASK))
+> +		return;
+> +
+> +	/* turn on/off the queue */
+> +	if (enable)
+> +		rx_reg |= I40E_QRX_ENA_QENA_REQ_MASK;
+> +	else
+> +		rx_reg &= ~I40E_QRX_ENA_QENA_REQ_MASK;
+> +
+> +	wr32(hw, I40E_QRX_ENA(pf_q), rx_reg);
+> +}
+> +
+> +/**
+>   * i40e_vsi_control_rx - Start or stop a VSI's rings
+>   * @vsi: the VSI being configured
+>   * @enable: start or stop the rings
+> @@ -4042,31 +4099,13 @@ static int i40e_pf_rxq_wait(struct i40e_pf *pf, int
+> pf_q, bool enable)
+>  static int i40e_vsi_control_rx(struct i40e_vsi *vsi, bool enable)
+>  {
+>  	struct i40e_pf *pf = vsi->back;
+> -	struct i40e_hw *hw = &pf->hw;
+> -	int i, j, pf_q, ret = 0;
+> -	u32 rx_reg;
+> +	int i, pf_q, ret = 0;
+> 
+>  	pf_q = vsi->base_queue;
+>  	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
+> -		for (j = 0; j < 50; j++) {
+> -			rx_reg = rd32(hw, I40E_QRX_ENA(pf_q));
+> -			if (((rx_reg >> I40E_QRX_ENA_QENA_REQ_SHIFT) & 1) ==
+> -			    ((rx_reg >> I40E_QRX_ENA_QENA_STAT_SHIFT) & 1))
+> -				break;
+> -			usleep_range(1000, 2000);
+> -		}
+> +		i40e_control_rx_q(pf, pf_q, enable);
+> 
+> -		/* Skip if the queue is already in the requested state */
+> -		if (enable == !!(rx_reg & I40E_QRX_ENA_QENA_STAT_MASK))
+> -			continue;
+> -
+> -		/* turn on/off the queue */
+> -		if (enable)
+> -			rx_reg |= I40E_QRX_ENA_QENA_REQ_MASK;
+> -		else
+> -			rx_reg &= ~I40E_QRX_ENA_QENA_REQ_MASK;
+> -		wr32(hw, I40E_QRX_ENA(pf_q), rx_reg);
+> -		/* No waiting for the Tx queue to disable */
+> +		/* Don't wait to disable when port Tx is suspended */
+>  		if (!enable && test_bit(__I40E_PORT_TX_SUSPENDED, &pf-
+> >state))
+>  			continue;
+> 
 > --
 > 2.9.3
 
