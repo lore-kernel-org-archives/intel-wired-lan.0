@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 13 Apr 2017 04:45:47 -0400
-Subject: [Intel-wired-lan] [next PATCH S70 04/12] i40e: factor out queue
-	control from i40e_vsi_control_(tx|rx)
+Date: Thu, 13 Apr 2017 04:45:49 -0400
+Subject: [Intel-wired-lan] [next PATCH S70 06/12] i40e: reduce wait time for
+	adminq command completion
 In-Reply-To: <20170413084555.6962-1-alice.michael@intel.com>
 References: <20170413084555.6962-1-alice.michael@intel.com>
-Message-ID: <20170413084555.6962-4-alice.michael@intel.com>
+Message-ID: <20170413084555.6962-6-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,204 +13,102 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-A future patch will need to be able to handle controlling queues without
-waiting until all VSIs are handled. Factor out the direct queue
-modification so that we can easily re-use this code. The result is also
-a bit easier to read since we don't embed multiple single-letter loop
-counters.
+When sending an adminq command, we wait for the command to complete in
+a loop. This loop waits for an entire millisecond, when in practice the
+adminq command is processed often much faster.
+
+Change the loop to use i40e_usec_delay instead, and wait for 50 usecs
+each time instead. This appears to be about the minimum time required,
+based on some manual observation and testing.
+
+The primary benefit of this change is reducing latency of various
+operations in the PF driver, especially when related to having a large
+number of VFs enabled.
+
+For example, on Linux, when instantiating 128 VFs, the time to finish
+the operation dropped from about 9 seconds down to under 6 seconds.
+Additionally, the time it takes to finish a PF reset with 128 VFs
+dropped from 5.1 seconds down to 0.7 seconds.
+
+As the examples above show, a significant portion of the delay is wasted
+waiting for admiqn operations which have already finished.
+
+This patch shouldn't cause impact to functionality, as we still check
+and keep waiting until the command does get processed. The only expected
+change is an increase in CPU utilization as we now check for completion
+far more times. However, in practice the commands appear to generally be
+complete within the first delay window anyways.
+
+Previously for NDIS we used i40e_msec_stall since i40e_msec_delay would
+cause the CPU to be yielded. We can now just use i40e_usec_delay instead
+because this function will behave correctly for both NDIS and non-NDIS
+code. Thus, we can simply drop the #ifdef logic entirely.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: Id923cbfa43127b1c24d8ed4f809b1012c736d9ac
+Change-ID: If8af8388e100da0a14eaf9e1af3afadf73a958cf
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 139 ++++++++++++++++++----------
- 1 file changed, 89 insertions(+), 50 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c   | 4 ++--
+ drivers/net/ethernet/intel/i40e/i40e_adminq.h   | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_adminq.c | 4 ++--
+ drivers/net/ethernet/intel/i40evf/i40e_adminq.h | 2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1c06693..ebf2ad4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3919,6 +3919,8 @@ static void i40e_netpoll(struct net_device *netdev)
- }
- #endif
- 
-+#define I40E_QTX_ENA_WAIT_COUNT 50
-+
- /**
-  * i40e_pf_txq_wait - Wait for a PF's Tx queue to be enabled or disabled
-  * @pf: the PF being configured
-@@ -3949,6 +3951,50 @@ static int i40e_pf_txq_wait(struct i40e_pf *pf, int pf_q, bool enable)
- }
- 
- /**
-+ * i40e_control_tx_q - Start or stop a particular Tx queue
-+ * @pf: the PF structure
-+ * @pf_q: the PF queue to configure
-+ * @enable: start or stop the queue
-+ *
-+ * This function enables or disables a single queue. Note that any delay
-+ * required after the operation is expected to be handled by the caller of
-+ * this function.
-+ **/
-+static void i40e_control_tx_q(struct i40e_pf *pf, int pf_q, bool enable)
-+{
-+	struct i40e_hw *hw = &pf->hw;
-+	u32 tx_reg;
-+	int i;
-+
-+	/* warn the TX unit of coming changes */
-+	i40e_pre_tx_queue_cfg(&pf->hw, pf_q, enable);
-+	if (!enable)
-+		usleep_range(10, 20);
-+
-+	for (i = 0; i < I40E_QTX_ENA_WAIT_COUNT; i++) {
-+		tx_reg = rd32(hw, I40E_QTX_ENA(pf_q));
-+		if (((tx_reg >> I40E_QTX_ENA_QENA_REQ_SHIFT) & 1) ==
-+		    ((tx_reg >> I40E_QTX_ENA_QENA_STAT_SHIFT) & 1))
-+			break;
-+		usleep_range(1000, 2000);
-+	}
-+
-+	/* Skip if the queue is already in the requested state */
-+	if (enable == !!(tx_reg & I40E_QTX_ENA_QENA_STAT_MASK))
-+		return;
-+
-+	/* turn on/off the queue */
-+	if (enable) {
-+		wr32(hw, I40E_QTX_HEAD(pf_q), 0);
-+		tx_reg |= I40E_QTX_ENA_QENA_REQ_MASK;
-+	} else {
-+		tx_reg &= ~I40E_QTX_ENA_QENA_REQ_MASK;
-+	}
-+
-+	wr32(hw, I40E_QTX_ENA(pf_q), tx_reg);
-+}
-+
-+/**
-  * i40e_vsi_control_tx - Start or stop a VSI's rings
-  * @vsi: the VSI being configured
-  * @enable: start or stop the rings
-@@ -3956,39 +4002,13 @@ static int i40e_pf_txq_wait(struct i40e_pf *pf, int pf_q, bool enable)
- static int i40e_vsi_control_tx(struct i40e_vsi *vsi, bool enable)
- {
- 	struct i40e_pf *pf = vsi->back;
--	struct i40e_hw *hw = &pf->hw;
--	int i, j, pf_q, ret = 0;
--	u32 tx_reg;
-+	int i, pf_q, ret = 0;
- 
- 	pf_q = vsi->base_queue;
- 	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
-+		i40e_control_tx_q(pf, pf_q, enable);
- 
--		/* warn the TX unit of coming changes */
--		i40e_pre_tx_queue_cfg(&pf->hw, pf_q, enable);
--		if (!enable)
--			usleep_range(10, 20);
--
--		for (j = 0; j < 50; j++) {
--			tx_reg = rd32(hw, I40E_QTX_ENA(pf_q));
--			if (((tx_reg >> I40E_QTX_ENA_QENA_REQ_SHIFT) & 1) ==
--			    ((tx_reg >> I40E_QTX_ENA_QENA_STAT_SHIFT) & 1))
--				break;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index 56fb272..ba04988 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -850,8 +850,8 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
+ 			 */
+ 			if (i40e_asq_done(hw))
+ 				break;
 -			usleep_range(1000, 2000);
--		}
--		/* Skip if the queue is already in the requested state */
--		if (enable == !!(tx_reg & I40E_QTX_ENA_QENA_STAT_MASK))
--			continue;
--
--		/* turn on/off the queue */
--		if (enable) {
--			wr32(hw, I40E_QTX_HEAD(pf_q), 0);
--			tx_reg |= I40E_QTX_ENA_QENA_REQ_MASK;
--		} else {
--			tx_reg &= ~I40E_QTX_ENA_QENA_REQ_MASK;
--		}
--
--		wr32(hw, I40E_QTX_ENA(pf_q), tx_reg);
--		/* No waiting for the Tx queue to disable */
-+		/* Don't wait to disable when port Tx is suspended */
- 		if (!enable && test_bit(__I40E_PORT_TX_SUSPENDED, &pf->state))
- 			continue;
+-			total_delay++;
++			udelay(50);
++			total_delay += 50;
+ 		} while (total_delay < hw->aq.asq_cmd_timeout);
+ 	}
  
-@@ -4035,6 +4055,43 @@ static int i40e_pf_rxq_wait(struct i40e_pf *pf, int pf_q, bool enable)
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+index d92aad3..2349fbe 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+@@ -151,7 +151,7 @@ static inline int i40e_aq_rc_to_posix(int aq_ret, int aq_rc)
  
- /**
-+ * i40e_control_rx_q - Start or stop a particular Rx queue
-+ * @pf: the PF structure
-+ * @pf_q: the PF queue to configure
-+ * @enable: start or stop the queue
-+ *
-+ * This function enables or disables a single queue. Note that any delay
-+ * required after the operation is expected to be handled by the caller of
-+ * this function.
-+ **/
-+static void i40e_control_rx_q(struct i40e_pf *pf, int pf_q, bool enable)
-+{
-+	struct i40e_hw *hw = &pf->hw;
-+	u32 rx_reg;
-+	int i;
-+
-+	for (i = 0; i < I40E_QTX_ENA_WAIT_COUNT; i++) {
-+		rx_reg = rd32(hw, I40E_QRX_ENA(pf_q));
-+		if (((rx_reg >> I40E_QRX_ENA_QENA_REQ_SHIFT) & 1) ==
-+		    ((rx_reg >> I40E_QRX_ENA_QENA_STAT_SHIFT) & 1))
-+			break;
-+		usleep_range(1000, 2000);
-+	}
-+
-+	/* Skip if the queue is already in the requested state */
-+	if (enable == !!(rx_reg & I40E_QRX_ENA_QENA_STAT_MASK))
-+		return;
-+
-+	/* turn on/off the queue */
-+	if (enable)
-+		rx_reg |= I40E_QRX_ENA_QENA_REQ_MASK;
-+	else
-+		rx_reg &= ~I40E_QRX_ENA_QENA_REQ_MASK;
-+
-+	wr32(hw, I40E_QRX_ENA(pf_q), rx_reg);
-+}
-+
-+/**
-  * i40e_vsi_control_rx - Start or stop a VSI's rings
-  * @vsi: the VSI being configured
-  * @enable: start or stop the rings
-@@ -4042,31 +4099,13 @@ static int i40e_pf_rxq_wait(struct i40e_pf *pf, int pf_q, bool enable)
- static int i40e_vsi_control_rx(struct i40e_vsi *vsi, bool enable)
- {
- 	struct i40e_pf *pf = vsi->back;
--	struct i40e_hw *hw = &pf->hw;
--	int i, j, pf_q, ret = 0;
--	u32 rx_reg;
-+	int i, pf_q, ret = 0;
+ /* general information */
+ #define I40E_AQ_LARGE_BUF	512
+-#define I40E_ASQ_CMD_TIMEOUT	250  /* msecs */
++#define I40E_ASQ_CMD_TIMEOUT	250000  /* usecs */
  
- 	pf_q = vsi->base_queue;
- 	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
--		for (j = 0; j < 50; j++) {
--			rx_reg = rd32(hw, I40E_QRX_ENA(pf_q));
--			if (((rx_reg >> I40E_QRX_ENA_QENA_REQ_SHIFT) & 1) ==
--			    ((rx_reg >> I40E_QRX_ENA_QENA_STAT_SHIFT) & 1))
--				break;
+ void i40e_fill_default_direct_cmd_desc(struct i40e_aq_desc *desc,
+ 				       u16 opcode);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
+index 9638515..8b0d4b2 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
+@@ -797,8 +797,8 @@ i40e_status i40evf_asq_send_command(struct i40e_hw *hw,
+ 			 */
+ 			if (i40evf_asq_done(hw))
+ 				break;
 -			usleep_range(1000, 2000);
--		}
-+		i40e_control_rx_q(pf, pf_q, enable);
+-			total_delay++;
++			udelay(50);
++			total_delay += 50;
+ 		} while (total_delay < hw->aq.asq_cmd_timeout);
+ 	}
  
--		/* Skip if the queue is already in the requested state */
--		if (enable == !!(rx_reg & I40E_QRX_ENA_QENA_STAT_MASK))
--			continue;
--
--		/* turn on/off the queue */
--		if (enable)
--			rx_reg |= I40E_QRX_ENA_QENA_REQ_MASK;
--		else
--			rx_reg &= ~I40E_QRX_ENA_QENA_REQ_MASK;
--		wr32(hw, I40E_QRX_ENA(pf_q), rx_reg);
--		/* No waiting for the Tx queue to disable */
-+		/* Don't wait to disable when port Tx is suspended */
- 		if (!enable && test_bit(__I40E_PORT_TX_SUSPENDED, &pf->state))
- 			continue;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+index 1f9b3b5..e0bfaa3 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+@@ -151,7 +151,7 @@ static inline int i40e_aq_rc_to_posix(int aq_ret, int aq_rc)
  
+ /* general information */
+ #define I40E_AQ_LARGE_BUF	512
+-#define I40E_ASQ_CMD_TIMEOUT	250  /* msecs */
++#define I40E_ASQ_CMD_TIMEOUT	250000  /* usecs */
+ 
+ void i40evf_fill_default_direct_cmd_desc(struct i40e_aq_desc *desc,
+ 				       u16 opcode);
 -- 
 2.9.3
 
