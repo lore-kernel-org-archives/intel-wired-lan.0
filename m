@@ -1,67 +1,170 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 12 Apr 2017 13:35:22 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Allow setting zero MAC address for
-	VF
-Message-ID: <20170412203522.57743-1-anthony.l.nguyen@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 13 Apr 2017 11:20:45 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ a78d4773e5abb557b3041cb94c2510f018c01706
+Message-ID: <58eeee8d.VrfwIVnV+EdIKlkg%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently, there is no logic that allows a VF's MAC address to be removed
-from the RAR table.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+a78d4773e5abb557b3041cb94c2510f018c01706  igb: Allow to remove administratively set MAC on VFs
 
-Allow the user to specify a zero MAC address in order to clear the VF's
-MAC address from the RAR table.  This functionality is also utilized by
-libvirt when removing VFs.
+drivers/net/ethernet/intel/i40e/i40e_main.c:11369:15: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_main.c:11370:3: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:1346:8: error: 'struct sk_buff' has no member named 'offload_fwd_mark'
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2171:36: error: 'size' undeclared (first use in this function)
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2171:5: error: 'size' undeclared (first use in this function)
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 28 +++++++++++++++++---------
- 1 file changed, 18 insertions(+), 10 deletions(-)
+Error ids grouped by kconfigs:
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index c45de53..58897d9 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -1347,18 +1347,26 @@ void ixgbe_ping_all_vfs(struct ixgbe_adapter *adapter)
- int ixgbe_ndo_set_vf_mac(struct net_device *netdev, int vf, u8 *mac)
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
--	if (!is_valid_ether_addr(mac) || (vf >= adapter->num_vfs))
-+
-+	if (vf >= adapter->num_vfs)
-+		return -EINVAL;
-+
-+	if (is_zero_ether_addr(mac)) {
-+		adapter->vfinfo[vf].pf_set_mac = false;
-+		dev_info(&adapter->pdev->dev, "removing MAC on VF %d\n", vf);
-+	} else if (is_valid_ether_addr(mac)) {
-+		adapter->vfinfo[vf].pf_set_mac = true;
-+		dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n",
-+			 mac, vf);
-+		dev_info(&adapter->pdev->dev, "Reload the VF driver to make this change effective.");
-+		if (test_bit(__IXGBE_DOWN, &adapter->state)) {
-+			dev_warn(&adapter->pdev->dev, "The VF MAC address has been set, but the PF device is not up.\n");
-+			dev_warn(&adapter->pdev->dev, "Bring the PF device up before attempting to use the VF device.\n");
-+		}
-+	} else {
- 		return -EINVAL;
--	adapter->vfinfo[vf].pf_set_mac = true;
--	dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n", mac, vf);
--	dev_info(&adapter->pdev->dev, "Reload the VF driver to make this"
--				      " change effective.");
--	if (test_bit(__IXGBE_DOWN, &adapter->state)) {
--		dev_warn(&adapter->pdev->dev, "The VF MAC address has been set,"
--			 " but the PF device is not up.\n");
--		dev_warn(&adapter->pdev->dev, "Bring the PF device up before"
--			 " attempting to use the VF device.\n");
- 	}
-+
- 	return ixgbe_set_vf_mac(adapter, vf, mac);
- }
- 
--- 
-2.9.3
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ia64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? powerpc-defconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? powerpc-ppc64_defconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? tile-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? x86_64-rhel
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
+??? x86_64-rhel-7.2
+    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
 
+elapsed time: 240m
+
+configs tested: 118
+
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                             ezx_defconfig
+m68k                           sun3_defconfig
+powerpc                      ppc64e_defconfig
+sh                           se7705_defconfig
+tile                             allyesconfig
+x86_64                 randconfig-x010-201715
+x86_64                 randconfig-x011-201715
+x86_64                 randconfig-x012-201715
+x86_64                 randconfig-x013-201715
+x86_64                 randconfig-x014-201715
+x86_64                 randconfig-x015-201715
+x86_64                 randconfig-x016-201715
+x86_64                 randconfig-x017-201715
+x86_64                 randconfig-x018-201715
+x86_64                 randconfig-x019-201715
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+i386                     randconfig-s0-201715
+i386                     randconfig-s1-201715
+x86_64                 randconfig-s0-04131020
+x86_64                 randconfig-s1-04131020
+x86_64                 randconfig-s2-04131020
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201715
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-u0-04131001
+i386                   randconfig-x010-201715
+i386                   randconfig-x014-201715
+i386                   randconfig-x016-201715
+i386                   randconfig-x017-201715
+i386                   randconfig-x013-201715
+i386                   randconfig-x019-201715
+i386                   randconfig-x011-201715
+i386                   randconfig-x015-201715
+i386                   randconfig-x012-201715
+i386                   randconfig-x018-201715
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201715
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                randconfig-ws0-04121644
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                             allmodconfig
+i386                   randconfig-x000-201715
+i386                   randconfig-x001-201715
+i386                   randconfig-x002-201715
+i386                   randconfig-x003-201715
+i386                   randconfig-x004-201715
+i386                   randconfig-x005-201715
+i386                   randconfig-x006-201715
+i386                   randconfig-x007-201715
+i386                   randconfig-x008-201715
+i386                   randconfig-x009-201715
+
+Thanks,
+Fengguang
