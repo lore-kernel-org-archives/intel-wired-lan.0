@@ -1,238 +1,178 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 13 Apr 2017 17:22:38 +0000
-Subject: [Intel-wired-lan] [next PATCH S70 04/12] i40e: factor out queue
- control from i40e_vsi_control_(tx|rx)
-In-Reply-To: <20170413084555.6962-4-alice.michael@intel.com>
-References: <20170413084555.6962-1-alice.michael@intel.com>
- <20170413084555.6962-4-alice.michael@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5857E014FE@ORSMSX115.amr.corp.intel.com>
+From: Paul Greenwalt <paul.greenwalt@intel.com>
+Date: Thu, 13 Apr 2017 08:07:07 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add 1000Base-T device based on
+	X550EM_X MAC
+Message-ID: <1492085227-52152-1-git-send-email-paul.greenwalt@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+Add support for new 1000Base-T device based on X550EM_X MAC
+type. All PHY operations are disabled as the PHY is controlled
+by FW.
 
-Thanks,
-Jake
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 45 ++++++++++++++++++++++++++-
+ 4 files changed, 49 insertions(+), 1 deletion(-)
 
-> -----Original Message-----
-> From: Michael, Alice
-> Sent: Thursday, April 13, 2017 1:46 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-> Cc: Keller, Jacob E <jacob.e.keller@intel.com>
-> Subject: [next PATCH S70 04/12] i40e: factor out queue control from
-> i40e_vsi_control_(tx|rx)
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> A future patch will need to be able to handle controlling queues without
-> waiting until all VSIs are handled. Factor out the direct queue
-> modification so that we can easily re-use this code. The result is also
-> a bit easier to read since we don't embed multiple single-letter loop
-> counters.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: Id923cbfa43127b1c24d8ed4f809b1012c736d9ac
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 139 ++++++++++++++++++-------
-> ---
->  1 file changed, 89 insertions(+), 50 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 1c06693..ebf2ad4 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -3919,6 +3919,8 @@ static void i40e_netpoll(struct net_device *netdev)
->  }
->  #endif
-> 
-> +#define I40E_QTX_ENA_WAIT_COUNT 50
-> +
->  /**
->   * i40e_pf_txq_wait - Wait for a PF's Tx queue to be enabled or disabled
->   * @pf: the PF being configured
-> @@ -3949,6 +3951,50 @@ static int i40e_pf_txq_wait(struct i40e_pf *pf, int pf_q,
-> bool enable)
->  }
-> 
->  /**
-> + * i40e_control_tx_q - Start or stop a particular Tx queue
-> + * @pf: the PF structure
-> + * @pf_q: the PF queue to configure
-> + * @enable: start or stop the queue
-> + *
-> + * This function enables or disables a single queue. Note that any delay
-> + * required after the operation is expected to be handled by the caller of
-> + * this function.
-> + **/
-> +static void i40e_control_tx_q(struct i40e_pf *pf, int pf_q, bool enable)
-> +{
-> +	struct i40e_hw *hw = &pf->hw;
-> +	u32 tx_reg;
-> +	int i;
-> +
-> +	/* warn the TX unit of coming changes */
-> +	i40e_pre_tx_queue_cfg(&pf->hw, pf_q, enable);
-> +	if (!enable)
-> +		usleep_range(10, 20);
-> +
-> +	for (i = 0; i < I40E_QTX_ENA_WAIT_COUNT; i++) {
-> +		tx_reg = rd32(hw, I40E_QTX_ENA(pf_q));
-> +		if (((tx_reg >> I40E_QTX_ENA_QENA_REQ_SHIFT) & 1) ==
-> +		    ((tx_reg >> I40E_QTX_ENA_QENA_STAT_SHIFT) & 1))
-> +			break;
-> +		usleep_range(1000, 2000);
-> +	}
-> +
-> +	/* Skip if the queue is already in the requested state */
-> +	if (enable == !!(tx_reg & I40E_QTX_ENA_QENA_STAT_MASK))
-> +		return;
-> +
-> +	/* turn on/off the queue */
-> +	if (enable) {
-> +		wr32(hw, I40E_QTX_HEAD(pf_q), 0);
-> +		tx_reg |= I40E_QTX_ENA_QENA_REQ_MASK;
-> +	} else {
-> +		tx_reg &= ~I40E_QTX_ENA_QENA_REQ_MASK;
-> +	}
-> +
-> +	wr32(hw, I40E_QTX_ENA(pf_q), tx_reg);
-> +}
-> +
-> +/**
->   * i40e_vsi_control_tx - Start or stop a VSI's rings
->   * @vsi: the VSI being configured
->   * @enable: start or stop the rings
-> @@ -3956,39 +4002,13 @@ static int i40e_pf_txq_wait(struct i40e_pf *pf, int
-> pf_q, bool enable)
->  static int i40e_vsi_control_tx(struct i40e_vsi *vsi, bool enable)
->  {
->  	struct i40e_pf *pf = vsi->back;
-> -	struct i40e_hw *hw = &pf->hw;
-> -	int i, j, pf_q, ret = 0;
-> -	u32 tx_reg;
-> +	int i, pf_q, ret = 0;
-> 
->  	pf_q = vsi->base_queue;
->  	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
-> +		i40e_control_tx_q(pf, pf_q, enable);
-> 
-> -		/* warn the TX unit of coming changes */
-> -		i40e_pre_tx_queue_cfg(&pf->hw, pf_q, enable);
-> -		if (!enable)
-> -			usleep_range(10, 20);
-> -
-> -		for (j = 0; j < 50; j++) {
-> -			tx_reg = rd32(hw, I40E_QTX_ENA(pf_q));
-> -			if (((tx_reg >> I40E_QTX_ENA_QENA_REQ_SHIFT) & 1) ==
-> -			    ((tx_reg >> I40E_QTX_ENA_QENA_STAT_SHIFT) & 1))
-> -				break;
-> -			usleep_range(1000, 2000);
-> -		}
-> -		/* Skip if the queue is already in the requested state */
-> -		if (enable == !!(tx_reg & I40E_QTX_ENA_QENA_STAT_MASK))
-> -			continue;
-> -
-> -		/* turn on/off the queue */
-> -		if (enable) {
-> -			wr32(hw, I40E_QTX_HEAD(pf_q), 0);
-> -			tx_reg |= I40E_QTX_ENA_QENA_REQ_MASK;
-> -		} else {
-> -			tx_reg &= ~I40E_QTX_ENA_QENA_REQ_MASK;
-> -		}
-> -
-> -		wr32(hw, I40E_QTX_ENA(pf_q), tx_reg);
-> -		/* No waiting for the Tx queue to disable */
-> +		/* Don't wait to disable when port Tx is suspended */
->  		if (!enable && test_bit(__I40E_PORT_TX_SUSPENDED, &pf-
-> >state))
->  			continue;
-> 
-> @@ -4035,6 +4055,43 @@ static int i40e_pf_rxq_wait(struct i40e_pf *pf, int pf_q,
-> bool enable)
->  }
-> 
->  /**
-> + * i40e_control_rx_q - Start or stop a particular Rx queue
-> + * @pf: the PF structure
-> + * @pf_q: the PF queue to configure
-> + * @enable: start or stop the queue
-> + *
-> + * This function enables or disables a single queue. Note that any delay
-> + * required after the operation is expected to be handled by the caller of
-> + * this function.
-> + **/
-> +static void i40e_control_rx_q(struct i40e_pf *pf, int pf_q, bool enable)
-> +{
-> +	struct i40e_hw *hw = &pf->hw;
-> +	u32 rx_reg;
-> +	int i;
-> +
-> +	for (i = 0; i < I40E_QTX_ENA_WAIT_COUNT; i++) {
-> +		rx_reg = rd32(hw, I40E_QRX_ENA(pf_q));
-> +		if (((rx_reg >> I40E_QRX_ENA_QENA_REQ_SHIFT) & 1) ==
-> +		    ((rx_reg >> I40E_QRX_ENA_QENA_STAT_SHIFT) & 1))
-> +			break;
-> +		usleep_range(1000, 2000);
-> +	}
-> +
-> +	/* Skip if the queue is already in the requested state */
-> +	if (enable == !!(rx_reg & I40E_QRX_ENA_QENA_STAT_MASK))
-> +		return;
-> +
-> +	/* turn on/off the queue */
-> +	if (enable)
-> +		rx_reg |= I40E_QRX_ENA_QENA_REQ_MASK;
-> +	else
-> +		rx_reg &= ~I40E_QRX_ENA_QENA_REQ_MASK;
-> +
-> +	wr32(hw, I40E_QRX_ENA(pf_q), rx_reg);
-> +}
-> +
-> +/**
->   * i40e_vsi_control_rx - Start or stop a VSI's rings
->   * @vsi: the VSI being configured
->   * @enable: start or stop the rings
-> @@ -4042,31 +4099,13 @@ static int i40e_pf_rxq_wait(struct i40e_pf *pf, int
-> pf_q, bool enable)
->  static int i40e_vsi_control_rx(struct i40e_vsi *vsi, bool enable)
->  {
->  	struct i40e_pf *pf = vsi->back;
-> -	struct i40e_hw *hw = &pf->hw;
-> -	int i, j, pf_q, ret = 0;
-> -	u32 rx_reg;
-> +	int i, pf_q, ret = 0;
-> 
->  	pf_q = vsi->base_queue;
->  	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
-> -		for (j = 0; j < 50; j++) {
-> -			rx_reg = rd32(hw, I40E_QRX_ENA(pf_q));
-> -			if (((rx_reg >> I40E_QRX_ENA_QENA_REQ_SHIFT) & 1) ==
-> -			    ((rx_reg >> I40E_QRX_ENA_QENA_STAT_SHIFT) & 1))
-> -				break;
-> -			usleep_range(1000, 2000);
-> -		}
-> +		i40e_control_rx_q(pf, pf_q, enable);
-> 
-> -		/* Skip if the queue is already in the requested state */
-> -		if (enable == !!(rx_reg & I40E_QRX_ENA_QENA_STAT_MASK))
-> -			continue;
-> -
-> -		/* turn on/off the queue */
-> -		if (enable)
-> -			rx_reg |= I40E_QRX_ENA_QENA_REQ_MASK;
-> -		else
-> -			rx_reg &= ~I40E_QRX_ENA_QENA_REQ_MASK;
-> -		wr32(hw, I40E_QRX_ENA(pf_q), rx_reg);
-> -		/* No waiting for the Tx queue to disable */
-> +		/* Don't wait to disable when port Tx is suspended */
->  		if (!enable && test_bit(__I40E_PORT_TX_SUSPENDED, &pf-
-> >state))
->  			continue;
-> 
-> --
-> 2.9.3
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index e8cd449..85b1afb 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -826,6 +826,7 @@ enum ixgbe_boards {
+ 	board_X540,
+ 	board_X550,
+ 	board_X550EM_x,
++	board_x550em_x_fw,
+ 	board_x550em_a,
+ 	board_x550em_a_fw,
+ };
+@@ -835,6 +836,7 @@ extern const struct ixgbe_info ixgbe_82599_info;
+ extern const struct ixgbe_info ixgbe_X540_info;
+ extern const struct ixgbe_info ixgbe_X550_info;
+ extern const struct ixgbe_info ixgbe_X550EM_x_info;
++extern const struct ixgbe_info ixgbe_x550em_x_fw_info;
+ extern const struct ixgbe_info ixgbe_x550em_a_info;
+ extern const struct ixgbe_info ixgbe_x550em_a_fw_info;
+ #ifdef CONFIG_IXGBE_DCB
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 750b204..c397667 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -89,6 +89,7 @@ static const struct ixgbe_info *ixgbe_info_tbl[] = {
+ 	[board_X540]		= &ixgbe_X540_info,
+ 	[board_X550]		= &ixgbe_X550_info,
+ 	[board_X550EM_x]	= &ixgbe_X550EM_x_info,
++	[board_x550em_x_fw]	= &ixgbe_x550em_x_fw_info,
+ 	[board_x550em_a]	= &ixgbe_x550em_a_info,
+ 	[board_x550em_a_fw]	= &ixgbe_x550em_a_fw_info,
+ };
+@@ -139,6 +140,7 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR), board_X550EM_x},
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), board_X550EM_x},
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), board_X550EM_x},
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_1G_T), board_x550em_x_fw},
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_KR), board_x550em_a },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_KR_L), board_x550em_a },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP_N), board_x550em_a },
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 2f06e4d..9c2460c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -3128,6 +3128,7 @@ enum ixgbe_phy_type {
+ 	ixgbe_phy_x550em_kx4,
+ 	ixgbe_phy_x550em_xfi,
+ 	ixgbe_phy_x550em_ext_t,
++	ixgbe_phy_ext_1g_t,
+ 	ixgbe_phy_cu_unknown,
+ 	ixgbe_phy_qt,
+ 	ixgbe_phy_xaui,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 58d3bca..2ba024b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -49,6 +49,18 @@ static s32 ixgbe_get_invariants_X550_x(struct ixgbe_hw *hw)
+ 	return 0;
+ }
+ 
++static s32 ixgbe_get_invariants_X550_x_fw(struct ixgbe_hw *hw)
++{
++	struct ixgbe_phy_info *phy = &hw->phy;
++
++	/* Start with X540 invariants, since so similar */
++	ixgbe_get_invariants_X540(hw);
++
++	phy->ops.set_phy_power = NULL;
++
++	return 0;
++}
++
+ static s32 ixgbe_get_invariants_X550_a(struct ixgbe_hw *hw)
+ {
+ 	struct ixgbe_mac_info *mac = &hw->mac;
+@@ -334,9 +346,11 @@ static s32 ixgbe_identify_phy_x550em(struct ixgbe_hw *hw)
+ 		else
+ 			hw->phy.phy_semaphore_mask = IXGBE_GSSR_PHY0_SM;
+ 		/* Fallthrough */
+-	case IXGBE_DEV_ID_X550EM_X_1G_T:
+ 	case IXGBE_DEV_ID_X550EM_X_10G_T:
+ 		return ixgbe_identify_phy_generic(hw);
++	case IXGBE_DEV_ID_X550EM_X_1G_T:
++		hw->phy.type = ixgbe_phy_ext_1g_t;
++		break;
+ 	case IXGBE_DEV_ID_X550EM_A_1G_T:
+ 	case IXGBE_DEV_ID_X550EM_A_1G_T_L:
+ 		hw->phy.type = ixgbe_phy_fw;
+@@ -2158,6 +2172,8 @@ static void ixgbe_init_mac_link_ops_X550em(struct ixgbe_hw *hw)
+ 					ixgbe_set_soft_rate_select_speed;
+ 		break;
+ 	case ixgbe_media_type_copper:
++		if (hw->device_id == IXGBE_DEV_ID_X550EM_X_1G_T)
++			break;
+ 		mac->ops.setup_link = ixgbe_setup_mac_link_t_X550em;
+ 		mac->ops.setup_fc = ixgbe_setup_fc_generic;
+ 		mac->ops.check_link = ixgbe_check_link_t_X550em;
+@@ -2238,6 +2254,7 @@ static s32 ixgbe_get_link_capabilities_X550em(struct ixgbe_hw *hw,
+ 			*speed = IXGBE_LINK_SPEED_1GB_FULL |
+ 				 IXGBE_LINK_SPEED_10GB_FULL;
+ 			break;
++		case ixgbe_phy_ext_1g_t:
+ 		case ixgbe_phy_sgmii:
+ 			*speed = IXGBE_LINK_SPEED_1GB_FULL;
+ 			break;
+@@ -3185,6 +3202,11 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
+ 		phy->ops.setup_link = ixgbe_setup_fw_link;
+ 		phy->ops.reset = ixgbe_reset_phy_fw;
+ 		break;
++	case ixgbe_phy_ext_1g_t:
++		phy->ops.setup_link = NULL;
++		phy->ops.read_reg = NULL;
++		phy->ops.write_reg = NULL;
++		break;
+ 	default:
+ 		break;
+ 	}
+@@ -3888,6 +3910,17 @@ static const struct ixgbe_phy_operations phy_ops_X550EM_x = {
+ 	.write_reg		= &ixgbe_write_phy_reg_generic,
+ };
+ 
++static const struct ixgbe_phy_operations phy_ops_x550em_x_fw = {
++	X550_COMMON_PHY
++	.check_overtemp		= NULL,
++	.init			= ixgbe_init_phy_ops_X550em,
++	.identify		= ixgbe_identify_phy_x550em,
++	.read_reg		= NULL,
++	.write_reg		= NULL,
++	.read_reg_mdi		= NULL,
++	.write_reg_mdi		= NULL,
++};
++
+ static const struct ixgbe_phy_operations phy_ops_x550em_a = {
+ 	X550_COMMON_PHY
+ 	.check_overtemp		= &ixgbe_tn_check_overtemp,
+@@ -3950,6 +3983,16 @@ const struct ixgbe_info ixgbe_X550EM_x_info = {
+ 	.link_ops		= &link_ops_x550em_x,
+ };
+ 
++const struct ixgbe_info ixgbe_x550em_x_fw_info = {
++	.mac			= ixgbe_mac_X550EM_x,
++	.get_invariants		= ixgbe_get_invariants_X550_x_fw,
++	.mac_ops		= &mac_ops_X550EM_x,
++	.eeprom_ops		= &eeprom_ops_X550EM_x,
++	.phy_ops		= &phy_ops_x550em_x_fw,
++	.mbx_ops		= &mbx_ops_generic,
++	.mvals			= ixgbe_mvals_X550EM_x,
++};
++
+ const struct ixgbe_info ixgbe_x550em_a_info = {
+ 	.mac			= ixgbe_mac_x550em_a,
+ 	.get_invariants		= &ixgbe_get_invariants_X550_a,
+-- 
+2.7.4
 
