@@ -1,241 +1,131 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 14 Apr 2017 17:30:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 76466f399ff287dc66d1508a7de92e91dbc2712e
-Message-ID: <58f0969f.qpS2obxA7b1fP4dP%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 14 Apr 2017 09:47:13 -0700
+Subject: [Intel-wired-lan] [next-queue v6 PATCH 5/7] i40e: Add TX and RX
+ support over port netdev's in switchdev mode
+In-Reply-To: <1490833375-2788-6-git-send-email-sridhar.samudrala@intel.com>
+References: <1490833375-2788-1-git-send-email-sridhar.samudrala@intel.com>
+ <1490833375-2788-6-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <CAKgT0UfE5LPb1YPEQpE76JFcGg8Ja_RHaUQDch6P4icyCpsbaQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-76466f399ff287dc66d1508a7de92e91dbc2712e  ixgbevf: Check for RSS key before setting value
+On Wed, Mar 29, 2017 at 5:22 PM, Sridhar Samudrala
+<sridhar.samudrala@intel.com> wrote:
+> In switchdev mode, broadcasts from VFs are received by the PF and passed
+> to corresponding port representor netdev.
+> Any frames sent via port netdevs are sent as directed transmits to the
+> corresponding VFs. To enable directed transmit, skb metadata dst is used
+> to pass the port id and the frame is requeued to call the PFs transmit
+> routine. VF id is used as port id for VFs and PF port id is defined as
+> I40_MAIN_VSI_PORT_ID.
+>
+> Small script to demonstrate inter VF and PF to VF pings in switchdev mode.
+> PF: p4p1, VFs: p4p1_0,p4p1_1 VF Port Reps:p4p1-vf0, p4p1-vf1
+> PF Port rep: p4p1-pf
+>
+> # rmmod i40e; modprobe i40e
+> # devlink dev eswitch set pci/0000:05:00.0 mode switchdev
+> # echo 2 > /sys/class/net/p4p1/device/sriov_numvfs
+> # ip link set p4p1 vf 0 mac 00:11:22:33:44:55
+> # ip link set p4p1 vf 1 mac 00:11:22:33:44:56
+> # rmmod i40evf; modprobe i40evf
+>
+> /* Create 2 namespaces and move the VFs to the corresponding ns */
+> # ip netns add ns0
+> # ip link set p4p1_0 netns ns0
+> # ip netns exec ns0 ip addr add 192.168.1.10/24 dev p4p1_0
+> # ip netns exec ns0 ip link set p4p1_0 up
+> # ip netns add ns1
+> # ip link set p4p1_1 netns ns1
+> # ip netns exec ns1 ip addr add 192.168.1.11/24 dev p4p1_1
+> # ip netns exec ns1 ip link set p4p1_1 up
+>
+> /* bring up pf and port netdevs */
+> # ip addr add 192.168.1.1/24 dev p4p1
+> # ip link set p4p1 up
+> # ip link set p4p1-vf0 up
+> # ip link set p4p1-vf1 up
+> # ip link set p4p1-pf up
+>
+> # ip netns exec ns0 ping -c3 192.168.1.11  /* VF0 -> VF1 */
+> # ip netns exec ns1 ping -c3 192.168.1.10  /* VF1 -> VF0 */
+> # ping -c3 192.168.1.10   /* PF -> VF0 */
+> # ping -c3 192.168.1.11   /* PF -> VF1 */
+>
+> /* VF0 -> IP in same subnet - broadcasts will be seen on p4p1-vf0 & p4p1 */
+> # ip netns exec ns0 ping -c1 -W1 192.168.1.200
+> /* VF1 -> IP in same subnet -  broadcasts will be seen on p4p1-vf1 & p4p1*/
+> # ip netns exec ns0 ping -c1 -W1 192.168.1.200
+> /* port rep VF0 -> IP in same subnet - broadcasts will be seen on p4p1_0 */
+> # ping -I p4p1-vf0 -c1 -W1 192.168.1.200
+> /* port rep VF1 -> IP in same subnet  - broadcasts will be seen on p4p1_1 */
+> # ping -I p4p1-vf1 -c1 -W1 192.168.1.200
+>
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h             |   4 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        |  27 +++-
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 148 ++++++++++++++++++++-
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h        |   2 +
+>  drivers/net/ethernet/intel/i40e/i40e_type.h        |   3 +
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   8 +-
+>  6 files changed, 184 insertions(+), 8 deletions(-)
+>
 
-drivers/net/ethernet/intel/i40e/i40e_main.c:11437:15: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
-drivers/net/ethernet/intel/i40e/i40e_main.c:11438:3: warning: 'vf' may be used uninitialized in this function [-Wmaybe-uninitialized]
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:1376:8: error: 'struct sk_buff' has no member named 'offload_fwd_mark'
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2173:36: error: 'size' undeclared (first use in this function)
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2173:5: error: 'size' undeclared (first use in this function)
+<snip>
 
-Error ids grouped by kconfigs:
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> index ebffca0..86d2510 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> @@ -1302,20 +1302,64 @@ static bool i40e_alloc_mapped_page(struct i40e_ring *rx_ring,
+>  }
+>
+>  /**
+> + * i40e_handle_lpbk_skb - Update skb->dev of a loopback frame
+> + * @rx_ring: rx ring in play
+> + * @skb: packet to send up
+> + **/
+> +static void i40e_handle_lpbk_skb(struct i40e_ring *rx_ring, struct sk_buff *skb)
+> +{
+> +       struct i40e_q_vector *q_vector = rx_ring->q_vector;
+> +       struct i40e_pf *pf = rx_ring->vsi->back;
+> +       struct sk_buff *nskb;
+> +       struct i40e_vf *vf;
+> +       struct ethhdr *eth;
+> +       int vf_id;
+> +
+> +       if ((skb->pkt_type != PACKET_BROADCAST) &&
+> +           (skb->pkt_type != PACKET_MULTICAST) &&
+> +           (skb->pkt_type != PACKET_OTHERHOST))
+> +               return;
+> +
+> +       eth = (struct ethhdr *)skb_mac_header(skb);
+> +
+> +       /* If a loopback packet is received in switchdev mode, clone the skb
+> +        * and pass it to the corresponding port netdev based on the source MAC.
+> +        */
+> +       for (vf_id = 0; vf_id < pf->num_alloc_vfs; vf_id++) {
+> +               vf = &pf->vf[vf_id];
+> +               if (ether_addr_equal(eth->h_source,
+> +                                    vf->default_lan_addr.addr)) {
+> +                       nskb = skb_clone(skb, GFP_ATOMIC);
+> +                       if (!nskb)
+> +                               break;
+> +                       nskb->offload_fwd_mark = 1;
 
-recent_errors
-??? alpha-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? i386-randconfig-x074-201715
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
-??? ia64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? ia64-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? parisc-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? powerpc-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? powerpc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
-??? s390-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? s390-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? sparc64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? sparc64-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? sparc-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? sparc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? tile-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:size-undeclared-(first-use-in-this-function)
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? x86_64-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? x86_64-rhel
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
-??? x86_64-rhel-7.2
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:error:struct-sk_buff-has-no-member-named-offload_fwd_mark
-??? xtensa-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
-??? xtensa-allyesconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:vf-may-be-used-uninitialized-in-this-function
+So this line is causing build errors when switchdev is not enabled.
+This whole function should probably be wrapped in a check to see if
+switchdev support is enabled or not.
 
-elapsed time: 164m
-
-configs tested: 146
-
-i386                     randconfig-a0-201715
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x012-201715
-x86_64                 randconfig-x015-201715
-x86_64                 randconfig-x017-201715
-x86_64                 randconfig-x010-201715
-x86_64                 randconfig-x018-201715
-x86_64                 randconfig-x011-201715
-x86_64                 randconfig-x019-201715
-x86_64                 randconfig-x014-201715
-x86_64                 randconfig-x013-201715
-x86_64                 randconfig-x016-201715
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201715
-i386                     randconfig-s1-201715
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201715
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201715
-i386                     randconfig-i1-201715
-i386                               tinyconfig
-blackfin             BF527-EZKIT-V2_defconfig
-sh                           se7780_defconfig
-i386                   randconfig-x010-201715
-i386                   randconfig-x014-201715
-i386                   randconfig-x016-201715
-i386                   randconfig-x017-201715
-i386                   randconfig-x013-201715
-i386                   randconfig-x019-201715
-i386                   randconfig-x011-201715
-i386                   randconfig-x015-201715
-i386                   randconfig-x012-201715
-i386                   randconfig-x018-201715
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201715
-i386                             allmodconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-x86_64               randconfig-x000-04141421
-x86_64               randconfig-x001-04141421
-x86_64               randconfig-x002-04141421
-x86_64               randconfig-x003-04141421
-x86_64               randconfig-x004-04141421
-x86_64               randconfig-x005-04141421
-x86_64               randconfig-x006-04141421
-x86_64               randconfig-x007-04141421
-x86_64               randconfig-x008-04141421
-x86_64               randconfig-x009-04141421
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                   randconfig-x073-201715
-i386                   randconfig-x077-201715
-i386                   randconfig-x070-201715
-i386                   randconfig-x072-201715
-i386                   randconfig-x076-201715
-i386                   randconfig-x074-201715
-i386                   randconfig-x078-201715
-i386                   randconfig-x075-201715
-i386                   randconfig-x079-201715
-i386                   randconfig-x071-201715
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                 randconfig-x004-201715
-x86_64                 randconfig-x009-201715
-x86_64                 randconfig-x003-201715
-x86_64                 randconfig-x008-201715
-x86_64                 randconfig-x002-201715
-x86_64                 randconfig-x007-201715
-x86_64                 randconfig-x000-201715
-x86_64                 randconfig-x005-201715
-x86_64                 randconfig-x001-201715
-x86_64                 randconfig-x006-201715
-i386                     randconfig-r0-201715
-i386                   randconfig-x006-201715
-i386                   randconfig-x002-201715
-i386                   randconfig-x005-201715
-i386                   randconfig-x007-201715
-i386                   randconfig-x003-201715
-i386                   randconfig-x001-201715
-i386                   randconfig-x008-201715
-i386                   randconfig-x000-201715
-i386                   randconfig-x009-201715
-i386                   randconfig-x004-201715
-
-Thanks,
-Fengguang
+> +                       nskb->dev = vf->port_netdev;
+> +                       napi_gro_receive(&q_vector->napi, nskb);
+> +                       break;
+> +               }
+> +       }
+> +}
+> +
+> +/**
