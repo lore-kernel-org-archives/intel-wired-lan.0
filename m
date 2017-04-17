@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 17 Apr 2017 17:33:35 +0000
-Subject: [Intel-wired-lan] [next PATCH S70 12/12] i40e: make use
-	of	i40e_reset_all_vfs when initializing new VFs
-In-Reply-To: <20170413084555.6962-12-alice.michael@intel.com>
+Date: Mon, 17 Apr 2017 17:34:44 +0000
+Subject: [Intel-wired-lan] [next PATCH S70 02/12] i40e: DCR 287 new
+	AQ	commands
+In-Reply-To: <20170413084555.6962-2-alice.michael@intel.com>
 References: <20170413084555.6962-1-alice.michael@intel.com>
- <20170413084555.6962-12-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040BF3A@ORSMSX101.amr.corp.intel.com>
+ <20170413084555.6962-2-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1040BF4D@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,39 +18,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Thursday, April 13, 2017 1:46 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S70 12/12] i40e: make use of
-> i40e_reset_all_vfs when initializing new VFs
+> Cc: Wu, Jingjing <jingjing.wu@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S70 02/12] i40e: DCR 287 new AQ
+> commands
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Jingjing Wu <jingjing.wu@intel.com>
 > 
-> When allocating a large number of VFs, the driver previously used
-> i40e_reset_vf in a sequence. Just as when performing a normal reset, this
-> accumulates a large amount of delay for handling all of the VFs in sequence.
-> This delay is mainly due to a hardware requirement to wait after initiating a
-> reset on the VF.
+> Add admin queue functions for Pipeline Personalization Profile AQ
+> commands defined in DCR 287:
+>  - Write Recipe Command buffer (Opcode: 0x0270)
+>  - Get Applied Profiles list (Opcode: 0x0271)
 > 
-> We recently added a new function, i40e_reset_all_vfs() which can be used to
-> amortize the delay time, by first triggering all VF resets, then waiting once,
-> and finally cleaning up and allocating the VFs. This is almost as good as truly
-> running the resets in parallel.
-> 
-> In order to avoid sending a spurious reset message to a client interface, we
-> have a check to see whether we've assigned
-> pf->num_alloc_vfs yet. This was originally intended as a way to
-> distinquish the "initialization" case from the regular reset case.
-> 
-> Unfortunately, this means that we can't directly use i40e_reset_all_vfs yet.
-> Lets avoid this check of pf->num_alloc_vfs by replacing it with a proper VSI
-> state bit which we can use instead. This makes the intention much clearer
-> and allows us to re-use the i40e_reset_all_vfs function directly.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Reviewed-by: Williams, Mitch A <mitch.a.williams@intel.com>
-> Change-ID: I694279b37eb6b5a91b6670182d0c15d10244fd6e
+> Signed-off-by: Jingjing Wu <jingjing.wu@intel.com>
+> Change-ID: I558b4145364140f624013af48d4bbf79d21ebb0d
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 10 +++++++---
-> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  1 +
->  2 files changed, 8 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  34 ++++
+>  drivers/net/ethernet/intel/i40e/i40e_common.c      | 212
+> +++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  17 ++
+>  drivers/net/ethernet/intel/i40e/i40e_type.h        |  80 ++++++++
+>  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  34 ++++
+>  drivers/net/ethernet/intel/i40evf/i40e_common.c    | 212
+> +++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40evf/i40e_prototype.h |  17 ++
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h      |  80 ++++++++
+>  8 files changed, 686 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
