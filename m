@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 19 Apr 2017 09:25:57 -0400
-Subject: [Intel-wired-lan] [next PATCH S71 08/10] i40e: remove
-	hw_disabled_flags in favor of using separate flag bits
+Date: Wed, 19 Apr 2017 09:25:52 -0400
+Subject: [Intel-wired-lan] [next PATCH S71 03/10] i40e: amortize wait time
+	when disabling lots of VFs
 In-Reply-To: <20170419132559.20459-1-alice.michael@intel.com>
 References: <20170419132559.20459-1-alice.michael@intel.com>
-Message-ID: <20170419132559.20459-8-alice.michael@intel.com>
+Message-ID: <20170419132559.20459-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,276 +13,46 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-The hw_disabled_flags field was added as a way of signifying that
-a feature was automatically or temporarily disabled. However, we
-actually only use this for FDir features. Replace its use with new
-_AUTO_DISABLED flags instead. This is more readable, because you aren't
-setting an *_ENABLED flag to *disable* the feature.
-
-Additionally, clean up a few areas where we used these bits. First, we
-don't really need to set the auto-disable flag for ATR if we're fully
-disabling the feature via ethtool.
-
-Second, we should always clear the auto-disable bits incase they somehow
-got set when the feature was disabled. However, avoid displaying
-a message that we've re-enabled the feature.
-
-Third, we shouldn't be re-enabling ATR in the SB ntuple add flow,
-because it might have been disabled due to space constraints. Instead,
-we should just wait for the fdir_check_and_reenable to be called by the
-watchdog.
-
-Overall, this change allows us to simplify some code by removing an
-extra field we didn't need, and the result should make it more clear as
-to what we're actually doing with these flags.
+Just as we do in i40e_reset_all_vfs, save some time when freeing VFs by
+amortizing the wait time for stopping queues. We can use
+i40e_vsi_stop_rings_no_wait() to begin the process of stopping all the
+VF rings at once. Then, once we've started the process on each VF we can
+begin waiting for the VFs to stop. This helps reduce the total wait time
+by a large factor.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h         |  9 +----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  6 +--
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 53 +++++++++++++-------------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 22 ++++-------
- 4 files changed, 38 insertions(+), 52 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 6eb21ab..cdde3cc2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -408,6 +408,8 @@ struct i40e_pf {
- #define I40E_FLAG_DCB_ENABLED			BIT_ULL(20)
- #define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(21)
- #define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
-+#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(23)
-+#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(24)
- #define I40E_FLAG_PTP				BIT_ULL(25)
- #define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
- #define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(27)
-@@ -440,13 +442,6 @@ struct i40e_pf {
- #define I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE		BIT_ULL(57)
- #define I40E_FLAG_LEGACY_RX			BIT_ULL(58)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 74977a2..2a47a64 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1194,9 +1194,21 @@ void i40e_free_vfs(struct i40e_pf *pf)
+ 		usleep_range(1000, 2000);
  
--	/* Tracks features that are disabled due to hw limitations.
--	 * If a bit is set here, it means that the corresponding
--	 * bit in the 'flags' field is cleared i.e that feature
--	 * is disabled
--	 */
--	u64 hw_disabled_flags;
--
- 	struct i40e_client_instance *cinst;
- 	bool stat_offsets_loaded;
- 	struct i40e_hw_port_stats stats;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index b1064c6..7a8eb48 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -3643,7 +3643,7 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
- 	if (!(pf->flags & I40E_FLAG_FD_SB_ENABLED))
- 		return -EOPNOTSUPP;
+ 	i40e_notify_client_of_vf_enable(pf, 0);
+-	for (i = 0; i < pf->num_alloc_vfs; i++)
++
++	/* Amortize wait time by stopping all VFs at the same time */
++	for (i = 0; i < pf->num_alloc_vfs; i++) {
++		if (test_bit(I40E_VF_STATE_INIT, &pf->vf[i].vf_states))
++			continue;
++
++		i40e_vsi_stop_rings_no_wait(pf->vsi[pf->vf[i].lan_vsi_idx]);
++	}
++
++	for (i = 0; i < pf->num_alloc_vfs; i++) {
+ 		if (test_bit(I40E_VF_STATE_INIT, &pf->vf[i].vf_states))
+-			i40e_vsi_stop_rings(pf->vsi[pf->vf[i].lan_vsi_idx]);
++			continue;
++
++		i40e_vsi_wait_queues_disabled(pf->vsi[pf->vf[i].lan_vsi_idx]);
++	}
  
--	if (pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED)
-+	if (pf->flags & I40E_FLAG_FD_SB_AUTO_DISABLED)
- 		return -ENOSPC;
- 
- 	if (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state) ||
-@@ -4086,12 +4086,12 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	/* Flush current ATR settings if ATR was disabled */
- 	if ((changed_flags & I40E_FLAG_FD_ATR_ENABLED) &&
- 	    !(pf->flags & I40E_FLAG_FD_ATR_ENABLED)) {
--		pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
-+		pf->flags |= I40E_FLAG_FD_ATR_AUTO_DISABLED;
- 		set_bit(__I40E_FD_FLUSH_REQUESTED, pf->state);
- 	}
- 
- 	/* Only allow ATR evict on hardware that is capable of handling it */
--	if (pf->hw_disabled_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)
-+	if (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)
- 		pf->flags &= ~I40E_FLAG_HW_ATR_EVICT_CAPABLE;
- 
- 	if (changed_flags & I40E_FLAG_TRUE_PROMISC_SUPPORT) {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index e2610eb..dd9d727 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1050,13 +1050,13 @@ static void i40e_update_pf_stats(struct i40e_pf *pf)
- 			   &osd->rx_lpi_count, &nsd->rx_lpi_count);
- 
- 	if (pf->flags & I40E_FLAG_FD_SB_ENABLED &&
--	    !(pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED))
-+	    !(pf->flags & I40E_FLAG_FD_SB_AUTO_DISABLED))
- 		nsd->fd_sb_status = true;
- 	else
- 		nsd->fd_sb_status = false;
- 
- 	if (pf->flags & I40E_FLAG_FD_ATR_ENABLED &&
--	    !(pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED))
-+	    !(pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED))
- 		nsd->fd_atr_status = true;
- 	else
- 		nsd->fd_atr_status = false;
-@@ -6078,31 +6078,30 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
- 	if (test_bit(__I40E_FD_FLUSH_REQUESTED, pf->state))
- 		return;
- 
--	/* Check if, FD SB or ATR was auto disabled and if there is enough room
--	 * to re-enable
--	 */
-+	/* Check if we have enough room to re-enable FDir SB capability. */
- 	fcnt_prog = i40e_get_global_fd_count(pf);
- 	fcnt_avail = pf->fdir_pf_filter_count;
- 	if ((fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM)) ||
- 	    (pf->fd_add_err == 0) ||
- 	    (i40e_get_current_atr_cnt(pf) < pf->fd_atr_cnt)) {
--		if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
--		    (pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED)) {
--			pf->hw_disabled_flags &= ~I40E_FLAG_FD_SB_ENABLED;
--			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+		if (pf->flags & I40E_FLAG_FD_SB_AUTO_DISABLED) {
-+			pf->flags &= ~I40E_FLAG_FD_SB_AUTO_DISABLED;
-+			if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
-+			    (I40E_DEBUG_FD & pf->hw.debug_mask))
- 				dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
- 		}
- 	}
- 
--	/* Wait for some more space to be available to turn on ATR. We also
--	 * must check that no existing ntuple rules for TCP are in effect
-+	/* We should wait for even more space before re-enabling ATR.
-+	 * Additionally, we cannot enable ATR as long as we still have TCP SB
-+	 * rules active.
- 	 */
--	if (fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM * 2)) {
--		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
--		    (pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED) &&
--		    (pf->fd_tcp4_filter_cnt == 0)) {
--			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
--			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+	if ((fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM_FOR_ATR)) &&
-+	    (pf->fd_tcp4_filter_cnt == 0)) {
-+		if (pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED) {
-+			pf->flags &= ~I40E_FLAG_FD_ATR_AUTO_DISABLED;
-+			if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
-+			    (I40E_DEBUG_FD & pf->hw.debug_mask))
- 				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table and there are no conflicting ntuple rules\n");
- 		}
- 	}
-@@ -6153,7 +6152,7 @@ static void i40e_fdir_flush_and_replay(struct i40e_pf *pf)
- 	}
- 
- 	pf->fd_flush_timestamp = jiffies;
--	pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
-+	pf->flags |= I40E_FLAG_FD_ATR_AUTO_DISABLED;
- 	/* flush all filters */
- 	wr32(&pf->hw, I40E_PFQF_CTL_1,
- 	     I40E_PFQF_CTL_1_CLEARFDTABLE_MASK);
-@@ -6173,7 +6172,7 @@ static void i40e_fdir_flush_and_replay(struct i40e_pf *pf)
- 		/* replay sideband filters */
- 		i40e_fdir_filter_restore(pf->vsi[pf->lan_vsi]);
- 		if (!disable_atr && !pf->fd_tcp4_filter_cnt)
--			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
-+			pf->flags &= ~I40E_FLAG_FD_ATR_AUTO_DISABLED;
- 		clear_bit(__I40E_FD_FLUSH_REQUESTED, pf->state);
- 		if (I40E_DEBUG_FD & pf->hw.debug_mask)
- 			dev_info(&pf->pdev->dev, "FD Filter table flushed and FD-SB replayed.\n");
-@@ -8822,9 +8821,9 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 		    (pf->hw.aq.api_min_ver > 4))) {
- 		/* Supported in FW API version higher than 1.4 */
- 		pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
--		pf->hw_disabled_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-+		pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
- 	} else {
--		pf->hw_disabled_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-+		pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
- 	}
- 
- 	pf->eeprom_version = 0xDEAD;
-@@ -8884,16 +8883,16 @@ bool i40e_set_ntuple(struct i40e_pf *pf, netdev_features_t features)
- 			need_reset = true;
- 			i40e_fdir_filter_exit(pf);
- 		}
--		pf->flags &= ~I40E_FLAG_FD_SB_ENABLED;
--		pf->hw_disabled_flags &= ~I40E_FLAG_FD_SB_ENABLED;
-+		pf->flags &= ~(I40E_FLAG_FD_SB_ENABLED |
-+			       I40E_FLAG_FD_SB_AUTO_DISABLED);
- 		/* reset fd counters */
- 		pf->fd_add_err = 0;
- 		pf->fd_atr_cnt = 0;
- 		/* if ATR was auto disabled it can be re-enabled. */
--		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
--		    (pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED)) {
--			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
--			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+		if (pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED) {
-+			pf->flags &= ~I40E_FLAG_FD_ATR_AUTO_DISABLED;
-+			if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
-+			    (I40E_DEBUG_FD & pf->hw.debug_mask))
- 				dev_info(&pf->pdev->dev, "ATR re-enabled.\n");
- 		}
- 	}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index a975754..1d39825 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -333,15 +333,9 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
- 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
- 		    I40E_DEBUG_FD & pf->hw.debug_mask)
- 			dev_info(&pf->pdev->dev, "Forcing ATR off, sideband rules for TCP/IPv4 flow being applied\n");
--		pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
-+		pf->flags |= I40E_FLAG_FD_ATR_AUTO_DISABLED;
- 	} else {
- 		pf->fd_tcp4_filter_cnt--;
--		if (pf->fd_tcp4_filter_cnt == 0) {
--			if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
--			    I40E_DEBUG_FD & pf->hw.debug_mask)
--				dev_info(&pf->pdev->dev, "ATR re-enabled due to no sideband TCP/IPv4 rules\n");
--			pf->hw_disabled_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
--		}
- 	}
- 
- 	return 0;
-@@ -597,8 +591,8 @@ static void i40e_fd_handle_status(struct i40e_ring *rx_ring,
- 		pf->fd_atr_cnt = i40e_get_current_atr_cnt(pf);
- 
- 		if ((rx_desc->wb.qword0.hi_dword.fd_id == 0) &&
--		    (pf->hw_disabled_flags & I40E_FLAG_FD_SB_ENABLED)) {
--			pf->hw_disabled_flags |= I40E_FLAG_FD_ATR_ENABLED;
-+		    pf->flags & I40E_FLAG_FD_SB_AUTO_DISABLED) {
-+			pf->flags |= I40E_FLAG_FD_ATR_AUTO_DISABLED;
- 			set_bit(__I40E_FD_FLUSH_REQUESTED, pf->state);
- 		}
- 
-@@ -611,12 +605,10 @@ static void i40e_fd_handle_status(struct i40e_ring *rx_ring,
- 		 */
- 		if (fcnt_prog >= (fcnt_avail - I40E_FDIR_BUFFER_FULL_MARGIN)) {
- 			if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
--			    !(pf->hw_disabled_flags &
--				     I40E_FLAG_FD_SB_ENABLED)) {
-+			    !(pf->flags & I40E_FLAG_FD_SB_AUTO_DISABLED)) {
-+				pf->flags |= I40E_FLAG_FD_SB_AUTO_DISABLED;
- 				if (I40E_DEBUG_FD & pf->hw.debug_mask)
- 					dev_warn(&pdev->dev, "FD filter space full, new ntuple rules will not be added\n");
--				pf->hw_disabled_flags |=
--							I40E_FLAG_FD_SB_ENABLED;
- 			}
- 		}
- 	} else if (error == BIT(I40E_RX_PROG_STATUS_DESC_NO_FD_ENTRY_SHIFT)) {
-@@ -2311,7 +2303,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	if (!(pf->flags & I40E_FLAG_FD_ATR_ENABLED))
- 		return;
- 
--	if ((pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED))
-+	if (pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED)
- 		return;
- 
- 	/* if sampling is disabled do nothing */
-@@ -2345,7 +2337,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	th = (struct tcphdr *)(hdr.network + hlen);
- 
- 	/* Due to lack of space, no more new filters can be programmed */
--	if (th->syn && (pf->hw_disabled_flags & I40E_FLAG_FD_ATR_ENABLED))
-+	if (th->syn && (pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED))
- 		return;
- 	if (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) {
- 		/* HW ATR eviction will take care of removing filters on FIN
+ 	/* Disable IOV before freeing resources. This lets any VF drivers
+ 	 * running in the host get themselves cleaned up before we yank
 -- 
 2.9.3
 
