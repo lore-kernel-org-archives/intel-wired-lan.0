@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 20 Apr 2017 23:01:28 +0000
-Subject: [Intel-wired-lan] [next PATCH S71 05/10] i40e: separate PF and
- VSI	state flags
-In-Reply-To: <20170419132559.20459-5-alice.michael@intel.com>
+Date: Thu, 20 Apr 2017 23:02:44 +0000
+Subject: [Intel-wired-lan] [next PATCH S71 07/10] i40evf: remove
+ needless	min_t() on num_online_cpus()*2
+In-Reply-To: <20170419132559.20459-7-alice.michael@intel.com>
 References: <20170419132559.20459-1-alice.michael@intel.com>
- <20170419132559.20459-5-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA1171@ORSMSX104.amr.corp.intel.com>
+ <20170419132559.20459-7-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA1181@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,31 +18,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, April 19, 2017 6:26 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S71 05/10] i40e: separate PF and VSI
-> state flags
+> Subject: [Intel-wired-lan] [next PATCH S71 07/10] i40evf: remove needless
+> min_t() on num_online_cpus()*2
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Avoid using the same named flags for both vsi->state and pf->state. This
-> makes code review easier, as it is more likely that future authors will use the
-> correct state field when checking bits. Previous commits already found issues
-> with at least one check, and possibly others may be incorrect.
+> We already set pairs to the value of adapter->num_active_queues. This
+> value is limited by vsi_res->num_queue_pairs and num_online_cpus(). This
+> means that pairs by definition is already smaller than num_online_cpus()*2,
+> so we don't even need to bother with this check.
 > 
-> This reduces confusion as it is more clear what each flag represents, and
-> which flags are valid for which state field.
+> Lets just remove it and update the comment.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h          |  12 ++-
->  drivers/net/ethernet/intel/i40e/i40e_client.c   |   4 +-
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c  |   4 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 104 ++++++++++++---------
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c     |   8 +-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |   8 +-
->  drivers/net/ethernet/intel/i40evf/i40evf.h      |   7 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c |  10 +--
->  8 files changed, 83 insertions(+), 74 deletions(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
