@@ -1,11 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 20 Apr 2017 23:03:42 +0000
-Subject: [Intel-wired-lan] [next PATCH S71 09/10] i40evf:
-	remove	I40E_FLAG_FDIR_ATR_ENABLED
-In-Reply-To: <20170419132559.20459-9-alice.michael@intel.com>
-References: <20170419132559.20459-1-alice.michael@intel.com>
- <20170419132559.20459-9-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA11A1@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 20 Apr 2017 23:05:10 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] i40evf: hide unused variable
+In-Reply-To: <20170419173008.3648215-1-arnd@arndb.de>
+References: <20170419173008.3648215-1-arnd@arndb.de>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA11B5@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,26 +12,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Wednesday, April 19, 2017 6:26 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> Behalf Of Arnd Bergmann
+> Sent: Wednesday, April 19, 2017 10:30 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>; linux-kernel at vger.kernel.org; Joe
+> Perches <joe@perches.com>; netdev at vger.kernel.org; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S71 09/10] i40evf: remove
-> I40E_FLAG_FDIR_ATR_ENABLED
+> Subject: [Intel-wired-lan] [PATCH net-next] i40evf: hide unused variable
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> On architectures with larger pages, we get a warning about an unused
+> variable:
 > 
-> The flag used by the common code and PF code is
-> I40E_FLAG_FD_ATR_ENABLED, not *FDIR*. It turns out none of the txrx code
-> actually shared with the VF driver actually checks the ATR flag. This is made
-> even more obvious by the typo in the VF header file.
+> drivers/net/ethernet/intel/i40evf/i40evf_main.c: In function
+> 'i40evf_configure_rx':
+> drivers/net/ethernet/intel/i40evf/i40evf_main.c:690:21: error: unused
+> variable 'netdev' [-Werror=unused-variable]
 > 
-> Let's just remove the flag from the VF driver since it's not needed.
+> This moves the declaration into the #ifdef to avoid the warning.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Fixes: dab86afdbbd1 ("i40e/i40evf: Change the way we limit the maximum
+> frame size for Rx")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > ---
->  drivers/net/ethernet/intel/i40evf/i40evf.h | 1 -
->  1 file changed, 1 deletion(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
