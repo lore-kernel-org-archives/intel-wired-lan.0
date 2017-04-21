@@ -1,39 +1,66 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 21 Apr 2017 18:13:46 +0000
-Subject: [Intel-wired-lan] [next PATCH S71 10/10] i40evf: allocate
- queues	before we setup the interrupts and q_vectors
-In-Reply-To: <20170419132559.20459-10-alice.michael@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Fri, 21 Apr 2017 20:15:06 +0000
+Subject: [Intel-wired-lan] [next PATCH S71 05/10] i40e: separate PF and
+ VSI	state flags
+In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA1171@ORSMSX104.amr.corp.intel.com>
 References: <20170419132559.20459-1-alice.michael@intel.com>
- <20170419132559.20459-10-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA12B2@ORSMSX104.amr.corp.intel.com>
+ <20170419132559.20459-5-alice.michael@intel.com>
+ <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA1171@ORSMSX104.amr.corp.intel.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5857E0A9BA@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+
+
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Wednesday, April 19, 2017 6:26 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S71 10/10] i40evf: allocate queues
-> before we setup the interrupts and q_vectors
+> Behalf Of Bowers, AndrewX
+> Sent: Thursday, April 20, 2017 4:01 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [next PATCH S71 05/10] i40e: separate PF and VSI
+> state flags
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> > Behalf Of Alice Michael
+> > Sent: Wednesday, April 19, 2017 6:26 AM
+> > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> > lan at lists.osuosl.org
+> > Subject: [Intel-wired-lan] [next PATCH S71 05/10] i40e: separate PF and VSI
+> > state flags
+> >
+> > From: Jacob Keller <jacob.e.keller@intel.com>
+> >
+> > Avoid using the same named flags for both vsi->state and pf->state. This
+> > makes code review easier, as it is more likely that future authors will use the
+> > correct state field when checking bits. Previous commits already found issues
+> > with at least one check, and possibly others may be incorrect.
+> >
+> > This reduces confusion as it is more clear what each flag represents, and
+> > which flags are valid for which state field.
+> >
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > ---
+> >  drivers/net/ethernet/intel/i40e/i40e.h          |  12 ++-
+> >  drivers/net/ethernet/intel/i40e/i40e_client.c   |   4 +-
+> >  drivers/net/ethernet/intel/i40e/i40e_debugfs.c  |   4 +-
+> >  drivers/net/ethernet/intel/i40e/i40e_main.c     | 104 ++++++++++++---------
+> > ---
+> >  drivers/net/ethernet/intel/i40e/i40e_txrx.c     |   8 +-
+> >  drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |   8 +-
+> >  drivers/net/ethernet/intel/i40evf/i40evf.h      |   7 +-
+> >  drivers/net/ethernet/intel/i40evf/i40evf_main.c |  10 +--
+> >  8 files changed, 83 insertions(+), 74 deletions(-)
 > 
-> This matches the ordering of how we free stuff during reset and remove.
-> It also makes logical sense because we set the interrupts based on the
-> number of queues. Currently this doesn't really matter in practice.
-> However a future patch moves the assignment of num_active_queues into
-> i40evf_alloc_queues, which is required by i40evf_set_interrupt_capability.
+> Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 18 +++++++++---------
->  1 file changed, 9 insertions(+), 9 deletions(-)
+> 
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+This patch is incorrect. I will send a v2, and I will try to make it fit within the same place in the current dev-queue as it does now.
 
+Thanks,
+Jake
 
