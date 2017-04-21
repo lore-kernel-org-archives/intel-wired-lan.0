@@ -1,190 +1,535 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 21 Apr 2017 13:38:04 -0700
-Subject: [Intel-wired-lan] [PATCH] fixup! i40e: separate PF and VSI state
-	flags
-Message-ID: <20170421203805.11445-1-jacob.e.keller@intel.com>
+Date: Fri, 21 Apr 2017 13:38:05 -0700
+Subject: [Intel-wired-lan] [PATCH] i40e: separate PF and VSI state flags
+In-Reply-To: <20170421203805.11445-1-jacob.e.keller@intel.com>
+References: <20170421203805.11445-1-jacob.e.keller@intel.com>
+Message-ID: <20170421203805.11445-2-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This can be squashed into 1a9768597ef7 ("i40e: separate PF and VSI state
-flags", 2017-04-21) and resolves some incorrect changes to the pf->state
-flags in that commit.
+Avoid using the same named flags for both vsi->state and pf->state. This
+makes code review easier, as it is more likely that future authors will
+use the correct state field when checking bits. Previous commits already
+found issues with at least one check, and possibly others may be
+incorrect.
+
+This reduces confusion as it is more clear what each flag represents,
+and which flags are valid for which state field.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-I provided this as a convenience to see the interdiff between the two
-versions of the patch. For this to apply you will have one rebase
-conflict due to the following patch where we use DECLARE_BITMAP which
-you need to resolve, the solution is make sure that we still dont' use
-__I40E_VSI_DOWN with pf->state.
+This version has the fixup! already squashed in for convenience. Again
+it replaces the patch with the same title on the queue.
 
- drivers/net/ethernet/intel/i40e/i40e_main.c | 38 ++++++++++++++---------------
- 1 file changed, 19 insertions(+), 19 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h          | 12 ++++-
+ drivers/net/ethernet/intel/i40e/i40e_client.c   |  4 +-
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c  |  4 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 66 ++++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c     |  8 +--
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |  8 +--
+ drivers/net/ethernet/intel/i40evf/i40evf.h      |  7 ++-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 10 ++--
+ 8 files changed, 64 insertions(+), 55 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 0f22c03ec726..ac2a4850a30b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -125,7 +125,6 @@ enum i40e_state_t {
+ 	__I40E_CONFIG_BUSY,
+ 	__I40E_CONFIG_DONE,
+ 	__I40E_DOWN,
+-	__I40E_NEEDS_RESTART,
+ 	__I40E_SERVICE_SCHED,
+ 	__I40E_ADMINQ_EVENT_PENDING,
+ 	__I40E_MDD_EVENT_PENDING,
+@@ -138,7 +137,6 @@ enum i40e_state_t {
+ 	__I40E_GLOBAL_RESET_REQUESTED,
+ 	__I40E_EMP_RESET_REQUESTED,
+ 	__I40E_EMP_RESET_INTR_RECEIVED,
+-	__I40E_FILTER_OVERFLOW_PROMISC,
+ 	__I40E_SUSPENDED,
+ 	__I40E_PTP_TX_IN_PROGRESS,
+ 	__I40E_BAD_EEPROM,
+@@ -149,6 +147,16 @@ enum i40e_state_t {
+ 	__I40E_VF_DISABLE,
+ };
+ 
++/* VSI state flags */
++enum i40e_vsi_state_t {
++	__I40E_VSI_DOWN,
++	__I40E_VSI_NEEDS_RESTART,
++	__I40E_VSI_SYNCING_FILTERS,
++	__I40E_VSI_OVERFLOW_PROMISC,
++	__I40E_VSI_REINIT_REQUESTED,
++	__I40E_VSI_DOWN_REQUESTED,
++};
++
+ enum i40e_interrupt_policy {
+ 	I40E_INTERRUPT_BEST_CASE,
+ 	I40E_INTERRUPT_MEDIUM,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+index eb2896fd52a6..75e528a6943f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+@@ -382,7 +382,7 @@ void i40e_client_subtask(struct i40e_pf *pf)
+ 	 * the netdev is up, then open the client.
+ 	 */
+ 	if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state)) {
+-		if (!test_bit(__I40E_DOWN, &vsi->state) &&
++		if (!test_bit(__I40E_VSI_DOWN, &vsi->state) &&
+ 		    client->ops && client->ops->open) {
+ 			set_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state);
+ 			ret = client->ops->open(&cdev->lan_info, client);
+@@ -397,7 +397,7 @@ void i40e_client_subtask(struct i40e_pf *pf)
+ 	/* Likewise for client close. If the client is up, but the netdev
+ 	 * is down, then close the client.
+ 	 */
+-		if (test_bit(__I40E_DOWN, &vsi->state) &&
++		if (test_bit(__I40E_VSI_DOWN, &vsi->state) &&
+ 		    client->ops && client->ops->close) {
+ 			clear_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state);
+ 			client->ops->close(&cdev->lan_info, client, false);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index a3d7ec62b76c..5408dbf04a00 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -174,7 +174,7 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
+ 	}
+ 	dev_info(&pf->pdev->dev, "    active_filters %u, promisc_threshold %u, overflow promisc %s\n",
+ 		 vsi->active_filters, vsi->promisc_threshold,
+-		 (test_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state) ?
++		 (test_bit(__I40E_VSI_OVERFLOW_PROMISC, &vsi->state) ?
+ 		  "ON" : "OFF"));
+ 	nstat = i40e_get_vsi_stats_struct(vsi);
+ 	dev_info(&pf->pdev->dev,
+@@ -1706,7 +1706,7 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
+ 		} else if (!vsi->netdev) {
+ 			dev_info(&pf->pdev->dev, "tx_timeout: no netdev for VSI %d\n",
+ 				 vsi_seid);
+-		} else if (test_bit(__I40E_DOWN, &vsi->state)) {
++		} else if (test_bit(__I40E_VSI_DOWN, &vsi->state)) {
+ 			dev_info(&pf->pdev->dev, "tx_timeout: VSI %d not UP\n",
+ 				 vsi_seid);
+ 		} else if (rtnl_trylock()) {
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 55bce4110773..c30f2bc65451 100644
+index 20850a646e6c..c30f2bc65451 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -295,7 +295,7 @@ struct i40e_vsi *i40e_find_vsi_from_id(struct i40e_pf *pf, u16 id)
-  **/
- void i40e_service_event_schedule(struct i40e_pf *pf)
- {
--	if (!test_bit(__I40E_VSI_DOWN, &pf->state) &&
-+	if (!test_bit(__I40E_DOWN, &pf->state) &&
- 	    !test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state))
- 		queue_work(i40e_wq, &pf->service_task);
- }
-@@ -3611,7 +3611,7 @@ static irqreturn_t i40e_intr(int irq, void *data)
- 		 * this is not a performance path and napi_schedule()
- 		 * can deal with rescheduling.
- 		 */
--		if (!test_bit(__I40E_VSI_DOWN, &pf->state))
-+		if (!test_bit(__I40E_DOWN, &pf->state))
- 			napi_schedule_irqoff(&q_vector->napi);
- 	}
- 
-@@ -3687,7 +3687,7 @@ static irqreturn_t i40e_intr(int irq, void *data)
- enable_intr:
- 	/* re-enable interrupt causes */
- 	wr32(hw, I40E_PFINT_ICR0_ENA, ena_mask);
--	if (!test_bit(__I40E_VSI_DOWN, &pf->state)) {
-+	if (!test_bit(__I40E_DOWN, &pf->state)) {
- 		i40e_service_event_schedule(pf);
- 		i40e_irq_dynamic_enable_icr0(pf, false);
- 	}
-@@ -5790,7 +5790,7 @@ void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags, bool lock_acquired)
- 					       &vsi->state))
- 				i40e_vsi_reinit_locked(pf->vsi[v]);
- 		}
--	} else if (reset_flags & BIT_ULL(__I40E_VSI_DOWN_REQUESTED)) {
-+	} else if (reset_flags & BIT_ULL(__I40E_DOWN_REQUESTED)) {
- 		int v;
- 
- 		/* Find the VSI(s) that needs to be brought down */
-@@ -6204,7 +6204,7 @@ static void i40e_fdir_reinit_subtask(struct i40e_pf *pf)
- {
- 
- 	/* if interface is down do nothing */
--	if (test_bit(__I40E_VSI_DOWN, &pf->state))
-+	if (test_bit(__I40E_DOWN, &pf->state))
- 		return;
- 
- 	if (test_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state))
-@@ -6345,7 +6345,7 @@ static void i40e_watchdog_subtask(struct i40e_pf *pf)
+@@ -422,7 +422,7 @@ static void i40e_get_netdev_stats_struct(struct net_device *netdev,
+ 	struct rtnl_link_stats64 *vsi_stats = i40e_get_vsi_stats_struct(vsi);
  	int i;
  
- 	/* if interface is down do nothing */
--	if (test_bit(__I40E_VSI_DOWN, &pf->state) ||
-+	if (test_bit(__I40E_DOWN, &pf->state) ||
+-	if (test_bit(__I40E_DOWN, &vsi->state))
++	if (test_bit(__I40E_VSI_DOWN, &vsi->state))
+ 		return;
+ 
+ 	if (!vsi->tx_rings)
+@@ -753,7 +753,7 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
+ 	u64 tx_p, tx_b;
+ 	u16 q;
+ 
+-	if (test_bit(__I40E_DOWN, &vsi->state) ||
++	if (test_bit(__I40E_VSI_DOWN, &vsi->state) ||
  	    test_bit(__I40E_CONFIG_BUSY, &pf->state))
  		return;
  
-@@ -6400,9 +6400,9 @@ static void i40e_reset_subtask(struct i40e_pf *pf)
- 		reset_flags |= BIT(__I40E_GLOBAL_RESET_REQUESTED);
- 		clear_bit(__I40E_GLOBAL_RESET_REQUESTED, &pf->state);
- 	}
--	if (test_bit(__I40E_VSI_DOWN_REQUESTED, &pf->state)) {
--		reset_flags |= BIT(__I40E_VSI_DOWN_REQUESTED);
--		clear_bit(__I40E_VSI_DOWN_REQUESTED, &pf->state);
-+	if (test_bit(__I40E_DOWN_REQUESTED, &pf->state)) {
-+		reset_flags |= BIT(__I40E_DOWN_REQUESTED);
-+		clear_bit(__I40E_DOWN_REQUESTED, &pf->state);
+@@ -1346,7 +1346,7 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
+ 		 * to failed, so we don't bother to try sending the filter
+ 		 * to the hardware.
+ 		 */
+-		if (test_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state))
++		if (test_bit(__I40E_VSI_OVERFLOW_PROMISC, &vsi->state))
+ 			f->state = I40E_FILTER_FAILED;
+ 		else
+ 			f->state = I40E_FILTER_NEW;
+@@ -1525,7 +1525,7 @@ static int i40e_set_mac(struct net_device *netdev, void *p)
+ 		return 0;
  	}
  
- 	/* If there's a recovery already waiting, it takes
-@@ -6416,7 +6416,7 @@ static void i40e_reset_subtask(struct i40e_pf *pf)
+-	if (test_bit(__I40E_DOWN, &vsi->back->state) ||
++	if (test_bit(__I40E_VSI_DOWN, &vsi->back->state) ||
+ 	    test_bit(__I40E_RESET_RECOVERY_PENDING, &vsi->back->state))
+ 		return -EADDRNOTAVAIL;
  
- 	/* If we're already down or resetting, just bail */
- 	if (reset_flags &&
--	    !test_bit(__I40E_VSI_DOWN, &pf->state) &&
-+	    !test_bit(__I40E_DOWN, &pf->state) &&
- 	    !test_bit(__I40E_CONFIG_BUSY, &pf->state)) {
- 		rtnl_lock();
- 		i40e_do_reset(pf, reset_flags, true);
-@@ -7003,7 +7003,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 	u32 val;
- 	int v;
+@@ -1920,7 +1920,7 @@ void i40e_aqc_add_filters(struct i40e_vsi *vsi, const char *vsi_name,
  
--	if (test_bit(__I40E_VSI_DOWN, &pf->state))
-+	if (test_bit(__I40E_DOWN, &pf->state))
- 		goto clear_recovery;
- 	dev_dbg(&pf->pdev->dev, "Rebuilding internal switch\n");
+ 	if (fcnt != num_add) {
+ 		*promisc_changed = true;
+-		set_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state);
++		set_bit(__I40E_VSI_OVERFLOW_PROMISC, &vsi->state);
+ 		dev_warn(&vsi->back->pdev->dev,
+ 			 "Error %s adding RX filters on %s, promiscuous mode forced on\n",
+ 			 i40e_aq_str(hw, aq_err),
+@@ -2003,7 +2003,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 	struct i40e_aqc_add_macvlan_element_data *add_list;
+ 	struct i40e_aqc_remove_macvlan_element_data *del_list;
  
-@@ -9769,7 +9769,7 @@ int i40e_vsi_release(struct i40e_vsi *vsi)
- 		return -ENODEV;
- 	}
- 	if (vsi == pf->vsi[pf->lan_vsi] &&
--	    !test_bit(__I40E_VSI_DOWN, &pf->state)) {
-+	    !test_bit(__I40E_DOWN, &pf->state)) {
- 		dev_info(&pf->pdev->dev, "Can't remove PF VSI\n");
- 		return -ENODEV;
- 	}
-@@ -11005,7 +11005,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	}
- 	pf->next_vsi = 0;
- 	pf->pdev = pdev;
--	set_bit(__I40E_VSI_DOWN, &pf->state);
-+	set_bit(__I40E_DOWN, &pf->state);
+-	while (test_and_set_bit(__I40E_CONFIG_BUSY, &vsi->state))
++	while (test_and_set_bit(__I40E_VSI_SYNCING_FILTERS, &vsi->state))
+ 		usleep_range(1000, 2000);
+ 	pf = vsi->back;
  
- 	hw = &pf->hw;
- 	hw->back = pf;
-@@ -11295,7 +11295,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	 * before setting up the misc vector or we get a race and the vector
- 	 * ends up disabled forever.
+@@ -2139,7 +2139,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 
+ 		num_add = 0;
+ 		hlist_for_each_entry_safe(new, h, &tmp_add_list, hlist) {
+-			if (test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
++			if (test_bit(__I40E_VSI_OVERFLOW_PROMISC,
+ 				     &vsi->state)) {
+ 				new->state = I40E_FILTER_FAILED;
+ 				continue;
+@@ -2227,20 +2227,20 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 	 * safely exit if we didn't just enter, we no longer have any failed
+ 	 * filters, and we have reduced filters below the threshold value.
  	 */
--	clear_bit(__I40E_VSI_DOWN, &pf->state);
-+	clear_bit(__I40E_DOWN, &pf->state);
+-	if (test_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state) &&
++	if (test_bit(__I40E_VSI_OVERFLOW_PROMISC, &vsi->state) &&
+ 	    !promisc_changed && !failed_filters &&
+ 	    (vsi->active_filters < vsi->promisc_threshold)) {
+ 		dev_info(&pf->pdev->dev,
+ 			 "filter logjam cleared on %s, leaving overflow promiscuous mode\n",
+ 			 vsi_name);
+-		clear_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state);
++		clear_bit(__I40E_VSI_OVERFLOW_PROMISC, &vsi->state);
+ 		promisc_changed = true;
+ 		vsi->promisc_threshold = 0;
+ 	}
  
- 	/* In case of MSIX we are going to setup the misc vector right here
- 	 * to handle admin queue events etc. In case of legacy and MSI
-@@ -11450,7 +11450,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	/* if the VF is not trusted do not do promisc */
+ 	if ((vsi->type == I40E_VSI_SRIOV) && !pf->vf[vsi->vf_id].trusted) {
+-		clear_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state);
++		clear_bit(__I40E_VSI_OVERFLOW_PROMISC, &vsi->state);
+ 		goto out;
+ 	}
  
- 	/* Unwind what we've done if something failed in the setup */
- err_vsis:
--	set_bit(__I40E_VSI_DOWN, &pf->state);
-+	set_bit(__I40E_DOWN, &pf->state);
- 	i40e_clear_interrupt_scheme(pf);
- 	kfree(pf->vsi);
- err_switch_setup:
-@@ -11502,7 +11502,7 @@ static void i40e_remove(struct pci_dev *pdev)
+@@ -2265,11 +2265,11 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 	}
+ 	if ((changed_flags & IFF_PROMISC) ||
+ 	    (promisc_changed &&
+-	     test_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state))) {
++	     test_bit(__I40E_VSI_OVERFLOW_PROMISC, &vsi->state))) {
+ 		bool cur_promisc;
  
- 	/* no more scheduling of any task */
- 	set_bit(__I40E_SUSPENDED, &pf->state);
--	set_bit(__I40E_VSI_DOWN, &pf->state);
-+	set_bit(__I40E_DOWN, &pf->state);
- 	if (pf->service_timer.data)
- 		del_timer_sync(&pf->service_timer);
- 	if (pf->service_task.func)
-@@ -11742,7 +11742,7 @@ static void i40e_shutdown(struct pci_dev *pdev)
- 	struct i40e_hw *hw = &pf->hw;
+ 		cur_promisc = (!!(vsi->current_netdev_flags & IFF_PROMISC) ||
+-			       test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
++			       test_bit(__I40E_VSI_OVERFLOW_PROMISC,
+ 					&vsi->state));
+ 		if ((vsi->type == I40E_VSI_MAIN) &&
+ 		    (pf->lan_veb != I40E_NO_VEB) &&
+@@ -2353,7 +2353,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 	if (retval)
+ 		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
  
- 	set_bit(__I40E_SUSPENDED, &pf->state);
--	set_bit(__I40E_VSI_DOWN, &pf->state);
-+	set_bit(__I40E_DOWN, &pf->state);
- 	rtnl_lock();
- 	i40e_prep_for_reset(pf, true);
- 	rtnl_unlock();
-@@ -11791,7 +11791,7 @@ static int i40e_suspend(struct pci_dev *pdev, pm_message_t state)
- 	int retval = 0;
+-	clear_bit(__I40E_CONFIG_BUSY, &vsi->state);
++	clear_bit(__I40E_VSI_SYNCING_FILTERS, &vsi->state);
+ 	return retval;
  
- 	set_bit(__I40E_SUSPENDED, &pf->state);
--	set_bit(__I40E_VSI_DOWN, &pf->state);
-+	set_bit(__I40E_DOWN, &pf->state);
+ err_no_memory:
+@@ -2365,7 +2365,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
  
- 	if (pf->wol_en && (pf->flags & I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE))
- 		i40e_enable_mc_magic_wake(pf);
-@@ -11843,7 +11843,7 @@ static int i40e_resume(struct pci_dev *pdev)
+ 	vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
+-	clear_bit(__I40E_CONFIG_BUSY, &vsi->state);
++	clear_bit(__I40E_VSI_SYNCING_FILTERS, &vsi->state);
+ 	return -ENOMEM;
+ }
  
- 	/* handling the reset will rebuild the device state */
- 	if (test_and_clear_bit(__I40E_SUSPENDED, &pf->state)) {
--		clear_bit(__I40E_VSI_DOWN, &pf->state);
-+		clear_bit(__I40E_DOWN, &pf->state);
- 		rtnl_lock();
- 		i40e_reset_and_rebuild(pf, false, true);
- 		rtnl_unlock();
+@@ -3907,7 +3907,7 @@ static void i40e_netpoll(struct net_device *netdev)
+ 	int i;
+ 
+ 	/* if interface is down do nothing */
+-	if (test_bit(__I40E_DOWN, &vsi->state))
++	if (test_bit(__I40E_VSI_DOWN, &vsi->state))
+ 		return;
+ 
+ 	if (pf->flags & I40E_FLAG_MSIX_ENABLED) {
+@@ -4436,7 +4436,7 @@ static void i40e_napi_disable_all(struct i40e_vsi *vsi)
+ static void i40e_vsi_close(struct i40e_vsi *vsi)
+ {
+ 	struct i40e_pf *pf = vsi->back;
+-	if (!test_and_set_bit(__I40E_DOWN, &vsi->state))
++	if (!test_and_set_bit(__I40E_VSI_DOWN, &vsi->state))
+ 		i40e_down(vsi);
+ 	i40e_vsi_free_irq(vsi);
+ 	i40e_vsi_free_tx_resources(vsi);
+@@ -4453,10 +4453,10 @@ static void i40e_vsi_close(struct i40e_vsi *vsi)
+  **/
+ static void i40e_quiesce_vsi(struct i40e_vsi *vsi)
+ {
+-	if (test_bit(__I40E_DOWN, &vsi->state))
++	if (test_bit(__I40E_VSI_DOWN, &vsi->state))
+ 		return;
+ 
+-	set_bit(__I40E_NEEDS_RESTART, &vsi->state);
++	set_bit(__I40E_VSI_NEEDS_RESTART, &vsi->state);
+ 	if (vsi->netdev && netif_running(vsi->netdev))
+ 		vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
+ 	else
+@@ -4469,10 +4469,9 @@ static void i40e_quiesce_vsi(struct i40e_vsi *vsi)
+  **/
+ static void i40e_unquiesce_vsi(struct i40e_vsi *vsi)
+ {
+-	if (!test_bit(__I40E_NEEDS_RESTART, &vsi->state))
++	if (!test_and_clear_bit(__I40E_VSI_NEEDS_RESTART, &vsi->state))
+ 		return;
+ 
+-	clear_bit(__I40E_NEEDS_RESTART, &vsi->state);
+ 	if (vsi->netdev && netif_running(vsi->netdev))
+ 		vsi->netdev->netdev_ops->ndo_open(vsi->netdev);
+ 	else
+@@ -4638,7 +4637,7 @@ static void i40e_detect_recover_hung(struct i40e_pf *pf)
+ 		return;
+ 
+ 	/* Make sure, VSI state is not DOWN/RECOVERY_PENDING */
+-	if (test_bit(__I40E_DOWN, &vsi->back->state) ||
++	if (test_bit(__I40E_VSI_DOWN, &vsi->back->state) ||
+ 	    test_bit(__I40E_RESET_RECOVERY_PENDING, &vsi->back->state))
+ 		return;
+ 
+@@ -5354,7 +5353,7 @@ static int i40e_up_complete(struct i40e_vsi *vsi)
+ 	if (err)
+ 		return err;
+ 
+-	clear_bit(__I40E_DOWN, &vsi->state);
++	clear_bit(__I40E_VSI_DOWN, &vsi->state);
+ 	i40e_napi_enable_all(vsi);
+ 	i40e_vsi_enable_irq(vsi);
+ 
+@@ -5435,7 +5434,7 @@ void i40e_down(struct i40e_vsi *vsi)
+ 	int i;
+ 
+ 	/* It is assumed that the caller of this function
+-	 * sets the vsi->state __I40E_DOWN bit.
++	 * sets the vsi->state __I40E_VSI_DOWN bit.
+ 	 */
+ 	if (vsi->netdev) {
+ 		netif_carrier_off(vsi->netdev);
+@@ -5787,10 +5786,9 @@ void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags, bool lock_acquired)
+ 			struct i40e_vsi *vsi = pf->vsi[v];
+ 
+ 			if (vsi != NULL &&
+-			    test_bit(__I40E_REINIT_REQUESTED, &vsi->state)) {
++			    test_and_clear_bit(__I40E_VSI_REINIT_REQUESTED,
++					       &vsi->state))
+ 				i40e_vsi_reinit_locked(pf->vsi[v]);
+-				clear_bit(__I40E_REINIT_REQUESTED, &vsi->state);
+-			}
+ 		}
+ 	} else if (reset_flags & BIT_ULL(__I40E_DOWN_REQUESTED)) {
+ 		int v;
+@@ -5801,10 +5799,10 @@ void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags, bool lock_acquired)
+ 			struct i40e_vsi *vsi = pf->vsi[v];
+ 
+ 			if (vsi != NULL &&
+-			    test_bit(__I40E_DOWN_REQUESTED, &vsi->state)) {
+-				set_bit(__I40E_DOWN, &vsi->state);
++			    test_and_clear_bit(__I40E_VSI_DOWN_REQUESTED,
++					       &vsi->state)) {
++				set_bit(__I40E_VSI_DOWN, &vsi->state);
+ 				i40e_down(vsi);
+-				clear_bit(__I40E_DOWN_REQUESTED, &vsi->state);
+ 			}
+ 		}
+ 	} else {
+@@ -6223,7 +6221,7 @@ static void i40e_fdir_reinit_subtask(struct i40e_pf *pf)
+  **/
+ static void i40e_vsi_link_event(struct i40e_vsi *vsi, bool link_up)
+ {
+-	if (!vsi || test_bit(__I40E_DOWN, &vsi->state))
++	if (!vsi || test_bit(__I40E_VSI_DOWN, &vsi->state))
+ 		return;
+ 
+ 	switch (vsi->type) {
+@@ -6316,11 +6314,11 @@ static void i40e_link_event(struct i40e_pf *pf)
+ 
+ 	if (new_link == old_link &&
+ 	    new_link_speed == old_link_speed &&
+-	    (test_bit(__I40E_DOWN, &vsi->state) ||
++	    (test_bit(__I40E_VSI_DOWN, &vsi->state) ||
+ 	     new_link == netif_carrier_ok(vsi->netdev)))
+ 		return;
+ 
+-	if (!test_bit(__I40E_DOWN, &vsi->state))
++	if (!test_bit(__I40E_VSI_DOWN, &vsi->state))
+ 		i40e_print_link_message(vsi, new_link);
+ 
+ 	/* Notify the base of the switch tree connected to
+@@ -7591,7 +7589,7 @@ static int i40e_vsi_mem_alloc(struct i40e_pf *pf, enum i40e_vsi_type type)
+ 	}
+ 	vsi->type = type;
+ 	vsi->back = pf;
+-	set_bit(__I40E_DOWN, &vsi->state);
++	set_bit(__I40E_VSI_DOWN, &vsi->state);
+ 	vsi->flags = 0;
+ 	vsi->idx = vsi_idx;
+ 	vsi->int_rate_limit = 0;
+@@ -9718,7 +9716,7 @@ static int i40e_add_vsi(struct i40e_vsi *vsi)
+ 	}
+ 
+ 	vsi->active_filters = 0;
+-	clear_bit(__I40E_FILTER_OVERFLOW_PROMISC, &vsi->state);
++	clear_bit(__I40E_VSI_OVERFLOW_PROMISC, &vsi->state);
+ 	spin_lock_bh(&vsi->mac_filter_hash_lock);
+ 	/* If macvlan filters already exist, force them to get loaded */
+ 	hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f, hlist) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 1531a0f9fcc6..bbd21cbf3e4d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -850,7 +850,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 
+ 		if (budget &&
+ 		    ((j / WB_STRIDE) == 0) && (j > 0) &&
+-		    !test_bit(__I40E_DOWN, &vsi->state) &&
++		    !test_bit(__I40E_VSI_DOWN, &vsi->state) &&
+ 		    (I40E_DESC_UNUSED(tx_ring) != tx_ring->count))
+ 			tx_ring->arm_wb = true;
+ 	}
+@@ -868,7 +868,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 		smp_mb();
+ 		if (__netif_subqueue_stopped(tx_ring->netdev,
+ 					     tx_ring->queue_index) &&
+-		   !test_bit(__I40E_DOWN, &vsi->state)) {
++		   !test_bit(__I40E_VSI_DOWN, &vsi->state)) {
+ 			netif_wake_subqueue(tx_ring->netdev,
+ 					    tx_ring->queue_index);
+ 			++tx_ring->tx_stats.restart_queue;
+@@ -2179,7 +2179,7 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+ 	}
+ 
+ enable_int:
+-	if (!test_bit(__I40E_DOWN, &vsi->state))
++	if (!test_bit(__I40E_VSI_DOWN, &vsi->state))
+ 		wr32(hw, INTREG(vector - 1), txval);
+ 
+ 	if (q_vector->itr_countdown)
+@@ -2208,7 +2208,7 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+ 	int budget_per_ring;
+ 	int work_done = 0;
+ 
+-	if (test_bit(__I40E_DOWN, &vsi->state)) {
++	if (test_bit(__I40E_VSI_DOWN, &vsi->state)) {
+ 		napi_complete(napi);
+ 		return 0;
+ 	}
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 34e96d98251a..c95ee0a8950f 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -266,7 +266,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 
+ 		if (budget &&
+ 		    ((j / WB_STRIDE) == 0) && (j > 0) &&
+-		    !test_bit(__I40E_DOWN, &vsi->state) &&
++		    !test_bit(__I40E_VSI_DOWN, &vsi->state) &&
+ 		    (I40E_DESC_UNUSED(tx_ring) != tx_ring->count))
+ 			tx_ring->arm_wb = true;
+ 	}
+@@ -284,7 +284,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 		smp_mb();
+ 		if (__netif_subqueue_stopped(tx_ring->netdev,
+ 					     tx_ring->queue_index) &&
+-		   !test_bit(__I40E_DOWN, &vsi->state)) {
++		   !test_bit(__I40E_VSI_DOWN, &vsi->state)) {
+ 			netif_wake_subqueue(tx_ring->netdev,
+ 					    tx_ring->queue_index);
+ 			++tx_ring->tx_stats.restart_queue;
+@@ -1508,7 +1508,7 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+ 	}
+ 
+ enable_int:
+-	if (!test_bit(__I40E_DOWN, &vsi->state))
++	if (!test_bit(__I40E_VSI_DOWN, &vsi->state))
+ 		wr32(hw, INTREG(vector - 1), txval);
+ 
+ 	if (q_vector->itr_countdown)
+@@ -1537,7 +1537,7 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
+ 	int budget_per_ring;
+ 	int work_done = 0;
+ 
+-	if (test_bit(__I40E_DOWN, &vsi->state)) {
++	if (test_bit(__I40E_VSI_DOWN, &vsi->state)) {
+ 		napi_complete(napi);
+ 		return 0;
+ 	}
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index 40f56e2335df..a56a6e54d907 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -49,6 +49,11 @@
+ #define DEFAULT_DEBUG_LEVEL_SHIFT 3
+ #define PFX "i40evf: "
+ 
++/* VSI state flags shared with common code */
++enum i40evf_vsi_state_t {
++	__I40E_VSI_DOWN,
++};
++
+ /* dummy struct to make common code less painful */
+ struct i40e_vsi {
+ 	struct i40evf_adapter *back;
+@@ -168,8 +173,6 @@ enum i40evf_critical_section_t {
+ 	__I40EVF_IN_CRITICAL_TASK,	/* cannot be interrupted */
+ 	__I40EVF_IN_CLIENT_TASK,
+ };
+-/* make common code happy */
+-#define __I40E_DOWN __I40EVF_DOWN
+ 
+ /* board specific private data structure */
+ struct i40evf_adapter {
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 3ea81bd0db32..b453d05c2a30 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -497,7 +497,7 @@ static void i40evf_netpoll(struct net_device *netdev)
+ 	int i;
+ 
+ 	/* if interface is down do nothing */
+-	if (test_bit(__I40E_DOWN, &adapter->vsi.state))
++	if (test_bit(__I40E_VSI_DOWN, &adapter->vsi.state))
+ 		return;
+ 
+ 	for (i = 0; i < q_vectors; i++)
+@@ -1087,7 +1087,7 @@ static void i40evf_configure(struct i40evf_adapter *adapter)
+ static void i40evf_up_complete(struct i40evf_adapter *adapter)
+ {
+ 	adapter->state = __I40EVF_RUNNING;
+-	clear_bit(__I40E_DOWN, &adapter->vsi.state);
++	clear_bit(__I40E_VSI_DOWN, &adapter->vsi.state);
+ 
+ 	i40evf_napi_enable_all(adapter);
+ 
+@@ -1753,7 +1753,7 @@ static void i40evf_disable_vf(struct i40evf_adapter *adapter)
+ 	adapter->flags |= I40EVF_FLAG_PF_COMMS_FAILED;
+ 
+ 	if (netif_running(adapter->netdev)) {
+-		set_bit(__I40E_DOWN, &adapter->vsi.state);
++		set_bit(__I40E_VSI_DOWN, &adapter->vsi.state);
+ 		netif_carrier_off(adapter->netdev);
+ 		netif_tx_disable(adapter->netdev);
+ 		adapter->link_up = false;
+@@ -2233,7 +2233,7 @@ static int i40evf_close(struct net_device *netdev)
+ 		return 0;
+ 
+ 
+-	set_bit(__I40E_DOWN, &adapter->vsi.state);
++	set_bit(__I40E_VSI_DOWN, &adapter->vsi.state);
+ 	if (CLIENT_ENABLED(adapter))
+ 		adapter->flags |= I40EVF_FLAG_CLIENT_NEEDS_CLOSE;
+ 
+@@ -2674,7 +2674,7 @@ static void i40evf_init_task(struct work_struct *work)
+ 		dev_info(&pdev->dev, "GRO is enabled\n");
+ 
+ 	adapter->state = __I40EVF_DOWN;
+-	set_bit(__I40E_DOWN, &adapter->vsi.state);
++	set_bit(__I40E_VSI_DOWN, &adapter->vsi.state);
+ 	i40evf_misc_irq_enable(adapter);
+ 
+ 	adapter->rss_key = kzalloc(adapter->rss_key_size, GFP_KERNEL);
 -- 
 2.12.2.882.g942b4cedeff1.dirty
 
