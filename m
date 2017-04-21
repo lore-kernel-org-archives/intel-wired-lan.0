@@ -1,113 +1,230 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 20 Apr 2017 19:16:53 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove MAC X550EM_X 1Gbase-t
- led_[on|off] support
-In-Reply-To: <1492692753-55535-1-git-send-email-paul.greenwalt@intel.com>
-References: <1492692753-55535-1-git-send-email-paul.greenwalt@intel.com>
-Message-ID: <1492741013.19041.0.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 21 Apr 2017 15:17:07 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE] BUILD SUCCESS
+ 2ebce3177300b27c93da7747c16298efb96ad157
+Message-ID: <58f9b1f3.AqaoyU4zyFLTWuFL%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2017-04-20 at 08:52 -0400, Paul Greenwalt wrote:
-> Since FW configures the PHY and MAC X550EM_X has no
-> PHY access, led_[on|off] is not supported with the 1Gbase-t design.
-> 
-> Removed MAC X550EM_X 1Gbase-t led_[on|off] support by setting
-> function pointers to NULL and added NULL pointer checks. Also set
-> init_led_link_act to NULL and added NULL pointer check.
-> 
-> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
-> ---
-> ?drivers/net/ethernet/intel/ixgbe/ixgbe_common.c? |? 3 ++-
-> ?drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |? 3 +++
-> ?drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c??? | 27
-> ++++++++++++++++++++++--
-> ?3 files changed, 30 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> index c38d50c..3af6127 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> @@ -395,7 +395,8 @@ s32 ixgbe_init_hw_generic(struct ixgbe_hw *hw)
-> ????????}
-> ?
-> ????????/* Initialize the LED link active for LED blink support */
-> -???????hw->mac.ops.init_led_link_act(hw);
-> +???????if (hw->mac.ops.init_led_link_act)
-> +???????????????hw->mac.ops.init_led_link_act(hw);
-> ?
-> ????????return status;
-> ?}
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> index 7e5e336..cced74d 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> @@ -2254,6 +2254,9 @@ static int ixgbe_set_phys_id(struct net_device
-> *netdev,
-> ????????struct ixgbe_adapter *adapter = netdev_priv(netdev);
-> ????????struct ixgbe_hw *hw = &adapter->hw;
-> ?
-> +???????if (!hw->mac.ops.led_on || !hw->mac.ops.led_off)
-> +???????????????return -EOPNOTSUPP;
-> +
-> ????????switch (state) {
-> ????????case ETHTOOL_ID_ACTIVE:
-> ????????????????adapter->led_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-> index 2ba024b..75dd1a3 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-> @@ -3206,6 +3206,7 @@ static s32 ixgbe_init_phy_ops_X550em(struct
-> ixgbe_hw *hw)
-> ????????????????phy->ops.setup_link = NULL;
-> ????????????????phy->ops.read_reg = NULL;
-> ????????????????phy->ops.write_reg = NULL;
-> +???????????????phy->ops.reset = NULL;
-> ????????????????break;
-> ????????default:
-> ????????????????break;
-> @@ -3819,7 +3820,29 @@ static const struct ixgbe_mac_operations
-> mac_ops_X550EM_x = {
-> ????????.write_iosf_sb_reg??????= ixgbe_write_iosf_sb_reg_x550,
-> ?};
-> ?
-> -static struct ixgbe_mac_operations mac_ops_x550em_a = {
-> +static const struct ixgbe_mac_operations mac_ops_X550EM_x_fw = {
-> +???????X550_COMMON_MAC
-> +???????.led_on?????????????????= NULL,
-> +???????.led_off????????????????= NULL,
-> +???????.init_led_link_act??????= NULL,
-> +???????.reset_hw???????????????= &ixgbe_reset_hw_X550em,
-> +???????.get_media_type?????????= &ixgbe_get_media_type_X550em,
-> +???????.get_san_mac_addr???????= NULL,
-> +???????.get_wwn_prefix?????????= NULL,
-> +???????.setup_link?????????????= &ixgbe_setup_mac_link_X540,
-> +???????.get_link_capabilities??=
-> &ixgbe_get_link_capabilities_X550em,
-> +???????.get_bus_info???????????= &ixgbe_get_bus_info_X550em,
-> +???????.setup_sfp??????????????= ixgbe_setup_sfp_modules_X550em,
-> +???????.acquire_swfw_sync??????= &ixgbe_acquire_swfw_sync_X550em,
-> +???????.release_swfw_sync??????= &ixgbe_release_swfw_sync_X550em,
-> +???????.init_swfw_sync?????????= &ixgbe_init_swfw_sync_X540,
-> +???????.setup_fc???????????????= NULL,
-> +???????.fc_autoneg?????????????= ixgbe_fc_autoneg,
-> +???????.read_iosf_sb_reg???????= ixgbe_read_iosf_sb_reg_x550,
-> +???????.write_iosf_sb_reg??????= ixgbe_write_iosf_sb_reg_x550,
-> +};
-> +
-> +???????static struct ixgbe_mac_operations mac_ops_x550em_a = {
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
+2ebce3177300b27c93da7747c16298efb96ad157  ixgbevf: Check for RSS key before setting value
 
-Did you mean to indent the above line?  FYI, it should not be indented.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170420/87cc77cf/attachment.asc>
+elapsed time: 204m
+
+configs tested: 206
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                      jornada720_defconfig
+mips                         bigsur_defconfig
+powerpc                 canyonlands_defconfig
+i386                     randconfig-a0-201716
+x86_64                 randconfig-a0-04211236
+x86_64                 randconfig-a0-04211414
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+avr32                       favr-32_defconfig
+m68k                            mac_defconfig
+nios2                         10m50_defconfig
+arm                    vt8500_v6_v7_defconfig
+s390                    performance_defconfig
+sh                           se7712_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-04211243
+i386                   randconfig-c0-04211353
+i386                   randconfig-c0-04211433
+mips                        nlm_xlp_defconfig
+powerpc                    socrates_defconfig
+um                               allyesconfig
+x86_64                randconfig-in0-04211223
+i386                             allmodconfig
+arm                       imx_v6_v7_defconfig
+arm                           stm32_defconfig
+microblaze                        allnoconfig
+powerpc                          allyesconfig
+sh                           se7751_defconfig
+alpha                            alldefconfig
+arm                     davinci_all_defconfig
+arm                         s3c6400_defconfig
+cris                                defconfig
+x86_64                 randconfig-x012-201716
+x86_64                 randconfig-x015-201716
+x86_64                 randconfig-x017-201716
+x86_64                 randconfig-x010-201716
+x86_64                 randconfig-x018-201716
+x86_64                 randconfig-x011-201716
+x86_64                 randconfig-x019-201716
+x86_64                 randconfig-x016-201716
+x86_64                 randconfig-x013-201716
+x86_64                 randconfig-x014-201716
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201716
+i386                     randconfig-s1-201716
+x86_64                 randconfig-s0-04211203
+x86_64                 randconfig-s1-04211203
+x86_64                 randconfig-s2-04211203
+x86_64                 randconfig-s0-04211407
+x86_64                 randconfig-s1-04211407
+x86_64                 randconfig-s2-04211407
+x86_64                 randconfig-s3-04211157
+x86_64                 randconfig-s4-04211157
+x86_64                 randconfig-s5-04211157
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+m68k                          hp300_defconfig
+parisc                           allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201716
+i386                   randconfig-b0-04211208
+i386                   randconfig-b0-04211324
+i386                   randconfig-b0-04211423
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                             allyesconfig
+parisc                generic-32bit_defconfig
+i386                   randconfig-x010-201716
+i386                   randconfig-x011-201716
+i386                   randconfig-x012-201716
+i386                   randconfig-x013-201716
+i386                   randconfig-x014-201716
+i386                   randconfig-x015-201716
+i386                   randconfig-x016-201716
+i386                   randconfig-x017-201716
+i386                   randconfig-x018-201716
+i386                   randconfig-x019-201716
+i386                     randconfig-n0-201716
+i386                   randconfig-h0-04211249
+i386                   randconfig-h1-04211249
+arm                       mainstone_defconfig
+arm                              zx_defconfig
+m68k                       m5275evb_defconfig
+x86_64                 randconfig-h0-04211415
+arm                          lpd270_defconfig
+mips                           ip28_defconfig
+parisc                        c8000_defconfig
+x86_64                                  kexec
+x86_64                 randconfig-n0-04211220
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                           allmodconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64       rhel-7.2+CONFIG_DEBUG_INFO_REDUCED
+x86_64                randconfig-ws0-04211248
+arm                          prima2_defconfig
+sh                             sh03_defconfig
+x86_64                randconfig-ws0-04211255
+i386                   randconfig-x070-201716
+i386                   randconfig-x071-201716
+i386                   randconfig-x072-201716
+i386                   randconfig-x073-201716
+i386                   randconfig-x074-201716
+i386                   randconfig-x075-201716
+i386                   randconfig-x076-201716
+i386                   randconfig-x077-201716
+i386                   randconfig-x078-201716
+i386                   randconfig-x079-201716
+x86_64       acpi-redef+CONFIG_DEBUG_INFO_REDUCED
+arm                       imx_v4_v5_defconfig
+m32r                       mappi.up_defconfig
+x86_64                 randconfig-x000-201716
+x86_64                 randconfig-x001-201716
+x86_64                 randconfig-x002-201716
+x86_64                 randconfig-x003-201716
+x86_64                 randconfig-x004-201716
+x86_64                 randconfig-x005-201716
+x86_64                 randconfig-x006-201716
+x86_64                 randconfig-x007-201716
+x86_64                 randconfig-x008-201716
+x86_64                 randconfig-x009-201716
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201716
+x86_64                 randconfig-r0-04211251
+i386                   randconfig-x000-201716
+i386                   randconfig-x001-201716
+i386                   randconfig-x002-201716
+i386                   randconfig-x003-201716
+i386                   randconfig-x004-201716
+i386                   randconfig-x005-201716
+i386                   randconfig-x006-201716
+i386                   randconfig-x007-201716
+i386                   randconfig-x008-201716
+i386                   randconfig-x009-201716
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                   randconfig-x0-04211325
+
+Thanks,
+Fengguang
