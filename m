@@ -1,46 +1,45 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 21 Apr 2017 21:29:36 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: separate PF and VSI state flags
-In-Reply-To: <20170421203805.11445-2-jacob.e.keller@intel.com>
-References: <20170421203805.11445-1-jacob.e.keller@intel.com>
- <20170421203805.11445-2-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA1387@ORSMSX104.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 21 Apr 2017 15:22:55 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix build issues seen w/ XDP
+Message-ID: <20170421222233.13851.98515.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Friday, April 21, 2017 1:38 PM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH] i40e: separate PF and VSI state flags
-> 
-> Avoid using the same named flags for both vsi->state and pf->state. This
-> makes code review easier, as it is more likely that future authors will use the
-> correct state field when checking bits. Previous commits already found issues
-> with at least one check, and possibly others may be incorrect.
-> 
-> This reduces confusion as it is more clear what each flag represents, and
-> which flags are valid for which state field.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
-> This version has the fixup! already squashed in for convenience. Again it
-> replaces the patch with the same title on the queue.
-> 
->  drivers/net/ethernet/intel/i40e/i40e.h          | 12 ++++-
->  drivers/net/ethernet/intel/i40e/i40e_client.c   |  4 +-
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c  |  4 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 66 ++++++++++++-----------
-> --
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c     |  8 +--
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |  8 +--
->  drivers/net/ethernet/intel/i40evf/i40evf.h      |  7 ++-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 10 ++--
->  8 files changed, 64 insertions(+), 55 deletions(-)
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Confirmed fixes earlier regression
+This patch is meant to fix the build issues seen w/ XDP when page sizes are
+larger than 4K.
+
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index c2c4de2aea43..503dd28261eb 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2125,7 +2125,8 @@ static struct sk_buff *ixgbe_construct_skb(struct ixgbe_ring *rx_ring,
+ #if (PAGE_SIZE < 8192)
+ 	unsigned int truesize = ixgbe_rx_pg_size(rx_ring) / 2;
+ #else
+-	unsigned int truesize = SKB_DATA_ALIGN(size);
++	unsigned int truesize = SKB_DATA_ALIGN(xdp->data_end -
++					       xdp->data_hard_start);
+ #endif
+ 	struct sk_buff *skb;
+ 
+@@ -2170,7 +2171,8 @@ static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
+ 	unsigned int truesize = ixgbe_rx_pg_size(rx_ring) / 2;
+ #else
+ 	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
+-				SKB_DATA_ALIGN(IXGBE_SKB_PAD + size);
++				SKB_DATA_ALIGN(xdp->data_end -
++					       xdp->data_hard_start);
+ #endif
+ 	struct sk_buff *skb;
+ 
+
