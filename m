@@ -1,154 +1,73 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 25 Apr 2017 01:53:51 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- cbed7c674c7b930fb92967617a4f625ffd2d1c93
-Message-ID: <58fe3baf.1JRmH8uT1RPvtXgM%fengguang.wu@intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Mon, 24 Apr 2017 12:10:26 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return
+ uninitialized stats
+In-Reply-To: <caef8d69-9e47-bbcc-0758-e5900e1cb291@intel.com>
+References: <20170421212012.25950-1-bpoirier@suse.com>
+ <630A6B92B7EDEB45A87E20D3D286660171182EED@hasmsx109.ger.corp.intel.com>
+ <caef8d69-9e47-bbcc-0758-e5900e1cb291@intel.com>
+Message-ID: <20170424191026.wpnpyhdaurfjixl7@f1.synalogic.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-cbed7c674c7b930fb92967617a4f625ffd2d1c93  i40evf: hide unused variable
+Sasha, please use reply-all to keep everyone in cc (including me...).
 
-elapsed time: 225m
+On 2017/04/24 11:17, Neftin, Sasha wrote:
+> On 4/23/2017 15:53, Neftin, Sasha wrote:
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Benjamin Poirier
+> > Sent: Saturday, April 22, 2017 00:20
+> > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> > Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Stefan Priebe <s.priebe@profihost.ag>
+> > Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return uninitialized stats
+> > 
+> > Some statistics passed to ethtool are garbage because e1000e_get_stats64() doesn't write them, for example: tx_heartbeat_errors. This leaks kernel memory to userspace and confuses users.
+> > 
+> > Do like ixgbe and use dev_get_stats() which first zeroes out rtnl_link_stats64.
+> > 
+> > Reported-by: Stefan Priebe <s.priebe@profihost.ag>
+> > Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> > ---
+> >   drivers/net/ethernet/intel/e1000e/ethtool.c | 2 +-
+> >   1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > index 7aff68a4a4df..f117b90cdc2f 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > @@ -2063,7 +2063,7 @@ static void e1000_get_ethtool_stats(struct net_device *netdev,
+> >   	pm_runtime_get_sync(netdev->dev.parent);
+> > -	e1000e_get_stats64(netdev, &net_stats);
+> > +	dev_get_stats(netdev, &net_stats);
+> >   	pm_runtime_put_sync(netdev->dev.parent);
+> > --
+> > 2.12.2
+> > 
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at lists.osuosl.org
+> > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
+> Hello,
+> 
+> We would like to not accept this patch. Suggested generic method
+> '*dev_get_stats' (net/core/dev.c) calls 'ops->ndo_get_stats64' method which
+> eventually calls e1000e_get_stats64 (netdev.c) - so there is same
+> functionality. Also, see that 'e1000e_get_stats64' method in netdev.c (line
 
-configs tested: 130
+No, it's not the same functionality because dev_get_stats() does a
+memset on the rtnl_link_stats64 struct.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> 5928) calls 'memset' with 0's before update statistics.  Local sanity check
 
-i386                     randconfig-a0-201717
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-x012-201717
-x86_64                 randconfig-x015-201717
-x86_64                 randconfig-x017-201717
-x86_64                 randconfig-x010-201717
-x86_64                 randconfig-x018-201717
-x86_64                 randconfig-x011-201717
-x86_64                 randconfig-x019-201717
-x86_64                 randconfig-x016-201717
-x86_64                 randconfig-x014-201717
-x86_64                 randconfig-x013-201717
-i386                     randconfig-s0-201717
-i386                     randconfig-s1-201717
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                               tinyconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201717
-i386                     randconfig-i0-201717
-i386                     randconfig-i1-201717
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-i386                   randconfig-x010-201717
-i386                   randconfig-x014-201717
-i386                   randconfig-x016-201717
-i386                   randconfig-x017-201717
-i386                   randconfig-x013-201717
-i386                   randconfig-x019-201717
-i386                   randconfig-x011-201717
-i386                   randconfig-x015-201717
-i386                   randconfig-x012-201717
-i386                   randconfig-x018-201717
-i386                     randconfig-n0-201717
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-x009-201717
-x86_64                 randconfig-x004-201717
-x86_64                 randconfig-x003-201717
-x86_64                 randconfig-x008-201717
-x86_64                 randconfig-x002-201717
-x86_64                 randconfig-x005-201717
-x86_64                 randconfig-x007-201717
-x86_64                 randconfig-x000-201717
-x86_64                 randconfig-x001-201717
-x86_64                 randconfig-x006-201717
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                                  kexec
-x86_64                                   rhel
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-i386                   randconfig-x073-201717
-i386                   randconfig-x077-201717
-i386                   randconfig-x070-201717
-i386                   randconfig-x072-201717
-i386                   randconfig-x076-201717
-i386                   randconfig-x074-201717
-i386                   randconfig-x078-201717
-i386                   randconfig-x075-201717
-i386                   randconfig-x079-201717
-i386                   randconfig-x071-201717
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                     randconfig-r0-201717
-i386                             allmodconfig
-i386                   randconfig-x006-201717
-i386                   randconfig-x002-201717
-i386                   randconfig-x005-201717
-i386                   randconfig-x007-201717
-i386                   randconfig-x003-201717
-i386                   randconfig-x001-201717
-i386                   randconfig-x008-201717
-i386                   randconfig-x000-201717
-i386                   randconfig-x004-201717
-i386                   randconfig-x009-201717
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
+I don't see any memset in e1000e_get_stats64(). What kernel version are
+you looking at?
 
-Thanks,
-Fengguang
+> in our lab shows 'tx_heartbeat_errors' counter reported as 0.
+> 
+
+Please see the mail I just sent to Paul Menzel <pmenzel@molgen.mpg.de>
+for more information about the issue and how to reproduce it.
