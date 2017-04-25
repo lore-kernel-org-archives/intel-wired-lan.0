@@ -1,36 +1,214 @@
-From: Lino Sanfilippo <LinoSanfilippo@gmx.de>
-Date: Tue, 25 Apr 2017 17:39:35 +0200
-Subject: [Intel-wired-lan] [PATCH] ixgbe: initialize u64_stats_sync
- structures early at ixgbe_probe
-In-Reply-To: <CAKgT0UeTdY9j1qDHP=DscgAZF2pPFCb+=ACySqKBK+UuBsaNBA@mail.gmail.com>
-References: <1480909244-16460-1-git-send-email-liwei.song@windriver.com>
- <EF50CC0C76A53A44BAD798C58E0A157E50B87CBB@ORSMSX103.amr.corp.intel.com>,
- <CAKgT0UeTdY9j1qDHP=DscgAZF2pPFCb+=ACySqKBK+UuBsaNBA@mail.gmail.com>
-Message-ID: <trinity-a348af9b-9ef5-47a9-a14e-94265c880cf1-1493134775614@3capp-gmx-bs78>
+From: Stephen Hemminger <stephen@networkplumber.org>
+Date: Tue, 25 Apr 2017 10:54:05 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return
+ uninitialized stats
+In-Reply-To: <1493111272.68612.2.camel@intel.com>
+References: <20170421212012.25950-1-bpoirier@suse.com>
+ <630A6B92B7EDEB45A87E20D3D286660171182EED@hasmsx109.ger.corp.intel.com>
+ <caef8d69-9e47-bbcc-0758-e5900e1cb291@intel.com>
+ <20170424191026.wpnpyhdaurfjixl7@f1.synalogic.ca>
+ <309B89C4C689E141A5FF6A0C5FB2118B8C5EF4F7@ORSMSX101.amr.corp.intel.com>
+ <1493111272.68612.2.camel@intel.com>
+Message-ID: <20170425105405.01541742@xeon-e3>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+On Tue, 25 Apr 2017 02:07:52 -0700
+Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
 
-> This patch doesn't look right to me. I would suggest rejecting it.
+> On Tue, 2017-04-25 at 07:10 +0000, Brown, Aaron F wrote:
+> > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.
+> > > org] On
+> > > Behalf Of Benjamin Poirier
+> > > Sent: Monday, April 24, 2017 12:10 PM
+> > > To: Neftin, Sasha <sasha.neftin@intel.com>
+> > > Cc: Kirsher at f1.synalogic.ca; Stefan Priebe <s.priebe@profihost.ag>;
+> > > netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> > > Subject: Re: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return
+> > > uninitialized
+> > > stats
+> > > 
+> > > Sasha, please use reply-all to keep everyone in cc (including
+> > > me...).
+> > > 
+> > > On 2017/04/24 11:17, Neftin, Sasha wrote:  
+> > > > On 4/23/2017 15:53, Neftin, Sasha wrote:  
+> > > > > -----Original Message-----
+> > > > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osu
+> > > > > osl.org]  
+> > > 
+> > > On Behalf Of Benjamin Poirier  
+> > > > > Sent: Saturday, April 22, 2017 00:20
+> > > > > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> > > > > Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
+> > > > > Stefan  
+> > > 
+> > > Priebe <s.priebe@profihost.ag>  
+> > > > > Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return
+> > > > > uninitialized  
+> > > 
+> > > stats  
+> > > > > 
+> > > > > Some statistics passed to ethtool are garbage because  
+> > > 
+> > > e1000e_get_stats64() doesn't write them, for example:
+> > > tx_heartbeat_errors.
+> > > This leaks kernel memory to userspace and confuses users.  
+> > > > > 
+> > > > > Do like ixgbe and use dev_get_stats() which first zeroes out  
+> > > 
+> > > rtnl_link_stats64.  
+> > > > > 
+> > > > > Reported-by: Stefan Priebe <s.priebe@profihost.ag>
+> > > > > Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> > > > > ---
+> > > > > ?? drivers/net/ethernet/intel/e1000e/ethtool.c | 2 +-
+> > > > > ?? 1 file changed, 1 insertion(+), 1 deletion(-)
+> > > > > 
+> > > > > diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c  
+> > > 
+> > > b/drivers/net/ethernet/intel/e1000e/ethtool.c  
+> > > > > index 7aff68a4a4df..f117b90cdc2f 100644
+> > > > > --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > > > > +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > > > > @@ -2063,7 +2063,7 @@ static void
+> > > > > e1000_get_ethtool_stats(struct  
+> > > 
+> > > net_device *netdev,  
+> > > > > ???????????pm_runtime_get_sync(netdev->dev.parent);
+> > > > > -?e1000e_get_stats64(netdev, &net_stats);
+> > > > > +?dev_get_stats(netdev, &net_stats);
+> > > > > ???????????pm_runtime_put_sync(netdev->dev.parent);
+> > > > > --
+> > > > > 2.12.2
+> > > > > 
+> > > > > _______________________________________________
+> > > > > Intel-wired-lan mailing list
+> > > > > Intel-wired-lan at lists.osuosl.org
+> > > > > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan  
+> > > > 
+> > > > Hello,
+> > > > 
+> > > > We would like to not accept this patch. Suggested generic method
+> > > > '*dev_get_stats' (net/core/dev.c) calls 'ops->ndo_get_stats64'
+> > > > method  
+> > > 
+> > > which  
+> > > > eventually calls e1000e_get_stats64 (netdev.c) - so there is same
+> > > > functionality. Also, see that 'e1000e_get_stats64' method in
+> > > > netdev.c (line  
+> > > 
+> > > No, it's not the same functionality because dev_get_stats() does a
+> > > memset on the rtnl_link_stats64 struct.
+> > >   
+> > > > 5928) calls 'memset' with 0's before update statistics.? Local
+> > > > sanity check  
+> > > 
+> > > I don't see any memset in e1000e_get_stats64(). What kernel version
+> > > are
+> > > you looking at?  
+> > 
+> > The call to memset was removed from the upstream kernel with:
+> > -------------------------------------------------------------------
+> > -----------------
+> > commit 5944701df90d9577658e2354cc27c4ceaeca30fe
+> > Author: stephen hemminger <stephen@networkplumber.org>
+> > Date:?? Fri Jan 6 19:12:53 2017 -0800
+> > 
+> > ??? net: remove useless memset's in drivers get_stats64
+> > 
+> > ??? In dev_get_stats() the statistic structure storage has already
+> > been
+> > ??? zeroed. Therefore network drivers do not need to call memset()
+> > again.
+> > ...
+> > < changes to other drivers snipped out >
+> > ...
+> > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > b/drivers/net/ethernet/int
+> > index 723025b..79651eb 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > @@ -5925,7 +5925,6 @@ void e1000e_get_stats64(struct net_device
+> > *netdev,
+> > ?{
+> > ??????? struct e1000_adapter *adapter = netdev_priv(netdev);
+> > 
+> > -?????? memset(stats, 0, sizeof(struct rtnl_link_stats64));
+> > ??????? spin_lock(&adapter->stats64_lock);
+> > ??????? e1000e_update_stats(adapter);
+> > ??????? /* Fill out the OS statistics structure */
+> > -------------------------------------------------------------------
+> > -----------------
+> > 
+> > This also is where the bad counters start to show up for e1000e for
+> > my test systems.? From this driver on I see (very) large values for
+> > tx_dropped, rx_over_errors and tx_fifo_errors on driver load (even
+> > before bringing the interface up.? It seems the memset is not so
+> > useless for this driver after all.? Would simply reverting the e1000e
+> > portion of this patch resolve the issue?  
 > 
-> The call to initialize the stats should be done when the ring is
-> allocated, not in ixgbe_probe(). This should probably be done in
-> ixgbe_alloc_q_vector() instead.
+> Looks like Aaron beat me to the punch on pointing out that we had this
+> very code in there before.  It appears that Stephen's
+> assertion/assumption was incorrect about the stats structure being
+> zero'd out, which is why we are seeing the issue.
 > 
+> I have no issue reverting Stephen's earlier patch, or do we want to
+> pursue why the stats structure is not zero'd out and resolve that
+> instead.  Either way, just want to make sure we are all on the same
+> page as to the right solution so that we do not end up repeating this
+> in the future.
 
-AFAICS ixgbe_alloc_q_vector() is also called in probe() (by ixgbe_init_interrupt_scheme()).
-Furthermore it is also called in resume() which would lead to multiple initialization of
-the u64_stats_sync in case of resume.
+Lets's fix this in the base code.
 
-IMHO the u64_stats_sync variables have to be initialized before register_netdev() is called
-since this is the point from which userspace can call ixgbe_get_stats64(). I would say the
-best place to do so is the probe() function as it is done in this patch.
+From: Stephen Hemminger <sthemmin@microsoft.com>
+Date: Tue, 25 Apr 2017 10:50:19 -0700
+Subject: [PATCH net] net: always zero statistics
 
-Just my 2 cents.
+Drivers with 32 bit statistics API also should get zeroed statistics.
 
-Regards,
-Lino
+Fixes: 5944701df90d ("net: remove useless memset's in drivers get_stats64")
+Signed-off-by: Stephen Hemminger <sthemmin@microsoft.com>
+---
+ net/core/dev.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 533a6d6f6092..07d27d3feb37 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -7607,14 +7607,15 @@ struct rtnl_link_stats64 *dev_get_stats(struct net_device *dev,
+ {
+ 	const struct net_device_ops *ops = dev->netdev_ops;
+ 
+-	if (ops->ndo_get_stats64) {
+-		memset(storage, 0, sizeof(*storage));
++	memset(storage, 0, sizeof(*storage));
++
++	if (ops->ndo_get_stats64)
+ 		ops->ndo_get_stats64(dev, storage);
+-	} else if (ops->ndo_get_stats) {
++	else if (ops->ndo_get_stats)
+ 		netdev_stats_to_stats64(storage, ops->ndo_get_stats(dev));
+-	} else {
++	else
+ 		netdev_stats_to_stats64(storage, &dev->stats);
+-	}
++
+ 	storage->rx_dropped += atomic_long_read(&dev->rx_dropped);
+ 	storage->tx_dropped += atomic_long_read(&dev->tx_dropped);
+ 	storage->rx_nohandler += atomic_long_read(&dev->rx_nohandler);
+-- 
+2.11.0
+
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170425/635f344e/attachment.asc>
