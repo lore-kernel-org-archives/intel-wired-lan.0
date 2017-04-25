@@ -1,62 +1,89 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 25 Apr 2017 10:16:22 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: initialize u64_stats_sync
- structures early at ixgbe_probe
-In-Reply-To: <trinity-a348af9b-9ef5-47a9-a14e-94265c880cf1-1493134775614@3capp-gmx-bs78>
-References: <1480909244-16460-1-git-send-email-liwei.song@windriver.com>
- <EF50CC0C76A53A44BAD798C58E0A157E50B87CBB@ORSMSX103.amr.corp.intel.com>
- <CAKgT0UeTdY9j1qDHP=DscgAZF2pPFCb+=ACySqKBK+UuBsaNBA@mail.gmail.com>
- <trinity-a348af9b-9ef5-47a9-a14e-94265c880cf1-1493134775614@3capp-gmx-bs78>
-Message-ID: <CAKgT0Uc31ehKGmjKWFg6YNWtqvD1grosaVXqBX+GUCxUBdQUHg@mail.gmail.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Tue, 25 Apr 2017 10:54:33 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return
+ uninitialized stats
+In-Reply-To: <1493111272.68612.2.camel@intel.com>
+References: <20170421212012.25950-1-bpoirier@suse.com>
+ <630A6B92B7EDEB45A87E20D3D286660171182EED@hasmsx109.ger.corp.intel.com>
+ <caef8d69-9e47-bbcc-0758-e5900e1cb291@intel.com>
+ <20170424191026.wpnpyhdaurfjixl7@f1.synalogic.ca>
+ <309B89C4C689E141A5FF6A0C5FB2118B8C5EF4F7@ORSMSX101.amr.corp.intel.com>
+ <1493111272.68612.2.camel@intel.com>
+Message-ID: <20170425175433.ykc6ilm6uo7e6my2@f1.synalogic.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Apr 25, 2017 at 8:39 AM, Lino Sanfilippo <LinoSanfilippo@gmx.de> wrote:
-> Hi,
->
->> This patch doesn't look right to me. I would suggest rejecting it.
->>
->> The call to initialize the stats should be done when the ring is
->> allocated, not in ixgbe_probe(). This should probably be done in
->> ixgbe_alloc_q_vector() instead.
->>
->
-> AFAICS ixgbe_alloc_q_vector() is also called in probe() (by ixgbe_init_interrupt_scheme()).
-> Furthermore it is also called in resume() which would lead to multiple initialization of
-> the u64_stats_sync in case of resume.
+On 2017/04/25 02:07, Jeff Kirsher wrote:
+[...]
+> > > 
+> > > I don't see any memset in e1000e_get_stats64(). What kernel version
+> > > are
+> > > you looking at?
+> > 
+> > The call to memset was removed from the upstream kernel with:
+> > -------------------------------------------------------------------
+> > -----------------
+> > commit 5944701df90d9577658e2354cc27c4ceaeca30fe
+> > Author: stephen hemminger <stephen@networkplumber.org>
+> > Date:?? Fri Jan 6 19:12:53 2017 -0800
+> > 
+> > ??? net: remove useless memset's in drivers get_stats64
+> > 
+> > ??? In dev_get_stats() the statistic structure storage has already
+> > been
+> > ??? zeroed. Therefore network drivers do not need to call memset()
+> > again.
+> > ...
+> > < changes to other drivers snipped out >
+> > ...
+> > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > b/drivers/net/ethernet/int
+> > index 723025b..79651eb 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > @@ -5925,7 +5925,6 @@ void e1000e_get_stats64(struct net_device
+> > *netdev,
+> > ?{
+> > ??????? struct e1000_adapter *adapter = netdev_priv(netdev);
+> > 
+> > -?????? memset(stats, 0, sizeof(struct rtnl_link_stats64));
+> > ??????? spin_lock(&adapter->stats64_lock);
+> > ??????? e1000e_update_stats(adapter);
+> > ??????? /* Fill out the OS statistics structure */
+> > -------------------------------------------------------------------
+> > -----------------
+> > 
+> > This also is where the bad counters start to show up for e1000e for
+> > my test systems.? From this driver on I see (very) large values for
+> > tx_dropped, rx_over_errors and tx_fifo_errors on driver load (even
+> > before bringing the interface up.? It seems the memset is not so
+> > useless for this driver after all.? Would simply reverting the e1000e
+> > portion of this patch resolve the issue?
+> 
+> Looks like Aaron beat me to the punch on pointing out that we had this
+> very code in there before.  It appears that Stephen's
+> assertion/assumption was incorrect about the stats structure being
+> zero'd out, which is why we are seeing the issue.
+> 
+> I have no issue reverting Stephen's earlier patch, or do we want to
+> pursue why the stats structure is not zero'd out and resolve that
+> instead.  Either way, just want to make sure we are all on the same
+> page as to the right solution so that we do not end up repeating this
+> in the future.
 
-ixgbe_alloc_q_vector() is what allocates the ring structures that are
-being initialized here. Calling it anywhere other than here doesn't
-make sense since what we want to do is initialize the memory after we
-have allocated it, but before we hand the pointer to it over to a
-netdev or in this case an adapter structure.
-
-> IMHO the u64_stats_sync variables have to be initialized before register_netdev() is called
-> since this is the point from which userspace can call ixgbe_get_stats64(). I would say the
-> best place to do so is the probe() function as it is done in this patch.
-
-I would disagree here. We should be initializing the stats variables
-after we allocate them. Especially since we can end up freeing and
-reallocating them any time the number of queues is changed.
-
-> Just my 2 cents.
->
-> Regards,
-> Lino
-
-My advice would be to look through the code and verify what it is you
-need to initialize and where it should happen. In this case we are
-getting a lockdep splat since we are just letting things get
-initialized with kzalloc and aren't following up in the right place. I
-don't disagree that the original code has the u64_stats_init in the
-wrong place since we can open/close the interface and trigger a
-reinitialization of the stats. I would say we need to initialize the
-stats just after we allocate them in memory so that if we decide to
-free and reallocate the rings we initialize the new rings before they
-are added to the netdev and don't reintroduce this issue in just a
-different form.
-
-- Alex
+If you revert the e1000e part of 5944701df90d ("net: remove useless
+memset's in drivers get_stats64", v4.11-rc1) it will fix the issue with
+ethtool but memset will be done twice for code paths that call
+dev_get_stats() (sysfs, rtnl, ...). Not a big deal but this is not a
+problem in the approach I initially suggested. Alternatively, we could
+put a memset in e1000_get_ethtool_stats().
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: Digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170425/afd4a93b/attachment.asc>
