@@ -1,53 +1,126 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 24 Apr 2017 23:00:23 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: initialize
-	u64_stats_sync	structures early at ixgbe_probe
-In-Reply-To: <1480909244-16460-1-git-send-email-liwei.song@windriver.com>
-References: <1480909244-16460-1-git-send-email-liwei.song@windriver.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E50B87CBB@ORSMSX103.amr.corp.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Tue, 25 Apr 2017 07:10:22 +0000
+Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return
+ uninitialized stats
+In-Reply-To: <20170424191026.wpnpyhdaurfjixl7@f1.synalogic.ca>
+References: <20170421212012.25950-1-bpoirier@suse.com>
+ <630A6B92B7EDEB45A87E20D3D286660171182EED@hasmsx109.ger.corp.intel.com>
+ <caef8d69-9e47-bbcc-0758-e5900e1cb291@intel.com>
+ <20170424191026.wpnpyhdaurfjixl7@f1.synalogic.ca>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C5EF4F7@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Benjamin Poirier
+> Sent: Monday, April 24, 2017 12:10 PM
+> To: Neftin, Sasha <sasha.neftin@intel.com>
+> Cc: Kirsher at f1.synalogic.ca; Stefan Priebe <s.priebe@profihost.ag>;
+> netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return uninitialized
+> stats
+> 
+> Sasha, please use reply-all to keep everyone in cc (including me...).
+> 
+> On 2017/04/24 11:17, Neftin, Sasha wrote:
+> > On 4/23/2017 15:53, Neftin, Sasha wrote:
+> > > -----Original Message-----
+> > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
+> On Behalf Of Benjamin Poirier
+> > > Sent: Saturday, April 22, 2017 00:20
+> > > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> > > Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Stefan
+> Priebe <s.priebe@profihost.ag>
+> > > Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return uninitialized
+> stats
+> > >
+> > > Some statistics passed to ethtool are garbage because
+> e1000e_get_stats64() doesn't write them, for example: tx_heartbeat_errors.
+> This leaks kernel memory to userspace and confuses users.
+> > >
+> > > Do like ixgbe and use dev_get_stats() which first zeroes out
+> rtnl_link_stats64.
+> > >
+> > > Reported-by: Stefan Priebe <s.priebe@profihost.ag>
+> > > Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> > > ---
+> > >   drivers/net/ethernet/intel/e1000e/ethtool.c | 2 +-
+> > >   1 file changed, 1 insertion(+), 1 deletion(-)
+> > >
+> > > diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c
+> b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > > index 7aff68a4a4df..f117b90cdc2f 100644
+> > > --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > > +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > > @@ -2063,7 +2063,7 @@ static void e1000_get_ethtool_stats(struct
+> net_device *netdev,
+> > >   	pm_runtime_get_sync(netdev->dev.parent);
+> > > -	e1000e_get_stats64(netdev, &net_stats);
+> > > +	dev_get_stats(netdev, &net_stats);
+> > >   	pm_runtime_put_sync(netdev->dev.parent);
+> > > --
+> > > 2.12.2
+> > >
+> > > _______________________________________________
+> > > Intel-wired-lan mailing list
+> > > Intel-wired-lan at lists.osuosl.org
+> > > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> >
+> > Hello,
+> >
+> > We would like to not accept this patch. Suggested generic method
+> > '*dev_get_stats' (net/core/dev.c) calls 'ops->ndo_get_stats64' method
+> which
+> > eventually calls e1000e_get_stats64 (netdev.c) - so there is same
+> > functionality. Also, see that 'e1000e_get_stats64' method in netdev.c (line
+> 
+> No, it's not the same functionality because dev_get_stats() does a
+> memset on the rtnl_link_stats64 struct.
+> 
+> > 5928) calls 'memset' with 0's before update statistics.  Local sanity check
+> 
+> I don't see any memset in e1000e_get_stats64(). What kernel version are
+> you looking at?
 
+The call to memset was removed from the upstream kernel with:
+------------------------------------------------------------------------------------
+commit 5944701df90d9577658e2354cc27c4ceaeca30fe
+Author: stephen hemminger <stephen@networkplumber.org>
+Date:   Fri Jan 6 19:12:53 2017 -0800
 
+    net: remove useless memset's in drivers get_stats64
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Liwei Song
-Sent: Sunday, December 4, 2016 7:41 PM
-To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org; Song, Liwei (Wind River) <liwei.song@windriver.com>
-Subject: [Intel-wired-lan] [PATCH] ixgbe: initialize u64_stats_sync structures early at ixgbe_probe
+    In dev_get_stats() the statistic structure storage has already been
+    zeroed. Therefore network drivers do not need to call memset() again.
+...
+< changes to other drivers snipped out >
+...
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/int
+index 723025b..79651eb 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5925,7 +5925,6 @@ void e1000e_get_stats64(struct net_device *netdev,
+ {
+        struct e1000_adapter *adapter = netdev_priv(netdev);
 
-Fix the following CallTrace:
-INFO: trying to register non-static key.
-the code is fine but needs lockdep annotation.
-turning off the locking correctness validator.
-CPU: 71 PID: 1 Comm: swapper/0 Not tainted 4.8.8-WR9.0.0.1_standard #11 Hardware name: Intel Corporation S2600WTT/S2600WTT, BIOS GRNDSDP1.86B.0036.R05.1407140519 07/14/2014
- 00200086 00200086 eb5e1ab8 c144dd70 00000000 00000000 eb5e1af8 c10af89a
- c1d23de4 eb5e1af8 00000009 eb5d8600 eb5d8638 eb5e1af8 c10b14d8 00000009  0000000a c1d32911 00000000 00000000 e44c826c eb5d8000 eb5e1b74 c10b214e Call Trace:
- [<c144dd70>] dump_stack+0x5f/0x8f
- [<c10af89a>] register_lock_class+0x25a/0x4c0  [<c10b14d8>] ? check_irq_usage+0x88/0xc0  [<c10b214e>] __lock_acquire+0x5e/0x17a0  [<c1abdb9b>] ? _raw_spin_unlock_irqrestore+0x3b/0x70
- [<c10cf14a>] ? rcu_read_lock_sched_held+0x8a/0x90
- [<c10b3c5f>] lock_acquire+0x9f/0x1f0
- [<c1922dcf>] ? dev_get_stats+0x5f/0x110  [<c176e6b3>] ixgbe_get_stats64+0x113/0x320  [<c1922dcf>] ? dev_get_stats+0x5f/0x110  [<c1922dcf>] dev_get_stats+0x5f/0x110  [<c1ab5415>] rtnl_fill_stats+0x40/0x105  [<c193dd45>] rtnl_fill_ifinfo+0x4c5/0xd20  [<c11c5115>] ? __kmalloc_node_track_caller+0x1a5/0x410
- [<c1917487>] ? __kmalloc_reserve.isra.42+0x27/0x80
- [<c191754f>] ? __alloc_skb+0x6f/0x270
- [<c1942291>] rtmsg_ifinfo_build_skb+0x71/0xd0  [<c194230a>] rtmsg_ifinfo.part.23+0x1a/0x50  [<c1923dad>] ? call_netdevice_notifiers_info+0x2d/0x60
- [<c194236b>] rtmsg_ifinfo+0x2b/0x40
- [<c192f997>] register_netdevice+0x3d7/0x4d0  [<c192faa7>] register_netdev+0x17/0x30  [<c177b83d>] ixgbe_probe+0x118d/0x1610  [<c1498202>] local_pci_probe+0x32/0x80  [<c1498172>] ? pci_match_device+0xd2/0x100  [<c14991e0>] pci_device_probe+0xc0/0x110  [<c1652cc5>] driver_probe_device+0x1c5/0x280  [<c1498172>] ? pci_match_device+0xd2/0x100  [<c1652e09>] __driver_attach+0x89/0x90  [<c1652d80>] ? driver_probe_device+0x280/0x280  [<c165114f>] bus_for_each_dev+0x4f/0x80  [<c165269e>] driver_attach+0x1e/0x20  [<c1652d80>] ? driver_probe_device+0x280/0x280  [<c1652317>] bus_add_driver+0x1a7/0x220  [<c1653a79>] driver_register+0x59/0xe0  [<c1f897b8>] ? igb_init_module+0x49/0x49  [<c1497b2a>] __pci_register_driver+0x4a/0x50  [<c1f8985d>] ixgbe_init_module+0xa5/0xc4  [<c1000485>] do_one_initcall+0x35/0x150  [<c107e818>] ? parameq+0x18/0x70  [<c1f395d8>] ? repair_env_string+0x12/0x51  [<c107ead0>] ? parse_args+0x260/0x3b0  [<c1074f73>] ? __usermodehelper_set_disable_depth+0x43/0x50
- [<c1f39e90>] kernel_init_freeable+0x19b/0x267  [<c1f395c6>] ? set_debug_rodata+0xf/0xf  [<c10b1e7b>] ? trace_hardirqs_on+0xb/0x10  [<c1abdc02>] ? _raw_spin_unlock_irq+0x32/0x50  [<c1085f0b>] ? finish_task_switch+0xab/0x1f0  [<c1085ec9>] ? finish_task_switch+0x69/0x1f0  [<c1ab6a30>] kernel_init+0x10/0x110  [<c108bd65>] ? schedule_tail+0x25/0x80  [<c1abe422>] ret_from_kernel_thread+0xe/0x24  [<c1ab6a20>] ? rest_init+0x130/0x130
+-       memset(stats, 0, sizeof(struct rtnl_link_stats64));
+        spin_lock(&adapter->stats64_lock);
+        e1000e_update_stats(adapter);
+        /* Fill out the OS statistics structure */
+------------------------------------------------------------------------------------
 
-This CallTrace occurred on 32-bit kernel with CONFIG_PROVE_LOCKING enabled.
+This also is where the bad counters start to show up for e1000e for my test systems.  From this driver on I see (very) large values for tx_dropped, rx_over_errors and tx_fifo_errors on driver load (even before bringing the interface up.  It seems the memset is not so useless for this driver after all.  Would simply reverting the e1000e portion of this patch resolve the issue?
 
-This happens at ixgbe driver probe hardware stage, when comes to ixgbe_get_stats64, the seqcount/seqlock still not initialize, although this was initialize in TX/RX resources setup routin, but it was too late, then lockdep give this Warning.
-
-To fix this, move the u64_stats_init function to driver probe stage, which before we get the status of seqcount and after the RX/TX ring was finished init.
-
-Signed-off-by: Liwei Song <liwei.song@windriver.com>
----
-
-Tested-by: Krishneil Singh  <krishneil.k.singh@intel.com>
-
+> 
+> > in our lab shows 'tx_heartbeat_errors' counter reported as 0.
+> >
+> 
+> Please see the mail I just sent to Paul Menzel <pmenzel@molgen.mpg.de>
+> for more information about the issue and how to reproduce it.
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
