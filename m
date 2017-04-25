@@ -1,63 +1,62 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 25 Apr 2017 08:07:49 -0700
+Date: Tue, 25 Apr 2017 10:16:22 -0700
 Subject: [Intel-wired-lan] [PATCH] ixgbe: initialize u64_stats_sync
  structures early at ixgbe_probe
-In-Reply-To: <EF50CC0C76A53A44BAD798C58E0A157E50B87CBB@ORSMSX103.amr.corp.intel.com>
+In-Reply-To: <trinity-a348af9b-9ef5-47a9-a14e-94265c880cf1-1493134775614@3capp-gmx-bs78>
 References: <1480909244-16460-1-git-send-email-liwei.song@windriver.com>
  <EF50CC0C76A53A44BAD798C58E0A157E50B87CBB@ORSMSX103.amr.corp.intel.com>
-Message-ID: <CAKgT0UeTdY9j1qDHP=DscgAZF2pPFCb+=ACySqKBK+UuBsaNBA@mail.gmail.com>
+ <CAKgT0UeTdY9j1qDHP=DscgAZF2pPFCb+=ACySqKBK+UuBsaNBA@mail.gmail.com>
+ <trinity-a348af9b-9ef5-47a9-a14e-94265c880cf1-1493134775614@3capp-gmx-bs78>
+Message-ID: <CAKgT0Uc31ehKGmjKWFg6YNWtqvD1grosaVXqBX+GUCxUBdQUHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Apr 24, 2017 at 4:00 PM, Singh, Krishneil K
-<krishneil.k.singh@intel.com> wrote:
+On Tue, Apr 25, 2017 at 8:39 AM, Lino Sanfilippo <LinoSanfilippo@gmx.de> wrote:
+> Hi,
 >
+>> This patch doesn't look right to me. I would suggest rejecting it.
+>>
+>> The call to initialize the stats should be done when the ring is
+>> allocated, not in ixgbe_probe(). This should probably be done in
+>> ixgbe_alloc_q_vector() instead.
+>>
 >
->
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Liwei Song
-> Sent: Sunday, December 4, 2016 7:41 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org; Song, Liwei (Wind River) <liwei.song@windriver.com>
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: initialize u64_stats_sync structures early at ixgbe_probe
->
-> Fix the following CallTrace:
-> INFO: trying to register non-static key.
-> the code is fine but needs lockdep annotation.
-> turning off the locking correctness validator.
-> CPU: 71 PID: 1 Comm: swapper/0 Not tainted 4.8.8-WR9.0.0.1_standard #11 Hardware name: Intel Corporation S2600WTT/S2600WTT, BIOS GRNDSDP1.86B.0036.R05.1407140519 07/14/2014
->  00200086 00200086 eb5e1ab8 c144dd70 00000000 00000000 eb5e1af8 c10af89a
->  c1d23de4 eb5e1af8 00000009 eb5d8600 eb5d8638 eb5e1af8 c10b14d8 00000009  0000000a c1d32911 00000000 00000000 e44c826c eb5d8000 eb5e1b74 c10b214e Call Trace:
->  [<c144dd70>] dump_stack+0x5f/0x8f
->  [<c10af89a>] register_lock_class+0x25a/0x4c0  [<c10b14d8>] ? check_irq_usage+0x88/0xc0  [<c10b214e>] __lock_acquire+0x5e/0x17a0  [<c1abdb9b>] ? _raw_spin_unlock_irqrestore+0x3b/0x70
->  [<c10cf14a>] ? rcu_read_lock_sched_held+0x8a/0x90
->  [<c10b3c5f>] lock_acquire+0x9f/0x1f0
->  [<c1922dcf>] ? dev_get_stats+0x5f/0x110  [<c176e6b3>] ixgbe_get_stats64+0x113/0x320  [<c1922dcf>] ? dev_get_stats+0x5f/0x110  [<c1922dcf>] dev_get_stats+0x5f/0x110  [<c1ab5415>] rtnl_fill_stats+0x40/0x105  [<c193dd45>] rtnl_fill_ifinfo+0x4c5/0xd20  [<c11c5115>] ? __kmalloc_node_track_caller+0x1a5/0x410
->  [<c1917487>] ? __kmalloc_reserve.isra.42+0x27/0x80
->  [<c191754f>] ? __alloc_skb+0x6f/0x270
->  [<c1942291>] rtmsg_ifinfo_build_skb+0x71/0xd0  [<c194230a>] rtmsg_ifinfo.part.23+0x1a/0x50  [<c1923dad>] ? call_netdevice_notifiers_info+0x2d/0x60
->  [<c194236b>] rtmsg_ifinfo+0x2b/0x40
->  [<c192f997>] register_netdevice+0x3d7/0x4d0  [<c192faa7>] register_netdev+0x17/0x30  [<c177b83d>] ixgbe_probe+0x118d/0x1610  [<c1498202>] local_pci_probe+0x32/0x80  [<c1498172>] ? pci_match_device+0xd2/0x100  [<c14991e0>] pci_device_probe+0xc0/0x110  [<c1652cc5>] driver_probe_device+0x1c5/0x280  [<c1498172>] ? pci_match_device+0xd2/0x100  [<c1652e09>] __driver_attach+0x89/0x90  [<c1652d80>] ? driver_probe_device+0x280/0x280  [<c165114f>] bus_for_each_dev+0x4f/0x80  [<c165269e>] driver_attach+0x1e/0x20  [<c1652d80>] ? driver_probe_device+0x280/0x280  [<c1652317>] bus_add_driver+0x1a7/0x220  [<c1653a79>] driver_register+0x59/0xe0  [<c1f897b8>] ? igb_init_module+0x49/0x49  [<c1497b2a>] __pci_register_driver+0x4a/0x50  [<c1f8985d>] ixgbe_init_module+0xa5/0xc4  [<c1000485>] do_one_initcall+0x35/0x150  [<c107e818>] ? parameq+0x18/0x70  [<c1f395d8>] ? repair_env_string+0x12/0x51  [<c107ead0>] ? parse_args+0x260/0x3b0  [<c1074f73>] ? __usermodehelper_set_disable_depth+0x43/0x50
->  [<c1f39e90>] kernel_init_freeable+0x19b/0x267  [<c1f395c6>] ? set_debug_rodata+0xf/0xf  [<c10b1e7b>] ? trace_hardirqs_on+0xb/0x10  [<c1abdc02>] ? _raw_spin_unlock_irq+0x32/0x50  [<c1085f0b>] ? finish_task_switch+0xab/0x1f0  [<c1085ec9>] ? finish_task_switch+0x69/0x1f0  [<c1ab6a30>] kernel_init+0x10/0x110  [<c108bd65>] ? schedule_tail+0x25/0x80  [<c1abe422>] ret_from_kernel_thread+0xe/0x24  [<c1ab6a20>] ? rest_init+0x130/0x130
->
-> This CallTrace occurred on 32-bit kernel with CONFIG_PROVE_LOCKING enabled.
->
-> This happens at ixgbe driver probe hardware stage, when comes to ixgbe_get_stats64, the seqcount/seqlock still not initialize, although this was initialize in TX/RX resources setup routin, but it was too late, then lockdep give this Warning.
->
-> To fix this, move the u64_stats_init function to driver probe stage, which before we get the status of seqcount and after the RX/TX ring was finished init.
->
-> Signed-off-by: Liwei Song <liwei.song@windriver.com>
-> ---
->
-> Tested-by: Krishneil Singh  <krishneil.k.singh@intel.com>
+> AFAICS ixgbe_alloc_q_vector() is also called in probe() (by ixgbe_init_interrupt_scheme()).
+> Furthermore it is also called in resume() which would lead to multiple initialization of
+> the u64_stats_sync in case of resume.
 
-This patch doesn't look right to me. I would suggest rejecting it.
+ixgbe_alloc_q_vector() is what allocates the ring structures that are
+being initialized here. Calling it anywhere other than here doesn't
+make sense since what we want to do is initialize the memory after we
+have allocated it, but before we hand the pointer to it over to a
+netdev or in this case an adapter structure.
 
-The call to initialize the stats should be done when the ring is
-allocated, not in ixgbe_probe(). This should probably be done in
-ixgbe_alloc_q_vector() instead.
+> IMHO the u64_stats_sync variables have to be initialized before register_netdev() is called
+> since this is the point from which userspace can call ixgbe_get_stats64(). I would say the
+> best place to do so is the probe() function as it is done in this patch.
+
+I would disagree here. We should be initializing the stats variables
+after we allocate them. Especially since we can end up freeing and
+reallocating them any time the number of queues is changed.
+
+> Just my 2 cents.
+>
+> Regards,
+> Lino
+
+My advice would be to look through the code and verify what it is you
+need to initialize and where it should happen. In this case we are
+getting a lockdep splat since we are just letting things get
+initialized with kzalloc and aren't following up in the right place. I
+don't disagree that the original code has the u64_stats_init in the
+wrong place since we can open/close the interface and trigger a
+reinitialization of the stats. I would say we need to initialize the
+stats just after we allocate them in memory so that if we decide to
+free and reallocate the rings we initialize the new rings before they
+are added to the netdev and don't reintroduce this issue in just a
+different form.
 
 - Alex
