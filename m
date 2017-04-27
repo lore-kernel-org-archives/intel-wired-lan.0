@@ -1,67 +1,105 @@
-From: Colin King <colin.king@canonical.com>
-Date: Thu, 27 Apr 2017 18:59:11 +0100
-Subject: [Intel-wired-lan] [PATCH] igb: make a few local functions static
-Message-ID: <20170427175911.15477-1-colin.king@canonical.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 27 Apr 2017 21:09:52 +0200
+Subject: [Intel-wired-lan] [PATCH net-next] igb: mark PM functions as
+	__maybe_unused
+Message-ID: <20170427191007.1990964-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+The new wake function is only used by the suspend/resume handlers that
+are defined in inside of an #ifdef, which can cause this harmless
+warning:
 
-clean up a few sparse warnings, these following
-functions can be made static:
+drivers/net/ethernet/intel/igb/igb_main.c:7988:13: warning: 'igb_deliver_wake_packet' defined but not used [-Wunused-function]
 
-drivers/net/ethernet/intel/igb/igb_main.c: warning: symbol
-  'igb_add_mac_filter' was not declared. Should it be static?
-drivers/net/ethernet/intel/igb/igb_main.c: warning: symbol
-  'igb_del_mac_filter' was not declared. Should it be static?
-drivers/net/ethernet/intel/igb/igb_main.c: warning: symbol
-  'igb_set_vf_mac_filter' was not declared. Should it be static?
+Removing the #ifdef, instead using a __maybe_unused annotation
+simplifies the code and avoids the warning.
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Fixes: b90fa8763560 ("igb: Enable reading of wake up packet")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 18 +++++-------------
+ 1 file changed, 5 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 1cf74aa4ebd9..b0021819b9d0 100644
+index 1cf74aa4ebd9..2d5bdb1fd37d 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -6457,8 +6457,8 @@ static void igb_set_default_mac_filter(struct igb_adapter *adapter)
- 	igb_rar_set_index(adapter, 0);
+@@ -191,10 +191,7 @@ static int igb_disable_sriov(struct pci_dev *dev);
+ static int igb_pci_disable_sriov(struct pci_dev *dev);
+ #endif
+ 
+-#ifdef CONFIG_PM
+-#ifdef CONFIG_PM_SLEEP
+ static int igb_suspend(struct device *);
+-#endif
+ static int igb_resume(struct device *);
+ static int igb_runtime_suspend(struct device *dev);
+ static int igb_runtime_resume(struct device *dev);
+@@ -204,7 +201,6 @@ static const struct dev_pm_ops igb_pm_ops = {
+ 	SET_RUNTIME_PM_OPS(igb_runtime_suspend, igb_runtime_resume,
+ 			igb_runtime_idle)
+ };
+-#endif
+ static void igb_shutdown(struct pci_dev *);
+ static int igb_pci_sriov_configure(struct pci_dev *dev, int num_vfs);
+ #ifdef CONFIG_IGB_DCA
+@@ -8015,9 +8011,7 @@ static void igb_deliver_wake_packet(struct net_device *netdev)
+ 	netif_rx(skb);
  }
  
--int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
--		       const u8 queue)
-+static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
-+			      const u8 queue)
+-#ifdef CONFIG_PM
+-#ifdef CONFIG_PM_SLEEP
+-static int igb_suspend(struct device *dev)
++static int __maybe_unused igb_suspend(struct device *dev)
  {
- 	struct e1000_hw *hw = &adapter->hw;
- 	int rar_entries = hw->mac.rar_entry_count -
-@@ -6487,8 +6487,8 @@ int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
- 	return -ENOSPC;
+ 	int retval;
+ 	bool wake;
+@@ -8036,9 +8030,8 @@ static int igb_suspend(struct device *dev)
+ 
+ 	return 0;
+ }
+-#endif /* CONFIG_PM_SLEEP */
+ 
+-static int igb_resume(struct device *dev)
++static int __maybe_unused igb_resume(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+@@ -8092,7 +8085,7 @@ static int igb_resume(struct device *dev)
+ 	return err;
  }
  
--int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
--		       const u8 queue)
-+static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
-+			      const u8 queue)
+-static int igb_runtime_idle(struct device *dev)
++static int __maybe_unused igb_runtime_idle(struct device *dev)
  {
- 	struct e1000_hw *hw = &adapter->hw;
- 	int rar_entries = hw->mac.rar_entry_count -
-@@ -6540,8 +6540,8 @@ static int igb_uc_unsync(struct net_device *netdev, const unsigned char *addr)
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+@@ -8104,7 +8097,7 @@ static int igb_runtime_idle(struct device *dev)
+ 	return -EBUSY;
+ }
+ 
+-static int igb_runtime_suspend(struct device *dev)
++static int __maybe_unused igb_runtime_suspend(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	int retval;
+@@ -8124,11 +8117,10 @@ static int igb_runtime_suspend(struct device *dev)
  	return 0;
  }
  
--int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
--			  const u32 info, const u8 *addr)
-+static int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
-+				 const u32 info, const u8 *addr)
+-static int igb_runtime_resume(struct device *dev)
++static int __maybe_unused igb_runtime_resume(struct device *dev)
  {
- 	struct pci_dev *pdev = adapter->pdev;
- 	struct vf_data_storage *vf_data = &adapter->vf_data[vf];
+ 	return igb_resume(dev);
+ }
+-#endif /* CONFIG_PM */
+ 
+ static void igb_shutdown(struct pci_dev *pdev)
+ {
 -- 
-2.11.0
+2.9.0
 
