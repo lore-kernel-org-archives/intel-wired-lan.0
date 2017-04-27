@@ -1,199 +1,67 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 27 Apr 2017 17:04:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 8ae1f6e8d954200bec7da95d2a18eb3aa37be577
-Message-ID: <5901b42a.O4EWuWeKdPbSlczb%fengguang.wu@intel.com>
+From: Colin King <colin.king@canonical.com>
+Date: Thu, 27 Apr 2017 18:59:11 +0100
+Subject: [Intel-wired-lan] [PATCH] igb: make a few local functions static
+Message-ID: <20170427175911.15477-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-8ae1f6e8d954200bec7da95d2a18eb3aa37be577  ixgbe: Correct thermal sensor event check
+From: Colin Ian King <colin.king@canonical.com>
 
-elapsed time: 275m
+clean up a few sparse warnings, these following
+functions can be made static:
 
-configs tested: 175
+drivers/net/ethernet/intel/igb/igb_main.c: warning: symbol
+  'igb_add_mac_filter' was not declared. Should it be static?
+drivers/net/ethernet/intel/igb/igb_main.c: warning: symbol
+  'igb_del_mac_filter' was not declared. Should it be static?
+drivers/net/ethernet/intel/igb/igb_main.c: warning: symbol
+  'igb_set_vf_mac_filter' was not declared. Should it be static?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-powerpc                       ppc64_defconfig
-sh                           se7705_defconfig
-x86_64                 randconfig-a0-04271334
-x86_64                 randconfig-a0-04271503
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-04271400
-x86_64                           allmodconfig
-arm                            zeus_defconfig
-m68k                          hp300_defconfig
-parisc                         b180_defconfig
-x86_64                randconfig-in0-04271422
-arm                        mvebu_v5_defconfig
-blackfin                BF609-EZKIT_defconfig
-mips                  maltasmvp_eva_defconfig
-x86_64                randconfig-it0-04271228
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                          pcm027_defconfig
-sh                          landisk_defconfig
-xtensa                  cadence_csp_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                 randconfig-g0-04271413
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                   randconfig-a0-04270907
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-arm64                            allmodconfig
-mips                           ip28_defconfig
-mn10300                             defconfig
-powerpc                 mpc837x_rdb_defconfig
-powerpc                     sbc834x_defconfig
-x86_64                 randconfig-x012-201717
-x86_64                 randconfig-x015-201717
-x86_64                 randconfig-x017-201717
-x86_64                 randconfig-x010-201717
-x86_64                 randconfig-x018-201717
-x86_64                 randconfig-x011-201717
-x86_64                 randconfig-x019-201717
-x86_64                 randconfig-x016-201717
-x86_64                 randconfig-x014-201717
-x86_64                 randconfig-x013-201717
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201717
-i386                     randconfig-s1-201717
-x86_64                 randconfig-s0-04271348
-x86_64                 randconfig-s1-04271348
-x86_64                 randconfig-s2-04271348
-x86_64                 randconfig-s3-04271350
-x86_64                 randconfig-s4-04271350
-x86_64                 randconfig-s5-04271350
-arm                        vexpress_defconfig
-avr32                    hammerhead_defconfig
-mips                          lasat_defconfig
-powerpc                 canyonlands_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201717
-i386                   randconfig-b0-04271355
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201717
-i386                     randconfig-i1-201717
-i386                             allyesconfig
-x86_64                 randconfig-b0-04271253
-x86_64                 randconfig-u0-04271355
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
-x86_64                randconfig-ne0-04271502
-arm                              allyesconfig
-cris                        etraxfs_defconfig
-powerpc                      chrp32_defconfig
-sh                          rsk7201_defconfig
-i386                   randconfig-x010-201717
-i386                   randconfig-x014-201717
-i386                   randconfig-x016-201717
-i386                   randconfig-x017-201717
-i386                   randconfig-x013-201717
-i386                   randconfig-x019-201717
-i386                   randconfig-x011-201717
-i386                   randconfig-x015-201717
-i386                   randconfig-x012-201717
-i386                   randconfig-x018-201717
-i386                     randconfig-n0-201717
-i386                   randconfig-h0-04271240
-i386                   randconfig-h1-04271240
-x86_64                 randconfig-h0-04271506
-sh                           se7722_defconfig
-openrisc                         allyesconfig
-i386                   randconfig-x073-201717
-i386                   randconfig-x077-201717
-i386                   randconfig-x070-201717
-i386                   randconfig-x072-201717
-i386                   randconfig-x076-201717
-i386                   randconfig-x074-201717
-i386                   randconfig-x078-201717
-i386                   randconfig-x075-201717
-i386                   randconfig-x079-201717
-i386                   randconfig-x071-201717
-x86_64                 randconfig-n0-04271358
-arm                         cm_x300_defconfig
-parisc                         a500_defconfig
-x86_64                randconfig-ws0-04271319
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x009-201717
-x86_64                 randconfig-x004-201717
-x86_64                 randconfig-x003-201717
-x86_64                 randconfig-x008-201717
-x86_64                 randconfig-x002-201717
-x86_64                 randconfig-x005-201717
-x86_64                 randconfig-x007-201717
-x86_64                 randconfig-x000-201717
-x86_64                 randconfig-x001-201717
-x86_64                 randconfig-x006-201717
-i386                     randconfig-r0-201717
-x86_64                 randconfig-r0-04262318
-avr32                     atstk1002_defconfig
-sh                   sh7724_generic_defconfig
-i386                   randconfig-x0-04271518
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 1cf74aa4ebd9..b0021819b9d0 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -6457,8 +6457,8 @@ static void igb_set_default_mac_filter(struct igb_adapter *adapter)
+ 	igb_rar_set_index(adapter, 0);
+ }
+ 
+-int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+-		       const u8 queue)
++static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
++			      const u8 queue)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	int rar_entries = hw->mac.rar_entry_count -
+@@ -6487,8 +6487,8 @@ int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 	return -ENOSPC;
+ }
+ 
+-int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+-		       const u8 queue)
++static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
++			      const u8 queue)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	int rar_entries = hw->mac.rar_entry_count -
+@@ -6540,8 +6540,8 @@ static int igb_uc_unsync(struct net_device *netdev, const unsigned char *addr)
+ 	return 0;
+ }
+ 
+-int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
+-			  const u32 info, const u8 *addr)
++static int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
++				 const u32 info, const u8 *addr)
+ {
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	struct vf_data_storage *vf_data = &adapter->vf_data[vf];
+-- 
+2.11.0
 
-Thanks,
-Fengguang
