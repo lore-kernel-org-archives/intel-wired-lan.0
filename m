@@ -1,254 +1,225 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 28 Apr 2017 10:16:55 -0700
-Subject: [Intel-wired-lan] [PATCH v2 5/5] net-intel: check for Tx timestamp
-	timeouts during watchdog
+Date: Fri, 28 Apr 2017 10:16:52 -0700
+Subject: [Intel-wired-lan] [PATCH v2 2/5] net-intel: avoid permanent lock of
+	*_PTP_TX_IN_PROGRESS
 In-Reply-To: <20170428171655.13650-1-jacob.e.keller@intel.com>
 References: <20170428171655.13650-1-jacob.e.keller@intel.com>
-Message-ID: <20170428171655.13650-6-jacob.e.keller@intel.com>
+Message-ID: <20170428171655.13650-3-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Several drivers share similar logic for handling the Tx timestamps.
-These drivers have some parts which rely on the interrupt instead of
-only a polling work task. Although unlikely it may be possible in some
-circumstances for the PTP tx timestamp to never occur. If this happens,
-the result is that all future Tx timestamp requests will be ignored
-permanently.
+Several drivers share a pattern for Tx timestamping using a bit lock to
+indicate when the timestamp is in progress so that multiple packets
+cannot be timestamped at once. This is required because we only have one
+set of Tx timestamp registers. There exist a few corner cases where we
+were not properly cleaning up after ourselves on failure to transmit,
+which potentially resulted in the state bit being locked forever.
 
-Fix this by adding a *ptp_tx_hang() function similar to the already
-existing *ptp_rx_hang() routine which checks to make sure that the
-timestamp hasn't taken too long. This ensures that we will eventually
-recover from this case.
+Add some code at the end of the *_xmit_frame() routines to check and
+make sure we cleanup in the case of failure. For the *_tx_map()
+functions, we also need to add a return code to indicate when DMA
+failure occurred.
 
+This resolves a possible permanent lock of the PTP_TX_IN_PROGRESS bit
+for igb, ixgbe, and i40e. The e1000e driver does not have the same
+problem due to the ordering of the Tx flow.
+
+Reported-by: Reported-by: David Mirabito <davidm@metamako.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h        |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c   |  1 +
- drivers/net/ethernet/intel/i40e/i40e_ptp.c    | 30 +++++++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  1 +
- drivers/net/ethernet/intel/igb/igb.h          |  1 +
- drivers/net/ethernet/intel/igb/igb_main.c     |  1 +
- drivers/net/ethernet/intel/igb/igb_ptp.c      | 29 ++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c  | 28 +++++++++++++++++++++++++
- 10 files changed, 95 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 26 ++++++++++++++++++++------
+ drivers/net/ethernet/intel/igb/igb_main.c     | 23 ++++++++++++++++++-----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 +++++++++++++++-----
+ 3 files changed, 53 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index f4465afe1fe1..25bf336c5f38 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -502,6 +502,7 @@ struct i40e_pf {
- 	struct ptp_clock *ptp_clock;
- 	struct ptp_clock_info ptp_caps;
- 	struct sk_buff *ptp_tx_skb;
-+	unsigned long ptp_tx_start;
- 	struct hwtstamp_config tstamp_config;
- 	struct mutex tmreg_lock; /* Used to protect the SYSTIME registers. */
- 	u64 ptp_base_adj;
-@@ -957,6 +958,7 @@ bool i40e_dcb_need_reconfig(struct i40e_pf *pf,
- 			    struct i40e_dcbx_config *new_cfg);
- #endif /* CONFIG_I40E_DCB */
- void i40e_ptp_rx_hang(struct i40e_pf *pf);
-+void i40e_ptp_tx_hang(struct i40e_pf *pf);
- void i40e_ptp_tx_hwtstamp(struct i40e_pf *pf);
- void i40e_ptp_rx_hwtstamp(struct i40e_pf *pf, struct sk_buff *skb, u8 index);
- void i40e_ptp_set_increment(struct i40e_pf *pf);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index c019dec988e3..e4eb97832413 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6373,6 +6373,7 @@ static void i40e_watchdog_subtask(struct i40e_pf *pf)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 29321a6167a6..19984be0f70c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2932,10 +2932,12 @@ bool __i40e_chk_linearize(struct sk_buff *skb)
+  * @hdr_len:  size of the packet header
+  * @td_cmd:   the command field in the descriptor
+  * @td_offset: offset for checksum or crc
++ *
++ * Returns 0 on success, -1 on failure to DMA
+  **/
+-static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+-			       struct i40e_tx_buffer *first, u32 tx_flags,
+-			       const u8 hdr_len, u32 td_cmd, u32 td_offset)
++static inline int i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
++			      struct i40e_tx_buffer *first, u32 tx_flags,
++			      const u8 hdr_len, u32 td_cmd, u32 td_offset)
+ {
+ 	unsigned int data_len = skb->data_len;
+ 	unsigned int size = skb_headlen(skb);
+@@ -3093,7 +3095,7 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		mmiowb();
  	}
  
- 	i40e_ptp_rx_hang(pf);
-+	i40e_ptp_tx_hang(pf);
+-	return;
++	return 0;
+ 
+ dma_error:
+ 	dev_info(tx_ring->dev, "TX DMA map failed\n");
+@@ -3110,6 +3112,8 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	}
+ 
+ 	tx_ring->next_to_use = i;
++
++	return -1;
  }
  
  /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index 876ea169816a..cd35c4b9a8b0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -327,6 +327,36 @@ void i40e_ptp_rx_hang(struct i40e_pf *pf)
- 	pf->rx_hwtstamp_cleared += cleared;
- }
+@@ -3210,8 +3214,9 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	 */
+ 	i40e_atr(tx_ring, skb, tx_flags);
  
-+/**
-+ * i40e_ptp_tx_hang - Detect error case when Tx timestamp register is hung
-+ * @pf: The PF private data structure
-+ *
-+ * This watchdog task is run periodically to make sure that we clear the Tx
-+ * timestamp logic if we don't obtain a timestamp in a reasonable amount of
-+ * time. It is unexpected in the normal case but if it occurs it results in
-+ * permanently prevent timestamps of future packets
-+ **/
-+void i40e_ptp_tx_hang(struct i40e_pf *pf)
-+{
-+	if (!(pf->flags & I40E_FLAG_PTP) || !pf->ptp_tx)
-+		return;
+-	i40e_tx_map(tx_ring, skb, first, tx_flags, hdr_len,
+-		    td_cmd, td_offset);
++	if (i40e_tx_map(tx_ring, skb, first, tx_flags, hdr_len,
++			td_cmd, td_offset))
++		goto cleanup_tx_tstamp;
+ 
+ 	return NETDEV_TX_OK;
+ 
+@@ -3219,6 +3224,15 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	i40e_trace(xmit_frame_ring_drop, first->skb, tx_ring);
+ 	dev_kfree_skb_any(first->skb);
+ 	first->skb = NULL;
++cleanup_tx_tstamp:
++	if (unlikely(tx_flags & I40E_TX_FLAGS_TSYN)) {
++		struct i40e_pf *pf = i40e_netdev_to_pf(tx_ring->netdev);
 +
-+	/* Nothing to do if we're not already waiting for a timestamp */
-+	if (!test_bit(__I40E_PTP_TX_IN_PROGRESS, pf->state))
-+		return;
-+
-+	/* We already have a handler routine which is run when we are notified
-+	 * of a Tx timestamp in the hardware. If we don't get an interrupt
-+	 * within a second it is reasonable to assume that we never will.
-+	 */
-+	if (time_is_before_jiffies(pf->ptp_tx_start + HZ)) {
 +		dev_kfree_skb_any(pf->ptp_tx_skb);
 +		pf->ptp_tx_skb = NULL;
 +		clear_bit_unlock(__I40E_PTP_TX_IN_PROGRESS, pf->state);
-+		pf->tx_hwtstamp_timeouts++;
 +	}
-+}
 +
- /**
-  * i40e_ptp_tx_hwtstamp - Utility function which returns the Tx timestamp
-  * @pf: Board private structure
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index c69ee4b0cfe2..c2e9013d05eb 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2628,6 +2628,7 @@ static int i40e_tsyn(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	if (pf->ptp_tx &&
- 	    !test_and_set_bit_lock(__I40E_PTP_TX_IN_PROGRESS, pf->state)) {
- 		skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
-+		pf->ptp_tx_start = jiffies;
- 		pf->ptp_tx_skb = skb_get(skb);
- 	} else {
- 		pf->tx_hwtstamp_skipped++;
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index be35edcf6b08..ff4d9073781a 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -677,6 +677,7 @@ void igb_ptp_stop(struct igb_adapter *adapter);
- void igb_ptp_reset(struct igb_adapter *adapter);
- void igb_ptp_suspend(struct igb_adapter *adapter);
- void igb_ptp_rx_hang(struct igb_adapter *adapter);
-+void igb_ptp_tx_hang(struct igb_adapter *adapter);
- void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector, struct sk_buff *skb);
- void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
- 			 struct sk_buff *skb);
+ 	return NETDEV_TX_OK;
+ }
+ 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 3745b98749ed..f9900f10215b 100644
+index dbb4e3cf7dbf..978908f426a7 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -4726,6 +4726,7 @@ static void igb_watchdog_task(struct work_struct *work)
- 
- 	igb_spoof_check(adapter);
- 	igb_ptp_rx_hang(adapter);
-+	igb_ptp_tx_hang(adapter);
- 
- 	/* Check LVMMC register on i350/i354 only */
- 	if ((adapter->hw.mac.type == e1000_i350) ||
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index a2da5738bfb5..b2f67c169bd2 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -711,6 +711,35 @@ void igb_ptp_rx_hang(struct igb_adapter *adapter)
- 	}
+@@ -5201,9 +5201,9 @@ static inline int igb_maybe_stop_tx(struct igb_ring *tx_ring, const u16 size)
+ 	return __igb_maybe_stop_tx(tx_ring, size);
  }
  
-+/**
-+ * igb_ptp_tx_hang - detect error case where Tx timestamp never finishes
-+ * @adapter: private network adapter structure
-+ */
-+void igb_ptp_tx_hang(struct igb_adapter *adapter)
-+{
-+	bool timeout = time_is_before_jiffies(adapter->ptp_tx_start +
-+					      IGB_PTP_TX_TIMEOUT);
+-static void igb_tx_map(struct igb_ring *tx_ring,
+-		       struct igb_tx_buffer *first,
+-		       const u8 hdr_len)
++static int igb_tx_map(struct igb_ring *tx_ring,
++		      struct igb_tx_buffer *first,
++		      const u8 hdr_len)
+ {
+ 	struct sk_buff *skb = first->skb;
+ 	struct igb_tx_buffer *tx_buffer;
+@@ -5314,7 +5314,7 @@ static void igb_tx_map(struct igb_ring *tx_ring,
+ 		 */
+ 		mmiowb();
+ 	}
+-	return;
++	return 0;
+ 
+ dma_error:
+ 	dev_err(tx_ring->dev, "TX DMA map failed\n");
+@@ -5345,6 +5345,8 @@ static void igb_tx_map(struct igb_ring *tx_ring,
+ 	tx_buffer->skb = NULL;
+ 
+ 	tx_ring->next_to_use = i;
 +
-+	if (!adapter->ptp_tx_skb)
-+		return;
++	return -1;
+ }
+ 
+ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
+@@ -5410,13 +5412,24 @@ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
+ 	else if (!tso)
+ 		igb_tx_csum(tx_ring, first);
+ 
+-	igb_tx_map(tx_ring, first, hdr_len);
++	if (igb_tx_map(tx_ring, first, hdr_len))
++		goto cleanup_tx_tstamp;
+ 
+ 	return NETDEV_TX_OK;
+ 
+ out_drop:
+ 	dev_kfree_skb_any(first->skb);
+ 	first->skb = NULL;
++cleanup_tx_tstamp:
++	if (unlikely(tx_flags & IGB_TX_FLAGS_TSTAMP)) {
++		struct igb_adapter *adapter = netdev_priv(tx_ring->netdev);
 +
-+	if (!test_bit(__IGB_PTP_TX_IN_PROGRESS, &adapter->state))
-+		return;
-+
-+	/* If we haven't received a timestamp within the timeout, it is
-+	 * reasonable to assume that it will never occur, so we can unlock the
-+	 * timestamp bit when this occurs.
-+	 */
-+	if (timeout) {
-+		cancel_work_sync(&adapter->ptp_tx_work);
 +		dev_kfree_skb_any(adapter->ptp_tx_skb);
 +		adapter->ptp_tx_skb = NULL;
++		if (adapter->hw.mac.type == e1000_82576)
++			cancel_work_sync(&adapter->ptp_tx_work);
 +		clear_bit_unlock(__IGB_PTP_TX_IN_PROGRESS, &adapter->state);
-+		adapter->tx_hwtstamp_timeouts++;
-+		dev_warn(&adapter->pdev->dev, "clearing Tx timestamp hang\n");
 +	}
-+}
-+
- /**
-  * igb_ptp_tx_hwtstamp - utility function which checks for TX time stamp
-  * @adapter: Board private structure.
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index eb36106218ad..dd5578756ae0 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -961,6 +961,7 @@ void ixgbe_ptp_suspend(struct ixgbe_adapter *adapter);
- void ixgbe_ptp_stop(struct ixgbe_adapter *adapter);
- void ixgbe_ptp_overflow_check(struct ixgbe_adapter *adapter);
- void ixgbe_ptp_rx_hang(struct ixgbe_adapter *adapter);
-+void ixgbe_ptp_tx_hang(struct ixgbe_adapter *adapter);
- void ixgbe_ptp_rx_pktstamp(struct ixgbe_q_vector *, struct sk_buff *);
- void ixgbe_ptp_rx_rgtstamp(struct ixgbe_q_vector *, struct sk_buff *skb);
- static inline void ixgbe_ptp_rx_hwtstamp(struct ixgbe_ring *rx_ring,
+ 
+ 	return NETDEV_TX_OK;
+ }
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index c61459fcc21e..f3199c73faed 100644
+index 68d849346cdf..54bf0f9f5573 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7645,6 +7645,7 @@ static void ixgbe_service_task(struct work_struct *work)
- 	if (test_bit(__IXGBE_PTP_RUNNING, &adapter->state)) {
- 		ixgbe_ptp_overflow_check(adapter);
- 		ixgbe_ptp_rx_hang(adapter);
-+		ixgbe_ptp_tx_hang(adapter);
+@@ -7885,9 +7885,9 @@ static inline int ixgbe_maybe_stop_tx(struct ixgbe_ring *tx_ring, u16 size)
+ #define IXGBE_TXD_CMD (IXGBE_TXD_CMD_EOP | \
+ 		       IXGBE_TXD_CMD_RS)
+ 
+-static void ixgbe_tx_map(struct ixgbe_ring *tx_ring,
+-			 struct ixgbe_tx_buffer *first,
+-			 const u8 hdr_len)
++static int ixgbe_tx_map(struct ixgbe_ring *tx_ring,
++			struct ixgbe_tx_buffer *first,
++			const u8 hdr_len)
+ {
+ 	struct sk_buff *skb = first->skb;
+ 	struct ixgbe_tx_buffer *tx_buffer;
+@@ -8014,7 +8014,7 @@ static void ixgbe_tx_map(struct ixgbe_ring *tx_ring,
+ 		mmiowb();
  	}
  
- 	ixgbe_service_event_complete(adapter);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-index 9270e6f4fcff..ef78835373fe 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-@@ -662,6 +662,34 @@ static void ixgbe_ptp_clear_tx_timestamp(struct ixgbe_adapter *adapter)
- 	clear_bit_unlock(__IXGBE_PTP_TX_IN_PROGRESS, &adapter->state);
+-	return;
++	return 0;
+ dma_error:
+ 	dev_err(tx_ring->dev, "TX DMA map failed\n");
+ 	tx_buffer = &tx_ring->tx_buffer_info[i];
+@@ -8044,6 +8044,8 @@ static void ixgbe_tx_map(struct ixgbe_ring *tx_ring,
+ 	first->skb = NULL;
+ 
+ 	tx_ring->next_to_use = i;
++
++	return -1;
  }
  
-+/**
-+ * ixgbe_ptp_tx_hang - detect error case where Tx timestamp never finishes
-+ * @adapter: private network adapter structure
-+ */
-+void ixgbe_ptp_tx_hang(struct ixgbe_adapter *adapter)
-+{
-+	bool timeout = time_is_before_jiffies(adapter->ptp_tx_start +
-+					      IXGBE_PTP_TX_TIMEOUT);
-+
-+	if (!adapter->ptp_tx_skb)
-+		return;
-+
-+	if (!test_bit(__IXGBE_PTP_TX_IN_PROGRESS, &adapter->state))
-+		return;
-+
-+	/* If we haven't received a timestamp within the timeout, it is
-+	 * reasonable to assume that it will never occur, so we can unlock the
-+	 * timestamp bit when this occurs.
-+	 */
-+	if (timeout) {
+ static void ixgbe_atr(struct ixgbe_ring *ring,
+@@ -8416,13 +8418,21 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+ #ifdef IXGBE_FCOE
+ xmit_fcoe:
+ #endif /* IXGBE_FCOE */
+-	ixgbe_tx_map(tx_ring, first, hdr_len);
++	if (ixgbe_tx_map(tx_ring, first, hdr_len))
++		goto cleanup_tx_timestamp;
+ 
+ 	return NETDEV_TX_OK;
+ 
+ out_drop:
+ 	dev_kfree_skb_any(first->skb);
+ 	first->skb = NULL;
++cleanup_tx_timestamp:
++	if (unlikely(tx_flags & IXGBE_TX_FLAGS_TSTAMP)) {
++		dev_kfree_skb_any(adapter->ptp_tx_skb);
++		adapter->ptp_tx_skb = NULL;
 +		cancel_work_sync(&adapter->ptp_tx_work);
-+		ixgbe_ptp_clear_tx_timestamp(adapter);
-+		adapter->tx_hwtstamp_timeouts++;
-+		e_warn(drv, "clearing Tx timestamp hang\n");
++		clear_bit_unlock(__IXGBE_PTP_TX_IN_PROGRESS, &adapter->state);
 +	}
-+}
-+
-+
- /**
-  * ixgbe_ptp_tx_hwtstamp - utility function which checks for TX time stamp
-  * @adapter: the private adapter struct
+ 
+ 	return NETDEV_TX_OK;
+ }
 -- 
 2.13.0.rc0.317.gcc792a6cad5a
 
