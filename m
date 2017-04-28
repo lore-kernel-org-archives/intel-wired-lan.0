@@ -1,36 +1,63 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 28 Apr 2017 16:53:15 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 1/3] i40evf: fix duplicate
-	lines
-In-Reply-To: <1493423597-18306-1-git-send-email-jesse.brandeburg@intel.com>
+Date: Fri, 28 Apr 2017 16:53:17 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 3/3] i40evf: disable unused
+	flags
+In-Reply-To: <1493423597-18306-3-git-send-email-jesse.brandeburg@intel.com>
 References: <1493423597-18306-1-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <1493423597-18306-2-git-send-email-jesse.brandeburg@intel.com>
+ <1493423597-18306-2-git-send-email-jesse.brandeburg@intel.com>
+ <1493423597-18306-3-git-send-email-jesse.brandeburg@intel.com>
+Message-ID: <1493423597-18306-4-git-send-email-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This removes two duplicate lines that snuck into the code somehow.
+The i40evf hardware doesn't have any way to ever report FCoE enabled
+so just force the code to always report FCoE is disabled, remove the
+unused defines, and mark the OP as reserved.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40e_common.c   | 3 +--
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index deb2cb8..3cdac24 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -152,8 +152,6 @@ int i40evf_send_vf_config_msg(struct i40evf_adapter *adapter)
- {
- 	u32 caps;
- 
--	adapter->current_op = I40E_VIRTCHNL_OP_GET_VF_RESOURCES;
--	adapter->aq_required &= ~I40EVF_FLAG_AQ_GET_CONFIG;
- 	caps = I40E_VIRTCHNL_VF_OFFLOAD_L2 |
- 	       I40E_VIRTCHNL_VF_OFFLOAD_RSS_AQ |
- 	       I40E_VIRTCHNL_VF_OFFLOAD_RSS_REG |
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index 43f1076..6729624 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -1105,8 +1105,7 @@ void i40e_vf_parse_hw_config(struct i40e_hw *hw,
+ 	hw->dev_caps.num_msix_vectors_vf = msg->max_vectors;
+ 	hw->dev_caps.dcb = msg->vf_offload_flags &
+ 			   I40E_VIRTCHNL_VF_OFFLOAD_L2;
+-	hw->dev_caps.fcoe = (msg->vf_offload_flags &
+-			     I40E_VIRTCHNL_VF_OFFLOAD_FCOE) ? 1 : 0;
++	hw->dev_caps.fcoe = 0;
+ 	for (i = 0; i < msg->num_vsis; i++) {
+ 		if (vsi_res->vsi_type == I40E_VSI_SRIOV) {
+ 			ether_addr_copy(hw->mac.perm_addr,
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+index c5ad038..b0b8de5 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+@@ -79,7 +79,7 @@ enum i40e_virtchnl_ops {
+ 	I40E_VIRTCHNL_OP_DEL_VLAN = 13,
+ 	I40E_VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE = 14,
+ 	I40E_VIRTCHNL_OP_GET_STATS = 15,
+-	I40E_VIRTCHNL_OP_FCOE = 16,
++	I40E_VIRTCHNL_OP_RSVD = 16,
+ 	I40E_VIRTCHNL_OP_EVENT = 17, /* must ALWAYS be 17 */
+ 	I40E_VIRTCHNL_OP_IWARP = 20,
+ 	I40E_VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP = 21,
+@@ -155,7 +155,6 @@ struct i40e_virtchnl_vsi_resource {
+ /* VF offload flags */
+ #define I40E_VIRTCHNL_VF_OFFLOAD_L2		0x00000001
+ #define I40E_VIRTCHNL_VF_OFFLOAD_IWARP		0x00000002
+-#define I40E_VIRTCHNL_VF_OFFLOAD_FCOE		0x00000004
+ #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_AQ		0x00000008
+ #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_REG	0x00000010
+ #define I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR	0x00000020
 -- 
 1.8.3.1
 
