@@ -1,114 +1,26 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 28 Apr 2017 12:42:03 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Add error checking to setting VF
-	MAC
-Message-ID: <20170428194203.24106-1-anthony.l.nguyen@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Fri, 28 Apr 2017 16:53:14 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/3] i40e/i40evf: small fixes
+Message-ID: <1493423597-18306-1-git-send-email-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently, when setting a VF MAC address there are no error checks to
-ensure that the MAC filter was successfully added.  This patch adds
-additional error checks, reporting, and propagation of errors.  It also
-will not set the MAC address unless adding the MAC filter was successful.
+This is a quick series of fixes that were found when reviewing
+code.
 
-With these changes, setting the mac address to zeros can no longer call
-ixgbe_set_vf_mac() as adding a zero MAC address filter is not valid.
-Instead directly delete the filter and, if successful, clear the MAC
-address.
+Jesse Brandeburg (3):
+  i40evf: fix duplicate lines
+  i40evf: fix merge error in older patch
+  i40evf: disable unused flags
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 54 +++++++++++++++++++-------
- 1 file changed, 41 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40e_common.c     | 3 +--
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h   | 3 +--
+ drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 3 +--
+ 3 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 8baf298..13c96a1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -778,11 +778,17 @@ static inline void ixgbe_vf_reset_event(struct ixgbe_adapter *adapter, u32 vf)
- static int ixgbe_set_vf_mac(struct ixgbe_adapter *adapter,
- 			    int vf, unsigned char *mac_addr)
- {
-+	s32 retval;
-+
- 	ixgbe_del_mac_filter(adapter, adapter->vfinfo[vf].vf_mac_addresses, vf);
--	memcpy(adapter->vfinfo[vf].vf_mac_addresses, mac_addr, ETH_ALEN);
--	ixgbe_add_mac_filter(adapter, adapter->vfinfo[vf].vf_mac_addresses, vf);
-+	retval = ixgbe_add_mac_filter(adapter, mac_addr, vf);
-+	if (retval >= 0)
-+		memcpy(adapter->vfinfo[vf].vf_mac_addresses, mac_addr,
-+		       ETH_ALEN);
-+	else
-+		memset(adapter->vfinfo[vf].vf_mac_addresses, 0, ETH_ALEN);
- 
--	return 0;
-+	return retval;
- }
- 
- int ixgbe_vf_configuration(struct pci_dev *pdev, unsigned int event_mask)
-@@ -1347,27 +1353,49 @@ void ixgbe_ping_all_vfs(struct ixgbe_adapter *adapter)
- int ixgbe_ndo_set_vf_mac(struct net_device *netdev, int vf, u8 *mac)
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+	s32 retval;
- 
- 	if (vf >= adapter->num_vfs)
- 		return -EINVAL;
- 
--	if (is_zero_ether_addr(mac)) {
--		adapter->vfinfo[vf].pf_set_mac = false;
--		dev_info(&adapter->pdev->dev, "removing MAC on VF %d\n", vf);
--	} else if (is_valid_ether_addr(mac)) {
--		adapter->vfinfo[vf].pf_set_mac = true;
-+	if (is_valid_ether_addr(mac)) {
- 		dev_info(&adapter->pdev->dev, "setting MAC %pM on VF %d\n",
- 			 mac, vf);
- 		dev_info(&adapter->pdev->dev, "Reload the VF driver to make this change effective.");
--		if (test_bit(__IXGBE_DOWN, &adapter->state)) {
--			dev_warn(&adapter->pdev->dev, "The VF MAC address has been set, but the PF device is not up.\n");
--			dev_warn(&adapter->pdev->dev, "Bring the PF device up before attempting to use the VF device.\n");
-+
-+		retval = ixgbe_set_vf_mac(adapter, vf, mac);
-+		if (retval >= 0) {
-+			adapter->vfinfo[vf].pf_set_mac = true;
-+
-+			if (test_bit(__IXGBE_DOWN, &adapter->state)) {
-+				dev_warn(&adapter->pdev->dev, "The VF MAC address has been set, but the PF device is not up.\n");
-+				dev_warn(&adapter->pdev->dev, "Bring the PF device up before attempting to use the VF device.\n");
-+			}
-+		} else {
-+			dev_warn(&adapter->pdev->dev, "The VF MAC address was NOT set due to invalid or duplicate MAC address.\n");
-+		}
-+	} else if (is_zero_ether_addr(mac)) {
-+		unsigned char *vf_mac_addr =
-+					   adapter->vfinfo[vf].vf_mac_addresses;
-+
-+		/* nothing to do */
-+		if (is_zero_ether_addr(vf_mac_addr))
-+			return 0;
-+
-+		dev_info(&adapter->pdev->dev, "removing MAC on VF %d\n", vf);
-+
-+		retval = ixgbe_del_mac_filter(adapter, vf_mac_addr, vf);
-+		if (retval >= 0) {
-+			adapter->vfinfo[vf].pf_set_mac = false;
-+			memcpy(vf_mac_addr, mac, ETH_ALEN);
-+		} else {
-+			dev_warn(&adapter->pdev->dev, "Could NOT remove the VF MAC address.\n");
- 		}
- 	} else {
--		return -EINVAL;
-+		retval = -EINVAL;
- 	}
- 
--	return ixgbe_set_vf_mac(adapter, vf, mac);
-+	return retval;
- }
- 
- static int ixgbe_enable_port_vlan(struct ixgbe_adapter *adapter, int vf,
 -- 
-2.9.3
+1.8.3.1
 
