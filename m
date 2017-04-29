@@ -1,160 +1,261 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 29 Apr 2017 16:45:24 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- d0849811c504da1abed5b2967357af2680991065
-Message-ID: <590452a4.FR84ZxSilqiNHEH6%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Sat, 29 Apr 2017 10:03:18 -0700
+Subject: [Intel-wired-lan] [PATCH v3 5/5] net-intel: check for Tx
+ timestamp timeouts during watchdog
+In-Reply-To: <20170428184421.20216-6-jacob.e.keller@intel.com>
+References: <20170428184421.20216-1-jacob.e.keller@intel.com>
+ <20170428184421.20216-6-jacob.e.keller@intel.com>
+Message-ID: <63ebf15a-429a-4d31-50e2-1beff3070f1c@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-d0849811c504da1abed5b2967357af2680991065  ixgbe: Correct thermal sensor event check
+On 4/28/2017 11:44 AM, Jacob Keller wrote:
+> Several drivers share similar logic for handling the Tx timestamps.
+> These drivers have some parts which rely on the interrupt instead of
+> only a polling work task. Although unlikely it may be possible in some
+> circumstances for the PTP tx timestamp to never occur. If this happens,
+> the result is that all future Tx timestamp requests will be ignored
+> permanently.
+>
+> Fix this by adding a *ptp_tx_hang() function similar to the already
+> existing *ptp_rx_hang() routine which checks to make sure that the
+> timestamp hasn't taken too long. This ensures that we will eventually
+> recover from this case.
+>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h        |  2 ++
+>  drivers/net/ethernet/intel/i40e/i40e_main.c   |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c    | 30 +++++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  1 +
+>  drivers/net/ethernet/intel/igb/igb.h          |  1 +
+>  drivers/net/ethernet/intel/igb/igb_main.c     |  1 +
+>  drivers/net/ethernet/intel/igb/igb_ptp.c      | 29 ++++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  1 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  1 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c  | 27 ++++++++++++++++++++++++
+>  10 files changed, 94 insertions(+)
 
-elapsed time: 144m
+I'd prefer to see the patches split up between the drivers.  I realize 
+that some commits in this series are simple patches applied to all the 
+drivers, but something like this is big enough that each driver should 
+be split out to a separate patch.
 
-configs tested: 136
+sln
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-i386                               tinyconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                 randconfig-x006-04271657
-i386                 randconfig-x003-04271657
-i386                 randconfig-x001-04271657
-i386                 randconfig-x005-04271657
-i386                 randconfig-x004-04271657
-i386                 randconfig-x007-04271657
-i386                 randconfig-x000-04271657
-i386                 randconfig-x009-04271657
-i386                 randconfig-x008-04271657
-i386                 randconfig-x002-04271657
-x86_64                 randconfig-x012-201717
-x86_64                 randconfig-x015-201717
-x86_64                 randconfig-x017-201717
-x86_64                 randconfig-x010-201717
-x86_64                 randconfig-x018-201717
-x86_64                 randconfig-x011-201717
-x86_64                 randconfig-x019-201717
-x86_64                 randconfig-x016-201717
-x86_64                 randconfig-x014-201717
-x86_64                 randconfig-x013-201717
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                   randconfig-a0-04271659
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                   randconfig-s1-04290241
-i386                   randconfig-s0-04290241
-x86_64                 randconfig-s3-04291539
-x86_64                 randconfig-s4-04291539
-x86_64                 randconfig-s5-04291539
-i386                             allmodconfig
-x86_64                   randconfig-i0-201717
-i386                     randconfig-i0-201717
-i386                     randconfig-i1-201717
-i386                   randconfig-x010-201717
-i386                   randconfig-x014-201717
-i386                   randconfig-x016-201717
-i386                   randconfig-x017-201717
-i386                   randconfig-x013-201717
-i386                   randconfig-x019-201717
-i386                   randconfig-x011-201717
-i386                   randconfig-x015-201717
-i386                   randconfig-x012-201717
-i386                   randconfig-x018-201717
-i386                     randconfig-n0-201717
-i386                   randconfig-x073-201717
-i386                   randconfig-x077-201717
-i386                   randconfig-x070-201717
-i386                   randconfig-x072-201717
-i386                   randconfig-x076-201717
-i386                   randconfig-x074-201717
-i386                   randconfig-x078-201717
-i386                   randconfig-x075-201717
-i386                   randconfig-x079-201717
-i386                   randconfig-x071-201717
-x86_64                           allmodconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                 randconfig-x009-201717
-x86_64                 randconfig-x004-201717
-x86_64                 randconfig-x003-201717
-x86_64                 randconfig-x008-201717
-x86_64                 randconfig-x002-201717
-x86_64                 randconfig-x005-201717
-x86_64                 randconfig-x007-201717
-x86_64                 randconfig-x000-201717
-x86_64                 randconfig-x001-201717
-x86_64                 randconfig-x006-201717
-i386                     randconfig-r0-201717
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-
-Thanks,
-Fengguang
+>
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+> index f4465afe1fe1..25bf336c5f38 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+> @@ -502,6 +502,7 @@ struct i40e_pf {
+>  	struct ptp_clock *ptp_clock;
+>  	struct ptp_clock_info ptp_caps;
+>  	struct sk_buff *ptp_tx_skb;
+> +	unsigned long ptp_tx_start;
+>  	struct hwtstamp_config tstamp_config;
+>  	struct mutex tmreg_lock; /* Used to protect the SYSTIME registers. */
+>  	u64 ptp_base_adj;
+> @@ -957,6 +958,7 @@ bool i40e_dcb_need_reconfig(struct i40e_pf *pf,
+>  			    struct i40e_dcbx_config *new_cfg);
+>  #endif /* CONFIG_I40E_DCB */
+>  void i40e_ptp_rx_hang(struct i40e_pf *pf);
+> +void i40e_ptp_tx_hang(struct i40e_pf *pf);
+>  void i40e_ptp_tx_hwtstamp(struct i40e_pf *pf);
+>  void i40e_ptp_rx_hwtstamp(struct i40e_pf *pf, struct sk_buff *skb, u8 index);
+>  void i40e_ptp_set_increment(struct i40e_pf *pf);
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index c019dec988e3..e4eb97832413 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -6373,6 +6373,7 @@ static void i40e_watchdog_subtask(struct i40e_pf *pf)
+>  	}
+>
+>  	i40e_ptp_rx_hang(pf);
+> +	i40e_ptp_tx_hang(pf);
+>  }
+>
+>  /**
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> index 876ea169816a..cd35c4b9a8b0 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> @@ -327,6 +327,36 @@ void i40e_ptp_rx_hang(struct i40e_pf *pf)
+>  	pf->rx_hwtstamp_cleared += cleared;
+>  }
+>
+> +/**
+> + * i40e_ptp_tx_hang - Detect error case when Tx timestamp register is hung
+> + * @pf: The PF private data structure
+> + *
+> + * This watchdog task is run periodically to make sure that we clear the Tx
+> + * timestamp logic if we don't obtain a timestamp in a reasonable amount of
+> + * time. It is unexpected in the normal case but if it occurs it results in
+> + * permanently prevent timestamps of future packets
+> + **/
+> +void i40e_ptp_tx_hang(struct i40e_pf *pf)
+> +{
+> +	if (!(pf->flags & I40E_FLAG_PTP) || !pf->ptp_tx)
+> +		return;
+> +
+> +	/* Nothing to do if we're not already waiting for a timestamp */
+> +	if (!test_bit(__I40E_PTP_TX_IN_PROGRESS, pf->state))
+> +		return;
+> +
+> +	/* We already have a handler routine which is run when we are notified
+> +	 * of a Tx timestamp in the hardware. If we don't get an interrupt
+> +	 * within a second it is reasonable to assume that we never will.
+> +	 */
+> +	if (time_is_before_jiffies(pf->ptp_tx_start + HZ)) {
+> +		dev_kfree_skb_any(pf->ptp_tx_skb);
+> +		pf->ptp_tx_skb = NULL;
+> +		clear_bit_unlock(__I40E_PTP_TX_IN_PROGRESS, pf->state);
+> +		pf->tx_hwtstamp_timeouts++;
+> +	}
+> +}
+> +
+>  /**
+>   * i40e_ptp_tx_hwtstamp - Utility function which returns the Tx timestamp
+>   * @pf: Board private structure
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> index c69ee4b0cfe2..c2e9013d05eb 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> @@ -2628,6 +2628,7 @@ static int i40e_tsyn(struct i40e_ring *tx_ring, struct sk_buff *skb,
+>  	if (pf->ptp_tx &&
+>  	    !test_and_set_bit_lock(__I40E_PTP_TX_IN_PROGRESS, pf->state)) {
+>  		skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+> +		pf->ptp_tx_start = jiffies;
+>  		pf->ptp_tx_skb = skb_get(skb);
+>  	} else {
+>  		pf->tx_hwtstamp_skipped++;
+> diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+> index be35edcf6b08..ff4d9073781a 100644
+> --- a/drivers/net/ethernet/intel/igb/igb.h
+> +++ b/drivers/net/ethernet/intel/igb/igb.h
+> @@ -677,6 +677,7 @@ void igb_ptp_stop(struct igb_adapter *adapter);
+>  void igb_ptp_reset(struct igb_adapter *adapter);
+>  void igb_ptp_suspend(struct igb_adapter *adapter);
+>  void igb_ptp_rx_hang(struct igb_adapter *adapter);
+> +void igb_ptp_tx_hang(struct igb_adapter *adapter);
+>  void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector, struct sk_buff *skb);
+>  void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
+>  			 struct sk_buff *skb);
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 21b455bfb4ca..eec54d9df06b 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -4726,6 +4726,7 @@ static void igb_watchdog_task(struct work_struct *work)
+>
+>  	igb_spoof_check(adapter);
+>  	igb_ptp_rx_hang(adapter);
+> +	igb_ptp_tx_hang(adapter);
+>
+>  	/* Check LVMMC register on i350/i354 only */
+>  	if ((adapter->hw.mac.type == e1000_i350) ||
+> diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
+> index a2da5738bfb5..b2f67c169bd2 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_ptp.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+> @@ -711,6 +711,35 @@ void igb_ptp_rx_hang(struct igb_adapter *adapter)
+>  	}
+>  }
+>
+> +/**
+> + * igb_ptp_tx_hang - detect error case where Tx timestamp never finishes
+> + * @adapter: private network adapter structure
+> + */
+> +void igb_ptp_tx_hang(struct igb_adapter *adapter)
+> +{
+> +	bool timeout = time_is_before_jiffies(adapter->ptp_tx_start +
+> +					      IGB_PTP_TX_TIMEOUT);
+> +
+> +	if (!adapter->ptp_tx_skb)
+> +		return;
+> +
+> +	if (!test_bit(__IGB_PTP_TX_IN_PROGRESS, &adapter->state))
+> +		return;
+> +
+> +	/* If we haven't received a timestamp within the timeout, it is
+> +	 * reasonable to assume that it will never occur, so we can unlock the
+> +	 * timestamp bit when this occurs.
+> +	 */
+> +	if (timeout) {
+> +		cancel_work_sync(&adapter->ptp_tx_work);
+> +		dev_kfree_skb_any(adapter->ptp_tx_skb);
+> +		adapter->ptp_tx_skb = NULL;
+> +		clear_bit_unlock(__IGB_PTP_TX_IN_PROGRESS, &adapter->state);
+> +		adapter->tx_hwtstamp_timeouts++;
+> +		dev_warn(&adapter->pdev->dev, "clearing Tx timestamp hang\n");
+> +	}
+> +}
+> +
+>  /**
+>   * igb_ptp_tx_hwtstamp - utility function which checks for TX time stamp
+>   * @adapter: Board private structure.
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> index eb36106218ad..dd5578756ae0 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> @@ -961,6 +961,7 @@ void ixgbe_ptp_suspend(struct ixgbe_adapter *adapter);
+>  void ixgbe_ptp_stop(struct ixgbe_adapter *adapter);
+>  void ixgbe_ptp_overflow_check(struct ixgbe_adapter *adapter);
+>  void ixgbe_ptp_rx_hang(struct ixgbe_adapter *adapter);
+> +void ixgbe_ptp_tx_hang(struct ixgbe_adapter *adapter);
+>  void ixgbe_ptp_rx_pktstamp(struct ixgbe_q_vector *, struct sk_buff *);
+>  void ixgbe_ptp_rx_rgtstamp(struct ixgbe_q_vector *, struct sk_buff *skb);
+>  static inline void ixgbe_ptp_rx_hwtstamp(struct ixgbe_ring *rx_ring,
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index c61459fcc21e..f3199c73faed 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -7645,6 +7645,7 @@ static void ixgbe_service_task(struct work_struct *work)
+>  	if (test_bit(__IXGBE_PTP_RUNNING, &adapter->state)) {
+>  		ixgbe_ptp_overflow_check(adapter);
+>  		ixgbe_ptp_rx_hang(adapter);
+> +		ixgbe_ptp_tx_hang(adapter);
+>  	}
+>
+>  	ixgbe_service_event_complete(adapter);
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+> index 9270e6f4fcff..24f4eaf37727 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+> @@ -662,6 +662,33 @@ static void ixgbe_ptp_clear_tx_timestamp(struct ixgbe_adapter *adapter)
+>  	clear_bit_unlock(__IXGBE_PTP_TX_IN_PROGRESS, &adapter->state);
+>  }
+>
+> +/**
+> + * ixgbe_ptp_tx_hang - detect error case where Tx timestamp never finishes
+> + * @adapter: private network adapter structure
+> + */
+> +void ixgbe_ptp_tx_hang(struct ixgbe_adapter *adapter)
+> +{
+> +	bool timeout = time_is_before_jiffies(adapter->ptp_tx_start +
+> +					      IXGBE_PTP_TX_TIMEOUT);
+> +
+> +	if (!adapter->ptp_tx_skb)
+> +		return;
+> +
+> +	if (!test_bit(__IXGBE_PTP_TX_IN_PROGRESS, &adapter->state))
+> +		return;
+> +
+> +	/* If we haven't received a timestamp within the timeout, it is
+> +	 * reasonable to assume that it will never occur, so we can unlock the
+> +	 * timestamp bit when this occurs.
+> +	 */
+> +	if (timeout) {
+> +		cancel_work_sync(&adapter->ptp_tx_work);
+> +		ixgbe_ptp_clear_tx_timestamp(adapter);
+> +		adapter->tx_hwtstamp_timeouts++;
+> +		e_warn(drv, "clearing Tx timestamp hang\n");
+> +	}
+> +}
+> +
+>  /**
+>   * ixgbe_ptp_tx_hwtstamp - utility function which checks for TX time stamp
+>   * @adapter: the private adapter struct
+>
