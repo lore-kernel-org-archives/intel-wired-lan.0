@@ -1,189 +1,74 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 01 May 2017 21:17:13 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 49b253746926012056273748f368e41aaa564ace
-Message-ID: <59073559.rQB8GUHD32uZDMNF%fengguang.wu@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Mon,  1 May 2017 11:24:38 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 00/13] i40e/i40evf: AVF series
+Message-ID: <1493663091-27870-1-git-send-email-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-49b253746926012056273748f368e41aaa564ace  igb: mark PM functions as __maybe_unused
+This is the introduction of the Intel(R) Adaptive Virtual Function
+driver code and device ID, as presented at the NetDEV 1.2
+conference in 2016.
+http://netdevconf.org/1.2/session.html?anjali-singhai
 
-elapsed time: 108m
+The idea is to convert the interface between the i40evf driver
+and the parent i40e PF driver to be generic, as the i40evf driver
+should in the future be able to run on top of other Intel PF
+drivers, and negotiate any features beyond a "base expected" set.
 
-configs tested: 165
+The series appears much bigger than it is due to the "move" of
+i40evf_virtchnl.h, which is a really a rename.  Please make sure
+your git client shows the rename when doing git log --follow.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Series applies on top of the "i40e/i40evf: small fixes" series,
+otherwise there will be conflicts when they are merged.
 
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-avr32                       favr-32_defconfig
-blackfin                   CM-BF548_defconfig
-sh                          kfr2r09_defconfig
-i386                   randconfig-c0-05011920
-x86_64                           allmodconfig
-mips                      fuloong2e_defconfig
-powerpc                     ksi8560_defconfig
-tile                             alldefconfig
-x86_64                randconfig-in0-05011828
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                            pleb_defconfig
-m32r                   mappi2.vdec2_defconfig
-xtensa                           allmodconfig
-x86_64                 randconfig-g0-05012014
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x015-201718
-x86_64                 randconfig-x012-201718
-x86_64                 randconfig-x010-201718
-x86_64                 randconfig-x017-201718
-x86_64                 randconfig-x011-201718
-x86_64                 randconfig-x018-201718
-x86_64                 randconfig-x013-201718
-x86_64                 randconfig-x014-201718
-x86_64                 randconfig-x016-201718
-x86_64                 randconfig-x019-201718
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-a0-05010503
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-arm                        spear3xx_defconfig
-h8300                       h8s-sim_defconfig
-mips                      loongson3_defconfig
-powerpc                      ppc44x_defconfig
-powerpc                     tqm8555_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-s0-05011949
-x86_64                 randconfig-s1-05011949
-x86_64                 randconfig-s2-05011949
-x86_64                 randconfig-s3-05011958
-x86_64                 randconfig-s4-05011958
-x86_64                 randconfig-s5-05011958
-x86_64                   randconfig-i0-201718
-i386                     randconfig-i0-201718
-i386                     randconfig-i1-201718
-x86_64                                    lkp
-x86_64                                   rhel
-openrisc                          allnoconfig
-x86_64                randconfig-ne0-05012049
-i386                               tinyconfig
-i386                   randconfig-x016-201718
-i386                   randconfig-x014-201718
-i386                   randconfig-x010-201718
-i386                   randconfig-x017-201718
-i386                   randconfig-x019-201718
-i386                   randconfig-x013-201718
-i386                   randconfig-x018-201718
-i386                   randconfig-x012-201718
-i386                   randconfig-x015-201718
-i386                   randconfig-x011-201718
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201718
-mn10300                             defconfig
-x86_64                 randconfig-n0-05012049
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-05011708
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-x003-201718
-x86_64                 randconfig-x004-201718
-x86_64                 randconfig-x009-201718
-x86_64                 randconfig-x002-201718
-x86_64                 randconfig-x008-201718
-x86_64                 randconfig-x000-201718
-x86_64                 randconfig-x007-201718
-x86_64                 randconfig-x005-201718
-x86_64                 randconfig-x006-201718
-x86_64                 randconfig-x001-201718
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                 randconfig-x072-05010711
-i386                 randconfig-x079-05010711
-i386                 randconfig-x071-05010711
-i386                 randconfig-x076-05010711
-i386                 randconfig-x074-05010711
-i386                 randconfig-x078-05010711
-i386                 randconfig-x077-05010711
-i386                 randconfig-x075-05010711
-i386                 randconfig-x070-05010711
-i386                 randconfig-x073-05010711
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-powerpc               corenet_basic_defconfig
-powerpc                 xes_mpc85xx_defconfig
-tile                              allnoconfig
-i386                     randconfig-r0-201718
-x86_64                 randconfig-r0-05010916
-arm                         lpc32xx_defconfig
-powerpc                    adder875_defconfig
-i386                   randconfig-x005-201718
-i386                   randconfig-x002-201718
-i386                   randconfig-x006-201718
-i386                   randconfig-x008-201718
-i386                   randconfig-x001-201718
-i386                   randconfig-x003-201718
-i386                   randconfig-x007-201718
-i386                   randconfig-x000-201718
-i386                   randconfig-x009-201718
-i386                   randconfig-x004-201718
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-05011954
+NOTE: There are some minor checkpatch warnings but I've
+reviewed them, and they can be ignored.
 
-Thanks,
-Fengguang
+Jesse Brandeburg (10):
+  i40evf: drop i40e_type.h include
+  i40e/i40evf: create and use new unified header file
+  i40e: use new unified virtchnl header file
+  virtchnl: rename i40e to generic virtchnl
+  virtchnl: move some code to core driver
+  virtchnl: convert to new macros
+  i40e/virtchnl: refactor code for validate checks
+  i40evf/virtchnl: whitespace cleanups
+  virtchnl: finish conversion to virtchnl interface
+  i40e/virtchnl: move function to virtchnl
+
+Preethi Banala (1):
+  i40evf: Add support for Adaptive Virtual Function
+
+Sridhar Samudrala (2):
+  virtchnl: Add pad fields to a couple of structures
+  virtchnl: Add compile time static asserts to validate structure sizes
+
+ MAINTAINERS                                        |   1 +
+ drivers/net/ethernet/intel/i40e/i40e.h             |   2 +-
+ drivers/net/ethernet/intel/i40e/i40e_client.c      |   6 +-
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |   2 +-
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   6 +-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl.h    | 449 -------------
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 480 +++++---------
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   9 +-
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    |  15 +-
+ drivers/net/ethernet/intel/i40evf/i40e_devids.h    |   1 +
+ drivers/net/ethernet/intel/i40evf/i40e_prototype.h |   6 +-
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h  | 448 -------------
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  26 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_client.c  |  18 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  66 +-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 285 +++++----
+ include/linux/avf/virtchnl.h                       | 708 +++++++++++++++++++++
+ 17 files changed, 1100 insertions(+), 1428 deletions(-)
+ delete mode 100644 drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
+ delete mode 100644 drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+ create mode 100644 include/linux/avf/virtchnl.h
+
+-- 
+1.8.3.1
+
