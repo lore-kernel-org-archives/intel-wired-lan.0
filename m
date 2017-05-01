@@ -1,57 +1,44 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon,  1 May 2017 11:24:49 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 11/13] virtchnl: Add pad
-	fields to a couple of structures
-In-Reply-To: <1493663091-27870-11-git-send-email-jesse.brandeburg@intel.com>
-References: <1493663091-27870-1-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-2-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-3-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-4-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-5-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-6-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-7-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-8-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-9-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-10-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-11-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <1493663091-27870-12-git-send-email-jesse.brandeburg@intel.com>
+From: Tushar Dave <tushar.n.dave@oracle.com>
+Date: Mon,  1 May 2017 16:15:59 -0700
+Subject: [Intel-wired-lan] [PATCH] i40evf: Use le32_to_cpu before evaluating
+	HW desc fields.
+Message-ID: <1493680559-6728-1-git-send-email-tushar.n.dave@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sridhar Samudrala <sridhar.samudrala@intel.com>
+i40e hardware descriptor fields are in little-endian format. Driver
+must use le32_to_cpu while evaluating these fields otherwise on
+big-endian arch we end up evaluating incorrect values, cause errors
+like:
 
-This removes holes and makes structure sizes consistent across
-32 and 64 bit builds.
+i40evf 0001:04:02.0: Expected response 0 from PF, received 285212672
+i40evf 0001:04:02.1: Expected response 0 from PF, received 285212672
 
-Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
+---
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 3f15d6a..ea34154 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -275,8 +275,10 @@ struct virtchnl_rxq_info {
- 	u16 splithdr_enabled; /* deprecated with AVF 1.0 */
- 	u32 databuffer_size;
- 	u32 max_pkt_size;
-+	u32 pad1;
- 	u64 dma_ring_addr;
- 	enum virtchnl_rx_hsplit rx_split_pos; /* deprecated with AVF 1.0 */
-+	u32 pad2;
- };
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index f35dcaa..2c1dfaf 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1923,8 +1923,10 @@ static void i40evf_adminq_task(struct work_struct *work)
+ 		if (ret || !v_msg->v_opcode)
+ 			break; /* No event to process or error cleaning ARQ */
  
- /* VIRTCHNL_OP_CONFIG_VSI_QUEUES
-@@ -295,6 +297,7 @@ struct virtchnl_queue_pair_info {
- struct virtchnl_vsi_queue_config_info {
- 	u16 vsi_id;
- 	u16 num_queue_pairs;
-+	u32 pad;
- 	struct virtchnl_queue_pair_info qpair[1];
- };
- 
+-		i40evf_virtchnl_completion(adapter, v_msg->v_opcode,
+-					   v_msg->v_retval, event.msg_buf,
++		i40evf_virtchnl_completion(adapter,
++					   le32_to_cpu(v_msg->v_opcode),
++					   le32_to_cpu(v_msg->v_retval),
++					   event.msg_buf,
+ 					   event.msg_len);
+ 		if (pending != 0)
+ 			memset(event.msg_buf, 0, I40EVF_MAX_AQ_BUF_SIZE);
 -- 
-1.8.3.1
+1.9.1
 
