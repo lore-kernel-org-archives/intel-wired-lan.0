@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 2 May 2017 18:34:58 +0000
-Subject: [Intel-wired-lan] [PATCH v3 4/5] i40e: use pf data
-	structure	directly in i40e_ptp_rx_hang
-In-Reply-To: <20170428184421.20216-5-jacob.e.keller@intel.com>
-References: <20170428184421.20216-1-jacob.e.keller@intel.com>
- <20170428184421.20216-5-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA1F33@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 2 May 2017 19:16:46 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/3] i40evf: fix
+	duplicate	lines
+In-Reply-To: <1493423597-18306-2-git-send-email-jesse.brandeburg@intel.com>
+References: <1493423597-18306-1-git-send-email-jesse.brandeburg@intel.com>
+ <1493423597-18306-2-git-send-email-jesse.brandeburg@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA1F4F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,23 +14,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Friday, April 28, 2017 11:44 AM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Cc: Richard Cochran <richardcochran@gmail.com>
-> Subject: [Intel-wired-lan] [PATCH v3 4/5] i40e: use pf data structure directly
-> in i40e_ptp_rx_hang
+> Behalf Of Jesse Brandeburg
+> Sent: Friday, April 28, 2017 4:53 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v1 1/3] i40evf: fix duplicate lines
 > 
-> There's no reason to pass a *vsi pointer if we already have the *pf pointer in
-> the only location where we call this function. Lets update the signature and
-> directly pass the *pf data structure pointer.
+> This removes two duplicate lines that snuck into the code somehow.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h      | 2 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
-> drivers/net/ethernet/intel/i40e/i40e_ptp.c  | 4 ++--
->  3 files changed, 4 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 2 --
+>  1 file changed, 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
