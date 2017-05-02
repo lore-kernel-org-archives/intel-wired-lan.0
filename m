@@ -1,13 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 2 May 2017 19:17:36 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1 3/3] i40evf: disable
- unused	flags
-In-Reply-To: <1493423597-18306-4-git-send-email-jesse.brandeburg@intel.com>
-References: <1493423597-18306-1-git-send-email-jesse.brandeburg@intel.com>
- <1493423597-18306-2-git-send-email-jesse.brandeburg@intel.com>
- <1493423597-18306-3-git-send-email-jesse.brandeburg@intel.com>
- <1493423597-18306-4-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA1F6C@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 2 May 2017 19:22:36 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add error checking to setting
+ VF	MAC
+In-Reply-To: <20170428194203.24106-1-anthony.l.nguyen@intel.com>
+References: <20170428194203.24106-1-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA1F7F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,21 +13,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jesse Brandeburg
-> Sent: Friday, April 28, 2017 4:53 PM
+> Behalf Of Tony Nguyen
+> Sent: Friday, April 28, 2017 12:42 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v1 3/3] i40evf: disable unused
-> flags
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Add error checking to setting VF
+> MAC
 > 
-> The i40evf hardware doesn't have any way to ever report FCoE enabled so
-> just force the code to always report FCoE is disabled, remove the unused
-> defines, and mark the OP as reserved.
+> Currently, when setting a VF MAC address there are no error checks to
+> ensure that the MAC filter was successfully added.  This patch adds additional
+> error checks, reporting, and propagation of errors.  It also will not set the
+> MAC address unless adding the MAC filter was successful.
 > 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> With these changes, setting the mac address to zeros can no longer call
+> ixgbe_set_vf_mac() as adding a zero MAC address filter is not valid.
+> Instead directly delete the filter and, if successful, clear the MAC address.
+> 
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40evf/i40e_common.c   | 3 +--
->  drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h | 3 +--
->  2 files changed, 2 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 54
+> +++++++++++++++++++-------
+>  1 file changed, 41 insertions(+), 13 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
