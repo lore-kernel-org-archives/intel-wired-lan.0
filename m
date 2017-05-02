@@ -1,76 +1,94 @@
-From: Liwei Song <liwei.song@windriver.com>
-Date: Tue, 2 May 2017 09:00:41 +0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: initialize u64_stats_sync
- structures early at ixgbe_probe
-In-Reply-To: <CAKgT0Uc31ehKGmjKWFg6YNWtqvD1grosaVXqBX+GUCxUBdQUHg@mail.gmail.com>
-References: <1480909244-16460-1-git-send-email-liwei.song@windriver.com>
- <EF50CC0C76A53A44BAD798C58E0A157E50B87CBB@ORSMSX103.amr.corp.intel.com>
- <CAKgT0UeTdY9j1qDHP=DscgAZF2pPFCb+=ACySqKBK+UuBsaNBA@mail.gmail.com>
- <trinity-a348af9b-9ef5-47a9-a14e-94265c880cf1-1493134775614@3capp-gmx-bs78>
- <CAKgT0Uc31ehKGmjKWFg6YNWtqvD1grosaVXqBX+GUCxUBdQUHg@mail.gmail.com>
-Message-ID: <5907DA39.4020006@windriver.com>
+From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
+Date: Tue, 2 May 2017 13:15:11 -0400
+Subject: [Intel-wired-lan] e1000e echo request response latency and tcph->ack
+Message-ID: <CAF=yD-+CpkwaEZeZA3UR4CLoqYQfUb-srBd-gew98=PjxTYauw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+With RR tests on a pair of 82571EB I am seeing much lower latency with
+TCP (40 usec) vs UDP (105 usec). But only for TCP with the ACK bit
+set.
 
-Liwei
+I observed the initial TCP vs UDP results with sockperf.  Digging into
+this behavior by emulating the protocol headers with packet sockets
+show that just toggling the ACK bit changes this behavior. I shared
+the test program that does this on github [1].
 
-On 04/26/2017 01:16 AM, Alexander Duyck wrote:
-> On Tue, Apr 25, 2017 at 8:39 AM, Lino Sanfilippo <LinoSanfilippo@gmx.de> wrote:
->> Hi,
->>
->>> This patch doesn't look right to me. I would suggest rejecting it.
->>>
->>> The call to initialize the stats should be done when the ring is
->>> allocated, not in ixgbe_probe(). This should probably be done in
->>> ixgbe_alloc_q_vector() instead.
->>>
->> AFAICS ixgbe_alloc_q_vector() is also called in probe() (by ixgbe_init_interrupt_scheme()).
->> Furthermore it is also called in resume() which would lead to multiple initialization of
->> the u64_stats_sync in case of resume.
-> ixgbe_alloc_q_vector() is what allocates the ring structures that are
-> being initialized here. Calling it anywhere other than here doesn't
-> make sense since what we want to do is initialize the memory after we
-> have allocated it, but before we hand the pointer to it over to a
-> netdev or in this case an adapter structure.
->
->> IMHO the u64_stats_sync variables have to be initialized before register_netdev() is called
->> since this is the point from which userspace can call ixgbe_get_stats64(). I would say the
->> best place to do so is the probe() function as it is done in this patch.
-> I would disagree here. We should be initializing the stats variables
-> after we allocate them. Especially since we can end up freeing and
-> reallocating them any time the number of queues is changed.
->
->> Just my 2 cents.
->>
->> Regards,
->> Lino
-> My advice would be to look through the code and verify what it is you
-> need to initialize and where it should happen. In this case we are
-> getting a lockdep splat since we are just letting things get
-> initialized with kzalloc and aren't following up in the right place. I
-> don't disagree that the original code has the u64_stats_init in the
-> wrong place since we can open/close the interface and trigger a
-> reinitialization of the stats. I would say we need to initialize the
-> stats just after we allocate them in memory so that if we decide to
-> free and reallocate the rings we initialize the new rings before they
-> are added to the netdev and don't reintroduce this issue in just a
-> different form.
+Is this known behavior? Is there some fast path on the NIC triggered
+only for TCP ACK packets? If so, then my real question is, is there a
+way to make UDP packets take this fast path?
 
-Thanks for your suggestion, I will try to modify it according to this.
+Output:
 
-Liwei
+# emulate UDP
+./pingpong_tcpudp -s 192.168.2.2 -d 192.168.2.1 -S ${smac} -D {$dmac} -i eth2 -u
+mode: server
+1. RTT: 140 usec
+2. RTT: 108 usec
+3. RTT: 106 usec
+4. RTT: 105 usec
+5. RTT: 106 usec
+6. RTT: 105 usec
+7. RTT: 106 usec
+8. RTT: 105 usec
+9. RTT: 106 usec
 
+# emulate TCP
+./pingpong_tcpudp -s 192.168.2.2 -d 192.168.2.1 -S ${smac} -D ${dmac} -i eth2
+mode: server
+1. RTT: 145 usec
+2. RTT: 107 usec
+3. RTT: 105 usec
+4. RTT: 105 usec
+5. RTT: 105 usec
+6. RTT: 104 usec
+7. RTT: 104 usec
+8. RTT: 104 usec
+9. RTT: 105 usec
 
->
-> - Alex
->
->
+# emulate TCP and set ACK bit
+./pingpong_tcpudp -s 192.168.2.2 -d 192.168.2.1 -S ${smac} -D ${dmac} -i eth2 -a
+mode: server
+1. RTT: 79 usec
+2. RTT: 41 usec
+3. RTT: 41 usec
+4. RTT: 41 usec
+5. RTT: 39 usec
+6. RTT: 39 usec
+7. RTT: 39 usec
+8. RTT: 39 usec
+9. RTT: 40 usec
 
 
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170502/db0aaba6/attachment.html>
+The hosts are connected through a switch, so there is some chance that
+this delay is incurred there. It is unlikely, as other non-e1000e
+devices do not show the same latency.
+
+The machine is running Linux at current davem-net-next/master HEAD,
+booted with idle=poll.
+
+ethtool -i eth2
+driver: e1000e
+version: 3.2.6-k
+firmware-version: 5.11-2
+
+Interrupt moderation, RPS and RFS are disabled and the packets are
+dropped to avoid ICMP responses:
+
+modprobe e1000e
+ip link set dev eth2 up
+ip addr add 192.168.2.2/24 dev eth2
+for dev in eth0 eth2; do ethtool -C $dev adaptive-rx off adaptive-tx
+off rx-usecs 0 rx-frames 0 tx-usecs 0 tx-frames 0; done
+echo 0 > /proc/sys/net/core/rps_sock_flow_entries
+echo 0 > /sys/class/net/eth2/queues/rx-0/rps_cpus
+echo 0 > /sys/class/net/eth2/queues/rx-0/rps_flow_cnt
+iptables -A PREROUTING -t raw -p udp --dport 4369 -j DROP
+iptables -A PREROUTING -t raw -p tcp --dport 4369 -j DROP
+iptables -A PREROUTING -t raw -p udp --dport 8738 -j DROP
+iptables -A PREROUTING -t raw -p tcp --dport 8738 -j DROP
+
+[1] https://github.com/wdebruij/kerneltools/blob/master/tests/pingpong_tcpudp.c
