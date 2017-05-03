@@ -1,69 +1,98 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 May 2017 10:28:49 -0700
-Subject: [Intel-wired-lan] [PATCH v4 00/15] ptp cornercase cleanups
-Message-ID: <20170503172904.9788-1-jacob.e.keller@intel.com>
+Date: Wed,  3 May 2017 10:28:55 -0700
+Subject: [Intel-wired-lan] [PATCH v4 06/15] igb: avoid permanent lock of
+	*_PTP_TX_IN_PROGRESS
+In-Reply-To: <20170503172904.9788-1-jacob.e.keller@intel.com>
+References: <20170503172904.9788-1-jacob.e.keller@intel.com>
+Message-ID: <20170503172904.9788-7-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This series contains fixes for similar corner cases in the e1000e, igb,
-i40e, and ixgbe drivers reported by David Mirabito on the ptp4l mailing
-list.
+The igb driver uses a state bit lock to avoid handling more than one Tx
+timestamp request at once. This is required because hardware is limited
+to a single set of registers for Tx timestamps.
 
-The first few patches fix a race condition with skb_tstamp_tx(). The
-next few patches ensure that we cleanup the state bit when exiting the
-_xmit_frame_ring() function with a DMA or TSO failure. After this, we
-add new statistic to count how many times the Tx timestamp is skipped
-due to already outstanding requests. The final few patches add some
-handling in the potential case where we somehow never finish a timestamp
-request, ensuring that we don't permanently lock the Tx timestamps
-forever in this rare case.
+The state bit lock is not properly cleaned up during
+igb_xmit_frame_ring() if the transmit fails such as due to DMA or TSO
+failure. In some hardware this results in blocking timestamps until the
+service task times out. In other hardware this results in a permanent
+lock of the timestamp bit because we never receive an interrupt
+indicating the timestamp occurred, since indeed the packet was never
+transmitted.
 
-Changes in v4
-- Split the driver patches at request of Shannon Nelson
-- Updated commit messages, but code content should be identical
+Fix this by checking for DMA and TSO errors in igb_xmit_frame_ring() and
+properly cleaning up after ourselves when these occur.
 
-I apologize in advance, the patchworks will not track this properly
-because I necessarily changed the commit subjects when splitting the
-patches apart by driver.
+Reported-by: Reported-by: David Mirabito <davidm@metamako.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
 
-Jacob Keller (15):
-  e1000e: fix race condition around skb_tstamp_tx()
-  i40e: fix race condition with PTP_TX_IN_PROGRESS bits
-  igb: fix race condition with PTP_TX_IN_PROGRESS bits
-  ixgbe: fix race condition with PTP_TX_IN_PROGRESS bits
-  i40e: avoid permanent lock of *_PTP_TX_IN_PROGRESS
-  igb: avoid permanent lock of *_PTP_TX_IN_PROGRESS
-  ixgbe: avoid permanent lock of *_PTP_TX_IN_PROGRESS
-  e1000e: add statistic indicating number of skipped Tx timestamps
-  i40e: add statistic indicating number of skipped Tx timestamps
-  igb: add statistic indicating number of skipped Tx timestamps
-  ixgbe: add statistic indicating number of skipped Tx timestamps
-  i40e: use pf data structure directly in i40e_ptp_rx_hang
-  i40e: check for Tx timestamp timeouts during watchdog
-  igb: check for Tx timestamp timeouts during watchdog
-  ixgbe: check for Tx timestamp timeouts during watchdog
-
- drivers/net/ethernet/intel/e1000e/e1000.h        |  1 +
- drivers/net/ethernet/intel/e1000e/ethtool.c      |  1 +
- drivers/net/ethernet/intel/e1000e/netdev.c       | 27 ++++++++-----
- drivers/net/ethernet/intel/i40e/i40e.h           |  5 ++-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c   |  1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c      |  3 +-
- drivers/net/ethernet/intel/i40e/i40e_ptp.c       | 48 +++++++++++++++++++++---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c      | 28 +++++++++++---
- drivers/net/ethernet/intel/igb/igb.h             |  2 +
- drivers/net/ethernet/intel/igb/igb_ethtool.c     |  1 +
- drivers/net/ethernet/intel/igb/igb_main.c        | 26 ++++++++++---
- drivers/net/ethernet/intel/igb/igb_ptp.c         | 41 +++++++++++++++++++-
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  2 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  3 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 42 ++++++++++++++-------
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c     | 42 +++++++++++++++++++--
- 16 files changed, 227 insertions(+), 46 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index dbb4e3cf7dbf..978908f426a7 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -5201,9 +5201,9 @@ static inline int igb_maybe_stop_tx(struct igb_ring *tx_ring, const u16 size)
+ 	return __igb_maybe_stop_tx(tx_ring, size);
+ }
+ 
+-static void igb_tx_map(struct igb_ring *tx_ring,
+-		       struct igb_tx_buffer *first,
+-		       const u8 hdr_len)
++static int igb_tx_map(struct igb_ring *tx_ring,
++		      struct igb_tx_buffer *first,
++		      const u8 hdr_len)
+ {
+ 	struct sk_buff *skb = first->skb;
+ 	struct igb_tx_buffer *tx_buffer;
+@@ -5314,7 +5314,7 @@ static void igb_tx_map(struct igb_ring *tx_ring,
+ 		 */
+ 		mmiowb();
+ 	}
+-	return;
++	return 0;
+ 
+ dma_error:
+ 	dev_err(tx_ring->dev, "TX DMA map failed\n");
+@@ -5345,6 +5345,8 @@ static void igb_tx_map(struct igb_ring *tx_ring,
+ 	tx_buffer->skb = NULL;
+ 
+ 	tx_ring->next_to_use = i;
++
++	return -1;
+ }
+ 
+ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
+@@ -5410,13 +5412,24 @@ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
+ 	else if (!tso)
+ 		igb_tx_csum(tx_ring, first);
+ 
+-	igb_tx_map(tx_ring, first, hdr_len);
++	if (igb_tx_map(tx_ring, first, hdr_len))
++		goto cleanup_tx_tstamp;
+ 
+ 	return NETDEV_TX_OK;
+ 
+ out_drop:
+ 	dev_kfree_skb_any(first->skb);
+ 	first->skb = NULL;
++cleanup_tx_tstamp:
++	if (unlikely(tx_flags & IGB_TX_FLAGS_TSTAMP)) {
++		struct igb_adapter *adapter = netdev_priv(tx_ring->netdev);
++
++		dev_kfree_skb_any(adapter->ptp_tx_skb);
++		adapter->ptp_tx_skb = NULL;
++		if (adapter->hw.mac.type == e1000_82576)
++			cancel_work_sync(&adapter->ptp_tx_work);
++		clear_bit_unlock(__IGB_PTP_TX_IN_PROGRESS, &adapter->state);
++	}
+ 
+ 	return NETDEV_TX_OK;
+ }
 -- 
 2.13.0.rc0.317.gcc792a6cad5a
 
