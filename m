@@ -1,76 +1,89 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 May 2017 10:28:50 -0700
-Subject: [Intel-wired-lan] [PATCH v4 01/15] e1000e: fix race condition
-	around skb_tstamp_tx()
+Date: Wed,  3 May 2017 10:29:00 -0700
+Subject: [Intel-wired-lan] [PATCH v4 11/15] ixgbe: add statistic indicating
+	number of skipped Tx timestamps
 In-Reply-To: <20170503172904.9788-1-jacob.e.keller@intel.com>
 References: <20170503172904.9788-1-jacob.e.keller@intel.com>
-Message-ID: <20170503172904.9788-2-jacob.e.keller@intel.com>
+Message-ID: <20170503172904.9788-12-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The e1000e driver and related hardware has a limitation on Tx PTP
-packets which requires we limit to timestamping a single packet at once.
-We do this by verifying that we never request a new Tx timestamp while
-we still have a tx_hwtstamp_skb pointer.
+The ixgbe driver can only handle one Tx timestamp request at a time.
+This means it is possible for an application timestamp request to be
+ignored.
 
-Unfortunately the driver suffers from a race condition around this. The
-tx_hwtstamp_skb pointer is not set to NULL until after skb_tstamp_tx()
-is called. This function notifies the stack and applications of a new
-timestamp. Even a well behaved application that only sends a new request
-when the first one is finished might be woken up and possibly send
-a packet before we can free the timestamp in the driver again. The
-result is that we needlessly ignore some Tx timestamp requests in this
-corner case.
+There is no easy way for an administrator to determine if this occurred.
+Add a new statistic which tracks this, tx_hwtstamp_skipped.
 
-Fix this by assigning the tx_hwtstamp_skb pointer prior to calling
-skb_tstamp_tx() and use a temporary pointer to hold the timestamped skb
-until that function finishes. This ensures that the application is not
-woken up until the driver is ready to begin timestamping a new packet.
-
-This ensures that well behaved applications do not accidentally race
-with condition to skip Tx timestamps. Obviously an application which
-sends multiple Tx timestamp requests at once will still only timestamp
-one packet at a time. Unfortunately there is nothing we can do about
-this.
-
-Reported-by: David Mirabito <davidm@metamako.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  3 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 21 ++++++++++++---------
+ 3 files changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index b3679728caac..ec9a50a72550 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1183,6 +1183,7 @@ static void e1000e_tx_hwtstamp_work(struct work_struct *work)
- 	struct e1000_hw *hw = &adapter->hw;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 76263762bea1..eb36106218ad 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -733,6 +733,7 @@ struct ixgbe_adapter {
+ 	struct timecounter hw_tc;
+ 	u32 base_incval;
+ 	u32 tx_hwtstamp_timeouts;
++	u32 tx_hwtstamp_skipped;
+ 	u32 rx_hwtstamp_cleared;
+ 	void (*ptp_setup_sdp)(struct ixgbe_adapter *);
  
- 	if (er32(TSYNCTXCTL) & E1000_TSYNCTXCTL_VALID) {
-+		struct sk_buff *skb = adapter->tx_hwtstamp_skb;
- 		struct skb_shared_hwtstamps shhwtstamps;
- 		u64 txstmp;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index cced74dd5a63..0b75d304b009 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -111,6 +111,9 @@ static const struct ixgbe_stats ixgbe_gstrings_stats[] = {
+ 	{"os2bmc_tx_by_bmc", IXGBE_STAT(stats.b2ospc)},
+ 	{"os2bmc_tx_by_host", IXGBE_STAT(stats.o2bspc)},
+ 	{"os2bmc_rx_by_host", IXGBE_STAT(stats.b2ogprc)},
++	{"tx_hwtstamp_timeouts", IXGBE_STAT(tx_hwtstamp_timeouts)},
++	{"tx_hwtstamp_skipped", IXGBE_STAT(tx_hwtstamp_skipped)},
++	{"rx_hwtstamp_cleared", IXGBE_STAT(rx_hwtstamp_cleared)},
+ #ifdef IXGBE_FCOE
+ 	{"fcoe_bad_fccrc", IXGBE_STAT(stats.fccrc)},
+ 	{"rx_fcoe_dropped", IXGBE_STAT(stats.fcoerpdc)},
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index f93330bc7b97..85a10458ab59 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8346,16 +8346,19 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+ 	protocol = vlan_get_protocol(skb);
  
-@@ -1191,9 +1192,14 @@ static void e1000e_tx_hwtstamp_work(struct work_struct *work)
+ 	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) &&
+-	    adapter->ptp_clock &&
+-	    !test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
+-				   &adapter->state)) {
+-		skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+-		tx_flags |= IXGBE_TX_FLAGS_TSTAMP;
++	    adapter->ptp_clock) {
++		if (!test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
++					   &adapter->state)) {
++			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
++			tx_flags |= IXGBE_TX_FLAGS_TSTAMP;
  
- 		e1000e_systim_to_hwtstamp(adapter, &shhwtstamps, txstmp);
+-		/* schedule check for Tx timestamp */
+-		adapter->ptp_tx_skb = skb_get(skb);
+-		adapter->ptp_tx_start = jiffies;
+-		schedule_work(&adapter->ptp_tx_work);
++			/* schedule check for Tx timestamp */
++			adapter->ptp_tx_skb = skb_get(skb);
++			adapter->ptp_tx_start = jiffies;
++			schedule_work(&adapter->ptp_tx_work);
++		} else {
++			adapter->tx_hwtstamp_skipped++;
++		}
+ 	}
  
--		skb_tstamp_tx(adapter->tx_hwtstamp_skb, &shhwtstamps);
--		dev_kfree_skb_any(adapter->tx_hwtstamp_skb);
-+		/* Clear the global tx_hwtstamp_skb pointer and force writes
-+		 * prior to notifying the stack of a Tx timestamp.
-+		 */
- 		adapter->tx_hwtstamp_skb = NULL;
-+		wmb(); /* force write prior to skb_tstamp_tx */
-+
-+		skb_tstamp_tx(skb, &shhwtstamps);
-+		dev_kfree_skb_any(skb);
- 	} else if (time_after(jiffies, adapter->tx_hwtstamp_start
- 			      + adapter->tx_timeout_factor * HZ)) {
- 		dev_kfree_skb_any(adapter->tx_hwtstamp_skb);
+ 	skb_tx_timestamp(skb);
 -- 
 2.13.0.rc0.317.gcc792a6cad5a
 
