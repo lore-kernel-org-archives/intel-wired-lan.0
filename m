@@ -1,101 +1,82 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 May 2017 10:28:54 -0700
-Subject: [Intel-wired-lan] [PATCH v4 05/15] i40e: avoid permanent lock of
-	*_PTP_TX_IN_PROGRESS
+Date: Wed,  3 May 2017 10:28:57 -0700
+Subject: [Intel-wired-lan] [PATCH v4 08/15] e1000e: add statistic indicating
+	number of skipped Tx timestamps
 In-Reply-To: <20170503172904.9788-1-jacob.e.keller@intel.com>
 References: <20170503172904.9788-1-jacob.e.keller@intel.com>
-Message-ID: <20170503172904.9788-6-jacob.e.keller@intel.com>
+Message-ID: <20170503172904.9788-9-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The i40e driver uses a bit lock to indicate when a Tx timestamp is in
-progress to avoid attempting to timestamp multiple packets at once. This
-is required because hardware only has registers to handle one request at
-a time.
+The e1000e driver can only handle one Tx timestamp request at a time.
+This means it is possible for an application timestamp request to be
+ignored.
 
-There is a corner case where we failed to cleanup the bit lock after
-a failed transmit. This can potentially result in a state bit being
-locked forever.
+There is no easy way for an administrator to determine if this occurred.
+Add a new statistic which tracks this, tx_hwtstamp_skipped.
 
-Add some cleanup code to i40e_xmit_frame_ring to check and make sure we
-cleanup incase of these failures. We also modify i40e_tx_map to return
-an error code indication DMA failure.
-
-Reported-by: Reported-by: David Mirabito <davidm@metamako.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 26 ++++++++++++++++++++------
- 1 file changed, 20 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/e1000e/e1000.h   |  1 +
+ drivers/net/ethernet/intel/e1000e/ethtool.c |  1 +
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 17 ++++++++++-------
+ 3 files changed, 12 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 29321a6167a6..19984be0f70c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2932,10 +2932,12 @@ bool __i40e_chk_linearize(struct sk_buff *skb)
-  * @hdr_len:  size of the packet header
-  * @td_cmd:   the command field in the descriptor
-  * @td_offset: offset for checksum or crc
-+ *
-+ * Returns 0 on success, -1 on failure to DMA
-  **/
--static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
--			       struct i40e_tx_buffer *first, u32 tx_flags,
--			       const u8 hdr_len, u32 td_cmd, u32 td_offset)
-+static inline int i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
-+			      struct i40e_tx_buffer *first, u32 tx_flags,
-+			      const u8 hdr_len, u32 td_cmd, u32 td_offset)
- {
- 	unsigned int data_len = skb->data_len;
- 	unsigned int size = skb_headlen(skb);
-@@ -3093,7 +3095,7 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		mmiowb();
- 	}
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index c7c994eb410e..98e68888abb1 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -268,6 +268,7 @@ struct e1000_adapter {
+ 	u32 tx_fifo_size;
+ 	u32 tx_dma_failed;
+ 	u32 tx_hwtstamp_timeouts;
++	u32 tx_hwtstamp_skipped;
  
--	return;
-+	return 0;
+ 	/* Rx */
+ 	bool (*clean_rx)(struct e1000_ring *ring, int *work_done,
+diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+index e23dbd9190d6..c658f6ebf7cb 100644
+--- a/drivers/net/ethernet/intel/e1000e/ethtool.c
++++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+@@ -105,6 +105,7 @@ static const struct e1000_stats e1000_gstrings_stats[] = {
+ 	E1000_STAT("uncorr_ecc_errors", uncorr_errors),
+ 	E1000_STAT("corr_ecc_errors", corr_errors),
+ 	E1000_STAT("tx_hwtstamp_timeouts", tx_hwtstamp_timeouts),
++	E1000_STAT("tx_hwtstamp_skipped", tx_hwtstamp_skipped),
+ };
  
- dma_error:
- 	dev_info(tx_ring->dev, "TX DMA map failed\n");
-@@ -3110,6 +3112,8 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	}
- 
- 	tx_ring->next_to_use = i;
-+
-+	return -1;
- }
- 
- /**
-@@ -3210,8 +3214,9 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	 */
- 	i40e_atr(tx_ring, skb, tx_flags);
- 
--	i40e_tx_map(tx_ring, skb, first, tx_flags, hdr_len,
--		    td_cmd, td_offset);
-+	if (i40e_tx_map(tx_ring, skb, first, tx_flags, hdr_len,
-+			td_cmd, td_offset))
-+		goto cleanup_tx_tstamp;
- 
- 	return NETDEV_TX_OK;
- 
-@@ -3219,6 +3224,15 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	i40e_trace(xmit_frame_ring_drop, first->skb, tx_ring);
- 	dev_kfree_skb_any(first->skb);
- 	first->skb = NULL;
-+cleanup_tx_tstamp:
-+	if (unlikely(tx_flags & I40E_TX_FLAGS_TSYN)) {
-+		struct i40e_pf *pf = i40e_netdev_to_pf(tx_ring->netdev);
-+
-+		dev_kfree_skb_any(pf->ptp_tx_skb);
-+		pf->ptp_tx_skb = NULL;
-+		clear_bit_unlock(__I40E_PTP_TX_IN_PROGRESS, pf->state);
-+	}
-+
- 	return NETDEV_TX_OK;
- }
- 
+ #define E1000_GLOBAL_STATS_LEN	ARRAY_SIZE(e1000_gstrings_stats)
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index ec9a50a72550..42424274853c 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5866,13 +5866,16 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
+ 			     nr_frags);
+ 	if (count) {
+ 		if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) &&
+-		    (adapter->flags & FLAG_HAS_HW_TIMESTAMP) &&
+-		    !adapter->tx_hwtstamp_skb) {
+-			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+-			tx_flags |= E1000_TX_FLAGS_HWTSTAMP;
+-			adapter->tx_hwtstamp_skb = skb_get(skb);
+-			adapter->tx_hwtstamp_start = jiffies;
+-			schedule_work(&adapter->tx_hwtstamp_work);
++		    (adapter->flags & FLAG_HAS_HW_TIMESTAMP)) {
++			if (!adapter->tx_hwtstamp_skb) {
++				skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
++				tx_flags |= E1000_TX_FLAGS_HWTSTAMP;
++				adapter->tx_hwtstamp_skb = skb_get(skb);
++				adapter->tx_hwtstamp_start = jiffies;
++				schedule_work(&adapter->tx_hwtstamp_work);
++			} else {
++				adapter->tx_hwtstamp_skipped++;
++			}
+ 		} else {
+ 			skb_tx_timestamp(skb);
+ 		}
 -- 
 2.13.0.rc0.317.gcc792a6cad5a
 
