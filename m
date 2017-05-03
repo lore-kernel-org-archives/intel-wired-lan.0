@@ -1,28 +1,56 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 3 May 2017 08:43:48 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: Fix error that repeat to add
- filter when changing adapter speed
-In-Reply-To: <1493774409-7536-1-git-send-email-gangfeng.huang@ni.com>
-References: <1493774409-7536-1-git-send-email-gangfeng.huang@ni.com>
-Message-ID: <20170503084348.0000464c@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Wed, 3 May 2017 16:43:20 +0000
+Subject: [Intel-wired-lan] [PATCH v3 0/5] ptp cornercase cleanups
+In-Reply-To: <20170428184421.20216-1-jacob.e.keller@intel.com>
+References: <20170428184421.20216-1-jacob.e.keller@intel.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5857E1D0D9@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 3 May 2017 09:20:09 +0800
-Gangfeng <gangfeng.huang@ni.com> wrote:
-
-> From: Gangfeng Huang <gangfeng.huang@ni.com>
+> -----Original Message-----
+> From: Keller, Jacob E
+> Sent: Friday, April 28, 2017 11:44 AM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Cc: Richard Cochran <richardcochran@gmail.com>; David Mirabito
+> <davidm@metamako.com>; Keller, Jacob E <jacob.e.keller@intel.com>
+> Subject: [PATCH v3 0/5] ptp cornercase cleanups
 > 
-> Function igb_nfc_filter_exit()/igb_nfc_filter_restore() should be paried,
-> igb_nfc_filter_restore exist in igb_up(), but igb_nfc_filter_exit() exist
-> in __igb_close(), so move the igb_nfc_filter_exit() to igb_down().
+> This version fixes two minor issues I realized after I was porting them
+> back to out-of-tree drivers. Sorry for the thrash.
+> 
+> Jacob Keller (5):
+>   net-intel: fix race condition with PTP_TX_IN_PROGRESS bits
+>   net-intel: avoid permanent lock of *_PTP_TX_IN_PROGRESS
+>   net-intel: add statistic indicating number of skipped Tx timestamps
+>   i40e: use pf data structure directly in i40e_ptp_rx_hang
+>   net-intel: check for Tx timestamp timeouts during watchdog
+> 
+>  drivers/net/ethernet/intel/e1000e/e1000.h        |  1 +
+>  drivers/net/ethernet/intel/e1000e/ethtool.c      |  1 +
+>  drivers/net/ethernet/intel/e1000e/netdev.c       | 27 ++++++++-----
+>  drivers/net/ethernet/intel/i40e/i40e.h           |  5 ++-
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c   |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c      |  3 +-
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c       | 48 +++++++++++++++++++++--
+> -
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c      | 28 +++++++++++---
+>  drivers/net/ethernet/intel/igb/igb.h             |  2 +
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c     |  1 +
+>  drivers/net/ethernet/intel/igb/igb_main.c        | 26 ++++++++++---
+>  drivers/net/ethernet/intel/igb/igb_ptp.c         | 41 +++++++++++++++++++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  2 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  3 ++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 42 ++++++++++++++-------
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c     | 42 +++++++++++++++++++--
+>  16 files changed, 227 insertions(+), 46 deletions(-)
+> 
+> --
+> 2.13.0.rc0.317.gcc792a6cad5a
 
-Hi, thanks for your patch.  Are you fixing a bug here? If so, your
-commit message should say what you're fixing and how to reproduce it.
-Say why you are doing something, not just what you're doing.
+Jeff, can you please drop this series? I'm about to send out an (identical content) v2 which splits the patches apart to each driver, and necessarily requires new subject names.
 
-In this case, it looks like you probably are fixing a bug, but
-definitely need a better commit message.
+Thanks,
+Jake
