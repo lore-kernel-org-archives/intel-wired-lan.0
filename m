@@ -1,77 +1,72 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 May 2017 10:28:51 -0700
-Subject: [Intel-wired-lan] [PATCH v4 02/15] i40e: fix race condition with
+Date: Wed,  3 May 2017 10:28:52 -0700
+Subject: [Intel-wired-lan] [PATCH v4 03/15] igb: fix race condition with
 	PTP_TX_IN_PROGRESS bits
 In-Reply-To: <20170503172904.9788-1-jacob.e.keller@intel.com>
 References: <20170503172904.9788-1-jacob.e.keller@intel.com>
-Message-ID: <20170503172904.9788-3-jacob.e.keller@intel.com>
+Message-ID: <20170503172904.9788-4-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hardware related to the i40e driver has a limitation on Tx PTP packets.
-This requires us to limit the driver to timestamping a single packet at
-once. This is done using a state bitlock which enforces that only one
-timestamp request is honored at a time.
+Hardware related to the igb driver has a limiation of only handling one
+Tx timestamp at a time. Thus, the driver uses a state bit lock to
+enforce that only one timestamp request is honored at a time.
 
-Unfortunately this suffers from a race condition. The bit lock is not
-cleared until after skb_tstamp_tx() is called notifying applications of
-a new Tx timestamp. Even a well behaved application sending only one
-packet at a time and waiting for a response can wake up and send a new
-timestamped packet request before the bit lock is cleared. This results
-in needlessly dropping some Tx timestamp requests.
+Unfortunately this suffers from a simple race condition. The bit lock is
+not cleared until after skb_tstamp_tx() is called notifying the stack of
+a new Tx timestamp. Even a well behaved application which sends only one
+timestamp request at once and waits for a response might wake up and
+send a new packet before the bit lock is cleared. This results in
+needlessly dropping some Tx timestamp requests.
 
 We can fix this by unlocking the state bit as soon as we read the
 Timestamp register, as this is the first point at which it is safe to
-timestamp another packet.
+unlock.
 
 To avoid issues with the skb pointer, we'll use a copy of the pointer
 and set the global variable in the driver structure to NULL first. This
 ensures that the next timestamp request does not modify our local copy
 of the skb pointer.
 
-Now, a well behaved application which has at most one outstanding
-timestamp request will not accidentally race with the driver unlock bit.
-Obviously an application attempting to timestamp faster than one request
-at a time will have some timestamp requests skipped. Unfortunately there
-is nothing we can do about that.
+This ensures that well behaved applications do not accidentally race
+with the unlock bit. Obviously an application which sends multiple Tx
+timestamp requests at once will still only timestamp one packet at
+a time. Unfortunately there is nothing we can do about this.
 
 Reported-by: David Mirabito <davidm@metamako.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ptp.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_ptp.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index 18c1cc08da97..5a4854e9fd29 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -338,6 +338,7 @@ void i40e_ptp_rx_hang(struct i40e_vsi *vsi)
- void i40e_ptp_tx_hwtstamp(struct i40e_pf *pf)
+diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
+index 7a3fd4d74592..a2da5738bfb5 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ptp.c
++++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+@@ -721,6 +721,7 @@ void igb_ptp_rx_hang(struct igb_adapter *adapter)
+  **/
+ static void igb_ptp_tx_hwtstamp(struct igb_adapter *adapter)
  {
++	struct sk_buff *skb = adapter->ptp_tx_skb;
+ 	struct e1000_hw *hw = &adapter->hw;
  	struct skb_shared_hwtstamps shhwtstamps;
-+	struct sk_buff *skb = pf->ptp_tx_skb;
- 	struct i40e_hw *hw = &pf->hw;
- 	u32 hi, lo;
- 	u64 ns;
-@@ -353,12 +354,19 @@ void i40e_ptp_tx_hwtstamp(struct i40e_pf *pf)
- 	hi = rd32(hw, I40E_PRTTSYN_TXTIME_H);
+ 	u64 regval;
+@@ -748,10 +749,17 @@ static void igb_ptp_tx_hwtstamp(struct igb_adapter *adapter)
+ 	shhwtstamps.hwtstamp =
+ 		ktime_add_ns(shhwtstamps.hwtstamp, adjust);
  
- 	ns = (((u64)hi) << 32) | lo;
--
- 	i40e_ptp_convert_to_hwtstamp(&shhwtstamps, ns);
--	skb_tstamp_tx(pf->ptp_tx_skb, &shhwtstamps);
--	dev_kfree_skb_any(pf->ptp_tx_skb);
-+
-+	/* Clear the bit lock as soon as possible after reading the register,
-+	 * and prior to notifying the stack via skb_tstamp_tx(). Otherwise
-+	 * applications might wake up and attempt to request another transmit
-+	 * timestamp prior to the bit lock being cleared.
+-	skb_tstamp_tx(adapter->ptp_tx_skb, &shhwtstamps);
+-	dev_kfree_skb_any(adapter->ptp_tx_skb);
++	/* Clear the lock early before calling skb_tstamp_tx so that
++	 * applications are not woken up before the lock bit is clear. We use
++	 * a copy of the skb pointer to ensure other threads can't change it
++	 * while we're notifying the stack.
 +	 */
- 	pf->ptp_tx_skb = NULL;
- 	clear_bit_unlock(__I40E_PTP_TX_IN_PROGRESS, pf->state);
+ 	adapter->ptp_tx_skb = NULL;
+ 	clear_bit_unlock(__IGB_PTP_TX_IN_PROGRESS, &adapter->state);
 +
 +	/* Notify the stack and free the skb after we've unlocked */
 +	skb_tstamp_tx(skb, &shhwtstamps);
