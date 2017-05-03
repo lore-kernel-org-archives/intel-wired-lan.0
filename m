@@ -1,95 +1,84 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 May 2017 10:28:56 -0700
-Subject: [Intel-wired-lan] [PATCH v4 07/15] ixgbe: avoid permanent lock of
-	*_PTP_TX_IN_PROGRESS
+Date: Wed,  3 May 2017 10:28:51 -0700
+Subject: [Intel-wired-lan] [PATCH v4 02/15] i40e: fix race condition with
+	PTP_TX_IN_PROGRESS bits
 In-Reply-To: <20170503172904.9788-1-jacob.e.keller@intel.com>
 References: <20170503172904.9788-1-jacob.e.keller@intel.com>
-Message-ID: <20170503172904.9788-8-jacob.e.keller@intel.com>
+Message-ID: <20170503172904.9788-3-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ixgbe driver uses a state bit lock to avoid handling more than one Tx
-timestamp request at once. This is required because hardware is limited
-to a single set of registers for Tx timestamps.
+Hardware related to the i40e driver has a limitation on Tx PTP packets.
+This requires us to limit the driver to timestamping a single packet at
+once. This is done using a state bitlock which enforces that only one
+timestamp request is honored at a time.
 
-The state bit lock is not properly cleaned up during
-ixgbe_xmit_frame_ring() if the transmit fails such as due to DMA or TSO
-failure. In some hardware this results in blocking timestamps until the
-service task times out. In other hardware this results in a permanent
-lock of the timestamp bit because we never receive an interrupt
-indicating the timestamp occurred, since indeed the packet was never
-transmitted.
+Unfortunately this suffers from a race condition. The bit lock is not
+cleared until after skb_tstamp_tx() is called notifying applications of
+a new Tx timestamp. Even a well behaved application sending only one
+packet at a time and waiting for a response can wake up and send a new
+timestamped packet request before the bit lock is cleared. This results
+in needlessly dropping some Tx timestamp requests.
 
-Fix this by checking for DMA and TSO errors in ixgbe_xmit_frame_ring() and
-properly cleaning up after ourselves when these occur.
+We can fix this by unlocking the state bit as soon as we read the
+Timestamp register, as this is the first point at which it is safe to
+timestamp another packet.
 
-Reported-by: Reported-by: David Mirabito <davidm@metamako.com>
+To avoid issues with the skb pointer, we'll use a copy of the pointer
+and set the global variable in the driver structure to NULL first. This
+ensures that the next timestamp request does not modify our local copy
+of the skb pointer.
+
+Now, a well behaved application which has at most one outstanding
+timestamp request will not accidentally race with the driver unlock bit.
+Obviously an application attempting to timestamp faster than one request
+at a time will have some timestamp requests skipped. Unfortunately there
+is nothing we can do about that.
+
+Reported-by: David Mirabito <davidm@metamako.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index a3b7d18924a5..f93330bc7b97 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7885,9 +7885,9 @@ static inline int ixgbe_maybe_stop_tx(struct ixgbe_ring *tx_ring, u16 size)
- #define IXGBE_TXD_CMD (IXGBE_TXD_CMD_EOP | \
- 		       IXGBE_TXD_CMD_RS)
- 
--static void ixgbe_tx_map(struct ixgbe_ring *tx_ring,
--			 struct ixgbe_tx_buffer *first,
--			 const u8 hdr_len)
-+static int ixgbe_tx_map(struct ixgbe_ring *tx_ring,
-+			struct ixgbe_tx_buffer *first,
-+			const u8 hdr_len)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+index 18c1cc08da97..5a4854e9fd29 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+@@ -338,6 +338,7 @@ void i40e_ptp_rx_hang(struct i40e_vsi *vsi)
+ void i40e_ptp_tx_hwtstamp(struct i40e_pf *pf)
  {
- 	struct sk_buff *skb = first->skb;
- 	struct ixgbe_tx_buffer *tx_buffer;
-@@ -8014,7 +8014,7 @@ static void ixgbe_tx_map(struct ixgbe_ring *tx_ring,
- 		mmiowb();
- 	}
+ 	struct skb_shared_hwtstamps shhwtstamps;
++	struct sk_buff *skb = pf->ptp_tx_skb;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	u32 hi, lo;
+ 	u64 ns;
+@@ -353,12 +354,19 @@ void i40e_ptp_tx_hwtstamp(struct i40e_pf *pf)
+ 	hi = rd32(hw, I40E_PRTTSYN_TXTIME_H);
  
--	return;
-+	return 0;
- dma_error:
- 	dev_err(tx_ring->dev, "TX DMA map failed\n");
- 	tx_buffer = &tx_ring->tx_buffer_info[i];
-@@ -8044,6 +8044,8 @@ static void ixgbe_tx_map(struct ixgbe_ring *tx_ring,
- 	first->skb = NULL;
- 
- 	tx_ring->next_to_use = i;
+ 	ns = (((u64)hi) << 32) | lo;
+-
+ 	i40e_ptp_convert_to_hwtstamp(&shhwtstamps, ns);
+-	skb_tstamp_tx(pf->ptp_tx_skb, &shhwtstamps);
+-	dev_kfree_skb_any(pf->ptp_tx_skb);
 +
-+	return -1;
++	/* Clear the bit lock as soon as possible after reading the register,
++	 * and prior to notifying the stack via skb_tstamp_tx(). Otherwise
++	 * applications might wake up and attempt to request another transmit
++	 * timestamp prior to the bit lock being cleared.
++	 */
+ 	pf->ptp_tx_skb = NULL;
+ 	clear_bit_unlock(__I40E_PTP_TX_IN_PROGRESS, pf->state);
++
++	/* Notify the stack and free the skb after we've unlocked */
++	skb_tstamp_tx(skb, &shhwtstamps);
++	dev_kfree_skb_any(skb);
  }
  
- static void ixgbe_atr(struct ixgbe_ring *ring,
-@@ -8416,13 +8418,21 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
- #ifdef IXGBE_FCOE
- xmit_fcoe:
- #endif /* IXGBE_FCOE */
--	ixgbe_tx_map(tx_ring, first, hdr_len);
-+	if (ixgbe_tx_map(tx_ring, first, hdr_len))
-+		goto cleanup_tx_timestamp;
- 
- 	return NETDEV_TX_OK;
- 
- out_drop:
- 	dev_kfree_skb_any(first->skb);
- 	first->skb = NULL;
-+cleanup_tx_timestamp:
-+	if (unlikely(tx_flags & IXGBE_TX_FLAGS_TSTAMP)) {
-+		dev_kfree_skb_any(adapter->ptp_tx_skb);
-+		adapter->ptp_tx_skb = NULL;
-+		cancel_work_sync(&adapter->ptp_tx_work);
-+		clear_bit_unlock(__IXGBE_PTP_TX_IN_PROGRESS, &adapter->state);
-+	}
- 
- 	return NETDEV_TX_OK;
- }
+ /**
 -- 
 2.13.0.rc0.317.gcc792a6cad5a
 
