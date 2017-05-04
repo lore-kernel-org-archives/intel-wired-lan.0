@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 4 May 2017 21:58:13 +0000
-Subject: [Intel-wired-lan] [PATCH v4 02/15] i40e: fix race condition
- with	PTP_TX_IN_PROGRESS bits
-In-Reply-To: <20170503172904.9788-3-jacob.e.keller@intel.com>
+Date: Thu, 4 May 2017 21:58:47 +0000
+Subject: [Intel-wired-lan] [PATCH v4 05/15] i40e: avoid permanent lock
+ of	*_PTP_TX_IN_PROGRESS
+In-Reply-To: <20170503172904.9788-6-jacob.e.keller@intel.com>
 References: <20170503172904.9788-1-jacob.e.keller@intel.com>
- <20170503172904.9788-3-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA2549@ORSMSX104.amr.corp.intel.com>
+ <20170503172904.9788-6-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA2559@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,40 +18,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, May 3, 2017 10:29 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
 > Cc: Richard Cochran <richardcochran@gmail.com>
-> Subject: [Intel-wired-lan] [PATCH v4 02/15] i40e: fix race condition with
-> PTP_TX_IN_PROGRESS bits
+> Subject: [Intel-wired-lan] [PATCH v4 05/15] i40e: avoid permanent lock of
+> *_PTP_TX_IN_PROGRESS
 > 
-> Hardware related to the i40e driver has a limitation on Tx PTP packets.
-> This requires us to limit the driver to timestamping a single packet at once.
-> This is done using a state bitlock which enforces that only one timestamp
-> request is honored at a time.
+> The i40e driver uses a bit lock to indicate when a Tx timestamp is in progress
+> to avoid attempting to timestamp multiple packets at once. This is required
+> because hardware only has registers to handle one request at a time.
 > 
-> Unfortunately this suffers from a race condition. The bit lock is not cleared
-> until after skb_tstamp_tx() is called notifying applications of a new Tx
-> timestamp. Even a well behaved application sending only one packet at a
-> time and waiting for a response can wake up and send a new timestamped
-> packet request before the bit lock is cleared. This results in needlessly
-> dropping some Tx timestamp requests.
+> There is a corner case where we failed to cleanup the bit lock after a failed
+> transmit. This can potentially result in a state bit being locked forever.
 > 
-> We can fix this by unlocking the state bit as soon as we read the Timestamp
-> register, as this is the first point at which it is safe to timestamp another
-> packet.
+> Add some cleanup code to i40e_xmit_frame_ring to check and make sure we
+> cleanup incase of these failures. We also modify i40e_tx_map to return an
+> error code indication DMA failure.
 > 
-> To avoid issues with the skb pointer, we'll use a copy of the pointer and set
-> the global variable in the driver structure to NULL first. This ensures that the
-> next timestamp request does not modify our local copy of the skb pointer.
-> 
-> Now, a well behaved application which has at most one outstanding
-> timestamp request will not accidentally race with the driver unlock bit.
-> Obviously an application attempting to timestamp faster than one request at
-> a time will have some timestamp requests skipped. Unfortunately there is
-> nothing we can do about that.
-> 
-> Reported-by: David Mirabito <davidm@metamako.com>
+> Reported-by: Reported-by: David Mirabito <davidm@metamako.com>
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ptp.c | 14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 26 ++++++++++++++++++++--
+> ----
+>  1 file changed, 20 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
