@@ -1,53 +1,58 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 5 May 2017 05:55:06 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue 4/4]
- drivers/net/ethernet/intel/i40e/i40e_main.c:8828:16: error:
- 'I40E_FLAG_HW_ATR_EVICT_ENABLED' undeclared
-Message-ID: <201705050505.wALUZ7vS%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 4 May 2017 21:58:13 +0000
+Subject: [Intel-wired-lan] [PATCH v4 02/15] i40e: fix race condition
+ with	PTP_TX_IN_PROGRESS bits
+In-Reply-To: <20170503172904.9788-3-jacob.e.keller@intel.com>
+References: <20170503172904.9788-1-jacob.e.keller@intel.com>
+ <20170503172904.9788-3-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA2549@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git dev-queue
-head:   9714e5c2be7ebfe681a124c9cfca810eedb6bb4c
-commit: 9714e5c2be7ebfe681a124c9cfca810eedb6bb4c [4/4] i40e: fix incorrect assignment of I40E_FLAG_HW_ATR_EVICT_CAPABLE
-config: x86_64-rhel (attached as .config)
-compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
-reproduce:
-        git checkout 9714e5c2be7ebfe681a124c9cfca810eedb6bb4c
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jacob Keller
+> Sent: Wednesday, May 3, 2017 10:29 AM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Cc: Richard Cochran <richardcochran@gmail.com>
+> Subject: [Intel-wired-lan] [PATCH v4 02/15] i40e: fix race condition with
+> PTP_TX_IN_PROGRESS bits
+> 
+> Hardware related to the i40e driver has a limitation on Tx PTP packets.
+> This requires us to limit the driver to timestamping a single packet at once.
+> This is done using a state bitlock which enforces that only one timestamp
+> request is honored at a time.
+> 
+> Unfortunately this suffers from a race condition. The bit lock is not cleared
+> until after skb_tstamp_tx() is called notifying applications of a new Tx
+> timestamp. Even a well behaved application sending only one packet at a
+> time and waiting for a response can wake up and send a new timestamped
+> packet request before the bit lock is cleared. This results in needlessly
+> dropping some Tx timestamp requests.
+> 
+> We can fix this by unlocking the state bit as soon as we read the Timestamp
+> register, as this is the first point at which it is safe to timestamp another
+> packet.
+> 
+> To avoid issues with the skb pointer, we'll use a copy of the pointer and set
+> the global variable in the driver structure to NULL first. This ensures that the
+> next timestamp request does not modify our local copy of the skb pointer.
+> 
+> Now, a well behaved application which has at most one outstanding
+> timestamp request will not accidentally race with the driver unlock bit.
+> Obviously an application attempting to timestamp faster than one request at
+> a time will have some timestamp requests skipped. Unfortunately there is
+> nothing we can do about that.
+> 
+> Reported-by: David Mirabito <davidm@metamako.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c | 14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
 
-All errors (new ones prefixed by >>):
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-   drivers/net/ethernet/intel/i40e/i40e_main.c: In function 'i40e_sw_init':
->> drivers/net/ethernet/intel/i40e/i40e_main.c:8828:16: error: 'I40E_FLAG_HW_ATR_EVICT_ENABLED' undeclared (first use in this function)
-      pf->flags |= I40E_FLAG_HW_ATR_EVICT_ENABLED;
-                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   drivers/net/ethernet/intel/i40e/i40e_main.c:8828:16: note: each undeclared identifier is reported only once for each function it appears in
 
-vim +/I40E_FLAG_HW_ATR_EVICT_ENABLED +8828 drivers/net/ethernet/intel/i40e/i40e_main.c
-
-  8822			/* Supported in FW API version higher than 1.4 */
-  8823			pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
-  8824		}
-  8825	
-  8826		/* Enable HW ATR eviction if possible */
-  8827		if (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)
-> 8828			pf->flags |= I40E_FLAG_HW_ATR_EVICT_ENABLED;
-  8829	
-  8830		pf->eeprom_version = 0xDEAD;
-  8831		pf->lan_veb = I40E_NO_VEB;
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 38958 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170505/945a154e/attachment-0001.bin>
