@@ -1,54 +1,53 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 04 May 2017 14:53:04 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: fix handling of HW ATR eviction
-In-Reply-To: <20170504211636.21192-1-jacob.e.keller@intel.com>
-References: <20170504211636.21192-1-jacob.e.keller@intel.com>
-Message-ID: <1493934784.48207.0.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 5 May 2017 05:55:06 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue 4/4]
+ drivers/net/ethernet/intel/i40e/i40e_main.c:8828:16: error:
+ 'I40E_FLAG_HW_ATR_EVICT_ENABLED' undeclared
+Message-ID: <201705050505.wALUZ7vS%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2017-05-04 at 14:16 -0700, Jacob Keller wrote:
-> A recent commit to refactor the driver and remove the
-> hw_disabled_flags
-> field accidentally introduced two regressions. First, we overwrote
-> pf->flags which removed various key flags including the MSI-X
-> settings.
-> 
-> Additionally, it was intended that we have now two flags,
-> HW_ATR_EVICT_CAPABLe and HW_ATR_EVICT_ENABLED, but this was not done,
-> and we accidentally were mis-using HW_ATR_EVICT_CAPABLE everywhere.
-> 
-> This patch adds the missing piece, HW_ATR_EVICT_ENABLED, and safely
-> updates pf->flags instead of overwriting it.
-> 
-> Without this patch we will have many problems including disabling
-> MSI-X
-> support, and we'll attempt to use HW ATR eviction on devices which do
-> not support it.
-> 
-> Fixes: 47994c119a36 ("i40e: remove hw_disabled_flags in favor of
-> using separate flag bits", 2017-04-19)
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
-> Ok. For real, this actually cleans up and adds the missing feature
-> that
-> we should have had. I'm working on the rest, but this should fix the
-> issue you were seeing without introducing other regressions.
-> 
-> ?drivers/net/ethernet/intel/i40e/i40e.h???????? | 1 +
-> ?drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 ++--
-> ?drivers/net/ethernet/intel/i40e/i40e_main.c??? | 7 ++++---
-> ?drivers/net/ethernet/intel/i40e/i40e_txrx.c??? | 4 ++--
-> ?4 files changed, 9 insertions(+), 7 deletions(-)
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git dev-queue
+head:   9714e5c2be7ebfe681a124c9cfca810eedb6bb4c
+commit: 9714e5c2be7ebfe681a124c9cfca810eedb6bb4c [4/4] i40e: fix incorrect assignment of I40E_FLAG_HW_ATR_EVICT_CAPABLE
+config: x86_64-rhel (attached as .config)
+compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+reproduce:
+        git checkout 9714e5c2be7ebfe681a124c9cfca810eedb6bb4c
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
- Ok is this the "final" version of the fix???
+All errors (new ones prefixed by >>):
+
+   drivers/net/ethernet/intel/i40e/i40e_main.c: In function 'i40e_sw_init':
+>> drivers/net/ethernet/intel/i40e/i40e_main.c:8828:16: error: 'I40E_FLAG_HW_ATR_EVICT_ENABLED' undeclared (first use in this function)
+      pf->flags |= I40E_FLAG_HW_ATR_EVICT_ENABLED;
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/i40e/i40e_main.c:8828:16: note: each undeclared identifier is reported only once for each function it appears in
+
+vim +/I40E_FLAG_HW_ATR_EVICT_ENABLED +8828 drivers/net/ethernet/intel/i40e/i40e_main.c
+
+  8822			/* Supported in FW API version higher than 1.4 */
+  8823			pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
+  8824		}
+  8825	
+  8826		/* Enable HW ATR eviction if possible */
+  8827		if (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)
+> 8828			pf->flags |= I40E_FLAG_HW_ATR_EVICT_ENABLED;
+  8829	
+  8830		pf->eeprom_version = 0xDEAD;
+  8831		pf->lan_veb = I40E_NO_VEB;
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 -------------- next part --------------
 A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170504/743c07a7/attachment.asc>
+Name: .config.gz
+Type: application/gzip
+Size: 38958 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170505/945a154e/attachment-0001.bin>
