@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 4 May 2017 22:02:33 +0000
-Subject: [Intel-wired-lan] [PATCH v4 15/15] ixgbe: check for Tx
- timestamp	timeouts during watchdog
-In-Reply-To: <20170503172904.9788-16-jacob.e.keller@intel.com>
+Date: Thu, 4 May 2017 22:03:04 +0000
+Subject: [Intel-wired-lan] [PATCH v4 07/15] ixgbe: avoid permanent lock
+ of	*_PTP_TX_IN_PROGRESS
+In-Reply-To: <20170503172904.9788-8-jacob.e.keller@intel.com>
 References: <20170503172904.9788-1-jacob.e.keller@intel.com>
- <20170503172904.9788-16-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA25AE@ORSMSX104.amr.corp.intel.com>
+ <20170503172904.9788-8-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA25C1@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,32 +18,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, May 3, 2017 10:29 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
 > Cc: Richard Cochran <richardcochran@gmail.com>
-> Subject: [Intel-wired-lan] [PATCH v4 15/15] ixgbe: check for Tx timestamp
-> timeouts during watchdog
+> Subject: [Intel-wired-lan] [PATCH v4 07/15] ixgbe: avoid permanent lock of
+> *_PTP_TX_IN_PROGRESS
 > 
-> The ixgbe driver has logic to handle only one Tx timestamp at a time, using a
-> state bit lock to avoid multiple requests at once.
+> The ixgbe driver uses a state bit lock to avoid handling more than one Tx
+> timestamp request at once. This is required because hardware is limited to a
+> single set of registers for Tx timestamps.
 > 
-> It may be possible, if incredibly unlikely, that a Tx timestamp event is
-> requested but never completes. Since we use an interrupt scheme to
-> determine when the Tx timestamp occurred we would never clear the state
-> bit in this case.
+> The state bit lock is not properly cleaned up during
+> ixgbe_xmit_frame_ring() if the transmit fails such as due to DMA or TSO
+> failure. In some hardware this results in blocking timestamps until the service
+> task times out. In other hardware this results in a permanent lock of the
+> timestamp bit because we never receive an interrupt indicating the
+> timestamp occurred, since indeed the packet was never transmitted.
 > 
-> Add an ixgbe_ptp_tx_hang() function similar to the already existing
-> ixgbe_ptp_rx_hang() function. This function runs in the watchdog routine
-> and makes sure we eventually recover from this case instead of permanently
-> disabling Tx timestamps.
+> Fix this by checking for DMA and TSO errors in ixgbe_xmit_frame_ring() and
+> properly cleaning up after ourselves when these occur.
 > 
-> Note: there is no currently known way to cause this without hacking the
-> driver code to force it.
-> 
+> Reported-by: Reported-by: David Mirabito <davidm@metamako.com>
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  1 +
-> drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c  | 27
-> +++++++++++++++++++++++++++
->  3 files changed, 29 insertions(+)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 +++++++++++++++-----
+>  1 file changed, 15 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
