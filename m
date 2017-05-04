@@ -1,66 +1,38 @@
-From: Gangfeng <gangfeng.huang@ni.com>
-Date: Thu, 4 May 2017 10:23:26 +0800
-Subject: [Intel-wired-lan] [PATCH] igb: Fix error of RX network flow
-	classification
-Message-ID: <1493864606-9716-1-git-send-email-gangfeng.huang@ni.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed,  3 May 2017 19:51:45 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 01/13] i40evf: drop
+	i40e_type.h include
+In-Reply-To: <20170504025157.71107-1-jeffrey.t.kirsher@intel.com>
+References: <20170504025157.71107-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20170504025157.71107-2-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Gangfeng Huang <gangfeng.huang@ni.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-After add an ethertype filter, if user change the adapter speed several
-times, the error "ethtool -N: etype filters are all used" is reported by
-igb driver.
+This drops the i40e_type.h include in anticipation of the next
+patch which moves this file to a location where type.h doesn't
+exist, and all the places this file is included already include
+i40e_type.h before this file.
 
-In older patch, function igb_nfc_filter_exit() and igb_nfc_filter_restore()
-is not paried. igb_nfc_filter_restore() exist in igb_up(), but function
-igb_nfc_filter_exit() is exist in __igb_close(). In the process of speed
-changing, only igb_nfc_filter_restore() is called, it will take a position
-of ethertype bitmap.
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Reproduce steps:
-Step 1: Add a etype filter by ethtool
-$ethtool -N eth0 flow-type ether proto 0x88F8 action 1
-Step 2: Change the adapter speed to 100M/full duplex
-$ethtool -s eth0 speed 100 duplex full
-Step 3: Change the adapter speed to 1000M/full duplex
-ethtool -s eth0 speed 1000 duplex full
-Repeat step2 and step3, then dmesg the system log, you can find the error
-message, add new ethtype filter is also failed.
-
-This fixing is move igb_nfc_filter_exit() from __igb_close() to igb_down()
-to make igb_nfc_filter_restore()/igb_nfc_filter_exit() is paired.
-
-Signed-off-by: Gangfeng <gangfeng.huang@ni.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 8f624af..e01e01a 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1791,6 +1791,8 @@ void igb_down(struct igb_adapter *adapter)
- 	wr32(E1000_RCTL, rctl & ~E1000_RCTL_EN);
- 	/* flush and sleep below */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+index b0b8de5..7d6da3a 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+@@ -27,8 +27,6 @@
+ #ifndef _I40E_VIRTCHNL_H_
+ #define _I40E_VIRTCHNL_H_
  
-+	igb_nfc_filter_exit(adapter);
-+
- 	netif_carrier_off(netdev);
- 	netif_tx_stop_all_queues(netdev);
- 
-@@ -3317,8 +3319,6 @@ static int __igb_close(struct net_device *netdev, bool suspending)
- 	igb_down(adapter);
- 	igb_free_irq(adapter);
- 
--	igb_nfc_filter_exit(adapter);
+-#include "i40e_type.h"
 -
- 	igb_free_all_tx_resources(adapter);
- 	igb_free_all_rx_resources(adapter);
- 
+ /* Description:
+  * This header file describes the VF-PF communication protocol used
+  * by the various i40e drivers.
 -- 
-2.7.2
+1.8.3.1
 
