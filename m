@@ -1,10 +1,10 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed,  3 May 2017 19:51:52 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 08/13] i40evf/virtchnl:
-	whitespace cleanups
+Date: Wed,  3 May 2017 19:51:51 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 07/13] i40e/virtchnl: refactor
+	code for validate checks
 In-Reply-To: <20170504025157.71107-1-jeffrey.t.kirsher@intel.com>
 References: <20170504025157.71107-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20170504025157.71107-9-jeffrey.t.kirsher@intel.com>
+Message-ID: <20170504025157.71107-8-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,81 +13,134 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-This patch fixes up a bunch of whitespace issues introduced
-by the previous automated change of name from i40e to virtchnl.
+This change updates the arguments passed to the validate function
+and fixes the caller, as well as uses the new return values added to
+virtchnl.h
+
+One other minor tweak, remove a duplicate set to zero of valid_len.
+
+This is in preparation for moving the function to virtchnl.h.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 41a046e..4d359b5 100644
+index 09fd12c..41a046e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1485,8 +1485,7 @@ static int i40e_vc_get_version_msg(struct i40e_vf *vf, u8 *msg)
- 		info.minor = VIRTCHNL_VERSION_MINOR_NO_VF_CAPS;
- 	return i40e_vc_send_msg_to_vf(vf, VIRTCHNL_OP_VERSION,
- 				      I40E_SUCCESS, (u8 *)&info,
--				      sizeof(struct
--					     virtchnl_version_info));
-+				      sizeof(struct virtchnl_version_info));
+@@ -2536,15 +2536,16 @@ static int i40e_vc_set_rss_hena(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ 
+ /**
+  * i40e_vc_validate_vf_msg
+- * @vf: pointer to the VF info
++ * @ver: Virtchnl version info
++ * @v_opcode: Opcode for the message
+  * @msg: pointer to the msg buffer
+  * @msglen: msg length
+- * @msghndl: msg handle
+  *
+- * validate msg
++ * validate msg format against struct for each opcode
+  **/
+-static int i40e_vc_validate_vf_msg(struct i40e_vf *vf, u32 v_opcode,
+-				   u32 v_retval, u8 *msg, u16 msglen)
++static int
++i40e_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
++			u8 *msg, u16 msglen)
+ {
+ 	bool err_msg_format = false;
+ 	int valid_len = 0;
+@@ -2557,7 +2558,7 @@ static int i40e_vc_validate_vf_msg(struct i40e_vf *vf, u32 v_opcode,
+ 	case VIRTCHNL_OP_RESET_VF:
+ 		break;
+ 	case VIRTCHNL_OP_GET_VF_RESOURCES:
+-		if (VF_IS_V11(&vf->vf_ver))
++		if (VF_IS_V11(ver))
+ 			valid_len = sizeof(u32);
+ 		break;
+ 	case VIRTCHNL_OP_CONFIG_TX_QUEUE:
+@@ -2633,7 +2634,6 @@ static int i40e_vc_validate_vf_msg(struct i40e_vf *vf, u32 v_opcode,
+ 			err_msg_format = true;
+ 		break;
+ 	case VIRTCHNL_OP_RELEASE_IWARP_IRQ_MAP:
+-		valid_len = 0;
+ 		break;
+ 	case VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP:
+ 		valid_len = sizeof(struct virtchnl_iwarp_qvlist_info);
+@@ -2673,15 +2673,13 @@ static int i40e_vc_validate_vf_msg(struct i40e_vf *vf, u32 v_opcode,
+ 	case VIRTCHNL_OP_EVENT:
+ 	case VIRTCHNL_OP_UNKNOWN:
+ 	default:
+-		return -EPERM;
++		return VIRTCHNL_ERR_PARAM;
+ 	}
+ 	/* few more checks */
+-	if ((valid_len != msglen) || (err_msg_format)) {
+-		i40e_vc_send_resp_to_vf(vf, v_opcode, I40E_ERR_PARAM);
+-		return -EINVAL;
+-	} else {
+-		return 0;
+-	}
++	if ((valid_len != msglen) || (err_msg_format))
++		return VIRTCHNL_STATUS_ERR_OPCODE_MISMATCH;
++
++	return 0;
  }
  
  /**
-@@ -1544,11 +1543,9 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 	} else {
- 		if ((pf->flags & I40E_FLAG_RSS_AQ_CAPABLE) &&
- 		    (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RSS_AQ))
--			vfres->vf_offload_flags |=
--					VIRTCHNL_VF_OFFLOAD_RSS_AQ;
-+			vfres->vf_offload_flags |= VIRTCHNL_VF_OFFLOAD_RSS_AQ;
- 		else
--			vfres->vf_offload_flags |=
--					VIRTCHNL_VF_OFFLOAD_RSS_REG;
-+			vfres->vf_offload_flags |= VIRTCHNL_VF_OFFLOAD_RSS_REG;
+@@ -2713,7 +2711,7 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
+ 		return I40E_ERR_PARAM;
+ 
+ 	/* perform basic checks on the msg */
+-	ret = i40e_vc_validate_vf_msg(vf, v_opcode, v_retval, msg, msglen);
++	ret = i40e_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
+ 
+ 	/* perform additional checks specific to this driver */
+ 	if (v_opcode == VIRTCHNL_OP_CONFIG_RSS_KEY) {
+@@ -2729,9 +2727,15 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
  	}
  
- 	if (pf->flags & I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE) {
-@@ -2530,8 +2527,7 @@ static int i40e_vc_set_rss_hena(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ 	if (ret) {
++		i40e_vc_send_resp_to_vf(vf, v_opcode, I40E_ERR_PARAM);
+ 		dev_err(&pf->pdev->dev, "Invalid message from VF %d, opcode %d, len %d\n",
+ 			local_vf_id, v_opcode, msglen);
+-		return ret;
++		switch (ret) {
++		case VIRTCHNL_ERR_PARAM:
++			return -EPERM;
++		default:
++			return -EINVAL;
++		}
+ 	}
  
- 	/* send the response to the VF */
- err:
--	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_SET_RSS_HENA,
--				       aq_ret);
-+	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_SET_RSS_HENA, aq_ret);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 90a17b0..d9f0409 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -1018,8 +1018,7 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 				~(BIT(VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP));
- 		break;
- 	case VIRTCHNL_OP_GET_RSS_HENA_CAPS: {
--		struct virtchnl_rss_hena *vrh =
--			(struct virtchnl_rss_hena *)msg;
-+		struct virtchnl_rss_hena *vrh = (struct virtchnl_rss_hena *)msg;
- 		if (msglen == sizeof(*vrh))
- 			adapter->hena = vrh->hena;
- 		else
+ 	switch (v_opcode) {
 diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 0e0c198..43b694f 100644
+index 05c1895..0e0c198 100644
 --- a/include/linux/avf/virtchnl.h
 +++ b/include/linux/avf/virtchnl.h
-@@ -175,10 +175,10 @@ struct virtchnl_vsi_resource {
- #define VIRTCHNL_VF_OFFLOAD_IWARP		0x00000002
- #define VIRTCHNL_VF_OFFLOAD_FCOE		0x00000004
- #define VIRTCHNL_VF_OFFLOAD_RSS_AQ		0x00000008
--#define VIRTCHNL_VF_OFFLOAD_RSS_REG	0x00000010
--#define VIRTCHNL_VF_OFFLOAD_WB_ON_ITR	0x00000020
-+#define VIRTCHNL_VF_OFFLOAD_RSS_REG		0x00000010
-+#define VIRTCHNL_VF_OFFLOAD_WB_ON_ITR		0x00000020
- #define VIRTCHNL_VF_OFFLOAD_VLAN		0x00010000
--#define VIRTCHNL_VF_OFFLOAD_RX_POLLING	0x00020000
-+#define VIRTCHNL_VF_OFFLOAD_RX_POLLING		0x00020000
- #define VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2	0x00040000
- #define VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
- #define VIRTCHNL_VF_OFFLOAD_ENCAP		0X00100000
+@@ -53,6 +53,23 @@
+  * its queues, optionally add MAC and VLAN filters, and process traffic.
+  */
+ 
++/* START GENERIC DEFINES
++ * Need to ensure the following enums and defines hold the same meaning and
++ * value in current and future projects
++ */
++
++/* Error Codes */
++enum virtchnl_status_code {
++	VIRTCHNL_STATUS_SUCCESS				= 0,
++	VIRTCHNL_ERR_PARAM				= -5,
++	VIRTCHNL_STATUS_ERR_OPCODE_MISMATCH		= -38,
++	VIRTCHNL_STATUS_ERR_CQP_COMPL_ERROR		= -39,
++	VIRTCHNL_STATUS_ERR_INVALID_VF_ID		= -40,
++	VIRTCHNL_STATUS_NOT_SUPPORTED			= -64,
++};
++
++/* END GENERIC DEFINES */
++
+ /* Opcodes for VF-PF communication. These are placed in the v_opcode field
+  * of the virtchnl_msg structure.
+  */
 -- 
 1.8.3.1
 
