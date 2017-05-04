@@ -1,89 +1,77 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu,  4 May 2017 02:35:20 -0700
-Subject: [Intel-wired-lan] [net-next v2 05/13] virtchnl: move some code to
-	core driver
+Date: Thu,  4 May 2017 02:35:28 -0700
+Subject: [Intel-wired-lan] [net-next v2 13/13] i40evf: Add support for
+	Adaptive Virtual Function
 In-Reply-To: <20170504093528.76047-1-jeffrey.t.kirsher@intel.com>
 References: <20170504093528.76047-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20170504093528.76047-6-jeffrey.t.kirsher@intel.com>
+Message-ID: <20170504093528.76047-14-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Preethi Banala <preethi.banala@intel.com>
 
-Before moving this function over to virtchnl.h, move
-some driver specific checks that had snuck into a fairly
-generic function, back into the caller of the function.
+Add device ID define and mac_type assignment needed for
+Adaptive Virtual Function (VF Base Mode Support).
 
+Also, update version to v3.0.0 in order to indicate
+clearly that this is the first driver supporting the AVF
+device ID.
+
+Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 27b1174..63dcc61 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2549,10 +2549,6 @@ static int i40e_vc_validate_vf_msg(struct i40e_vf *vf, u32 v_opcode,
- 	bool err_msg_format = false;
- 	int valid_len = 0;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index 9dec775..1dd1938 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -68,6 +68,7 @@ i40e_status i40e_set_mac_type(struct i40e_hw *hw)
+ 			break;
+ 		case I40E_DEV_ID_VF:
+ 		case I40E_DEV_ID_VF_HV:
++		case I40E_DEV_ID_ADAPTIVE_VF:
+ 			hw->mac.type = I40E_MAC_VF;
+ 			break;
+ 		default:
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_devids.h b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
+index d76393c..0469e4b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_devids.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
+@@ -43,6 +43,7 @@
+ #define I40E_DEV_ID_25G_SFP28		0x158B
+ #define I40E_DEV_ID_VF			0x154C
+ #define I40E_DEV_ID_VF_HV		0x1571
++#define I40E_DEV_ID_ADAPTIVE_VF		0x1889
+ #define I40E_DEV_ID_SFP_X722		0x37D0
+ #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
+ #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 1b00274..3a3ca96 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -44,9 +44,9 @@
  
--	/* Check if VF is disabled. */
--	if (test_bit(I40E_VF_STATE_DISABLED, &vf->vf_states))
--		return I40E_ERR_PARAM;
--
- 	/* Validate message length. */
- 	switch (v_opcode) {
- 	case VIRTCHNL_OP_VERSION:
-@@ -2657,10 +2653,6 @@ static int i40e_vc_validate_vf_msg(struct i40e_vf *vf, u32 v_opcode,
- 		if (msglen >= valid_len) {
- 			struct virtchnl_rss_key *vrk =
- 				(struct virtchnl_rss_key *)msg;
--			if (vrk->key_len != I40E_HKEY_ARRAY_SIZE) {
--				err_msg_format = true;
--				break;
--			}
- 			valid_len += vrk->key_len - 1;
- 		}
- 		break;
-@@ -2669,10 +2661,6 @@ static int i40e_vc_validate_vf_msg(struct i40e_vf *vf, u32 v_opcode,
- 		if (msglen >= valid_len) {
- 			struct virtchnl_rss_lut *vrl =
- 				(struct virtchnl_rss_lut *)msg;
--			if (vrl->lut_entries != I40E_VF_HLUT_ARRAY_SIZE) {
--				err_msg_format = true;
--				break;
--			}
- 			valid_len += vrl->lut_entries - 1;
- 		}
- 		break;
-@@ -2719,9 +2707,27 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
- 	if (local_vf_id >= pf->num_alloc_vfs)
- 		return -EINVAL;
- 	vf = &(pf->vf[local_vf_id]);
-+
-+	/* Check if VF is disabled. */
-+	if (test_bit(I40E_VF_STATE_DISABLED, &vf->vf_states))
-+		return I40E_ERR_PARAM;
-+
- 	/* perform basic checks on the msg */
- 	ret = i40e_vc_validate_vf_msg(vf, v_opcode, v_retval, msg, msglen);
+ #define DRV_KERN "-k"
  
-+	/* perform additional checks specific to this driver */
-+	if (v_opcode == VIRTCHNL_OP_CONFIG_RSS_KEY) {
-+		struct virtchnl_rss_key *vrk = (struct virtchnl_rss_key *)msg;
-+
-+		if (vrk->key_len != I40E_HKEY_ARRAY_SIZE)
-+			ret = -EINVAL;
-+	} else if (v_opcode == VIRTCHNL_OP_CONFIG_RSS_LUT) {
-+		struct virtchnl_rss_lut *vrl = (struct virtchnl_rss_lut *)msg;
-+
-+		if (vrl->lut_entries != I40E_VF_HLUT_ARRAY_SIZE)
-+			ret = -EINVAL;
-+	}
-+
- 	if (ret) {
- 		dev_err(&pf->pdev->dev, "Invalid message from VF %d, opcode %d, len %d\n",
- 			local_vf_id, v_opcode, msglen);
+-#define DRV_VERSION_MAJOR 2
+-#define DRV_VERSION_MINOR 1
+-#define DRV_VERSION_BUILD 14
++#define DRV_VERSION_MAJOR 3
++#define DRV_VERSION_MINOR 0
++#define DRV_VERSION_BUILD 0
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
+@@ -67,6 +67,7 @@
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF_HV), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_X722_VF), 0},
++	{PCI_VDEVICE(INTEL, I40E_DEV_ID_ADAPTIVE_VF), 0},
+ 	/* required last entry */
+ 	{0, }
+ };
 -- 
 1.8.3.1
 
