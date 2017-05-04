@@ -1,35 +1,66 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 May 2017 16:51:47 -0700
-Subject: [Intel-wired-lan] [PATCH] ethtool: show vf and queue in the help
-	for -N
-Message-ID: <20170503235147.17709-1-jacob.e.keller@intel.com>
+From: Gangfeng <gangfeng.huang@ni.com>
+Date: Thu, 4 May 2017 10:23:26 +0800
+Subject: [Intel-wired-lan] [PATCH] igb: Fix error of RX network flow
+	classification
+Message-ID: <1493864606-9716-1-git-send-email-gangfeng.huang@ni.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Show that you can use vf and queue instead of action in the help output,
-and not only in the manual page.
+From: Gangfeng Huang <gangfeng.huang@ni.com>
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+After add an ethertype filter, if user change the adapter speed several
+times, the error "ethtool -N: etype filters are all used" is reported by
+igb driver.
+
+In older patch, function igb_nfc_filter_exit() and igb_nfc_filter_restore()
+is not paried. igb_nfc_filter_restore() exist in igb_up(), but function
+igb_nfc_filter_exit() is exist in __igb_close(). In the process of speed
+changing, only igb_nfc_filter_restore() is called, it will take a position
+of ethertype bitmap.
+
+Reproduce steps:
+Step 1: Add a etype filter by ethtool
+$ethtool -N eth0 flow-type ether proto 0x88F8 action 1
+Step 2: Change the adapter speed to 100M/full duplex
+$ethtool -s eth0 speed 100 duplex full
+Step 3: Change the adapter speed to 1000M/full duplex
+ethtool -s eth0 speed 1000 duplex full
+Repeat step2 and step3, then dmesg the system log, you can find the error
+message, add new ethtype filter is also failed.
+
+This fixing is move igb_nfc_filter_exit() from __igb_close() to igb_down()
+to make igb_nfc_filter_restore()/igb_nfc_filter_exit() is paired.
+
+Signed-off-by: Gangfeng <gangfeng.huang@ni.com>
 ---
- ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/ethtool.c b/ethtool.c
-index 7af039e26b50..d4b204c2a04b 100644
---- a/ethtool.c
-+++ b/ethtool.c
-@@ -4780,7 +4780,7 @@ static const struct option {
- 	  "			[ vlan %x [m %x] ]\n"
- 	  "			[ user-def %x [m %x] ]\n"
- 	  "			[ dst-mac %x:%x:%x:%x:%x:%x [m %x:%x:%x:%x:%x:%x] ]\n"
--	  "			[ action %d ]\n"
-+	  "			[ action %d ] | [ vf %d queue %d ]\n"
- 	  "			[ loc %d]] |\n"
- 	  "		delete %d\n" },
- 	{ "-T|--show-time-stamping", 1, do_tsinfo,
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 8f624af..e01e01a 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -1791,6 +1791,8 @@ void igb_down(struct igb_adapter *adapter)
+ 	wr32(E1000_RCTL, rctl & ~E1000_RCTL_EN);
+ 	/* flush and sleep below */
+ 
++	igb_nfc_filter_exit(adapter);
++
+ 	netif_carrier_off(netdev);
+ 	netif_tx_stop_all_queues(netdev);
+ 
+@@ -3317,8 +3319,6 @@ static int __igb_close(struct net_device *netdev, bool suspending)
+ 	igb_down(adapter);
+ 	igb_free_irq(adapter);
+ 
+-	igb_nfc_filter_exit(adapter);
+-
+ 	igb_free_all_tx_resources(adapter);
+ 	igb_free_all_rx_resources(adapter);
+ 
 -- 
-2.13.0.rc0.317.gcc792a6cad5a
+2.7.2
 
