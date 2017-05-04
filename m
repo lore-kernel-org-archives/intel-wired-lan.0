@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 4 May 2017 22:00:58 +0000
-Subject: [Intel-wired-lan] [PATCH v4 13/15] i40e: check for Tx
-	timestamp	timeouts during watchdog
-In-Reply-To: <20170503172904.9788-14-jacob.e.keller@intel.com>
+Date: Thu, 4 May 2017 22:00:30 +0000
+Subject: [Intel-wired-lan] [PATCH v4 12/15] i40e: use pf data
+	structure	directly in i40e_ptp_rx_hang
+In-Reply-To: <20170503172904.9788-13-jacob.e.keller@intel.com>
 References: <20170503172904.9788-1-jacob.e.keller@intel.com>
- <20170503172904.9788-14-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA2587@ORSMSX104.amr.corp.intel.com>
+ <20170503172904.9788-13-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA257B@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,33 +18,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, May 3, 2017 10:29 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
 > Cc: Richard Cochran <richardcochran@gmail.com>
-> Subject: [Intel-wired-lan] [PATCH v4 13/15] i40e: check for Tx timestamp
-> timeouts during watchdog
+> Subject: [Intel-wired-lan] [PATCH v4 12/15] i40e: use pf data structure
+> directly in i40e_ptp_rx_hang
 > 
-> The i40e driver has logic to handle only one Tx timestamp at a time, using a
-> state bit lock to avoid multiple requests at once.
-> 
-> It may be possible, if incredibly unlikely, that a Tx timestamp event is
-> requested but never completes. Since we use an interrupt scheme to
-> determine when the Tx timestamp occurred we would never clear the state
-> bit in this case.
-> 
-> Add an i40e_ptp_tx_hang() function similar to the already existing
-> i40e_ptp_rx_hang() function. This function runs in the watchdog routine and
-> makes sure we eventually recover from this case instead of permanently
-> disabling Tx timestamps.
-> 
-> Note: there is no currently known way to cause this without hacking the
-> driver code to force it.
+> There's no reason to pass a *vsi pointer if we already have the *pf pointer in
+> the only location where we call this function. Lets update the signature and
+> directly pass the *pf data structure pointer.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h      |  2 ++
->  drivers/net/ethernet/intel/i40e/i40e_main.c |  1 +
-> drivers/net/ethernet/intel/i40e/i40e_ptp.c  | 30
-> +++++++++++++++++++++++++++++
-> drivers/net/ethernet/intel/i40e/i40e_txrx.c |  1 +
->  4 files changed, 34 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e.h      | 2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
+> drivers/net/ethernet/intel/i40e/i40e_ptp.c  | 4 ++--
+>  3 files changed, 4 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
