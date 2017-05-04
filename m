@@ -1,46 +1,52 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 4 May 2017 15:39:21 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: Fix error of RX network flow
- classification
-In-Reply-To: <1493864606-9716-1-git-send-email-gangfeng.huang@ni.com>
-References: <1493864606-9716-1-git-send-email-gangfeng.huang@ni.com>
-Message-ID: <20170504153921.00002201@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 4 May 2017 22:40:07 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: fix handling of HW ATR eviction
+In-Reply-To: <20170504211636.21192-1-jacob.e.keller@intel.com>
+References: <20170504211636.21192-1-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA260F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 4 May 2017 10:23:26 +0800
-Gangfeng <gangfeng.huang@ni.com> wrote:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jacob Keller
+> Sent: Thursday, May 4, 2017 2:17 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [PATCH] i40e: fix handling of HW ATR eviction
+> 
+> A recent commit to refactor the driver and remove the hw_disabled_flags
+> field accidentally introduced two regressions. First, we overwrote
+> pf->flags which removed various key flags including the MSI-X settings.
+> 
+> Additionally, it was intended that we have now two flags,
+> HW_ATR_EVICT_CAPABLe and HW_ATR_EVICT_ENABLED, but this was not
+> done, and we accidentally were mis-using HW_ATR_EVICT_CAPABLE
+> everywhere.
+> 
+> This patch adds the missing piece, HW_ATR_EVICT_ENABLED, and safely
+> updates pf->flags instead of overwriting it.
+> 
+> Without this patch we will have many problems including disabling MSI-X
+> support, and we'll attempt to use HW ATR eviction on devices which do not
+> support it.
+> 
+> Fixes: 47994c119a36 ("i40e: remove hw_disabled_flags in favor of using
+> separate flag bits", 2017-04-19)
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+> Ok. For real, this actually cleans up and adds the missing feature that we
+> should have had. I'm working on the rest, but this should fix the issue you
+> were seeing without introducing other regressions.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h         | 1 +
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 7 ++++---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 4 ++--
+>  4 files changed, 9 insertions(+), 7 deletions(-)
 
-> From: Gangfeng Huang <gangfeng.huang@ni.com>
-> 
-> After add an ethertype filter, if user change the adapter speed several
-> times, the error "ethtool -N: etype filters are all used" is reported by
-> igb driver.
-> 
-> In older patch, function igb_nfc_filter_exit() and igb_nfc_filter_restore()
-> is not paried. igb_nfc_filter_restore() exist in igb_up(), but function
-> igb_nfc_filter_exit() is exist in __igb_close(). In the process of speed
-> changing, only igb_nfc_filter_restore() is called, it will take a position
-> of ethertype bitmap.
-> 
-> Reproduce steps:
-> Step 1: Add a etype filter by ethtool
-> $ethtool -N eth0 flow-type ether proto 0x88F8 action 1
-> Step 2: Change the adapter speed to 100M/full duplex
-> $ethtool -s eth0 speed 100 duplex full
-> Step 3: Change the adapter speed to 1000M/full duplex
-> ethtool -s eth0 speed 1000 duplex full
-> Repeat step2 and step3, then dmesg the system log, you can find the error
-> message, add new ethtype filter is also failed.
-> 
-> This fixing is move igb_nfc_filter_exit() from __igb_close() to igb_down()
-> to make igb_nfc_filter_restore()/igb_nfc_filter_exit() is paired.
-> 
-> Signed-off-by: Gangfeng <gangfeng.huang@ni.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Thank you, this looks much better!
 
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
