@@ -1,23 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 5 May 2017 18:07:43 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1 13/13] i40evf: Add support
- for	Adaptive Virtual Function
-In-Reply-To: <1493663091-27870-14-git-send-email-jesse.brandeburg@intel.com>
-References: <1493663091-27870-1-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-2-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-3-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-4-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-5-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-6-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-7-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-8-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-9-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-10-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-11-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-12-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-13-git-send-email-jesse.brandeburg@intel.com>
- <1493663091-27870-14-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA2870@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 5 May 2017 18:09:08 +0000
+Subject: [Intel-wired-lan] [net-next v2 04/13] virtchnl: rename i40e
+	to	generic virtchnl
+In-Reply-To: <20170504093528.76047-5-jeffrey.t.kirsher@intel.com>
+References: <20170504093528.76047-1-jeffrey.t.kirsher@intel.com>
+ <20170504093528.76047-5-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA2880@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -25,22 +13,55 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jesse Brandeburg
-> Sent: Monday, May 1, 2017 11:25 AM
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Thursday, May 4, 2017 2:35 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v1 13/13] i40evf: Add support for
-> Adaptive Virtual Function
+> Subject: [Intel-wired-lan] [net-next v2 04/13] virtchnl: rename i40e to generic
+> virtchnl
 > 
-> From: Preethi Banala <preethi.banala@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> Add device ID define and mac_type assignment needed for Adaptive Virtual
-> Function (VF Base Mode Support).
+> This morphs all the i40e and i40evf references to/in virtchnl.h
+> to be generic, using only automated methods. Updates all the
+> callers to use the new names.  A followup patch provides separate
+> clean ups for messy line conversions from these "automatic"
+> changes, to make them more reviewable.
 > 
-> Also, update version to v3.0.0 in order to indicate clearly that this is the first
-> driver supporting the AVF device ID.
+> Was executed with the following sed script:
+> sed -i -f transform_script drivers/net/ethernet/intel/i40e/i40e_client.c
+> sed -i -f transform_script drivers/net/ethernet/intel/i40e/i40e_prototype.h
+> sed -i -f transform_script drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> sed -i -f transform_script drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> sed -i -f transform_script drivers/net/ethernet/intel/i40evf/i40e_common.c
+> sed -i -f transform_script
+> drivers/net/ethernet/intel/i40evf/i40e_prototype.h
+> sed -i -f transform_script drivers/net/ethernet/intel/i40evf/i40evf.h
+> sed -i -f transform_script drivers/net/ethernet/intel/i40evf/i40evf_client.c
+> sed -i -f transform_script drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> sed -i -f transform_script drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+> sed -i -f transform_script include/linux/avf/virtchnl.h
 > 
-> Signed-off-by: Preethi Banala <preethi.banala@intel.com>
+> transform_script:
+> ----8<----
+> s/I40E_VIRTCHNL_SUPPORTED_QTYPES/SAVE_ME_SUPPORTED_QTYPES/g
+> s/I40E_VIRTCHNL_VF_CAP/SAVE_ME_VF_CAP/g
+> 
+> s/I40E_VIRTCHNL_/VIRTCHNL_/g
+> s/i40e_virtchnl_/virtchnl_/g
+> s/I40E_QUEUE_TYPE_PE_AEQ/QUEUE_TYPE_PE_AEQ/g
+> s/I40E_QUEUE_INVALID_IDX/QUEUE_INVALID_IDX/g
+> s/i40e_vfr_/virtchnl_vfr_/g
+> s/I40E_VFR_/VIRTCHNL_VFR_/g
+> 
+> s/VIRTCHNL_OP_ADD_ETHER_ADDRESS/VIRTCHNL_OP_ADD_ETH_ADDR/g
+> s/VIRTCHNL_OP_DEL_ETHER_ADDRESS/VIRTCHNL_OP_DEL_ETH_ADDR/g
+> s/VIRTCHNL_OP_FCOE/VIRTCHNL_OP_RSVD/g
+> 
+> s/SAVE_ME_SUPPORTED_QTYPES/I40E_VIRTCHNL_SUPPORTED_QTYPES/g
+> s/SAVE_ME_VF_CAP/I40E_VIRTCHNL_VF_CAP/g
+> ----8<----
+> 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
