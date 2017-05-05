@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 5 May 2017 18:10:17 +0000
-Subject: [Intel-wired-lan] [net-next v2 07/13] i40e/virtchnl: refactor
- code	for validate checks
-In-Reply-To: <20170504093528.76047-8-jeffrey.t.kirsher@intel.com>
+Date: Fri, 5 May 2017 18:10:56 +0000
+Subject: [Intel-wired-lan] [net-next v2 10/13] i40e/virtchnl: move
+ function	to virtchnl
+In-Reply-To: <20170504093528.76047-11-jeffrey.t.kirsher@intel.com>
 References: <20170504093528.76047-1-jeffrey.t.kirsher@intel.com>
- <20170504093528.76047-8-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA28A2@ORSMSX104.amr.corp.intel.com>
+ <20170504093528.76047-11-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA28B2@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,17 +17,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Thursday, May 4, 2017 2:35 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net-next v2 07/13] i40e/virtchnl: refactor code for
-> validate checks
+> Subject: [Intel-wired-lan] [net-next v2 10/13] i40e/virtchnl: move function to
+> virtchnl
 > 
 > From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> This change updates the arguments passed to the validate function and fixes
-> the caller, as well as uses the new return values added to virtchnl.h
+> This moves a function that is needed for the virtchnl interface from the i40e
+> PF driver over to the virtchnl.h file.
 > 
-> One other minor tweak, remove a duplicate set to zero of valid_len.
-> 
-> This is in preparation for moving the function to virtchnl.h.
+> It was manually verified that the function in question is unchanged except for
+> the function name and function header, which explains the slight difference
+> in the number of lines removed/added.
 > 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
