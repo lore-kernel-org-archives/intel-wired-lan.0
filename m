@@ -1,8 +1,8 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 5 May 2017 18:06:09 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1 07/13] i40e/virtchnl:
- refactor	code for validate checks
-In-Reply-To: <1493663091-27870-8-git-send-email-jesse.brandeburg@intel.com>
+Date: Fri, 5 May 2017 18:06:38 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 08/13]
+	i40evf/virtchnl:	whitespace cleanups
+In-Reply-To: <1493663091-27870-9-git-send-email-jesse.brandeburg@intel.com>
 References: <1493663091-27870-1-git-send-email-jesse.brandeburg@intel.com>
  <1493663091-27870-2-git-send-email-jesse.brandeburg@intel.com>
  <1493663091-27870-3-git-send-email-jesse.brandeburg@intel.com>
@@ -11,7 +11,8 @@ References: <1493663091-27870-1-git-send-email-jesse.brandeburg@intel.com>
  <1493663091-27870-6-git-send-email-jesse.brandeburg@intel.com>
  <1493663091-27870-7-git-send-email-jesse.brandeburg@intel.com>
  <1493663091-27870-8-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA283E@ORSMSX104.amr.corp.intel.com>
+ <1493663091-27870-9-git-send-email-jesse.brandeburg@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA284D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -23,15 +24,11 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jesse Brandeburg
 > Sent: Monday, May 1, 2017 11:25 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v1 07/13] i40e/virtchnl: refactor
-> code for validate checks
+> Subject: [Intel-wired-lan] [PATCH net-next v1 08/13] i40evf/virtchnl:
+> whitespace cleanups
 > 
-> This change updates the arguments passed to the validate function and fixes
-> the caller, as well as uses the new return values added to virtchnl.h
-> 
-> One other minor tweak, remove a duplicate set to zero of valid_len.
-> 
-> This is in preparation for moving the function to virtchnl.h.
+> This patch fixes up a bunch of whitespace issues introduced by the previous
+> automated change of name from i40e to virtchnl.
 > 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
