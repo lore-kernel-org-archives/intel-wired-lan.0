@@ -1,214 +1,179 @@
-From: Stephen Hemminger <stephen@networkplumber.org>
-Date: Tue, 25 Apr 2017 10:54:05 -0700
-Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return
- uninitialized stats
-In-Reply-To: <1493111272.68612.2.camel@intel.com>
-References: <20170421212012.25950-1-bpoirier@suse.com>
- <630A6B92B7EDEB45A87E20D3D286660171182EED@hasmsx109.ger.corp.intel.com>
- <caef8d69-9e47-bbcc-0758-e5900e1cb291@intel.com>
- <20170424191026.wpnpyhdaurfjixl7@f1.synalogic.ca>
- <309B89C4C689E141A5FF6A0C5FB2118B8C5EF4F7@ORSMSX101.amr.corp.intel.com>
- <1493111272.68612.2.camel@intel.com>
-Message-ID: <20170425105405.01541742@xeon-e3>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 08 May 2017 21:00:46 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ c2b825a5e8885007d3cb27a2c8a147b97c3e6c39
+Message-ID: <59106bfe.NUdRjHA9WwO1IcLd%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 25 Apr 2017 02:07:52 -0700
-Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+c2b825a5e8885007d3cb27a2c8a147b97c3e6c39  i40e: fix handling of HW ATR eviction
 
-> On Tue, 2017-04-25 at 07:10 +0000, Brown, Aaron F wrote:
-> > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.
-> > > org] On
-> > > Behalf Of Benjamin Poirier
-> > > Sent: Monday, April 24, 2017 12:10 PM
-> > > To: Neftin, Sasha <sasha.neftin@intel.com>
-> > > Cc: Kirsher at f1.synalogic.ca; Stefan Priebe <s.priebe@profihost.ag>;
-> > > netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> > > Subject: Re: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return
-> > > uninitialized
-> > > stats
-> > > 
-> > > Sasha, please use reply-all to keep everyone in cc (including
-> > > me...).
-> > > 
-> > > On 2017/04/24 11:17, Neftin, Sasha wrote:  
-> > > > On 4/23/2017 15:53, Neftin, Sasha wrote:  
-> > > > > -----Original Message-----
-> > > > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osu
-> > > > > osl.org]  
-> > > 
-> > > On Behalf Of Benjamin Poirier  
-> > > > > Sent: Saturday, April 22, 2017 00:20
-> > > > > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> > > > > Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
-> > > > > Stefan  
-> > > 
-> > > Priebe <s.priebe@profihost.ag>  
-> > > > > Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Don't return
-> > > > > uninitialized  
-> > > 
-> > > stats  
-> > > > > 
-> > > > > Some statistics passed to ethtool are garbage because  
-> > > 
-> > > e1000e_get_stats64() doesn't write them, for example:
-> > > tx_heartbeat_errors.
-> > > This leaks kernel memory to userspace and confuses users.  
-> > > > > 
-> > > > > Do like ixgbe and use dev_get_stats() which first zeroes out  
-> > > 
-> > > rtnl_link_stats64.  
-> > > > > 
-> > > > > Reported-by: Stefan Priebe <s.priebe@profihost.ag>
-> > > > > Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
-> > > > > ---
-> > > > > ?? drivers/net/ethernet/intel/e1000e/ethtool.c | 2 +-
-> > > > > ?? 1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > 
-> > > > > diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c  
-> > > 
-> > > b/drivers/net/ethernet/intel/e1000e/ethtool.c  
-> > > > > index 7aff68a4a4df..f117b90cdc2f 100644
-> > > > > --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-> > > > > +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> > > > > @@ -2063,7 +2063,7 @@ static void
-> > > > > e1000_get_ethtool_stats(struct  
-> > > 
-> > > net_device *netdev,  
-> > > > > ???????????pm_runtime_get_sync(netdev->dev.parent);
-> > > > > -?e1000e_get_stats64(netdev, &net_stats);
-> > > > > +?dev_get_stats(netdev, &net_stats);
-> > > > > ???????????pm_runtime_put_sync(netdev->dev.parent);
-> > > > > --
-> > > > > 2.12.2
-> > > > > 
-> > > > > _______________________________________________
-> > > > > Intel-wired-lan mailing list
-> > > > > Intel-wired-lan at lists.osuosl.org
-> > > > > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan  
-> > > > 
-> > > > Hello,
-> > > > 
-> > > > We would like to not accept this patch. Suggested generic method
-> > > > '*dev_get_stats' (net/core/dev.c) calls 'ops->ndo_get_stats64'
-> > > > method  
-> > > 
-> > > which  
-> > > > eventually calls e1000e_get_stats64 (netdev.c) - so there is same
-> > > > functionality. Also, see that 'e1000e_get_stats64' method in
-> > > > netdev.c (line  
-> > > 
-> > > No, it's not the same functionality because dev_get_stats() does a
-> > > memset on the rtnl_link_stats64 struct.
-> > >   
-> > > > 5928) calls 'memset' with 0's before update statistics.? Local
-> > > > sanity check  
-> > > 
-> > > I don't see any memset in e1000e_get_stats64(). What kernel version
-> > > are
-> > > you looking at?  
-> > 
-> > The call to memset was removed from the upstream kernel with:
-> > -------------------------------------------------------------------
-> > -----------------
-> > commit 5944701df90d9577658e2354cc27c4ceaeca30fe
-> > Author: stephen hemminger <stephen@networkplumber.org>
-> > Date:?? Fri Jan 6 19:12:53 2017 -0800
-> > 
-> > ??? net: remove useless memset's in drivers get_stats64
-> > 
-> > ??? In dev_get_stats() the statistic structure storage has already
-> > been
-> > ??? zeroed. Therefore network drivers do not need to call memset()
-> > again.
-> > ...
-> > < changes to other drivers snipped out >
-> > ...
-> > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
-> > b/drivers/net/ethernet/int
-> > index 723025b..79651eb 100644
-> > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> > @@ -5925,7 +5925,6 @@ void e1000e_get_stats64(struct net_device
-> > *netdev,
-> > ?{
-> > ??????? struct e1000_adapter *adapter = netdev_priv(netdev);
-> > 
-> > -?????? memset(stats, 0, sizeof(struct rtnl_link_stats64));
-> > ??????? spin_lock(&adapter->stats64_lock);
-> > ??????? e1000e_update_stats(adapter);
-> > ??????? /* Fill out the OS statistics structure */
-> > -------------------------------------------------------------------
-> > -----------------
-> > 
-> > This also is where the bad counters start to show up for e1000e for
-> > my test systems.? From this driver on I see (very) large values for
-> > tx_dropped, rx_over_errors and tx_fifo_errors on driver load (even
-> > before bringing the interface up.? It seems the memset is not so
-> > useless for this driver after all.? Would simply reverting the e1000e
-> > portion of this patch resolve the issue?  
-> 
-> Looks like Aaron beat me to the punch on pointing out that we had this
-> very code in there before.  It appears that Stephen's
-> assertion/assumption was incorrect about the stats structure being
-> zero'd out, which is why we are seeing the issue.
-> 
-> I have no issue reverting Stephen's earlier patch, or do we want to
-> pursue why the stats structure is not zero'd out and resolve that
-> instead.  Either way, just want to make sure we are all on the same
-> page as to the right solution so that we do not end up repeating this
-> in the future.
+elapsed time: 268m
 
-Lets's fix this in the base code.
+configs tested: 155
 
-From: Stephen Hemminger <sthemmin@microsoft.com>
-Date: Tue, 25 Apr 2017 10:50:19 -0700
-Subject: [PATCH net] net: always zero statistics
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Drivers with 32 bit statistics API also should get zeroed statistics.
+arm                     am200epdkit_defconfig
+m32r                   m32700ut.smp_defconfig
+um                               alldefconfig
+i386                 randconfig-x000-05080812
+i386                 randconfig-x001-05080812
+i386                 randconfig-x002-05080812
+i386                 randconfig-x003-05080812
+i386                 randconfig-x004-05080812
+i386                 randconfig-x005-05080812
+i386                 randconfig-x006-05080812
+i386                 randconfig-x007-05080812
+i386                 randconfig-x008-05080812
+i386                 randconfig-x009-05080812
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                           allmodconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                              allnoconfig
+blackfin                BF537-STAMP_defconfig
+blackfin                BF561-EZKIT_defconfig
+x86_64                randconfig-it0-05081703
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-g0-05081909
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x015-201719
+x86_64                 randconfig-x012-201719
+x86_64                 randconfig-x010-201719
+x86_64                 randconfig-x017-201719
+x86_64                 randconfig-x011-201719
+x86_64                 randconfig-x018-201719
+x86_64                 randconfig-x014-201719
+x86_64                 randconfig-x013-201719
+x86_64                 randconfig-x016-201719
+x86_64                 randconfig-x019-201719
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-a0-05080146
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+score                      spct6600_defconfig
+blackfin                            defconfig
+mips                                defconfig
+sh                                  defconfig
+i386                             alldefconfig
+i386                                defconfig
+i386                             allmodconfig
+arm                        spear6xx_defconfig
+ia64                            sim_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201719
+x86_64       randconfig-i0-201719+CONFIG_DEBUG_INFO_REDUCED
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                          nuc910_defconfig
+arm                          pcm027_defconfig
+mips                  maltasmvp_eva_defconfig
+powerpc                      ppc40x_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-05080222
+i386                   randconfig-i1-05080222
+x86_64                 randconfig-b0-05081918
+powerpc                     rainier_defconfig
+i386                   randconfig-x010-201719
+i386                   randconfig-x011-201719
+i386                   randconfig-x012-201719
+i386                   randconfig-x013-201719
+i386                   randconfig-x014-201719
+i386                   randconfig-x015-201719
+i386                   randconfig-x016-201719
+i386                   randconfig-x017-201719
+i386                   randconfig-x018-201719
+i386                   randconfig-x019-201719
+blackfin                       SRV1_defconfig
+um                               allyesconfig
+i386                   randconfig-n0-05080057
+x86_64                 randconfig-h0-05081612
+i386                 randconfig-x070-05081613
+i386                 randconfig-x071-05081613
+i386                 randconfig-x072-05081613
+i386                 randconfig-x073-05081613
+i386                 randconfig-x074-05081613
+i386                 randconfig-x075-05081613
+i386                 randconfig-x076-05081613
+i386                 randconfig-x077-05081613
+i386                 randconfig-x078-05081613
+i386                 randconfig-x079-05081613
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-x003-201719
+x86_64                 randconfig-x004-201719
+x86_64                 randconfig-x009-201719
+x86_64                 randconfig-x002-201719
+x86_64                 randconfig-x008-201719
+x86_64                 randconfig-x007-201719
+x86_64                 randconfig-x000-201719
+x86_64                 randconfig-x005-201719
+x86_64                 randconfig-x006-201719
+x86_64                 randconfig-x001-201719
+i386                     randconfig-r0-201719
+x86_64                 randconfig-r0-05071515
 
-Fixes: 5944701df90d ("net: remove useless memset's in drivers get_stats64")
-Signed-off-by: Stephen Hemminger <sthemmin@microsoft.com>
----
- net/core/dev.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 533a6d6f6092..07d27d3feb37 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -7607,14 +7607,15 @@ struct rtnl_link_stats64 *dev_get_stats(struct net_device *dev,
- {
- 	const struct net_device_ops *ops = dev->netdev_ops;
- 
--	if (ops->ndo_get_stats64) {
--		memset(storage, 0, sizeof(*storage));
-+	memset(storage, 0, sizeof(*storage));
-+
-+	if (ops->ndo_get_stats64)
- 		ops->ndo_get_stats64(dev, storage);
--	} else if (ops->ndo_get_stats) {
-+	else if (ops->ndo_get_stats)
- 		netdev_stats_to_stats64(storage, ops->ndo_get_stats(dev));
--	} else {
-+	else
- 		netdev_stats_to_stats64(storage, &dev->stats);
--	}
-+
- 	storage->rx_dropped += atomic_long_read(&dev->rx_dropped);
- 	storage->tx_dropped += atomic_long_read(&dev->tx_dropped);
- 	storage->rx_nohandler += atomic_long_read(&dev->rx_nohandler);
--- 
-2.11.0
-
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: not available
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: OpenPGP digital signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170425/635f344e/attachment.asc>
+Thanks,
+Fengguang
