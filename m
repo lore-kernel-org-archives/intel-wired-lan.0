@@ -1,96 +1,109 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 10 May 2017 14:12:47 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 08/14] i40evf/virtchnl:
-	whitespace cleanups
+Date: Wed, 10 May 2017 14:12:52 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 13/14] i40evf: Add support for
+	Adaptive Virtual Function
 In-Reply-To: <20170510211253.112105-1-jesse.brandeburg@intel.com>
 References: <20170510211253.112105-1-jesse.brandeburg@intel.com>
-Message-ID: <20170510211253.112105-9-jesse.brandeburg@intel.com>
+Message-ID: <20170510211253.112105-14-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes up a bunch of whitespace issues introduced
-by the previous automated change of name from i40e to virtchnl.
+From: Preethi Banala <preethi.banala@intel.com>
 
+Add device ID define and mac_type assignment needed for
+Adaptive Virtual Function (VF Base Mode Support).
+
+Also, update version to v3.0.0 in order to indicate
+clearly that this is the first driver supporting the AVF
+device ID.
+
+Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c  | 12 ++++--------
- drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c |  3 +--
- include/linux/avf/virtchnl.h                        |  6 +++---
- 3 files changed, 8 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 41a046e..4d359b5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1485,8 +1485,7 @@ static int i40e_vc_get_version_msg(struct i40e_vf *vf, u8 *msg)
- 		info.minor = VIRTCHNL_VERSION_MINOR_NO_VF_CAPS;
- 	return i40e_vc_send_msg_to_vf(vf, VIRTCHNL_OP_VERSION,
- 				      I40E_SUCCESS, (u8 *)&info,
--				      sizeof(struct
--					     virtchnl_version_info));
-+				      sizeof(struct virtchnl_version_info));
- }
+---
+v2: added Kconfig
+---
+ drivers/net/ethernet/intel/Kconfig              | 10 ++++++----
+ drivers/net/ethernet/intel/i40evf/i40e_common.c |  1 +
+ drivers/net/ethernet/intel/i40evf/i40e_devids.h |  1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c |  7 ++++---
+ 4 files changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 1542a21..1feb54b 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -236,12 +236,14 @@ config I40E_DCB
+ 	  If unsure, say N.
  
- /**
-@@ -1544,11 +1543,9 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 	} else {
- 		if ((pf->flags & I40E_FLAG_RSS_AQ_CAPABLE) &&
- 		    (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RSS_AQ))
--			vfres->vf_offload_flags |=
--					VIRTCHNL_VF_OFFLOAD_RSS_AQ;
-+			vfres->vf_offload_flags |= VIRTCHNL_VF_OFFLOAD_RSS_AQ;
- 		else
--			vfres->vf_offload_flags |=
--					VIRTCHNL_VF_OFFLOAD_RSS_REG;
-+			vfres->vf_offload_flags |= VIRTCHNL_VF_OFFLOAD_RSS_REG;
- 	}
+ config I40EVF
+-	tristate "Intel(R) XL710 X710 Virtual Function Ethernet support"
++	tristate "Intel(R) Ethernet Adaptive Virtual Function support"
+ 	depends on PCI_MSI
+ 	---help---
+-	  This driver supports Intel(R) XL710 and X710 virtual functions.
+-	  For more information on how to identify your adapter, go to the
+-	  Adapter & Driver ID Guide that can be located at:
++	  This driver supports virtual functions for Intel XL710,
++	  X710, X722, and all devices advertising support for Intel
++	  Ethernet Adaptive Virtual Function devices. For more
++	  information on how to identify your adapter, go to the Adapter
++	  & Driver ID Guide that can be located at:
  
- 	if (pf->flags & I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE) {
-@@ -2530,8 +2527,7 @@ static int i40e_vc_set_rss_hena(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ 	  <http://support.intel.com>
  
- 	/* send the response to the VF */
- err:
--	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_SET_RSS_HENA,
--				       aq_ret);
-+	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_SET_RSS_HENA, aq_ret);
- }
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index 9dec775..1dd1938 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -68,6 +68,7 @@ i40e_status i40e_set_mac_type(struct i40e_hw *hw)
+ 			break;
+ 		case I40E_DEV_ID_VF:
+ 		case I40E_DEV_ID_VF_HV:
++		case I40E_DEV_ID_ADAPTIVE_VF:
+ 			hw->mac.type = I40E_MAC_VF;
+ 			break;
+ 		default:
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_devids.h b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
+index d76393c..0469e4b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_devids.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
+@@ -43,6 +43,7 @@
+ #define I40E_DEV_ID_25G_SFP28		0x158B
+ #define I40E_DEV_ID_VF			0x154C
+ #define I40E_DEV_ID_VF_HV		0x1571
++#define I40E_DEV_ID_ADAPTIVE_VF		0x1889
+ #define I40E_DEV_ID_SFP_X722		0x37D0
+ #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
+ #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 1b00274..3a3ca96 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -44,9 +44,9 @@ static const char i40evf_driver_string[] =
  
- /**
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 90a17b0..d9f0409 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -1018,8 +1018,7 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 				~(BIT(VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP));
- 		break;
- 	case VIRTCHNL_OP_GET_RSS_HENA_CAPS: {
--		struct virtchnl_rss_hena *vrh =
--			(struct virtchnl_rss_hena *)msg;
-+		struct virtchnl_rss_hena *vrh = (struct virtchnl_rss_hena *)msg;
- 		if (msglen == sizeof(*vrh))
- 			adapter->hena = vrh->hena;
- 		else
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 0e0c198..43b694f 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -175,10 +175,10 @@ struct virtchnl_vsi_resource {
- #define VIRTCHNL_VF_OFFLOAD_IWARP		0x00000002
- #define VIRTCHNL_VF_OFFLOAD_FCOE		0x00000004
- #define VIRTCHNL_VF_OFFLOAD_RSS_AQ		0x00000008
--#define VIRTCHNL_VF_OFFLOAD_RSS_REG	0x00000010
--#define VIRTCHNL_VF_OFFLOAD_WB_ON_ITR	0x00000020
-+#define VIRTCHNL_VF_OFFLOAD_RSS_REG		0x00000010
-+#define VIRTCHNL_VF_OFFLOAD_WB_ON_ITR		0x00000020
- #define VIRTCHNL_VF_OFFLOAD_VLAN		0x00010000
--#define VIRTCHNL_VF_OFFLOAD_RX_POLLING	0x00020000
-+#define VIRTCHNL_VF_OFFLOAD_RX_POLLING		0x00020000
- #define VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2	0x00040000
- #define VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
- #define VIRTCHNL_VF_OFFLOAD_ENCAP		0X00100000
+ #define DRV_KERN "-k"
+ 
+-#define DRV_VERSION_MAJOR 2
+-#define DRV_VERSION_MINOR 1
+-#define DRV_VERSION_BUILD 14
++#define DRV_VERSION_MAJOR 3
++#define DRV_VERSION_MINOR 0
++#define DRV_VERSION_BUILD 0
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
+@@ -67,6 +67,7 @@ static const struct pci_device_id i40evf_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF_HV), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_X722_VF), 0},
++	{PCI_VDEVICE(INTEL, I40E_DEV_ID_ADAPTIVE_VF), 0},
+ 	/* required last entry */
+ 	{0, }
+ };
 -- 
 2.9.3
 
