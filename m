@@ -1,109 +1,96 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 10 May 2017 14:12:52 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 13/14] i40evf: Add support for
-	Adaptive Virtual Function
+Date: Wed, 10 May 2017 14:12:41 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 02/14] i40e/i40evf: create and
+	use new unified header file
 In-Reply-To: <20170510211253.112105-1-jesse.brandeburg@intel.com>
 References: <20170510211253.112105-1-jesse.brandeburg@intel.com>
-Message-ID: <20170510211253.112105-14-jesse.brandeburg@intel.com>
+Message-ID: <20170510211253.112105-3-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Preethi Banala <preethi.banala@intel.com>
+This moves a header for i40evf to include/linux/avf/virtchnl.h.
+The directory name avf is an acronym for the Intel(R) Adaptive
+Virtual Function.
 
-Add device ID define and mac_type assignment needed for
-Adaptive Virtual Function (VF Base Mode Support).
+This first step creates the new file, which is a rename of
+drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h to
+include/linux/avf/virtchnl.h, and should show up in git
+as a rename when using git log --follow.
 
-Also, update version to v3.0.0 in order to indicate
-clearly that this is the first driver supporting the AVF
-device ID.
+To keep things building after the move, the changes to the i40evf
+driver are made to point to the new include file location.
 
-Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
+ delete mode 100644 drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+ create mode 100644 include/linux/avf/virtchnl.h
 ---
-v2: added Kconfig
----
- drivers/net/ethernet/intel/Kconfig              | 10 ++++++----
- drivers/net/ethernet/intel/i40evf/i40e_common.c |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_devids.h |  1 +
- drivers/net/ethernet/intel/i40evf/i40evf_main.c |  7 ++++---
- 4 files changed, 12 insertions(+), 7 deletions(-)
+ MAINTAINERS                                                             | 1 +
+ drivers/net/ethernet/intel/i40evf/i40e_common.c                         | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_prototype.h                      | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf.h                              | 2 +-
+ .../intel/i40evf/i40e_virtchnl.h => include/linux/avf/virtchnl.h        | 0
+ 5 files changed, 4 insertions(+), 3 deletions(-)
+ rename drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h => include/linux/avf/virtchnl.h (100%)
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 1542a21..1feb54b 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -236,12 +236,14 @@ config I40E_DCB
- 	  If unsure, say N.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 45b173a..2a5abf9 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6673,6 +6673,7 @@ F:	Documentation/networking/i40e.txt
+ F:	Documentation/networking/i40evf.txt
+ F:	drivers/net/ethernet/intel/
+ F:	drivers/net/ethernet/intel/*/
++F:	include/linux/avf/virtchnl.h
  
- config I40EVF
--	tristate "Intel(R) XL710 X710 Virtual Function Ethernet support"
-+	tristate "Intel(R) Ethernet Adaptive Virtual Function support"
- 	depends on PCI_MSI
- 	---help---
--	  This driver supports Intel(R) XL710 and X710 virtual functions.
--	  For more information on how to identify your adapter, go to the
--	  Adapter & Driver ID Guide that can be located at:
-+	  This driver supports virtual functions for Intel XL710,
-+	  X710, X722, and all devices advertising support for Intel
-+	  Ethernet Adaptive Virtual Function devices. For more
-+	  information on how to identify your adapter, go to the Adapter
-+	  & Driver ID Guide that can be located at:
- 
- 	  <http://support.intel.com>
- 
+ INTEL RDMA RNIC DRIVER
+ M:     Faisal Latif <faisal.latif@intel.com>
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-index 9dec775..1dd1938 100644
+index 6729624..1db028a 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-@@ -68,6 +68,7 @@ i40e_status i40e_set_mac_type(struct i40e_hw *hw)
- 			break;
- 		case I40E_DEV_ID_VF:
- 		case I40E_DEV_ID_VF_HV:
-+		case I40E_DEV_ID_ADAPTIVE_VF:
- 			hw->mac.type = I40E_MAC_VF;
- 			break;
- 		default:
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_devids.h b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
-index d76393c..0469e4b 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_devids.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
-@@ -43,6 +43,7 @@
- #define I40E_DEV_ID_25G_SFP28		0x158B
- #define I40E_DEV_ID_VF			0x154C
- #define I40E_DEV_ID_VF_HV		0x1571
-+#define I40E_DEV_ID_ADAPTIVE_VF		0x1889
- #define I40E_DEV_ID_SFP_X722		0x37D0
- #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
- #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 1b00274..3a3ca96 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -44,9 +44,9 @@ static const char i40evf_driver_string[] =
+@@ -27,7 +27,7 @@
+ #include "i40e_type.h"
+ #include "i40e_adminq.h"
+ #include "i40e_prototype.h"
+-#include "i40e_virtchnl.h"
++#include <linux/avf/virtchnl.h>
  
- #define DRV_KERN "-k"
+ /**
+  * i40e_set_mac_type - Sets MAC type
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
+index 741223d..227905b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
+@@ -29,7 +29,7 @@
  
--#define DRV_VERSION_MAJOR 2
--#define DRV_VERSION_MINOR 1
--#define DRV_VERSION_BUILD 14
-+#define DRV_VERSION_MAJOR 3
-+#define DRV_VERSION_MINOR 0
-+#define DRV_VERSION_BUILD 0
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD) \
-@@ -67,6 +67,7 @@ static const struct pci_device_id i40evf_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF_HV), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_X722_VF), 0},
-+	{PCI_VDEVICE(INTEL, I40E_DEV_ID_ADAPTIVE_VF), 0},
- 	/* required last entry */
- 	{0, }
- };
+ #include "i40e_type.h"
+ #include "i40e_alloc.h"
+-#include "i40e_virtchnl.h"
++#include <linux/avf/virtchnl.h>
+ 
+ /* Prototypes for shared code functions that are not in
+  * the standard function pointer structures.  These are
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index b8ada6d..75d314b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -43,7 +43,7 @@
+ #include <net/udp.h>
+ 
+ #include "i40e_type.h"
+-#include "i40e_virtchnl.h"
++#include <linux/avf/virtchnl.h>
+ #include "i40e_txrx.h"
+ 
+ #define DEFAULT_DEBUG_LEVEL_SHIFT 3
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h b/include/linux/avf/virtchnl.h
+similarity index 100%
+rename from drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+rename to include/linux/avf/virtchnl.h
 -- 
 2.9.3
 
