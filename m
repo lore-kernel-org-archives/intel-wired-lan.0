@@ -1,353 +1,77 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 11 May 2017 11:23:17 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v3 10/14] i40e/virtchnl: move
-	function to virtchnl
+Date: Thu, 11 May 2017 11:23:21 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v3 14/14] i40evf: update
+	i40evf.txt with new content
 In-Reply-To: <20170511182321.147850-1-jesse.brandeburg@intel.com>
 References: <20170511182321.147850-1-jesse.brandeburg@intel.com>
-Message-ID: <20170511182321.147850-11-jesse.brandeburg@intel.com>
+Message-ID: <20170511182321.147850-15-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This moves a function that is needed for the virtchnl interface
-from the i40e PF driver over to the virtchnl.h file.
+The addition of the AVF and virtchnl code to the i40evf driver
+means we should update the i40evf.txt file with the most up to date
+information.
 
-It was manually verified that the function in question is unchanged
-except for the function name and function header, which explains
-the slight difference in the number of lines removed/added.
+It seems this file hasn't been updated in a while, so the
+changes cover a little more than just AVF, but it's all only
+in the i40evf.txt.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 150 +--------------------
- include/linux/avf/virtchnl.h                       | 147 ++++++++++++++++++++
- 2 files changed, 148 insertions(+), 149 deletions(-)
+ Documentation/networking/i40evf.txt | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 352d9d2..6bee254 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2532,154 +2532,6 @@ static int i40e_vc_set_rss_hena(struct i40e_vf *vf, u8 *msg, u16 msglen)
- }
+diff --git a/Documentation/networking/i40evf.txt b/Documentation/networking/i40evf.txt
+index 21e4127..e9b3035 100644
+--- a/Documentation/networking/i40evf.txt
++++ b/Documentation/networking/i40evf.txt
+@@ -1,8 +1,8 @@
+ Linux* Base Driver for Intel(R) Network Connection
+ ==================================================
  
- /**
-- * i40e_vc_validate_vf_msg
-- * @ver: Virtchnl version info
-- * @v_opcode: Opcode for the message
-- * @msg: pointer to the msg buffer
-- * @msglen: msg length
-- *
-- * validate msg format against struct for each opcode
-- **/
--static int
--i40e_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
--			u8 *msg, u16 msglen)
--{
--	bool err_msg_format = false;
--	int valid_len = 0;
--
--	/* Validate message length. */
--	switch (v_opcode) {
--	case VIRTCHNL_OP_VERSION:
--		valid_len = sizeof(struct virtchnl_version_info);
--		break;
--	case VIRTCHNL_OP_RESET_VF:
--		break;
--	case VIRTCHNL_OP_GET_VF_RESOURCES:
--		if (VF_IS_V11(ver))
--			valid_len = sizeof(u32);
--		break;
--	case VIRTCHNL_OP_CONFIG_TX_QUEUE:
--		valid_len = sizeof(struct virtchnl_txq_info);
--		break;
--	case VIRTCHNL_OP_CONFIG_RX_QUEUE:
--		valid_len = sizeof(struct virtchnl_rxq_info);
--		break;
--	case VIRTCHNL_OP_CONFIG_VSI_QUEUES:
--		valid_len = sizeof(struct virtchnl_vsi_queue_config_info);
--		if (msglen >= valid_len) {
--			struct virtchnl_vsi_queue_config_info *vqc =
--			    (struct virtchnl_vsi_queue_config_info *)msg;
--			valid_len += (vqc->num_queue_pairs *
--				      sizeof(struct
--					     virtchnl_queue_pair_info));
--			if (vqc->num_queue_pairs == 0)
--				err_msg_format = true;
--		}
--		break;
--	case VIRTCHNL_OP_CONFIG_IRQ_MAP:
--		valid_len = sizeof(struct virtchnl_irq_map_info);
--		if (msglen >= valid_len) {
--			struct virtchnl_irq_map_info *vimi =
--			    (struct virtchnl_irq_map_info *)msg;
--			valid_len += (vimi->num_vectors *
--				      sizeof(struct virtchnl_vector_map));
--			if (vimi->num_vectors == 0)
--				err_msg_format = true;
--		}
--		break;
--	case VIRTCHNL_OP_ENABLE_QUEUES:
--	case VIRTCHNL_OP_DISABLE_QUEUES:
--		valid_len = sizeof(struct virtchnl_queue_select);
--		break;
--	case VIRTCHNL_OP_ADD_ETH_ADDR:
--	case VIRTCHNL_OP_DEL_ETH_ADDR:
--		valid_len = sizeof(struct virtchnl_ether_addr_list);
--		if (msglen >= valid_len) {
--			struct virtchnl_ether_addr_list *veal =
--			    (struct virtchnl_ether_addr_list *)msg;
--			valid_len += veal->num_elements *
--			    sizeof(struct virtchnl_ether_addr);
--			if (veal->num_elements == 0)
--				err_msg_format = true;
--		}
--		break;
--	case VIRTCHNL_OP_ADD_VLAN:
--	case VIRTCHNL_OP_DEL_VLAN:
--		valid_len = sizeof(struct virtchnl_vlan_filter_list);
--		if (msglen >= valid_len) {
--			struct virtchnl_vlan_filter_list *vfl =
--			    (struct virtchnl_vlan_filter_list *)msg;
--			valid_len += vfl->num_elements * sizeof(u16);
--			if (vfl->num_elements == 0)
--				err_msg_format = true;
--		}
--		break;
--	case VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE:
--		valid_len = sizeof(struct virtchnl_promisc_info);
--		break;
--	case VIRTCHNL_OP_GET_STATS:
--		valid_len = sizeof(struct virtchnl_queue_select);
--		break;
--	case VIRTCHNL_OP_IWARP:
--		/* These messages are opaque to us and will be validated in
--		 * the RDMA client code. We just need to check for nonzero
--		 * length. The firmware will enforce max length restrictions.
--		 */
--		if (msglen)
--			valid_len = msglen;
--		else
--			err_msg_format = true;
--		break;
--	case VIRTCHNL_OP_RELEASE_IWARP_IRQ_MAP:
--		break;
--	case VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP:
--		valid_len = sizeof(struct virtchnl_iwarp_qvlist_info);
--		if (msglen >= valid_len) {
--			struct virtchnl_iwarp_qvlist_info *qv =
--				(struct virtchnl_iwarp_qvlist_info *)msg;
--			if (qv->num_vectors == 0) {
--				err_msg_format = true;
--				break;
--			}
--			valid_len += ((qv->num_vectors - 1) *
--				sizeof(struct virtchnl_iwarp_qv_info));
--		}
--		break;
--	case VIRTCHNL_OP_CONFIG_RSS_KEY:
--		valid_len = sizeof(struct virtchnl_rss_key);
--		if (msglen >= valid_len) {
--			struct virtchnl_rss_key *vrk =
--				(struct virtchnl_rss_key *)msg;
--			valid_len += vrk->key_len - 1;
--		}
--		break;
--	case VIRTCHNL_OP_CONFIG_RSS_LUT:
--		valid_len = sizeof(struct virtchnl_rss_lut);
--		if (msglen >= valid_len) {
--			struct virtchnl_rss_lut *vrl =
--				(struct virtchnl_rss_lut *)msg;
--			valid_len += vrl->lut_entries - 1;
--		}
--		break;
--	case VIRTCHNL_OP_GET_RSS_HENA_CAPS:
--		break;
--	case VIRTCHNL_OP_SET_RSS_HENA:
--		valid_len = sizeof(struct virtchnl_rss_hena);
--		break;
--	/* These are always errors coming from the VF. */
--	case VIRTCHNL_OP_EVENT:
--	case VIRTCHNL_OP_UNKNOWN:
--	default:
--		return VIRTCHNL_ERR_PARAM;
--	}
--	/* few more checks */
--	if ((valid_len != msglen) || (err_msg_format))
--		return VIRTCHNL_STATUS_ERR_OPCODE_MISMATCH;
--
--	return 0;
--}
--
--/**
-  * i40e_vc_process_vf_msg
-  * @pf: pointer to the PF structure
-  * @vf_id: source VF id
-@@ -2708,7 +2560,7 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
- 		return I40E_ERR_PARAM;
+-Intel XL710 X710 Virtual Function Linux driver.
+-Copyright(c) 2013 Intel Corporation.
++Intel Ethernet Adaptive Virtual Function Linux driver.
++Copyright(c) 2013-2017 Intel Corporation.
  
- 	/* perform basic checks on the msg */
--	ret = i40e_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
-+	ret = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
+ Contents
+ ========
+@@ -11,19 +11,26 @@ Contents
+ - Known Issues/Troubleshooting
+ - Support
  
- 	/* perform additional checks specific to this driver */
- 	if (v_opcode == VIRTCHNL_OP_CONFIG_RSS_KEY) {
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 6c6fbb4..dab76e9 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -498,4 +498,151 @@ enum virtchnl_vfr_states {
- 	VIRTCHNL_VFR_VFACTIVE,
- };
+-This file describes the i40evf Linux* Base Driver for the Intel(R) XL710
+-X710 Virtual Function.
++This file describes the i40evf Linux* Base Driver.
  
-+/**
-+ * virtchnl_vc_validate_vf_msg
-+ * @ver: Virtchnl version info
-+ * @v_opcode: Opcode for the message
-+ * @msg: pointer to the msg buffer
-+ * @msglen: msg length
-+ *
-+ * validate msg format against struct for each opcode
-+ */
-+static inline int
-+virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
-+			    u8 *msg, u16 msglen)
-+{
-+	bool err_msg_format = false;
-+	int valid_len = 0;
+-The i40evf driver supports XL710 and X710 virtual function devices that
+-can only be activated on kernels with CONFIG_PCI_IOV enabled.
++The i40evf driver supports the below mentioned virtual function
++devices and can only be activated on kernels running the i40e or
++newer Physical Function (PF) driver compiled with CONFIG_PCI_IOV.
++The i40evf driver requires CONFIG_PCI_MSI to be enabled.
+ 
+ The guest OS loading the i40evf driver must support MSI-X interrupts.
+ 
++Supported Hardware
++==================
++Intel XL710 X710 Virtual Function
++Intel Ethernet Adaptive Virtual Function
++Intel X722 Virtual Function
 +
-+	/* Validate message length. */
-+	switch (v_opcode) {
-+	case VIRTCHNL_OP_VERSION:
-+		valid_len = sizeof(struct virtchnl_version_info);
-+		break;
-+	case VIRTCHNL_OP_RESET_VF:
-+		break;
-+	case VIRTCHNL_OP_GET_VF_RESOURCES:
-+		if (VF_IS_V11(ver))
-+			valid_len = sizeof(u32);
-+		break;
-+	case VIRTCHNL_OP_CONFIG_TX_QUEUE:
-+		valid_len = sizeof(struct virtchnl_txq_info);
-+		break;
-+	case VIRTCHNL_OP_CONFIG_RX_QUEUE:
-+		valid_len = sizeof(struct virtchnl_rxq_info);
-+		break;
-+	case VIRTCHNL_OP_CONFIG_VSI_QUEUES:
-+		valid_len = sizeof(struct virtchnl_vsi_queue_config_info);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_vsi_queue_config_info *vqc =
-+			    (struct virtchnl_vsi_queue_config_info *)msg;
-+			valid_len += (vqc->num_queue_pairs *
-+				      sizeof(struct
-+					     virtchnl_queue_pair_info));
-+			if (vqc->num_queue_pairs == 0)
-+				err_msg_format = true;
-+		}
-+		break;
-+	case VIRTCHNL_OP_CONFIG_IRQ_MAP:
-+		valid_len = sizeof(struct virtchnl_irq_map_info);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_irq_map_info *vimi =
-+			    (struct virtchnl_irq_map_info *)msg;
-+			valid_len += (vimi->num_vectors *
-+				      sizeof(struct virtchnl_vector_map));
-+			if (vimi->num_vectors == 0)
-+				err_msg_format = true;
-+		}
-+		break;
-+	case VIRTCHNL_OP_ENABLE_QUEUES:
-+	case VIRTCHNL_OP_DISABLE_QUEUES:
-+		valid_len = sizeof(struct virtchnl_queue_select);
-+		break;
-+	case VIRTCHNL_OP_ADD_ETH_ADDR:
-+	case VIRTCHNL_OP_DEL_ETH_ADDR:
-+		valid_len = sizeof(struct virtchnl_ether_addr_list);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_ether_addr_list *veal =
-+			    (struct virtchnl_ether_addr_list *)msg;
-+			valid_len += veal->num_elements *
-+			    sizeof(struct virtchnl_ether_addr);
-+			if (veal->num_elements == 0)
-+				err_msg_format = true;
-+		}
-+		break;
-+	case VIRTCHNL_OP_ADD_VLAN:
-+	case VIRTCHNL_OP_DEL_VLAN:
-+		valid_len = sizeof(struct virtchnl_vlan_filter_list);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_vlan_filter_list *vfl =
-+			    (struct virtchnl_vlan_filter_list *)msg;
-+			valid_len += vfl->num_elements * sizeof(u16);
-+			if (vfl->num_elements == 0)
-+				err_msg_format = true;
-+		}
-+		break;
-+	case VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE:
-+		valid_len = sizeof(struct virtchnl_promisc_info);
-+		break;
-+	case VIRTCHNL_OP_GET_STATS:
-+		valid_len = sizeof(struct virtchnl_queue_select);
-+		break;
-+	case VIRTCHNL_OP_IWARP:
-+		/* These messages are opaque to us and will be validated in
-+		 * the RDMA client code. We just need to check for nonzero
-+		 * length. The firmware will enforce max length restrictions.
-+		 */
-+		if (msglen)
-+			valid_len = msglen;
-+		else
-+			err_msg_format = true;
-+		break;
-+	case VIRTCHNL_OP_RELEASE_IWARP_IRQ_MAP:
-+		break;
-+	case VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP:
-+		valid_len = sizeof(struct virtchnl_iwarp_qvlist_info);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_iwarp_qvlist_info *qv =
-+				(struct virtchnl_iwarp_qvlist_info *)msg;
-+			if (qv->num_vectors == 0) {
-+				err_msg_format = true;
-+				break;
-+			}
-+			valid_len += ((qv->num_vectors - 1) *
-+				sizeof(struct virtchnl_iwarp_qv_info));
-+		}
-+		break;
-+	case VIRTCHNL_OP_CONFIG_RSS_KEY:
-+		valid_len = sizeof(struct virtchnl_rss_key);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_rss_key *vrk =
-+				(struct virtchnl_rss_key *)msg;
-+			valid_len += vrk->key_len - 1;
-+		}
-+		break;
-+	case VIRTCHNL_OP_CONFIG_RSS_LUT:
-+		valid_len = sizeof(struct virtchnl_rss_lut);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_rss_lut *vrl =
-+				(struct virtchnl_rss_lut *)msg;
-+			valid_len += vrl->lut_entries - 1;
-+		}
-+		break;
-+	case VIRTCHNL_OP_GET_RSS_HENA_CAPS:
-+		break;
-+	case VIRTCHNL_OP_SET_RSS_HENA:
-+		valid_len = sizeof(struct virtchnl_rss_hena);
-+		break;
-+	/* These are always errors coming from the VF. */
-+	case VIRTCHNL_OP_EVENT:
-+	case VIRTCHNL_OP_UNKNOWN:
-+	default:
-+		return VIRTCHNL_ERR_PARAM;
-+	}
-+	/* few more checks */
-+	if ((valid_len != msglen) || (err_msg_format))
-+		return VIRTCHNL_STATUS_ERR_OPCODE_MISMATCH;
-+
-+	return 0;
-+}
- #endif /* _VIRTCHNL_H_ */
+ Identifying Your Adapter
+ ========================
+ 
+-For more information on how to identify your adapter, go to the Adapter &
+-Driver ID Guide at:
++For more information on how to identify your adapter, go to the
++Adapter & Driver ID Guide at:
+ 
+     http://support.intel.com/support/go/network/adapter/idguide.htm
+ 
 -- 
 2.9.3
 
