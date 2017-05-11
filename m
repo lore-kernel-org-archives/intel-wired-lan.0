@@ -1,96 +1,353 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 11 May 2017 11:23:15 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v3 08/14] i40evf/virtchnl:
-	whitespace cleanups
+Date: Thu, 11 May 2017 11:23:17 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v3 10/14] i40e/virtchnl: move
+	function to virtchnl
 In-Reply-To: <20170511182321.147850-1-jesse.brandeburg@intel.com>
 References: <20170511182321.147850-1-jesse.brandeburg@intel.com>
-Message-ID: <20170511182321.147850-9-jesse.brandeburg@intel.com>
+Message-ID: <20170511182321.147850-11-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes up a bunch of whitespace issues introduced
-by the previous automated change of name from i40e to virtchnl.
+This moves a function that is needed for the virtchnl interface
+from the i40e PF driver over to the virtchnl.h file.
+
+It was manually verified that the function in question is unchanged
+except for the function name and function header, which explains
+the slight difference in the number of lines removed/added.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c  | 12 ++++--------
- drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c |  3 +--
- include/linux/avf/virtchnl.h                        |  6 +++---
- 3 files changed, 8 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 150 +--------------------
+ include/linux/avf/virtchnl.h                       | 147 ++++++++++++++++++++
+ 2 files changed, 148 insertions(+), 149 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 61f948c..422cccf0 100644
+index 352d9d2..6bee254 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1485,8 +1485,7 @@ static int i40e_vc_get_version_msg(struct i40e_vf *vf, u8 *msg)
- 		info.minor = VIRTCHNL_VERSION_MINOR_NO_VF_CAPS;
- 	return i40e_vc_send_msg_to_vf(vf, VIRTCHNL_OP_VERSION,
- 				      I40E_SUCCESS, (u8 *)&info,
+@@ -2532,154 +2532,6 @@ static int i40e_vc_set_rss_hena(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ }
+ 
+ /**
+- * i40e_vc_validate_vf_msg
+- * @ver: Virtchnl version info
+- * @v_opcode: Opcode for the message
+- * @msg: pointer to the msg buffer
+- * @msglen: msg length
+- *
+- * validate msg format against struct for each opcode
+- **/
+-static int
+-i40e_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
+-			u8 *msg, u16 msglen)
+-{
+-	bool err_msg_format = false;
+-	int valid_len = 0;
+-
+-	/* Validate message length. */
+-	switch (v_opcode) {
+-	case VIRTCHNL_OP_VERSION:
+-		valid_len = sizeof(struct virtchnl_version_info);
+-		break;
+-	case VIRTCHNL_OP_RESET_VF:
+-		break;
+-	case VIRTCHNL_OP_GET_VF_RESOURCES:
+-		if (VF_IS_V11(ver))
+-			valid_len = sizeof(u32);
+-		break;
+-	case VIRTCHNL_OP_CONFIG_TX_QUEUE:
+-		valid_len = sizeof(struct virtchnl_txq_info);
+-		break;
+-	case VIRTCHNL_OP_CONFIG_RX_QUEUE:
+-		valid_len = sizeof(struct virtchnl_rxq_info);
+-		break;
+-	case VIRTCHNL_OP_CONFIG_VSI_QUEUES:
+-		valid_len = sizeof(struct virtchnl_vsi_queue_config_info);
+-		if (msglen >= valid_len) {
+-			struct virtchnl_vsi_queue_config_info *vqc =
+-			    (struct virtchnl_vsi_queue_config_info *)msg;
+-			valid_len += (vqc->num_queue_pairs *
 -				      sizeof(struct
--					     virtchnl_version_info));
-+				      sizeof(struct virtchnl_version_info));
- }
+-					     virtchnl_queue_pair_info));
+-			if (vqc->num_queue_pairs == 0)
+-				err_msg_format = true;
+-		}
+-		break;
+-	case VIRTCHNL_OP_CONFIG_IRQ_MAP:
+-		valid_len = sizeof(struct virtchnl_irq_map_info);
+-		if (msglen >= valid_len) {
+-			struct virtchnl_irq_map_info *vimi =
+-			    (struct virtchnl_irq_map_info *)msg;
+-			valid_len += (vimi->num_vectors *
+-				      sizeof(struct virtchnl_vector_map));
+-			if (vimi->num_vectors == 0)
+-				err_msg_format = true;
+-		}
+-		break;
+-	case VIRTCHNL_OP_ENABLE_QUEUES:
+-	case VIRTCHNL_OP_DISABLE_QUEUES:
+-		valid_len = sizeof(struct virtchnl_queue_select);
+-		break;
+-	case VIRTCHNL_OP_ADD_ETH_ADDR:
+-	case VIRTCHNL_OP_DEL_ETH_ADDR:
+-		valid_len = sizeof(struct virtchnl_ether_addr_list);
+-		if (msglen >= valid_len) {
+-			struct virtchnl_ether_addr_list *veal =
+-			    (struct virtchnl_ether_addr_list *)msg;
+-			valid_len += veal->num_elements *
+-			    sizeof(struct virtchnl_ether_addr);
+-			if (veal->num_elements == 0)
+-				err_msg_format = true;
+-		}
+-		break;
+-	case VIRTCHNL_OP_ADD_VLAN:
+-	case VIRTCHNL_OP_DEL_VLAN:
+-		valid_len = sizeof(struct virtchnl_vlan_filter_list);
+-		if (msglen >= valid_len) {
+-			struct virtchnl_vlan_filter_list *vfl =
+-			    (struct virtchnl_vlan_filter_list *)msg;
+-			valid_len += vfl->num_elements * sizeof(u16);
+-			if (vfl->num_elements == 0)
+-				err_msg_format = true;
+-		}
+-		break;
+-	case VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE:
+-		valid_len = sizeof(struct virtchnl_promisc_info);
+-		break;
+-	case VIRTCHNL_OP_GET_STATS:
+-		valid_len = sizeof(struct virtchnl_queue_select);
+-		break;
+-	case VIRTCHNL_OP_IWARP:
+-		/* These messages are opaque to us and will be validated in
+-		 * the RDMA client code. We just need to check for nonzero
+-		 * length. The firmware will enforce max length restrictions.
+-		 */
+-		if (msglen)
+-			valid_len = msglen;
+-		else
+-			err_msg_format = true;
+-		break;
+-	case VIRTCHNL_OP_RELEASE_IWARP_IRQ_MAP:
+-		break;
+-	case VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP:
+-		valid_len = sizeof(struct virtchnl_iwarp_qvlist_info);
+-		if (msglen >= valid_len) {
+-			struct virtchnl_iwarp_qvlist_info *qv =
+-				(struct virtchnl_iwarp_qvlist_info *)msg;
+-			if (qv->num_vectors == 0) {
+-				err_msg_format = true;
+-				break;
+-			}
+-			valid_len += ((qv->num_vectors - 1) *
+-				sizeof(struct virtchnl_iwarp_qv_info));
+-		}
+-		break;
+-	case VIRTCHNL_OP_CONFIG_RSS_KEY:
+-		valid_len = sizeof(struct virtchnl_rss_key);
+-		if (msglen >= valid_len) {
+-			struct virtchnl_rss_key *vrk =
+-				(struct virtchnl_rss_key *)msg;
+-			valid_len += vrk->key_len - 1;
+-		}
+-		break;
+-	case VIRTCHNL_OP_CONFIG_RSS_LUT:
+-		valid_len = sizeof(struct virtchnl_rss_lut);
+-		if (msglen >= valid_len) {
+-			struct virtchnl_rss_lut *vrl =
+-				(struct virtchnl_rss_lut *)msg;
+-			valid_len += vrl->lut_entries - 1;
+-		}
+-		break;
+-	case VIRTCHNL_OP_GET_RSS_HENA_CAPS:
+-		break;
+-	case VIRTCHNL_OP_SET_RSS_HENA:
+-		valid_len = sizeof(struct virtchnl_rss_hena);
+-		break;
+-	/* These are always errors coming from the VF. */
+-	case VIRTCHNL_OP_EVENT:
+-	case VIRTCHNL_OP_UNKNOWN:
+-	default:
+-		return VIRTCHNL_ERR_PARAM;
+-	}
+-	/* few more checks */
+-	if ((valid_len != msglen) || (err_msg_format))
+-		return VIRTCHNL_STATUS_ERR_OPCODE_MISMATCH;
+-
+-	return 0;
+-}
+-
+-/**
+  * i40e_vc_process_vf_msg
+  * @pf: pointer to the PF structure
+  * @vf_id: source VF id
+@@ -2708,7 +2560,7 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
+ 		return I40E_ERR_PARAM;
  
- /**
-@@ -1544,11 +1543,9 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 	} else {
- 		if ((pf->flags & I40E_FLAG_RSS_AQ_CAPABLE) &&
- 		    (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RSS_AQ))
--			vfres->vf_offload_flags |=
--					VIRTCHNL_VF_OFFLOAD_RSS_AQ;
-+			vfres->vf_offload_flags |= VIRTCHNL_VF_OFFLOAD_RSS_AQ;
- 		else
--			vfres->vf_offload_flags |=
--					VIRTCHNL_VF_OFFLOAD_RSS_REG;
-+			vfres->vf_offload_flags |= VIRTCHNL_VF_OFFLOAD_RSS_REG;
- 	}
+ 	/* perform basic checks on the msg */
+-	ret = i40e_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
++	ret = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
  
- 	if (pf->flags & I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE) {
-@@ -2530,8 +2527,7 @@ static int i40e_vc_set_rss_hena(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 
- 	/* send the response to the VF */
- err:
--	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_SET_RSS_HENA,
--				       aq_ret);
-+	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_SET_RSS_HENA, aq_ret);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 90a17b0..d9f0409 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -1018,8 +1018,7 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 				~(BIT(VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP));
- 		break;
- 	case VIRTCHNL_OP_GET_RSS_HENA_CAPS: {
--		struct virtchnl_rss_hena *vrh =
--			(struct virtchnl_rss_hena *)msg;
-+		struct virtchnl_rss_hena *vrh = (struct virtchnl_rss_hena *)msg;
- 		if (msglen == sizeof(*vrh))
- 			adapter->hena = vrh->hena;
- 		else
+ 	/* perform additional checks specific to this driver */
+ 	if (v_opcode == VIRTCHNL_OP_CONFIG_RSS_KEY) {
 diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index f1cc1f0..73970bd 100644
+index 6c6fbb4..dab76e9 100644
 --- a/include/linux/avf/virtchnl.h
 +++ b/include/linux/avf/virtchnl.h
-@@ -175,10 +175,10 @@ struct virtchnl_vsi_resource {
- #define VIRTCHNL_VF_OFFLOAD_IWARP		0x00000002
- #define VIRTCHNL_VF_OFFLOAD_FCOE		0x00000004
- #define VIRTCHNL_VF_OFFLOAD_RSS_AQ		0x00000008
--#define VIRTCHNL_VF_OFFLOAD_RSS_REG	0x00000010
--#define VIRTCHNL_VF_OFFLOAD_WB_ON_ITR	0x00000020
-+#define VIRTCHNL_VF_OFFLOAD_RSS_REG		0x00000010
-+#define VIRTCHNL_VF_OFFLOAD_WB_ON_ITR		0x00000020
- #define VIRTCHNL_VF_OFFLOAD_VLAN		0x00010000
--#define VIRTCHNL_VF_OFFLOAD_RX_POLLING	0x00020000
-+#define VIRTCHNL_VF_OFFLOAD_RX_POLLING		0x00020000
- #define VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2	0x00040000
- #define VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
- #define VIRTCHNL_VF_OFFLOAD_ENCAP		0X00100000
+@@ -498,4 +498,151 @@ enum virtchnl_vfr_states {
+ 	VIRTCHNL_VFR_VFACTIVE,
+ };
+ 
++/**
++ * virtchnl_vc_validate_vf_msg
++ * @ver: Virtchnl version info
++ * @v_opcode: Opcode for the message
++ * @msg: pointer to the msg buffer
++ * @msglen: msg length
++ *
++ * validate msg format against struct for each opcode
++ */
++static inline int
++virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
++			    u8 *msg, u16 msglen)
++{
++	bool err_msg_format = false;
++	int valid_len = 0;
++
++	/* Validate message length. */
++	switch (v_opcode) {
++	case VIRTCHNL_OP_VERSION:
++		valid_len = sizeof(struct virtchnl_version_info);
++		break;
++	case VIRTCHNL_OP_RESET_VF:
++		break;
++	case VIRTCHNL_OP_GET_VF_RESOURCES:
++		if (VF_IS_V11(ver))
++			valid_len = sizeof(u32);
++		break;
++	case VIRTCHNL_OP_CONFIG_TX_QUEUE:
++		valid_len = sizeof(struct virtchnl_txq_info);
++		break;
++	case VIRTCHNL_OP_CONFIG_RX_QUEUE:
++		valid_len = sizeof(struct virtchnl_rxq_info);
++		break;
++	case VIRTCHNL_OP_CONFIG_VSI_QUEUES:
++		valid_len = sizeof(struct virtchnl_vsi_queue_config_info);
++		if (msglen >= valid_len) {
++			struct virtchnl_vsi_queue_config_info *vqc =
++			    (struct virtchnl_vsi_queue_config_info *)msg;
++			valid_len += (vqc->num_queue_pairs *
++				      sizeof(struct
++					     virtchnl_queue_pair_info));
++			if (vqc->num_queue_pairs == 0)
++				err_msg_format = true;
++		}
++		break;
++	case VIRTCHNL_OP_CONFIG_IRQ_MAP:
++		valid_len = sizeof(struct virtchnl_irq_map_info);
++		if (msglen >= valid_len) {
++			struct virtchnl_irq_map_info *vimi =
++			    (struct virtchnl_irq_map_info *)msg;
++			valid_len += (vimi->num_vectors *
++				      sizeof(struct virtchnl_vector_map));
++			if (vimi->num_vectors == 0)
++				err_msg_format = true;
++		}
++		break;
++	case VIRTCHNL_OP_ENABLE_QUEUES:
++	case VIRTCHNL_OP_DISABLE_QUEUES:
++		valid_len = sizeof(struct virtchnl_queue_select);
++		break;
++	case VIRTCHNL_OP_ADD_ETH_ADDR:
++	case VIRTCHNL_OP_DEL_ETH_ADDR:
++		valid_len = sizeof(struct virtchnl_ether_addr_list);
++		if (msglen >= valid_len) {
++			struct virtchnl_ether_addr_list *veal =
++			    (struct virtchnl_ether_addr_list *)msg;
++			valid_len += veal->num_elements *
++			    sizeof(struct virtchnl_ether_addr);
++			if (veal->num_elements == 0)
++				err_msg_format = true;
++		}
++		break;
++	case VIRTCHNL_OP_ADD_VLAN:
++	case VIRTCHNL_OP_DEL_VLAN:
++		valid_len = sizeof(struct virtchnl_vlan_filter_list);
++		if (msglen >= valid_len) {
++			struct virtchnl_vlan_filter_list *vfl =
++			    (struct virtchnl_vlan_filter_list *)msg;
++			valid_len += vfl->num_elements * sizeof(u16);
++			if (vfl->num_elements == 0)
++				err_msg_format = true;
++		}
++		break;
++	case VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE:
++		valid_len = sizeof(struct virtchnl_promisc_info);
++		break;
++	case VIRTCHNL_OP_GET_STATS:
++		valid_len = sizeof(struct virtchnl_queue_select);
++		break;
++	case VIRTCHNL_OP_IWARP:
++		/* These messages are opaque to us and will be validated in
++		 * the RDMA client code. We just need to check for nonzero
++		 * length. The firmware will enforce max length restrictions.
++		 */
++		if (msglen)
++			valid_len = msglen;
++		else
++			err_msg_format = true;
++		break;
++	case VIRTCHNL_OP_RELEASE_IWARP_IRQ_MAP:
++		break;
++	case VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP:
++		valid_len = sizeof(struct virtchnl_iwarp_qvlist_info);
++		if (msglen >= valid_len) {
++			struct virtchnl_iwarp_qvlist_info *qv =
++				(struct virtchnl_iwarp_qvlist_info *)msg;
++			if (qv->num_vectors == 0) {
++				err_msg_format = true;
++				break;
++			}
++			valid_len += ((qv->num_vectors - 1) *
++				sizeof(struct virtchnl_iwarp_qv_info));
++		}
++		break;
++	case VIRTCHNL_OP_CONFIG_RSS_KEY:
++		valid_len = sizeof(struct virtchnl_rss_key);
++		if (msglen >= valid_len) {
++			struct virtchnl_rss_key *vrk =
++				(struct virtchnl_rss_key *)msg;
++			valid_len += vrk->key_len - 1;
++		}
++		break;
++	case VIRTCHNL_OP_CONFIG_RSS_LUT:
++		valid_len = sizeof(struct virtchnl_rss_lut);
++		if (msglen >= valid_len) {
++			struct virtchnl_rss_lut *vrl =
++				(struct virtchnl_rss_lut *)msg;
++			valid_len += vrl->lut_entries - 1;
++		}
++		break;
++	case VIRTCHNL_OP_GET_RSS_HENA_CAPS:
++		break;
++	case VIRTCHNL_OP_SET_RSS_HENA:
++		valid_len = sizeof(struct virtchnl_rss_hena);
++		break;
++	/* These are always errors coming from the VF. */
++	case VIRTCHNL_OP_EVENT:
++	case VIRTCHNL_OP_UNKNOWN:
++	default:
++		return VIRTCHNL_ERR_PARAM;
++	}
++	/* few more checks */
++	if ((valid_len != msglen) || (err_msg_format))
++		return VIRTCHNL_STATUS_ERR_OPCODE_MISMATCH;
++
++	return 0;
++}
+ #endif /* _VIRTCHNL_H_ */
 -- 
 2.9.3
 
