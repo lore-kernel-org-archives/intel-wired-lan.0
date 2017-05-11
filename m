@@ -1,50 +1,85 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 11 May 2017 11:23:18 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v3 11/14] virtchnl: Add pad
-	fields to a couple of structures
+Date: Thu, 11 May 2017 11:23:13 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v3 06/14] virtchnl: convert to
+	new macros
 In-Reply-To: <20170511182321.147850-1-jesse.brandeburg@intel.com>
 References: <20170511182321.147850-1-jesse.brandeburg@intel.com>
-Message-ID: <20170511182321.147850-12-jesse.brandeburg@intel.com>
+Message-ID: <20170511182321.147850-7-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sridhar Samudrala <sridhar.samudrala@intel.com>
+As part of the conversion, change the arguments
+to VF_IS_V1[01] macros and move them to virtchnl.h
 
-This removes holes and makes structure sizes consistent across
-32 and 64 bit builds.
-
-Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- include/linux/avf/virtchnl.h | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 6 +++---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h | 3 ---
+ include/linux/avf/virtchnl.h                       | 3 +++
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index d7fcc4f..923026a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1481,7 +1481,7 @@ static int i40e_vc_get_version_msg(struct i40e_vf *vf, u8 *msg)
+ 
+ 	vf->vf_ver = *(struct virtchnl_version_info *)msg;
+ 	/* VFs running the 1.0 API expect to get 1.0 back or they will cry. */
+-	if (VF_IS_V10(vf))
++	if (VF_IS_V10(&vf->vf_ver))
+ 		info.minor = VIRTCHNL_VERSION_MINOR_NO_VF_CAPS;
+ 	return i40e_vc_send_msg_to_vf(vf, VIRTCHNL_OP_VERSION,
+ 				      I40E_SUCCESS, (u8 *)&info,
+@@ -1521,7 +1521,7 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 		len = 0;
+ 		goto err;
+ 	}
+-	if (VF_IS_V11(vf))
++	if (VF_IS_V11(&vf->vf_ver))
+ 		vf->driver_caps = *(u32 *)msg;
+ 	else
+ 		vf->driver_caps = VIRTCHNL_VF_OFFLOAD_L2 |
+@@ -2557,7 +2557,7 @@ static int i40e_vc_validate_vf_msg(struct i40e_vf *vf, u32 v_opcode,
+ 	case VIRTCHNL_OP_RESET_VF:
+ 		break;
+ 	case VIRTCHNL_OP_GET_VF_RESOURCES:
+-		if (VF_IS_V11(vf))
++		if (VF_IS_V11(&vf->vf_ver))
+ 			valid_len = sizeof(u32);
+ 		break;
+ 	case VIRTCHNL_OP_CONFIG_TX_QUEUE:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+index b57ffff..1f4b0c5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+@@ -40,9 +40,6 @@
+ #define I40E_VLAN_MASK			0xFFF
+ #define I40E_PRIORITY_MASK		0x7000
+ 
+-#define VF_IS_V10(_v) (((_v)->vf_ver.major == 1) && ((_v)->vf_ver.minor == 0))
+-#define VF_IS_V11(_v) (((_v)->vf_ver.major == 1) && ((_v)->vf_ver.minor == 1))
+-
+ /* Various queue ctrls */
+ enum i40e_queue_ctrl {
+ 	I40E_QUEUE_CTRL_UNKNOWN = 0,
 diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index dab76e9..72466c6 100644
+index a8b6161..8ffa670 100644
 --- a/include/linux/avf/virtchnl.h
 +++ b/include/linux/avf/virtchnl.h
-@@ -275,8 +275,10 @@ struct virtchnl_rxq_info {
- 	u16 splithdr_enabled; /* deprecated with AVF 1.0 */
- 	u32 databuffer_size;
- 	u32 max_pkt_size;
-+	u32 pad1;
- 	u64 dma_ring_addr;
- 	enum virtchnl_rx_hsplit rx_split_pos; /* deprecated with AVF 1.0 */
-+	u32 pad2;
+@@ -123,6 +123,9 @@ struct virtchnl_version_info {
+ 	u32 minor;
  };
  
- /* VIRTCHNL_OP_CONFIG_VSI_QUEUES
-@@ -295,6 +297,7 @@ struct virtchnl_queue_pair_info {
- struct virtchnl_vsi_queue_config_info {
- 	u16 vsi_id;
- 	u16 num_queue_pairs;
-+	u32 pad;
- 	struct virtchnl_queue_pair_info qpair[1];
- };
- 
++#define VF_IS_V10(_v) (((_v)->major == 1) && ((_v)->minor == 0))
++#define VF_IS_V11(_ver) (((_ver)->major == 1) && ((_ver)->minor == 1))
++
+ /* VIRTCHNL_OP_RESET_VF
+  * VF sends this request to PF with no parameters
+  * PF does NOT respond! VF driver must delay then poll VFGEN_RSTAT register
 -- 
 2.9.3
 
