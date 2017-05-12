@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 12 May 2017 18:02:33 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 14/14] i40evf:
-	update	i40evf.txt with new content
-In-Reply-To: <20170511182321.147850-15-jesse.brandeburg@intel.com>
+Date: Fri, 12 May 2017 18:05:18 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 04/14] virtchnl: rename
+ i40e	to generic virtchnl
+In-Reply-To: <20170511182321.147850-5-jesse.brandeburg@intel.com>
 References: <20170511182321.147850-1-jesse.brandeburg@intel.com>
- <20170511182321.147850-15-jesse.brandeburg@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA328B@ORSMSX104.amr.corp.intel.com>
+ <20170511182321.147850-5-jesse.brandeburg@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA32CF@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,62 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jesse Brandeburg
 > Sent: Thursday, May 11, 2017 11:23 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v3 14/14] i40evf: update
-> i40evf.txt with new content
+> Subject: [Intel-wired-lan] [PATCH net-next v3 04/14] virtchnl: rename i40e to
+> generic virtchnl
 > 
-> The addition of the AVF and virtchnl code to the i40evf driver means we
-> should update the i40evf.txt file with the most up to date information.
+> This morphs all the i40e and i40evf references to/in virtchnl.h
+> to be generic, using only automated methods. Updates all the
+> callers to use the new names.  A followup patch provides separate
+> clean ups for messy line conversions from these "automatic"
+> changes, to make them more reviewable.
 > 
-> It seems this file hasn't been updated in a while, so the changes cover a little
-> more than just AVF, but it's all only in the i40evf.txt.
+> Was executed with the following sed script:
+> sed -i -f transform_script drivers/net/ethernet/intel/i40e/i40e_client.c
+> sed -i -f transform_script drivers/net/ethernet/intel/i40e/i40e_prototype.h
+> sed -i -f transform_script drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> sed -i -f transform_script drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> sed -i -f transform_script drivers/net/ethernet/intel/i40evf/i40e_common.c
+> sed -i -f transform_script
+> drivers/net/ethernet/intel/i40evf/i40e_prototype.h
+> sed -i -f transform_script drivers/net/ethernet/intel/i40evf/i40evf.h
+> sed -i -f transform_script drivers/net/ethernet/intel/i40evf/i40evf_client.c
+> sed -i -f transform_script drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> sed -i -f transform_script drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+> sed -i -f transform_script include/linux/avf/virtchnl.h
+> 
+> transform_script:
+> ----8<----
+> s/I40E_VIRTCHNL_SUPPORTED_QTYPES/SAVE_ME_SUPPORTED_QTYPES/g
+> s/I40E_VIRTCHNL_VF_CAP/SAVE_ME_VF_CAP/g
+> 
+> s/I40E_VIRTCHNL_/VIRTCHNL_/g
+> s/i40e_virtchnl_/virtchnl_/g
+> s/i40e_vfr_/virtchnl_vfr_/g
+> s/I40E_VFR_/VIRTCHNL_VFR_/g
+> 
+> s/VIRTCHNL_OP_ADD_ETHER_ADDRESS/VIRTCHNL_OP_ADD_ETH_ADDR/g
+> s/VIRTCHNL_OP_DEL_ETHER_ADDRESS/VIRTCHNL_OP_DEL_ETH_ADDR/g
+> s/VIRTCHNL_OP_FCOE/VIRTCHNL_OP_RSVD/g
+> 
+> s/SAVE_ME_SUPPORTED_QTYPES/I40E_VIRTCHNL_SUPPORTED_QTYPES/g
+> s/SAVE_ME_VF_CAP/I40E_VIRTCHNL_VF_CAP/g
+> ----8<----
 > 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  Documentation/networking/i40evf.txt | 23 +++++++++++++++--------
->  1 file changed, 15 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_client.c      |   2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 370 ++++++++++--------
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   6 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_common.c    |  10 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_prototype.h |   4 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf.h         |  22 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf_client.c  |  18 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  48 +--
+>  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 280 ++++++++--------
+>  include/linux/avf/virtchnl.h                       | 233 ++++++-------
+>  11 files changed, 499 insertions(+), 498 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
