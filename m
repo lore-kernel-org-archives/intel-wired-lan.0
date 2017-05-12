@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 12 May 2017 17:59:50 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 09/14] virtchnl:
-	finish	conversion to virtchnl interface
-In-Reply-To: <20170511182321.147850-10-jesse.brandeburg@intel.com>
+Date: Fri, 12 May 2017 18:00:18 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 10/14] i40e/virtchnl:
+	move	function to virtchnl
+In-Reply-To: <20170511182321.147850-11-jesse.brandeburg@intel.com>
 References: <20170511182321.147850-1-jesse.brandeburg@intel.com>
- <20170511182321.147850-10-jesse.brandeburg@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA313C@ORSMSX104.amr.corp.intel.com>
+ <20170511182321.147850-11-jesse.brandeburg@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA3148@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jesse Brandeburg
 > Sent: Thursday, May 11, 2017 11:23 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v3 09/14] virtchnl: finish
-> conversion to virtchnl interface
+> Subject: [Intel-wired-lan] [PATCH net-next v3 10/14] i40e/virtchnl: move
+> function to virtchnl
 > 
-> This patch implements the complete version of the virtchnl.h file with final
-> renames, and fixes the related code in i40e and i40evf.
+> This moves a function that is needed for the virtchnl interface from the i40e
+> PF driver over to the virtchnl.h file.
 > 
-> It also expands comments, and adds details on the usage of certain fields.
-> 
-> In addition, due to the changes a couple of casts are needed to prevent
-> errors found by sparse after renaming some fields.
+> It was manually verified that the function in question is unchanged except for
+> the function name and function header, which explains the slight difference
+> in the number of lines removed/added.
 > 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  18 +--
->  drivers/net/ethernet/intel/i40evf/i40e_common.c    |   2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf.h         |   2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  11 +-
->  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |   6 +-
->  include/linux/avf/virtchnl.h                       | 128 +++++++++++++--------
->  6 files changed, 102 insertions(+), 65 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 150 +--------------------
+>  include/linux/avf/virtchnl.h                       | 147 ++++++++++++++++++++
+>  2 files changed, 148 insertions(+), 149 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
