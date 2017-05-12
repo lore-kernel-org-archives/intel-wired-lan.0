@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 12 May 2017 18:00:18 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 10/14] i40e/virtchnl:
-	move	function to virtchnl
-In-Reply-To: <20170511182321.147850-11-jesse.brandeburg@intel.com>
+Date: Fri, 12 May 2017 18:00:50 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 11/14] virtchnl: Add
+	pad	fields to a couple of structures
+In-Reply-To: <20170511182321.147850-12-jesse.brandeburg@intel.com>
 References: <20170511182321.147850-1-jesse.brandeburg@intel.com>
- <20170511182321.147850-11-jesse.brandeburg@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA3148@ORSMSX104.amr.corp.intel.com>
+ <20170511182321.147850-12-jesse.brandeburg@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA315E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jesse Brandeburg
 > Sent: Thursday, May 11, 2017 11:23 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v3 10/14] i40e/virtchnl: move
-> function to virtchnl
+> Subject: [Intel-wired-lan] [PATCH net-next v3 11/14] virtchnl: Add pad fields
+> to a couple of structures
 > 
-> This moves a function that is needed for the virtchnl interface from the i40e
-> PF driver over to the virtchnl.h file.
+> From: Sridhar Samudrala <sridhar.samudrala@intel.com>
 > 
-> It was manually verified that the function in question is unchanged except for
-> the function name and function header, which explains the slight difference
-> in the number of lines removed/added.
+> This removes holes and makes structure sizes consistent across
+> 32 and 64 bit builds.
 > 
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 150 +--------------------
->  include/linux/avf/virtchnl.h                       | 147 ++++++++++++++++++++
->  2 files changed, 148 insertions(+), 149 deletions(-)
+>  include/linux/avf/virtchnl.h | 3 +++
+>  1 file changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
