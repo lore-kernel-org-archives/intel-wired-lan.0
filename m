@@ -1,191 +1,44 @@
-From: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
-Date: Fri, 12 May 2017 23:26:56 -0300
-Subject: [Intel-wired-lan] [PATCH net] i40e: Fix state flags for bit set and
-	clean operations of PF
-Message-ID: <1494642416-21796-1-git-send-email-maurosr@linux.vnet.ibm.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Sun, 14 May 2017 19:56:49 +0200
+Subject: [Intel-wired-lan] [PATCH net] i40e: proper update of the
+	page_offset field
+Message-ID: <20170514175649.31616-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit 0da36b9774cc ("i40e: use DECLARE_BITMAP for state fields")
-introduced changes in the way i40e works with state flags converting
-them to bitmaps using kernel bitmap API. This change introduced a
-regression due to a mistaken substitution using __I40E_VSI_DOWN instead
-of __I40E_DOWN when testing state of a PF at i40e_reset_subtask()
-function. This caused a flood in the kernel log with the follow message:
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-[49.013] i40e 0002:01:00.0: bad reset request 0x00000020
+In f8b45b74cc62 ("i40e/i40evf: Use build_skb to build frames")
+i40e_build_skb updates the page_offset field with an incorrect offset,
+which can lead to data corruption. This patch updates page_offset
+correctly.
 
-Commit d19cb64b9222 ("i40e: separate PF and VSI state flags")
-also introduced some misuse of the VSI and PF flags, so both could be
-considered as the offenders.
+Note that the bug only appears on architectures where PAGE_SIZE is
+8192 or larger.
 
-This patch simply fixes the flags where it makes sense by changing
-__I40E_VSI_DOWN to __I40E_DOWN.
-
-Fixes: 0da36b9774cc ("i40e: use DECLARE_BITMAP for state fields")
-Fixes: d19cb64b9222 ("i40e: separate PF and VSI state flags")
-
-Reviewed-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+Fixes: f8b45b74cc62 ("i40e/i40evf: Use build_skb to build frames")
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 36 ++++++++++++++---------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index d5c9c9e..150caf6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -295,7 +295,7 @@ struct i40e_vsi *i40e_find_vsi_from_id(struct i40e_pf *pf, u16 id)
-  **/
- void i40e_service_event_schedule(struct i40e_pf *pf)
- {
--	if (!test_bit(__I40E_VSI_DOWN, pf->state) &&
-+	if (!test_bit(__I40E_DOWN, pf->state) &&
- 	    !test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state))
- 		queue_work(i40e_wq, &pf->service_task);
- }
-@@ -3611,7 +3611,7 @@ static irqreturn_t i40e_intr(int irq, void *data)
- 		 * this is not a performance path and napi_schedule()
- 		 * can deal with rescheduling.
- 		 */
--		if (!test_bit(__I40E_VSI_DOWN, pf->state))
-+		if (!test_bit(__I40E_DOWN, pf->state))
- 			napi_schedule_irqoff(&q_vector->napi);
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 29321a6167a6..cd894f4023b1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1854,7 +1854,8 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
+ #if (PAGE_SIZE < 8192)
+ 	unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
+ #else
+-	unsigned int truesize = SKB_DATA_ALIGN(size);
++	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
++				SKB_DATA_ALIGN(I40E_SKB_PAD + size);
+ #endif
+ 	struct sk_buff *skb;
  
-@@ -3687,7 +3687,7 @@ static irqreturn_t i40e_intr(int irq, void *data)
- enable_intr:
- 	/* re-enable interrupt causes */
- 	wr32(hw, I40E_PFINT_ICR0_ENA, ena_mask);
--	if (!test_bit(__I40E_VSI_DOWN, pf->state)) {
-+	if (!test_bit(__I40E_DOWN, pf->state)) {
- 		i40e_service_event_schedule(pf);
- 		i40e_irq_dynamic_enable_icr0(pf, false);
- 	}
-@@ -6203,7 +6203,7 @@ static void i40e_fdir_reinit_subtask(struct i40e_pf *pf)
- {
- 
- 	/* if interface is down do nothing */
--	if (test_bit(__I40E_VSI_DOWN, pf->state))
-+	if (test_bit(__I40E_DOWN, pf->state))
- 		return;
- 
- 	if (test_bit(__I40E_FD_FLUSH_REQUESTED, pf->state))
-@@ -6344,7 +6344,7 @@ static void i40e_watchdog_subtask(struct i40e_pf *pf)
- 	int i;
- 
- 	/* if interface is down do nothing */
--	if (test_bit(__I40E_VSI_DOWN, pf->state) ||
-+	if (test_bit(__I40E_DOWN, pf->state) ||
- 	    test_bit(__I40E_CONFIG_BUSY, pf->state))
- 		return;
- 
-@@ -6399,9 +6399,9 @@ static void i40e_reset_subtask(struct i40e_pf *pf)
- 		reset_flags |= BIT(__I40E_GLOBAL_RESET_REQUESTED);
- 		clear_bit(__I40E_GLOBAL_RESET_REQUESTED, pf->state);
- 	}
--	if (test_bit(__I40E_VSI_DOWN_REQUESTED, pf->state)) {
--		reset_flags |= BIT(__I40E_VSI_DOWN_REQUESTED);
--		clear_bit(__I40E_VSI_DOWN_REQUESTED, pf->state);
-+	if (test_bit(__I40E_DOWN_REQUESTED, pf->state)) {
-+		reset_flags |= BIT(__I40E_DOWN_REQUESTED);
-+		clear_bit(__I40E_DOWN_REQUESTED, pf->state);
- 	}
- 
- 	/* If there's a recovery already waiting, it takes
-@@ -6415,7 +6415,7 @@ static void i40e_reset_subtask(struct i40e_pf *pf)
- 
- 	/* If we're already down or resetting, just bail */
- 	if (reset_flags &&
--	    !test_bit(__I40E_VSI_DOWN, pf->state) &&
-+	    !test_bit(__I40E_DOWN, pf->state) &&
- 	    !test_bit(__I40E_CONFIG_BUSY, pf->state)) {
- 		rtnl_lock();
- 		i40e_do_reset(pf, reset_flags, true);
-@@ -7002,7 +7002,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 	u32 val;
- 	int v;
- 
--	if (test_bit(__I40E_VSI_DOWN, pf->state))
-+	if (test_bit(__I40E_DOWN, pf->state))
- 		goto clear_recovery;
- 	dev_dbg(&pf->pdev->dev, "Rebuilding internal switch\n");
- 
-@@ -9767,7 +9767,7 @@ int i40e_vsi_release(struct i40e_vsi *vsi)
- 		return -ENODEV;
- 	}
- 	if (vsi == pf->vsi[pf->lan_vsi] &&
--	    !test_bit(__I40E_VSI_DOWN, pf->state)) {
-+	    !test_bit(__I40E_DOWN, pf->state)) {
- 		dev_info(&pf->pdev->dev, "Can't remove PF VSI\n");
- 		return -ENODEV;
- 	}
-@@ -11003,7 +11003,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	}
- 	pf->next_vsi = 0;
- 	pf->pdev = pdev;
--	set_bit(__I40E_VSI_DOWN, pf->state);
-+	set_bit(__I40E_DOWN, pf->state);
- 
- 	hw = &pf->hw;
- 	hw->back = pf;
-@@ -11293,7 +11293,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	 * before setting up the misc vector or we get a race and the vector
- 	 * ends up disabled forever.
- 	 */
--	clear_bit(__I40E_VSI_DOWN, pf->state);
-+	clear_bit(__I40E_DOWN, pf->state);
- 
- 	/* In case of MSIX we are going to setup the misc vector right here
- 	 * to handle admin queue events etc. In case of legacy and MSI
-@@ -11448,7 +11448,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	/* Unwind what we've done if something failed in the setup */
- err_vsis:
--	set_bit(__I40E_VSI_DOWN, pf->state);
-+	set_bit(__I40E_DOWN, pf->state);
- 	i40e_clear_interrupt_scheme(pf);
- 	kfree(pf->vsi);
- err_switch_setup:
-@@ -11500,7 +11500,7 @@ static void i40e_remove(struct pci_dev *pdev)
- 
- 	/* no more scheduling of any task */
- 	set_bit(__I40E_SUSPENDED, pf->state);
--	set_bit(__I40E_VSI_DOWN, pf->state);
-+	set_bit(__I40E_DOWN, pf->state);
- 	if (pf->service_timer.data)
- 		del_timer_sync(&pf->service_timer);
- 	if (pf->service_task.func)
-@@ -11740,7 +11740,7 @@ static void i40e_shutdown(struct pci_dev *pdev)
- 	struct i40e_hw *hw = &pf->hw;
- 
- 	set_bit(__I40E_SUSPENDED, pf->state);
--	set_bit(__I40E_VSI_DOWN, pf->state);
-+	set_bit(__I40E_DOWN, pf->state);
- 	rtnl_lock();
- 	i40e_prep_for_reset(pf, true);
- 	rtnl_unlock();
-@@ -11789,7 +11789,7 @@ static int i40e_suspend(struct pci_dev *pdev, pm_message_t state)
- 	int retval = 0;
- 
- 	set_bit(__I40E_SUSPENDED, pf->state);
--	set_bit(__I40E_VSI_DOWN, pf->state);
-+	set_bit(__I40E_DOWN, pf->state);
- 
- 	if (pf->wol_en && (pf->flags & I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE))
- 		i40e_enable_mc_magic_wake(pf);
-@@ -11841,7 +11841,7 @@ static int i40e_resume(struct pci_dev *pdev)
- 
- 	/* handling the reset will rebuild the device state */
- 	if (test_and_clear_bit(__I40E_SUSPENDED, pf->state)) {
--		clear_bit(__I40E_VSI_DOWN, pf->state);
-+		clear_bit(__I40E_DOWN, pf->state);
- 		rtnl_lock();
- 		i40e_reset_and_rebuild(pf, false, true);
- 		rtnl_unlock();
 -- 
-2.7.4
+2.11.0
 
