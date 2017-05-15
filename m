@@ -1,59 +1,204 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Mon, 15 May 2017 06:52:00 +0200
-Subject: [Intel-wired-lan] [PATCH net v2] i40e/i40evf: proper update of the
-	page_offset field
-Message-ID: <20170515045200.27789-1-bjorn.topel@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 15 May 2017 23:58:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ a691a2afec82a2a38a1ea9d110ae9585ec86b8e1
+Message-ID: <5919d020.G8eNnn29Q0wF43N3%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+a691a2afec82a2a38a1ea9d110ae9585ec86b8e1  i40e: fix handling of HW ATR eviction
 
-In f8b45b74cc62 ("i40e/i40evf: Use build_skb to build frames")
-i40e_build_skb updates the page_offset field with an incorrect offset,
-which can lead to data corruption. This patch updates page_offset
-correctly, by properly setting truesize.
+elapsed time: 186m
 
-Note that the bug only appears on architectures where PAGE_SIZE is
-8192 or larger.
+configs tested: 181
 
-Fixes: f8b45b74cc62 ("i40e/i40evf: Use build_skb to build frames")
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 3 ++-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 29321a6167a6..cd894f4023b1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1854,7 +1854,8 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
- #else
--	unsigned int truesize = SKB_DATA_ALIGN(size);
-+	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
-+				SKB_DATA_ALIGN(I40E_SKB_PAD + size);
- #endif
- 	struct sk_buff *skb;
- 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index dfe241a12ad0..12b02e530503 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1190,7 +1190,8 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
- #else
--	unsigned int truesize = SKB_DATA_ALIGN(size);
-+	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
-+				SKB_DATA_ALIGN(I40E_SKB_PAD + size);
- #endif
- 	struct sk_buff *skb;
- 
--- 
-2.11.0
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+mips                        bcm63xx_defconfig
+powerpc               corenet_basic_defconfig
+sh                           se7722_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-05152129
+arm                      jornada720_defconfig
+m68k                            mac_defconfig
+powerpc                  mpc885_ads_defconfig
+arm                            u300_defconfig
+m32r                       mappi.up_defconfig
+sparc                       sparc32_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x019-201720
+x86_64                 randconfig-x010-201720
+x86_64                 randconfig-x015-201720
+x86_64                 randconfig-x014-201720
+x86_64                 randconfig-x012-201720
+x86_64                 randconfig-x018-201720
+x86_64                 randconfig-x017-201720
+x86_64                 randconfig-x016-201720
+x86_64                 randconfig-x013-201720
+x86_64                 randconfig-x011-201720
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-a0-05150621
+i386                             allmodconfig
+arm                           spitz_defconfig
+arm64                            allmodconfig
+mips                  cavium_octeon_defconfig
+parisc                      default_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+x86_64                 randconfig-s0-05152239
+x86_64                 randconfig-s1-05152239
+x86_64                 randconfig-s2-05152239
+x86_64                 randconfig-s3-05152204
+x86_64                 randconfig-s4-05152204
+x86_64                 randconfig-s5-05152204
+i386                               tinyconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201720
+i386                   randconfig-b0-05152255
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201720
+i386                     randconfig-i1-201720
+x86_64                 randconfig-b0-05152112
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+powerpc                      pcm030_defconfig
+sh                      rts7751r2d1_defconfig
+x86_64                 randconfig-u0-05152219
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                       allmodconfig
+powerpc                    sam440ep_defconfig
+arm                           tegra_defconfig
+xtensa                            allnoconfig
+arm                             rpc_defconfig
+mips                        maltaup_defconfig
+x86_64                randconfig-ne0-05152210
+mips                             allmodconfig
+mips                       rbtx49xx_defconfig
+s390                           gcov_defconfig
+i386                   randconfig-x016-201720
+i386                   randconfig-x017-201720
+i386                   randconfig-x012-201720
+i386                   randconfig-x018-201720
+i386                   randconfig-x010-201720
+i386                   randconfig-x019-201720
+i386                   randconfig-x013-201720
+i386                   randconfig-x014-201720
+i386                   randconfig-x015-201720
+i386                   randconfig-x011-201720
+i386                   randconfig-h0-05152159
+i386                   randconfig-h1-05152159
+blackfin                   CM-BF527_defconfig
+cris                        etraxfs_defconfig
+powerpc                     tqm8540_defconfig
+x86_64                 randconfig-h0-05152206
+blackfin                  CM-BF537U_defconfig
+sh                               j2_defconfig
+m32r                      mappi.smp_defconfig
+m68k                                defconfig
+i386                 randconfig-x071-05150021
+i386                 randconfig-x072-05150021
+i386                 randconfig-x079-05150021
+i386                 randconfig-x073-05150021
+i386                 randconfig-x078-05150021
+i386                 randconfig-x077-05150021
+i386                 randconfig-x070-05150021
+i386                 randconfig-x075-05150021
+i386                 randconfig-x074-05150021
+i386                 randconfig-x076-05150021
+x86_64                 randconfig-n0-05152245
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+x86_64                           allmodconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-x006-201720
+x86_64                 randconfig-x007-201720
+x86_64                 randconfig-x001-201720
+x86_64                 randconfig-x004-201720
+x86_64                 randconfig-x005-201720
+x86_64                 randconfig-x000-201720
+x86_64                 randconfig-x008-201720
+x86_64                 randconfig-x002-201720
+x86_64                 randconfig-x003-201720
+x86_64                 randconfig-x009-201720
+x86_64                                  kexec
+i386                   randconfig-r0-05150127
+x86_64                 randconfig-r0-05150127
+arm                       omap2plus_defconfig
+arm                       versatile_defconfig
+sh                           se7712_defconfig
+i386                   randconfig-x002-201720
+i386                   randconfig-x006-201720
+i386                   randconfig-x009-201720
+i386                   randconfig-x008-201720
+i386                   randconfig-x001-201720
+i386                   randconfig-x000-201720
+i386                   randconfig-x005-201720
+i386                   randconfig-x007-201720
+i386                   randconfig-x004-201720
+i386                   randconfig-x003-201720
+i386                   randconfig-x0-05152142
 
+Thanks,
+Fengguang
