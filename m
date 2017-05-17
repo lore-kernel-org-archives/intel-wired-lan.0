@@ -1,32 +1,30 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 17 May 2017 21:54:28 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Check for memory allocation
- failure
-In-Reply-To: <20170505192913.4905-1-christophe.jaillet@wanadoo.fr>
-References: <20170505192913.4905-1-christophe.jaillet@wanadoo.fr>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA3942@ORSMSX104.amr.corp.intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Wed, 17 May 2017 15:17:36 -0700
+Subject: [Intel-wired-lan] [PATCH 0/5] ixgbe: fixes for configuring link on
+	x550a
+Message-ID: <20170517221424.15538.5968.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Christophe JAILLET
-> Sent: Friday, May 5, 2017 12:29 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: kernel-janitors at vger.kernel.org; Christophe JAILLET
-> <christophe.jaillet@wanadoo.fr>; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: Check for memory allocation failure
-> 
-> If 'kzalloc' fails, a NULL pointer will be dereferenced. Return -ENOMEM
-> instead.
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_client.c | 2 ++
->  1 file changed, 2 insertions(+)
+The following series introduces small fixes needed to address issues
+with setting up link on SFP+ based x550a parts.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+---
+
+Emil Tantilov (5):
+      ixgbe: correct CS4223/7 PHY identification
+      ixgbe: add write flush when configuring CS4223/7
+      ixgbe: always call setup_mac_link for multispeed fiber
+      ixgbe: add missing configuration for rate select 1
+      ixgbe: fix incorrect status check
+
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   37 ++++++++++++-----------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h    |    5 ++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |   30 ++++++++++++++-----
+ 3 files changed, 45 insertions(+), 27 deletions(-)
+
+--
