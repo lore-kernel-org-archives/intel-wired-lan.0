@@ -1,66 +1,60 @@
-From: Gustavo A. R. Silva <garsilva@embeddedor.com>
-Date: Wed, 17 May 2017 15:48:58 -0500
-Subject: [Intel-wired-lan] [net-intel-i40e] question about assignment
-	overwrite
-Message-ID: <20170517154858.Horde.xMvsIEhHNSGu52mfyp7HA3R@gator4166.hostgator.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 17 May 2017 21:50:22 +0000
+Subject: [Intel-wired-lan] [PATCH 1/4] ixgbe: Resolve truncation warning
+ for	q_vector->name
+In-Reply-To: <20170512183810.26185-1-anthony.l.nguyen@intel.com>
+References: <20170512183810.26185-1-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA38FF@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Friday, May 12, 2017 11:38 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH 1/4] ixgbe: Resolve truncation warning for
+> q_vector->name
+> 
+> The following warning is now shown as a result of new checks added for gcc
+> 7:
+> 
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function ?ixgbe_open?:
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:3118:13: warning: ?%d?
+> directive output may be truncated writing between 1 and 10 bytes into a
+> region of size between 3 and 18 [-Wformat-truncation=]
+>       "%s-%s-%d", netdev->name, "TxRx", ri++);
+>              ^~
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:3118:6: note: directive
+> argument in the range [0, 2147483647]
+>       "%s-%s-%d", netdev->name, "TxRx", ri++);
+>       ^~~~~~~~~~
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:3117:4: note: ?snprintf?
+> output between 8 and 32 bytes into a destination of size 24
+>     snprintf(q_vector->name, sizeof(q_vector->name) - 1,
+>     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>       "%s-%s-%d", netdev->name, "TxRx", ri++);
+>       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> 
+> Resolve this warning by making a couple of changes.
+>  - Don't reserve space for the null terminator.  Since snprintf adds the
+>    null terminator automatically, there is no need for us to reserve a byte
+>    for it.
+> 
+>  - Change a couple variables that can never be negative from int to
+>    unsigned int.
+> 
+> While we're making changes to the format string, move the constant strings
+> into the format string instead of providing them as specifiers.
+> 
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
 
-Hello everybody,
-
-While looking into Coverity ID 1408956 I ran into the following piece  
-of code at drivers/net/ethernet/intel/i40e/i40e_main.c:8807:
-
-8807        if (pf->hw.mac.type == I40E_MAC_X722) {
-8808                pf->flags |= I40E_FLAG_RSS_AQ_CAPABLE
-8809                             | I40E_FLAG_128_QP_RSS_CAPABLE
-8810                             | I40E_FLAG_HW_ATR_EVICT_CAPABLE
-8811                             | I40E_FLAG_OUTER_UDP_CSUM_CAPABLE
-8812                             | I40E_FLAG_WB_ON_ITR_CAPABLE
-8813                             | I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE
-8814                             | I40E_FLAG_NO_PCI_LINK_CHECK
-8815                             | I40E_FLAG_USE_SET_LLDP_MIB
-8816                             | I40E_FLAG_GENEVE_OFFLOAD_CAPABLE
-8817                             | I40E_FLAG_PTP_L4_CAPABLE
-8818                             | I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE;
-8819        } else if ((pf->hw.aq.api_maj_ver > 1) ||
-8820                   ((pf->hw.aq.api_maj_ver == 1) &&
-8821                    (pf->hw.aq.api_min_ver > 4))) {
-8822                /* Supported in FW API version higher than 1.4 */
-8823                pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
-8824                pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-8825        } else {
-8826                pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-8827        }
-
-The issue here is that the assignment at line 8823 is overwritten by  
-the code at line 8824.
-
-I'm suspicious that line 8824 should be remove and a patch like the  
-following can be applied:
-
-index d5c9c9e..48ffa73 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8821,7 +8821,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
-                     (pf->hw.aq.api_min_ver > 4))) {
-                 /* Supported in FW API version higher than 1.4 */
-                 pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
--               pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-         } else {
-                 pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-         }
-
-What do you think?
-
-Thanks!
---
-Gustavo A. R. Silva
-
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
