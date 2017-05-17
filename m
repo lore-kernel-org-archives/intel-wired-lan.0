@@ -1,58 +1,62 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 17 May 2017 15:17:46 -0700
-Subject: [Intel-wired-lan] [PATCH 2/5] ixgbe: add write flush when
-	configuring CS4223/7
+Date: Wed, 17 May 2017 15:17:51 -0700
+Subject: [Intel-wired-lan] [PATCH 3/5] ixgbe: always call setup_mac_link for
+	multispeed fiber
 In-Reply-To: <20170517221424.15538.5968.stgit@localhost6.localdomain6>
 References: <20170517221424.15538.5968.stgit@localhost6.localdomain6>
-Message-ID: <20170517221746.15538.89916.stgit@localhost6.localdomain6>
+Message-ID: <20170517221751.15538.97694.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Make sure the writes are processed immediately. Without the flush it
-is possible for operations on one port to spill over the other as the
-resource is shared.
+Remove the logic which would previously skip the link configuration
+in the case where we are already at the requested speed in
+ixgbe_setup_mac_link_multispeed_fiber().
+
+By exiting early we are skipping the link configuration and as such
+the driver may not always configure the PHY correctly for SFP+.
 
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   20 ++++++++++++++++++--
- 1 file changed, 18 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   18 ------------------
+ 1 file changed, 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 870f9e1..cb5d363 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1824,12 +1824,28 @@ static s32 ixgbe_setup_sfi_x550a(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 3af6127..8a2e8bf8 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -4121,15 +4121,6 @@ s32 ixgbe_setup_mac_link_multispeed_fiber(struct ixgbe_hw *hw,
+ 		speedcnt++;
+ 		highest_link_speed = IXGBE_LINK_SPEED_10GB_FULL;
  
- 	/* Configure CS4227/CS4223 LINE side to proper mode. */
- 	reg_slice = IXGBE_CS4227_LINE_SPARE24_LSB + slice_offset;
-+
-+	ret_val = hw->phy.ops.read_reg(hw, reg_slice,
-+				       IXGBE_MDIO_ZERO_DEV_TYPE, &reg_phy_ext);
-+	if (ret_val)
-+		return ret_val;
-+
-+	reg_phy_ext &= ~((IXGBE_CS4227_EDC_MODE_CX1 << 1) |
-+			 (IXGBE_CS4227_EDC_MODE_SR << 1));
-+
- 	if (setup_linear)
- 		reg_phy_ext = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
- 	else
- 		reg_phy_ext = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
--	return hw->phy.ops.write_reg(hw, reg_slice, IXGBE_MDIO_ZERO_DEV_TYPE,
--				     reg_phy_ext);
-+
-+	ret_val = hw->phy.ops.write_reg(hw, reg_slice,
-+					IXGBE_MDIO_ZERO_DEV_TYPE, reg_phy_ext);
-+	if (ret_val)
-+		return ret_val;
-+
-+	/* Flush previous write with a read */
-+	return hw->phy.ops.read_reg(hw, reg_slice,
-+				    IXGBE_MDIO_ZERO_DEV_TYPE, &reg_phy_ext);
- }
+-		/* If we already have link at this speed, just jump out */
+-		status = hw->mac.ops.check_link(hw, &link_speed, &link_up,
+-						false);
+-		if (status)
+-			return status;
+-
+-		if (link_speed == IXGBE_LINK_SPEED_10GB_FULL && link_up)
+-			goto out;
+-
+ 		/* Set the module link speed */
+ 		switch (hw->phy.media_type) {
+ 		case ixgbe_media_type_fiber:
+@@ -4181,15 +4172,6 @@ s32 ixgbe_setup_mac_link_multispeed_fiber(struct ixgbe_hw *hw,
+ 		if (highest_link_speed == IXGBE_LINK_SPEED_UNKNOWN)
+ 			highest_link_speed = IXGBE_LINK_SPEED_1GB_FULL;
  
- /**
+-		/* If we already have link at this speed, just jump out */
+-		status = hw->mac.ops.check_link(hw, &link_speed, &link_up,
+-						false);
+-		if (status)
+-			return status;
+-
+-		if (link_speed == IXGBE_LINK_SPEED_1GB_FULL && link_up)
+-			goto out;
+-
+ 		/* Set the module link speed */
+ 		switch (hw->phy.media_type) {
+ 		case ixgbe_media_type_fiber:
 
