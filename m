@@ -1,48 +1,66 @@
-From: Benjamin Poirier <bpoirier@suse.com>
-Date: Wed, 17 May 2017 16:24:13 -0400
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: Don't return uninitialized
-	stats
-In-Reply-To: <20170425175433.ykc6ilm6uo7e6my2@f1.synalogic.ca>
-References: <20170425175433.ykc6ilm6uo7e6my2@f1.synalogic.ca>
-Message-ID: <20170517202413.18321-1-bpoirier@suse.com>
+From: Gustavo A. R. Silva <garsilva@embeddedor.com>
+Date: Wed, 17 May 2017 15:48:58 -0500
+Subject: [Intel-wired-lan] [net-intel-i40e] question about assignment
+	overwrite
+Message-ID: <20170517154858.Horde.xMvsIEhHNSGu52mfyp7HA3R@gator4166.hostgator.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Some statistics passed to ethtool are garbage because e1000e_get_stats64()
-doesn't write them, for example: tx_heartbeat_errors. This leaks kernel
-memory to userspace and confuses users.
 
-Do like ixgbe and use dev_get_stats() which first zeroes out
-rtnl_link_stats64.
+Hello everybody,
 
-Fixes: 5944701df90d ("net: remove useless memset's in drivers get_stats64")
-Reported-by: Stefan Priebe <s.priebe@profihost.ag>
-Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
----
+While looking into Coverity ID 1408956 I ran into the following piece  
+of code at drivers/net/ethernet/intel/i40e/i40e_main.c:8807:
 
-Notes:
-    Changes v1->v2:
-    * add the Fixes tag
+8807        if (pf->hw.mac.type == I40E_MAC_X722) {
+8808                pf->flags |= I40E_FLAG_RSS_AQ_CAPABLE
+8809                             | I40E_FLAG_128_QP_RSS_CAPABLE
+8810                             | I40E_FLAG_HW_ATR_EVICT_CAPABLE
+8811                             | I40E_FLAG_OUTER_UDP_CSUM_CAPABLE
+8812                             | I40E_FLAG_WB_ON_ITR_CAPABLE
+8813                             | I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE
+8814                             | I40E_FLAG_NO_PCI_LINK_CHECK
+8815                             | I40E_FLAG_USE_SET_LLDP_MIB
+8816                             | I40E_FLAG_GENEVE_OFFLOAD_CAPABLE
+8817                             | I40E_FLAG_PTP_L4_CAPABLE
+8818                             | I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE;
+8819        } else if ((pf->hw.aq.api_maj_ver > 1) ||
+8820                   ((pf->hw.aq.api_maj_ver == 1) &&
+8821                    (pf->hw.aq.api_min_ver > 4))) {
+8822                /* Supported in FW API version higher than 1.4 */
+8823                pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
+8824                pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+8825        } else {
+8826                pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+8827        }
 
- drivers/net/ethernet/intel/e1000e/ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The issue here is that the assignment at line 8823 is overwritten by  
+the code at line 8824.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index e23dbd9190d6..5b4d97570896 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -2072,7 +2072,7 @@ static void e1000_get_ethtool_stats(struct net_device *netdev,
- 
- 	pm_runtime_get_sync(netdev->dev.parent);
- 
--	e1000e_get_stats64(netdev, &net_stats);
-+	dev_get_stats(netdev, &net_stats);
- 
- 	pm_runtime_put_sync(netdev->dev.parent);
- 
--- 
-2.12.2
+I'm suspicious that line 8824 should be remove and a patch like the  
+following can be applied:
+
+index d5c9c9e..48ffa73 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8821,7 +8821,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
+                     (pf->hw.aq.api_min_ver > 4))) {
+                 /* Supported in FW API version higher than 1.4 */
+                 pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
+-               pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+         } else {
+                 pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+         }
+
+What do you think?
+
+Thanks!
+--
+Gustavo A. R. Silva
+
+
+
 
