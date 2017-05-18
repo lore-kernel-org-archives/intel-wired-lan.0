@@ -1,39 +1,37 @@
-From: tndave <tushar.n.dave@oracle.com>
-Date: Thu, 18 May 2017 11:05:08 -0700
-Subject: [Intel-wired-lan] [PATCH] i40evf: Use le32_to_cpu before
-	evaluating HW desc fields.
-In-Reply-To: <1494976037.40313.1.camel@intel.com>
-References: <1493680559-6728-1-git-send-email-tushar.n.dave@oracle.com>
- <1494976037.40313.1.camel@intel.com>
-Message-ID: <9f11c040-693a-5a39-375c-e460dfad0cc0@oracle.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 18 May 2017 22:39:00 +0000
+Subject: [Intel-wired-lan] [PATCH 3/5] ixgbe: always call setup_mac_link
+ for	multispeed fiber
+In-Reply-To: <20170517221751.15538.97694.stgit@localhost6.localdomain6>
+References: <20170517221424.15538.5968.stgit@localhost6.localdomain6>
+ <20170517221751.15538.97694.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA3B12@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Emil Tantilov
+> Sent: Wednesday, May 17, 2017 3:18 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH 3/5] ixgbe: always call setup_mac_link for
+> multispeed fiber
+> 
+> Remove the logic which would previously skip the link configuration in the
+> case where we are already at the requested speed in
+> ixgbe_setup_mac_link_multispeed_fiber().
+> 
+> By exiting early we are skipping the link configuration and as such the driver
+> may not always configure the PHY correctly for SFP+.
+> 
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   18 ------------------
+>  1 file changed, 18 deletions(-)
+
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
-On 05/16/2017 04:07 PM, Jeff Kirsher wrote:
-> On Mon, 2017-05-01 at 16:15 -0700, Tushar Dave wrote:
->> i40e hardware descriptor fields are in little-endian format. Driver
->> must use le32_to_cpu while evaluating these fields otherwise on
->> big-endian arch we end up evaluating incorrect values, cause errors
->> like:
->>
->> i40evf 0001:04:02.0: Expected response 0 from PF, received 285212672
->> i40evf 0001:04:02.1: Expected response 0 from PF, received 285212672
->>
->> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
->> ---
->>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 ++++--
->>  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> Due to recent patches already applied to my tree, this patch does not
-> apply cleanly.  Feel free to send an updated patch, if the change is
-> still needed.
-Okay. I will send v2.
-Thanks.
-
--Tushar
->
