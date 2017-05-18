@@ -1,52 +1,71 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 18 May 2017 02:33:55 +0000
-Subject: [Intel-wired-lan] [next-queue v2] igb: Remove useless argument
-In-Reply-To: <20170516225516.65557-1-jeffrey.t.kirsher@intel.com>
-References: <20170516225516.65557-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C5F8E7D@ORSMSX101.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 17 May 2017 22:49:11 -0700
+Subject: [Intel-wired-lan] [net-intel-i40e] question about assignment
+	overwrite
+In-Reply-To: <20170517154858.Horde.xMvsIEhHNSGu52mfyp7HA3R@gator4166.hostgator.com>
+References: <20170517154858.Horde.xMvsIEhHNSGu52mfyp7HA3R@gator4166.hostgator.com>
+Message-ID: <1495086551.46489.1.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
-> Of Jeff Kirsher
-> Sent: Tuesday, May 16, 2017 3:55 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Benjamin Poirier <bpoirier@suse.com>
-> Subject: [Intel-wired-lan] [next-queue v2] igb: Remove useless argument
+On Wed, 2017-05-17 at 15:48 -0500, Gustavo A. R. Silva wrote:
+> While looking into Coverity ID 1408956 I ran into the following
+> piece??
+> of code at drivers/net/ethernet/intel/i40e/i40e_main.c:8807:
 > 
-> From: Benjamin Poirier <bpoirier@suse.com>
+> 8807??????? if (pf->hw.mac.type == I40E_MAC_X722) {
+> 8808??????????????? pf->flags |= I40E_FLAG_RSS_AQ_CAPABLE
+> 8809???????????????????????????? | I40E_FLAG_128_QP_RSS_CAPABLE
+> 8810???????????????????????????? | I40E_FLAG_HW_ATR_EVICT_CAPABLE
+> 8811???????????????????????????? | I40E_FLAG_OUTER_UDP_CSUM_CAPABLE
+> 8812???????????????????????????? | I40E_FLAG_WB_ON_ITR_CAPABLE
+> 8813???????????????????????????? |
+> I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE
+> 8814???????????????????????????? | I40E_FLAG_NO_PCI_LINK_CHECK
+> 8815???????????????????????????? | I40E_FLAG_USE_SET_LLDP_MIB
+> 8816???????????????????????????? | I40E_FLAG_GENEVE_OFFLOAD_CAPABLE
+> 8817???????????????????????????? | I40E_FLAG_PTP_L4_CAPABLE
+> 8818???????????????????????????? | I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE;
+> 8819??????? } else if ((pf->hw.aq.api_maj_ver > 1) ||
+> 8820?????????????????? ((pf->hw.aq.api_maj_ver == 1) &&
+> 8821??????????????????? (pf->hw.aq.api_min_ver > 4))) {
+> 8822??????????????? /* Supported in FW API version higher than 1.4 */
+> 8823??????????????? pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
+> 8824??????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+> 8825??????? } else {
+> 8826??????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+> 8827??????? }
 > 
-> Given that all callers of igb_update_stats() pass the same two arguments:
-> (adapter, &adapter->stats64), the second argument can be removed.
+> The issue here is that the assignment at line 8823 is overwritten
+> by??
+> the code at line 8824.
 > 
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb.h         |    2 +-
->  drivers/net/ethernet/intel/igb/igb_ethtool.c |    2 +-
->  drivers/net/ethernet/intel/igb/igb_main.c    |   10 +++++-----
->  3 files changed, 7 insertions(+), 7 deletions(-)
+> I'm suspicious that line 8824 should be remove and a patch like the??
+> following can be applied:
 > 
+> index d5c9c9e..48ffa73 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -8821,7 +8821,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
+> ???????????????????? (pf->hw.aq.api_min_ver > 4))) {
+> ???????????????? /* Supported in FW API version higher than 1.4 */
+> ???????????????? pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
+> -?????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+> ???????? } else {
+> ???????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+> ???????? }
+> 
+> What do you think?
 
-I'm getting a warning from checkpatch with this:
-------------------------------------------------------------
-WARNING: function definition argument 'struct igb_adapter *' should also have an identifier name
-#25: FILE: drivers/net/ethernet/intel/igb/igb.h:670:
-+void igb_update_stats(struct igb_adapter *);
-
-total: 0 errors, 1 warnings, 0 checks, 51 lines checked
-
-NOTE: For some of the reported defects, checkpatch may be able to
-      mechanically convert to the typical style using --fix or --fix-inplace.
-
-Your patch has style problems, please review.
-
-NOTE: If any of the errors are false positives, please report
-      them to the maintainer, see CHECKPATCH in MAINTAINERS.
-u1515:[2]/usr/src/kernels/next-queue>
-------------------------------------------------------------
-But it otherwise seems fine so I'm not inclined to hold it up for that.
-
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+This issue is already fixed in my dev-queue branch on my next-queue
+tree.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170517/9e80a5f1/attachment.asc>
