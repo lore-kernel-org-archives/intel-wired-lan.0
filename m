@@ -1,78 +1,131 @@
 From: Gustavo A. R. Silva <garsilva@embeddedor.com>
-Date: Thu, 18 May 2017 12:44:06 -0500
-Subject: [Intel-wired-lan] [net-intel-i40e] question about assignment
-	overwrite
-In-Reply-To: <1495086551.46489.1.camel@intel.com>
-References: <20170517154858.Horde.xMvsIEhHNSGu52mfyp7HA3R@gator4166.hostgator.com>
- <1495086551.46489.1.camel@intel.com>
-Message-ID: <20170518124406.Horde.V0ka_TqBLXCDelD3FThBIE6@gator4166.hostgator.com>
+Date: Thu, 18 May 2017 17:22:23 -0500
+Subject: [Intel-wired-lan] [net-intel-e1000e] question about value overwrite
+Message-ID: <20170518172223.Horde.5kLLwxMJWThQKv0bAxTsk4D@gator4166.hostgator.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Jeff,
 
-Quoting Jeff Kirsher <jeffrey.t.kirsher@intel.com>:
+Hello everybody,
 
-> On Wed, 2017-05-17 at 15:48 -0500, Gustavo A. R. Silva wrote:
->> While looking into Coverity ID 1408956 I ran into the following
->> piece??
->> of code at drivers/net/ethernet/intel/i40e/i40e_main.c:8807:
->>
->> 8807??????? if (pf->hw.mac.type == I40E_MAC_X722) {
->> 8808??????????????? pf->flags |= I40E_FLAG_RSS_AQ_CAPABLE
->> 8809???????????????????????????? | I40E_FLAG_128_QP_RSS_CAPABLE
->> 8810???????????????????????????? | I40E_FLAG_HW_ATR_EVICT_CAPABLE
->> 8811???????????????????????????? | I40E_FLAG_OUTER_UDP_CSUM_CAPABLE
->> 8812???????????????????????????? | I40E_FLAG_WB_ON_ITR_CAPABLE
->> 8813???????????????????????????? |
->> I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE
->> 8814???????????????????????????? | I40E_FLAG_NO_PCI_LINK_CHECK
->> 8815???????????????????????????? | I40E_FLAG_USE_SET_LLDP_MIB
->> 8816???????????????????????????? | I40E_FLAG_GENEVE_OFFLOAD_CAPABLE
->> 8817???????????????????????????? | I40E_FLAG_PTP_L4_CAPABLE
->> 8818???????????????????????????? | I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE;
->> 8819??????? } else if ((pf->hw.aq.api_maj_ver > 1) ||
->> 8820?????????????????? ((pf->hw.aq.api_maj_ver == 1) &&
->> 8821??????????????????? (pf->hw.aq.api_min_ver > 4))) {
->> 8822??????????????? /* Supported in FW API version higher than 1.4 */
->> 8823??????????????? pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
->> 8824??????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
->> 8825??????? } else {
->> 8826??????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
->> 8827??????? }
->>
->> The issue here is that the assignment at line 8823 is overwritten
->> by??
->> the code at line 8824.
->>
->> I'm suspicious that line 8824 should be remove and a patch like the??
->> following can be applied:
->>
->> index d5c9c9e..48ffa73 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
->> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
->> @@ -8821,7 +8821,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
->> ???????????????????? (pf->hw.aq.api_min_ver > 4))) {
->> ???????????????? /* Supported in FW API version higher than 1.4 */
->> ???????????????? pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
->> -?????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
->> ???????? } else {
->> ???????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
->> ???????? }
->>
->> What do you think?
->
-> This issue is already fixed in my dev-queue branch on my next-queue
-> tree.
+While looking into Coverity ID 1226905 I ran into the following piece  
+of code at drivers/net/ethernet/intel/e1000e/ich8lan.c:2400
 
-Great, it's good to know.
+2400/**
+2401 *  e1000_hv_phy_workarounds_ich8lan - A series of Phy workarounds to be
+2402 *  done after every PHY reset.
+2403 **/
+2404static s32 e1000_hv_phy_workarounds_ich8lan(struct e1000_hw *hw)
+2405{
+2406        s32 ret_val = 0;
+2407        u16 phy_data;
+2408
+2409        if (hw->mac.type != e1000_pchlan)
+2410                return 0;
+2411
+2412        /* Set MDIO slow mode before any other MDIO access */
+2413        if (hw->phy.type == e1000_phy_82577) {
+2414                ret_val = e1000_set_mdio_slow_mode_hv(hw);
+2415                if (ret_val)
+2416                        return ret_val;
+2417        }
+2418
+2419        if (((hw->phy.type == e1000_phy_82577) &&
+2420             ((hw->phy.revision == 1) || (hw->phy.revision == 2))) ||
+2421            ((hw->phy.type == e1000_phy_82578) &&  
+(hw->phy.revision == 1))) {
+2422                /* Disable generation of early preamble */
+2423                ret_val = e1e_wphy(hw, PHY_REG(769, 25), 0x4431);
+2424                if (ret_val)
+2425                        return ret_val;
+2426
+2427                /* Preamble tuning for SSC */
+2428                ret_val = e1e_wphy(hw, HV_KMRN_FIFO_CTRLSTA, 0xA204);
+2429                if (ret_val)
+2430                        return ret_val;
+2431        }
+2432
+2433        if (hw->phy.type == e1000_phy_82578) {
+2434                /* Return registers to default by doing a soft reset then
+2435                 * writing 0x3140 to the control register.
+2436                 */
+2437                if (hw->phy.revision < 2) {
+2438                        e1000e_phy_sw_reset(hw);
+2439                        ret_val = e1e_wphy(hw, MII_BMCR, 0x3140);
+2440                }
+2441        }
+2442
+2443        /* Select page 0 */
+2444        ret_val = hw->phy.ops.acquire(hw);
+2445        if (ret_val)
+2446                return ret_val;
+2447
+2448        hw->phy.addr = 1;
+2449        ret_val = e1000e_write_phy_reg_mdic(hw,  
+IGP01E1000_PHY_PAGE_SELECT, 0);
+2450        hw->phy.ops.release(hw);
+2451        if (ret_val)
+2452                return ret_val;
+2453
+2454        /* Configure the K1 Si workaround during phy reset  
+assuming there is
+2455         * link so that it disables K1 if link is in 1Gbps.
+2456         */
+2457        ret_val = e1000_k1_gig_workaround_hv(hw, true);
+2458        if (ret_val)
+2459                return ret_val;
+2460
+2461        /* Workaround for link disconnects on a busy hub in half duplex */
+2462        ret_val = hw->phy.ops.acquire(hw);
+2463        if (ret_val)
+2464                return ret_val;
+2465        ret_val = e1e_rphy_locked(hw, BM_PORT_GEN_CFG, &phy_data);
+2466        if (ret_val)
+2467                goto release;
+2468        ret_val = e1e_wphy_locked(hw, BM_PORT_GEN_CFG, phy_data & 0x00FF);
+2469        if (ret_val)
+2470                goto release;
+2471
+2472        /* set MSE higher to enable link to stay up when noise is high */
+2473        ret_val = e1000_write_emi_reg_locked(hw,  
+I82577_MSE_THRESHOLD, 0x0034);
+2474release:
+2475        hw->phy.ops.release(hw);
+2476
+2477        return ret_val;
+2478}
 
-Thanks!
+The issue is that the value stored in variable _ret_val_ at line 2439  
+is overwritten by the one stored at line 2444, before it can be used.
+
+My question is if the original intention was to return this value  
+immediately after the assignment at line 2439, something like in the  
+following patch:
+
+index 68ea8b4..d6d4ed7 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -2437,6 +2437,8 @@ static s32  
+e1000_hv_phy_workarounds_ich8lan(struct e1000_hw *hw)
+                 if (hw->phy.revision < 2) {
+                         e1000e_phy_sw_reset(hw);
+                         ret_val = e1e_wphy(hw, MII_BMCR, 0x3140);
++                       if (ret_val)
++                               return ret_val;
+                 }
+         }
+
+What do you think?
+
+I'd really appreciate any comment on this.
+
+Thank you!
 --
 Gustavo A. R. Silva
+
 
 
 
