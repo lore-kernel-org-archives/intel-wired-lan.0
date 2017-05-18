@@ -1,71 +1,136 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 17 May 2017 22:49:11 -0700
-Subject: [Intel-wired-lan] [net-intel-i40e] question about assignment
-	overwrite
-In-Reply-To: <20170517154858.Horde.xMvsIEhHNSGu52mfyp7HA3R@gator4166.hostgator.com>
-References: <20170517154858.Horde.xMvsIEhHNSGu52mfyp7HA3R@gator4166.hostgator.com>
-Message-ID: <1495086551.46489.1.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 18 May 2017 19:35:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 7cc52a4bf18c481e931182884fe8ac9aed983c40
+Message-ID: <591d86f8.A1xldKCO5WL2K0gB%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2017-05-17 at 15:48 -0500, Gustavo A. R. Silva wrote:
-> While looking into Coverity ID 1408956 I ran into the following
-> piece??
-> of code at drivers/net/ethernet/intel/i40e/i40e_main.c:8807:
-> 
-> 8807??????? if (pf->hw.mac.type == I40E_MAC_X722) {
-> 8808??????????????? pf->flags |= I40E_FLAG_RSS_AQ_CAPABLE
-> 8809???????????????????????????? | I40E_FLAG_128_QP_RSS_CAPABLE
-> 8810???????????????????????????? | I40E_FLAG_HW_ATR_EVICT_CAPABLE
-> 8811???????????????????????????? | I40E_FLAG_OUTER_UDP_CSUM_CAPABLE
-> 8812???????????????????????????? | I40E_FLAG_WB_ON_ITR_CAPABLE
-> 8813???????????????????????????? |
-> I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE
-> 8814???????????????????????????? | I40E_FLAG_NO_PCI_LINK_CHECK
-> 8815???????????????????????????? | I40E_FLAG_USE_SET_LLDP_MIB
-> 8816???????????????????????????? | I40E_FLAG_GENEVE_OFFLOAD_CAPABLE
-> 8817???????????????????????????? | I40E_FLAG_PTP_L4_CAPABLE
-> 8818???????????????????????????? | I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE;
-> 8819??????? } else if ((pf->hw.aq.api_maj_ver > 1) ||
-> 8820?????????????????? ((pf->hw.aq.api_maj_ver == 1) &&
-> 8821??????????????????? (pf->hw.aq.api_min_ver > 4))) {
-> 8822??????????????? /* Supported in FW API version higher than 1.4 */
-> 8823??????????????? pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
-> 8824??????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-> 8825??????? } else {
-> 8826??????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-> 8827??????? }
-> 
-> The issue here is that the assignment at line 8823 is overwritten
-> by??
-> the code at line 8824.
-> 
-> I'm suspicious that line 8824 should be remove and a patch like the??
-> following can be applied:
-> 
-> index d5c9c9e..48ffa73 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -8821,7 +8821,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
-> ???????????????????? (pf->hw.aq.api_min_ver > 4))) {
-> ???????????????? /* Supported in FW API version higher than 1.4 */
-> ???????????????? pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
-> -?????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-> ???????? } else {
-> ???????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-> ???????? }
-> 
-> What do you think?
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+7cc52a4bf18c481e931182884fe8ac9aed983c40  ixgbe: fix incorrect status check
 
-This issue is already fixed in my dev-queue branch on my next-queue
-tree.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170517/9e80a5f1/attachment.asc>
+elapsed time: 379m
+
+configs tested: 112
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+i386                   randconfig-a0-05181312
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x019-201720
+x86_64                 randconfig-x010-201720
+x86_64                 randconfig-x015-201720
+x86_64                 randconfig-x014-201720
+x86_64                 randconfig-x012-201720
+x86_64                 randconfig-x018-201720
+x86_64                 randconfig-x017-201720
+x86_64                 randconfig-x016-201720
+x86_64                 randconfig-x013-201720
+x86_64                 randconfig-x011-201720
+i386                               tinyconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x016-201720
+i386                   randconfig-x017-201720
+i386                   randconfig-x012-201720
+i386                   randconfig-x018-201720
+i386                   randconfig-x010-201720
+i386                   randconfig-x019-201720
+i386                   randconfig-x013-201720
+i386                   randconfig-x014-201720
+i386                   randconfig-x015-201720
+i386                   randconfig-x011-201720
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+x86_64                             acpi-redef
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                 randconfig-x074-05150639
+i386                 randconfig-x076-05150639
+i386                 randconfig-x070-05150639
+i386                 randconfig-x077-05150639
+i386                 randconfig-x078-05150639
+i386                 randconfig-x075-05150639
+i386                 randconfig-x072-05150639
+i386                 randconfig-x071-05150639
+i386                 randconfig-x079-05150639
+i386                 randconfig-x073-05150639
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                 randconfig-x006-201720
+x86_64                 randconfig-x007-201720
+x86_64                 randconfig-x001-201720
+x86_64                 randconfig-x004-201720
+x86_64                 randconfig-x005-201720
+x86_64                 randconfig-x000-201720
+x86_64                 randconfig-x008-201720
+x86_64                 randconfig-x002-201720
+x86_64                 randconfig-x003-201720
+x86_64                 randconfig-x009-201720
+x86_64                                  kexec
+x86_64                                   rhel
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
