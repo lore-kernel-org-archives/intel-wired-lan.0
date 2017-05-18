@@ -1,34 +1,52 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 17 May 2017 15:18:01 -0700
-Subject: [Intel-wired-lan] [PATCH 5/5] ixgbe: fix incorrect status check
-In-Reply-To: <20170517221424.15538.5968.stgit@localhost6.localdomain6>
-References: <20170517221424.15538.5968.stgit@localhost6.localdomain6>
-Message-ID: <20170517221801.15538.81934.stgit@localhost6.localdomain6>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 18 May 2017 02:33:55 +0000
+Subject: [Intel-wired-lan] [next-queue v2] igb: Remove useless argument
+In-Reply-To: <20170516225516.65557-1-jeffrey.t.kirsher@intel.com>
+References: <20170516225516.65557-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C5F8E7D@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Check for ret_val instead of !ret_val to allow the rest of
-the code to execute and configure the speed properly.
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
+> Of Jeff Kirsher
+> Sent: Tuesday, May 16, 2017 3:55 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Benjamin Poirier <bpoirier@suse.com>
+> Subject: [Intel-wired-lan] [next-queue v2] igb: Remove useless argument
+> 
+> From: Benjamin Poirier <bpoirier@suse.com>
+> 
+> Given that all callers of igb_update_stats() pass the same two arguments:
+> (adapter, &adapter->stats64), the second argument can be removed.
+> 
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb.h         |    2 +-
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c |    2 +-
+>  drivers/net/ethernet/intel/igb/igb_main.c    |   10 +++++-----
+>  3 files changed, 7 insertions(+), 7 deletions(-)
+> 
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I'm getting a warning from checkpatch with this:
+------------------------------------------------------------
+WARNING: function definition argument 'struct igb_adapter *' should also have an identifier name
+#25: FILE: drivers/net/ethernet/intel/igb/igb.h:670:
++void igb_update_stats(struct igb_adapter *);
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index cb5d363..47c8f24 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1798,7 +1798,7 @@ static s32 ixgbe_setup_sfi_x550a(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
- 	if (ret_val == IXGBE_ERR_SFP_NOT_PRESENT)
- 		return 0;
- 
--	if (!ret_val)
-+	if (ret_val)
- 		return ret_val;
- 
- 	/* Configure internal PHY for KR/KX. */
+total: 0 errors, 1 warnings, 0 checks, 51 lines checked
 
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+u1515:[2]/usr/src/kernels/next-queue>
+------------------------------------------------------------
+But it otherwise seems fine so I'm not inclined to hold it up for that.
+
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
