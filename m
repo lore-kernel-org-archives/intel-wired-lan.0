@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 18 May 2017 22:39:36 +0000
-Subject: [Intel-wired-lan] [PATCH 4/5] ixgbe: add missing configuration
- for	rate select 1
-In-Reply-To: <20170517221756.15538.27845.stgit@localhost6.localdomain6>
+Date: Thu, 18 May 2017 22:40:13 +0000
+Subject: [Intel-wired-lan] [PATCH 5/5] ixgbe: fix incorrect status check
+In-Reply-To: <20170517221801.15538.81934.stgit@localhost6.localdomain6>
 References: <20170517221424.15538.5968.stgit@localhost6.localdomain6>
- <20170517221756.15538.27845.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA3B21@ORSMSX104.amr.corp.intel.com>
+ <20170517221801.15538.81934.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA3B32@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,16 +16,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Emil Tantilov
 > Sent: Wednesday, May 17, 2017 3:18 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 4/5] ixgbe: add missing configuration for
-> rate select 1
+> Subject: [Intel-wired-lan] [PATCH 5/5] ixgbe: fix incorrect status check
 > 
-> Add RS1 configuration to ixgbe_set_soft_rate_select_speed()
+> Check for ret_val instead of !ret_val to allow the rest of the code to execute
+> and configure the speed properly.
 > 
 > Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   19
-> +++++++++++++++++++
->  1 file changed, 19 insertions(+)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
