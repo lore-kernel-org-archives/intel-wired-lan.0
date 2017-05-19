@@ -1,39 +1,54 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Fri, 19 May 2017 22:16:44 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: prevent driver configuration
- changes while XDP is loaded
-In-Reply-To: <20170502050634.7459.50968.stgit@john-Precision-Tower-5810>
-References: <20170502050634.7459.50968.stgit@john-Precision-Tower-5810>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E5966BBD6@ORSMSX103.amr.corp.intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Fri, 19 May 2017 15:30:57 -0700
+Subject: [Intel-wired-lan] [PATCH 0/4] Configuring traffic classes via
+ new hardware offload mechanism in tc/mqprio
+In-Reply-To: <149524122523.11022.4541073724650541658.stgit@anamdev.jf.intel.com>
+References: <149524122523.11022.4541073724650541658.stgit@anamdev.jf.intel.com>
+Message-ID: <591F7221.3050303@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On 05/19/2017 05:58 PM, Amritha Nambiar wrote:
+> The following series introduces a new harware offload mode in
+> tc/mqprio where the TCs, the queue configurations and bandwidth rate
+> limits are offloaded to the hardware. The i40e driver enables the new
+> mqprio hardware offload mechanism factoring the TCs, queue
+> configuration and bandwidth rates by creating HW channel VSIs.
+> 
+
+nice work, fix your time stamp and line wrapping though.
 
 
+> In this mode, the priority to traffic class mapping and the user
+> specified queue ranges are used to configure the traffic class when
+> the 'hw' option is set to 2. This is achieved by creating HW
+> channels(VSI). A new channel is created for each of the traffic class
+> configuration offloaded via mqprio framework except for the first TC
+> (TC0) which is for the main VSI. TC0 for the main VSI is also
+> reconfigured as per user provided queue parameters. Finally,
+> bandwidth rate limits are set on these traffic classes through the
+> mqprio offload framework by sending these rates in addition to the
+> number of TCs and the queue configurations.
+> Example:
+> # tc qdisc add dev eth0 root mqprio num_tc 2  map 0 0 0 0 1 1 1 1\
+>   queues 4 at 0 4 at 4 min_rate 0Mbit 0Mbit max_rate 55Mbit 60Mbit hw 2
+> 
+> To dump the bandwidth rates:
+> 
+> # tc qdisc show dev eth0
+>   qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
+>                queues:(0:3) (4:7)
+>                min rates:0bit 0bit
+>                max rates:55Mbit 60Mbit
+> 
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of John Fastabend
-Sent: Monday, May 1, 2017 10:07 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH] ixgbe: prevent driver configuration changes while XDP is loaded
+Looks reasonable to me thanks. Previously, rate limits were being set
+via dcbnl but I guess this interface is slightly nicer in that it puts
+all configuration in one spot. IMO it would be nice to push dcbnl users
+over to this.
 
-XDP checks to ensure the MTU is valid and LRO is disabled when it is loaded. But user configuration after XDP is loaded could change these and cause a misconfiguration.
-
-This patch adds checks to ensure config changes are valid.
-
-Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
----
-
-With this patch applied, we are seeing issue where setting initial MTU >= 1515 fails with Error: Setting MTU > 1536 with XDP is not supported, but setting MTU to 1514  , we can now set MTU till 3050. If we set anything greater than 3050 it errors out with the following message: Setting MTU > 3072 with XDP is not supported.
-
-Is there a way to see if XDP is enabled and is XDP is supposed to be enabled by default on ixgbe ? only info about XDP seen on platform is in dmesg as follows. 
-
-[    3.267909] ixgbe 0000:04:00.0: Multiqueue Enabled: Rx Queue count = 12, Tx Queue count = 12 XDP Queue count = 0
-[    3.724686] ixgbe 0000:04:00.1: Multiqueue Enabled: Rx Queue count = 12, Tx Queue count = 12 XDP Queue count = 0
-[    4.186271] ixgbe 0000:06:00.0: Multiqueue Enabled: Rx Queue count = 12, Tx Queue count = 12 XDP Queue count = 0
-[    4.644388] ixgbe 0000:06:00.1: Multiqueue Enabled: Rx Queue count = 12, Tx Queue count = 12 XDP Queue count = 0
-
-When using latest iproute2 tool to disable xdp ( ip link set ethX xdp off) , there is no error reported by iproute2 and nothing is reported in dmesg but we were still unable to set MTU > = 3051.
+Thanks,
+.John
