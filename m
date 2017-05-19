@@ -1,43 +1,39 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 19 May 2017 21:12:58 +0000
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: Don't return uninitialized
-	stats
-In-Reply-To: <1495181811.2376.0.camel@intel.com>
-References: <20170425175433.ykc6ilm6uo7e6my2@f1.synalogic.ca>
- <20170517202413.18321-1-bpoirier@suse.com>
- <20170518.104614.1739169308591707817.davem@davemloft.net>
- <1495181811.2376.0.camel@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C5F9877@ORSMSX101.amr.corp.intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Fri, 19 May 2017 22:16:44 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: prevent driver configuration
+ changes while XDP is loaded
+In-Reply-To: <20170502050634.7459.50968.stgit@john-Precision-Tower-5810>
+References: <20170502050634.7459.50968.stgit@john-Precision-Tower-5810>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E5966BBD6@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Kirsher, Jeffrey T
-> Sent: Friday, May 19, 2017 1:17 AM
-> To: David Miller <davem@davemloft.net>; bpoirier at suse.com
-> Cc: s.priebe at profihost.ag; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; pmenzel at molgen.mpg.de; Neftin, Sasha
-> <sasha.neftin@intel.com>; Brown, Aaron F <aaron.f.brown@intel.com>;
-> stephen at networkplumber.org
-> Subject: Re: [PATCH v2] e1000e: Don't return uninitialized stats
-> 
-> On Thu, 2017-05-18 at 10:46 -0400, David Miller wrote:
-> > From: Benjamin Poirier <bpoirier@suse.com>
-> > Date: Wed, 17 May 2017 16:24:13 -0400
-> >
-> > > Some statistics passed to ethtool are garbage because
-> > > e1000e_get_stats64()
-> > > doesn't write them, for example: tx_heartbeat_errors. This leaks kernel
-> > > memory to userspace and confuses users.
-> > >
-> > > Do like ixgbe and use dev_get_stats() which first zeroes out
-> > > rtnl_link_stats64.
-> > >
-> > > Fixes: 5944701df90d ("net: remove useless memset's in drivers
-> > > get_stats64")
-> > > Reported-by: Stefan Priebe <s.priebe@profihost.ag>
-> > > Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of John Fastabend
+Sent: Monday, May 1, 2017 10:07 PM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [PATCH] ixgbe: prevent driver configuration changes while XDP is loaded
+
+XDP checks to ensure the MTU is valid and LRO is disabled when it is loaded. But user configuration after XDP is loaded could change these and cause a misconfiguration.
+
+This patch adds checks to ensure config changes are valid.
+
+Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+---
+
+With this patch applied, we are seeing issue where setting initial MTU >= 1515 fails with Error: Setting MTU > 1536 with XDP is not supported, but setting MTU to 1514  , we can now set MTU till 3050. If we set anything greater than 3050 it errors out with the following message: Setting MTU > 3072 with XDP is not supported.
+
+Is there a way to see if XDP is enabled and is XDP is supposed to be enabled by default on ixgbe ? only info about XDP seen on platform is in dmesg as follows. 
+
+[    3.267909] ixgbe 0000:04:00.0: Multiqueue Enabled: Rx Queue count = 12, Tx Queue count = 12 XDP Queue count = 0
+[    3.724686] ixgbe 0000:04:00.1: Multiqueue Enabled: Rx Queue count = 12, Tx Queue count = 12 XDP Queue count = 0
+[    4.186271] ixgbe 0000:06:00.0: Multiqueue Enabled: Rx Queue count = 12, Tx Queue count = 12 XDP Queue count = 0
+[    4.644388] ixgbe 0000:06:00.1: Multiqueue Enabled: Rx Queue count = 12, Tx Queue count = 12 XDP Queue count = 0
+
+When using latest iproute2 tool to disable xdp ( ip link set ethX xdp off) , there is no error reported by iproute2 and nothing is reported in dmesg but we were still unable to set MTU > = 3051.
