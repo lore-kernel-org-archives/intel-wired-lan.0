@@ -1,56 +1,79 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Sun, 21 May 2017 15:35:13 -0700
-Subject: [Intel-wired-lan] [PATCH 0/4] Configuring traffic classes via
- new hardware offload mechanism in tc/mqprio
-In-Reply-To: <CAJ3xEMjTDW7sQ5CFmTyR5xMpin_WFFQg-S8imWMBpXWuS1zvVw@mail.gmail.com>
-References: <149524122523.11022.4541073724650541658.stgit@anamdev.jf.intel.com>
- <CAJ3xEMjTDW7sQ5CFmTyR5xMpin_WFFQg-S8imWMBpXWuS1zvVw@mail.gmail.com>
-Message-ID: <CAKgT0Ue6tDOE8L4thktyje-erGkVMmtO7zyp0FRgmRPYOppjQA@mail.gmail.com>
+Date: Sun, 21 May 2017 16:02:34 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: prevent driver configuration
+ changes while XDP is loaded
+In-Reply-To: <20170502050634.7459.50968.stgit@john-Precision-Tower-5810>
+References: <20170502050634.7459.50968.stgit@john-Precision-Tower-5810>
+Message-ID: <CAKgT0UdXLpTb6LchTDs3th=6ka4x_6QPcf4PY_-u+ZeMTiGM=g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, May 20, 2017 at 2:15 PM, Or Gerlitz <gerlitz.or@gmail.com> wrote:
-> On Sat, May 20, 2017 at 3:58 AM, Amritha Nambiar
-> <amritha.nambiar@intel.com> wrote:
->> The following series introduces a new harware offload mode in tc/mqprio
+On Mon, May 1, 2017 at 10:06 PM, John Fastabend
+<john.fastabend@gmail.com> wrote:
+> XDP checks to ensure the MTU is valid and LRO is disabled when it is
+> loaded. But user configuration after XDP is loaded could change these
+> and cause a misconfiguration.
 >
-> Wait, we have already a HW QoS model introduced by John F and Co
-> couple of years ago,  right?
+> This patch adds checks to ensure config changes are valid.
+>
+> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index ee20a2b..156357e 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -6437,6 +6437,19 @@ static void ixgbe_free_all_rx_resources(struct ixgbe_adapter *adapter)
+>  static int ixgbe_change_mtu(struct net_device *netdev, int new_mtu)
+>  {
+>         struct ixgbe_adapter *adapter = netdev_priv(netdev);
+> +       int i, frame_size = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
+> +
+> +       /* If XDP is running enforce MTU limitations */
+> +       for (i = 0; i < adapter->num_rx_queues; i++) {
+> +               struct ixgbe_ring *ring = adapter->rx_ring[i];
+> +
+> +               if (frame_size > ixgbe_rx_bufsz(ring)) {
+> +                       e_warn(probe,
+> +                              "Setting MTU > %i with XDP is not supported\n",
+> +                              ixgbe_rx_bufsz(ring));
+> +                       return -EINVAL;
+> +               }
+> +       }
+>
 
-I assume you are referring to the ETS portion of DCBX? If so then yes
-we have something there, but there is a fairly high level of
-complexity and dependencies in order to enable that. What we have in
-mind doesn't really fit with DCBX and the problem is the spec calls
-out that you really have to have support for DCBX in order to make use
-of ETS. What we are trying to do here is provide a lightweight way of
-doing this configuration similar to how mqprio was already providing a
-lightweight way of enabling multiple traffic classes.
+There are a few issues with this piece.
 
-> Please elaborate in few sentence if you are extending it/replacing it,
-> why we want to do that and what are the implications on existing
-> applications UAPI wise.
+First the Rx buffer size gets updated depending on if we are using
+jumbo frames or not. We either use 1.5K or 3K to hold the contents of
+the frame. Instead of using ixgbe_rx_bufsz you might just make it so
+that you use IXGBE_MAX_FRAME_BUILD_SKB if the adapter flag for
+LEGACY_RX is not set, otherwise you can probably just use
+IXGBE_RXBUFFER_2K.
 
-This is meant to be an extension of the existing structure. It can be
-ignored by the driver and instead only have the basic hw offload
-supported. In such a case the command will still return success but
-any rate limits and queue configuration can be ignored. In the case of
-the current implementation the queue configuration was already being
-ignored so we opted to re-purpose the "hw" flag so that if you pass a
-value greater than 1 and the driver doesn't recognize the value it has
-the option to just ignore the extra bits it doesn't recognize and
-return 1 as it did before for the hw flag in mqprio.
+Also you should only be performing this check if xdp_prog is set and
+it doesn't look like you are checking for that.
 
-> Below you just say in the new mode Qos is configured with knobs XYZ --
-> this is way not enough
-
-Can you clarify what you are asking for here? Amritha included an
-example in patch 1 of a command line that enabled 2 traffic classes
-with rate limits. Is there something more specific you are looking
-for?
-
-Thanks.
-
-- Alex
+>         /*
+>          * For 82599EB we cannot allow legacy VFs to enable their receive
+> @@ -9291,6 +9304,10 @@ static netdev_features_t ixgbe_fix_features(struct net_device *netdev,
+>         if (!(adapter->flags2 & IXGBE_FLAG2_RSC_CAPABLE))
+>                 features &= ~NETIF_F_LRO;
+>
+> +       /* If XDP is enabled we can not enable LRO */
+> +       if (adapter->xdp_prog)
+> +               features &= ~NETIF_F_LRO;
+> +
+>         return features;
+>  }
+>
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
