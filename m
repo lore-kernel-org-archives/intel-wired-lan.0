@@ -1,54 +1,60 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 22 May 2017 12:31:12 -0700
-Subject: [Intel-wired-lan] [PATCH 0/4] Configuring traffic classes via
- new hardware offload mechanism in tc/mqprio
-In-Reply-To: <149524122523.11022.4541073724650541658.stgit@anamdev.jf.intel.com>
-References: <149524122523.11022.4541073724650541658.stgit@anamdev.jf.intel.com>
-Message-ID: <1495481472.4878.4.camel@intel.com>
+Date: Mon, 22 May 2017 12:36:19 -0700
+Subject: [Intel-wired-lan] [PATCH] i40evf: Use le32_to_cpu before
+ evaluating HW desc fields.
+In-Reply-To: <8607da8f-51fa-b3e5-2b71-a28863f1fe84@oracle.com>
+References: <1493680559-6728-1-git-send-email-tushar.n.dave@oracle.com>
+ <1494976037.40313.1.camel@intel.com>
+ <8607da8f-51fa-b3e5-2b71-a28863f1fe84@oracle.com>
+Message-ID: <1495481779.4878.6.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2017-05-19 at 17:58 -0700, Amritha Nambiar wrote:
-> The following series introduces a new harware offload mode in tc/mqprio
-> where the TCs, the queue configurations and bandwidth rate limits are
-> offloaded to the hardware.
-> The i40e driver enables the new mqprio hardware offload mechanism
-> factoring the TCs, queue configuration and bandwidth rates by creating HW
-> channel VSIs.?
+On Fri, 2017-05-19 at 18:12 -0700, tndave wrote:
+> On 05/16/2017 04:07 PM, Jeff Kirsher wrote:
+> > On Mon, 2017-05-01 at 16:15 -0700, Tushar Dave wrote:
+> > > i40e hardware descriptor fields are in little-endian format. Driver
+> > > must use le32_to_cpu while evaluating these fields otherwise on
+> > > big-endian arch we end up evaluating incorrect values, cause errors
+> > > like:
+> > > 
+> > > i40evf 0001:04:02.0: Expected response 0 from PF, received 285212672
+> > > i40evf 0001:04:02.1: Expected response 0 from PF, received 285212672
+> > > 
+> > > Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
+> > > ---
+> > > ? drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 ++++--
+> > > ? 1 file changed, 4 insertions(+), 2 deletions(-)
+> > 
+> > Due to recent patches already applied to my tree, this patch does not
+> > apply cleanly.? Feel free to send an updated patch, if the change is
+> > still needed.
 > 
-> In this mode, the priority to traffic class mapping and the user
-> specified queue ranges are used to configure the traffic class when the
-> 'hw' option is set to 2. This is achieved by creating HW channels(VSI). A
-> new channel is created for each of the traffic class configuration
-> offloaded via mqprio framework except for the first TC (TC0) which is for
-> the main VSI. TC0 for the main VSI is also reconfigured as per user
-> provided queue parameters. Finally, bandwidth rate limits are set on
-> these traffic classes through the mqprio offload framework by sending
-> these rates in addition to the number of TCs and the queue
-> configurations.
+> Hi Jeff,
 > 
-> Example:
-> # tc qdisc add dev eth0 root mqprio num_tc 2??map 0 0 0 0 1 1 1 1\
-> ? queues 4 at 0 4 at 4 min_rate 0Mbit 0Mbit max_rate 55Mbit 60Mbit hw 2
+> I just tried the same patch on Dave's latest linux-net and it applies
+> cleanly. Wondering if I should clone your tree and make sure it applies?
+> If so, I may need to do same for all my future patches as well, thats a
+> extra bit of work!
 > 
-> To dump the bandwidth rates:
-> 
-> # tc qdisc show dev eth0
-> ? qdisc mqprio 804a: root??tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
-> ???????????????queues:(0:3) (4:7)
-> ???????????????min rates:0bit 0bit
-> ???????????????max rates:55Mbit 60Mbit
-> 
+> Most of the time, mine are bug fixes and I always use linux-net when
+> upstreaming my patches for Intel Ethernet drivers.
 
-This was meant to be sent out as an RFC, but apparently that did not get
-conveyed when these were sent out Friday.
+As Alex has already pointed out, yes, you should be using my dev-queue
+branch on either next-queue or net-queue trees.  As you know, I have a
+number of patches currently in the queue which won't show up on linux-net
+until they get pushed to David Miller.
+
+If you use my tree for the Intel drivers, you may find we already fix the
+issue or your fix may need to be re-worked due to changes in the code which
+are currently in the "queue".
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 819 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170522/d42362ce/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170522/1ec1b4a3/attachment.asc>
