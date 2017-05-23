@@ -1,10 +1,9 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue, 23 May 2017 09:33:16 +0200
-Subject: [Intel-wired-lan] [PATCH v6 1/2] i40e: add XDP support for pass and
-	drop actions
+Date: Tue, 23 May 2017 09:33:17 +0200
+Subject: [Intel-wired-lan] [PATCH v6 2/2] i40e: add support for XDP_TX action
 In-Reply-To: <20170523073317.11900-1-bjorn.topel@gmail.com>
 References: <20170523073317.11900-1-bjorn.topel@gmail.com>
-Message-ID: <20170523073317.11900-2-bjorn.topel@gmail.com>
+Message-ID: <20170523073317.11900-3-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,414 +12,857 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-This commit adds basic XDP support for i40e derived NICs. All XDP
-actions will end up in XDP_DROP.
+This patch adds proper XDP_TX action support. For each Tx ring, an
+additional XDP Tx ring is allocated and setup. This version does the
+DMA mapping in the fast-path, which will penalize performance for
+IOMMU enabled systems. Further, debugfs support is not wired up for
+the XDP Tx rings.
 
 Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |   7 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c |  75 ++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 130 +++++++++++++++++++++-------
- drivers/net/ethernet/intel/i40e/i40e_txrx.h |   1 +
- 4 files changed, 182 insertions(+), 31 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h         |   1 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  42 +++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 277 +++++++++++++++++++------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 118 ++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h    |  11 +
+ 5 files changed, 373 insertions(+), 76 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 395ca94faf80..d3195b29d53c 100644
+index d3195b29d53c..4250ab55a9f1 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -645,6 +645,8 @@ struct i40e_vsi {
- 	u16 max_frame;
- 	u16 rx_buf_len;
+@@ -629,6 +629,7 @@ struct i40e_vsi {
+ 	/* These are containers of ring pointers, allocated at run-time */
+ 	struct i40e_ring **rx_rings;
+ 	struct i40e_ring **tx_rings;
++	struct i40e_ring **xdp_rings; /* XDP Tx rings */
  
-+	struct bpf_prog *xdp_prog;
-+
- 	/* List of q_vectors allocated to this VSI */
- 	struct i40e_q_vector **q_vectors;
- 	int num_q_vectors;
-@@ -972,4 +974,9 @@ i40e_status i40e_get_npar_bw_setting(struct i40e_pf *pf);
- i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf);
- i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf);
- void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
-+
-+static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
+ 	u32  active_filters;
+ 	u32  promisc_threshold;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 3d58762efbc0..9d3233c2c9cd 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1299,6 +1299,17 @@ static void i40e_get_ringparam(struct net_device *netdev,
+ 	ring->rx_jumbo_pending = 0;
+ }
+ 
++static bool i40e_active_tx_ring_index(struct i40e_vsi *vsi, u16 index)
 +{
-+	return !!vsi->xdp_prog;
++	if (i40e_enabled_xdp_vsi(vsi)) {
++		return index < vsi->num_queue_pairs ||
++			(index >= vsi->alloc_queue_pairs &&
++			 index < vsi->alloc_queue_pairs + vsi->num_queue_pairs);
++	}
++
++	return index < vsi->num_queue_pairs;
 +}
- #endif /* _I40E_H_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 8d1d3b859af7..c8b1db0ebb9e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -27,6 +27,7 @@
- #include <linux/etherdevice.h>
- #include <linux/of_net.h>
- #include <linux/pci.h>
-+#include <linux/bpf.h>
- 
- /* Local includes */
- #include "i40e.h"
-@@ -2408,6 +2409,13 @@ static int i40e_change_mtu(struct net_device *netdev, int new_mtu)
++
+ static int i40e_set_ringparam(struct net_device *netdev,
+ 			      struct ethtool_ringparam *ring)
+ {
+@@ -1308,6 +1319,7 @@ static int i40e_set_ringparam(struct net_device *netdev,
  	struct i40e_vsi *vsi = np->vsi;
  	struct i40e_pf *pf = vsi->back;
+ 	u32 new_rx_count, new_tx_count;
++	u16 tx_alloc_queue_pairs;
+ 	int timeout = 50;
+ 	int i, err = 0;
+ 
+@@ -1345,6 +1357,8 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 		for (i = 0; i < vsi->num_queue_pairs; i++) {
+ 			vsi->tx_rings[i]->count = new_tx_count;
+ 			vsi->rx_rings[i]->count = new_rx_count;
++			if (i40e_enabled_xdp_vsi(vsi))
++				vsi->xdp_rings[i]->count = new_tx_count;
+ 		}
+ 		goto done;
+ 	}
+@@ -1354,20 +1368,24 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 	 * to the Tx and Rx ring structs.
+ 	 */
+ 
+-	/* alloc updated Tx resources */
++	/* alloc updated Tx and XDP Tx resources */
++	tx_alloc_queue_pairs = vsi->alloc_queue_pairs *
++			       (i40e_enabled_xdp_vsi(vsi) ? 2 : 1);
+ 	if (new_tx_count != vsi->tx_rings[0]->count) {
+ 		netdev_info(netdev,
+ 			    "Changing Tx descriptor count from %d to %d.\n",
+ 			    vsi->tx_rings[0]->count, new_tx_count);
+-		tx_rings = kcalloc(vsi->alloc_queue_pairs,
++		tx_rings = kcalloc(tx_alloc_queue_pairs,
+ 				   sizeof(struct i40e_ring), GFP_KERNEL);
+ 		if (!tx_rings) {
+ 			err = -ENOMEM;
+ 			goto done;
+ 		}
+ 
+-		for (i = 0; i < vsi->num_queue_pairs; i++) {
+-			/* clone ring and setup updated count */
++		for (i = 0; i < tx_alloc_queue_pairs; i++) {
++			if (!i40e_active_tx_ring_index(vsi, i))
++				continue;
++
+ 			tx_rings[i] = *vsi->tx_rings[i];
+ 			tx_rings[i].count = new_tx_count;
+ 			/* the desc and bi pointers will be reallocated in the
+@@ -1379,6 +1397,8 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 			if (err) {
+ 				while (i) {
+ 					i--;
++					if (!i40e_active_tx_ring_index(vsi, i))
++						continue;
+ 					i40e_free_tx_resources(&tx_rings[i]);
+ 				}
+ 				kfree(tx_rings);
+@@ -1446,9 +1466,11 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 	i40e_down(vsi);
+ 
+ 	if (tx_rings) {
+-		for (i = 0; i < vsi->num_queue_pairs; i++) {
+-			i40e_free_tx_resources(vsi->tx_rings[i]);
+-			*vsi->tx_rings[i] = tx_rings[i];
++		for (i = 0; i < tx_alloc_queue_pairs; i++) {
++			if (i40e_active_tx_ring_index(vsi, i)) {
++				i40e_free_tx_resources(vsi->tx_rings[i]);
++				*vsi->tx_rings[i] = tx_rings[i];
++			}
+ 		}
+ 		kfree(tx_rings);
+ 		tx_rings = NULL;
+@@ -1479,8 +1501,10 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ free_tx:
+ 	/* error cleanup if the Rx allocations failed after getting Tx */
+ 	if (tx_rings) {
+-		for (i = 0; i < vsi->num_queue_pairs; i++)
+-			i40e_free_tx_resources(&tx_rings[i]);
++		for (i = 0; i < tx_alloc_queue_pairs; i++) {
++			if (i40e_active_tx_ring_index(vsi, i))
++				i40e_free_tx_resources(vsi->tx_rings[i]);
++		}
+ 		kfree(tx_rings);
+ 		tx_rings = NULL;
+ 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index c8b1db0ebb9e..4b86f460fdb1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -408,6 +408,27 @@ struct rtnl_link_stats64 *i40e_get_vsi_stats_struct(struct i40e_vsi *vsi)
+ }
+ 
+ /**
++ * i40e_get_netdev_stats_struct_tx - populate stats from a Tx ring
++ * @ring: Tx ring to get statistics from
++ * @stats: statistics entry to be updated
++ **/
++static void i40e_get_netdev_stats_struct_tx(struct i40e_ring *ring,
++					    struct rtnl_link_stats64 *stats)
++{
++	u64 bytes, packets;
++	unsigned int start;
++
++	do {
++		start = u64_stats_fetch_begin_irq(&ring->syncp);
++		packets = ring->stats.packets;
++		bytes   = ring->stats.bytes;
++	} while (u64_stats_fetch_retry_irq(&ring->syncp, start));
++
++	stats->tx_packets += packets;
++	stats->tx_bytes   += bytes;
++}
++
++/**
+  * i40e_get_netdev_stats_struct - Get statistics for netdev interface
+  * @netdev: network interface device structure
+  *
+@@ -437,15 +458,8 @@ static void i40e_get_netdev_stats_struct(struct net_device *netdev,
+ 		tx_ring = ACCESS_ONCE(vsi->tx_rings[i]);
+ 		if (!tx_ring)
+ 			continue;
++		i40e_get_netdev_stats_struct_tx(tx_ring, stats);
+ 
+-		do {
+-			start = u64_stats_fetch_begin_irq(&tx_ring->syncp);
+-			packets = tx_ring->stats.packets;
+-			bytes   = tx_ring->stats.bytes;
+-		} while (u64_stats_fetch_retry_irq(&tx_ring->syncp, start));
+-
+-		stats->tx_packets += packets;
+-		stats->tx_bytes   += bytes;
+ 		rx_ring = &tx_ring[1];
+ 
+ 		do {
+@@ -456,6 +470,9 @@ static void i40e_get_netdev_stats_struct(struct net_device *netdev,
+ 
+ 		stats->rx_packets += packets;
+ 		stats->rx_bytes   += bytes;
++
++		if (i40e_enabled_xdp_vsi(vsi))
++			i40e_get_netdev_stats_struct_tx(&rx_ring[1], stats);
+ 	}
+ 	rcu_read_unlock();
+ 
+@@ -2802,6 +2819,12 @@ static int i40e_vsi_setup_tx_resources(struct i40e_vsi *vsi)
+ 	for (i = 0; i < vsi->num_queue_pairs && !err; i++)
+ 		err = i40e_setup_tx_descriptors(vsi->tx_rings[i]);
+ 
++	if (!i40e_enabled_xdp_vsi(vsi))
++		return err;
++
++	for (i = 0; i < vsi->num_queue_pairs && !err; i++)
++		err = i40e_setup_tx_descriptors(vsi->xdp_rings[i]);
++
+ 	return err;
+ }
+ 
+@@ -2815,12 +2838,17 @@ static void i40e_vsi_free_tx_resources(struct i40e_vsi *vsi)
+ {
+ 	int i;
+ 
+-	if (!vsi->tx_rings)
+-		return;
++	if (vsi->tx_rings) {
++		for (i = 0; i < vsi->num_queue_pairs; i++)
++			if (vsi->tx_rings[i] && vsi->tx_rings[i]->desc)
++				i40e_free_tx_resources(vsi->tx_rings[i]);
++	}
+ 
+-	for (i = 0; i < vsi->num_queue_pairs; i++)
+-		if (vsi->tx_rings[i] && vsi->tx_rings[i]->desc)
+-			i40e_free_tx_resources(vsi->tx_rings[i]);
++	if (vsi->xdp_rings) {
++		for (i = 0; i < vsi->num_queue_pairs; i++)
++			if (vsi->xdp_rings[i] && vsi->xdp_rings[i]->desc)
++				i40e_free_tx_resources(vsi->xdp_rings[i]);
++	}
+ }
+ 
+ /**
+@@ -3081,6 +3109,12 @@ static int i40e_vsi_configure_tx(struct i40e_vsi *vsi)
+ 	for (i = 0; (i < vsi->num_queue_pairs) && !err; i++)
+ 		err = i40e_configure_tx_ring(vsi->tx_rings[i]);
+ 
++	if (!i40e_enabled_xdp_vsi(vsi))
++		return err;
++
++	for (i = 0; (i < vsi->num_queue_pairs) && !err; i++)
++		err = i40e_configure_tx_ring(vsi->xdp_rings[i]);
++
+ 	return err;
+ }
+ 
+@@ -3225,6 +3259,7 @@ static int i40e_vsi_configure(struct i40e_vsi *vsi)
+  **/
+ static void i40e_vsi_configure_msix(struct i40e_vsi *vsi)
+ {
++	bool has_xdp = i40e_enabled_xdp_vsi(vsi);
+ 	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	u16 vector;
+@@ -3255,17 +3290,29 @@ static void i40e_vsi_configure_msix(struct i40e_vsi *vsi)
+ 		/* Linked list for the queuepairs assigned to this vector */
+ 		wr32(hw, I40E_PFINT_LNKLSTN(vector - 1), qp);
+ 		for (q = 0; q < q_vector->num_ringpairs; q++) {
++			u32 nextqp = has_xdp ? qp + vsi->alloc_queue_pairs : qp;
+ 			u32 val;
+ 
+ 			val = I40E_QINT_RQCTL_CAUSE_ENA_MASK |
+ 			      (I40E_RX_ITR << I40E_QINT_RQCTL_ITR_INDX_SHIFT)  |
+ 			      (vector      << I40E_QINT_RQCTL_MSIX_INDX_SHIFT) |
+-			      (qp          << I40E_QINT_RQCTL_NEXTQ_INDX_SHIFT)|
++			      (nextqp      << I40E_QINT_RQCTL_NEXTQ_INDX_SHIFT)|
+ 			      (I40E_QUEUE_TYPE_TX
+ 				      << I40E_QINT_RQCTL_NEXTQ_TYPE_SHIFT);
+ 
+ 			wr32(hw, I40E_QINT_RQCTL(qp), val);
+ 
++			if (has_xdp) {
++				val = I40E_QINT_TQCTL_CAUSE_ENA_MASK |
++				      (I40E_TX_ITR << I40E_QINT_TQCTL_ITR_INDX_SHIFT)  |
++				      (vector      << I40E_QINT_TQCTL_MSIX_INDX_SHIFT) |
++				      (qp          << I40E_QINT_TQCTL_NEXTQ_INDX_SHIFT)|
++				      (I40E_QUEUE_TYPE_TX
++				       << I40E_QINT_TQCTL_NEXTQ_TYPE_SHIFT);
++
++				wr32(hw, I40E_QINT_TQCTL(nextqp), val);
++			}
++
+ 			val = I40E_QINT_TQCTL_CAUSE_ENA_MASK |
+ 			      (I40E_TX_ITR << I40E_QINT_TQCTL_ITR_INDX_SHIFT)  |
+ 			      (vector      << I40E_QINT_TQCTL_MSIX_INDX_SHIFT) |
+@@ -3330,6 +3377,7 @@ static void i40e_enable_misc_int_causes(struct i40e_pf *pf)
+  **/
+ static void i40e_configure_msi_and_legacy(struct i40e_vsi *vsi)
+ {
++	u32 nextqp = i40e_enabled_xdp_vsi(vsi) ? vsi->alloc_queue_pairs : 0;
+ 	struct i40e_q_vector *q_vector = vsi->q_vectors[0];
+ 	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
+@@ -3350,12 +3398,22 @@ static void i40e_configure_msi_and_legacy(struct i40e_vsi *vsi)
+ 	wr32(hw, I40E_PFINT_LNKLST0, 0);
+ 
+ 	/* Associate the queue pair to the vector and enable the queue int */
+-	val = I40E_QINT_RQCTL_CAUSE_ENA_MASK		      |
+-	      (I40E_RX_ITR << I40E_QINT_RQCTL_ITR_INDX_SHIFT) |
++	val = I40E_QINT_RQCTL_CAUSE_ENA_MASK		       |
++	      (I40E_RX_ITR << I40E_QINT_RQCTL_ITR_INDX_SHIFT)  |
++	      (nextqp	   << I40E_QINT_RQCTL_NEXTQ_INDX_SHIFT)|
+ 	      (I40E_QUEUE_TYPE_TX << I40E_QINT_TQCTL_NEXTQ_TYPE_SHIFT);
+ 
+ 	wr32(hw, I40E_QINT_RQCTL(0), val);
  
 +	if (i40e_enabled_xdp_vsi(vsi)) {
-+		int frame_size = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
++		val = I40E_QINT_TQCTL_CAUSE_ENA_MASK		     |
++		      (I40E_TX_ITR << I40E_QINT_TQCTL_ITR_INDX_SHIFT)|
++		      (I40E_QUEUE_TYPE_TX
++		       << I40E_QINT_TQCTL_NEXTQ_TYPE_SHIFT);
 +
-+		if (frame_size > vsi->rx_buf_len)
-+			return -EINVAL;
++	       wr32(hw, I40E_QINT_TQCTL(nextqp), val);
 +	}
 +
- 	netdev_info(netdev, "changing MTU from %d to %d\n",
- 		    netdev->mtu, new_mtu);
- 	netdev->mtu = new_mtu;
-@@ -9310,6 +9318,72 @@ static netdev_features_t i40e_features_check(struct sk_buff *skb,
- 	return features & ~(NETIF_F_CSUM_MASK | NETIF_F_GSO_MASK);
+ 	val = I40E_QINT_TQCTL_CAUSE_ENA_MASK		      |
+ 	      (I40E_TX_ITR << I40E_QINT_TQCTL_ITR_INDX_SHIFT) |
+ 	      (I40E_QUEUE_END_OF_LIST << I40E_QINT_TQCTL_NEXTQ_INDX_SHIFT);
+@@ -3522,6 +3580,9 @@ static void i40e_vsi_disable_irq(struct i40e_vsi *vsi)
+ 	for (i = 0; i < vsi->num_queue_pairs; i++) {
+ 		wr32(hw, I40E_QINT_TQCTL(vsi->tx_rings[i]->reg_idx), 0);
+ 		wr32(hw, I40E_QINT_RQCTL(vsi->rx_rings[i]->reg_idx), 0);
++		if (!i40e_enabled_xdp_vsi(vsi))
++			continue;
++		wr32(hw, I40E_QINT_TQCTL(vsi->xdp_rings[i]->reg_idx), 0);
+ 	}
+ 
+ 	if (pf->flags & I40E_FLAG_MSIX_ENABLED) {
+@@ -3824,6 +3885,16 @@ static void i40e_map_vector_to_qp(struct i40e_vsi *vsi, int v_idx, int qp_idx)
+ 	q_vector->tx.ring = tx_ring;
+ 	q_vector->tx.count++;
+ 
++	/* Place XDP Tx ring in the same q_vector ring list as regular Tx */
++	if (i40e_enabled_xdp_vsi(vsi)) {
++		struct i40e_ring *xdp_ring = vsi->xdp_rings[qp_idx];
++
++		xdp_ring->q_vector = q_vector;
++		xdp_ring->next = q_vector->tx.ring;
++		q_vector->tx.ring = xdp_ring;
++		q_vector->tx.count++;
++	}
++
+ 	rx_ring->q_vector = q_vector;
+ 	rx_ring->next = q_vector->rx.ring;
+ 	q_vector->rx.ring = rx_ring;
+@@ -4003,6 +4074,33 @@ static void i40e_control_tx_q(struct i40e_pf *pf, int pf_q, bool enable)
  }
  
-+/**
-+ * i40e_xdp_setup - add/remove an XDP program
-+ * @vsi: VSI to changed
-+ * @prog: XDP program
+ /**
++ * i40e_control_wait_tx_q - Start/stop Tx queue and wait for completion
++ * @seid: VSI SEID
++ * @pf: the PF structure
++ * @pf_q: the PF queue to configure
++ * @is_xdp: true if the queue is used for XDP
++ * @enable: start or stop the queue
 + **/
-+static int i40e_xdp_setup(struct i40e_vsi *vsi,
-+			  struct bpf_prog *prog)
++static int i40e_control_wait_tx_q(int seid, struct i40e_pf *pf, int pf_q,
++				  bool is_xdp, bool enable)
 +{
-+	int frame_size = vsi->netdev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
-+	struct i40e_pf *pf = vsi->back;
-+	struct bpf_prog *old_prog;
-+	bool need_reset;
-+	int i;
++	int ret;
 +
-+	/* Don't allow frames that span over multiple buffers */
-+	if (frame_size > vsi->rx_buf_len)
-+		return -EINVAL;
++	i40e_control_tx_q(pf, pf_q, enable);
 +
-+	if (!i40e_enabled_xdp_vsi(vsi) && !prog)
-+		return 0;
-+
-+	/* When turning XDP on->off/off->on we reset and rebuild the rings. */
-+	need_reset = (i40e_enabled_xdp_vsi(vsi) != !!prog);
-+
-+	if (need_reset)
-+		i40e_prep_for_reset(pf, true);
-+
-+	old_prog = xchg(&vsi->xdp_prog, prog);
-+
-+	if (need_reset)
-+		i40e_reset_and_rebuild(pf, true, true);
-+
-+	for (i = 0; i < vsi->num_queue_pairs; i++)
-+		WRITE_ONCE(vsi->rx_rings[i]->xdp_prog, vsi->xdp_prog);
-+
-+	if (old_prog)
-+		bpf_prog_put(old_prog);
-+
-+	return 0;
-+}
-+
-+/**
-+ * i40e_xdp - implements ndo_xdp for i40e
-+ * @dev: netdevice
-+ * @xdp: XDP command
-+ **/
-+static int i40e_xdp(struct net_device *dev,
-+		    struct netdev_xdp *xdp)
-+{
-+	struct i40e_netdev_priv *np = netdev_priv(dev);
-+	struct i40e_vsi *vsi = np->vsi;
-+
-+	if (vsi->type != I40E_VSI_MAIN)
-+		return -EINVAL;
-+
-+	switch (xdp->command) {
-+	case XDP_SETUP_PROG:
-+		return i40e_xdp_setup(vsi, xdp->prog);
-+	case XDP_QUERY_PROG:
-+		xdp->prog_attached = i40e_enabled_xdp_vsi(vsi);
-+		return 0;
-+	default:
-+		return -EINVAL;
++	/* wait for the change to finish */
++	ret = i40e_pf_txq_wait(pf, pf_q, enable);
++	if (ret) {
++		dev_info(&pf->pdev->dev,
++			 "VSI seid %d %sTx ring %d %sable timeout\n",
++			 seid, (is_xdp ? "XDP " : ""), pf_q,
++			 (enable ? "en" : "dis"));
 +	}
++
++	return ret;
 +}
 +
- static const struct net_device_ops i40e_netdev_ops = {
- 	.ndo_open		= i40e_open,
- 	.ndo_stop		= i40e_close,
-@@ -9342,6 +9416,7 @@ static const struct net_device_ops i40e_netdev_ops = {
- 	.ndo_features_check	= i40e_features_check,
- 	.ndo_bridge_getlink	= i40e_ndo_bridge_getlink,
- 	.ndo_bridge_setlink	= i40e_ndo_bridge_setlink,
-+	.ndo_xdp		= i40e_xdp,
- };
++/**
+  * i40e_vsi_control_tx - Start or stop a VSI's rings
+  * @vsi: the VSI being configured
+  * @enable: start or stop the rings
+@@ -4014,16 +4112,20 @@ static int i40e_vsi_control_tx(struct i40e_vsi *vsi, bool enable)
+ 
+ 	pf_q = vsi->base_queue;
+ 	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
+-		i40e_control_tx_q(pf, pf_q, enable);
++		ret = i40e_control_wait_tx_q(vsi->seid, pf,
++					     pf_q,
++					     false /*is xdp*/, enable);
++		if (ret)
++			break;
+ 
+-		/* wait for the change to finish */
+-		ret = i40e_pf_txq_wait(pf, pf_q, enable);
+-		if (ret) {
+-			dev_info(&pf->pdev->dev,
+-				 "VSI seid %d Tx ring %d %sable timeout\n",
+-				 vsi->seid, pf_q, (enable ? "en" : "dis"));
++		if (!i40e_enabled_xdp_vsi(vsi))
++			continue;
++
++		ret = i40e_control_wait_tx_q(vsi->seid, pf,
++					     pf_q + vsi->alloc_queue_pairs,
++					     true /*is xdp*/, enable);
++		if (ret)
+ 			break;
+-		}
+ 	}
+ 
+ 	return ret;
+@@ -4535,7 +4637,21 @@ int i40e_vsi_wait_queues_disabled(struct i40e_vsi *vsi)
+ 				 vsi->seid, pf_q);
+ 			return ret;
+ 		}
+-		/* Check and wait for the Tx queue */
++
++		if (!i40e_enabled_xdp_vsi(vsi))
++			goto wait_rx;
++
++		/* Check and wait for the XDP Tx queue */
++		ret = i40e_pf_txq_wait(pf, pf_q + vsi->alloc_queue_pairs,
++				       false);
++		if (ret) {
++			dev_info(&pf->pdev->dev,
++				 "VSI seid %d XDP Tx ring %d disable timeout\n",
++				 vsi->seid, pf_q);
++			return ret;
++		}
++wait_rx:
++		/* Check and wait for the Rx queue */
+ 		ret = i40e_pf_rxq_wait(pf, pf_q, false);
+ 		if (ret) {
+ 			dev_info(&pf->pdev->dev,
+@@ -5454,6 +5570,8 @@ void i40e_down(struct i40e_vsi *vsi)
+ 
+ 	for (i = 0; i < vsi->num_queue_pairs; i++) {
+ 		i40e_clean_tx_ring(vsi->tx_rings[i]);
++		if (i40e_enabled_xdp_vsi(vsi))
++			i40e_clean_tx_ring(vsi->xdp_rings[i]);
+ 		i40e_clean_rx_ring(vsi->rx_rings[i]);
+ 	}
+ 
+@@ -7522,15 +7640,22 @@ static int i40e_set_num_rings_in_vsi(struct i40e_vsi *vsi)
+  **/
+ static int i40e_vsi_alloc_arrays(struct i40e_vsi *vsi, bool alloc_qvectors)
+ {
++	struct i40e_ring **next_rings;
+ 	int size;
+ 	int ret = 0;
+ 
+-	/* allocate memory for both Tx and Rx ring pointers */
+-	size = sizeof(struct i40e_ring *) * vsi->alloc_queue_pairs * 2;
++	/* allocate memory for both Tx, XDP Tx and Rx ring pointers */
++	size = sizeof(struct i40e_ring *) * vsi->alloc_queue_pairs *
++	       (i40e_enabled_xdp_vsi(vsi) ? 3 : 2);
+ 	vsi->tx_rings = kzalloc(size, GFP_KERNEL);
+ 	if (!vsi->tx_rings)
+ 		return -ENOMEM;
+-	vsi->rx_rings = &vsi->tx_rings[vsi->alloc_queue_pairs];
++	next_rings = vsi->tx_rings + vsi->alloc_queue_pairs;
++	if (i40e_enabled_xdp_vsi(vsi)) {
++		vsi->xdp_rings = next_rings;
++		next_rings += vsi->alloc_queue_pairs;
++	}
++	vsi->rx_rings = next_rings;
+ 
+ 	if (alloc_qvectors) {
+ 		/* allocate memory for q_vector pointers */
+@@ -7650,6 +7775,7 @@ static void i40e_vsi_free_arrays(struct i40e_vsi *vsi, bool free_qvectors)
+ 	kfree(vsi->tx_rings);
+ 	vsi->tx_rings = NULL;
+ 	vsi->rx_rings = NULL;
++	vsi->xdp_rings = NULL;
+ }
  
  /**
+@@ -7733,6 +7859,8 @@ static void i40e_vsi_clear_rings(struct i40e_vsi *vsi)
+ 			kfree_rcu(vsi->tx_rings[i], rcu);
+ 			vsi->tx_rings[i] = NULL;
+ 			vsi->rx_rings[i] = NULL;
++			if (vsi->xdp_rings)
++				vsi->xdp_rings[i] = NULL;
+ 		}
+ 	}
+ }
+@@ -7743,43 +7871,61 @@ static void i40e_vsi_clear_rings(struct i40e_vsi *vsi)
+  **/
+ static int i40e_alloc_rings(struct i40e_vsi *vsi)
+ {
+-	struct i40e_ring *tx_ring, *rx_ring;
++	int i, qpv = i40e_enabled_xdp_vsi(vsi) ? 3 : 2;
+ 	struct i40e_pf *pf = vsi->back;
+-	int i;
++	struct i40e_ring *ring;
+ 
+ 	/* Set basic values in the rings to be used later during open() */
+ 	for (i = 0; i < vsi->alloc_queue_pairs; i++) {
+ 		/* allocate space for both Tx and Rx in one shot */
+-		tx_ring = kzalloc(sizeof(struct i40e_ring) * 2, GFP_KERNEL);
+-		if (!tx_ring)
++		ring = kcalloc(qpv, sizeof(struct i40e_ring), GFP_KERNEL);
++		if (!ring)
+ 			goto err_out;
+ 
+-		tx_ring->queue_index = i;
+-		tx_ring->reg_idx = vsi->base_queue + i;
+-		tx_ring->ring_active = false;
+-		tx_ring->vsi = vsi;
+-		tx_ring->netdev = vsi->netdev;
+-		tx_ring->dev = &pf->pdev->dev;
+-		tx_ring->count = vsi->num_desc;
+-		tx_ring->size = 0;
+-		tx_ring->dcb_tc = 0;
++		ring->queue_index = i;
++		ring->reg_idx = vsi->base_queue + i;
++		ring->ring_active = false;
++		ring->vsi = vsi;
++		ring->netdev = vsi->netdev;
++		ring->dev = &pf->pdev->dev;
++		ring->count = vsi->num_desc;
++		ring->size = 0;
++		ring->dcb_tc = 0;
+ 		if (vsi->back->flags & I40E_FLAG_WB_ON_ITR_CAPABLE)
+-			tx_ring->flags = I40E_TXR_FLAGS_WB_ON_ITR;
+-		tx_ring->tx_itr_setting = pf->tx_itr_default;
+-		vsi->tx_rings[i] = tx_ring;
+-
+-		rx_ring = &tx_ring[1];
+-		rx_ring->queue_index = i;
+-		rx_ring->reg_idx = vsi->base_queue + i;
+-		rx_ring->ring_active = false;
+-		rx_ring->vsi = vsi;
+-		rx_ring->netdev = vsi->netdev;
+-		rx_ring->dev = &pf->pdev->dev;
+-		rx_ring->count = vsi->num_desc;
+-		rx_ring->size = 0;
+-		rx_ring->dcb_tc = 0;
+-		rx_ring->rx_itr_setting = pf->rx_itr_default;
+-		vsi->rx_rings[i] = rx_ring;
++			ring->flags = I40E_TXR_FLAGS_WB_ON_ITR;
++		ring->tx_itr_setting = pf->tx_itr_default;
++		vsi->tx_rings[i] = ring++;
++
++		if (!i40e_enabled_xdp_vsi(vsi))
++			goto setup_rx;
++
++		ring->queue_index = vsi->alloc_queue_pairs + i;
++		ring->reg_idx = vsi->base_queue + ring->queue_index;
++		ring->ring_active = false;
++		ring->vsi = vsi;
++		ring->netdev = NULL;
++		ring->dev = &pf->pdev->dev;
++		ring->count = vsi->num_desc;
++		ring->size = 0;
++		ring->dcb_tc = 0;
++		if (vsi->back->flags & I40E_FLAG_WB_ON_ITR_CAPABLE)
++			ring->flags = I40E_TXR_FLAGS_WB_ON_ITR;
++		set_ring_xdp(ring);
++		ring->tx_itr_setting = pf->tx_itr_default;
++		vsi->xdp_rings[i] = ring++;
++
++setup_rx:
++		ring->queue_index = i;
++		ring->reg_idx = vsi->base_queue + i;
++		ring->ring_active = false;
++		ring->vsi = vsi;
++		ring->netdev = vsi->netdev;
++		ring->dev = &pf->pdev->dev;
++		ring->count = vsi->num_desc;
++		ring->size = 0;
++		ring->dcb_tc = 0;
++		ring->rx_itr_setting = pf->rx_itr_default;
++		vsi->rx_rings[i] = ring;
+ 	}
+ 
+ 	return 0;
+@@ -9985,6 +10131,7 @@ static int i40e_vsi_setup_vectors(struct i40e_vsi *vsi)
+  **/
+ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
+ {
++	u16 alloc_queue_pairs;
+ 	struct i40e_pf *pf;
+ 	u8 enabled_tc;
+ 	int ret;
+@@ -10003,11 +10150,14 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
+ 	if (ret)
+ 		goto err_vsi;
+ 
+-	ret = i40e_get_lump(pf, pf->qp_pile, vsi->alloc_queue_pairs, vsi->idx);
++	alloc_queue_pairs = vsi->alloc_queue_pairs *
++			    (i40e_enabled_xdp_vsi(vsi) ? 2 : 1);
++
++	ret = i40e_get_lump(pf, pf->qp_pile, alloc_queue_pairs, vsi->idx);
+ 	if (ret < 0) {
+ 		dev_info(&pf->pdev->dev,
+ 			 "failed to get tracking for %d queues for VSI %d err %d\n",
+-			 vsi->alloc_queue_pairs, vsi->seid, ret);
++			 alloc_queue_pairs, vsi->seid, ret);
+ 		goto err_vsi;
+ 	}
+ 	vsi->base_queue = ret;
+@@ -10063,6 +10213,7 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+ {
+ 	struct i40e_vsi *vsi = NULL;
+ 	struct i40e_veb *veb = NULL;
++	u16 alloc_queue_pairs;
+ 	int ret, i;
+ 	int v_idx;
+ 
+@@ -10150,12 +10301,14 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+ 	else if (type == I40E_VSI_SRIOV)
+ 		vsi->vf_id = param1;
+ 	/* assign it some queues */
+-	ret = i40e_get_lump(pf, pf->qp_pile, vsi->alloc_queue_pairs,
+-				vsi->idx);
++	alloc_queue_pairs = vsi->alloc_queue_pairs *
++			    (i40e_enabled_xdp_vsi(vsi) ? 2 : 1);
++
++	ret = i40e_get_lump(pf, pf->qp_pile, alloc_queue_pairs, vsi->idx);
+ 	if (ret < 0) {
+ 		dev_info(&pf->pdev->dev,
+ 			 "failed to get tracking for %d queues for VSI %d err=%d\n",
+-			 vsi->alloc_queue_pairs, vsi->seid, ret);
++			 alloc_queue_pairs, vsi->seid, ret);
+ 		goto err_vsi;
+ 	}
+ 	vsi->base_queue = ret;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index af554f3cda19..f744f843bc72 100644
+index f744f843bc72..b936febc315a 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -26,6 +26,7 @@
+@@ -630,6 +630,8 @@ static void i40e_unmap_and_free_tx_resource(struct i40e_ring *ring,
+ 	if (tx_buffer->skb) {
+ 		if (tx_buffer->tx_flags & I40E_TX_FLAGS_FD_SB)
+ 			kfree(tx_buffer->raw_buf);
++		else if (ring_is_xdp(ring))
++			page_frag_free(tx_buffer->raw_buf);
+ 		else
+ 			dev_kfree_skb_any(tx_buffer->skb);
+ 		if (dma_unmap_len(tx_buffer, len))
+@@ -771,8 +773,11 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 		total_bytes += tx_buf->bytecount;
+ 		total_packets += tx_buf->gso_segs;
  
- #include <linux/prefetch.h>
- #include <net/busy_poll.h>
-+#include <linux/bpf_trace.h>
- #include "i40e.h"
- #include "i40e_trace.h"
- #include "i40e_prototype.h"
-@@ -1195,6 +1196,7 @@ void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
- void i40e_free_rx_resources(struct i40e_ring *rx_ring)
- {
- 	i40e_clean_rx_ring(rx_ring);
-+	rx_ring->xdp_prog = NULL;
- 	kfree(rx_ring->rx_bi);
- 	rx_ring->rx_bi = NULL;
+-		/* free the skb */
+-		napi_consume_skb(tx_buf->skb, napi_budget);
++		/* free the skb/XDP data */
++		if (ring_is_xdp(tx_ring))
++			page_frag_free(tx_buf->raw_buf);
++		else
++			napi_consume_skb(tx_buf->skb, napi_budget);
  
-@@ -1241,6 +1243,8 @@ int i40e_setup_rx_descriptors(struct i40e_ring *rx_ring)
- 	rx_ring->next_to_clean = 0;
- 	rx_ring->next_to_use = 0;
+ 		/* unmap skb header data */
+ 		dma_unmap_single(tx_ring->dev,
+@@ -848,6 +853,9 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 			tx_ring->arm_wb = true;
+ 	}
  
-+	rx_ring->xdp_prog = rx_ring->vsi->xdp_prog;
++	if (ring_is_xdp(tx_ring))
++		return !!budget;
 +
- 	return 0;
- err:
- 	kfree(rx_ring->rx_bi);
-@@ -1593,6 +1597,7 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
-  * i40e_cleanup_headers - Correct empty headers
-  * @rx_ring: rx descriptor ring packet is being transacted on
-  * @skb: pointer to current skb being fixed
-+ * @rx_desc: pointer to the EOP Rx descriptor
-  *
-  * Also address the case where we are pulling data in on pages only
-  * and as such no data is present in the skb header.
-@@ -1602,8 +1607,25 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
-  *
-  * Returns true if an error was encountered and skb was freed.
-  **/
--static bool i40e_cleanup_headers(struct i40e_ring *rx_ring, struct sk_buff *skb)
-+static bool i40e_cleanup_headers(struct i40e_ring *rx_ring, struct sk_buff *skb,
-+				 union i40e_rx_desc *rx_desc)
+ 	/* notify netdev of completed buffers */
+ 	netdev_tx_completed_queue(txring_txq(tx_ring),
+ 				  total_packets, total_bytes);
+@@ -1969,6 +1977,10 @@ static bool i40e_is_non_eop(struct i40e_ring *rx_ring,
+ 
+ #define I40E_XDP_PASS 0
+ #define I40E_XDP_CONSUMED 1
++#define I40E_XDP_TX 2
 +
++static int i40e_xmit_xdp_ring(struct xdp_buff *xdp,
++			      struct i40e_ring *xdp_ring);
+ 
+ /**
+  * i40e_run_xdp - run an XDP program
+@@ -1979,6 +1991,7 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
+ 				    struct xdp_buff *xdp)
  {
-+	/* XDP packets use error pointer so abort at this point */
-+	if (IS_ERR(skb))
-+		return true;
-+
-+	/* ERR_MASK will only have valid bits if EOP set, and
-+	 * what we are doing here is actually checking
-+	 * I40E_RX_DESC_ERROR_RXE_SHIFT, since it is the zeroth bit in
-+	 * the error field
-+	 */
-+	if (unlikely(i40e_test_staterr(rx_desc,
-+				       BIT(I40E_RXD_QW1_ERROR_SHIFT)))) {
-+		dev_kfree_skb_any(skb);
-+		return true;
-+	}
-+
- 	/* if eth_skb_pad returns an error the skb was freed */
- 	if (eth_skb_pad(skb))
- 		return true;
-@@ -1776,7 +1798,7 @@ static struct i40e_rx_buffer *i40e_get_rx_buffer(struct i40e_ring *rx_ring,
-  * i40e_construct_skb - Allocate skb and populate it
-  * @rx_ring: rx descriptor ring to transact packets on
-  * @rx_buffer: rx buffer to pull data from
-- * @size: size of buffer to add to skb
-+ * @xdp: xdp_buff pointing to the data
-  *
-  * This function allocates an skb.  It then populates it with the page
-  * data from the current receive descriptor, taking care to set up the
-@@ -1784,9 +1806,9 @@ static struct i40e_rx_buffer *i40e_get_rx_buffer(struct i40e_ring *rx_ring,
-  */
- static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
- 					  struct i40e_rx_buffer *rx_buffer,
--					  unsigned int size)
-+					  struct xdp_buff *xdp)
- {
--	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+	unsigned int size = xdp->data_end - xdp->data;
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
- #else
-@@ -1796,9 +1818,9 @@ static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
- 	struct sk_buff *skb;
+ 	int result = I40E_XDP_PASS;
++	struct i40e_ring *xdp_ring;
+ 	struct bpf_prog *xdp_prog;
+ 	u32 act;
  
- 	/* prefetch first cache line of first page */
--	prefetch(va);
-+	prefetch(xdp->data);
- #if L1_CACHE_BYTES < 128
--	prefetch(va + L1_CACHE_BYTES);
-+	prefetch(xdp->data + L1_CACHE_BYTES);
- #endif
- 
- 	/* allocate a skb to store the frags */
-@@ -1811,10 +1833,11 @@ static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
- 	/* Determine available headroom for copy */
- 	headlen = size;
- 	if (headlen > I40E_RX_HDR_SIZE)
--		headlen = eth_get_headlen(va, I40E_RX_HDR_SIZE);
-+		headlen = eth_get_headlen(xdp->data, I40E_RX_HDR_SIZE);
- 
- 	/* align pull length to size of long to optimize memcpy performance */
--	memcpy(__skb_put(skb, headlen), va, ALIGN(headlen, sizeof(long)));
-+	memcpy(__skb_put(skb, headlen), xdp->data,
-+	       ALIGN(headlen, sizeof(long)));
- 
- 	/* update all of the pointers */
- 	size -= headlen;
-@@ -1841,16 +1864,16 @@ static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
-  * i40e_build_skb - Build skb around an existing buffer
-  * @rx_ring: Rx descriptor ring to transact packets on
-  * @rx_buffer: Rx buffer to pull data from
-- * @size: size of buffer to add to skb
-+ * @xdp: xdp_buff pointing to the data
-  *
-  * This function builds an skb around an existing Rx buffer, taking care
-  * to set up the skb correctly and avoid any memcpy overhead.
-  */
- static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
- 				      struct i40e_rx_buffer *rx_buffer,
--				      unsigned int size)
-+				      struct xdp_buff *xdp)
- {
--	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+	unsigned int size = xdp->data_end - xdp->data;
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
- #else
-@@ -1860,12 +1883,12 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
- 	struct sk_buff *skb;
- 
- 	/* prefetch first cache line of first page */
--	prefetch(va);
-+	prefetch(xdp->data);
- #if L1_CACHE_BYTES < 128
--	prefetch(va + L1_CACHE_BYTES);
-+	prefetch(xdp->data + L1_CACHE_BYTES);
- #endif
- 	/* build an skb around the page buffer */
--	skb = build_skb(va - I40E_SKB_PAD, truesize);
-+	skb = build_skb(xdp->data_hard_start, truesize);
- 	if (unlikely(!skb))
- 		return NULL;
- 
-@@ -1944,6 +1967,46 @@ static bool i40e_is_non_eop(struct i40e_ring *rx_ring,
- 	return true;
+@@ -1992,9 +2005,12 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
+ 	switch (act) {
+ 	case XDP_PASS:
+ 		break;
++	case XDP_TX:
++		xdp_ring = rx_ring->vsi->xdp_rings[rx_ring->queue_index];
++		result = i40e_xmit_xdp_ring(xdp, xdp_ring);
++		break;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
+-	case XDP_TX:
+ 	case XDP_ABORTED:
+ 		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
+ 		/* fallthrough -- handle aborts by dropping packet */
+@@ -2008,6 +2024,27 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
  }
  
-+#define I40E_XDP_PASS 0
-+#define I40E_XDP_CONSUMED 1
-+
-+/**
-+ * i40e_run_xdp - run an XDP program
-+ * @rx_ring: Rx ring being processed
-+ * @xdp: XDP buffer containing the frame
+ /**
++ * i40e_rx_buffer_flip - adjusted rx_buffer to point to an unused region
++ * @rx_ring: Rx ring
++ * @rx_buffer: Rx buffer to adjust
++ * @size: Size of adjustment
 + **/
-+static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
-+				    struct xdp_buff *xdp)
++static void i40e_rx_buffer_flip(struct i40e_ring *rx_ring,
++				struct i40e_rx_buffer *rx_buffer,
++				unsigned int size)
 +{
-+	int result = I40E_XDP_PASS;
-+	struct bpf_prog *xdp_prog;
-+	u32 act;
++#if (PAGE_SIZE < 8192)
++	unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
 +
-+	rcu_read_lock();
-+	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
++	rx_buffer->page_offset ^= truesize;
++#else
++	unsigned int truesize = SKB_DATA_ALIGN(i40e_rx_offset(rx_ring) + size);
 +
-+	if (!xdp_prog)
-+		goto xdp_out;
-+
-+	act = bpf_prog_run_xdp(xdp_prog, xdp);
-+	switch (act) {
-+	case XDP_PASS:
-+		break;
-+	default:
-+		bpf_warn_invalid_xdp_action(act);
-+	case XDP_TX:
-+	case XDP_ABORTED:
-+		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
-+		/* fallthrough -- handle aborts by dropping packet */
-+	case XDP_DROP:
-+		result = I40E_XDP_CONSUMED;
-+		break;
-+	}
-+xdp_out:
-+	rcu_read_unlock();
-+	return ERR_PTR(-result);
++	rx_buffer->page_offset += truesize;
++#endif
 +}
 +
- /**
++/**
   * i40e_clean_rx_irq - Clean completed descriptors from Rx ring - bounce buf
   * @rx_ring: rx descriptor ring to transact packets on
-@@ -1966,6 +2029,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+  * @budget: Total limit on number of packets to process
+@@ -2024,7 +2061,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
+ 	struct sk_buff *skb = rx_ring->skb;
+ 	u16 cleaned_count = I40E_DESC_UNUSED(rx_ring);
+-	bool failure = false;
++	bool failure = false, xdp_xmit = false;
+ 
  	while (likely(total_rx_packets < budget)) {
  		struct i40e_rx_buffer *rx_buffer;
- 		union i40e_rx_desc *rx_desc;
-+		struct xdp_buff xdp;
- 		unsigned int size;
- 		u16 vlan_tag;
- 		u8 rx_ptype;
-@@ -2006,12 +2070,27 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		rx_buffer = i40e_get_rx_buffer(rx_ring, size);
- 
- 		/* retrieve a buffer from the ring */
--		if (skb)
-+		if (!skb) {
-+			xdp.data = page_address(rx_buffer->page) +
-+				   rx_buffer->page_offset;
-+			xdp.data_hard_start = xdp.data -
-+					      i40e_rx_offset(rx_ring);
-+			xdp.data_end = xdp.data + size;
-+
-+			skb = i40e_run_xdp(rx_ring, &xdp);
-+		}
-+
-+		if (IS_ERR(skb)) {
-+			total_rx_bytes += size;
-+			total_rx_packets++;
-+			rx_buffer->pagecnt_bias++;
-+		} else if (skb) {
- 			i40e_add_rx_frag(rx_ring, rx_buffer, skb, size);
--		else if (ring_uses_build_skb(rx_ring))
--			skb = i40e_build_skb(rx_ring, rx_buffer, size);
--		else
--			skb = i40e_construct_skb(rx_ring, rx_buffer, size);
-+		} else if (ring_uses_build_skb(rx_ring)) {
-+			skb = i40e_build_skb(rx_ring, rx_buffer, &xdp);
-+		} else {
-+			skb = i40e_construct_skb(rx_ring, rx_buffer, &xdp);
-+		}
- 
- 		/* exit if we failed to retrieve a buffer */
- 		if (!skb) {
-@@ -2026,18 +2105,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		if (i40e_is_non_eop(rx_ring, rx_desc, skb))
- 			continue;
- 
--		/* ERR_MASK will only have valid bits if EOP set, and
--		 * what we are doing here is actually checking
--		 * I40E_RX_DESC_ERROR_RXE_SHIFT, since it is the zeroth bit in
--		 * the error field
--		 */
--		if (unlikely(i40e_test_staterr(rx_desc, BIT(I40E_RXD_QW1_ERROR_SHIFT)))) {
--			dev_kfree_skb_any(skb);
--			skb = NULL;
--			continue;
--		}
--
--		if (i40e_cleanup_headers(rx_ring, skb)) {
-+		if (i40e_cleanup_headers(rx_ring, skb, rx_desc)) {
- 			skb = NULL;
- 			continue;
+@@ -2081,9 +2118,14 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
  		}
+ 
+ 		if (IS_ERR(skb)) {
++			if (PTR_ERR(skb) == -I40E_XDP_TX) {
++				xdp_xmit = true;
++				i40e_rx_buffer_flip(rx_ring, rx_buffer, size);
++			} else {
++				rx_buffer->pagecnt_bias++;
++			}
+ 			total_rx_bytes += size;
+ 			total_rx_packets++;
+-			rx_buffer->pagecnt_bias++;
+ 		} else if (skb) {
+ 			i40e_add_rx_frag(rx_ring, rx_buffer, skb, size);
+ 		} else if (ring_uses_build_skb(rx_ring)) {
+@@ -2131,6 +2173,19 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		total_rx_packets++;
+ 	}
+ 
++	if (xdp_xmit) {
++		struct i40e_ring *xdp_ring;
++
++		xdp_ring = rx_ring->vsi->xdp_rings[rx_ring->queue_index];
++
++		/* Force memory writes to complete before letting h/w
++		 * know there are new descriptors to fetch.
++		 */
++		wmb();
++
++		writel(xdp_ring->next_to_use, xdp_ring->tail);
++	}
++
+ 	rx_ring->skb = skb;
+ 
+ 	u64_stats_update_begin(&rx_ring->syncp);
+@@ -3188,6 +3243,59 @@ static inline int i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ }
+ 
+ /**
++ * i40e_xmit_xdp_ring - transmits an XDP buffer to an XDP Tx ring
++ * @xdp: data to transmit
++ * @xdp_ring: XDP Tx ring
++ **/
++static int i40e_xmit_xdp_ring(struct xdp_buff *xdp,
++			      struct i40e_ring *xdp_ring)
++{
++	u32 size = xdp->data_end - xdp->data;
++	u16 i = xdp_ring->next_to_use;
++	struct i40e_tx_buffer *tx_bi;
++	struct i40e_tx_desc *tx_desc;
++	dma_addr_t dma;
++
++	if (!unlikely(I40E_DESC_UNUSED(xdp_ring))) {
++		xdp_ring->tx_stats.tx_busy++;
++		return I40E_XDP_CONSUMED;
++	}
++
++	dma = dma_map_single(xdp_ring->dev, xdp->data, size, DMA_TO_DEVICE);
++	if (dma_mapping_error(xdp_ring->dev, dma))
++		return I40E_XDP_CONSUMED;
++
++	tx_bi = &xdp_ring->tx_bi[i];
++	tx_bi->bytecount = size;
++	tx_bi->gso_segs = 1;
++	tx_bi->raw_buf = xdp->data;
++
++	/* record length, and DMA address */
++	dma_unmap_len_set(tx_bi, len, size);
++	dma_unmap_addr_set(tx_bi, dma, dma);
++
++	tx_desc = I40E_TX_DESC(xdp_ring, i);
++	tx_desc->buffer_addr = cpu_to_le64(dma);
++	tx_desc->cmd_type_offset_bsz = build_ctob(I40E_TX_DESC_CMD_ICRC
++						  | I40E_TXD_CMD,
++						  0, size, 0);
++
++	/* Make certain all of the status bits have been updated
++	 * before next_to_watch is written.
++	 */
++	smp_wmb();
++
++	i++;
++	if (i == xdp_ring->count)
++		i = 0;
++
++	tx_bi->next_to_watch = tx_desc;
++	xdp_ring->next_to_use = i;
++
++	return I40E_XDP_TX;
++}
++
++/**
+  * i40e_xmit_frame_ring - Sends buffer on Tx ring
+  * @skb:     send buffer
+  * @tx_ring: ring to send buffer on
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index f5de51124cae..31f0b162996f 100644
+index 31f0b162996f..b288d58313a6 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -360,6 +360,7 @@ struct i40e_ring {
- 	void *desc;			/* Descriptor ring memory */
- 	struct device *dev;		/* Used for DMA mapping */
- 	struct net_device *netdev;	/* netdev ring maps to */
-+	struct bpf_prog *xdp_prog;
- 	union {
- 		struct i40e_tx_buffer *tx_bi;
- 		struct i40e_rx_buffer *rx_bi;
+@@ -396,6 +396,7 @@ struct i40e_ring {
+ 	u16 flags;
+ #define I40E_TXR_FLAGS_WB_ON_ITR		BIT(0)
+ #define I40E_RXR_FLAGS_BUILD_SKB_ENABLED	BIT(1)
++#define I40E_TXR_FLAGS_XDP			BIT(2)
+ 
+ 	/* stats structs */
+ 	struct i40e_queue_stats	stats;
+@@ -438,6 +439,16 @@ static inline void clear_ring_build_skb_enabled(struct i40e_ring *ring)
+ 	ring->flags &= ~I40E_RXR_FLAGS_BUILD_SKB_ENABLED;
+ }
+ 
++static inline bool ring_is_xdp(struct i40e_ring *ring)
++{
++	return !!(ring->flags & I40E_TXR_FLAGS_XDP);
++}
++
++static inline void set_ring_xdp(struct i40e_ring *ring)
++{
++	ring->flags |= I40E_TXR_FLAGS_XDP;
++}
++
+ enum i40e_latency_range {
+ 	I40E_LOWEST_LATENCY = 0,
+ 	I40E_LOW_LATENCY = 1,
 -- 
 2.11.0
 
