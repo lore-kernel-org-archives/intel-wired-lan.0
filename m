@@ -1,73 +1,86 @@
-From: tndave <tushar.n.dave@oracle.com>
-Date: Mon, 22 May 2017 16:13:24 -0700
-Subject: [Intel-wired-lan] [PATCH] i40evf: Use le32_to_cpu before
-	evaluating HW desc fields.
-In-Reply-To: <1495481779.4878.6.camel@intel.com>
-References: <1493680559-6728-1-git-send-email-tushar.n.dave@oracle.com>
- <1494976037.40313.1.camel@intel.com>
- <8607da8f-51fa-b3e5-2b71-a28863f1fe84@oracle.com>
- <1495481779.4878.6.camel@intel.com>
-Message-ID: <9f105a6c-2f55-6ad5-1140-03c37340bba1@oracle.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Tue, 23 May 2017 09:33:15 +0200
+Subject: [Intel-wired-lan] [PATCH v6 0/2] i40e: support for XDP
+Message-ID: <20170523073317.11900-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
+This series adds XDP support for i40e-based NICs.
 
-On 05/22/2017 12:36 PM, Jeff Kirsher wrote:
-> On Fri, 2017-05-19 at 18:12 -0700, tndave wrote:
->> On 05/16/2017 04:07 PM, Jeff Kirsher wrote:
->>> On Mon, 2017-05-01 at 16:15 -0700, Tushar Dave wrote:
->>>> i40e hardware descriptor fields are in little-endian format. Driver
->>>> must use le32_to_cpu while evaluating these fields otherwise on
->>>> big-endian arch we end up evaluating incorrect values, cause errors
->>>> like:
->>>>
->>>> i40evf 0001:04:02.0: Expected response 0 from PF, received 285212672
->>>> i40evf 0001:04:02.1: Expected response 0 from PF, received 285212672
->>>>
->>>> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
->>>> ---
->>>>   drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 ++++--
->>>>   1 file changed, 4 insertions(+), 2 deletions(-)
->>>
->>> Due to recent patches already applied to my tree, this patch does not
->>> apply cleanly.  Feel free to send an updated patch, if the change is
->>> still needed.
->>
->> Hi Jeff,
->>
->> I just tried the same patch on Dave's latest linux-net and it applies
->> cleanly. Wondering if I should clone your tree and make sure it applies?
->> If so, I may need to do same for all my future patches as well, thats a
->> extra bit of work!
->>
->> Most of the time, mine are bug fixes and I always use linux-net when
->> upstreaming my patches for Intel Ethernet drivers.
->
-> As Alex has already pointed out, yes, you should be using my dev-queue
-> branch on either next-queue or net-queue trees.  As you know, I have a
-> number of patches currently in the queue which won't show up on linux-net
-> until they get pushed to David Miller.
->
-> If you use my tree for the Intel drivers, you may find we already fix the
-> issue or your fix may need to be re-worked due to changes in the code which
-> are currently in the "queue".
-Jeff,
+The first patch wires up ndo_xdp and implements XDP_DROP semantics for
+all actions. The second patch adds egress support via the XDP_TX
+action.
 
-Tried the same patch (using git am) on your net-queue tree
-branch:dev-queue and the patch applies cleanly.
+Performance numbers (40GbE port, 64B packets) for xdp1 and xdp2
+programs, from samples/bpf/:
 
-FYI, right now 
-https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git:dev-queue 
-has top commit:
-  "i40e/i40evf: proper update of the page_offset field"
+ IOMMU                      | xdp1      | xdp2
+ ---------------------------+-----------+-----------
+ iommu=off                  | 29.7 Mpps | 17.1 Mpps
+ iommu=pt intel_iommu=on    | 29.7 Mpps | 11.6 Mpps
+ iommu=on intel_iommu=on    | 21.8 Mpps |  3.7 Mpps
 
-My system has:  patch --version
-GNU patch 2.7.1
+Future improvements, not covered by the patches:
+  * Proper debugfs support.
+  * i40evf support.
 
-Thanks.
--Tushar
->
+Thanks to Alex, Daniel, John and Scott for all feedback!
+
+v6:
+  * Addressed various cosmetic issues (reverse xmas tree formatting on
+    local variables, preserve function parameter ordering, qvector
+    mapping).
+  * Placed XDP Tx rings directly after Tx rings. This opened up to
+    various simplications in the code, since we can now treat the XDP
+    Tx rings as an extension of existing Tx ring space. E.g.,
+    i40e_set_ringparam now has smaller changeset.
+  * Ring allocation and setup was simplified (i40e_alloc_rings,
+    i40e_vsi_alloc_arrays).
+
+v5:
+  * Aligned the implementation to ixgbe's XDP support: naming, favor
+    xchg instead of RCU semantics
+  * Support for XDP headroom (piggybacking on Alex' build_skb work)
+  * Added xdp tracepoints for exception states (as suggested by
+    Daniel)
+
+v4:
+  * Removed unused i40e_page_is_reserved function
+  * Prior running the XDP program, set the struct xdp_buff
+    data_hard_start member
+
+v3:
+  * Rebased patch set on Jeff's dev-queue branch
+  * MSI-X is no longer a prerequisite for XDP
+  * RCU locking for the XDP program and XDP_RX support is introduced
+    in the same patch
+  * Rx bytes is now bumped for XDP
+  * Removed pointer-to-pointer clunkiness
+  * Added comments to XDP preconditions in ndo_xdp
+  * When a non-EOF is received, log once, and drop the frame
+
+v2:
+  * Fixed kbuild error for PAGE_SIZE >= 8192.
+  * Renamed i40e_try_flip_rx_page to i40e_can_reuse_rx_page, which is
+    more in line to the other Intel Ethernet drivers (igb/fm10k).
+  * Validate xdp_adjust_head support in ndo_xdp/XDP_SETUP_PROG.
+
+Bj?rn T?pel (2):
+  i40e: add XDP support for pass and drop actions
+  i40e: add support for XDP_TX action
+
+ drivers/net/ethernet/intel/i40e/i40e.h         |   8 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  42 ++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 352 ++++++++++++++++++++-----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 244 ++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h    |  12 +
+ 5 files changed, 553 insertions(+), 105 deletions(-)
+
+-- 
+2.11.0
+
