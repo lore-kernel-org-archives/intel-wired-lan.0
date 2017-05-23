@@ -1,33 +1,69 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 23 May 2017 18:43:48 +0300
-Subject: [Intel-wired-lan] [PATCH] e1000e: use disable_hardirq() also
- for MSIX vectors in e1000_netpoll()
-In-Reply-To: <CAM_iQpUD9qJepFn-8M32+VcureTgM77-beY9=+tm0jC7Btkg7Q@mail.gmail.com>
-References: <149517832870.37403.16008624383220981105.stgit@buzz>
- <CAM_iQpUD9qJepFn-8M32+VcureTgM77-beY9=+tm0jC7Btkg7Q@mail.gmail.com>
-Message-ID: <889b47a8-6b52-bf90-6a0d-823e9b03361e@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 23 May 2017 09:51:19 -0700
+Subject: [Intel-wired-lan] [PATCH v6 1/2] i40e: add XDP support for pass
+	and drop actions
+In-Reply-To: <20170523073317.11900-2-bjorn.topel@gmail.com>
+References: <20170523073317.11900-1-bjorn.topel@gmail.com>
+ <20170523073317.11900-2-bjorn.topel@gmail.com>
+Message-ID: <CAKgT0UdAP=rE4YwxD0+uXbY2Z+DsNySeYubkxxM_1VN-rKQKXA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 5/19/2017 21:34, Cong Wang wrote:
-> On Fri, May 19, 2017 at 12:18 AM, Konstantin Khlebnikov
-> <khlebnikov@yandex-team.ru> wrote:
->> Replace disable_irq() which waits for threaded irq handlers with
->> disable_hardirq() which waits only for hardirq part.
->>
->> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
->> Fixes: 311191297125 ("e1000: use disable_hardirq() for e1000_netpoll()")
-> Thomas had a similar patch, I don't know why he never sends it
-> out formally. Anyway,
+On Tue, May 23, 2017 at 12:33 AM, Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
 >
-> Acked-by: Cong Wang <xiyou.wangcong@gmail.com>
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> This commit adds basic XDP support for i40e derived NICs. All XDP
+> actions will end up in XDP_DROP.
+>
+> Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Ack. Let's pick up this patch.
+So I only really see one issue which I pointed out earlier. Basically
+the i40e_change_mtu call can't really be dependent on vsi->rx_buf_len
+since rx_buf_len is changed as a result of changing the MTU.
 
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h      |   7 ++
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |  75 ++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 130 +++++++++++++++++++++-------
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h |   1 +
+>  4 files changed, 182 insertions(+), 31 deletions(-)
+>
+
+[...]
+
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 8d1d3b859af7..c8b1db0ebb9e 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -27,6 +27,7 @@
+>  #include <linux/etherdevice.h>
+>  #include <linux/of_net.h>
+>  #include <linux/pci.h>
+> +#include <linux/bpf.h>
+>
+>  /* Local includes */
+>  #include "i40e.h"
+> @@ -2408,6 +2409,13 @@ static int i40e_change_mtu(struct net_device *netdev, int new_mtu)
+>         struct i40e_vsi *vsi = np->vsi;
+>         struct i40e_pf *pf = vsi->back;
+>
+> +       if (i40e_enabled_xdp_vsi(vsi)) {
+> +               int frame_size = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
+> +
+> +               if (frame_size > vsi->rx_buf_len)
+> +                       return -EINVAL;
+> +       }
+> +
+
+So this code suffers from the same issue that John's ixgbe code did.
+You might be better off implementing something like we did with
+i40e_vsi_configure_rx. Basically the upper limit can be either 3K or
+2K if the page size greater than 4K or the LEGACY_RX flag is set. You
+might look at adding a check here for that instead of just comparing
+it to vsi->rx_buf_len since rx_buf_len can change depending on the MTU
+size.
+
+- Alex
