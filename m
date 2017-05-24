@@ -1,12 +1,12 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 24 May 2017 14:45:41 -0700
-Subject: [Intel-wired-lan] [PATCH 2/4] [next-queue]net: i40e: Add
- infrastructure for queue channel support with the TCs and queue
- configurations offloaded via mqprio scheduler
-In-Reply-To: <149524190808.11022.3222127507844771494.stgit@anamdev.jf.intel.com>
+Date: Wed, 24 May 2017 14:59:59 -0700
+Subject: [Intel-wired-lan] [PATCH 1/4] [next-queue]net: mqprio:
+ Introduce new hardware offload mode in mqprio for offloading full TC
+ configurations
+In-Reply-To: <149524190301.11022.16999010740843369111.stgit@anamdev.jf.intel.com>
 References: <149524122523.11022.4541073724650541658.stgit@anamdev.jf.intel.com>
- <149524190808.11022.3222127507844771494.stgit@anamdev.jf.intel.com>
-Message-ID: <CAKgT0UdLNrnjuYxmrkD8V5N0V8gXMGLzGnaq-rRV_g0nE5HTJw@mail.gmail.com>
+ <149524190301.11022.16999010740843369111.stgit@anamdev.jf.intel.com>
+Message-ID: <CAKgT0UeKf37YKbw2bgZKXs4Or4aK6p64zRSNk9ZSnc=kp0_JCQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,109 +15,97 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Fri, May 19, 2017 at 5:58 PM, Amritha Nambiar
 <amritha.nambiar@intel.com> wrote:
-> This patch sets up the infrastructure for offloading TCs and
-> queue configurations to the hardware by creating HW channels(VSI).
-> A new channel is created for each of the traffic class
-> configuration offloaded via mqprio framework except for the first TC
-> (TC0). TC0 for the main VSI is also reconfigured as per user provided
-> queue parameters. Queue counts that are not power-of-2 are handled by
-> reconfiguring RSS by reprogramming LUTs using the queue count value.
-> This patch also handles configuring the TX rings for the channels,
-> setting up the RX queue map for channel.
+> This patch introduces a new hardware offload mode in mqprio
+> which makes full use of the mqprio options, the TCs, the
+> queue configurations and the bandwidth rates for the TCs.
+> This is achieved by setting the value 2 for the "hw" option.
+> This new offload mode supports new attributes for traffic
+> class such as minimum and maximum values for bandwidth rate limits.
 >
-> Also, the channels so created are removed and all the queue
-> configuration is set to default when the qdisc is detached from the
-> root of the device.
+> Introduces a new datastructure 'tc_mqprio_qopt_offload' for offloading
+> mqprio queue options and use this to be shared between the kernel and
+> device driver. This contains a copy of the exisiting datastructure
+> for mqprio queue options. This new datastructure can be extended when
+> adding new attributes for traffic class such as bandwidth rate limits. The
+> existing datastructure for mqprio queue options will be shared between the
+> kernel and userspace.
+>
+> This patch enables configuring additional attributes associated
+> with a traffic class such as minimum and maximum bandwidth
+> rates and can be offloaded to the hardware in the new offload mode.
+> The min and max limits for bandwidth rates are provided
+> by the user along with the the TCs and the queue configurations
+> when creating the mqprio qdisc.
+>
+> Example:
+> # tc qdisc add dev eth0 root mqprio num_tc 2  map 0 0 0 0 1 1 1 1\
+>   queues 4 at 0 4 at 4 min_rate 0Mbit 0Mbit max_rate 55Mbit 60Mbit hw 2
+>
+> To dump the bandwidth rates:
+>
+> # tc qdisc show dev eth0
+> qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
+>              queues:(0:3) (4:7)
+>              min rates:0bit 0bit
+>              max rates:55Mbit 60Mbit
 >
 > Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h      |   36 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c |  740 +++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h |    2
->  3 files changed, 771 insertions(+), 7 deletions(-)
+>  include/linux/netdevice.h      |    2
+>  include/net/pkt_cls.h          |    7 ++
+>  include/uapi/linux/pkt_sched.h |   13 +++
+>  net/sched/sch_mqprio.c         |  169 +++++++++++++++++++++++++++++++++++++---
+>  4 files changed, 180 insertions(+), 11 deletions(-)
 >
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-> index 395ca94..0915b02 100644
 
 [...]
 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 8d1d3b85..e1bea45 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> diff --git a/net/sched/sch_mqprio.c b/net/sched/sch_mqprio.c
+> index 0a4cf27..6457ec9 100644
+> --- a/net/sched/sch_mqprio.c
+> +++ b/net/sched/sch_mqprio.c
+> @@ -18,10 +18,13 @@
+>  #include <net/netlink.h>
+>  #include <net/pkt_sched.h>
+>  #include <net/sch_generic.h>
+> +#include <net/pkt_cls.h>
+>
+>  struct mqprio_sched {
+>         struct Qdisc            **qdiscs;
+>         int hw_offload;
+> +       u32 flags;
+> +       u64 min_rate[TC_QOPT_MAX_QUEUE], max_rate[TC_QOPT_MAX_QUEUE];
+>  };
+>
+>  static void mqprio_destroy(struct Qdisc *sch)
+> @@ -39,10 +42,21 @@ static void mqprio_destroy(struct Qdisc *sch)
+>         }
+>
+>         if (priv->hw_offload && dev->netdev_ops->ndo_setup_tc) {
+> -               struct tc_mqprio_qopt offload = { 0 };
+> -               struct tc_to_netdev tc = { .type = TC_SETUP_MQPRIO,
+> -                                          { .mqprio = &offload } };
+> +               struct tc_mqprio_qopt_offload offload = { 0 };
 
-[...]
+So this is currently throwing a warning when I pull these patches and
+build this with gcc 6.2. I think the correct setup is "offload = {{ 0
+}}" in order to indicate that we are initializing the inner structure
+and all other data to 0.
 
-> +/**
-> + * i40e_create_queue_channel - function to create channel
-> + * @vsi: VSI to be configured
-> + * @ch: ptr to channel (it contains channel specific params)
-> + *
-> + * This function creates channel (VSI) using num_queues specified by user,
-> + * reconfigs RSS if needed.
-> + **/
-> +int i40e_create_queue_channel(struct i40e_vsi *vsi,
-> +                             struct i40e_channel *ch)
-> +{
-> +       struct i40e_pf *pf = vsi->back;
-> +       bool reconfig_rss;
-> +       int err;
-> +
-> +       if (!ch)
-> +               return -EINVAL;
-> +
-> +       if (!ch->num_queue_pairs) {
-> +               dev_err(&pf->pdev->dev, "Invalid num_queues requested: %d\n",
-> +                       ch->num_queue_pairs);
-> +               return -EINVAL;
-> +       }
-> +
-> +       /* validate user requested num_queues for channel */
-> +       err = i40e_validate_num_queues(pf, ch->num_queue_pairs, vsi,
-> +                                      &reconfig_rss);
-> +       if (err) {
-> +               dev_info(&pf->pdev->dev, "Failed to validate num_queues (%d)\n",
-> +                        ch->num_queue_pairs);
-> +               return -EINVAL;
-> +       }
-> +
-> +       /* By default we are in VEPA mode, if this is the first VF/VMDq
-> +        * VSI to be added switch to VEB mode.
-> +        */
-> +       if ((!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) ||
-> +           (!i40e_is_any_channel(vsi))) {
-> +               if (!is_power_of_2(vsi->tc_config.tc_info[0].qcount)) {
-> +                       dev_info(&pf->pdev->dev,
-> +                                "Failed to create channel. Override queues (%u) not power of 2\n",
-> +                                vsi->tc_config.tc_info[0].qcount);
-> +                       return -EINVAL;
+> +               struct tc_to_netdev tc = { 0 };
+>
+> +               switch (priv->hw_offload) {
+> +               case TC_MQPRIO_HW_OFFLOAD_TCS:
+> +                       tc.type = TC_SETUP_MQPRIO;
+> +                       tc.mqprio = &offload.qopt;
+> +                       break;
+> +               case TC_MQPRIO_HW_OFFLOAD:
+> +                       tc.type = TC_SETUP_MQPRIO_EXT;
+> +                       tc.mqprio_qopt = &offload;
+> +                       break;
+> +               default:
+> +                       return;
 > +               }
-> +
-> +               if (vsi->type == I40E_VSI_SRIOV) {
-> +                       if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
-> +                               dev_info(&pf->pdev->dev,
-> +                                        "Expected to be VEB mode by this time\n");
-> +                               return -EINVAL;
-> +                       }
-> +               }
-> +               if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
-> +                       pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
-> +
-> +                       if (vsi->type == I40E_VSI_MAIN) {
-> +                               if (pf->flags & I40E_FLAG_TC_MQPRIO)
-> +                                       i40e_do_reset(pf,
-> +                                       BIT_ULL(__I40E_PF_RESET_REQUESTED),
-> +                                                     true);
-> +                               else
-> +                                       i40e_do_reset_safe(pf,
-> +                                       BIT_ULL(__I40E_PF_RESET_REQUESTED));
-
-So these BIT_ULL lines are triggering a check in checkpatch, and I
-have to say I don't really like this as it really is messed up in
-terms of formatting.
-
-If nothing else you might want to look at defining a macro that
-replaces the line. That way you could still represent the same data
-without having to resort to misaligning things to make it under 80
-characters.
+>                 dev->netdev_ops->ndo_setup_tc(dev, sch->handle, 0, &tc);
+>         } else {
+>                 netdev_set_num_tc(dev, 0);
