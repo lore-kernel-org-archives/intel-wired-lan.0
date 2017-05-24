@@ -1,96 +1,123 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 24 May 2017 09:31:16 -0700
-Subject: [Intel-wired-lan] [PATCH v7 0/2] i40e: support for XDP
-In-Reply-To: <20170524055535.14155-1-bjorn.topel@gmail.com>
-References: <20170524055535.14155-1-bjorn.topel@gmail.com>
-Message-ID: <CAKgT0Ud6fRk2VQ=tc5rPMarD+MM1uXMqU701K6++ti4ufi6DdA@mail.gmail.com>
+Date: Wed, 24 May 2017 14:45:41 -0700
+Subject: [Intel-wired-lan] [PATCH 2/4] [next-queue]net: i40e: Add
+ infrastructure for queue channel support with the TCs and queue
+ configurations offloaded via mqprio scheduler
+In-Reply-To: <149524190808.11022.3222127507844771494.stgit@anamdev.jf.intel.com>
+References: <149524122523.11022.4541073724650541658.stgit@anamdev.jf.intel.com>
+ <149524190808.11022.3222127507844771494.stgit@anamdev.jf.intel.com>
+Message-ID: <CAKgT0UdLNrnjuYxmrkD8V5N0V8gXMGLzGnaq-rRV_g0nE5HTJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This series looks good to me.
+On Fri, May 19, 2017 at 5:58 PM, Amritha Nambiar
+<amritha.nambiar@intel.com> wrote:
+> This patch sets up the infrastructure for offloading TCs and
+> queue configurations to the hardware by creating HW channels(VSI).
+> A new channel is created for each of the traffic class
+> configuration offloaded via mqprio framework except for the first TC
+> (TC0). TC0 for the main VSI is also reconfigured as per user provided
+> queue parameters. Queue counts that are not power-of-2 are handled by
+> reconfiguring RSS by reprogramming LUTs using the queue count value.
+> This patch also handles configuring the TX rings for the channels,
+> setting up the RX queue map for channel.
+>
+> Also, the channels so created are removed and all the queue
+> configuration is set to default when the qdisc is detached from the
+> root of the device.
+>
+> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h      |   36 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |  740 +++++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h |    2
+>  3 files changed, 771 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+> index 395ca94..0915b02 100644
 
-Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
+[...]
 
-On Tue, May 23, 2017 at 10:55 PM, Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
-> From: Bj?rn T?pel <bjorn.topel@intel.com>
->
-> This series adds XDP support for i40e-based NICs.
->
-> The first patch wires up ndo_xdp and implements XDP_DROP semantics for
-> all actions. The second patch adds egress support via the XDP_TX
-> action.
->
-> Performance numbers (40GbE port, 64B packets) for xdp1 and xdp2
-> programs, from samples/bpf/:
->
->  IOMMU                      | xdp1      | xdp2
->  ---------------------------+-----------+-----------
->  iommu=off                  | 29.7 Mpps | 17.1 Mpps
->  iommu=pt intel_iommu=on    | 29.7 Mpps | 11.6 Mpps
->  iommu=on intel_iommu=on    | 21.8 Mpps |  3.7 Mpps
->
-> Future improvements, not covered by the patches:
->   * Proper debugfs support.
->   * i40evf support.
->
-> Thanks to Alex, Daniel, John and Scott for all feedback!
->
-> v7:
->   * Proper MTU check for XDP
->
-> v6:
->   * Addressed various cosmetic issues (reverse xmas tree formatting on
->     local variables, preserve function parameter ordering, qvector
->     mapping).
->   * Placed XDP Tx rings directly after Tx rings. This opened up to
->     various simplications in the code, since we can now treat the XDP
->     Tx rings as an extension of existing Tx ring space. E.g.,
->     i40e_set_ringparam now has smaller changeset.
->   * Ring allocation and setup was simplified (i40e_alloc_rings,
->     i40e_vsi_alloc_arrays).
->
-> v5:
->   * Aligned the implementation to ixgbe's XDP support: naming, favor
->     xchg instead of RCU semantics
->   * Support for XDP headroom (piggybacking on Alex' build_skb work)
->   * Added xdp tracepoints for exception states (as suggested by
->     Daniel)
->
-> v4:
->   * Removed unused i40e_page_is_reserved function
->   * Prior running the XDP program, set the struct xdp_buff
->     data_hard_start member
->
-> v3:
->   * Rebased patch set on Jeff's dev-queue branch
->   * MSI-X is no longer a prerequisite for XDP
->   * RCU locking for the XDP program and XDP_RX support is introduced
->     in the same patch
->   * Rx bytes is now bumped for XDP
->   * Removed pointer-to-pointer clunkiness
->   * Added comments to XDP preconditions in ndo_xdp
->   * When a non-EOF is received, log once, and drop the frame
->
-> v2:
->   * Fixed kbuild error for PAGE_SIZE >= 8192.
->   * Renamed i40e_try_flip_rx_page to i40e_can_reuse_rx_page, which is
->     more in line to the other Intel Ethernet drivers (igb/fm10k).
->   * Validate xdp_adjust_head support in ndo_xdp/XDP_SETUP_PROG.
->
-> Bj?rn T?pel (2):
->   i40e: add XDP support for pass and drop actions
->   i40e: add support for XDP_TX action
->
->  drivers/net/ethernet/intel/i40e/i40e.h         |   8 +
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  42 ++-
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 364 ++++++++++++++++++++-----
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 244 ++++++++++++++---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h    |  12 +
->  5 files changed, 565 insertions(+), 105 deletions(-)
->
-> --
-> 2.11.0
->
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 8d1d3b85..e1bea45 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+
+[...]
+
+> +/**
+> + * i40e_create_queue_channel - function to create channel
+> + * @vsi: VSI to be configured
+> + * @ch: ptr to channel (it contains channel specific params)
+> + *
+> + * This function creates channel (VSI) using num_queues specified by user,
+> + * reconfigs RSS if needed.
+> + **/
+> +int i40e_create_queue_channel(struct i40e_vsi *vsi,
+> +                             struct i40e_channel *ch)
+> +{
+> +       struct i40e_pf *pf = vsi->back;
+> +       bool reconfig_rss;
+> +       int err;
+> +
+> +       if (!ch)
+> +               return -EINVAL;
+> +
+> +       if (!ch->num_queue_pairs) {
+> +               dev_err(&pf->pdev->dev, "Invalid num_queues requested: %d\n",
+> +                       ch->num_queue_pairs);
+> +               return -EINVAL;
+> +       }
+> +
+> +       /* validate user requested num_queues for channel */
+> +       err = i40e_validate_num_queues(pf, ch->num_queue_pairs, vsi,
+> +                                      &reconfig_rss);
+> +       if (err) {
+> +               dev_info(&pf->pdev->dev, "Failed to validate num_queues (%d)\n",
+> +                        ch->num_queue_pairs);
+> +               return -EINVAL;
+> +       }
+> +
+> +       /* By default we are in VEPA mode, if this is the first VF/VMDq
+> +        * VSI to be added switch to VEB mode.
+> +        */
+> +       if ((!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) ||
+> +           (!i40e_is_any_channel(vsi))) {
+> +               if (!is_power_of_2(vsi->tc_config.tc_info[0].qcount)) {
+> +                       dev_info(&pf->pdev->dev,
+> +                                "Failed to create channel. Override queues (%u) not power of 2\n",
+> +                                vsi->tc_config.tc_info[0].qcount);
+> +                       return -EINVAL;
+> +               }
+> +
+> +               if (vsi->type == I40E_VSI_SRIOV) {
+> +                       if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
+> +                               dev_info(&pf->pdev->dev,
+> +                                        "Expected to be VEB mode by this time\n");
+> +                               return -EINVAL;
+> +                       }
+> +               }
+> +               if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
+> +                       pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
+> +
+> +                       if (vsi->type == I40E_VSI_MAIN) {
+> +                               if (pf->flags & I40E_FLAG_TC_MQPRIO)
+> +                                       i40e_do_reset(pf,
+> +                                       BIT_ULL(__I40E_PF_RESET_REQUESTED),
+> +                                                     true);
+> +                               else
+> +                                       i40e_do_reset_safe(pf,
+> +                                       BIT_ULL(__I40E_PF_RESET_REQUESTED));
+
+So these BIT_ULL lines are triggering a check in checkpatch, and I
+have to say I don't really like this as it really is messed up in
+terms of formatting.
+
+If nothing else you might want to look at defining a macro that
+replaces the line. That way you could still represent the same data
+without having to resort to misaligning things to make it under 80
+characters.
