@@ -1,61 +1,52 @@
-From: tndave <tushar.n.dave@oracle.com>
-Date: Thu, 25 May 2017 09:00:24 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix incorrect pf->flags
-In-Reply-To: <1495703624.49259.39.camel@intel.com>
-References: <1495242112-14835-1-git-send-email-tushar.n.dave@oracle.com>
- <1495703624.49259.39.camel@intel.com>
-Message-ID: <4b4638a9-a995-de0a-cdcd-97c891e1b6b3@oracle.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 25 May 2017 18:13:57 +0000
+Subject: [Intel-wired-lan] [PATCH net] i40e: Fix state flags for bit set
+ and	clean operations of PF
+In-Reply-To: <1494642416-21796-1-git-send-email-maurosr@linux.vnet.ibm.com>
+References: <1494642416-21796-1-git-send-email-maurosr@linux.vnet.ibm.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA40B8@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Mauro S. M. Rodrigues
+> Sent: Friday, May 12, 2017 7:27 PM
+> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Cc: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>;
+> gpiccoli at linux.vnet.ibm.com
+> Subject: [Intel-wired-lan] [PATCH net] i40e: Fix state flags for bit set and
+> clean operations of PF
+> 
+> Commit 0da36b9774cc ("i40e: use DECLARE_BITMAP for state fields")
+> introduced changes in the way i40e works with state flags converting them to
+> bitmaps using kernel bitmap API. This change introduced a regression due to
+> a mistaken substitution using __I40E_VSI_DOWN instead of __I40E_DOWN
+> when testing state of a PF at i40e_reset_subtask() function. This caused a
+> flood in the kernel log with the follow message:
+> 
+> [49.013] i40e 0002:01:00.0: bad reset request 0x00000020
+> 
+> Commit d19cb64b9222 ("i40e: separate PF and VSI state flags") also
+> introduced some misuse of the VSI and PF flags, so both could be considered
+> as the offenders.
+> 
+> This patch simply fixes the flags where it makes sense by changing
+> __I40E_VSI_DOWN to __I40E_DOWN.
+> 
+> Fixes: 0da36b9774cc ("i40e: use DECLARE_BITMAP for state fields")
+> Fixes: d19cb64b9222 ("i40e: separate PF and VSI state flags")
+> 
+> Reviewed-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+> Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 36 ++++++++++++++----------
+> -----
+>  1 file changed, 18 insertions(+), 18 deletions(-)
+
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
-On 05/25/2017 02:13 AM, Jeff Kirsher wrote:
-> On Fri, 2017-05-19 at 18:01 -0700, Tushar Dave wrote:
->> Fix bug introduced by 'commit 47994c119a36e ("i40e: remove
->> hw_disabled_flags in favor of using separate flag bits")' that
->> mistakenly wipes out pf->flags.
->>
->> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
->> ---
->>  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> :-(
-> Not even close to applying, I even tried to apply by hand but the patch
-> was not near the same as my branch in my tree.  I will forgive this
-> second instance of a patch generated on different tree/branch, but I
-> really must insist that you use my tree & branch if you need/want to
-> make changes to Intel wired LAN driver changes.
-Apology Jeff. I used Dave's net tree.
-Now onwards, I will use your 'net-queue:dev_queue' for bug fixes and
-'next-queue:dev_queue' for developmental changes to Intel Ethernet drivers.
-
-Being this patch a bug fix, I will send v2 based off your git tree
-'net-queue' on branch 'dev_queue'. Hope that is okay?
-
-Thanks.
-
--Tushar
->
->>
->> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
->> b/drivers/net/ethernet/intel/i40e/i40e_main.c
->> index d5c9c9e..6b98d34 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
->> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
->> @@ -8821,9 +8821,9 @@ static int i40e_sw_init(struct i40e_pf *pf)
->>  		    (pf->hw.aq.api_min_ver > 4))) {
->>  		/* Supported in FW API version higher than 1.4 */
->>  		pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
->> -		pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
->> +		pf->flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
->>  	} else {
->> -		pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
->> +		pf->flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
->>  	}
->>
->>  	pf->eeprom_version = 0xDEAD;
