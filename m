@@ -1,54 +1,41 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 25 May 2017 02:13:44 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix incorrect pf->flags
-In-Reply-To: <1495242112-14835-1-git-send-email-tushar.n.dave@oracle.com>
-References: <1495242112-14835-1-git-send-email-tushar.n.dave@oracle.com>
-Message-ID: <1495703624.49259.39.camel@intel.com>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Date: Thu, 25 May 2017 12:28:02 +0200
+Subject: [Intel-wired-lan] [PATCH v7 0/2] i40e: support for XDP
+In-Reply-To: <CAKgT0Ud6fRk2VQ=tc5rPMarD+MM1uXMqU701K6++ti4ufi6DdA@mail.gmail.com>
+References: <20170524055535.14155-1-bjorn.topel@gmail.com>
+ <CAKgT0Ud6fRk2VQ=tc5rPMarD+MM1uXMqU701K6++ti4ufi6DdA@mail.gmail.com>
+Message-ID: <5926B1B2.5050605@iogearbox.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2017-05-19 at 18:01 -0700, Tushar Dave wrote:
-> Fix bug introduced by 'commit 47994c119a36e ("i40e: remove
-> hw_disabled_flags in favor of using separate flag bits")' that
-> mistakenly wipes out pf->flags.
-> 
-> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+On 05/24/2017 06:31 PM, Alexander Duyck wrote:
+> This series looks good to me.
+>
+> Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
+>
+> On Tue, May 23, 2017 at 10:55 PM, Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
+>> From: Bj?rn T?pel <bjorn.topel@intel.com>
+>>
+>> This series adds XDP support for i40e-based NICs.
 
-:-(
-Not even close to applying, I even tried to apply by hand but the patch
-was not near the same as my branch in my tree.  I will forgive this
-second instance of a patch generated on different tree/branch, but I
-really must insist that you use my tree & branch if you need/want to
-make changes to Intel wired LAN driver changes.
+Awesome, very nice! Will these land this net-next cycle? :)
 
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index d5c9c9e..6b98d34 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -8821,9 +8821,9 @@ static int i40e_sw_init(struct i40e_pf *pf)
->  		    (pf->hw.aq.api_min_ver > 4))) {
->  		/* Supported in FW API version higher than 1.4 */
->  		pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
-> -		pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-> +		pf->flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
->  	} else {
-> -		pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-> +		pf->flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
->  	}
->  
->  	pf->eeprom_version = 0xDEAD;
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170525/5f66082b/attachment.asc>
+>> The first patch wires up ndo_xdp and implements XDP_DROP semantics for
+>> all actions. The second patch adds egress support via the XDP_TX
+>> action.
+>>
+>> Performance numbers (40GbE port, 64B packets) for xdp1 and xdp2
+>> programs, from samples/bpf/:
+>>
+>>   IOMMU                      | xdp1      | xdp2
+>>   ---------------------------+-----------+-----------
+>>   iommu=off                  | 29.7 Mpps | 17.1 Mpps
+>>   iommu=pt intel_iommu=on    | 29.7 Mpps | 11.6 Mpps
+>>   iommu=on intel_iommu=on    | 21.8 Mpps |  3.7 Mpps
+>>
+>> Future improvements, not covered by the patches:
+>>    * Proper debugfs support.
+>>    * i40evf support.
