@@ -1,9 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 25 May 2017 18:19:14 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: Bump version number
-In-Reply-To: <20170518215507.49784-1-anthony.l.nguyen@intel.com>
-References: <20170518215507.49784-1-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA40D9@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 25 May 2017 18:19:30 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbevf: Bump version number
+In-Reply-To: <20170518215523.49844-1-anthony.l.nguyen@intel.com>
+References: <20170518215523.49844-1-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DA40E5@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,13 +15,13 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, May 18, 2017 2:55 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: Bump version number
+> Subject: [Intel-wired-lan] [PATCH 2/2] ixgbevf: Bump version number
 > 
-> Update ixgbe version number.
+> Update ixgbevf version number.
 > 
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
