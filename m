@@ -1,35 +1,39 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 27 May 2017 01:21:36 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: use disable_hardirq() also
- for MSIX vectors in e1000_netpoll()
-In-Reply-To: <149517832870.37403.16008624383220981105.stgit@buzz>
-References: <149517832870.37403.16008624383220981105.stgit@buzz>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C5FC04C@ORSMSX101.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 30 May 2017 08:41:38 -0700
+Subject: [Intel-wired-lan] [i40e] regression on TCP stream and TCP
+	maerts, kernel-4.12.0-0.rc2
+In-Reply-To: <655ed9ab-853e-7497-9ea3-cc8d13f56043@redhat.com>
+References: <655ed9ab-853e-7497-9ea3-cc8d13f56043@redhat.com>
+Message-ID: <CAKgT0UcdJQWqr_zxxi36a6_3iMwBNow-YS723i7t6xsKvAqvCA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-
-> owner at vger.kernel.org] On Behalf Of Konstantin Khlebnikov
-> Sent: Friday, May 19, 2017 12:19 AM
-> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey
-> T <jeffrey.t.kirsher@intel.com>
-> Cc: Dave Jones <davej@codemonkey.org.uk>; WANG Cong
-> <xiyou.wangcong@gmail.com>; David S. Miller <davem@davemloft.net>;
-> Sabrina Dubroca <sd@queasysnail.net>
-> Subject: [PATCH] e1000e: use disable_hardirq() also for MSIX vectors in
-> e1000_netpoll()
-> 
-> Replace disable_irq() which waits for threaded irq handlers with
-> disable_hardirq() which waits only for hardirq part.
-> 
-> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-> Fixes: 311191297125 ("e1000: use disable_hardirq() for e1000_netpoll()")
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+On Tue, May 30, 2017 at 6:43 AM, Adam Okuliar <aokuliar@redhat.com> wrote:
+> Hello,
+>
+> we found regression on intel card(XL710) with i40e driver. Regression is
+> about ~45%
+> on TCP_STREAM and TCP_MAERTS test for IPv4 and IPv6. Regression was first
+> visible in kernel-4.12.0-0.rc1.
+>
+> More details about results you can see in uploaded images in bugzilla. [0]
+>
+>
+> [0] https://bugzilla.kernel.org/show_bug.cgi?id=195923
+>
+>
+> Best regards, / S pozdravom,
+>
+> Adri?n Toma?ov
+> Kernel Performance QE
+> atomasov at redhat.com
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+I have added the i40e driver maintainer and the intel-wired-lan
+mailing list so that we can make are developers aware of the issue.
 
+Thanks.
+
+- Alex
