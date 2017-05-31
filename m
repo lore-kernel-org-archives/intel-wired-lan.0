@@ -1,55 +1,47 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 30 May 2017 18:27:43 -0700
-Subject: [Intel-wired-lan] [i40e] regression on TCP stream and TCP
-	maerts, kernel-4.12.0-0.rc2
-In-Reply-To: <CAKgT0UcdJQWqr_zxxi36a6_3iMwBNow-YS723i7t6xsKvAqvCA@mail.gmail.com>
-References: <655ed9ab-853e-7497-9ea3-cc8d13f56043@redhat.com>
- <CAKgT0UcdJQWqr_zxxi36a6_3iMwBNow-YS723i7t6xsKvAqvCA@mail.gmail.com>
-Message-ID: <CAKgT0Ufb41o=WM=3DM9cwvrw9N5AFn-uL0p1gQB-m+D3BX3DKA@mail.gmail.com>
+From: Jia-Ju Bai <baijiaju1990@163.com>
+Date: Wed, 31 May 2017 10:12:11 +0800
+Subject: [Intel-wired-lan] [PATCH] i40e: Fix a sleep-in-atomic bug
+Message-ID: <1496196731-748-1-git-send-email-baijiaju1990@163.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, May 30, 2017 at 8:41 AM, Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
-> On Tue, May 30, 2017 at 6:43 AM, Adam Okuliar <aokuliar@redhat.com> wrote:
->> Hello,
->>
->> we found regression on intel card(XL710) with i40e driver. Regression is
->> about ~45%
->> on TCP_STREAM and TCP_MAERTS test for IPv4 and IPv6. Regression was first
->> visible in kernel-4.12.0-0.rc1.
->>
->> More details about results you can see in uploaded images in bugzilla. [0]
->>
->>
->> [0] https://bugzilla.kernel.org/show_bug.cgi?id=195923
->>
->>
->> Best regards, / S pozdravom,
->>
->> Adri?n Toma?ov
->> Kernel Performance QE
->> atomasov at redhat.com
->
-> I have added the i40e driver maintainer and the intel-wired-lan
-> mailing list so that we can make are developers aware of the issue.
->
-> Thanks.
->
-> - Alex
+The driver may sleep under a spin lock, and the function call path is:
+i40e_ndo_set_vf_port_vlan (acquire the lock by spin_lock_bh)
+  i40e_vsi_remove_pvid
+    i40e_vlan_stripping_disable
+      i40e_aq_update_vsi_params
+        i40e_asq_send_command
+          mutex_lock --> may sleep
 
-Adam,
+To fixed it, the spin lock is released before "i40e_vsi_remove_pvid", and 
+the lock is acquired again after this function.
 
-We are having some issues trying to reproduce what you reported.
+Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Can you provide some additional data. Specifically we would be looking
-for an "ethtool -i", and an "ethtool -S" for the port before and after
-the test. If you can attach it to the bugzilla that would be
-appreciated.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 95c23fb..0fb38ca 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -3017,10 +3017,12 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
+ 					   VLAN_VID_MASK));
+ 	}
+ 
++	spin_unlock_bh(&vsi->mac_filter_hash_lock);
+ 	if (vlan_id || qos)
+ 		ret = i40e_vsi_add_pvid(vsi, vlanprio);
+ 	else
+ 		i40e_vsi_remove_pvid(vsi);
++	spin_lock_bh(&vsi->mac_filter_hash_lock);
+ 
+ 	if (vlan_id) {
+ 		dev_info(&pf->pdev->dev, "Setting VLAN %d, QOS 0x%x on VF %d\n",
+-- 
+1.7.9.5
 
-Thanks.
 
-- Alex
