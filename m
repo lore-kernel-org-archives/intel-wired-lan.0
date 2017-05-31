@@ -1,57 +1,87 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Wed, 31 May 2017 18:23:41 +0200
-Subject: [Intel-wired-lan] [PULL] topic/e1000e-fix
-In-Reply-To: <20170531.110833.1362264472730468352.davem@davemloft.net>
-References: <CAPM=9twH-CXm+xj2Os87Ra7nOBQ+WNXYGF83wFqpQ3s=MNx_mQ@mail.gmail.com>
- <CAKMK7uF-b1U7qipgEoYnAjDtrNdvKYT4KkoV2=krikkdGERkCw@mail.gmail.com>
- <CAKMK7uGbi2Bwfno9XogKZ-LUOyMepbtRyGuGrNYWwj6Cts+uag@mail.gmail.com>
- <20170531.110833.1362264472730468352.davem@davemloft.net>
-Message-ID: <CAKMK7uF6X==k_DP2Q+YAVywP46JBJZ++4QJyvdmGhC8+nE67FA@mail.gmail.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 31 May 2017 14:42:32 -0700
+Subject: [Intel-wired-lan] [i40e] regression on TCP stream and TCP
+	maerts, kernel-4.12.0-0.rc2
+In-Reply-To: <1496238507.22688.4.camel@redhat.com>
+References: <655ed9ab-853e-7497-9ea3-cc8d13f56043@redhat.com>
+ <CAKgT0UcdJQWqr_zxxi36a6_3iMwBNow-YS723i7t6xsKvAqvCA@mail.gmail.com>
+ <CAKgT0Ufb41o=WM=3DM9cwvrw9N5AFn-uL0p1gQB-m+D3BX3DKA@mail.gmail.com>
+ <1496238507.22688.4.camel@redhat.com>
+Message-ID: <CAKgT0Ucg9wHrKDBjQXKH6gziuinwcK9MO-jRC=0q60Lm-8vFqA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, May 31, 2017 at 5:08 PM, David Miller <davem@davemloft.net> wrote:
-> From: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Date: Wed, 31 May 2017 08:10:45 +0200
->
->> On Wed, May 31, 2017 at 7:54 AM, Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
->>> On Wed, May 31, 2017 at 1:06 AM, Dave Airlie <airlied@gmail.com> wrote:
->>>> On 31 May 2017 at 08:10, David Miller <davem@davemloft.net> wrote:
->>>>> From: Daniel Vetter <daniel.vetter@ffwll.ch>
->>>>> Date: Tue, 30 May 2017 22:15:42 +0200
->>>>>
->>>>>> If the e1000e maintainer wants to coalesce or not return statements
->>>>>> this simple way, that's imo on him to change the color as needed.
->>>>>
->>>>> That's not how things work.
->>>>>
->>>>> If the maintainer wants you to style things a certain way, either you
->>>>> do it that way or your patch isn't accepted.
->>>
->>> Consider this pull a regression report, pls handle it.
+On Wed, May 31, 2017 at 6:48 AM, Adrian Tomasov <atomasov@redhat.com> wrote:
+> On Tue, 2017-05-30 at 18:27 -0700, Alexander Duyck wrote:
+>> On Tue, May 30, 2017 at 8:41 AM, Alexander Duyck
+>> <alexander.duyck@gmail.com> wrote:
+>> >
+>> > On Tue, May 30, 2017 at 6:43 AM, Adam Okuliar <aokuliar@redhat.com>
+>> > wrote:
+>> > >
+>> > > Hello,
+>> > >
+>> > > we found regression on intel card(XL710) with i40e driver.
+>> > > Regression is
+>> > > about ~45%
+>> > > on TCP_STREAM and TCP_MAERTS test for IPv4 and IPv6. Regression
+>> > > was first
+>> > > visible in kernel-4.12.0-0.rc1.
+>> > >
+>> > > More details about results you can see in uploaded images in
+>> > > bugzilla. [0]
+>> > >
+>> > >
+>> > > [0] https://bugzilla.kernel.org/show_bug.cgi?id=195923
+>> > >
+>> > >
+>> > > Best regards, / S pozdravom,
+>> > >
+>> > > Adri?n Toma?ov
+>> > > Kernel Performance QE
+>> > > atomasov at redhat.com
+>> >
+>> > I have added the i40e driver maintainer and the intel-wired-lan
+>> > mailing list so that we can make are developers aware of the issue.
+>> >
+>> > Thanks.
+>> >
+>> > - Alex
 >>
->> And I guess I pile of more cc, to make this regression report
->> complete. I mean you got the backtrace, bisect and a proposed fix, and
->> the almost-whitespace change demanded is something gcc does in its
->> sleep. I'd understand a request to retest if it would be a real
->> functional change, but in this situation I have no idea why this
->> regression just can't be fixed already.
+>> Adam,
+>>
+>> We are having some issues trying to reproduce what you reported.
+>>
+>> Can you provide some additional data. Specifically we would be
+>> looking
+>> for an "ethtool -i", and an "ethtool -S" for the port before and
+>> after
+>> the test. If you can attach it to the bugzilla that would be
+>> appreciated.
+>>
+>> Thanks.
+>>
+>> - Alex
 >
-> And we can't understand why respinning with the requested change is
-> less work than making several postings such as this one.
+> Hello Alex,
+>
+> requested files are updated in bugzilla.
+>
+> If you have any questions about testing feel free to ask.
+>
+>
+> Best regards,
+>
+> Adrian
 
-I guess next time around we should do even less, i.e. report the
-regression + bisect and then escalate this until the netdev folks fix
-it on their own?
+So looking at the data I wonder if we don't have an MTU mismatch in
+the network config. I notice the "after" has rx_length_errors being
+reported. Recent changes made it so that i40e doesn't support jumbo
+frames by default, whereas before we could. You might want to check
+for that as that could cause the kind of performance issues you are
+seeing.
 
-Like Jani said every -rc1 a pile of our CI machines keel over, and
-unfortunately this patch here isn't the only one which seems to not
-really move anywhere.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+- Alex
