@@ -1,76 +1,39 @@
-From: Adrian Tomasov <atomasov@redhat.com>
-Date: Wed, 31 May 2017 15:48:27 +0200
-Subject: [Intel-wired-lan] [i40e] regression on TCP stream and TCP
- maerts, kernel-4.12.0-0.rc2
-In-Reply-To: <CAKgT0Ufb41o=WM=3DM9cwvrw9N5AFn-uL0p1gQB-m+D3BX3DKA@mail.gmail.com>
-References: <655ed9ab-853e-7497-9ea3-cc8d13f56043@redhat.com>
- <CAKgT0UcdJQWqr_zxxi36a6_3iMwBNow-YS723i7t6xsKvAqvCA@mail.gmail.com>
- <CAKgT0Ufb41o=WM=3DM9cwvrw9N5AFn-uL0p1gQB-m+D3BX3DKA@mail.gmail.com>
-Message-ID: <1496238507.22688.4.camel@redhat.com>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Wed, 31 May 2017 18:50:42 +0300
+Subject: [Intel-wired-lan] [PULL] topic/e1000e-fix
+In-Reply-To: <20170531.110833.1362264472730468352.davem@davemloft.net>
+References: <20170531.110833.1362264472730468352.davem@davemloft.net>
+Message-ID: <20170531155043.3596-1-jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2017-05-30 at 18:27 -0700, Alexander Duyck wrote:
-> On Tue, May 30, 2017 at 8:41 AM, Alexander Duyck
-> <alexander.duyck@gmail.com> wrote:
-> > 
-> > On Tue, May 30, 2017 at 6:43 AM, Adam Okuliar <aokuliar@redhat.com>
-> > wrote:
-> > > 
-> > > Hello,
-> > > 
-> > > we found regression on intel card(XL710) with i40e driver.
-> > > Regression is
-> > > about ~45%
-> > > on TCP_STREAM and TCP_MAERTS test for IPv4 and IPv6. Regression
-> > > was first
-> > > visible in kernel-4.12.0-0.rc1.
-> > > 
-> > > More details about results you can see in uploaded images in
-> > > bugzilla. [0]
-> > > 
-> > > 
-> > > [0] https://bugzilla.kernel.org/show_bug.cgi?id=195923
-> > > 
-> > > 
-> > > Best regards, / S pozdravom,
-> > > 
-> > > Adri?n Toma?ov
-> > > Kernel Performance QE
-> > > atomasov at redhat.com
-> > 
-> > I have added the i40e driver maintainer and the intel-wired-lan
-> > mailing list so that we can make are developers aware of the issue.
-> > 
-> > Thanks.
-> > 
-> > - Alex
-> 
-> Adam,
-> 
-> We are having some issues trying to reproduce what you reported.
-> 
-> Can you provide some additional data. Specifically we would be
-> looking
-> for an "ethtool -i", and an "ethtool -S" for the port before and
-> after
-> the test. If you can attach it to the bugzilla that would be
-> appreciated.
-> 
-> Thanks.
-> 
-> - Alex
+On Wed, 31 May 2017, David Miller <davem@davemloft.net> wrote:
+> And we can't understand why respinning with the requested change is
+> less work than making several postings such as this one.
 
-Hello Alex,
+When our CI hits tons of non-drm issues every merge window, I imagine
+our developers can start to get a little frustrated trying to get them
+fixed. Especially so when valid fixes like this get blocked by silly
+bikesheds from developers who don't even seem to have very many
+contributions upstream, and the maintainers don't respond. We have
+enough on our plates trying to get our own stuff fixed.
 
-requested files are updated in bugzilla.
+While I understand why our developers aren't willing to jump through all
+the hoops, updated patch follows. Please let's move on.
 
-If you have any questions about testing feel free to ask.
+BR,
+Jani.
 
 
-Best regards,
+Chris Wilson (1):
+  e1000e: Undo e1000e_pm_freeze if __e1000_shutdown fails
 
-Adrian
+ drivers/net/ethernet/intel/e1000e/netdev.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+-- 
+2.11.0
+
