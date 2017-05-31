@@ -1,47 +1,62 @@
-From: Jia-Ju Bai <baijiaju1990@163.com>
-Date: Wed, 31 May 2017 10:12:11 +0800
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix a sleep-in-atomic bug
-Message-ID: <1496196731-748-1-git-send-email-baijiaju1990@163.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Wed, 31 May 2017 08:10:45 +0200
+Subject: [Intel-wired-lan] [PULL] topic/e1000e-fix
+In-Reply-To: <CAKMK7uF-b1U7qipgEoYnAjDtrNdvKYT4KkoV2=krikkdGERkCw@mail.gmail.com>
+References: <20170530201542.a5rudn6xfykbj3la@phenom.ffwll.local>
+ <20170530.181022.1101254623191993046.davem@davemloft.net>
+ <CAPM=9twH-CXm+xj2Os87Ra7nOBQ+WNXYGF83wFqpQ3s=MNx_mQ@mail.gmail.com>
+ <CAKMK7uF-b1U7qipgEoYnAjDtrNdvKYT4KkoV2=krikkdGERkCw@mail.gmail.com>
+Message-ID: <CAKMK7uGbi2Bwfno9XogKZ-LUOyMepbtRyGuGrNYWwj6Cts+uag@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The driver may sleep under a spin lock, and the function call path is:
-i40e_ndo_set_vf_port_vlan (acquire the lock by spin_lock_bh)
-  i40e_vsi_remove_pvid
-    i40e_vlan_stripping_disable
-      i40e_aq_update_vsi_params
-        i40e_asq_send_command
-          mutex_lock --> may sleep
+On Wed, May 31, 2017 at 7:54 AM, Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
+> On Wed, May 31, 2017 at 1:06 AM, Dave Airlie <airlied@gmail.com> wrote:
+>> On 31 May 2017 at 08:10, David Miller <davem@davemloft.net> wrote:
+>>> From: Daniel Vetter <daniel.vetter@ffwll.ch>
+>>> Date: Tue, 30 May 2017 22:15:42 +0200
+>>>
+>>>> If the e1000e maintainer wants to coalesce or not return statements
+>>>> this simple way, that's imo on him to change the color as needed.
+>>>
+>>> That's not how things work.
+>>>
+>>> If the maintainer wants you to style things a certain way, either you
+>>> do it that way or your patch isn't accepted.
+>
+> Consider this pull a regression report, pls handle it.
 
-To fixed it, the spin lock is released before "i40e_vsi_remove_pvid", and 
-the lock is acquired again after this function.
+And I guess I pile of more cc, to make this regression report
+complete. I mean you got the backtrace, bisect and a proposed fix, and
+the almost-whitespace change demanded is something gcc does in its
+sleep. I'd understand a request to retest if it would be a real
+functional change, but in this situation I have no idea why this
+regression just can't be fixed already.
 
-Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |    2 ++
- 1 file changed, 2 insertions(+)
+Not sure if it's really preferred if regression reports come
+incomplete, without bugfix and bisect attached.
+-Daniel
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 95c23fb..0fb38ca 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -3017,10 +3017,12 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 					   VLAN_VID_MASK));
- 	}
- 
-+	spin_unlock_bh(&vsi->mac_filter_hash_lock);
- 	if (vlan_id || qos)
- 		ret = i40e_vsi_add_pvid(vsi, vlanprio);
- 	else
- 		i40e_vsi_remove_pvid(vsi);
-+	spin_lock_bh(&vsi->mac_filter_hash_lock);
- 
- 	if (vlan_id) {
- 		dev_info(&pf->pdev->dev, "Setting VLAN %d, QOS 0x%x on VF %d\n",
+>> I'm not really sure why Chris just couldn't respin already.
+>>
+>> Though really I think Chris should have just asked for a revert of the
+>> original patch that broke stuff, instead of trying to patch a driver
+>> if he doesn't have time to get the patch right for the maintainer.
+>
+> Ok, can we pls revert 2800209994f8 ("e1000e: Refactor PM flows") then?
+>
+> Thanks, Daniel
+> --
+> Daniel Vetter
+> Software Engineer, Intel Corporation
+> +41 (0) 79 365 57 48 - http://blog.ffwll.ch
+
+
+
 -- 
-1.7.9.5
-
-
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch
