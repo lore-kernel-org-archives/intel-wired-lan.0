@@ -1,41 +1,82 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  1 Jun 2017 15:40:40 -0700
-Subject: [Intel-wired-lan] [PATCH 04/15] fm10k: add missing fall through
-	comment
+Date: Thu,  1 Jun 2017 15:40:38 -0700
+Subject: [Intel-wired-lan] [PATCH 02/15] fm10k: fix typos on fall through
+	comments
 In-Reply-To: <20170601224051.6106-1-jacob.e.keller@intel.com>
 References: <20170601224051.6106-1-jacob.e.keller@intel.com>
-Message-ID: <20170601224051.6106-5-jacob.e.keller@intel.com>
+Message-ID: <20170601224051.6106-3-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Newer versions of GCC starting with 7 now additionally warn when a case
-statement may fall through without an explicit comment mentioning it.
-Add such a comment to silence the warning, as this is expected.
-
-Unfortunately the comment must come directly before the next case
-statement, so we put it outside the #ifdef. Otherwise, the compiler
-cannot properly detect it and thus the warning is displayed regardless.
+Newer versions of GCC since version 7 now warn when a case statement may
+fall through without an explicit comment. "Fallthough" does not count as
+it is misspelled. Fix the typos for these comments to appease the new
+warnings.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.c |  4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c  | 10 +++++-----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 9dffaba85ae6..189d52a8a605 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -876,6 +876,7 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
- 	case IPPROTO_GRE:
- 		if (skb->encapsulation)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+index 334088a101c3..244d3ad58ca7 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+@@ -1,5 +1,5 @@
+ /* Intel(R) Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -1586,7 +1586,7 @@ s32 fm10k_pfvf_mbx_init(struct fm10k_hw *hw, struct fm10k_mbx_info *mbx,
+ 			mbx->mbmem_reg = FM10K_MBMEM_VF(id, 0);
  			break;
+ 		}
+-		/* fallthough */
 +		/* fall through */
  	default:
- 		if (unlikely(net_ratelimit())) {
- 			dev_warn(tx_ring->dev,
+ 		return FM10K_MBX_ERR_NO_MBX;
+ 	}
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 40ee0242a80a..9e4fb3a44376 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -1,5 +1,5 @@
+ /* Intel(R) Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -1334,19 +1334,19 @@ static u8 fm10k_iov_supported_xcast_mode_pf(struct fm10k_vf_info *vf_info,
+ 	case FM10K_XCAST_MODE_PROMISC:
+ 		if (vf_flags & FM10K_VF_FLAG_PROMISC_CAPABLE)
+ 			return FM10K_XCAST_MODE_PROMISC;
+-		/* fallthough */
++		/* fall through */
+ 	case FM10K_XCAST_MODE_ALLMULTI:
+ 		if (vf_flags & FM10K_VF_FLAG_ALLMULTI_CAPABLE)
+ 			return FM10K_XCAST_MODE_ALLMULTI;
+-		/* fallthough */
++		/* fall through */
+ 	case FM10K_XCAST_MODE_MULTI:
+ 		if (vf_flags & FM10K_VF_FLAG_MULTI_CAPABLE)
+ 			return FM10K_XCAST_MODE_MULTI;
+-		/* fallthough */
++		/* fall through */
+ 	case FM10K_XCAST_MODE_NONE:
+ 		if (vf_flags & FM10K_VF_FLAG_NONE_CAPABLE)
+ 			return FM10K_XCAST_MODE_NONE;
+-		/* fallthough */
++		/* fall through */
+ 	default:
+ 		break;
+ 	}
 -- 
 2.13.0.598.gf927b9495246
 
