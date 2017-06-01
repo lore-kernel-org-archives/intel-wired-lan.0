@@ -1,56 +1,100 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  1 Jun 2017 15:40:41 -0700
-Subject: [Intel-wired-lan] [PATCH 05/15] fm10k: avoid needless delay when
-	loading driver
+Date: Thu,  1 Jun 2017 15:40:45 -0700
+Subject: [Intel-wired-lan] [PATCH 09/15] fm10k: move fm10k_prepare_for_reset
+	and fm10k_handle_reset
 In-Reply-To: <20170601224051.6106-1-jacob.e.keller@intel.com>
 References: <20170601224051.6106-1-jacob.e.keller@intel.com>
-Message-ID: <20170601224051.6106-6-jacob.e.keller@intel.com>
+Message-ID: <20170601224051.6106-10-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When we load the driver, we set the last_reset to be in the future,
-which delays the initial driver reset. Additionally, the service task
-isn't scheduled to run automatically until the timer runs out. This
-causes a needless delay of the first reset to begin talking to the
-switch manager.
-
-We can avoid this by simply not setting last_reset and immediately
-scheduling the service task while in probe. This allows the device to
-wake up faster, and avoids this delay.
+A future patch needs these functions defined earlier in the file. Move
+them closer to above where they will be called.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 58 ++++++++++++++--------------
+ 1 file changed, 29 insertions(+), 29 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 80b18f2479b4..32b5ace82cad 100644
+index 32b5ace82cad..6a7b4c5429ae 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1800,9 +1800,6 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
- 		netdev->vlan_features |= NETIF_F_HIGHDMA;
- 	}
+@@ -132,35 +132,6 @@ static void fm10k_service_timer(unsigned long data)
+ 	fm10k_service_event_schedule(interface);
+ }
  
--	/* delay any future reset requests */
--	interface->last_reset = jiffies + (10 * HZ);
+-static void fm10k_detach_subtask(struct fm10k_intfc *interface)
+-{
+-	struct net_device *netdev = interface->netdev;
+-	u32 __iomem *hw_addr;
+-	u32 value;
 -
- 	/* reset and initialize the hardware so it is in a known state */
- 	err = hw->mac.ops.reset_hw(hw);
- 	if (err) {
-@@ -2079,8 +2076,9 @@ static int fm10k_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	/* enable SR-IOV after registering netdev to enforce PF/VF ordering */
- 	fm10k_iov_configure(pdev, 0);
+-	/* do nothing if device is still present or hw_addr is set */
+-	if (netif_device_present(netdev) || interface->hw.hw_addr)
+-		return;
+-
+-	/* check the real address space to see if we've recovered */
+-	hw_addr = READ_ONCE(interface->uc_addr);
+-	value = readl(hw_addr);
+-	if (~value) {
+-		interface->hw.hw_addr = interface->uc_addr;
+-		netif_device_attach(netdev);
+-		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
+-		netdev_warn(netdev, "PCIe link restored, device now attached\n");
+-		return;
+-	}
+-
+-	rtnl_lock();
+-
+-	if (netif_running(netdev))
+-		dev_close(netdev);
+-
+-	rtnl_unlock();
+-}
+-
+ static void fm10k_prepare_for_reset(struct fm10k_intfc *interface)
+ {
+ 	struct net_device *netdev = interface->netdev;
+@@ -270,6 +241,35 @@ static int fm10k_handle_reset(struct fm10k_intfc *interface)
+ 	return err;
+ }
  
--	/* clear the service task disable bit to allow service task to start */
-+	/* clear the service task disable bit and kick off service task */
- 	clear_bit(__FM10K_SERVICE_DISABLE, interface->state);
-+	fm10k_service_event_schedule(interface);
- 
- 	return 0;
- 
++static void fm10k_detach_subtask(struct fm10k_intfc *interface)
++{
++	struct net_device *netdev = interface->netdev;
++	u32 __iomem *hw_addr;
++	u32 value;
++
++	/* do nothing if device is still present or hw_addr is set */
++	if (netif_device_present(netdev) || interface->hw.hw_addr)
++		return;
++
++	/* check the real address space to see if we've recovered */
++	hw_addr = READ_ONCE(interface->uc_addr);
++	value = readl(hw_addr);
++	if (~value) {
++		interface->hw.hw_addr = interface->uc_addr;
++		netif_device_attach(netdev);
++		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
++		netdev_warn(netdev, "PCIe link restored, device now attached\n");
++		return;
++	}
++
++	rtnl_lock();
++
++	if (netif_running(netdev))
++		dev_close(netdev);
++
++	rtnl_unlock();
++}
++
+ static void fm10k_reinit(struct fm10k_intfc *interface)
+ {
+ 	int err;
 -- 
 2.13.0.598.gf927b9495246
 
