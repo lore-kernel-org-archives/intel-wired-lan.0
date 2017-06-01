@@ -1,235 +1,67 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  1 Jun 2017 15:40:51 -0700
-Subject: [Intel-wired-lan] [PATCH 15/15] fm10k: use the MAC/VLAN queue for
-	VF<->PF MAC/VLAN requests
+Date: Thu,  1 Jun 2017 15:40:39 -0700
+Subject: [Intel-wired-lan] [PATCH 03/15] fm10k: avoid possible truncation of
+	q_vector->name
 In-Reply-To: <20170601224051.6106-1-jacob.e.keller@intel.com>
 References: <20170601224051.6106-1-jacob.e.keller@intel.com>
-Message-ID: <20170601224051.6106-16-jacob.e.keller@intel.com>
+Message-ID: <20170601224051.6106-4-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Now that we have a working MAC/VLAN queue for handling MAC/VLAN messages
-from the netdev, replace the default handler for the VF<->PF messages.
-This new handler is very similar to the default code, but uses the
-MAC/VLAN queue instead of sending the message directly. Unfortunately we
-can't easily re-use the default code, so we'll just replace the entire
-function.
+New versions of GCC since version 7 began warning about possible
+truncation of calls to snprintf. We can fix this and avoid false
+positives. First, we should pass the full buffer size to snprintf,
+because it guarantees a NULL character as part of its passed length, so
+passing len-1 is simply wasting a byte of possible storage.
 
-This ensures that a VF requesting a large number of VLANs or MAC
-addresses does not start a reset cycle, as explained in the commit which
-introduced the message queue.
+Second, if we make the ri and ti variables unsigned, the compiler is
+able to correctly reason that the value never gets larger than 256, so
+it doesn't need to warn about the full space required to print a signed
+integer.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Kwan, Ngai-mint <ngai-mint.kwan@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_iov.c | 132 ++++++++++++++++++++++++++-
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c  |   2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_pf.h  |   3 +-
- 3 files changed, 133 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-index 03897720bf0b..7e53521667b8 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-@@ -35,10 +35,133 @@ static s32 fm10k_iov_msg_error(struct fm10k_hw *hw, u32 **results,
- 	return fm10k_tlv_msg_error(hw, results, mbx);
- }
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 3e26d27ad213..80b18f2479b4 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -1544,7 +1544,7 @@ int fm10k_qv_request_irq(struct fm10k_intfc *interface)
+ 	struct net_device *dev = interface->netdev;
+ 	struct fm10k_hw *hw = &interface->hw;
+ 	struct msix_entry *entry;
+-	int ri = 0, ti = 0;
++	unsigned int ri = 0, ti = 0;
+ 	int vector, err;
  
-+/**
-+ *  fm10k_iov_msg_queue_mac_vlan - Message handler for MAC/VLAN request from VF
-+ *  @hw: Pointer to hardware structure
-+ *  @results: Pointer array to message, results[0] is pointer to message
-+ *  @mbx: Pointer to mailbox information structure
-+ *
-+ *  This function is a custom handler for MAC/VLAN requests from the VF. The
-+ *  assumption is that it is acceptable to directly hande off the message from
-+ *  the VF to the PF's switch manager. However, we use a MAC/VLAN message
-+ *  queue to avoid overloading the mailbox when a large number of requests
-+ *  come in.
-+ **/
-+static s32 fm10k_iov_msg_queue_mac_vlan(struct fm10k_hw *hw, u32 **results,
-+					struct fm10k_mbx_info *mbx)
-+{
-+	struct fm10k_vf_info *vf_info = (struct fm10k_vf_info *)mbx;
-+	struct fm10k_intfc *interface = hw->back;
-+	u8 mac[ETH_ALEN];
-+	u32 *result;
-+	int err = 0;
-+	bool set;
-+	u16 vlan;
-+	u32 vid;
-+
-+	/* we shouldn't be updating rules on a disabled interface */
-+	if (!FM10K_VF_FLAG_ENABLED(vf_info))
-+		err = FM10K_ERR_PARAM;
-+
-+	if (!err && !!results[FM10K_MAC_VLAN_MSG_VLAN]) {
-+		result = results[FM10K_MAC_VLAN_MSG_VLAN];
-+
-+		/* record VLAN id requested */
-+		err = fm10k_tlv_attr_get_u32(result, &vid);
-+		if (err)
-+			return err;
-+
-+		set = !(vid & FM10K_VLAN_CLEAR);
-+		vid &= ~FM10K_VLAN_CLEAR;
-+
-+		/* if the length field has been set, this is a multi-bit
-+		 * update request. For multi-bit requests, simply disallow
-+		 * them when the pf_vid has been set. In this case, the PF
-+		 * should have already cleared the VLAN_TABLE, and if we
-+		 * allowed them, it could allow a rogue VF to receive traffic
-+		 * on a VLAN it was not assigned. In the single-bit case, we
-+		 * need to modify requests for VLAN 0 to use the default PF or
-+		 * SW vid when assigned.
-+		 */
-+
-+		if (vid >> 16) {
-+			/* prevent multi-bit requests when PF has
-+			 * administratively set the VLAN for this VF
-+			 */
-+			if (vf_info->pf_vid)
-+				return FM10K_ERR_PARAM;
-+		} else {
-+			err = fm10k_iov_select_vid(vf_info, (u16)vid);
-+			if (err < 0)
-+				return err;
-+
-+			vid = err;
-+		}
-+
-+		/* update VSI info for VF in regards to VLAN table */
-+		err = hw->mac.ops.update_vlan(hw, vid, vf_info->vsi, set);
-+	}
-+
-+	if (!err && !!results[FM10K_MAC_VLAN_MSG_MAC]) {
-+		result = results[FM10K_MAC_VLAN_MSG_MAC];
-+
-+		/* record unicast MAC address requested */
-+		err = fm10k_tlv_attr_get_mac_vlan(result, mac, &vlan);
-+		if (err)
-+			return err;
-+
-+		/* block attempts to set MAC for a locked device */
-+		if (is_valid_ether_addr(vf_info->mac) &&
-+		    !ether_addr_equal(mac, vf_info->mac))
-+			return FM10K_ERR_PARAM;
-+
-+		set = !(vlan & FM10K_VLAN_CLEAR);
-+		vlan &= ~FM10K_VLAN_CLEAR;
-+
-+		err = fm10k_iov_select_vid(vf_info, vlan);
-+		if (err < 0)
-+			return err;
-+
-+		vlan = (u16)err;
-+
-+		/* Add this request to the MAC/VLAN queue */
-+		err = fm10k_queue_mac_request(interface, vf_info->glort,
-+					      mac, vlan, set);
-+	}
-+
-+	if (!err && !!results[FM10K_MAC_VLAN_MSG_MULTICAST]) {
-+		result = results[FM10K_MAC_VLAN_MSG_MULTICAST];
-+
-+		/* record multicast MAC address requested */
-+		err = fm10k_tlv_attr_get_mac_vlan(result, mac, &vlan);
-+		if (err)
-+			return err;
-+
-+		/* verify that the VF is allowed to request multicast */
-+		if (!(vf_info->vf_flags & FM10K_VF_FLAG_MULTI_ENABLED))
-+			return FM10K_ERR_PARAM;
-+
-+		set = !(vlan & FM10K_VLAN_CLEAR);
-+		vlan &= ~FM10K_VLAN_CLEAR;
-+
-+		err = fm10k_iov_select_vid(vf_info, vlan);
-+		if (err < 0)
-+			return err;
-+
-+		vlan = (u16)err;
-+
-+		/* Add this request to the MAC/VLAN queue */
-+		err = fm10k_queue_mac_request(interface, vf_info->glort,
-+					      mac, vlan, set);
-+	}
-+
-+	return err;
-+}
-+
- static const struct fm10k_msg_data iov_mbx_data[] = {
- 	FM10K_TLV_MSG_TEST_HANDLER(fm10k_tlv_msg_test),
- 	FM10K_VF_MSG_MSIX_HANDLER(fm10k_iov_msg_msix_pf),
--	FM10K_VF_MSG_MAC_VLAN_HANDLER(fm10k_iov_msg_mac_vlan_pf),
-+	FM10K_VF_MSG_MAC_VLAN_HANDLER(fm10k_iov_msg_queue_mac_vlan),
- 	FM10K_VF_MSG_LPORT_STATE_HANDLER(fm10k_iov_msg_lport_state_pf),
- 	FM10K_TLV_MSG_ERROR_HANDLER(fm10k_iov_msg_error),
- };
-@@ -126,8 +249,10 @@ s32 fm10k_iov_mbx(struct fm10k_intfc *interface)
- 		hw->mbx.ops.process(hw, &hw->mbx);
+ 	entry = &interface->msix_entries[NON_Q_VECTORS(hw)];
+@@ -1554,15 +1554,15 @@ int fm10k_qv_request_irq(struct fm10k_intfc *interface)
  
- 		/* verify port mapping is valid, if not reset port */
--		if (vf_info->vf_flags && !fm10k_glort_valid_pf(hw, glort))
-+		if (vf_info->vf_flags && !fm10k_glort_valid_pf(hw, glort)) {
- 			hw->iov.ops.reset_lport(hw, vf_info);
-+			fm10k_clear_macvlan_queue(interface, glort, false);
-+		}
- 
- 		/* reset VFs that have mailbox timed out */
- 		if (!mbx->timeout) {
-@@ -190,6 +315,7 @@ void fm10k_iov_suspend(struct pci_dev *pdev)
- 
- 		hw->iov.ops.reset_resources(hw, vf_info);
- 		hw->iov.ops.reset_lport(hw, vf_info);
-+		fm10k_clear_macvlan_queue(interface, vf_info->glort, false);
- 	}
- }
- 
-@@ -414,6 +540,8 @@ static inline void fm10k_reset_vf_info(struct fm10k_intfc *interface,
- 	/* disable LPORT for this VF which clears switch rules */
- 	hw->iov.ops.reset_lport(hw, vf_info);
- 
-+	fm10k_clear_macvlan_queue(interface, vf_info->glort, false);
-+
- 	/* assign new MAC+VLAN for this VF */
- 	hw->iov.ops.assign_default_mac_vlan(hw, vf_info);
- 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 9e4fb3a44376..425d814aed4d 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1186,7 +1186,7 @@ s32 fm10k_iov_msg_msix_pf(struct fm10k_hw *hw, u32 **results,
-  * Will report an error if the VLAN ID is out of range. For VID = 0, it will
-  * return either the pf_vid or sw_vid depending on which one is set.
-  */
--static s32 fm10k_iov_select_vid(struct fm10k_vf_info *vf_info, u16 vid)
-+s32 fm10k_iov_select_vid(struct fm10k_vf_info *vf_info, u16 vid)
- {
- 	if (!vid)
- 		return vf_info->pf_vid ? vf_info->pf_vid : vf_info->sw_vid;
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-index 3336d3c10760..e04d41f1a532 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-@@ -1,5 +1,5 @@
- /* Intel(R) Ethernet Switch Host Interface Driver
-- * Copyright(c) 2013 - 2016 Intel Corporation.
-+ * Copyright(c) 2013 - 2017 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -114,6 +114,7 @@ extern const struct fm10k_tlv_attr fm10k_err_msg_attr[];
- #define FM10K_PF_MSG_ERR_HANDLER(msg, func) \
- 	FM10K_MSG_HANDLER(FM10K_PF_MSG_ID_##msg, fm10k_err_msg_attr, func)
- 
-+s32 fm10k_iov_select_vid(struct fm10k_vf_info *vf_info, u16 vid);
- s32 fm10k_iov_msg_msix_pf(struct fm10k_hw *, u32 **, struct fm10k_mbx_info *);
- s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *, u32 **,
- 			      struct fm10k_mbx_info *);
+ 		/* name the vector */
+ 		if (q_vector->tx.count && q_vector->rx.count) {
+-			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
+-				 "%s-TxRx-%d", dev->name, ri++);
++			snprintf(q_vector->name, sizeof(q_vector->name),
++				 "%s-TxRx-%u", dev->name, ri++);
+ 			ti++;
+ 		} else if (q_vector->rx.count) {
+-			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
+-				 "%s-rx-%d", dev->name, ri++);
++			snprintf(q_vector->name, sizeof(q_vector->name),
++				 "%s-rx-%u", dev->name, ri++);
+ 		} else if (q_vector->tx.count) {
+-			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
+-				 "%s-tx-%d", dev->name, ti++);
++			snprintf(q_vector->name, sizeof(q_vector->name),
++				 "%s-tx-%u", dev->name, ti++);
+ 		} else {
+ 			/* skip this unused q_vector */
+ 			continue;
 -- 
 2.13.0.598.gf927b9495246
 
