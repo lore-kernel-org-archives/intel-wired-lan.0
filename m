@@ -1,31 +1,43 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  2 Jun 2017 10:42:27 -0700
-Subject: [Intel-wired-lan] [PATCH] fm10k: bump version number
-Message-ID: <20170602174227.21432-1-jacob.e.keller@intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Fri, 02 Jun 2017 14:14:26 -0400 (EDT)
+Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: Undo e1000e_pm_freeze
+ if __e1000_shutdown fails
+In-Reply-To: <20170531155043.3596-2-jani.nikula@intel.com>
+References: <20170531.110833.1362264472730468352.davem@davemloft.net>
+ <20170531155043.3596-1-jani.nikula@intel.com>
+ <20170531155043.3596-2-jani.nikula@intel.com>
+Message-ID: <20170602.141426.713378366601051907.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Wed, 31 May 2017 18:50:43 +0300
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 189d52a8a605..5d56ed5ad7a6 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -28,7 +28,7 @@
- 
- #include "fm10k.h"
- 
--#define DRV_VERSION	"0.21.7-k"
-+#define DRV_VERSION	"0.22.1-k"
- #define DRV_SUMMARY	"Intel(R) Ethernet Switch Host Interface Driver"
- const char fm10k_driver_version[] = DRV_VERSION;
- char fm10k_driver_name[] = "fm10k";
--- 
-2.13.0.615.gb09ed6e59a40
+> From: Chris Wilson <chris@chris-wilson.co.uk>
+> 
+> An error during suspend (e100e_pm_suspend),
+ ...
+> lead to complete failure:
+ ...
+> The unwind failures stems from commit 2800209994f8 ("e1000e: Refactor PM
+> flows"), but it may be a later patch that introduced the non-recoverable
+> behaviour.
+> 
+> Fixes: 2800209994f8 ("e1000e: Refactor PM flows")
+> Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=99847
+> Cc: Tvrtko Ursulin <tvrtko.ursulin@intel.com>
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Cc: Dave Ertman <davidx.m.ertman@intel.com>
+> Cc: Bruce Allan <bruce.w.allan@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org
+> Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+> [Jani: bikeshed repainted]
+> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
 
+Jeff, please make sure this gets submitted to me soon.
+
+Thanks.
