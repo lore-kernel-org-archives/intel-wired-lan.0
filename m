@@ -1,43 +1,49 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Sun, 4 Jun 2017 21:01:33 +0200
-Subject: [Intel-wired-lan] [PATCH] net/{mii,
- smsc}: Make mii_ethtool_get_link_ksettings and smc_netdev_get_ecmd
- return void
-In-Reply-To: <20170604172200.4177-1-yuval.shaia@oracle.com>
-References: <20170604172200.4177-1-yuval.shaia@oracle.com>
-Message-ID: <20170604190133.GB10273@lunn.ch>
+From: Jeff Mahoney <jeffm@suse.com>
+Date: Sat, 3 Jun 2017 18:01:17 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbe: pci_set_drvdata must be called
+	before register_netdev
+Message-ID: <12c75353-174a-d6de-27bc-83cebba68c13@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> diff --git a/drivers/net/cris/eth_v10.c b/drivers/net/cris/eth_v10.c
-> index da02041..017f48c 100644
-> --- a/drivers/net/cris/eth_v10.c
-> +++ b/drivers/net/cris/eth_v10.c
-> @@ -1417,10 +1417,9 @@ static int e100_get_link_ksettings(struct net_device *dev,
->  {
->  	struct net_local *np = netdev_priv(dev);
->  	u32 supported;
-> -	int err;
->  
->  	spin_lock_irq(&np->lock);
-> -	err = mii_ethtool_get_link_ksettings(&np->mii_if, cmd);
-> +	mii_ethtool_get_link_ksettings(&np->mii_if, cmd);
->  	spin_unlock_irq(&np->lock);
->  
->  	/* The PHY may support 1000baseT, but the Etrax100 does not.  */
-> @@ -1432,7 +1431,7 @@ static int e100_get_link_ksettings(struct net_device *dev,
->  	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
->  						supported);
->  
-> -	return err;
-> +	return 0;
->  }
+We call pci_set_drvdata immediately after calling register_netdev,
+which leaves a window where tasks writing to the sriov_numvfs sysfs
+attribute can sneak in and crash the kernel.  register_netdev cleans
+up after itself so placing pci_set_drvdata immediately before it
+should preserve the intent of commit 0fb6a55cc31f (ixgbe: fix crash
+on rmmod after probe fail).
 
-How far are going planning on going? It seems like
-*_get_link_ksettings() now all return a useless 0. Do you plan to
-change ethtool_ops and make if void all the way up?
+Fixes: 0fb6a55cc31f (ixgbe: fix crash on rmmod after probe fail)
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-       Andrew
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index d39cba214320..ec257eeb2ca1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -10341,12 +10341,11 @@ static int ixgbe_probe(struct pci_dev *pdev,
+const struct pci_device_id *ent)
+ 			   "hardware.\n");
+ 	}
+ 	strcpy(netdev->name, "eth%d");
++	pci_set_drvdata(pdev, adapter);
+ 	err = register_netdev(netdev);
+ 	if (err)
+ 		goto err_register;
+
+-	pci_set_drvdata(pdev, adapter);
+-
+ 	/* power down the optics for 82599 SFP+ fiber */
+ 	if (hw->mac.ops.disable_tx_laser)
+ 		hw->mac.ops.disable_tx_laser(hw);
+
+
+-- 
+Jeff Mahoney
+SUSE Labs
