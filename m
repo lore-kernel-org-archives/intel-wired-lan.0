@@ -1,107 +1,34 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Mon, 5 Jun 2017 08:20:38 +0300
-Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: Undo e1000e_pm_freeze
- if __e1000_shutdown fails
-In-Reply-To: <20170531155043.3596-2-jani.nikula@intel.com>
-References: <20170531.110833.1362264472730468352.davem@davemloft.net>
- <20170531155043.3596-1-jani.nikula@intel.com>
- <20170531155043.3596-2-jani.nikula@intel.com>
-Message-ID: <c660f3b8-e54a-25b7-3043-c12ddd0c910e@intel.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Mon, 5 Jun 2017 17:34:18 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: pci_set_drvdata must be called
+ before register_netdev
+In-Reply-To: <12c75353-174a-d6de-27bc-83cebba68c13@suse.com>
+References: <12c75353-174a-d6de-27bc-83cebba68c13@suse.com>
+Message-ID: <87618083B2453E4A8714035B62D67992A9000D21@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 5/31/2017 18:50, Jani Nikula wrote:
-> From: Chris Wilson <chris@chris-wilson.co.uk>
+>-----Original Message-----
+>From: Jeff Mahoney [mailto:jeffm at suse.com]
+>Sent: Saturday, June 03, 2017 3:01 PM
+>To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-lan at lists.osuosl.org
+>Cc: Tantilov, Emil S <emil.s.tantilov@intel.com>
+>Subject: [PATCH] ixgbe: pci_set_drvdata must be called before register_netdev
 >
-> An error during suspend (e100e_pm_suspend),
->
-> [  429.994338] ACPI : EC: event blocked
-> [  429.994633] e1000e: EEE TX LPI TIMER: 00000011
-> [  430.955451] pci_pm_suspend(): e1000e_pm_suspend+0x0/0x30 [e1000e] returns -2
-> [  430.955454] dpm_run_callback(): pci_pm_suspend+0x0/0x140 returns -2
-> [  430.955458] PM: Device 0000:00:19.0 failed to suspend async: error -2
-> [  430.955581] PM: Some devices failed to suspend, or early wake event detected
-> [  430.957709] ACPI : EC: event unblocked
->
-> lead to complete failure:
->
-> [  432.585002] ------------[ cut here ]------------
-> [  432.585013] WARNING: CPU: 3 PID: 8372 at kernel/irq/manage.c:1478 __free_irq+0x9f/0x280
-> [  432.585015] Trying to free already-free IRQ 20
-> [  432.585016] Modules linked in: cdc_ncm usbnet x86_pkg_temp_thermal intel_powerclamp coretemp mii crct10dif_pclmul crc32_pclmul ghash_clmulni_intel snd_hda_codec_hdmi snd_hda_codec_realtek snd_hda_codec_generic snd_hda_intel snd_hda_codec snd_hwdep lpc_ich snd_hda_core snd_pcm mei_me mei sdhci_pci sdhci i915 mmc_core e1000e ptp pps_core prime_numbers
-> [  432.585042] CPU: 3 PID: 8372 Comm: kworker/u16:40 Tainted: G     U          4.10.0-rc8-CI-Patchwork_3870+ #1
-> [  432.585044] Hardware name: LENOVO 2356GCG/2356GCG, BIOS G7ET31WW (1.13 ) 07/02/2012
-> [  432.585050] Workqueue: events_unbound async_run_entry_fn
-> [  432.585051] Call Trace:
-> [  432.585058]  dump_stack+0x67/0x92
-> [  432.585062]  __warn+0xc6/0xe0
-> [  432.585065]  warn_slowpath_fmt+0x4a/0x50
-> [  432.585070]  ? _raw_spin_lock_irqsave+0x49/0x60
-> [  432.585072]  __free_irq+0x9f/0x280
-> [  432.585075]  free_irq+0x34/0x80
-> [  432.585089]  e1000_free_irq+0x65/0x70 [e1000e]
-> [  432.585098]  e1000e_pm_freeze+0x7a/0xb0 [e1000e]
-> [  432.585106]  e1000e_pm_suspend+0x21/0x30 [e1000e]
-> [  432.585113]  pci_pm_suspend+0x71/0x140
-> [  432.585118]  dpm_run_callback+0x6f/0x330
-> [  432.585122]  ? pci_pm_freeze+0xe0/0xe0
-> [  432.585125]  __device_suspend+0xea/0x330
-> [  432.585128]  async_suspend+0x1a/0x90
-> [  432.585132]  async_run_entry_fn+0x34/0x160
-> [  432.585137]  process_one_work+0x1f4/0x6d0
-> [  432.585140]  ? process_one_work+0x16e/0x6d0
-> [  432.585143]  worker_thread+0x49/0x4a0
-> [  432.585145]  kthread+0x107/0x140
-> [  432.585148]  ? process_one_work+0x6d0/0x6d0
-> [  432.585150]  ? kthread_create_on_node+0x40/0x40
-> [  432.585154]  ret_from_fork+0x2e/0x40
-> [  432.585156] ---[ end trace 6712df7f8c4b9124 ]---
->
-> The unwind failures stems from commit 2800209994f8 ("e1000e: Refactor PM
-> flows"), but it may be a later patch that introduced the non-recoverable
-> behaviour.
->
-> Fixes: 2800209994f8 ("e1000e: Refactor PM flows")
-> Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=99847
-> Cc: Tvrtko Ursulin <tvrtko.ursulin@intel.com>
-> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Cc: Dave Ertman <davidx.m.ertman@intel.com>
-> Cc: Bruce Allan <bruce.w.allan@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org
-> Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
-> [Jani: bikeshed repainted]
-> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/netdev.c | 7 ++++++-
->   1 file changed, 6 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index b3679728caac..5cad688be609 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -6630,12 +6630,17 @@ static int e1000e_pm_thaw(struct device *dev)
->   static int e1000e_pm_suspend(struct device *dev)
->   {
->   	struct pci_dev *pdev = to_pci_dev(dev);
-> +	int rc;
->   
->   	e1000e_flush_lpic(pdev);
->   
->   	e1000e_pm_freeze(dev);
->   
-> -	return __e1000_shutdown(pdev, false);
-> +	rc = __e1000_shutdown(pdev, false);
-> +	if (rc)
-> +		e1000e_pm_thaw(dev);
-> +
-> +	return rc;
->   }
->   
->   static int e1000e_pm_resume(struct device *dev)
+>We call pci_set_drvdata immediately after calling register_netdev,
+>which leaves a window where tasks writing to the sriov_numvfs sysfs
+>attribute can sneak in and crash the kernel.  register_netdev cleans
+>up after itself so placing pci_set_drvdata immediately before it
+>should preserve the intent of commit 0fb6a55cc31f (ixgbe: fix crash
+>on rmmod after probe fail).
 
-Good. Let's pick up this patch.
+This change should be OK for ixgbe, although there is an effort to avoid
+the race between setting SRIOV and the probe in drivers by using the driver
+lock: http://marc.info/?l=linux-kernel&m=149549349112592
+
+Thanks,
+Emil
 
