@@ -1,168 +1,179 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  7 Jun 2017 05:43:09 -0400
-Subject: [Intel-wired-lan] [next PATCH S72-V3 09/13] i40e: Add support for
-	OEM firmware version
+Date: Wed,  7 Jun 2017 05:43:08 -0400
+Subject: [Intel-wired-lan] [next PATCH S72-V3 08/13] i40e: genericize the
+	partition bandwidth control
 In-Reply-To: <20170607094313.32060-1-alice.michael@intel.com>
 References: <20170607094313.32060-1-alice.michael@intel.com>
-Message-ID: <20170607094313.32060-9-alice.michael@intel.com>
+Message-ID: <20170607094313.32060-8-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Filip Sadowski <filip.sadowski@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-This patch adds support for OEM firmware version. If OEM specific
-adapter is detected ethtool reports OEM product version in firmware
-version string instead of etrack id.
+Partition bandwidth control is not in just one form of MFP (multi-function
+partitioning), so make the code more generic and be sure to nudge the Tx
+scheduler for all MFP.
 
-Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+Copyright updated to 2017.
+
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      | 48 ++++++++++++++++++++---------
- drivers/net/ethernet/intel/i40e/i40e_main.c | 47 ++++++++++++++++++++++++++++
- 2 files changed, 81 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h      | 13 +++++----
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 41 ++++++++++++++---------------
+ 2 files changed, 26 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 962ef98..cb102cd 100644
+index 4250ab5..76395e6 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -103,6 +103,12 @@
- 	(I40E_AQ_PHY_DEBUG_DISABLE_LINK_FW | \
- 	I40E_AQ_PHY_DEBUG_DISABLE_ALL_LINK_FW)
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+  *
+  * Intel Ethernet Controller XL710 Family Linux Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -516,9 +516,8 @@ struct i40e_pf {
+ 	bool ptp_tx;
+ 	bool ptp_rx;
+ 	u16 rss_table_size; /* HW RSS table size */
+-	/* These are only valid in NPAR modes */
+-	u32 npar_max_bw;
+-	u32 npar_min_bw;
++	u32 max_bw;
++	u32 min_bw;
  
-+#define I40E_OEM_EETRACK_ID		0xffffffff
-+#define I40E_OEM_GEN_SHIFT		24
-+#define I40E_OEM_SNAP_MASK		0x00ff0000
-+#define I40E_OEM_SNAP_SHIFT		16
-+#define I40E_OEM_RELEASE_MASK		0x0000ffff
-+
- /* The values in here are decimal coded as hex as is the case in the NVM map*/
- #define I40E_CURRENT_NVM_VERSION_HI	0x2
- #define I40E_CURRENT_NVM_VERSION_LO	0x40
-@@ -733,22 +739,36 @@ static inline char *i40e_nvm_version_str(struct i40e_hw *hw)
- {
- 	static char buf[32];
- 	u32 full_ver;
--	u8 ver, patch;
--	u16 build;
+ 	u32 ioremap_len;
+ 	u32 fd_inv;
+@@ -971,9 +970,9 @@ int i40e_ptp_get_ts_config(struct i40e_pf *pf, struct ifreq *ifr);
+ void i40e_ptp_init(struct i40e_pf *pf);
+ void i40e_ptp_stop(struct i40e_pf *pf);
+ int i40e_is_vsi_uplink_mode_veb(struct i40e_vsi *vsi);
+-i40e_status i40e_get_npar_bw_setting(struct i40e_pf *pf);
+-i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf);
+-i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf);
++i40e_status i40e_get_partition_bw_setting(struct i40e_pf *pf);
++i40e_status i40e_set_partition_bw_setting(struct i40e_pf *pf);
++i40e_status i40e_commit_partition_bw_setting(struct i40e_pf *pf);
+ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
  
- 	full_ver = hw->nvm.oem_ver;
--	ver = (u8)(full_ver >> I40E_OEM_VER_SHIFT);
--	build = (u16)((full_ver >> I40E_OEM_VER_BUILD_SHIFT) &
--		 I40E_OEM_VER_BUILD_MASK);
--	patch = (u8)(full_ver & I40E_OEM_VER_PATCH_MASK);
--
--	snprintf(buf, sizeof(buf),
--		 "%x.%02x 0x%x %d.%d.%d",
--		 (hw->nvm.version & I40E_NVM_VERSION_HI_MASK) >>
--			I40E_NVM_VERSION_HI_SHIFT,
--		 (hw->nvm.version & I40E_NVM_VERSION_LO_MASK) >>
--			I40E_NVM_VERSION_LO_SHIFT,
--		 hw->nvm.eetrack, ver, build, patch);
-+
-+	if (hw->nvm.eetrack == I40E_OEM_EETRACK_ID) {
-+		u8 gen, snap;
-+		u16 release;
-+
-+		gen = (u8)(full_ver >> I40E_OEM_GEN_SHIFT);
-+		snap = (u8)((full_ver & I40E_OEM_SNAP_MASK) >>
-+			I40E_OEM_SNAP_SHIFT);
-+		release = (u16)(full_ver & I40E_OEM_RELEASE_MASK);
-+
-+		snprintf(buf, sizeof(buf), "%x.%x.%x", gen, snap, release);
-+	} else {
-+		u8 ver, patch;
-+		u16 build;
-+
-+		ver = (u8)(full_ver >> I40E_OEM_VER_SHIFT);
-+		build = (u16)((full_ver >> I40E_OEM_VER_BUILD_SHIFT) &
-+			 I40E_OEM_VER_BUILD_MASK);
-+		patch = (u8)(full_ver & I40E_OEM_VER_PATCH_MASK);
-+
-+		snprintf(buf, sizeof(buf),
-+			 "%x.%02x 0x%x %d.%d.%d",
-+			 (hw->nvm.version & I40E_NVM_VERSION_HI_MASK) >>
-+				I40E_NVM_VERSION_HI_SHIFT,
-+			 (hw->nvm.version & I40E_NVM_VERSION_LO_MASK) >>
-+				I40E_NVM_VERSION_LO_SHIFT,
-+			 hw->nvm.eetrack, ver, build, patch);
-+	}
- 
- 	return buf;
- }
+ static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index e4ae673..5fd4d2f 100644
+index 9f4763d..18a9be6 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7107,6 +7107,51 @@ static void i40e_send_version(struct i40e_pf *pf)
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+  *
+  * Intel Ethernet Controller XL710 Family Linux Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -8739,10 +8739,10 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
  }
  
  /**
-+ * i40e_get_oem_version - get OEM specific version information
-+ * @hw: pointer to the hardware structure
-+ **/
-+static void i40e_get_oem_version(struct i40e_hw *hw)
-+{
-+	u16 block_offset = 0xffff;
-+	u16 block_length = 0;
-+	u16 capabilities = 0;
-+	u16 gen_snap = 0;
-+	u16 release = 0;
-+
-+#define I40E_SR_NVM_OEM_VERSION_PTR		0x1B
-+#define I40E_NVM_OEM_LENGTH_OFFSET		0x00
-+#define I40E_NVM_OEM_CAPABILITIES_OFFSET	0x01
-+#define I40E_NVM_OEM_GEN_OFFSET			0x02
-+#define I40E_NVM_OEM_RELEASE_OFFSET		0x03
-+#define I40E_NVM_OEM_CAPABILITIES_MASK		0x000F
-+#define I40E_NVM_OEM_LENGTH			3
-+
-+	/* Check if pointer to OEM version block is valid. */
-+	i40e_read_nvm_word(hw, I40E_SR_NVM_OEM_VERSION_PTR, &block_offset);
-+	if (block_offset == 0xffff)
-+		return;
-+
-+	/* Check if OEM version block has correct length. */
-+	i40e_read_nvm_word(hw, block_offset + I40E_NVM_OEM_LENGTH_OFFSET,
-+			   &block_length);
-+	if (block_length < I40E_NVM_OEM_LENGTH)
-+		return;
-+
-+	/* Check if OEM version format is as expected. */
-+	i40e_read_nvm_word(hw, block_offset + I40E_NVM_OEM_CAPABILITIES_OFFSET,
-+			   &capabilities);
-+	if ((capabilities & I40E_NVM_OEM_CAPABILITIES_MASK) != 0)
-+		return;
-+
-+	i40e_read_nvm_word(hw, block_offset + I40E_NVM_OEM_GEN_OFFSET,
-+			   &gen_snap);
-+	i40e_read_nvm_word(hw, block_offset + I40E_NVM_OEM_RELEASE_OFFSET,
-+			   &release);
-+	hw->nvm.oem_ver = (gen_snap << I40E_OEM_SNAP_SHIFT) | release;
-+	hw->nvm.eetrack = I40E_OEM_EETRACK_ID;
-+}
-+
-+/**
-  * i40e_reset - wait for core reset to finish reset, reset pf if corer not seen
+- * i40e_get_npar_bw_setting - Retrieve BW settings for this PF partition
++ * i40e_get_partition_bw_setting - Retrieve BW settings for this PF partition
   * @pf: board private structure
   **/
-@@ -7153,6 +7198,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 			 i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
- 		goto clear_recovery;
+-i40e_status i40e_get_npar_bw_setting(struct i40e_pf *pf)
++i40e_status i40e_get_partition_bw_setting(struct i40e_pf *pf)
+ {
+ 	i40e_status status;
+ 	bool min_valid, max_valid;
+@@ -8753,27 +8753,27 @@ i40e_status i40e_get_npar_bw_setting(struct i40e_pf *pf)
+ 
+ 	if (!status) {
+ 		if (min_valid)
+-			pf->npar_min_bw = min_bw;
++			pf->min_bw = min_bw;
+ 		if (max_valid)
+-			pf->npar_max_bw = max_bw;
++			pf->max_bw = max_bw;
  	}
-+	i40e_get_oem_version(&pf->hw);
  
- 	/* re-verify the eeprom if we just had an EMP reset */
- 	if (test_and_clear_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state))
-@@ -11337,6 +11383,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	return status;
+ }
  
- 		goto err_pf_reset;
+ /**
+- * i40e_set_npar_bw_setting - Set BW settings for this PF partition
++ * i40e_set_partition_bw_setting - Set BW settings for this PF partition
+  * @pf: board private structure
+  **/
+-i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf)
++i40e_status i40e_set_partition_bw_setting(struct i40e_pf *pf)
+ {
+ 	struct i40e_aqc_configure_partition_bw_data bw_data;
+ 	i40e_status status;
+ 
+ 	/* Set the valid bit for this PF */
+ 	bw_data.pf_valid_bits = cpu_to_le16(BIT(pf->hw.pf_id));
+-	bw_data.max_bw[pf->hw.pf_id] = pf->npar_max_bw & I40E_ALT_BW_VALUE_MASK;
+-	bw_data.min_bw[pf->hw.pf_id] = pf->npar_min_bw & I40E_ALT_BW_VALUE_MASK;
++	bw_data.max_bw[pf->hw.pf_id] = pf->max_bw & I40E_ALT_BW_VALUE_MASK;
++	bw_data.min_bw[pf->hw.pf_id] = pf->min_bw & I40E_ALT_BW_VALUE_MASK;
+ 
+ 	/* Set the new bandwidths */
+ 	status = i40e_aq_configure_partition_bw(&pf->hw, &bw_data, NULL);
+@@ -8782,10 +8782,10 @@ i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf)
+ }
+ 
+ /**
+- * i40e_commit_npar_bw_setting - Commit BW settings for this PF partition
++ * i40e_commit_partition_bw_setting - Commit BW settings for this PF partition
+  * @pf: board private structure
+  **/
+-i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf)
++i40e_status i40e_commit_partition_bw_setting(struct i40e_pf *pf)
+ {
+ 	/* Commit temporary BW setting to permanent NVM image */
+ 	enum i40e_admin_queue_err last_aq_status;
+@@ -8904,16 +8904,19 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 	if (pf->hw.func_caps.npar_enable || pf->hw.func_caps.flex10_enable) {
+ 		pf->flags |= I40E_FLAG_MFP_ENABLED;
+ 		dev_info(&pf->pdev->dev, "MFP mode Enabled\n");
+-		if (i40e_get_npar_bw_setting(pf))
++		if (i40e_get_partition_bw_setting(pf)) {
+ 			dev_warn(&pf->pdev->dev,
+-				 "Could not get NPAR bw settings\n");
+-		else
++				 "Could not get partition bw settings\n");
++		} else {
+ 			dev_info(&pf->pdev->dev,
+-				 "Min BW = %8.8x, Max BW = %8.8x\n",
+-				 pf->npar_min_bw, pf->npar_max_bw);
++				 "Partition BW Min = %8.8x, Max = %8.8x\n",
++				 pf->min_bw, pf->max_bw);
++
++			/* nudge the Tx scheduler */
++			i40e_set_partition_bw_setting(pf);
++		}
  	}
-+	i40e_get_oem_version(hw);
  
- 	/* provide nvm, fw, api versions */
- 	dev_info(&pdev->dev, "fw %d.%d.%05d api %d.%d nvm %s\n",
+-	/* FW/NVM is not yet fixed in this regard */
+ 	if ((pf->hw.func_caps.fd_filters_guaranteed > 0) ||
+ 	    (pf->hw.func_caps.fd_filters_best_effort > 0)) {
+ 		pf->flags |= I40E_FLAG_FD_ATR_ENABLED;
+@@ -9016,10 +9019,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 
+ 	mutex_init(&pf->switch_mutex);
+ 
+-	/* If NPAR is enabled nudge the Tx scheduler */
+-	if (pf->hw.func_caps.npar_enable && (!i40e_get_npar_bw_setting(pf)))
+-		i40e_set_npar_bw_setting(pf);
+-
+ sw_init_done:
+ 	return err;
+ }
 -- 
 2.9.3
 
