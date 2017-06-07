@@ -1,57 +1,78 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  7 Jun 2017 05:43:04 -0400
-Subject: [Intel-wired-lan] [next PATCH S72-V3 04/13] i40e: comment that
-	udp_port must be in host byte order
+Date: Wed,  7 Jun 2017 05:43:02 -0400
+Subject: [Intel-wired-lan] [next PATCH S72-V3 02/13] i40e/i40evf: update WOL
+	and I40E_AQC_ADDR_VALID_MASK flags
 In-Reply-To: <20170607094313.32060-1-alice.michael@intel.com>
 References: <20170607094313.32060-1-alice.michael@intel.com>
-Message-ID: <20170607094313.32060-4-alice.michael@intel.com>
+Message-ID: <20170607094313.32060-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+Update a few flags related to FW interactions.
 
-The firmware expects the port number passed when setting up
-the UDP tunnel configuration to be in Little Endian format.
-The i40e_aq_add_udp_tunnel command byte swaps the value from
-host order to Little Endian.
+Copyright updated to 2017.
 
-Since commit fe0b0cd97b4f ("i40e: send correct port number to
-AdminQ when enabling UDP tunnels") we've correctly
-sent the value in host order.
-
-Let's also add a comment to the function explaining that it must
-be in host order, as the port numbers are commonly stored as Big
-Endian values.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Alice Michael <alice.michael@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 4 ++--
+ drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 5 +++--
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index cbad4eb..8e082a9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -3614,11 +3614,15 @@ i40e_status i40e_aq_get_cee_dcb_config(struct i40e_hw *hw,
- /**
-  * i40e_aq_add_udp_tunnel
-  * @hw: pointer to the hw struct
-- * @udp_port: the UDP port to add
-+ * @udp_port: the UDP port to add in Host byte order
-  * @header_len: length of the tunneling header length in DWords
-  * @protocol_index: protocol index type
-  * @filter_index: pointer to filter index
-  * @cmd_details: pointer to command details structure or NULL
-+ *
-+ * Note: Firmware expects the udp_port value to be in Little Endian format,
-+ * and this function will call cpu_to_le16 to convert from Host byte order to
-+ * Little Endian order.
-  **/
- i40e_status i40e_aq_add_udp_tunnel(struct i40e_hw *hw,
- 				u16 udp_port, u8 protocol_index,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 5eb0411..5d5f422 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+  *
+  * Intel Ethernet Controller XL710 Family Linux Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -531,7 +531,7 @@ struct i40e_aqc_mac_address_read {
+ #define I40E_AQC_PORT_ADDR_VALID	0x40
+ #define I40E_AQC_WOL_ADDR_VALID		0x80
+ #define I40E_AQC_MC_MAG_EN_VALID	0x100
+-#define I40E_AQC_ADDR_VALID_MASK	0x1F0
++#define I40E_AQC_ADDR_VALID_MASK	0x3F0
+ 	u8	reserved[6];
+ 	__le32	addr_high;
+ 	__le32	addr_low;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index 91d8786..83e63e5 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+  *
+  * Intel Ethernet Controller XL710 Family Linux Virtual Function Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -528,7 +528,7 @@ struct i40e_aqc_mac_address_read {
+ #define I40E_AQC_PORT_ADDR_VALID	0x40
+ #define I40E_AQC_WOL_ADDR_VALID		0x80
+ #define I40E_AQC_MC_MAG_EN_VALID	0x100
+-#define I40E_AQC_ADDR_VALID_MASK	0x1F0
++#define I40E_AQC_ADDR_VALID_MASK	0x3F0
+ 	u8	reserved[6];
+ 	__le32	addr_high;
+ 	__le32	addr_low;
+@@ -586,6 +586,7 @@ struct i40e_aqc_set_wol_filter {
+ 	__le16 cmd_flags;
+ #define I40E_AQC_SET_WOL_FILTER				0x8000
+ #define I40E_AQC_SET_WOL_FILTER_NO_TCO_WOL		0x4000
++#define I40E_AQC_SET_WOL_FILTER_WOL_PRESERVE_ON_PFR	0x2000
+ #define I40E_AQC_SET_WOL_FILTER_ACTION_CLEAR		0
+ #define I40E_AQC_SET_WOL_FILTER_ACTION_SET		1
+ 	__le16 valid_flags;
 -- 
 2.9.3
 
