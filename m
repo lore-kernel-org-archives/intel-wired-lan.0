@@ -1,60 +1,50 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  7 Jun 2017 05:43:11 -0400
-Subject: [Intel-wired-lan] [next PATCH S72-V3 11/13] i40e: clear only
-	cause_ena bit
+Date: Wed,  7 Jun 2017 05:43:12 -0400
+Subject: [Intel-wired-lan] [next PATCH S72-V3 12/13] i40e: Handle PE_CRITERR
+	properly with IWARP enabled
 In-Reply-To: <20170607094313.32060-1-alice.michael@intel.com>
 References: <20170607094313.32060-1-alice.michael@intel.com>
-Message-ID: <20170607094313.32060-11-alice.michael@intel.com>
+Message-ID: <20170607094313.32060-12-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-When disabling interrupts, we should only be clearing the CAUSE_ENA bit,
-not clearing the whole register.  Clearing the whole register sets the
-NEXTQ_IDX field to 0 instead of 0x7ff which can confuse the Firmware in
-some reset sequences.
+When IWARP is enabled, we weren't clearing the PE_CRITERR, just logging
+it and removing it from the mask. We need to do a corer to reset the
+PE_CRITERR register, so set the bit for that as we handle the
+interrupt.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+We should also be checking for the error against the PFINT_ICR0 register,
+and only need to clear it in the value getting written to
+PFINT_ICR0_ENA.
+
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index b7b1f18..581a8ff 100644
+index 581a8ff..6db448e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3588,14 +3588,24 @@ static void i40e_vsi_disable_irq(struct i40e_vsi *vsi)
- 	int base = vsi->base_vector;
- 	int i;
+@@ -3684,10 +3684,10 @@ static irqreturn_t i40e_intr(int irq, void *data)
+ 		pf->sw_int_count++;
  
-+	/* disable interrupt causation from each queue */
- 	for (i = 0; i < vsi->num_queue_pairs; i++) {
--		wr32(hw, I40E_QINT_TQCTL(vsi->tx_rings[i]->reg_idx), 0);
--		wr32(hw, I40E_QINT_RQCTL(vsi->rx_rings[i]->reg_idx), 0);
-+		u32 val;
-+
-+		val = rd32(hw, I40E_QINT_TQCTL(vsi->tx_rings[i]->reg_idx));
-+		val &= ~I40E_QINT_TQCTL_CAUSE_ENA_MASK;
-+		wr32(hw, I40E_QINT_TQCTL(vsi->tx_rings[i]->reg_idx), val);
-+
-+		val = rd32(hw, I40E_QINT_RQCTL(vsi->rx_rings[i]->reg_idx));
-+		val &= ~I40E_QINT_RQCTL_CAUSE_ENA_MASK;
-+		wr32(hw, I40E_QINT_RQCTL(vsi->rx_rings[i]->reg_idx), val);
-+
- 		if (!i40e_enabled_xdp_vsi(vsi))
- 			continue;
- 		wr32(hw, I40E_QINT_TQCTL(vsi->xdp_rings[i]->reg_idx), 0);
+ 	if ((pf->flags & I40E_FLAG_IWARP_ENABLED) &&
+-	    (ena_mask & I40E_PFINT_ICR0_ENA_PE_CRITERR_MASK)) {
++	    (icr0 & I40E_PFINT_ICR0_ENA_PE_CRITERR_MASK)) {
+ 		ena_mask &= ~I40E_PFINT_ICR0_ENA_PE_CRITERR_MASK;
+-		icr0 &= ~I40E_PFINT_ICR0_ENA_PE_CRITERR_MASK;
+ 		dev_dbg(&pf->pdev->dev, "cleared PE_CRITERR\n");
++		set_bit(__I40E_CORE_RESET_REQUESTED, pf->state);
  	}
  
-+	/* disable each interrupt */
- 	if (pf->flags & I40E_FLAG_MSIX_ENABLED) {
- 		for (i = vsi->base_vector;
- 		     i < (vsi->num_q_vectors + vsi->base_vector); i++)
+ 	/* only q0 is used in MSI/Legacy mode, and none are used in MSIX */
 -- 
 2.9.3
 
