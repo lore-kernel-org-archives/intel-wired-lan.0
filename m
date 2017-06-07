@@ -1,52 +1,53 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  7 Jun 2017 05:43:05 -0400
-Subject: [Intel-wired-lan] [next PATCH S72-V3 05/13] i40e: Fix potential out
-	of bound array access
+Date: Wed,  7 Jun 2017 05:43:10 -0400
+Subject: [Intel-wired-lan] [next PATCH S72-V3 10/13] i40e: fix disabling
+	overflow promiscuous mode
 In-Reply-To: <20170607094313.32060-1-alice.michael@intel.com>
 References: <20170607094313.32060-1-alice.michael@intel.com>
-Message-ID: <20170607094313.32060-5-alice.michael@intel.com>
+Message-ID: <20170607094313.32060-10-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+From: Alan Brady <alan.brady@intel.com>
 
-This is a fix for the static code analysis issue where dcbcfg->numapps
-could be greater than size of array (i.e dcbcfg->app[I40E_DCBX_MAX_APPS]).
-The fix makes sure that the array is not accessed past the size of
-of the array (i.e. I40E_DCBX_MAX_APPS).
+There exists a bug in which the driver does not correctly exit overflow
+promiscuous mode.  This can occur if "too many" mac filters are added,
+putting the driver into overflow promiscuous mode, and the filters are
+then removed.  When the failed filters are removed, the driver reports
+exiting overflow promiscuous mode which is correct, however traffic
+continues to be received as if in promiscuous mode still.
 
-Copyright updated to 2017.
+The bug occurs because the conditional for toggling promiscuous mode was
+set to only execute when promiscuous mode was enabled and not when it
+was disabled as well.  This patch fixes the conditional to correctly
+execute when promiscuous mode is toggled and not just enabled.  Without
+this patch, the driver is unable to correctly exit overflow promiscuous
+mode.
 
-Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_dcb.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-index 0fab3a9..bf1d67e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-@@ -1,7 +1,7 @@
- /*******************************************************************************
-  *
-  * Intel Ethernet Controller XL710 Family Linux Driver
-- * Copyright(c) 2013 - 2014 Intel Corporation.
-+ * Copyright(c) 2013 - 2017 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -390,6 +390,8 @@ static void i40e_parse_cee_app_tlv(struct i40e_cee_feat_tlv *tlv,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 5fd4d2f..b7b1f18 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2281,9 +2281,8 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 				 i40e_aq_str(hw, hw->aq.asq_last_status));
+ 		}
+ 	}
+-	if ((changed_flags & IFF_PROMISC) ||
+-	    (promisc_changed &&
+-	     test_bit(__I40E_VSI_OVERFLOW_PROMISC, vsi->state))) {
++
++	if ((changed_flags & IFF_PROMISC) || promisc_changed) {
+ 		bool cur_promisc;
  
- 	if (!dcbcfg->numapps)
- 		return;
-+	if (dcbcfg->numapps > I40E_DCBX_MAX_APPS)
-+		dcbcfg->numapps = I40E_DCBX_MAX_APPS;
- 
- 	for (i = 0; i < dcbcfg->numapps; i++) {
- 		u8 up, selector;
+ 		cur_promisc = (!!(vsi->current_netdev_flags & IFF_PROMISC) ||
 -- 
 2.9.3
 
