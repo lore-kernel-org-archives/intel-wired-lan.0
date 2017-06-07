@@ -1,71 +1,119 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed,  7 Jun 2017 14:36:18 -0700
-Subject: [Intel-wired-lan] [PATCH 2/5] ixgbe: Enable LASI interrupts for
-	X552 devices
+Date: Wed,  7 Jun 2017 14:36:21 -0700
+Subject: [Intel-wired-lan] [PATCH 5/5] ixgbe: Disable flow control for XFI
 In-Reply-To: <20170607213621.18256-1-anthony.l.nguyen@intel.com>
 References: <20170607213621.18256-1-anthony.l.nguyen@intel.com>
-Message-ID: <20170607213621.18256-2-anthony.l.nguyen@intel.com>
+Message-ID: <20170607213621.18256-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Enable LASI interrupts on X552 devices in order to receive notifications of
-link configurations of the external PHY and support the configuration of
-the internal iXFI link since iXFI does not support auto-negotiation.  This
-is not required for X553 devices; add a check to avoid enabling LASI
-interrupts for X553 devices.
+Flow control autonegotiation is not supported for XFI.  Make sure that
+ixgbe_device_supports_autoneg_fc() returns false and
+hw->fc.disable_fc_autoneg is set to true to avoid running the fc_autoneg
+function for that device.
 
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 31 +++++++++++++++++++--------
- 1 file changed, 22 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |  5 ++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   | 57 ++++++++++++++-----------
+ 2 files changed, 35 insertions(+), 27 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 40ae7db..2c19070 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -97,7 +97,10 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
+ 
+ 		break;
+ 	case ixgbe_media_type_backplane:
+-		supported = true;
++		if (hw->device_id == IXGBE_DEV_ID_X550EM_X_XFI)
++			supported = false;
++		else
++			supported = true;
+ 		break;
+ 	case ixgbe_media_type_copper:
+ 		/* only some copper devices support flow control autoneg */
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index b90d676..a1bf67b 100644
+index ba97685..4c8e545 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -2404,17 +2404,30 @@ static s32 ixgbe_enable_lasi_ext_t_x550em(struct ixgbe_hw *hw)
- 	status = ixgbe_get_lasi_ext_t_x550em(hw, &lsc);
+@@ -2843,7 +2843,7 @@ static s32 ixgbe_setup_fc_x550em(struct ixgbe_hw *hw)
+ {
+ 	bool pause, asm_dir;
+ 	u32 reg_val;
+-	s32 rc;
++	s32 rc = 0;
  
- 	/* Enable link status change alarm */
--	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_PMA_TX_VEN_LASI_INT_MASK,
--				      MDIO_MMD_AN, &reg);
--	if (status)
--		return status;
+ 	/* Validate the requested mode */
+ 	if (hw->fc.strict_ieee && hw->fc.requested_mode == ixgbe_fc_rx_pause) {
+@@ -2886,32 +2886,37 @@ static s32 ixgbe_setup_fc_x550em(struct ixgbe_hw *hw)
+ 		return IXGBE_ERR_CONFIG;
+ 	}
  
--	reg |= IXGBE_MDIO_PMA_TX_VEN_LASI_INT_EN;
-+	/* Enable the LASI interrupts on X552 devices to receive notifications
-+	 * of the link configurations of the external PHY and correspondingly
-+	 * support the configuration of the internal iXFI link, since iXFI does
-+	 * not support auto-negotiation. This is not required for X553 devices
-+	 * having KR support, which performs auto-negotiations and which is used
-+	 * as the internal link to the external PHY. Hence adding a check here
-+	 * to avoid enabling LASI interrupts for X553 devices.
-+	 */
-+	if (hw->mac.type != ixgbe_mac_x550em_a) {
-+		status = hw->phy.ops.read_reg(hw,
-+					    IXGBE_MDIO_PMA_TX_VEN_LASI_INT_MASK,
-+					    MDIO_MMD_AN, &reg);
-+		if (status)
-+			return status;
+-	if (hw->device_id != IXGBE_DEV_ID_X550EM_X_KR &&
+-	    hw->device_id != IXGBE_DEV_ID_X550EM_A_KR &&
+-	    hw->device_id != IXGBE_DEV_ID_X550EM_A_KR_L)
+-		return 0;
+-
+-	rc = hw->mac.ops.read_iosf_sb_reg(hw,
+-					  IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
+-					  IXGBE_SB_IOSF_TARGET_KR_PHY,
+-					  &reg_val);
+-	if (rc)
+-		return rc;
+-
+-	reg_val &= ~(IXGBE_KRM_AN_CNTL_1_SYM_PAUSE |
+-		     IXGBE_KRM_AN_CNTL_1_ASM_PAUSE);
+-	if (pause)
+-		reg_val |= IXGBE_KRM_AN_CNTL_1_SYM_PAUSE;
+-	if (asm_dir)
+-		reg_val |= IXGBE_KRM_AN_CNTL_1_ASM_PAUSE;
+-	rc = hw->mac.ops.write_iosf_sb_reg(hw,
+-					   IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
+-					   IXGBE_SB_IOSF_TARGET_KR_PHY,
+-					   reg_val);
+-
+-	/* This device does not fully support AN. */
+-	hw->fc.disable_fc_autoneg = true;
++	switch (hw->device_id) {
++	case IXGBE_DEV_ID_X550EM_X_KR:
++	case IXGBE_DEV_ID_X550EM_A_KR:
++	case IXGBE_DEV_ID_X550EM_A_KR_L:
++		rc = hw->mac.ops.read_iosf_sb_reg(hw,
++					    IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
++					    IXGBE_SB_IOSF_TARGET_KR_PHY,
++					    &reg_val);
++		if (rc)
++			return rc;
+ 
++		reg_val &= ~(IXGBE_KRM_AN_CNTL_1_SYM_PAUSE |
++			     IXGBE_KRM_AN_CNTL_1_ASM_PAUSE);
++		if (pause)
++			reg_val |= IXGBE_KRM_AN_CNTL_1_SYM_PAUSE;
++		if (asm_dir)
++			reg_val |= IXGBE_KRM_AN_CNTL_1_ASM_PAUSE;
++		rc = hw->mac.ops.write_iosf_sb_reg(hw,
++					    IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
++					    IXGBE_SB_IOSF_TARGET_KR_PHY,
++					    reg_val);
 +
-+		reg |= IXGBE_MDIO_PMA_TX_VEN_LASI_INT_EN;
- 
--	status = hw->phy.ops.write_reg(hw, IXGBE_MDIO_PMA_TX_VEN_LASI_INT_MASK,
--				       MDIO_MMD_AN, reg);
--	if (status)
--		return status;
-+		status = hw->phy.ops.write_reg(hw,
-+					    IXGBE_MDIO_PMA_TX_VEN_LASI_INT_MASK,
-+					    MDIO_MMD_AN, reg);
-+		if (status)
-+			return status;
++		/* This device does not fully support AN. */
++		hw->fc.disable_fc_autoneg = true;
++		break;
++	case IXGBE_DEV_ID_X550EM_X_XFI:
++		hw->fc.disable_fc_autoneg = true;
++		break;
++	default:
++		break;
 +	}
+ 	return rc;
+ }
  
- 	/* Enable high temperature failure and global fault alarms */
- 	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_GLOBAL_INT_MASK,
 -- 
 2.9.3
 
