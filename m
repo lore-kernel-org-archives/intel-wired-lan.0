@@ -1,82 +1,58 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 07 Jun 2017 13:34:59 -0700
-Subject: [Intel-wired-lan] [net-intel-i40e] question about assignment
-	overwrite
-In-Reply-To: <20170607195526.GA26867@korriban>
-References: <20170517154858.Horde.xMvsIEhHNSGu52mfyp7HA3R@gator4166.hostgator.com>
- <1495086551.46489.1.camel@intel.com> <20170607195526.GA26867@korriban>
-Message-ID: <1496867699.2192.2.camel@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed,  7 Jun 2017 14:36:17 -0700
+Subject: [Intel-wired-lan] [PATCH 1/5] ixgbe: Ensure MAC filter was added
+	before setting MACVLAN
+Message-ID: <20170607213621.18256-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2017-06-07 at 16:55 -0300, Mauro Rodrigues wrote:
-> On Wed, May 17, 2017 at 10:49:11PM -0700, Jeff Kirsher wrote:
-> > On Wed, 2017-05-17 at 15:48 -0500, Gustavo A. R. Silva wrote:
-> > > While looking into Coverity ID 1408956 I ran into the following
-> > > piece??
-> > > of code at drivers/net/ethernet/intel/i40e/i40e_main.c:8807:
-> > > 
-> > > 8807??????? if (pf->hw.mac.type == I40E_MAC_X722) {
-> > > 8808??????????????? pf->flags |= I40E_FLAG_RSS_AQ_CAPABLE
-> > > 8809???????????????????????????? | I40E_FLAG_128_QP_RSS_CAPABLE
-> > > 8810???????????????????????????? | I40E_FLAG_HW_ATR_EVICT_CAPABLE
-> > > 8811???????????????????????????? | I40E_FLAG_OUTER_UDP_CSUM_CAPABLE
-> > > 8812???????????????????????????? | I40E_FLAG_WB_ON_ITR_CAPABLE
-> > > 8813???????????????????????????? |
-> > > I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE
-> > > 8814???????????????????????????? | I40E_FLAG_NO_PCI_LINK_CHECK
-> > > 8815???????????????????????????? | I40E_FLAG_USE_SET_LLDP_MIB
-> > > 8816???????????????????????????? | I40E_FLAG_GENEVE_OFFLOAD_CAPABLE
-> > > 8817???????????????????????????? | I40E_FLAG_PTP_L4_CAPABLE
-> > > 8818???????????????????????????? | I40E_FLAG_WOL_MC_MAGIC_PKT_WAKE;
-> > > 8819??????? } else if ((pf->hw.aq.api_maj_ver > 1) ||
-> > > 8820?????????????????? ((pf->hw.aq.api_maj_ver == 1) &&
-> > > 8821??????????????????? (pf->hw.aq.api_min_ver > 4))) {
-> > > 8822??????????????? /* Supported in FW API version higher than 1.4 */
-> > > 8823??????????????? pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
-> > > 8824??????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-> > > 8825??????? } else {
-> > > 8826??????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-> > > 8827??????? }
-> > > 
-> > > The issue here is that the assignment at line 8823 is overwritten
-> > > by??
-> > > the code at line 8824.
-> > > 
-> > > I'm suspicious that line 8824 should be remove and a patch like the??
-> > > following can be applied:
-> > > 
-> > > index d5c9c9e..48ffa73 100644
-> > > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > > @@ -8821,7 +8821,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
-> > > ???????????????????? (pf->hw.aq.api_min_ver > 4))) {
-> > > ???????????????? /* Supported in FW API version higher than 1.4 */
-> > > ???????????????? pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
-> > > -?????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-> > > ???????? } else {
-> > > ???????????????? pf->flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
-> > > ???????? }
-> > > 
-> > > What do you think?
-> > 
-> > This issue is already fixed in my dev-queue branch on my next-queue
-> > tree.
-> 
-> Hi Jeff, are you planning to push this fix into net branch anytime soon?
-> 
-> Thanks,
-> 
-> Mauro
+This patch adds a check to ensure that adding the MAC filter was
+successful before setting the MACVLAN.  If it was unsuccessful, propagate
+the error.
 
-The patch that fixed this issue is already in David Miller's net-next tree.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170607/9080abaf/attachment.asc>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index b77f992..df43c59 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -685,6 +685,7 @@ static int ixgbe_set_vf_macvlan(struct ixgbe_adapter *adapter,
+ {
+ 	struct list_head *pos;
+ 	struct vf_macvlans *entry;
++	s32 retval = 0;
+ 
+ 	if (index <= 1) {
+ 		list_for_each(pos, &adapter->vf_mvs.l) {
+@@ -725,14 +726,15 @@ static int ixgbe_set_vf_macvlan(struct ixgbe_adapter *adapter,
+ 	if (!entry || !entry->free)
+ 		return -ENOSPC;
+ 
+-	entry->free = false;
+-	entry->is_macvlan = true;
+-	entry->vf = vf;
+-	memcpy(entry->vf_macvlan, mac_addr, ETH_ALEN);
+-
+-	ixgbe_add_mac_filter(adapter, mac_addr, vf);
++	retval = ixgbe_add_mac_filter(adapter, mac_addr, vf);
++	if (retval >= 0) {
++		entry->free = false;
++		entry->is_macvlan = true;
++		entry->vf = vf;
++		memcpy(entry->vf_macvlan, mac_addr, ETH_ALEN);
++	}
+ 
+-	return 0;
++	return retval;
+ }
+ 
+ static inline void ixgbe_vf_reset_event(struct ixgbe_adapter *adapter, u32 vf)
+-- 
+2.9.3
+
