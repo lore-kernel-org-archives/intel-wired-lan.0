@@ -1,119 +1,146 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed,  7 Jun 2017 14:36:21 -0700
-Subject: [Intel-wired-lan] [PATCH 5/5] ixgbe: Disable flow control for XFI
-In-Reply-To: <20170607213621.18256-1-anthony.l.nguyen@intel.com>
-References: <20170607213621.18256-1-anthony.l.nguyen@intel.com>
-Message-ID: <20170607213621.18256-5-anthony.l.nguyen@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 08 Jun 2017 12:22:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 626286244ae843b7dcff97a4cb06facf1e497b1f
+Message-ID: <5938d0f0.mwY5CJvnhnB2E1Dr%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Flow control autonegotiation is not supported for XFI.  Make sure that
-ixgbe_device_supports_autoneg_fc() returns false and
-hw->fc.disable_fc_autoneg is set to true to avoid running the fc_autoneg
-function for that device.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+626286244ae843b7dcff97a4cb06facf1e497b1f  i40e: don't hold RTNL lock for the entire reset
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |  5 ++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   | 57 ++++++++++++++-----------
- 2 files changed, 35 insertions(+), 27 deletions(-)
+elapsed time: 297m
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 40ae7db..2c19070 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -97,7 +97,10 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
- 
- 		break;
- 	case ixgbe_media_type_backplane:
--		supported = true;
-+		if (hw->device_id == IXGBE_DEV_ID_X550EM_X_XFI)
-+			supported = false;
-+		else
-+			supported = true;
- 		break;
- 	case ixgbe_media_type_copper:
- 		/* only some copper devices support flow control autoneg */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index ba97685..4c8e545 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -2843,7 +2843,7 @@ static s32 ixgbe_setup_fc_x550em(struct ixgbe_hw *hw)
- {
- 	bool pause, asm_dir;
- 	u32 reg_val;
--	s32 rc;
-+	s32 rc = 0;
- 
- 	/* Validate the requested mode */
- 	if (hw->fc.strict_ieee && hw->fc.requested_mode == ixgbe_fc_rx_pause) {
-@@ -2886,32 +2886,37 @@ static s32 ixgbe_setup_fc_x550em(struct ixgbe_hw *hw)
- 		return IXGBE_ERR_CONFIG;
- 	}
- 
--	if (hw->device_id != IXGBE_DEV_ID_X550EM_X_KR &&
--	    hw->device_id != IXGBE_DEV_ID_X550EM_A_KR &&
--	    hw->device_id != IXGBE_DEV_ID_X550EM_A_KR_L)
--		return 0;
--
--	rc = hw->mac.ops.read_iosf_sb_reg(hw,
--					  IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
--					  IXGBE_SB_IOSF_TARGET_KR_PHY,
--					  &reg_val);
--	if (rc)
--		return rc;
--
--	reg_val &= ~(IXGBE_KRM_AN_CNTL_1_SYM_PAUSE |
--		     IXGBE_KRM_AN_CNTL_1_ASM_PAUSE);
--	if (pause)
--		reg_val |= IXGBE_KRM_AN_CNTL_1_SYM_PAUSE;
--	if (asm_dir)
--		reg_val |= IXGBE_KRM_AN_CNTL_1_ASM_PAUSE;
--	rc = hw->mac.ops.write_iosf_sb_reg(hw,
--					   IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
--					   IXGBE_SB_IOSF_TARGET_KR_PHY,
--					   reg_val);
--
--	/* This device does not fully support AN. */
--	hw->fc.disable_fc_autoneg = true;
-+	switch (hw->device_id) {
-+	case IXGBE_DEV_ID_X550EM_X_KR:
-+	case IXGBE_DEV_ID_X550EM_A_KR:
-+	case IXGBE_DEV_ID_X550EM_A_KR_L:
-+		rc = hw->mac.ops.read_iosf_sb_reg(hw,
-+					    IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
-+					    IXGBE_SB_IOSF_TARGET_KR_PHY,
-+					    &reg_val);
-+		if (rc)
-+			return rc;
- 
-+		reg_val &= ~(IXGBE_KRM_AN_CNTL_1_SYM_PAUSE |
-+			     IXGBE_KRM_AN_CNTL_1_ASM_PAUSE);
-+		if (pause)
-+			reg_val |= IXGBE_KRM_AN_CNTL_1_SYM_PAUSE;
-+		if (asm_dir)
-+			reg_val |= IXGBE_KRM_AN_CNTL_1_ASM_PAUSE;
-+		rc = hw->mac.ops.write_iosf_sb_reg(hw,
-+					    IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
-+					    IXGBE_SB_IOSF_TARGET_KR_PHY,
-+					    reg_val);
-+
-+		/* This device does not fully support AN. */
-+		hw->fc.disable_fc_autoneg = true;
-+		break;
-+	case IXGBE_DEV_ID_X550EM_X_XFI:
-+		hw->fc.disable_fc_autoneg = true;
-+		break;
-+	default:
-+		break;
-+	}
- 	return rc;
- }
- 
--- 
-2.9.3
+configs tested: 122
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-a0-06050003
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                 randconfig-x019-201723
+x86_64                 randconfig-x010-201723
+x86_64                 randconfig-x015-201723
+x86_64                 randconfig-x012-201723
+x86_64                 randconfig-x014-201723
+x86_64                 randconfig-x016-201723
+x86_64                 randconfig-x017-201723
+x86_64                 randconfig-x018-201723
+x86_64                 randconfig-x013-201723
+x86_64                 randconfig-x011-201723
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+arm                         shannon_defconfig
+blackfin                  TCM-BF518_defconfig
+mips                  mips_paravirt_defconfig
+mips                      pistachio_defconfig
+i386                   randconfig-b0-06081104
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+i386                   randconfig-x017-201723
+i386                   randconfig-x016-201723
+i386                   randconfig-x018-201723
+i386                   randconfig-x012-201723
+i386                   randconfig-x010-201723
+i386                   randconfig-x019-201723
+i386                   randconfig-x013-201723
+i386                   randconfig-x014-201723
+i386                   randconfig-x015-201723
+i386                   randconfig-x011-201723
+x86_64                randconfig-ne0-06081042
+i386                               tinyconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+i386                 randconfig-x075-06041529
+i386                 randconfig-x073-06041529
+i386                 randconfig-x078-06041529
+i386                 randconfig-x071-06041529
+i386                 randconfig-x072-06041529
+i386                 randconfig-x079-06041529
+i386                 randconfig-x077-06041529
+i386                 randconfig-x070-06041529
+i386                 randconfig-x076-06041529
+i386                 randconfig-x074-06041529
+x86_64                 randconfig-x006-201723
+x86_64                 randconfig-x001-201723
+x86_64                 randconfig-x007-201723
+x86_64                 randconfig-x005-201723
+x86_64                 randconfig-x004-201723
+x86_64                 randconfig-x000-201723
+x86_64                 randconfig-x002-201723
+x86_64                 randconfig-x008-201723
+x86_64                 randconfig-x003-201723
+x86_64                 randconfig-x009-201723
+i386                             allmodconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+i386                   randconfig-x0-06081057
+
+Thanks,
+Fengguang
