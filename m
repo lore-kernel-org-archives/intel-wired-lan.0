@@ -1,353 +1,428 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 9 Jun 2017 20:25:14 +0000
-Subject: [Intel-wired-lan] [i40e] regression on TCP stream and TCP
- maerts, kernel-4.12.0-0.rc2
-In-Reply-To: <CAKgT0UcKnDu-VUci6TT0Pfxu6eDSvVxSb0KyRgn4VUmG1gMiqg@mail.gmail.com>
-References: <655ed9ab-853e-7497-9ea3-cc8d13f56043@redhat.com>
- <CAKgT0UcdJQWqr_zxxi36a6_3iMwBNow-YS723i7t6xsKvAqvCA@mail.gmail.com>
- <CAKgT0Ufb41o=WM=3DM9cwvrw9N5AFn-uL0p1gQB-m+D3BX3DKA@mail.gmail.com>
- <1496238507.22688.4.camel@redhat.com>
- <CAKgT0Ucg9wHrKDBjQXKH6gziuinwcK9MO-jRC=0q60Lm-8vFqA@mail.gmail.com>
- <1496312080.3758.7.camel@redhat.com> <1496344683.27073.306.camel@intel.com>
- <1497004478.32667.16.camel@redhat.com>
- <CAKgT0UcKnDu-VUci6TT0Pfxu6eDSvVxSb0KyRgn4VUmG1gMiqg@mail.gmail.com>
-Message-ID: <02874ECE860811409154E81DA85FBB58829BF66C@ORSMSX115.amr.corp.intel.com>
+From: Paul Greenwalt <paul.greenwalt@intel.com>
+Date: Fri,  9 Jun 2017 10:56:30 -0400
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Add malicious driver detection
+	support
+Message-ID: <1497020190-65305-1-git-send-email-paul.greenwalt@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Add malicious driver detection (MDD) support for X550, X550em_a,
+and X550em_x devices.
 
+MDD is a hardware SR-IOV security feature which the driver enables by
+default, but can be controlled on|off by ethtool set-priv-flags
+parameter. When enabled MDD disables a VF drivers transmit queue
+when a malformed descriptor is detected. The PF will log the event
+and re-enable the VF queue.
 
-> -----Original Message-----
-> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
-> Sent: Friday, June 09, 2017 12:59 PM
-> To: Adrian Tomasov <atomasov@redhat.com>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; Keller, Jacob E <jacob.e.keller@intel.com>
-> Cc: Duyck, Alexander H <alexander.h.duyck@intel.com>; osabart at redhat.com;
-> netdev at vger.kernel.org; aokuliar at redhat.com; intel-wired-lan at lists.osuosl.org;
-> jhladky at redhat.com
-> Subject: Re: [Intel-wired-lan] [i40e] regression on TCP stream and TCP maerts,
-> kernel-4.12.0-0.rc2
-> 
-> On Fri, Jun 9, 2017 at 3:34 AM, Adrian Tomasov <atomasov@redhat.com> wrote:
-> > On Thu, 2017-06-01 at 19:18 +0000, Duyck, Alexander H wrote:
-> >> On Thu, 2017-06-01 at 12:14 +0200, Adrian Tomasov wrote:
-> >> >
-> >> > On Wed, 2017-05-31 at 14:42 -0700, Alexander Duyck wrote:
-> >> > >
-> >> > >
-> >> > > On Wed, May 31, 2017 at 6:48 AM, Adrian Tomasov <atomasov@redhat.
-> >> > > com>
-> >> > > wrote:
-> >> > > >
-> >> > > >
-> >> > > >
-> >> > > > On Tue, 2017-05-30 at 18:27 -0700, Alexander Duyck wrote:
-> >> > > > >
-> >> > > > >
-> >> > > > >
-> >> > > > > On Tue, May 30, 2017 at 8:41 AM, Alexander Duyck
-> >> > > > > <alexander.duyck@gmail.com> wrote:
-> >> > > > > >
-> >> > > > > >
-> >> > > > > >
-> >> > > > > >
-> >> > > > > > On Tue, May 30, 2017 at 6:43 AM, Adam Okuliar <aokuliar@red
-> >> > > > > > hat.
-> >> > > > > > com>
-> >> > > > > > wrote:
-> >> > > > > > >
-> >> > > > > > >
-> >> > > > > > >
-> >> > > > > > >
-> >> > > > > > > Hello,
-> >> > > > > > >
-> >> > > > > > > we found regression on intel card(XL710) with i40e
-> >> > > > > > > driver.
-> >> > > > > > > Regression is
-> >> > > > > > > about ~45%
-> >> > > > > > > on TCP_STREAM and TCP_MAERTS test for IPv4 and IPv6.
-> >> > > > > > > Regression
-> >> > > > > > > was first
-> >> > > > > > > visible in kernel-4.12.0-0.rc1.
-> >> > > > > > >
-> >> > > > > > > More details about results you can see in uploaded images
-> >> > > > > > > in
-> >> > > > > > > bugzilla. [0]
-> >> > > > > > >
-> >> > > > > > >
-> >> > > > > > > [0] https://bugzilla.kernel.org/show_bug.cgi?id=195923
-> >> > > > > > >
-> >> > > > > > >
-> >> > > > > > > Best regards, / S pozdravom,
-> >> > > > > > >
-> >> > > > > > > Adri?n Toma?ov
-> >> > > > > > > Kernel Performance QE
-> >> > > > > > > atomasov at redhat.com
-> >> > > > > >
-> >> > > > > > I have added the i40e driver maintainer and the intel-
-> >> > > > > > wired-lan
-> >> > > > > > mailing list so that we can make are developers aware of
-> >> > > > > > the
-> >> > > > > > issue.
-> >> > > > > >
-> >> > > > > > Thanks.
-> >> > > > > >
-> >> > > > > > - Alex
-> >> > > > >
-> >> > > > > Adam,
-> >> > > > >
-> >> > > > > We are having some issues trying to reproduce what you
-> >> > > > > reported.
-> >> > > > >
-> >> > > > > Can you provide some additional data. Specifically we would
-> >> > > > > be
-> >> > > > > looking
-> >> > > > > for an "ethtool -i", and an "ethtool -S" for the port before
-> >> > > > > and
-> >> > > > > after
-> >> > > > > the test. If you can attach it to the bugzilla that would be
-> >> > > > > appreciated.
-> >> > > > >
-> >> > > > > Thanks.
-> >> > > > >
-> >> > > > > - Alex
-> >> > > >
-> >> > > > Hello Alex,
-> >> > > >
-> >> > > > requested files are updated in bugzilla.
-> >> > > >
-> >> > > > If you have any questions about testing feel free to ask.
-> >> > > >
-> >> > > >
-> >> > > > Best regards,
-> >> > > >
-> >> > > > Adrian
-> >> > >
-> >> > > So looking at the data I wonder if we don't have an MTU mismatch
-> >> > > in
-> >> > > the network config. I notice the "after" has rx_length_errors
-> >> > > being
-> >> > > reported. Recent changes made it so that i40e doesn't support
-> >> > > jumbo
-> >> > > frames by default, whereas before we could. You might want to
-> >> > > check
-> >> > > for that as that could cause the kind of performance issues you
-> >> > > are
-> >> > > seeing.
-> >> > >
-> >> > > - Alex
-> >> >
-> >> > There isn't MTU mismatch. Traffic path is : server -> switch ->
-> >> > server.
-> >> >
-> >> >
-> >> > Output from switch:
-> >> >
-> >> >     > show interfaces et-0/0/18
-> >> >     Physical interface: et-0/0/18, Enabled, Physical link is Up
-> >> >       Interface index: 644, SNMP ifIndex: 538
-> >> >       Link-level type: Ethernet, MTU: 1514, Speed: 40Gbps, BPDU
-> >> > Error:
-> >> >     None, MAC-REWRITE Error: None, Loopback: Disabled, Source
-> >> > filtering:
-> >> >     Disabled, Flow control: Disabled, Media type: Fiber
-> >> >       Device flags   : Present Running
-> >> >       Interface flags: SNMP-Traps Internal: 0x4000
-> >> >       Link flags     : None
-> >> >       CoS queues     : 12 supported, 12 maximum usable queues
-> >> >       Current address: d4:04:ff:90:5a:4b, Hardware address:
-> >> >     d4:04:ff:90:5a:4b
-> >> >       Last flapped   : 2017-06-01 10:09:32 CEST (01:21:29 ago)
-> >> >       Input rate     : 432 bps (0 pps)
-> >> >       Output rate    : 8336 bps (11 pps)
-> >> >       Active alarms  : None
-> >> >       Active defects : None
-> >> >       Interface transmit statistics: Disabled
-> >> >
-> >> >       Logical interface et-0/0/18.0 (Index 552) (SNMP ifIndex 539)
-> >> >         Flags: SNMP-Traps 0x24024000 Encapsulation: Ethernet-Bridge
-> >> >         Input packets : 464041
-> >> >         Output packets: 209210
-> >> >         Protocol eth-switch, MTU: 1514
-> >> >           Flags: Is-Primary, Trunk-Mode
-> >> >
-> >> >
-> >> > MTU is same for all et-0/0/x interfaces.
-> >> >
-> >> > - Adrian
-> >>
-> >> One thing you might try try doing is toggling the legacy-rx flag
-> >> using
-> >> the "ethtool --show-priv-flags/--set-priv-flags" command to see if
-> >> that
-> >> has any impact. That will help to rule things out as the most
-> >> significant change I can think of is the recent update of the Rx path
-> >> to support XDP.
-> >>
-> >> Also one other thing you might try would be to use a fixed interrupt
-> >> moderation rate by locking things down using "ethtool -C" to disable
-> >> adaptive interrupt moderation and lock the Rx usecs and Tx usecs at
-> >> some predefined values. I seem to recall there have been some
-> >> interrupt
-> >> moderation changes made recently that might be impacting the
-> >> performance.
-> >>
-> >> Beyond that is there any chance you would be able to bisect the
-> >> issue?
-> >> Unfortunately we haven't be able to reproduce it internally so
-> >> anything
-> >> that would help us to narrow down the problem would be useful.
-> >>
-> >> Thanks.
-> >>
-> >> - Alex
-> >
-> > Hello Alex,
-> >
-> > I updated firmware in NIC and it didn't make any changes. Current
-> > firmware version is "firmware-version: 5.05 0x800028a6 1.1568.0".
-> >
-> >
-> > I tried bisect this issue with new firmware and successfully found
-> > first bad commit. Log from bisecting is pasted in the end. For testing
-> > of kernel builds I used clear distribution install of  RHEL7 and turn
-> > of irqbalance. Test run between 2 servers with same HW an SW
-> > configuration. NIC was put into different IPv4 subnet to avoid
-> > undesirable communication.
-> >
-> >
-> > testing command : netperf -L 192.168.0.1 -H 192.168.0.2 -T 0,0 -t
-> > TCP_STREAM -l 30 -- -m 4096
-> >
-> >
-> > [root at vales1 linux]# git bisect good
-> > 47994c119a36e28e1779efabc92d6ab5329a6f75 is the first bad commit
-> > commit 47994c119a36e28e1779efabc92d6ab5329a6f75
-> > Author: Jacob Keller <jacob.e.keller@intel.com>
-> > Date:   Wed Apr 19 09:25:57 2017 -0400
-> >
-> >     i40e: remove hw_disabled_flags in favor of using separate flag bits
-> >
-> >     The hw_disabled_flags field was added as a way of signifying that
-> >     a feature was automatically or temporarily disabled. However, we
-> >     actually only use this for FDir features. Replace its use with new
-> >     _AUTO_DISABLED flags instead. This is more readable, because you
-> > aren't
-> >     setting an *_ENABLED flag to *disable* the feature.
-> >
-> >     Additionally, clean up a few areas where we used these bits. First,
-> > we
-> >     don't really need to set the auto-disable flag for ATR if we're
-> > fully
-> >     disabling the feature via ethtool.
-> >
-> >     Second, we should always clear the auto-disable bits in case they
-> > somehow
-> >     got set when the feature was disabled. However, avoid displaying
-> >     a message that we've re-enabled the feature.
-> >
-> >     Third, we shouldn't be re-enabling ATR in the SB ntuple add flow,
-> >     because it might have been disabled due to space constraints.
-> > Instead,
-> >     we should just wait for the fdir_check_and_reenable to be called by
-> > the
-> >     watchdog.
-> >
-> >     Overall, this change allows us to simplify some code by removing an
-> >     extra field we didn't need, and the result should make it more
-> > clear as
-> >     to what we're actually doing with these flags.
-> >
-> >     Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> >     Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-> >     Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> >
-> > :040000 040000 e2f7724e0e857b902ebfeb7104ac18ecf6b90e36
-> > 524e5f2381a64fb152ec00638d738a4f28968455 M      drivers
-> > [root at vales1 linux]# git bisect log
-> > git bisect start
-> > # good: [5a7ad1146caa895ad718a534399e38bd2ba721b7] Linux 4.11-rc8
-> > git bisect good 5a7ad1146caa895ad718a534399e38bd2ba721b7
-> > # bad: [2ea659a9ef488125eb46da6eb571de5eae5c43f6] Linux 4.12-rc1
-> > git bisect bad 2ea659a9ef488125eb46da6eb571de5eae5c43f6
-> > # bad: [221656e7c4ce342b99c31eca96c1cbb6d1dce45f] Merge tag 'sound-
-> > 4.12-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound
-> > git bisect bad 221656e7c4ce342b99c31eca96c1cbb6d1dce45f
-> > # bad: [8d65b08debc7e62b2c6032d7fe7389d895b92cbc] Merge
-> > git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next
-> > git bisect bad 8d65b08debc7e62b2c6032d7fe7389d895b92cbc
-> > # good: [2d2ab658d2debcb4c0e29c9e6f18e5683f3077bf] rhashtable: Do not
-> > lower max_elems when max_size is zero
-> > git bisect good 2d2ab658d2debcb4c0e29c9e6f18e5683f3077bf
-> > # good: [6dc2cce9321198172cd96f955a5fc798a4cc35a6] Merge branch 'x86-
-> > process-for-linus' of
-> > git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
-> > git bisect good 6dc2cce9321198172cd96f955a5fc798a4cc35a6
-> > # good: [b68e7e952f24527de62f4768b1cead91f92f5f6e] Merge branch 'for-
-> > linus' of git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux
-> > git bisect good b68e7e952f24527de62f4768b1cead91f92f5f6e
-> > # bad: [773225388dae15e72790d6f573e2e70e96292b6b] net: thunderx:
-> > Optimize page recycling for XDP
-> > git bisect bad 773225388dae15e72790d6f573e2e70e96292b6b
-> > # bad: [edd7f4efa8111efc279582290acc4d54d405748a] Merge branch 'bpf-
-> > samples-skb_mode-bug-fixes'
-> > git bisect bad edd7f4efa8111efc279582290acc4d54d405748a
-> > # good: [0da36b9774cc24bac4bff446edf49f31aa98a282] i40e: use
-> > DECLARE_BITMAP for state fields
-> > git bisect good 0da36b9774cc24bac4bff446edf49f31aa98a282
-> > # bad: [1d11e732e7d501c4a231f0b32cf8b81990592689] virtio-net: use
-> > netif_tx_napi_add for tx napi
-> > git bisect bad 1d11e732e7d501c4a231f0b32cf8b81990592689
-> > # bad: [d1f496fd8f34a40458d0eda6be0655926559e546] bpf: restore skb->sk
-> > before pskb_trim() call
-> > git bisect bad d1f496fd8f34a40458d0eda6be0655926559e546
-> > # bad: [3dfc3eb581645bc503c7940861f494a0d75615da] i40evf: hide unused
-> > variable
-> > git bisect bad 3dfc3eb581645bc503c7940861f494a0d75615da
-> > # bad: [47994c119a36e28e1779efabc92d6ab5329a6f75] i40e: remove
-> > hw_disabled_flags in favor of using separate flag bits
-> > git bisect bad 47994c119a36e28e1779efabc92d6ab5329a6f75
-> > # good: [789f38ca70e0b2848472aaf5f278aa3deabd4a4e] i40evf: remove
-> > needless min_t() on num_online_cpus()*2
-> > git bisect good 789f38ca70e0b2848472aaf5f278aa3deabd4a4e
-> > # first bad commit: [47994c119a36e28e1779efabc92d6ab5329a6f75] i40e:
-> > remove hw_disabled_flags in favor of using separate flag bits
-> >
-> > [root at vales1 linux]# ethtool -i ens1f0
-> > driver: i40e
-> > version: 2.1.14-k
-> > firmware-version: 5.05 0x800028a6 1.1568.0
-> > expansion-rom-version:
-> > bus-info: 0000:04:00.0
-> > supports-statistics: yes
-> > supports-test: yes
-> > supports-eeprom-access: yes
-> > supports-register-dump: yes
-> > supports-priv-flags: yes
-> >
-> >
-> > - Adrian
-> >
-> 
-> Okay I think I have an idea what is going on.
-> 
-> Looking at the code there is a bug and apparently it is fixed in:
-> https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-
-> queue.git/commit/?h=dev-
-> queue&id=b699c97b570ac69989955a7a9f05722abd3177cf
-> 
-> I am assuming that is being submitted to net at some point since this
-> is a bug that is visible in Linus's tree. Jeff do we have an ETA on
-> when that patch might go out?
-> 
-> Thanks.
-> 
-> Alex
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+---
+v2: Changed new function declarations to static.
 
-Yes please, we should backport the fix into net.  What can I do to help this?
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   3 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c  |  25 +++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  13 ++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   6 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c   |  50 ++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   8 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    | 138 +++++++++++++++++++++++
+ 7 files changed, 241 insertions(+), 2 deletions(-)
 
-Thanks,
-Jake
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index dd55787..2e9df66 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -563,6 +563,8 @@ struct ixgbe_mac_addr {
+ #define IXGBE_TRY_LINK_TIMEOUT (4 * HZ)
+ #define IXGBE_SFP_POLL_JIFFIES (2 * HZ)	/* SFP poll every 2 seconds */
+ 
++#define IXGBE_MDD_Q_BITMAP_DEPTH 2
++
+ /* board specific private data structure */
+ struct ixgbe_adapter {
+ 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
+@@ -603,6 +605,7 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER	BIT(26)
+ #define IXGBE_FLAG_DCB_CAPABLE			BIT(27)
+ #define IXGBE_FLAG_GENEVE_OFFLOAD_CAPABLE	BIT(28)
++#define IXGBE_FLAG_MDD_ENABLED			BIT(29)
+ 
+ 	u32 flags2;
+ #define IXGBE_FLAG2_RSC_CAPABLE			BIT(0)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c
+index 78c5237..d37d2b0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c
+@@ -379,10 +379,22 @@ static u8 ixgbe_dcbnl_set_all(struct net_device *netdev)
+ 		} else {
+ 			hw->mac.ops.fc_enable(hw);
+ 		}
++		/* Disable MDD before updating SRRCTL, because modifying the
++		 * SRRCTL register while the queue is enabled will generate an
++		 * MDD event.
++		 */
++		if ((adapter->num_vfs) && (hw->mac.ops.disable_mdd) &&
++		    (adapter->flags & IXGBE_FLAG_MDD_ENABLED))
++			hw->mac.ops.disable_mdd(hw);
+ 
+ 		ixgbe_set_rx_drop_en(adapter);
+ 
+-		ret = DCB_HW_CHG;
++		if ((adapter->num_vfs) && (hw->mac.ops.enable_mdd) &&
++		    (adapter->flags & IXGBE_FLAG_MDD_ENABLED))
++			hw->mac.ops.enable_mdd(hw);
++
++		if (ret != DCB_HW_CHG_RST)
++			ret = DCB_HW_CHG;
+ 	}
+ 
+ #ifdef IXGBE_FCOE
+@@ -634,8 +646,19 @@ static int ixgbe_dcbnl_ieee_setpfc(struct net_device *dev,
+ 	else
+ 		err = hw->mac.ops.fc_enable(hw);
+ 
++	/* Disable MDD before updating SRRCTL, because modifying the SRRCTL
++	 * register while the queue is enabled will generate an MDD event.
++	 */
++	if ((adapter->num_vfs) && (hw->mac.ops.disable_mdd) &&
++	    (adapter->flags & IXGBE_FLAG_MDD_ENABLED))
++		hw->mac.ops.disable_mdd(hw);
++
+ 	ixgbe_set_rx_drop_en(adapter);
+ 
++	if ((adapter->num_vfs) && (hw->mac.ops.enable_mdd) &&
++	    (adapter->flags & IXGBE_FLAG_MDD_ENABLED))
++		hw->mac.ops.enable_mdd(hw);
++
+ 	return err;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 72c5657..e10a4d6 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -157,6 +157,8 @@ static const char ixgbe_gstrings_test[][ETH_GSTRING_LEN] = {
+ static const char ixgbe_priv_flags_strings[][ETH_GSTRING_LEN] = {
+ #define IXGBE_PRIV_FLAGS_LEGACY_RX	BIT(0)
+ 	"legacy-rx",
++#define IXGBE_PRIV_FLAG_MDD_ENABLED	BIT(1)
++	"mdd",
+ };
+ 
+ #define IXGBE_PRIV_FLAGS_STR_LEN ARRAY_SIZE(ixgbe_priv_flags_strings)
+@@ -3420,6 +3422,9 @@ static u32 ixgbe_get_priv_flags(struct net_device *netdev)
+ 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	u32 priv_flags = 0;
+ 
++	if (adapter->flags & IXGBE_FLAG_MDD_ENABLED)
++		priv_flags |= IXGBE_PRIV_FLAG_MDD_ENABLED;
++
+ 	if (adapter->flags2 & IXGBE_FLAG2_RX_LEGACY)
+ 		priv_flags |= IXGBE_PRIV_FLAGS_LEGACY_RX;
+ 
+@@ -3430,13 +3435,19 @@ static int ixgbe_set_priv_flags(struct net_device *netdev, u32 priv_flags)
+ {
+ 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	unsigned int flags2 = adapter->flags2;
++	unsigned int flags = adapter->flags;
++
++	flags &= ~IXGBE_FLAG_MDD_ENABLED;
++	if (priv_flags & IXGBE_PRIV_FLAG_MDD_ENABLED)
++		flags |= IXGBE_FLAG_MDD_ENABLED;
+ 
+ 	flags2 &= ~IXGBE_FLAG2_RX_LEGACY;
+ 	if (priv_flags & IXGBE_PRIV_FLAGS_LEGACY_RX)
+ 		flags2 |= IXGBE_FLAG2_RX_LEGACY;
+ 
+-	if (flags2 != adapter->flags2) {
++	if (flags2 != adapter->flags2 || flags != adapter->flags) {
+ 		adapter->flags2 = flags2;
++		adapter->flags = flags;
+ 
+ 		/* reset interface to repopulate queues */
+ 		if (netif_running(netdev))
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 0854e529..cbf25e9 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6101,6 +6101,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
+ 		adapter->flags &= ~IXGBE_FLAG_DCA_CAPABLE;
+ #endif
+ 		adapter->flags |= IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE;
++		adapter->flags |= IXGBE_FLAG_MDD_ENABLED;
+ 		break;
+ 	default:
+ 		break;
+@@ -7214,6 +7215,11 @@ static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *adapter)
+ 	netif_carrier_on(netdev);
+ 	ixgbe_check_vf_rate_limit(adapter);
+ 
++	/* Turn on malicious driver detection */
++	if ((adapter->num_vfs) && (hw->mac.ops.enable_mdd) &&
++	    (adapter->flags & IXGBE_FLAG_MDD_ENABLED))
++		hw->mac.ops.enable_mdd(hw);
++
+ 	/* enable transmits */
+ 	netif_tx_wake_all_queues(adapter->netdev);
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index 0760bd7..b77f992 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -257,6 +257,10 @@ int ixgbe_disable_sriov(struct ixgbe_adapter *adapter)
+ 	if (!(adapter->flags & IXGBE_FLAG_SRIOV_ENABLED))
+ 		return 0;
+ 
++	/* Turn off malicious driver detection */
++	if ((hw->mac.ops.disable_mdd) &&
++	    (!(adapter->flags & IXGBE_FLAG_MDD_ENABLED)))
++		hw->mac.ops.disable_mdd(hw);
+ #ifdef CONFIG_PCI_IOV
+ 	/*
+ 	 * If our VFs are assigned we cannot shut down SR-IOV
+@@ -1292,11 +1296,57 @@ static void ixgbe_rcv_ack_from_vf(struct ixgbe_adapter *adapter, u32 vf)
+ 		ixgbe_write_mbx(hw, &msg, 1, vf);
+ }
+ 
++static void ixgbe_check_mdd_event(struct ixgbe_adapter *adapter)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++	u32 vf_bitmap[IXGBE_MDD_Q_BITMAP_DEPTH] = { 0 };
++	u32 j, i;
++	u32 ping;
++
++	if (!hw->mac.ops.mdd_event)
++		return;
++
++	/* Did we have a malicious event */
++	hw->mac.ops.mdd_event(hw, vf_bitmap);
++
++	/* Log any blocked queues and release lock */
++	for (i = 0; i < IXGBE_MDD_Q_BITMAP_DEPTH; i++) {
++		for (j = 0; j < 32 && vf_bitmap[i]; j++) {
++			u32 vf;
++
++			if (!(vf_bitmap[i] & (1 << j)))
++				continue;
++
++			/* The VF that malicious event occurred on */
++			vf = j + (i * 32);
++
++			dev_warn(&adapter->pdev->dev,
++				 "Malicious event on VF %d tx:%x rx:%x\n", vf,
++				 IXGBE_READ_REG(hw, IXGBE_LVMMC_TX),
++				 IXGBE_READ_REG(hw, IXGBE_LVMMC_RX));
++
++			/* restart the vf */
++			if (hw->mac.ops.restore_mdd_vf) {
++				hw->mac.ops.restore_mdd_vf(hw, vf);
++
++				/* get the VF to rebuild its queues */
++				adapter->vfinfo[vf].clear_to_send = 0;
++				ping = IXGBE_PF_CONTROL_MSG |
++				       IXGBE_VT_MSGTYPE_CTS;
++				ixgbe_write_mbx(hw, &ping, 1, vf);
++			}
++		}
++	}
++}
++
+ void ixgbe_msg_task(struct ixgbe_adapter *adapter)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	u32 vf;
+ 
++	if (adapter->flags & IXGBE_FLAG_MDD_ENABLED && adapter->vfinfo)
++		ixgbe_check_mdd_event(adapter);
++
+ 	for (vf = 0; vf < adapter->num_vfs; vf++) {
+ 		/* process any reset requests */
+ 		if (!ixgbe_check_for_rst(hw, vf))
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 9c2460c..805561c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -380,6 +380,8 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_MRCTL(_i)      (0x0F600 + ((_i) * 4))
+ #define IXGBE_VMRVLAN(_i)    (0x0F610 + ((_i) * 4))
+ #define IXGBE_VMRVM(_i)      (0x0F630 + ((_i) * 4))
++#define IXGBE_LVMMC_RX	     0x2FA8
++#define IXGBE_LVMMC_TX	     0x8108
+ #define IXGBE_WQBR_RX(_i)    (0x2FB0 + ((_i) * 4)) /* 4 total */
+ #define IXGBE_WQBR_TX(_i)    (0x8130 + ((_i) * 4)) /* 4 total */
+ #define IXGBE_L34T_IMIR(_i)  (0x0E800 + ((_i) * 4)) /*128 of these (0-127)*/
+@@ -3462,6 +3464,12 @@ struct ixgbe_mac_operations {
+ 	s32 (*dmac_config_tcs)(struct ixgbe_hw *hw);
+ 	s32 (*read_iosf_sb_reg)(struct ixgbe_hw *, u32, u32, u32 *);
+ 	s32 (*write_iosf_sb_reg)(struct ixgbe_hw *, u32, u32, u32);
++
++	/* Malicious driver detection */
++	void (*disable_mdd)(struct ixgbe_hw *hw);
++	void (*enable_mdd)(struct ixgbe_hw *hw);
++	void (*mdd_event)(struct ixgbe_hw *hw, u32 *vf_bitmap);
++	void (*restore_mdd_vf)(struct ixgbe_hw *hw, u32 vf);
+ };
+ 
+ struct ixgbe_phy_operations {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 72d84a0..b227da0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -3507,6 +3507,140 @@ static void ixgbe_set_source_address_pruning_X550(struct ixgbe_hw *hw,
+ }
+ 
+ /**
++ *  ixgbe_disable_mdd_X550
++ *  @hw: pointer to hardware structure
++ *
++ *  Disable malicious driver detection
++ **/
++static void ixgbe_disable_mdd_X550(struct ixgbe_hw *hw)
++{
++	u32 reg;
++
++	/* Disable MDD for TX DMA and interrupt */
++	reg = IXGBE_READ_REG(hw, IXGBE_DMATXCTL);
++	reg &= ~(IXGBE_DMATXCTL_MDP_EN | IXGBE_DMATXCTL_MBINTEN);
++	IXGBE_WRITE_REG(hw, IXGBE_DMATXCTL, reg);
++
++	/* Disable MDD for RX and interrupt */
++	reg = IXGBE_READ_REG(hw, IXGBE_RDRXCTL);
++	reg &= ~(IXGBE_RDRXCTL_MDP_EN | IXGBE_RDRXCTL_MBINTEN);
++	IXGBE_WRITE_REG(hw, IXGBE_RDRXCTL, reg);
++}
++
++/**
++ *  ixgbe_enable_mdd_X550
++ *  @hw: pointer to hardware structure
++ *
++ *  Enable malicious driver detection
++ **/
++static void ixgbe_enable_mdd_X550(struct ixgbe_hw *hw)
++{
++	u32 reg;
++
++	/* Enable MDD for TX DMA and interrupt */
++	reg = IXGBE_READ_REG(hw, IXGBE_DMATXCTL);
++	reg |= (IXGBE_DMATXCTL_MDP_EN | IXGBE_DMATXCTL_MBINTEN);
++	IXGBE_WRITE_REG(hw, IXGBE_DMATXCTL, reg);
++
++	/* Enable MDD for RX and interrupt */
++	reg = IXGBE_READ_REG(hw, IXGBE_RDRXCTL);
++	reg |= (IXGBE_RDRXCTL_MDP_EN | IXGBE_RDRXCTL_MBINTEN);
++	IXGBE_WRITE_REG(hw, IXGBE_RDRXCTL, reg);
++}
++
++/**
++ *  ixgbe_restore_mdd_vf_X550
++ *  @hw: pointer to hardware structure
++ *  @vf: vf index
++ *
++ *  Restore VF that was disabled during malicious driver detection event
++ **/
++static void ixgbe_restore_mdd_vf_X550(struct ixgbe_hw *hw, u32 vf)
++{
++	u32 idx, reg, num_qs, start_q, bitmask;
++
++	/* Map VF to queues */
++	reg = IXGBE_READ_REG(hw, IXGBE_MRQC);
++	switch (reg & IXGBE_MRQC_MRQE_MASK) {
++	case IXGBE_MRQC_VMDQRT8TCEN:
++		num_qs = 8;  /* 16 VFs / pools */
++		bitmask = 0x000000FF;
++		break;
++	case IXGBE_MRQC_VMDQRSS32EN:
++	case IXGBE_MRQC_VMDQRT4TCEN:
++		num_qs = 4;  /* 32 VFs / pools */
++		bitmask = 0x0000000F;
++		break;
++	default:            /* 64 VFs / pools */
++		num_qs = 2;
++		bitmask = 0x00000003;
++		break;
++	}
++	start_q = vf * num_qs;
++
++	/* Release vf's queues by clearing WQBR_TX and WQBR_RX (RW1C) */
++	idx = start_q / 32;
++	reg = 0;
++	reg |= (bitmask << (start_q % 32));
++	IXGBE_WRITE_REG(hw, IXGBE_WQBR_TX(idx), reg);
++	IXGBE_WRITE_REG(hw, IXGBE_WQBR_RX(idx), reg);
++}
++
++/**
++ *  ixgbe_mdd_event_X550
++ *  @hw: pointer to hardware structure
++ *  @vf_bitmap: vf bitmap of malicious vfs
++ *
++ *  Handle malicious driver detection event.
++ **/
++static void ixgbe_mdd_event_X550(struct ixgbe_hw *hw, u32 *vf_bitmap)
++{
++	u32 wqbr;
++	u32 i, j, reg, q, shift, vf, idx;
++
++	/* figure out pool size for mapping to vf's */
++	reg = IXGBE_READ_REG(hw, IXGBE_MRQC);
++	switch (reg & IXGBE_MRQC_MRQE_MASK) {
++	case IXGBE_MRQC_VMDQRT8TCEN:
++		shift = 3;  /* 16 VFs / pools */
++		break;
++	case IXGBE_MRQC_VMDQRSS32EN:
++	case IXGBE_MRQC_VMDQRT4TCEN:
++		shift = 2;  /* 32 VFs / pools */
++		break;
++	default:
++		shift = 1;  /* 64 VFs / pools */
++		break;
++	}
++
++	/* Read WQBR_TX and WQBR_RX and check for malicious queues */
++	for (i = 0; i < 4; i++) {
++		wqbr = IXGBE_READ_REG(hw, IXGBE_WQBR_TX(i));
++		wqbr |= IXGBE_READ_REG(hw, IXGBE_WQBR_RX(i));
++
++		if (!wqbr)
++			continue;
++
++		/* Get malicious queue */
++		for (j = 0; j < 32 && wqbr; j++) {
++			if (!(wqbr & (1 << j)))
++				continue;
++
++			/* Get queue from bitmask */
++			q = j + (i * 32);
++
++			/* Map queue to vf */
++			vf = (q >> shift);
++
++			/* Set vf bit in vf_bitmap */
++			idx = vf / 32;
++			vf_bitmap[idx] |= (1 << (vf % 32));
++			wqbr &= ~(1 << j);
++		}
++	}
++}
++
++/**
+  *  ixgbe_setup_fc_backplane_x550em_a - Set up flow control
+  *  @hw: pointer to hardware structure
+  *
+@@ -3791,6 +3925,10 @@ static s32 ixgbe_write_phy_reg_x550a(struct ixgbe_hw *hw, u32 reg_addr,
+ 	.init_thermal_sensor_thresh	= NULL, \
+ 	.enable_rx			= &ixgbe_enable_rx_generic, \
+ 	.disable_rx			= &ixgbe_disable_rx_x550, \
++	.enable_mdd                     = &ixgbe_enable_mdd_X550, \
++	.disable_mdd                    = &ixgbe_disable_mdd_X550, \
++	.mdd_event                      = &ixgbe_mdd_event_X550, \
++	.restore_mdd_vf                 = &ixgbe_restore_mdd_vf_X550, \
+ 
+ static const struct ixgbe_mac_operations mac_ops_X550 = {
+ 	X550_COMMON_MAC
+-- 
+2.7.4
+
