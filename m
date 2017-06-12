@@ -1,207 +1,39 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 01 May 2017 04:16:52 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 3dfc3eb581645bc503c7940861f494a0d75615da
-Message-ID: <59064634.lnxLOEpBjPxGhDKB%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 12 Jun 2017 16:51:38 +0000
+Subject: [Intel-wired-lan] [next PATCH S72-V3 06/13] i40e: Support
+ firmware	CEE DCB UP to TC map re-definition
+In-Reply-To: <20170607094313.32060-6-alice.michael@intel.com>
+References: <20170607094313.32060-1-alice.michael@intel.com>
+ <20170607094313.32060-6-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DAAB3C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-3dfc3eb581645bc503c7940861f494a0d75615da  i40evf: hide unused variable
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Wednesday, June 7, 2017 2:43 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: Bowers, Gregory J <gregory.j.bowers@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S72-V3 06/13] i40e: Support firmware
+> CEE DCB UP to TC map re-definition
+> 
+> Changes parsing of FW 4.33 AQ command Get CEE DCBX OPER CFG (0x0A07).
+> Change is required because FW now creates the oper_prio_tc nibbles
+> reversed from those in the CEE Priority Group sub-TLV.
+> This change will only apply to FW 4.33 as future FW versions will use a
+> different function to parse the CEE data.
+> 
+> Signed-off-by: Greg Bowers <gregory.j.bowers@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_dcb.c | 11 +++++++----
+>  1 file changed, 7 insertions(+), 4 deletions(-)
 
-elapsed time: 150m
 
-configs tested: 183
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-x86_64                 randconfig-a0-05010148
-i386                   randconfig-c0-05010126
-x86_64                           allmodconfig
-m68k                       m5275evb_defconfig
-powerpc                 mpc836x_rdk_defconfig
-sh                          landisk_defconfig
-x86_64                randconfig-in0-05010150
-x86_64                randconfig-it0-05010252
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                             allyesconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-ia64                             allyesconfig
-xtensa                       common_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                 randconfig-g0-05010150
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                 randconfig-x006-04271657
-i386                 randconfig-x003-04271657
-i386                 randconfig-x001-04271657
-i386                 randconfig-x005-04271657
-i386                 randconfig-x004-04271657
-i386                 randconfig-x007-04271657
-i386                 randconfig-x000-04271657
-i386                 randconfig-x009-04271657
-i386                 randconfig-x008-04271657
-i386                 randconfig-x002-04271657
-x86_64                 randconfig-x015-201718
-x86_64                 randconfig-x012-201718
-x86_64                 randconfig-x010-201718
-x86_64                 randconfig-x017-201718
-x86_64                 randconfig-x011-201718
-x86_64                 randconfig-x018-201718
-x86_64                 randconfig-x013-201718
-x86_64                 randconfig-x014-201718
-x86_64                 randconfig-x016-201718
-x86_64                 randconfig-x019-201718
-ia64                             alldefconfig
-ia64                              allnoconfig
-x86_64                               rhel-7.2
-i386                   randconfig-a0-04271659
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm64                            allmodconfig
-mips                          rb532_defconfig
-powerpc               mpc834x_itxgp_defconfig
-sparc                               defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-x86_64                 randconfig-s0-05010148
-x86_64                 randconfig-s1-05010148
-x86_64                 randconfig-s2-05010148
-x86_64                 randconfig-s3-05010143
-x86_64                 randconfig-s4-05010143
-x86_64                 randconfig-s5-05010143
-i386                               tinyconfig
-i386                             allmodconfig
-arm                         lpc32xx_defconfig
-m68k                             allmodconfig
-mips                           ip28_defconfig
-powerpc                       eiger_defconfig
-x86_64                 randconfig-i0-04302128
-i386                   randconfig-b0-05010144
-arm                        mini2440_defconfig
-mips                           mtx1_defconfig
-sparc                       sparc64_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201718
-i386                     randconfig-i1-201718
-x86_64                 randconfig-b0-05010209
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6472_defconfig
-m68k                       bvme6000_defconfig
-x86_64                 randconfig-u0-05010146
-mips                      fuloong2e_defconfig
-mn10300                          allmodconfig
-x86_64                randconfig-ne0-05010150
-i386                   randconfig-n0-05010305
-powerpc                     mpc83xx_defconfig
-m32r                             allmodconfig
-mips                        bcm47xx_defconfig
-s390                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                  randconfig-sb0-05010200
-x86_64                 randconfig-x003-201718
-x86_64                 randconfig-x004-201718
-x86_64                 randconfig-x009-201718
-x86_64                 randconfig-x002-201718
-x86_64                 randconfig-x008-201718
-x86_64                 randconfig-x000-201718
-x86_64                 randconfig-x007-201718
-x86_64                 randconfig-x005-201718
-x86_64                 randconfig-x006-201718
-x86_64                 randconfig-x001-201718
-x86_64                              defconfig
-arm                             ezx_defconfig
-m32r                        oaks32r_defconfig
-x86_64                randconfig-ws0-05010204
-x86_64                randconfig-ws0-04302152
-i386                   randconfig-x073-201717
-i386                   randconfig-x077-201717
-i386                   randconfig-x070-201717
-i386                   randconfig-x072-201717
-i386                   randconfig-x076-201717
-i386                   randconfig-x074-201717
-i386                   randconfig-x078-201717
-i386                   randconfig-x075-201717
-i386                   randconfig-x079-201717
-i386                   randconfig-x071-201717
-arm                       cns3420vb_defconfig
-cris                             allyesconfig
-i386                     randconfig-r0-201718
-x86_64                 randconfig-r0-04262318
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-05010044
-
-Thanks,
-Fengguang
