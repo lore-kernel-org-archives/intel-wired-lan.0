@@ -1,11 +1,11 @@
-From: Stillwell Jr, Paul M <paul.m.stillwell.jr@intel.com>
-Date: Wed, 14 Jun 2017 16:22:27 +0000
-Subject: [Intel-wired-lan] [next PATCH S73-V2 3/9] i40e: Handle admin Q
- timeout when releasing NVM
-In-Reply-To: <20170614081742.18561-3-alice.michael@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Wed, 14 Jun 2017 22:03:20 +0000
+Subject: [Intel-wired-lan] [next PATCH S73-V2 8/9] i40e: display correct
+ UDP tunnel type name
+In-Reply-To: <20170614081742.18561-8-alice.michael@intel.com>
 References: <20170614081742.18561-1-alice.michael@intel.com>
- <20170614081742.18561-3-alice.michael@intel.com>
-Message-ID: <F8A4ECA1C1D86B4081DD6BF503D1F43688500FC8@fmsmsx120.amr.corp.intel.com>
+ <20170614081742.18561-8-alice.michael@intel.com>
+Message-ID: <02874ECE860811409154E81DA85FBB58829C5441@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,57 +14,83 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 ACK
 
-Paul
-
-
------Original Message-----
-From: Michael, Alice 
-Sent: Wednesday, June 14, 2017 1:18 AM
-To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: Stillwell Jr, Paul M <paul.m.stillwell.jr@intel.com>
-Subject: [next PATCH S73-V2 3/9] i40e: Handle admin Q timeout when releasing NVM
-
-From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
-
-There are some rare cases where the release resource call will return an admin Q timeout. In these cases the code needs to try to release the resource again until it succeeds or it times out.
-
-Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_nvm.c | 21 +++++++++++++++++++--
- 1 file changed, 19 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 800bd55..17607a2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -134,8 +134,25 @@ i40e_status i40e_acquire_nvm(struct i40e_hw *hw,
-  **/
- void i40e_release_nvm(struct i40e_hw *hw)  {
--	if (!hw->nvm.blank_nvm_mode)
--		i40e_aq_release_resource(hw, I40E_NVM_RESOURCE_ID, 0, NULL);
-+	i40e_status ret_code = I40E_SUCCESS;
-+	u32 total_delay = 0;
-+
-+	if (hw->nvm.blank_nvm_mode)
-+		return;
-+
-+	ret_code = i40e_aq_release_resource(hw, I40E_NVM_RESOURCE_ID, 0, 
-+NULL);
-+
-+	/* there are some rare cases when trying to release the resource
-+	 * results in an admin Q timeout, so handle them correctly
-+	 */
-+	while ((ret_code == I40E_ERR_ADMIN_QUEUE_TIMEOUT) &&
-+	       (total_delay < hw->aq.asq_cmd_timeout)) {
-+		usleep_range(1000, 2000);
-+		ret_code = i40e_aq_release_resource(hw,
-+						    I40E_NVM_RESOURCE_ID,
-+						    0, NULL);
-+			total_delay++;
-+	}
- }
- 
- /**
---
-2.9.3
+> -----Original Message-----
+> From: Michael, Alice
+> Sent: Wednesday, June 14, 2017 1:18 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
+> Cc: Keller, Jacob E <jacob.e.keller@intel.com>
+> Subject: [next PATCH S73-V2 8/9] i40e: display correct UDP tunnel type name
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> The i40e driver attempts to display the UDP tunnel name by doing a check
+> against the type, where for non-zero types we use "vxlan" and for zero
+> type we use "geneve". This is not future proof, because if new tunnel
+> types get added, we'll incorrectly label them. It also depends on the
+> value of UDP_TUNNEL_TYPE_GENEVE == 0, which is brittle.
+> 
+> Instead, replace this with a function that can return a constant string
+> depending on the type. For now we'll use "unknown" for types we don't
+> know about, and we can expand this in the future if new types get added.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 28 ++++++++++++++++++++------
+> --
+>  1 file changed, 20 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 1f05ce3..21705d5 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -7520,6 +7520,18 @@ static void i40e_handle_mdd_event(struct i40e_pf
+> *pf)
+>  	i40e_flush(hw);
+>  }
+> 
+> +static const char *i40e_tunnel_name(struct i40e_udp_port_config *port)
+> +{
+> +	switch (port->type) {
+> +	case UDP_TUNNEL_TYPE_VXLAN:
+> +		return "vxlan";
+> +	case UDP_TUNNEL_TYPE_GENEVE:
+> +		return "geneve";
+> +	default:
+> +		return "unknown";
+> +	}
+> +}
+> +
+>  /**
+>   * i40e_sync_udp_filters - Trigger a sync event for existing UDP filters
+>   * @pf: board private structure
+> @@ -7565,14 +7577,14 @@ static void i40e_sync_udp_filters_subtask(struct
+> i40e_pf *pf)
+>  				ret = i40e_aq_del_udp_tunnel(hw, i, NULL);
+> 
+>  			if (ret) {
+> -				dev_dbg(&pf->pdev->dev,
+> -					"%s %s port %d, index %d failed, err %s
+> aq_err %s\n",
+> -					pf->udp_ports[i].type ? "vxlan" :
+> "geneve",
+> -					port ? "add" : "delete",
+> -					port, i,
+> -					i40e_stat_str(&pf->hw, ret),
+> -					i40e_aq_str(&pf->hw,
+> -						    pf->hw.aq.asq_last_status));
+> +				dev_info(&pf->pdev->dev,
+> +					 "%s %s port %d, index %d failed, err %s
+> aq_err %s\n",
+> +					 i40e_tunnel_name(&pf->udp_ports[i]),
+> +					 port ? "add" : "delete",
+> +					 port, i,
+> +					 i40e_stat_str(&pf->hw, ret),
+> +					 i40e_aq_str(&pf->hw,
+> +						     pf->hw.aq.asq_last_status));
+>  				pf->udp_ports[i].port = 0;
+>  			}
+>  		}
+> --
+> 2.9.3
 
