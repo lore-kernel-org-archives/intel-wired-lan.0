@@ -1,42 +1,37 @@
-From: Gustavo A. R. Silva <garsilva@embeddedor.com>
-Date: Thu, 15 Jun 2017 16:07:40 -0500
-Subject: [Intel-wired-lan] [PATCH] intel: i40e: virtchnl: fix incorrect
- variable assignment
-In-Reply-To: <20170615135033.00001ecf@intel.com>
-References: <20170615023826.GA8136@embeddedgus>
- <20170615135033.00001ecf@intel.com>
-Message-ID: <20170615160740.Horde.Jp_M9DTPyKHhri-Ff7J7hSX@gator4166.hostgator.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 15 Jun 2017 23:40:47 +0000
+Subject: [Intel-wired-lan] [PATCH 2/5] ixgbe: Enable LASI interrupts
+	for	X552 devices
+In-Reply-To: <20170607213621.18256-2-anthony.l.nguyen@intel.com>
+References: <20170607213621.18256-1-anthony.l.nguyen@intel.com>
+ <20170607213621.18256-2-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DAB289@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Jesse,
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Wednesday, June 7, 2017 2:36 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH 2/5] ixgbe: Enable LASI interrupts for X552
+> devices
+> 
+> Enable LASI interrupts on X552 devices in order to receive notifications of link
+> configurations of the external PHY and support the configuration of the
+> internal iXFI link since iXFI does not support auto-negotiation.  This is not
+> required for X553 devices; add a check to avoid enabling LASI interrupts for
+> X553 devices.
+> 
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 31
+> +++++++++++++++++++--------
+>  1 file changed, 22 insertions(+), 9 deletions(-)
 
-Quoting Jesse Brandeburg <jesse.brandeburg@intel.com>:
-
-> On Wed, 14 Jun 2017 21:38:26 -0500
-> "Gustavo A. R. Silva" <garsilva@embeddedor.com> wrote:
->
->> Fix incorrect variable assignment.
->> Based on line 1511: aq_ret = I40_ERR_PARAM; the correct variable to be
->> used in this instance is aq_ret instead of ret. Also, variable ret is
->> updated at line 1602 just before return, so assigning a value to this
->> variable in this code block is useless.
->>
->> Addresses-Coverity-ID: 1397693
->> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
->
-> Thanks for the fix, looks reasonable.
-> Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-
-Absolutely, glad to help.
-
-Regards
---
-Gustavo A. R. Silva
-
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
