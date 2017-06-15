@@ -1,39 +1,27 @@
-From: Gustavo A. R. Silva <garsilva@embeddedor.com>
-Date: Wed, 14 Jun 2017 21:38:26 -0500
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Thu, 15 Jun 2017 13:50:33 -0700
 Subject: [Intel-wired-lan] [PATCH] intel: i40e: virtchnl: fix incorrect
-	variable assignment
-Message-ID: <20170615023826.GA8136@embeddedgus>
+ variable assignment
+In-Reply-To: <20170615023826.GA8136@embeddedgus>
+References: <20170615023826.GA8136@embeddedgus>
+Message-ID: <20170615135033.00001ecf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix incorrect variable assignment.
-Based on line 1511: aq_ret = I40_ERR_PARAM; the correct variable to be
-used in this instance is aq_ret instead of ret. Also, variable ret is
-updated at line 1602 just before return, so assigning a value to this
-variable in this code block is useless.
+On Wed, 14 Jun 2017 21:38:26 -0500
+"Gustavo A. R. Silva" <garsilva@embeddedor.com> wrote:
 
-Addresses-Coverity-ID: 1397693
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> Fix incorrect variable assignment.
+> Based on line 1511: aq_ret = I40_ERR_PARAM; the correct variable to be
+> used in this instance is aq_ret instead of ret. Also, variable ret is
+> updated at line 1602 just before return, so assigning a value to this
+> variable in this code block is useless.
+> 
+> Addresses-Coverity-ID: 1397693
+> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 6bee254..fb1f018 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1567,7 +1567,7 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 			dev_err(&pf->pdev->dev,
- 				"VF %d requested polling mode: this feature is supported only when the device is running in single function per port (SFP) mode\n",
- 				 vf->vf_id);
--			ret = I40E_ERR_PARAM;
-+			aq_ret = I40E_ERR_PARAM;
- 			goto err;
- 		}
- 		vfres->vf_offload_flags |= VIRTCHNL_VF_OFFLOAD_RX_POLLING;
--- 
-2.5.0
-
+Thanks for the fix, looks reasonable.
+Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
