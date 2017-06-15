@@ -1,70 +1,235 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 14 Jun 2017 22:03:32 +0000
-Subject: [Intel-wired-lan] [next PATCH S73-V2 2/9] i40e: remove
- WQ_UNBOUND and the task limit of our workqueue
-In-Reply-To: <20170614081742.18561-2-alice.michael@intel.com>
-References: <20170614081742.18561-1-alice.michael@intel.com>
- <20170614081742.18561-2-alice.michael@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB58829C544E@ORSMSX115.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 15 Jun 2017 10:05:22 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ cbd09fd2e35b44e506a11450efbc0c2024e4c203
+Message-ID: <5941eb62.QbynqMTiL5FgfNdD%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+cbd09fd2e35b44e506a11450efbc0c2024e4c203  ixgbe: Add malicious driver detection support
 
-> -----Original Message-----
-> From: Michael, Alice
-> Sent: Wednesday, June 14, 2017 1:18 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-> Cc: Keller, Jacob E <jacob.e.keller@intel.com>
-> Subject: [next PATCH S73-V2 2/9] i40e: remove WQ_UNBOUND and the task limit
-> of our workqueue
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> During certain events such as a CORER, multiple devices will run a work
-> task to handle some cleanup. This can cause issues due to
-> a single-threaded workqueue which can mean that a device doesn't cleanup
-> in time. Prevent this by removing the single-threaded restriction on the
-> module workqueue. This avoids the need to add more complex yielding
-> logic in our service task routine. This is also similar to what other
-> drivers such as fm10k do.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++++-----
->  1 file changed, 7 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 4490264..c794e27 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -12180,12 +12180,14 @@ static int __init i40e_init_module(void)
->  		i40e_driver_string, i40e_driver_version_str);
->  	pr_info("%s: %s\n", i40e_driver_name, i40e_copyright);
-> 
-> -	/* we will see if single thread per module is enough for now,
-> -	 * it can't be any worse than using the system workqueue which
-> -	 * was already single threaded
-> +	/* There is no need to throttle the number of active tasks because
-> +	 * each device limits its own task using a state bit for scheduling
-> +	 * the service task, and the device tasks do not interfere with each
-> +	 * other, so we don't set a max task limit. We must set
-> WQ_MEM_RECLAIM
-> +	 * since we need to be able to guarantee forward progress even under
-> +	 * memory pressure.
->  	 */
-> -	i40e_wq = alloc_workqueue("%s", WQ_UNBOUND |
-> WQ_MEM_RECLAIM, 1,
-> -				  i40e_driver_name);
-> +	i40e_wq = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0,
-> i40e_driver_name);
->  	if (!i40e_wq) {
->  		pr_err("%s: Failed to create workqueue\n", i40e_driver_name);
->  		return -ENOMEM;
-> --
-> 2.9.3
+elapsed time: 194m
 
+configs tested: 212
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+sh                               allmodconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm64                            allyesconfig
+m32r                       mappi.up_defconfig
+powerpc                      ep88xc_defconfig
+x86_64                 randconfig-a0-06150656
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                          nuc960_defconfig
+m32r                                defconfig
+m68k                             allyesconfig
+i386                   randconfig-c0-06150646
+i386                   randconfig-c0-06150803
+blackfin                BF533-STAMP_defconfig
+blackfin                BF561-EZKIT_defconfig
+powerpc                     mpc83xx_defconfig
+arm                         assabet_defconfig
+mn10300                          allmodconfig
+powerpc               corenet_basic_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-v0-06150459
+x86_64                 randconfig-v0-06150827
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+powerpc                          allyesconfig
+powerpc               mpc85xx_basic_defconfig
+sh                          sdk7780_defconfig
+x86_64                 randconfig-g0-06150722
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-x010-201724
+x86_64                 randconfig-x019-201724
+x86_64                 randconfig-x015-201724
+x86_64                 randconfig-x014-201724
+x86_64                 randconfig-x012-201724
+x86_64                 randconfig-x018-201724
+x86_64                 randconfig-x017-201724
+x86_64                 randconfig-x016-201724
+x86_64                 randconfig-x013-201724
+x86_64                 randconfig-x011-201724
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-a0-06111806
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                         at91_dt_defconfig
+mips                      fuloong2e_defconfig
+powerpc                mpc7448_hpc2_defconfig
+sh                ecovec24-romimage_defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-06110439
+i386                   randconfig-s1-06110439
+x86_64                 randconfig-s0-06150753
+x86_64                 randconfig-s1-06150753
+x86_64                 randconfig-s2-06150753
+x86_64                 randconfig-s3-06150757
+x86_64                 randconfig-s4-06150757
+x86_64                 randconfig-s5-06150757
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201724
+i386                   randconfig-b0-06150644
+i386                   randconfig-b0-06150750
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                        multi_v7_defconfig
+mips                       capcella_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-06120139
+i386                   randconfig-i1-06120139
+x86_64                 randconfig-b0-06150649
+x86_64                           allmodconfig
+m32r                             allyesconfig
+powerpc                        icon_defconfig
+powerpc                     kmeter1_defconfig
+x86_64                 randconfig-u0-06150647
+x86_64                 randconfig-u0-06150749
+i386                               tinyconfig
+arm                         em_x270_defconfig
+powerpc                     kilauea_defconfig
+xtensa                  nommu_kc705_defconfig
+mips                      bmips_stb_defconfig
+parisc                        c8000_defconfig
+x86_64                randconfig-ne0-06150744
+blackfin                  CM-BF537U_defconfig
+powerpc                    sam440ep_defconfig
+i386                 randconfig-x013-06140628
+i386                 randconfig-x017-06140628
+i386                 randconfig-x016-06140628
+i386                 randconfig-x018-06140628
+i386                 randconfig-x015-06140628
+i386                 randconfig-x011-06140628
+i386                 randconfig-x019-06140628
+i386                 randconfig-x010-06140628
+i386                 randconfig-x012-06140628
+i386                 randconfig-x014-06140628
+i386                   randconfig-n0-06140628
+i386                   randconfig-h0-06142153
+i386                   randconfig-h1-06142153
+arm                           corgi_defconfig
+blackfin                         alldefconfig
+m32r                    mappi.nommu_defconfig
+powerpc                       ebony_defconfig
+sh                          rsk7203_defconfig
+x86_64                 randconfig-h0-06150715
+arm                          simpad_defconfig
+sh                               alldefconfig
+x86_64                 randconfig-n0-06150701
+x86_64                 randconfig-n0-06150903
+i386                  randconfig-sb0-06141659
+x86_64                 randconfig-x006-201724
+x86_64                 randconfig-x007-201724
+x86_64                 randconfig-x001-201724
+x86_64                 randconfig-x004-201724
+x86_64                 randconfig-x005-201724
+x86_64                 randconfig-x000-201724
+x86_64                 randconfig-x008-201724
+x86_64                 randconfig-x002-201724
+x86_64                 randconfig-x003-201724
+x86_64                 randconfig-x009-201724
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                 randconfig-x070-06120530
+i386                 randconfig-x071-06120530
+i386                 randconfig-x075-06120530
+i386                 randconfig-x079-06120530
+i386                 randconfig-x073-06120530
+i386                 randconfig-x077-06120530
+i386                 randconfig-x072-06120530
+i386                 randconfig-x074-06120530
+i386                 randconfig-x076-06120530
+i386                 randconfig-x078-06120530
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                            e55_defconfig
+parisc                           allmodconfig
+i386                     randconfig-r0-201724
+x86_64                 randconfig-r0-06111139
+sh                   rts7751r2dplus_defconfig
+i386                   randconfig-x006-201724
+i386                   randconfig-x009-201724
+i386                   randconfig-x008-201724
+i386                   randconfig-x002-201724
+i386                   randconfig-x001-201724
+i386                   randconfig-x000-201724
+i386                   randconfig-x005-201724
+i386                   randconfig-x007-201724
+i386                   randconfig-x004-201724
+i386                   randconfig-x003-201724
+i386                   randconfig-x0-06150704
+i386                   randconfig-x0-06150813
+
+Thanks,
+Fengguang
