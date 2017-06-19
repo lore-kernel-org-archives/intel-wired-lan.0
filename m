@@ -1,51 +1,42 @@
-From: Yuval Shaia <yuval.shaia@oracle.com>
-Date: Sun, 4 Jun 2017 22:49:06 +0300
-Subject: [Intel-wired-lan] [PATCH] net/{mii,
- smsc}: Make mii_ethtool_get_link_ksettings and smc_netdev_get_ecmd
- return void
-In-Reply-To: <20170604190133.GB10273@lunn.ch>
-References: <20170604172200.4177-1-yuval.shaia@oracle.com>
- <20170604190133.GB10273@lunn.ch>
-Message-ID: <20170604194905.GA7045@yuvallap>
+From: Cliff Spradlin <cspradlin@google.com>
+Date: Mon, 19 Jun 2017 13:30:43 -0700
+Subject: [Intel-wired-lan] [PATCH] igb: protect TX timestamping from API
+	misuse
+Message-ID: <20170619203043.120598-1-cspradlin@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Jun 04, 2017 at 09:01:33PM +0200, Andrew Lunn wrote:
-> > diff --git a/drivers/net/cris/eth_v10.c b/drivers/net/cris/eth_v10.c
-> > index da02041..017f48c 100644
-> > --- a/drivers/net/cris/eth_v10.c
-> > +++ b/drivers/net/cris/eth_v10.c
-> > @@ -1417,10 +1417,9 @@ static int e100_get_link_ksettings(struct net_device *dev,
-> >  {
-> >  	struct net_local *np = netdev_priv(dev);
-> >  	u32 supported;
-> > -	int err;
-> >  
-> >  	spin_lock_irq(&np->lock);
-> > -	err = mii_ethtool_get_link_ksettings(&np->mii_if, cmd);
-> > +	mii_ethtool_get_link_ksettings(&np->mii_if, cmd);
-> >  	spin_unlock_irq(&np->lock);
-> >  
-> >  	/* The PHY may support 1000baseT, but the Etrax100 does not.  */
-> > @@ -1432,7 +1431,7 @@ static int e100_get_link_ksettings(struct net_device *dev,
-> >  	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-> >  						supported);
-> >  
-> > -	return err;
-> > +	return 0;
-> >  }
-> 
-> How far are going planning on going? It seems like
-> *_get_link_ksettings() now all return a useless 0. Do you plan to
-> change ethtool_ops and make if void all the way up?
+HW timestamping can only be requested for a packet if the NIC is first
+setup via ioctl(SIOCSHWTSTAMP). If this step was skipped, then the igb
+driver still allowed TX packets to request HW timestamping. In this
+situation, the _IGB_PTP_TX_IN_PROGRESS flag was set and would never
+clear. This prevented any future HW timestamping requests to succeed.
 
-It is not always correct, see for example how xgene_get_link_ksettings
-returns non-zero value so i assume that ethtool_ops should remain as it is.
-Also, looking at ethtool_get_settings it seems that returned value is
-checked.
+Fix this by checking that the NIC is configured for HW TX timestamping
+before accepting a HW TX timestamping request.
 
-> 
->        Andrew
+Signed-off-by: Cliff Spradlin <cspradlin@google.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 63b035454cd0..4077a09fd4c2 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -5388,7 +5388,8 @@ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
+ 	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP)) {
+ 		struct igb_adapter *adapter = netdev_priv(tx_ring->netdev);
+ 
+-		if (!test_and_set_bit_lock(__IGB_PTP_TX_IN_PROGRESS,
++		if (adapter->tstamp_config.tx_type & HWTSTAMP_TX_ON &&
++		    !test_and_set_bit_lock(__IGB_PTP_TX_IN_PROGRESS,
+ 					   &adapter->state)) {
+ 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+ 			tx_flags |= IGB_TX_FLAGS_TSTAMP;
+-- 
+2.13.1.518.g3df882009-goog
+
