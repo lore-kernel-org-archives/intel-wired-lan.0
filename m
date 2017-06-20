@@ -1,55 +1,49 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 20 Jun 2017 15:16:54 -0700
-Subject: [Intel-wired-lan] [next PATCH S73-V2 2/9] i40e: remove WQ_UNBOUND
-	and the task limit of our workqueue
+Date: Tue, 20 Jun 2017 15:16:58 -0700
+Subject: [Intel-wired-lan] [next PATCH S73-V2 6/9] i40e/i40evf: make ipv6
+	atr code clearer
 In-Reply-To: <20170620221701.46765-1-jeffrey.t.kirsher@intel.com>
 References: <20170620221701.46765-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20170620221701.46765-2-jeffrey.t.kirsher@intel.com>
+Message-ID: <20170620221701.46765-6-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-During certain events such as a CORER, multiple devices will run a work
-task to handle some cleanup. This can cause issues due to
-a single-threaded workqueue which can mean that a device doesn't cleanup
-in time. Prevent this by removing the single-threaded restriction on the
-module workqueue. This avoids the need to add more complex yielding
-logic in our service task routine. This is also similar to what other
-drivers such as fm10k do.
+This just reorders some local vars and makes the code flow
+clearer.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4490264..c794e27 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -12180,12 +12180,14 @@ static int __init i40e_init_module(void)
- 		i40e_driver_string, i40e_driver_version_str);
- 	pr_info("%s: %s\n", i40e_driver_name, i40e_copyright);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index b936feb..c9a1496 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2451,9 +2451,15 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		hlen = (hdr.network[0] & 0x0F) << 2;
+ 		l4_proto = hdr.ipv4->protocol;
+ 	} else {
+-		hlen = hdr.network - skb->data;
+-		l4_proto = ipv6_find_hdr(skb, &hlen, IPPROTO_TCP, NULL, NULL);
+-		hlen -= hdr.network - skb->data;
++		/* find the start of the innermost ipv6 header */
++		unsigned int inner_hlen = hdr.network - skb->data;
++		unsigned int h_offset = inner_hlen;
++
++		/* this function updates h_offset to the end of the header */
++		l4_proto =
++		  ipv6_find_hdr(skb, &h_offset, IPPROTO_TCP, NULL, NULL);
++		/* hlen will contain our best estimate of the tcp header */
++		hlen = h_offset - inner_hlen;
+ 	}
  
--	/* we will see if single thread per module is enough for now,
--	 * it can't be any worse than using the system workqueue which
--	 * was already single threaded
-+	/* There is no need to throttle the number of active tasks because
-+	 * each device limits its own task using a state bit for scheduling
-+	 * the service task, and the device tasks do not interfere with each
-+	 * other, so we don't set a max task limit. We must set WQ_MEM_RECLAIM
-+	 * since we need to be able to guarantee forward progress even under
-+	 * memory pressure.
- 	 */
--	i40e_wq = alloc_workqueue("%s", WQ_UNBOUND | WQ_MEM_RECLAIM, 1,
--				  i40e_driver_name);
-+	i40e_wq = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0, i40e_driver_name);
- 	if (!i40e_wq) {
- 		pr_err("%s: Failed to create workqueue\n", i40e_driver_name);
- 		return -ENOMEM;
+ 	if (l4_proto != IPPROTO_TCP)
 -- 
 2.9.3
 
