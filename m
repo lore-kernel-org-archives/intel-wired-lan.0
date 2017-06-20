@@ -1,38 +1,55 @@
-From: Gustavo A. R. Silva <garsilva@embeddedor.com>
-Date: Tue, 20 Jun 2017 16:22:34 -0500
-Subject: [Intel-wired-lan] [PATCH] net: intel: e1000e: add check on
-	e1e_wphy() return value
-In-Reply-To: <20170518172223.Horde.5kLLwxMJWThQKv0bAxTsk4D@gator4166.hostgator.com>
-Message-ID: <20170620212234.GA10957@embeddedgus>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Tue, 20 Jun 2017 15:16:54 -0700
+Subject: [Intel-wired-lan] [next PATCH S73-V2 2/9] i40e: remove WQ_UNBOUND
+	and the task limit of our workqueue
+In-Reply-To: <20170620221701.46765-1-jeffrey.t.kirsher@intel.com>
+References: <20170620221701.46765-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20170620221701.46765-2-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Check return value from call to e1e_wphy(). This value is being
-checked during previous calls to function e1e_wphy() and it seems
-a check was missing here.
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Addresses-Coverity-ID: 1226905
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+During certain events such as a CORER, multiple devices will run a work
+task to handle some cleanup. This can cause issues due to
+a single-threaded workqueue which can mean that a device doesn't cleanup
+in time. Prevent this by removing the single-threaded restriction on the
+module workqueue. This avoids the need to add more complex yielding
+logic in our service task routine. This is also similar to what other
+drivers such as fm10k do.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index 68ea8b4..d6d4ed7 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -2437,6 +2437,8 @@ static s32 e1000_hv_phy_workarounds_ich8lan(struct e1000_hw *hw)
- 		if (hw->phy.revision < 2) {
- 			e1000e_phy_sw_reset(hw);
- 			ret_val = e1e_wphy(hw, MII_BMCR, 0x3140);
-+			if (ret_val)
-+				return ret_val;
- 		}
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 4490264..c794e27 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -12180,12 +12180,14 @@ static int __init i40e_init_module(void)
+ 		i40e_driver_string, i40e_driver_version_str);
+ 	pr_info("%s: %s\n", i40e_driver_name, i40e_copyright);
  
+-	/* we will see if single thread per module is enough for now,
+-	 * it can't be any worse than using the system workqueue which
+-	 * was already single threaded
++	/* There is no need to throttle the number of active tasks because
++	 * each device limits its own task using a state bit for scheduling
++	 * the service task, and the device tasks do not interfere with each
++	 * other, so we don't set a max task limit. We must set WQ_MEM_RECLAIM
++	 * since we need to be able to guarantee forward progress even under
++	 * memory pressure.
+ 	 */
+-	i40e_wq = alloc_workqueue("%s", WQ_UNBOUND | WQ_MEM_RECLAIM, 1,
+-				  i40e_driver_name);
++	i40e_wq = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0, i40e_driver_name);
+ 	if (!i40e_wq) {
+ 		pr_err("%s: Failed to create workqueue\n", i40e_driver_name);
+ 		return -ENOMEM;
 -- 
-2.5.0
+2.9.3
 
