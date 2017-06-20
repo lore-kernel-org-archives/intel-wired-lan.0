@@ -1,31 +1,46 @@
-From: Miroslav Lichvar <mlichvar@redhat.com>
-Date: Tue, 20 Jun 2017 14:55:52 +0200
-Subject: [Intel-wired-lan] [PATCH] igb: protect TX timestamping from API
- misuse
-In-Reply-To: <20170619203043.120598-1-cspradlin@google.com>
-References: <20170619203043.120598-1-cspradlin@google.com>
-Message-ID: <20170620125552.GB10520@localhost>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 20 Jun 2017 17:10:12 +0000
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Add malicious driver
+ detection	support
+In-Reply-To: <1497020190-65305-1-git-send-email-paul.greenwalt@intel.com>
+References: <1497020190-65305-1-git-send-email-paul.greenwalt@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DAB65D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jun 19, 2017 at 01:30:43PM -0700, Cliff Spradlin wrote:
-> HW timestamping can only be requested for a packet if the NIC is first
-> setup via ioctl(SIOCSHWTSTAMP). If this step was skipped, then the igb
-> driver still allowed TX packets to request HW timestamping. In this
-> situation, the _IGB_PTP_TX_IN_PROGRESS flag was set and would never
-> clear. This prevented any future HW timestamping requests to succeed.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Paul Greenwalt
+> Sent: Friday, June 9, 2017 7:57 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Add malicious driver detection
+> support
+> 
+> Add malicious driver detection (MDD) support for X550, X550em_a, and
+> X550em_x devices.
+> 
+> MDD is a hardware SR-IOV security feature which the driver enables by
+> default, but can be controlled on|off by ethtool set-priv-flags parameter.
+> When enabled MDD disables a VF drivers transmit queue when a malformed
+> descriptor is detected. The PF will log the event and re-enable the VF queue.
+> 
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+> ---
+> v2: Changed new function declarations to static.
+> 
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   3 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c  |  25 +++-
+> drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  13 ++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   6 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c   |  50 ++++++++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   8 ++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    | 138
+> +++++++++++++++++++++++
+>  7 files changed, 241 insertions(+), 2 deletions(-)
 
-Good catch!
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-This probably explains some weird cases I saw where HW timestamping
-stopped working and the only thing that fixed it was to rmmod &&
-modprobe the igb driver. I suspected a faulty HW and it's probably
-just me messing with hwstamp_ctl at wrong time.
 
-Thanks,
-
--- 
-Miroslav Lichvar
