@@ -1,58 +1,58 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 20 Jun 2017 15:16:53 -0700
-Subject: [Intel-wired-lan] [next PATCH S73-V2 1/9] i40e: Fix for trace found
-	with S4 state
-Message-ID: <20170620221701.46765-1-jeffrey.t.kirsher@intel.com>
+Date: Tue, 20 Jun 2017 15:16:57 -0700
+Subject: [Intel-wired-lan] [next PATCH S73-V2 5/9] i40e: fix odd formatting
+	and indent
+In-Reply-To: <20170620221701.46765-1-jeffrey.t.kirsher@intel.com>
+References: <20170620221701.46765-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20170620221701.46765-5-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-This patch fixes a problem found in systems when entering
-S4 state.  This patch fixes the problem by ensuring that
-the misc vector's irq is disabled as well.  Without this
-patch a stack trace can be seen upon entering S4 state.
+The compiler warned on an oddly indented bit of code, and when
+investigating that, noted that the functions themselves had
+an odd flow. The if condition was checked, and would exclude
+a call to AQ, but then the aq_ret would be checked unconditionally
+which just looks really weird, and is likely to cause objections.
 
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 18 ++++++++----------
+ 1 file changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 520588c..4490264 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -12089,7 +12089,10 @@ static int i40e_suspend(struct pci_dev *pdev, pm_message_t state)
- 	wr32(hw, I40E_PFPM_WUFC, (pf->wol_en ? I40E_PFPM_WUFC_MAG_MASK : 0));
- 
- 	i40e_stop_misc_vector(pf);
--
-+	if (pf->msix_entries) {
-+		synchronize_irq(pf->msix_entries[0].vector);
-+		free_irq(pf->msix_entries[0].vector, pf);
-+	}
- 	retval = pci_save_state(pdev);
- 	if (retval)
- 		return retval;
-@@ -12129,6 +12132,15 @@ static int i40e_resume(struct pci_dev *pdev)
- 	/* handling the reset will rebuild the device state */
- 	if (test_and_clear_bit(__I40E_SUSPENDED, pf->state)) {
- 		clear_bit(__I40E_DOWN, pf->state);
-+		if (pf->msix_entries) {
-+			err = request_irq(pf->msix_entries[0].vector,
-+					  i40e_intr, 0, pf->int_name, pf);
-+			if (err) {
-+				dev_err(&pf->pdev->dev,
-+					"request_irq for %s failed: %d\n",
-+					pf->int_name, err);
-+			}
-+		}
- 		i40e_reset_and_rebuild(pf, false, false);
- 	}
- 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index ecbe40e..e81cf4d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1741,16 +1741,14 @@ static int i40e_vc_config_promiscuous_mode_msg(struct i40e_vf *vf,
+ 							    NULL);
+ 	} else if (i40e_getnum_vf_vsi_vlan_filters(vsi)) {
+ 		hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
+-			aq_ret = 0;
+-			if (f->vlan >= 0 && f->vlan <= I40E_MAX_VLANID) {
+-				aq_ret =
+-				i40e_aq_set_vsi_uc_promisc_on_vlan(hw,
+-								   vsi->seid,
+-								   alluni,
+-								   f->vlan,
+-								   NULL);
+-				aq_err = pf->hw.aq.asq_last_status;
+-			}
++			if (f->vlan < 0 || f->vlan > I40E_MAX_VLANID)
++				continue;
++			aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw,
++								    vsi->seid,
++								    alluni,
++								    f->vlan,
++								    NULL);
++			aq_err = pf->hw.aq.asq_last_status;
+ 			if (aq_ret)
+ 				dev_err(&pf->pdev->dev,
+ 					"Could not add VLAN %d to Unicast promiscuous domain err %s aq_err %s\n",
 -- 
 2.9.3
 
