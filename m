@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 22 Jun 2017 17:15:46 +0000
-Subject: [Intel-wired-lan] [next PATCH S73-V2 3/9] i40e: Handle admin
-	Q	timeout when releasing NVM
-In-Reply-To: <20170620221701.46765-3-jeffrey.t.kirsher@intel.com>
+Date: Thu, 22 Jun 2017 18:27:08 +0000
+Subject: [Intel-wired-lan] [next PATCH S73-V2 4/9] i40e: fix up 32
+	bit	timespec references
+In-Reply-To: <20170620221701.46765-4-jeffrey.t.kirsher@intel.com>
 References: <20170620221701.46765-1-jeffrey.t.kirsher@intel.com>
- <20170620221701.46765-3-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DAB8EE@ORSMSX104.amr.corp.intel.com>
+ <20170620221701.46765-4-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DAB916@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Tuesday, June 20, 2017 3:17 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Stillwell Jr, Paul M <paul.m.stillwell.jr@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S73-V2 3/9] i40e: Handle admin Q
-> timeout when releasing NVM
+> Subject: [Intel-wired-lan] [next PATCH S73-V2 4/9] i40e: fix up 32 bit
+> timespec references
 > 
-> From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> There are some rare cases where the release resource call will return an
-> admin Q timeout. In these cases the code needs to try to release the
-> resource again until it succeeds or it times out.
+> As it turns out there was only a small set of errors on 32 bit, and we just
+> needed to be using the right calls for dealing with timespec64 variables.
 > 
-> Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_nvm.c | 21 +++++++++++++++++++--
->  1 file changed, 19 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
