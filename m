@@ -1,63 +1,44 @@
 From: Tushar Dave <tushar.n.dave@oracle.com>
-Date: Thu, 22 Jun 2017 09:44:32 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH] i40evf: Use le32_to_cpu before
-	evaluating HW desc fields
-Message-ID: <1498149872-16623-1-git-send-email-tushar.n.dave@oracle.com>
+Date: Thu, 22 Jun 2017 10:12:11 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH] i40evf: remove unnecessary
+	__packed
+Message-ID: <1498151531-18508-1-git-send-email-tushar.n.dave@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i40e hardware descriptor fields are in little-endian format. Driver
-must use le32_to_cpu while evaluating these fields otherwise on
-big-endian arch we end up evaluating incorrect values, cause errors
-like:
-i40evf 0000:03:0a.0: Expected response 24 from PF, received 402653184
-i40evf 0000:03:0a.1: Expected response 7 from PF, received 117440512
+This is similar to 'commit 9588397d24eec ("i40e: remove unnecessary
+__packed")' to avoid unaligned access.
 
 Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
-Reviewed-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40e_osdep.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 7c213a3..93536b9 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1957,8 +1957,8 @@ static void i40evf_adminq_task(struct work_struct *work)
- 		container_of(work, struct i40evf_adapter, adminq_task);
- 	struct i40e_hw *hw = &adapter->hw;
- 	struct i40e_arq_event_info event;
--	struct virtchnl_msg *v_msg;
--	i40e_status ret;
-+	enum virtchnl_ops v_op;
-+	i40e_status ret, v_ret;
- 	u32 val, oldval;
- 	u16 pending;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_osdep.h b/drivers/net/ethernet/intel/i40evf/i40e_osdep.h
+index 5e314fd..a907377 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_osdep.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_osdep.h
+@@ -54,7 +54,7 @@ struct i40e_dma_mem {
+ 	void *va;
+ 	dma_addr_t pa;
+ 	u32 size;
+-} __packed;
++};
  
-@@ -1970,15 +1970,15 @@ static void i40evf_adminq_task(struct work_struct *work)
- 	if (!event.msg_buf)
- 		goto out;
+ #define i40e_allocate_dma_mem(h, m, unused, s, a) \
+ 	i40evf_allocate_dma_mem_d(h, m, s, a)
+@@ -63,7 +63,7 @@ struct i40e_dma_mem {
+ struct i40e_virt_mem {
+ 	void *va;
+ 	u32 size;
+-} __packed;
++};
+ #define i40e_allocate_virt_mem(h, m, s) i40evf_allocate_virt_mem_d(h, m, s)
+ #define i40e_free_virt_mem(h, m) i40evf_free_virt_mem_d(h, m)
  
--	v_msg = (struct virtchnl_msg *)&event.desc;
- 	do {
- 		ret = i40evf_clean_arq_element(hw, &event, &pending);
--		if (ret || !v_msg->v_opcode)
-+		v_op = (enum virtchnl_ops)le32_to_cpu(event.desc.cookie_high);
-+		v_ret = (i40e_status)le32_to_cpu(event.desc.cookie_low);
-+
-+		if (ret || !v_op)
- 			break; /* No event to process or error cleaning ARQ */
- 
--		i40evf_virtchnl_completion(adapter, v_msg->v_opcode,
--					   (i40e_status)v_msg->v_retval,
--					   event.msg_buf,
-+		i40evf_virtchnl_completion(adapter, v_op, v_ret, event.msg_buf,
- 					   event.msg_len);
- 		if (pending != 0)
- 			memset(event.msg_buf, 0, I40EVF_MAX_AQ_BUF_SIZE);
 -- 
 1.9.1
 
