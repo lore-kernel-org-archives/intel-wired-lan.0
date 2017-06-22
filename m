@@ -1,197 +1,149 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 22 Jun 2017 15:15:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- b970eeff5f64157c2db06b907e4782a1e4755ba7
-Message-ID: <594b6ea1.W75hWcLOU6fR2Dtj%fengguang.wu@intel.com>
+From: Corinna Vinschen <vinschen@redhat.com>
+Date: Thu, 22 Jun 2017 11:28:20 +0200
+Subject: [Intel-wired-lan] [PATCH v4 00/15] ptp cornercase cleanups
+In-Reply-To: <CACJTkKFkJQ2Sg8PLryxy+bXis678mc19ct7uj-69Kmfn_SM7Cg@mail.gmail.com>
+References: <20170503172904.9788-1-jacob.e.keller@intel.com>
+ <20170621155343.GA1595@calimero.vinschen.de>
+ <CACJTkKFkJQ2Sg8PLryxy+bXis678mc19ct7uj-69Kmfn_SM7Cg@mail.gmail.com>
+Message-ID: <20170622092820.GA18863@calimero.vinschen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-b970eeff5f64157c2db06b907e4782a1e4755ba7  igb: protect TX timestamping from API misuse
+Hi David,
 
-elapsed time: 145m
+On Jun 22 12:14, David Mirabito wrote:
+> For what it's worth, I found that although the patches solved the case
+> where a tx timestamp would *never* come  (on an I354/igb), we still had to
+> set "tx_timestamp_timeout 750" in ptp4l.conf as there were still the
+> occasional case where it'd come, just a bit later than ptp4l seems to
+> expect. YMMV of course, but we needed both the patch and this config change
+> at once in order to be stable.
+> 
+> Note 750 was just a number that worked. It may be that a smaller number
+> would suffice but it seems OK for us.
 
-configs tested: 173
+Thanks for the info.  I'm just giving it a try.  A value of 100 appears
+to work fine in my environment.  Interestingly, I only have to raise
+tx_timestamp_timeout on i350, not on an i210 in the same machine.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-ia64                      gensparse_defconfig
-powerpc                 mpc832x_rdb_defconfig
-x86_64                 randconfig-a0-06221347
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-06221328
-arm                         s3c6400_defconfig
-arm                           tegra_defconfig
-powerpc                     kmeter1_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-06221246
-x86_64                 randconfig-g0-06221438
-i386                   randconfig-a0-06162344
-i386                   randconfig-a1-06162344
-x86_64                 randconfig-s0-06221437
-x86_64                 randconfig-s1-06221437
-x86_64                 randconfig-s2-06221437
-arm                         hackkit_defconfig
-arm                          nuc960_defconfig
-score                      spct6600_defconfig
-x86_64                 randconfig-x010-201725
-x86_64                 randconfig-x019-201725
-x86_64                 randconfig-x015-201725
-x86_64                 randconfig-x014-201725
-x86_64                 randconfig-x012-201725
-x86_64                 randconfig-x017-201725
-x86_64                 randconfig-x018-201725
-x86_64                 randconfig-x016-201725
-x86_64                 randconfig-x013-201725
-x86_64                 randconfig-x011-201725
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-s3-06221432
-x86_64                 randconfig-s4-06221432
-x86_64                 randconfig-s5-06221432
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-x86_64                   randconfig-i0-201725
-i386                     randconfig-i0-201725
-i386                     randconfig-i1-201725
-powerpc                    adder875_defconfig
-powerpc                       eiger_defconfig
-x86_64                 randconfig-u0-06221355
-arm                         orion5x_defconfig
-mn10300                     asb2303_defconfig
-parisc                           alldefconfig
-powerpc                         wii_defconfig
-i386                 randconfig-x011-06190614
-i386                 randconfig-x017-06190614
-i386                 randconfig-x012-06190614
-i386                 randconfig-x016-06190614
-i386                 randconfig-x018-06190614
-i386                 randconfig-x014-06190614
-i386                 randconfig-x019-06190614
-i386                 randconfig-x015-06190614
-i386                 randconfig-x010-06190614
-i386                 randconfig-x013-06190614
-arm                    vt8500_v6_v7_defconfig
-blackfin                BF538-EZKIT_defconfig
-x86_64                randconfig-ne0-06221303
-arm                        keystone_defconfig
-arm                             mxs_defconfig
-arm                        realview_defconfig
-powerpc                       holly_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-06212341
-i386                   randconfig-h0-06221041
-i386                   randconfig-h1-06221041
-powerpc                 xes_mpc85xx_defconfig
-mips                       bmips_be_defconfig
-i386                 randconfig-x070-06190854
-i386                 randconfig-x071-06190854
-i386                 randconfig-x072-06190854
-i386                 randconfig-x073-06190854
-i386                 randconfig-x074-06190854
-i386                 randconfig-x075-06190854
-i386                 randconfig-x076-06190854
-i386                 randconfig-x077-06190854
-i386                 randconfig-x078-06190854
-i386                 randconfig-x079-06190854
-x86_64                 randconfig-n0-06221349
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-arm                          pxa910_defconfig
-m68k                        m5407c3_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                 randconfig-x070-06180431
-i386                 randconfig-x074-06180431
-i386                 randconfig-x073-06180431
-i386                 randconfig-x076-06180431
-i386                 randconfig-x071-06180431
-i386                 randconfig-x072-06180431
-i386                 randconfig-x078-06180431
-i386                 randconfig-x077-06180431
-i386                 randconfig-x075-06180431
-i386                 randconfig-x079-06180431
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-microblaze                       allyesconfig
-powerpc                     sequoia_defconfig
-sh                          urquell_defconfig
-i386                   randconfig-x000-201725
-i386                   randconfig-x001-201725
-i386                   randconfig-x002-201725
-i386                   randconfig-x003-201725
-i386                   randconfig-x004-201725
-i386                   randconfig-x005-201725
-i386                   randconfig-x006-201725
-i386                   randconfig-x007-201725
-i386                   randconfig-x008-201725
-i386                   randconfig-x009-201725
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-06221340
 
 Thanks,
-Fengguang
+Corinna
+
+
+> Cheers,
+> - DavidM
+> 
+> 
+> On 22 June 2017 at 01:53, Corinna Vinschen <vinschen@redhat.com> wrote:
+> 
+> > Hi Jacob,
+> >
+> > I'm just testing this patchset on IGB as applied to the upstream
+> > net-next repo (4.12.0-rc5+), and the problem persists.  It seems to
+> > occur more seldom than without the patch, but I'm still seeing
+> > occasional messages along the lines of
+> >
+> >   ptp4l [1122.159]: timed out while polling for tx timestamp
+> >   ptp4l [1122.159]: increasing tx_timestamp_timeout may correct this
+> >   issue, but it is likely caused by a driver bug
+> >
+> > roughly every 10 minutes.  Other than ptp4l running, the machine is
+> > basically idle.  Is there something missing in net-next?
+> >
+> >
+> > Thanks,
+> > Corinna
+> >
+> >
+> > On May  3 10:28, Jacob Keller wrote:
+> > > This series contains fixes for similar corner cases in the e1000e, igb,
+> > > i40e, and ixgbe drivers reported by David Mirabito on the ptp4l mailing
+> > > list.
+> > >
+> > > The first few patches fix a race condition with skb_tstamp_tx(). The
+> > > next few patches ensure that we cleanup the state bit when exiting the
+> > > _xmit_frame_ring() function with a DMA or TSO failure. After this, we
+> > > add new statistic to count how many times the Tx timestamp is skipped
+> > > due to already outstanding requests. The final few patches add some
+> > > handling in the potential case where we somehow never finish a timestamp
+> > > request, ensuring that we don't permanently lock the Tx timestamps
+> > > forever in this rare case.
+> > >
+> > > Changes in v4
+> > > - Split the driver patches at request of Shannon Nelson
+> > > - Updated commit messages, but code content should be identical
+> > >
+> > > I apologize in advance, the patchworks will not track this properly
+> > > because I necessarily changed the commit subjects when splitting the
+> > > patches apart by driver.
+> > >
+> > > Jacob Keller (15):
+> > >   e1000e: fix race condition around skb_tstamp_tx()
+> > >   i40e: fix race condition with PTP_TX_IN_PROGRESS bits
+> > >   igb: fix race condition with PTP_TX_IN_PROGRESS bits
+> > >   ixgbe: fix race condition with PTP_TX_IN_PROGRESS bits
+> > >   i40e: avoid permanent lock of *_PTP_TX_IN_PROGRESS
+> > >   igb: avoid permanent lock of *_PTP_TX_IN_PROGRESS
+> > >   ixgbe: avoid permanent lock of *_PTP_TX_IN_PROGRESS
+> > >   e1000e: add statistic indicating number of skipped Tx timestamps
+> > >   i40e: add statistic indicating number of skipped Tx timestamps
+> > >   igb: add statistic indicating number of skipped Tx timestamps
+> > >   ixgbe: add statistic indicating number of skipped Tx timestamps
+> > >   i40e: use pf data structure directly in i40e_ptp_rx_hang
+> > >   i40e: check for Tx timestamp timeouts during watchdog
+> > >   igb: check for Tx timestamp timeouts during watchdog
+> > >   ixgbe: check for Tx timestamp timeouts during watchdog
+> > >
+> > >  drivers/net/ethernet/intel/e1000e/e1000.h        |  1 +
+> > >  drivers/net/ethernet/intel/e1000e/ethtool.c      |  1 +
+> > >  drivers/net/ethernet/intel/e1000e/netdev.c       | 27 ++++++++-----
+> > >  drivers/net/ethernet/intel/i40e/i40e.h           |  5 ++-
+> > >  drivers/net/ethernet/intel/i40e/i40e_ethtool.c   |  1 +
+> > >  drivers/net/ethernet/intel/i40e/i40e_main.c      |  3 +-
+> > >  drivers/net/ethernet/intel/i40e/i40e_ptp.c       | 48
+> > +++++++++++++++++++++---
+> > >  drivers/net/ethernet/intel/i40e/i40e_txrx.c      | 28 +++++++++++---
+> > >  drivers/net/ethernet/intel/igb/igb.h             |  2 +
+> > >  drivers/net/ethernet/intel/igb/igb_ethtool.c     |  1 +
+> > >  drivers/net/ethernet/intel/igb/igb_main.c        | 26 ++++++++++---
+> > >  drivers/net/ethernet/intel/igb/igb_ptp.c         | 41
+> > +++++++++++++++++++-
+> > >  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  2 +
+> > >  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  3 ++
+> > >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 42
+> > ++++++++++++++-------
+> > >  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c     | 42
+> > +++++++++++++++++++--
+> > >  16 files changed, 227 insertions(+), 46 deletions(-)
+> > >
+> > > --
+> > > 2.13.0.rc0.317.gcc792a6cad5a
+> > >
+> > > _______________________________________________
+> > > Intel-wired-lan mailing list
+> > > Intel-wired-lan at lists.osuosl.org
+> > > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> >
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at osuosl.org
+> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> >
+> >
+
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170622/c8c79e5d/attachment.asc>
