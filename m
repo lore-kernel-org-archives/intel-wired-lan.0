@@ -1,78 +1,197 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 22 Jun 2017 09:54:59 +0300
-Subject: [Intel-wired-lan] [PATCH] net: intel: e1000e: add check on
- e1e_wphy() return value
-In-Reply-To: <20170621145208.Horde.eM1O3f5tAb_tIuGcYvFpDJZ@gator4166.hostgator.com>
-References: <20170518172223.Horde.5kLLwxMJWThQKv0bAxTsk4D@gator4166.hostgator.com>
- <20170620212234.GA10957@embeddedgus>
- <CABawtvMeV9=_hhECX1hkVE5+fOytBdaf2pYtSU9xAfY_yPK-Uw@mail.gmail.com>
- <20170621145208.Horde.eM1O3f5tAb_tIuGcYvFpDJZ@gator4166.hostgator.com>
-Message-ID: <92573970-6eb7-9f4f-a512-4a467d4f6caf@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 22 Jun 2017 15:15:45 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ b970eeff5f64157c2db06b907e4782a1e4755ba7
+Message-ID: <594b6ea1.W75hWcLOU6fR2Dtj%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 21/06/2017 22:52, Gustavo A. R. Silva wrote:
-> Hi Ethan,
->
-> Quoting Ethan Zhao <ethan.kernel@gmail.com>:
->
->> Gustavo,
->>
->>    The return value of ret_val seems used to check if the access to 
->> PHY/NVM
->> got its semaphore,  generally speaking, it is needed for every PHY
->> access of this driver.
->>
->> Reviewed-by: Ethan Zhao <ethan.zhao@oracle.com>
->>
->
-> Thank you very much for the clarification.
->
->> On Wed, Jun 21, 2017 at 5:22 AM, Gustavo A. R. Silva
->> <garsilva@embeddedor.com> wrote:
->>> Check return value from call to e1e_wphy(). This value is being
->>> checked during previous calls to function e1e_wphy() and it seems
->>> a check was missing here.
->>>
->>> Addresses-Coverity-ID: 1226905
->>> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
->>> ---
->>>  drivers/net/ethernet/intel/e1000e/ich8lan.c | 2 ++
->>>  1 file changed, 2 insertions(+)
->>>
->>> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c 
->>> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
->>> index 68ea8b4..d6d4ed7 100644
->>> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
->>> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
->>> @@ -2437,6 +2437,8 @@ static s32 
->>> e1000_hv_phy_workarounds_ich8lan(struct e1000_hw *hw)
->>>                 if (hw->phy.revision < 2) {
->>>                         e1000e_phy_sw_reset(hw);
->>>                         ret_val = e1e_wphy(hw, MII_BMCR, 0x3140);
->>> +                       if (ret_val)
->>> +                               return ret_val;
->>>                 }
->>>         }
->>>
->>> -- 
->>> 2.5.0
->>>
->
-> -- 
-> Gustavo A. R. Silva
->
->
->
->
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b970eeff5f64157c2db06b907e4782a1e4755ba7  igb: protect TX timestamping from API misuse
 
-We will accept this patch.
+elapsed time: 145m
 
+configs tested: 173
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+ia64                      gensparse_defconfig
+powerpc                 mpc832x_rdb_defconfig
+x86_64                 randconfig-a0-06221347
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-06221328
+arm                         s3c6400_defconfig
+arm                           tegra_defconfig
+powerpc                     kmeter1_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-v0-06221246
+x86_64                 randconfig-g0-06221438
+i386                   randconfig-a0-06162344
+i386                   randconfig-a1-06162344
+x86_64                 randconfig-s0-06221437
+x86_64                 randconfig-s1-06221437
+x86_64                 randconfig-s2-06221437
+arm                         hackkit_defconfig
+arm                          nuc960_defconfig
+score                      spct6600_defconfig
+x86_64                 randconfig-x010-201725
+x86_64                 randconfig-x019-201725
+x86_64                 randconfig-x015-201725
+x86_64                 randconfig-x014-201725
+x86_64                 randconfig-x012-201725
+x86_64                 randconfig-x017-201725
+x86_64                 randconfig-x018-201725
+x86_64                 randconfig-x016-201725
+x86_64                 randconfig-x013-201725
+x86_64                 randconfig-x011-201725
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-s3-06221432
+x86_64                 randconfig-s4-06221432
+x86_64                 randconfig-s5-06221432
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+x86_64                   randconfig-i0-201725
+i386                     randconfig-i0-201725
+i386                     randconfig-i1-201725
+powerpc                    adder875_defconfig
+powerpc                       eiger_defconfig
+x86_64                 randconfig-u0-06221355
+arm                         orion5x_defconfig
+mn10300                     asb2303_defconfig
+parisc                           alldefconfig
+powerpc                         wii_defconfig
+i386                 randconfig-x011-06190614
+i386                 randconfig-x017-06190614
+i386                 randconfig-x012-06190614
+i386                 randconfig-x016-06190614
+i386                 randconfig-x018-06190614
+i386                 randconfig-x014-06190614
+i386                 randconfig-x019-06190614
+i386                 randconfig-x015-06190614
+i386                 randconfig-x010-06190614
+i386                 randconfig-x013-06190614
+arm                    vt8500_v6_v7_defconfig
+blackfin                BF538-EZKIT_defconfig
+x86_64                randconfig-ne0-06221303
+arm                        keystone_defconfig
+arm                             mxs_defconfig
+arm                        realview_defconfig
+powerpc                       holly_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-06212341
+i386                   randconfig-h0-06221041
+i386                   randconfig-h1-06221041
+powerpc                 xes_mpc85xx_defconfig
+mips                       bmips_be_defconfig
+i386                 randconfig-x070-06190854
+i386                 randconfig-x071-06190854
+i386                 randconfig-x072-06190854
+i386                 randconfig-x073-06190854
+i386                 randconfig-x074-06190854
+i386                 randconfig-x075-06190854
+i386                 randconfig-x076-06190854
+i386                 randconfig-x077-06190854
+i386                 randconfig-x078-06190854
+i386                 randconfig-x079-06190854
+x86_64                 randconfig-n0-06221349
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+arm                          pxa910_defconfig
+m68k                        m5407c3_defconfig
+powerpc                 mpc836x_rdk_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                 randconfig-x070-06180431
+i386                 randconfig-x074-06180431
+i386                 randconfig-x073-06180431
+i386                 randconfig-x076-06180431
+i386                 randconfig-x071-06180431
+i386                 randconfig-x072-06180431
+i386                 randconfig-x078-06180431
+i386                 randconfig-x077-06180431
+i386                 randconfig-x075-06180431
+i386                 randconfig-x079-06180431
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+microblaze                       allyesconfig
+powerpc                     sequoia_defconfig
+sh                          urquell_defconfig
+i386                   randconfig-x000-201725
+i386                   randconfig-x001-201725
+i386                   randconfig-x002-201725
+i386                   randconfig-x003-201725
+i386                   randconfig-x004-201725
+i386                   randconfig-x005-201725
+i386                   randconfig-x006-201725
+i386                   randconfig-x007-201725
+i386                   randconfig-x008-201725
+i386                   randconfig-x009-201725
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-06221340
+
+Thanks,
+Fengguang
