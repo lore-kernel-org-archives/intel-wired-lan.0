@@ -1,49 +1,156 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 23 Jun 2017 04:24:48 -0400
-Subject: [Intel-wired-lan] [next PATCH S74-V2 07/10] i40e: Detect ATR HW
-	Evict NVM issue and disable the feature
+Date: Fri, 23 Jun 2017 04:24:49 -0400
+Subject: [Intel-wired-lan] [next PATCH S74-V2 08/10] i40e/i40evf: organize
+	and re-number feature flags
 In-Reply-To: <20170623082451.32671-1-alice.michael@intel.com>
 References: <20170623082451.32671-1-alice.michael@intel.com>
-Message-ID: <20170623082451.32671-7-alice.michael@intel.com>
+Message-ID: <20170623082451.32671-8-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes a problem with the HW ATR eviction feature where the
-NVM setting was incorrect.  This patch detects the issue on X720
-adapters and disables the feature if the NVM setting is incorrect.
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Without this patch, HW ATR Evict feature does not work on broken NVMs
-and is not detected either.  If the HW ATR Evict feature is disabled
-the SW Eviction feature will take effect.
+Now that we've reduced the number of flags, organize similar flags
+together and re-number them accordingly.
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Signed-off-by: Alice Michael <alice.michael@intel.com>
+Also ensure that the flags variable is actually a u64 to guarantee
+64bits of space on all architectures.
+
+One alternative approach considered, but not implemented here, was to
+use an enumeration for the flag variables, and create a macro
+I40E_FLAG() which used string concatenation to generate BIT_ULL values.
+This has the advantage of making the actual bit values compile-time
+dynamic so that we do not need to worry about matching the order to the
+bit value. However, this does produce a high level of code churn, and
+makes it more difficult to read a dumped flags value when debugging.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Williams, Mitch A <mitch.a.williams@intel.com>
+Change-ID: I8653fff69453cd547d6fe98d29dfa9d8710387d1
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e.h     | 57 +++++++++++++++---------------
+ drivers/net/ethernet/intel/i40evf/i40evf.h | 30 ++++++++--------
+ 2 files changed, 44 insertions(+), 43 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 43840cf..ffd4891 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8963,6 +8963,14 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 				    I40E_HW_PTP_L4_CAPABLE |
- 				    I40E_HW_WOL_MC_MAGIC_PKT_WAKE |
- 				    I40E_HW_OUTER_UDP_CSUM_CAPABLE);
-+
-+#define I40E_FDEVICT_PCTYPE_DEFAULT 0xc03
-+		if (rd32(&pf->hw, I40E_GLQF_FDEVICTENA(1)) !=
-+						I40E_FDEVICT_PCTYPE_DEFAULT) {
-+			dev_warn(&pf->pdev->dev,
-+				 "FD EVICT PCTYPES are not right, disable FD HW EVICT\n");
-+			pf->hw_features &= ~I40E_HW_ATR_EVICT_CAPABLE;
-+		}
- 	} else if ((pf->hw.aq.api_maj_ver > 1) ||
- 		   ((pf->hw.aq.api_maj_ver == 1) &&
- 		    (pf->hw.aq.api_min_ver > 4))) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index d0c1bf5..5f75e67 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -423,33 +423,34 @@ struct i40e_pf {
+ #define I40E_HW_RESTART_AUTONEG			BIT_ULL(18)
+ 
+ 	u64 flags;
+-#define I40E_FLAG_RX_CSUM_ENABLED		BIT_ULL(1)
+-#define I40E_FLAG_MSI_ENABLED			BIT_ULL(2)
+-#define I40E_FLAG_MSIX_ENABLED			BIT_ULL(3)
+-#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(4)
+-#define I40E_FLAG_RSS_ENABLED			BIT_ULL(6)
+-#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(7)
+-#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(10)
+-#define I40E_FLAG_FILTER_SYNC			BIT_ULL(15)
+-#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(16)
+-#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(19)
+-#define I40E_FLAG_DCB_ENABLED			BIT_ULL(20)
+-#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(21)
+-#define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
+-#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(23)
+-#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(24)
+-#define I40E_FLAG_PTP				BIT_ULL(25)
+-#define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
+-#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(27)
+-#define I40E_FLAG_DCB_CAPABLE			BIT_ULL(29)
+-#define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(37)
+-#define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(39)
+-#define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(40)
+-#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(51)
+-#define I40E_FLAG_CLIENT_RESET			BIT_ULL(54)
+-#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(55)
+-#define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(56)
+-#define I40E_FLAG_LEGACY_RX			BIT_ULL(58)
++#define I40E_FLAG_RX_CSUM_ENABLED		BIT_ULL(0)
++#define I40E_FLAG_MSI_ENABLED			BIT_ULL(1)
++#define I40E_FLAG_MSIX_ENABLED			BIT_ULL(2)
++#define I40E_FLAG_RSS_ENABLED			BIT_ULL(3)
++#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(4)
++#define I40E_FLAG_FILTER_SYNC			BIT_ULL(5)
++#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(6)
++#define I40E_FLAG_DCB_CAPABLE			BIT_ULL(7)
++#define I40E_FLAG_DCB_ENABLED			BIT_ULL(8)
++#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(9)
++#define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(10)
++#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(11)
++#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(12)
++#define I40E_FLAG_MFP_ENABLED			BIT_ULL(13)
++#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(14)
++#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(15)
++#define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(16)
++#define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(17)
++#define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(18)
++#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(19)
++#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(20)
++#define I40E_FLAG_LEGACY_RX			BIT_ULL(21)
++#define I40E_FLAG_PTP				BIT_ULL(22)
++#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(23)
++#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(24)
++#define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(25)
++#define I40E_FLAG_CLIENT_RESET			BIT_ULL(26)
++#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT_ULL(27)
+ 
+ 	struct i40e_client_instance *cinst;
+ 	bool stat_offsets_loaded;
+@@ -613,7 +614,7 @@ struct i40e_vsi {
+ 	DECLARE_BITMAP(state, __I40E_VSI_STATE_SIZE__);
+ #define I40E_VSI_FLAG_FILTER_CHANGED	BIT(0)
+ #define I40E_VSI_FLAG_VEB_OWNER		BIT(1)
+-	unsigned long flags;
++	u64 flags;
+ 
+ 	/* Per VSI lock to protect elements/hash (MAC filter) */
+ 	spinlock_t mac_filter_hash_lock;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index 7f90536..c89767e 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -220,21 +220,21 @@ struct i40evf_adapter {
+ 
+ 	u32 flags;
+ #define I40EVF_FLAG_RX_CSUM_ENABLED		BIT(0)
+-#define I40EVF_FLAG_IMIR_ENABLED		BIT(5)
+-#define I40EVF_FLAG_MQ_CAPABLE			BIT(6)
+-#define I40EVF_FLAG_PF_COMMS_FAILED		BIT(8)
+-#define I40EVF_FLAG_RESET_PENDING		BIT(9)
+-#define I40EVF_FLAG_RESET_NEEDED		BIT(10)
+-#define I40EVF_FLAG_WB_ON_ITR_CAPABLE		BIT(11)
+-#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE	BIT(12)
+-#define I40EVF_FLAG_ADDR_SET_BY_PF		BIT(13)
+-#define I40EVF_FLAG_SERVICE_CLIENT_REQUESTED	BIT(14)
+-#define I40EVF_FLAG_CLIENT_NEEDS_OPEN		BIT(15)
+-#define I40EVF_FLAG_CLIENT_NEEDS_CLOSE		BIT(16)
+-#define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(17)
+-#define I40EVF_FLAG_PROMISC_ON			BIT(18)
+-#define I40EVF_FLAG_ALLMULTI_ON			BIT(19)
+-#define I40EVF_FLAG_LEGACY_RX			BIT(20)
++#define I40EVF_FLAG_IMIR_ENABLED		BIT(1)
++#define I40EVF_FLAG_MQ_CAPABLE			BIT(2)
++#define I40EVF_FLAG_PF_COMMS_FAILED		BIT(3)
++#define I40EVF_FLAG_RESET_PENDING		BIT(4)
++#define I40EVF_FLAG_RESET_NEEDED		BIT(5)
++#define I40EVF_FLAG_WB_ON_ITR_CAPABLE		BIT(6)
++#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE	BIT(7)
++#define I40EVF_FLAG_ADDR_SET_BY_PF		BIT(8)
++#define I40EVF_FLAG_SERVICE_CLIENT_REQUESTED	BIT(9)
++#define I40EVF_FLAG_CLIENT_NEEDS_OPEN		BIT(10)
++#define I40EVF_FLAG_CLIENT_NEEDS_CLOSE		BIT(11)
++#define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(12)
++#define I40EVF_FLAG_PROMISC_ON			BIT(13)
++#define I40EVF_FLAG_ALLMULTI_ON			BIT(14)
++#define I40EVF_FLAG_LEGACY_RX			BIT(15)
+ /* duplicates for common code */
+ #define I40E_FLAG_DCB_ENABLED			0
+ #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
 -- 
 2.9.3
 
