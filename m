@@ -1,42 +1,31 @@
-From: Michael, Alice <alice.michael@intel.com>
-Date: Fri, 23 Jun 2017 16:33:46 +0000
-Subject: [Intel-wired-lan] [next PATCH S74-V2 07/10] i40e: Detect ATR
-	HW	Evict NVM issue and disable the feature
-In-Reply-To: <9BBC4E0CF881AA4299206E2E1412B6265047A159@ORSMSX102.amr.corp.intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Fri, 23 Jun 2017 10:19:44 -0700
+Subject: [Intel-wired-lan] [next PATCH S74-V2 05/10] i40e: separate
+ hw_features from runtime changing flags
+In-Reply-To: <20170623082451.32671-5-alice.michael@intel.com>
 References: <20170623082451.32671-1-alice.michael@intel.com>
- <20170623082451.32671-7-alice.michael@intel.com>
- <9BBC4E0CF881AA4299206E2E1412B6265047A159@ORSMSX102.amr.corp.intel.com>
-Message-ID: <CD14C679C9B9B1409B02829D9B523C296C8BF0@ORSMSX101.amr.corp.intel.com>
+ <20170623082451.32671-5-alice.michael@intel.com>
+Message-ID: <6ead4bb4-74f8-56d4-ef77-e925598bb356@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I already sent this up, Jeff can you do that?
-Thanks,
-Alice
-
------Original Message-----
-From: Wyborny, Carolyn 
-Sent: Friday, June 23, 2017 9:33 AM
-To: Michael, Alice <alice.michael@intel.com>; Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-Subject: RE: [Intel-wired-lan] [next PATCH S74-V2 07/10] i40e: Detect ATR HW Evict NVM issue and disable the feature
-
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On 
-> Behalf Of Alice Michael
-> Sent: Friday, June 23, 2017 1:25 AM
-> To: Michael, Alice <alice.michael@intel.com>; 
-> intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S74-V2 07/10] i40e: Detect ATR 
-> HW Evict NVM issue and disable the feature
+On 6/23/2017 1:24 AM, Alice Michael wrote:
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> This patch fixes a problem with the HW ATR eviction feature where the 
-> NVM setting was incorrect.  This patch detects the issue on X720
-[..]
-Change X720 to X722
+> The number of flags found in pf->flags has grown quite large, and there
+> are a lot of different types of flags. Most of the flags are simply
+> hardware features which are enabled on some firmware or some MAC types.
+> Other flags are dynamic run-time flags which enable or disable certain
+> features of the driver.
+> 
+> Separate these two types of flags into pf->hw_features and pf->flags.
 
-Thanks,
+In general this looks fine and really has long been needed.  My only 
+concern is that the name chosen clashes with netdev->hw_features.  This 
+is a small nit, but I think a slightly different name would be better in 
+the long run.  Even simply "features" would be good.
 
-Carolyn
+sln
