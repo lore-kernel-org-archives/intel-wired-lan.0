@@ -1,43 +1,48 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 23 Jun 2017 23:20:37 +0000
-Subject: [Intel-wired-lan] [next PATCH S73-V2 8/9] i40e: display correct
- UDP	tunnel type name
-In-Reply-To: <20170620221701.46765-8-jeffrey.t.kirsher@intel.com>
-References: <20170620221701.46765-1-jeffrey.t.kirsher@intel.com>
- <20170620221701.46765-8-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DABAFB@ORSMSX104.amr.corp.intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Fri, 23 Jun 2017 16:38:29 -0700
+Subject: [Intel-wired-lan] [next PATCH S74-V2 05/10] i40e: separate
+ hw_features from runtime changing flags
+In-Reply-To: <02874ECE860811409154E81DA85FBB58829D0682@ORSMSX115.amr.corp.intel.com>
+References: <20170623082451.32671-1-alice.michael@intel.com>
+ <20170623082451.32671-5-alice.michael@intel.com>
+ <6ead4bb4-74f8-56d4-ef77-e925598bb356@oracle.com>
+ <02874ECE860811409154E81DA85FBB58829D0682@ORSMSX115.amr.corp.intel.com>
+Message-ID: <0be474d6-d18b-dae7-2940-ae0447084534@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Tuesday, June 20, 2017 3:17 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S73-V2 8/9] i40e: display correct UDP
-> tunnel type name
+On 6/23/2017 11:30 AM, Keller, Jacob E wrote:
+>> -----Original Message-----
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
+>> Shannon Nelson
+>> Sent: Friday, June 23, 2017 10:20 AM
+>> To: intel-wired-lan at osuosl.org
+>> Subject: Re: [Intel-wired-lan] [next PATCH S74-V2 05/10] i40e: separate
+>> hw_features from runtime changing flags
+>>
+>> On 6/23/2017 1:24 AM, Alice Michael wrote:
+>>> From: Jacob Keller <jacob.e.keller@intel.com>
+>>>
+>>> The number of flags found in pf->flags has grown quite large, and there
+>>> are a lot of different types of flags. Most of the flags are simply
+>>> hardware features which are enabled on some firmware or some MAC types.
+>>> Other flags are dynamic run-time flags which enable or disable certain
+>>> features of the driver.
+>>>
+>>> Separate these two types of flags into pf->hw_features and pf->flags.
+>>
+>> In general this looks fine and really has long been needed.  My only
+>> concern is that the name chosen clashes with netdev->hw_features.  This
+>> is a small nit, but I think a slightly different name would be better in
+>> the long run.  Even simply "features" would be good.
+>>
+>> sln
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> I don't mind changing the name if we need, though it will cause a lot of thrash on our end. Personally I don't find it that confusing. Anyone else want to weigh in?
 > 
-> The i40e driver attempts to display the UDP tunnel name by doing a check
-> against the type, where for non-zero types we use "vxlan" and for zero type
-> we use "geneve". This is not future proof, because if new tunnel types get
-> added, we'll incorrectly label them. It also depends on the value of
-> UDP_TUNNEL_TYPE_GENEVE == 0, which is brittle.
-> 
-> Instead, replace this with a function that can return a constant string
-> depending on the type. For now we'll use "unknown" for types we don't
-> know about, and we can expand this in the future if new types get added.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 28
-> ++++++++++++++++++++--------
->  1 file changed, 20 insertions(+), 8 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+Like I said - an annoying nit, not necessarily a big deal.
+sln
