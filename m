@@ -1,82 +1,97 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 23 Jun 2017 04:24:42 -0400
-Subject: [Intel-wired-lan] [next PATCH S74-V2 01/10] i40e/i40evf: fix some
-	minor type mismatches
-Message-ID: <20170623082451.32671-1-alice.michael@intel.com>
+Date: Fri, 23 Jun 2017 04:24:43 -0400
+Subject: [Intel-wired-lan] [next PATCH S74-V2 02/10] i40e/i40evf: adjust
+	packet size to account for double VLANs
+In-Reply-To: <20170623082451.32671-1-alice.michael@intel.com>
+References: <20170623082451.32671-1-alice.michael@intel.com>
+Message-ID: <20170623082451.32671-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-This patch fixes two trivial type mismatches, one where
-we were returning an enum type, but pretending it was an int,
-and the other where we were using a void* for offset math, but
-it is communicated more clearly and correctly to use a u8*,
-which we then cast to void* for prefetch to use.
+Now that the kernel supports double VLAN tags, we should at least play
+nice. Adjust the max packet size to account for two VLAN tags, not just
+one.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I8d9cf84a1ddbcff7f31eaad9e08880cad4a71f5f
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 4 ++--
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 6 +++---
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 4 ++--
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h     | 1 +
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h   | 1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 3 ++-
+ 4 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index d464fce..eda8da1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1524,7 +1524,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
-  *
-  * Returns a hash type to be used by skb_set_hash
-  **/
--static inline int i40e_ptype_to_htype(u8 ptype)
-+static inline enum pkt_hash_types i40e_ptype_to_htype(u8 ptype)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 21705d5..b429550 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2434,6 +2434,7 @@ static int i40e_max_xdp_frame_size(struct i40e_vsi *vsi)
+ static int i40e_change_mtu(struct net_device *netdev, int new_mtu)
  {
- 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(ptype);
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	int max_frame = new_mtu + I40E_PACKET_HDR_PAD;
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
  
-@@ -1828,7 +1828,7 @@ static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
- 	/* prefetch first cache line of first page */
- 	prefetch(xdp->data);
- #if L1_CACHE_BYTES < 128
--	prefetch(xdp->data + L1_CACHE_BYTES);
-+	prefetch((void *)(xdp->data + L1_CACHE_BYTES));
- #endif
+@@ -9768,8 +9769,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
  
- 	/* allocate a skb to store the frags */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index d91676c..4bf7e35 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -858,7 +858,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
-  *
-  * Returns a hash type to be used by skb_set_hash
-  **/
--static inline int i40e_ptype_to_htype(u8 ptype)
-+static inline enum pkt_hash_types i40e_ptype_to_htype(u8 ptype)
+ 	/* MTU range: 68 - 9706 */
+ 	netdev->min_mtu = ETH_MIN_MTU;
+-	netdev->max_mtu = I40E_MAX_RXBUFFER -
+-			  (ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN);
++	netdev->max_mtu = I40E_MAX_RXBUFFER - I40E_PACKET_HDR_PAD;
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index b288d58..a39892d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -130,6 +130,7 @@ enum i40e_dyn_idx_t {
+  * i.e. RXBUFFER_512 --> 1216 byte skb (size-2048 slab)
+  */
+ #define I40E_RX_HDR_SIZE I40E_RXBUFFER_256
++#define I40E_PACKET_HDR_PAD (ETH_HLEN + ETH_FCS_LEN + (VLAN_HLEN * 2))
+ #define i40e_rx_desc i40e_32byte_rx_desc
+ 
+ #define I40E_RX_DMA_ATTR \
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index 901282c..472f606 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -117,6 +117,7 @@ enum i40e_dyn_idx_t {
+  * i.e. RXBUFFER_512 --> 1216 byte skb (size-2048 slab)
+  */
+ #define I40E_RX_HDR_SIZE I40E_RXBUFFER_256
++#define I40E_PACKET_HDR_PAD (ETH_HLEN + ETH_FCS_LEN + (VLAN_HLEN * 2))
+ #define i40e_rx_desc i40e_32byte_rx_desc
+ 
+ #define I40E_RX_DMA_ATTR \
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 7c213a3..6422273 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2269,6 +2269,7 @@ static int i40evf_close(struct net_device *netdev)
+ static int i40evf_change_mtu(struct net_device *netdev, int new_mtu)
  {
- 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(ptype);
+ 	struct i40evf_adapter *adapter = netdev_priv(netdev);
++	int max_frame = new_mtu + I40E_PACKET_HDR_PAD;
  
-@@ -1122,7 +1122,7 @@ static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
- 					  struct i40e_rx_buffer *rx_buffer,
- 					  unsigned int size)
- {
--	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+	u8 *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
- #else
-@@ -1134,7 +1134,7 @@ static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
- 	/* prefetch first cache line of first page */
- 	prefetch(va);
- #if L1_CACHE_BYTES < 128
--	prefetch(va + L1_CACHE_BYTES);
-+	prefetch((void *)(va + L1_CACHE_BYTES));
- #endif
+ 	netdev->mtu = new_mtu;
+ 	if (CLIENT_ENABLED(adapter)) {
+@@ -2625,7 +2626,7 @@ static void i40evf_init_task(struct work_struct *work)
  
- 	/* allocate a skb to store the frags */
+ 	/* MTU range: 68 - 9710 */
+ 	netdev->min_mtu = ETH_MIN_MTU;
+-	netdev->max_mtu = I40E_MAX_RXBUFFER - (ETH_HLEN + ETH_FCS_LEN);
++	netdev->max_mtu = I40E_MAX_RXBUFFER - I40E_PACKET_HDR_PAD;
+ 
+ 	if (!is_valid_ether_addr(adapter->hw.mac.addr)) {
+ 		dev_info(&pdev->dev, "Invalid MAC address %pM, using random\n",
 -- 
 2.9.3
 
