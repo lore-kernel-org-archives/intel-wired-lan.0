@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 23 Jun 2017 04:24:49 -0400
-Subject: [Intel-wired-lan] [next PATCH S74-V2 08/10] i40e/i40evf: organize
-	and re-number feature flags
+Date: Fri, 23 Jun 2017 04:24:50 -0400
+Subject: [Intel-wired-lan] [next PATCH S74-V2 09/10] i40e/i40evf: use
+	cmpxchg64 when updating private flags in ethtool
 In-Reply-To: <20170623082451.32671-1-alice.michael@intel.com>
 References: <20170623082451.32671-1-alice.michael@intel.com>
-Message-ID: <20170623082451.32671-8-alice.michael@intel.com>
+Message-ID: <20170623082451.32671-9-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,144 +13,196 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-Now that we've reduced the number of flags, organize similar flags
-together and re-number them accordingly.
+When a user gives an invalid command to change a private flag which is
+not supported, either because it is read-only, or the device is not
+capable of the feature, we simply ignore the request.
 
-Also ensure that the flags variable is actually a u64 to guarantee
-64bits of space on all architectures.
+A naive solution would simply be to report error codes when one of the
+flags was not supported. However, this causes problems because it makes
+the operation not atomic. If a user requests multiple private flags
+together at once we could end up changing one before failing at the
+second flag.
 
-One alternative approach considered, but not implemented here, was to
-use an enumeration for the flag variables, and create a macro
-I40E_FLAG() which used string concatenation to generate BIT_ULL values.
-This has the advantage of making the actual bit values compile-time
-dynamic so that we do not need to worry about matching the order to the
-bit value. However, this does produce a high level of code churn, and
-makes it more difficult to read a dumped flags value when debugging.
+We can do a bit better if we instead update a temporary copy of the
+flags variable in the loop, and then copy it into place after. If we
+aren't careful this has the pitfall of potentially silently overwriting
+any changes caused by other threads.
+
+Avoid this by using cmpxchg64 which will compare and swap the flags
+variable only if it currently matched the old value. We'll report
+-EAGAIN in the (hopefully rare!) case where the cmpxchg64 fails.
+
+This ensures that we can properly report when flags are not supported in
+an atomic fashion without the risk of overwriting other threads changes.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Williams, Mitch A <mitch.a.williams@intel.com>
-Change-ID: I8653fff69453cd547d6fe98d29dfa9d8710387d1
 ---
- drivers/net/ethernet/intel/i40e/i40e.h     | 57 +++++++++++++++---------------
- drivers/net/ethernet/intel/i40evf/i40evf.h | 30 ++++++++--------
- 2 files changed, 44 insertions(+), 43 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 57 +++++++++++++++-------
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 41 ++++++++++++----
+ 2 files changed, 70 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index d0c1bf5..5f75e67 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -423,33 +423,34 @@ struct i40e_pf {
- #define I40E_HW_RESTART_AUTONEG			BIT_ULL(18)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index c76549e..a868c8d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -4069,23 +4069,26 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	struct i40e_netdev_priv *np = netdev_priv(dev);
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+-	u64 changed_flags;
++	u64 orig_flags, new_flags, changed_flags;
+ 	u32 i, j;
  
- 	u64 flags;
--#define I40E_FLAG_RX_CSUM_ENABLED		BIT_ULL(1)
--#define I40E_FLAG_MSI_ENABLED			BIT_ULL(2)
--#define I40E_FLAG_MSIX_ENABLED			BIT_ULL(3)
--#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(4)
--#define I40E_FLAG_RSS_ENABLED			BIT_ULL(6)
--#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(7)
--#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(10)
--#define I40E_FLAG_FILTER_SYNC			BIT_ULL(15)
--#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(16)
--#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(19)
--#define I40E_FLAG_DCB_ENABLED			BIT_ULL(20)
--#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(21)
--#define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
--#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(23)
--#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(24)
--#define I40E_FLAG_PTP				BIT_ULL(25)
--#define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
--#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(27)
--#define I40E_FLAG_DCB_CAPABLE			BIT_ULL(29)
--#define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(37)
--#define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(39)
--#define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(40)
--#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(51)
--#define I40E_FLAG_CLIENT_RESET			BIT_ULL(54)
--#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(55)
--#define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(56)
--#define I40E_FLAG_LEGACY_RX			BIT_ULL(58)
-+#define I40E_FLAG_RX_CSUM_ENABLED		BIT_ULL(0)
-+#define I40E_FLAG_MSI_ENABLED			BIT_ULL(1)
-+#define I40E_FLAG_MSIX_ENABLED			BIT_ULL(2)
-+#define I40E_FLAG_RSS_ENABLED			BIT_ULL(3)
-+#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(4)
-+#define I40E_FLAG_FILTER_SYNC			BIT_ULL(5)
-+#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(6)
-+#define I40E_FLAG_DCB_CAPABLE			BIT_ULL(7)
-+#define I40E_FLAG_DCB_ENABLED			BIT_ULL(8)
-+#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(9)
-+#define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(10)
-+#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(11)
-+#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(12)
-+#define I40E_FLAG_MFP_ENABLED			BIT_ULL(13)
-+#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(14)
-+#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(15)
-+#define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(16)
-+#define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(17)
-+#define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(18)
-+#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(19)
-+#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(20)
-+#define I40E_FLAG_LEGACY_RX			BIT_ULL(21)
-+#define I40E_FLAG_PTP				BIT_ULL(22)
-+#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(23)
-+#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(24)
-+#define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(25)
-+#define I40E_FLAG_CLIENT_RESET			BIT_ULL(26)
-+#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT_ULL(27)
+-	changed_flags = pf->flags;
++	orig_flags = READ_ONCE(pf->flags);
++	new_flags = orig_flags;
  
- 	struct i40e_client_instance *cinst;
- 	bool stat_offsets_loaded;
-@@ -613,7 +614,7 @@ struct i40e_vsi {
- 	DECLARE_BITMAP(state, __I40E_VSI_STATE_SIZE__);
- #define I40E_VSI_FLAG_FILTER_CHANGED	BIT(0)
- #define I40E_VSI_FLAG_VEB_OWNER		BIT(1)
--	unsigned long flags;
-+	u64 flags;
+ 	for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
+ 		const struct i40e_priv_flags *priv_flags;
  
- 	/* Per VSI lock to protect elements/hash (MAC filter) */
- 	spinlock_t mac_filter_hash_lock;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index 7f90536..c89767e 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -220,21 +220,21 @@ struct i40evf_adapter {
+ 		priv_flags = &i40e_gstrings_priv_flags[i];
  
- 	u32 flags;
- #define I40EVF_FLAG_RX_CSUM_ENABLED		BIT(0)
--#define I40EVF_FLAG_IMIR_ENABLED		BIT(5)
--#define I40EVF_FLAG_MQ_CAPABLE			BIT(6)
--#define I40EVF_FLAG_PF_COMMS_FAILED		BIT(8)
--#define I40EVF_FLAG_RESET_PENDING		BIT(9)
--#define I40EVF_FLAG_RESET_NEEDED		BIT(10)
--#define I40EVF_FLAG_WB_ON_ITR_CAPABLE		BIT(11)
--#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE	BIT(12)
--#define I40EVF_FLAG_ADDR_SET_BY_PF		BIT(13)
--#define I40EVF_FLAG_SERVICE_CLIENT_REQUESTED	BIT(14)
--#define I40EVF_FLAG_CLIENT_NEEDS_OPEN		BIT(15)
--#define I40EVF_FLAG_CLIENT_NEEDS_CLOSE		BIT(16)
--#define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(17)
--#define I40EVF_FLAG_PROMISC_ON			BIT(18)
--#define I40EVF_FLAG_ALLMULTI_ON			BIT(19)
--#define I40EVF_FLAG_LEGACY_RX			BIT(20)
-+#define I40EVF_FLAG_IMIR_ENABLED		BIT(1)
-+#define I40EVF_FLAG_MQ_CAPABLE			BIT(2)
-+#define I40EVF_FLAG_PF_COMMS_FAILED		BIT(3)
-+#define I40EVF_FLAG_RESET_PENDING		BIT(4)
-+#define I40EVF_FLAG_RESET_NEEDED		BIT(5)
-+#define I40EVF_FLAG_WB_ON_ITR_CAPABLE		BIT(6)
-+#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE	BIT(7)
-+#define I40EVF_FLAG_ADDR_SET_BY_PF		BIT(8)
-+#define I40EVF_FLAG_SERVICE_CLIENT_REQUESTED	BIT(9)
-+#define I40EVF_FLAG_CLIENT_NEEDS_OPEN		BIT(10)
-+#define I40EVF_FLAG_CLIENT_NEEDS_CLOSE		BIT(11)
-+#define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(12)
-+#define I40EVF_FLAG_PROMISC_ON			BIT(13)
-+#define I40EVF_FLAG_ALLMULTI_ON			BIT(14)
-+#define I40EVF_FLAG_LEGACY_RX			BIT(15)
- /* duplicates for common code */
- #define I40E_FLAG_DCB_ENABLED			0
- #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
+-		if (priv_flags->read_only)
+-			continue;
+-
+ 		if (flags & BIT(i))
+-			pf->flags |= priv_flags->flag;
++			new_flags |= priv_flags->flag;
+ 		else
+-			pf->flags &= ~(priv_flags->flag);
++			new_flags &= ~(priv_flags->flag);
++
++		/* If this is a read-only flag, it can't be changed */
++		if (priv_flags->read_only &&
++		    ((orig_flags ^ new_flags) & ~BIT(i)))
++			return -EOPNOTSUPP;
+ 	}
+ 
+ 	if (pf->hw.pf_id != 0)
+@@ -4096,18 +4099,40 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 
+ 		priv_flags = &i40e_gl_gstrings_priv_flags[j];
+ 
+-		if (priv_flags->read_only)
+-			continue;
+-
+ 		if (flags & BIT(i + j))
+-			pf->flags |= priv_flags->flag;
++			new_flags |= priv_flags->flag;
+ 		else
+-			pf->flags &= ~(priv_flags->flag);
++			new_flags &= ~(priv_flags->flag);
++
++		/* If this is a read-only flag, it can't be changed */
++		if (priv_flags->read_only &&
++		    ((orig_flags ^ new_flags) & ~BIT(i)))
++			return -EOPNOTSUPP;
+ 	}
+ 
+ flags_complete:
+-	/* check for flags that changed */
+-	changed_flags ^= pf->flags;
++	/* Before we finalize any flag changes, we need to perform some
++	 * checks to ensure that the changes are supported and safe.
++	 */
++
++	/* ATR eviction is not supported on all devices */
++	if ((new_flags & I40E_FLAG_HW_ATR_EVICT_ENABLED) &&
++	    !(pf->hw_features & I40E_HW_ATR_EVICT_CAPABLE))
++		return -EOPNOTSUPP;
++
++	/* Compare and exchange the new flags into place. If we failed, that
++	 * is if cmpxchg64 returns anything but the old value, this means that
++	 * something else has modified the flags variable since we copied it
++	 * originally. We'll just punt with an error and log something in the
++	 * message buffer.
++	 */
++	if (cmpxchg64(&pf->flags, orig_flags, new_flags) != orig_flags) {
++		dev_warn(&pf->pdev->dev,
++			 "Unable to update pf->flags as it was modified by another thread...\n");
++		return -EAGAIN;
++	}
++
++	changed_flags = orig_flags ^ new_flags;
+ 
+ 	/* Process any additional changes needed as a result of flag changes.
+ 	 * The changed_flags value reflects the list of bits that were
+@@ -4121,10 +4146,6 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 		set_bit(__I40E_FD_FLUSH_REQUESTED, pf->state);
+ 	}
+ 
+-	/* Only allow ATR evict on hardware that is capable of handling it */
+-	if (!(pf->hw_features & I40E_HW_ATR_EVICT_CAPABLE))
+-		pf->flags &= ~I40E_FLAG_HW_ATR_EVICT_ENABLED;
+-
+ 	if (changed_flags & I40E_FLAG_TRUE_PROMISC_SUPPORT) {
+ 		u16 sw_flags = 0, valid_flags = 0;
+ 		int ret;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+index db79fb3..31fb276 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+@@ -258,29 +258,50 @@ static u32 i40evf_get_priv_flags(struct net_device *netdev)
+ static int i40evf_set_priv_flags(struct net_device *netdev, u32 flags)
+ {
+ 	struct i40evf_adapter *adapter = netdev_priv(netdev);
+-	u64 changed_flags;
++	u32 orig_flags, new_flags, changed_flags;
+ 	u32 i;
+ 
+-	changed_flags = adapter->flags;
++	orig_flags = READ_ONCE(adapter->flags);
++	new_flags = orig_flags;
+ 
+ 	for (i = 0; i < I40EVF_PRIV_FLAGS_STR_LEN; i++) {
+ 		const struct i40evf_priv_flags *priv_flags;
+ 
+ 		priv_flags = &i40evf_gstrings_priv_flags[i];
+ 
+-		if (priv_flags->read_only)
+-			continue;
+-
+ 		if (flags & BIT(i))
+-			adapter->flags |= priv_flags->flag;
++			new_flags |= priv_flags->flag;
+ 		else
+-			adapter->flags &= ~(priv_flags->flag);
++			new_flags &= ~(priv_flags->flag);
++
++		if (priv_flags->read_only &&
++		    ((orig_flags ^ new_flags) & ~BIT(i)))
++			return -EOPNOTSUPP;
++	}
++
++	/* Before we finalize any flag changes, any checks which we need to
++	 * perform to determine if the new flags will be supported should go
++	 * here...
++	 */
++
++	/* Compare and exchange the new flags into place. If we failed, that
++	 * is if cmpxchg returns anything but the old value, this means
++	 * something else must have modified the flags variable since we
++	 * copied it. We'll just punt with an error and log something in the
++	 * message buffer.
++	 */
++	if (cmpxchg(&adapter->flags, orig_flags, new_flags) != orig_flags) {
++		dev_warn(&adapter->pdev->dev,
++			 "Unable to update adapter->flags as it was modified by another thread...\n");
++		return -EAGAIN;
+ 	}
+ 
+-	/* check for flags that changed */
+-	changed_flags ^= adapter->flags;
++	changed_flags = orig_flags ^ new_flags;
+ 
+-	/* Process any additional changes needed as a result of flag changes. */
++	/* Process any additional changes needed as a result of flag changes.
++	 * The changed_flags value reflects the list of bits that were changed
++	 * in the code above.
++	 */
+ 
+ 	/* issue a reset to force legacy-rx change to take effect */
+ 	if (changed_flags & I40EVF_FLAG_LEGACY_RX) {
 -- 
 2.9.3
 
