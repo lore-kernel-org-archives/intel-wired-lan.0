@@ -1,209 +1,76 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 27 Jun 2017 16:24:52 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- ea3e0e4ac54c250449123f82d5d35f5fb53cec9e
-Message-ID: <59521654.OJ3zQcnPfhgPCVcH%fengguang.wu@intel.com>
+Date: Tue, 27 Jun 2017 17:59:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 52/57]
+ drivers/net//ethernet/intel/i40e/i40e_debugfs.c:160:2: warning: format
+ '%lx' expects argument of type 'long unsigned int',
+ but argument 3 has type 'u64'
+Message-ID: <201706271705.zWRrW0sp%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-ea3e0e4ac54c250449123f82d5d35f5fb53cec9e  igb: Fix error of RX network flow classification
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   ea3e0e4ac54c250449123f82d5d35f5fb53cec9e
+commit: d15813888dabcb98b5226a70d4ebcb61de76d05a [52/57] i40e/i40evf: organize and re-number feature flags
+config: xtensa-allmodconfig (attached as .config)
+compiler: xtensa-linux-gcc (GCC) 4.9.0
+reproduce:
+        wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout d15813888dabcb98b5226a70d4ebcb61de76d05a
+        # save the attached .config to linux build tree
+        make.cross ARCH=xtensa 
 
-drivers/net/ethernet/intel/i40e/i40e_debugfs.c:160:28: warning: format '%lx' expects argument of type 'long unsigned int', but argument 3 has type 'u64 {aka long long unsigned int}' [-Wformat=]
-drivers/net/ethernet/intel/i40e/i40e_debugfs.c:161:4: warning: format '%lx' expects argument of type 'long unsigned int', but argument 3 has type 'u64 {aka long long unsigned int}' [-Wformat=]
+All warnings (new ones prefixed by >>):
 
-Error ids grouped by kconfigs:
+   drivers/net//ethernet/intel/i40e/i40e_debugfs.c: In function 'i40e_dbg_dump_vsi_seid':
+>> drivers/net//ethernet/intel/i40e/i40e_debugfs.c:160:2: warning: format '%lx' expects argument of type 'long unsigned int', but argument 3 has type 'u64' [-Wformat=]
+     dev_info(&pf->pdev->dev,
+     ^
 
-recent_errors
-??? arm64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? arm64-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? arm-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? frv-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? ia64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? powerpc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? x86_64-randconfig-ne0-06271311
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? x86_64-rhel
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? x86_64-rhel-7.2
-    ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+vim +160 drivers/net//ethernet/intel/i40e/i40e_debugfs.c
 
-elapsed time: 505m
+02e9c290 Jesse Brandeburg 2013-09-11  144  	}
+02e9c290 Jesse Brandeburg 2013-09-11  145  	dev_info(&pf->pdev->dev, "vsi seid %d\n", seid);
+de1017f7 Shannon Nelson   2015-12-23  146  	if (vsi->netdev) {
+de1017f7 Shannon Nelson   2015-12-23  147  		struct net_device *nd = vsi->netdev;
+de1017f7 Shannon Nelson   2015-12-23  148  
+de1017f7 Shannon Nelson   2015-12-23  149  		dev_info(&pf->pdev->dev, "    netdev: name = %s, state = %lu, flags = 0x%08x\n",
+de1017f7 Shannon Nelson   2015-12-23  150  			 nd->name, nd->state, nd->flags);
+de1017f7 Shannon Nelson   2015-12-23  151  		dev_info(&pf->pdev->dev, "        features      = 0x%08lx\n",
+de1017f7 Shannon Nelson   2015-12-23  152  			 (unsigned long int)nd->features);
+de1017f7 Shannon Nelson   2015-12-23  153  		dev_info(&pf->pdev->dev, "        hw_features   = 0x%08lx\n",
+de1017f7 Shannon Nelson   2015-12-23  154  			 (unsigned long int)nd->hw_features);
+de1017f7 Shannon Nelson   2015-12-23  155  		dev_info(&pf->pdev->dev, "        vlan_features = 0x%08lx\n",
+de1017f7 Shannon Nelson   2015-12-23  156  			 (unsigned long int)nd->vlan_features);
+de1017f7 Shannon Nelson   2015-12-23  157  	}
+02e9c290 Jesse Brandeburg 2013-09-11  158  	dev_info(&pf->pdev->dev,
+02e9c290 Jesse Brandeburg 2013-09-11  159  		 "    vlgrp: & = %p\n", vsi->active_vlans);
+02e9c290 Jesse Brandeburg 2013-09-11 @160  	dev_info(&pf->pdev->dev,
+0da36b97 Jacob Keller     2017-04-19  161  		 "    flags = 0x%08lx, netdev_registered = %i, current_netdev_flags = 0x%04x\n",
+0da36b97 Jacob Keller     2017-04-19  162  		 vsi->flags, vsi->netdev_registered, vsi->current_netdev_flags);
+0da36b97 Jacob Keller     2017-04-19  163  	for (i = 0; i < BITS_TO_LONGS(__I40E_VSI_STATE_SIZE__); i++)
+0da36b97 Jacob Keller     2017-04-19  164  		dev_info(&pf->pdev->dev,
+0da36b97 Jacob Keller     2017-04-19  165  			 "    state[%d] = %08lx\n",
+0da36b97 Jacob Keller     2017-04-19  166  			 i, vsi->state[i]);
+2ddb80c9 Shannon Nelson   2015-02-27  167  	if (vsi == pf->vsi[pf->lan_vsi])
+2ddb80c9 Shannon Nelson   2015-02-27  168  		dev_info(&pf->pdev->dev, "    MAC address: %pM SAN MAC: %pM Port MAC: %pM\n",
 
-configs tested: 155
+:::::: The code at line 160 was first introduced by commit
+:::::: 02e9c290814cc143ceccecb14eac3e7a05da745e i40e: debugfs interface
 
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                               tinyconfig
-i386                   randconfig-c0-06271514
-x86_64                randconfig-in0-06271113
-x86_64                 randconfig-v0-06271504
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                          allyesconfig
-x86_64                 randconfig-g0-06271506
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                   randconfig-a0-06262357
-i386                   randconfig-a1-06262357
-x86_64                 randconfig-s0-06271514
-x86_64                 randconfig-s1-06271514
-x86_64                 randconfig-s2-06271514
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-frv                              allyesconfig
-mips                           jazz_defconfig
-mips                         mpc30x_defconfig
-x86_64                 randconfig-x010-201726
-x86_64                 randconfig-x019-201726
-x86_64                 randconfig-x015-201726
-x86_64                 randconfig-x012-201726
-x86_64                 randconfig-x014-201726
-x86_64                 randconfig-x016-201726
-x86_64                 randconfig-x018-201726
-x86_64                 randconfig-x017-201726
-x86_64                 randconfig-x013-201726
-x86_64                 randconfig-x011-201726
-x86_64                 randconfig-s3-06271548
-x86_64                 randconfig-s4-06271548
-x86_64                 randconfig-s5-06271548
-arm                            hisi_defconfig
-arm                           sama5_defconfig
-powerpc               corenet_basic_defconfig
-sh                     magicpanelr2_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-i0-06260516
-i386                   randconfig-b0-06271428
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                            pleb_defconfig
-mips                      maltasmvp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i1-06252058
-i386                   randconfig-i0-06252058
-x86_64                 randconfig-b0-06271453
-x86_64                           allmodconfig
-arm64                            allyesconfig
-powerpc                    socrates_defconfig
-um                                  defconfig
-x86_64                 randconfig-u0-06271459
-arm                        vexpress_defconfig
-arm                            zeus_defconfig
-ia64                        generic_defconfig
-x86_64                randconfig-ne0-06271311
-i386                 randconfig-x012-06270719
-i386                 randconfig-x018-06270719
-i386                 randconfig-x014-06270719
-i386                 randconfig-x016-06270719
-i386                 randconfig-x017-06270719
-i386                 randconfig-x010-06270719
-i386                 randconfig-x015-06270719
-i386                 randconfig-x011-06270719
-i386                 randconfig-x013-06270719
-i386                 randconfig-x019-06270719
-i386                  randconfig-sb0-06271221
-i386                 randconfig-x072-06262345
-i386                 randconfig-x074-06262345
-i386                 randconfig-x071-06262345
-i386                 randconfig-x078-06262345
-i386                 randconfig-x075-06262345
-i386                 randconfig-x079-06262345
-i386                 randconfig-x077-06262345
-i386                 randconfig-x076-06262345
-i386                 randconfig-x073-06262345
-i386                 randconfig-x070-06262345
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-x0-06271302
+:::::: TO: Jesse Brandeburg <jesse.brandeburg@intel.com>
+:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Thanks,
-Fengguang
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 50222 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170627/8f8fbedd/attachment-0001.bin>
