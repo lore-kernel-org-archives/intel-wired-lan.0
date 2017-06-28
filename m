@@ -1,149 +1,30 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 28 Jun 2017 13:37:54 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- c8e535dfc418c2f2f3e03a4b38af6dd3397293af
-Message-ID: <595340b2.bws4ZDk7O73wuOOP%fengguang.wu@intel.com>
+From: John Steele Scott <toojays@toojays.net>
+Date: Wed, 28 Jun 2017 21:51:42 +0930
+Subject: [Intel-wired-lan] help to debug "slow" socket reads on ixgbe: numa
+ problem? something else?
+Message-ID: <3d85b894-dba9-ab43-84f2-5dcae207648b@toojays.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-c8e535dfc418c2f2f3e03a4b38af6dd3397293af  igb: Fix error of RX network flow classification
+I work on a storage appliance where we recently discovered a performance anomaly between different variants of the same hardware family. One of the current hypotheses about the cause relates to the memory buffers ixgbe allocates to receive data. If we have a userspace app using all the memory on the NUMA node the card is on, can that prevent ixgbe from getting buffers on that node, cause the CPU's DDIO optimization to be bypassed, and thus lead to slow receive performance? Or could a greedy RAID card driver somehow prevent ixgbe from getting its preferred buffers?
 
-drivers/net/ethernet/intel/i40e/i40e_debugfs.c:160:28: warning: format '%lx' expects argument of type 'long unsigned int', but argument 3 has type 'u64 {aka long long unsigned int}' [-Wformat=]
-drivers/net/ethernet/intel/i40e/i40e_debugfs.c:161:4: warning: format '%lx' expects argument of type 'long unsigned int', but argument 3 has type 'u64 {aka long long unsigned int}' [-Wformat=]
+Are there statistics we can get from the driver that could prove/disprove this?
 
-Error ids grouped by kconfigs:
+What else should we look at?
 
-recent_errors
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? x86_64-rhel
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
-??? x86_64-rhel-7.2
-    ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+Background: We noticed that on one of our benchmarks, the larger appliance (more memory, 2 RAID controllers instead of 1, more disk) in a particular product line performed worse than the smaller one. After chopping out most of the data path so we basically just have samba reading data and dropping it on the floor (no disk I/O) we can achieve close enough to line rate (2460M/s) on the small box, but only about 1700M/s on the large box. The large box is using more system cpu + softrq (40%, versus 25% on the small box). Both systems have a dual port X520 connected via socket 1, while the RAID card(s) are through socket 0.
 
-elapsed time: 355m
+So: less throughput, more CPU usage. Profiling (before we truncated the I/O, but I believe still representative) shows copy_user_enhanced_fast_string() (called from memcpy_toiovec() on the kernel side of a socket read) having a CPI of 36 on the slow box versus 17 on the fast one. Hence the focus on ixgbe's buffers.
 
-configs tested: 111
+Both systems are using dual E5-2609 v3 CPUs. A previous generation of this product line using E5-2609 v2 can hit line rate on both the large and small models. We're currently on a semi-ancient kernel 2.6.32-642 from Centos 6.8.
 
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-mn10300                          alldefconfig
-sh                     magicpanelr2_defconfig
-sh                      rts7751r2d1_defconfig
-i386                   randconfig-c0-06281234
-m68k                           sun3_defconfig
-powerpc64                         allnoconfig
-xtensa                generic_kc705_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                 randconfig-s0-06281257
-x86_64                 randconfig-s1-06281257
-x86_64                 randconfig-s2-06281257
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-x86_64                 randconfig-x010-201726
-x86_64                 randconfig-x019-201726
-x86_64                 randconfig-x015-201726
-x86_64                 randconfig-x012-201726
-x86_64                 randconfig-x014-201726
-x86_64                 randconfig-x016-201726
-x86_64                 randconfig-x018-201726
-x86_64                 randconfig-x017-201726
-x86_64                 randconfig-x013-201726
-x86_64                 randconfig-x011-201726
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-i0-06260516
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                           allmodconfig
-mips                    maltaup_xpa_defconfig
-powerpc                     mpc83xx_defconfig
-s390                    performance_defconfig
-x86_64                 randconfig-u0-06281241
-x86_64                randconfig-ne0-06281245
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-h0-06281133
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-06281231
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                                  kexec
-i386                 randconfig-x072-06262345
-i386                 randconfig-x074-06262345
-i386                 randconfig-x071-06262345
-i386                 randconfig-x078-06262345
-i386                 randconfig-x075-06262345
-i386                 randconfig-x079-06262345
-i386                 randconfig-x077-06262345
-i386                 randconfig-x076-06262345
-i386                 randconfig-x073-06262345
-i386                 randconfig-x070-06262345
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
+Thanks in advance for any light you can shed. It might be too late for this product generation but hopefully we can learn something to feed into our next iteration.
 
-Thanks,
-Fengguang
+Cheers,
+
+John
+
+
