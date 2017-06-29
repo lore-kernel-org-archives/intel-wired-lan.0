@@ -1,75 +1,141 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Thu, 29 Jun 2017 15:12:25 +0200
-Subject: [Intel-wired-lan] [PATCH 2/2] i40e/i40evf: add virtchnl flag to
-	indicate trusted VF
-In-Reply-To: <20170629131225.9251-1-sassmann@kpanic.de>
-References: <20170629131225.9251-1-sassmann@kpanic.de>
-Message-ID: <20170629131225.9251-3-sassmann@kpanic.de>
+From: Alice Michael <alice.michael@intel.com>
+Date: Thu, 29 Jun 2017 04:36:34 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V2 03/12] i40e: prevent changing
+	ITR if adaptive-rx/tx enabled
+In-Reply-To: <20170629083643.82018-1-alice.michael@intel.com>
+References: <20170629083643.82018-1-alice.michael@intel.com>
+Message-ID: <20170629083643.82018-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Give the VF a hint whether it runs in trusted mode or not. This allows
-the VF to decide if it should allow changing the MAC address.
-Currently the VF returns -EPERM in i40evf_set_mac when an
-administratively set MAC has been set. However this prevents overriding
-the administratively set MAC in trusted mode. Simply removing the EPERM
-check is not an option, as that would bring the VF in an inconsistent
-state when the PF decides to deny adding the appropriate filter.
+From: Alan Brady <alan.brady@intel.com>
 
-Due to the fact that the communication between PF and VF is async the VF
-driver cannot decide whether to deny or allow a MAC address change
-without the VF trust hint.
+Currently the driver allows the user to change (or even disable)
+interrupt moderation if adaptive-rx/tx is enabled when this should
+not be the case.
 
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+Adaptive RX/TX will not respect the user's ITR settings so
+allowing the user to change it is weird.  This bug would also
+allow the user to disable interrupt moderation with adaptive-rx/tx
+enabled which doesn't make much sense either.
+
+This patch makes it such that if adaptive-rx/tx is enabled, the user
+cannot make any manual adjustments to interrupt moderation.  It also
+makes it so that if ITR is disabled but adaptive-rx/tx is then
+enabled, ITR will be re-enabled.
+
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 +++
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 3 ++-
- include/linux/avf/virtchnl.h                       | 1 +
- 3 files changed, 6 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 61 +++++++++++++++++---------
+ 1 file changed, 41 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 057c77b..9e872b1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1579,6 +1579,9 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 					VIRTCHNL_VF_OFFLOAD_WB_ON_ITR;
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index a868c8d..b273c24 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2194,14 +2194,29 @@ static int __i40e_set_coalesce(struct net_device *netdev,
+ 			       int queue)
+ {
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	u16 intrl_reg, cur_rx_itr, cur_tx_itr;
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+-	u16 intrl_reg;
+ 	int i;
  
-+	if (test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps))
-+		vfres->vf_cap_flags |= VIRTCHNL_VF_TRUSTED;
+ 	if (ec->tx_max_coalesced_frames_irq || ec->rx_max_coalesced_frames_irq)
+ 		vsi->work_limit = ec->tx_max_coalesced_frames_irq;
+ 
++	if (queue < 0) {
++		cur_rx_itr = vsi->rx_rings[0]->rx_itr_setting;
++		cur_tx_itr = vsi->tx_rings[0]->tx_itr_setting;
++	} else if (queue < vsi->num_queue_pairs) {
++		cur_rx_itr = vsi->rx_rings[queue]->rx_itr_setting;
++		cur_tx_itr = vsi->tx_rings[queue]->tx_itr_setting;
++	} else {
++		netif_info(pf, drv, netdev, "Invalid queue value, queue range is 0 - %d\n",
++			   vsi->num_queue_pairs - 1);
++		return -EINVAL;
++	}
 +
- 	vfres->num_vsis = num_vsis;
- 	vfres->num_queue_pairs = vf->num_queue_pairs;
- 	vfres->max_vectors = pf->hw.func_caps.num_msix_vectors_vf;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 21103bb..8822062 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2649,7 +2649,8 @@ static void i40evf_init_task(struct work_struct *work)
- 		eth_hw_addr_random(netdev);
- 		ether_addr_copy(adapter->hw.mac.addr, netdev->dev_addr);
- 	} else {
--		adapter->flags |= I40EVF_FLAG_ADDR_SET_BY_PF;
-+		if (!(adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_TRUSTED))
-+			adapter->flags |= I40EVF_FLAG_ADDR_SET_BY_PF;
- 		ether_addr_copy(netdev->dev_addr, adapter->hw.mac.addr);
- 		ether_addr_copy(netdev->perm_addr, adapter->hw.mac.addr);
++	cur_tx_itr &= ~I40E_ITR_DYNAMIC;
++	cur_rx_itr &= ~I40E_ITR_DYNAMIC;
++
+ 	/* tx_coalesce_usecs_high is ignored, use rx-usecs-high instead */
+ 	if (ec->tx_coalesce_usecs_high != vsi->int_rate_limit) {
+ 		netif_info(pf, drv, netdev, "tx-usecs-high is not used, please program rx-usecs-high\n");
+@@ -2214,15 +2229,34 @@ static int __i40e_set_coalesce(struct net_device *netdev,
+ 		return -EINVAL;
  	}
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index becfca2..6d74453 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -240,6 +240,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
- #define VIRTCHNL_VF_OFFLOAD_ENCAP		0X00100000
- #define VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM		0X00200000
- #define VIRTCHNL_VF_OFFLOAD_RX_ENCAP_CSUM	0X00400000
-+#define VIRTCHNL_VF_TRUSTED			0X00800000
  
- #define VF_BASE_MODE_OFFLOADS (VIRTCHNL_VF_OFFLOAD_L2 | \
- 			       VIRTCHNL_VF_OFFLOAD_VLAN | \
+-	if (ec->rx_coalesce_usecs == 0) {
+-		if (ec->use_adaptive_rx_coalesce)
+-			netif_info(pf, drv, netdev, "rx-usecs=0, need to disable adaptive-rx for a complete disable\n");
+-	} else if ((ec->rx_coalesce_usecs < (I40E_MIN_ITR << 1)) ||
+-		   (ec->rx_coalesce_usecs > (I40E_MAX_ITR << 1))) {
++	if (ec->rx_coalesce_usecs != cur_rx_itr &&
++	    ec->use_adaptive_rx_coalesce) {
++		netif_info(pf, drv, netdev, "RX interrupt moderation cannot be changed if adaptive-rx is enabled.\n");
++		return -EINVAL;
++	}
++
++	if (ec->rx_coalesce_usecs > (I40E_MAX_ITR << 1)) {
+ 			netif_info(pf, drv, netdev, "Invalid value, rx-usecs range is 0-8160\n");
+ 			return -EINVAL;
+ 	}
+ 
++	if (ec->tx_coalesce_usecs != cur_tx_itr &&
++	    ec->use_adaptive_tx_coalesce) {
++		netif_info(pf, drv, netdev, "TX interrupt moderation cannot be changed if adaptive-tx is enabled.\n");
++		return -EINVAL;
++	}
++
++	if (ec->tx_coalesce_usecs > (I40E_MAX_ITR << 1)) {
++		netif_info(pf, drv, netdev, "Invalid value, tx-usecs range is 0-8160\n");
++		return -EINVAL;
++	}
++
++	if (ec->use_adaptive_rx_coalesce && !cur_rx_itr)
++		ec->rx_coalesce_usecs = I40E_MIN_ITR << 1;
++
++	if (ec->use_adaptive_tx_coalesce && !cur_tx_itr)
++		ec->tx_coalesce_usecs = I40E_MIN_ITR << 1;
++
+ 	intrl_reg = i40e_intrl_usec_to_reg(ec->rx_coalesce_usecs_high);
+ 	vsi->int_rate_limit = INTRL_REG_TO_USEC(intrl_reg);
+ 	if (vsi->int_rate_limit != ec->rx_coalesce_usecs_high) {
+@@ -2230,27 +2264,14 @@ static int __i40e_set_coalesce(struct net_device *netdev,
+ 			   vsi->int_rate_limit);
+ 	}
+ 
+-	if (ec->tx_coalesce_usecs == 0) {
+-		if (ec->use_adaptive_tx_coalesce)
+-			netif_info(pf, drv, netdev, "tx-usecs=0, need to disable adaptive-tx for a complete disable\n");
+-	} else if ((ec->tx_coalesce_usecs < (I40E_MIN_ITR << 1)) ||
+-		   (ec->tx_coalesce_usecs > (I40E_MAX_ITR << 1))) {
+-			netif_info(pf, drv, netdev, "Invalid value, tx-usecs range is 0-8160\n");
+-			return -EINVAL;
+-	}
+-
+ 	/* rx and tx usecs has per queue value. If user doesn't specify the queue,
+ 	 * apply to all queues.
+ 	 */
+ 	if (queue < 0) {
+ 		for (i = 0; i < vsi->num_queue_pairs; i++)
+ 			i40e_set_itr_per_queue(vsi, ec, i);
+-	} else if (queue < vsi->num_queue_pairs) {
+-		i40e_set_itr_per_queue(vsi, ec, queue);
+ 	} else {
+-		netif_info(pf, drv, netdev, "Invalid queue value, queue range is 0 - %d\n",
+-			   vsi->num_queue_pairs - 1);
+-		return -EINVAL;
++		i40e_set_itr_per_queue(vsi, ec, queue);
+ 	}
+ 
+ 	return 0;
 -- 
-2.9.4
+2.9.3
 
