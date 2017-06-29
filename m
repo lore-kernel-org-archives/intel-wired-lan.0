@@ -1,55 +1,46 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 29 Jun 2017 04:36:40 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V2 09/12] i40e: force VMDQ device
-	name truncation
-In-Reply-To: <20170629083643.82018-1-alice.michael@intel.com>
-References: <20170629083643.82018-1-alice.michael@intel.com>
-Message-ID: <20170629083643.82018-9-alice.michael@intel.com>
+Date: Thu, 29 Jun 2017 04:36:32 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V2 01/12] i40evf: use netdev
+	variable in reset task
+Message-ID: <20170629083643.82018-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Alan Brady <alan.brady@intel.com>
 
-In new versions of GCC since 7.x a new warning exists which warns when
-a string is truncated before all of the format can be completed.
+If we're going to bother initializing a variable to reference it we might
+as well use it.
 
-When we setup VMDQ netdev names we are copying a pre-existing interface
-name which could be up to 15 characters in length. Since we also add
-4 bytes, v, the literal %, the d and a \0 null, we would overrun the
-available size unless snprintf truncated for us.
-
-The snprintf call will ofcourse truncate on the end, so lets instead
-modify the code to force truncation of the copied netdev name by
-4 characters, to create enough space for the 4 bytes we're adding.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 837d434..0c8c07d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9690,8 +9690,13 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 		i40e_add_mac_filter(vsi, mac_addr);
- 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
- 	} else {
--		/* relate the VSI_VMDQ name to the VSI_MAIN name */
--		snprintf(netdev->name, IFNAMSIZ, "%sv%%d",
-+		/* Relate the VSI_VMDQ name to the VSI_MAIN name. Note that we
-+		 * are still limited by IFNAMSIZ, but we're adding 'v%d\0' to
-+		 * the end, which is 4 bytes long, so force truncation of the
-+		 * original name by IFNAMSIZ - 4
-+		 */
-+		snprintf(netdev->name, IFNAMSIZ, "%.*sv%%d",
-+			 IFNAMSIZ - 4,
- 			 pf->vsi[pf->lan_vsi]->netdev->name);
- 		random_ether_addr(mac_addr);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 77d2835..ef55f71 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1879,7 +1879,7 @@ static void i40evf_reset_task(struct work_struct *work)
+ 	}
  
+ continue_reset:
+-	if (netif_running(adapter->netdev)) {
++	if (netif_running(netdev)) {
+ 		netif_carrier_off(netdev);
+ 		netif_tx_stop_all_queues(netdev);
+ 		adapter->link_up = false;
+@@ -1947,7 +1947,7 @@ static void i40evf_reset_task(struct work_struct *work)
+ 	return;
+ reset_err:
+ 	dev_err(&adapter->pdev->dev, "failed to allocate resources during reinit\n");
+-	i40evf_close(adapter->netdev);
++	i40evf_close(netdev);
+ }
+ 
+ /**
 -- 
 2.9.3
 
