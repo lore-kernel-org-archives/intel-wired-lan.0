@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 29 Jun 2017 04:36:33 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V2 02/12] i40e: use cpumask_copy
-	instead of direct assignment
+Date: Thu, 29 Jun 2017 04:36:40 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V2 09/12] i40e: force VMDQ device
+	name truncation
 In-Reply-To: <20170629083643.82018-1-alice.michael@intel.com>
 References: <20170629083643.82018-1-alice.michael@intel.com>
-Message-ID: <20170629083643.82018-2-alice.michael@intel.com>
+Message-ID: <20170629083643.82018-9-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,42 +13,43 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-According to the header file cpumask.h, we shouldn't be directly copying
-a cpumask_t, since its a bitmap and might not be copied correctly. Lets
-use the provided cpumask_copy() function instead.
+In new versions of GCC since 7.x a new warning exists which warns when
+a string is truncated before all of the format can be completed.
+
+When we setup VMDQ netdev names we are copying a pre-existing interface
+name which could be up to 15 characters in length. Since we also add
+4 bytes, v, the literal %, the d and a \0 null, we would overrun the
+available size unless snprintf truncated for us.
+
+The snprintf call will ofcourse truncate on the end, so lets instead
+modify the code to force truncation of the copied netdev name by
+4 characters, to create enough space for the 4 bytes we're adding.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 998ad96..837d434 100644
+index 837d434..0c8c07d 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3450,7 +3450,7 @@ static void i40e_irq_affinity_notify(struct irq_affinity_notify *notify,
- 	struct i40e_q_vector *q_vector =
- 		container_of(notify, struct i40e_q_vector, affinity_notify);
+@@ -9690,8 +9690,13 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 		i40e_add_mac_filter(vsi, mac_addr);
+ 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
+ 	} else {
+-		/* relate the VSI_VMDQ name to the VSI_MAIN name */
+-		snprintf(netdev->name, IFNAMSIZ, "%sv%%d",
++		/* Relate the VSI_VMDQ name to the VSI_MAIN name. Note that we
++		 * are still limited by IFNAMSIZ, but we're adding 'v%d\0' to
++		 * the end, which is 4 bytes long, so force truncation of the
++		 * original name by IFNAMSIZ - 4
++		 */
++		snprintf(netdev->name, IFNAMSIZ, "%.*sv%%d",
++			 IFNAMSIZ - 4,
+ 			 pf->vsi[pf->lan_vsi]->netdev->name);
+ 		random_ether_addr(mac_addr);
  
--	q_vector->affinity_mask = *mask;
-+	cpumask_copy(&q_vector->affinity_mask, mask);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index ef55f71..755f60f 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -520,7 +520,7 @@ static void i40evf_irq_affinity_notify(struct irq_affinity_notify *notify,
- 	struct i40e_q_vector *q_vector =
- 		container_of(notify, struct i40e_q_vector, affinity_notify);
- 
--	q_vector->affinity_mask = *mask;
-+	cpumask_copy(&q_vector->affinity_mask, mask);
- }
- 
- /**
 -- 
 2.9.3
 
