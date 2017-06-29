@@ -1,239 +1,193 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 29 Jun 2017 04:36:41 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V2 10/12] i40e/i40evf: support
-	for VF VLAN tag stripping control
+Date: Thu, 29 Jun 2017 04:36:43 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V2 12/12] i40e: Add support for
+	'ethtool -m'
 In-Reply-To: <20170629083643.82018-1-alice.michael@intel.com>
 References: <20170629083643.82018-1-alice.michael@intel.com>
-Message-ID: <20170629083643.82018-10-alice.michael@intel.com>
+Message-ID: <20170629083643.82018-12-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mariusz Stachura <mariusz.stachura@intel.com>
+From: Filip Sadowski <filip.sadowski@intel.com>
 
-This patch gives VF capability to control VLAN tag stripping via
-ethtool. As rx-vlan-offload was fixed before, now the VF is able to
-change it using "ethtool --offload <IF> rxvlan on/off" settings.
+This patch adds support for 'ethtool -m' command which displays
+information about (Q)SFP+ module plugged into NIC's cage.
 
-Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 60 ++++++++++++++++++++++
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  4 ++
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 33 ++++++++++++
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 40 +++++++++++++++
- 4 files changed, 137 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 149 +++++++++++++++++++++++++
+ 1 file changed, 149 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index aa8d30b..d551f84 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2530,6 +2530,60 @@ static int i40e_vc_set_rss_hena(struct i40e_vf *vf, u8 *msg, u16 msglen)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index b273c24..06f17ff 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -4196,6 +4196,153 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	return 0;
  }
  
- /**
-+ * i40e_vc_enable_vlan_stripping
-+ * @vf: pointer to the VF info
-+ * @msg: pointer to the msg buffer
-+ * @msglen: msg length
-+ *
-+ * Enable vlan header stripping for the VF
-+ **/
-+static int i40e_vc_enable_vlan_stripping(struct i40e_vf *vf, u8 *msg,
-+					 u16 msglen)
-+{
-+	struct i40e_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
-+	i40e_status aq_ret = 0;
-+
-+	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-+		aq_ret = I40E_ERR_PARAM;
-+		goto err;
-+	}
-+
-+	i40e_vlan_stripping_enable(vsi);
-+
-+	/* send the response to the VF */
-+err:
-+	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_ENABLE_VLAN_STRIPPING,
-+				       aq_ret);
-+}
++#define I40E_I2C_EEPROM_DEV_ADDR	0xA0
++#define I40E_I2C_EEPROM_DEV_ADDR2	0xA2
++#define I40E_MODULE_TYPE_ADDR		0x00
++#define I40E_MODULE_REVISION_ADDR	0x01
++#define I40E_MODULE_SFF_8472_COMP	0x5E
++#define I40E_MODULE_SFF_8472_SWAP	0x5C
++#define I40E_MODULE_SFF_ADDR_MODE	0x04
++#define I40E_MODULE_TYPE_SFP		0x03
++#define I40E_MODULE_TYPE_QSFP_PLUS	0x0D
++#define I40E_MODULE_TYPE_QSFP28		0x11
 +
 +/**
-+ * i40e_vc_disable_vlan_stripping
-+ * @vf: pointer to the VF info
-+ * @msg: pointer to the msg buffer
-+ * @msglen: msg length
-+ *
-+ * Disable vlan header stripping for the VF
++ * i40e_get_module_info - get (Q)SFP+ module type info
++ * @netdev: network interface device structure
++ * @modinfo: module EEPROM size and layout information structure
 + **/
-+static int i40e_vc_disable_vlan_stripping(struct i40e_vf *vf, u8 *msg,
-+					  u16 msglen)
++static int i40e_get_module_info(struct net_device *netdev,
++				struct ethtool_modinfo *modinfo)
 +{
-+	struct i40e_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
-+	i40e_status aq_ret = 0;
++	i40e_status status;
++	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	struct i40e_vsi *vsi = np->vsi;
++	struct i40e_pf *pf = vsi->back;
++	struct i40e_hw *hw = &pf->hw;
++	u32 sff8472_comp = 0;
++	u32 sff8472_swap = 0;
++	u32 sff8636_rev = 0;
++	u32 type = 0;
 +
-+	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-+		aq_ret = I40E_ERR_PARAM;
-+		goto err;
-+	}
-+
-+	i40e_vlan_stripping_disable(vsi);
-+
-+	/* send the response to the VF */
-+err:
-+	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_DISABLE_VLAN_STRIPPING,
-+				       aq_ret);
-+}
-+
-+/**
-  * i40e_vc_process_vf_msg
-  * @pf: pointer to the PF structure
-  * @vf_id: source VF id
-@@ -2648,6 +2702,12 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
- 	case VIRTCHNL_OP_SET_RSS_HENA:
- 		ret = i40e_vc_set_rss_hena(vf, msg, msglen);
- 		break;
-+	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
-+		ret = i40e_vc_enable_vlan_stripping(vf, msg, msglen);
-+		break;
-+	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
-+		ret = i40e_vc_disable_vlan_stripping(vf, msg, msglen);
-+		break;
- 
- 	case VIRTCHNL_OP_UNKNOWN:
- 	default:
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index f028c09..b659358 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -261,6 +261,8 @@ struct i40evf_adapter {
- #define I40EVF_FLAG_AQ_RELEASE_PROMISC		BIT(16)
- #define I40EVF_FLAG_AQ_REQUEST_ALLMULTI		BIT(17)
- #define I40EVF_FLAG_AQ_RELEASE_ALLMULTI		BIT(18)
-+#define I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING	BIT(19)
-+#define I40EVF_FLAG_AQ_DISABLE_VLAN_STRIPPING   BIT(20)
- 
- 	/* OS defined structs */
- 	struct net_device *netdev;
-@@ -358,6 +360,8 @@ void i40evf_get_hena(struct i40evf_adapter *adapter);
- void i40evf_set_hena(struct i40evf_adapter *adapter);
- void i40evf_set_rss_key(struct i40evf_adapter *adapter);
- void i40evf_set_rss_lut(struct i40evf_adapter *adapter);
-+void i40evf_enable_vlan_stripping(struct i40evf_adapter *adapter);
-+void i40evf_disable_vlan_stripping(struct i40evf_adapter *adapter);
- void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 				enum virtchnl_ops v_opcode,
- 				i40e_status v_retval, u8 *msg, u16 msglen);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index a8bc1ed..ad4c833 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1676,6 +1676,16 @@ static void i40evf_watchdog_task(struct work_struct *work)
- 		goto watchdog_done;
- 	}
- 
-+	if (adapter->aq_required & I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING) {
-+		i40evf_enable_vlan_stripping(adapter);
-+		goto watchdog_done;
-+	}
-+
-+	if (adapter->aq_required & I40EVF_FLAG_AQ_DISABLE_VLAN_STRIPPING) {
-+		i40evf_disable_vlan_stripping(adapter);
-+		goto watchdog_done;
-+	}
-+
- 	if (adapter->aq_required & I40EVF_FLAG_AQ_CONFIGURE_QUEUES) {
- 		i40evf_configure_queues(adapter);
- 		goto watchdog_done;
-@@ -2295,6 +2305,28 @@ static int i40evf_change_mtu(struct net_device *netdev, int new_mtu)
- }
- 
- /**
-+ * i40e_set_features - set the netdev feature flags
-+ * @netdev: ptr to the netdev being adjusted
-+ * @features: the feature set that the stack is suggesting
-+ * Note: expects to be called while under rtnl_lock()
-+ **/
-+static int i40evf_set_features(struct net_device *netdev,
-+			       netdev_features_t features)
-+{
-+	struct i40evf_adapter *adapter = netdev_priv(netdev);
-+
-+	if (!VLAN_ALLOWED(adapter))
++	/* Check if firmware supports reading module EEPROM. */
++	if (!(hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
++	      hw->aq.api_min_ver >= 7)) {
++		netdev_err(vsi->netdev, "Module EEPROM memory read not supported. Please update the NVM image.\n");
 +		return -EINVAL;
++	}
 +
-+	if (features & NETIF_F_HW_VLAN_CTAG_RX)
-+		adapter->aq_required |= I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING;
-+	else
-+		adapter->aq_required |= I40EVF_FLAG_AQ_DISABLE_VLAN_STRIPPING;
++	status = i40e_aq_get_phy_register(hw,
++			I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
++			I40E_I2C_EEPROM_DEV_ADDR, I40E_MODULE_TYPE_ADDR,
++			&type, NULL);
++	if (status)
++		return -EIO;
 +
++	switch (type) {
++	case I40E_MODULE_TYPE_SFP:
++		status = i40e_aq_get_phy_register(hw,
++				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
++				I40E_I2C_EEPROM_DEV_ADDR,
++				I40E_MODULE_SFF_8472_COMP,
++				&sff8472_comp, NULL);
++		if (status)
++			return -EIO;
++
++		status = i40e_aq_get_phy_register(hw,
++				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
++				I40E_I2C_EEPROM_DEV_ADDR,
++				I40E_MODULE_SFF_8472_SWAP,
++				&sff8472_swap, NULL);
++		if (status)
++			return -EIO;
++
++		/* Check if the module requires address swap to access
++		 * the other EEPROM memory page.
++		 */
++		if (sff8472_swap & I40E_MODULE_SFF_ADDR_MODE) {
++			netdev_warn(vsi->netdev, "Module address swap to access page 0xA2 is not supported.\n");
++			modinfo->type = ETH_MODULE_SFF_8079;
++			modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
++		} else if (sff8472_comp == 0x00) {
++			/* Module is not SFF-8472 compliant */
++			modinfo->type = ETH_MODULE_SFF_8079;
++			modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
++		} else {
++			modinfo->type = ETH_MODULE_SFF_8472;
++			modinfo->eeprom_len = ETH_MODULE_SFF_8472_LEN;
++		}
++		break;
++	case I40E_MODULE_TYPE_QSFP_PLUS:
++		status = i40e_aq_get_phy_register(hw,
++				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
++				I40E_I2C_EEPROM_DEV_ADDR,
++				I40E_MODULE_REVISION_ADDR,
++				&sff8636_rev, NULL);
++		if (status)
++			return -EIO;
++		/* Determine revision compliance byte */
++		if (sff8636_rev > 0x02) {
++			/* Module is SFF-8636 compliant */
++			modinfo->type = ETH_MODULE_SFF_8636;
++			modinfo->eeprom_len = ETH_MODULE_SFF_8636_LEN;
++		} else {
++			modinfo->type = ETH_MODULE_SFF_8436;
++			modinfo->eeprom_len = ETH_MODULE_SFF_8436_LEN;
++		}
++		break;
++	case I40E_MODULE_TYPE_QSFP28:
++		modinfo->type = ETH_MODULE_SFF_8636;
++		modinfo->eeprom_len = ETH_MODULE_SFF_8636_LEN;
++		break;
++	default:
++		netdev_err(vsi->netdev, "Module type unrecognized\n");
++		return -EINVAL;
++	}
 +	return 0;
 +}
 +
 +/**
-  * i40evf_features_check - Validate encapsulated packet conforms to limits
-  * @skb: skb buff
-  * @netdev: This physical port's netdev
-@@ -2387,6 +2419,7 @@ static const struct net_device_ops i40evf_netdev_ops = {
- 	.ndo_vlan_rx_kill_vid	= i40evf_vlan_rx_kill_vid,
- 	.ndo_features_check	= i40evf_features_check,
- 	.ndo_fix_features	= i40evf_fix_features,
-+	.ndo_set_features	= i40evf_set_features,
- #ifdef CONFIG_NET_POLL_CONTROLLER
- 	.ndo_poll_controller	= i40evf_netpoll,
- #endif
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 6c403bf..85876f4 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -821,6 +821,46 @@ void i40evf_set_rss_lut(struct i40evf_adapter *adapter)
- }
- 
- /**
-+ * i40evf_enable_vlan_stripping
-+ * @adapter: adapter structure
-+ *
-+ * Request VLAN header stripping to be enabled
++ * i40e_get_module_eeprom - fills buffer with (Q)SFP+ module memory contents
++ * @netdev: network interface device structure
++ * @ee: EEPROM dump request structure
++ * @data: buffer to be filled with EEPROM contents
 + **/
-+void i40evf_enable_vlan_stripping(struct i40evf_adapter *adapter)
++static int i40e_get_module_eeprom(struct net_device *netdev,
++				  struct ethtool_eeprom *ee,
++				  u8 *data)
 +{
-+	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
-+		/* bail because we already have a command pending */
-+		dev_err(&adapter->pdev->dev, "Cannot enable stripping, command %d pending\n",
-+			adapter->current_op);
-+		return;
++	i40e_status status;
++	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	struct i40e_vsi *vsi = np->vsi;
++	struct i40e_pf *pf = vsi->back;
++	struct i40e_hw *hw = &pf->hw;
++	u32 value = 0;
++	int i;
++
++	if (!ee || !ee->len || !data)
++		return -EINVAL;
++
++	for (i = 0; i < ee->len; i++) {
++		u32 offset = i + ee->offset;
++		u32 addr = I40E_I2C_EEPROM_DEV_ADDR;
++
++		/* Check if we need to access the other memory page */
++		if (offset >= ETH_MODULE_SFF_8079_LEN) {
++			offset -= ETH_MODULE_SFF_8079_LEN;
++			addr = I40E_I2C_EEPROM_DEV_ADDR2;
++		}
++
++		status = i40e_aq_get_phy_register(hw,
++				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
++				addr, offset, &value, NULL);
++		if (status)
++			return -EIO;
++		data[i] = value;
 +	}
-+	adapter->current_op = VIRTCHNL_OP_ENABLE_VLAN_STRIPPING;
-+	adapter->aq_required &= ~I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING;
-+	i40evf_send_pf_msg(adapter, VIRTCHNL_OP_ENABLE_VLAN_STRIPPING,
-+			   NULL, 0);
++	return 0;
 +}
 +
-+/**
-+ * i40evf_disable_vlan_stripping
-+ * @adapter: adapter structure
-+ *
-+ * Request VLAN header stripping to be disabled
-+ **/
-+void i40evf_disable_vlan_stripping(struct i40evf_adapter *adapter)
-+{
-+	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
-+		/* bail because we already have a command pending */
-+		dev_err(&adapter->pdev->dev, "Cannot disable stripping, command %d pending\n",
-+			adapter->current_op);
-+		return;
-+	}
-+	adapter->current_op = VIRTCHNL_OP_DISABLE_VLAN_STRIPPING;
-+	adapter->aq_required &= ~I40EVF_FLAG_AQ_DISABLE_VLAN_STRIPPING;
-+	i40evf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_VLAN_STRIPPING,
-+			   NULL, 0);
-+}
-+
-+/**
-  * i40evf_print_link_message - print link up or down
-  * @adapter: adapter structure
-  *
+ static const struct ethtool_ops i40e_ethtool_ops = {
+ 	.get_drvinfo		= i40e_get_drvinfo,
+ 	.get_regs_len		= i40e_get_regs_len,
+@@ -4228,6 +4375,8 @@ static const struct ethtool_ops i40e_ethtool_ops = {
+ 	.set_rxfh		= i40e_set_rxfh,
+ 	.get_channels		= i40e_get_channels,
+ 	.set_channels		= i40e_set_channels,
++	.get_module_info	= i40e_get_module_info,
++	.get_module_eeprom	= i40e_get_module_eeprom,
+ 	.get_ts_info		= i40e_get_ts_info,
+ 	.get_priv_flags		= i40e_get_priv_flags,
+ 	.set_priv_flags		= i40e_set_priv_flags,
 -- 
 2.9.3
 
