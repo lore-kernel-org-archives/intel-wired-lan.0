@@ -1,9 +1,9 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 3 Jul 2017 01:08:51 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 46/57]
- drivers/net/ethernet/intel/i40e/i40e_main.c:2437: warning: unused variable
- 'max_frame'
-Message-ID: <201707030149.lnICrpXJ%fengguang.wu@intel.com>
+Date: Mon, 3 Jul 2017 01:43:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 52/57]
+ drivers/net//ethernet/intel/i40e/i40e_debugfs.c:160: warning: format
+ '%08lx' expects type 'long unsigned int', but argument 3 has type 'u64'
+Message-ID: <201707030115.qbqBEM8v%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,49 +12,52 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
 head:   c8e535dfc418c2f2f3e03a4b38af6dd3397293af
-commit: 854d38a89c8add869e3eb0dd8a258ff4c3f9fac2 [46/57] i40e/i40evf: adjust packet size to account for double VLANs
+commit: 5772282c0f13d52aa930cd0015aac806cafc3d9b [52/57] i40e/i40evf: organize and re-number feature flags
 config: x86_64-randconfig-v0-07022319 (attached as .config)
 compiler: gcc-4.4 (Debian 4.4.7-8) 4.4.7
 reproduce:
-        git checkout 854d38a89c8add869e3eb0dd8a258ff4c3f9fac2
+        git checkout 5772282c0f13d52aa930cd0015aac806cafc3d9b
         # save the attached .config to linux build tree
         make ARCH=x86_64 
 
 All warnings (new ones prefixed by >>):
 
-   drivers/net/ethernet/intel/i40e/i40e_main.c: In function 'i40e_change_mtu':
->> drivers/net/ethernet/intel/i40e/i40e_main.c:2437: warning: unused variable 'max_frame'
---
-   drivers/net/ethernet/intel/i40evf/i40evf_main.c: In function 'i40evf_change_mtu':
->> drivers/net/ethernet/intel/i40evf/i40evf_main.c:2272: warning: unused variable 'max_frame'
+   drivers/net//ethernet/intel/i40e/i40e_debugfs.c: In function 'i40e_dbg_dump_vsi_seid':
+>> drivers/net//ethernet/intel/i40e/i40e_debugfs.c:160: warning: format '%08lx' expects type 'long unsigned int', but argument 3 has type 'u64'
 
-vim +/max_frame +2437 drivers/net/ethernet/intel/i40e/i40e_main.c
+vim +160 drivers/net//ethernet/intel/i40e/i40e_debugfs.c
 
-  2421		if (PAGE_SIZE >= 8192 || (vsi->back->flags & I40E_FLAG_LEGACY_RX))
-  2422			return I40E_RXBUFFER_2048;
-  2423		else
-  2424			return I40E_RXBUFFER_3072;
-  2425	}
-  2426	
-  2427	/**
-  2428	 * i40e_change_mtu - NDO callback to change the Maximum Transfer Unit
-  2429	 * @netdev: network interface device structure
-  2430	 * @new_mtu: new value for maximum frame size
-  2431	 *
-  2432	 * Returns 0 on success, negative on failure
-  2433	 **/
-  2434	static int i40e_change_mtu(struct net_device *netdev, int new_mtu)
-  2435	{
-  2436		struct i40e_netdev_priv *np = netdev_priv(netdev);
-> 2437		int max_frame = new_mtu + I40E_PACKET_HDR_PAD;
-  2438		struct i40e_vsi *vsi = np->vsi;
-  2439		struct i40e_pf *pf = vsi->back;
-  2440	
-  2441		if (i40e_enabled_xdp_vsi(vsi)) {
-  2442			int frame_size = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
-  2443	
-  2444			if (frame_size > i40e_max_xdp_frame_size(vsi))
-  2445				return -EINVAL;
+02e9c290 Jesse Brandeburg 2013-09-11  144  	}
+02e9c290 Jesse Brandeburg 2013-09-11  145  	dev_info(&pf->pdev->dev, "vsi seid %d\n", seid);
+de1017f7 Shannon Nelson   2015-12-23  146  	if (vsi->netdev) {
+de1017f7 Shannon Nelson   2015-12-23  147  		struct net_device *nd = vsi->netdev;
+de1017f7 Shannon Nelson   2015-12-23  148  
+de1017f7 Shannon Nelson   2015-12-23  149  		dev_info(&pf->pdev->dev, "    netdev: name = %s, state = %lu, flags = 0x%08x\n",
+de1017f7 Shannon Nelson   2015-12-23  150  			 nd->name, nd->state, nd->flags);
+de1017f7 Shannon Nelson   2015-12-23  151  		dev_info(&pf->pdev->dev, "        features      = 0x%08lx\n",
+de1017f7 Shannon Nelson   2015-12-23  152  			 (unsigned long int)nd->features);
+de1017f7 Shannon Nelson   2015-12-23  153  		dev_info(&pf->pdev->dev, "        hw_features   = 0x%08lx\n",
+de1017f7 Shannon Nelson   2015-12-23  154  			 (unsigned long int)nd->hw_features);
+de1017f7 Shannon Nelson   2015-12-23  155  		dev_info(&pf->pdev->dev, "        vlan_features = 0x%08lx\n",
+de1017f7 Shannon Nelson   2015-12-23  156  			 (unsigned long int)nd->vlan_features);
+de1017f7 Shannon Nelson   2015-12-23  157  	}
+02e9c290 Jesse Brandeburg 2013-09-11  158  	dev_info(&pf->pdev->dev,
+02e9c290 Jesse Brandeburg 2013-09-11  159  		 "    vlgrp: & = %p\n", vsi->active_vlans);
+02e9c290 Jesse Brandeburg 2013-09-11 @160  	dev_info(&pf->pdev->dev,
+0da36b97 Jacob Keller     2017-04-19  161  		 "    flags = 0x%08lx, netdev_registered = %i, current_netdev_flags = 0x%04x\n",
+0da36b97 Jacob Keller     2017-04-19  162  		 vsi->flags, vsi->netdev_registered, vsi->current_netdev_flags);
+0da36b97 Jacob Keller     2017-04-19  163  	for (i = 0; i < BITS_TO_LONGS(__I40E_VSI_STATE_SIZE__); i++)
+0da36b97 Jacob Keller     2017-04-19  164  		dev_info(&pf->pdev->dev,
+0da36b97 Jacob Keller     2017-04-19  165  			 "    state[%d] = %08lx\n",
+0da36b97 Jacob Keller     2017-04-19  166  			 i, vsi->state[i]);
+2ddb80c9 Shannon Nelson   2015-02-27  167  	if (vsi == pf->vsi[pf->lan_vsi])
+2ddb80c9 Shannon Nelson   2015-02-27  168  		dev_info(&pf->pdev->dev, "    MAC address: %pM SAN MAC: %pM Port MAC: %pM\n",
+
+:::::: The code at line 160 was first introduced by commit
+:::::: 02e9c290814cc143ceccecb14eac3e7a05da745e i40e: debugfs interface
+
+:::::: TO: Jesse Brandeburg <jesse.brandeburg@intel.com>
+:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
@@ -65,4 +68,4 @@ Name: .config.gz
 Type: application/gzip
 Size: 32828 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170703/da3196b7/attachment-0001.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170703/7c7842ba/attachment-0001.bin>
