@@ -1,35 +1,37 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sun, 23 Jul 2017 14:58:52 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 78/101] ERROR:
- "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
-Message-ID: <201707231451.SEgUsR3R%fengguang.wu@intel.com>
+From: Sabrina Dubroca <sd@queasysnail.net>
+Date: Mon,  3 Jul 2017 13:02:55 +0200
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix masking of bits read from
+	IXGBE_VXLANCTRL register
+Message-ID: <fc6577fcc305742e61ea24c6eb519c212717e5ec.1499078414.git.sd@queasysnail.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   94e0787e2073e3d2b826a4ba35adfcfa7c727f31
-commit: 853571d07cc6206862951f1984afaf14822a9a12 [78/101] i40e: Refactor VF BW rate limiting function to be reused on the PF as well
-config: i386-allmodconfig (attached as .config)
-compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
-reproduce:
-        git checkout 853571d07cc6206862951f1984afaf14822a9a12
-        # save the attached .config to linux build tree
-        make ARCH=i386 
+In ixgbe_clear_udp_tunnel_port(), we read the IXGBE_VXLANCTRL register
+and then try to mask some bits out of the value, using the logical
+instead of bitwise and operator.
 
-All errors (new ones prefixed by >>):
-
->> ERROR: "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
-
+Fixes: a21d0822ff69 ("ixgbe: add support for geneve Rx offload")
+Signed-off-by: Sabrina Dubroca <sd@queasysnail.net>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 60927 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170723/b90ac35b/attachment-0001.bin>
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index d39cba214320..c3e70ec2da0f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -4868,7 +4868,7 @@ static void ixgbe_clear_udp_tunnel_port(struct ixgbe_adapter *adapter, u32 mask)
+ 				IXGBE_FLAG_GENEVE_OFFLOAD_CAPABLE)))
+ 		return;
+ 
+-	vxlanctrl = IXGBE_READ_REG(hw, IXGBE_VXLANCTRL) && ~mask;
++	vxlanctrl = IXGBE_READ_REG(hw, IXGBE_VXLANCTRL) & ~mask;
+ 	IXGBE_WRITE_REG(hw, IXGBE_VXLANCTRL, vxlanctrl);
+ 
+ 	if (mask & IXGBE_VXLANCTRL_VXLAN_UDPPORT_MASK)
+-- 
+2.13.2
+
