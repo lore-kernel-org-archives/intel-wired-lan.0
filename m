@@ -1,11 +1,11 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 5 Jul 2017 15:08:29 -0700
-Subject: [Intel-wired-lan] [next PATCH S75-V2 06/12] i40e: prevent
- snprintf format specifier truncation
-In-Reply-To: <20170629083643.82018-6-alice.michael@intel.com>
+Date: Wed, 5 Jul 2017 15:22:25 -0700
+Subject: [Intel-wired-lan] [next PATCH S75-V2 12/12] i40e: Add support
+ for 'ethtool -m'
+In-Reply-To: <20170629083643.82018-12-alice.michael@intel.com>
 References: <20170629083643.82018-1-alice.michael@intel.com>
- <20170629083643.82018-6-alice.michael@intel.com>
-Message-ID: <c20f02b1-85fc-207d-6f7c-a5ebd8b77747@oracle.com>
+ <20170629083643.82018-12-alice.michael@intel.com>
+Message-ID: <08ca53c4-de80-f9bf-e71a-440efc0f0366@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,63 +13,186 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 6/29/2017 1:36 AM, Alice Michael wrote:
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Filip Sadowski <filip.sadowski@intel.com>
 > 
-> Increase the size of the prefix buffer so that it can hold enough
-> characters for every possible input. Although 20 is enough for all
-> expected inputs, it is possible for the values to be larger than
-> expected, resulting in a possibly truncated string.
+> This patch adds support for 'ethtool -m' command which displays
+> information about (Q)SFP+ module plugged into NIC's cage.
 > 
-> New versions of GCC starting at 7 now include warnings to prevent
-> truncation unless you handle the return code. At most 27 bytes can be
-> written here, so lets just increase the buffer size even if for all
-> expected hw->bus.* values we only needed 20.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
 > ---
->   drivers/net/ethernet/intel/i40e/i40e_common.c   | 4 ++--
->   drivers/net/ethernet/intel/i40evf/i40e_common.c | 4 ++--
->   2 files changed, 4 insertions(+), 4 deletions(-)
+>   drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 149 +++++++++++++++++++++++++
+>   1 file changed, 149 insertions(+)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> index 5c36a18..69d5cd8 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> @@ -328,9 +328,9 @@ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
->   			len = buf_len;
->   		/* write the full 16-byte chunks */
->   		if (hw->debug_mask & mask) {
-> -			char prefix[20];
-> +			char prefix[27];
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+> index b273c24..06f17ff 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+> @@ -4196,6 +4196,153 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+>   	return 0;
+>   }
 >   
-> -			snprintf(prefix, 20,
-> +			snprintf(prefix, 27,
+> +#define I40E_I2C_EEPROM_DEV_ADDR	0xA0
+> +#define I40E_I2C_EEPROM_DEV_ADDR2	0xA2
+> +#define I40E_MODULE_TYPE_ADDR		0x00
+> +#define I40E_MODULE_REVISION_ADDR	0x01
+> +#define I40E_MODULE_SFF_8472_COMP	0x5E
+> +#define I40E_MODULE_SFF_8472_SWAP	0x5C
+> +#define I40E_MODULE_SFF_ADDR_MODE	0x04
+> +#define I40E_MODULE_TYPE_SFP		0x03
+> +#define I40E_MODULE_TYPE_QSFP_PLUS	0x0D
+> +#define I40E_MODULE_TYPE_QSFP28		0x11
 
-You might use sizeof(prefix) here rather than hoping that the number 
-stays in sync with the actual declaration.
-
->   				 "i40e %02x:%02x.%x: \t0x",
->   				 hw->bus.bus_id,
->   				 hw->bus.device,
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-> index 1dd1938..d0fc662 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
-> +++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-> @@ -333,9 +333,9 @@ void i40evf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
->   			len = buf_len;
->   		/* write the full 16-byte chunks */
->   		if (hw->debug_mask & mask) {
-> -			char prefix[20];
-> +			char prefix[27];
->   
-> -			snprintf(prefix, 20,
-> +			snprintf(prefix, 27,
-
-Same comment.
+Why aren't these defines in i40e_type.h?
 
 sln
 
->   				 "i40evf %02x:%02x.%x: \t0x",
->   				 hw->bus.bus_id,
->   				 hw->bus.device,
+> +
+> +/**
+> + * i40e_get_module_info - get (Q)SFP+ module type info
+> + * @netdev: network interface device structure
+> + * @modinfo: module EEPROM size and layout information structure
+> + **/
+> +static int i40e_get_module_info(struct net_device *netdev,
+> +				struct ethtool_modinfo *modinfo)
+> +{
+> +	i40e_status status;
+> +	struct i40e_netdev_priv *np = netdev_priv(netdev);
+> +	struct i40e_vsi *vsi = np->vsi;
+> +	struct i40e_pf *pf = vsi->back;
+> +	struct i40e_hw *hw = &pf->hw;
+> +	u32 sff8472_comp = 0;
+> +	u32 sff8472_swap = 0;
+> +	u32 sff8636_rev = 0;
+> +	u32 type = 0;
+> +
+> +	/* Check if firmware supports reading module EEPROM. */
+> +	if (!(hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+> +	      hw->aq.api_min_ver >= 7)) {
+> +		netdev_err(vsi->netdev, "Module EEPROM memory read not supported. Please update the NVM image.\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	status = i40e_aq_get_phy_register(hw,
+> +			I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+> +			I40E_I2C_EEPROM_DEV_ADDR, I40E_MODULE_TYPE_ADDR,
+> +			&type, NULL);
+> +	if (status)
+> +		return -EIO;
+> +
+> +	switch (type) {
+> +	case I40E_MODULE_TYPE_SFP:
+> +		status = i40e_aq_get_phy_register(hw,
+> +				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+> +				I40E_I2C_EEPROM_DEV_ADDR,
+> +				I40E_MODULE_SFF_8472_COMP,
+> +				&sff8472_comp, NULL);
+> +		if (status)
+> +			return -EIO;
+> +
+> +		status = i40e_aq_get_phy_register(hw,
+> +				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+> +				I40E_I2C_EEPROM_DEV_ADDR,
+> +				I40E_MODULE_SFF_8472_SWAP,
+> +				&sff8472_swap, NULL);
+> +		if (status)
+> +			return -EIO;
+> +
+> +		/* Check if the module requires address swap to access
+> +		 * the other EEPROM memory page.
+> +		 */
+> +		if (sff8472_swap & I40E_MODULE_SFF_ADDR_MODE) {
+> +			netdev_warn(vsi->netdev, "Module address swap to access page 0xA2 is not supported.\n");
+> +			modinfo->type = ETH_MODULE_SFF_8079;
+> +			modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
+> +		} else if (sff8472_comp == 0x00) {
+> +			/* Module is not SFF-8472 compliant */
+> +			modinfo->type = ETH_MODULE_SFF_8079;
+> +			modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
+> +		} else {
+> +			modinfo->type = ETH_MODULE_SFF_8472;
+> +			modinfo->eeprom_len = ETH_MODULE_SFF_8472_LEN;
+> +		}
+> +		break;
+> +	case I40E_MODULE_TYPE_QSFP_PLUS:
+> +		status = i40e_aq_get_phy_register(hw,
+> +				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+> +				I40E_I2C_EEPROM_DEV_ADDR,
+> +				I40E_MODULE_REVISION_ADDR,
+> +				&sff8636_rev, NULL);
+> +		if (status)
+> +			return -EIO;
+> +		/* Determine revision compliance byte */
+> +		if (sff8636_rev > 0x02) {
+> +			/* Module is SFF-8636 compliant */
+> +			modinfo->type = ETH_MODULE_SFF_8636;
+> +			modinfo->eeprom_len = ETH_MODULE_SFF_8636_LEN;
+> +		} else {
+> +			modinfo->type = ETH_MODULE_SFF_8436;
+> +			modinfo->eeprom_len = ETH_MODULE_SFF_8436_LEN;
+> +		}
+> +		break;
+> +	case I40E_MODULE_TYPE_QSFP28:
+> +		modinfo->type = ETH_MODULE_SFF_8636;
+> +		modinfo->eeprom_len = ETH_MODULE_SFF_8636_LEN;
+> +		break;
+> +	default:
+> +		netdev_err(vsi->netdev, "Module type unrecognized\n");
+> +		return -EINVAL;
+> +	}
+> +	return 0;
+> +}
+> +
+> +/**
+> + * i40e_get_module_eeprom - fills buffer with (Q)SFP+ module memory contents
+> + * @netdev: network interface device structure
+> + * @ee: EEPROM dump request structure
+> + * @data: buffer to be filled with EEPROM contents
+> + **/
+> +static int i40e_get_module_eeprom(struct net_device *netdev,
+> +				  struct ethtool_eeprom *ee,
+> +				  u8 *data)
+> +{
+> +	i40e_status status;
+> +	struct i40e_netdev_priv *np = netdev_priv(netdev);
+> +	struct i40e_vsi *vsi = np->vsi;
+> +	struct i40e_pf *pf = vsi->back;
+> +	struct i40e_hw *hw = &pf->hw;
+> +	u32 value = 0;
+> +	int i;
+> +
+> +	if (!ee || !ee->len || !data)
+> +		return -EINVAL;
+> +
+> +	for (i = 0; i < ee->len; i++) {
+> +		u32 offset = i + ee->offset;
+> +		u32 addr = I40E_I2C_EEPROM_DEV_ADDR;
+> +
+> +		/* Check if we need to access the other memory page */
+> +		if (offset >= ETH_MODULE_SFF_8079_LEN) {
+> +			offset -= ETH_MODULE_SFF_8079_LEN;
+> +			addr = I40E_I2C_EEPROM_DEV_ADDR2;
+> +		}
+> +
+> +		status = i40e_aq_get_phy_register(hw,
+> +				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+> +				addr, offset, &value, NULL);
+> +		if (status)
+> +			return -EIO;
+> +		data[i] = value;
+> +	}
+> +	return 0;
+> +}
+> +
+>   static const struct ethtool_ops i40e_ethtool_ops = {
+>   	.get_drvinfo		= i40e_get_drvinfo,
+>   	.get_regs_len		= i40e_get_regs_len,
+> @@ -4228,6 +4375,8 @@ static const struct ethtool_ops i40e_ethtool_ops = {
+>   	.set_rxfh		= i40e_set_rxfh,
+>   	.get_channels		= i40e_get_channels,
+>   	.set_channels		= i40e_set_channels,
+> +	.get_module_info	= i40e_get_module_info,
+> +	.get_module_eeprom	= i40e_get_module_eeprom,
+>   	.get_ts_info		= i40e_get_ts_info,
+>   	.get_priv_flags		= i40e_get_priv_flags,
+>   	.set_priv_flags		= i40e_set_priv_flags,
 > 
