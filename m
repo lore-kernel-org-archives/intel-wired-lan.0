@@ -1,8 +1,8 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 05 Jul 2017 15:48:14 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe-shared: Clear SWFW_SYNC register
-	during init
-Message-ID: <20170705224814.8172.72720.stgit@localhost6.localdomain6>
+Date: Wed, 05 Jul 2017 15:57:30 -0700
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Clear SWFW_SYNC register during
+	init
+Message-ID: <20170705225730.8377.3240.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,6 +19,8 @@ out while attempting to acquire the resource.
 
 This allows the driver to load in cases where the semaphore bits
 could be stuck after a reset or a crash.
+
+-v2 - fixed title
 
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
