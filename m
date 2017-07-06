@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 6 Jul 2017 22:18:46 +0000
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix masking of bits read
- from	IXGBE_VXLANCTRL register
-In-Reply-To: <fc6577fcc305742e61ea24c6eb519c212717e5ec.1499078414.git.sd@queasysnail.net>
-References: <fc6577fcc305742e61ea24c6eb519c212717e5ec.1499078414.git.sd@queasysnail.net>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB13F9@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 6 Jul 2017 22:19:19 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe-shared: Clear SWFW_SYNC
+ register	during init
+In-Reply-To: <20170705224814.8172.72720.stgit@localhost6.localdomain6>
+References: <20170705224814.8172.72720.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB1409@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,22 +13,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Sabrina Dubroca
-> Sent: Monday, July 3, 2017 4:03 AM
+> Behalf Of Emil Tantilov
+> Sent: Wednesday, July 5, 2017 3:48 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; Sabrina Dubroca <sd@queasysnail.net>
-> Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix masking of bits read from
-> IXGBE_VXLANCTRL register
+> Subject: [Intel-wired-lan] [PATCH] ixgbe-shared: Clear SWFW_SYNC register
+> during init
 > 
-> In ixgbe_clear_udp_tunnel_port(), we read the IXGBE_VXLANCTRL register
-> and then try to mask some bits out of the value, using the logical instead of
-> bitwise and operator.
+> Added clearing of SW resource bits in the SW/FW synchronization register to
+> ixgbe_init_swfw_sync_X540().
 > 
-> Fixes: a21d0822ff69 ("ixgbe: add support for geneve Rx offload")
-> Signed-off-by: Sabrina Dubroca <sd@queasysnail.net>
+> Updated ixgbe_acquire_swfw_sync_X540 SW Manageability host interface
+> resource bit error case to match the error handling of the other SW resource
+> bits. Which is to release the SW resource bits if SW times out while
+> attempting to acquire the resource.
+> 
+> This allows the driver to load in cases where the semaphore bits could be
+> stuck after a reset or a crash.
+> 
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c |   19 ++++++++++++-------
+>  1 file changed, 12 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
