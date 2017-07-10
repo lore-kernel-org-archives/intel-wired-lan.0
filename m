@@ -1,82 +1,105 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 10 Jul 2017 13:23:05 -0700
-Subject: [Intel-wired-lan] [PATCH v3 02/16] fm10k: fix typos on fall through
-	comments
+Date: Mon, 10 Jul 2017 13:23:13 -0700
+Subject: [Intel-wired-lan] [PATCH v3 10/16] fm10k: prevent race condition of
+	__FM10K_SERVICE_SCHED
 In-Reply-To: <20170710202319.22110-1-jacob.e.keller@intel.com>
 References: <20170710202319.22110-1-jacob.e.keller@intel.com>
-Message-ID: <20170710202319.22110-2-jacob.e.keller@intel.com>
+Message-ID: <20170710202319.22110-10-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Newer versions of GCC since version 7 now warn when a case statement may
-fall through without an explicit comment. "Fallthough" does not count as
-it is misspelled. Fix the typos for these comments to appease the new
-warnings.
+Although very unlikely, it is possible that cancel_work_sync() may stop
+the service_task before it actually started. In this case, the
+__FM10K_SERVICE_SCHED bit will never be cleared. This results in the
+service task being unable to reschedule in the future. Add a helper
+function which sets the service disable bit, waits for the service task
+to stop and clears the schedule bit, thus avoiding the race condition.
+We know the schedule bit is safe to clear because the cancel_work_sync()
+guarantees the service task is not running.
+
+Add a helper function also to restart the service task, for symmetry.
+This is not strictly needed but helps the mental model of how to stop
+and start the service task.
+
+This race could only happen in fm10k_suspend/fm10k_resume as this is the
+only place where the service task is actually restarted. Thus,
+suspend/resume testing would be ideal. However, note that the chance of
+this happening is very slim as the service event is scheduled for
+immediate execution, and you would have to trigger a suspend at almost
+the exact same time as the service task was scheduled.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.c |  4 ++--
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c  | 10 +++++-----
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 32 ++++++++++++++++++++++------
+ 1 file changed, 25 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-index 334088a101c3..244d3ad58ca7 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-@@ -1,5 +1,5 @@
- /* Intel(R) Ethernet Switch Host Interface Driver
-- * Copyright(c) 2013 - 2016 Intel Corporation.
-+ * Copyright(c) 2013 - 2017 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -1586,7 +1586,7 @@ s32 fm10k_pfvf_mbx_init(struct fm10k_hw *hw, struct fm10k_mbx_info *mbx,
- 			mbx->mbmem_reg = FM10K_MBMEM_VF(id, 0);
- 			break;
- 		}
--		/* fallthough */
-+		/* fall through */
- 	default:
- 		return FM10K_MBX_ERR_NO_MBX;
- 	}
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 40ee0242a80a..9e4fb3a44376 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1,5 +1,5 @@
- /* Intel(R) Ethernet Switch Host Interface Driver
-- * Copyright(c) 2013 - 2016 Intel Corporation.
-+ * Copyright(c) 2013 - 2017 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -1334,19 +1334,19 @@ static u8 fm10k_iov_supported_xcast_mode_pf(struct fm10k_vf_info *vf_info,
- 	case FM10K_XCAST_MODE_PROMISC:
- 		if (vf_flags & FM10K_VF_FLAG_PROMISC_CAPABLE)
- 			return FM10K_XCAST_MODE_PROMISC;
--		/* fallthough */
-+		/* fall through */
- 	case FM10K_XCAST_MODE_ALLMULTI:
- 		if (vf_flags & FM10K_VF_FLAG_ALLMULTI_CAPABLE)
- 			return FM10K_XCAST_MODE_ALLMULTI;
--		/* fallthough */
-+		/* fall through */
- 	case FM10K_XCAST_MODE_MULTI:
- 		if (vf_flags & FM10K_VF_FLAG_MULTI_CAPABLE)
- 			return FM10K_XCAST_MODE_MULTI;
--		/* fallthough */
-+		/* fall through */
- 	case FM10K_XCAST_MODE_NONE:
- 		if (vf_flags & FM10K_VF_FLAG_NONE_CAPABLE)
- 			return FM10K_XCAST_MODE_NONE;
--		/* fallthough */
-+		/* fall through */
- 	default:
- 		break;
- 	}
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 6a7b4c5429ae..cfbe25e90006 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -118,6 +118,27 @@ static void fm10k_service_event_complete(struct fm10k_intfc *interface)
+ 		fm10k_service_event_schedule(interface);
+ }
+ 
++static void fm10k_stop_service_event(struct fm10k_intfc *interface)
++{
++	set_bit(__FM10K_SERVICE_DISABLE, interface->state);
++	cancel_work_sync(&interface->service_task);
++
++	/* It's possible that cancel_work_sync stopped the service task from
++	 * running before it could actually start. In this case the
++	 * __FM10K_SERVICE_SCHED bit will never be cleared. Since we know that
++	 * the service task cannot be running at this point, we need to clear
++	 * the scheduled bit, as otherwise the service task may never be
++	 * restarted.
++	 */
++	clear_bit(__FM10K_SERVICE_SCHED, interface->state);
++}
++
++static void fm10k_start_service_event(struct fm10k_intfc *interface)
++{
++	clear_bit(__FM10K_SERVICE_DISABLE, interface->state);
++	fm10k_service_event_schedule(interface);
++}
++
+ /**
+  * fm10k_service_timer - Timer Call-back
+  * @data: pointer to interface cast into an unsigned long
+@@ -2116,8 +2137,7 @@ static void fm10k_remove(struct pci_dev *pdev)
+ 
+ 	del_timer_sync(&interface->service_timer);
+ 
+-	set_bit(__FM10K_SERVICE_DISABLE, interface->state);
+-	cancel_work_sync(&interface->service_task);
++	fm10k_stop_service_event(interface);
+ 
+ 	/* free netdev, this may bounce the interrupts due to setup_tc */
+ 	if (netdev->reg_state == NETREG_REGISTERED)
+@@ -2155,8 +2175,7 @@ static void fm10k_prepare_suspend(struct fm10k_intfc *interface)
+ 	 * stopped. We stop the watchdog task until after we resume software
+ 	 * activity.
+ 	 */
+-	set_bit(__FM10K_SERVICE_DISABLE, interface->state);
+-	cancel_work_sync(&interface->service_task);
++	fm10k_stop_service_event(interface);
+ 
+ 	fm10k_prepare_for_reset(interface);
+ }
+@@ -2183,9 +2202,8 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
+ 	interface->link_down_event = jiffies + (HZ);
+ 	set_bit(__FM10K_LINK_DOWN, interface->state);
+ 
+-	/* clear the service task disable bit to allow service task to start */
+-	clear_bit(__FM10K_SERVICE_DISABLE, interface->state);
+-	fm10k_service_event_schedule(interface);
++	/* restart the service task */
++	fm10k_start_service_event(interface);
+ 
+ 	return err;
+ }
 -- 
 2.13.0.615.gb09ed6e59a40
 
