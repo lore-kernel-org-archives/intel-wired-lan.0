@@ -1,67 +1,48 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 10 Jul 2017 13:23:06 -0700
-Subject: [Intel-wired-lan] [PATCH v3 03/16] fm10k: avoid possible truncation
-	of q_vector->name
+Date: Mon, 10 Jul 2017 13:23:09 -0700
+Subject: [Intel-wired-lan] [PATCH v3 06/16] fm10k: simplify reading PFVFLRE
+	register
 In-Reply-To: <20170710202319.22110-1-jacob.e.keller@intel.com>
 References: <20170710202319.22110-1-jacob.e.keller@intel.com>
-Message-ID: <20170710202319.22110-3-jacob.e.keller@intel.com>
+Message-ID: <20170710202319.22110-6-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-New versions of GCC since version 7 began warning about possible
-truncation of calls to snprintf. We can fix this and avoid false
-positives. First, we should pass the full buffer size to snprintf,
-because it guarantees a NULL character as part of its passed length, so
-passing len-1 is simply wasting a byte of possible storage.
-
-Second, if we make the ri and ti variables unsigned, the compiler is
-able to correctly reason that the value never gets larger than 256, so
-it doesn't need to warn about the full space required to print a signed
-integer.
+We're doing a really convoluted bitshift and read for the PFVFLRE
+register. Just reading the PFVFLRE(1), shifting it by 32, then reading
+PFVFLRE(0) should be sufficient.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_iov.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 3e26d27ad213..80b18f2479b4 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1544,7 +1544,7 @@ int fm10k_qv_request_irq(struct fm10k_intfc *interface)
- 	struct net_device *dev = interface->netdev;
- 	struct fm10k_hw *hw = &interface->hw;
- 	struct msix_entry *entry;
--	int ri = 0, ti = 0;
-+	unsigned int ri = 0, ti = 0;
- 	int vector, err;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+index d8356c494f06..dfc88a463735 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+@@ -1,5 +1,5 @@
+ /* Intel(R) Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2016 Intel Corporation.
++ * Copyright(c) 2013 - 2017 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -67,10 +67,8 @@ s32 fm10k_iov_event(struct fm10k_intfc *interface)
  
- 	entry = &interface->msix_entries[NON_Q_VECTORS(hw)];
-@@ -1554,15 +1554,15 @@ int fm10k_qv_request_irq(struct fm10k_intfc *interface)
+ 	/* read VFLRE to determine if any VFs have been reset */
+ 	do {
+-		vflre = fm10k_read_reg(hw, FM10K_PFVFLRE(0));
++		vflre = fm10k_read_reg(hw, FM10K_PFVFLRE(1));
+ 		vflre <<= 32;
+-		vflre |= fm10k_read_reg(hw, FM10K_PFVFLRE(1));
+-		vflre = (vflre << 32) | (vflre >> 32);
+ 		vflre |= fm10k_read_reg(hw, FM10K_PFVFLRE(0));
  
- 		/* name the vector */
- 		if (q_vector->tx.count && q_vector->rx.count) {
--			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
--				 "%s-TxRx-%d", dev->name, ri++);
-+			snprintf(q_vector->name, sizeof(q_vector->name),
-+				 "%s-TxRx-%u", dev->name, ri++);
- 			ti++;
- 		} else if (q_vector->rx.count) {
--			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
--				 "%s-rx-%d", dev->name, ri++);
-+			snprintf(q_vector->name, sizeof(q_vector->name),
-+				 "%s-rx-%u", dev->name, ri++);
- 		} else if (q_vector->tx.count) {
--			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
--				 "%s-tx-%d", dev->name, ti++);
-+			snprintf(q_vector->name, sizeof(q_vector->name),
-+				 "%s-tx-%u", dev->name, ti++);
- 		} else {
- 			/* skip this unused q_vector */
- 			continue;
+ 		i = iov_data->num_vfs;
 -- 
 2.13.0.615.gb09ed6e59a40
 
