@@ -1,81 +1,56 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 10 Jul 2017 13:23:10 -0700
-Subject: [Intel-wired-lan] [PATCH v3 07/16] fm10k: don't loop while
-	resetting VFs due to VFLR event
+Date: Mon, 10 Jul 2017 13:23:08 -0700
+Subject: [Intel-wired-lan] [PATCH v3 05/16] fm10k: avoid needless delay when
+	loading driver
 In-Reply-To: <20170710202319.22110-1-jacob.e.keller@intel.com>
 References: <20170710202319.22110-1-jacob.e.keller@intel.com>
-Message-ID: <20170710202319.22110-7-jacob.e.keller@intel.com>
+Message-ID: <20170710202319.22110-5-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We've always had a really weird looping construction for resetting VFs.
-We read the VFLRE register and reset the VF if the corresponding bit is
-set, which makes sense. However we loop continuously until we no longer
-have any bits left unset. At first this makes sense, as a sort of "keep
-trying until we succeed" concept.
+When we load the driver, we set the last_reset to be in the future,
+which delays the initial driver reset. Additionally, the service task
+isn't scheduled to run automatically until the timer runs out. This
+causes a needless delay of the first reset to begin talking to the
+switch manager.
 
-Unfortunately this causes a problem if we happen to surprise remove
-while this code is executing, because in this case we'll always read all
-1s for the VFLRE register. This results in a hard lockup on the CPU
-because the loop will never terminate.
-
-Because our own reset function will clear the VFLR event register
-always, (except when we've lost PCIe link obviously) there is no real
-reason to loop. In practice, we'll loop over once and find that no VFs
-are pending anymore.
-
-Lets just check once. Since we're clear the notification when we reset
-there's no benefit to the loop. Additionally, there shouldn't be a race
-as future VLFRE events should trigger an interrupt. Additionally, we
-didn't warn or do anything in the looped case anyways.
+We can avoid this by simply not setting last_reset and immediately
+scheduling the service task while in probe. This allows the device to
+wake up faster, and avoids this delay.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_iov.c | 24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-index dfc88a463735..03897720bf0b 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-@@ -66,23 +66,21 @@ s32 fm10k_iov_event(struct fm10k_intfc *interface)
- 		goto read_unlock;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 80b18f2479b4..32b5ace82cad 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -1800,9 +1800,6 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
+ 		netdev->vlan_features |= NETIF_F_HIGHDMA;
+ 	}
  
- 	/* read VFLRE to determine if any VFs have been reset */
--	do {
--		vflre = fm10k_read_reg(hw, FM10K_PFVFLRE(1));
--		vflre <<= 32;
--		vflre |= fm10k_read_reg(hw, FM10K_PFVFLRE(0));
-+	vflre = fm10k_read_reg(hw, FM10K_PFVFLRE(1));
-+	vflre <<= 32;
-+	vflre |= fm10k_read_reg(hw, FM10K_PFVFLRE(0));
+-	/* delay any future reset requests */
+-	interface->last_reset = jiffies + (10 * HZ);
+-
+ 	/* reset and initialize the hardware so it is in a known state */
+ 	err = hw->mac.ops.reset_hw(hw);
+ 	if (err) {
+@@ -2079,8 +2076,9 @@ static int fm10k_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	/* enable SR-IOV after registering netdev to enforce PF/VF ordering */
+ 	fm10k_iov_configure(pdev, 0);
  
--		i = iov_data->num_vfs;
-+	i = iov_data->num_vfs;
+-	/* clear the service task disable bit to allow service task to start */
++	/* clear the service task disable bit and kick off service task */
+ 	clear_bit(__FM10K_SERVICE_DISABLE, interface->state);
++	fm10k_service_event_schedule(interface);
  
--		for (vflre <<= 64 - i; vflre && i--; vflre += vflre) {
--			struct fm10k_vf_info *vf_info = &iov_data->vf_info[i];
-+	for (vflre <<= 64 - i; vflre && i--; vflre += vflre) {
-+		struct fm10k_vf_info *vf_info = &iov_data->vf_info[i];
+ 	return 0;
  
--			if (vflre >= 0)
--				continue;
-+		if (vflre >= 0)
-+			continue;
- 
--			hw->iov.ops.reset_resources(hw, vf_info);
--			vf_info->mbx.ops.connect(hw, &vf_info->mbx);
--		}
--	} while (i != iov_data->num_vfs);
-+		hw->iov.ops.reset_resources(hw, vf_info);
-+		vf_info->mbx.ops.connect(hw, &vf_info->mbx);
-+	}
- 
- read_unlock:
- 	rcu_read_unlock();
 -- 
 2.13.0.615.gb09ed6e59a40
 
