@@ -1,71 +1,157 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 3 Jul 2017 01:43:19 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 52/57]
- drivers/net//ethernet/intel/i40e/i40e_debugfs.c:160: warning: format
- '%08lx' expects type 'long unsigned int', but argument 3 has type 'u64'
-Message-ID: <201707030115.qbqBEM8v%fengguang.wu@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Mon, 10 Jul 2017 20:02:39 +0000
+Subject: [Intel-wired-lan] [PATCH 10/15] fm10k: prepare_for_reset() when
+	we lose PCIe Link
+In-Reply-To: <20170601224051.6106-11-jacob.e.keller@intel.com>
+References: <20170601224051.6106-1-jacob.e.keller@intel.com>
+ <20170601224051.6106-11-jacob.e.keller@intel.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5882A0499C@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   c8e535dfc418c2f2f3e03a4b38af6dd3397293af
-commit: 5772282c0f13d52aa930cd0015aac806cafc3d9b [52/57] i40e/i40evf: organize and re-number feature flags
-config: x86_64-randconfig-v0-07022319 (attached as .config)
-compiler: gcc-4.4 (Debian 4.4.7-8) 4.4.7
-reproduce:
-        git checkout 5772282c0f13d52aa930cd0015aac806cafc3d9b
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+> -----Original Message-----
+> From: Keller, Jacob E
+> Sent: Thursday, June 01, 2017 3:41 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Cc: Keller, Jacob E <jacob.e.keller@intel.com>
+> Subject: [PATCH 10/15] fm10k: prepare_for_reset() when we lose PCIe Link
+> 
+> If we lose PCIe link, such as when an unannounced PFLR event occurs, or
+> when a device is surprise removed, we currently detach the device and
+> close the netdev. This unfortunately leaves a lot of things still
+> active, such as the msix_mbx_pf IRQ, and Tx/Rx resources.
+> 
+> This can cause problems because the register reads will return
+> potentially invalid values which may result in unknown driver behavior.
+> 
+> Begin the process of resetting using fm10k_prepare_for_reset(), much in
+> the same way as the suspend and resume cycle does. This will attempt to
+> shutdown as much as possible, in order to prevent possible issues.
+> 
+> Since the __FM10K_RESETTING state is long lived, we'll also stop waiting
+> for it when we check to the fm10k_reset_subtask. This is important since
+> otherwise it would deadlock with the fm10k_detach_subtask. Additionally,
+> stop attempting to manage the mailbox subtask if we're
+> detached/resetting, as there is nothing to do when we don't have a PCIe
+> address.
+> 
+> Overall this produces a much cleaner shutdown and recovery cycle for
+> a PCIe surprise remove event.
+> 
 
-All warnings (new ones prefixed by >>):
+This patch suffers from a problem we discovered while testing. I have some fixes proposed, and have marked the necessary patches as changes requested. I'll be submitting a new version soon. It will be labeled v3 since one of the patches already had a v2.
 
-   drivers/net//ethernet/intel/i40e/i40e_debugfs.c: In function 'i40e_dbg_dump_vsi_seid':
->> drivers/net//ethernet/intel/i40e/i40e_debugfs.c:160: warning: format '%08lx' expects type 'long unsigned int', but argument 3 has type 'u64'
+Thanks,
+Jake
 
-vim +160 drivers/net//ethernet/intel/i40e/i40e_debugfs.c
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 39 +++++++++++++++++++-----
+> ----
+>  1 file changed, 27 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> index 6a7b4c5429ae..2d94a16f9613 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> @@ -141,8 +141,9 @@ static void fm10k_prepare_for_reset(struct fm10k_intfc
+> *interface)
+>  	/* put off any impending NetWatchDogTimeout */
+>  	netif_trans_update(netdev);
+> 
+> -	while (test_and_set_bit(__FM10K_RESETTING, interface->state))
+> -		usleep_range(1000, 2000);
+> +	/* Nothing to do if a reset is already in progress */
+> +	if (test_and_set_bit(__FM10K_RESETTING, interface->state))
+> +		return;
+> 
+>  	rtnl_lock();
+> 
+> @@ -168,6 +169,8 @@ static int fm10k_handle_reset(struct fm10k_intfc
+> *interface)
+>  	struct fm10k_hw *hw = &interface->hw;
+>  	int err;
+> 
+> +	WARN_ON(!test_bit(__FM10K_RESETTING, interface->state));
+> +
+>  	rtnl_lock();
+> 
+>  	pci_set_master(interface->pdev);
+> @@ -247,27 +250,33 @@ static void fm10k_detach_subtask(struct fm10k_intfc
+> *interface)
+>  	u32 __iomem *hw_addr;
+>  	u32 value;
+> 
+> -	/* do nothing if device is still present or hw_addr is set */
+> +	/* do nothing if netdev is still present or hw_addr is set */
+>  	if (netif_device_present(netdev) || interface->hw.hw_addr)
+>  		return;
+> 
+> +	/* We've lost the PCIe register space, and can no longer access the
+> +	 * device. Shut everything except the detach subtask down and prepare
+> +	 * to reset the device in case we recover.
+> +	 */
+> +	fm10k_prepare_for_reset(interface);
+> +
+>  	/* check the real address space to see if we've recovered */
+>  	hw_addr = READ_ONCE(interface->uc_addr);
+>  	value = readl(hw_addr);
+>  	if (~value) {
+> +		/* Restore the hardware address */
+>  		interface->hw.hw_addr = interface->uc_addr;
+> +
+> +		/* PCIe link has been restored, and the device is active
+> +		 * again. Restore everything and reset the device.
+> +		 */
+> +		fm10k_handle_reset(interface);
+> +
+> +		/* Re-attach the netdev */
+>  		netif_device_attach(netdev);
+> -		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
+>  		netdev_warn(netdev, "PCIe link restored, device now
+> attached\n");
+>  		return;
+>  	}
+> -
+> -	rtnl_lock();
+> -
+> -	if (netif_running(netdev))
+> -		dev_close(netdev);
+> -
+> -	rtnl_unlock();
+>  }
+> 
+>  static void fm10k_reinit(struct fm10k_intfc *interface)
+> @@ -360,6 +369,10 @@ static void fm10k_watchdog_update_host_state(struct
+> fm10k_intfc *interface)
+>   **/
+>  static void fm10k_mbx_subtask(struct fm10k_intfc *interface)
+>  {
+> +	/* If we're resetting, bail out */
+> +	if (test_bit(__FM10K_RESETTING, interface->state))
+> +		return;
+> +
+>  	/* process upstream mailbox and update device state */
+>  	fm10k_watchdog_update_host_state(interface);
+> 
+> @@ -609,9 +622,11 @@ static void fm10k_service_task(struct work_struct
+> *work)
+> 
+>  	interface = container_of(work, struct fm10k_intfc, service_task);
+> 
+> +	/* Check whether we're detached first */
+> +	fm10k_detach_subtask(interface);
+> +
+>  	/* tasks run even when interface is down */
+>  	fm10k_mbx_subtask(interface);
+> -	fm10k_detach_subtask(interface);
+>  	fm10k_reset_subtask(interface);
+> 
+>  	/* tasks only run when interface is up */
+> --
+> 2.13.0.598.gf927b9495246
 
-02e9c290 Jesse Brandeburg 2013-09-11  144  	}
-02e9c290 Jesse Brandeburg 2013-09-11  145  	dev_info(&pf->pdev->dev, "vsi seid %d\n", seid);
-de1017f7 Shannon Nelson   2015-12-23  146  	if (vsi->netdev) {
-de1017f7 Shannon Nelson   2015-12-23  147  		struct net_device *nd = vsi->netdev;
-de1017f7 Shannon Nelson   2015-12-23  148  
-de1017f7 Shannon Nelson   2015-12-23  149  		dev_info(&pf->pdev->dev, "    netdev: name = %s, state = %lu, flags = 0x%08x\n",
-de1017f7 Shannon Nelson   2015-12-23  150  			 nd->name, nd->state, nd->flags);
-de1017f7 Shannon Nelson   2015-12-23  151  		dev_info(&pf->pdev->dev, "        features      = 0x%08lx\n",
-de1017f7 Shannon Nelson   2015-12-23  152  			 (unsigned long int)nd->features);
-de1017f7 Shannon Nelson   2015-12-23  153  		dev_info(&pf->pdev->dev, "        hw_features   = 0x%08lx\n",
-de1017f7 Shannon Nelson   2015-12-23  154  			 (unsigned long int)nd->hw_features);
-de1017f7 Shannon Nelson   2015-12-23  155  		dev_info(&pf->pdev->dev, "        vlan_features = 0x%08lx\n",
-de1017f7 Shannon Nelson   2015-12-23  156  			 (unsigned long int)nd->vlan_features);
-de1017f7 Shannon Nelson   2015-12-23  157  	}
-02e9c290 Jesse Brandeburg 2013-09-11  158  	dev_info(&pf->pdev->dev,
-02e9c290 Jesse Brandeburg 2013-09-11  159  		 "    vlgrp: & = %p\n", vsi->active_vlans);
-02e9c290 Jesse Brandeburg 2013-09-11 @160  	dev_info(&pf->pdev->dev,
-0da36b97 Jacob Keller     2017-04-19  161  		 "    flags = 0x%08lx, netdev_registered = %i, current_netdev_flags = 0x%04x\n",
-0da36b97 Jacob Keller     2017-04-19  162  		 vsi->flags, vsi->netdev_registered, vsi->current_netdev_flags);
-0da36b97 Jacob Keller     2017-04-19  163  	for (i = 0; i < BITS_TO_LONGS(__I40E_VSI_STATE_SIZE__); i++)
-0da36b97 Jacob Keller     2017-04-19  164  		dev_info(&pf->pdev->dev,
-0da36b97 Jacob Keller     2017-04-19  165  			 "    state[%d] = %08lx\n",
-0da36b97 Jacob Keller     2017-04-19  166  			 i, vsi->state[i]);
-2ddb80c9 Shannon Nelson   2015-02-27  167  	if (vsi == pf->vsi[pf->lan_vsi])
-2ddb80c9 Shannon Nelson   2015-02-27  168  		dev_info(&pf->pdev->dev, "    MAC address: %pM SAN MAC: %pM Port MAC: %pM\n",
-
-:::::: The code at line 160 was first introduced by commit
-:::::: 02e9c290814cc143ceccecb14eac3e7a05da745e i40e: debugfs interface
-
-:::::: TO: Jesse Brandeburg <jesse.brandeburg@intel.com>
-:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 32828 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170703/7c7842ba/attachment-0001.bin>
