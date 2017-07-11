@@ -1,42 +1,72 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 11 Jul 2017 08:01:14 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V2 07/12] i40e: Use correct flag
-	to enable egress traffic for unicast promisc
+Date: Tue, 11 Jul 2017 08:01:18 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V2 11/12] i40e: 25G FEC status
+	improvements
 In-Reply-To: <20170711120118.44095-1-alice.michael@intel.com>
 References: <20170711120118.44095-1-alice.michael@intel.com>
-Message-ID: <20170711120118.44095-7-alice.michael@intel.com>
+Message-ID: <20170711120118.44095-11-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Mariusz Stachura <mariusz.stachura@intel.com>
 
-Albeit, we usually set true promiscuous mode for both multicast and
-unicast at the same time - however, it is possible to set it
-individually, so using allmulti flag which is only for allmulticast might
-caused unwanted behavior in mirroring egress traffic promiscuous for
-unicast in VF.
+This patch improves the system log message. The log message will
+be expanded to include the FEC mode the FW requested before link
+was established.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 3ef67dc..aa8d30b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1758,7 +1758,7 @@ static int i40e_vc_config_promiscuous_mode_msg(struct i40e_vf *vf,
- 		}
- 	} else {
- 		aq_ret = i40e_aq_set_vsi_unicast_promiscuous(hw, vsi->seid,
--							     allmulti, NULL,
-+							     alluni, NULL,
- 							     true);
- 		aq_err = pf->hw.aq.asq_last_status;
- 		if (aq_ret) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 0c8c07d..fa93c63 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -5355,6 +5355,7 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
+ 	char *speed = "Unknown";
+ 	char *fc = "Unknown";
+ 	char *fec = "";
++	char *req_fec = "";
+ 	char *an = "";
+ 
+ 	new_speed = vsi->back->hw.phy.link_info.link_speed;
+@@ -5416,6 +5417,7 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
+ 	}
+ 
+ 	if (vsi->back->hw.phy.link_info.link_speed == I40E_LINK_SPEED_25GB) {
++		req_fec = ", Requested FEC: None";
+ 		fec = ", FEC: None";
+ 		an = ", Autoneg: False";
+ 
+@@ -5428,10 +5430,22 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
+ 		else if (vsi->back->hw.phy.link_info.fec_info &
+ 			 I40E_AQ_CONFIG_FEC_RS_ENA)
+ 			fec = ", FEC: CL108 RS-FEC";
++
++		/* 'CL108 RS-FEC' should be displayed when RS is requested, or
++		 * both RS and FC are requested
++		 */
++		if (vsi->back->hw.phy.link_info.req_fec_info &
++		    (I40E_AQ_REQUEST_FEC_KR | I40E_AQ_REQUEST_FEC_RS)) {
++			if (vsi->back->hw.phy.link_info.req_fec_info &
++			    I40E_AQ_REQUEST_FEC_RS)
++				req_fec = ", Requested FEC: CL108 RS-FEC";
++			else
++				req_fec = ", Requested FEC: CL74 FC-FEC/BASE-R";
++		}
+ 	}
+ 
+-	netdev_info(vsi->netdev, "NIC Link is Up, %sbps Full Duplex%s%s, Flow Control: %s\n",
+-		    speed, fec, an, fc);
++	netdev_info(vsi->netdev, "NIC Link is Up, %sbps Full Duplex%s%s%s, Flow Control: %s\n",
++		    speed, req_fec, fec, an, fc);
+ }
+ 
+ /**
 -- 
 2.9.3
 
