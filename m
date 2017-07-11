@@ -1,141 +1,97 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 11 Jul 2017 08:01:10 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V2 03/12] i40e: prevent changing
-	ITR if adaptive-rx/tx enabled
+Date: Tue, 11 Jul 2017 08:01:15 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V2 08/12] i40evf: fix possible
+	snprintf truncation of q_vector->name
 In-Reply-To: <20170711120118.44095-1-alice.michael@intel.com>
 References: <20170711120118.44095-1-alice.michael@intel.com>
-Message-ID: <20170711120118.44095-3-alice.michael@intel.com>
+Message-ID: <20170711120118.44095-8-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Currently the driver allows the user to change (or even disable)
-interrupt moderation if adaptive-rx/tx is enabled when this should
-not be the case.
+The q_vector names are based on the interface name with a driver prefix,
+the type of q_vector setup, and the queue number. We previously set the
+size of this variable to IFNAMSIZ + 9, which is incorrect, because we
+actually include a minimum of 14 characters extra beyond the interface
+name size.
 
-Adaptive RX/TX will not respect the user's ITR settings so
-allowing the user to change it is weird.  This bug would also
-allow the user to disable interrupt moderation with adaptive-rx/tx
-enabled which doesn't make much sense either.
+New versions of GCC since 7 include a new warning that detects this
+possible truncation and complains. We can fix this by increasing the
+size incase our interface name is too large to avoid truncation. We
+don't need to go beyond 14 because the compiler is smart enough to
+realize our values can never exceed size of 1. We do go up to 15 here
+because possible future changes may increase the number of queues beyond
+one digit.
 
-This patch makes it such that if adaptive-rx/tx is enabled, the user
-cannot make any manual adjustments to interrupt moderation.  It also
-makes it so that if ITR is disabled but adaptive-rx/tx is then
-enabled, ITR will be re-enabled.
+While we are here, also change some variables to be unsigned (since they
+are never negative) and stop using an extra unnecessary %s format
+specifier.
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 61 +++++++++++++++++---------
- 1 file changed, 41 insertions(+), 20 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf.h      |  2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 21 +++++++++------------
+ 2 files changed, 10 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index a868c8d..b273c24 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2194,14 +2194,29 @@ static int __i40e_set_coalesce(struct net_device *netdev,
- 			       int queue)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index c89767e..f028c09 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -121,7 +121,7 @@ struct i40e_q_vector {
+ #define ITR_COUNTDOWN_START 100
+ 	u8 itr_countdown;	/* when 0 or 1 update ITR */
+ 	int v_idx;	/* vector index in list */
+-	char name[IFNAMSIZ + 9];
++	char name[IFNAMSIZ + 15];
+ 	bool arm_wb_state;
+ 	cpumask_t affinity_mask;
+ 	struct irq_affinity_notify affinity_notify;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 755f60f..a8bc1ed 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -543,9 +543,9 @@ static void i40evf_irq_affinity_release(struct kref *ref) {}
+ static int
+ i40evf_request_traffic_irqs(struct i40evf_adapter *adapter, char *basename)
  {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
-+	u16 intrl_reg, cur_rx_itr, cur_tx_itr;
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
--	u16 intrl_reg;
- 	int i;
+-	int vector, err, q_vectors;
+-	int rx_int_idx = 0, tx_int_idx = 0;
+-	int irq_num;
++	unsigned int vector, q_vectors;
++	unsigned int rx_int_idx = 0, tx_int_idx = 0;
++	int irq_num, err;
  
- 	if (ec->tx_max_coalesced_frames_irq || ec->rx_max_coalesced_frames_irq)
- 		vsi->work_limit = ec->tx_max_coalesced_frames_irq;
+ 	i40evf_irq_disable(adapter);
+ 	/* Decrement for Other and TCP Timer vectors */
+@@ -556,18 +556,15 @@ i40evf_request_traffic_irqs(struct i40evf_adapter *adapter, char *basename)
+ 		irq_num = adapter->msix_entries[vector + NONQ_VECS].vector;
  
-+	if (queue < 0) {
-+		cur_rx_itr = vsi->rx_rings[0]->rx_itr_setting;
-+		cur_tx_itr = vsi->tx_rings[0]->tx_itr_setting;
-+	} else if (queue < vsi->num_queue_pairs) {
-+		cur_rx_itr = vsi->rx_rings[queue]->rx_itr_setting;
-+		cur_tx_itr = vsi->tx_rings[queue]->tx_itr_setting;
-+	} else {
-+		netif_info(pf, drv, netdev, "Invalid queue value, queue range is 0 - %d\n",
-+			   vsi->num_queue_pairs - 1);
-+		return -EINVAL;
-+	}
-+
-+	cur_tx_itr &= ~I40E_ITR_DYNAMIC;
-+	cur_rx_itr &= ~I40E_ITR_DYNAMIC;
-+
- 	/* tx_coalesce_usecs_high is ignored, use rx-usecs-high instead */
- 	if (ec->tx_coalesce_usecs_high != vsi->int_rate_limit) {
- 		netif_info(pf, drv, netdev, "tx-usecs-high is not used, please program rx-usecs-high\n");
-@@ -2214,15 +2229,34 @@ static int __i40e_set_coalesce(struct net_device *netdev,
- 		return -EINVAL;
- 	}
- 
--	if (ec->rx_coalesce_usecs == 0) {
--		if (ec->use_adaptive_rx_coalesce)
--			netif_info(pf, drv, netdev, "rx-usecs=0, need to disable adaptive-rx for a complete disable\n");
--	} else if ((ec->rx_coalesce_usecs < (I40E_MIN_ITR << 1)) ||
--		   (ec->rx_coalesce_usecs > (I40E_MAX_ITR << 1))) {
-+	if (ec->rx_coalesce_usecs != cur_rx_itr &&
-+	    ec->use_adaptive_rx_coalesce) {
-+		netif_info(pf, drv, netdev, "RX interrupt moderation cannot be changed if adaptive-rx is enabled.\n");
-+		return -EINVAL;
-+	}
-+
-+	if (ec->rx_coalesce_usecs > (I40E_MAX_ITR << 1)) {
- 			netif_info(pf, drv, netdev, "Invalid value, rx-usecs range is 0-8160\n");
- 			return -EINVAL;
- 	}
- 
-+	if (ec->tx_coalesce_usecs != cur_tx_itr &&
-+	    ec->use_adaptive_tx_coalesce) {
-+		netif_info(pf, drv, netdev, "TX interrupt moderation cannot be changed if adaptive-tx is enabled.\n");
-+		return -EINVAL;
-+	}
-+
-+	if (ec->tx_coalesce_usecs > (I40E_MAX_ITR << 1)) {
-+		netif_info(pf, drv, netdev, "Invalid value, tx-usecs range is 0-8160\n");
-+		return -EINVAL;
-+	}
-+
-+	if (ec->use_adaptive_rx_coalesce && !cur_rx_itr)
-+		ec->rx_coalesce_usecs = I40E_MIN_ITR << 1;
-+
-+	if (ec->use_adaptive_tx_coalesce && !cur_tx_itr)
-+		ec->tx_coalesce_usecs = I40E_MIN_ITR << 1;
-+
- 	intrl_reg = i40e_intrl_usec_to_reg(ec->rx_coalesce_usecs_high);
- 	vsi->int_rate_limit = INTRL_REG_TO_USEC(intrl_reg);
- 	if (vsi->int_rate_limit != ec->rx_coalesce_usecs_high) {
-@@ -2230,27 +2264,14 @@ static int __i40e_set_coalesce(struct net_device *netdev,
- 			   vsi->int_rate_limit);
- 	}
- 
--	if (ec->tx_coalesce_usecs == 0) {
--		if (ec->use_adaptive_tx_coalesce)
--			netif_info(pf, drv, netdev, "tx-usecs=0, need to disable adaptive-tx for a complete disable\n");
--	} else if ((ec->tx_coalesce_usecs < (I40E_MIN_ITR << 1)) ||
--		   (ec->tx_coalesce_usecs > (I40E_MAX_ITR << 1))) {
--			netif_info(pf, drv, netdev, "Invalid value, tx-usecs range is 0-8160\n");
--			return -EINVAL;
--	}
--
- 	/* rx and tx usecs has per queue value. If user doesn't specify the queue,
- 	 * apply to all queues.
- 	 */
- 	if (queue < 0) {
- 		for (i = 0; i < vsi->num_queue_pairs; i++)
- 			i40e_set_itr_per_queue(vsi, ec, i);
--	} else if (queue < vsi->num_queue_pairs) {
--		i40e_set_itr_per_queue(vsi, ec, queue);
- 	} else {
--		netif_info(pf, drv, netdev, "Invalid queue value, queue range is 0 - %d\n",
--			   vsi->num_queue_pairs - 1);
--		return -EINVAL;
-+		i40e_set_itr_per_queue(vsi, ec, queue);
- 	}
- 
- 	return 0;
+ 		if (q_vector->tx.ring && q_vector->rx.ring) {
+-			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
+-				 "i40evf-%s-%s-%d", basename,
+-				 "TxRx", rx_int_idx++);
++			snprintf(q_vector->name, sizeof(q_vector->name),
++				 "i40evf-%s-TxRx-%d", basename, rx_int_idx++);
+ 			tx_int_idx++;
+ 		} else if (q_vector->rx.ring) {
+-			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
+-				 "i40evf-%s-%s-%d", basename,
+-				 "rx", rx_int_idx++);
++			snprintf(q_vector->name, sizeof(q_vector->name),
++				 "i40evf-%s-rx-%d", basename, rx_int_idx++);
+ 		} else if (q_vector->tx.ring) {
+-			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
+-				 "i40evf-%s-%s-%d", basename,
+-				 "tx", tx_int_idx++);
++			snprintf(q_vector->name, sizeof(q_vector->name),
++				 "i40evf-%s-tx-%d", basename, tx_int_idx++);
+ 		} else {
+ 			/* skip this unused q_vector */
+ 			continue;
 -- 
 2.9.3
 
