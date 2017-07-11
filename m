@@ -1,43 +1,51 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 11 Jul 2017 08:01:08 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V2 01/12] i40evf: use netdev
-	variable in reset task
-Message-ID: <20170711120118.44095-1-alice.michael@intel.com>
+Date: Tue, 11 Jul 2017 08:01:09 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V2 02/12] i40e: use cpumask_copy
+	instead of direct assignment
+In-Reply-To: <20170711120118.44095-1-alice.michael@intel.com>
+References: <20170711120118.44095-1-alice.michael@intel.com>
+Message-ID: <20170711120118.44095-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-If we're going to bother initializing a variable to reference it we might
-as well use it.
+According to the header file cpumask.h, we shouldn't be directly copying
+a cpumask_t, since its a bitmap and might not be copied correctly. Lets
+use the provided cpumask_copy() function instead.
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 998ad96..837d434 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -3450,7 +3450,7 @@ static void i40e_irq_affinity_notify(struct irq_affinity_notify *notify,
+ 	struct i40e_q_vector *q_vector =
+ 		container_of(notify, struct i40e_q_vector, affinity_notify);
+ 
+-	q_vector->affinity_mask = *mask;
++	cpumask_copy(&q_vector->affinity_mask, mask);
+ }
+ 
+ /**
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 77d2835..ef55f71 100644
+index ef55f71..755f60f 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1879,7 +1879,7 @@ static void i40evf_reset_task(struct work_struct *work)
- 	}
+@@ -520,7 +520,7 @@ static void i40evf_irq_affinity_notify(struct irq_affinity_notify *notify,
+ 	struct i40e_q_vector *q_vector =
+ 		container_of(notify, struct i40e_q_vector, affinity_notify);
  
- continue_reset:
--	if (netif_running(adapter->netdev)) {
-+	if (netif_running(netdev)) {
- 		netif_carrier_off(netdev);
- 		netif_tx_stop_all_queues(netdev);
- 		adapter->link_up = false;
-@@ -1947,7 +1947,7 @@ static void i40evf_reset_task(struct work_struct *work)
- 	return;
- reset_err:
- 	dev_err(&adapter->pdev->dev, "failed to allocate resources during reinit\n");
--	i40evf_close(adapter->netdev);
-+	i40evf_close(netdev);
+-	q_vector->affinity_mask = *mask;
++	cpumask_copy(&q_vector->affinity_mask, mask);
  }
  
  /**
