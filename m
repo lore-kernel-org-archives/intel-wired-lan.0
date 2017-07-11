@@ -1,26 +1,46 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 11 Jul 2017 07:26:35 -0700 (PDT)
-Subject: [Intel-wired-lan] [PATCH 0/6] Configuring traffic classes via
- new hardware offload mechanism in tc/mqprio
-In-Reply-To: <149976762072.2896.5722904915197643856.stgit@anamdev.jf.intel.com>
-References: <149976762072.2896.5722904915197643856.stgit@anamdev.jf.intel.com>
-Message-ID: <20170711.072635.185388451319287053.davem@davemloft.net>
+From: Alice Michael <alice.michael@intel.com>
+Date: Tue, 11 Jul 2017 08:01:08 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V2 01/12] i40evf: use netdev
+	variable in reset task
+Message-ID: <20170711120118.44095-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Amritha Nambiar <amritha.nambiar@intel.com>
-Date: Tue, 11 Jul 2017 03:18:30 -0700
+From: Alan Brady <alan.brady@intel.com>
 
-> The following series introduces a new hardware offload mode in
-> tc/mqprio where the TCs, the queue configurations and
-> bandwidth rate limits are offloaded to the hardware.
+If we're going to bother initializing a variable to reference it we might
+as well use it.
 
-net-next is closed, please resubmit this when net-next opens
-again:
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+---
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-	http://vger.kernel.org/~davem/net-next.html
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 77d2835..ef55f71 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1879,7 +1879,7 @@ static void i40evf_reset_task(struct work_struct *work)
+ 	}
+ 
+ continue_reset:
+-	if (netif_running(adapter->netdev)) {
++	if (netif_running(netdev)) {
+ 		netif_carrier_off(netdev);
+ 		netif_tx_stop_all_queues(netdev);
+ 		adapter->link_up = false;
+@@ -1947,7 +1947,7 @@ static void i40evf_reset_task(struct work_struct *work)
+ 	return;
+ reset_err:
+ 	dev_err(&adapter->pdev->dev, "failed to allocate resources during reinit\n");
+-	i40evf_close(adapter->netdev);
++	i40evf_close(netdev);
+ }
+ 
+ /**
+-- 
+2.9.3
 
-Thank you.
