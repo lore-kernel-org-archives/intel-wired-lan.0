@@ -1,54 +1,59 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 11 Jul 2017 08:01:16 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V2 09/12] i40e: force VMDQ device
-	name truncation
+Date: Tue, 11 Jul 2017 08:01:11 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V2 04/12] i40e: synchronize
+	nvmupdate command and adminq subtask
 In-Reply-To: <20170711120118.44095-1-alice.michael@intel.com>
 References: <20170711120118.44095-1-alice.michael@intel.com>
-Message-ID: <20170711120118.44095-9-alice.michael@intel.com>
+Message-ID: <20170711120118.44095-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 
-In new versions of GCC since 7.x a new warning exists which warns when
-a string is truncated before all of the format can be completed.
+During NVM update, state machine gets into unrecoverable state because
+i40e_clean_adminq_subtask can get scheduled after the admin queue
+command but before other state variables are updated. This causes
+incorrect input to i40e_nvmupd_check_wait_event and state transitions
+don't happen.
 
-When we setup VMDQ netdev names we are copying a pre-existing interface
-name which could be up to 15 characters in length. Since we also add
-4 bytes, v, the literal %, the d and a \0 null, we would overrun the
-available size unless snprintf truncated for us.
+This issue existed before but surfaced after commit 373149fc99a0
+("i40e: Decrease the scope of rtnl lock")
 
-The snprintf call will ofcourse truncate on the end, so lets instead
-modify the code to force truncation of the copied netdev name by
-4 characters, to create enough space for the 4 bytes we're adding.
+This fix adds locking around admin queue command and update of
+state variables so that adminq_subtask will have accurate information
+whenever it gets scheduled.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 837d434..0c8c07d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9690,8 +9690,13 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 		i40e_add_mac_filter(vsi, mac_addr);
- 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
- 	} else {
--		/* relate the VSI_VMDQ name to the VSI_MAIN name */
--		snprintf(netdev->name, IFNAMSIZ, "%sv%%d",
-+		/* Relate the VSI_VMDQ name to the VSI_MAIN name. Note that we
-+		 * are still limited by IFNAMSIZ, but we're adding 'v%d\0' to
-+		 * the end, which is 4 bytes long, so force truncation of the
-+		 * original name by IFNAMSIZ - 4
-+		 */
-+		snprintf(netdev->name, IFNAMSIZ, "%.*sv%%d",
-+			 IFNAMSIZ - 4,
- 			 pf->vsi[pf->lan_vsi]->netdev->name);
- 		random_ether_addr(mac_addr);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 17607a2..04f2192 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -753,6 +753,11 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
+ 		hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ 	}
+ 
++	/* Acquire lock to prevent race condition where adminq_task
++	 * can execute after i40e_nvmupd_nvm_read/write but before state
++	 * variables (nvm_wait_opcode, nvm_release_on_done) are updated
++	 */
++	mutex_lock(&hw->aq.arq_mutex);
+ 	switch (hw->nvmupd_state) {
+ 	case I40E_NVMUPD_STATE_INIT:
+ 		status = i40e_nvmupd_state_init(hw, cmd, bytes, perrno);
+@@ -788,6 +793,7 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
+ 		*perrno = -ESRCH;
+ 		break;
+ 	}
++	mutex_unlock(&hw->aq.arq_mutex);
+ 	return status;
+ }
  
 -- 
 2.9.3
