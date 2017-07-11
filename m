@@ -1,72 +1,55 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 11 Jul 2017 08:01:18 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V2 11/12] i40e: 25G FEC status
-	improvements
+Date: Tue, 11 Jul 2017 08:01:16 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V2 09/12] i40e: force VMDQ device
+	name truncation
 In-Reply-To: <20170711120118.44095-1-alice.michael@intel.com>
 References: <20170711120118.44095-1-alice.michael@intel.com>
-Message-ID: <20170711120118.44095-11-alice.michael@intel.com>
+Message-ID: <20170711120118.44095-9-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mariusz Stachura <mariusz.stachura@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-This patch improves the system log message. The log message will
-be expanded to include the FEC mode the FW requested before link
-was established.
+In new versions of GCC since 7.x a new warning exists which warns when
+a string is truncated before all of the format can be completed.
 
-Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+When we setup VMDQ netdev names we are copying a pre-existing interface
+name which could be up to 15 characters in length. Since we also add
+4 bytes, v, the literal %, the d and a \0 null, we would overrun the
+available size unless snprintf truncated for us.
+
+The snprintf call will ofcourse truncate on the end, so lets instead
+modify the code to force truncation of the copied netdev name by
+4 characters, to create enough space for the 4 bytes we're adding.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 0c8c07d..fa93c63 100644
+index 837d434..0c8c07d 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5355,6 +5355,7 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 	char *speed = "Unknown";
- 	char *fc = "Unknown";
- 	char *fec = "";
-+	char *req_fec = "";
- 	char *an = "";
- 
- 	new_speed = vsi->back->hw.phy.link_info.link_speed;
-@@ -5416,6 +5417,7 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 	}
- 
- 	if (vsi->back->hw.phy.link_info.link_speed == I40E_LINK_SPEED_25GB) {
-+		req_fec = ", Requested FEC: None";
- 		fec = ", FEC: None";
- 		an = ", Autoneg: False";
- 
-@@ -5428,10 +5430,22 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 		else if (vsi->back->hw.phy.link_info.fec_info &
- 			 I40E_AQ_CONFIG_FEC_RS_ENA)
- 			fec = ", FEC: CL108 RS-FEC";
-+
-+		/* 'CL108 RS-FEC' should be displayed when RS is requested, or
-+		 * both RS and FC are requested
+@@ -9690,8 +9690,13 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 		i40e_add_mac_filter(vsi, mac_addr);
+ 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
+ 	} else {
+-		/* relate the VSI_VMDQ name to the VSI_MAIN name */
+-		snprintf(netdev->name, IFNAMSIZ, "%sv%%d",
++		/* Relate the VSI_VMDQ name to the VSI_MAIN name. Note that we
++		 * are still limited by IFNAMSIZ, but we're adding 'v%d\0' to
++		 * the end, which is 4 bytes long, so force truncation of the
++		 * original name by IFNAMSIZ - 4
 +		 */
-+		if (vsi->back->hw.phy.link_info.req_fec_info &
-+		    (I40E_AQ_REQUEST_FEC_KR | I40E_AQ_REQUEST_FEC_RS)) {
-+			if (vsi->back->hw.phy.link_info.req_fec_info &
-+			    I40E_AQ_REQUEST_FEC_RS)
-+				req_fec = ", Requested FEC: CL108 RS-FEC";
-+			else
-+				req_fec = ", Requested FEC: CL74 FC-FEC/BASE-R";
-+		}
- 	}
++		snprintf(netdev->name, IFNAMSIZ, "%.*sv%%d",
++			 IFNAMSIZ - 4,
+ 			 pf->vsi[pf->lan_vsi]->netdev->name);
+ 		random_ether_addr(mac_addr);
  
--	netdev_info(vsi->netdev, "NIC Link is Up, %sbps Full Duplex%s%s, Flow Control: %s\n",
--		    speed, fec, an, fc);
-+	netdev_info(vsi->netdev, "NIC Link is Up, %sbps Full Duplex%s%s%s, Flow Control: %s\n",
-+		    speed, req_fec, fec, an, fc);
- }
- 
- /**
 -- 
 2.9.3
 
