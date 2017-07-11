@@ -1,105 +1,71 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 10 Jul 2017 13:23:13 -0700
-Subject: [Intel-wired-lan] [PATCH v3 10/16] fm10k: prevent race condition of
-	__FM10K_SERVICE_SCHED
-In-Reply-To: <20170710202319.22110-1-jacob.e.keller@intel.com>
-References: <20170710202319.22110-1-jacob.e.keller@intel.com>
-Message-ID: <20170710202319.22110-10-jacob.e.keller@intel.com>
+From: Amritha Nambiar <amritha.nambiar@intel.com>
+Date: Tue, 11 Jul 2017 03:18:30 -0700
+Subject: [Intel-wired-lan] [PATCH 0/6] Configuring traffic classes via new
+ hardware offload mechanism in tc/mqprio
+Message-ID: <149976762072.2896.5722904915197643856.stgit@anamdev.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Although very unlikely, it is possible that cancel_work_sync() may stop
-the service_task before it actually started. In this case, the
-__FM10K_SERVICE_SCHED bit will never be cleared. This results in the
-service task being unable to reschedule in the future. Add a helper
-function which sets the service disable bit, waits for the service task
-to stop and clears the schedule bit, thus avoiding the race condition.
-We know the schedule bit is safe to clear because the cancel_work_sync()
-guarantees the service task is not running.
+The following series introduces a new hardware offload mode in
+tc/mqprio where the TCs, the queue configurations and
+bandwidth rate limits are offloaded to the hardware. The existing
+mqprio framework is extended to configure the queue counts and
+layout and also added support for rate limiting. This is achieved
+by setting the value 2 for the "hw" mode. Legacy devices can fall
+back to the existing setup supporting hw mode 1 where only the
+TCs are offloaded, however if hw mode 2 is specified, then this
+type of offload fails to initialize if the requested mode is not
+supported. The i40e driver enables the new mqprio hardware offload
+mechanism factoring the TCs, queue configuration and bandwidth
+rates by creating HW channel VSIs.
 
-Add a helper function also to restart the service task, for symmetry.
-This is not strictly needed but helps the mental model of how to stop
-and start the service task.
+In this new mode, the priority to traffic class mapping and the
+user specified queue ranges are used to configure the traffic
+class when the 'hw' option is set to 2. This is achieved by
+creating HW channels(VSI). A new channel is created for each
+of the traffic class configuration offloaded via mqprio
+framework except for the first TC (TC0) which is for the main
+VSI. TC0 for the main VSI is also reconfigured as per user
+provided queue parameters. Finally, bandwidth rate limits are
+set on these traffic classes through the mqprio offload
+framework by sending these rates in addition to the number of
+TCs and the queue configurations.
 
-This race could only happen in fm10k_suspend/fm10k_resume as this is the
-only place where the service task is actually restarted. Thus,
-suspend/resume testing would be ideal. However, note that the chance of
-this happening is very slim as the service event is scheduled for
-immediate execution, and you would have to trigger a suspend at almost
-the exact same time as the service task was scheduled.
+Example:
+# tc qdisc add dev eth0 root mqprio num_tc 2  map 0 0 0 0 1 1 1 1\
+  queues 4 at 0 4 at 4 min_rate 0Mbit 0Mbit max_rate 55Mbit 60Mbit hw 2
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+To dump the bandwidth rates:
+
+# tc qdisc show dev eth0
+  qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
+               queues:(0:3) (4:7)
+               min rates:0bit 0bit
+               max rates:55Mbit 60Mbit
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 32 ++++++++++++++++++++++------
- 1 file changed, 25 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 6a7b4c5429ae..cfbe25e90006 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -118,6 +118,27 @@ static void fm10k_service_event_complete(struct fm10k_intfc *interface)
- 		fm10k_service_event_schedule(interface);
- }
- 
-+static void fm10k_stop_service_event(struct fm10k_intfc *interface)
-+{
-+	set_bit(__FM10K_SERVICE_DISABLE, interface->state);
-+	cancel_work_sync(&interface->service_task);
-+
-+	/* It's possible that cancel_work_sync stopped the service task from
-+	 * running before it could actually start. In this case the
-+	 * __FM10K_SERVICE_SCHED bit will never be cleared. Since we know that
-+	 * the service task cannot be running at this point, we need to clear
-+	 * the scheduled bit, as otherwise the service task may never be
-+	 * restarted.
-+	 */
-+	clear_bit(__FM10K_SERVICE_SCHED, interface->state);
-+}
-+
-+static void fm10k_start_service_event(struct fm10k_intfc *interface)
-+{
-+	clear_bit(__FM10K_SERVICE_DISABLE, interface->state);
-+	fm10k_service_event_schedule(interface);
-+}
-+
- /**
-  * fm10k_service_timer - Timer Call-back
-  * @data: pointer to interface cast into an unsigned long
-@@ -2116,8 +2137,7 @@ static void fm10k_remove(struct pci_dev *pdev)
- 
- 	del_timer_sync(&interface->service_timer);
- 
--	set_bit(__FM10K_SERVICE_DISABLE, interface->state);
--	cancel_work_sync(&interface->service_task);
-+	fm10k_stop_service_event(interface);
- 
- 	/* free netdev, this may bounce the interrupts due to setup_tc */
- 	if (netdev->reg_state == NETREG_REGISTERED)
-@@ -2155,8 +2175,7 @@ static void fm10k_prepare_suspend(struct fm10k_intfc *interface)
- 	 * stopped. We stop the watchdog task until after we resume software
- 	 * activity.
- 	 */
--	set_bit(__FM10K_SERVICE_DISABLE, interface->state);
--	cancel_work_sync(&interface->service_task);
-+	fm10k_stop_service_event(interface);
- 
- 	fm10k_prepare_for_reset(interface);
- }
-@@ -2183,9 +2202,8 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
- 	interface->link_down_event = jiffies + (HZ);
- 	set_bit(__FM10K_LINK_DOWN, interface->state);
- 
--	/* clear the service task disable bit to allow service task to start */
--	clear_bit(__FM10K_SERVICE_DISABLE, interface->state);
--	fm10k_service_event_schedule(interface);
-+	/* restart the service task */
-+	fm10k_start_service_event(interface);
- 
- 	return err;
- }
--- 
-2.13.0.615.gb09ed6e59a40
+Amritha Nambiar (6):
+      [next-queue]net: mqprio: Introduce new hardware offload mode in mqprio for offloading full TC configurations
+      [next-queue]net: i40e: Add macro for PF reset bit
+      [next-queue]net: i40e: Add infrastructure for queue channel support with the TCs and queue configurations offloaded via mqprio scheduler
+      [next-queue]net: i40e: Enable mqprio full offload mode in the i40e driver for configuring TCs and queue mapping
+      [next-queue]net: i40e: Refactor VF BW rate limiting function to be reused on the PF as well
+      [next-queue]net: i40e: Add support to set max bandwidth rates for TCs offloaded via tc/mqprio
 
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |   45 +
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |    3 
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |    8 
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 1478 +++++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |    2 
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   50 -
+ include/linux/netdevice.h                          |    2 
+ include/net/pkt_cls.h                              |    7 
+ include/uapi/linux/pkt_sched.h                     |   13 
+ net/sched/sch_mqprio.c                             |  170 ++
+ 10 files changed, 1526 insertions(+), 252 deletions(-)
+
+--
