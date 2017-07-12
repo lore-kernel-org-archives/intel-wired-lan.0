@@ -1,68 +1,55 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 12 Jul 2017 05:46:08 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V3 05/11] i40e: Store the
-	requested FEC information
+Date: Wed, 12 Jul 2017 05:46:12 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V3 09/11] i40e: force VMDQ device
+	name truncation
 In-Reply-To: <20170712094614.76501-1-alice.michael@intel.com>
 References: <20170712094614.76501-1-alice.michael@intel.com>
-Message-ID: <20170712094614.76501-5-alice.michael@intel.com>
+Message-ID: <20170712094614.76501-9-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mariusz Stachura <mariusz.stachura@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Store information about FEC modes, that were requested. It will be used
-in printing link status information function and this way there is no
-need to call admin queue there.
+In new versions of GCC since 7.x a new warning exists which warns when
+a string is truncated before all of the format can be completed.
 
-Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+When we setup VMDQ netdev names we are copying a pre-existing interface
+name which could be up to 15 characters in length. Since we also add
+4 bytes, v, the literal %, the d and a \0 null, we would overrun the
+available size unless snprintf truncated for us.
+
+The snprintf call will ofcourse truncate on the end, so lets instead
+modify the code to force truncation of the copied netdev name by
+4 characters, to create enough space for the 4 bytes we're adding.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 4 ++++
- drivers/net/ethernet/intel/i40e/i40e_type.h   | 1 +
- drivers/net/ethernet/intel/i40evf/i40e_type.h | 1 +
- 3 files changed, 6 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 8e082a9..5c36a18 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -2529,6 +2529,10 @@ i40e_status i40e_update_link_info(struct i40e_hw *hw)
- 		if (status)
- 			return status;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 837d434..0c8c07d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -9690,8 +9690,13 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 		i40e_add_mac_filter(vsi, mac_addr);
+ 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
+ 	} else {
+-		/* relate the VSI_VMDQ name to the VSI_MAIN name */
+-		snprintf(netdev->name, IFNAMSIZ, "%sv%%d",
++		/* Relate the VSI_VMDQ name to the VSI_MAIN name. Note that we
++		 * are still limited by IFNAMSIZ, but we're adding 'v%d\0' to
++		 * the end, which is 4 bytes long, so force truncation of the
++		 * original name by IFNAMSIZ - 4
++		 */
++		snprintf(netdev->name, IFNAMSIZ, "%.*sv%%d",
++			 IFNAMSIZ - 4,
+ 			 pf->vsi[pf->lan_vsi]->netdev->name);
+ 		random_ether_addr(mac_addr);
  
-+		hw->phy.link_info.req_fec_info =
-+			abilities.fec_cfg_curr_mod_ext_info &
-+			(I40E_AQ_REQUEST_FEC_KR | I40E_AQ_REQUEST_FEC_RS);
-+
- 		memcpy(hw->phy.link_info.module_type, &abilities.module_type,
- 		       sizeof(hw->phy.link_info.module_type));
- 	}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 3a18ed1..fd4bbdd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -185,6 +185,7 @@ struct i40e_link_status {
- 	enum i40e_aq_link_speed link_speed;
- 	u8 link_info;
- 	u8 an_info;
-+	u8 req_fec_info;
- 	u8 fec_info;
- 	u8 ext_info;
- 	u8 loopback;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index bde7f24..2ea919d 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -159,6 +159,7 @@ struct i40e_link_status {
- 	enum i40e_aq_link_speed link_speed;
- 	u8 link_info;
- 	u8 an_info;
-+	u8 req_fec_info;
- 	u8 fec_info;
- 	u8 ext_info;
- 	u8 loopback;
 -- 
 2.9.3
 
