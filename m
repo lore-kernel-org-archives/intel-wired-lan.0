@@ -1,97 +1,68 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 12 Jul 2017 05:46:11 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V3 08/11] i40evf: fix possible
-	snprintf truncation of q_vector->name
+Date: Wed, 12 Jul 2017 05:46:08 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V3 05/11] i40e: Store the
+	requested FEC information
 In-Reply-To: <20170712094614.76501-1-alice.michael@intel.com>
 References: <20170712094614.76501-1-alice.michael@intel.com>
-Message-ID: <20170712094614.76501-8-alice.michael@intel.com>
+Message-ID: <20170712094614.76501-5-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Mariusz Stachura <mariusz.stachura@intel.com>
 
-The q_vector names are based on the interface name with a driver prefix,
-the type of q_vector setup, and the queue number. We previously set the
-size of this variable to IFNAMSIZ + 9, which is incorrect, because we
-actually include a minimum of 14 characters extra beyond the interface
-name size.
+Store information about FEC modes, that were requested. It will be used
+in printing link status information function and this way there is no
+need to call admin queue there.
 
-New versions of GCC since 7 include a new warning that detects this
-possible truncation and complains. We can fix this by increasing the
-size incase our interface name is too large to avoid truncation. We
-don't need to go beyond 14 because the compiler is smart enough to
-realize our values can never exceed size of 1. We do go up to 15 here
-because possible future changes may increase the number of queues beyond
-one digit.
-
-While we are here, also change some variables to be unsigned (since they
-are never negative) and stop using an extra unnecessary %s format
-specifier.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf.h      |  2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 21 +++++++++------------
- 2 files changed, 10 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 4 ++++
+ drivers/net/ethernet/intel/i40e/i40e_type.h   | 1 +
+ drivers/net/ethernet/intel/i40evf/i40e_type.h | 1 +
+ 3 files changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index c89767e..f028c09 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -121,7 +121,7 @@ struct i40e_q_vector {
- #define ITR_COUNTDOWN_START 100
- 	u8 itr_countdown;	/* when 0 or 1 update ITR */
- 	int v_idx;	/* vector index in list */
--	char name[IFNAMSIZ + 9];
-+	char name[IFNAMSIZ + 15];
- 	bool arm_wb_state;
- 	cpumask_t affinity_mask;
- 	struct irq_affinity_notify affinity_notify;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 755f60f..a8bc1ed 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -543,9 +543,9 @@ static void i40evf_irq_affinity_release(struct kref *ref) {}
- static int
- i40evf_request_traffic_irqs(struct i40evf_adapter *adapter, char *basename)
- {
--	int vector, err, q_vectors;
--	int rx_int_idx = 0, tx_int_idx = 0;
--	int irq_num;
-+	unsigned int vector, q_vectors;
-+	unsigned int rx_int_idx = 0, tx_int_idx = 0;
-+	int irq_num, err;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 8e082a9..5c36a18 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -2529,6 +2529,10 @@ i40e_status i40e_update_link_info(struct i40e_hw *hw)
+ 		if (status)
+ 			return status;
  
- 	i40evf_irq_disable(adapter);
- 	/* Decrement for Other and TCP Timer vectors */
-@@ -556,18 +556,15 @@ i40evf_request_traffic_irqs(struct i40evf_adapter *adapter, char *basename)
- 		irq_num = adapter->msix_entries[vector + NONQ_VECS].vector;
- 
- 		if (q_vector->tx.ring && q_vector->rx.ring) {
--			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
--				 "i40evf-%s-%s-%d", basename,
--				 "TxRx", rx_int_idx++);
-+			snprintf(q_vector->name, sizeof(q_vector->name),
-+				 "i40evf-%s-TxRx-%d", basename, rx_int_idx++);
- 			tx_int_idx++;
- 		} else if (q_vector->rx.ring) {
--			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
--				 "i40evf-%s-%s-%d", basename,
--				 "rx", rx_int_idx++);
-+			snprintf(q_vector->name, sizeof(q_vector->name),
-+				 "i40evf-%s-rx-%d", basename, rx_int_idx++);
- 		} else if (q_vector->tx.ring) {
--			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
--				 "i40evf-%s-%s-%d", basename,
--				 "tx", tx_int_idx++);
-+			snprintf(q_vector->name, sizeof(q_vector->name),
-+				 "i40evf-%s-tx-%d", basename, tx_int_idx++);
- 		} else {
- 			/* skip this unused q_vector */
- 			continue;
++		hw->phy.link_info.req_fec_info =
++			abilities.fec_cfg_curr_mod_ext_info &
++			(I40E_AQ_REQUEST_FEC_KR | I40E_AQ_REQUEST_FEC_RS);
++
+ 		memcpy(hw->phy.link_info.module_type, &abilities.module_type,
+ 		       sizeof(hw->phy.link_info.module_type));
+ 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 3a18ed1..fd4bbdd 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -185,6 +185,7 @@ struct i40e_link_status {
+ 	enum i40e_aq_link_speed link_speed;
+ 	u8 link_info;
+ 	u8 an_info;
++	u8 req_fec_info;
+ 	u8 fec_info;
+ 	u8 ext_info;
+ 	u8 loopback;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index bde7f24..2ea919d 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -159,6 +159,7 @@ struct i40e_link_status {
+ 	enum i40e_aq_link_speed link_speed;
+ 	u8 link_info;
+ 	u8 an_info;
++	u8 req_fec_info;
+ 	u8 fec_info;
+ 	u8 ext_info;
+ 	u8 loopback;
 -- 
 2.9.3
 
