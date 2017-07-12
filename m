@@ -1,60 +1,141 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 12 Jul 2017 05:46:07 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V3 04/11] i40e: synchronize
-	nvmupdate command and adminq subtask
+Date: Wed, 12 Jul 2017 05:46:06 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V3 03/11] i40e: prevent changing
+	ITR if adaptive-rx/tx enabled
 In-Reply-To: <20170712094614.76501-1-alice.michael@intel.com>
 References: <20170712094614.76501-1-alice.michael@intel.com>
-Message-ID: <20170712094614.76501-4-alice.michael@intel.com>
+Message-ID: <20170712094614.76501-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+From: Alan Brady <alan.brady@intel.com>
 
-During NVM update, state machine gets into unrecoverable state because
-i40e_clean_adminq_subtask can get scheduled after the admin queue
-command but before other state variables are updated. This causes
-incorrect input to i40e_nvmupd_check_wait_event and state transitions
-don't happen.
+Currently the driver allows the user to change (or even disable)
+interrupt moderation if adaptive-rx/tx is enabled when this should
+not be the case.
 
-This issue existed before but surfaced after commit 373149fc99a0
-("i40e: Decrease the scope of rtnl lock")
+Adaptive RX/TX will not respect the user's ITR settings so
+allowing the user to change it is weird.  This bug would also
+allow the user to disable interrupt moderation with adaptive-rx/tx
+enabled which doesn't make much sense either.
 
-This fix adds locking around admin queue command and update of
-state variables so that adminq_subtask will have accurate information
-whenever it gets scheduled.
+This patch makes it such that if adaptive-rx/tx is enabled, the user
+cannot make any manual adjustments to interrupt moderation.  It also
+makes it so that if ITR is disabled but adaptive-rx/tx is then
+enabled, ITR will be re-enabled.
 
-Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_nvm.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 61 +++++++++++++++++---------
+ 1 file changed, 41 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 17607a2..04f2192 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -753,6 +753,11 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
- 		hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index a868c8d..b273c24 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2194,14 +2194,29 @@ static int __i40e_set_coalesce(struct net_device *netdev,
+ 			       int queue)
+ {
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	u16 intrl_reg, cur_rx_itr, cur_tx_itr;
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+-	u16 intrl_reg;
+ 	int i;
+ 
+ 	if (ec->tx_max_coalesced_frames_irq || ec->rx_max_coalesced_frames_irq)
+ 		vsi->work_limit = ec->tx_max_coalesced_frames_irq;
+ 
++	if (queue < 0) {
++		cur_rx_itr = vsi->rx_rings[0]->rx_itr_setting;
++		cur_tx_itr = vsi->tx_rings[0]->tx_itr_setting;
++	} else if (queue < vsi->num_queue_pairs) {
++		cur_rx_itr = vsi->rx_rings[queue]->rx_itr_setting;
++		cur_tx_itr = vsi->tx_rings[queue]->tx_itr_setting;
++	} else {
++		netif_info(pf, drv, netdev, "Invalid queue value, queue range is 0 - %d\n",
++			   vsi->num_queue_pairs - 1);
++		return -EINVAL;
++	}
++
++	cur_tx_itr &= ~I40E_ITR_DYNAMIC;
++	cur_rx_itr &= ~I40E_ITR_DYNAMIC;
++
+ 	/* tx_coalesce_usecs_high is ignored, use rx-usecs-high instead */
+ 	if (ec->tx_coalesce_usecs_high != vsi->int_rate_limit) {
+ 		netif_info(pf, drv, netdev, "tx-usecs-high is not used, please program rx-usecs-high\n");
+@@ -2214,15 +2229,34 @@ static int __i40e_set_coalesce(struct net_device *netdev,
+ 		return -EINVAL;
  	}
  
-+	/* Acquire lock to prevent race condition where adminq_task
-+	 * can execute after i40e_nvmupd_nvm_read/write but before state
-+	 * variables (nvm_wait_opcode, nvm_release_on_done) are updated
-+	 */
-+	mutex_lock(&hw->aq.arq_mutex);
- 	switch (hw->nvmupd_state) {
- 	case I40E_NVMUPD_STATE_INIT:
- 		status = i40e_nvmupd_state_init(hw, cmd, bytes, perrno);
-@@ -788,6 +793,7 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
- 		*perrno = -ESRCH;
- 		break;
+-	if (ec->rx_coalesce_usecs == 0) {
+-		if (ec->use_adaptive_rx_coalesce)
+-			netif_info(pf, drv, netdev, "rx-usecs=0, need to disable adaptive-rx for a complete disable\n");
+-	} else if ((ec->rx_coalesce_usecs < (I40E_MIN_ITR << 1)) ||
+-		   (ec->rx_coalesce_usecs > (I40E_MAX_ITR << 1))) {
++	if (ec->rx_coalesce_usecs != cur_rx_itr &&
++	    ec->use_adaptive_rx_coalesce) {
++		netif_info(pf, drv, netdev, "RX interrupt moderation cannot be changed if adaptive-rx is enabled.\n");
++		return -EINVAL;
++	}
++
++	if (ec->rx_coalesce_usecs > (I40E_MAX_ITR << 1)) {
+ 			netif_info(pf, drv, netdev, "Invalid value, rx-usecs range is 0-8160\n");
+ 			return -EINVAL;
  	}
-+	mutex_unlock(&hw->aq.arq_mutex);
- 	return status;
- }
  
++	if (ec->tx_coalesce_usecs != cur_tx_itr &&
++	    ec->use_adaptive_tx_coalesce) {
++		netif_info(pf, drv, netdev, "TX interrupt moderation cannot be changed if adaptive-tx is enabled.\n");
++		return -EINVAL;
++	}
++
++	if (ec->tx_coalesce_usecs > (I40E_MAX_ITR << 1)) {
++		netif_info(pf, drv, netdev, "Invalid value, tx-usecs range is 0-8160\n");
++		return -EINVAL;
++	}
++
++	if (ec->use_adaptive_rx_coalesce && !cur_rx_itr)
++		ec->rx_coalesce_usecs = I40E_MIN_ITR << 1;
++
++	if (ec->use_adaptive_tx_coalesce && !cur_tx_itr)
++		ec->tx_coalesce_usecs = I40E_MIN_ITR << 1;
++
+ 	intrl_reg = i40e_intrl_usec_to_reg(ec->rx_coalesce_usecs_high);
+ 	vsi->int_rate_limit = INTRL_REG_TO_USEC(intrl_reg);
+ 	if (vsi->int_rate_limit != ec->rx_coalesce_usecs_high) {
+@@ -2230,27 +2264,14 @@ static int __i40e_set_coalesce(struct net_device *netdev,
+ 			   vsi->int_rate_limit);
+ 	}
+ 
+-	if (ec->tx_coalesce_usecs == 0) {
+-		if (ec->use_adaptive_tx_coalesce)
+-			netif_info(pf, drv, netdev, "tx-usecs=0, need to disable adaptive-tx for a complete disable\n");
+-	} else if ((ec->tx_coalesce_usecs < (I40E_MIN_ITR << 1)) ||
+-		   (ec->tx_coalesce_usecs > (I40E_MAX_ITR << 1))) {
+-			netif_info(pf, drv, netdev, "Invalid value, tx-usecs range is 0-8160\n");
+-			return -EINVAL;
+-	}
+-
+ 	/* rx and tx usecs has per queue value. If user doesn't specify the queue,
+ 	 * apply to all queues.
+ 	 */
+ 	if (queue < 0) {
+ 		for (i = 0; i < vsi->num_queue_pairs; i++)
+ 			i40e_set_itr_per_queue(vsi, ec, i);
+-	} else if (queue < vsi->num_queue_pairs) {
+-		i40e_set_itr_per_queue(vsi, ec, queue);
+ 	} else {
+-		netif_info(pf, drv, netdev, "Invalid queue value, queue range is 0 - %d\n",
+-			   vsi->num_queue_pairs - 1);
+-		return -EINVAL;
++		i40e_set_itr_per_queue(vsi, ec, queue);
+ 	}
+ 
+ 	return 0;
 -- 
 2.9.3
 
