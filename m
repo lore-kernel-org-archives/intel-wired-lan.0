@@ -1,16 +1,30 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 12 Jul 2017 17:16:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
- 0795b67420bc9c159bd4f957024b3e9cf23d7912
-Message-ID: <5965e8f7.nZdMV14A/YSM4moB%fengguang.wu@intel.com>
+Date: Wed, 12 Jul 2017 17:16:38 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ fba7ac1c2ab15f03f3f95355b8e6d15b42922fa3
+Message-ID: <5965e8f6.8KohQeTewvFEuC99%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-0795b67420bc9c159bd4f957024b3e9cf23d7912  ixgbe: fix masking of bits read from IXGBE_VXLANCTRL register
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+fba7ac1c2ab15f03f3f95355b8e6d15b42922fa3  ixgbe: Clear SWFW_SYNC register during init
+
+drivers/net/ethernet/intel/i40e/i40e_debugfs.c:161:4: warning: format '%lx' expects argument of type 'long unsigned int', but argument 3 has type 'u64 {aka long long unsigned int}' [-Wformat=]
+
+Error ids grouped by kconfigs:
+
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+??? ia64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+??? x86_64-rhel
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+??? x86_64-rhel-7.2
+    ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
 
 TIMEOUT after 603m
 
@@ -22,11 +36,10 @@ possible error reports when our build infrastructure is restored or catches up.
 There will be no more build success notification for this branch head, but you
 can expect reasonably good test coverage after waiting for 1 day.
 
-configs timed out: 99
+configs timed out: 101
 
 alpha                            allmodconfig
 alpha                            allyesconfig
-alpha                               defconfig
 arm64                          customconfig-0
 arm64                          customconfig-1
 arm64                          customconfig-2
@@ -62,29 +75,27 @@ i386                          randconfig-x006
 i386                          randconfig-x007
 i386                          randconfig-x008
 i386                          randconfig-x009
-i386                          randconfig-x010
-i386                          randconfig-x011
-i386                          randconfig-x012
-i386                          randconfig-x013
-i386                          randconfig-x014
-i386                          randconfig-x015
-i386                          randconfig-x016
-i386                          randconfig-x017
-i386                          randconfig-x018
-i386                          randconfig-x019
-i386                               tinyconfig
+i386                          randconfig-x070
+i386                          randconfig-x071
+i386                          randconfig-x072
+i386                          randconfig-x073
+i386                          randconfig-x074
+i386                          randconfig-x075
+i386                          randconfig-x076
+i386                          randconfig-x077
+i386                          randconfig-x078
+i386                          randconfig-x079
 ia64                             allmodconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                             allyesconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
 mips                             allmodconfig
 mips                             allyesconfig
 parisc                           allmodconfig
-parisc                            allnoconfig
 parisc                           allyesconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
 powerpc                          allyesconfig
@@ -94,7 +105,11 @@ s390                             allmodconfig
 s390                             allyesconfig
 s390                        default_defconfig
 sh                               allmodconfig
+sh                                allnoconfig
 sh                               allyesconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
 sparc64                          allmodconfig
 sparc64                          allyesconfig
 sparc                            allmodconfig
@@ -108,6 +123,7 @@ x86_64                           allyesdebian
 x86_64                         customconfig-0
 x86_64                         customconfig-1
 x86_64                         customconfig-2
+x86_64                                  kexec
 x86_64                                    lkp
 x86_64                                nfsroot
 x86_64                          randconfig-i0
@@ -124,22 +140,14 @@ x86_64                        randconfig-x019
 xtensa                           allmodconfig
 xtensa                           allyesconfig
 
-configs tested: 75
+configs tested: 73
 
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                             allmodconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                               tinyconfig
 c6x                        evmc6678_defconfig
 xtensa                       common_defconfig
 m32r                       m32104ut_defconfig
@@ -150,22 +158,26 @@ m32r                           usrv_defconfig
 m32r                     mappi3.smp_defconfig
 nios2                         10m50_defconfig
 h8300                    h8300h-sim_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-i386                 randconfig-x075-07111527
-i386                 randconfig-x078-07111527
-i386                 randconfig-x071-07111527
-i386                 randconfig-x072-07111527
-i386                 randconfig-x077-07111527
-i386                 randconfig-x070-07111527
-i386                 randconfig-x073-07111527
-i386                 randconfig-x079-07111527
-i386                 randconfig-x076-07111527
-i386                 randconfig-x074-07111527
+x86_64                                   rhel
+x86_64                               rhel-7.2
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x012-201728
+i386                   randconfig-x018-201728
+i386                   randconfig-x016-201728
+i386                   randconfig-x017-201728
+i386                   randconfig-x013-201728
+i386                   randconfig-x010-201728
+i386                   randconfig-x019-201728
+i386                   randconfig-x014-201728
+i386                   randconfig-x015-201728
+i386                   randconfig-x011-201728
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
 arm                         at91_dt_defconfig
 arm                               allnoconfig
 arm                           efm32_defconfig
@@ -176,18 +188,12 @@ arm64                             allnoconfig
 arm                          exynos_defconfig
 arm                        shmobile_defconfig
 arm                        multi_v7_defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
 x86_64                 randconfig-x006-201728
 x86_64                 randconfig-x004-201728
 x86_64                 randconfig-x005-201728
@@ -198,9 +204,17 @@ x86_64                 randconfig-x002-201728
 x86_64                 randconfig-x000-201728
 x86_64                 randconfig-x009-201728
 x86_64                 randconfig-x003-201728
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
 
 Thanks,
 Fengguang
