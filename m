@@ -1,69 +1,43 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 12 Jul 2017 05:46:14 -0400
-Subject: [Intel-wired-lan] [next PATCH S75-V3 11/11] i40e: 25G FEC status
-	improvements
-In-Reply-To: <20170712094614.76501-1-alice.michael@intel.com>
-References: <20170712094614.76501-1-alice.michael@intel.com>
-Message-ID: <20170712094614.76501-11-alice.michael@intel.com>
+Date: Wed, 12 Jul 2017 05:46:04 -0400
+Subject: [Intel-wired-lan] [next PATCH S75-V3 01/11] i40evf: use netdev
+	variable in reset task
+Message-ID: <20170712094614.76501-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mariusz Stachura <mariusz.stachura@intel.com>
+From: Alan Brady <alan.brady@intel.com>
 
-This patch improves the system log message. The log message will
-be expanded to include the FEC mode the FW requested before link
-was established.
+If we're going to bother initializing a variable to reference it we might
+as well use it.
 
-Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 0c8c07d..fa93c63 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5355,6 +5355,7 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 	char *speed = "Unknown";
- 	char *fc = "Unknown";
- 	char *fec = "";
-+	char *req_fec = "";
- 	char *an = "";
- 
- 	new_speed = vsi->back->hw.phy.link_info.link_speed;
-@@ -5416,6 +5417,7 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 77d2835..ef55f71 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1879,7 +1879,7 @@ static void i40evf_reset_task(struct work_struct *work)
  	}
  
- 	if (vsi->back->hw.phy.link_info.link_speed == I40E_LINK_SPEED_25GB) {
-+		req_fec = ", Requested FEC: None";
- 		fec = ", FEC: None";
- 		an = ", Autoneg: False";
- 
-@@ -5428,10 +5430,22 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 		else if (vsi->back->hw.phy.link_info.fec_info &
- 			 I40E_AQ_CONFIG_FEC_RS_ENA)
- 			fec = ", FEC: CL108 RS-FEC";
-+
-+		/* 'CL108 RS-FEC' should be displayed when RS is requested, or
-+		 * both RS and FC are requested
-+		 */
-+		if (vsi->back->hw.phy.link_info.req_fec_info &
-+		    (I40E_AQ_REQUEST_FEC_KR | I40E_AQ_REQUEST_FEC_RS)) {
-+			if (vsi->back->hw.phy.link_info.req_fec_info &
-+			    I40E_AQ_REQUEST_FEC_RS)
-+				req_fec = ", Requested FEC: CL108 RS-FEC";
-+			else
-+				req_fec = ", Requested FEC: CL74 FC-FEC/BASE-R";
-+		}
- 	}
- 
--	netdev_info(vsi->netdev, "NIC Link is Up, %sbps Full Duplex%s%s, Flow Control: %s\n",
--		    speed, fec, an, fc);
-+	netdev_info(vsi->netdev, "NIC Link is Up, %sbps Full Duplex%s%s%s, Flow Control: %s\n",
-+		    speed, req_fec, fec, an, fc);
+ continue_reset:
+-	if (netif_running(adapter->netdev)) {
++	if (netif_running(netdev)) {
+ 		netif_carrier_off(netdev);
+ 		netif_tx_stop_all_queues(netdev);
+ 		adapter->link_up = false;
+@@ -1947,7 +1947,7 @@ static void i40evf_reset_task(struct work_struct *work)
+ 	return;
+ reset_err:
+ 	dev_err(&adapter->pdev->dev, "failed to allocate resources during reinit\n");
+-	i40evf_close(adapter->netdev);
++	i40evf_close(netdev);
  }
  
  /**
