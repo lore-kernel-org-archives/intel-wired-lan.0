@@ -1,177 +1,219 @@
-From: Jamal Hadi Salim <jhs@mojatatu.com>
-Date: Fri, 14 Jul 2017 04:36:20 -0400
-Subject: [Intel-wired-lan] [PATCH 1/6] [next-queue]net: mqprio:
- Introduce new hardware offload mode in mqprio for offloading full TC
- configurations
-In-Reply-To: <149976831535.2896.16233967758531918702.stgit@anamdev.jf.intel.com>
-References: <149976762072.2896.5722904915197643856.stgit@anamdev.jf.intel.com>
- <149976831535.2896.16233967758531918702.stgit@anamdev.jf.intel.com>
-Message-ID: <d88ee2ba-ff7b-74dd-3b0b-9887fd7d1de9@mojatatu.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 15 Jul 2017 02:04:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
+ f7687debf7b05ff8ca9659c71e5159b037dbcdd4
+Message-ID: <596907a8.NlpehB0gmZTKgcqT%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 17-07-11 06:18 AM, Amritha Nambiar wrote:
-> This patch introduces a new hardware offload mode in mqprio
-> which makes full use of the mqprio options, the TCs, the
-> queue configurations and the bandwidth rates for the TCs.
-> This is achieved by setting the value 2 for the "hw" option.
-> This new offload mode supports new attributes for traffic
-> class such as minimum and maximum values for bandwidth rate limits.
-> 
-> Introduces a new datastructure 'tc_mqprio_qopt_offload' for offloading
-> mqprio queue options and use this to be shared between the kernel and
-> device driver. This contains a copy of the exisiting datastructure
-> for mqprio queue options. This new datastructure can be extended when
-> adding new attributes for traffic class such as bandwidth rate limits. The
-> existing datastructure for mqprio queue options will be shared between the
-> kernel and userspace.
-> 
-> This patch enables configuring additional attributes associated
-> with a traffic class such as minimum and maximum bandwidth
-> rates and can be offloaded to the hardware in the new offload mode.
-> The min and max limits for bandwidth rates are provided
-> by the user along with the the TCs and the queue configurations
-> when creating the mqprio qdisc.
-> 
-> Example:
-> # tc qdisc add dev eth0 root mqprio num_tc 2 map 0 0 0 0 1 1 1 1\
->    queues 4 at 0 4 at 4 min_rate 0Mbit 0Mbit max_rate 55Mbit 60Mbit hw 2
-> 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+f7687debf7b05ff8ca9659c71e5159b037dbcdd4  ixgbe: fix masking of bits read from IXGBE_VXLANCTRL register
 
-I know this has nothing to do with your patches - but that is very
-unfriendly ;-> Most mortals will have a problem with the map (but you
-can argue it has been there since prio qdisc was introduced) - leave
-alone the 4 at 4 syntax and now min_rate where i have to type in obvious
-defaults like "0Mbit".
-You have some great features that not many people can use as a result.
-Note:
-This is just a comment maybe someone can be kind enough to fix (or
-it would get annoying enough I will fix it); i.e should not be
-holding your good work.
-
-> To dump the bandwidth rates:
-> 
-> # tc qdisc show dev eth0
-> 
-> qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
->               queues:(0:3) (4:7)
->               min rates:0bit 0bit
->               max rates:55Mbit 60Mbit
-> 
-> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
-> ---
->   include/linux/netdevice.h      |    2
->   include/net/pkt_cls.h          |    7 ++
->   include/uapi/linux/pkt_sched.h |   13 +++
->   net/sched/sch_mqprio.c         |  170 +++++++++++++++++++++++++++++++++++++---
->   4 files changed, 181 insertions(+), 11 deletions(-)
-> 
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index e48ee2e..12c6c3f 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> @@ -779,6 +779,7 @@ enum {
->   	TC_SETUP_CLSFLOWER,
->   	TC_SETUP_MATCHALL,
->   	TC_SETUP_CLSBPF,
-> +	TC_SETUP_MQPRIO_EXT,
->   };
-> 
->   struct tc_cls_u32_offload;
-> @@ -791,6 +792,7 @@ struct tc_to_netdev {
->   		struct tc_cls_matchall_offload *cls_mall;
->   		struct tc_cls_bpf_offload *cls_bpf;
->   		struct tc_mqprio_qopt *mqprio;
-> +		struct tc_mqprio_qopt_offload *mqprio_qopt;
->   	};
->   	bool egress_dev;
->   };
+TIMEOUT after 604m
 
 
-> diff --git a/include/net/pkt_cls.h b/include/net/pkt_cls.h
-> index 537d0a0..9facda2 100644
-> --- a/include/net/pkt_cls.h
-> +++ b/include/net/pkt_cls.h
-> @@ -569,6 +569,13 @@ struct tc_cls_bpf_offload {
->   	u32 gen_flags;
->   };
->   
-> +struct tc_mqprio_qopt_offload {
-> +	/* struct tc_mqprio_qopt must always be the first element */
-> +	struct tc_mqprio_qopt qopt;
-> +	u32 flags;
-> +	u64 min_rate[TC_QOPT_MAX_QUEUE];
-> +	u64 max_rate[TC_QOPT_MAX_QUEUE];
-> +};
->
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
 
-Quickly scanned code.
-My opinion is: struct tc_mqprio_qopt is messed up in terms of
-alignments. And you just made it worse. Why not create a new struct
-call it "tc_mqprio_qopt_hw" or something indicating it is for hw
-offload. You can then fixup stuff. I think it will depend on whether
-you can have both hw priority and rate in all network cards.
-If some hw cannot support rate offload then I would suggest it becomes
-optional via TLVs etc.
-If you are willing to do that clean up I can say more.
+configs timed out: 60
 
->   /* This structure holds cookie structure that is passed from user
->    * to the kernel for actions and classifiers
-> diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
-> index 099bf55..cf2a146 100644
-> --- a/include/uapi/linux/pkt_sched.h
-> +++ b/include/uapi/linux/pkt_sched.h
-> @@ -620,6 +620,7 @@ struct tc_drr_stats {
->   enum {
->   	TC_MQPRIO_HW_OFFLOAD_NONE,	/* no offload requested */
->   	TC_MQPRIO_HW_OFFLOAD_TCS,	/* offload TCs, no queue counts */
-> +	TC_MQPRIO_HW_OFFLOAD,		/* fully supported offload */
->   	__TC_MQPRIO_HW_OFFLOAD_MAX
->   };
->   
-> @@ -633,6 +634,18 @@ struct tc_mqprio_qopt {
->   	__u16	offset[TC_QOPT_MAX_QUEUE];
->   };
->   
-> +#define TC_MQPRIO_F_MIN_RATE  0x1
-> +#define TC_MQPRIO_F_MAX_RATE  0x2
-> +
-> +enum {
-> +	TCA_MQPRIO_UNSPEC,
-> +	TCA_MQPRIO_MIN_RATE64,
-> +	TCA_MQPRIO_MAX_RATE64,
-> +	__TCA_MQPRIO_MAX,
-> +};
-> +
-> +#define TCA_MQPRIO_MAX (__TCA_MQPRIO_MAX - 1)
-> +
->   /* SFB */
->   
->   enum {
-> diff --git a/net/sched/sch_mqprio.c b/net/sched/sch_mqprio.c
-> index e0c0272..6524d12 100644
-> --- a/net/sched/sch_mqprio.c
-> +++ b/net/sched/sch_mqprio.c
-> @@ -18,10 +18,13 @@
->   #include <net/netlink.h>
->   #include <net/pkt_sched.h>
->   #include <net/sch_generic.h>
-> +#include <net/pkt_cls.h>
->   
->   struct mqprio_sched {
->   	struct Qdisc		**qdiscs;
->   	int hw_offload;
-> +	u32 flags;
-> +	u64 min_rate[TC_QOPT_MAX_QUEUE], max_rate[TC_QOPT_MAX_QUEUE];
->   };
+alpha                            allmodconfig
+alpha                            allyesconfig
+arm64                          customconfig-0
+arm64                          customconfig-1
+arm64                          customconfig-2
+arm                            customconfig-0
+arm                            customconfig-1
+arm                            customconfig-2
+blackfin                         allmodconfig
+blackfin                         allyesconfig
+cris                             allmodconfig
+cris                             allyesconfig
+i386                             allmodconfig
+i386                           customconfig-0
+i386                           customconfig-1
+i386                           customconfig-2
+i386                            randconfig-i0
+i386                            randconfig-i1
+i386                          randconfig-x000
+i386                          randconfig-x001
+i386                          randconfig-x002
+i386                          randconfig-x003
+i386                          randconfig-x004
+i386                          randconfig-x005
+i386                          randconfig-x006
+i386                          randconfig-x007
+i386                          randconfig-x008
+i386                          randconfig-x009
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+mips                             allmodconfig
+mips                             allyesconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                          allyesconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                             allmodconfig
+s390                             allyesconfig
+s390                        default_defconfig
+sh                               allmodconfig
+sh                               allyesconfig
+sparc64                          allmodconfig
+sparc64                          allyesconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+tile                             allmodconfig
+tile                             allyesconfig
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+x86_64                         customconfig-0
+x86_64                         customconfig-1
+x86_64                         customconfig-2
+x86_64                                    lkp
+xtensa                           allmodconfig
+xtensa                           allyesconfig
 
-You have to change this before Jiri sees it ;->
+configs tested: 127
 
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                   randconfig-x012-201728
+i386                   randconfig-x018-201728
+i386                   randconfig-x016-201728
+i386                   randconfig-x017-201728
+i386                   randconfig-x013-201728
+i386                   randconfig-x010-201728
+i386                   randconfig-x019-201728
+i386                   randconfig-x014-201728
+i386                   randconfig-x015-201728
+i386                   randconfig-x011-201728
+i386                     randconfig-n0-201728
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+x86_64                 randconfig-x019-201728
+x86_64                 randconfig-x010-201728
+x86_64                 randconfig-x015-201728
+x86_64                 randconfig-x018-201728
+x86_64                 randconfig-x017-201728
+x86_64                 randconfig-x016-201728
+x86_64                 randconfig-x014-201728
+x86_64                 randconfig-x012-201728
+x86_64                 randconfig-x011-201728
+x86_64                 randconfig-x013-201728
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                                   samsung
+arm                        mvebu_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       imx_v6_v7_defconfig
+arm64                            allmodconfig
+arm                           tegra_defconfig
+arm                                      arm5
+arm64                            alldefconfig
+arm                                        sh
+arm                                     arm67
+i386                   randconfig-a1-07130840
+i386                   randconfig-a0-07130840
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+i386                   randconfig-s1-07121634
+i386                   randconfig-s0-07121634
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                 randconfig-i0-07121632
+i386                               tinyconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-x006-201728
+x86_64                 randconfig-x004-201728
+x86_64                 randconfig-x005-201728
+x86_64                 randconfig-x007-201728
+x86_64                 randconfig-x001-201728
+x86_64                 randconfig-x008-201728
+x86_64                 randconfig-x002-201728
+x86_64                 randconfig-x000-201728
+x86_64                 randconfig-x009-201728
+x86_64                 randconfig-x003-201728
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                 randconfig-x076-07130833
+i386                 randconfig-x074-07130833
+i386                 randconfig-x073-07130833
+i386                 randconfig-x079-07130833
+i386                 randconfig-x070-07130833
+i386                 randconfig-x078-07130833
+i386                 randconfig-x077-07130833
+i386                 randconfig-x072-07130833
+i386                 randconfig-x075-07130833
+i386                 randconfig-x071-07130833
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
 
-I will review more later.
-
-cheers,
-jamal
+Thanks,
+Fengguang
