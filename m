@@ -1,107 +1,239 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 14 Jul 2017 09:27:09 -0400
-Subject: [Intel-wired-lan] [next PATCH S77-V3 10/10] i40e: refactor FW
-	version checking
+Date: Fri, 14 Jul 2017 09:27:08 -0400
+Subject: [Intel-wired-lan] [next PATCH S77-V3 09/10] i40e: Enable VF to
+	negotiate number of allocated queues
 In-Reply-To: <20170714132709.52657-1-alice.michael@intel.com>
 References: <20170714132709.52657-1-alice.michael@intel.com>
-Message-ID: <20170714132709.52657-10-alice.michael@intel.com>
+Message-ID: <20170714132709.52657-9-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Alan Brady <alan.brady@intel.com>
 
-The i40e driver now supports two different devices with two different
-firmware versions. So be smart about how we handle these. Move the FW
-version macros to the appropriate header file, and add a convenience
-macro that checks the version based on the device. Then use this macro
-to check whether or not the driver can use the new link info API.
+Currently the PF allocates a default number of queues for each VF and
+cannot be changed.  This patch enables the VF to request a different
+number of queues allocated to it.  This patch also adds a new virtchnl
+op and capability flag to facilitate this negotiation.
 
-Testing Hints (required if no HSD): Compile, load on both X710 and X722
-and make sure it doesn't complain about API version on latest FW.
+After the PF receives a request message, it will set a requested number
+of queues for that VF.  Then when the VF resets, its VSI will get a new
+number of queues allocated to it.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+This is a best effort request and since we only allocate a guaranteed
+default number, if the VF tries to ask for more than the guaranteed
+number, there may not be enough in HW to accommodate it unless other
+queues for other VFs are freed. It should also be noted decreasing the
+number queues allocated to a VF to below the default will NOT enable the
+allocation of more than 32 VFs per PF and will not free queues guaranteed
+to each VF by default.
+
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 10 +++++++++-
- drivers/net/ethernet/intel/i40e/i40e_common.c       |  6 ++++--
- drivers/net/ethernet/intel/i40e/i40e_main.c         |  2 +-
- drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 10 +++++++++-
- 4 files changed, 23 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h             |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 75 ++++++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  1 +
+ include/linux/avf/virtchnl.h                       | 20 ++++++
+ 4 files changed, 97 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 5d5f422..e2a9ec8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -34,7 +34,15 @@
-  */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 2f1f65e..890508f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -77,6 +77,7 @@
+ #define i40e_default_queues_per_vmdq(pf) \
+ 		(((pf)->hw_features & I40E_HW_RSS_AQ_CAPABLE) ? 4 : 1)
+ #define I40E_DEFAULT_QUEUES_PER_VF	4
++#define I40E_MAX_VF_QUEUES		16
+ #define I40E_DEFAULT_QUEUES_PER_TC	1 /* should be a power of 2 */
+ #define i40e_pf_get_max_q_per_tc(pf) \
+ 		(((pf)->hw_features & I40E_HW_128_QP_RSS_CAPABLE) ? 128 : 64)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index aa8d30b..7daf6a4 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -815,6 +815,14 @@ static void i40e_free_vf_res(struct i40e_vf *vf)
+ 	 */
+ 	clear_bit(I40E_VF_STATE_INIT, &vf->vf_states);
  
- #define I40E_FW_API_VERSION_MAJOR	0x0001
--#define I40E_FW_API_VERSION_MINOR	0x0005
-+#define I40E_FW_API_VERSION_MINOR_X722	0x0005
-+#define I40E_FW_API_VERSION_MINOR_X710	0x0007
++	/* It's possible the VF had requeuested more queues than the default so
++	 * do the accounting here when we're about to free them.
++	 */
++	if (vf->num_queue_pairs > I40E_DEFAULT_QUEUES_PER_VF) {
++		pf->queues_left +=
++			vf->num_queue_pairs - I40E_DEFAULT_QUEUES_PER_VF;
++	}
 +
-+#define I40E_FW_MINOR_VERSION(_h) ((_h)->mac.type == I40E_MAC_XL710 ? \
-+					I40E_FW_API_VERSION_MINOR_X710 : \
-+					I40E_FW_API_VERSION_MINOR_X722)
+ 	/* free vsi & disconnect it from the parent uplink */
+ 	if (vf->lan_vsi_idx) {
+ 		i40e_vsi_release(pf->vsi[vf->lan_vsi_idx]);
+@@ -868,12 +876,27 @@ static int i40e_alloc_vf_res(struct i40e_vf *vf)
+ 	int total_queue_pairs = 0;
+ 	int ret;
+ 
++	if (vf->num_req_queues &&
++	    vf->num_req_queues <= pf->queues_left + I40E_DEFAULT_QUEUES_PER_VF)
++		pf->num_vf_qps = vf->num_req_queues;
++	else
++		pf->num_vf_qps = I40E_DEFAULT_QUEUES_PER_VF;
 +
-+/* API version 1.7 implements additional link and PHY-specific APIs  */
-+#define I40E_MINOR_VER_GET_LINK_INFO_XL710 0x0007
+ 	/* allocate hw vsi context & associated resources */
+ 	ret = i40e_alloc_vsi_res(vf, I40E_VSI_SRIOV);
+ 	if (ret)
+ 		goto error_alloc;
+ 	total_queue_pairs += pf->vsi[vf->lan_vsi_idx]->alloc_queue_pairs;
  
- struct i40e_aq_desc {
- 	__le16 flags;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 111426b..f01a54a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1593,8 +1593,10 @@ i40e_status i40e_aq_get_phy_capabilities(struct i40e_hw *hw,
- 		status = I40E_ERR_UNKNOWN_PHY;
- 
- 	if (report_init) {
--		hw->phy.phy_types = le32_to_cpu(abilities->phy_type);
--		hw->phy.phy_types |= ((u64)abilities->phy_type_ext << 32);
-+		if (hw->mac.type ==  I40E_MAC_XL710 &&
-+		    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
-+		    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
-+			status = i40e_aq_get_link_info(hw, true, NULL, NULL);
++	/* We account for each VF to get a default number of queue pairs.  If
++	 * the VF has now requested more, we need to account for that to make
++	 * certain we never request more queues than we actually have left in
++	 * HW.
++	 */
++	if (total_queue_pairs > I40E_DEFAULT_QUEUES_PER_VF)
++		pf->queues_left -=
++			total_queue_pairs - I40E_DEFAULT_QUEUES_PER_VF;
++
+ 	if (vf->trusted)
+ 		set_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps);
+ 	else
+@@ -1579,6 +1602,9 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 					VIRTCHNL_VF_OFFLOAD_WB_ON_ITR;
  	}
  
- 	return status;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1ad014d..fb0c8c6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11420,7 +11420,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		 i40e_nvm_version_str(hw));
- 
- 	if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
--	    hw->aq.api_min_ver > I40E_FW_API_VERSION_MINOR)
-+	    hw->aq.api_min_ver > I40E_FW_MINOR_VERSION(hw))
- 		dev_info(&pdev->dev,
- 			 "The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.\n");
- 	else if (hw->aq.api_maj_ver == 1 && hw->aq.api_min_ver < 4)
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index 83e63e5..f9f48d1 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -34,7 +34,15 @@
-  */
- 
- #define I40E_FW_API_VERSION_MAJOR	0x0001
--#define I40E_FW_API_VERSION_MINOR	0x0005
-+#define I40E_FW_API_VERSION_MINOR_X722	0x0005
-+#define I40E_FW_API_VERSION_MINOR_X710	0x0007
++	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_REQ_QUEUES)
++		vfres->vf_offload_flags |= VIRTCHNL_VF_OFFLOAD_REQ_QUEUES;
 +
-+#define I40E_FW_MINOR_VERSION(_h) ((_h)->mac.type == I40E_MAC_XL710 ? \
-+					I40E_FW_API_VERSION_MINOR_X710 : \
-+					I40E_FW_API_VERSION_MINOR_X722)
-+
-+/* API version 1.7 implements additional link and PHY-specific APIs  */
-+#define I40E_MINOR_VER_GET_LINK_INFO_XL710 0x0007
+ 	vfres->num_vsis = num_vsis;
+ 	vfres->num_queue_pairs = vf->num_queue_pairs;
+ 	vfres->max_vectors = pf->hw.func_caps.num_msix_vectors_vf;
+@@ -1987,6 +2013,52 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ }
  
- struct i40e_aq_desc {
- 	__le16 flags;
+ /**
++ * i40e_vc_request_queues_msg
++ * @vf: pointer to the VF info
++ * @msg: pointer to the msg buffer
++ * @msglen: msg length
++ *
++ * VFs get a default number of queues but can use this message to request a
++ * different number.  Will respond with either the number requested or the
++ * maximum we can support.
++ **/
++static int i40e_vc_request_queues_msg(struct i40e_vf *vf, u8 *msg, int msglen)
++{
++	struct virtchnl_vf_res_request *vfres =
++		(struct virtchnl_vf_res_request *)msg;
++	int req_pairs = vfres->num_queue_pairs;
++	int cur_pairs = vf->num_queue_pairs;
++	struct i40e_pf *pf = vf->pf;
++
++	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states))
++		return -EINVAL;
++
++	if (req_pairs <= 0) {
++		dev_err(&pf->pdev->dev,
++			"VF %d tried to request %d queues.  Ignoring.\n",
++			vf->vf_id, req_pairs);
++	} else if (req_pairs > I40E_MAX_VF_QUEUES) {
++		dev_err(&pf->pdev->dev,
++			"VF %d tried to request more than %d queues.\n",
++			vf->vf_id,
++			I40E_MAX_VF_QUEUES);
++		vfres->num_queue_pairs = I40E_MAX_VF_QUEUES;
++	} else if (req_pairs - cur_pairs > pf->queues_left) {
++		dev_warn(&pf->pdev->dev,
++			 "VF %d requested %d more queues, but only %d left.\n",
++			 vf->vf_id,
++			 req_pairs - cur_pairs,
++			 pf->queues_left);
++		vfres->num_queue_pairs = pf->queues_left + cur_pairs;
++	} else {
++		vf->num_req_queues = req_pairs;
++	}
++
++	return i40e_vc_send_msg_to_vf(vf, VIRTCHNL_OP_REQUEST_QUEUES, 0,
++				      (u8 *)vfres, sizeof(vfres));
++}
++
++/**
+  * i40e_vc_get_stats_msg
+  * @vf: pointer to the VF info
+  * @msg: pointer to the msg buffer
+@@ -2648,6 +2720,9 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
+ 	case VIRTCHNL_OP_SET_RSS_HENA:
+ 		ret = i40e_vc_set_rss_hena(vf, msg, msglen);
+ 		break;
++	case VIRTCHNL_OP_REQUEST_QUEUES:
++		ret = i40e_vc_request_queues_msg(vf, msg, msglen);
++		break;
+ 
+ 	case VIRTCHNL_OP_UNKNOWN:
+ 	default:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+index 1f4b0c5..5111d05 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+@@ -97,6 +97,7 @@ struct i40e_vf {
+ 	u16 lan_vsi_id;		/* ID as used by firmware */
+ 
+ 	u8 num_queue_pairs;	/* num of qps assigned to VF vsis */
++	u8 num_req_queues;	/* num of requested qps */
+ 	u64 num_mdd_events;	/* num of mdd events detected */
+ 	/* num of continuous malformed or invalid msgs detected */
+ 	u64 num_invalid_msgs;
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index c893b95..35375a0 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -133,6 +133,7 @@ enum virtchnl_ops {
+ 	VIRTCHNL_OP_CONFIG_RSS_LUT = 24,
+ 	VIRTCHNL_OP_GET_RSS_HENA_CAPS = 25,
+ 	VIRTCHNL_OP_SET_RSS_HENA = 26,
++	VIRTCHNL_OP_REQUEST_QUEUES = 29,
+ };
+ 
+ /* This macro is used to generate a compilation error if a structure
+@@ -233,6 +234,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
+ #define VIRTCHNL_VF_OFFLOAD_RSS_AQ		0x00000008
+ #define VIRTCHNL_VF_OFFLOAD_RSS_REG		0x00000010
+ #define VIRTCHNL_VF_OFFLOAD_WB_ON_ITR		0x00000020
++#define VIRTCHNL_VF_OFFLOAD_REQ_QUEUES		0x00000040
+ #define VIRTCHNL_VF_OFFLOAD_VLAN		0x00010000
+ #define VIRTCHNL_VF_OFFLOAD_RX_POLLING		0x00020000
+ #define VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2	0x00040000
+@@ -323,6 +325,21 @@ struct virtchnl_vsi_queue_config_info {
+ 	struct virtchnl_queue_pair_info qpair[1];
+ };
+ 
++/* VIRTCHNL_OP_REQUEST_QUEUES
++ * VF sends this message to request the PF to allocate additional queues to
++ * this VF.  Each VF gets a guaranteed number of queues on init but asking for
++ * additional queues must be negotiated.  This is a best effort request as it
++ * is possible the PF does not have enough queues left to support the request.
++ * If the PF cannot support the number requested it will respond with the
++ * maximum number it is able to support; otherwise it will respond with the
++ * number requested.
++ */
++
++/* VF resource request */
++struct virtchnl_vf_res_request {
++	u16 num_queue_pairs;
++};
++
+ VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_vsi_queue_config_info);
+ 
+ /* VIRTCHNL_OP_CONFIG_IRQ_MAP
+@@ -686,6 +703,9 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
+ 	case VIRTCHNL_OP_SET_RSS_HENA:
+ 		valid_len = sizeof(struct virtchnl_rss_hena);
+ 		break;
++	case VIRTCHNL_OP_REQUEST_QUEUES:
++		valid_len = sizeof(struct virtchnl_vf_res_request);
++		break;
+ 	/* These are always errors coming from the VF. */
+ 	case VIRTCHNL_OP_EVENT:
+ 	case VIRTCHNL_OP_UNKNOWN:
 -- 
 2.9.3
 
