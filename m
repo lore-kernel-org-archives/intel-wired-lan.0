@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 14 Jul 2017 09:10:18 -0400
-Subject: [Intel-wired-lan] [next PATCH S76-V2 12/13] i40e: simplify member
-	variable accesses
+Date: Fri, 14 Jul 2017 09:10:16 -0400
+Subject: [Intel-wired-lan] [next PATCH S76-V2 10/13] i40e: Fix link down
+	message when interface is brought up
 In-Reply-To: <20170714131019.52530-1-alice.michael@intel.com>
 References: <20170714131019.52530-1-alice.michael@intel.com>
-Message-ID: <20170714131019.52530-12-alice.michael@intel.com>
+Message-ID: <20170714131019.52530-10-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,82 +13,43 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 
-This commit replaces usage of vsi->back in i40e_print_link_message()
-(which is actually a PF pointer) with temp variable.
+i40e_print_link_message() is intended to compare new
+link state with current link state and print log message
+only if the new state is different from current state.
 
-Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+However in current driver the new state does not get updated
+when link is going down because of the if condition. When an
+interface is brought down, vsi->state is set to I40E_VSI_DOWN
+in i40e_vsi_close() and later i40e_print_link_message() does
+not get invoked in i40e_link_event due to if condition. Hence
+link down message doesn't appear when link is going down. The
+down state is seen  later during i40e_open() and old state
+gets printed. The actual link state doesn't get updated in
+i40e_close() or i40e_open() but when i40e_handle_link_event is
+called inside i40e_clean_adminq_subtask.
+
+This change allows i40e_print_link_message() to be called when
+interface is going down and keeps the state information updated.
+
+Signed-off-by: Mogilappagari, Sudheer <sudheer.mogilappagari@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index b4844e2..d83a9e6 100644
+index beeeeeb..b4844e2 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5347,12 +5347,13 @@ static int i40e_init_pf_dcb(struct i40e_pf *pf)
- void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- {
- 	enum i40e_aq_link_speed new_speed;
-+	struct i40e_pf *pf = vsi->back;
- 	char *speed = "Unknown";
- 	char *fc = "Unknown";
- 	char *fec = "";
- 	char *an = "";
- 
--	new_speed = vsi->back->hw.phy.link_info.link_speed;
-+	new_speed = pf->hw.phy.link_info.link_speed;
- 
- 	if ((vsi->current_isup == isup) && (vsi->current_speed == new_speed))
+@@ -6406,8 +6406,7 @@ static void i40e_link_event(struct i40e_pf *pf)
+ 	     new_link == netif_carrier_ok(vsi->netdev)))
  		return;
-@@ -5366,13 +5367,13 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 	/* Warn user if link speed on NPAR enabled partition is not at
- 	 * least 10GB
- 	 */
--	if (vsi->back->hw.func_caps.npar_enable &&
--	    (vsi->back->hw.phy.link_info.link_speed == I40E_LINK_SPEED_1GB ||
--	     vsi->back->hw.phy.link_info.link_speed == I40E_LINK_SPEED_100MB))
-+	if (pf->hw.func_caps.npar_enable &&
-+	    (pf->hw.phy.link_info.link_speed == I40E_LINK_SPEED_1GB ||
-+	     pf->hw.phy.link_info.link_speed == I40E_LINK_SPEED_100MB))
- 		netdev_warn(vsi->netdev,
- 			    "The partition detected link speed that is less than 10Gbps\n");
  
--	switch (vsi->back->hw.phy.link_info.link_speed) {
-+	switch (pf->hw.phy.link_info.link_speed) {
- 	case I40E_LINK_SPEED_40GB:
- 		speed = "40 G";
- 		break;
-@@ -5395,7 +5396,7 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 		break;
- 	}
+-	if (!test_bit(__I40E_VSI_DOWN, vsi->state))
+-		i40e_print_link_message(vsi, new_link);
++	i40e_print_link_message(vsi, new_link);
  
--	switch (vsi->back->hw.fc.current_mode) {
-+	switch (pf->hw.fc.current_mode) {
- 	case I40E_FC_FULL:
- 		fc = "RX/TX";
- 		break;
-@@ -5410,17 +5411,17 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 		break;
- 	}
- 
--	if (vsi->back->hw.phy.link_info.link_speed == I40E_LINK_SPEED_25GB) {
-+	if (pf->hw.phy.link_info.link_speed == I40E_LINK_SPEED_25GB) {
- 		fec = ", FEC: None";
- 		an = ", Autoneg: False";
- 
--		if (vsi->back->hw.phy.link_info.an_info & I40E_AQ_AN_COMPLETED)
-+		if (pf->hw.phy.link_info.an_info & I40E_AQ_AN_COMPLETED)
- 			an = ", Autoneg: True";
- 
--		if (vsi->back->hw.phy.link_info.fec_info &
-+		if (pf->hw.phy.link_info.fec_info &
- 		    I40E_AQ_CONFIG_FEC_KR_ENA)
- 			fec = ", FEC: CL74 FC-FEC/BASE-R";
--		else if (vsi->back->hw.phy.link_info.fec_info &
-+		else if (pf->hw.phy.link_info.fec_info &
- 			 I40E_AQ_CONFIG_FEC_RS_ENA)
- 			fec = ", FEC: CL108 RS-FEC";
- 	}
+ 	/* Notify the base of the switch tree connected to
+ 	 * the link.  Floating VEBs are not notified.
 -- 
 2.9.3
 
