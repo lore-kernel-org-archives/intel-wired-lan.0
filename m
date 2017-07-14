@@ -1,51 +1,38 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 14 Jul 2017 21:50:12 +0000
-Subject: [Intel-wired-lan] [PATCH 3/3] igb: do not drop PF mailbox
-	lock	after read of VF message
-In-Reply-To: <20170628152226.25369-4-gedwards@ddn.com>
-References: <20170628152226.25369-1-gedwards@ddn.com>
- <20170628152226.25369-4-gedwards@ddn.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C64E047@ORSMSX103.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 14 Jul 2017 22:26:10 +0000
+Subject: [Intel-wired-lan] [next PATCH S75-V3 02/11] i40e: use
+ cpumask_copy	instead of direct assignment
+In-Reply-To: <20170712094614.76501-2-alice.michael@intel.com>
+References: <20170712094614.76501-1-alice.michael@intel.com>
+ <20170712094614.76501-2-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB1C10@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
-> Of Greg Edwards
-> Sent: Wednesday, June 28, 2017 8:22 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Greg Edwards <gedwards@ddn.com>
-> Subject: [Intel-wired-lan] [PATCH 3/3] igb: do not drop PF mailbox lock after
-> read of VF message
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Wednesday, July 12, 2017 2:46 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S75-V3 02/11] i40e: use
+> cpumask_copy instead of direct assignment
 > 
-> When the PF receives a mailbox message from the VF, it grabs the mailbox
-> lock, reads the VF message from the mailbox, ACKs the message and drops
-> the lock.
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> While the PF is performing the action for the VF message, nothing
-> prevents another VF message from being posted to the mailbox.  The
-> current code handles this condition by just dropping any new VF messages
-> without processing them.  This results in a mailbox timeout in the VM
-> for posted messages waiting for an ACK, and the VF is reset by the
-> igbvf_watchdog_task in the VM.
+> According to the header file cpumask.h, we shouldn't be directly copying a
+> cpumask_t, since its a bitmap and might not be copied correctly. Lets use the
+> provided cpumask_copy() function instead.
 > 
-> Given the right sequence of VF messages and mailbox timeouts, this
-> condition can go on ad infinitum.
-> 
-> Modify the PF mailbox read method to take an 'unlock' argument that
-> optionally leaves the mailbox locked by the PF after reading the VF
-> message.  This ensures another VF message is not posted to the mailbox
-> until after the PF has completed processing the VF message and written
-> its reply.
-> 
-> Signed-off-by: Greg Edwards <gedwards@ddn.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/e1000_hw.h  |  3 ++-
->  drivers/net/ethernet/intel/igb/e1000_mbx.c | 18 ++++++++++++------
->  drivers/net/ethernet/intel/igb/e1000_mbx.h |  3 ++-
->  drivers/net/ethernet/intel/igb/igb_main.c  | 14 ++++++++++----
->  4 files changed, 26 insertions(+), 12 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
