@@ -1,239 +1,162 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 14 Jul 2017 09:27:08 -0400
-Subject: [Intel-wired-lan] [next PATCH S77-V3 09/10] i40e: Enable VF to
-	negotiate number of allocated queues
+Date: Fri, 14 Jul 2017 09:27:06 -0400
+Subject: [Intel-wired-lan] [next PATCH S77-V3 07/10] i40e: shutdown all IRQs
+	and disable MSI-X when suspended
 In-Reply-To: <20170714132709.52657-1-alice.michael@intel.com>
 References: <20170714132709.52657-1-alice.michael@intel.com>
-Message-ID: <20170714132709.52657-9-alice.michael@intel.com>
+Message-ID: <20170714132709.52657-7-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Currently the PF allocates a default number of queues for each VF and
-cannot be changed.  This patch enables the VF to request a different
-number of queues allocated to it.  This patch also adds a new virtchnl
-op and capability flag to facilitate this negotiation.
+On some platforms with a large number of CPUs, we will allocate many IRQ
+vectors. When hibernating, the system will attempt to migrate all of the
+vectors back to CPU0 when shutting down all the other CPUs. It is
+possible that we have so many vectors that it cannot re-assign them to
+CPU0. This is even more likely if we have many devices installed in one
+platform.
 
-After the PF receives a request message, it will set a requested number
-of queues for that VF.  Then when the VF resets, its VSI will get a new
-number of queues allocated to it.
+The end result is failure to hibernate, as it is not possible to
+shutdown the CPUs. We can avoid this by disabling MSI-X and clearing our
+interrupt scheme when the device is suspended. A more ideal solution
+would be some method for the stack to properly handle this for all
+drivers, rather than on a case-by-case basis for each driver to fix
+itself.
 
-This is a best effort request and since we only allocate a guaranteed
-default number, if the VF tries to ask for more than the guaranteed
-number, there may not be enough in HW to accommodate it unless other
-queues for other VFs are freed. It should also be noted decreasing the
-number queues allocated to a VF to below the default will NOT enable the
-allocation of more than 32 VFs per PF and will not free queues guaranteed
-to each VF by default.
+However, until this more ideal solution exists, we can do our part and
+shutdown our IRQs during suspend, which should allow systems with
+a large number of CPUs to safely suspend or hibernate.
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+It may be worth investigating if we should shut down even further when
+we suspend as it may make the path cleaner, but this was the minimum fix
+for the hibernation issue mentioned here.
+
+Testing-hints:
+  This affects systems with a large number of CPUs, and with multiple
+  devices enabled. Without this change, those platforms are unable to
+  hibernate at all.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h             |  1 +
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 75 ++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  1 +
- include/linux/avf/virtchnl.h                       | 20 ++++++
- 4 files changed, 97 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 68 ++++++++++++++++++++++++-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c |  2 +-
+ 2 files changed, 68 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 2f1f65e..890508f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -77,6 +77,7 @@
- #define i40e_default_queues_per_vmdq(pf) \
- 		(((pf)->hw_features & I40E_HW_RSS_AQ_CAPABLE) ? 4 : 1)
- #define I40E_DEFAULT_QUEUES_PER_VF	4
-+#define I40E_MAX_VF_QUEUES		16
- #define I40E_DEFAULT_QUEUES_PER_TC	1 /* should be a power of 2 */
- #define i40e_pf_get_max_q_per_tc(pf) \
- 		(((pf)->hw_features & I40E_HW_128_QP_RSS_CAPABLE) ? 128 : 64)
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index aa8d30b..7daf6a4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -815,6 +815,14 @@ static void i40e_free_vf_res(struct i40e_vf *vf)
- 	 */
- 	clear_bit(I40E_VF_STATE_INIT, &vf->vf_states);
- 
-+	/* It's possible the VF had requeuested more queues than the default so
-+	 * do the accounting here when we're about to free them.
-+	 */
-+	if (vf->num_queue_pairs > I40E_DEFAULT_QUEUES_PER_VF) {
-+		pf->queues_left +=
-+			vf->num_queue_pairs - I40E_DEFAULT_QUEUES_PER_VF;
-+	}
-+
- 	/* free vsi & disconnect it from the parent uplink */
- 	if (vf->lan_vsi_idx) {
- 		i40e_vsi_release(pf->vsi[vf->lan_vsi_idx]);
-@@ -868,12 +876,27 @@ static int i40e_alloc_vf_res(struct i40e_vf *vf)
- 	int total_queue_pairs = 0;
- 	int ret;
- 
-+	if (vf->num_req_queues &&
-+	    vf->num_req_queues <= pf->queues_left + I40E_DEFAULT_QUEUES_PER_VF)
-+		pf->num_vf_qps = vf->num_req_queues;
-+	else
-+		pf->num_vf_qps = I40E_DEFAULT_QUEUES_PER_VF;
-+
- 	/* allocate hw vsi context & associated resources */
- 	ret = i40e_alloc_vsi_res(vf, I40E_VSI_SRIOV);
- 	if (ret)
- 		goto error_alloc;
- 	total_queue_pairs += pf->vsi[vf->lan_vsi_idx]->alloc_queue_pairs;
- 
-+	/* We account for each VF to get a default number of queue pairs.  If
-+	 * the VF has now requested more, we need to account for that to make
-+	 * certain we never request more queues than we actually have left in
-+	 * HW.
-+	 */
-+	if (total_queue_pairs > I40E_DEFAULT_QUEUES_PER_VF)
-+		pf->queues_left -=
-+			total_queue_pairs - I40E_DEFAULT_QUEUES_PER_VF;
-+
- 	if (vf->trusted)
- 		set_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps);
- 	else
-@@ -1579,6 +1602,9 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 					VIRTCHNL_VF_OFFLOAD_WB_ON_ITR;
- 	}
- 
-+	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_REQ_QUEUES)
-+		vfres->vf_offload_flags |= VIRTCHNL_VF_OFFLOAD_REQ_QUEUES;
-+
- 	vfres->num_vsis = num_vsis;
- 	vfres->num_queue_pairs = vf->num_queue_pairs;
- 	vfres->max_vectors = pf->hw.func_caps.num_msix_vectors_vf;
-@@ -1987,6 +2013,52 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 0d2e652..1ad014d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8340,6 +8340,57 @@ static int i40e_init_interrupt_scheme(struct i40e_pf *pf)
+ 	return 0;
  }
  
- /**
-+ * i40e_vc_request_queues_msg
-+ * @vf: pointer to the VF info
-+ * @msg: pointer to the msg buffer
-+ * @msglen: msg length
++#ifdef CONFIG_PM
++/**
++ * i40e_restore_interrupt_scheme - Restore the interrupt scheme
++ * @pf: private board data structure
 + *
-+ * VFs get a default number of queues but can use this message to request a
-+ * different number.  Will respond with either the number requested or the
-+ * maximum we can support.
-+ **/
-+static int i40e_vc_request_queues_msg(struct i40e_vf *vf, u8 *msg, int msglen)
++ * Restore the interrupt scheme that was cleared when we suspended the
++ * device. This should be called during resume to re-allocate the q_vectors
++ * and reacquire IRQs.
++ */
++static int i40e_restore_interrupt_scheme(struct i40e_pf *pf)
 +{
-+	struct virtchnl_vf_res_request *vfres =
-+		(struct virtchnl_vf_res_request *)msg;
-+	int req_pairs = vfres->num_queue_pairs;
-+	int cur_pairs = vf->num_queue_pairs;
-+	struct i40e_pf *pf = vf->pf;
++	int err, i;
 +
-+	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states))
-+		return -EINVAL;
++	/* We cleared the MSI and MSI-X flags when disabling the old interrupt
++	 * scheme. We need to re-enabled them here in order to attempt to
++	 * re-acquire the MSI or MSI-X vectors
++	 */
++	pf->flags |= (I40E_FLAG_MSIX_ENABLED | I40E_FLAG_MSI_ENABLED);
 +
-+	if (req_pairs <= 0) {
-+		dev_err(&pf->pdev->dev,
-+			"VF %d tried to request %d queues.  Ignoring.\n",
-+			vf->vf_id, req_pairs);
-+	} else if (req_pairs > I40E_MAX_VF_QUEUES) {
-+		dev_err(&pf->pdev->dev,
-+			"VF %d tried to request more than %d queues.\n",
-+			vf->vf_id,
-+			I40E_MAX_VF_QUEUES);
-+		vfres->num_queue_pairs = I40E_MAX_VF_QUEUES;
-+	} else if (req_pairs - cur_pairs > pf->queues_left) {
-+		dev_warn(&pf->pdev->dev,
-+			 "VF %d requested %d more queues, but only %d left.\n",
-+			 vf->vf_id,
-+			 req_pairs - cur_pairs,
-+			 pf->queues_left);
-+		vfres->num_queue_pairs = pf->queues_left + cur_pairs;
-+	} else {
-+		vf->num_req_queues = req_pairs;
++	err = i40e_init_interrupt_scheme(pf);
++	if (err)
++		return err;
++
++	/* Now that we've re-acquired IRQs, we need to remap the vectors and
++	 * rings together again.
++	 */
++	for (i = 0; i < pf->num_alloc_vsi; i++) {
++		if (pf->vsi[i]) {
++			err = i40e_vsi_alloc_q_vectors(pf->vsi[i]);
++			if (err)
++				goto err_unwind;
++			i40e_vsi_map_rings_to_vectors(pf->vsi[i]);
++		}
 +	}
 +
-+	return i40e_vc_send_msg_to_vf(vf, VIRTCHNL_OP_REQUEST_QUEUES, 0,
-+				      (u8 *)vfres, sizeof(vfres));
++	err = i40e_setup_misc_vector(pf);
++	if (err)
++		goto err_unwind;
++
++	return 0;
++
++err_unwind:
++	while (i--) {
++		if (pf->vsi[i])
++			i40e_vsi_free_q_vectors(pf->vsi[i]);
++	}
++
++	return err;
 +}
++#endif /* CONFIG_PM */
 +
-+/**
-  * i40e_vc_get_stats_msg
-  * @vf: pointer to the VF info
-  * @msg: pointer to the msg buffer
-@@ -2648,6 +2720,9 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
- 	case VIRTCHNL_OP_SET_RSS_HENA:
- 		ret = i40e_vc_set_rss_hena(vf, msg, msglen);
- 		break;
-+	case VIRTCHNL_OP_REQUEST_QUEUES:
-+		ret = i40e_vc_request_queues_msg(vf, msg, msglen);
-+		break;
+ /**
+  * i40e_setup_misc_vector - Setup the misc vector to handle non queue events
+  * @pf: board private structure
+@@ -12063,7 +12114,12 @@ static int i40e_suspend(struct device *dev)
+ 	wr32(hw, I40E_PFPM_APM, (pf->wol_en ? I40E_PFPM_APM_APME_MASK : 0));
+ 	wr32(hw, I40E_PFPM_WUFC, (pf->wol_en ? I40E_PFPM_WUFC_MAG_MASK : 0));
  
- 	case VIRTCHNL_OP_UNKNOWN:
- 	default:
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 1f4b0c5..5111d05 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -97,6 +97,7 @@ struct i40e_vf {
- 	u16 lan_vsi_id;		/* ID as used by firmware */
+-	i40e_free_misc_vector(pf);
++	/* Clear the interrupt scheme and release our IRQs so that the system
++	 * can safely hibernate even when there are a large number of CPUs.
++	 * Otherwise hibernation might fail when mapping all the vectors back
++	 * to CPU0.
++	 */
++	i40e_clear_interrupt_scheme(pf);
  
- 	u8 num_queue_pairs;	/* num of qps assigned to VF vsis */
-+	u8 num_req_queues;	/* num of requested qps */
- 	u64 num_mdd_events;	/* num of mdd events detected */
- 	/* num of continuous malformed or invalid msgs detected */
- 	u64 num_invalid_msgs;
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index c893b95..35375a0 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -133,6 +133,7 @@ enum virtchnl_ops {
- 	VIRTCHNL_OP_CONFIG_RSS_LUT = 24,
- 	VIRTCHNL_OP_GET_RSS_HENA_CAPS = 25,
- 	VIRTCHNL_OP_SET_RSS_HENA = 26,
-+	VIRTCHNL_OP_REQUEST_QUEUES = 29,
- };
+ 	return 0;
+ }
+@@ -12076,11 +12132,21 @@ static int i40e_resume(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct i40e_pf *pf = pci_get_drvdata(pdev);
++	int err;
  
- /* This macro is used to generate a compilation error if a structure
-@@ -233,6 +234,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
- #define VIRTCHNL_VF_OFFLOAD_RSS_AQ		0x00000008
- #define VIRTCHNL_VF_OFFLOAD_RSS_REG		0x00000010
- #define VIRTCHNL_VF_OFFLOAD_WB_ON_ITR		0x00000020
-+#define VIRTCHNL_VF_OFFLOAD_REQ_QUEUES		0x00000040
- #define VIRTCHNL_VF_OFFLOAD_VLAN		0x00010000
- #define VIRTCHNL_VF_OFFLOAD_RX_POLLING		0x00020000
- #define VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2	0x00040000
-@@ -323,6 +325,21 @@ struct virtchnl_vsi_queue_config_info {
- 	struct virtchnl_queue_pair_info qpair[1];
- };
+ 	/* If we're not suspended, then there is nothing to do */
+ 	if (!test_bit(__I40E_SUSPENDED, pf->state))
+ 		return 0;
  
-+/* VIRTCHNL_OP_REQUEST_QUEUES
-+ * VF sends this message to request the PF to allocate additional queues to
-+ * this VF.  Each VF gets a guaranteed number of queues on init but asking for
-+ * additional queues must be negotiated.  This is a best effort request as it
-+ * is possible the PF does not have enough queues left to support the request.
-+ * If the PF cannot support the number requested it will respond with the
-+ * maximum number it is able to support; otherwise it will respond with the
-+ * number requested.
-+ */
++	/* We cleared the interrupt scheme when we suspended, so we need to
++	 * restore it now to resume device functionality.
++	 */
++	err = i40e_restore_interrupt_scheme(pf);
++	if (err) {
++		dev_err(&pdev->dev, "Cannot restore interrupt scheme: %d\n",
++			err);
++	}
 +
-+/* VF resource request */
-+struct virtchnl_vf_res_request {
-+	u16 num_queue_pairs;
-+};
-+
- VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_vsi_queue_config_info);
+ 	clear_bit(__I40E_DOWN, pf->state);
+ 	i40e_reset_and_rebuild(pf, false, false);
  
- /* VIRTCHNL_OP_CONFIG_IRQ_MAP
-@@ -686,6 +703,9 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 	case VIRTCHNL_OP_SET_RSS_HENA:
- 		valid_len = sizeof(struct virtchnl_rss_hena);
- 		break;
-+	case VIRTCHNL_OP_REQUEST_QUEUES:
-+		valid_len = sizeof(struct virtchnl_vf_res_request);
-+		break;
- 	/* These are always errors coming from the VF. */
- 	case VIRTCHNL_OP_EVENT:
- 	case VIRTCHNL_OP_UNKNOWN:
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 29953c9..d8e17c2 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -46,7 +46,7 @@ static const char i40evf_driver_string[] =
+ 
+ #define DRV_VERSION_MAJOR 3
+ #define DRV_VERSION_MINOR 0
+-#define DRV_VERSION_BUILD 0
++#define DRV_VERSION_BUILD 1
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
 -- 
 2.9.3
 
