@@ -1,114 +1,67 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 14 Jul 2017 09:27:07 -0400
-Subject: [Intel-wired-lan] [next PATCH S77-V3 08/10] i40evf: fix ring to
-	vector mapping
+Date: Fri, 14 Jul 2017 09:27:04 -0400
+Subject: [Intel-wired-lan] [next PATCH S77-V3 05/10] i40e: don't clear
+	suspended state until we finish resuming
 In-Reply-To: <20170714132709.52657-1-alice.michael@intel.com>
 References: <20170714132709.52657-1-alice.michael@intel.com>
-Message-ID: <20170714132709.52657-8-alice.michael@intel.com>
+Message-ID: <20170714132709.52657-5-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-The current implementation for mapping queues to vectors is broken
-because it attempts to map each tx and rx ring to its own vector,
-however we use combined queues so we should actually be mapping the
-tx/rx rings together on one vector.
+When handling suspend and resume callbacks we want to make sure that (a)
+we don't suspend again if we're already suspended and (b) we don't
+resume again if we're already resuming. Lets make sure we test_and_set
+the __I40E_SUSPENDED bit in i40e_suspend which ensures that a suspend
+call when already suspended will exit early. Additionally, if
+__I40E_SUSPENDED is not set when we begin resuming, exit early as well.
 
-Also in the current implementation, in the case where we have more
-queues than vectors, we attempt to group the queues together into
-'chunks' and map each 'chunk' of queues to a vector.  Chunking them
-together would be more ideal if, and only if, we only had RSS because of
-the way the hashing algorithm works but in the case of a future patch
-that enables VF ADq, round robin assignment is better and still works
-with RSS.
-
-This patch resolves both those issues and simplifies the code needed to
-accomplish this.  Instead of treating the case where we have more queues
-than vectors as special, if we notice our vector index is greater than
-vectors, reset the vector index to zero and continue mapping.  This
-should ensure that in both cases, whether we have enough vectors for
-each queue or not, the queues get appropriately mapped.
-
-Testing-hints:
-    Make sure traffic continues to be received and features like RSS
-    continue to work as expected.
-
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 48 ++++++-------------------
- 1 file changed, 10 insertions(+), 38 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index d8e17c2..551fba6 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -432,52 +432,24 @@ i40evf_map_vector_to_txq(struct i40evf_adapter *adapter, int v_idx, int t_idx)
-  **/
- static int i40evf_map_rings_to_vectors(struct i40evf_adapter *adapter)
- {
-+	int rings_remaining = adapter->num_active_queues;
-+	int ridx = 0, vidx = 0;
- 	int q_vectors;
--	int v_start = 0;
--	int rxr_idx = 0, txr_idx = 0;
--	int rxr_remaining = adapter->num_active_queues;
--	int txr_remaining = adapter->num_active_queues;
--	int i, j;
--	int rqpv, tqpv;
- 	int err = 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b47cc14..11c9565 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -12045,7 +12045,10 @@ static int i40e_suspend(struct device *dev)
+ 	struct i40e_pf *pf = pci_get_drvdata(pdev);
+ 	struct i40e_hw *hw = &pf->hw;
  
- 	q_vectors = adapter->num_msix_vectors - NONQ_VECS;
+-	set_bit(__I40E_SUSPENDED, pf->state);
++	/* If we're already suspended, then there is nothing to do */
++	if (test_and_set_bit(__I40E_SUSPENDED, pf->state))
++		return 0;
++
+ 	set_bit(__I40E_DOWN, pf->state);
  
--	/* The ideal configuration...
--	 * We have enough vectors to map one per queue.
--	 */
--	if (q_vectors >= (rxr_remaining * 2)) {
--		for (; rxr_idx < rxr_remaining; v_start++, rxr_idx++)
--			i40evf_map_vector_to_rxq(adapter, v_start, rxr_idx);
-+	for (; ridx < rings_remaining; ridx++) {
-+		i40evf_map_vector_to_rxq(adapter, vidx, ridx);
-+		i40evf_map_vector_to_txq(adapter, vidx, ridx);
+ 	if (pf->wol_en && (pf->hw_features & I40E_HW_WOL_MC_MAGIC_PKT_WAKE))
+@@ -12070,11 +12073,15 @@ static int i40e_resume(struct device *dev)
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct i40e_pf *pf = pci_get_drvdata(pdev);
  
--		for (; txr_idx < txr_remaining; v_start++, txr_idx++)
--			i40evf_map_vector_to_txq(adapter, v_start, txr_idx);
--		goto out;
+-	/* handling the reset will rebuild the device state */
+-	if (test_and_clear_bit(__I40E_SUSPENDED, pf->state)) {
+-		clear_bit(__I40E_DOWN, pf->state);
+-		i40e_reset_and_rebuild(pf, false, false);
 -	}
--
--	/* If we don't have enough vectors for a 1-to-1
--	 * mapping, we'll have to group them so there are
--	 * multiple queues per vector.
--	 * Re-adjusting *qpv takes care of the remainder.
--	 */
--	for (i = v_start; i < q_vectors; i++) {
--		rqpv = DIV_ROUND_UP(rxr_remaining, q_vectors - i);
--		for (j = 0; j < rqpv; j++) {
--			i40evf_map_vector_to_rxq(adapter, i, rxr_idx);
--			rxr_idx++;
--			rxr_remaining--;
--		}
--	}
--	for (i = v_start; i < q_vectors; i++) {
--		tqpv = DIV_ROUND_UP(txr_remaining, q_vectors - i);
--		for (j = 0; j < tqpv; j++) {
--			i40evf_map_vector_to_txq(adapter, i, txr_idx);
--			txr_idx++;
--			txr_remaining--;
--		}
-+		/* In the case where we have more queues than vectors, continue
-+		 * round-robin on vectors until all queues are mapped.
-+		 */
-+		if (++vidx >= q_vectors)
-+			vidx = 0;
- 	}
++	/* If we're not suspended, then there is nothing to do */
++	if (!test_bit(__I40E_SUSPENDED, pf->state))
++		return 0;
++
++	clear_bit(__I40E_DOWN, pf->state);
++	i40e_reset_and_rebuild(pf, false, false);
++
++	/* Clear suspended state last after everything is recovered */
++	clear_bit(__I40E_SUSPENDED, pf->state);
  
--out:
- 	adapter->aq_required |= I40EVF_FLAG_AQ_MAP_VECTORS;
- 
- 	return err;
+ 	return 0;
+ }
 -- 
 2.9.3
 
