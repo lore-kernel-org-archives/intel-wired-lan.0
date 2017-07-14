@@ -1,191 +1,35 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 14 Jul 2017 09:10:13 -0400
-Subject: [Intel-wired-lan] [next PATCH S76-V2 07/13] i40e/i40evf: avoid
-	dynamic ITR updates when polling or low packet rate
-In-Reply-To: <20170714131019.52530-1-alice.michael@intel.com>
-References: <20170714131019.52530-1-alice.michael@intel.com>
-Message-ID: <20170714131019.52530-7-alice.michael@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 14 Jul 2017 21:20:55 +0000
+Subject: [Intel-wired-lan] [next PATCH S75-V3 01/11] i40evf: use
+	netdev	variable in reset task
+In-Reply-To: <20170712094614.76501-1-alice.michael@intel.com>
+References: <20170712094614.76501-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB1B63@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Wednesday, July 12, 2017 2:46 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S75-V3 01/11] i40evf: use netdev
+> variable in reset task
+> 
+> From: Alan Brady <alan.brady@intel.com>
+> 
+> If we're going to bother initializing a variable to reference it we might as well
+> use it.
+> 
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-The dynamic ITR algorithm depends on a calculation of usecs which
-assumes that the interrupts have been firing constantly at the interrupt
-throttle rate. This is not guaranteed because we could have a low packet
-rate, or have been polling in software.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-We'll estimate whether this is the case by using jiffies to determine if
-we've been too long. If the time difference of jiffies is larger we are
-guaranteed to have an incorrect calculation. If the time difference of
-jiffies is smaller we might have been polling some but the difference
-shouldn't affect the calculation too much.
-
-This ensures that we don't get stuck in BULK latency during certain rare
-situations where we receive bursts of packets that force us into napi
-polling.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 22 +++++++++++++++++-----
- drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 22 +++++++++++++++++-----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  1 +
- 4 files changed, 36 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index c056f60..74589ed 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -961,11 +961,25 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	enum i40e_latency_range new_latency_range = rc->latency_range;
- 	u32 new_itr = rc->itr;
- 	int bytes_per_int;
--	int usecs;
-+	unsigned int usecs, estimated_usecs;
- 
- 	if (rc->total_packets == 0 || !rc->itr)
- 		return false;
- 
-+	usecs = (rc->itr << 1) * ITR_COUNTDOWN_START;
-+	bytes_per_int = rc->total_bytes / usecs;
-+
-+	/* The calculations in this algorithm depend on interrupts actually
-+	 * firing at the ITR rate. This may not happen if the packet rate is
-+	 * really low, or if we've been napi polling. Check to make sure
-+	 * that's not the case before we continue.
-+	 */
-+	estimated_usecs = jiffies_to_usecs(jiffies - rc->last_itr_update);
-+	if (estimated_usecs > usecs) {
-+		new_latency_range = I40E_LOW_LATENCY;
-+		goto reset_latency;
-+	}
-+
- 	/* simple throttlerate management
- 	 *   0-10MB/s   lowest (50000 ints/s)
- 	 *  10-20MB/s   low    (20000 ints/s)
-@@ -977,9 +991,6 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	 * are in 2 usec increments in the ITR registers, and make sure
- 	 * to use the smoothed values that the countdown timer gives us.
- 	 */
--	usecs = (rc->itr << 1) * ITR_COUNTDOWN_START;
--	bytes_per_int = rc->total_bytes / usecs;
--
- 	switch (new_latency_range) {
- 	case I40E_LOWEST_LATENCY:
- 		if (bytes_per_int > 10)
-@@ -998,6 +1009,7 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 		break;
- 	}
- 
-+reset_latency:
- 	rc->latency_range = new_latency_range;
- 
- 	switch (new_latency_range) {
-@@ -1016,12 +1028,12 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 
- 	rc->total_bytes = 0;
- 	rc->total_packets = 0;
-+	rc->last_itr_update = jiffies;
- 
- 	if (new_itr != rc->itr) {
- 		rc->itr = new_itr;
- 		return true;
- 	}
--
- 	return false;
- }
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index e6456e8..2f848bc 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -461,6 +461,7 @@ struct i40e_ring_container {
- 	struct i40e_ring *ring;
- 	unsigned int total_bytes;	/* total bytes processed this int */
- 	unsigned int total_packets;	/* total packets processed this int */
-+	unsigned long last_itr_update;	/* jiffies of last ITR update */
- 	u16 count;
- 	enum i40e_latency_range latency_range;
- 	u16 itr;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index b9acb20..b56a193 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -359,11 +359,25 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	enum i40e_latency_range new_latency_range = rc->latency_range;
- 	u32 new_itr = rc->itr;
- 	int bytes_per_int;
--	int usecs;
-+	unsigned int usecs, estimated_usecs;
- 
- 	if (rc->total_packets == 0 || !rc->itr)
- 		return false;
- 
-+	usecs = (rc->itr << 1) * ITR_COUNTDOWN_START;
-+	bytes_per_int = rc->total_bytes / usecs;
-+
-+	/* The calculations in this algorithm depend on interrupts actually
-+	 * firing at the ITR rate. This may not happen if the packet rate is
-+	 * really low, or if we've been napi polling. Check to make sure
-+	 * that's not the case before we continue.
-+	 */
-+	estimated_usecs = jiffies_to_usecs(jiffies - rc->last_itr_update);
-+	if (estimated_usecs > usecs) {
-+		new_latency_range = I40E_LOW_LATENCY;
-+		goto reset_latency;
-+	}
-+
- 	/* simple throttlerate management
- 	 *   0-10MB/s   lowest (50000 ints/s)
- 	 *  10-20MB/s   low    (20000 ints/s)
-@@ -375,9 +389,6 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	 * are in 2 usec increments in the ITR registers, and make sure
- 	 * to use the smoothed values that the countdown timer gives us.
- 	 */
--	usecs = (rc->itr << 1) * ITR_COUNTDOWN_START;
--	bytes_per_int = rc->total_bytes / usecs;
--
- 	switch (new_latency_range) {
- 	case I40E_LOWEST_LATENCY:
- 		if (bytes_per_int > 10)
-@@ -396,6 +407,7 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 		break;
- 	}
- 
-+reset_latency:
- 	rc->latency_range = new_latency_range;
- 
- 	switch (new_latency_range) {
-@@ -414,12 +426,12 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 
- 	rc->total_bytes = 0;
- 	rc->total_packets = 0;
-+	rc->last_itr_update = jiffies;
- 
- 	if (new_itr != rc->itr) {
- 		rc->itr = new_itr;
- 		return true;
- 	}
--
- 	return false;
- }
- 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index fb506c9..0d9f98b 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -432,6 +432,7 @@ struct i40e_ring_container {
- 	struct i40e_ring *ring;
- 	unsigned int total_bytes;	/* total bytes processed this int */
- 	unsigned int total_packets;	/* total packets processed this int */
-+	unsigned long last_itr_update;	/* jiffies of last ITR update */
- 	u16 count;
- 	enum i40e_latency_range latency_range;
- 	u16 itr;
--- 
-2.9.3
 
