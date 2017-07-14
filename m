@@ -1,72 +1,81 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 13 Jul 2017 15:33:20 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: fix unused
- igb_deliver_wake_packet() warning when CONFIG_PM=n
-In-Reply-To: <CAOMZO5B1bFRJh3wjbR77HL4ZQ7LqmmSJdeVzRkbyJXUjFFCsrQ@mail.gmail.com>
-References: <20170712210925.4F647FAA@viggo.jf.intel.com>
- <CAOMZO5B1bFRJh3wjbR77HL4ZQ7LqmmSJdeVzRkbyJXUjFFCsrQ@mail.gmail.com>
-Message-ID: <1499985200.4698.31.camel@intel.com>
+From: Nambiar, Amritha <amritha.nambiar@intel.com>
+Date: Fri, 14 Jul 2017 03:31:01 -0700
+Subject: [Intel-wired-lan] [PATCH 0/6] Configuring traffic classes via
+ new hardware offload mechanism in tc/mqprio
+In-Reply-To: <13371d93-6362-b56f-3655-a85b37f5667e@mojatatu.com>
+References: <149976762072.2896.5722904915197643856.stgit@anamdev.jf.intel.com>
+ <13371d93-6362-b56f-3655-a85b37f5667e@mojatatu.com>
+Message-ID: <42d0cfed-2f47-2d81-9654-aa9f017860ac@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2017-07-12 at 18:23 -0300, Fabio Estevam wrote:
-> On Wed, Jul 12, 2017 at 6:09 PM, Dave Hansen
-> <dave.hansen@linux.intel.com> wrote:
-> > 
-> > From: Dave Hansen <dave.hansen@linux.intel.com>
-> > 
-> > I'm seeing warnings on kernel configurations where CONFIG_PM is
-> > disabled.  It happens in 4.12, at least:
-> > 
-> > drivers/ethernet/intel/igb/igb_main.c:7988:13: warning:
-> > 'igb_deliver_wake_packet' defined but not used [-Wunused-function]
-> > 
-> > This is because igb_deliver_wake_packet() is defined outside of
-> > the #ifdef", but is used only a single time within the #ifdef in
-> > igb_resume().  Fix it by moving igb_deliver_wake_packet() next to
-> > igb_resume() inside the #ifdef.
-> > 
-> > The diff ends up looking a bit funky here.  It *looks* like
-> > igb_suspend() is getting moved, but that's an artifact of how
-> > 'diff' sees the changes.
-> > 
-> > Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> > Cc: intel-wired-lan at lists.osuosl.org
-> > Cc: netdev at vger.kernel.org
-> > Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-> 
-> Seems to be fixed by the following commit in linux-next:
-> 
-> commit 000ba1f2ebf0d6f93b9ae6cfbe5417e66f1b8e8c
-> Author: Arnd Bergmann <arnd@arndb.de>
-> Date:   Thu Apr 27 21:09:52 2017 +0200
-> 
->     igb: mark PM functions as __maybe_unused
-> 
->     The new wake function is only used by the suspend/resume handlers
-> that
->     are defined in inside of an #ifdef, which can cause this harmless
->     warning:
-> 
->     drivers/net/ethernet/intel/igb/igb_main.c:7988:13: warning:
-> 'igb_deliver_wake_packet' defined but not used [-Wunused-function]
-> 
->     Removing the #ifdef, instead using a __maybe_unused annotation
->     simplifies the code and avoids the warning.
-> 
->     Fixes: b90fa8763560 ("igb: Enable reading of wake up packet")
->     Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->     Tested-by: Aaron Brown <aaron.f.brown@intel.com>
->     Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+On 7/14/2017 12:56 AM, Jamal Hadi Salim wrote:
+> Hi Amritha,
+>
+> On 17-07-11 06:18 AM, Amritha Nambiar wrote:
+>> The following series introduces a new hardware offload mode in
+>> tc/mqprio where the TCs, the queue configurations and
+>> bandwidth rate limits are offloaded to the hardware. The existing
+>> mqprio framework is extended to configure the queue counts and
+>> layout and also added support for rate limiting. This is achieved
+>> by setting the value 2 for the "hw" mode. Legacy devices can fall
+>> back to the existing setup supporting hw mode 1 where only the
+>> TCs are offloaded, however if hw mode 2 is specified, then this
+>> type of offload fails to initialize if the requested mode is not
+>> supported. The i40e driver enables the new mqprio hardware offload
+>> mechanism factoring the TCs, queue configuration and bandwidth
+>> rates by creating HW channel VSIs.
+>>
+>> In this new mode, the priority to traffic class mapping and the
+>> user specified queue ranges are used to configure the traffic
+>> class when the 'hw' option is set to 2. This is achieved by
+>> creating HW channels(VSI). A new channel is created for each
+>> of the traffic class configuration offloaded via mqprio
+>> framework except for the first TC (TC0) which is for the main
+>> VSI. TC0 for the main VSI is also reconfigured as per user
+>> provided queue parameters. Finally, bandwidth rate limits are
+>> set on these traffic classes through the mqprio offload
+>> framework by sending these rates in addition to the number of
+>> TCs and the queue configurations.
+>>
+>> Example:
+>> # tc qdisc add dev eth0 root mqprio num_tc 2  map 0 0 0 0 1 1 1 1\
+>>    queues 4 at 0 4 at 4 min_rate 0Mbit 0Mbit max_rate 55Mbit 60Mbit hw 2
+>>
+>> To dump the bandwidth rates:
+>>
+>> # tc qdisc show dev eth0
+>>    qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
+>>                 queues:(0:3) (4:7)
+>>                 min rates:0bit 0bit
+>>                 max rates:55Mbit 60Mbit
+>
+> My only concern is usability. Was already cryptic with hw "1" and
+> now we introduce another magic number "2". Could we not have two
+> have some human friendly nouns? I know 1 means offload qos and two
+> mean offload rate (+qos?).
 
-Yeah, this is already fixed in my tree.  Dropping this patch.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170713/d6cbf4a1/attachment.asc>
+I agree this could be less friendly, I was trying to retain the existing
+conventions. Yes, hw "2" offloads qos and rates.
+
+>
+> I have some questions:
+> BTW, what would tc class show dev eth0 display in this case?
+> Above seems to select queue groupings for a specific rates which
+> is a short-cut to say assigning each queue via something like TBF
+> via "tc class" semantics (but way more cryptic than tc class;->)
+
+Dumping the classes under mqprio qdisc will not display any of the
+queue configurations or rates. MQPRIO is classless and does not support
+change_class operation like HTB does to add a class to the qdisc and set
+a rate for the class.
+
+>
+> cheers,
+> jamal
+>
+>
+
