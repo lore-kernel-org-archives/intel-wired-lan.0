@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 14 Jul 2017 09:10:09 -0400
-Subject: [Intel-wired-lan] [next PATCH S76-V2 03/13] i40e: move enabling
-	icr0 into i40e_update_enable_itr
+Date: Fri, 14 Jul 2017 09:10:08 -0400
+Subject: [Intel-wired-lan] [next PATCH S76-V2 02/13] i40e: remove workaround
+	for resetting XPS on newer kernels
 In-Reply-To: <20170714131019.52530-1-alice.michael@intel.com>
 References: <20170714131019.52530-1-alice.michael@intel.com>
-Message-ID: <20170714131019.52530-3-alice.michael@intel.com>
+Message-ID: <20170714131019.52530-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,42 +13,62 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-If we don't have MSI-X enabled, we handle interrupts on all icr0. This
-is a special case, so let's move the conditional into
-i40e_update_enable_itr() in order to make i40e_napi_poll easier to
-read about.
+Since commit 3ffa037d7f78 ("i40e: Set XPS bit mask to zero in DCB mode")
+we've tried to reset the XPS settings by building a custom
+empty CPU mask.
+
+This workaround is not necessary because we're not really removing the
+XPS setting, but simply setting it so that no CPU is valid. Since v4.10
+we've had this taken care of for us in the netdev core code.
+
+We recently added a new macro to COMPAT which allows us to wrap the XPS
+workaround when it's not necessary.
+
+While we're doing this, we change the ordering of the calls, and add an
+early return statement. This helps make the code easier to understand,
+and reduces the headache of reading these #ifdefs. This should help
+future maintainability.
+
+Second, we shorten the code further by using zalloc_cpumask_var instead
+of a separate call to bitmap_zero().
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index eda8da1..d96970f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2241,6 +2241,12 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
- 	int idx = q_vector->v_idx;
- 	int rx_itr_setting, tx_itr_setting;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 9ee1d0f..5004857 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2875,22 +2875,15 @@ static void i40e_vsi_free_rx_resources(struct i40e_vsi *vsi)
+ static void i40e_config_xps_tx_ring(struct i40e_ring *ring)
+ {
+ 	struct i40e_vsi *vsi = ring->vsi;
+-	cpumask_var_t mask;
  
-+	/* If we don't have MSIX, then we only need to re-enable icr0 */
-+	if (!(vsi->back->flags & I40E_FLAG_MSIX_ENABLED)) {
-+		i40e_irq_dynamic_enable_icr0(vsi->back, false);
-+		return;
-+	}
-+
- 	vector = (q_vector->v_idx + vsi->base_vector);
+ 	if (!ring->q_vector || !ring->netdev)
+ 		return;
  
- 	/* avoid dynamic calculation if in countdown mode OR if
-@@ -2394,8 +2400,6 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
- 	 */
- 	if (!clean_complete)
- 		i40e_force_wb(vsi, q_vector);
--	else if (!(vsi->back->flags & I40E_FLAG_MSIX_ENABLED))
--		i40e_irq_dynamic_enable_icr0(vsi->back, false);
- 	else
- 		i40e_update_enable_itr(vsi, q_vector);
+-	/* Single TC mode enable XPS */
+-	if (vsi->tc_config.numtc <= 1) {
+-		if (!test_and_set_bit(__I40E_TX_XPS_INIT_DONE, &ring->state))
+-			netif_set_xps_queue(ring->netdev,
+-					    &ring->q_vector->affinity_mask,
+-					    ring->queue_index);
+-	} else if (alloc_cpumask_var(&mask, GFP_KERNEL)) {
+-		/* Disable XPS to allow selection based on TC */
+-		bitmap_zero(cpumask_bits(mask), nr_cpumask_bits);
+-		netif_set_xps_queue(ring->netdev, mask, ring->queue_index);
+-		free_cpumask_var(mask);
++	if ((vsi->tc_config.numtc <= 1) &&
++	    !test_and_set_bit(__I40E_TX_XPS_INIT_DONE, &ring->state)) {
++		netif_set_xps_queue(ring->netdev,
++				    &ring->q_vector->affinity_mask,
++				    ring->queue_index);
+ 	}
  
+ 	/* schedule our worker thread which will take care of
 -- 
 2.9.3
 
