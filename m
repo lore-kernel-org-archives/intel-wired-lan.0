@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 14 Jul 2017 22:35:55 +0000
-Subject: [Intel-wired-lan] [next PATCH S75-V3 08/11] i40evf: fix
- possible	snprintf truncation of q_vector->name
-In-Reply-To: <20170712094614.76501-8-alice.michael@intel.com>
+Date: Fri, 14 Jul 2017 22:50:04 +0000
+Subject: [Intel-wired-lan] [next PATCH S75-V3 05/11] i40e: Store
+	the	requested FEC information
+In-Reply-To: <20170712094614.76501-5-alice.michael@intel.com>
 References: <20170712094614.76501-1-alice.michael@intel.com>
- <20170712094614.76501-8-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB1C40@ORSMSX104.amr.corp.intel.com>
+ <20170712094614.76501-5-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB1C5C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,31 +18,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, July 12, 2017 2:46 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S75-V3 08/11] i40evf: fix possible
-> snprintf truncation of q_vector->name
+> Cc: Stachura, Mariusz <mariusz.stachura@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S75-V3 05/11] i40e: Store the
+> requested FEC information
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Mariusz Stachura <mariusz.stachura@intel.com>
 > 
-> The q_vector names are based on the interface name with a driver prefix,
-> the type of q_vector setup, and the queue number. We previously set the
-> size of this variable to IFNAMSIZ + 9, which is incorrect, because we actually
-> include a minimum of 14 characters extra beyond the interface name size.
+> Store information about FEC modes, that were requested. It will be used in
+> printing link status information function and this way there is no need to call
+> admin queue there.
 > 
-> New versions of GCC since 7 include a new warning that detects this possible
-> truncation and complains. We can fix this by increasing the size incase our
-> interface name is too large to avoid truncation. We don't need to go beyond
-> 14 because the compiler is smart enough to realize our values can never
-> exceed size of 1. We do go up to 15 here because possible future changes
-> may increase the number of queues beyond one digit.
-> 
-> While we are here, also change some variables to be unsigned (since they
-> are never negative) and stop using an extra unnecessary %s format specifier.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40evf/i40evf.h      |  2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 21 +++++++++------------
->  2 files changed, 10 insertions(+), 13 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 4 ++++
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   | 1 +
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h | 1 +
+>  3 files changed, 6 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
