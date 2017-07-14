@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 14 Jul 2017 09:10:14 -0400
-Subject: [Intel-wired-lan] [next PATCH S76-V2 08/13] i40e/i40evf: rename
-	bytes_per_int to bytes_per_usec
+Date: Fri, 14 Jul 2017 09:10:11 -0400
+Subject: [Intel-wired-lan] [next PATCH S76-V2 05/13] i40e: invert logic for
+	checking incorrect cpu vs irq affinity
 In-Reply-To: <20170714131019.52530-1-alice.michael@intel.com>
 References: <20170714131019.52530-1-alice.michael@intel.com>
-Message-ID: <20170714131019.52530-8-alice.michael@intel.com>
+Message-ID: <20170714131019.52530-5-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,106 +13,159 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-This value is not calculating bytes_per_int, which would actually just
-be bytes/ITR_COUNTDOWN_START, but rather it's calculating bytes/usecs.
+In commit 96db776a3682 ("i40e/vf: fix interrupt affinity bug")
+we added some code to force exit of polling incase we did
+not have the correct CPU. This is important since it was possible for
+the IRQ affinity to be changed while the CPU is pegged at 100%. This can
+result in the polling routine being stuck on the wrong CPU until
+traffic finally stops.
 
-Rename the variable for clarity so that future developers understand
-what the value is actually calculating.
+Unfortunately, the implementation, "if the CPU is correct, exit as
+normal, otherwise, fall-through to the end-polling exit" is incredibly
+confusing to reason about. In this case, the normal flow looks like the
+exception, while the exception actually occurs far away from the if
+statement and comment.
+
+We recently discovered and fixed a bug in this code because we were
+incorrectly initializing the affinity mask.
+
+Re-write the code so that the exceptional case is handled at the check,
+rather than having the logic be spread through the regular exit flow.
+This does end up with minor code duplication, but the resulting code is
+much easier to reason about.
+
+The new logic is identical, but inverted. If we are running on a CPU not
+in our affinity mask, we'll exit polling. However, the code flow is much
+easier to understand.
+
+Note that we don't actually have to check for MSI-X, because in the MSI
+case we'll only have one q_vector, but its default affinity mask should
+be correct as it includes all CPUs when it's initialized. Further, we
+could at some point add code to setup the notifier for the non-MSI-X
+case and enable this workaround for that case too, if desired, though
+there isn't much gain since its unlikely to be the common case.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 12 ++++++------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 12 ++++++------
- 2 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 31 +++++++++++++--------------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 30 +++++++++++++-------------
+ 2 files changed, 30 insertions(+), 31 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 74589ed..8cd8203 100644
+index d96970f..b323677 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -960,14 +960,14 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- {
- 	enum i40e_latency_range new_latency_range = rc->latency_range;
- 	u32 new_itr = rc->itr;
--	int bytes_per_int;
-+	int bytes_per_usec;
- 	unsigned int usecs, estimated_usecs;
+@@ -2367,7 +2367,6 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
  
- 	if (rc->total_packets == 0 || !rc->itr)
- 		return false;
+ 	/* If work not completed, return budget and polling will return */
+ 	if (!clean_complete) {
+-		const cpumask_t *aff_mask = &q_vector->affinity_mask;
+ 		int cpu_id = smp_processor_id();
  
- 	usecs = (rc->itr << 1) * ITR_COUNTDOWN_START;
--	bytes_per_int = rc->total_bytes / usecs;
-+	bytes_per_usec = rc->total_bytes / usecs;
- 
- 	/* The calculations in this algorithm depend on interrupts actually
- 	 * firing at the ITR rate. This may not happen if the packet rate is
-@@ -993,18 +993,18 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	 */
- 	switch (new_latency_range) {
- 	case I40E_LOWEST_LATENCY:
--		if (bytes_per_int > 10)
-+		if (bytes_per_usec > 10)
- 			new_latency_range = I40E_LOW_LATENCY;
- 		break;
- 	case I40E_LOW_LATENCY:
--		if (bytes_per_int > 20)
-+		if (bytes_per_usec > 20)
- 			new_latency_range = I40E_BULK_LATENCY;
--		else if (bytes_per_int <= 10)
-+		else if (bytes_per_usec <= 10)
- 			new_latency_range = I40E_LOWEST_LATENCY;
- 		break;
- 	case I40E_BULK_LATENCY:
- 	default:
--		if (bytes_per_int <= 20)
-+		if (bytes_per_usec <= 20)
- 			new_latency_range = I40E_LOW_LATENCY;
- 		break;
+ 		/* It is possible that the interrupt affinity has changed but,
+@@ -2377,15 +2376,22 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+ 		 * continue to poll, otherwise we must stop polling so the
+ 		 * interrupt can move to the correct cpu.
+ 		 */
+-		if (likely(cpumask_test_cpu(cpu_id, aff_mask) ||
+-			   !(vsi->back->flags & I40E_FLAG_MSIX_ENABLED))) {
++		if (!cpumask_test_cpu(cpu_id, &q_vector->affinity_mask)) {
++			/* Tell napi that we are done polling */
++			napi_complete_done(napi, work_done);
++
++			/* Force an interrupt */
++			i40e_force_wb(vsi, q_vector);
++
++			/* Return budget-1 so that polling stops */
++			return budget - 1;
++		}
+ tx_only:
+-			if (arm_wb) {
+-				q_vector->tx.ring[0].tx_stats.tx_force_wb++;
+-				i40e_enable_wb_on_itr(vsi, q_vector);
+-			}
+-			return budget;
++		if (arm_wb) {
++			q_vector->tx.ring[0].tx_stats.tx_force_wb++;
++			i40e_enable_wb_on_itr(vsi, q_vector);
+ 		}
++		return budget;
  	}
+ 
+ 	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
+@@ -2394,14 +2400,7 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+ 	/* Work is done so exit the polling mode and re-enable the interrupt */
+ 	napi_complete_done(napi, work_done);
+ 
+-	/* If we're prematurely stopping polling to fix the interrupt
+-	 * affinity we want to make sure polling starts back up so we
+-	 * issue a call to i40e_force_wb which triggers a SW interrupt.
+-	 */
+-	if (!clean_complete)
+-		i40e_force_wb(vsi, q_vector);
+-	else
+-		i40e_update_enable_itr(vsi, q_vector);
++	i40e_update_enable_itr(vsi, q_vector);
+ 
+ 	return min(work_done, budget - 1);
+ }
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index b56a193..8167617 100644
+index 4bf7e35..a8dc1d9 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -358,14 +358,14 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- {
- 	enum i40e_latency_range new_latency_range = rc->latency_range;
- 	u32 new_itr = rc->itr;
--	int bytes_per_int;
-+	int bytes_per_usec;
- 	unsigned int usecs, estimated_usecs;
+@@ -1575,7 +1575,6 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
  
- 	if (rc->total_packets == 0 || !rc->itr)
- 		return false;
+ 	/* If work not completed, return budget and polling will return */
+ 	if (!clean_complete) {
+-		const cpumask_t *aff_mask = &q_vector->affinity_mask;
+ 		int cpu_id = smp_processor_id();
  
- 	usecs = (rc->itr << 1) * ITR_COUNTDOWN_START;
--	bytes_per_int = rc->total_bytes / usecs;
-+	bytes_per_usec = rc->total_bytes / usecs;
- 
- 	/* The calculations in this algorithm depend on interrupts actually
- 	 * firing at the ITR rate. This may not happen if the packet rate is
-@@ -391,18 +391,18 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	 */
- 	switch (new_latency_range) {
- 	case I40E_LOWEST_LATENCY:
--		if (bytes_per_int > 10)
-+		if (bytes_per_usec > 10)
- 			new_latency_range = I40E_LOW_LATENCY;
- 		break;
- 	case I40E_LOW_LATENCY:
--		if (bytes_per_int > 20)
-+		if (bytes_per_usec > 20)
- 			new_latency_range = I40E_BULK_LATENCY;
--		else if (bytes_per_int <= 10)
-+		else if (bytes_per_usec <= 10)
- 			new_latency_range = I40E_LOWEST_LATENCY;
- 		break;
- 	case I40E_BULK_LATENCY:
- 	default:
--		if (bytes_per_int <= 20)
-+		if (bytes_per_usec <= 20)
- 			new_latency_range = I40E_LOW_LATENCY;
- 		break;
+ 		/* It is possible that the interrupt affinity has changed but,
+@@ -1585,14 +1584,22 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
+ 		 * continue to poll, otherwise we must stop polling so the
+ 		 * interrupt can move to the correct cpu.
+ 		 */
+-		if (likely(cpumask_test_cpu(cpu_id, aff_mask))) {
++		if (!cpumask_test_cpu(cpu_id, &q_vector->affinity_mask)) {
++			/* Tell napi that we are done polling */
++			napi_complete_done(napi, work_done);
++
++			/* Force an interrupt */
++			i40evf_force_wb(vsi, q_vector);
++
++			/* Return budget-1 so that polling stops */
++			return budget - 1;
++		}
+ tx_only:
+-			if (arm_wb) {
+-				q_vector->tx.ring[0].tx_stats.tx_force_wb++;
+-				i40e_enable_wb_on_itr(vsi, q_vector);
+-			}
+-			return budget;
++		if (arm_wb) {
++			q_vector->tx.ring[0].tx_stats.tx_force_wb++;
++			i40e_enable_wb_on_itr(vsi, q_vector);
+ 		}
++		return budget;
  	}
+ 
+ 	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
+@@ -1601,14 +1608,7 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
+ 	/* Work is done so exit the polling mode and re-enable the interrupt */
+ 	napi_complete_done(napi, work_done);
+ 
+-	/* If we're prematurely stopping polling to fix the interrupt
+-	 * affinity we want to make sure polling starts back up so we
+-	 * issue a call to i40evf_force_wb which triggers a SW interrupt.
+-	 */
+-	if (!clean_complete)
+-		i40evf_force_wb(vsi, q_vector);
+-	else
+-		i40e_update_enable_itr(vsi, q_vector);
++	i40e_update_enable_itr(vsi, q_vector);
+ 
+ 	return min(work_done, budget - 1);
+ }
 -- 
 2.9.3
 
