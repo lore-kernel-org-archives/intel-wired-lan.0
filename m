@@ -1,139 +1,164 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 15 Jul 2017 14:36:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
- 10b3bf54406bb7f4e78da9bb2a485c5c986678ad
-Message-ID: <5969b7ff.ssLEqafu6eZUawiQ%fengguang.wu@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 15 Jul 2017 17:01:51 +0800
+Subject: [Intel-wired-lan] [next PATCH S76-V2 11/13] i40e: Fix
+ unrecognized PHY type warning message for 25G AOC/ACC
+In-Reply-To: <20170714131019.52530-11-alice.michael@intel.com>
+Message-ID: <201707151603.qVK4VaDi%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-10b3bf54406bb7f4e78da9bb2a485c5c986678ad  sctp: fix an array overflow when all ext chunks are set
+Hi Sudheer,
 
-elapsed time: 869m
+[auto build test ERROR on jkirsher-next-queue/dev-queue]
+[also build test ERROR on v4.12 next-20170714]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-configs tested: 115
+url:    https://github.com/0day-ci/linux/commits/Alice-Michael/i40e-Fix-for-unused-value-issue-found-by-static-analysis/20170715-162444
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+config: x86_64-randconfig-x013-201728 (attached as .config)
+compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+reproduce:
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+All errors (new ones prefixed by >>):
 
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                           allmodconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-i386                   randconfig-x012-201728
-i386                   randconfig-x018-201728
-i386                   randconfig-x016-201728
-i386                   randconfig-x017-201728
-i386                   randconfig-x013-201728
-i386                   randconfig-x010-201728
-i386                   randconfig-x019-201728
-i386                   randconfig-x014-201728
-i386                   randconfig-x015-201728
-i386                   randconfig-x011-201728
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-s390                        default_defconfig
-x86_64                 randconfig-x019-201728
-x86_64                 randconfig-x010-201728
-x86_64                 randconfig-x015-201728
-x86_64                 randconfig-x018-201728
-x86_64                 randconfig-x017-201728
-x86_64                 randconfig-x016-201728
-x86_64                 randconfig-x014-201728
-x86_64                 randconfig-x012-201728
-x86_64                 randconfig-x011-201728
-x86_64                 randconfig-x013-201728
-i386                   randconfig-a1-07130840
-i386                   randconfig-a0-07130840
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-s1-07121634
-i386                   randconfig-s0-07121634
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                               tinyconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-i386                 randconfig-x076-07130833
-i386                 randconfig-x074-07130833
-i386                 randconfig-x073-07130833
-i386                 randconfig-x079-07130833
-i386                 randconfig-x070-07130833
-i386                 randconfig-x078-07130833
-i386                 randconfig-x077-07130833
-i386                 randconfig-x072-07130833
-i386                 randconfig-x075-07130833
-i386                 randconfig-x071-07130833
-x86_64                 randconfig-x006-201728
-x86_64                 randconfig-x004-201728
-x86_64                 randconfig-x005-201728
-x86_64                 randconfig-x007-201728
-x86_64                 randconfig-x001-201728
-x86_64                 randconfig-x008-201728
-x86_64                 randconfig-x002-201728
-x86_64                 randconfig-x000-201728
-x86_64                 randconfig-x009-201728
-x86_64                 randconfig-x003-201728
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function 'i40e_get_link_ksettings':
+>> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:7: error: 'I40E_PHY_TYPE_25GBASE_AOC' undeclared (first use in this function)
+     case I40E_PHY_TYPE_25GBASE_AOC:
+          ^~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:7: note: each undeclared identifier is reported only once for each function it appears in
+>> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:669:7: error: 'I40E_PHY_TYPE_25GBASE_ACC' undeclared (first use in this function)
+     case I40E_PHY_TYPE_25GBASE_ACC:
+          ^~~~~~~~~~~~~~~~~~~~~~~~~
+   In file included from include/linux/netdevice.h:42:0,
+                    from include/net/sock.h:51,
+                    from include/linux/tcp.h:23,
+                    from include/net/tcp.h:24,
+                    from drivers/net/ethernet/intel/i40e/i40e.h:30,
+                    from drivers/net/ethernet/intel/i40e/i40e_ethtool.c:29:
+>> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:670:40: error: 'ks' undeclared (first use in this function)
+      ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
+                                           ^
+   include/linux/ethtool.h:137:49: note: in definition of macro 'ethtool_link_ksettings_add_link_mode'
+     __set_bit(ETHTOOL_LINK_MODE_ ## mode ## _BIT, (ptr)->link_modes.name)
+                                                    ^~~
 
-Thanks,
-Fengguang
+vim +/I40E_PHY_TYPE_25GBASE_AOC +668 drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+
+   589	
+   590	/**
+   591	 * i40e_get_settings - Get Link Speed and Duplex settings
+   592	 * @netdev: network interface device structure
+   593	 * @ecmd: ethtool command
+   594	 *
+   595	 * Reports speed/duplex settings based on media_type
+   596	 **/
+   597	static int i40e_get_link_ksettings(struct net_device *netdev,
+   598					   struct ethtool_link_ksettings *cmd)
+   599	{
+   600		struct i40e_netdev_priv *np = netdev_priv(netdev);
+   601		struct i40e_pf *pf = np->vsi->back;
+   602		struct i40e_hw *hw = &pf->hw;
+   603		struct i40e_link_status *hw_link_info = &hw->phy.link_info;
+   604		bool link_up = hw_link_info->link_info & I40E_AQ_LINK_UP;
+   605		u32 advertising;
+   606	
+   607		if (link_up)
+   608			i40e_get_settings_link_up(hw, cmd, netdev, pf);
+   609		else
+   610			i40e_get_settings_link_down(hw, cmd, pf);
+   611	
+   612		/* Now set the settings that don't rely on link being up/down */
+   613		/* Set autoneg settings */
+   614		cmd->base.autoneg = ((hw_link_info->an_info & I40E_AQ_AN_COMPLETED) ?
+   615				  AUTONEG_ENABLE : AUTONEG_DISABLE);
+   616	
+   617		switch (hw->phy.media_type) {
+   618		case I40E_MEDIA_TYPE_BACKPLANE:
+   619			ethtool_link_ksettings_add_link_mode(cmd, supported,
+   620							     Autoneg);
+   621			ethtool_link_ksettings_add_link_mode(cmd, supported,
+   622							     Backplane);
+   623			ethtool_link_ksettings_add_link_mode(cmd, advertising,
+   624							     Autoneg);
+   625			ethtool_link_ksettings_add_link_mode(cmd, advertising,
+   626							     Backplane);
+   627			cmd->base.port = PORT_NONE;
+   628			break;
+   629		case I40E_MEDIA_TYPE_BASET:
+   630			ethtool_link_ksettings_add_link_mode(cmd, supported, TP);
+   631			ethtool_link_ksettings_add_link_mode(cmd, advertising, TP);
+   632			cmd->base.port = PORT_TP;
+   633			break;
+   634		case I40E_MEDIA_TYPE_DA:
+   635		case I40E_MEDIA_TYPE_CX4:
+   636			ethtool_link_ksettings_add_link_mode(cmd, supported, FIBRE);
+   637			ethtool_link_ksettings_add_link_mode(cmd, advertising, FIBRE);
+   638			cmd->base.port = PORT_DA;
+   639			break;
+   640		case I40E_MEDIA_TYPE_FIBER:
+   641			ethtool_link_ksettings_add_link_mode(cmd, supported, FIBRE);
+   642			cmd->base.port = PORT_FIBRE;
+   643			break;
+   644		case I40E_MEDIA_TYPE_UNKNOWN:
+   645		default:
+   646			cmd->base.port = PORT_OTHER;
+   647			break;
+   648		}
+   649	
+   650		/* Set flow control settings */
+   651		ethtool_link_ksettings_add_link_mode(cmd, supported, Pause);
+   652	
+   653		switch (hw->fc.requested_mode) {
+   654		case I40E_FC_FULL:
+   655			ethtool_link_ksettings_add_link_mode(cmd, advertising,
+   656							     Pause);
+   657			break;
+   658		case I40E_FC_TX_PAUSE:
+   659			ethtool_link_ksettings_add_link_mode(cmd, advertising,
+   660							     Asym_Pause);
+   661			break;
+   662		case I40E_FC_RX_PAUSE:
+   663			ethtool_link_ksettings_add_link_mode(cmd, advertising,
+   664							     Pause);
+   665			ethtool_link_ksettings_add_link_mode(cmd, advertising,
+   666							     Asym_Pause);
+   667			break;
+ > 668		case I40E_PHY_TYPE_25GBASE_AOC:
+ > 669		case I40E_PHY_TYPE_25GBASE_ACC:
+ > 670			ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
+   671			ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
+   672			ethtool_link_ksettings_add_link_mode(ks, supported,
+   673							     25000baseCR_Full);
+   674			ethtool_link_ksettings_add_link_mode(ks, advertising,
+   675							     25000baseCR_Full);
+   676			break;
+   677		default:
+   678			ethtool_convert_link_mode_to_legacy_u32(
+   679				&advertising, cmd->link_modes.advertising);
+   680	
+   681			advertising &= ~(ADVERTISED_Pause | ADVERTISED_Asym_Pause);
+   682	
+   683			ethtool_convert_legacy_u32_to_link_mode(
+   684				cmd->link_modes.advertising, advertising);
+   685			break;
+   686		}
+   687	
+   688		return 0;
+   689	}
+   690	
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 31779 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170715/292d4003/attachment-0001.bin>
