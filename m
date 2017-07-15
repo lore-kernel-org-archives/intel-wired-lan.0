@@ -1,9 +1,9 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 15 Jul 2017 17:01:51 +0800
+Date: Sat, 15 Jul 2017 18:26:11 +0800
 Subject: [Intel-wired-lan] [next PATCH S76-V2 11/13] i40e: Fix
  unrecognized PHY type warning message for 25G AOC/ACC
 In-Reply-To: <20170714131019.52530-11-alice.michael@intel.com>
-Message-ID: <201707151603.qVK4VaDi%fengguang.wu@intel.com>
+Message-ID: <201707151854.Yyd8Yizi%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,26 +12,37 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Hi Sudheer,
 
-[auto build test ERROR on jkirsher-next-queue/dev-queue]
-[also build test ERROR on v4.12 next-20170714]
+[auto build test WARNING on jkirsher-next-queue/dev-queue]
+[also build test WARNING on v4.12 next-20170714]
 [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
 url:    https://github.com/0day-ci/linux/commits/Alice-Michael/i40e-Fix-for-unused-value-issue-found-by-static-analysis/20170715-162444
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-config: x86_64-randconfig-x013-201728 (attached as .config)
-compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
 reproduce:
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+        # apt-get install sparse
+        make ARCH=x86_64 allmodconfig
+        make C=1 CF=-D__CHECK_ENDIAN__
 
-All errors (new ones prefixed by >>):
 
+sparse warnings: (new ones prefixed by >>)
+
+   include/linux/compiler.h:260:8: sparse: attribute 'no_sanitize_address': unknown attribute
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:14: sparse: undefined identifier 'I40E_PHY_TYPE_25GBASE_AOC'
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:669:14: sparse: undefined identifier 'I40E_PHY_TYPE_25GBASE_ACC'
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:670:17: sparse: undefined identifier 'ks'
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:671:17: sparse: undefined identifier 'ks'
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:672:17: sparse: undefined identifier 'ks'
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:674:17: sparse: undefined identifier 'ks'
+>> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:14: sparse: incompatible types for 'case' statement
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:669:14: sparse: incompatible types for 'case' statement
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:14: sparse: Expected constant expression in case statement
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:669:14: sparse: Expected constant expression in case statement
    drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function 'i40e_get_link_ksettings':
->> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:7: error: 'I40E_PHY_TYPE_25GBASE_AOC' undeclared (first use in this function)
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:7: error: 'I40E_PHY_TYPE_25GBASE_AOC' undeclared (first use in this function)
      case I40E_PHY_TYPE_25GBASE_AOC:
           ^~~~~~~~~~~~~~~~~~~~~~~~~
    drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:7: note: each undeclared identifier is reported only once for each function it appears in
->> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:669:7: error: 'I40E_PHY_TYPE_25GBASE_ACC' undeclared (first use in this function)
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:669:7: error: 'I40E_PHY_TYPE_25GBASE_ACC' undeclared (first use in this function)
      case I40E_PHY_TYPE_25GBASE_ACC:
           ^~~~~~~~~~~~~~~~~~~~~~~~~
    In file included from include/linux/netdevice.h:42:0,
@@ -40,14 +51,14 @@ All errors (new ones prefixed by >>):
                     from include/net/tcp.h:24,
                     from drivers/net/ethernet/intel/i40e/i40e.h:30,
                     from drivers/net/ethernet/intel/i40e/i40e_ethtool.c:29:
->> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:670:40: error: 'ks' undeclared (first use in this function)
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:670:40: error: 'ks' undeclared (first use in this function)
       ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
                                            ^
    include/linux/ethtool.h:137:49: note: in definition of macro 'ethtool_link_ksettings_add_link_mode'
      __set_bit(ETHTOOL_LINK_MODE_ ## mode ## _BIT, (ptr)->link_modes.name)
                                                     ^~~
 
-vim +/I40E_PHY_TYPE_25GBASE_AOC +668 drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+vim +/case +668 drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 
    589	
    590	/**
@@ -129,8 +140,8 @@ vim +/I40E_PHY_TYPE_25GBASE_AOC +668 drivers/net/ethernet/intel/i40e/i40e_ethtoo
    666							     Asym_Pause);
    667			break;
  > 668		case I40E_PHY_TYPE_25GBASE_AOC:
- > 669		case I40E_PHY_TYPE_25GBASE_ACC:
- > 670			ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
+   669		case I40E_PHY_TYPE_25GBASE_ACC:
+   670			ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
    671			ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
    672			ethtool_link_ksettings_add_link_mode(ks, supported,
    673							     25000baseCR_Full);
@@ -155,10 +166,3 @@ vim +/I40E_PHY_TYPE_25GBASE_AOC +668 drivers/net/ethernet/intel/i40e/i40e_ethtoo
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 31779 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170715/292d4003/attachment-0001.bin>
