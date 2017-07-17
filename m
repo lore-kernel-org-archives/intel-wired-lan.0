@@ -1,75 +1,176 @@
-From: Jonathan Toppins <jtoppins@redhat.com>
-Date: Thu, 27 Jul 2017 13:41:08 -0400
-Subject: [Intel-wired-lan] [PATCH] igb: support BCM54616 PHY
-In-Reply-To: <20170727153713.GG18666@lunn.ch>
-References: <b5d586566a1b523b9be65567b52898e33058a1cf.1500660210.git.>
- <309B89C4C689E141A5FF6A0C5FB2118B8C663B22@ORSMSX101.amr.corp.intel.com>
- <20170727153713.GG18666@lunn.ch>
-Message-ID: <211b5efd-f8d5-cf44-4e0d-dc661c144b7d@redhat.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 17 Jul 2017 23:39:12 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 3877e478d6f9bf4da407060eb1ebaac7358e734d
+Message-ID: <596cda20.IuCLxB3H+Jo3K1IO%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 07/27/2017 11:37 AM, Andrew Lunn wrote:
-> On Thu, Jul 27, 2017 at 12:40:01AM +0000, Brown, Aaron F wrote:
->>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
->>> Of John W. Linville
->>> Sent: Friday, July 21, 2017 11:12 AM
->>> To: netdev at vger.kernel.org
->>> Cc: intel-wired-lan at lists.osuosl.org; John W. Linville
->>> <linville@tuxdriver.com>
->>> Subject: [Intel-wired-lan] [PATCH] igb: support BCM54616 PHY
->>>
->>> The management port on an Edgecore AS7712-32 switch uses an igb MAC,
->>> but
->>> it uses a BCM54616 PHY. Without a patch like this, loading the igb
->>> module produces dmesg output like this:
->>>
->>> [    3.439125] igb: Copyright (c) 2007-2014 Intel Corporation.
->>> [    3.439866] igb: probe of 0000:00:14.0 failed with error -2
->>>
->>> Signed-off-by: John W. Linville <linville@tuxdriver.com>
->>> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
->>> ---
->>>  drivers/net/ethernet/intel/igb/e1000_82575.c   | 6 ++++++
->>>  drivers/net/ethernet/intel/igb/e1000_defines.h | 1 +
->>>  drivers/net/ethernet/intel/igb/e1000_hw.h      | 1 +
->>>  3 files changed, 8 insertions(+)
->>
->> I do not have the specific hardware (Edgecore switch) but as far as regression tests go this works fine.
->> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-> 
-> Sorry, missed the initial post, so replying to a reply.
-> 
-> Linux has supported the BCM54616 PHY since April 2015. If the Intel
-> drivers used the Linux PHY drivers, you would not of had this problem.
-> 
-> It would be good if somebody spent the time to migrate these MAC
-> drivers to use the common Linux PHY infrastructure.
-> 
-> 	Andrew
-> 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+3877e478d6f9bf4da407060eb1ebaac7358e734d  i40e: force VMDQ device name truncation
 
-Thank you. This was a point I made in 2015 when I posted the original
-patch for igb to support this phy.
+drivers/net/ethernet/intel/i40e/i40e_debugfs.c:160:28: warning: format '%lx' expects argument of type 'long unsigned int', but argument 3 has type 'u64 {aka long long unsigned int}' [-Wformat=]
+drivers/net/ethernet/intel/i40e/i40e_debugfs.c:161:4: warning: format '%lx' expects argument of type 'long unsigned int', but argument 3 has type 'u64 {aka long long unsigned int}' [-Wformat=]
+drivers/net/ethernet/intel/i40e/i40e_nvm.c:781:3-9: preceding lock on line 760
 
-http://marc.info/?l=linux-netdev&m=142870703206646&w=2
-http://marc.info/?l=linux-netdev&m=142870703806647&w=2
-http://marc.info/?l=linux-netdev&m=142870703806648&w=2
+Error ids grouped by kconfigs:
 
-http://marc.info/?l=linux-netdev&m=142930225730399&w=2
-http://marc.info/?l=linux-netdev&m=142930226230400&w=2
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+??? ??? drivers-net-ethernet-intel-i40e-i40e_nvm.c:preceding-lock-on-line
+??? ia64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+??? powerpc-defconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+??? powerpc-ppc64_defconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+??? x86_64-rhel
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
+??? x86_64-rhel-7.2
+    ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u64-aka-long-long-unsigned-int
 
-It would be good to accept this patch and then later work to port older
-drivers to use phylib.
+elapsed time: 523m
 
-It might be worthwhile to start beating up on new driver submissions
-that don't use phylib.
+configs tested: 132
 
-I recall someone mentioning that there were plans to have phylib support
-[Q]SFP[+] modules as well. I am very interested in that work, if someone
-has patches/plans I would like to take a look.
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+i386                               tinyconfig
+i386                   randconfig-n0-07170916
+x86_64                 randconfig-x006-201729
+x86_64                 randconfig-x004-201729
+x86_64                 randconfig-x005-201729
+x86_64                 randconfig-x007-201729
+x86_64                 randconfig-x001-201729
+x86_64                 randconfig-x008-201729
+x86_64                 randconfig-x002-201729
+x86_64                 randconfig-x000-201729
+x86_64                 randconfig-x009-201729
+x86_64                 randconfig-x003-201729
+x86_64                 randconfig-x019-201729
+x86_64                 randconfig-x010-201729
+x86_64                 randconfig-x015-201729
+x86_64                 randconfig-x017-201729
+x86_64                 randconfig-x018-201729
+x86_64                 randconfig-x016-201729
+x86_64                 randconfig-x014-201729
+x86_64                 randconfig-x012-201729
+x86_64                 randconfig-x011-201729
+x86_64                 randconfig-x013-201729
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                     randconfig-a1-201729
+i386                     randconfig-a0-201729
+i386                     randconfig-s0-201729
+i386                     randconfig-s1-201729
+x86_64                           allmodconfig
+x86_64                   randconfig-i0-201729
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-i1-07170525
+i386                   randconfig-i0-07170525
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-x012-201729
+i386                   randconfig-x018-201729
+i386                   randconfig-x016-201729
+i386                   randconfig-x017-201729
+i386                   randconfig-x013-201729
+i386                   randconfig-x010-201729
+i386                   randconfig-x019-201729
+i386                   randconfig-x014-201729
+i386                   randconfig-x015-201729
+i386                   randconfig-x011-201729
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                 randconfig-x076-07162059
+i386                 randconfig-x077-07162059
+i386                 randconfig-x072-07162059
+i386                 randconfig-x073-07162059
+i386                 randconfig-x075-07162059
+i386                 randconfig-x074-07162059
+i386                 randconfig-x078-07162059
+i386                 randconfig-x079-07162059
+i386                 randconfig-x070-07162059
+i386                 randconfig-x071-07162059
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+i386                             allmodconfig
+i386                   randconfig-x002-201729
+i386                   randconfig-x009-201729
+i386                   randconfig-x006-201729
+i386                   randconfig-x008-201729
+i386                   randconfig-x005-201729
+i386                   randconfig-x001-201729
+i386                   randconfig-x000-201729
+i386                   randconfig-x004-201729
+i386                   randconfig-x007-201729
+i386                   randconfig-x003-201729
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
 
--Jon
+Thanks,
+Fengguang
