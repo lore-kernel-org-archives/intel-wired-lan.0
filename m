@@ -1,52 +1,50 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 17 Jul 2017 15:13:39 -0700
-Subject: [Intel-wired-lan] [next-queue] e1000e: Initial Support for IceLake
-Message-ID: <20170717221339.48847-1-jeffrey.t.kirsher@intel.com>
+From: Greg Edwards <gedwards@ddn.com>
+Date: Mon, 17 Jul 2017 17:06:31 -0600
+Subject: [Intel-wired-lan] [PATCH 3/3] igb: do not drop PF mailbox lock
+ after read of VF message
+In-Reply-To: <CAKgT0UdRfaxcy6FodbJojENpUA+Fi7YY39EbKvm5PUQB_G_52Q@mail.gmail.com>
+References: <20170628152226.25369-1-gedwards@ddn.com>
+ <20170628152226.25369-4-gedwards@ddn.com>
+ <CAKgT0UdRfaxcy6FodbJojENpUA+Fi7YY39EbKvm5PUQB_G_52Q@mail.gmail.com>
+Message-ID: <20170717230631.GA24395@psuche>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sasha Neftin <sasha.neftin@intel.com>
+On Fri, Jul 14, 2017 at 09:03:50PM -0700, Alexander Duyck wrote:
+> On Wed, Jun 28, 2017 at 8:22 AM, Greg Edwards <gedwards@ddn.com> wrote:
+>> When the PF receives a mailbox message from the VF, it grabs the mailbox
+>> lock, reads the VF message from the mailbox, ACKs the message and drops
+>> the lock.
+>>
+>> While the PF is performing the action for the VF message, nothing
+>> prevents another VF message from being posted to the mailbox.  The
+>> current code handles this condition by just dropping any new VF messages
+>> without processing them.  This results in a mailbox timeout in the VM
+>> for posted messages waiting for an ACK, and the VF is reset by the
+>> igbvf_watchdog_task in the VM.
+>>
+>> Given the right sequence of VF messages and mailbox timeouts, this
+>> condition can go on ad infinitum.
+>>
+>> Modify the PF mailbox read method to take an 'unlock' argument that
+>> optionally leaves the mailbox locked by the PF after reading the VF
+>> message.  This ensures another VF message is not posted to the mailbox
+>> until after the PF has completed processing the VF message and written
+>> its reply.
+>
+> I really don't like the design of this patch. It is fixing the PF for
+> a VF bug. The VF should not be sending multiple messages to the PF at
+> the same time. In the case of the Linux VF anyway there should be the
+> RTNL to prevent multiple messages from being sent. If we are sending
+> multiple messages at the same time from the VF it points at a bug in
+> the VF, not the PF driver.
 
-i219 (8) and i219 (9) are the next LOM generations that will be available
-on the next Intel Client platform (IceLake).
-This patch provides the initial support for these devices
+Sure, I can look at fixing it in the VF driver, if that would be the
+preferred approach.  The I350 datasheet made it sound like the PF should
+be able to handle this condition (Section 7.8.2.9.1 "VF to PF Mailbox"),
+but I realize that may be implementation specific.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-Reviewed-by: Raanan Avargil <raanan.avargil@intel.com>
-Reviewed-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
-
----
-
-diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
-index 66bd5060a65b..d803b1a12349 100644
---- a/drivers/net/ethernet/intel/e1000e/hw.h
-+++ b/drivers/net/ethernet/intel/e1000e/hw.h
-@@ -100,6 +100,10 @@ struct e1000_hw;
- #define E1000_DEV_ID_PCH_CNP_I219_V6		0x15BE
- #define E1000_DEV_ID_PCH_CNP_I219_LM7		0x15BB
- #define E1000_DEV_ID_PCH_CNP_I219_V7		0x15BC
-+#define E1000_DEV_ID_PCH_ICP_I219_LM8		0x15DF
-+#define E1000_DEV_ID_PCH_ICP_I219_V8		0x15E0
-+#define E1000_DEV_ID_PCH_ICP_I219_LM9		0x15E1
-+#define E1000_DEV_ID_PCH_ICP_I219_V9		0x15E2
- 
- #define E1000_REVISION_4	4
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 2dcb5463d9b8..327dfe5bedc0 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7544,6 +7544,10 @@ static const struct pci_device_id e1000_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_V6), board_pch_cnp },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_LM7), board_pch_cnp },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_V7), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_LM8), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V8), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_LM9), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V9), board_pch_cnp },
- 
- 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
- };
+Greg
