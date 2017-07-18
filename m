@@ -1,46 +1,49 @@
-From: Tantilov, Emil S <emil.s.tantilov@intel.com>
-Date: Tue, 18 Jul 2017 20:33:08 +0000
-Subject: [Intel-wired-lan] Device isolation for X550 functions
-In-Reply-To: <CAL1RGDW0ThAtTR-o_RUCmrKBAEM_a2wDLG7=2HRV5McRNa0DyQ@mail.gmail.com>
-References: <CAL1RGDW0ThAtTR-o_RUCmrKBAEM_a2wDLG7=2HRV5McRNa0DyQ@mail.gmail.com>
-Message-ID: <87618083B2453E4A8714035B62D67992B3EAAEA7@FMSMSX105.amr.corp.intel.com>
+From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Date: Tue, 18 Jul 2017 10:21:09 -0400
+Subject: [Intel-wired-lan] commit 16ecba59 breaks 82574L under heavy load.
+Message-ID: <20170718142109.GO18556@csclub.uwaterloo.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
->Of Roland Dreier
->Sent: Monday, July 17, 2017 1:48 PM
-To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] Device isolation for X550 functions
->
->Hi ixgbe maintainers -
->
->We've been trying to do passthrough of X550 VFs to a KVM virtual
->machine for our application, and we noticed that the kernel does not
->put the different functions in different iommu groups the same way it
->does for X520.  This is because the kernel change that enabled
->appropriate ACS bits for X520 does not include the X550 device ID
->(1563h in our case):
+Commit 16ecba59bc333d6282ee057fb02339f77a880beb has apparently broken
+at least the 82574L under heavy load (as in load heavy enough to cause
+packet drops).  In this case, when running in MSI-X mode, the Other
+Causes interrupt fires about 3000 times per second, but not due to link
+state changes.  Unfortunately this commit changed the driver to assume
+that the Other Causes interrupt can only mean link state change and
+hence sets the flag that (unfortunately) means both link is down and link
+state should be checked.  Since this now happens 3000 times per second,
+the chances of it happening while the watchdog_task is checking the link
+state becomes pretty high, and it if does happen to coincice, then the
+watchdog_task will reset the adapter, which causes a real loss of link.
 
-According to the X540/550 datasheet ACS is supported starting with X540
-and it can be enabled in the NVM.
+Reverting the commit makes everything work fine again (of course packets
+are still dropped, but at least the link stays up, the adapter isn't
+reset, and most packets make it through).
 
-Is it not possible to determine the state from the PCIe config space,
-rather than adding device IDs?
+I tried checking what the bits in the ICR actually were under these
+conditions, and it would appear that the only bit set is 24 (the Other
+Causes interrupt bit).  So I don't know what the real cause is although
+rx buffer overrun would be my guess, and in fact I see nothing in the
+datasheet indicating that you can actually disable the rx buffer overrun
+from generating an interrupt.
 
-I did a quick check on my system with 0x1563 device and I can see the
-ACS capabilities being reported:
+Prior to this commit, the interrupt handler explicitly checked that the
+interrupt was caused by a link state change and only then did it trigger
+a recheck which worked fine and did not cause incorrect adapter resets,
+although it of course still had lots of undesired interrupts to deal with.
 
-	Capabilities: [1b0 v1] Access Control Services
-		ACSCap:	SrcValid- TransBlk- ReqRedir- CmpltRedir- UpstreamFwd- EgressCtrl- DirectTrans-
-		ACSCtl:	SrcValid- TransBlk- ReqRedir- CmpltRedir- UpstreamFwd- EgressCtrl- DirectTrans-
+Of course ideally there would be a way to make these 3000 pointless
+interrupts per second not happen, but unless there is a way to determine
+that, I think this commit needs reverting, since it apparently causes
+link failures on actual hardware that exists.
 
-That being said I am not an expert on this and I will try to get some
-clarification from our HW folks.
+The ports are onboard intel 82574L on a Supermicro X7SPA-HF-D525 with
+1.2a BIOS (upgrading to 1.2b to check if it makes a difference is not
+an option unfortunately).
 
-Thanks,
-Emil
+-- 
+Len Sorensen
