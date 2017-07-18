@@ -1,38 +1,258 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 18 Jul 2017 11:04:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 55/147]
- net/core/filter.c:undefined reference to `__dev_map_lookup_elem'
-Message-ID: <201707181120.25Vx2o6E%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 17 Jul 2017 22:09:45 -0700
+Subject: [Intel-wired-lan] [next PATCH S75-v4 10/11] i40e/i40evf: support
+	for VF VLAN tag stripping control
+Message-ID: <20170718050945.69999-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   a6883c63dd1a60482d881feabb784f43145e128f
-commit: 97f91a7cf04ff605845c20948b8a80e54cbd3376 [55/147] bpf: add bpf_redirect_map helper routine
-config: blackfin-TCM-BF537_defconfig (attached as .config)
-compiler: bfin-uclinux-gcc (GCC) 6.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 97f91a7cf04ff605845c20948b8a80e54cbd3376
-        # save the attached .config to linux build tree
-        make.cross ARCH=blackfin 
+From: Mariusz Stachura <mariusz.stachura@intel.com>
 
-All errors (new ones prefixed by >>):
+This patch gives VF capability to control VLAN tag stripping via
+ethtool. As rx-vlan-offload was fixed before, now the VF is able to
+change it using "ethtool --offload <IF> rxvlan on/off" settings.
 
-   net/core/filter.o: In function `xdp_do_redirect_map':
->> net/core/filter.c:(.text+0x40d6): undefined reference to `__dev_map_lookup_elem'
-
+Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 10985 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170718/e48fbc13/attachment.bin>
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   60 ++++++++++++++++++++
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |    4 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |   33 +++++++++++
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |   40 +++++++++++++
+ include/linux/avf/virtchnl.h                       |    5 ++
+ 5 files changed, 142 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 27d87bef4ba3..4d1e670f490e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2530,6 +2530,60 @@ static int i40e_vc_set_rss_hena(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ }
+ 
+ /**
++ * i40e_vc_enable_vlan_stripping
++ * @vf: pointer to the VF info
++ * @msg: pointer to the msg buffer
++ * @msglen: msg length
++ *
++ * Enable vlan header stripping for the VF
++ **/
++static int i40e_vc_enable_vlan_stripping(struct i40e_vf *vf, u8 *msg,
++					 u16 msglen)
++{
++	struct i40e_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
++	i40e_status aq_ret = 0;
++
++	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
++		aq_ret = I40E_ERR_PARAM;
++		goto err;
++	}
++
++	i40e_vlan_stripping_enable(vsi);
++
++	/* send the response to the VF */
++err:
++	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_ENABLE_VLAN_STRIPPING,
++				       aq_ret);
++}
++
++/**
++ * i40e_vc_disable_vlan_stripping
++ * @vf: pointer to the VF info
++ * @msg: pointer to the msg buffer
++ * @msglen: msg length
++ *
++ * Disable vlan header stripping for the VF
++ **/
++static int i40e_vc_disable_vlan_stripping(struct i40e_vf *vf, u8 *msg,
++					  u16 msglen)
++{
++	struct i40e_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
++	i40e_status aq_ret = 0;
++
++	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
++		aq_ret = I40E_ERR_PARAM;
++		goto err;
++	}
++
++	i40e_vlan_stripping_disable(vsi);
++
++	/* send the response to the VF */
++err:
++	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_DISABLE_VLAN_STRIPPING,
++				       aq_ret);
++}
++
++/**
+  * i40e_vc_process_vf_msg
+  * @pf: pointer to the PF structure
+  * @vf_id: source VF id
+@@ -2648,6 +2702,12 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
+ 	case VIRTCHNL_OP_SET_RSS_HENA:
+ 		ret = i40e_vc_set_rss_hena(vf, msg, msglen);
+ 		break;
++	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++		ret = i40e_vc_enable_vlan_stripping(vf, msg, msglen);
++		break;
++	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
++		ret = i40e_vc_disable_vlan_stripping(vf, msg, msglen);
++		break;
+ 
+ 	case VIRTCHNL_OP_UNKNOWN:
+ 	default:
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index 83e430b8a815..a1af9b1c3d15 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -261,6 +261,8 @@ struct i40evf_adapter {
+ #define I40EVF_FLAG_AQ_RELEASE_PROMISC		BIT(16)
+ #define I40EVF_FLAG_AQ_REQUEST_ALLMULTI		BIT(17)
+ #define I40EVF_FLAG_AQ_RELEASE_ALLMULTI		BIT(18)
++#define I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING	BIT(19)
++#define I40EVF_FLAG_AQ_DISABLE_VLAN_STRIPPING	BIT(20)
+ 
+ 	/* OS defined structs */
+ 	struct net_device *netdev;
+@@ -358,6 +360,8 @@ void i40evf_get_hena(struct i40evf_adapter *adapter);
+ void i40evf_set_hena(struct i40evf_adapter *adapter);
+ void i40evf_set_rss_key(struct i40evf_adapter *adapter);
+ void i40evf_set_rss_lut(struct i40evf_adapter *adapter);
++void i40evf_enable_vlan_stripping(struct i40evf_adapter *adapter);
++void i40evf_disable_vlan_stripping(struct i40evf_adapter *adapter);
+ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 				enum virtchnl_ops v_opcode,
+ 				i40e_status v_retval, u8 *msg, u16 msglen);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 0abdf304f917..a1b603dacd25 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1676,6 +1676,16 @@ static void i40evf_watchdog_task(struct work_struct *work)
+ 		goto watchdog_done;
+ 	}
+ 
++	if (adapter->aq_required & I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING) {
++		i40evf_enable_vlan_stripping(adapter);
++		goto watchdog_done;
++	}
++
++	if (adapter->aq_required & I40EVF_FLAG_AQ_DISABLE_VLAN_STRIPPING) {
++		i40evf_disable_vlan_stripping(adapter);
++		goto watchdog_done;
++	}
++
+ 	if (adapter->aq_required & I40EVF_FLAG_AQ_CONFIGURE_QUEUES) {
+ 		i40evf_configure_queues(adapter);
+ 		goto watchdog_done;
+@@ -2295,6 +2305,28 @@ static int i40evf_change_mtu(struct net_device *netdev, int new_mtu)
+ }
+ 
+ /**
++ * i40e_set_features - set the netdev feature flags
++ * @netdev: ptr to the netdev being adjusted
++ * @features: the feature set that the stack is suggesting
++ * Note: expects to be called while under rtnl_lock()
++ **/
++static int i40evf_set_features(struct net_device *netdev,
++			       netdev_features_t features)
++{
++	struct i40evf_adapter *adapter = netdev_priv(netdev);
++
++	if (!VLAN_ALLOWED(adapter))
++		return -EINVAL;
++
++	if (features & NETIF_F_HW_VLAN_CTAG_RX)
++		adapter->aq_required |= I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING;
++	else
++		adapter->aq_required |= I40EVF_FLAG_AQ_DISABLE_VLAN_STRIPPING;
++
++	return 0;
++}
++
++/**
+  * i40evf_features_check - Validate encapsulated packet conforms to limits
+  * @skb: skb buff
+  * @netdev: This physical port's netdev
+@@ -2387,6 +2419,7 @@ static const struct net_device_ops i40evf_netdev_ops = {
+ 	.ndo_vlan_rx_kill_vid	= i40evf_vlan_rx_kill_vid,
+ 	.ndo_features_check	= i40evf_features_check,
+ 	.ndo_fix_features	= i40evf_fix_features,
++	.ndo_set_features	= i40evf_set_features,
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ 	.ndo_poll_controller	= i40evf_netpoll,
+ #endif
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index 6c403bf1bbb8..85876f4fb1fb 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -821,6 +821,46 @@ void i40evf_set_rss_lut(struct i40evf_adapter *adapter)
+ }
+ 
+ /**
++ * i40evf_enable_vlan_stripping
++ * @adapter: adapter structure
++ *
++ * Request VLAN header stripping to be enabled
++ **/
++void i40evf_enable_vlan_stripping(struct i40evf_adapter *adapter)
++{
++	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
++		/* bail because we already have a command pending */
++		dev_err(&adapter->pdev->dev, "Cannot enable stripping, command %d pending\n",
++			adapter->current_op);
++		return;
++	}
++	adapter->current_op = VIRTCHNL_OP_ENABLE_VLAN_STRIPPING;
++	adapter->aq_required &= ~I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING;
++	i40evf_send_pf_msg(adapter, VIRTCHNL_OP_ENABLE_VLAN_STRIPPING,
++			   NULL, 0);
++}
++
++/**
++ * i40evf_disable_vlan_stripping
++ * @adapter: adapter structure
++ *
++ * Request VLAN header stripping to be disabled
++ **/
++void i40evf_disable_vlan_stripping(struct i40evf_adapter *adapter)
++{
++	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
++		/* bail because we already have a command pending */
++		dev_err(&adapter->pdev->dev, "Cannot disable stripping, command %d pending\n",
++			adapter->current_op);
++		return;
++	}
++	adapter->current_op = VIRTCHNL_OP_DISABLE_VLAN_STRIPPING;
++	adapter->aq_required &= ~I40EVF_FLAG_AQ_DISABLE_VLAN_STRIPPING;
++	i40evf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_VLAN_STRIPPING,
++			   NULL, 0);
++}
++
++/**
+  * i40evf_print_link_message - print link up or down
+  * @adapter: adapter structure
+  *
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index becfca2ae94e..2b038442c352 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -133,6 +133,8 @@ enum virtchnl_ops {
+ 	VIRTCHNL_OP_CONFIG_RSS_LUT = 24,
+ 	VIRTCHNL_OP_GET_RSS_HENA_CAPS = 25,
+ 	VIRTCHNL_OP_SET_RSS_HENA = 26,
++	VIRTCHNL_OP_ENABLE_VLAN_STRIPPING = 27,
++	VIRTCHNL_OP_DISABLE_VLAN_STRIPPING = 28,
+ };
+ 
+ /* This macro is used to generate a compilation error if a structure
+@@ -686,6 +688,9 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
+ 	case VIRTCHNL_OP_SET_RSS_HENA:
+ 		valid_len = sizeof(struct virtchnl_rss_hena);
+ 		break;
++	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
++		break;
+ 	/* These are always errors coming from the VF. */
+ 	case VIRTCHNL_OP_EVENT:
+ 	case VIRTCHNL_OP_UNKNOWN:
