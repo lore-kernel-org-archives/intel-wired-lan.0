@@ -1,206 +1,150 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 19 Jul 2017 19:23:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE] BUILD INCOMPLETE
- e857230ed2095f87c811d5cdd7ccde6e8f2b71da
-Message-ID: <596f4144.8+VUkC1SSbAir3KB%fengguang.wu@intel.com>
+From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Date: Wed, 19 Jul 2017 10:19:53 -0400
+Subject: [Intel-wired-lan] commit 16ecba59 breaks 82574L under heavy
+	load.
+In-Reply-To: <20170718231435.64us7vu67wtp6pwe@f1.synalogic.ca>
+References: <20170718142109.GO18556@csclub.uwaterloo.ca>
+ <20170718231435.64us7vu67wtp6pwe@f1.synalogic.ca>
+Message-ID: <20170719141953.GQ18556@csclub.uwaterloo.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
-e857230ed2095f87c811d5cdd7ccde6e8f2b71da  ixgbe: Disable flow control for XFI
+On Tue, Jul 18, 2017 at 04:14:35PM -0700, Benjamin Poirier wrote:
+> Thanks for the detailed analysis.
+> 
+> Refering to the original discussion around this patch series, it seemed like
+> the IMS bit for a condition had to be set for the Other interrupt to be raised
+> for that condition.
+> 
+> https://lkml.org/lkml/2015/11/4/683
+> 
+> In this case however, E1000_ICR_RXT0 is not set in IMS so Other shouldn't be
+> raised for Receiver Overrun. Apparently something is going on...
+> 
+> I can reproduce the spurious Other interrupts with a simple mdelay()
+> With the debugging patch at the end of the mail I see stuff like this
+> while blasting with udp frames:
+>           <idle>-0     [086] d.h1 15338.742675: e1000_msix_other: got Other interrupt, count 15127
+>            <...>-54504 [086] d.h. 15338.742724: e1000_msix_other: got Other interrupt, count 1
+>            <...>-54504 [086] d.h. 15338.742774: e1000_msix_other: got Other interrupt, count 1
+>            <...>-54504 [086] d.h. 15338.742824: e1000_msix_other: got Other interrupt, count 1
+>           <idle>-0     [086] d.h1 15340.745123: e1000_msix_other: got Other interrupt, count 27584
+>            <...>-54504 [086] d.h. 15340.745172: e1000_msix_other: got Other interrupt, count 1
+>            <...>-54504 [086] d.h. 15340.745222: e1000_msix_other: got Other interrupt, count 1
+>            <...>-54504 [086] d.h. 15340.745272: e1000_msix_other: got Other interrupt, count 1
+> 
+> > hence sets the flag that (unfortunately) means both link is down and link
+> > state should be checked.  Since this now happens 3000 times per second,
+> > the chances of it happening while the watchdog_task is checking the link
+> > state becomes pretty high, and it if does happen to coincice, then the
+> > watchdog_task will reset the adapter, which causes a real loss of link.
+> 
+> Through which path does watchdog_task reset the adapter? I didn't
+> reproduce that.
 
-TIMEOUT after 601m
+The other interrupt happens and sets get_link_status to true.  At some
+point the watchdog_task runs on some core and calls e1000e_has_link,
+which then calls check_for_link to find out the current link status.
+While e1000e_check_for_copper_link is checking the link state and
+after updating get_link_status to false to indicate link is up, another
+interrupt occurs and another core handles it and changes get_link_status
+to true again.  So by the time e1000e_has_link goes to determine the
+return value, get_link_state has changed back again so now it returns
+link down, and as a result the watchdog_task calls reset, because we
+have packets in the transmit queue (we were busy forwarding over 100000
+packets per second when it happened).
 
+Running on an Atom D525 which isn't very fast and uses hyperthreading
+might have something to do with how the scheduling manages to trigger
+this race condition.  On a faster CPU you very likely would be done
+checking the link state quickly enough that the interrupt handler rarely
+gets a chance to interfere.  Also we have the irq affinity set so the
+RX/TX of one port is handled by one CPU, the RX/TX of the other port
+by a different CPU and the Other interrupts and other tasks (like the
+watchdog) are handled by the last two CPUs.
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+Either making the current link state its own bool and keeping it's meaning
+away from get_link_state, or making the interrupt handler only change
+get_link_state when LSC is actually present makes the problem go away.
+Having two meanings to get_link_state (both link state needs checking
+and what the link state is) causes issues.  After all it is using a bool
+to store 3 values: Link is up, link needs checking but is up and link
+needs checking but is down.  Of course the last two states are rather
+quantum, in that you don't know which it is until you check.
 
-configs timed out: 144
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index b3679728caac..689ad76d0d12 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -46,6 +46,8 @@
+>  
+>  #include "e1000.h"
+>  
+> +DEFINE_RATELIMIT_STATE(e1000e_ratelimit_state, 2 * HZ, 4);
+> +
+>  #define DRV_EXTRAVERSION "-k"
+>  
+>  #define DRV_VERSION "3.2.6" DRV_EXTRAVERSION
+> @@ -937,6 +939,8 @@ static bool e1000_clean_rx_irq(struct e1000_ring *rx_ring, int *work_done,
+>  	bool cleaned = false;
+>  	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
+>  
+> +	mdelay(10);
+> +
+>  	i = rx_ring->next_to_clean;
+>  	rx_desc = E1000_RX_DESC_EXT(*rx_ring, i);
+>  	staterr = le32_to_cpu(rx_desc->wb.upper.status_error);
+> @@ -1067,6 +1071,13 @@ static bool e1000_clean_rx_irq(struct e1000_ring *rx_ring, int *work_done,
+>  
+>  	adapter->total_rx_bytes += total_rx_bytes;
+>  	adapter->total_rx_packets += total_rx_packets;
+> +
+> +	if (__ratelimit(&e1000e_ratelimit_state)) {
+> +		static unsigned int max;
+> +		max = max(max, total_rx_packets);
+> +		trace_printk("received %u max %u\n", total_rx_packets, max);
+> +	}
+> +
+>  	return cleaned;
+>  }
+>  
+> @@ -1904,9 +1915,16 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+>  	struct net_device *netdev = data;
+>  	struct e1000_adapter *adapter = netdev_priv(netdev);
+>  	struct e1000_hw *hw = &adapter->hw;
+> +	static unsigned int count;
+>  
+>  	hw->mac.get_link_status = true;
+>  
+> +	count++;
+> +	if (__ratelimit(&e1000e_ratelimit_state)) {
+> +		trace_printk("got Other interrupt, count %u\n", count);
+> +		count = 0;
+> +	}
+> +
+>  	/* guard against interrupt when we're going down */
+>  	if (!test_bit(__E1000_DOWN, &adapter->state)) {
+>  		mod_timer(&adapter->watchdog_timer, jiffies + 1);
+> @@ -7121,7 +7139,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  	netdev->netdev_ops = &e1000e_netdev_ops;
+>  	e1000e_set_ethtool_ops(netdev);
+>  	netdev->watchdog_timeo = 5 * HZ;
+> -	netif_napi_add(netdev, &adapter->napi, e1000e_poll, 64);
+> +	netif_napi_add(netdev, &adapter->napi, e1000e_poll, 500);
+>  	strlcpy(netdev->name, pci_name(pdev), sizeof(netdev->name));
+>  
+>  	netdev->mem_start = mmio_start;
+> @@ -7327,6 +7345,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  	if (err)
+>  		goto err_register;
+>  
+> +	ratelimit_set_flags(&e1000e_ratelimit_state, RATELIMIT_MSG_ON_RELEASE);
+> +
+>  	/* carrier off reporting is important to ethtool even BEFORE open */
+>  	netif_carrier_off(netdev);
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-alpha                               defconfig
-arm64                             allnoconfig
-arm64                          customconfig-0
-arm64                          customconfig-1
-arm64                          customconfig-2
-arm64                               defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                            customconfig-0
-arm                            customconfig-1
-arm                            customconfig-2
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-blackfin                         allmodconfig
-blackfin                         allyesconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-c6x                        evmc6678_defconfig
-cris                             allmodconfig
-cris                             allyesconfig
-cris                 etrax-100lx_v2_defconfig
-frv                                 defconfig
-h8300                    h8300h-sim_defconfig
-i386                             allmodconfig
-i386                           customconfig-0
-i386                           customconfig-1
-i386                           customconfig-2
-i386                            randconfig-a0
-i386                            randconfig-a1
-i386                            randconfig-i0
-i386                            randconfig-i1
-i386                            randconfig-n0
-i386                            randconfig-s0
-i386                            randconfig-s1
-i386                          randconfig-x000
-i386                          randconfig-x001
-i386                          randconfig-x002
-i386                          randconfig-x003
-i386                          randconfig-x004
-i386                          randconfig-x005
-i386                          randconfig-x006
-i386                          randconfig-x007
-i386                          randconfig-x008
-i386                          randconfig-x009
-i386                          randconfig-x010
-i386                          randconfig-x011
-i386                          randconfig-x012
-i386                          randconfig-x013
-i386                          randconfig-x014
-i386                          randconfig-x015
-i386                          randconfig-x016
-i386                          randconfig-x017
-i386                          randconfig-x018
-i386                          randconfig-x019
-i386                               tinyconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                             allyesconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-mn10300                     asb2364_defconfig
-nios2                         10m50_defconfig
-openrisc                    or1ksim_defconfig
-parisc                           allmodconfig
-parisc                            allnoconfig
-parisc                           allyesconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                          allyesconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                             allmodconfig
-s390                             allyesconfig
-s390                        default_defconfig
-score                      spct6600_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                               allyesconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                             defconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-sparc                               defconfig
-tile                             allmodconfig
-tile                             allyesconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allmodconfig
-x86_64                           allyesconfig
-x86_64                         customconfig-0
-x86_64                         customconfig-1
-x86_64                         customconfig-2
-x86_64                                    lkp
-x86_64                          randconfig-i0
-x86_64                        randconfig-x010
-x86_64                        randconfig-x011
-x86_64                        randconfig-x012
-x86_64                        randconfig-x013
-x86_64                        randconfig-x014
-x86_64                        randconfig-x015
-x86_64                        randconfig-x016
-x86_64                        randconfig-x017
-x86_64                        randconfig-x018
-x86_64                        randconfig-x019
-x86_64                                   rhel
-x86_64                               rhel-7.2
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-
-configs tested: 30
-
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                 randconfig-x075-07191652
-i386                 randconfig-x078-07191652
-i386                 randconfig-x071-07191652
-i386                 randconfig-x072-07191652
-i386                 randconfig-x070-07191652
-i386                 randconfig-x074-07191652
-i386                 randconfig-x077-07191652
-i386                 randconfig-x079-07191652
-i386                 randconfig-x073-07191652
-i386                 randconfig-x076-07191652
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                                  kexec
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64               randconfig-x000-07191207
-x86_64               randconfig-x004-07191207
-x86_64               randconfig-x007-07191207
-x86_64               randconfig-x006-07191207
-x86_64               randconfig-x009-07191207
-x86_64               randconfig-x001-07191207
-x86_64               randconfig-x008-07191207
-x86_64               randconfig-x002-07191207
-x86_64               randconfig-x003-07191207
-x86_64               randconfig-x005-07191207
-
-Thanks,
-Fengguang
+-- 
+Len Sorensen
