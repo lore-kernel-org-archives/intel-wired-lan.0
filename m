@@ -1,149 +1,214 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 19 Jul 2017 14:33:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 91/103]
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:2: warning: case value
- '35' not in enumerated type 'enum i40e_fc_mode'
-Message-ID: <201707191405.USp68jGy%fengguang.wu@intel.com>
+Date: Wed, 19 Jul 2017 18:43:45 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ b2d9b6159795fd40ca0619db734419c0536d0b8e
+Message-ID: <596f37e1.mWwFUqwCboux+3DL%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   b2d9b6159795fd40ca0619db734419c0536d0b8e
-commit: 09bed6cad6c4f9c6f766cddcba8cf5437f841a57 [91/103] i40e: Add new phy types for 25G AOC and ACC support.
-config: xtensa-allyesconfig (attached as .config)
-compiler: xtensa-linux-gcc (GCC) 4.9.0
-reproduce:
-        wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 09bed6cad6c4f9c6f766cddcba8cf5437f841a57
-        # save the attached .config to linux build tree
-        make.cross ARCH=xtensa 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b2d9b6159795fd40ca0619db734419c0536d0b8e  i40e: refactor FW version checking
 
-All warnings (new ones prefixed by >>):
+drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:2: warning: case value '35' not in enumerated type 'enum i40e_fc_mode' [-Wswitch]
 
-   drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function 'i40e_get_link_ksettings':
->> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:2: warning: case value '35' not in enumerated type 'enum i40e_fc_mode' [-Wswitch]
-     case I40E_PHY_TYPE_25GBASE_AOC:
-     ^
-   drivers/net/ethernet/intel/i40e/i40e_ethtool.c:669:2: warning: case value '36' not in enumerated type 'enum i40e_fc_mode' [-Wswitch]
-     case I40E_PHY_TYPE_25GBASE_ACC:
-     ^
+Error ids grouped by kconfigs:
 
-vim +668 drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+recent_errors
+??? xtensa-allyesconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_ethtool.c:warning:case-value-not-in-enumerated-type-enum-i40e_fc_mode
 
-   589	
-   590	/**
-   591	 * i40e_get_settings - Get Link Speed and Duplex settings
-   592	 * @netdev: network interface device structure
-   593	 * @ecmd: ethtool command
-   594	 *
-   595	 * Reports speed/duplex settings based on media_type
-   596	 **/
-   597	static int i40e_get_link_ksettings(struct net_device *netdev,
-   598					   struct ethtool_link_ksettings *cmd)
-   599	{
-   600		struct i40e_netdev_priv *np = netdev_priv(netdev);
-   601		struct i40e_pf *pf = np->vsi->back;
-   602		struct i40e_hw *hw = &pf->hw;
-   603		struct i40e_link_status *hw_link_info = &hw->phy.link_info;
-   604		bool link_up = hw_link_info->link_info & I40E_AQ_LINK_UP;
-   605		u32 advertising;
-   606	
-   607		if (link_up)
-   608			i40e_get_settings_link_up(hw, cmd, netdev, pf);
-   609		else
-   610			i40e_get_settings_link_down(hw, cmd, pf);
-   611	
-   612		/* Now set the settings that don't rely on link being up/down */
-   613		/* Set autoneg settings */
-   614		cmd->base.autoneg = ((hw_link_info->an_info & I40E_AQ_AN_COMPLETED) ?
-   615				  AUTONEG_ENABLE : AUTONEG_DISABLE);
-   616	
-   617		switch (hw->phy.media_type) {
-   618		case I40E_MEDIA_TYPE_BACKPLANE:
-   619			ethtool_link_ksettings_add_link_mode(cmd, supported,
-   620							     Autoneg);
-   621			ethtool_link_ksettings_add_link_mode(cmd, supported,
-   622							     Backplane);
-   623			ethtool_link_ksettings_add_link_mode(cmd, advertising,
-   624							     Autoneg);
-   625			ethtool_link_ksettings_add_link_mode(cmd, advertising,
-   626							     Backplane);
-   627			cmd->base.port = PORT_NONE;
-   628			break;
-   629		case I40E_MEDIA_TYPE_BASET:
-   630			ethtool_link_ksettings_add_link_mode(cmd, supported, TP);
-   631			ethtool_link_ksettings_add_link_mode(cmd, advertising, TP);
-   632			cmd->base.port = PORT_TP;
-   633			break;
-   634		case I40E_MEDIA_TYPE_DA:
-   635		case I40E_MEDIA_TYPE_CX4:
-   636			ethtool_link_ksettings_add_link_mode(cmd, supported, FIBRE);
-   637			ethtool_link_ksettings_add_link_mode(cmd, advertising, FIBRE);
-   638			cmd->base.port = PORT_DA;
-   639			break;
-   640		case I40E_MEDIA_TYPE_FIBER:
-   641			ethtool_link_ksettings_add_link_mode(cmd, supported, FIBRE);
-   642			cmd->base.port = PORT_FIBRE;
-   643			break;
-   644		case I40E_MEDIA_TYPE_UNKNOWN:
-   645		default:
-   646			cmd->base.port = PORT_OTHER;
-   647			break;
-   648		}
-   649	
-   650		/* Set flow control settings */
-   651		ethtool_link_ksettings_add_link_mode(cmd, supported, Pause);
-   652	
-   653		switch (hw->fc.requested_mode) {
-   654		case I40E_FC_FULL:
-   655			ethtool_link_ksettings_add_link_mode(cmd, advertising,
-   656							     Pause);
-   657			break;
-   658		case I40E_FC_TX_PAUSE:
-   659			ethtool_link_ksettings_add_link_mode(cmd, advertising,
-   660							     Asym_Pause);
-   661			break;
-   662		case I40E_FC_RX_PAUSE:
-   663			ethtool_link_ksettings_add_link_mode(cmd, advertising,
-   664							     Pause);
-   665			ethtool_link_ksettings_add_link_mode(cmd, advertising,
-   666							     Asym_Pause);
-   667			break;
- > 668		case I40E_PHY_TYPE_25GBASE_AOC:
-   669		case I40E_PHY_TYPE_25GBASE_ACC:
-   670			ethtool_link_ksettings_add_link_mode(cmd, supported, Autoneg);
-   671			ethtool_link_ksettings_add_link_mode(cmd, advertising, Autoneg);
-   672			ethtool_link_ksettings_add_link_mode(cmd, supported,
-   673							     25000baseCR_Full);
-   674			ethtool_link_ksettings_add_link_mode(cmd, advertising,
-   675							     25000baseCR_Full);
-   676			break;
-   677		default:
-   678			ethtool_convert_link_mode_to_legacy_u32(
-   679				&advertising, cmd->link_modes.advertising);
-   680	
-   681			advertising &= ~(ADVERTISED_Pause | ADVERTISED_Asym_Pause);
-   682	
-   683			ethtool_convert_legacy_u32_to_link_mode(
-   684				cmd->link_modes.advertising, advertising);
-   685			break;
-   686		}
-   687	
-   688		return 0;
-   689	}
-   690	
+TIMEOUT after 606m
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 50943 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170719/8ab0e5ad/attachment-0001.bin>
+
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 164
+
+alpha                            allmodconfig
+alpha                            allyesconfig
+alpha                               defconfig
+arm64                             allnoconfig
+arm64                          customconfig-0
+arm64                          customconfig-1
+arm64                          customconfig-2
+arm64                               defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                            customconfig-0
+arm                            customconfig-1
+arm                            customconfig-2
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+blackfin                         allmodconfig
+blackfin                         allyesconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+c6x                        evmc6678_defconfig
+cris                             allmodconfig
+cris                             allyesconfig
+cris                 etrax-100lx_v2_defconfig
+frv                                 defconfig
+h8300                    h8300h-sim_defconfig
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                           customconfig-0
+i386                           customconfig-1
+i386                           customconfig-2
+i386                                defconfig
+i386                            randconfig-a0
+i386                            randconfig-a1
+i386                            randconfig-i0
+i386                            randconfig-i1
+i386                            randconfig-n0
+i386                            randconfig-s0
+i386                            randconfig-s1
+i386                          randconfig-x000
+i386                          randconfig-x001
+i386                          randconfig-x002
+i386                          randconfig-x003
+i386                          randconfig-x004
+i386                          randconfig-x005
+i386                          randconfig-x006
+i386                          randconfig-x007
+i386                          randconfig-x008
+i386                          randconfig-x009
+i386                          randconfig-x010
+i386                          randconfig-x011
+i386                          randconfig-x012
+i386                          randconfig-x013
+i386                          randconfig-x014
+i386                          randconfig-x015
+i386                          randconfig-x016
+i386                          randconfig-x017
+i386                          randconfig-x018
+i386                          randconfig-x019
+i386                          randconfig-x070
+i386                          randconfig-x071
+i386                          randconfig-x072
+i386                          randconfig-x073
+i386                          randconfig-x074
+i386                          randconfig-x075
+i386                          randconfig-x076
+i386                          randconfig-x077
+i386                          randconfig-x078
+i386                          randconfig-x079
+i386                               tinyconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+ia64                                defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                             allyesconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+mn10300                     asb2364_defconfig
+nios2                         10m50_defconfig
+openrisc                    or1ksim_defconfig
+parisc                           allmodconfig
+parisc                            allnoconfig
+parisc                           allyesconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                          allyesconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                             allmodconfig
+s390                             allyesconfig
+s390                        default_defconfig
+score                      spct6600_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                               allyesconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                             defconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+sparc                               defconfig
+tile                             allmodconfig
+tile                             allyesconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+x86_64                           allyesdebian
+x86_64                         customconfig-0
+x86_64                         customconfig-1
+x86_64                         customconfig-2
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                          randconfig-i0
+x86_64                        randconfig-x010
+x86_64                        randconfig-x011
+x86_64                        randconfig-x012
+x86_64                        randconfig-x013
+x86_64                        randconfig-x014
+x86_64                        randconfig-x015
+x86_64                        randconfig-x016
+x86_64                        randconfig-x017
+x86_64                        randconfig-x018
+x86_64                        randconfig-x019
+x86_64                                   rhel
+x86_64                               rhel-7.2
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+
+configs tested: 10
+
+x86_64               randconfig-x000-07191207
+x86_64               randconfig-x004-07191207
+x86_64               randconfig-x007-07191207
+x86_64               randconfig-x006-07191207
+x86_64               randconfig-x009-07191207
+x86_64               randconfig-x001-07191207
+x86_64               randconfig-x008-07191207
+x86_64               randconfig-x002-07191207
+x86_64               randconfig-x003-07191207
+x86_64               randconfig-x005-07191207
+
+Thanks,
+Fengguang
