@@ -1,26 +1,18 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 19 Jul 2017 18:43:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- b2d9b6159795fd40ca0619db734419c0536d0b8e
-Message-ID: <596f37e1.mWwFUqwCboux+3DL%fengguang.wu@intel.com>
+Date: Wed, 19 Jul 2017 19:23:48 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE] BUILD INCOMPLETE
+ e857230ed2095f87c811d5cdd7ccde6e8f2b71da
+Message-ID: <596f4144.8+VUkC1SSbAir3KB%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-b2d9b6159795fd40ca0619db734419c0536d0b8e  i40e: refactor FW version checking
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
+e857230ed2095f87c811d5cdd7ccde6e8f2b71da  ixgbe: Disable flow control for XFI
 
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c:668:2: warning: case value '35' not in enumerated type 'enum i40e_fc_mode' [-Wswitch]
-
-Error ids grouped by kconfigs:
-
-recent_errors
-??? xtensa-allyesconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_ethtool.c:warning:case-value-not-in-enumerated-type-enum-i40e_fc_mode
-
-TIMEOUT after 606m
+TIMEOUT after 601m
 
 
 Sorry we cannot finish the testset for your branch within a reasonable time.
@@ -30,7 +22,7 @@ possible error reports when our build infrastructure is restored or catches up.
 There will be no more build success notification for this branch head, but you
 can expect reasonably good test coverage after waiting for 1 day.
 
-configs timed out: 164
+configs timed out: 144
 
 alpha                            allmodconfig
 alpha                            allyesconfig
@@ -63,13 +55,10 @@ cris                             allyesconfig
 cris                 etrax-100lx_v2_defconfig
 frv                                 defconfig
 h8300                    h8300h-sim_defconfig
-i386                             alldefconfig
 i386                             allmodconfig
-i386                              allnoconfig
 i386                           customconfig-0
 i386                           customconfig-1
 i386                           customconfig-2
-i386                                defconfig
 i386                            randconfig-a0
 i386                            randconfig-a1
 i386                            randconfig-i0
@@ -97,22 +86,9 @@ i386                          randconfig-x016
 i386                          randconfig-x017
 i386                          randconfig-x018
 i386                          randconfig-x019
-i386                          randconfig-x070
-i386                          randconfig-x071
-i386                          randconfig-x072
-i386                          randconfig-x073
-i386                          randconfig-x074
-i386                          randconfig-x075
-i386                          randconfig-x076
-i386                          randconfig-x077
-i386                          randconfig-x078
-i386                          randconfig-x079
 i386                               tinyconfig
-ia64                             alldefconfig
 ia64                             allmodconfig
-ia64                              allnoconfig
 ia64                             allyesconfig
-ia64                                defconfig
 m32r                       m32104ut_defconfig
 m32r                     mappi3.smp_defconfig
 m32r                         opsput_defconfig
@@ -169,16 +145,12 @@ tile                             allyesconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
-x86_64                             acpi-redef
 x86_64                           allmodconfig
 x86_64                           allyesconfig
-x86_64                           allyesdebian
 x86_64                         customconfig-0
 x86_64                         customconfig-1
 x86_64                         customconfig-2
-x86_64                                  kexec
 x86_64                                    lkp
-x86_64                                nfsroot
 x86_64                          randconfig-i0
 x86_64                        randconfig-x010
 x86_64                        randconfig-x011
@@ -197,8 +169,28 @@ xtensa                           allyesconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
 
-configs tested: 10
+configs tested: 30
 
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                 randconfig-x075-07191652
+i386                 randconfig-x078-07191652
+i386                 randconfig-x071-07191652
+i386                 randconfig-x072-07191652
+i386                 randconfig-x070-07191652
+i386                 randconfig-x074-07191652
+i386                 randconfig-x077-07191652
+i386                 randconfig-x079-07191652
+i386                 randconfig-x073-07191652
+i386                 randconfig-x076-07191652
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                                  kexec
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 x86_64               randconfig-x000-07191207
 x86_64               randconfig-x004-07191207
 x86_64               randconfig-x007-07191207
