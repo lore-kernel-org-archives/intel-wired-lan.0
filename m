@@ -1,69 +1,62 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 19 Jul 2017 20:41:53 +0000
-Subject: [Intel-wired-lan] [next PATCH S76-V2 06/13] i40e/i40evf:
-	remove	ULTRA latency mode
-In-Reply-To: <20170714131019.52530-6-alice.michael@intel.com>
-References: <20170714131019.52530-1-alice.michael@intel.com>
- <20170714131019.52530-6-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB2523@ORSMSX104.amr.corp.intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed, 19 Jul 2017 15:00:26 -0700
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Ensure MAC filter was added
+	before setting MACVLAN
+Message-ID: <20170719220026.47784-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Friday, July 14, 2017 6:10 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S76-V2 06/13] i40e/i40evf: remove
-> ULTRA latency mode
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> Since commit c56625d59726 ("i40e/i40evf: change dynamic interrupt
-> thresholds") a new higher latency ITR setting called I40E_ULTRA_LATENCY
-> was added with a cryptic comment about how it was meant for adjusting Rx
-> more aggressively when streaming small packets.
-> 
-> This mode was attempting to calculate packets per second and then kick in
-> when we have a huge number of small packets.
-> 
-> Unfortunately, the ULTRA setting was kicking in for workloads it wasn't
-> intended for including single-thread UDP_STREAM workloads.
-> 
-> This wasn't caught for a variety of reasons. First, the ip_defrag routines were
-> improved somewhat which makes the UDP_STREAM test still reasonable at
-> 10GbE, even when dropped down to 8k interrupts a second.
-> Additionally, some other obvious workloads appear to work fine, such as
-> TCP_STREAM.
-> 
-> The number 40k doesn't make sense for a number of reasons. First, we
-> absolutely can do more than 40k packets per second. Second, we calculate
-> the value inline in an integer, which sometimes can overflow resulting in
-> using incorrect values.
-> 
-> If we fix this overflow it makes it even more likely that we'll enter ULTRA
-> mode which is the opposite of what we want.
-> 
-> The ULTRA mode was added originally as a way to reduce CPU utilization
-> during a small packet workload where we weren't keeping up anyways. It
-> should never have been kicking in during these other workloads.
-> 
-> Given the issues outlined above, let's remove the ULTRA latency mode. If
-> necessary, a better solution to the CPU utilization issue for small packet
-> workloads will be added in a future patch.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 17 -----------------
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  1 -
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 17 -----------------
-> drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  1 -
->  4 files changed, 36 deletions(-)
+This patch adds a check to ensure that adding the MAC filter was
+successful before setting the MACVLAN.  If it was unsuccessful, propagate
+the error.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+---
+v2: 
+  Made changes as suggested by Joe Perches.
+  - Declared retval as an int
+  - Switched logic to return on error
+  - Return 0 on success
 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index 0760bd7..112d24c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -679,8 +679,9 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter *adapter, u32 vf)
+ static int ixgbe_set_vf_macvlan(struct ixgbe_adapter *adapter,
+ 				int vf, int index, unsigned char *mac_addr)
+ {
+-	struct list_head *pos;
+ 	struct vf_macvlans *entry;
++	struct list_head *pos;
++	int retval = 0;
+ 
+ 	if (index <= 1) {
+ 		list_for_each(pos, &adapter->vf_mvs.l) {
+@@ -721,13 +722,15 @@ static int ixgbe_set_vf_macvlan(struct ixgbe_adapter *adapter,
+ 	if (!entry || !entry->free)
+ 		return -ENOSPC;
+ 
++	retval = ixgbe_add_mac_filter(adapter, mac_addr, vf);
++	if (retval < 0)
++		return retval;
++
+ 	entry->free = false;
+ 	entry->is_macvlan = true;
+ 	entry->vf = vf;
+ 	memcpy(entry->vf_macvlan, mac_addr, ETH_ALEN);
+ 
+-	ixgbe_add_mac_filter(adapter, mac_addr, vf);
+-
+ 	return 0;
+ }
+ 
+-- 
+2.9.3
 
