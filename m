@@ -1,18 +1,18 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 20 Jul 2017 18:06:21 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
- 5d6a4df76df34bb6a198f5cc6370387d9a6a1e50
-Message-ID: <5970809d.oqcNfJFriI1c0AoP%fengguang.wu@intel.com>
+Date: Thu, 20 Jul 2017 18:06:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD INCOMPLETE
+ 65e3c766359992f6cbe3fa1ef0a19546ecbdf380
+Message-ID: <597080a2.OWaLBQjLoP64S3wF%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-5d6a4df76df34bb6a198f5cc6370387d9a6a1e50  ixgbe: fix masking of bits read from IXGBE_VXLANCTRL register
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+65e3c766359992f6cbe3fa1ef0a19546ecbdf380  dt-binding: ptp: Add SoC compatibility strings for dte ptp clock
 
-TIMEOUT after 609m
+TIMEOUT after 637m
 
 
 Sorry we cannot finish the testset for your branch within a reasonable time.
@@ -22,7 +22,7 @@ possible error reports when our build infrastructure is restored or catches up.
 There will be no more build success notification for this branch head, but you
 can expect reasonably good test coverage after waiting for 1 day.
 
-configs timed out: 168
+configs timed out: 155
 
 alpha                            allmodconfig
 alpha                            allyesconfig
@@ -49,12 +49,10 @@ blackfin                BF526-EZBRD_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
-c6x                        evmc6678_defconfig
 cris                             allmodconfig
 cris                             allyesconfig
 cris                 etrax-100lx_v2_defconfig
 frv                                 defconfig
-h8300                    h8300h-sim_defconfig
 i386                             alldefconfig
 i386                             allmodconfig
 i386                              allnoconfig
@@ -104,10 +102,6 @@ ia64                             allmodconfig
 ia64                              allnoconfig
 ia64                             allyesconfig
 ia64                                defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
 m68k                             allmodconfig
 m68k                             allyesconfig
 m68k                       m5475evb_defconfig
@@ -123,7 +117,6 @@ mips                                   jz4740
 mips                      malta_kvm_defconfig
 mips                                     txx9
 mn10300                     asb2364_defconfig
-nios2                         10m50_defconfig
 openrisc                    or1ksim_defconfig
 parisc                           allmodconfig
 parisc                            allnoconfig
@@ -139,7 +132,6 @@ powerpc                       ppc64_defconfig
 s390                             allmodconfig
 s390                             allyesconfig
 s390                        default_defconfig
-score                      spct6600_defconfig
 sh                               allmodconfig
 sh                                allnoconfig
 sh                               allyesconfig
@@ -158,15 +150,12 @@ tile                             allyesconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
-x86_64                             acpi-redef
 x86_64                           allmodconfig
 x86_64                           allyesconfig
-x86_64                           allyesdebian
 x86_64                         customconfig-0
 x86_64                         customconfig-1
 x86_64                         customconfig-2
-x86_64                                  kexec
-x86_64                                nfsroot
+x86_64                                    lkp
 x86_64                          randconfig-i0
 x86_64                        randconfig-x000
 x86_64                        randconfig-x001
@@ -190,17 +179,28 @@ x86_64                        randconfig-x018
 x86_64                        randconfig-x019
 xtensa                           allmodconfig
 xtensa                           allyesconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
 
-configs tested: 6
+configs tested: 19
 
 i386                               tinyconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
 
 Thanks,
 Fengguang
