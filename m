@@ -1,62 +1,76 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 19 Jul 2017 15:00:26 -0700
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Ensure MAC filter was added
-	before setting MACVLAN
-Message-ID: <20170719220026.47784-1-anthony.l.nguyen@intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Wed, 19 Jul 2017 17:07:47 -0700
+Subject: [Intel-wired-lan] commit 16ecba59 breaks 82574L under heavy
+	load.
+In-Reply-To: <20170719141953.GQ18556@csclub.uwaterloo.ca>
+References: <20170718142109.GO18556@csclub.uwaterloo.ca>
+ <20170718231435.64us7vu67wtp6pwe@f1.synalogic.ca>
+ <20170719141953.GQ18556@csclub.uwaterloo.ca>
+Message-ID: <20170720000747.4jiadqubv7hg5esz@f1.synalogic.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds a check to ensure that adding the MAC filter was
-successful before setting the MACVLAN.  If it was unsuccessful, propagate
-the error.
+On 2017/07/19 10:19, Lennart Sorensen wrote:
+> On Tue, Jul 18, 2017 at 04:14:35PM -0700, Benjamin Poirier wrote:
+> > Thanks for the detailed analysis.
+> > 
+> > Refering to the original discussion around this patch series, it seemed like
+> > the IMS bit for a condition had to be set for the Other interrupt to be raised
+> > for that condition.
+> > 
+> > https://lkml.org/lkml/2015/11/4/683
+> > 
+> > In this case however, E1000_ICR_RXT0 is not set in IMS so Other shouldn't be
+> > raised for Receiver Overrun. Apparently something is going on...
+> > 
+> > I can reproduce the spurious Other interrupts with a simple mdelay()
+> > With the debugging patch at the end of the mail I see stuff like this
+> > while blasting with udp frames:
+> >           <idle>-0     [086] d.h1 15338.742675: e1000_msix_other: got Other interrupt, count 15127
+> >            <...>-54504 [086] d.h. 15338.742724: e1000_msix_other: got Other interrupt, count 1
+> >            <...>-54504 [086] d.h. 15338.742774: e1000_msix_other: got Other interrupt, count 1
+> >            <...>-54504 [086] d.h. 15338.742824: e1000_msix_other: got Other interrupt, count 1
+> >           <idle>-0     [086] d.h1 15340.745123: e1000_msix_other: got Other interrupt, count 27584
+> >            <...>-54504 [086] d.h. 15340.745172: e1000_msix_other: got Other interrupt, count 1
+> >            <...>-54504 [086] d.h. 15340.745222: e1000_msix_other: got Other interrupt, count 1
+> >            <...>-54504 [086] d.h. 15340.745272: e1000_msix_other: got Other interrupt, count 1
+> > 
+> > > hence sets the flag that (unfortunately) means both link is down and link
+> > > state should be checked.  Since this now happens 3000 times per second,
+> > > the chances of it happening while the watchdog_task is checking the link
+> > > state becomes pretty high, and it if does happen to coincice, then the
+> > > watchdog_task will reset the adapter, which causes a real loss of link.
+> > 
+> > Through which path does watchdog_task reset the adapter? I didn't
+> > reproduce that.
+> 
+> The other interrupt happens and sets get_link_status to true.  At some
+> point the watchdog_task runs on some core and calls e1000e_has_link,
+> which then calls check_for_link to find out the current link status.
+> While e1000e_check_for_copper_link is checking the link state and
+> after updating get_link_status to false to indicate link is up, another
+> interrupt occurs and another core handles it and changes get_link_status
+> to true again.  So by the time e1000e_has_link goes to determine the
+> return value, get_link_state has changed back again so now it returns
+> link down, and as a result the watchdog_task calls reset, because we
+> have packets in the transmit queue (we were busy forwarding over 100000
+> packets per second when it happened).
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
----
-v2: 
-  Made changes as suggested by Joe Perches.
-  - Declared retval as an int
-  - Switched logic to return on error
-  - Return 0 on success
+Ah I see. Thanks again.
 
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+In your previous mail,
+On 2017/07/18 10:21, Lennart Sorensen wrote:
+[...]
+> I tried checking what the bits in the ICR actually were under these
+> conditions, and it would appear that the only bit set is 24 (the Other
+> Causes interrupt bit).  So I don't know what the real cause is although
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 0760bd7..112d24c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -679,8 +679,9 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter *adapter, u32 vf)
- static int ixgbe_set_vf_macvlan(struct ixgbe_adapter *adapter,
- 				int vf, int index, unsigned char *mac_addr)
- {
--	struct list_head *pos;
- 	struct vf_macvlans *entry;
-+	struct list_head *pos;
-+	int retval = 0;
- 
- 	if (index <= 1) {
- 		list_for_each(pos, &adapter->vf_mvs.l) {
-@@ -721,13 +722,15 @@ static int ixgbe_set_vf_macvlan(struct ixgbe_adapter *adapter,
- 	if (!entry || !entry->free)
- 		return -ENOSPC;
- 
-+	retval = ixgbe_add_mac_filter(adapter, mac_addr, vf);
-+	if (retval < 0)
-+		return retval;
-+
- 	entry->free = false;
- 	entry->is_macvlan = true;
- 	entry->vf = vf;
- 	memcpy(entry->vf_macvlan, mac_addr, ETH_ALEN);
- 
--	ixgbe_add_mac_filter(adapter, mac_addr, vf);
--
- 	return 0;
- }
- 
--- 
-2.9.3
+Are you sure about this? In my testing, while triggering the overrun
+with the msleep, I read ICR when entering e1000_msix_other() and RXO is
+consistently set.
 
+I'm working on a patch that uses that fact to handle the situation and
+limit the interrupt.
