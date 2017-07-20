@@ -1,40 +1,35 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Thu, 20 Jul 2017 10:00:27 -0400
-Subject: [Intel-wired-lan] commit 16ecba59 breaks 82574L under heavy
-	load.
-In-Reply-To: <20170720000747.4jiadqubv7hg5esz@f1.synalogic.ca>
-References: <20170718142109.GO18556@csclub.uwaterloo.ca>
- <20170718231435.64us7vu67wtp6pwe@f1.synalogic.ca>
- <20170719141953.GQ18556@csclub.uwaterloo.ca>
- <20170720000747.4jiadqubv7hg5esz@f1.synalogic.ca>
-Message-ID: <20170720140027.GR18556@csclub.uwaterloo.ca>
+From: Greg Edwards <gedwards@ddn.com>
+Date: Thu, 20 Jul 2017 10:00:56 -0600
+Subject: [Intel-wired-lan] [PATCH v2 0/2] igbvf: VF mailbox timeouts with
+	multiple VF messages
+Message-ID: <20170720160058.8198-1-gedwards@ddn.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jul 19, 2017 at 05:07:47PM -0700, Benjamin Poirier wrote:
-> Are you sure about this? In my testing, while triggering the overrun
-> with the msleep, I read ICR when entering e1000_msix_other() and RXO is
-> consistently set.
+We've encountered VF mailbox timeout issues with I350 VFs assigned to VMs, when
+NetworkManager or lldpad (LLDP) are assigning multicast addresses in rapid
+succession.  A VF message may encounter a mailbox timeout waiting for the ACK
+from the PF, and the igbvf_watchdog_task will detect the condition and reset
+the VF.  This pattern can continue for some time or indefinitely.
 
-I had thousands of calls to e1000_msix_other where the only bit set
-was OTHER.
+Changes from v1:
+  - fix in igbvf VF driver instead of igb PF driver, per suggestion by
+    Alex.
 
-I don't know if the cause is overruns, it just seems plausible.
+Greg Edwards (2):
+  igbvf: add lock around mailbox ops
+  igbvf: after mailbox write, wait for reply
 
-> I'm working on a patch that uses that fact to handle the situation and
-> limit the interrupt.
-
-Excellent.
-
-Running in MSI mode rather than MSI-X seems to not have the problem of
-unexpected interrupts, but has other issues (such as loosing the IRQ
-affinity setting if you do ifconfig down;ifconfig up on the interface,
-which does not happen in MSI-X's case.)  That's rather annoying as you
-can't set the affinity before bringing up the interface which is rather
-undesirable.
+ drivers/net/ethernet/intel/igbvf/ethtool.c |  4 +++
+ drivers/net/ethernet/intel/igbvf/mbx.c     |  4 +++
+ drivers/net/ethernet/intel/igbvf/netdev.c  | 47 ++++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/igbvf/vf.c      | 10 +++++--
+ drivers/net/ethernet/intel/igbvf/vf.h      |  1 +
+ 5 files changed, 64 insertions(+), 2 deletions(-)
 
 -- 
-Len Sorensen
+2.13.3
+
