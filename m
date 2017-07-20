@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 20 Jul 2017 19:26:56 +0000
-Subject: [Intel-wired-lan] [next PATCH S76-V2 12/13] i40e: simplify
- member	variable accesses
-In-Reply-To: <20170714131019.52530-12-alice.michael@intel.com>
+Date: Thu, 20 Jul 2017 19:27:48 +0000
+Subject: [Intel-wired-lan] [next PATCH S76-V2 13/13] i40e: relax
+	warning	message in case of version mismatch
+In-Reply-To: <20170714131019.52530-13-alice.michael@intel.com>
 References: <20170714131019.52530-1-alice.michael@intel.com>
- <20170714131019.52530-12-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB262C@ORSMSX104.amr.corp.intel.com>
+ <20170714131019.52530-13-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB263C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,18 +18,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Friday, July 14, 2017 6:10 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S76-V2 12/13] i40e: simplify member
-> variable accesses
+> Cc: Stachura, Mariusz <mariusz.stachura@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S76-V2 13/13] i40e: relax warning
+> message in case of version mismatch
 > 
-> From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+> From: Mariusz Stachura <mariusz.stachura@intel.com>
 > 
-> This commit replaces usage of vsi->back in i40e_print_link_message() (which
-> is actually a PF pointer) with temp variable.
+> FVL and FPK devices are often on different firmware release schedules. This
+> change relaxes the minor version warning message, so it is only displayed for
+> older FW warning version for old firmware FVL3 or earlier.
 > 
-> Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 21 +++++++++++----------
->  1 file changed, 11 insertions(+), 10 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
