@@ -1,71 +1,47 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 21 Jul 2017 18:03:21 +0000
-Subject: [Intel-wired-lan] [next PATCH S77-V3 03/10] i40e: use
-	separate	state bit for miscellaneous IRQ setup
-In-Reply-To: <20170714132709.52657-3-alice.michael@intel.com>
-References: <20170714132709.52657-1-alice.michael@intel.com>
- <20170714132709.52657-3-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB2706@ORSMSX104.amr.corp.intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Fri, 21 Jul 2017 11:36:24 -0700
+Subject: [Intel-wired-lan] [PATCH 2/5] e1000e: Fix wrong comment related to
+	link detection
+In-Reply-To: <20170721183627.13373-1-bpoirier@suse.com>
+References: <20170721160937.GA22632@csclub.uwaterloo.ca>
+ <20170721183627.13373-1-bpoirier@suse.com>
+Message-ID: <20170721183627.13373-2-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Friday, July 14, 2017 6:27 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S77-V3 03/10] i40e: use separate state
-> bit for miscellaneous IRQ setup
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> We currently (mis)use the __I40E_RECOVERY_PENDING bit to determine
-> when we should actually request a new IRQ in i40e_setup_misc_vector().
-> 
-> This led to a design mistake where we open-coded the re-setup of the
-> miscellaneous vector in i40e_resume() instead of using the function
-> provided. If we did not open-code this and instead tried to use the
-> i40e_setup_misc_vector() function, it would lead to never reallocating the
-> IRQ.
-> 
-> This would lead to a second i40e_suspend() call failing to free the vector due
-> to a NULL pointer dereference.
-> 
-> A future patch is going to re-work how the i40e_suspend() and
-> i40e_resume() flows work to clear all IRQ vectors, which would require us to
-> use i40e_setup_misc_vector() directly. Since during this time the
-> __I40E_RECOVERY_PENDING bit is set, we'll never re-allocate the vector.
-> 
-> Rather than leaving the open-coded setup in i40e_resume() lets just fix the
-> problem properly in i40e_setup_misc_vector().
-> 
-> Introduce a new state bit which indicates when the IRQ has been assigned,
-> which will be set when i40e_setup_misc_vector is first called.
-> This ultimately resolves the issue of re-requesting the vector, without
-> overloading the __I40E_RECOVERY_PENDING state. This ensures that the
-> suspend/resume cycle can use the setup function instead of open-coding
-> the re-request during resume.
-> 
-> Additionally, since the only callers of i40e_stop_misc_vector also want to
-> free it, move this code directly into the function to avoid duplication. Due to
-> the new functionality, rename it to i40e_free_misc_vector().
-> 
-> This lets us drop the extra calls to free and re-enable the vector during
-> i40e_suspend() and i40e_resume(). We don't need to call
-> i40e_setup_misc_Vector() in i40e_resume() because it gets called by the
-> i40e_rebuild() call.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 39 +++++++++++---------------
-> ---
->  2 files changed, 15 insertions(+), 25 deletions(-)
+Reading e1000e_check_for_copper_link() shows that get_link_status is set to
+false after link has been detected. Therefore, it stays TRUE until then.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 2dcb5463d9b8..58a87134d2e5 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5074,7 +5074,7 @@ static bool e1000e_has_link(struct e1000_adapter *adapter)
+ 
+ 	/* get_link_status is set on LSC (link status) interrupt or
+ 	 * Rx sequence error interrupt.  get_link_status will stay
+-	 * false until the check_for_link establishes link
++	 * true until the check_for_link establishes link
+ 	 * for copper adapters ONLY
+ 	 */
+ 	switch (hw->phy.media_type) {
+@@ -5092,7 +5092,7 @@ static bool e1000e_has_link(struct e1000_adapter *adapter)
+ 		break;
+ 	case e1000_media_type_internal_serdes:
+ 		ret_val = hw->mac.ops.check_for_link(hw);
+-		link_active = adapter->hw.mac.serdes_has_link;
++		link_active = hw->mac.serdes_has_link;
+ 		break;
+ 	default:
+ 	case e1000_media_type_unknown:
+-- 
+2.13.2
 
