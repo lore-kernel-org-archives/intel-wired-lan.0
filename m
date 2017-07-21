@@ -1,46 +1,43 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Fri, 21 Jul 2017 14:50:02 -0400
-Subject: [Intel-wired-lan] [PATCH 4/5] e1000e: Separate signaling for
-	link check/link up
-In-Reply-To: <20170721183627.13373-4-bpoirier@suse.com>
-References: <20170721160937.GA22632@csclub.uwaterloo.ca>
- <20170721183627.13373-1-bpoirier@suse.com>
- <20170721183627.13373-4-bpoirier@suse.com>
-Message-ID: <20170721185002.GV18556@csclub.uwaterloo.ca>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 21 Jul 2017 18:50:13 +0000
+Subject: [Intel-wired-lan] [next PATCH S77-V3 04/10] i40e: use newer
+ generic	PM support instead of legacy PM callbacks
+In-Reply-To: <20170714132709.52657-4-alice.michael@intel.com>
+References: <20170714132709.52657-1-alice.michael@intel.com>
+ <20170714132709.52657-4-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10DB2733@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jul 21, 2017 at 11:36:26AM -0700, Benjamin Poirier wrote:
-> Lennart reported the following race condition:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Friday, July 14, 2017 6:27 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S77-V3 04/10] i40e: use newer generic
+> PM support instead of legacy PM callbacks
 > 
-> \ e1000_watchdog_task
->     \ e1000e_has_link
->         \ hw->mac.ops.check_for_link() === e1000e_check_for_copper_link
->             /* link is up */
->             mac->get_link_status = false;
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
->                             /* interrupt */
->                             \ e1000_msix_other
->                                 hw->mac.get_link_status = true;
+> Stop using the old legacy PM support, since we now have stable support for
+> the newer generic PM callbacks.
 > 
->         link_active = !hw->mac.get_link_status
->         /* link_active is false, wrongly */
+> This has several advantages. First, we no longer have to manage our own
+> pci_save_state() and power changes, as it's preferred to have the PCI stack
+> do this. Second, these routines get called for both hibernate and suspend to
+> ram, so we can have the driver properly handle all the suspend/resume
+> flows that it needs to.
 > 
-> This problem arises because the single flag get_link_status is used to
-> signal two different states: link status needs checking and link status is
-> down.
-> 
-> Avoid the problem by using the return value of .check_for_link to signal
-> the link status to e1000e_has_link().
-> 
-> Reported-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 54 +++++++++------------------
+> --
+>  1 file changed, 17 insertions(+), 37 deletions(-)
 
-This too seems potentially -stable worthy, although with patch 5, the
-problem becomes much much less likely to occur.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
--- 
-Len Sorensen
+
