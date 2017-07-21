@@ -1,70 +1,76 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Fri, 21 Jul 2017 15:02:44 -0400
-Subject: [Intel-wired-lan] commit 16ecba59 breaks 82574L under heavy
-	load.
-In-Reply-To: <20170720234455.7nxtui7shmnzivxd@f1.synalogic.ca>
-References: <20170718142109.GO18556@csclub.uwaterloo.ca>
- <20170718231435.64us7vu67wtp6pwe@f1.synalogic.ca>
- <20170719141953.GQ18556@csclub.uwaterloo.ca>
- <20170720000747.4jiadqubv7hg5esz@f1.synalogic.ca>
- <20170720140027.GR18556@csclub.uwaterloo.ca>
- <20170720234455.7nxtui7shmnzivxd@f1.synalogic.ca>
-Message-ID: <20170721190244.GW18556@csclub.uwaterloo.ca>
+From: John W. Linville <linville@tuxdriver.com>
+Date: Fri, 21 Jul 2017 14:12:24 -0400
+Subject: [Intel-wired-lan] [PATCH] igb: support BCM54616 PHY
+Message-ID: <b5d586566a1b523b9be65567b52898e33058a1cf.1500660210.git.>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Jul 20, 2017 at 04:44:55PM -0700, Benjamin Poirier wrote:
-> Could you please test the following patch and let me know if it:
-> 1) reduces the interrupt rate of the Other msi-x vector
-> 2) avoids the link flaps
-> or
-> 3) logs some dmesg warnings of the form "Other interrupt with unhandled [...]"
-> In this case, please paste icr values printed.
+The management port on an Edgecore AS7712-32 switch uses an igb MAC, but
+it uses a BCM54616 PHY. Without a patch like this, loading the igb
+module produces dmesg output like this:
 
-By the way, while at fixing the e1000e, I just noticed that
-if you are blasting the port with traffic when it comes up,
-you risk getting a transmit queue time out, because the queue
-is started before the carrier is up.  ixgbe already fixed that in
-cdc04dcce0598fead6029a2f95e95a4d2ea419c2.  igb has the same problem (which
-goes away by moving the queue start to the watchdog after carrier_on,
-I just haven't got around to sending that patch yet).
+[    3.439125] igb: Copyright (c) 2007-2014 Intel Corporation.
+[    3.439866] igb: probe of 0000:00:14.0 failed with error -2
 
-I am going to try moving the queue start to the watchdog and try it again.
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
+ drivers/net/ethernet/intel/igb/e1000_82575.c   | 6 ++++++
+ drivers/net/ethernet/intel/igb/e1000_defines.h | 1 +
+ drivers/net/ethernet/intel/igb/e1000_hw.h      | 1 +
+ 3 files changed, 8 insertions(+)
 
-Trace looked like this:
-
-------------[ cut here ]------------
-WARNING: CPU: 0 PID: 0 at net/sched/sch_generic.c:316 dev_watchdog+0x1f9/0x200
-NETDEV WATCHDOG: eth0 (e1000e): transmit queue 0 timed out
-Modules linked in: dpi_drv(PO) ccu_util(PO) ipv4_mb(PO) l2bridge_config_util(PO) l2_config_util(PO) route_config_util(PO) qos_config_util(PO) sysapp_common(PO) chantry_fwd_eng_2800_config(PO) shim_module(PO) sadb_cc(PO) ipsecXformer(PO) libeCrypto(PO) ipmatch_cc(PO) l2h_cc(PO) ndproxy_cc(PO) arpint_cc(PO) portinfo_cc(PO) chantryqos_cc(PO) redirector_cc(PO) ix_ph(PO) fpm_core_cc(PO) pulse_cc(PO) vnstt_cc(PO) vnsap_cc(PO) fm_cc(PO) rutm_cc(PO) mutm_cc(PO) ethernet_tx_cc(PO) stkdrv_cc(PO) l2bridge_cc(PO) events_util(PO) sched_cc(PO) qm_cc(PO) ipv4_cc(PO) wred_cc(PO) tc_meter_cc(PO) dscp_classifier_cc(PO) classifier_6t_cc(PO) ent586_cc(PO) dev_cc_arp(PO) chantry_fwd_eng_2800_tables(PO) ether_arp_lib(PO) rtmv4_lib(PO) lkup_lib(PO) l2tm_lib(PO) fragmentation_lib(PO) properties_lib(PO) msg_support_lib(PO)
- utilities_lib(PO) cci_lib(PO) rm_lib(PO) libossl(O) vip(O) productSpec_x86_dp(PO) e1000e
-CPU: 0 PID: 0 Comm: swapper/0 Tainted: P           O    4.9.24 #20
-Hardware name: Supermicro X7SPA-HF/X7SPA-HF, BIOS 1.2a       06/23/12  
- 0000000000000000 ffffffff811cef1b ffff88007fc03e88 0000000000000000
- ffffffff81037ade 0000000000000000 ffff88007fc03ed8 0000000000000001
- 0000000000000000 0000000000000082 0000000000000001 ffffffff81037b4c
-Call Trace:
- <IRQ> 
- [<ffffffff811cef1b>] ? dump_stack+0x46/0x5b
- [<ffffffff81037ade>] ? __warn+0xbe/0xe0
- [<ffffffff81037b4c>] ? warn_slowpath_fmt+0x4c/0x50
- [<ffffffff8107ac92>] ? mod_timer+0xf2/0x150
- [<ffffffff812ffe69>] ? dev_watchdog+0x1f9/0x200
- [<ffffffff812ffc70>] ? dev_graft_qdisc+0x70/0x70
- [<ffffffff8107aeb1>] ? call_timer_fn.isra.26+0x11/0x80
- [<ffffffff8107b048>] ? run_timer_softirq+0x128/0x150
- [<ffffffff8103b16b>] ? __do_softirq+0xeb/0x1f0
- [<ffffffff8103b365>] ? irq_exit+0x55/0x60
- [<ffffffff81024da9>] ? smp_apic_timer_interrupt+0x39/0x50
- [<ffffffff813ab19c>] ? apic_timer_interrupt+0x7c/0x90
- <EOI> 
- [<ffffffff813aa1e1>] ? mwait_idle+0x51/0x80
- [<ffffffff81067717>] ? cpu_startup_entry+0xa7/0x130
- [<ffffffff81663cf4>] ? start_kernel+0x306/0x30e
----[ end trace ee759b7a56e1110b ]---
-
+diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+index ee443985581f..a87bc7dcea80 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_82575.c
++++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+@@ -339,6 +339,9 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+ 		phy->ops.set_d3_lplu_state = igb_set_d3_lplu_state_82580;
+ 		phy->ops.force_speed_duplex = igb_phy_force_speed_duplex_m88;
+ 		break;
++	case BCM54616_E_PHY_ID:
++		phy->type = e1000_phy_bcm54616;
++		break;
+ 	default:
+ 		ret_val = -E1000_ERR_PHY;
+ 		goto out;
+@@ -1658,6 +1661,9 @@ static s32 igb_setup_copper_link_82575(struct e1000_hw *hw)
+ 	case e1000_phy_82580:
+ 		ret_val = igb_copper_link_setup_82580(hw);
+ 		break;
++	case e1000_phy_bcm54616:
++		ret_val = 0;
++		break;
+ 	default:
+ 		ret_val = -E1000_ERR_PHY;
+ 		break;
+diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+index 2688180a7acd..ce95b7ec1bc7 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -867,6 +867,7 @@
+ #define I210_I_PHY_ID        0x01410C00
+ #define M88E1543_E_PHY_ID    0x01410EA0
+ #define M88E1512_E_PHY_ID    0x01410DD0
++#define BCM54616_E_PHY_ID    0x03625D10
+ 
+ /* M88E1000 Specific Registers */
+ #define M88E1000_PHY_SPEC_CTRL     0x10  /* PHY Specific Control Register */
+diff --git a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
+index 2fb2213cd562..644d8f59debe 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_hw.h
++++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
+@@ -128,6 +128,7 @@ enum e1000_phy_type {
+ 	e1000_phy_ife,
+ 	e1000_phy_82580,
+ 	e1000_phy_i210,
++	e1000_phy_bcm54616,
+ };
+ 
+ enum e1000_bus_type {
 -- 
-Len Sorensen
+2.13.3
+
