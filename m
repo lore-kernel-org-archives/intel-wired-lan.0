@@ -1,39 +1,35 @@
-From: Kushal Gautam <kushal.gautam@gmail.com>
-Date: Sun, 23 Jul 2017 04:21:08 +0200
-Subject: [Intel-wired-lan] Issue with Flow Director
-Message-ID: <CAGv3bDc7ssoTaM8_bKv4fSJHNvr7jiqwZFbCGXr2R0JEsuCCwA@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sun, 23 Jul 2017 14:58:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 78/101] ERROR:
+ "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
+Message-ID: <201707231451.SEgUsR3R%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi:
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   94e0787e2073e3d2b826a4ba35adfcfa7c727f31
+commit: 853571d07cc6206862951f1984afaf14822a9a12 [78/101] i40e: Refactor VF BW rate limiting function to be reused on the PF as well
+config: i386-allmodconfig (attached as .config)
+compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+reproduce:
+        git checkout 853571d07cc6206862951f1984afaf14822a9a12
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-I am using Intel X710 NIC, and i40e driver.
+All errors (new ones prefixed by >>):
 
-I have been trying to use ethtool to add a flow rule to the incoming
-packets. The command that I have been using is:
+>> ERROR: "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
 
-ethtool -U ens1f0 flow-type udp4 dst-port 319 action 3 loc 1
-ethtool -U ens1f1 flow-type udp4 dst-port 319 action 3 loc 1
-
-As per my understanding, this should be forwarding all the matched packets
-to Queue #3. But, these packets are directed to somewhere else (the queue
-number usually changes). I could see this will /proc/interrupts.
-
-Also, upon inspection, I saw that atr was enabled even when I added a rule.
-So, I somehow replicated the code from i40e_add_del_fdir_tcpv4() in
-i40e_add_del_fdir_udp4()
-to disable atr whenever there is a rule for UDP as well.
-
-Despite several tweaks, I am still not able to funnel my packets to a
-particular queue. Am I doing something wrong here ?
-
-I can provide further information, if needed.
-
-Thanks,
-Kushal.
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 -------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170723/ab1b6b5f/attachment.html>
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 60927 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170723/b90ac35b/attachment-0001.bin>
