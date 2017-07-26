@@ -1,65 +1,98 @@
-From: Tantilov, Emil S <emil.s.tantilov@intel.com>
-Date: Tue, 25 Jul 2017 19:19:23 +0000
-Subject: [Intel-wired-lan] ixgbe: X540T + BMC - speed stuck at 100Mbit
-In-Reply-To: <87o9s9um2x.fsf@linkitivity.dja.id.au>
-References: <87o9s9um2x.fsf@linkitivity.dja.id.au>
-Message-ID: <87618083B2453E4A8714035B62D67992B3EAC970@FMSMSX105.amr.corp.intel.com>
+From: Amritha Nambiar <amritha.nambiar@intel.com>
+Date: Tue, 25 Jul 2017 18:13:22 -0700
+Subject: [Intel-wired-lan] [PATCH] [next-queue]net: i40e: Proper clean up
+ when exiting from setup_tc
+Message-ID: <150103160221.33986.12646981723333638260.stgit@anamdev.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
->Of Daniel Axtens
->Sent: Monday, July 24, 2017 10:23 PM
-To: intel-wired-lan@lists.osuosl.org; Kirsher, Jeffrey T
-><jeffrey.t.kirsher@intel.com>
->Subject: [Intel-wired-lan] ixgbe: X540T + BMC - speed stuck at 100Mbit
->
->Hi,
->
->I'm looking at a Dell system that has an ixgbe X540T card that is shared
->with a BMC.
->
->When the system boots, the card negotiates a speed of 100Mbit, even
->though the other end is capable of 10Gbit and autonegotiation is on.
->
->Unplugging the network cable from the card and plugging it back in again
->causes the speed to go to 10Gbit, but if the system is shut down and
->then booted again, the speed drops back to 100Mbit.
->
->Asking for a renegotiation with 'ethtool -r' doesn't cause the speed to
->change, nor does bringing it down and up with 'ip link'.
->
->Our theory is that this is related to the sharing with the BMC. It was
->first observed when the userspace on the system changed from Ubuntu
->14.04 to Ubuntu 16.04, but it doesn't seem to depend on the kernel
->version - it seems to be some sort of weird race condition.
+Fix cleaning up and exit from setup_tc on negative scenarios.
+Set the tc configuration to default values where only TC0 is
+enabled.
 
-The only time the driver cares about the existence of a BMC is when deciding
-whether to shut down the PHY. The supported/negotiated speeds are configured
-the same. If you suspect the BMC you can try and disable it. Also you can try
-with different link partners, or simply limit the advertised speed to 10gig:
->ethtool -s ethX advertise 0x1000
+Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c |   40 +++++++++++++++++++++++----
+ 1 file changed, 34 insertions(+), 6 deletions(-)
 
->Is there any way to force a harder reset of the card to make it
->renegotiate? I thought that probe() would call reset_hw() and that
->ixgbe_reset_hw_X540() would be sufficient to reset the link but it
->doesn't seem to be taking.
-
-Any reset that results in a link drop (as observed in dmesg as link down/up
-events should also result in the link being re-negotiated).
-
->(This has been observed on a stock Xenial kernel, which is based on v4.4
->but with some of the more recent fixes to the driver backported. I
->haven't seen anything in the git history that looks like it would fix
->the issue, but I can try a more recent kernel version if that would be
->helpful.)
-
-You can try the out-of-tree driver from e1000.s.net.
-
-Thanks,
-Emil 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 370ce9f..c367d8d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6608,6 +6608,33 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
+ }
+ 
+ /**
++ * i40e_vsi_set_default_tc_config - set default values for tc configuration
++ * @vsi: the VSI being configured
++ **/
++static void i40e_vsi_set_default_tc_config(struct i40e_vsi *vsi)
++{
++	u16 qcount;
++	int i;
++
++	/* Only TC0 is enabled */
++	vsi->tc_config.numtc = 1;
++	vsi->tc_config.enabled_tc = 1;
++	qcount = min_t(int, vsi->alloc_queue_pairs,
++		       i40e_pf_get_max_q_per_tc(vsi->back));
++	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
++		/* For the TC that is not enabled set the offset to to default
++		 * queue and allocate one queue for the given TC.
++		 */
++		vsi->tc_config.tc_info[i].qoffset = 0;
++		if (i == 0)
++			vsi->tc_config.tc_info[i].qcount = qcount;
++		else
++			vsi->tc_config.tc_info[i].qcount = 1;
++		vsi->tc_config.tc_info[i].netdev_tc = 0;
++	}
++}
++
++/**
+  * i40e_setup_tc - configure multiple traffic classes
+  * @netdev: net device to configure
+  * @tc: pointer to struct tc_to_netdev
+@@ -6706,7 +6733,7 @@ static int i40e_setup_tc(struct net_device *netdev, struct tc_to_netdev *tc)
+ 	if (ret) {
+ 		netdev_info(netdev, "Failed configuring TC for VSI seid=%d\n",
+ 			    vsi->seid);
+-		goto exit;
++		goto reset;
+ 	}
+ 
+ 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
+@@ -6721,23 +6748,24 @@ static int i40e_setup_tc(struct net_device *netdev, struct tc_to_netdev *tc)
+ 					max_tx_rate / I40E_BW_CREDIT_DIVISOR,
+ 					vsi->seid);
+ 			else
+-				goto exit;
++				goto reset;
+ 		}
+ 		ret = i40e_configure_queue_channels(vsi);
+ 		if (ret) {
+ 			netdev_info(netdev,
+ 				    "Failed configuring queue channels\n");
+-			goto exit;
++			goto reset;
+ 		}
+ 	}
+ 
+ 	goto out;
+-exit:
+-	/* Reset the configuration data */
+-	memset(&vsi->tc_config, 0, sizeof(vsi->tc_config));
++reset:
++	/* Reset the configuration data to defaults, only TC0 is enabled */
++	i40e_vsi_set_default_tc_config(vsi);
+ out:
+ 	/* Unquiesce VSI */
+ 	i40e_unquiesce_vsi(vsi);
++exit:
+ 	return ret;
+ }
+ 
 
