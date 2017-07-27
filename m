@@ -1,207 +1,38 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 27 Jul 2017 04:37:20 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD INCOMPLETE
- 2f1d86e44c9dac948a79ee7543426e00230564ab
-Message-ID: <5978fd80.qF2ZqO62fPwnk8jg%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 27 Jul 2017 00:40:01 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: support BCM54616 PHY
+In-Reply-To: <b5d586566a1b523b9be65567b52898e33058a1cf.1500660210.git.>
+References: <b5d586566a1b523b9be65567b52898e33058a1cf.1500660210.git.>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C663B22@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-2f1d86e44c9dac948a79ee7543426e00230564ab  i40e: handle setting administratively set MAC address back to zero
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
+> Of John W. Linville
+> Sent: Friday, July 21, 2017 11:12 AM
+> To: netdev at vger.kernel.org
+> Cc: intel-wired-lan at lists.osuosl.org; John W. Linville
+> <linville@tuxdriver.com>
+> Subject: [Intel-wired-lan] [PATCH] igb: support BCM54616 PHY
+> 
+> The management port on an Edgecore AS7712-32 switch uses an igb MAC,
+> but
+> it uses a BCM54616 PHY. Without a patch like this, loading the igb
+> module produces dmesg output like this:
+> 
+> [    3.439125] igb: Copyright (c) 2007-2014 Intel Corporation.
+> [    3.439866] igb: probe of 0000:00:14.0 failed with error -2
+> 
+> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igb/e1000_82575.c   | 6 ++++++
+>  drivers/net/ethernet/intel/igb/e1000_defines.h | 1 +
+>  drivers/net/ethernet/intel/igb/e1000_hw.h      | 1 +
+>  3 files changed, 8 insertions(+)
 
-TIMEOUT after 605m
-
-
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
-
-configs timed out: 100
-
-alpha                            allmodconfig
-alpha                            allyesconfig
-arm64                          customconfig-0
-arm64                          customconfig-1
-arm64                          customconfig-2
-arm                            customconfig-0
-arm                            customconfig-1
-arm                            customconfig-2
-blackfin                         allmodconfig
-blackfin                         allyesconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                             allmodconfig
-cris                             allyesconfig
-cris                 etrax-100lx_v2_defconfig
-frv                                 defconfig
-i386                           customconfig-0
-i386                           customconfig-1
-i386                           customconfig-2
-i386                            randconfig-a0
-i386                            randconfig-a1
-i386                            randconfig-i0
-i386                            randconfig-i1
-i386                            randconfig-n0
-i386                            randconfig-s0
-i386                            randconfig-s1
-i386                          randconfig-x000
-i386                          randconfig-x001
-i386                          randconfig-x002
-i386                          randconfig-x003
-i386                          randconfig-x004
-i386                          randconfig-x005
-i386                          randconfig-x006
-i386                          randconfig-x007
-i386                          randconfig-x008
-i386                          randconfig-x009
-i386                          randconfig-x010
-i386                          randconfig-x011
-i386                          randconfig-x012
-i386                          randconfig-x013
-i386                          randconfig-x014
-i386                          randconfig-x015
-i386                          randconfig-x016
-i386                          randconfig-x017
-i386                          randconfig-x018
-i386                          randconfig-x019
-i386                          randconfig-x070
-i386                          randconfig-x071
-i386                          randconfig-x072
-i386                          randconfig-x073
-i386                          randconfig-x074
-i386                          randconfig-x075
-i386                          randconfig-x076
-i386                          randconfig-x077
-i386                          randconfig-x078
-i386                          randconfig-x079
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                          allyesconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                             allmodconfig
-s390                             allyesconfig
-s390                        default_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                               allyesconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-tile                             allmodconfig
-tile                             allyesconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allmodconfig
-x86_64                           allyesconfig
-x86_64                         customconfig-0
-x86_64                         customconfig-1
-x86_64                         customconfig-2
-x86_64                                    lkp
-x86_64                          randconfig-i0
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-
-configs tested: 75
-
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                           rhel_piglitd
-x86_64                               rhel-7.2
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-x86_64                 randconfig-x016-201730
-x86_64                 randconfig-x011-201730
-x86_64                 randconfig-x019-201730
-x86_64                 randconfig-x014-201730
-x86_64                 randconfig-x012-201730
-x86_64                 randconfig-x013-201730
-x86_64                 randconfig-x018-201730
-x86_64                 randconfig-x015-201730
-x86_64                 randconfig-x010-201730
-x86_64                 randconfig-x017-201730
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                 randconfig-x007-201730
-x86_64                 randconfig-x001-201730
-x86_64                 randconfig-x000-201730
-x86_64                 randconfig-x006-201730
-x86_64                 randconfig-x003-201730
-x86_64                 randconfig-x004-201730
-x86_64                 randconfig-x009-201730
-x86_64                 randconfig-x005-201730
-x86_64                 randconfig-x008-201730
-x86_64                 randconfig-x002-201730
-i386                             allmodconfig
-
-Thanks,
-Fengguang
+I do not have the specific hardware (Edgecore switch) but as far as regression tests go this works fine.
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
