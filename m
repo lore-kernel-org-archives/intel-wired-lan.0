@@ -1,90 +1,250 @@
-From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
-Date: Thu, 27 Jul 2017 18:35:31 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: support BCM54616 PHY
-In-Reply-To: <76c8ea56-8e4e-a85c-abe5-695b46c99308@gmail.com>
-References: <b5d586566a1b523b9be65567b52898e33058a1cf.1500660210.git.>
- <309B89C4C689E141A5FF6A0C5FB2118B8C663B22@ORSMSX101.amr.corp.intel.com>
- <20170727153713.GG18666@lunn.ch>
- <76c8ea56-8e4e-a85c-abe5-695b46c99308@gmail.com>
-Message-ID: <9BBC4E0CF881AA4299206E2E1412B626504A900F@ORSMSX102.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 28 Jul 2017 17:32:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 606a872b4297c9cc9be6d05ce3e5c2aa432adf85
+Message-ID: <597b0495.1lCP3982+K1+s3jf%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: netdev-owner at vger.kernel.org [mailto:netdev-
-> owner at vger.kernel.org] On Behalf Of Florian Fainelli
-> Sent: Thursday, July 27, 2017 10:58 AM
-> To: Andrew Lunn <andrew@lunn.ch>; Brown, Aaron F
-> <aaron.f.brown@intel.com>
-> Cc: John W. Linville <linville@tuxdriver.com>; netdev at vger.kernel.org; intel-
-> wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH] igb: support BCM54616 PHY
-> 
-> On 07/27/2017 08:37 AM, Andrew Lunn wrote:
-> > On Thu, Jul 27, 2017 at 12:40:01AM +0000, Brown, Aaron F wrote:
-> >>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf
-> >>> Of John W. Linville
-> >>> Sent: Friday, July 21, 2017 11:12 AM
-> >>> To: netdev at vger.kernel.org
-> >>> Cc: intel-wired-lan at lists.osuosl.org; John W. Linville
-> >>> <linville@tuxdriver.com>
-> >>> Subject: [Intel-wired-lan] [PATCH] igb: support BCM54616 PHY
-> >>>
-> >>> The management port on an Edgecore AS7712-32 switch uses an igb MAC,
-> >>> but
-> >>> it uses a BCM54616 PHY. Without a patch like this, loading the igb
-> >>> module produces dmesg output like this:
-> >>>
-> >>> [    3.439125] igb: Copyright (c) 2007-2014 Intel Corporation.
-> >>> [    3.439866] igb: probe of 0000:00:14.0 failed with error -2
-> >>>
-> >>> Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> >>> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> >>> ---
-> >>>  drivers/net/ethernet/intel/igb/e1000_82575.c   | 6 ++++++
-> >>>  drivers/net/ethernet/intel/igb/e1000_defines.h | 1 +
-> >>>  drivers/net/ethernet/intel/igb/e1000_hw.h      | 1 +
-> >>>  3 files changed, 8 insertions(+)
-> >>
-> >> I do not have the specific hardware (Edgecore switch) but as far as
-> regression tests go this works fine.
-> >> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-> >
-> > Sorry, missed the initial post, so replying to a reply.
-> >
-> > Linux has supported the BCM54616 PHY since April 2015. If the Intel
-> > drivers used the Linux PHY drivers, you would not of had this problem.
-> >
-> > It would be good if somebody spent the time to migrate these MAC
-> > drivers to use the common Linux PHY infrastructure.
-> 
-> I suspect there is a design pattern within the Intel drivers to share as
-> much low-level code as possible between OSes and only have some
-> Linux-ism where necessary (e.g: net_device, ethtool etc.).
-> 
-> PHY code is a pain in general, especially if you are serious about
-> testing interoperability (which is where you can spend tons of $$$ with
-> little reward but just say: yes it works), so it may make sense to share
-> it across different OSes.
-> 
-> I too, wish there was more sharing, but considering that this works for
-> the Intel driver, there is little incentive in doing this I suppose...
-> --
-> Florian
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+606a872b4297c9cc9be6d05ce3e5c2aa432adf85  igbvf: convert msleep to mdelay in atomic context
 
-Yes Florian you are correct generally, but future implementations have not been ruled out.  With this driver, we had our custom phy init code tested and released for several products before phylib existed.  I began research on a phylib implementation for it at one point, but internal product decisions ended up lowering the priority of that work.
+drivers/net/ethernet/intel/i40e/i40e_nvm.c:781:3-9: preceding lock on line 760
+ERROR: "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
+
+Error ids grouped by kconfigs:
+
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_nvm.c:preceding-lock-on-line
+    ??? ERROR:__udivdi3-drivers-net-ethernet-intel-i40e-i40e.ko-undefined
+
+elapsed time: 509m
+
+configs tested: 219
+
+mips                        generic_defconfig
+powerpc                        warp_defconfig
+sh                               allyesconfig
+x86_64                 randconfig-a0-07281138
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                         assabet_defconfig
+m68k                       bvme6000_defconfig
+powerpc                     taishan_defconfig
+x86_64                randconfig-in0-07281144
+arm                               allnoconfig
+arm                  colibri_pxa300_defconfig
+xtensa                           allyesconfig
+x86_64                randconfig-it0-07281205
+i386                               tinyconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201730
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                           h3600_defconfig
+arm                           sunxi_defconfig
+microblaze                       allmodconfig
+x86_64                 randconfig-v0-07281206
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+arm                       aspeed_g4_defconfig
+m68k                          multi_defconfig
+tile                         tilegx_defconfig
+m32r                             allyesconfig
+mips                          ath79_defconfig
+sh                            shmin_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-g0-07281214
+x86_64                 randconfig-g0-07281632
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x016-201730
+x86_64                 randconfig-x011-201730
+x86_64                 randconfig-x019-201730
+x86_64                 randconfig-x014-201730
+x86_64                 randconfig-x012-201730
+x86_64                 randconfig-x013-201730
+x86_64                 randconfig-x018-201730
+x86_64                 randconfig-x015-201730
+x86_64                 randconfig-x010-201730
+x86_64                 randconfig-x017-201730
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                                   samsung
+arm                        mvebu_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       imx_v6_v7_defconfig
+arm64                            allmodconfig
+arm                           tegra_defconfig
+arm                                      arm5
+arm64                            alldefconfig
+arm                                        sh
+arm                                     arm67
+i386                     randconfig-a0-201730
+i386                     randconfig-a1-201730
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-s3-07281642
+x86_64                 randconfig-s4-07281642
+x86_64                 randconfig-s5-07281642
+mips                       bmips_be_defconfig
+mips                       markeins_defconfig
+um                               allyesconfig
+arm                          badge4_defconfig
+blackfin                   CM-BF533_defconfig
+mips                  mips_paravirt_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201730
+i386                   randconfig-b0-07281202
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                            hisi_defconfig
+arm                            qcom_defconfig
+ia64                             alldefconfig
+i386                     randconfig-i1-201730
+i386                     randconfig-i0-201730
+x86_64                 randconfig-b0-07281157
+m68k                          atari_defconfig
+powerpc                          alldefconfig
+powerpc                      pasemi_defconfig
+x86_64                 randconfig-u0-07281121
+mips                        workpad_defconfig
+powerpc                    amigaone_defconfig
+sh                           se7722_defconfig
+sparc64                          alldefconfig
+i386                   randconfig-x019-201730
+i386                   randconfig-x013-201730
+i386                   randconfig-x016-201730
+i386                   randconfig-x012-201730
+i386                   randconfig-x018-201730
+i386                   randconfig-x010-201730
+i386                   randconfig-x015-201730
+i386                   randconfig-x011-201730
+i386                   randconfig-x017-201730
+i386                   randconfig-x014-201730
+i386                   randconfig-h0-07281015
+i386                   randconfig-h1-07281015
+arm                           corgi_defconfig
+arm                         orion5x_defconfig
+powerpc                     tqm8560_defconfig
+arm                         em_x270_defconfig
+mips                        msp71xx_defconfig
+powerpc                         c2k_defconfig
+powerpc                       maple_defconfig
+arm                           acs5k_defconfig
+arm                            u300_defconfig
+m68k                              allnoconfig
+x86_64                 randconfig-h0-07281141
+mips                           jazz_defconfig
+tile                             allmodconfig
+i386                   randconfig-x075-201730
+i386                   randconfig-x076-201730
+i386                   randconfig-x071-201730
+i386                   randconfig-x074-201730
+i386                   randconfig-x070-201730
+i386                   randconfig-x072-201730
+i386                   randconfig-x079-201730
+i386                   randconfig-x077-201730
+i386                   randconfig-x078-201730
+i386                   randconfig-x073-201730
+x86_64                                  kexec
+x86_64             rhel-7.2+CONFIG_DEBUG_INFO
+arm                         s3c2410_defconfig
+ia64                            zx1_defconfig
+mips                            gpr_defconfig
+m68k                           sun3_defconfig
+m68k                       m5475evb_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                  randconfig-sb0-07281136
+i386                  randconfig-sb0-07281626
+x86_64                           allmodconfig
+i386                   randconfig-x000-201730
+i386                   randconfig-x003-201730
+i386                   randconfig-x009-201730
+i386                   randconfig-x004-201730
+i386                   randconfig-x008-201730
+i386                   randconfig-x001-201730
+i386                   randconfig-x005-201730
+i386                   randconfig-x007-201730
+i386                   randconfig-x002-201730
+i386                   randconfig-x006-201730
+x86_64                 randconfig-x007-201730
+x86_64                 randconfig-x001-201730
+x86_64                 randconfig-x000-201730
+x86_64                 randconfig-x006-201730
+x86_64                 randconfig-x003-201730
+x86_64                 randconfig-x004-201730
+x86_64                 randconfig-x009-201730
+x86_64                 randconfig-x005-201730
+x86_64                 randconfig-x008-201730
+x86_64                 randconfig-x002-201730
+arm                          nuc950_defconfig
+powerpc                      cm5200_defconfig
+sh                   secureedge5410_defconfig
+x86_64                randconfig-ws0-07281124
+x86_64                randconfig-ws0-07281621
+mips                      pic32mzda_defconfig
+powerpc                 mpc8313_rdb_defconfig
+x86_64                randconfig-ws0-07280951
+arm                         socfpga_defconfig
+ia64                                defconfig
+ia64                              allnoconfig
+x86_64                 randconfig-r0-07281102
+x86_64                 randconfig-r0-07281653
+powerpc                      arches_defconfig
+powerpc                      tqm8xx_defconfig
+i386                   randconfig-x0-07281153
 
 Thanks,
-
-Carolyn
-
-Carolyn Wyborny 
-Linux Development 
-Networking Division 
-Intel Corporation 
-
-
+Fengguang
