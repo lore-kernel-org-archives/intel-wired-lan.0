@@ -1,43 +1,286 @@
-From: Ding Tianhong <dingtianhong@huawei.com>
-Date: Sun, 20 Aug 2017 18:10:53 +0800
-Subject: [Intel-wired-lan] [PATCH v3 net 0/2 RESEND] net: ixgbe: Use new
-	flag to disable Relaxed Ordering
-Message-ID: <1503223855-24616-1-git-send-email-dingtianhong@huawei.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 01 Aug 2017 01:13:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 15278d958d1b662a77605c8dc133fe1cacbea04e
+Message-ID: <597f6530.dMQNYTRz2pfnOsrK%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The new flag PCI_DEV_FLAGS_NO_RELAXED_ORDERING has been added
-to indicate that Relaxed Ordering Attributes (RO) should not
-be used for Transaction Layer Packets (TLP) targeted toward
-these affected Root Port, it will clear the bit4 in the PCIe
-Device Control register, so the PCIe device drivers could
-query PCIe configuration space to determine if it can send
-TLPs to Root Port with the Relaxed Ordering Attributes set.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+15278d958d1b662a77605c8dc133fe1cacbea04e  igbvf: convert msleep to mdelay in atomic context
 
-The ixgbe driver could use this flag to determine if it can
-send TLPs to Root Port with the Relaxed Ordering Attributes set.
+drivers/net/ethernet/intel/i40e/i40e_nvm.c:781:3-9: preceding lock on line 760
+ERROR: "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
 
-v2: Simplify the original program according Alex's suggestion,
-    remove the new ixgbe flag2 and only check the bit4 in the
-    PCIe Device Control register. 
+Error ids grouped by kconfigs:
 
-v3: Remove the code that clears the bits in DCA_T/RXCTRL, relaxed
-    ordering should be enabled by the HW when the bus allow it.
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_nvm.c:preceding-lock-on-line
+    ??? ERROR:__udivdi3-drivers-net-ethernet-intel-i40e-i40e.ko-undefined
 
-Ding Tianhong (2):
-  Revert commit 1a8b6d76dc5b ("net:add one common config...")
-  net: ixgbe: Use new IXGBE_FLAG2_ROOT_NO_RELAXED_ORDERING flag
+elapsed time: 527m
 
- arch/Kconfig                                    |  3 --
- arch/sparc/Kconfig                              |  1 -
- drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c  | 37 ++++++++++++-------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 32 +++++++++++----------
- 4 files changed, 35 insertions(+), 38 deletions(-)
+configs tested: 255
 
--- 
-1.8.3.1
+arm                         em_x270_defconfig
+cris                        etraxfs_defconfig
+nios2                         10m50_defconfig
+mips                       lemote2f_defconfig
+mips                  mips_paravirt_defconfig
+mips                        workpad_defconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                      katmai_defconfig
+powerpc64                        allmodconfig
+x86_64                 randconfig-a0-07312050
+x86_64                 randconfig-a0-07312146
+x86_64                 randconfig-a0-07312235
+arm                        realview_defconfig
+powerpc                 xes_mpc85xx_defconfig
+arm                        mini2440_defconfig
+c6x                        evmc6474_defconfig
+sparc64                          alldefconfig
+h8300                     edosk2674_defconfig
+powerpc                    klondike_defconfig
+sh                        sh7763rdp_defconfig
+i386                   randconfig-c0-07312033
+i386                   randconfig-c0-07312119
+arm                              zx_defconfig
+frv                              alldefconfig
+arm                           viper_defconfig
+mips                          rb532_defconfig
+powerpc                      ppc40x_defconfig
+arm                           h5000_defconfig
+mips                                defconfig
+powerpc                      pcm030_defconfig
+x86_64                randconfig-in0-07312005
+arm                             ezx_defconfig
+cris                             alldefconfig
+arm                           sama5_defconfig
+blackfin                         allyesconfig
+ia64                        generic_defconfig
+i386                     randconfig-n0-201731
+mips                         tb0219_defconfig
+tile                             allmodconfig
+um                                  defconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+powerpc                       maple_defconfig
+sh                         ap325rxa_defconfig
+sh                        edosk7760_defconfig
+mips                        generic_defconfig
+openrisc                         allyesconfig
+sh                           se7780_defconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                 randconfig-g0-07312024
+i386                             allmodconfig
+x86_64                 randconfig-x016-201731
+x86_64                 randconfig-x011-201731
+x86_64                 randconfig-x019-201731
+x86_64                 randconfig-x014-201731
+x86_64                 randconfig-x012-201731
+x86_64                 randconfig-x018-201731
+x86_64                 randconfig-x013-201731
+x86_64                 randconfig-x015-201731
+x86_64                 randconfig-x010-201731
+x86_64                 randconfig-x017-201731
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                                   samsung
+arm                        mvebu_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       imx_v6_v7_defconfig
+arm64                            allmodconfig
+arm                           tegra_defconfig
+arm                                      arm5
+arm64                            alldefconfig
+arm                                        sh
+arm                                     arm67
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-a1-07302228
+i386                   randconfig-a0-07302228
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+m68k                        m5272c3_defconfig
+mips                          malta_defconfig
+mn10300                          allmodconfig
+sh                         apsh4a3a_defconfig
+sh                          kfr2r09_defconfig
+arm                        vexpress_defconfig
+m32r                             allmodconfig
+m32r                    mappi2.opsp_defconfig
+mips                   sb1250_swarm_defconfig
+xtensa                       common_defconfig
+arm                        clps711x_defconfig
+arm                          imote2_defconfig
+ia64                         bigsur_defconfig
+s390                             alldefconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-s3-07312046
+x86_64                 randconfig-s4-07312046
+x86_64                 randconfig-s5-07312046
+x86_64                 randconfig-s3-07312149
+x86_64                 randconfig-s4-07312149
+x86_64                 randconfig-s5-07312149
+x86_64                 randconfig-s3-07312250
+x86_64                 randconfig-s4-07312250
+x86_64                 randconfig-s5-07312250
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+i386                               tinyconfig
+arm                         lpc18xx_defconfig
+sh                          r7785rp_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+i386                   randconfig-b0-07312049
+i386                   randconfig-b0-07312150
+i386                   randconfig-b0-07312244
+mips                 pnx8335_stb225_defconfig
+sparc                               defconfig
+um                               allyesconfig
+arm                        cerfcube_defconfig
+arm                       spear13xx_defconfig
+arm                       aspeed_g4_defconfig
+m68k                        mvme147_defconfig
+powerpc                         wii_defconfig
+x86_64                 randconfig-b0-07311855
+x86_64                 randconfig-b0-07312139
+x86_64                 randconfig-b0-07312223
+mips                    maltaup_xpa_defconfig
+powerpc                     virtex5_defconfig
+blackfin                BF548-EZKIT_defconfig
+mips                           mtx1_defconfig
+powerpc                      cm5200_defconfig
+m68k                             allmodconfig
+openrisc                          allnoconfig
+i386                   randconfig-x019-201731
+i386                   randconfig-x013-201731
+i386                   randconfig-x016-201731
+i386                   randconfig-x012-201731
+i386                   randconfig-x018-201731
+i386                   randconfig-x010-201731
+i386                   randconfig-x015-201731
+i386                   randconfig-x011-201731
+i386                   randconfig-x017-201731
+i386                   randconfig-x014-201731
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                randconfig-ne0-07312008
+arm                           u8500_defconfig
+mips                      maltaaprp_defconfig
+x86_64                 randconfig-h0-07312249
+parisc                           allyesconfig
+arm                     am200epdkit_defconfig
+powerpc                    adder875_defconfig
+mips                        maltaup_defconfig
+powerpc                      walnut_defconfig
+x86_64                 randconfig-n0-07312249
+blackfin                   CM-BF561_defconfig
+sparc64                             defconfig
+arm                      jornada720_defconfig
+blackfin                            defconfig
+tile                             alldefconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                  randconfig-sb0-07311906
+i386                  randconfig-sb0-07312256
+sparc64                           allnoconfig
+x86_64                           allmodconfig
+c6x                        evmc6678_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+h8300                    h8300h-sim_defconfig
+x86_64                 randconfig-x007-201731
+x86_64                 randconfig-x001-201731
+x86_64                 randconfig-x000-201731
+x86_64                 randconfig-x006-201731
+x86_64                 randconfig-x003-201731
+x86_64                 randconfig-x004-201731
+x86_64                 randconfig-x009-201731
+x86_64                 randconfig-x005-201731
+x86_64                 randconfig-x008-201731
+x86_64                 randconfig-x002-201731
+openrisc                         alldefconfig
+powerpc                     tqm5200_defconfig
+x86_64                randconfig-ws0-07312047
+parisc                          712_defconfig
+i386                   randconfig-x075-201731
+i386                   randconfig-x076-201731
+i386                   randconfig-x071-201731
+i386                   randconfig-x074-201731
+i386                   randconfig-x070-201731
+i386                   randconfig-x072-201731
+i386                   randconfig-x079-201731
+i386                   randconfig-x077-201731
+i386                   randconfig-x073-201731
+i386                   randconfig-x078-201731
+x86_64                           alldefconfig
+arm                       mainstone_defconfig
+x86_64                 randconfig-r0-07312102
+x86_64                 randconfig-r0-07312203
+x86_64                 randconfig-r0-07312256
+i386                 randconfig-x005-07302233
+i386                 randconfig-x003-07302233
+i386                 randconfig-x002-07302233
+i386                 randconfig-x006-07302233
+i386                 randconfig-x008-07302233
+i386                 randconfig-x009-07302233
+i386                 randconfig-x007-07302233
+i386                 randconfig-x000-07302233
+i386                 randconfig-x001-07302233
+i386                 randconfig-x004-07302233
+i386                   randconfig-x0-07311954
 
-
+Thanks,
+Fengguang
