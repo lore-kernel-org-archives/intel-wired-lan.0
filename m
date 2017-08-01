@@ -1,104 +1,151 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Wed, 2 Aug 2017 21:48:10 +0000
-Subject: [Intel-wired-lan] Runtime PM enabled I210 does not respond on
- cable plug event
-In-Reply-To: <CAAd53p68i_mmt-gj1vL4ar+sh5-mtWg9V9Jiw_azq67+12zPxw@mail.gmail.com>
-References: <CAAd53p68i_mmt-gj1vL4ar+sh5-mtWg9V9Jiw_azq67+12zPxw@mail.gmail.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD681D8E337@ORSMSX114.amr.corp.intel.com>
+From: Jiri Pirko <jiri@resnulli.us>
+Date: Tue, 1 Aug 2017 13:12:03 +0200
+Subject: [Intel-wired-lan] [PATCH 1/6] [net-next]net: sched: act_mirred:
+ Extend redirect action to accept a traffic class
+In-Reply-To: <150154785793.4135.15194023552358061083.stgit@anamdev.jf.intel.com>
+References: <150154569340.4135.11548126443780491627.stgit@anamdev.jf.intel.com>
+ <150154785793.4135.15194023552358061083.stgit@anamdev.jf.intel.com>
+Message-ID: <20170801111203.GI1939@nanopsycho>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Sorry it took so long to get back to you. This is a high volume list of commits and you really should be using e1000-devel at sourceforge.net or linux-nics at intel.com for questions.
+Tue, Aug 01, 2017 at 02:37:37AM CEST, amritha.nambiar at intel.com wrote:
+>The Mirred/redirect action is extended to forward to a traffic
+>class on the device. The traffic class index needs to be
+>provided in addition to the device's ifindex.
+>
+>Example:
+># tc filter add dev eth0 protocol ip parent ffff: prio 1 flower\
+>  dst_ip 192.168.1.1/32 ip_proto udp dst_port 22\
+>  skip_sw indev eth0 action mirred ingress redirect dev eth0 tc 1
 
-What are you trying to do? There's a good chance the PME bits are overridden by the NVM. Please check the i210 data sheet for more information. You should be able to find it on the intel.com web site and the easiest way to find it is to use google.
-
-Todd Fujinaka
-Software Application Engineer
-Datacenter Engineering Group
-Intel Corporation
-todd.fujinaka at intel.com
-(503) 712-4565
+You need to make sure that the current offloaders fill forbid to add
+this rule, not just silently ignore the tc value.
 
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Kai-Heng Feng
-Sent: Sunday, July 23, 2017 9:05 PM
-To: intel-wired-lan@osuosl.org
-Subject: [Intel-wired-lan] Runtime PM enabled I210 does not respond on cable plug event
+>
+>Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+>---
+> include/net/tc_act/tc_mirred.h        |    7 +++++++
+> include/uapi/linux/tc_act/tc_mirred.h |    5 +++++
+> net/sched/act_mirred.c                |   17 +++++++++++++++++
+> 3 files changed, 29 insertions(+)
+>
+>diff --git a/include/net/tc_act/tc_mirred.h b/include/net/tc_act/tc_mirred.h
+>index 604bc31..60058c4 100644
+>--- a/include/net/tc_act/tc_mirred.h
+>+++ b/include/net/tc_act/tc_mirred.h
+>@@ -9,6 +9,8 @@ struct tcf_mirred {
+> 	int			tcfm_eaction;
+> 	int			tcfm_ifindex;
+> 	bool			tcfm_mac_header_xmit;
+>+	u8			tcfm_tc;
+>+	u32			flags;
+> 	struct net_device __rcu	*tcfm_dev;
+> 	struct list_head	tcfm_list;
+> };
+>@@ -37,4 +39,9 @@ static inline int tcf_mirred_ifindex(const struct tc_action *a)
+> 	return to_mirred(a)->tcfm_ifindex;
+> }
+> 
+>+static inline int tcf_mirred_tc(const struct tc_action *a)
+>+{
+>+	return to_mirred(a)->tcfm_tc;
+>+}
+>+
+> #endif /* __NET_TC_MIR_H */
+>diff --git a/include/uapi/linux/tc_act/tc_mirred.h b/include/uapi/linux/tc_act/tc_mirred.h
+>index 3d7a2b3..8ff4d76 100644
+>--- a/include/uapi/linux/tc_act/tc_mirred.h
+>+++ b/include/uapi/linux/tc_act/tc_mirred.h
+>@@ -9,6 +9,10 @@
+> #define TCA_EGRESS_MIRROR 2 /* mirror packet to EGRESS */
+> #define TCA_INGRESS_REDIR 3  /* packet redirect to INGRESS*/
+> #define TCA_INGRESS_MIRROR 4 /* mirror packet to INGRESS */
+>+
+>+#define MIRRED_F_TC_MAP		0x1
+>+#define MIRRED_TC_MAP_MAX	0x10
+>+#define MIRRED_TC_MAP_MASK	0xF
 
-Hi,
+I'm completely lost. Why do you have these values here? and in fact one
+twice?
 
-The device in question uses igb driver, the latest commit from jkirsher/next-queue.git does not help.
-I found a defined but not used variable, E1000_CTRL_EN_PHY_PWR_MGMT, and add the additional flag to ctrl doesn't help, either.
 
-I can provide more logs if needed.
-Below is the output from `lspci -vvv`, PME is suspiciously not enabled:
-
-02:00.0 Ethernet controller: Intel Corporation I210 Gigabit Network Connection (rev 03)
-        Subsystem: Dell I210 Gigabit Network Connection
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 19
-        Region 0: Memory at 90100000 (32-bit, non-prefetchable) [size=512K]
-        Region 2: I/O ports at 2000 [size=32]
-        Region 3: Memory at 90180000 (32-bit, non-prefetchable) [size=16K]
-        Capabilities: [40] Power Management version 3
-                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA
-PME(D0+,D1-,D2-,D3hot+,D3cold+)
-                Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
-        Capabilities: [50] MSI: Enable- Count=1/1 Maskable+ 64bit+
-                Address: 0000000000000000  Data: 0000
-                Masking: 00000000  Pending: 00000000
-        Capabilities: [70] MSI-X: Enable+ Count=5 Masked-
-                Vector table: BAR=3 offset=00000000
-                PBA: BAR=3 offset=00002000
-        Capabilities: [a0] Express (v2) Endpoint, MSI 00
-                DevCap: MaxPayload 512 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
-                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset+
-                DevCtl: Report errors: Correctable+ Non-Fatal+ Fatal+
-Unsupported+
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+ FLReset-
-                        MaxPayload 128 bytes, MaxReadReq 512 bytes
-                DevSta: CorrErr+ UncorrErr- FatalErr- UnsuppReq+
-AuxPwr+ TransPend-
-                LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Exit Latency L0s <2us, L1 <16us
-                        ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp+
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- CommClk+
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train-
-SlotClk+ DLActive- BWMgmt- ABWMgmt-
-                DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR-, OBFF Not Supported
-                DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, LTR-, OBFF Disabled
-                LnkCtl2: Target Link Speed: 2.5GT/s, EnterCompliance- SpeedDis-
-                         Transmit Margin: Normal Operating Range,
-EnterModifiedCompliance- ComplianceSOS-
-                         Compliance De-emphasis: -6dB
-                LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete-, EqualizationPhase1-
-                         EqualizationPhase2-, EqualizationPhase3-,
-LinkEqualizationRequest-
-        Capabilities: [100 v2] Advanced Error Reporting
-                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
-UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
-                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
-UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
-                UESvrt: DLP+ SDES+ TLP- FCP+ CmpltTO- CmpltAbrt-
-UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
-                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
-                CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
-                AERCap: First Error Pointer: 00, GenCap+ CGenEn- ChkCap+ ChkEn-
-        Capabilities: [140 v1] Device Serial Number 48-4d-7e-ff-ff-e9-d7-35
-        Capabilities: [1a0 v1] Transaction Processing Hints
-                Device specific mode supported
-                Steering table in TPH capability structure
-        Kernel driver in use: igb
-        Kernel modules: igb
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>                                                                                 
+> struct tc_mirred {
+> 	tc_gen;
+>@@ -21,6 +25,7 @@ enum {
+> 	TCA_MIRRED_TM,
+> 	TCA_MIRRED_PARMS,
+> 	TCA_MIRRED_PAD,
+>+	TCA_MIRRED_TC_MAP,
+> 	__TCA_MIRRED_MAX
+> };
+> #define TCA_MIRRED_MAX (__TCA_MIRRED_MAX - 1)
+>diff --git a/net/sched/act_mirred.c b/net/sched/act_mirred.c
+>index 1b5549a..f9801de 100644
+>--- a/net/sched/act_mirred.c
+>+++ b/net/sched/act_mirred.c
+>@@ -67,6 +67,7 @@ static void tcf_mirred_release(struct tc_action *a, int bind)
+> 
+> static const struct nla_policy mirred_policy[TCA_MIRRED_MAX + 1] = {
+> 	[TCA_MIRRED_PARMS]	= { .len = sizeof(struct tc_mirred) },
+>+	[TCA_MIRRED_TC_MAP]	= { .type = NLA_U8 },
+> };
+> 
+> static unsigned int mirred_net_id;
+>@@ -83,6 +84,8 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+> 	struct tcf_mirred *m;
+> 	struct net_device *dev;
+> 	bool exists = false;
+>+	u8 *tc_map = NULL;
+>+	u32 flags = 0;
+> 	int ret;
+> 
+> 	if (nla == NULL)
+>@@ -92,6 +95,14 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+> 		return ret;
+> 	if (tb[TCA_MIRRED_PARMS] == NULL)
+> 		return -EINVAL;
+>+
+>+	if (tb[TCA_MIRRED_TC_MAP]) {
+>+		tc_map = nla_data(tb[TCA_MIRRED_TC_MAP]);
+>+		if (*tc_map >= MIRRED_TC_MAP_MAX)
+>+			return -EINVAL;
+>+		flags |= MIRRED_F_TC_MAP;
+>+	}
+>+
+> 	parm = nla_data(tb[TCA_MIRRED_PARMS]);
+> 
+> 	exists = tcf_hash_check(tn, parm->index, a, bind);
+>@@ -139,6 +150,7 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+> 	ASSERT_RTNL();
+> 	m->tcf_action = parm->action;
+> 	m->tcfm_eaction = parm->eaction;
+>+	m->flags = flags;
+> 	if (dev != NULL) {
+> 		m->tcfm_ifindex = parm->ifindex;
+> 		if (ret != ACT_P_CREATED)
+>@@ -146,6 +158,8 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+> 		dev_hold(dev);
+> 		rcu_assign_pointer(m->tcfm_dev, dev);
+> 		m->tcfm_mac_header_xmit = mac_header_xmit;
+>+		if (flags & MIRRED_F_TC_MAP)
+>+			m->tcfm_tc = *tc_map & MIRRED_TC_MAP_MASK;
+> 	}
+> 
+> 	if (ret == ACT_P_CREATED) {
+>@@ -259,6 +273,9 @@ static int tcf_mirred_dump(struct sk_buff *skb, struct tc_action *a, int bind,
+> 
+> 	if (nla_put(skb, TCA_MIRRED_PARMS, sizeof(opt), &opt))
+> 		goto nla_put_failure;
+>+	if ((m->flags & MIRRED_F_TC_MAP) &&
+>+	    nla_put_u8(skb, TCA_MIRRED_TC_MAP, m->tcfm_tc))
+>+		goto nla_put_failure;
+> 
+> 	tcf_tm_dump(&t, &m->tcf_tm);
+> 	if (nla_put_64bit(skb, TCA_MIRRED_TM, sizeof(t), &t, TCA_MIRRED_PAD))
+>
