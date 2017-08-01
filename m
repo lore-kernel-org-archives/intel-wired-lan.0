@@ -1,11 +1,11 @@
 From: Jamal Hadi Salim <jhs@mojatatu.com>
-Date: Tue, 1 Aug 2017 06:22:16 -0400
+Date: Tue, 1 Aug 2017 06:44:46 -0400
 Subject: [Intel-wired-lan] [PATCH 1/6] [net-next]net: sched: act_mirred:
  Extend redirect action to accept a traffic class
 In-Reply-To: <150154785793.4135.15194023552358061083.stgit@anamdev.jf.intel.com>
 References: <150154569340.4135.11548126443780491627.stgit@anamdev.jf.intel.com>
  <150154785793.4135.15194023552358061083.stgit@anamdev.jf.intel.com>
-Message-ID: <85d57ef2-1c9f-d0e6-a3e8-d65078485afb@mojatatu.com>
+Message-ID: <7f2d3255-ecb1-0252-1066-4ac1ed7c79eb@mojatatu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -63,11 +63,88 @@ On 17-07-31 08:37 PM, Amritha Nambiar wrote:
 > +
 > +#define MIRRED_F_TC_MAP		0x1
 > +#define MIRRED_TC_MAP_MAX	0x10
+> +#define MIRRED_TC_MAP_MASK	0xF
+>                                                                                   
+>   struct tc_mirred {
+>   	tc_gen;
+> @@ -21,6 +25,7 @@ enum {
+>   	TCA_MIRRED_TM,
+>   	TCA_MIRRED_PARMS,
+>   	TCA_MIRRED_PAD,
+> +	TCA_MIRRED_TC_MAP,
+>   	__TCA_MIRRED_MAX
+>   };
+>   #define TCA_MIRRED_MAX (__TCA_MIRRED_MAX - 1)
+> diff --git a/net/sched/act_mirred.c b/net/sched/act_mirred.c
+> index 1b5549a..f9801de 100644
+> --- a/net/sched/act_mirred.c
+> +++ b/net/sched/act_mirred.c
+> @@ -67,6 +67,7 @@ static void tcf_mirred_release(struct tc_action *a, int bind)
+>   
+>   static const struct nla_policy mirred_policy[TCA_MIRRED_MAX + 1] = {
+>   	[TCA_MIRRED_PARMS]	= { .len = sizeof(struct tc_mirred) },
+> +	[TCA_MIRRED_TC_MAP]	= { .type = NLA_U8 },
+>   };
+>   
+>   static unsigned int mirred_net_id;
+> @@ -83,6 +84,8 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+>   	struct tcf_mirred *m;
+>   	struct net_device *dev;
+>   	bool exists = false;
+> +	u8 *tc_map = NULL;
+> +	u32 flags = 0;
+>   	int ret;
+>   
+>   	if (nla == NULL)
+> @@ -92,6 +95,14 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+>   		return ret;
+>   	if (tb[TCA_MIRRED_PARMS] == NULL)
+>   		return -EINVAL;
+> +
+> +	if (tb[TCA_MIRRED_TC_MAP]) {
+> +		tc_map = nla_data(tb[TCA_MIRRED_TC_MAP]);
+> +		if (*tc_map >= MIRRED_TC_MAP_MAX)
+> +			return -EINVAL;
+> +		flags |= MIRRED_F_TC_MAP;
 
-Assuming this is the max number of queues?
-Where does this upper bound come from? Is it a spec
-or an intel thing? If spec - mentioning which
-spec and section would be useful.
+
+> +	}
+> +
+>   	parm = nla_data(tb[TCA_MIRRED_PARMS]);
+>   
+>   	exists = tcf_hash_check(tn, parm->index, a, bind);
+> @@ -139,6 +150,7 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+>   	ASSERT_RTNL();
+>   	m->tcf_action = parm->action;
+>   	m->tcfm_eaction = parm->eaction;
+> +	m->flags = flags;
+>   	if (dev != NULL) {
+>   		m->tcfm_ifindex = parm->ifindex;
+>   		if (ret != ACT_P_CREATED)
+> @@ -146,6 +158,8 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+>   		dev_hold(dev);
+>   		rcu_assign_pointer(m->tcfm_dev, dev);
+>   		m->tcfm_mac_header_xmit = mac_header_xmit;
+> +		if (flags & MIRRED_F_TC_MAP)
+> +			m->tcfm_tc = *tc_map & MIRRED_TC_MAP_MASK;
+>   	}
+>   
+Is the mask a hardware limit. I dont know how these queues are
+allocated - I am assuming each of these "tc queues" maps to a rx
+DMA ring?
+
+>   	if (ret == ACT_P_CREATED) {
+> @@ -259,6 +273,9 @@ static int tcf_mirred_dump(struct sk_buff *skb, struct tc_action *a, int bind,
+>   
+>   	if (nla_put(skb, TCA_MIRRED_PARMS, sizeof(opt), &opt))
+>   		goto nla_put_failure;
+> +	if ((m->flags & MIRRED_F_TC_MAP) &&
+> +	    nla_put_u8(skb, TCA_MIRRED_TC_MAP, m->tcfm_tc))
+> +		goto nla_put_failure;
+>
+
+If you have m->tcfm_tc then I dont think you need the flags; so i would
+remove it from the struct altogether.
 
 cheers,
 jamal
