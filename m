@@ -1,162 +1,102 @@
-From: Nambiar, Amritha <amritha.nambiar@intel.com>
-Date: Tue, 1 Aug 2017 19:20:43 -0700
-Subject: [Intel-wired-lan] [PATCH 1/6] [net-next]net: sched: act_mirred:
- Extend redirect action to accept a traffic class
-In-Reply-To: <20170801111203.GI1939@nanopsycho>
-References: <150154569340.4135.11548126443780491627.stgit@anamdev.jf.intel.com>
- <150154785793.4135.15194023552358061083.stgit@anamdev.jf.intel.com>
- <20170801111203.GI1939@nanopsycho>
-Message-ID: <7ee73404-a304-646d-d4d5-62386f373ad2@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Wed, 2 Aug 2017 14:28:07 +0300
+Subject: [Intel-wired-lan] [PATCH 4/5] e1000e: Separate signaling for
+ link check/link up
+In-Reply-To: <20170721183627.13373-4-bpoirier@suse.com>
+References: <20170721160937.GA22632@csclub.uwaterloo.ca>
+ <20170721183627.13373-1-bpoirier@suse.com>
+ <20170721183627.13373-4-bpoirier@suse.com>
+Message-ID: <14acedf3-e5d9-31e8-9ff6-fabc2127c021@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On 7/21/2017 21:36, Benjamin Poirier wrote:
+> Lennart reported the following race condition:
+>
+> \ e1000_watchdog_task
+>      \ e1000e_has_link
+>          \ hw->mac.ops.check_for_link() === e1000e_check_for_copper_link
+>              /* link is up */
+>              mac->get_link_status = false;
+>
+>                              /* interrupt */
+>                              \ e1000_msix_other
+>                                  hw->mac.get_link_status = true;
+>
+>          link_active = !hw->mac.get_link_status
+>          /* link_active is false, wrongly */
+>
+> This problem arises because the single flag get_link_status is used to
+> signal two different states: link status needs checking and link status is
+> down.
+>
+> Avoid the problem by using the return value of .check_for_link to signal
+> the link status to e1000e_has_link().
+>
+> Reported-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/mac.c    | 11 ++++++++---
+>   drivers/net/ethernet/intel/e1000e/netdev.c |  2 +-
+>   2 files changed, 9 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
+> index b322011ec282..f457c5703d0c 100644
+> --- a/drivers/net/ethernet/intel/e1000e/mac.c
+> +++ b/drivers/net/ethernet/intel/e1000e/mac.c
+> @@ -410,6 +410,9 @@ void e1000e_clear_hw_cntrs_base(struct e1000_hw *hw)
+>    *  Checks to see of the link status of the hardware has changed.  If a
+>    *  change in link status has been detected, then we read the PHY registers
+>    *  to get the current speed/duplex if link exists.
+> + *
+> + *  Returns a negative error code (-E1000_ERR_*) or 0 (link down) or 1 (link
+> + *  up).
+>    **/
+>   s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+>   {
+> @@ -423,7 +426,7 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+>   	 * Change or Rx Sequence Error interrupt.
+>   	 */
+>   	if (!mac->get_link_status)
+> -		return 0;
+> +		return 1;
+>   
+>   	/* First we want to see if the MII Status Register reports
+>   	 * link.  If so, then we want to get the current speed/duplex
+> @@ -461,10 +464,12 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+>   	 * different link partner.
+>   	 */
+>   	ret_val = e1000e_config_fc_after_link_up(hw);
+> -	if (ret_val)
+> +	if (ret_val) {
+>   		e_dbg("Error configuring flow control\n");
+> +		return ret_val;
+> +	}
+>   
+> -	return ret_val;
+> +	return 1;
+>   }
+>   
+>   /**
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index fc6a1d9999b2..5a8ab1136566 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -5081,7 +5081,7 @@ static bool e1000e_has_link(struct e1000_adapter *adapter)
+>   	case e1000_media_type_copper:
+>   		if (hw->mac.get_link_status) {
+>   			ret_val = hw->mac.ops.check_for_link(hw);
+> -			link_active = !hw->mac.get_link_status;
+> +			link_active = ret_val > 0;
+>   		} else {
+>   			link_active = true;
+>   		}
 
-On 8/1/2017 4:12 AM, Jiri Pirko wrote:
-> Tue, Aug 01, 2017 at 02:37:37AM CEST, amritha.nambiar at intel.com wrote:
->> The Mirred/redirect action is extended to forward to a traffic
->> class on the device. The traffic class index needs to be
->> provided in addition to the device's ifindex.
->>
->> Example:
->> # tc filter add dev eth0 protocol ip parent ffff: prio 1 flower\
->>  dst_ip 192.168.1.1/32 ip_proto udp dst_port 22\
->>  skip_sw indev eth0 action mirred ingress redirect dev eth0 tc 1
-> 
-> You need to make sure that the current offloaders fill forbid to add
-> this rule, not just silently ignore the tc value.
+Hello Benjamin,
 
-I will fix this in the next version, probably using the 'flags' field
-I've defined.
+Will this patch fix any serious problem with link indication? Is it 
+necessary? Can we consider your patch series without 4/5 part?
 
-> 
-> 
->>
->> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
->> ---
->> include/net/tc_act/tc_mirred.h        |    7 +++++++
->> include/uapi/linux/tc_act/tc_mirred.h |    5 +++++
->> net/sched/act_mirred.c                |   17 +++++++++++++++++
->> 3 files changed, 29 insertions(+)
->>
->> diff --git a/include/net/tc_act/tc_mirred.h b/include/net/tc_act/tc_mirred.h
->> index 604bc31..60058c4 100644
->> --- a/include/net/tc_act/tc_mirred.h
->> +++ b/include/net/tc_act/tc_mirred.h
->> @@ -9,6 +9,8 @@ struct tcf_mirred {
->> 	int			tcfm_eaction;
->> 	int			tcfm_ifindex;
->> 	bool			tcfm_mac_header_xmit;
->> +	u8			tcfm_tc;
->> +	u32			flags;
->> 	struct net_device __rcu	*tcfm_dev;
->> 	struct list_head	tcfm_list;
->> };
->> @@ -37,4 +39,9 @@ static inline int tcf_mirred_ifindex(const struct tc_action *a)
->> 	return to_mirred(a)->tcfm_ifindex;
->> }
->>
->> +static inline int tcf_mirred_tc(const struct tc_action *a)
->> +{
->> +	return to_mirred(a)->tcfm_tc;
->> +}
->> +
->> #endif /* __NET_TC_MIR_H */
->> diff --git a/include/uapi/linux/tc_act/tc_mirred.h b/include/uapi/linux/tc_act/tc_mirred.h
->> index 3d7a2b3..8ff4d76 100644
->> --- a/include/uapi/linux/tc_act/tc_mirred.h
->> +++ b/include/uapi/linux/tc_act/tc_mirred.h
->> @@ -9,6 +9,10 @@
->> #define TCA_EGRESS_MIRROR 2 /* mirror packet to EGRESS */
->> #define TCA_INGRESS_REDIR 3  /* packet redirect to INGRESS*/
->> #define TCA_INGRESS_MIRROR 4 /* mirror packet to INGRESS */
->> +
->> +#define MIRRED_F_TC_MAP		0x1
->> +#define MIRRED_TC_MAP_MAX	0x10
->> +#define MIRRED_TC_MAP_MASK	0xF
-> 
-> I'm completely lost. Why do you have these values here? and in fact one
-> twice?
-
-I'll fix this to remove the defines for the TC max range and its bitmap
-here and reuse the existing ones defined in linux/netdevice.h
-
-> 
-> 
->>                                                                                 
->> struct tc_mirred {
->> 	tc_gen;
->> @@ -21,6 +25,7 @@ enum {
->> 	TCA_MIRRED_TM,
->> 	TCA_MIRRED_PARMS,
->> 	TCA_MIRRED_PAD,
->> +	TCA_MIRRED_TC_MAP,
->> 	__TCA_MIRRED_MAX
->> };
->> #define TCA_MIRRED_MAX (__TCA_MIRRED_MAX - 1)
->> diff --git a/net/sched/act_mirred.c b/net/sched/act_mirred.c
->> index 1b5549a..f9801de 100644
->> --- a/net/sched/act_mirred.c
->> +++ b/net/sched/act_mirred.c
->> @@ -67,6 +67,7 @@ static void tcf_mirred_release(struct tc_action *a, int bind)
->>
->> static const struct nla_policy mirred_policy[TCA_MIRRED_MAX + 1] = {
->> 	[TCA_MIRRED_PARMS]	= { .len = sizeof(struct tc_mirred) },
->> +	[TCA_MIRRED_TC_MAP]	= { .type = NLA_U8 },
->> };
->>
->> static unsigned int mirred_net_id;
->> @@ -83,6 +84,8 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
->> 	struct tcf_mirred *m;
->> 	struct net_device *dev;
->> 	bool exists = false;
->> +	u8 *tc_map = NULL;
->> +	u32 flags = 0;
->> 	int ret;
->>
->> 	if (nla == NULL)
->> @@ -92,6 +95,14 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
->> 		return ret;
->> 	if (tb[TCA_MIRRED_PARMS] == NULL)
->> 		return -EINVAL;
->> +
->> +	if (tb[TCA_MIRRED_TC_MAP]) {
->> +		tc_map = nla_data(tb[TCA_MIRRED_TC_MAP]);
->> +		if (*tc_map >= MIRRED_TC_MAP_MAX)
->> +			return -EINVAL;
->> +		flags |= MIRRED_F_TC_MAP;
->> +	}
->> +
->> 	parm = nla_data(tb[TCA_MIRRED_PARMS]);
->>
->> 	exists = tcf_hash_check(tn, parm->index, a, bind);
->> @@ -139,6 +150,7 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
->> 	ASSERT_RTNL();
->> 	m->tcf_action = parm->action;
->> 	m->tcfm_eaction = parm->eaction;
->> +	m->flags = flags;
->> 	if (dev != NULL) {
->> 		m->tcfm_ifindex = parm->ifindex;
->> 		if (ret != ACT_P_CREATED)
->> @@ -146,6 +158,8 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
->> 		dev_hold(dev);
->> 		rcu_assign_pointer(m->tcfm_dev, dev);
->> 		m->tcfm_mac_header_xmit = mac_header_xmit;
->> +		if (flags & MIRRED_F_TC_MAP)
->> +			m->tcfm_tc = *tc_map & MIRRED_TC_MAP_MASK;
->> 	}
->>
->> 	if (ret == ACT_P_CREATED) {
->> @@ -259,6 +273,9 @@ static int tcf_mirred_dump(struct sk_buff *skb, struct tc_action *a, int bind,
->>
->> 	if (nla_put(skb, TCA_MIRRED_PARMS, sizeof(opt), &opt))
->> 		goto nla_put_failure;
->> +	if ((m->flags & MIRRED_F_TC_MAP) &&
->> +	    nla_put_u8(skb, TCA_MIRRED_TC_MAP, m->tcfm_tc))
->> +		goto nla_put_failure;
->>
->> 	tcf_tm_dump(&t, &m->tcf_tm);
->> 	if (nla_put_64bit(skb, TCA_MIRRED_TM, sizeof(t), &t, TCA_MIRRED_PAD))
->>
