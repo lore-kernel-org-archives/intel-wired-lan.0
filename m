@@ -1,11 +1,12 @@
 From: Nambiar, Amritha <amritha.nambiar@intel.com>
-Date: Tue, 1 Aug 2017 17:57:06 -0700
-Subject: [Intel-wired-lan] [PATCH net-next RFC 0/6] Configure cloud
- filters in i40e via tc/flower classifier
-In-Reply-To: <2d833571-a5f3-41a6-0e6c-9d2c27b0a8c5@mojatatu.com>
+Date: Tue, 1 Aug 2017 18:12:24 -0700
+Subject: [Intel-wired-lan] [PATCH 1/6] [net-next]net: sched: act_mirred:
+ Extend redirect action to accept a traffic class
+In-Reply-To: <85d57ef2-1c9f-d0e6-a3e8-d65078485afb@mojatatu.com>
 References: <150154569340.4135.11548126443780491627.stgit@anamdev.jf.intel.com>
- <2d833571-a5f3-41a6-0e6c-9d2c27b0a8c5@mojatatu.com>
-Message-ID: <78fbc08d-f846-a3e4-ffbd-f0cba43780e3@intel.com>
+ <150154785793.4135.15194023552358061083.stgit@anamdev.jf.intel.com>
+ <85d57ef2-1c9f-d0e6-a3e8-d65078485afb@mojatatu.com>
+Message-ID: <558ba1d1-7d1e-50e6-390a-dc8eae1ba3ae@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,36 +14,67 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
-On 8/1/2017 3:15 AM, Jamal Hadi Salim wrote:
-> On 17-07-31 08:36 PM, Amritha Nambiar wrote:
->> This patch series enables configuring cloud filters in i40e
->> using the tc/flower classifier. The only tc-filter action
->> supported is to redirect packets to a traffic class on the
->> same device. The tc/mirred:redirect action is extended to
->> accept a traffic class to achieve this.
->>
->> The cloud filters are added for a VSI and are cleaned up when
->> the VSI is deleted. The filters that match on L4 ports needs
->> enhanced admin queue functions with big buffer support for
->> extended general fields in Add/Remove Cloud filters command.
+On 8/1/2017 3:22 AM, Jamal Hadi Salim wrote:
+> On 17-07-31 08:37 PM, Amritha Nambiar wrote:
+>> The Mirred/redirect action is extended to forward to a traffic
+>> class on the device. The traffic class index needs to be
+>> provided in addition to the device's ifindex.
 >>
 >> Example:
->> # tc qdisc add dev eth0 ingress
->>
->> # ethtool -K eth0 hw-tc-offload on
->>
 >> # tc filter add dev eth0 protocol ip parent ffff: prio 1 flower\
 >>    dst_ip 192.168.1.1/32 ip_proto udp dst_port 22\
 >>    skip_sw indev eth0 action mirred ingress redirect dev eth0 tc 1
 >>
+>> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+>> ---
+>>   include/net/tc_act/tc_mirred.h        |    7 +++++++
+>>   include/uapi/linux/tc_act/tc_mirred.h |    5 +++++
+>>   net/sched/act_mirred.c                |   17 +++++++++++++++++
+>>   3 files changed, 29 insertions(+)
+>>
+>> diff --git a/include/net/tc_act/tc_mirred.h b/include/net/tc_act/tc_mirred.h
+>> index 604bc31..60058c4 100644
+>> --- a/include/net/tc_act/tc_mirred.h
+>> +++ b/include/net/tc_act/tc_mirred.h
+>> @@ -9,6 +9,8 @@ struct tcf_mirred {
+>>   	int			tcfm_eaction;
+>>   	int			tcfm_ifindex;
+>>   	bool			tcfm_mac_header_xmit;
+>> +	u8			tcfm_tc;
+>> +	u32			flags;
+>>   	struct net_device __rcu	*tcfm_dev;
+>>   	struct list_head	tcfm_list;
+>>   };
+>> @@ -37,4 +39,9 @@ static inline int tcf_mirred_ifindex(const struct tc_action *a)
+>>   	return to_mirred(a)->tcfm_ifindex;
+>>   }
+>>   
+>> +static inline int tcf_mirred_tc(const struct tc_action *a)
+>> +{
+>> +	return to_mirred(a)->tcfm_tc;
+>> +}
+>> +
+>>   #endif /* __NET_TC_MIR_H */
+>> diff --git a/include/uapi/linux/tc_act/tc_mirred.h b/include/uapi/linux/tc_act/tc_mirred.h
+>> index 3d7a2b3..8ff4d76 100644
+>> --- a/include/uapi/linux/tc_act/tc_mirred.h
+>> +++ b/include/uapi/linux/tc_act/tc_mirred.h
+>> @@ -9,6 +9,10 @@
+>>   #define TCA_EGRESS_MIRROR 2 /* mirror packet to EGRESS */
+>>   #define TCA_INGRESS_REDIR 3  /* packet redirect to INGRESS*/
+>>   #define TCA_INGRESS_MIRROR 4 /* mirror packet to INGRESS */
+>> +
+>> +#define MIRRED_F_TC_MAP		0x1
+>> +#define MIRRED_TC_MAP_MAX	0x10
 > 
-> I think "queue 1" sounds better than "tc 1".
-> "tc" is  already a keyword in a few places (even within that declaration
-> above).
+> Assuming this is the max number of queues?
+> Where does this upper bound come from? Is it a spec
+> or an intel thing? If spec - mentioning which
+> spec and section would be useful.
 
-The idea is to redirect to a traffic class that has queues assigned to
-it and not a single queue i.e. these are actually queue groups and not a
-single queue. So may be "qgroup 1" or "tcqgroup 1" fits better.
+This is the max number of TCs. The Linux upper bound for this is defined
+in linux/netdevice.h. I will fix this part to remove the definition here
+and reuse the existing one.
 
 > 
 > cheers,
