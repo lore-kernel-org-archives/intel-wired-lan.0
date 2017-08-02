@@ -1,41 +1,68 @@
 From: Jamal Hadi Salim <jhs@mojatatu.com>
-Date: Wed, 2 Aug 2017 08:01:07 -0400
-Subject: [Intel-wired-lan] [PATCH net-next RFC 0/6] Configure cloud
+Date: Wed, 2 Aug 2017 08:02:15 -0400
+Subject: [Intel-wired-lan] [PATCH 6/6] [net-next]net: i40e: Enable cloud
  filters in i40e via tc/flower classifier
-In-Reply-To: <78fbc08d-f846-a3e4-ffbd-f0cba43780e3@intel.com>
+In-Reply-To: <30cd59b5-4175-8641-f288-a2373475837d@intel.com>
 References: <150154569340.4135.11548126443780491627.stgit@anamdev.jf.intel.com>
- <2d833571-a5f3-41a6-0e6c-9d2c27b0a8c5@mojatatu.com>
- <78fbc08d-f846-a3e4-ffbd-f0cba43780e3@intel.com>
-Message-ID: <146b5375-5d70-bb65-74aa-5c19c1de7daf@mojatatu.com>
+ <150154788503.4135.7051219373661945937.stgit@anamdev.jf.intel.com>
+ <f93480af-9ae0-2e02-7b11-78f8ab53899c@mojatatu.com>
+ <30cd59b5-4175-8641-f288-a2373475837d@intel.com>
+Message-ID: <382b07c6-562b-9dc6-a4be-8f82819ab87a@mojatatu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 17-08-01 08:57 PM, Nambiar, Amritha wrote:
+On 17-08-01 10:13 PM, Nambiar, Amritha wrote:
 > 
-> On 8/1/2017 3:15 AM, Jamal Hadi Salim wrote:
->> On 17-07-31 08:36 PM, Amritha Nambiar wrote:
-
+> On 8/1/2017 3:56 AM, Jamal Hadi Salim wrote:
+>> On 17-07-31 08:38 PM, Amritha Nambiar wrote:
+>>> This patch enables tc-flower based hardware offloads. tc/flower
+>>> filter provided by the kernel is configured as driver specific
+>>> cloud filter. The patch implements functions and admin queue
+>>> commands needed to support cloud filters in the driver and
+>>> adds cloud filters to configure these tc-flower filters.
 >>>
->>> # tc filter add dev eth0 protocol ip parent ffff: prio 1 flower\
->>>     dst_ip 192.168.1.1/32 ip_proto udp dst_port 22\
->>>     skip_sw indev eth0 action mirred ingress redirect dev eth0 tc 1
+>>> The only action supported is to redirect packets to a traffic class
+>>> on the same device.
+>>>
+>>> # tc qdisc add dev eth0 ingress
+>>> # ethtool -K eth0 hw-tc-offload on
+>>>
+>>> # tc filter add dev eth0 protocol ip parent ffff:\
+>>>     prio 1 flower dst_mac 3c:fd:fe:a0:d6:70 skip_sw indev eth0\
+>>>     action mirred ingress redirect dev eth0 tc 0
 >>>
 >>
->> I think "queue 1" sounds better than "tc 1".
->> "tc" is  already a keyword in a few places (even within that declaration
->> above).
+>> Out of curiosity - did you need to say "indev eth0" there?
 > 
-> The idea is to redirect to a traffic class that has queues assigned to
-> it and not a single queue i.e. these are actually queue groups and not a
-> single queue. So may be "qgroup 1" or "tcqgroup 1" fits better.
+> It looks like I don't need to specify "indev eth0". I will need to look
+> up how this part is offloaded and probably validate in the driver when
+> this is specified.
+> 
+>> Also: Is it possible to add an skbmark? Example something like
+>> these that directs two flows to the same queue but different
+>> skb marks:
+>>
+>> # tc filter add dev eth0 protocol ip parent ffff: \
+>>     prio 2 flower dst_ip 192.168.3.5/32 \
+>>     ip_proto udp dst_port 2a skip_sw \
+>>     action skbedit mark 11 \
+>>     action mirred ingress redirect dev eth0 tcqueue 1
+>>
+>> # tc filter add dev eth0 protocol ip parent ffff: \
+>>       prio 1 flower dst_mac 3c:fd:fe:a0:d6:70 skip_sw \
+>>       action skbedit mark 12 \
+>>       action mirred ingress redirect dev eth0 tcqueue 1
+>>
+> 
+> It is possible to support the skbedit mark action for the first rule
+> here (L3 and L4) which I can take up in a subsequent patch, but this
+> cannot be supported on our device for L2 based match in the second rule.
 > 
 
-Can you describe how this works? So the specific memeber of a
-a tcgroups show up on a specific rx DMA ring? If you only have
-16 and 512 RX DMA rings - how does that work?
+Ok, thanks. So the issue is one of hardware limitation?
 
 cheers,
 jamal
