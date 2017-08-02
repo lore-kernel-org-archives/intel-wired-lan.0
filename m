@@ -1,74 +1,104 @@
-From: Nambiar, Amritha <amritha.nambiar@intel.com>
-Date: Wed, 2 Aug 2017 11:20:01 -0700
-Subject: [Intel-wired-lan] [PATCH 6/6] [net-next]net: i40e: Enable cloud
- filters in i40e via tc/flower classifier
-In-Reply-To: <382b07c6-562b-9dc6-a4be-8f82819ab87a@mojatatu.com>
-References: <150154569340.4135.11548126443780491627.stgit@anamdev.jf.intel.com>
- <150154788503.4135.7051219373661945937.stgit@anamdev.jf.intel.com>
- <f93480af-9ae0-2e02-7b11-78f8ab53899c@mojatatu.com>
- <30cd59b5-4175-8641-f288-a2373475837d@intel.com>
- <382b07c6-562b-9dc6-a4be-8f82819ab87a@mojatatu.com>
-Message-ID: <62e2edac-521a-0e7b-4ca5-936d93c6a613@intel.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Wed, 2 Aug 2017 21:48:10 +0000
+Subject: [Intel-wired-lan] Runtime PM enabled I210 does not respond on
+ cable plug event
+In-Reply-To: <CAAd53p68i_mmt-gj1vL4ar+sh5-mtWg9V9Jiw_azq67+12zPxw@mail.gmail.com>
+References: <CAAd53p68i_mmt-gj1vL4ar+sh5-mtWg9V9Jiw_azq67+12zPxw@mail.gmail.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD681D8E337@ORSMSX114.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/2/2017 5:02 AM, Jamal Hadi Salim wrote:
-> On 17-08-01 10:13 PM, Nambiar, Amritha wrote:
->>
->> On 8/1/2017 3:56 AM, Jamal Hadi Salim wrote:
->>> On 17-07-31 08:38 PM, Amritha Nambiar wrote:
->>>> This patch enables tc-flower based hardware offloads. tc/flower
->>>> filter provided by the kernel is configured as driver specific
->>>> cloud filter. The patch implements functions and admin queue
->>>> commands needed to support cloud filters in the driver and
->>>> adds cloud filters to configure these tc-flower filters.
->>>>
->>>> The only action supported is to redirect packets to a traffic class
->>>> on the same device.
->>>>
->>>> # tc qdisc add dev eth0 ingress
->>>> # ethtool -K eth0 hw-tc-offload on
->>>>
->>>> # tc filter add dev eth0 protocol ip parent ffff:\
->>>>     prio 1 flower dst_mac 3c:fd:fe:a0:d6:70 skip_sw indev eth0\
->>>>     action mirred ingress redirect dev eth0 tc 0
->>>>
->>>
->>> Out of curiosity - did you need to say "indev eth0" there?
->>
->> It looks like I don't need to specify "indev eth0". I will need to look
->> up how this part is offloaded and probably validate in the driver when
->> this is specified.
->>
->>> Also: Is it possible to add an skbmark? Example something like
->>> these that directs two flows to the same queue but different
->>> skb marks:
->>>
->>> # tc filter add dev eth0 protocol ip parent ffff: \
->>>     prio 2 flower dst_ip 192.168.3.5/32 \
->>>     ip_proto udp dst_port 2a skip_sw \
->>>     action skbedit mark 11 \
->>>     action mirred ingress redirect dev eth0 tcqueue 1
->>>
->>> # tc filter add dev eth0 protocol ip parent ffff: \
->>>       prio 1 flower dst_mac 3c:fd:fe:a0:d6:70 skip_sw \
->>>       action skbedit mark 12 \
->>>       action mirred ingress redirect dev eth0 tcqueue 1
->>>
->>
->> It is possible to support the skbedit mark action for the first rule
->> here (L3 and L4) which I can take up in a subsequent patch, but this
->> cannot be supported on our device for L2 based match in the second rule.
->>
-> 
-> Ok, thanks. So the issue is one of hardware limitation?
-> 
+Sorry it took so long to get back to you. This is a high volume list of commits and you really should be using e1000-devel at sourceforge.net or linux-nics at intel.com for questions.
 
-Right. Our hardware does not have this support now.
+What are you trying to do? There's a good chance the PME bits are overridden by the NVM. Please check the i210 data sheet for more information. You should be able to find it on the intel.com web site and the easiest way to find it is to use google.
 
-> cheers,
-> jamal
-> 
+Todd Fujinaka
+Software Application Engineer
+Datacenter Engineering Group
+Intel Corporation
+todd.fujinaka at intel.com
+(503) 712-4565
+
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Kai-Heng Feng
+Sent: Sunday, July 23, 2017 9:05 PM
+To: intel-wired-lan@osuosl.org
+Subject: [Intel-wired-lan] Runtime PM enabled I210 does not respond on cable plug event
+
+Hi,
+
+The device in question uses igb driver, the latest commit from jkirsher/next-queue.git does not help.
+I found a defined but not used variable, E1000_CTRL_EN_PHY_PWR_MGMT, and add the additional flag to ctrl doesn't help, either.
+
+I can provide more logs if needed.
+Below is the output from `lspci -vvv`, PME is suspiciously not enabled:
+
+02:00.0 Ethernet controller: Intel Corporation I210 Gigabit Network Connection (rev 03)
+        Subsystem: Dell I210 Gigabit Network Connection
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B- DisINTx+
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 64 bytes
+        Interrupt: pin A routed to IRQ 19
+        Region 0: Memory at 90100000 (32-bit, non-prefetchable) [size=512K]
+        Region 2: I/O ports at 2000 [size=32]
+        Region 3: Memory at 90180000 (32-bit, non-prefetchable) [size=16K]
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [50] MSI: Enable- Count=1/1 Maskable+ 64bit+
+                Address: 0000000000000000  Data: 0000
+                Masking: 00000000  Pending: 00000000
+        Capabilities: [70] MSI-X: Enable+ Count=5 Masked-
+                Vector table: BAR=3 offset=00000000
+                PBA: BAR=3 offset=00002000
+        Capabilities: [a0] Express (v2) Endpoint, MSI 00
+                DevCap: MaxPayload 512 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
+                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset+
+                DevCtl: Report errors: Correctable+ Non-Fatal+ Fatal+
+Unsupported+
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+ FLReset-
+                        MaxPayload 128 bytes, MaxReadReq 512 bytes
+                DevSta: CorrErr+ UncorrErr- FatalErr- UnsuppReq+
+AuxPwr+ TransPend-
+                LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Exit Latency L0s <2us, L1 <16us
+                        ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp+
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- CommClk+
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train-
+SlotClk+ DLActive- BWMgmt- ABWMgmt-
+                DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR-, OBFF Not Supported
+                DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, LTR-, OBFF Disabled
+                LnkCtl2: Target Link Speed: 2.5GT/s, EnterCompliance- SpeedDis-
+                         Transmit Margin: Normal Operating Range,
+EnterModifiedCompliance- ComplianceSOS-
+                         Compliance De-emphasis: -6dB
+                LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete-, EqualizationPhase1-
+                         EqualizationPhase2-, EqualizationPhase3-,
+LinkEqualizationRequest-
+        Capabilities: [100 v2] Advanced Error Reporting
+                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
+UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
+UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+                UESvrt: DLP+ SDES+ TLP- FCP+ CmpltTO- CmpltAbrt-
+UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
+                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
+                CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
+                AERCap: First Error Pointer: 00, GenCap+ CGenEn- ChkCap+ ChkEn-
+        Capabilities: [140 v1] Device Serial Number 48-4d-7e-ff-ff-e9-d7-35
+        Capabilities: [1a0 v1] Transaction Processing Hints
+                Device specific mode supported
+                Steering table in TPH capability structure
+        Kernel driver in use: igb
+        Kernel modules: igb
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
