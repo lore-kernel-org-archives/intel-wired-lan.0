@@ -1,264 +1,189 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri,  4 Aug 2017 09:52:11 -0400
-Subject: [Intel-wired-lan] [next PATCH S78-V4 01/12] i40e: use admin queue
-	for setting LEDs behavior
-Message-ID: <20170804135222.46684-1-alice.michael@intel.com>
+Date: Fri,  4 Aug 2017 09:52:22 -0400
+Subject: [Intel-wired-lan] [next PATCH S78-V4 12/12] i40e: Stop dropping
+	802.1ad tags (eth proto 0x88a8)
+In-Reply-To: <20170804135222.46684-1-alice.michael@intel.com>
+References: <20170804135222.46684-1-alice.michael@intel.com>
+Message-ID: <20170804135222.46684-12-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mariusz Stachura <mariusz.stachura@intel.com>
+From: Scott Peterson <scott.d.peterson@intel.com>
 
-Instead of accessing register directly, use newly added AQC in
-order to blink LEDs. Introduce and utilize a new flag to prevent
-excessive API version checking.
+Enable i40e to pass traffic with VLAN tags using the 802.1ad ethernet
+protocol ID (0x88a8).
 
-Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+This requires NIC firmware providing version 1.7 of the API. With
+older NIC firmware 802.1ad tagged packets will continue to be dropped.
+
+No VLAN offloads nor RSS are supported for 802.1ad VLANs.
+
+Signed-off-by: Scott Peterson <scott.d.peterson@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c |   6 ++
- drivers/net/ethernet/intel/i40e/i40e_common.c | 148 ++++++++++++++++++++------
- drivers/net/ethernet/intel/i40e/i40e_type.h   |   1 +
- drivers/net/ethernet/intel/i40evf/i40e_type.h |   2 +
- 4 files changed, 122 insertions(+), 35 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c       |  6 ++++++
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 17 ++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_common.c       |  6 +++++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c         |  7 +++++++
+ drivers/net/ethernet/intel/i40e/i40e_type.h         |  6 ++++++
+ drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 17 ++++++++++++++++-
+ drivers/net/ethernet/intel/i40evf/i40e_type.h       |  6 ++++++
+ 7 files changed, 62 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index ba04988..340e5a2 100644
+index 340e5a2..8553f2b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -607,6 +607,12 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
- 			   &oem_lo);
- 	hw->nvm.oem_ver = ((u32)oem_hi << 16) | oem_lo;
+@@ -613,6 +613,12 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
+ 		hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
+ 	}
  
-+	if (hw->mac.type ==  I40E_MAC_XL710 &&
-+	    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
-+	    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
-+		hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
-+	}
++	/* The ability to RX (not drop) 802.1ad frames was added in API 1.7 */
++	if ((hw->aq.api_maj_ver > 1) ||
++	    ((hw->aq.api_maj_ver == 1) &&
++	     (hw->aq.api_min_ver >= 7)))
++		hw->flags |= I40E_HW_FLAG_802_1AD_CAPABLE;
 +
  	if (hw->aq.api_maj_ver > I40E_FW_API_VERSION_MAJOR) {
  		ret_code = I40E_ERR_FIRMWARE_API_VERSION;
  		goto init_adminq_free_arq;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 8fcbbd8..b59e8a7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -775,7 +775,22 @@ struct i40e_aqc_set_switch_config {
+ #define I40E_AQ_SET_SWITCH_CFG_PROMISC		0x0001
+ #define I40E_AQ_SET_SWITCH_CFG_L2_FILTER	0x0002
+ 	__le16	valid_flags;
+-	u8	reserved[12];
++	/* The ethertype in switch_tag is dropped on ingress and used
++	 * internally by the switch. Set this to zero for the default
++	 * of 0x88a8 (802.1ad). Should be zero for firmware API
++	 * versions lower than 1.7.
++	 */
++	__le16	switch_tag;
++	/* The ethertypes in first_tag and second_tag are used to
++	 * match the outer and inner VLAN tags (respectively) when HW
++	 * double VLAN tagging is enabled via the set port parameters
++	 * AQ command. Otherwise these are both ignored. Set them to
++	 * zero for their defaults of 0x8100 (802.1Q). Should be zero
++	 * for firmware API versions lower than 1.7.
++	 */
++	__le16	first_tag;
++	__le16	second_tag;
++	u8	reserved[6];
+ };
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_set_switch_config);
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index e4e86e0..e9f30b8 100644
+index 6b7712c..46db282 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -4849,24 +4849,38 @@ i40e_status i40e_led_get_phy(struct i40e_hw *hw, u16 *led_addr,
- 	u16 temp_addr;
- 	u8 port_num;
- 	u32 i;
+@@ -2404,7 +2404,11 @@ enum i40e_status_code i40e_aq_set_switch_config(struct i40e_hw *hw,
+ 					  i40e_aqc_opc_set_switch_config);
+ 	scfg->flags = cpu_to_le16(flags);
+ 	scfg->valid_flags = cpu_to_le16(valid_flags);
 -
--	temp_addr = I40E_PHY_LED_PROV_REG_1;
--	i = rd32(hw, I40E_PFGEN_PORTNUM);
--	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
--	phy_addr = i40e_get_phy_address(hw, port_num);
--
--	for (gpio_led_port = 0; gpio_led_port < 3; gpio_led_port++,
--	     temp_addr++) {
--		status = i40e_read_phy_register_clause45(hw,
-+	u32 reg_val_aq;
-+
-+	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+		status =
-+		      i40e_aq_get_phy_register(hw,
-+					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					       I40E_PHY_COM_REG_PAGE,
-+					       I40E_PHY_LED_PROV_REG_1,
-+					       &reg_val_aq, NULL);
-+		if (status)
-+			return status;
-+		*val = (u16)reg_val_aq;
-+	} else {
-+		temp_addr = I40E_PHY_LED_PROV_REG_1;
-+		i = rd32(hw, I40E_PFGEN_PORTNUM);
-+		port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
-+		phy_addr = i40e_get_phy_address(hw, port_num);
-+
-+		for (gpio_led_port = 0; gpio_led_port < 3; gpio_led_port++,
-+		     temp_addr++) {
-+			status =
-+			 i40e_read_phy_register_clause45(hw,
- 							 I40E_PHY_COM_REG_PAGE,
- 							 temp_addr, phy_addr,
- 							 &reg_val);
--		if (status)
--			return status;
--		*val = reg_val;
--		if (reg_val & I40E_PHY_LED_LINK_MODE_MASK) {
--			*led_addr = temp_addr;
--			break;
-+			if (status)
-+				return status;
-+			*val = reg_val;
-+			if (reg_val & I40E_PHY_LED_LINK_MODE_MASK) {
-+				*led_addr = temp_addr;
-+				break;
-+			}
- 		}
- 	}
- 	return status;
-@@ -4884,51 +4898,115 @@ i40e_status i40e_led_set_phy(struct i40e_hw *hw, bool on,
- 			     u16 led_addr, u32 mode)
- {
- 	i40e_status status = 0;
--	u16 led_ctl = 0;
--	u16 led_reg = 0;
-+	u32 led_ctl = 0;
-+	u32 led_reg = 0;
- 	u8 phy_addr = 0;
- 	u8 port_num;
- 	u32 i;
++	if (hw->flags & I40E_HW_FLAG_802_1AD_CAPABLE) {
++		scfg->switch_tag = cpu_to_le16(hw->switch_tag);
++		scfg->first_tag = cpu_to_le16(hw->first_tag);
++		scfg->second_tag = cpu_to_le16(hw->second_tag);
++	}
+ 	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
  
--	i = rd32(hw, I40E_PFGEN_PORTNUM);
--	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
--	phy_addr = i40e_get_phy_address(hw, port_num);
--	status = i40e_read_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
--						 led_addr, phy_addr, &led_reg);
-+	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+		status =
-+		      i40e_aq_get_phy_register(hw,
-+					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					       I40E_PHY_COM_REG_PAGE,
-+					       I40E_PHY_LED_PROV_REG_1,
-+					       &led_reg, NULL);
-+	} else {
-+		i = rd32(hw, I40E_PFGEN_PORTNUM);
-+		port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
-+		phy_addr = i40e_get_phy_address(hw, port_num);
-+		status = i40e_read_phy_register_clause45(hw,
-+							 I40E_PHY_COM_REG_PAGE,
-+							 led_addr, phy_addr,
-+							 (u16 *)&led_reg);
-+	}
- 	if (status)
- 		return status;
- 	led_ctl = led_reg;
- 	if (led_reg & I40E_PHY_LED_LINK_MODE_MASK) {
- 		led_reg = 0;
--		status = i40e_write_phy_register_clause45(hw,
--							  I40E_PHY_COM_REG_PAGE,
--							  led_addr, phy_addr,
--							  led_reg);
-+		if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
-+		    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
-+			status = i40e_aq_set_phy_register(hw,
-+					I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					I40E_PHY_COM_REG_PAGE,
-+					I40E_PHY_LED_PROV_REG_1,
-+					led_reg, NULL);
-+		} else {
-+			status = i40e_write_phy_register_clause45(hw,
-+							I40E_PHY_COM_REG_PAGE,
-+							led_addr, phy_addr,
-+							(u16)led_reg);
-+		}
- 		if (status)
- 			return status;
- 	}
--	status = i40e_read_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
--						 led_addr, phy_addr, &led_reg);
-+	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+		status =
-+		      i40e_aq_get_phy_register(hw,
-+					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					       I40E_PHY_COM_REG_PAGE,
-+					       I40E_PHY_LED_PROV_REG_1,
-+					       &led_reg, NULL);
-+	} else {
-+		status = i40e_read_phy_register_clause45(hw,
-+							 I40E_PHY_COM_REG_PAGE,
-+							 led_addr, phy_addr,
-+							 (u16 *)&led_reg);
-+	}
- 	if (status)
- 		goto restore_config;
- 	if (on)
- 		led_reg = I40E_PHY_LED_MANUAL_ON;
- 	else
- 		led_reg = 0;
--	status = i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
--						  led_addr, phy_addr, led_reg);
+ 	return status;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 370ce9f..17dc8e2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -12451,6 +12451,13 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	hw->bus.bus_id = pdev->bus->number;
+ 	pf->instance = pfs_found;
+ 
++	/* Select something other than the 802.1ad ethertype for the
++	 * switch to use internally and drop on ingress.
++	 */
++	hw->switch_tag = 0xffff;
++	hw->first_tag = ETH_P_8021AD;
++	hw->second_tag = ETH_P_8021Q;
 +
-+	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+		status =
-+		      i40e_aq_set_phy_register(hw,
-+					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					       I40E_PHY_COM_REG_PAGE,
-+					       I40E_PHY_LED_PROV_REG_1,
-+					       led_reg, NULL);
-+	} else {
-+		status =
-+		    i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
-+						     led_addr, phy_addr,
-+						     (u16)led_reg);
-+	}
- 	if (status)
- 		goto restore_config;
- 	if (mode & I40E_PHY_LED_MODE_ORIG) {
- 		led_ctl = (mode & I40E_PHY_LED_MODE_MASK);
--		status = i40e_write_phy_register_clause45(hw,
--						 I40E_PHY_COM_REG_PAGE,
--						 led_addr, phy_addr, led_ctl);
-+		if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+			status = i40e_aq_set_phy_register(hw,
-+					I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					I40E_PHY_COM_REG_PAGE,
-+					I40E_PHY_LED_PROV_REG_1,
-+					led_ctl, NULL);
-+		} else {
-+			status = i40e_write_phy_register_clause45(hw,
-+							 I40E_PHY_COM_REG_PAGE,
-+							 led_addr, phy_addr,
-+							 (u16)led_ctl);
-+		}
- 	}
- 	return status;
- restore_config:
--	status = i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
--						  led_addr, phy_addr, led_ctl);
-+	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+		status =
-+		      i40e_aq_set_phy_register(hw,
-+					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					       I40E_PHY_COM_REG_PAGE,
-+					       I40E_PHY_LED_PROV_REG_1,
-+					       led_ctl, NULL);
-+	} else {
-+		status =
-+			i40e_write_phy_register_clause45(hw,
-+							 I40E_PHY_COM_REG_PAGE,
-+							 led_addr, phy_addr,
-+							 (u16)led_ctl);
-+	}
- 	return status;
- }
+ 	INIT_LIST_HEAD(&pf->l3_flex_pit_list);
+ 	INIT_LIST_HEAD(&pf->l4_flex_pit_list);
  
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index fd4bbdd..78fda11 100644
+index 8b0b9f8..4b32b1d 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -598,6 +598,7 @@ struct i40e_hw {
+@@ -610,9 +610,15 @@ struct i40e_hw {
  	struct i40e_dcbx_config desired_dcbx_config; /* CEE Desired Cfg */
  
  #define I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE BIT_ULL(0)
-+#define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
++#define I40E_HW_FLAG_802_1AD_CAPABLE        BIT_ULL(1)
+ #define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
  	u64 flags;
  
++	/* Used in set switch config AQ command */
++	u16 switch_tag;
++	u16 first_tag;
++	u16 second_tag;
++
  	/* debug mask */
+ 	u32 debug_mask;
+ 	char err_str[16];
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index b7715d4..3a498d5 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -771,7 +771,22 @@ struct i40e_aqc_set_switch_config {
+ #define I40E_AQ_SET_SWITCH_CFG_PROMISC		0x0001
+ #define I40E_AQ_SET_SWITCH_CFG_L2_FILTER	0x0002
+ 	__le16	valid_flags;
+-	u8	reserved[12];
++	/* The ethertype in switch_tag is dropped on ingress and used
++	 * internally by the switch. Set this to zero for the default
++	 * of 0x88a8 (802.1ad). Should be zero for firmware API
++	 * versions lower than 1.7.
++	 */
++	__le16	switch_tag;
++	/* The ethertypes in first_tag and second_tag are used to
++	 * match the outer and inner VLAN tags (respectively) when HW
++	 * double VLAN tagging is enabled via the set port parameters
++	 * AQ command. Otherwise these are both ignored. Set them to
++	 * zero for their defaults of 0x8100 (802.1Q). Should be zero
++	 * for firmware API versions lower than 1.7.
++	 */
++	__le16	first_tag;
++	__le16	second_tag;
++	u8	reserved[6];
+ };
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_set_switch_config);
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 2ea919d..412a32c 100644
+index 48eacf5..9364b67 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -556,6 +556,8 @@ struct i40e_hw {
+@@ -568,6 +568,7 @@ struct i40e_hw {
  	/* LLDP/DCBX Status */
  	u16 dcbx_status;
  
-+#define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
-+
++#define I40E_HW_FLAG_802_1AD_CAPABLE        BIT_ULL(1)
+ #define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
+ 
  	/* DCBX info */
- 	struct i40e_dcbx_config local_dcbx_config; /* Oper/Local Cfg */
+@@ -575,6 +576,11 @@ struct i40e_hw {
  	struct i40e_dcbx_config remote_dcbx_config; /* Peer Cfg */
+ 	struct i40e_dcbx_config desired_dcbx_config; /* CEE Desired Cfg */
+ 
++	/* Used in set switch config AQ command */
++	u16 switch_tag;
++	u16 first_tag;
++	u16 second_tag;
++
+ 	/* debug mask */
+ 	u32 debug_mask;
+ 	char err_str[16];
 -- 
 2.9.4
 
