@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri,  4 Aug 2017 09:52:20 -0400
-Subject: [Intel-wired-lan] [next PATCH S78-V4 10/12] i40e: fix handling of
-	vf_states variable
+Date: Fri,  4 Aug 2017 09:52:21 -0400
+Subject: [Intel-wired-lan] [next PATCH S78-V4 11/12] i40e: fix client notify
+	of VF reset
 In-Reply-To: <20170804135222.46684-1-alice.michael@intel.com>
 References: <20170804135222.46684-1-alice.michael@intel.com>
-Message-ID: <20170804135222.46684-10-alice.michael@intel.com>
+Message-ID: <20170804135222.46684-11-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,54 +13,40 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alan Brady <alan.brady@intel.com>
 
-Currently we inappropriately clear the vf_states variable with a null
-assignment.  This is problematic because we should be using atomic
-bitops on this variable and we don't actually want to clear all the
-flags.  We should just clear the ones we know we want to clear.
-Additionally remove the I40E_VF_STATE_FCOEENA bit because it is no
-longer being used.
+Currently there is a bug in which the PF driver fails to inform clients
+of a VF reset which then causes clients to leak resources.  The bug
+exists because we were incorrectly checking the I40E_VF_STATE_PRE_ENABLE
+bit.
+
+When a VF is first init we go through a reset to initialize variables
+and allocate resources but we don't want to inform clients of this first
+reset since the client isn't fully enabled yet so we set a state bit
+signifying we're in a "pre-enabled" client state.  During the first
+reset we should be clearing the bit, allowing all following resets to
+notify the client of the reset when the bit is not set.  This patch
+fixes the issue by negating the 'test_and_clear_bit' check to accurately
+reflect the behavior we want.
 
 Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 ++++-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h | 1 -
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index c7f1819..e65ecaf 100644
+index e65ecaf..137254e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -876,7 +876,8 @@ static void i40e_free_vf_res(struct i40e_vf *vf)
+@@ -1047,8 +1047,8 @@ static void i40e_cleanup_reset_vf(struct i40e_vf *vf)
+ 		set_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states);
+ 		clear_bit(I40E_VF_STATE_DISABLED, &vf->vf_states);
+ 		/* Do not notify the client during VF init */
+-		if (test_and_clear_bit(I40E_VF_STATE_PRE_ENABLE,
+-				       &vf->vf_states))
++		if (!test_and_clear_bit(I40E_VF_STATE_PRE_ENABLE,
++					&vf->vf_states))
+ 			i40e_notify_client_of_vf_reset(pf, abs_vf_id);
+ 		vf->num_vlan = 0;
  	}
- 	/* reset some of the state variables keeping track of the resources */
- 	vf->num_queue_pairs = 0;
--	vf->vf_states = 0;
-+	clear_bit(I40E_VF_STATE_MC_PROMISC, &vf->vf_states);
-+	clear_bit(I40E_VF_STATE_UC_PROMISC, &vf->vf_states);
- }
- 
- /**
-@@ -1582,6 +1583,8 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 	    (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_IWARP)) {
- 		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_IWARP;
- 		set_bit(I40E_VF_STATE_IWARPENA, &vf->vf_states);
-+	} else {
-+		clear_bit(I40E_VF_STATE_IWARPENA, &vf->vf_states);
- 	}
- 
- 	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RSS_PF) {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 5ea42ad..5efc4f9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -56,7 +56,6 @@ enum i40e_vf_states {
- 	I40E_VF_STATE_INIT = 0,
- 	I40E_VF_STATE_ACTIVE,
- 	I40E_VF_STATE_IWARPENA,
--	I40E_VF_STATE_FCOEENA,
- 	I40E_VF_STATE_DISABLED,
- 	I40E_VF_STATE_MC_PROMISC,
- 	I40E_VF_STATE_UC_PROMISC,
 -- 
 2.9.4
 
