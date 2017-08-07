@@ -1,11 +1,11 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon, 7 Aug 2017 10:19:05 -0700
-Subject: [Intel-wired-lan] [next PATCH S78-V4 03/12] i40e: Add support
- for 'ethtool -m'
-In-Reply-To: <20170804135222.46684-3-alice.michael@intel.com>
+Date: Mon, 7 Aug 2017 10:19:10 -0700
+Subject: [Intel-wired-lan] [next PATCH S78-V4 08/12] i40evf: Enable VF
+ to request an alternate queue allocation
+In-Reply-To: <20170804135222.46684-8-alice.michael@intel.com>
 References: <20170804135222.46684-1-alice.michael@intel.com>
- <20170804135222.46684-3-alice.michael@intel.com>
-Message-ID: <85e2bed4-9741-9492-7d50-12509a5c4014@oracle.com>
+ <20170804135222.46684-8-alice.michael@intel.com>
+Message-ID: <afaabd4a-324e-ab62-3d5a-6170238eb74d@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,525 +13,338 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 8/4/2017 6:52 AM, Alice Michael wrote:
-> From: Filip Sadowski <filip.sadowski@intel.com>
+> From: Alan Brady <alan.brady@intel.com>
 > 
-> This patch adds support for 'ethtool -m' command which displays
-> information about (Q)SFP+ module plugged into NIC's cage.
+> Currently the VF gets a default number of allocated queues from HW on
+> init and it could choose to enable or disable those allocated queues.
+> This makes it such that the VF can request more or less underlying
+> allocated queues from the PF.
 > 
-> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+> First the VF negotiates the number of queues it wants that can be
+> supported by the PF and if successful asks for a reset.  During reset
+> the PF will reallocate the HW queues for the VF and will then remap the
+> new queues.
+> 
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
 > ---
->   drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  18 +++
->   drivers/net/ethernet/intel/i40e/i40e_common.c      |  69 +++++++++
->   drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 154 +++++++++++++++++++++
->   drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   9 ++
->   drivers/net/ethernet/intel/i40e/i40e_type.h        |  12 ++
->   .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  18 +++
->   drivers/net/ethernet/intel/i40evf/i40e_common.c    |  69 +++++++++
->   drivers/net/ethernet/intel/i40evf/i40e_prototype.h |   9 ++
->   drivers/net/ethernet/intel/i40evf/i40e_type.h      |  12 ++
->   9 files changed, 370 insertions(+)
+>   drivers/net/ethernet/intel/i40evf/i40evf.h         |  4 +
+>   drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 38 ++++++++-
+>   drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 94 ++++++++++++++++++++--
+>   .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 44 +++++++++-
+>   4 files changed, 173 insertions(+), 7 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-> index 5d0291c..8fcbbd8 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-> @@ -244,6 +244,8 @@ enum i40e_admin_queue_opc {
->   	i40e_aqc_opc_set_phy_debug		= 0x0622,
->   	i40e_aqc_opc_upload_ext_phy_fm		= 0x0625,
->   	i40e_aqc_opc_run_phy_activity		= 0x0626,
-> +	i40e_aqc_opc_set_phy_register		= 0x0628,
-> +	i40e_aqc_opc_get_phy_register		= 0x0629,
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+> index a1af9b1..de0af52 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40evf.h
+> +++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+> @@ -102,6 +102,7 @@ struct i40e_vsi {
+>   #define I40E_TX_CTXTDESC(R, i) \
+>   	(&(((struct i40e_tx_context_desc *)((R)->desc))[i]))
+>   #define MAX_QUEUES 16
+> +#define I40EVF_MAX_REQ_QUEUES 4
+
+Why can you only request 4 queues if a VF can have up to 16 queues?
+
 >   
->   	/* NVM commands */
->   	i40e_aqc_opc_nvm_read			= 0x0701,
-> @@ -2053,6 +2055,22 @@ struct i40e_aqc_run_phy_activity {
+>   #define I40EVF_HKEY_ARRAY_SIZE ((I40E_VFQF_HKEY_MAX_INDEX + 1) * 4)
+>   #define I40EVF_HLUT_ARRAY_SIZE ((I40E_VFQF_HLUT_MAX_INDEX + 1) * 4)
+> @@ -200,6 +201,7 @@ struct i40evf_adapter {
+>   	struct list_head vlan_filter_list;
+>   	char misc_vector_name[IFNAMSIZ + 9];
+>   	int num_active_queues;
+> +	int num_req_queues;
 >   
->   I40E_CHECK_CMD_LENGTH(i40e_aqc_run_phy_activity);
+>   	/* TX */
+>   	struct i40e_ring *tx_rings;
+> @@ -235,6 +237,7 @@ struct i40evf_adapter {
+>   #define I40EVF_FLAG_PROMISC_ON			BIT(13)
+>   #define I40EVF_FLAG_ALLMULTI_ON			BIT(14)
+>   #define I40EVF_FLAG_LEGACY_RX			BIT(15)
+> +#define I40EVF_FLAG_REINIT_ITR_NEEDED		BIT(16)
+>   /* duplicates for common code */
+>   #define I40E_FLAG_DCB_ENABLED			0
+>   #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
+> @@ -349,6 +352,7 @@ void i40evf_deconfigure_queues(struct i40evf_adapter *adapter);
+>   void i40evf_enable_queues(struct i40evf_adapter *adapter);
+>   void i40evf_disable_queues(struct i40evf_adapter *adapter);
+>   void i40evf_map_queues(struct i40evf_adapter *adapter);
+> +int i40evf_request_queues(struct i40evf_adapter *adapter, int num);
+>   void i40evf_add_ether_addrs(struct i40evf_adapter *adapter);
+>   void i40evf_del_ether_addrs(struct i40evf_adapter *adapter);
+>   void i40evf_add_vlans(struct i40evf_adapter *adapter);
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+> index 65874d6..da006fa 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+> @@ -669,7 +669,7 @@ static void i40evf_get_channels(struct net_device *netdev,
+>   	struct i40evf_adapter *adapter = netdev_priv(netdev);
 >   
-> +/* Set PHY Register command (0x0628) */
-> +/* Get PHY Register command (0x0629) */
-> +struct i40e_aqc_phy_register_access {
-> +	u8	phy_interface;
-> +#define I40E_AQ_PHY_REG_ACCESS_INTERNAL	0
-> +#define I40E_AQ_PHY_REG_ACCESS_EXTERNAL	1
-> +#define I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE	2
-> +	u8	dev_address;
-> +	u8	reserved1[2];
-> +	u32	reg_address;
-> +	u32	reg_value;
-> +	u8	reserved2[4];
-> +};
-> +
-> +I40E_CHECK_CMD_LENGTH(i40e_aqc_phy_register_access);
-> +
->   /* NVM Read command (indirect 0x0701)
->    * NVM Erase commands (direct 0x0702)
->    * NVM Update commands (indirect 0x0703)
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> index c0aeda7..6b7712c 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> @@ -5143,6 +5143,75 @@ void i40e_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val)
+>   	/* Report maximum channels */
+> -	ch->max_combined = adapter->num_active_queues;
+> +	ch->max_combined = I40EVF_MAX_REQ_QUEUES;
+>   
+>   	ch->max_other = NONQ_VECS;
+>   	ch->other_count = NONQ_VECS;
+> @@ -678,6 +678,41 @@ static void i40evf_get_channels(struct net_device *netdev,
 >   }
 >   
 >   /**
-> + * i40e_aq_set_phy_register
-> + * @hw: pointer to the hw struct
-> + * @phy_select: select which phy should be accessed
-> + * @dev_addr: PHY device address
-> + * @reg_addr: PHY register address
-> + * @reg_val: new register value
-> + * @cmd_details: pointer to command details structure or NULL
+> + * i40evf_set_channels: set the new channel count
+> + * @netdev: network interface device structure
+> + * @ch: channel information structure
 > + *
-> + * Write the external PHY register.
+> + * Negotiate a new number of channels with the PF then do a reset.  During
+> + * reset we'll realloc queues and fix the RSS table.  Returns 0 on success,
+> + * negative on failure.
 > + **/
-> +i40e_status i40e_aq_set_phy_register(struct i40e_hw *hw,
-> +				     u8 phy_select, u8 dev_addr,
-> +				     u32 reg_addr, u32 reg_val,
-> +				     struct i40e_asq_cmd_details *cmd_details)
+> +static int i40evf_set_channels(struct net_device *netdev,
+> +			       struct ethtool_channels *ch)
 > +{
-> +	struct i40e_aq_desc desc;
-> +	struct i40e_aqc_phy_register_access *cmd =
-> +		(struct i40e_aqc_phy_register_access *)&desc.params.raw;
-> +	i40e_status status;
+> +	struct i40evf_adapter *adapter = netdev_priv(netdev);
+> +	int num_req = ch->combined_count;
 > +
-> +	i40e_fill_default_direct_cmd_desc(&desc,
-> +					  i40e_aqc_opc_set_phy_register);
+> +	if (num_req != adapter->num_active_queues &&
+> +	    !(adapter->vf_res->vf_cap_flags &
+> +	      VIRTCHNL_VF_OFFLOAD_REQ_QUEUES)) {
+> +		dev_info(&adapter->pdev->dev, "PF is not capable of queue negotiation.\n");
+> +		return -EINVAL;
+> +	}
 > +
-> +	cmd->phy_interface = phy_select;
-> +	cmd->dev_address = dev_addr;
-> +	cmd->reg_address = reg_addr;
-> +	cmd->reg_value = reg_val;
-
-Byteswapping?
-
+> +	/* All of these should have already been checked by ethtool before this
+> +	 * even gets to us, but just to be sure.
+> +	 */
+> +	if (num_req <= 0 || num_req > I40EVF_MAX_REQ_QUEUES)
+> +		return -EINVAL;
 > +
-> +	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
+> +	if (ch->rx_count || ch->tx_count || ch->other_count != NONQ_VECS)
+> +		return -EINVAL;
 > +
-> +	return status;
+> +	adapter->num_req_queues = num_req;
+> +	return i40evf_request_queues(adapter, num_req);
 > +}
 > +
 > +/**
-> + * i40e_aq_get_phy_register
-> + * @hw: pointer to the hw struct
-> + * @phy_select: select which phy should be accessed
-> + * @dev_addr: PHY device address
-> + * @reg_addr: PHY register address
-> + * @reg_val: read register value
-> + * @cmd_details: pointer to command details structure or NULL
-> + *
-> + * Read the external PHY register.
-> + **/
-> +i40e_status i40e_aq_get_phy_register(struct i40e_hw *hw,
-> +				     u8 phy_select, u8 dev_addr,
-> +				     u32 reg_addr, u32 *reg_val,
-> +				     struct i40e_asq_cmd_details *cmd_details)
-> +{
-> +	struct i40e_aq_desc desc;
-> +	struct i40e_aqc_phy_register_access *cmd =
-> +		(struct i40e_aqc_phy_register_access *)&desc.params.raw;
-> +	i40e_status status;
+>    * i40evf_get_rxfh_key_size - get the RSS hash key size
+>    * @netdev: network interface device structure
+>    *
+> @@ -785,6 +820,7 @@ static const struct ethtool_ops i40evf_ethtool_ops = {
+>   	.get_rxfh		= i40evf_get_rxfh,
+>   	.set_rxfh		= i40evf_set_rxfh,
+>   	.get_channels		= i40evf_get_channels,
+> +	.set_channels		= i40evf_set_channels,
+>   	.get_rxfh_key_size	= i40evf_get_rxfh_key_size,
+>   	.get_link_ksettings	= i40evf_get_link_ksettings,
+>   };
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> index a216fd2..a803c6b 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> @@ -1189,9 +1189,18 @@ static int i40evf_alloc_queues(struct i40evf_adapter *adapter)
+>   {
+>   	int i, num_active_queues;
+>   
+> -	num_active_queues = min_t(int,
+> -				  adapter->vsi_res->num_queue_pairs,
+> -				  (int)(num_online_cpus()));
+> +	/* If we're in reset reallocating queues we don't actually know yet for
+> +	 * certain the PF gave us the number of queues we asked for but we'll
+> +	 * assume it did.  Once basic reset is finished we'll confirm once we
+> +	 * start negotiating config with PF.
+> +	 */
+> +	if (adapter->num_req_queues)
+> +		num_active_queues = adapter->num_req_queues;
+> +	else
+> +		num_active_queues = min_t(int,
+> +					  adapter->vsi_res->num_queue_pairs,
+> +					  (int)(num_online_cpus()));
 > +
-> +	i40e_fill_default_direct_cmd_desc(&desc,
-> +					  i40e_aqc_opc_get_phy_register);
-> +
-> +	cmd->phy_interface = phy_select;
-> +	cmd->dev_address = dev_addr;
-> +	cmd->reg_address = reg_addr;
-
-Byteswapping?
-
-> +
-> +	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
-> +	if (!status)
-> +		*reg_val = cmd->reg_value;
-
-Byteswapping?
-
-> +
-> +	return status;
-> +}
-> +
-> +/**
->    * i40e_aq_write_ppp - Write pipeline personalization profile (ppp)
->    * @hw: pointer to the hw struct
->    * @buff: command buffer (size in bytes = buff_size)
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> index 326fc18..72910c5 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> @@ -4202,6 +4202,158 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
->   	return 0;
+>   
+>   	adapter->tx_rings = kcalloc(num_active_queues,
+>   				    sizeof(struct i40e_ring), GFP_KERNEL);
+> @@ -1540,6 +1549,48 @@ static void i40evf_free_rss(struct i40evf_adapter *adapter)
 >   }
 >   
-> +/**
-> + * i40e_get_module_info - get (Q)SFP+ module type info
-> + * @netdev: network interface device structure
-> + * @modinfo: module EEPROM size and layout information structure
+>   /**
+> + * i40evf_reinit_interrupt_scheme - Reallocate queues and vectors
+> + * @adapter: board private structure
+> + *
+> + * Returns 0 on success, negative on failure
 > + **/
-> +static int i40e_get_module_info(struct net_device *netdev,
-> +				struct ethtool_modinfo *modinfo)
+> +static int i40evf_reinit_interrupt_scheme(struct i40evf_adapter *adapter)
 > +{
-> +	i40e_status status;
-> +	struct i40e_netdev_priv *np = netdev_priv(netdev);
-> +	struct i40e_vsi *vsi = np->vsi;
-> +	struct i40e_pf *pf = vsi->back;
-> +	struct i40e_hw *hw = &pf->hw;
-> +	u32 sff8472_comp = 0;
-> +	u32 sff8472_swap = 0;
-> +	u32 sff8636_rev = 0;
-> +	u32 type = 0;
+> +	struct net_device *netdev = adapter->netdev;
+> +	int err;
 > +
-> +	/* Check if firmware supports reading module EEPROM. */
-> +	if (!(hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE)) {
-> +		netdev_err(vsi->netdev, "Module EEPROM memory read not supported. Please update the NVM image.\n");
-> +		return -EINVAL;
+> +	if (netif_running(netdev))
+> +		i40evf_free_traffic_irqs(adapter);
+> +	i40evf_free_misc_irq(adapter);
+> +	i40evf_reset_interrupt_capability(adapter);
+> +	i40evf_free_q_vectors(adapter);
+> +	i40evf_free_queues(adapter);
+> +
+> +	err =  i40evf_init_interrupt_scheme(adapter);
+> +	if (err)
+> +		goto err;
+> +
+> +	netif_tx_stop_all_queues(netdev);
+> +
+> +	err = i40evf_request_misc_irq(adapter);
+> +	if (err)
+> +		goto err;
+> +
+> +	set_bit(__I40E_VSI_DOWN, adapter->vsi.state);
+> +
+> +	err = i40evf_map_rings_to_vectors(adapter);
+> +	if (err)
+> +		goto err;
+> +
+> +	if (RSS_AQ(adapter))
+> +		adapter->aq_required |= I40EVF_FLAG_AQ_CONFIGURE_RSS;
+> +	else
+> +		err = i40evf_init_rss(adapter);
+> +err:
+> +	return err;
+> +}
+> +
+> +/**
+>    * i40evf_watchdog_timer - Periodic call-back timer
+>    * @data: pointer to adapter disguised as unsigned long
+>    **/
+> @@ -1885,8 +1936,15 @@ static void i40evf_reset_task(struct work_struct *work)
+>   	if (err)
+>   		dev_info(&adapter->pdev->dev, "Failed to init adminq: %d\n",
+>   			 err);
+> +	adapter->aq_required = 0;
+>   
+> -	adapter->aq_required = I40EVF_FLAG_AQ_GET_CONFIG;
+> +	if (adapter->flags & I40EVF_FLAG_REINIT_ITR_NEEDED) {
+> +		err = i40evf_reinit_interrupt_scheme(adapter);
+> +		if (err)
+> +			goto reset_err;
 > +	}
 > +
-> +	status = i40e_update_link_info(hw);
-> +	if (status)
-> +		return -EIO;
+> +	adapter->aq_required |= I40EVF_FLAG_AQ_GET_CONFIG;
+>   	adapter->aq_required |= I40EVF_FLAG_AQ_MAP_VECTORS;
+>   
+>   	/* re-add all MAC filters */
+> @@ -1916,6 +1974,15 @@ static void i40evf_reset_task(struct work_struct *work)
+>   		if (err)
+>   			goto reset_err;
+>   
+> +		if (adapter->flags & I40EVF_FLAG_REINIT_ITR_NEEDED) {
+> +			err = i40evf_request_traffic_irqs(adapter,
+> +							  netdev->name);
+> +			if (err)
+> +				goto reset_err;
 > +
-> +	if (hw->phy.link_info.phy_type == I40E_PHY_TYPE_EMPTY) {
-> +		netdev_err(vsi->netdev, "Cannot read module EEPROM memory. No module connected.\n");
-> +		return -EINVAL;
-> +	}
+> +			adapter->flags &= ~I40EVF_FLAG_REINIT_ITR_NEEDED;
+> +		}
 > +
-> +	type = hw->phy.link_info.module_type[0];
-> +
-> +	switch (type) {
-> +	case I40E_MODULE_TYPE_SFP:
-> +		status = i40e_aq_get_phy_register(hw,
-> +				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
-> +				I40E_I2C_EEPROM_DEV_ADDR,
-> +				I40E_MODULE_SFF_8472_COMP,
-> +				&sff8472_comp, NULL);
-> +		if (status)
-> +			return -EIO;
-> +
-> +		status = i40e_aq_get_phy_register(hw,
-> +				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
-> +				I40E_I2C_EEPROM_DEV_ADDR,
-> +				I40E_MODULE_SFF_8472_SWAP,
-> +				&sff8472_swap, NULL);
-> +		if (status)
-> +			return -EIO;
-> +
-> +		/* Check if the module requires address swap to access
-> +		 * the other EEPROM memory page.
+>   		i40evf_configure(adapter);
+>   
+>   		i40evf_up_complete(adapter);
+> @@ -2432,9 +2499,9 @@ static int i40evf_check_reset_complete(struct i40e_hw *hw)
+>   int i40evf_process_config(struct i40evf_adapter *adapter)
+>   {
+>   	struct virtchnl_vf_resource *vfres = adapter->vf_res;
+> +	int i, num_req_queues = adapter->num_req_queues;
+>   	struct net_device *netdev = adapter->netdev;
+>   	struct i40e_vsi *vsi = &adapter->vsi;
+> -	int i;
+>   	netdev_features_t hw_enc_features;
+>   	netdev_features_t hw_features;
+>   
+> @@ -2448,6 +2515,23 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
+>   		return -ENODEV;
+>   	}
+>   
+> +	if (num_req_queues &&
+> +	    num_req_queues != adapter->vsi_res->num_queue_pairs) {
+> +		/* Problem.  The PF gave us fewer queues than what we had
+> +		 * negotiated in our request.  Need a reset to see if we can't
+> +		 * get back to a working state.
 > +		 */
-> +		if (sff8472_swap & I40E_MODULE_SFF_ADDR_MODE) {
-> +			netdev_warn(vsi->netdev, "Module address swap to access page 0xA2 is not supported.\n");
-> +			modinfo->type = ETH_MODULE_SFF_8079;
-> +			modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
-> +		} else if (sff8472_comp == 0x00) {
-> +			/* Module is not SFF-8472 compliant */
-> +			modinfo->type = ETH_MODULE_SFF_8079;
-> +			modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
-> +		} else {
-> +			modinfo->type = ETH_MODULE_SFF_8472;
-> +			modinfo->eeprom_len = ETH_MODULE_SFF_8472_LEN;
-> +		}
-> +		break;
-> +	case I40E_MODULE_TYPE_QSFP_PLUS:
-> +		/* Read from memory page 0. */
-> +		status = i40e_aq_get_phy_register(hw,
-> +				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
-> +				0,
-> +				I40E_MODULE_REVISION_ADDR,
-> +				&sff8636_rev, NULL);
-> +		if (status)
-> +			return -EIO;
-> +		/* Determine revision compliance byte */
-> +		if (sff8636_rev > 0x02) {
-> +			/* Module is SFF-8636 compliant */
-> +			modinfo->type = ETH_MODULE_SFF_8636;
-> +			modinfo->eeprom_len = I40E_MODULE_QSFP_MAX_LEN;
-> +		} else {
-> +			modinfo->type = ETH_MODULE_SFF_8436;
-> +			modinfo->eeprom_len = I40E_MODULE_QSFP_MAX_LEN;
-> +		}
-> +		break;
-> +	case I40E_MODULE_TYPE_QSFP28:
-> +		modinfo->type = ETH_MODULE_SFF_8636;
-> +		modinfo->eeprom_len = I40E_MODULE_QSFP_MAX_LEN;
-> +		break;
-> +	default:
-> +		netdev_err(vsi->netdev, "Module type unrecognized\n");
-> +		return -EINVAL;
+> +		dev_err(&adapter->pdev->dev,
+> +			"Requested %d queues, but PF only gave us %d.\n",
+> +			num_req_queues,
+> +			adapter->vsi_res->num_queue_pairs);
+> +		adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
+> +		adapter->num_req_queues = adapter->vsi_res->num_queue_pairs;
+> +		i40evf_schedule_reset(adapter);
+> +		return -ENODEV;
 > +	}
-> +	return 0;
-> +}
+> +	adapter->num_req_queues = 0;
 > +
-> +/**
-> + * i40e_get_module_eeprom - fills buffer with (Q)SFP+ module memory contents
-> + * @netdev: network interface device structure
-> + * @ee: EEPROM dump request structure
-> + * @data: buffer to be filled with EEPROM contents
-> + **/
-> +static int i40e_get_module_eeprom(struct net_device *netdev,
-> +				  struct ethtool_eeprom *ee,
-> +				  u8 *data)
-> +{
-> +	i40e_status status;
-> +	struct i40e_netdev_priv *np = netdev_priv(netdev);
-> +	struct i40e_vsi *vsi = np->vsi;
-> +	struct i40e_pf *pf = vsi->back;
-> +	struct i40e_hw *hw = &pf->hw;
-> +	bool is_sfp = false;
-> +	u32 value = 0;
-> +	int i;
-> +
-> +	if (!ee || !ee->len || !data)
-> +		return -EINVAL;
-> +
-> +	if (hw->phy.link_info.module_type[0] == I40E_MODULE_TYPE_SFP)
-> +		is_sfp = true;
-> +
-> +	for (i = 0; i < ee->len; i++) {
-> +		u32 offset = i + ee->offset;
-> +		u32 addr = is_sfp ? I40E_I2C_EEPROM_DEV_ADDR : 0;
-> +
-> +		/* Check if we need to access the other memory page */
-> +		if (is_sfp) {
-> +			if (offset >= ETH_MODULE_SFF_8079_LEN) {
-> +				offset -= ETH_MODULE_SFF_8079_LEN;
-> +				addr = I40E_I2C_EEPROM_DEV_ADDR2;
-> +			}
-> +		} else {
-> +			while (offset >= ETH_MODULE_SFF_8436_LEN) {
-> +				/* Compute memory page number and offset. */
-> +				offset -= ETH_MODULE_SFF_8436_LEN / 2;
-> +				addr++;
-> +			}
-> +		}
-> +
-> +		status = i40e_aq_get_phy_register(hw,
-> +				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
-> +				addr, offset, &value, NULL);
-> +		if (status)
-> +			return -EIO;
-> +		data[i] = value;
-> +	}
-> +	return 0;
-> +}
-> +
->   static const struct ethtool_ops i40e_ethtool_ops = {
->   	.get_drvinfo		= i40e_get_drvinfo,
->   	.get_regs_len		= i40e_get_regs_len,
-> @@ -4234,6 +4386,8 @@ static const struct ethtool_ops i40e_ethtool_ops = {
->   	.set_rxfh		= i40e_set_rxfh,
->   	.get_channels		= i40e_get_channels,
->   	.set_channels		= i40e_set_channels,
-> +	.get_module_info	= i40e_get_module_info,
-> +	.get_module_eeprom	= i40e_get_module_eeprom,
->   	.get_ts_info		= i40e_get_ts_info,
->   	.get_priv_flags		= i40e_get_priv_flags,
->   	.set_priv_flags		= i40e_set_priv_flags,
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-> index df613ea..6254ad5 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-> @@ -362,6 +362,15 @@ i40e_status i40e_aq_rx_ctl_write_register(struct i40e_hw *hw,
->   				u32 reg_addr, u32 reg_val,
->   				struct i40e_asq_cmd_details *cmd_details);
->   void i40e_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val);
-> +i40e_status i40e_aq_set_phy_register(struct i40e_hw *hw,
-> +				     u8 phy_select, u8 dev_addr,
-> +				     u32 reg_addr, u32 reg_val,
-> +				     struct i40e_asq_cmd_details *cmd_details);
-> +i40e_status i40e_aq_get_phy_register(struct i40e_hw *hw,
-> +				     u8 phy_select, u8 dev_addr,
-> +				     u32 reg_addr, u32 *reg_val,
-> +				     struct i40e_asq_cmd_details *cmd_details);
-> +
->   i40e_status i40e_read_phy_register_clause22(struct i40e_hw *hw,
->   					    u16 reg, u8 phy_addr, u16 *value);
->   i40e_status i40e_write_phy_register_clause22(struct i40e_hw *hw,
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-> index 78fda11..8b0b9f8 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-> @@ -428,6 +428,18 @@ struct i40e_nvm_access {
->   	u8 data[1];
->   };
+>   	hw_enc_features = NETIF_F_SG			|
+>   			  NETIF_F_IP_CSUM		|
+>   			  NETIF_F_IPV6_CSUM		|
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+> index 2bb0fe0..2bb81c3 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+> @@ -160,7 +160,8 @@ int i40evf_send_vf_config_msg(struct i40evf_adapter *adapter)
+>   	       VIRTCHNL_VF_OFFLOAD_WB_ON_ITR |
+>   	       VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2 |
+>   	       VIRTCHNL_VF_OFFLOAD_ENCAP |
+> -	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM;
+> +	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM |
+> +	       VIRTCHNL_VF_OFFLOAD_REQ_QUEUES;
 >   
-> +/* (Q)SFP module access definitions */
-> +#define I40E_I2C_EEPROM_DEV_ADDR	0xA0
-> +#define I40E_I2C_EEPROM_DEV_ADDR2	0xA2
-> +#define I40E_MODULE_TYPE_ADDR		0x00
-> +#define I40E_MODULE_REVISION_ADDR	0x01
-> +#define I40E_MODULE_SFF_8472_COMP	0x5E
-> +#define I40E_MODULE_SFF_8472_SWAP	0x5C
-> +#define I40E_MODULE_SFF_ADDR_MODE	0x04
-> +#define I40E_MODULE_TYPE_QSFP_PLUS	0x0D
-> +#define I40E_MODULE_TYPE_QSFP28		0x11
-> +#define I40E_MODULE_QSFP_MAX_LEN	640
-> +
->   /* PCI bus types */
->   enum i40e_bus_type {
->   	i40e_bus_type_unknown = 0,
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-> index 709d114..b7715d4 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-> +++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-> @@ -244,6 +244,8 @@ enum i40e_admin_queue_opc {
->   	i40e_aqc_opc_set_phy_debug		= 0x0622,
->   	i40e_aqc_opc_upload_ext_phy_fm		= 0x0625,
->   	i40e_aqc_opc_run_phy_activity		= 0x0626,
-> +	i40e_aqc_opc_set_phy_register		= 0x0628,
-> +	i40e_aqc_opc_get_phy_register		= 0x0629,
->   
->   	/* NVM commands */
->   	i40e_aqc_opc_nvm_read			= 0x0701,
-> @@ -2046,6 +2048,22 @@ struct i40e_aqc_run_phy_activity {
->   
->   I40E_CHECK_CMD_LENGTH(i40e_aqc_run_phy_activity);
->   
-> +/* Set PHY Register command (0x0628) */
-> +/* Get PHY Register command (0x0629) */
-> +struct i40e_aqc_phy_register_access {
-> +	u8	phy_interface;
-> +#define I40E_AQ_PHY_REG_ACCESS_INTERNAL	0
-> +#define I40E_AQ_PHY_REG_ACCESS_EXTERNAL	1
-> +#define I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE	2
-> +	u8	dev_address;
-> +	u8	reserved1[2];
-> +	u32	reg_address;
-> +	u32	reg_value;
-> +	u8	reserved2[4];
-> +};
-> +
-> +I40E_CHECK_CMD_LENGTH(i40e_aqc_phy_register_access);
-> +
->   /* NVM Read command (indirect 0x0701)
->    * NVM Erase commands (direct 0x0702)
->    * NVM Update commands (indirect 0x0703)
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-> index 8d3a2bf..7df4610 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
-> +++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-> @@ -1042,6 +1042,75 @@ void i40evf_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val)
+>   	adapter->current_op = VIRTCHNL_OP_GET_VF_RESOURCES;
+>   	adapter->aq_required &= ~I40EVF_FLAG_AQ_GET_CONFIG;
+> @@ -385,6 +386,32 @@ void i40evf_map_queues(struct i40evf_adapter *adapter)
 >   }
 >   
 >   /**
-> + * i40evf_aq_set_phy_register
-> + * @hw: pointer to the hw struct
-> + * @phy_select: select which phy should be accessed
-> + * @dev_addr: PHY device address
-> + * @reg_addr: PHY register address
-> + * @reg_val: new register value
-> + * @cmd_details: pointer to command details structure or NULL
+> + * i40evf_request_queues
+> + * @adapter: adapter structure
+> + * @num: number of requested queues
 > + *
-> + * Reset the external PHY.
+> + * We get a default number of queues from the PF.  This enables us to request a
+> + * different number.  Returns 0 on success, negative on failure
 > + **/
-> +i40e_status i40evf_aq_set_phy_register(struct i40e_hw *hw,
-> +				       u8 phy_select, u8 dev_addr,
-> +				       u32 reg_addr, u32 reg_val,
-> +				       struct i40e_asq_cmd_details *cmd_details)
+> +int i40evf_request_queues(struct i40evf_adapter *adapter, int num)
 > +{
-> +	struct i40e_aq_desc desc;
-> +	struct i40e_aqc_phy_register_access *cmd =
-> +		(struct i40e_aqc_phy_register_access *)&desc.params.raw;
-> +	i40e_status status;
+> +	struct virtchnl_vf_res_request vfres;
 > +
-> +	i40evf_fill_default_direct_cmd_desc(&desc,
-> +					    i40e_aqc_opc_set_phy_register);
+> +	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
+> +		/* bail because we already have a command pending */
+> +		dev_err(&adapter->pdev->dev, "Cannot request queues, command %d pending\n",
+> +			adapter->current_op);
+> +		return -EBUSY;
+> +	}
 > +
-> +	cmd->phy_interface = phy_select;
-> +	cmd->dev_address = dev_addr;
-> +	cmd->reg_address = reg_addr;
-> +	cmd->reg_value = reg_val;
-
-Same byteswapping comments...
-
-
+> +	vfres.num_queue_pairs = num;
 > +
-> +	status = i40evf_asq_send_command(hw, &desc, NULL, 0, cmd_details);
-> +
-> +	return status;
+> +	adapter->current_op = VIRTCHNL_OP_REQUEST_QUEUES;
+> +	return i40evf_send_pf_msg(adapter, VIRTCHNL_OP_REQUEST_QUEUES,
+> +				  (u8 *)&vfres, sizeof(vfres));
 > +}
 > +
 > +/**
-> + * i40evf_aq_get_phy_register
-> + * @hw: pointer to the hw struct
-> + * @phy_select: select which phy should be accessed
-> + * @dev_addr: PHY device address
-> + * @reg_addr: PHY register address
-> + * @reg_val: read register value
-> + * @cmd_details: pointer to command details structure or NULL
-> + *
-> + * Reset the external PHY.
-> + **/
-> +i40e_status i40evf_aq_get_phy_register(struct i40e_hw *hw,
-> +				       u8 phy_select, u8 dev_addr,
-> +				       u32 reg_addr, u32 *reg_val,
-> +				       struct i40e_asq_cmd_details *cmd_details)
-> +{
-> +	struct i40e_aq_desc desc;
-> +	struct i40e_aqc_phy_register_access *cmd =
-> +		(struct i40e_aqc_phy_register_access *)&desc.params.raw;
-> +	i40e_status status;
-> +
-> +	i40evf_fill_default_direct_cmd_desc(&desc,
-> +					    i40e_aqc_opc_get_phy_register);
-> +
-> +	cmd->phy_interface = phy_select;
-> +	cmd->dev_address = dev_addr;
-> +	cmd->reg_address = reg_addr;
-> +
-> +	status = i40evf_asq_send_command(hw, &desc, NULL, 0, cmd_details);
-> +	if (!status)
-> +		*reg_val = cmd->reg_value;
-> +
-> +	return status;
-> +}
-> +
-> +/**
->    * i40e_aq_send_msg_to_pf
->    * @hw: pointer to the hardware structure
->    * @v_opcode: opcodes for VF-PF communication
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
-> index c9836bb..b624b59 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
-> +++ b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
-> @@ -111,6 +111,15 @@ i40e_status i40evf_aq_rx_ctl_write_register(struct i40e_hw *hw,
->   				u32 reg_addr, u32 reg_val,
->   				struct i40e_asq_cmd_details *cmd_details);
->   void i40evf_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val);
-> +i40e_status i40e_aq_set_phy_register(struct i40e_hw *hw,
-> +				     u8 phy_select, u8 dev_addr,
-> +				     u32 reg_addr, u32 reg_val,
-> +				     struct i40e_asq_cmd_details *cmd_details);
-> +i40e_status i40e_aq_get_phy_register(struct i40e_hw *hw,
-> +				     u8 phy_select, u8 dev_addr,
-> +				     u32 reg_addr, u32 *reg_val,
-> +				     struct i40e_asq_cmd_details *cmd_details);
-> +
->   i40e_status i40e_read_phy_register(struct i40e_hw *hw, u8 page,
->   				   u16 reg, u8 phy_addr, u16 *value);
->   i40e_status i40e_write_phy_register(struct i40e_hw *hw, u8 page,
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-> index 412a32c..48eacf5 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-> +++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-> @@ -401,6 +401,18 @@ struct i40e_nvm_access {
->   	u8 data[1];
->   };
->   
-> +/* (Q)SFP module access definitions */
-> +#define I40E_I2C_EEPROM_DEV_ADDR	0xA0
-> +#define I40E_I2C_EEPROM_DEV_ADDR2	0xA2
-> +#define I40E_MODULE_TYPE_ADDR		0x00
-> +#define I40E_MODULE_REVISION_ADDR	0x01
-> +#define I40E_MODULE_SFF_8472_COMP	0x5E
-> +#define I40E_MODULE_SFF_8472_SWAP	0x5C
-> +#define I40E_MODULE_SFF_ADDR_MODE	0x04
-> +#define I40E_MODULE_TYPE_QSFP_PLUS	0x0D
-> +#define I40E_MODULE_TYPE_QSFP28		0x11
-> +#define I40E_MODULE_QSFP_MAX_LEN	640
-> +
->   /* PCI bus types */
->   enum i40e_bus_type {
->   	i40e_bus_type_unknown = 0,
+>    * i40evf_add_ether_addrs
+>    * @adapter: adapter structure
+>    * @addrs: the MAC address filters to add (contiguous)
+> @@ -1068,6 +1095,21 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+>   				 "Invalid message %d from PF\n", v_opcode);
+>   		}
+>   		break;
+> +	case VIRTCHNL_OP_REQUEST_QUEUES: {
+> +		struct virtchnl_vf_res_request *vfres =
+> +			(struct virtchnl_vf_res_request *)msg;
+> +		if (vfres->num_queue_pairs == adapter->num_req_queues) {
+> +			adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
+> +			i40evf_schedule_reset(adapter);
+> +		} else {
+> +			dev_info(&adapter->pdev->dev,
+> +				 "Requested %d queues, PF can support %d\n",
+> +				 adapter->num_req_queues,
+> +				 vfres->num_queue_pairs);
+> +			adapter->num_req_queues = 0;
+> +		}
+> +		}
+> +		break;
+>   	default:
+>   		if (adapter->current_op && (v_opcode != adapter->current_op))
+>   			dev_warn(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
 > 
