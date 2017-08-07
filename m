@@ -1,266 +1,41 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon,  7 Aug 2017 09:18:03 -0400
-Subject: [Intel-wired-lan] [next PATCH S78-V5 03/12] i40e: use admin queue
-	for setting LEDs behavior
+Date: Mon,  7 Aug 2017 09:18:06 -0400
+Subject: [Intel-wired-lan] [next PATCH S78-V5 06/12] i40e: make use of
+	i40e_vc_disable_vf
 In-Reply-To: <20170807131812.86747-1-alice.michael@intel.com>
 References: <20170807131812.86747-1-alice.michael@intel.com>
-Message-ID: <20170807131812.86747-3-alice.michael@intel.com>
+Message-ID: <20170807131812.86747-6-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mariusz Stachura <mariusz.stachura@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Instead of accessing register directly, use newly added AQC in
-order to blink LEDs. Introduce and utilize a new flag to prevent
-excessive API version checking.
+Replace i40e_vc_notify_vf_reset and i40e_reset_vf with a call to
+i40e_vc_disable_vf which does this exact thing. This matches similar
+code patterns throughout the driver.
 
-Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c |   6 ++
- drivers/net/ethernet/intel/i40e/i40e_common.c | 148 ++++++++++++++++++++------
- drivers/net/ethernet/intel/i40e/i40e_type.h   |   1 +
- drivers/net/ethernet/intel/i40evf/i40e_type.h |   2 +
- 4 files changed, 122 insertions(+), 35 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index ba04988..340e5a2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -607,6 +607,12 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
- 			   &oem_lo);
- 	hw->nvm.oem_ver = ((u32)oem_hi << 16) | oem_lo;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 2adcc7f..c9898cb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -3345,8 +3345,7 @@ int i40e_ndo_set_vf_trust(struct net_device *netdev, int vf_id, bool setting)
+ 		goto out;
  
-+	if (hw->mac.type ==  I40E_MAC_XL710 &&
-+	    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
-+	    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
-+		hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
-+	}
-+
- 	if (hw->aq.api_maj_ver > I40E_FW_API_VERSION_MAJOR) {
- 		ret_code = I40E_ERR_FIRMWARE_API_VERSION;
- 		goto init_adminq_free_arq;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 4e560ae..6b7712c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -4855,24 +4855,38 @@ i40e_status i40e_led_get_phy(struct i40e_hw *hw, u16 *led_addr,
- 	u16 temp_addr;
- 	u8 port_num;
- 	u32 i;
--
--	temp_addr = I40E_PHY_LED_PROV_REG_1;
--	i = rd32(hw, I40E_PFGEN_PORTNUM);
--	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
--	phy_addr = i40e_get_phy_address(hw, port_num);
--
--	for (gpio_led_port = 0; gpio_led_port < 3; gpio_led_port++,
--	     temp_addr++) {
--		status = i40e_read_phy_register_clause45(hw,
-+	u32 reg_val_aq;
-+
-+	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+		status =
-+		      i40e_aq_get_phy_register(hw,
-+					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					       I40E_PHY_COM_REG_PAGE,
-+					       I40E_PHY_LED_PROV_REG_1,
-+					       &reg_val_aq, NULL);
-+		if (status)
-+			return status;
-+		*val = (u16)reg_val_aq;
-+	} else {
-+		temp_addr = I40E_PHY_LED_PROV_REG_1;
-+		i = rd32(hw, I40E_PFGEN_PORTNUM);
-+		port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
-+		phy_addr = i40e_get_phy_address(hw, port_num);
-+
-+		for (gpio_led_port = 0; gpio_led_port < 3; gpio_led_port++,
-+		     temp_addr++) {
-+			status =
-+			 i40e_read_phy_register_clause45(hw,
- 							 I40E_PHY_COM_REG_PAGE,
- 							 temp_addr, phy_addr,
- 							 &reg_val);
--		if (status)
--			return status;
--		*val = reg_val;
--		if (reg_val & I40E_PHY_LED_LINK_MODE_MASK) {
--			*led_addr = temp_addr;
--			break;
-+			if (status)
-+				return status;
-+			*val = reg_val;
-+			if (reg_val & I40E_PHY_LED_LINK_MODE_MASK) {
-+				*led_addr = temp_addr;
-+				break;
-+			}
- 		}
- 	}
- 	return status;
-@@ -4890,51 +4904,115 @@ i40e_status i40e_led_set_phy(struct i40e_hw *hw, bool on,
- 			     u16 led_addr, u32 mode)
- {
- 	i40e_status status = 0;
--	u16 led_ctl = 0;
--	u16 led_reg = 0;
-+	u32 led_ctl = 0;
-+	u32 led_reg = 0;
- 	u8 phy_addr = 0;
- 	u8 port_num;
- 	u32 i;
- 
--	i = rd32(hw, I40E_PFGEN_PORTNUM);
--	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
--	phy_addr = i40e_get_phy_address(hw, port_num);
--	status = i40e_read_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
--						 led_addr, phy_addr, &led_reg);
-+	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+		status =
-+		      i40e_aq_get_phy_register(hw,
-+					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					       I40E_PHY_COM_REG_PAGE,
-+					       I40E_PHY_LED_PROV_REG_1,
-+					       &led_reg, NULL);
-+	} else {
-+		i = rd32(hw, I40E_PFGEN_PORTNUM);
-+		port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
-+		phy_addr = i40e_get_phy_address(hw, port_num);
-+		status = i40e_read_phy_register_clause45(hw,
-+							 I40E_PHY_COM_REG_PAGE,
-+							 led_addr, phy_addr,
-+							 (u16 *)&led_reg);
-+	}
- 	if (status)
- 		return status;
- 	led_ctl = led_reg;
- 	if (led_reg & I40E_PHY_LED_LINK_MODE_MASK) {
- 		led_reg = 0;
--		status = i40e_write_phy_register_clause45(hw,
--							  I40E_PHY_COM_REG_PAGE,
--							  led_addr, phy_addr,
--							  led_reg);
-+		if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
-+		    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
-+			status = i40e_aq_set_phy_register(hw,
-+					I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					I40E_PHY_COM_REG_PAGE,
-+					I40E_PHY_LED_PROV_REG_1,
-+					led_reg, NULL);
-+		} else {
-+			status = i40e_write_phy_register_clause45(hw,
-+							I40E_PHY_COM_REG_PAGE,
-+							led_addr, phy_addr,
-+							(u16)led_reg);
-+		}
- 		if (status)
- 			return status;
- 	}
--	status = i40e_read_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
--						 led_addr, phy_addr, &led_reg);
-+	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+		status =
-+		      i40e_aq_get_phy_register(hw,
-+					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					       I40E_PHY_COM_REG_PAGE,
-+					       I40E_PHY_LED_PROV_REG_1,
-+					       &led_reg, NULL);
-+	} else {
-+		status = i40e_read_phy_register_clause45(hw,
-+							 I40E_PHY_COM_REG_PAGE,
-+							 led_addr, phy_addr,
-+							 (u16 *)&led_reg);
-+	}
- 	if (status)
- 		goto restore_config;
- 	if (on)
- 		led_reg = I40E_PHY_LED_MANUAL_ON;
- 	else
- 		led_reg = 0;
--	status = i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
--						  led_addr, phy_addr, led_reg);
-+
-+	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+		status =
-+		      i40e_aq_set_phy_register(hw,
-+					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					       I40E_PHY_COM_REG_PAGE,
-+					       I40E_PHY_LED_PROV_REG_1,
-+					       led_reg, NULL);
-+	} else {
-+		status =
-+		    i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
-+						     led_addr, phy_addr,
-+						     (u16)led_reg);
-+	}
- 	if (status)
- 		goto restore_config;
- 	if (mode & I40E_PHY_LED_MODE_ORIG) {
- 		led_ctl = (mode & I40E_PHY_LED_MODE_MASK);
--		status = i40e_write_phy_register_clause45(hw,
--						 I40E_PHY_COM_REG_PAGE,
--						 led_addr, phy_addr, led_ctl);
-+		if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+			status = i40e_aq_set_phy_register(hw,
-+					I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					I40E_PHY_COM_REG_PAGE,
-+					I40E_PHY_LED_PROV_REG_1,
-+					led_ctl, NULL);
-+		} else {
-+			status = i40e_write_phy_register_clause45(hw,
-+							 I40E_PHY_COM_REG_PAGE,
-+							 led_addr, phy_addr,
-+							 (u16)led_ctl);
-+		}
- 	}
- 	return status;
- restore_config:
--	status = i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
--						  led_addr, phy_addr, led_ctl);
-+	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-+		status =
-+		      i40e_aq_set_phy_register(hw,
-+					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-+					       I40E_PHY_COM_REG_PAGE,
-+					       I40E_PHY_LED_PROV_REG_1,
-+					       led_ctl, NULL);
-+	} else {
-+		status =
-+			i40e_write_phy_register_clause45(hw,
-+							 I40E_PHY_COM_REG_PAGE,
-+							 led_addr, phy_addr,
-+							 (u16)led_ctl);
-+	}
- 	return status;
- }
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 4bb5914..8b0b9f8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -610,6 +610,7 @@ struct i40e_hw {
- 	struct i40e_dcbx_config desired_dcbx_config; /* CEE Desired Cfg */
- 
- #define I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE BIT_ULL(0)
-+#define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
- 	u64 flags;
- 
- 	/* debug mask */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index b53584e..48eacf5 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -568,6 +568,8 @@ struct i40e_hw {
- 	/* LLDP/DCBX Status */
- 	u16 dcbx_status;
- 
-+#define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
-+
- 	/* DCBX info */
- 	struct i40e_dcbx_config local_dcbx_config; /* Oper/Local Cfg */
- 	struct i40e_dcbx_config remote_dcbx_config; /* Peer Cfg */
+ 	vf->trusted = setting;
+-	i40e_vc_notify_vf_reset(vf);
+-	i40e_reset_vf(vf, false);
++	i40e_vc_disable_vf(vf);
+ 	dev_info(&pf->pdev->dev, "VF %u is now %strusted\n",
+ 		 vf_id, setting ? "" : "un");
+ out:
 -- 
 2.9.4
 
