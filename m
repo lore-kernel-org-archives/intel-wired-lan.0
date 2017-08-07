@@ -1,239 +1,290 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sun, 09 Jul 2017 20:47:23 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD INCOMPLETE
- e8df760307830ca26cf380a9a4b36468a0352fa5
-Message-ID: <596225db.o6dJKf46xOil3qfa%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Mon, 7 Aug 2017 10:18:40 -0700
+Subject: [Intel-wired-lan] [next PATCH S78-V4 01/12] i40e: use admin
+ queue for setting LEDs behavior
+In-Reply-To: <20170804135222.46684-1-alice.michael@intel.com>
+References: <20170804135222.46684-1-alice.michael@intel.com>
+Message-ID: <c79a0ea6-ff95-8107-6f60-933de6091efc@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-e8df760307830ca26cf380a9a4b36468a0352fa5  net: ethernet: mediatek: remove useless code in mtk_probe()
+On 8/4/2017 6:52 AM, Alice Michael wrote:
+> From: Mariusz Stachura <mariusz.stachura@intel.com>
+> 
+> Instead of accessing register directly, use newly added AQC in
+> order to blink LEDs. Introduce and utilize a new flag to prevent
+> excessive API version checking.
+> 
+> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+> ---
+>   drivers/net/ethernet/intel/i40e/i40e_adminq.c |   6 ++
+>   drivers/net/ethernet/intel/i40e/i40e_common.c | 148 ++++++++++++++++++++------
+>   drivers/net/ethernet/intel/i40e/i40e_type.h   |   1 +
+>   drivers/net/ethernet/intel/i40evf/i40e_type.h |   2 +
+>   4 files changed, 122 insertions(+), 35 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+> index ba04988..340e5a2 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+> @@ -607,6 +607,12 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
+>   			   &oem_lo);
+>   	hw->nvm.oem_ver = ((u32)oem_hi << 16) | oem_lo;
+>   
+> +	if (hw->mac.type ==  I40E_MAC_XL710 &&
 
-TIMEOUT after 1402m
+Extra space after ==
+
+> +	    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+> +	    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
+> +		hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
+> +	}
+> +
+>   	if (hw->aq.api_maj_ver > I40E_FW_API_VERSION_MAJOR) {
+>   		ret_code = I40E_ERR_FIRMWARE_API_VERSION;
+>   		goto init_adminq_free_arq;
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+> index e4e86e0..e9f30b8 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+> @@ -4849,24 +4849,38 @@ i40e_status i40e_led_get_phy(struct i40e_hw *hw, u16 *led_addr,
+>   	u16 temp_addr;
+>   	u8 port_num;
+>   	u32 i;
+> -
+> -	temp_addr = I40E_PHY_LED_PROV_REG_1;
+> -	i = rd32(hw, I40E_PFGEN_PORTNUM);
+> -	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
+> -	phy_addr = i40e_get_phy_address(hw, port_num);
+> -
+> -	for (gpio_led_port = 0; gpio_led_port < 3; gpio_led_port++,
+> -	     temp_addr++) {
+> -		status = i40e_read_phy_register_clause45(hw,
+> +	u32 reg_val_aq;
+> +
+> +	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
+> +		status =
+> +		      i40e_aq_get_phy_register(hw,
+> +					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
+> +					       I40E_PHY_COM_REG_PAGE,
+> +					       I40E_PHY_LED_PROV_REG_1,
+> +					       &reg_val_aq, NULL);
+
+Since this call doesn't exist yet, please re-order this patchset so that 
+"i40e: Add support for 'ethtool -m'" comes first.
+
+> +		if (status)
+> +			return status;
+> +		*val = (u16)reg_val_aq;
+
+The diffs below would be greatly simplified by doing the return here and 
+not shifting the rest into an else block.  Something like this and the 
+rest can be left alone:
+
+		if (!status)
+			*val = (u16)reg_val_aq;
+		return status;
+	}
 
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+> +	} else {
+> +		temp_addr = I40E_PHY_LED_PROV_REG_1;
+> +		i = rd32(hw, I40E_PFGEN_PORTNUM);
+> +		port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
+> +		phy_addr = i40e_get_phy_address(hw, port_num);
+> +
+> +		for (gpio_led_port = 0; gpio_led_port < 3; gpio_led_port++,
+> +		     temp_addr++) {
+> +			status =
+> +			 i40e_read_phy_register_clause45(hw,
+>   							 I40E_PHY_COM_REG_PAGE,
+>   							 temp_addr, phy_addr,
+>   							 &reg_val);
+> -		if (status)
+> -			return status;
+> -		*val = reg_val;
+> -		if (reg_val & I40E_PHY_LED_LINK_MODE_MASK) {
+> -			*led_addr = temp_addr;
+> -			break;
+> +			if (status)
+> +				return status;
+> +			*val = reg_val;
+> +			if (reg_val & I40E_PHY_LED_LINK_MODE_MASK) {
+> +				*led_addr = temp_addr;
+> +				break;
+> +			}
+>   		}
+>   	}
+>   	return status;
+> @@ -4884,51 +4898,115 @@ i40e_status i40e_led_set_phy(struct i40e_hw *hw, bool on,
+>   			     u16 led_addr, u32 mode)
+>   {
+>   	i40e_status status = 0;
+> -	u16 led_ctl = 0;
+> -	u16 led_reg = 0;
+> +	u32 led_ctl = 0;
+> +	u32 led_reg = 0;
+>   	u8 phy_addr = 0;
+>   	u8 port_num;
+>   	u32 i;
+>   
+> -	i = rd32(hw, I40E_PFGEN_PORTNUM);
+> -	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
+> -	phy_addr = i40e_get_phy_address(hw, port_num);
+> -	status = i40e_read_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
+> -						 led_addr, phy_addr, &led_reg);
+> +	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
+> +		status =
+> +		      i40e_aq_get_phy_register(hw,
+> +					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
+> +					       I40E_PHY_COM_REG_PAGE,
+> +					       I40E_PHY_LED_PROV_REG_1,
+> +					       &led_reg, NULL);
+> +	} else {
+> +		i = rd32(hw, I40E_PFGEN_PORTNUM);
+> +		port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
+> +		phy_addr = i40e_get_phy_address(hw, port_num);
+> +		status = i40e_read_phy_register_clause45(hw,
+> +							 I40E_PHY_COM_REG_PAGE,
+> +							 led_addr, phy_addr,
+> +							 (u16 *)&led_reg);
+> +	}
+>   	if (status)
+>   		return status;
+>   	led_ctl = led_reg;
+>   	if (led_reg & I40E_PHY_LED_LINK_MODE_MASK) {
+>   		led_reg = 0;
+> -		status = i40e_write_phy_register_clause45(hw,
+> -							  I40E_PHY_COM_REG_PAGE,
+> -							  led_addr, phy_addr,
+> -							  led_reg);
+> +		if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+> +		    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
 
-configs timed out: 47
+Why are you not using the I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE here?
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-arm64                          customconfig-0
-arm64                          customconfig-1
-arm64                          customconfig-2
-arm                            customconfig-0
-arm                            customconfig-1
-arm                            customconfig-2
-blackfin                         allmodconfig
-blackfin                         allyesconfig
-cris                             allmodconfig
-i386                           customconfig-0
-i386                           customconfig-1
-i386                           customconfig-2
-i386                            randconfig-i0
-i386                            randconfig-i1
-i386                            randconfig-n0
-i386                            randconfig-s0
-i386                            randconfig-s1
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-mips                             allmodconfig
-mips                             allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-s390                             allmodconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-tile                             allmodconfig
-tile                             allyesconfig
-x86_64                           allyesconfig
-x86_64                         customconfig-0
-x86_64                         customconfig-1
-x86_64                         customconfig-2
-x86_64                                    lkp
-xtensa                           allmodconfig
-xtensa                           allyesconfig
+> +			status = i40e_aq_set_phy_register(hw,
+> +					I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
+> +					I40E_PHY_COM_REG_PAGE,
+> +					I40E_PHY_LED_PROV_REG_1,
+> +					led_reg, NULL);
+> +		} else {
+> +			status = i40e_write_phy_register_clause45(hw,
+> +							I40E_PHY_COM_REG_PAGE,
+> +							led_addr, phy_addr,
+> +							(u16)led_reg);
+> +		}
+>   		if (status)
+>   			return status;
+>   	}
+> -	status = i40e_read_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
+> -						 led_addr, phy_addr, &led_reg);
+> +	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
+> +		status =
+> +		      i40e_aq_get_phy_register(hw,
+> +					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
+> +					       I40E_PHY_COM_REG_PAGE,
+> +					       I40E_PHY_LED_PROV_REG_1,
+> +					       &led_reg, NULL);
+> +	} else {
+> +		status = i40e_read_phy_register_clause45(hw,
+> +							 I40E_PHY_COM_REG_PAGE,
+> +							 led_addr, phy_addr,
+> +							 (u16 *)&led_reg);
+> +	}
 
-configs tested: 160
+Please abstract these read/write structures into helper functions 
+instead of repeating this if/else so many times.
 
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-x86_64                           allmodconfig
-arm                          pxa168_defconfig
-cris                             allyesconfig
-powerpc                     stx_gp3_defconfig
-x86_64                randconfig-it0-07091204
-x86_64                randconfig-it0-07091347
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                 randconfig-g0-07091317
-x86_64                 randconfig-x010-201727
-x86_64                 randconfig-x019-201727
-x86_64                 randconfig-x015-201727
-x86_64                 randconfig-x012-201727
-x86_64                 randconfig-x014-201727
-x86_64                 randconfig-x016-201727
-x86_64                 randconfig-x017-201727
-x86_64                 randconfig-x018-201727
-x86_64                 randconfig-x013-201727
-x86_64                 randconfig-x011-201727
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                   randconfig-a0-07071215
-i386                   randconfig-a1-07071215
-x86_64                 randconfig-s0-07091313
-x86_64                 randconfig-s1-07091313
-x86_64                 randconfig-s2-07091313
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-blackfin                         alldefconfig
-m32r                        oaks32r_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                 randconfig-i0-07061134
-i386                   randconfig-b0-07091049
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-x012-201728
-i386                   randconfig-x018-201728
-i386                   randconfig-x016-201728
-i386                   randconfig-x017-201728
-i386                   randconfig-x013-201728
-i386                   randconfig-x010-201728
-i386                   randconfig-x019-201728
-i386                   randconfig-x014-201728
-i386                   randconfig-x015-201728
-i386                   randconfig-x011-201728
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-mips                        qi_lb60_defconfig
-sh                        dreamcast_defconfig
-x86_64                           alldefconfig
-m68k                                defconfig
-x86_64                randconfig-ne0-07091150
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-x86_64                 randconfig-x006-201727
-x86_64                 randconfig-x001-201727
-x86_64                 randconfig-x007-201727
-x86_64                 randconfig-x005-201727
-x86_64                 randconfig-x004-201727
-x86_64                 randconfig-x000-201727
-x86_64                 randconfig-x002-201727
-x86_64                 randconfig-x008-201727
-x86_64                 randconfig-x003-201727
-x86_64                 randconfig-x009-201727
-i386                 randconfig-x079-07060935
-i386                 randconfig-x073-07060935
-i386                 randconfig-x070-07060935
-i386                 randconfig-x077-07060935
-i386                 randconfig-x076-07060935
-i386                 randconfig-x078-07060935
-i386                 randconfig-x072-07060935
-i386                 randconfig-x074-07060935
-i386                 randconfig-x071-07060935
-i386                 randconfig-x075-07060935
-powerpc                    adder875_defconfig
-powerpc                     sequoia_defconfig
-sh                               allmodconfig
-i386                 randconfig-x000-07060929
-i386                 randconfig-x001-07060929
-i386                 randconfig-x002-07060929
-i386                 randconfig-x003-07060929
-i386                 randconfig-x004-07060929
-i386                 randconfig-x005-07060929
-i386                 randconfig-x006-07060929
-i386                 randconfig-x007-07060929
-i386                 randconfig-x008-07060929
-i386                 randconfig-x009-07060929
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x0-07091236
-i386                   randconfig-x0-07091348
-
-Thanks,
-Fengguang
+>   	if (status)
+>   		goto restore_config;
+>   	if (on)
+>   		led_reg = I40E_PHY_LED_MANUAL_ON;
+>   	else
+>   		led_reg = 0;
+> -	status = i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
+> -						  led_addr, phy_addr, led_reg);
+> +
+> +	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
+> +		status =
+> +		      i40e_aq_set_phy_register(hw,
+> +					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
+> +					       I40E_PHY_COM_REG_PAGE,
+> +					       I40E_PHY_LED_PROV_REG_1,
+> +					       led_reg, NULL);
+> +	} else {
+> +		status =
+> +		    i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
+> +						     led_addr, phy_addr,
+> +						     (u16)led_reg);
+> +	}
+>   	if (status)
+>   		goto restore_config;
+>   	if (mode & I40E_PHY_LED_MODE_ORIG) {
+>   		led_ctl = (mode & I40E_PHY_LED_MODE_MASK);
+> -		status = i40e_write_phy_register_clause45(hw,
+> -						 I40E_PHY_COM_REG_PAGE,
+> -						 led_addr, phy_addr, led_ctl);
+> +		if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
+> +			status = i40e_aq_set_phy_register(hw,
+> +					I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
+> +					I40E_PHY_COM_REG_PAGE,
+> +					I40E_PHY_LED_PROV_REG_1,
+> +					led_ctl, NULL);
+> +		} else {
+> +			status = i40e_write_phy_register_clause45(hw,
+> +							 I40E_PHY_COM_REG_PAGE,
+> +							 led_addr, phy_addr,
+> +							 (u16)led_ctl);
+> +		}
+>   	}
+>   	return status;
+>   restore_config:
+> -	status = i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
+> -						  led_addr, phy_addr, led_ctl);
+> +	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
+> +		status =
+> +		      i40e_aq_set_phy_register(hw,
+> +					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
+> +					       I40E_PHY_COM_REG_PAGE,
+> +					       I40E_PHY_LED_PROV_REG_1,
+> +					       led_ctl, NULL);
+> +	} else {
+> +		status =
+> +			i40e_write_phy_register_clause45(hw,
+> +							 I40E_PHY_COM_REG_PAGE,
+> +							 led_addr, phy_addr,
+> +							 (u16)led_ctl);
+> +	}
+>   	return status;
+>   }
+>   
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+> index fd4bbdd..78fda11 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+> @@ -598,6 +598,7 @@ struct i40e_hw {
+>   	struct i40e_dcbx_config desired_dcbx_config; /* CEE Desired Cfg */
+>   
+>   #define I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE BIT_ULL(0)
+> +#define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
+>   	u64 flags;
+>   
+>   	/* debug mask */
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+> index 2ea919d..412a32c 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
+> +++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+> @@ -556,6 +556,8 @@ struct i40e_hw {
+>   	/* LLDP/DCBX Status */
+>   	u16 dcbx_status;
+>   
+> +#define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
+> +
+>   	/* DCBX info */
+>   	struct i40e_dcbx_config local_dcbx_config; /* Oper/Local Cfg */
+>   	struct i40e_dcbx_config remote_dcbx_config; /* Peer Cfg */
+> 
