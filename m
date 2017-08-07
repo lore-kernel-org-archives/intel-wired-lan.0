@@ -1,10 +1,11 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon, 7 Aug 2017 10:18:40 -0700
-Subject: [Intel-wired-lan] [next PATCH S78-V4 01/12] i40e: use admin
- queue for setting LEDs behavior
-In-Reply-To: <20170804135222.46684-1-alice.michael@intel.com>
+Date: Mon, 7 Aug 2017 10:18:49 -0700
+Subject: [Intel-wired-lan] [next PATCH S78-V4 02/12] i40e: Fix reporting
+ of supported link modes
+In-Reply-To: <20170804135222.46684-2-alice.michael@intel.com>
 References: <20170804135222.46684-1-alice.michael@intel.com>
-Message-ID: <c79a0ea6-ff95-8107-6f60-933de6091efc@oracle.com>
+ <20170804135222.46684-2-alice.michael@intel.com>
+Message-ID: <d035a7b9-742d-cd78-e1a8-22b7c8ba5f42@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,279 +13,168 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 8/4/2017 6:52 AM, Alice Michael wrote:
-> From: Mariusz Stachura <mariusz.stachura@intel.com>
+> From: Filip Sadowski <filip.sadowski@intel.com>
 > 
-> Instead of accessing register directly, use newly added AQC in
-> order to blink LEDs. Introduce and utilize a new flag to prevent
-> excessive API version checking.
+> This patch fixes incorrect reporting of supported link modes on some NICs.
 > 
-> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
 > ---
->   drivers/net/ethernet/intel/i40e/i40e_adminq.c |   6 ++
->   drivers/net/ethernet/intel/i40e/i40e_common.c | 148 ++++++++++++++++++++------
->   drivers/net/ethernet/intel/i40e/i40e_type.h   |   1 +
->   drivers/net/ethernet/intel/i40evf/i40e_type.h |   2 +
->   4 files changed, 122 insertions(+), 35 deletions(-)
+>   drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 20 ++++++++++++++++++--
+>   drivers/net/ethernet/intel/i40e/i40e_common.c       |  8 +++++++-
+>   drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 20 ++++++++++++++++++--
+>   3 files changed, 43 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-> index ba04988..340e5a2 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-> @@ -607,6 +607,12 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
->   			   &oem_lo);
->   	hw->nvm.oem_ver = ((u32)oem_hi << 16) | oem_lo;
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> index e2a9ec8..5d0291c 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> @@ -1734,6 +1734,8 @@ enum i40e_aq_phy_type {
+>   	I40E_PHY_TYPE_10GBASE_CR1_CU		= 0xB,
+>   	I40E_PHY_TYPE_10GBASE_AOC		= 0xC,
+>   	I40E_PHY_TYPE_40GBASE_AOC		= 0xD,
+> +	I40E_PHY_TYPE_UNRECOGNIZED		= 0xE,
+> +	I40E_PHY_TYPE_UNSUPPORTED		= 0xF,
+>   	I40E_PHY_TYPE_100BASE_TX		= 0x11,
+>   	I40E_PHY_TYPE_1000BASE_T		= 0x12,
+>   	I40E_PHY_TYPE_10GBASE_T			= 0x13,
+> @@ -1752,6 +1754,8 @@ enum i40e_aq_phy_type {
+>   	I40E_PHY_TYPE_25GBASE_CR		= 0x20,
+>   	I40E_PHY_TYPE_25GBASE_SR		= 0x21,
+>   	I40E_PHY_TYPE_25GBASE_LR		= 0x22,
+> +	I40E_PHY_TYPE_EMPTY			= 0xFE,
+> +	I40E_PHY_TYPE_DEFAULT			= 0xFF,
+>   	I40E_PHY_TYPE_MAX
+>   };
 >   
-> +	if (hw->mac.type ==  I40E_MAC_XL710 &&
+> @@ -1942,19 +1946,31 @@ struct i40e_aqc_get_link_status {
+>   #define I40E_AQ_25G_SERDES_UCODE_ERR	0X04
+>   #define I40E_AQ_25G_NIMB_UCODE_ERR	0X05
+>   	u8	loopback; /* use defines from i40e_aqc_set_lb_mode */
+> +/* Since firmware API 1.7 loopback field keeps power class info as well */
+> +#define I40E_AQ_LOOPBACK_MASK		0x07
+> +#define I40E_AQ_PWR_CLASS_SHIFT_LB	6
+> +#define I40E_AQ_PWR_CLASS_MASK_LB	(0x03 << I40E_AQ_PWR_CLASS_SHIFT_LB)
+>   	__le16	max_frame_size;
+>   	u8	config;
+>   #define I40E_AQ_CONFIG_FEC_KR_ENA	0x01
+>   #define I40E_AQ_CONFIG_FEC_RS_ENA	0x02
+>   #define I40E_AQ_CONFIG_CRC_ENA		0x04
+>   #define I40E_AQ_CONFIG_PACING_MASK	0x78
+> -	u8	power_desc;
+> +	union {
+> +		struct {
+> +			u8	power_desc;
+>   #define I40E_AQ_LINK_POWER_CLASS_1	0x00
+>   #define I40E_AQ_LINK_POWER_CLASS_2	0x01
+>   #define I40E_AQ_LINK_POWER_CLASS_3	0x02
+>   #define I40E_AQ_LINK_POWER_CLASS_4	0x03
+>   #define I40E_AQ_PWR_CLASS_MASK		0x03
+> -	u8	reserved[4];
+> +			u8	reserved[4];
+> +		};
+> +		struct {
+> +			u8	link_type[4];
 
-Extra space after ==
+Wait, is this a 32-bit value on an odd-byte alignment?  No, no, no... we 
+worked hard early on to not let the HW folks do this.
 
-> +	    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
-> +	    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
-> +		hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
-> +	}
-> +
->   	if (hw->aq.api_maj_ver > I40E_FW_API_VERSION_MAJOR) {
->   		ret_code = I40E_ERR_FIRMWARE_API_VERSION;
->   		goto init_adminq_free_arq;
+> +			u8	link_type_ext;
+> +		};
+> +	};
+>   };
+>   
+>   I40E_CHECK_CMD_LENGTH(i40e_aqc_get_link_status);
 > diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> index e4e86e0..e9f30b8 100644
+> index e9f30b8..c0aeda7 100644
 > --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
 > +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> @@ -4849,24 +4849,38 @@ i40e_status i40e_led_get_phy(struct i40e_hw *hw, u16 *led_addr,
->   	u16 temp_addr;
->   	u8 port_num;
->   	u32 i;
-> -
-> -	temp_addr = I40E_PHY_LED_PROV_REG_1;
-> -	i = rd32(hw, I40E_PFGEN_PORTNUM);
-> -	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
-> -	phy_addr = i40e_get_phy_address(hw, port_num);
-> -
-> -	for (gpio_led_port = 0; gpio_led_port < 3; gpio_led_port++,
-> -	     temp_addr++) {
-> -		status = i40e_read_phy_register_clause45(hw,
-> +	u32 reg_val_aq;
-> +
-> +	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-> +		status =
-> +		      i40e_aq_get_phy_register(hw,
-> +					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-> +					       I40E_PHY_COM_REG_PAGE,
-> +					       I40E_PHY_LED_PROV_REG_1,
-> +					       &reg_val_aq, NULL);
-
-Since this call doesn't exist yet, please re-order this patchset so that 
-"i40e: Add support for 'ethtool -m'" comes first.
-
-> +		if (status)
-> +			return status;
-> +		*val = (u16)reg_val_aq;
-
-The diffs below would be greatly simplified by doing the return here and 
-not shifting the rest into an else block.  Something like this and the 
-rest can be left alone:
-
-		if (!status)
-			*val = (u16)reg_val_aq;
-		return status;
-	}
-
-
-> +	} else {
-> +		temp_addr = I40E_PHY_LED_PROV_REG_1;
-> +		i = rd32(hw, I40E_PFGEN_PORTNUM);
-> +		port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
-> +		phy_addr = i40e_get_phy_address(hw, port_num);
-> +
-> +		for (gpio_led_port = 0; gpio_led_port < 3; gpio_led_port++,
-> +		     temp_addr++) {
-> +			status =
-> +			 i40e_read_phy_register_clause45(hw,
->   							 I40E_PHY_COM_REG_PAGE,
->   							 temp_addr, phy_addr,
->   							 &reg_val);
-> -		if (status)
-> -			return status;
-> -		*val = reg_val;
-> -		if (reg_val & I40E_PHY_LED_LINK_MODE_MASK) {
-> -			*led_addr = temp_addr;
-> -			break;
-> +			if (status)
-> +				return status;
-> +			*val = reg_val;
-> +			if (reg_val & I40E_PHY_LED_LINK_MODE_MASK) {
-> +				*led_addr = temp_addr;
-> +				break;
-> +			}
->   		}
->   	}
->   	return status;
-> @@ -4884,51 +4898,115 @@ i40e_status i40e_led_set_phy(struct i40e_hw *hw, bool on,
->   			     u16 led_addr, u32 mode)
->   {
->   	i40e_status status = 0;
-> -	u16 led_ctl = 0;
-> -	u16 led_reg = 0;
-> +	u32 led_ctl = 0;
-> +	u32 led_reg = 0;
->   	u8 phy_addr = 0;
->   	u8 port_num;
->   	u32 i;
+> @@ -1826,7 +1826,7 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
+>   	hw_link_info->fec_info = resp->config & (I40E_AQ_CONFIG_FEC_KR_ENA |
+>   						 I40E_AQ_CONFIG_FEC_RS_ENA);
+>   	hw_link_info->ext_info = resp->ext_info;
+> -	hw_link_info->loopback = resp->loopback;
+> +	hw_link_info->loopback = resp->loopback & I40E_AQ_LOOPBACK_MASK;
+>   	hw_link_info->max_frame_size = le16_to_cpu(resp->max_frame_size);
+>   	hw_link_info->pacing = resp->config & I40E_AQ_CONFIG_PACING_MASK;
 >   
-> -	i = rd32(hw, I40E_PFGEN_PORTNUM);
-> -	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
-> -	phy_addr = i40e_get_phy_address(hw, port_num);
-> -	status = i40e_read_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
-> -						 led_addr, phy_addr, &led_reg);
-> +	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-> +		status =
-> +		      i40e_aq_get_phy_register(hw,
-> +					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-> +					       I40E_PHY_COM_REG_PAGE,
-> +					       I40E_PHY_LED_PROV_REG_1,
-> +					       &led_reg, NULL);
-> +	} else {
-> +		i = rd32(hw, I40E_PFGEN_PORTNUM);
-> +		port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
-> +		phy_addr = i40e_get_phy_address(hw, port_num);
-> +		status = i40e_read_phy_register_clause45(hw,
-> +							 I40E_PHY_COM_REG_PAGE,
-> +							 led_addr, phy_addr,
-> +							 (u16 *)&led_reg);
+> @@ -1857,6 +1857,12 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
+>   	     hw->aq.fw_min_ver < 40)) && hw_link_info->phy_type == 0xE)
+>   		hw_link_info->phy_type = I40E_PHY_TYPE_10GBASE_SFPP_CU;
+>   
+> +	if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+> +	    hw->aq.api_min_ver >= 7) {
+> +		hw->phy.phy_types = le32_to_cpu(*(__le32 *)resp->link_type);
+
+Reading a 32-bit word from an odd byte boundary will cause a non-x86 
+machine (e.g. SPARC) a bit of heartburn, kernel log messages, and 
+possibly a few customer complaints.  You're going to need a memcpy() to 
+get it out of the funky memory address, then you can add in the byteswap.
+
+		u32 tmp;
+		memcpy(&tmp, &resp->link_type, sizeof(tmp));
+		hw->phy.phy_types = le32_to_cpu(tmp);
+
+
+> +		hw->phy.phy_types |= ((u64)resp->link_type_ext << 32);
 > +	}
->   	if (status)
->   		return status;
->   	led_ctl = led_reg;
->   	if (led_reg & I40E_PHY_LED_LINK_MODE_MASK) {
->   		led_reg = 0;
-> -		status = i40e_write_phy_register_clause45(hw,
-> -							  I40E_PHY_COM_REG_PAGE,
-> -							  led_addr, phy_addr,
-> -							  led_reg);
-> +		if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
-> +		    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
-
-Why are you not using the I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE here?
-
-> +			status = i40e_aq_set_phy_register(hw,
-> +					I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-> +					I40E_PHY_COM_REG_PAGE,
-> +					I40E_PHY_LED_PROV_REG_1,
-> +					led_reg, NULL);
-> +		} else {
-> +			status = i40e_write_phy_register_clause45(hw,
-> +							I40E_PHY_COM_REG_PAGE,
-> +							led_addr, phy_addr,
-> +							(u16)led_reg);
-> +		}
->   		if (status)
->   			return status;
->   	}
-> -	status = i40e_read_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
-> -						 led_addr, phy_addr, &led_reg);
-> +	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-> +		status =
-> +		      i40e_aq_get_phy_register(hw,
-> +					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-> +					       I40E_PHY_COM_REG_PAGE,
-> +					       I40E_PHY_LED_PROV_REG_1,
-> +					       &led_reg, NULL);
-> +	} else {
-> +		status = i40e_read_phy_register_clause45(hw,
-> +							 I40E_PHY_COM_REG_PAGE,
-> +							 led_addr, phy_addr,
-> +							 (u16 *)&led_reg);
-> +	}
-
-Please abstract these read/write structures into helper functions 
-instead of repeating this if/else so many times.
-
->   	if (status)
->   		goto restore_config;
->   	if (on)
->   		led_reg = I40E_PHY_LED_MANUAL_ON;
->   	else
->   		led_reg = 0;
-> -	status = i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
-> -						  led_addr, phy_addr, led_reg);
 > +
-> +	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-> +		status =
-> +		      i40e_aq_set_phy_register(hw,
-> +					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-> +					       I40E_PHY_COM_REG_PAGE,
-> +					       I40E_PHY_LED_PROV_REG_1,
-> +					       led_reg, NULL);
-> +	} else {
-> +		status =
-> +		    i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
-> +						     led_addr, phy_addr,
-> +						     (u16)led_reg);
-> +	}
->   	if (status)
->   		goto restore_config;
->   	if (mode & I40E_PHY_LED_MODE_ORIG) {
->   		led_ctl = (mode & I40E_PHY_LED_MODE_MASK);
-> -		status = i40e_write_phy_register_clause45(hw,
-> -						 I40E_PHY_COM_REG_PAGE,
-> -						 led_addr, phy_addr, led_ctl);
-> +		if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-> +			status = i40e_aq_set_phy_register(hw,
-> +					I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-> +					I40E_PHY_COM_REG_PAGE,
-> +					I40E_PHY_LED_PROV_REG_1,
-> +					led_ctl, NULL);
-> +		} else {
-> +			status = i40e_write_phy_register_clause45(hw,
-> +							 I40E_PHY_COM_REG_PAGE,
-> +							 led_addr, phy_addr,
-> +							 (u16)led_ctl);
-> +		}
->   	}
->   	return status;
->   restore_config:
-> -	status = i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
-> -						  led_addr, phy_addr, led_ctl);
-> +	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
-> +		status =
-> +		      i40e_aq_set_phy_register(hw,
-> +					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
-> +					       I40E_PHY_COM_REG_PAGE,
-> +					       I40E_PHY_LED_PROV_REG_1,
-> +					       led_ctl, NULL);
-> +	} else {
-> +		status =
-> +			i40e_write_phy_register_clause45(hw,
-> +							 I40E_PHY_COM_REG_PAGE,
-> +							 led_addr, phy_addr,
-> +							 (u16)led_ctl);
-> +	}
->   	return status;
->   }
+>   	/* save link status information */
+>   	if (link)
+>   		*link = *hw_link_info;
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+> index f9f48d1..709d114 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+> +++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+> @@ -1730,6 +1730,8 @@ enum i40e_aq_phy_type {
+>   	I40E_PHY_TYPE_10GBASE_CR1_CU		= 0xB,
+>   	I40E_PHY_TYPE_10GBASE_AOC		= 0xC,
+>   	I40E_PHY_TYPE_40GBASE_AOC		= 0xD,
+> +	I40E_PHY_TYPE_UNRECOGNIZED		= 0xE,
+> +	I40E_PHY_TYPE_UNSUPPORTED		= 0xF,
+>   	I40E_PHY_TYPE_100BASE_TX		= 0x11,
+>   	I40E_PHY_TYPE_1000BASE_T		= 0x12,
+>   	I40E_PHY_TYPE_10GBASE_T			= 0x13,
+> @@ -1748,6 +1750,8 @@ enum i40e_aq_phy_type {
+>   	I40E_PHY_TYPE_25GBASE_CR		= 0x20,
+>   	I40E_PHY_TYPE_25GBASE_SR		= 0x21,
+>   	I40E_PHY_TYPE_25GBASE_LR		= 0x22,
+> +	I40E_PHY_TYPE_EMPTY			= 0xFE,
+> +	I40E_PHY_TYPE_DEFAULT			= 0xFF,
+>   	I40E_PHY_TYPE_MAX
+>   };
 >   
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-> index fd4bbdd..78fda11 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-> @@ -598,6 +598,7 @@ struct i40e_hw {
->   	struct i40e_dcbx_config desired_dcbx_config; /* CEE Desired Cfg */
+> @@ -1938,19 +1942,31 @@ struct i40e_aqc_get_link_status {
+>   #define I40E_AQ_25G_SERDES_UCODE_ERR	0X04
+>   #define I40E_AQ_25G_NIMB_UCODE_ERR	0X05
+>   	u8	loopback; /* use defines from i40e_aqc_set_lb_mode */
+> +/* Since firmware API 1.7 loopback field keeps power class info as well */
+> +#define I40E_AQ_LOOPBACK_MASK		0x07
+> +#define I40E_AQ_PWR_CLASS_SHIFT_LB	6
+> +#define I40E_AQ_PWR_CLASS_MASK_LB	(0x03 << I40E_AQ_PWR_CLASS_SHIFT_LB)
+>   	__le16	max_frame_size;
+>   	u8	config;
+>   #define I40E_AQ_CONFIG_FEC_KR_ENA	0x01
+>   #define I40E_AQ_CONFIG_FEC_RS_ENA	0x02
+>   #define I40E_AQ_CONFIG_CRC_ENA		0x04
+>   #define I40E_AQ_CONFIG_PACING_MASK	0x78
+> -	u8	power_desc;
+> +	union {
+> +		struct {
+> +			u8	power_desc;
+>   #define I40E_AQ_LINK_POWER_CLASS_1	0x00
+>   #define I40E_AQ_LINK_POWER_CLASS_2	0x01
+>   #define I40E_AQ_LINK_POWER_CLASS_3	0x02
+>   #define I40E_AQ_LINK_POWER_CLASS_4	0x03
+>   #define I40E_AQ_PWR_CLASS_MASK		0x03
+> -	u8	reserved[4];
+> +			u8	reserved[4];
+> +		};
+> +		struct {
+> +			u8	link_type[4];
+> +			u8	link_type_ext;
+> +		};
+> +	};
+>   };
 >   
->   #define I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE BIT_ULL(0)
-> +#define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
->   	u64 flags;
->   
->   	/* debug mask */
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-> index 2ea919d..412a32c 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-> +++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-> @@ -556,6 +556,8 @@ struct i40e_hw {
->   	/* LLDP/DCBX Status */
->   	u16 dcbx_status;
->   
-> +#define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
-> +
->   	/* DCBX info */
->   	struct i40e_dcbx_config local_dcbx_config; /* Oper/Local Cfg */
->   	struct i40e_dcbx_config remote_dcbx_config; /* Peer Cfg */
+>   I40E_CHECK_CMD_LENGTH(i40e_aqc_get_link_status);
 > 
