@@ -1,347 +1,189 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon,  7 Aug 2017 10:28:35 -0400
-Subject: [Intel-wired-lan] [next PATCH S78-V6 08/12] i40evf: Enable VF to
-	request an alternate queue allocation
+Date: Mon,  7 Aug 2017 10:28:39 -0400
+Subject: [Intel-wired-lan] [next PATCH S78-V6 12/12] i40e: Stop dropping
+	802.1ad tags (eth proto 0x88a8
 In-Reply-To: <20170807142839.60975-1-alice.michael@intel.com>
 References: <20170807142839.60975-1-alice.michael@intel.com>
-Message-ID: <20170807142839.60975-9-alice.michael@intel.com>
+Message-ID: <20170807142839.60975-13-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Scott Peterson <scott.d.peterson@intel.com>
 
-Currently the VF gets a default number of allocated queues from HW on
-init and it could choose to enable or disable those allocated queues.
-This makes it such that the VF can request more or less underlying
-allocated queues from the PF.
+Enable i40e to pass traffic with VLAN tags using the 802.1ad ethernet
+protocol ID (0x88a8).
 
-First the VF negotiates the number of queues it wants that can be
-supported by the PF and if successful asks for a reset.  During reset
-the PF will reallocate the HW queues for the VF and will then remap the
-new queues.
+This requires NIC firmware providing version 1.7 of the API. With
+older NIC firmware 802.1ad tagged packets will continue to be dropped.
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+No VLAN offloads nor RSS are supported for 802.1ad VLANs.
+
+Signed-off-by: Scott Peterson <scott.d.peterson@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  4 +
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 38 ++++++++-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 94 ++++++++++++++++++++--
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 44 +++++++++-
- 4 files changed, 173 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c       |  6 ++++++
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 17 ++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_common.c       |  6 +++++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c         |  7 +++++++
+ drivers/net/ethernet/intel/i40e/i40e_type.h         |  6 ++++++
+ drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 17 ++++++++++++++++-
+ drivers/net/ethernet/intel/i40evf/i40e_type.h       |  6 ++++++
+ 7 files changed, 62 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index a1af9b1..de0af52 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -102,6 +102,7 @@ struct i40e_vsi {
- #define I40E_TX_CTXTDESC(R, i) \
- 	(&(((struct i40e_tx_context_desc *)((R)->desc))[i]))
- #define MAX_QUEUES 16
-+#define I40EVF_MAX_REQ_QUEUES 4
- 
- #define I40EVF_HKEY_ARRAY_SIZE ((I40E_VFQF_HKEY_MAX_INDEX + 1) * 4)
- #define I40EVF_HLUT_ARRAY_SIZE ((I40E_VFQF_HLUT_MAX_INDEX + 1) * 4)
-@@ -200,6 +201,7 @@ struct i40evf_adapter {
- 	struct list_head vlan_filter_list;
- 	char misc_vector_name[IFNAMSIZ + 9];
- 	int num_active_queues;
-+	int num_req_queues;
- 
- 	/* TX */
- 	struct i40e_ring *tx_rings;
-@@ -235,6 +237,7 @@ struct i40evf_adapter {
- #define I40EVF_FLAG_PROMISC_ON			BIT(13)
- #define I40EVF_FLAG_ALLMULTI_ON			BIT(14)
- #define I40EVF_FLAG_LEGACY_RX			BIT(15)
-+#define I40EVF_FLAG_REINIT_ITR_NEEDED		BIT(16)
- /* duplicates for common code */
- #define I40E_FLAG_DCB_ENABLED			0
- #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
-@@ -349,6 +352,7 @@ void i40evf_deconfigure_queues(struct i40evf_adapter *adapter);
- void i40evf_enable_queues(struct i40evf_adapter *adapter);
- void i40evf_disable_queues(struct i40evf_adapter *adapter);
- void i40evf_map_queues(struct i40evf_adapter *adapter);
-+int i40evf_request_queues(struct i40evf_adapter *adapter, int num);
- void i40evf_add_ether_addrs(struct i40evf_adapter *adapter);
- void i40evf_del_ether_addrs(struct i40evf_adapter *adapter);
- void i40evf_add_vlans(struct i40evf_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index 65874d6..da006fa 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -669,7 +669,7 @@ static void i40evf_get_channels(struct net_device *netdev,
- 	struct i40evf_adapter *adapter = netdev_priv(netdev);
- 
- 	/* Report maximum channels */
--	ch->max_combined = adapter->num_active_queues;
-+	ch->max_combined = I40EVF_MAX_REQ_QUEUES;
- 
- 	ch->max_other = NONQ_VECS;
- 	ch->other_count = NONQ_VECS;
-@@ -678,6 +678,41 @@ static void i40evf_get_channels(struct net_device *netdev,
- }
- 
- /**
-+ * i40evf_set_channels: set the new channel count
-+ * @netdev: network interface device structure
-+ * @ch: channel information structure
-+ *
-+ * Negotiate a new number of channels with the PF then do a reset.  During
-+ * reset we'll realloc queues and fix the RSS table.  Returns 0 on success,
-+ * negative on failure.
-+ **/
-+static int i40evf_set_channels(struct net_device *netdev,
-+			       struct ethtool_channels *ch)
-+{
-+	struct i40evf_adapter *adapter = netdev_priv(netdev);
-+	int num_req = ch->combined_count;
-+
-+	if (num_req != adapter->num_active_queues &&
-+	    !(adapter->vf_res->vf_cap_flags &
-+	      VIRTCHNL_VF_OFFLOAD_REQ_QUEUES)) {
-+		dev_info(&adapter->pdev->dev, "PF is not capable of queue negotiation.\n");
-+		return -EINVAL;
-+	}
-+
-+	/* All of these should have already been checked by ethtool before this
-+	 * even gets to us, but just to be sure.
-+	 */
-+	if (num_req <= 0 || num_req > I40EVF_MAX_REQ_QUEUES)
-+		return -EINVAL;
-+
-+	if (ch->rx_count || ch->tx_count || ch->other_count != NONQ_VECS)
-+		return -EINVAL;
-+
-+	adapter->num_req_queues = num_req;
-+	return i40evf_request_queues(adapter, num_req);
-+}
-+
-+/**
-  * i40evf_get_rxfh_key_size - get the RSS hash key size
-  * @netdev: network interface device structure
-  *
-@@ -785,6 +820,7 @@ static const struct ethtool_ops i40evf_ethtool_ops = {
- 	.get_rxfh		= i40evf_get_rxfh,
- 	.set_rxfh		= i40evf_set_rxfh,
- 	.get_channels		= i40evf_get_channels,
-+	.set_channels		= i40evf_set_channels,
- 	.get_rxfh_key_size	= i40evf_get_rxfh_key_size,
- 	.get_link_ksettings	= i40evf_get_link_ksettings,
- };
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index a216fd2..a803c6b 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1189,9 +1189,18 @@ static int i40evf_alloc_queues(struct i40evf_adapter *adapter)
- {
- 	int i, num_active_queues;
- 
--	num_active_queues = min_t(int,
--				  adapter->vsi_res->num_queue_pairs,
--				  (int)(num_online_cpus()));
-+	/* If we're in reset reallocating queues we don't actually know yet for
-+	 * certain the PF gave us the number of queues we asked for but we'll
-+	 * assume it did.  Once basic reset is finished we'll confirm once we
-+	 * start negotiating config with PF.
-+	 */
-+	if (adapter->num_req_queues)
-+		num_active_queues = adapter->num_req_queues;
-+	else
-+		num_active_queues = min_t(int,
-+					  adapter->vsi_res->num_queue_pairs,
-+					  (int)(num_online_cpus()));
-+
- 
- 	adapter->tx_rings = kcalloc(num_active_queues,
- 				    sizeof(struct i40e_ring), GFP_KERNEL);
-@@ -1540,6 +1549,48 @@ static void i40evf_free_rss(struct i40evf_adapter *adapter)
- }
- 
- /**
-+ * i40evf_reinit_interrupt_scheme - Reallocate queues and vectors
-+ * @adapter: board private structure
-+ *
-+ * Returns 0 on success, negative on failure
-+ **/
-+static int i40evf_reinit_interrupt_scheme(struct i40evf_adapter *adapter)
-+{
-+	struct net_device *netdev = adapter->netdev;
-+	int err;
-+
-+	if (netif_running(netdev))
-+		i40evf_free_traffic_irqs(adapter);
-+	i40evf_free_misc_irq(adapter);
-+	i40evf_reset_interrupt_capability(adapter);
-+	i40evf_free_q_vectors(adapter);
-+	i40evf_free_queues(adapter);
-+
-+	err =  i40evf_init_interrupt_scheme(adapter);
-+	if (err)
-+		goto err;
-+
-+	netif_tx_stop_all_queues(netdev);
-+
-+	err = i40evf_request_misc_irq(adapter);
-+	if (err)
-+		goto err;
-+
-+	set_bit(__I40E_VSI_DOWN, adapter->vsi.state);
-+
-+	err = i40evf_map_rings_to_vectors(adapter);
-+	if (err)
-+		goto err;
-+
-+	if (RSS_AQ(adapter))
-+		adapter->aq_required |= I40EVF_FLAG_AQ_CONFIGURE_RSS;
-+	else
-+		err = i40evf_init_rss(adapter);
-+err:
-+	return err;
-+}
-+
-+/**
-  * i40evf_watchdog_timer - Periodic call-back timer
-  * @data: pointer to adapter disguised as unsigned long
-  **/
-@@ -1885,8 +1936,15 @@ static void i40evf_reset_task(struct work_struct *work)
- 	if (err)
- 		dev_info(&adapter->pdev->dev, "Failed to init adminq: %d\n",
- 			 err);
-+	adapter->aq_required = 0;
- 
--	adapter->aq_required = I40EVF_FLAG_AQ_GET_CONFIG;
-+	if (adapter->flags & I40EVF_FLAG_REINIT_ITR_NEEDED) {
-+		err = i40evf_reinit_interrupt_scheme(adapter);
-+		if (err)
-+			goto reset_err;
-+	}
-+
-+	adapter->aq_required |= I40EVF_FLAG_AQ_GET_CONFIG;
- 	adapter->aq_required |= I40EVF_FLAG_AQ_MAP_VECTORS;
- 
- 	/* re-add all MAC filters */
-@@ -1916,6 +1974,15 @@ static void i40evf_reset_task(struct work_struct *work)
- 		if (err)
- 			goto reset_err;
- 
-+		if (adapter->flags & I40EVF_FLAG_REINIT_ITR_NEEDED) {
-+			err = i40evf_request_traffic_irqs(adapter,
-+							  netdev->name);
-+			if (err)
-+				goto reset_err;
-+
-+			adapter->flags &= ~I40EVF_FLAG_REINIT_ITR_NEEDED;
-+		}
-+
- 		i40evf_configure(adapter);
- 
- 		i40evf_up_complete(adapter);
-@@ -2432,9 +2499,9 @@ static int i40evf_check_reset_complete(struct i40e_hw *hw)
- int i40evf_process_config(struct i40evf_adapter *adapter)
- {
- 	struct virtchnl_vf_resource *vfres = adapter->vf_res;
-+	int i, num_req_queues = adapter->num_req_queues;
- 	struct net_device *netdev = adapter->netdev;
- 	struct i40e_vsi *vsi = &adapter->vsi;
--	int i;
- 	netdev_features_t hw_enc_features;
- 	netdev_features_t hw_features;
- 
-@@ -2448,6 +2515,23 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 		return -ENODEV;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index 340e5a2..8553f2b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -613,6 +613,12 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
+ 		hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
  	}
  
-+	if (num_req_queues &&
-+	    num_req_queues != adapter->vsi_res->num_queue_pairs) {
-+		/* Problem.  The PF gave us fewer queues than what we had
-+		 * negotiated in our request.  Need a reset to see if we can't
-+		 * get back to a working state.
-+		 */
-+		dev_err(&adapter->pdev->dev,
-+			"Requested %d queues, but PF only gave us %d.\n",
-+			num_req_queues,
-+			adapter->vsi_res->num_queue_pairs);
-+		adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
-+		adapter->num_req_queues = adapter->vsi_res->num_queue_pairs;
-+		i40evf_schedule_reset(adapter);
-+		return -ENODEV;
-+	}
-+	adapter->num_req_queues = 0;
++	/* The ability to RX (not drop) 802.1ad frames was added in API 1.7 */
++	if ((hw->aq.api_maj_ver > 1) ||
++	    ((hw->aq.api_maj_ver == 1) &&
++	     (hw->aq.api_min_ver >= 7)))
++		hw->flags |= I40E_HW_FLAG_802_1AD_CAPABLE;
 +
- 	hw_enc_features = NETIF_F_SG			|
- 			  NETIF_F_IP_CSUM		|
- 			  NETIF_F_IPV6_CSUM		|
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 2bb0fe0..2bb81c3 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -160,7 +160,8 @@ int i40evf_send_vf_config_msg(struct i40evf_adapter *adapter)
- 	       VIRTCHNL_VF_OFFLOAD_WB_ON_ITR |
- 	       VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2 |
- 	       VIRTCHNL_VF_OFFLOAD_ENCAP |
--	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM;
-+	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM |
-+	       VIRTCHNL_VF_OFFLOAD_REQ_QUEUES;
+ 	if (hw->aq.api_maj_ver > I40E_FW_API_VERSION_MAJOR) {
+ 		ret_code = I40E_ERR_FIRMWARE_API_VERSION;
+ 		goto init_adminq_free_arq;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index ef0a897..0129e9b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -775,7 +775,22 @@ struct i40e_aqc_set_switch_config {
+ #define I40E_AQ_SET_SWITCH_CFG_PROMISC		0x0001
+ #define I40E_AQ_SET_SWITCH_CFG_L2_FILTER	0x0002
+ 	__le16	valid_flags;
+-	u8	reserved[12];
++	/* The ethertype in switch_tag is dropped on ingress and used
++	 * internally by the switch. Set this to zero for the default
++	 * of 0x88a8 (802.1ad). Should be zero for firmware API
++	 * versions lower than 1.7.
++	 */
++	__le16	switch_tag;
++	/* The ethertypes in first_tag and second_tag are used to
++	 * match the outer and inner VLAN tags (respectively) when HW
++	 * double VLAN tagging is enabled via the set port parameters
++	 * AQ command. Otherwise these are both ignored. Set them to
++	 * zero for their defaults of 0x8100 (802.1Q). Should be zero
++	 * for firmware API versions lower than 1.7.
++	 */
++	__le16	first_tag;
++	__le16	second_tag;
++	u8	reserved[6];
+ };
  
- 	adapter->current_op = VIRTCHNL_OP_GET_VF_RESOURCES;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_GET_CONFIG;
-@@ -385,6 +386,32 @@ void i40evf_map_queues(struct i40evf_adapter *adapter)
- }
- 
- /**
-+ * i40evf_request_queues
-+ * @adapter: adapter structure
-+ * @num: number of requested queues
-+ *
-+ * We get a default number of queues from the PF.  This enables us to request a
-+ * different number.  Returns 0 on success, negative on failure
-+ **/
-+int i40evf_request_queues(struct i40evf_adapter *adapter, int num)
-+{
-+	struct virtchnl_vf_res_request vfres;
-+
-+	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
-+		/* bail because we already have a command pending */
-+		dev_err(&adapter->pdev->dev, "Cannot request queues, command %d pending\n",
-+			adapter->current_op);
-+		return -EBUSY;
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_set_switch_config);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index fbbc3e8..249c660 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -2406,7 +2406,11 @@ enum i40e_status_code i40e_aq_set_switch_config(struct i40e_hw *hw,
+ 					  i40e_aqc_opc_set_switch_config);
+ 	scfg->flags = cpu_to_le16(flags);
+ 	scfg->valid_flags = cpu_to_le16(valid_flags);
+-
++	if (hw->flags & I40E_HW_FLAG_802_1AD_CAPABLE) {
++		scfg->switch_tag = cpu_to_le16(hw->switch_tag);
++		scfg->first_tag = cpu_to_le16(hw->first_tag);
++		scfg->second_tag = cpu_to_le16(hw->second_tag);
 +	}
+ 	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
+ 
+ 	return status;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 728acad..e95d91e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -11359,6 +11359,13 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	hw->bus.bus_id = pdev->bus->number;
+ 	pf->instance = pfs_found;
+ 
++	/* Select something other than the 802.1ad ethertype for the
++	 * switch to use internally and drop on ingress.
++	 */
++	hw->switch_tag = 0xffff;
++	hw->first_tag = ETH_P_8021AD;
++	hw->second_tag = ETH_P_8021Q;
 +
-+	vfres.num_queue_pairs = num;
+ 	INIT_LIST_HEAD(&pf->l3_flex_pit_list);
+ 	INIT_LIST_HEAD(&pf->l4_flex_pit_list);
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 8b0b9f8..4b32b1d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -610,9 +610,15 @@ struct i40e_hw {
+ 	struct i40e_dcbx_config desired_dcbx_config; /* CEE Desired Cfg */
+ 
+ #define I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE BIT_ULL(0)
++#define I40E_HW_FLAG_802_1AD_CAPABLE        BIT_ULL(1)
+ #define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
+ 	u64 flags;
+ 
++	/* Used in set switch config AQ command */
++	u16 switch_tag;
++	u16 first_tag;
++	u16 second_tag;
 +
-+	adapter->current_op = VIRTCHNL_OP_REQUEST_QUEUES;
-+	return i40evf_send_pf_msg(adapter, VIRTCHNL_OP_REQUEST_QUEUES,
-+				  (u8 *)&vfres, sizeof(vfres));
-+}
+ 	/* debug mask */
+ 	u32 debug_mask;
+ 	char err_str[16];
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index 5a271a4..4b02300 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -771,7 +771,22 @@ struct i40e_aqc_set_switch_config {
+ #define I40E_AQ_SET_SWITCH_CFG_PROMISC		0x0001
+ #define I40E_AQ_SET_SWITCH_CFG_L2_FILTER	0x0002
+ 	__le16	valid_flags;
+-	u8	reserved[12];
++	/* The ethertype in switch_tag is dropped on ingress and used
++	 * internally by the switch. Set this to zero for the default
++	 * of 0x88a8 (802.1ad). Should be zero for firmware API
++	 * versions lower than 1.7.
++	 */
++	__le16	switch_tag;
++	/* The ethertypes in first_tag and second_tag are used to
++	 * match the outer and inner VLAN tags (respectively) when HW
++	 * double VLAN tagging is enabled via the set port parameters
++	 * AQ command. Otherwise these are both ignored. Set them to
++	 * zero for their defaults of 0x8100 (802.1Q). Should be zero
++	 * for firmware API versions lower than 1.7.
++	 */
++	__le16	first_tag;
++	__le16	second_tag;
++	u8	reserved[6];
+ };
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_set_switch_config);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index 48eacf5..9364b67 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -568,6 +568,7 @@ struct i40e_hw {
+ 	/* LLDP/DCBX Status */
+ 	u16 dcbx_status;
+ 
++#define I40E_HW_FLAG_802_1AD_CAPABLE        BIT_ULL(1)
+ #define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
+ 
+ 	/* DCBX info */
+@@ -575,6 +576,11 @@ struct i40e_hw {
+ 	struct i40e_dcbx_config remote_dcbx_config; /* Peer Cfg */
+ 	struct i40e_dcbx_config desired_dcbx_config; /* CEE Desired Cfg */
+ 
++	/* Used in set switch config AQ command */
++	u16 switch_tag;
++	u16 first_tag;
++	u16 second_tag;
 +
-+/**
-  * i40evf_add_ether_addrs
-  * @adapter: adapter structure
-  * @addrs: the MAC address filters to add (contiguous)
-@@ -1068,6 +1095,21 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 				 "Invalid message %d from PF\n", v_opcode);
- 		}
- 		break;
-+	case VIRTCHNL_OP_REQUEST_QUEUES: {
-+		struct virtchnl_vf_res_request *vfres =
-+			(struct virtchnl_vf_res_request *)msg;
-+		if (vfres->num_queue_pairs == adapter->num_req_queues) {
-+			adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
-+			i40evf_schedule_reset(adapter);
-+		} else {
-+			dev_info(&adapter->pdev->dev,
-+				 "Requested %d queues, PF can support %d\n",
-+				 adapter->num_req_queues,
-+				 vfres->num_queue_pairs);
-+			adapter->num_req_queues = 0;
-+		}
-+		}
-+		break;
- 	default:
- 		if (adapter->current_op && (v_opcode != adapter->current_op))
- 			dev_warn(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
+ 	/* debug mask */
+ 	u32 debug_mask;
+ 	char err_str[16];
 -- 
 2.9.4
 
