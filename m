@@ -1,75 +1,66 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon, 7 Aug 2017 10:40:28 -0700
-Subject: [Intel-wired-lan] [next PATCH S78-V4 08/12] i40evf: Enable VF
- to request an alternate queue allocation
-In-Reply-To: <C8326AE922E1A04D91DF73B4913A8DCB2CA32739@ORSMSX108.amr.corp.intel.com>
-References: <20170804135222.46684-1-alice.michael@intel.com>
- <20170804135222.46684-8-alice.michael@intel.com>
- <afaabd4a-324e-ab62-3d5a-6170238eb74d@oracle.com>
- <C8326AE922E1A04D91DF73B4913A8DCB2CA32739@ORSMSX108.amr.corp.intel.com>
-Message-ID: <41615842-c95b-699b-e9d2-951682ac7d33@oracle.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Mon,  7 Aug 2017 09:18:10 -0400
+Subject: [Intel-wired-lan] [next PATCH S78-V5 10/12] i40e: fix handling of
+	vf_states variable
+In-Reply-To: <20170807131812.86747-1-alice.michael@intel.com>
+References: <20170807131812.86747-1-alice.michael@intel.com>
+Message-ID: <20170807131812.86747-10-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/7/2017 10:31 AM, Brady, Alan wrote:
->> -----Original Message-----
->> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
->> Shannon Nelson
->> Sent: Monday, August 7, 2017 10:19 AM
->> To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
->> Subject: Re: [Intel-wired-lan] [next PATCH S78-V4 08/12] i40evf: Enable VF to
->> request an alternate queue allocation
->>
->> On 8/4/2017 6:52 AM, Alice Michael wrote:
->>> From: Alan Brady <alan.brady@intel.com>
->>>
->>> Currently the VF gets a default number of allocated queues from HW on
->>> init and it could choose to enable or disable those allocated queues.
->>> This makes it such that the VF can request more or less underlying
->>> allocated queues from the PF.
->>>
->>> First the VF negotiates the number of queues it wants that can be
->>> supported by the PF and if successful asks for a reset.  During reset
->>> the PF will reallocate the HW queues for the VF and will then remap
->>> the new queues.
->>>
->>> Signed-off-by: Alan Brady <alan.brady@intel.com>
->>> ---
->>>    drivers/net/ethernet/intel/i40evf/i40evf.h         |  4 +
->>>    drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 38 ++++++++-
->>>    drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 94
->> ++++++++++++++++++++--
->>>    .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 44 +++++++++-
->>>    4 files changed, 173 insertions(+), 7 deletions(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h
->>> b/drivers/net/ethernet/intel/i40evf/i40evf.h
->>> index a1af9b1..de0af52 100644
->>> --- a/drivers/net/ethernet/intel/i40evf/i40evf.h
->>> +++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
->>> @@ -102,6 +102,7 @@ struct i40e_vsi {
->>>    #define I40E_TX_CTXTDESC(R, i) \
->>>    	(&(((struct i40e_tx_context_desc *)((R)->desc))[i]))
->>>    #define MAX_QUEUES 16
->>> +#define I40EVF_MAX_REQ_QUEUES 4
->>
->> Why can you only request 4 queues if a VF can have up to 16 queues?
->>
-> 
-> Hey Shannon,
-> 
-> Thanks for the feedback.  So the differentiation here comes down to vectors.  The hardware can support up to 16 queues for a VF, but currently we're limited to 4 traffic vectors (+1 misc vector).  So we want to limit the user's ability to request more queues than that as it provides no benefit to have more queues than vectors with just RSS.  However, there are other features which can use more than 4 queues and the differentiation should become clearer with future patches.
+From: Alan Brady <alan.brady@intel.com>
 
-You might stick a little comment in there, something like
-#define I40EVF_MAX_REQ_QUEUES 4      /* no more than irq's available */
+Currently we inappropriately clear the vf_states variable with a null
+assignment.  This is problematic because we should be using atomic
+bitops on this variable and we don't actually want to clear all the
+flags.  We should just clear the ones we know we want to clear.
+Additionally remove the I40E_VF_STATE_FCOEENA bit because it is no
+longer being used.
 
-sln
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 ++++-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h | 1 -
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-> 
->> [...]
-> 
-> -ATB
-> 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index c7f1819..e65ecaf 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -876,7 +876,8 @@ static void i40e_free_vf_res(struct i40e_vf *vf)
+ 	}
+ 	/* reset some of the state variables keeping track of the resources */
+ 	vf->num_queue_pairs = 0;
+-	vf->vf_states = 0;
++	clear_bit(I40E_VF_STATE_MC_PROMISC, &vf->vf_states);
++	clear_bit(I40E_VF_STATE_UC_PROMISC, &vf->vf_states);
+ }
+ 
+ /**
+@@ -1582,6 +1583,8 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 	    (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_IWARP)) {
+ 		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_IWARP;
+ 		set_bit(I40E_VF_STATE_IWARPENA, &vf->vf_states);
++	} else {
++		clear_bit(I40E_VF_STATE_IWARPENA, &vf->vf_states);
+ 	}
+ 
+ 	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RSS_PF) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+index 5ea42ad..5efc4f9 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+@@ -56,7 +56,6 @@ enum i40e_vf_states {
+ 	I40E_VF_STATE_INIT = 0,
+ 	I40E_VF_STATE_ACTIVE,
+ 	I40E_VF_STATE_IWARPENA,
+-	I40E_VF_STATE_FCOEENA,
+ 	I40E_VF_STATE_DISABLED,
+ 	I40E_VF_STATE_MC_PROMISC,
+ 	I40E_VF_STATE_UC_PROMISC,
+-- 
+2.9.4
+
