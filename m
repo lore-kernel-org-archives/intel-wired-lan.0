@@ -1,228 +1,71 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 10 Aug 2017 07:44:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
- eeb0149660a21c61122d4937bd406aa4f334c1e4
-Message-ID: <598b9e77.7PxS9yedjuFEuFuF%fengguang.wu@intel.com>
+From: Rafael J. Wysocki <rafael@kernel.org>
+Date: Wed, 9 Aug 2017 23:52:06 +0200
+Subject: [Intel-wired-lan] [regression] wake on lan no longer works in
+ 4.13-rc3. was Re: Linux 4.13: Reported regressions as of Sunday, 2017-08-06
+In-Reply-To: <alpine.NEB.2.21.1.1708091415010.1455@chris.i8u.org>
+References: <a6b015b1-a4da-c56b-89e4-629c873af4d0@leemhuis.info>
+ <15027171.LoAvHuklGv@aspire.rjw.lan> <20170809064231.GA19118@amd>
+ <25469991.213uJSqkO8@aspire.rjw.lan>
+ <alpine.NEB.2.21.1.1708091415010.1455@chris.i8u.org>
+Message-ID: <CAJZ5v0g4nNBQavS6Osz9f618gNKNaUTSjedrOQzXrLtjs1Ng4g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
-eeb0149660a21c61122d4937bd406aa4f334c1e4  igb: support BCM54616 PHY
+On Wed, Aug 9, 2017 at 11:15 PM, Hisashi T Fujinaka <htodd@twofifty.com> wrote:
+> On Wed, 9 Aug 2017, Rafael J. Wysocki wrote:
+>
+>> [You seem to have a stale linux-pm address in your address book,
+>> I replaced it with the current one in the CC list.]
+>>
+>> On Wednesday, August 9, 2017 8:42:31 AM CEST Pavel Machek wrote:
+>>>
+>>> On Wed 2017-08-09 02:45:54, Rafael J. Wysocki wrote:
+>>>>
+>>>> On Tuesday, August 8, 2017 11:00:53 AM CEST Pavel Machek wrote:
+>>>>>
+>>>>> Hi!
+>>>>>
+>>>>> Perhaps you should get regressions at kernel.org alias, or something like
+>>>>> that?
+>>>>>
+>>>>>> As always: Are you aware of any other regressions? Then please let me
+>>>>>> know. For details see http://bit.ly/lnxregtrackid And please tell me
+>>>>>> if
+>>>>>> there is anything in the report that shouldn't be there.
+>>>>>
+>>>>>
+>>>>> I am using wake-on-lan quite a bit, and it stopped working. I'll move
+>>>>> to -rc4 and test there; but if anyone already has some ideas, let me
+>>>>> know.
+>>>>>
+>>>>> Hardware is thinkpad X220
+>>>>>
+>>>>> 00:19.0 Ethernet controller: Intel Corporation 82579LM Gigabit Network
+>>>>> Connection (rev 04)
+>>>>
+>>>>
+>>>> I guess this is ACPI S3 suspend?
+>>>
+>>>
+>>> ACPI S3, right. Machine still wakes up properly when I hit a key on
+>>> USB keyboard.
+>>
+>>
+>> OK, so my guess would be a driver issue.  What driver is this, igb?
+>>
+>>> Does wake on LAN work on you, on any hardware?
+>>
+>>
+>> Yes it does, I checked two machines earlier today, both work.
+>>
+>> Can you enable dynamic debug in device_pm.c and send a dmesg output
+>> with that covering a suspend-resume cycle?
+>
+>
+> 82579 is e1000e
 
-elapsed time: 117m
-
-configs tested: 204
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-m68k                         apollo_defconfig
-m68k                       m5249evb_defconfig
-powerpc                      mgcoge_defconfig
-x86_64                 randconfig-a0-08100604
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-mips                  maltasmvp_eva_defconfig
-mn10300                     asb2364_defconfig
-powerpc                      katmai_defconfig
-x86_64                randconfig-it0-08100304
-i386                               tinyconfig
-i386                     randconfig-n0-201732
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF537-STAMP_defconfig
-blackfin                  TCM-BF518_defconfig
-sh                        edosk7705_defconfig
-x86_64                 randconfig-x016-201732
-x86_64                 randconfig-x011-201732
-x86_64                 randconfig-x014-201732
-x86_64                 randconfig-x019-201732
-x86_64                 randconfig-x012-201732
-x86_64                 randconfig-x013-201732
-x86_64                 randconfig-x018-201732
-x86_64                 randconfig-x015-201732
-x86_64                 randconfig-x010-201732
-x86_64                 randconfig-x017-201732
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201732
-i386                     randconfig-a1-201732
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mips                        nlm_xlr_defconfig
-powerpc               mpc86xx_basic_defconfig
-powerpc                  storcenter_defconfig
-powerpc                        warp_defconfig
-sparc                               defconfig
-blackfin                  CM-BF537E_defconfig
-blackfin                   CM-BF561_defconfig
-powerpc                        cell_defconfig
-powerpc                 mpc8315_rdb_defconfig
-sh                            hp6xx_defconfig
-arm                        raumfeld_defconfig
-ia64                             alldefconfig
-mips                        bcm47xx_defconfig
-powerpc                     redwood_defconfig
-arm                         axm55xx_defconfig
-frv                               allnoconfig
-tile                             allmodconfig
-xtensa                  nommu_kc705_defconfig
-i386                     randconfig-s1-201732
-i386                     randconfig-s0-201732
-frv                                 defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-arm                          nuc950_defconfig
-mips                       lemote2f_defconfig
-powerpc                      bamboo_defconfig
-powerpc                    ge_imp3a_defconfig
-arm                        mvebu_v5_defconfig
-c6x                        evmc6472_defconfig
-sparc64                          alldefconfig
-xtensa                            allnoconfig
-x86_64                   randconfig-i0-201732
-i386                   randconfig-b0-08100604
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201732
-i386                     randconfig-i0-201732
-i386                             allyesconfig
-arm                          badge4_defconfig
-um                               alldefconfig
-blackfin             BF527-EZKIT-V2_defconfig
-m68k                        m5272c3_defconfig
-sh                        sh7785lcr_defconfig
-sh                         ap325rxa_defconfig
-x86_64                randconfig-ne0-08100535
-i386                   randconfig-x019-201732
-i386                   randconfig-x013-201732
-i386                   randconfig-x016-201732
-i386                   randconfig-x012-201732
-i386                   randconfig-x018-201732
-i386                   randconfig-x010-201732
-i386                   randconfig-x015-201732
-i386                   randconfig-x011-201732
-i386                   randconfig-x017-201732
-i386                   randconfig-x014-201732
-mips                           ci20_defconfig
-powerpc                  iss476-smp_defconfig
-sparc                            allmodconfig
-x86_64                 randconfig-h0-08100611
-x86_64                 randconfig-h0-08100712
-ia64                         bigsur_defconfig
-tile                                defconfig
-i386                   randconfig-x075-201732
-i386                   randconfig-x076-201732
-i386                   randconfig-x071-201732
-i386                   randconfig-x074-201732
-i386                   randconfig-x070-201732
-i386                   randconfig-x072-201732
-i386                   randconfig-x079-201732
-i386                   randconfig-x077-201732
-i386                   randconfig-x078-201732
-i386                   randconfig-x073-201732
-powerpc                          alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-i386                   randconfig-x000-201732
-i386                   randconfig-x003-201732
-i386                   randconfig-x009-201732
-i386                   randconfig-x004-201732
-i386                   randconfig-x001-201732
-i386                   randconfig-x008-201732
-i386                   randconfig-x005-201732
-i386                   randconfig-x007-201732
-i386                   randconfig-x002-201732
-i386                   randconfig-x006-201732
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-sparc64                           allnoconfig
-sparc64                             defconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                randconfig-ws0-08100607
-x86_64                randconfig-ws0-08100224
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-powerpc                         ps3_defconfig
-um                                allnoconfig
-xtensa                  cadence_csp_defconfig
-x86_64                 randconfig-x007-201732
-x86_64                 randconfig-x001-201732
-x86_64                 randconfig-x000-201732
-x86_64                 randconfig-x006-201732
-x86_64                 randconfig-x003-201732
-x86_64                 randconfig-x004-201732
-x86_64                 randconfig-x009-201732
-x86_64                 randconfig-x005-201732
-x86_64                 randconfig-x008-201732
-x86_64                 randconfig-x002-201732
-x86_64                 randconfig-r0-08100607
-arm                            pleb_defconfig
-microblaze                        allnoconfig
-
-Thanks,
-Fengguang
+Hmm.  That also is there in my venerable Thoshiba Portege R500 which
+wakes on LAN with 4.13-rc4.  So the driver is off the hook I guess.
