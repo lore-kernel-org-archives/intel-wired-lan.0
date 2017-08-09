@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 9 Aug 2017 22:46:41 +0000
-Subject: [Intel-wired-lan] [next PATCH S78-V6 07/12] i40e: ensure
-	reset	occurs when disabling VF
-In-Reply-To: <20170807142839.60975-8-alice.michael@intel.com>
+Date: Wed, 9 Aug 2017 22:53:44 +0000
+Subject: [Intel-wired-lan] [next PATCH S78-V6 09/12] i40e:
+	make	i40evf_map_rings_to_vectors void
+In-Reply-To: <20170807142839.60975-10-alice.michael@intel.com>
 References: <20170807142839.60975-1-alice.michael@intel.com>
- <20170807142839.60975-8-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E8FCF2@ORSMSX104.amr.corp.intel.com>
+ <20170807142839.60975-10-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E8FD05@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,25 +18,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, August 7, 2017 7:29 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S78-V6 07/12] i40e: ensure reset
-> occurs when disabling VF
+> Cc: Williams, Mitch A <mitch.a.williams@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S78-V6 09/12] i40e: make
+> i40evf_map_rings_to_vectors void
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> It is possible although rare that we may not reset when
-> i40e_vc_disable_vf() is called. This can lead to some weird circumstances
-> with some values not being properly set. Modify
-> i40e_reset_vf() to return a code indicating whether it reset or not.
+> This function cannot fail, so why is it returning a value? And why are we
+> checking it? Why shouldn't we just make it void? Why is this commit message
+> made up of only questions?
 > 
-> Now, i40e_vc_disable_vf() can wait until a reset actually occurs. If it fails to
-> free up within a reasonable timeframe we'll display a warning message.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 42
-> +++++++++++++++++-----
-> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  4 +--
->  2 files changed, 35 insertions(+), 11 deletions(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 9 ++-------
+>  1 file changed, 2 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
