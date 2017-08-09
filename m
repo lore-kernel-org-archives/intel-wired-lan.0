@@ -1,10 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 9 Aug 2017 17:46:01 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] i40e: limit lan queue count
- in	large cpu count machine
-In-Reply-To: <1500945462-33176-1-git-send-email-shannon.nelson@oracle.com>
-References: <1500945462-33176-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E8EC44@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 9 Aug 2017 17:47:30 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: remove logically dead code
+In-Reply-To: <1501150629-20305-1-git-send-email-lihong.yang@intel.com>
+References: <1501150629-20305-1-git-send-email-lihong.yang@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E8FC55@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,24 +12,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Shannon Nelson
-> Sent: Monday, July 24, 2017 6:18 PM
-> To: davem at davemloft.net; netdev at vger.kernel.org
-> Cc: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next] i40e: limit lan queue count in
-> large cpu count machine
+> Behalf Of Lihong Yang
+> Sent: Thursday, July 27, 2017 3:17 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] i40e: remove logically dead code
 > 
-> When a machine has more cpus than queuepairs, e.g. 512 cores, the counting
-> gets a little funky and turns off Flow Director with the
-> message:
->   not enough queues for Flow Director. Flow Director feature is disabled
+> This patch removes the !vf condition check that cannot be true in
+> i40e_ndo_set_vf_trust function
 > 
-> This patch limits the number of lan queues initially allocated to be sure we
-> have some left for FD and other features.
+> Detected by CoverityScan, CID 1397531 Logically dead code
 > 
-> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+> Signed-off-by: Lihong Yang <lihong.yang@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c |   11 +++++++----
->  1 files changed, 7 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 --
+>  1 file changed, 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
