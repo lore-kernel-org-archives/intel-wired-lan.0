@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 9 Aug 2017 22:40:48 +0000
-Subject: [Intel-wired-lan] [next PATCH S78-V6 06/12] i40e: make use
-	of	i40e_vc_disable_vf
-In-Reply-To: <20170807142839.60975-7-alice.michael@intel.com>
+Date: Wed, 9 Aug 2017 22:46:41 +0000
+Subject: [Intel-wired-lan] [next PATCH S78-V6 07/12] i40e: ensure
+	reset	occurs when disabling VF
+In-Reply-To: <20170807142839.60975-8-alice.michael@intel.com>
 References: <20170807142839.60975-1-alice.michael@intel.com>
- <20170807142839.60975-7-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E8FCE1@ORSMSX104.amr.corp.intel.com>
+ <20170807142839.60975-8-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E8FCF2@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,19 +18,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, August 7, 2017 7:29 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S78-V6 06/12] i40e: make use of
-> i40e_vc_disable_vf
+> Subject: [Intel-wired-lan] [next PATCH S78-V6 07/12] i40e: ensure reset
+> occurs when disabling VF
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Replace i40e_vc_notify_vf_reset and i40e_reset_vf with a call to
-> i40e_vc_disable_vf which does this exact thing. This matches similar code
-> patterns throughout the driver.
+> It is possible although rare that we may not reset when
+> i40e_vc_disable_vf() is called. This can lead to some weird circumstances
+> with some values not being properly set. Modify
+> i40e_reset_vf() to return a code indicating whether it reset or not.
+> 
+> Now, i40e_vc_disable_vf() can wait until a reset actually occurs. If it fails to
+> free up within a reasonable timeframe we'll display a warning message.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 42
+> +++++++++++++++++-----
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  4 +--
+>  2 files changed, 35 insertions(+), 11 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
