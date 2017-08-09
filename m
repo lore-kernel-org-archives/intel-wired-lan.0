@@ -1,42 +1,38 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 9 Aug 2017 18:06:49 +0000
-Subject: [Intel-wired-lan] [next PATCH S78-V6 03/12] i40e: use admin
- queue	for setting LEDs behavior
-In-Reply-To: <20170807142839.60975-4-alice.michael@intel.com>
-References: <20170807142839.60975-1-alice.michael@intel.com>
- <20170807142839.60975-4-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E8FC87@ORSMSX104.amr.corp.intel.com>
+From: Rafael J. Wysocki <rjw@rjwysocki.net>
+Date: Wed, 09 Aug 2017 02:45:54 +0200
+Subject: [Intel-wired-lan] [regression] wake on lan no longer works in
+	4.13-rc3. was Re: Linux 4.13: Reported regressions as of
+	Sunday, 2017-08-06
+In-Reply-To: <20170808090053.GA3066@amd>
+References: <a6b015b1-a4da-c56b-89e4-629c873af4d0@leemhuis.info>
+ <20170808090053.GA3066@amd>
+Message-ID: <15027171.LoAvHuklGv@aspire.rjw.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Monday, August 7, 2017 7:29 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Cc: Stachura, Mariusz <mariusz.stachura@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S78-V6 03/12] i40e: use admin queue
-> for setting LEDs behavior
+On Tuesday, August 8, 2017 11:00:53 AM CEST Pavel Machek wrote:
+> Hi!
 > 
-> From: Mariusz Stachura <mariusz.stachura@intel.com>
+> Perhaps you should get regressions at kernel.org alias, or something like that?
 > 
-> Instead of accessing register directly, use newly added AQC in order to blink
-> LEDs. Introduce and utilize a new flag to prevent excessive API version
-> checking.
+> > As always: Are you aware of any other regressions? Then please let me
+> > know. For details see http://bit.ly/lnxregtrackid And please tell me if
+> > there is anything in the report that shouldn't be there.
 > 
-> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c |   6 ++
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 148
-> ++++++++++++++++++++------
->  drivers/net/ethernet/intel/i40e/i40e_type.h   |   1 +
->  drivers/net/ethernet/intel/i40evf/i40e_type.h |   2 +
->  4 files changed, 122 insertions(+), 35 deletions(-)
+> I am using wake-on-lan quite a bit, and it stopped working. I'll move
+> to -rc4 and test there; but if anyone already has some ideas, let me
+> know.
+> 
+> Hardware is thinkpad X220
+> 
+> 00:19.0 Ethernet controller: Intel Corporation 82579LM Gigabit Network
+> Connection (rev 04)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+I guess this is ACPI S3 suspend?
 
+Thanks,
+Rafael
 
