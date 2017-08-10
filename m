@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 10 Aug 2017 18:24:57 +0000
-Subject: [Intel-wired-lan] [next PATCH S78-V6 08/12] i40evf: Enable VF
- to	request an alternate queue allocation
-In-Reply-To: <20170807142839.60975-9-alice.michael@intel.com>
+Date: Thu, 10 Aug 2017 21:33:05 +0000
+Subject: [Intel-wired-lan] [next PATCH S78-V6 12/12] i40e: Stop
+	dropping	802.1ad tags (eth proto 0x88a8
+In-Reply-To: <20170807142839.60975-13-alice.michael@intel.com>
 References: <20170807142839.60975-1-alice.michael@intel.com>
- <20170807142839.60975-9-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E9019A@ORSMSX104.amr.corp.intel.com>
+ <20170807142839.60975-13-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E901CD@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,28 +18,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, August 7, 2017 7:29 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S78-V6 08/12] i40evf: Enable VF to
-> request an alternate queue allocation
+> Subject: [Intel-wired-lan] [next PATCH S78-V6 12/12] i40e: Stop dropping
+> 802.1ad tags (eth proto 0x88a8
 > 
-> From: Alan Brady <alan.brady@intel.com>
+> From: Scott Peterson <scott.d.peterson@intel.com>
 > 
-> Currently the VF gets a default number of allocated queues from HW on init
-> and it could choose to enable or disable those allocated queues.
-> This makes it such that the VF can request more or less underlying allocated
-> queues from the PF.
+> Enable i40e to pass traffic with VLAN tags using the 802.1ad ethernet protocol
+> ID (0x88a8).
 > 
-> First the VF negotiates the number of queues it wants that can be supported
-> by the PF and if successful asks for a reset.  During reset the PF will reallocate
-> the HW queues for the VF and will then remap the new queues.
+> This requires NIC firmware providing version 1.7 of the API. With older NIC
+> firmware 802.1ad tagged packets will continue to be dropped.
 > 
-> Signed-off-by: Alan Brady <alan.brady@intel.com>
+> No VLAN offloads nor RSS are supported for 802.1ad VLANs.
+> 
+> Signed-off-by: Scott Peterson <scott.d.peterson@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40evf/i40evf.h         |  4 +
->  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 38 ++++++++-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 94
-> ++++++++++++++++++++--
->  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 44 +++++++++-
->  4 files changed, 173 insertions(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c       |  6 ++++++
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 17
+> ++++++++++++++++-
+>  drivers/net/ethernet/intel/i40e/i40e_common.c       |  6 +++++-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c         |  7 +++++++
+>  drivers/net/ethernet/intel/i40e/i40e_type.h         |  6 ++++++
+>  drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 17
+> ++++++++++++++++-
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h       |  6 ++++++
+>  7 files changed, 62 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
