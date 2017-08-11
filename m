@@ -1,72 +1,79 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 11 Aug 2017 11:14:37 -0700
-Subject: [Intel-wired-lan] [PATCH] fm10k: prefer %s and __func__ for
-	diagnostic prints
-Message-ID: <20170811181437.30509-1-jacob.e.keller@intel.com>
+Date: Fri, 11 Aug 2017 11:14:58 -0700
+Subject: [Intel-wired-lan] [PATCH] fm10k: fix mis-ordered parameters in
+	declaration for .ndo_set_vf_bw
+Message-ID: <20170811181458.30776-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Don't hardcode the function names in the diagnostic output when these
-reset related routines fail. Instead, use %s and __func__ so that future
-refactors don't need to change the print outs.
+We've had support for setting both a minimum and maximum bandwidth via
+.ndo_set_vf_bw since commit 883a9ccbae56 ("fm10k: Add support for SR-IOV
+to driver", 2014-09-20).
 
-Additionally, while we are here, add missing function header comments
-for the new reset_prepare and reset_done function handlers.
+Likely because we do not support minimum rates, the declaration
+mis-ordered the "unused" parameter, which causes warnings when analyzed
+with cppcheck.
+
+Fix this warning by properly declaring the min_rate and max_rate
+variables in the declaration and definition (rather than using
+"unused"). Also rename "rate" to max_rate so as to clarify that we only
+support setting the maximum rate.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k.h     | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_iov.c | 9 +++++----
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 3c79e6707cec..ba9d038f22e8 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -2588,11 +2588,18 @@ static void fm10k_io_resume(struct pci_dev *pdev)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+index 40856bc0f3b9..46973fb234c5 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+@@ -562,8 +562,8 @@ s32 fm10k_iov_update_pvid(struct fm10k_intfc *interface, u16 glort, u16 pvid);
+ int fm10k_ndo_set_vf_mac(struct net_device *netdev, int vf_idx, u8 *mac);
+ int fm10k_ndo_set_vf_vlan(struct net_device *netdev,
+ 			  int vf_idx, u16 vid, u8 qos, __be16 vlan_proto);
+-int fm10k_ndo_set_vf_bw(struct net_device *netdev, int vf_idx, int rate,
+-			int unused);
++int fm10k_ndo_set_vf_bw(struct net_device *netdev, int vf_idx,
++			int __always_unused min_rate, int max_rate);
+ int fm10k_ndo_get_vf_config(struct net_device *netdev,
+ 			    int vf_idx, struct ifla_vf_info *ivi);
  
- 	if (err)
- 		dev_warn(&pdev->dev,
--			 "fm10k_io_resume failed: %d\n", err);
-+			 "%s failed: %d\n", __func__, err);
- 	else
- 		netif_device_attach(netdev);
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+index 7e53521667b8..dafcf8f96b44 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+@@ -613,7 +613,7 @@ int fm10k_ndo_set_vf_vlan(struct net_device *netdev, int vf_idx, u16 vid,
  }
  
-+/**
-+ * fm10k_io_reset_prepare - called when PCI function is about to be reset
-+ * @pdev: Pointer to PCI device
-+ *
-+ * This callback is called when the PCI function is about to be reset,
-+ * allowing the device driver to prepare for it.
-+ */
- static void fm10k_io_reset_prepare(struct pci_dev *pdev)
+ int fm10k_ndo_set_vf_bw(struct net_device *netdev, int vf_idx,
+-			int __always_unused unused, int rate)
++			int __always_unused min_rate, int max_rate)
  {
- 	/* warn incase we have any active VF devices */
-@@ -2602,6 +2609,13 @@ static void fm10k_io_reset_prepare(struct pci_dev *pdev)
- 	fm10k_prepare_suspend(pci_get_drvdata(pdev));
- }
+ 	struct fm10k_intfc *interface = netdev_priv(netdev);
+ 	struct fm10k_iov_data *iov_data = interface->iov_data;
+@@ -624,14 +624,15 @@ int fm10k_ndo_set_vf_bw(struct net_device *netdev, int vf_idx,
+ 		return -EINVAL;
  
-+/**
-+ * fm10k_io_reset_done - called when PCI function has finished resetting
-+ * @pdev: Pointer to PCI device
-+ *
-+ * This callback is called just after the PCI function is reset, such as via
-+ * /sys/class/net/<enpX>/device/reset or similar.
-+ */
- static void fm10k_io_reset_done(struct pci_dev *pdev)
- {
- 	struct fm10k_intfc *interface = pci_get_drvdata(pdev);
-@@ -2609,7 +2623,7 @@ static void fm10k_io_reset_done(struct pci_dev *pdev)
+ 	/* rate limit cannot be less than 10Mbs or greater than link speed */
+-	if (rate && ((rate < FM10K_VF_TC_MIN) || rate > FM10K_VF_TC_MAX))
++	if (max_rate &&
++	    ((max_rate < FM10K_VF_TC_MIN) || max_rate > FM10K_VF_TC_MAX))
+ 		return -EINVAL;
  
- 	if (err) {
- 		dev_warn(&pdev->dev,
--			 "fm10k_io_reset_notify failed: %d\n", err);
-+			 "%s failed: %d\n", __func__, err);
- 		netif_device_detach(interface->netdev);
- 	}
+ 	/* store values */
+-	iov_data->vf_info[vf_idx].rate = rate;
++	iov_data->vf_info[vf_idx].rate = max_rate;
+ 
+ 	/* update hardware configuration */
+-	hw->iov.ops.configure_tc(hw, vf_idx, rate);
++	hw->iov.ops.configure_tc(hw, vf_idx, max_rate);
+ 
+ 	return 0;
  }
 -- 
 2.14.0.rc1.251.g593d8d6362ce
