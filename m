@@ -1,80 +1,37 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 11 Aug 2017 11:14:58 -0700
-Subject: [Intel-wired-lan] [PATCH] fm10k: fix mis-ordered parameters in
-	declaration for .ndo_set_vf_bw
-Message-ID: <20170811181458.30776-1-jacob.e.keller@intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Fri, 11 Aug 2017 11:23:52 -0400
+Subject: [Intel-wired-lan] [next PATCH S78-V6 00/12] Change Log
+Message-ID: <20170811152354.87886-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We've had support for setting both a minimum and maximum bandwidth via
-.ndo_set_vf_bw since commit 883a9ccbae56 ("fm10k: Add support for SR-IOV
-to driver", 2014-09-20).
+V4: Submission to Jeff's tree
+V5: Re-ordered patches
+V6: Sync with Jeff's latest tree
+V7: Changes to patches 1 and 2 as per community feedback
 
-Likely because we do not support minimum rates, the declaration
-mis-ordered the "unused" parameter, which causes warnings when analyzed
-with cppcheck.
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c      |  12 ++
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  55 ++++-
+ drivers/net/ethernet/intel/i40e/i40e_common.c      | 231 +++++++++++++++++----
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 154 ++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |   7 +
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   9 +
+ drivers/net/ethernet/intel/i40e/i40e_type.h        |  19 ++
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  97 +++++++--
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   5 +-
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  55 ++++-
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    |  69 ++++++
+ drivers/net/ethernet/intel/i40evf/i40e_prototype.h |   9 +
+ drivers/net/ethernet/intel/i40evf/i40e_type.h      |  20 ++
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |   4 +
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  38 +++-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  97 ++++++++-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  44 +++-
+ 17 files changed, 846 insertions(+), 79 deletions(-)
 
-Fix this warning by properly declaring the min_rate and max_rate
-variables in the declaration and definition (rather than using
-"unused"). Also rename "rate" to max_rate so as to clarify that we only
-support setting the maximum rate.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k.h     | 4 ++--
- drivers/net/ethernet/intel/fm10k/fm10k_iov.c | 9 +++++----
- 2 files changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 40856bc0f3b9..46973fb234c5 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -562,8 +562,8 @@ s32 fm10k_iov_update_pvid(struct fm10k_intfc *interface, u16 glort, u16 pvid);
- int fm10k_ndo_set_vf_mac(struct net_device *netdev, int vf_idx, u8 *mac);
- int fm10k_ndo_set_vf_vlan(struct net_device *netdev,
- 			  int vf_idx, u16 vid, u8 qos, __be16 vlan_proto);
--int fm10k_ndo_set_vf_bw(struct net_device *netdev, int vf_idx, int rate,
--			int unused);
-+int fm10k_ndo_set_vf_bw(struct net_device *netdev, int vf_idx,
-+			int __always_unused min_rate, int max_rate);
- int fm10k_ndo_get_vf_config(struct net_device *netdev,
- 			    int vf_idx, struct ifla_vf_info *ivi);
- 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-index 7e53521667b8..dafcf8f96b44 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-@@ -613,7 +613,7 @@ int fm10k_ndo_set_vf_vlan(struct net_device *netdev, int vf_idx, u16 vid,
- }
- 
- int fm10k_ndo_set_vf_bw(struct net_device *netdev, int vf_idx,
--			int __always_unused unused, int rate)
-+			int __always_unused min_rate, int max_rate)
- {
- 	struct fm10k_intfc *interface = netdev_priv(netdev);
- 	struct fm10k_iov_data *iov_data = interface->iov_data;
-@@ -624,14 +624,15 @@ int fm10k_ndo_set_vf_bw(struct net_device *netdev, int vf_idx,
- 		return -EINVAL;
- 
- 	/* rate limit cannot be less than 10Mbs or greater than link speed */
--	if (rate && ((rate < FM10K_VF_TC_MIN) || rate > FM10K_VF_TC_MAX))
-+	if (max_rate &&
-+	    ((max_rate < FM10K_VF_TC_MIN) || max_rate > FM10K_VF_TC_MAX))
- 		return -EINVAL;
- 
- 	/* store values */
--	iov_data->vf_info[vf_idx].rate = rate;
-+	iov_data->vf_info[vf_idx].rate = max_rate;
- 
- 	/* update hardware configuration */
--	hw->iov.ops.configure_tc(hw, vf_idx, rate);
-+	hw->iov.ops.configure_tc(hw, vf_idx, max_rate);
- 
- 	return 0;
- }
 -- 
-2.14.0.rc1.251.g593d8d6362ce
+2.9.4
 
