@@ -1,49 +1,40 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 10 Aug 2017 21:33:05 +0000
-Subject: [Intel-wired-lan] [next PATCH S78-V6 12/12] i40e: Stop
-	dropping	802.1ad tags (eth proto 0x88a8
-In-Reply-To: <20170807142839.60975-13-alice.michael@intel.com>
-References: <20170807142839.60975-1-alice.michael@intel.com>
- <20170807142839.60975-13-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E901CD@ORSMSX104.amr.corp.intel.com>
+From: Joe Perches <joe@perches.com>
+Date: Fri, 11 Aug 2017 09:17:15 -0700
+Subject: [Intel-wired-lan] [PATCH] fm10k: Fix misuse of net_ratelimit()
+Message-ID: <83d6fcab6a180d7006c8eb396c9aa3169dc6a84d.1502468221.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Monday, August 7, 2017 7:29 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S78-V6 12/12] i40e: Stop dropping
-> 802.1ad tags (eth proto 0x88a8
-> 
-> From: Scott Peterson <scott.d.peterson@intel.com>
-> 
-> Enable i40e to pass traffic with VLAN tags using the 802.1ad ethernet protocol
-> ID (0x88a8).
-> 
-> This requires NIC firmware providing version 1.7 of the API. With older NIC
-> firmware 802.1ad tagged packets will continue to be dropped.
-> 
-> No VLAN offloads nor RSS are supported for 802.1ad VLANs.
-> 
-> Signed-off-by: Scott Peterson <scott.d.peterson@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c       |  6 ++++++
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 17
-> ++++++++++++++++-
->  drivers/net/ethernet/intel/i40e/i40e_common.c       |  6 +++++-
->  drivers/net/ethernet/intel/i40e/i40e_main.c         |  7 +++++++
->  drivers/net/ethernet/intel/i40e/i40e_type.h         |  6 ++++++
->  drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 17
-> ++++++++++++++++-
->  drivers/net/ethernet/intel/i40evf/i40e_type.h       |  6 ++++++
->  7 files changed, 62 insertions(+), 3 deletions(-)
+Correct the backward logic using !net_ratelimit()
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Miscellanea:
 
+o Add a blank line before the error return label
+
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 9dffaba85ae6..489d8032e2f2 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -806,9 +806,10 @@ static int fm10k_tso(struct fm10k_ring *tx_ring,
+ 	tx_desc->mss = cpu_to_le16(skb_shinfo(skb)->gso_size);
+ 
+ 	return 1;
++
+ err_vxlan:
+ 	tx_ring->netdev->features &= ~NETIF_F_GSO_UDP_TUNNEL;
+-	if (!net_ratelimit())
++	if (net_ratelimit())
+ 		netdev_err(tx_ring->netdev,
+ 			   "TSO requested for unsupported tunnel, disabling offload\n");
+ 	return -1;
+-- 
+2.10.0.rc2.1.g053435c
 
