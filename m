@@ -1,220 +1,57 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 12 Aug 2017 20:53:18 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- fcf8cea2a1e40cbed198caa6b96aaebba824b508
-Message-ID: <598efa3e.hh5l6xnuykxb85Yc%fengguang.wu@intel.com>
+From: Philip Prindeville <philipp_subx@redfish-solutions.com>
+Date: Fri, 11 Aug 2017 20:13:47 -0600
+Subject: [Intel-wired-lan] [PATCH 5/5] e1000e: Avoid receiver overrun
+	interrupt bursts
+In-Reply-To: <20170721184848.GU18556@csclub.uwaterloo.ca>
+References: <20170721160937.GA22632@csclub.uwaterloo.ca>
+ <20170721183627.13373-1-bpoirier@suse.com>
+ <20170721183627.13373-5-bpoirier@suse.com>
+ <20170721184848.GU18556@csclub.uwaterloo.ca>
+Message-ID: <49B1F3E9-2A99-4AD6-9574-FC3960E67A77@redfish-solutions.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-fcf8cea2a1e40cbed198caa6b96aaebba824b508  i40e: synchronize nvmupdate command and adminq subtask
 
-elapsed time: 103m
+> On Jul 21, 2017, at 12:48 PM, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
+> 
+> On Fri, Jul 21, 2017 at 11:36:27AM -0700, Benjamin Poirier wrote:
+>> When e1000e_poll() is not fast enough to keep up with incoming traffic, the
+>> adapter (when operating in msix mode) raises the Other interrupt to signal
+>> Receiver Overrun.
+>> 
+>> This is a double problem because 1) at the moment e1000_msix_other()
+>> assumes that it is only called in case of Link Status Change and 2) if the
+>> condition persists, the interrupt is repeatedly raised again in quick
+>> succession.
+>> 
+>> Ideally we would configure the Other interrupt to not be raised in case of
+>> receiver overrun but this doesn't seem possible on this adapter. Instead,
+>> we handle the first part of the problem by reverting to the practice of
+>> reading ICR in the other interrupt handler, like before commit 16ecba59bc33
+>> ("e1000e: Do not read ICR in Other interrupt"). Thanks to commit
+>> 0a8047ac68e5 ("e1000e: Fix msi-x interrupt automask") which cleared IAME
+>> from CTRL_EXT, reading ICR doesn't interfere with RxQ0, TxQ0 interrupts
+>> anymore. We handle the second part of the problem by not re-enabling the
+>> Other interrupt right away when there is overrun. Instead, we wait until
+>> traffic subsides, napi polling mode is exited and interrupts are
+>> re-enabled.
+>> 
+>> Reported-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+>> Fixes: 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt")
+>> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> 
+> Any chance of this fix hitting -stable?  After all adapter reset under
+> load is not nice.
+> 
 
-configs tested: 196
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I tried this patch sequence and I?m seeing a 2% drop in throughput.  CPU utilization at softIRQ is also about 8% higher.  The previous single patch that went out to fix this problem had better performance.
 
-mips                        xilfpga_defconfig
-powerpc                          alldefconfig
-powerpc                 xes_mpc85xx_defconfig
-x86_64                 randconfig-a0-08121932
-arm                         hackkit_defconfig
-mips                             allyesconfig
-powerpc                 linkstation_defconfig
-i386                   randconfig-c0-08121937
-arm                      tct_hammer_defconfig
-mn10300                          allyesconfig
-powerpc                     kmeter1_defconfig
-blackfin                BF537-STAMP_defconfig
-mips                         rt305x_defconfig
-sh                        sh7763rdp_defconfig
-x86_64                randconfig-it0-08121925
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201732
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-08121925
-m68k                        mvme147_defconfig
-s390                                defconfig
-sh                             sh03_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x016-201732
-x86_64                 randconfig-x011-201732
-x86_64                 randconfig-x014-201732
-x86_64                 randconfig-x019-201732
-x86_64                 randconfig-x012-201732
-x86_64                 randconfig-x013-201732
-x86_64                 randconfig-x018-201732
-x86_64                 randconfig-x015-201732
-x86_64                 randconfig-x010-201732
-x86_64                 randconfig-x017-201732
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201732
-i386                     randconfig-a1-201732
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-parisc                        c8000_defconfig
-powerpc                      pcm030_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201732
-i386                     randconfig-s0-201732
-x86_64                 randconfig-s3-08121922
-x86_64                 randconfig-s4-08121922
-x86_64                 randconfig-s5-08121922
-i386                             allmodconfig
-mn10300                          allmodconfig
-powerpc                    adder875_defconfig
-powerpc                     tqm5200_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201732
-i386                   randconfig-b0-08121939
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201732
-i386                     randconfig-i0-201732
-x86_64                           allmodconfig
-arm                  colibri_pxa300_defconfig
-arm                            netx_defconfig
-m68k                       m5208evb_defconfig
-x86_64                 randconfig-u0-08121927
-i386                               tinyconfig
-i386                   randconfig-x019-201732
-i386                   randconfig-x013-201732
-i386                   randconfig-x016-201732
-i386                   randconfig-x012-201732
-i386                   randconfig-x018-201732
-i386                   randconfig-x010-201732
-i386                   randconfig-x015-201732
-i386                   randconfig-x011-201732
-i386                   randconfig-x017-201732
-i386                   randconfig-x014-201732
-alpha                            allyesconfig
-arm                          nuc960_defconfig
-x86_64                randconfig-ne0-08121915
-arm                         at91_dt_defconfig
-arm                          exynos_defconfig
-s390                           gcov_defconfig
-i386                   randconfig-x075-201732
-i386                   randconfig-x076-201732
-i386                   randconfig-x071-201732
-i386                   randconfig-x074-201732
-i386                   randconfig-x070-201732
-i386                   randconfig-x072-201732
-i386                   randconfig-x079-201732
-i386                   randconfig-x077-201732
-i386                   randconfig-x078-201732
-i386                   randconfig-x073-201732
-arm                          badge4_defconfig
-arm                           u8500_defconfig
-powerpc                  storcenter_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-08121922
-i386                   randconfig-x000-201732
-i386                   randconfig-x003-201732
-i386                   randconfig-x009-201732
-i386                   randconfig-x004-201732
-i386                   randconfig-x001-201732
-i386                   randconfig-x008-201732
-i386                   randconfig-x005-201732
-i386                   randconfig-x007-201732
-i386                   randconfig-x002-201732
-i386                   randconfig-x006-201732
-x86_64                 randconfig-x007-201732
-x86_64                 randconfig-x001-201732
-x86_64                 randconfig-x000-201732
-x86_64                 randconfig-x006-201732
-x86_64                 randconfig-x003-201732
-x86_64                 randconfig-x004-201732
-x86_64                 randconfig-x009-201732
-x86_64                 randconfig-x005-201732
-x86_64                 randconfig-x008-201732
-x86_64                 randconfig-x002-201732
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                       versatile_defconfig
-cris                    etrax-100lx_defconfig
-x86_64                randconfig-ws0-08121906
-powerpc                      obs600_defconfig
-sh                          sdk7786_defconfig
-xtensa                  audio_kc705_defconfig
-x86_64                 randconfig-r0-08121934
-alpha                            alldefconfig
-arm                         lpc18xx_defconfig
-blackfin                            defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-x0-08121902
+This is on an Atom D525 with an 82574L and running 2 GB streams across a pair of interfaces with iperf3.
 
-Thanks,
-Fengguang
+-Philip
+
+
