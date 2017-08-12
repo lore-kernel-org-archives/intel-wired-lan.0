@@ -1,67 +1,36 @@
-From: Philip Prindeville <philipp_subx@redfish-solutions.com>
-Date: Fri, 11 Aug 2017 20:47:14 -0600
-Subject: [Intel-wired-lan] [PATCH 5/5] e1000e: Avoid receiver overrun
-	interrupt bursts
-In-Reply-To: <49B1F3E9-2A99-4AD6-9574-FC3960E67A77@redfish-solutions.com>
-References: <20170721160937.GA22632@csclub.uwaterloo.ca>
- <20170721183627.13373-1-bpoirier@suse.com>
- <20170721183627.13373-5-bpoirier@suse.com>
- <20170721184848.GU18556@csclub.uwaterloo.ca>
- <49B1F3E9-2A99-4AD6-9574-FC3960E67A77@redfish-solutions.com>
-Message-ID: <C95AF637-ACAB-4EA9-A287-8DB99A83B830@redfish-solutions.com>
+From: Juergen Gross <jgross@suse.com>
+Date: Sat, 12 Aug 2017 18:09:46 +0200
+Subject: [Intel-wired-lan] [PATCH] net/i40e: use cpumask_copy() for
+	assigning cpumask
+Message-ID: <20170812160946.2278-1-jgross@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Using direct assignment for a cpumask is wrong, cpumask_copy() should
+be used instead.
 
-> On Aug 11, 2017, at 8:13 PM, Philip Prindeville <philipp_subx@redfish-solutions.com> wrote:
-> 
->> 
->> On Jul 21, 2017, at 12:48 PM, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
->> 
->> On Fri, Jul 21, 2017 at 11:36:27AM -0700, Benjamin Poirier wrote:
->>> When e1000e_poll() is not fast enough to keep up with incoming traffic, the
->>> adapter (when operating in msix mode) raises the Other interrupt to signal
->>> Receiver Overrun.
->>> 
->>> This is a double problem because 1) at the moment e1000_msix_other()
->>> assumes that it is only called in case of Link Status Change and 2) if the
->>> condition persists, the interrupt is repeatedly raised again in quick
->>> succession.
->>> 
->>> Ideally we would configure the Other interrupt to not be raised in case of
->>> receiver overrun but this doesn't seem possible on this adapter. Instead,
->>> we handle the first part of the problem by reverting to the practice of
->>> reading ICR in the other interrupt handler, like before commit 16ecba59bc33
->>> ("e1000e: Do not read ICR in Other interrupt"). Thanks to commit
->>> 0a8047ac68e5 ("e1000e: Fix msi-x interrupt automask") which cleared IAME
->>> from CTRL_EXT, reading ICR doesn't interfere with RxQ0, TxQ0 interrupts
->>> anymore. We handle the second part of the problem by not re-enabling the
->>> Other interrupt right away when there is overrun. Instead, we wait until
->>> traffic subsides, napi polling mode is exited and interrupts are
->>> re-enabled.
->>> 
->>> Reported-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
->>> Fixes: 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt")
->>> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
->> 
->> Any chance of this fix hitting -stable?  After all adapter reset under
->> load is not nice.
->> 
-> 
-> 
-> I tried this patch sequence and I?m seeing a 2% drop in throughput.  CPU utilization at softIRQ is also about 8% higher.  The previous single patch that went out to fix this problem had better performance.
-> 
-> This is on an Atom D525 with an 82574L and running 2 GB streams across a pair of interfaces with iperf3.
-> 
-> -Philip
+Cc: stable at vger.kernel.org
+Signed-off-by: Juergen Gross <jgross@suse.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-Actually, after turning off MSI-X mode (and using MSI mode instead), and setting InterruptRateThrottle to ?4? (conservative dynamic mode) across all interfaces, I?m actually seeing slightly better throughput than the earlier patch? with comparable overall CPU utilization and SoftIRQ utilization.
-
-So setting the module parameters correctly for routing (and not end-system parameters) makes a big difference when routing.
-
--Philip
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 2db93d3f6d23..c0e42d162c7c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -3495,7 +3495,7 @@ static void i40e_irq_affinity_notify(struct irq_affinity_notify *notify,
+ 	struct i40e_q_vector *q_vector =
+ 		container_of(notify, struct i40e_q_vector, affinity_notify);
+ 
+-	q_vector->affinity_mask = *mask;
++	cpumask_copy(&q_vector->affinity_mask, mask);
+ }
+ 
+ /**
+-- 
+2.12.3
 
