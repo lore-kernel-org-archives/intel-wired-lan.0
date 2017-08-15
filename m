@@ -1,55 +1,40 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 15 Aug 2017 08:59:54 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: restore normal RSS after
-	last macvlan offload is removed
-Message-ID: <1502812794-452204-1-git-send-email-shannon.nelson@oracle.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 15 Aug 2017 17:24:14 +0000
+Subject: [Intel-wired-lan] [next PATCH S77-V3 01/10] i40e: fix for
+	flow	director counters not wrapping as expected
+In-Reply-To: <20170714132709.52657-1-alice.michael@intel.com>
+References: <20170714132709.52657-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E90AEE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Just like when the last VF is removed, we need to restore normal
-operations after the last macvlan offload is removed, else we
-get stuck in single queue operations.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Friday, July 14, 2017 6:27 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: Stachura, Mariusz <mariusz.stachura@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S77-V3 01/10] i40e: fix for flow
+> director counters not wrapping as expected
+> 
+> From: Mariusz Stachura <mariusz.stachura@intel.com>
+> 
+> An eratta with GLQF_PCNT causes it to not wrap as expected. This can cause
+> an error in flow director statistics. This patch resets affected counters just
+> after reading.
+> 
+> Testing Hints (required if no HSD): DCR 2187
+> 
+> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 35 +++++++++++++++++++--
+> --------
+>  1 file changed, 23 insertions(+), 12 deletions(-)
 
-To test:
-ethtool -l eth1   # note the number of queues in use, ~= cpus
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-ethtool -K eth1 l2-fwd-offload on
-ip link add mv1 link eth1 type macvlan mode bridge
-ip link set dev mv1 up
-ip link del mv1
-
-ethtool -l eth1   # are we back to the same # of queues, or stuck on 1?
-
-Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 0f867dc..cedaf1c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -9728,6 +9728,17 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
- 	limit = find_last_bit(&adapter->fwd_bitmask, 32);
- 	adapter->ring_feature[RING_F_VMDQ].limit = limit + 1;
- 	ixgbe_fwd_ring_down(fwd_adapter->netdev, fwd_adapter);
-+
-+	/* go back to full RSS if we're done with our VMQs */
-+	if (adapter->ring_feature[RING_F_VMDQ].limit == 1) {
-+		int rss = min_t(int, ixgbe_max_rss_indices(adapter),
-+				num_online_cpus());
-+
-+		adapter->flags &= ~IXGBE_FLAG_VMDQ_ENABLED;
-+		adapter->flags &= ~IXGBE_FLAG_SRIOV_ENABLED;
-+		adapter->ring_feature[RING_F_RSS].limit = rss;
-+	}
-+
- 	ixgbe_setup_tc(pdev, netdev_get_num_tc(pdev));
- 	netdev_dbg(pdev, "pool %i:%i queues %i:%i VSI bitmask %lx\n",
- 		   fwd_adapter->pool, adapter->num_rx_pools,
--- 
-1.7.1
 
