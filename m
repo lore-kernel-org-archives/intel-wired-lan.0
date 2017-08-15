@@ -1,230 +1,55 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 15 Aug 2017 23:28:11 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 120c2d7f1e7122ec8d4ec028fa4803993154fbd8
-Message-ID: <5993130b.JWYubGKKyBOD+I+Q%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Tue, 15 Aug 2017 08:59:54 -0700
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: restore normal RSS after
+	last macvlan offload is removed
+Message-ID: <1502812794-452204-1-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-120c2d7f1e7122ec8d4ec028fa4803993154fbd8  ixgbe: fix masking of bits read from IXGBE_VXLANCTRL register
+Just like when the last VF is removed, we need to restore normal
+operations after the last macvlan offload is removed, else we
+get stuck in single queue operations.
 
-elapsed time: 423m
+To test:
+ethtool -l eth1   # note the number of queues in use, ~= cpus
 
-configs tested: 206
+ethtool -K eth1 l2-fwd-offload on
+ip link add mv1 link eth1 type macvlan mode bridge
+ip link set dev mv1 up
+ip link del mv1
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+ethtool -l eth1   # are we back to the same # of queues, or stuck on 1?
 
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-m68k                          multi_defconfig
-powerpc                     kmeter1_defconfig
-sh                   sh7770_generic_defconfig
-i386                               tinyconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-arm                          gemini_defconfig
-arm                          ixp4xx_defconfig
-arm                        magician_defconfig
-m68k                       m5249evb_defconfig
-powerpc                    gamecube_defconfig
-s390                                defconfig
-arm                           efm32_defconfig
-arm                       versatile_defconfig
-m32r                             allyesconfig
-x86_64                randconfig-in0-08152030
-x86_64                randconfig-in0-08152213
-i386                   randconfig-x019-201733
-i386                   randconfig-x013-201733
-i386                   randconfig-x016-201733
-i386                   randconfig-x012-201733
-i386                   randconfig-x018-201733
-i386                   randconfig-x010-201733
-i386                   randconfig-x015-201733
-i386                   randconfig-x011-201733
-i386                   randconfig-x017-201733
-i386                   randconfig-x014-201733
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201733
-x86_64                 randconfig-x007-201733
-x86_64                 randconfig-x001-201733
-x86_64                 randconfig-x000-201733
-x86_64                 randconfig-x006-201733
-x86_64                 randconfig-x003-201733
-x86_64                 randconfig-x004-201733
-x86_64                 randconfig-x009-201733
-x86_64                 randconfig-x005-201733
-x86_64                 randconfig-x008-201733
-x86_64                 randconfig-x002-201733
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                            allnoconfig
-mips                      fuloong2e_defconfig
-xtensa                  nommu_kc705_defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-m32r                         opsput_defconfig
-powerpc                    amigaone_defconfig
-sh                   sh7724_generic_defconfig
-arm                              zx_defconfig
-mips                       markeins_defconfig
-mips                       rbtx49xx_defconfig
-m32r                        oaks32r_defconfig
-mips                          malta_defconfig
-powerpc                      obs600_defconfig
-m68k                       m5475evb_defconfig
-parisc                         a500_defconfig
-s390                             alldefconfig
-blackfin             BF527-EZKIT-V2_defconfig
-openrisc                         allmodconfig
-mips                         mpc30x_defconfig
-mips                        xilfpga_defconfig
-powerpc                      tqm8xx_defconfig
-x86_64                 randconfig-g0-08152211
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-x86_64                                  kexec
-i386                     randconfig-a0-201733
-i386                     randconfig-a1-201733
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-x86_64                 randconfig-x016-201733
-x86_64                 randconfig-x011-201733
-x86_64                 randconfig-x014-201733
-x86_64                 randconfig-x019-201733
-x86_64                 randconfig-x012-201733
-x86_64                 randconfig-x018-201733
-x86_64                 randconfig-x013-201733
-x86_64                 randconfig-x015-201733
-x86_64                 randconfig-x010-201733
-x86_64                 randconfig-x017-201733
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s1-08141822
-i386                   randconfig-s0-08141822
-x86_64                           allmodconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201733
-i386                   randconfig-b0-08152221
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201733
-i386                     randconfig-i0-201733
-x86_64                 randconfig-u0-08152234
-cris                             allmodconfig
-sparc                             allnoconfig
-arm                            hisi_defconfig
-ia64                             alldefconfig
-x86_64                randconfig-ne0-08152109
-x86_64                randconfig-ne0-08152151
-x86_64                randconfig-ne0-08152217
-mips                           mtx1_defconfig
-mips                         tb0226_defconfig
-powerpc                 linkstation_defconfig
-xtensa                  audio_kc705_defconfig
-powerpc                 mpc836x_rdk_defconfig
-powerpc                      walnut_defconfig
-powerpc64                         allnoconfig
-sh                ecovec24-romimage_defconfig
-powerpc               mpc86xx_basic_defconfig
-powerpc                  mpc885_ads_defconfig
-sparc64                          allyesconfig
-arm                       aspeed_g4_defconfig
-mips                         tb0287_defconfig
-powerpc                     asp8347_defconfig
-sh                           se7722_defconfig
-powerpc                          g5_defconfig
-powerpc                      ppc44x_defconfig
-arm                          nuc910_defconfig
-i386                   randconfig-x075-201733
-i386                   randconfig-x076-201733
-i386                   randconfig-x071-201733
-i386                   randconfig-x074-201733
-i386                   randconfig-x070-201733
-i386                   randconfig-x072-201733
-i386                   randconfig-x079-201733
-i386                   randconfig-x077-201733
-i386                   randconfig-x073-201733
-i386                   randconfig-x078-201733
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                randconfig-ws0-08152111
-blackfin                  CM-BF537E_defconfig
-m68k                       m5208evb_defconfig
-microblaze                       allyesconfig
-sh                          sdk7780_defconfig
-i386                   randconfig-x000-201733
-i386                   randconfig-x003-201733
-i386                   randconfig-x009-201733
-i386                   randconfig-x004-201733
-i386                   randconfig-x001-201733
-i386                   randconfig-x008-201733
-i386                   randconfig-x005-201733
-i386                   randconfig-x007-201733
-i386                   randconfig-x002-201733
-i386                   randconfig-x006-201733
+Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-Thanks,
-Fengguang
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 0f867dc..cedaf1c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -9728,6 +9728,17 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
+ 	limit = find_last_bit(&adapter->fwd_bitmask, 32);
+ 	adapter->ring_feature[RING_F_VMDQ].limit = limit + 1;
+ 	ixgbe_fwd_ring_down(fwd_adapter->netdev, fwd_adapter);
++
++	/* go back to full RSS if we're done with our VMQs */
++	if (adapter->ring_feature[RING_F_VMDQ].limit == 1) {
++		int rss = min_t(int, ixgbe_max_rss_indices(adapter),
++				num_online_cpus());
++
++		adapter->flags &= ~IXGBE_FLAG_VMDQ_ENABLED;
++		adapter->flags &= ~IXGBE_FLAG_SRIOV_ENABLED;
++		adapter->ring_feature[RING_F_RSS].limit = rss;
++	}
++
+ 	ixgbe_setup_tc(pdev, netdev_get_num_tc(pdev));
+ 	netdev_dbg(pdev, "pool %i:%i queues %i:%i VSI bitmask %lx\n",
+ 		   fwd_adapter->pool, adapter->num_rx_pools,
+-- 
+1.7.1
+
