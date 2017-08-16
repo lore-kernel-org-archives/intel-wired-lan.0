@@ -1,43 +1,46 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 15 Aug 2017 23:13:18 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: restore normal RSS
- after	last macvlan offload is removed
-In-Reply-To: <1502812794-452204-1-git-send-email-shannon.nelson@oracle.com>
-References: <1502812794-452204-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E90B2F@ORSMSX104.amr.corp.intel.com>
+From: Stefano Brivio <sbrivio@redhat.com>
+Date: Wed, 16 Aug 2017 11:52:33 +0200
+Subject: [Intel-wired-lan] [PATCH] net/i40e: use cpumask_copy() for
+	assigning cpumask
+In-Reply-To: <20170812160946.2278-1-jgross@suse.com>
+References: <20170812160946.2278-1-jgross@suse.com>
+Message-ID: <20170816115233.6cc33078@elisabeth>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Shannon Nelson
-> Sent: Tuesday, August 15, 2017 9:00 AM
-> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Cc: davem at davemloft.net
-> Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: restore normal RSS after
-> last macvlan offload is removed
-> 
-> Just like when the last VF is removed, we need to restore normal operations
-> after the last macvlan offload is removed, else we get stuck in single queue
-> operations.
-> 
-> To test:
-> ethtool -l eth1   # note the number of queues in use, ~= cpus
-> 
-> ethtool -K eth1 l2-fwd-offload on
-> ip link add mv1 link eth1 type macvlan mode bridge ip link set dev mv1 up ip
-> link del mv1
-> 
-> ethtool -l eth1   # are we back to the same # of queues, or stuck on 1?
-> 
-> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   11 +++++++++++
->  1 files changed, 11 insertions(+), 0 deletions(-)
+Hi Juergen,
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+On Sat, 12 Aug 2017 18:09:46 +0200
+Juergen Gross <jgross@suse.com> wrote:
+
+> Using direct assignment for a cpumask is wrong, cpumask_copy() should
+> be used instead.
+
+Perhaps a Fixes: tag might be helpful here, such as:
+
+	Fixes: 96db776a3682 ("i40e/i40evf: fix interrupt affinity bug")
+
+as I reported in my other (late) patch:
+
+	http://marc.info/?l=linux-netdev&m=150279303222066&w=2
+
+> Cc: stable at vger.kernel.org
+
+and maybe also an indication about which versions this applies to, such as
+
+Cc: stable at vger.kernel.org # 4.10+
+
+In general, feel free to copy from my commit message.
+
+These comments also apply to:
+
+	[PATCH] net/i40evf: use cpumask_copy() for assigning cpumask
+
+Thanks,
 
 
+--
+Stefano
