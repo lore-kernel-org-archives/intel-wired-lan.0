@@ -1,8 +1,10 @@
 From: Ding Tianhong <dingtianhong@huawei.com>
-Date: Wed, 16 Aug 2017 17:41:45 +0800
-Subject: [Intel-wired-lan] [PATCH net 0/2] net: ixgbe: Use new flag to
-	disable Relaxed Ordering
-Message-ID: <1502876507-9360-1-git-send-email-dingtianhong@huawei.com>
+Date: Wed, 16 Aug 2017 17:41:46 +0800
+Subject: [Intel-wired-lan] [PATCH net 1/2] Revert commit 1a8b6d76dc5b
+	("net:add one common config...")
+In-Reply-To: <1502876507-9360-1-git-send-email-dingtianhong@huawei.com>
+References: <1502876507-9360-1-git-send-email-dingtianhong@huawei.com>
+Message-ID: <1502876507-9360-2-git-send-email-dingtianhong@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +19,57 @@ Device Control register, so the PCIe device drivers could
 query PCIe configuration space to determine if it can send
 TLPs to Root Port with the Relaxed Ordering Attributes set.
 
-The ixgbe driver could use this flag to determine if it can
-send TLPs to Root Port with the Relaxed Ordering Attributes set.
+With this new flag  we don't need the config ARCH_WANT_RELAX_ORDER
+to control the Relaxed Ordering Attributes for the ixgbe drivers
+just like the commit 1a8b6d76dc5b ("net:add one common config...") did,
+so revert this commit.
 
-Ding Tianhong (2):
-  Revert commit 1a8b6d76dc5b ("net:add one common config...")
-  net: ixgbe: Use new IXGBE_FLAG2_ROOT_NO_RELAXED_ORDERING flag
+Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
+---
+ arch/Kconfig                                    | 3 ---
+ arch/sparc/Kconfig                              | 1 -
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
+ 3 files changed, 1 insertion(+), 5 deletions(-)
 
- arch/Kconfig                                    |  3 --
- arch/sparc/Kconfig                              |  1 -
- drivers/net/ethernet/intel/ixgbe/ixgbe.h        |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c  | 37 ++++++++++++-------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 32 +++++++++++----------
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   | 17 ++++++++++++
- 6 files changed, 53 insertions(+), 38 deletions(-)
-
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 21d0089..00cfc63 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -928,9 +928,6 @@ config STRICT_MODULE_RWX
+ 	  and non-text memory will be made non-executable. This provides
+ 	  protection against certain security exploits (e.g. writing to text)
+ 
+-config ARCH_WANT_RELAX_ORDER
+-	bool
+-
+ config REFCOUNT_FULL
+ 	bool "Perform full reference count validation at the expense of speed"
+ 	help
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index a4a6261..987a575 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -44,7 +44,6 @@ config SPARC
+ 	select ARCH_HAS_SG_CHAIN
+ 	select CPU_NO_EFFICIENT_FFS
+ 	select LOCKDEP_SMALL if LOCKDEP
+-	select ARCH_WANT_RELAX_ORDER
+ 
+ config SPARC32
+ 	def_bool !64BIT
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 4e35e70..d4933d2 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -350,7 +350,7 @@ s32 ixgbe_start_hw_gen2(struct ixgbe_hw *hw)
+ 	}
+ 	IXGBE_WRITE_FLUSH(hw);
+ 
+-#ifndef CONFIG_ARCH_WANT_RELAX_ORDER
++#ifndef CONFIG_SPARC
+ 	/* Disable relaxed ordering */
+ 	for (i = 0; i < hw->mac.max_tx_queues; i++) {
+ 		u32 regval;
 -- 
 1.8.3.1
 
