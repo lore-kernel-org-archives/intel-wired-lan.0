@@ -1,176 +1,135 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 17 Aug 2017 13:03:37 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 7c75fe6c621dff1abd260247de13aa9728a17aeb
-Message-ID: <599523a9.3ajTYQ71uxuy+N8C%fengguang.wu@intel.com>
+From: Stefano Brivio <sbrivio@redhat.com>
+Date: Thu, 17 Aug 2017 11:24:34 +0200
+Subject: [Intel-wired-lan] [PATCH] i40e{,
+ vf}: Fix out-of-bound cpumask read in IRQ affinity handler
+In-Reply-To: <ae9c9586f61e914dc1c6fe2e6ac1fb2bf07283bc.1502792828.git.sbrivio@redhat.com>
+References: <ae9c9586f61e914dc1c6fe2e6ac1fb2bf07283bc.1502792828.git.sbrivio@redhat.com>
+Message-ID: <20170817112434.28e9e35c@elisabeth>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-7c75fe6c621dff1abd260247de13aa9728a17aeb  ixgbe: restore normal RSS after last macvlan offload is removed
+Jeff, Dave,
 
-elapsed time: 289m
+This is a pretty bad issue as one can crash a kernel quite easily by
+forcing interrupt affinity changes.
 
-configs tested: 153
+We now have three versions of this patch, with exactly the same code
+changes. I posted mine as I independently found this issue last week
+and didn't notice Juergen patch which was posted two days earlier.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I didn't notice the other patch in the pull request from Jeff either, I
+just checked his tree and it wasn't there until yesterday. Frankly
+speaking, I think this was quite vaguely worded and hidden in the cover
+letter, and queued up for net-next, while it should really go to net as
+it fixes a panic in mainline.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                               allmodconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-arm                          moxart_defconfig
-microblaze                       allyesconfig
-sh                      rts7751r2d1_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                           allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-mips                            ar7_defconfig
-mips                        workpad_defconfig
-um                               allyesconfig
-parisc                          712_defconfig
-score                      spct6600_defconfig
-i386                               tinyconfig
-i386                     randconfig-n0-201733
-x86_64                 randconfig-x007-201733
-x86_64                 randconfig-x001-201733
-x86_64                 randconfig-x000-201733
-x86_64                 randconfig-x006-201733
-x86_64                 randconfig-x003-201733
-x86_64                 randconfig-x004-201733
-x86_64                 randconfig-x009-201733
-x86_64                 randconfig-x005-201733
-x86_64                 randconfig-x008-201733
-x86_64                 randconfig-x002-201733
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-x010-201733
-x86_64                 randconfig-x011-201733
-x86_64                 randconfig-x012-201733
-x86_64                 randconfig-x013-201733
-x86_64                 randconfig-x014-201733
-x86_64                 randconfig-x015-201733
-x86_64                 randconfig-x016-201733
-x86_64                 randconfig-x017-201733
-x86_64                 randconfig-x018-201733
-x86_64                 randconfig-x019-201733
-i386                     randconfig-a0-201733
-i386                     randconfig-a1-201733
-x86_64                 randconfig-s0-08171148
-x86_64                 randconfig-s1-08171148
-x86_64                 randconfig-s2-08171148
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-b0-08160601
-i386                     randconfig-i0-201733
-i386                     randconfig-i1-201733
-mips                      loongson3_defconfig
-parisc                           allmodconfig
-x86_64                 randconfig-u0-08171119
-m32r                    m32700ut.up_defconfig
-sh                               allyesconfig
-x86_64                randconfig-ne0-08170132
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-h0-08170551
-x86_64                 randconfig-h0-08171215
-i386                   randconfig-x075-201733
-i386                   randconfig-x076-201733
-i386                   randconfig-x071-201733
-i386                   randconfig-x074-201733
-i386                   randconfig-x070-201733
-i386                   randconfig-x072-201733
-i386                   randconfig-x079-201733
-i386                   randconfig-x077-201733
-i386                   randconfig-x073-201733
-i386                   randconfig-x078-201733
-i386                   randconfig-x000-201733
-i386                   randconfig-x003-201733
-i386                   randconfig-x009-201733
-i386                   randconfig-x004-201733
-i386                   randconfig-x001-201733
-i386                   randconfig-x008-201733
-i386                   randconfig-x005-201733
-i386                   randconfig-x007-201733
-i386                   randconfig-x002-201733
-i386                   randconfig-x006-201733
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-powerpc                        icon_defconfig
-powerpc                 mpc836x_mds_defconfig
-sh                           sh2007_defconfig
-x86_64                randconfig-ws0-08170136
-ia64                        generic_defconfig
-m32r                   mappi2.vdec2_defconfig
-mips                        nlm_xlp_defconfig
-mips                        qi_lb60_defconfig
-i386                             allmodconfig
-powerpc                      makalu_defconfig
-sh                           se7750_defconfig
-arm                          ks8695_defconfig
-arm                         lpc18xx_defconfig
-powerpc                      katmai_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x0-08171139
+FWIW, I don't care too much about which version ends up applied, even
+though I'd prefer one which a commit message which clearly describes
+the issue with its implications and reports the right Fixed: tag. Both
+my patch and Juergen's v2, posted later, are fine by me (I still think
+mine is a bit clearer).
 
-Thanks,
-Fengguang
+--
+Stefano
+
+On Tue, 15 Aug 2017 12:30:14 +0200
+Stefano Brivio <sbrivio@redhat.com> wrote:
+
+> The cpumask used in i40e{,vf}_irq_affinity_notify() is allocated
+> by irq_affinity_notify() with alloc_cpumask_var(), which doesn't
+> allocate NR_CPUS bits, but only nr_cpumask_bits bits. If we just
+> dereference it, we'll read way more than what is allocated, e.g.
+> 1024 bytes vs. 8 bytes allocated on x86_64 machine with 24 CPUs.
+> 
+> Use cpumask_copy() instead. A comprehensive explanation is given
+> in the comments about cpumask_var_t, in include/linux/cpumask.h.
+> 
+> KASAN reports:
+> [   25.242312] BUG: KASAN: slab-out-of-bounds in i40e_irq_affinity_notify+0x30/0x50 [i40e] at addr ffff880462eea960
+> [   25.242315] Read of size 1024 by task kworker/2:1/170
+> [   25.242322] CPU: 2 PID: 170 Comm: kworker/2:1 Not tainted 4.11.0-22.el7a.x86_64 #1
+> [   25.242325] Hardware name: HP ProLiant DL380 Gen9, BIOS P89 05/06/2015
+> [   25.242336] Workqueue: events irq_affinity_notify
+> [   25.242340] Call Trace:
+> [   25.242350]  dump_stack+0x63/0x8d
+> [   25.242358]  kasan_object_err+0x21/0x70
+> [   25.242364]  kasan_report+0x288/0x540
+> [   25.242397]  ? i40e_irq_affinity_notify+0x30/0x50 [i40e]
+> [   25.242403]  check_memory_region+0x13c/0x1a0
+> [   25.242408]  __asan_loadN+0xf/0x20
+> [   25.242440]  i40e_irq_affinity_notify+0x30/0x50 [i40e]
+> [   25.242446]  irq_affinity_notify+0x1b4/0x230
+> [   25.242452]  ? irq_set_affinity_notifier+0x130/0x130
+> [   25.242457]  ? kasan_slab_free+0x89/0xc0
+> [   25.242466]  process_one_work+0x32f/0x6f0
+> [   25.242472]  worker_thread+0x89/0x770
+> [   25.242481]  ? pci_mmcfg_check_reserved+0xc0/0xc0
+> [   25.242488]  kthread+0x18c/0x1e0
+> [   25.242493]  ? process_one_work+0x6f0/0x6f0
+> [   25.242499]  ? kthread_create_on_node+0xc0/0xc0
+> [   25.242506]  ret_from_fork+0x2c/0x40
+> [   25.242511] Object at ffff880462eea960, in cache kmalloc-8 size: 8
+> [   25.242513] Allocated:
+> [   25.242514] PID = 170
+> [   25.242522]  save_stack_trace+0x1b/0x20
+> [   25.242529]  save_stack+0x46/0xd0
+> [   25.242533]  kasan_kmalloc+0xad/0xe0
+> [   25.242537]  __kmalloc_node+0x12c/0x2b0
+> [   25.242542]  alloc_cpumask_var_node+0x3c/0x60
+> [   25.242546]  alloc_cpumask_var+0xe/0x10
+> [   25.242550]  irq_affinity_notify+0x94/0x230
+> [   25.242555]  process_one_work+0x32f/0x6f0
+> [   25.242559]  worker_thread+0x89/0x770
+> [   25.242564]  kthread+0x18c/0x1e0
+> [   25.242568]  ret_from_fork+0x2c/0x40
+> [   25.242569] Freed:
+> [   25.242570] PID = 0
+> [   25.242572] (stack is not available)
+> [   25.242573] Memory state around the buggy address:
+> [   25.242578]  ffff880462eea800: fc fc 00 fc fc 00 fc fc 00 fc fc 00 fc fc fb fc
+> [   25.242582]  ffff880462eea880: fc fb fc fc fb fc fc 00 fc fc 00 fc fc 00 fc fc
+> [   25.242586] >ffff880462eea900: 00 fc fc 00 fc fc 00 fc fc fb fc fc 00 fc fc fc
+> [   25.242588]                                                           ^
+> [   25.242592]  ffff880462eea980: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+> [   25.242596]  ffff880462eeaa00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+> [   25.242597] ==================================================================
+> 
+> Fixes: 96db776a3682 ("i40e/i40evf: fix interrupt affinity bug")
+> Signed-off-by: Stefano Brivio <sbrivio@redhat.com>
+> ---
+> This should be considered for -stable, back to 4.10.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 2db93d3f6d23..c0e42d162c7c 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -3495,7 +3495,7 @@ static void i40e_irq_affinity_notify(struct irq_affinity_notify *notify,
+>  	struct i40e_q_vector *q_vector =
+>  		container_of(notify, struct i40e_q_vector, affinity_notify);
+>  
+> -	q_vector->affinity_mask = *mask;
+> +	cpumask_copy(&q_vector->affinity_mask, mask);
+>  }
+>  
+>  /**
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> index 7c213a347909..a4b60367ecce 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> @@ -520,7 +520,7 @@ static void i40evf_irq_affinity_notify(struct irq_affinity_notify *notify,
+>  	struct i40e_q_vector *q_vector =
+>  		container_of(notify, struct i40e_q_vector, affinity_notify);
+>  
+> -	q_vector->affinity_mask = *mask;
+> +	cpumask_copy(&q_vector->affinity_mask, mask);
+>  }
+>  
+>  /**
+
