@@ -1,119 +1,756 @@
 From: Amritha Nambiar <amritha.nambiar@intel.com>
-Date: Thu, 17 Aug 2017 03:00:55 -0700
-Subject: [Intel-wired-lan] [PATCH v2 2/6] [net-next]net: i40e: Add macro for
-	PF reset bit
+Date: Thu, 17 Aug 2017 03:01:05 -0700
+Subject: [Intel-wired-lan] [PATCH v2 4/6] [net-next]net: i40e: Enable mqprio
+ full offload mode in the i40e driver for configuring TCs and queue mapping
 In-Reply-To: <150296373549.16167.14331445560838257351.stgit@anamdev.jf.intel.com>
 References: <150296373549.16167.14331445560838257351.stgit@anamdev.jf.intel.com>
-Message-ID: <150296405502.16167.9720405534691757130.stgit@anamdev.jf.intel.com>
+Message-ID: <150296406520.16167.5021074555537720773.stgit@anamdev.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Introduce a macro for the bit setting the PF reset flag and
-update its usages. This makes it easier to use this flag
-in functions to be introduced in future without encountering
-checkpatch issues related to alignment and line over 80
-characters.
+The i40e driver is modified to enable the new mqprio hardware
+offload mode and factor the TCs and queue configuration by
+creating channel VSIs. In this mode, the priority to traffic
+class mapping and the user specified queue ranges are used
+to configure the traffic classes when the 'hw' option is set
+to 2.
+
+Example:
+# tc qdisc add dev eth0 root mqprio num_tc 4\
+  map 0 0 0 0 1 2 2 3 queues 2 at 0 2 at 2 1 at 4 1 at 5 hw 2
+
+# tc qdisc show dev eth0
+
+qdisc mqprio 8038: root  tc 4 map 0 0 0 0 1 2 2 3 0 0 0 0 0 0 0 0
+             queues:(0:1) (2:3) (4:4) (5:5)
+
+The HW channels created are removed and all the queue configuration
+is set to default when the qdisc is detached from the root of the
+device.
+
+# tc qdisc del dev eth0 root
+
+This patch also disables setting up channels via ethtool (ethtool -L)
+when the TCs are configured using mqprio scheduler.
+
+The patch also limits setting ethtool Rx flow hash indirection
+(ethtool -X eth0 equal N) to max queues configured via mqprio.
+The Rx flow hash indirection input through ethtool should be
+validated so that it is within in the queue range configured via
+tc/mqprio. The bound checking is achieved by reporting the current
+rss size to the kernel when queues are configured via mqprio.
+
+Example:
+# tc qdisc add dev eth0 root mqprio num_tc 4\
+  map 0 0 0 1 0 2 3 0 queues 2 at 0 4 at 2 8 at 6 11 at 14 hw 2
+
+# ethtool -X eth0 equal 12
+Cannot set RX flow hash configuration: Invalid argument
+
+v2: Clean up __i40e_setup_tc() and i40e_setup_tc() to work
+with Jiri's changes to the ndo_setup_tc interface which
+now takes a type and the type_data for the offload.
+No need to disable ATR in MQPRIO mode.
 
 Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h             |    2 ++
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |    3 +--
- drivers/net/ethernet/intel/i40e/i40e_main.c        |    9 ++++-----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |    5 ++---
- 4 files changed, 9 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h         |    3 
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |    8 
+ drivers/net/ethernet/intel/i40e/i40e_main.c    |  488 ++++++++++++++++++------
+ 3 files changed, 384 insertions(+), 115 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 890508f..0e53838 100644
+index e259a67..2565280 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -157,6 +157,8 @@ enum i40e_state_t {
- 	__I40E_STATE_SIZE__,
- };
+@@ -54,6 +54,7 @@
+ #include <linux/clocksource.h>
+ #include <linux/net_tstamp.h>
+ #include <linux/ptp_clock_kernel.h>
++#include <net/pkt_cls.h>
+ #include "i40e_type.h"
+ #include "i40e_prototype.h"
+ #include "i40e_client.h"
+@@ -699,6 +700,7 @@ struct i40e_vsi {
+ 	enum i40e_vsi_type type;  /* VSI type, e.g., LAN, FCoE, etc */
+ 	s16 vf_id;		/* Virtual function ID for SRIOV VSIs */
  
-+#define I40E_PF_RESET_FLAG	BIT_ULL(__I40E_PF_RESET_REQUESTED)
++	struct tc_mqprio_qopt_offload mqprio_qopt; /* queue parameters */
+ 	struct i40e_tc_configuration tc_config;
+ 	struct i40e_aqc_vsi_properties_data info;
+ 
+@@ -724,6 +726,7 @@ struct i40e_vsi {
+ 	u16 cnt_q_avail; /* num of queues available for channel usage */
+ 	u16 orig_rss_size;
+ 	u16 current_rss_size;
++	bool reconfig_rss;
+ 
+ 	/* keeps track of next_base_queue to be used for channel setup */
+ 	atomic_t next_base_queue;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index b273c24..326fc18 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2647,7 +2647,7 @@ static int i40e_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
+ 
+ 	switch (cmd->cmd) {
+ 	case ETHTOOL_GRXRINGS:
+-		cmd->data = vsi->num_queue_pairs;
++		cmd->data = vsi->rss_size;
+ 		ret = 0;
+ 		break;
+ 	case ETHTOOL_GRXFH:
+@@ -3892,6 +3892,12 @@ static int i40e_set_channels(struct net_device *dev,
+ 	if (vsi->type != I40E_VSI_MAIN)
+ 		return -EINVAL;
+ 
++	/* We do not support setting channels via ethtool when TCs are
++	 * configured through mqprio
++	 */
++	if (pf->flags & I40E_FLAG_TC_MQPRIO)
++		return -EINVAL;
 +
- /* VSI state flags */
- enum i40e_vsi_state_t {
- 	__I40E_VSI_DOWN,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 8f326f8..b46117e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -798,8 +798,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 		 */
- 		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
- 			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
--			i40e_do_reset_safe(pf,
--					   BIT_ULL(__I40E_PF_RESET_REQUESTED));
-+			i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
- 		}
- 
- 		vsi = i40e_vsi_setup(pf, I40E_VSI_VMDQ2, vsi_seid, 0);
+ 	/* verify they are not requesting separate vectors */
+ 	if (!count || ch->rx_count || ch->tx_count)
+ 		return -EINVAL;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index d2ca98f..9392c5a 100644
+index 64769cb..5b783fc 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5753,7 +5753,7 @@ int i40e_vsi_open(struct i40e_vsi *vsi)
- err_setup_tx:
- 	i40e_vsi_free_tx_resources(vsi);
- 	if (vsi == pf->vsi[pf->lan_vsi])
--		i40e_do_reset(pf, BIT_ULL(__I40E_PF_RESET_REQUESTED), true);
-+		i40e_do_reset(pf, I40E_PF_RESET_FLAG, true);
- 
- 	return err;
+@@ -1589,6 +1589,169 @@ static int i40e_set_mac(struct net_device *netdev, void *p)
  }
-@@ -5881,7 +5881,7 @@ void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags, bool lock_acquired)
- 		wr32(&pf->hw, I40E_GLGEN_RTRIG, val);
- 		i40e_flush(&pf->hw);
  
--	} else if (reset_flags & BIT_ULL(__I40E_PF_RESET_REQUESTED)) {
-+	} else if (reset_flags & I40E_PF_RESET_FLAG) {
- 
- 		/* Request a PF Reset
- 		 *
-@@ -9209,7 +9209,7 @@ static int i40e_set_features(struct net_device *netdev,
- 	need_reset = i40e_set_ntuple(pf, features);
- 
- 	if (need_reset)
--		i40e_do_reset(pf, BIT_ULL(__I40E_PF_RESET_REQUESTED), true);
-+		i40e_do_reset(pf, I40E_PF_RESET_FLAG, true);
- 
- 	return 0;
- }
-@@ -9461,8 +9461,7 @@ static int i40e_ndo_bridge_setlink(struct net_device *dev,
- 				pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
- 			else
- 				pf->flags &= ~I40E_FLAG_VEB_MODE_ENABLED;
--			i40e_do_reset(pf, BIT_ULL(__I40E_PF_RESET_REQUESTED),
--				      true);
-+			i40e_do_reset(pf, I40E_PF_RESET_FLAG, true);
- 			break;
+ /**
++ * i40e_config_rss_aq - Prepare for RSS using AQ commands
++ * @vsi: vsi structure
++ * @seed: RSS hash seed
++ **/
++static int i40e_config_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
++			      u8 *lut, u16 lut_size)
++{
++	struct i40e_pf *pf = vsi->back;
++	struct i40e_hw *hw = &pf->hw;
++	int ret = 0;
++
++	if (seed) {
++		struct i40e_aqc_get_set_rss_key_data *seed_dw =
++			(struct i40e_aqc_get_set_rss_key_data *)seed;
++		ret = i40e_aq_set_rss_key(hw, vsi->id, seed_dw);
++		if (ret) {
++			dev_info(&pf->pdev->dev,
++				 "Cannot set RSS key, err %s aq_err %s\n",
++				 i40e_stat_str(hw, ret),
++				 i40e_aq_str(hw, hw->aq.asq_last_status));
++			return ret;
++		}
++	}
++	if (lut) {
++		bool pf_lut = vsi->type == I40E_VSI_MAIN ? true : false;
++
++		ret = i40e_aq_set_rss_lut(hw, vsi->id, pf_lut, lut, lut_size);
++		if (ret) {
++			dev_info(&pf->pdev->dev,
++				 "Cannot set RSS lut, err %s aq_err %s\n",
++				 i40e_stat_str(hw, ret),
++				 i40e_aq_str(hw, hw->aq.asq_last_status));
++			return ret;
++		}
++	}
++	return ret;
++}
++
++/**
++ * i40e_vsi_config_rss - Prepare for VSI(VMDq) RSS if used
++ * @vsi: VSI structure
++ **/
++static int i40e_vsi_config_rss(struct i40e_vsi *vsi)
++{
++	u8 seed[I40E_HKEY_ARRAY_SIZE];
++	struct i40e_pf *pf = vsi->back;
++	u8 *lut;
++	int ret;
++
++	if (!(pf->hw_features & I40E_HW_RSS_AQ_CAPABLE))
++		return 0;
++	if (!vsi->rss_size)
++		vsi->rss_size = min_t(int, pf->alloc_rss_size,
++				      vsi->num_queue_pairs);
++	if (!vsi->rss_size)
++		return -EINVAL;
++	lut = kzalloc(vsi->rss_table_size, GFP_KERNEL);
++	if (!lut)
++		return -ENOMEM;
++
++	/* Use the user configured hash keys and lookup table if there is one,
++	 * otherwise use default
++	 */
++	if (vsi->rss_lut_user)
++		memcpy(lut, vsi->rss_lut_user, vsi->rss_table_size);
++	else
++		i40e_fill_rss_lut(pf, lut, vsi->rss_table_size, vsi->rss_size);
++	if (vsi->rss_hkey_user)
++		memcpy(seed, vsi->rss_hkey_user, I40E_HKEY_ARRAY_SIZE);
++	else
++		netdev_rss_key_fill((void *)seed, I40E_HKEY_ARRAY_SIZE);
++	ret = i40e_config_rss_aq(vsi, seed, lut, vsi->rss_table_size);
++	kfree(lut);
++	return ret;
++}
++
++/**
++ * i40e_vsi_setup_queue_map_mqprio - Prepares VSI tc_config to have queue
++ * configurations based on MQPRIO options.
++ * @vsi: the VSI being configured,
++ * @ctxt: VSI context structure
++ * @enabled_tc: number of traffic classes to enable
++ **/
++static int i40e_vsi_setup_queue_map_mqprio(struct i40e_vsi *vsi,
++					   struct i40e_vsi_context *ctxt,
++					   u8 enabled_tc)
++{
++	u16 qcount = 0, max_qcount, qmap, sections = 0;
++	int i, override_q, pow, num_qps, ret;
++	u8 netdev_tc = 0, offset = 0;
++
++	if (vsi->type != I40E_VSI_MAIN)
++		return -EINVAL;
++	sections = I40E_AQ_VSI_PROP_QUEUE_MAP_VALID;
++	sections |= I40E_AQ_VSI_PROP_SCHED_VALID;
++	vsi->tc_config.numtc = vsi->mqprio_qopt.qopt.num_tc;
++	vsi->tc_config.enabled_tc = enabled_tc ? enabled_tc : 1;
++	num_qps = vsi->mqprio_qopt.qopt.count[0];
++
++	/* find the next higher power-of-2 of num queue pairs */
++	pow = ilog2(num_qps);
++	if (!is_power_of_2(num_qps))
++		pow++;
++	qmap = (offset << I40E_AQ_VSI_TC_QUE_OFFSET_SHIFT) |
++		(pow << I40E_AQ_VSI_TC_QUE_NUMBER_SHIFT);
++
++	/* Setup queue offset/count for all TCs for given VSI */
++	max_qcount = vsi->mqprio_qopt.qopt.count[0];
++	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
++		/* See if the given TC is enabled for the given VSI */
++		if (vsi->tc_config.enabled_tc & BIT(i)) {
++			offset = vsi->mqprio_qopt.qopt.offset[i];
++			qcount = vsi->mqprio_qopt.qopt.count[i];
++			if (qcount > max_qcount)
++				max_qcount = qcount;
++			vsi->tc_config.tc_info[i].qoffset = offset;
++			vsi->tc_config.tc_info[i].qcount = qcount;
++			vsi->tc_config.tc_info[i].netdev_tc = netdev_tc++;
++		} else {
++			/* TC is not enabled so set the offset to
++			 * default queue and allocate one queue
++			 * for the given TC.
++			 */
++			vsi->tc_config.tc_info[i].qoffset = 0;
++			vsi->tc_config.tc_info[i].qcount = 1;
++			vsi->tc_config.tc_info[i].netdev_tc = 0;
++		}
++	}
++
++	/* Set actual Tx/Rx queue pairs */
++	vsi->num_queue_pairs = offset + qcount;
++
++	/* Setup queue TC[0].qmap for given VSI context */
++	ctxt->info.tc_mapping[0] = cpu_to_le16(qmap);
++	ctxt->info.mapping_flags |= cpu_to_le16(I40E_AQ_VSI_QUE_MAP_CONTIG);
++	ctxt->info.queue_mapping[0] = cpu_to_le16(vsi->base_queue);
++	ctxt->info.valid_sections |= cpu_to_le16(sections);
++
++	/* Reconfigure RSS for main VSI with max queue count */
++	vsi->rss_size = max_qcount;
++	ret = i40e_vsi_config_rss(vsi);
++	if (ret) {
++		dev_info(&vsi->back->pdev->dev,
++			 "Failed to reconfig rss for num_queues (%u)\n",
++			 max_qcount);
++		return ret;
++	}
++	vsi->reconfig_rss = true;
++	dev_dbg(&vsi->back->pdev->dev,
++		"Reconfigured rss with num_queues (%u)\n", max_qcount);
++
++	/* Find queue count available for channel VSIs and starting offset
++	 * for channel VSIs
++	 */
++	override_q = vsi->mqprio_qopt.qopt.count[0];
++	if (override_q && (override_q < vsi->num_queue_pairs)) {
++		vsi->cnt_q_avail = vsi->num_queue_pairs - override_q;
++		atomic_set(&vsi->next_base_queue, override_q);
++	}
++	return 0;
++}
++
++/**
+  * i40e_vsi_setup_queue_map - Setup a VSI queue map based on enabled_tc
+  * @vsi: the VSI being setup
+  * @ctxt: VSI context structure
+@@ -1626,7 +1789,7 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
+ 			numtc = 1;
  		}
- 	}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index e156096..92fe06d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1400,8 +1400,7 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
- 	if (num_vfs) {
- 		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
- 			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
--			i40e_do_reset_safe(pf,
--					   BIT_ULL(__I40E_PF_RESET_REQUESTED));
-+			i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
- 		}
- 		return i40e_pci_sriov_enable(pdev, num_vfs);
- 	}
-@@ -1409,7 +1408,7 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
- 	if (!pci_vfs_assigned(pf->pdev)) {
- 		i40e_free_vfs(pf);
- 		pf->flags &= ~I40E_FLAG_VEB_MODE_ENABLED;
--		i40e_do_reset_safe(pf, BIT_ULL(__I40E_PF_RESET_REQUESTED));
-+		i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
  	} else {
- 		dev_warn(&pdev->dev, "Unable to free VFs because some are assigned to VMs.\n");
- 		return -EINVAL;
+-		/* At least TC0 is enabled in case of non-DCB case */
++		/* At least TC0 is enabled in non-DCB, non-MQPRIO case */
+ 		numtc = 1;
+ 	}
+ 
+@@ -3168,6 +3331,7 @@ static void i40e_vsi_config_dcb_rings(struct i40e_vsi *vsi)
+ 			rx_ring->dcb_tc = 0;
+ 			tx_ring->dcb_tc = 0;
+ 		}
++		return;
+ 	}
+ 
+ 	for (n = 0; n < I40E_MAX_TRAFFIC_CLASS; n++) {
+@@ -4880,6 +5044,24 @@ static u8 i40e_dcb_get_enabled_tc(struct i40e_dcbx_config *dcbcfg)
+ }
+ 
+ /**
++ * i40e_mqprio_get_enabled_tc - Get enabled traffic classes
++ * @pf: PF being queried
++ *
++ * Query the current MQPRIO configuration and return the number of
++ * traffic classes enabled.
++ **/
++static u8 i40e_mqprio_get_enabled_tc(struct i40e_pf *pf)
++{
++	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
++	u8 num_tc = vsi->mqprio_qopt.qopt.num_tc;
++	u8 enabled_tc = 1, i;
++
++	for (i = 1; i < num_tc; i++)
++		enabled_tc |= BIT(i);
++	return enabled_tc;
++}
++
++/**
+  * i40e_pf_get_num_tc - Get enabled traffic classes for PF
+  * @pf: PF being queried
+  *
+@@ -4892,7 +5074,10 @@ static u8 i40e_pf_get_num_tc(struct i40e_pf *pf)
+ 	u8 num_tc = 0;
+ 	struct i40e_dcbx_config *dcbcfg = &hw->local_dcbx_config;
+ 
+-	/* If DCB is not enabled then always in single TC */
++	if (pf->flags & I40E_FLAG_TC_MQPRIO)
++		return pf->vsi[pf->lan_vsi]->mqprio_qopt.qopt.num_tc;
++
++	/* If neither MQPRIO nor DCB is enabled, then always use single TC */
+ 	if (!(pf->flags & I40E_FLAG_DCB_ENABLED))
+ 		return 1;
+ 
+@@ -4921,7 +5106,12 @@ static u8 i40e_pf_get_num_tc(struct i40e_pf *pf)
+  **/
+ static u8 i40e_pf_get_tc_map(struct i40e_pf *pf)
+ {
+-	/* If DCB is not enabled for this PF then just return default TC */
++	if (pf->flags & I40E_FLAG_TC_MQPRIO)
++		return i40e_mqprio_get_enabled_tc(pf);
++
++	/* If neither MQPRIO nor DCB is enabled for this PF then just return
++	 * default TC
++	 */
+ 	if (!(pf->flags & I40E_FLAG_DCB_ENABLED))
+ 		return I40E_DEFAULT_TRAFFIC_CLASS;
+ 
+@@ -5011,6 +5201,9 @@ static int i40e_vsi_configure_bw_alloc(struct i40e_vsi *vsi, u8 enabled_tc,
+ 	i40e_status ret;
+ 	int i;
+ 
++	if ((vsi->back->flags & I40E_FLAG_TC_MQPRIO) ||
++	    !vsi->mqprio_qopt.qopt.hw)
++		return 0;
+ 	bw_data.tc_valid_bits = enabled_tc;
+ 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++)
+ 		bw_data.tc_bw_credits[i] = bw_share[i];
+@@ -5073,6 +5266,9 @@ static void i40e_vsi_config_netdev_tc(struct i40e_vsi *vsi, u8 enabled_tc)
+ 					vsi->tc_config.tc_info[i].qoffset);
+ 	}
+ 
++	if (pf->flags & I40E_FLAG_TC_MQPRIO)
++		return;
++
+ 	/* Assign UP2TC map for the VSI */
+ 	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
+ 		/* Get the actual TC# for the UP */
+@@ -5123,7 +5319,8 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
+ 	int i;
+ 
+ 	/* Check if enabled_tc is same as existing or new TCs */
+-	if (vsi->tc_config.enabled_tc == enabled_tc)
++	if (vsi->tc_config.enabled_tc == enabled_tc &&
++	    vsi->mqprio_qopt.qopt.hw != TC_MQPRIO_HW_OFFLOAD)
+ 		return ret;
+ 
+ 	/* Enable ETS TCs with equal BW Share for now across all VSIs */
+@@ -5146,15 +5343,37 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
+ 	ctxt.vf_num = 0;
+ 	ctxt.uplink_seid = vsi->uplink_seid;
+ 	ctxt.info = vsi->info;
+-	i40e_vsi_setup_queue_map(vsi, &ctxt, enabled_tc, false);
++	if (vsi->back->flags & I40E_FLAG_TC_MQPRIO) {
++		ret = i40e_vsi_setup_queue_map_mqprio(vsi, &ctxt, enabled_tc);
++		if (ret)
++			goto out;
++	} else {
++		i40e_vsi_setup_queue_map(vsi, &ctxt, enabled_tc, false);
++	}
+ 
++	/* On destroying the qdisc, reset vsi->rss_size, as number of enabled
++	 * queues changed.
++	 */
++	if (!vsi->mqprio_qopt.qopt.hw && vsi->reconfig_rss) {
++		vsi->rss_size = min_t(int, vsi->back->alloc_rss_size,
++				      vsi->num_queue_pairs);
++		ret = i40e_vsi_config_rss(vsi);
++		if (ret) {
++			dev_info(&vsi->back->pdev->dev,
++				 "Failed to reconfig rss for num_queues\n");
++			return ret;
++		}
++		vsi->reconfig_rss = false;
++	}
+ 	if (vsi->back->flags & I40E_FLAG_IWARP_ENABLED) {
+ 		ctxt.info.valid_sections |=
+ 				cpu_to_le16(I40E_AQ_VSI_PROP_QUEUE_OPT_VALID);
+ 		ctxt.info.queueing_opt_flags |= I40E_AQ_VSI_QUE_OPT_TCP_ENA;
+ 	}
+ 
+-	/* Update the VSI after updating the VSI queue-mapping information */
++	/* Update the VSI after updating the VSI queue-mapping
++	 * information
++	 */
+ 	ret = i40e_aq_update_vsi_params(&vsi->back->hw, &ctxt, NULL);
+ 	if (ret) {
+ 		dev_info(&vsi->back->pdev->dev,
+@@ -6252,54 +6471,170 @@ void i40e_down(struct i40e_vsi *vsi)
+ }
+ 
+ /**
++ * i40e_validate_mqprio_qopt- validate queue mapping info
++ * @vsi: the VSI being configured
++ * @mqprio_qopt: queue parametrs
++ **/
++static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
++				     struct tc_mqprio_qopt_offload *mqprio_qopt)
++{
++	int i;
++
++	if ((mqprio_qopt->qopt.offset[0] != 0) ||
++	    (mqprio_qopt->qopt.num_tc < 1) ||
++	    (mqprio_qopt->qopt.num_tc > I40E_MAX_TRAFFIC_CLASS))
++		return -EINVAL;
++	for (i = 0; ; i++) {
++		if (!mqprio_qopt->qopt.count[i])
++			return -EINVAL;
++		if (mqprio_qopt->min_rate[i] || mqprio_qopt->max_rate[i])
++			return -EINVAL;
++		if (i >= mqprio_qopt->qopt.num_tc - 1)
++			break;
++		if (mqprio_qopt->qopt.offset[i + 1] !=
++		    (mqprio_qopt->qopt.offset[i] + mqprio_qopt->qopt.count[i]))
++			return -EINVAL;
++	}
++	if (vsi->num_queue_pairs <
++	    (mqprio_qopt->qopt.offset[i] + mqprio_qopt->qopt.count[i])) {
++		return -EINVAL;
++	}
++	return 0;
++}
++
++/**
++ * i40e_vsi_set_default_tc_config - set default values for tc configuration
++ * @vsi: the VSI being configured
++ **/
++static void i40e_vsi_set_default_tc_config(struct i40e_vsi *vsi)
++{
++	u16 qcount;
++	int i;
++
++	/* Only TC0 is enabled */
++	vsi->tc_config.numtc = 1;
++	vsi->tc_config.enabled_tc = 1;
++	qcount = min_t(int, vsi->alloc_queue_pairs,
++		       i40e_pf_get_max_q_per_tc(vsi->back));
++	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
++		/* For the TC that is not enabled set the offset to to default
++		 * queue and allocate one queue for the given TC.
++		 */
++		vsi->tc_config.tc_info[i].qoffset = 0;
++		if (i == 0)
++			vsi->tc_config.tc_info[i].qcount = qcount;
++		else
++			vsi->tc_config.tc_info[i].qcount = 1;
++		vsi->tc_config.tc_info[i].netdev_tc = 0;
++	}
++}
++
++/**
+  * i40e_setup_tc - configure multiple traffic classes
+  * @netdev: net device to configure
+- * @tc: number of traffic classes to enable
++ * @type: type of tc offload
++ * @type_data: offload data
+  **/
+-static int i40e_setup_tc(struct net_device *netdev, u8 tc)
++static int i40e_setup_tc(struct net_device *netdev, enum tc_setup_type type,
++			 void *type_data)
+ {
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	struct tc_mqprio_qopt_offload *mqprio_qopt = NULL;
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+-	u8 enabled_tc = 0;
++	struct tc_mqprio_qopt *mqprio = NULL;
++	u8 enabled_tc = 0, num_tc = 0, hw = 0;
+ 	int ret = -EINVAL;
+ 	int i;
+ 
+-	/* Check if DCB enabled to continue */
+-	if (!(pf->flags & I40E_FLAG_DCB_ENABLED)) {
+-		netdev_info(netdev, "DCB is not enabled for adapter\n");
+-		goto exit;
+-	}
++	if (type == TC_SETUP_MQPRIO) {
++		mqprio = type_data;
++		hw = mqprio->hw;
++		num_tc = mqprio->num_tc;
++	} else if (type == TC_SETUP_MQPRIO_EXT) {
++		mqprio_qopt = type_data;
++		hw = mqprio_qopt->qopt.hw;
++		num_tc = mqprio_qopt->qopt.num_tc;
++	}
++	if (!hw) {
++		pf->flags &= ~I40E_FLAG_TC_MQPRIO;
++		if (type == TC_SETUP_MQPRIO_EXT)
++			memcpy(&vsi->mqprio_qopt, mqprio_qopt,
++			       sizeof(*mqprio_qopt));
++		goto config_tc;
++	}
++	switch (hw) {
++	case TC_MQPRIO_HW_OFFLOAD_TCS:
++		pf->flags &= ~I40E_FLAG_TC_MQPRIO;
++
++		/* Check if DCB enabled to continue */
++		if (!(pf->flags & I40E_FLAG_DCB_ENABLED)) {
++			netdev_info(netdev,
++				    "DCB is not enabled for adapter\n");
++			goto exit;
++		}
+ 
+-	/* Check if MFP enabled */
+-	if (pf->flags & I40E_FLAG_MFP_ENABLED) {
+-		netdev_info(netdev, "Configuring TC not supported in MFP mode\n");
+-		goto exit;
+-	}
++		/* Check if MFP enabled */
++		if (pf->flags & I40E_FLAG_MFP_ENABLED) {
++			netdev_info(netdev,
++				    "Configuring TC not supported in MFP mode\n");
++			goto exit;
++		}
+ 
+-	/* Check whether tc count is within enabled limit */
+-	if (tc > i40e_pf_get_num_tc(pf)) {
+-		netdev_info(netdev, "TC count greater than enabled on link for adapter\n");
+-		goto exit;
++		/* Check whether tc count is within enabled limit */
++		if (num_tc > i40e_pf_get_num_tc(pf)) {
++			netdev_info(netdev,
++				    "TC count greater than enabled on link for adapter\n");
++			goto exit;
++		}
++		break;
++	case TC_MQPRIO_HW_OFFLOAD:
++		if (pf->flags & I40E_FLAG_DCB_ENABLED) {
++			netdev_info(netdev,
++				    "Full offload of TC Mqprio options is not supported when DCB is enabled\n");
++			goto exit;
++		}
++
++		/* Check if MFP enabled */
++		if (pf->flags & I40E_FLAG_MFP_ENABLED) {
++			netdev_info(netdev,
++				    "Configuring TC not supported in MFP mode\n");
++			goto exit;
++		}
++		ret = i40e_validate_mqprio_qopt(vsi, mqprio_qopt);
++		if (ret)
++			goto exit;
++		memcpy(&vsi->mqprio_qopt, mqprio_qopt,
++		       sizeof(*mqprio_qopt));
++		pf->flags |= I40E_FLAG_TC_MQPRIO;
++		pf->flags &= ~I40E_FLAG_DCB_ENABLED;
++		break;
++	default:
++		return -EINVAL;
+ 	}
+ 
++config_tc:
+ 	/* Generate TC map for number of tc requested */
+-	for (i = 0; i < tc; i++)
++	for (i = 0; i < num_tc; i++)
+ 		enabled_tc |= BIT(i);
+ 
+ 	/* Requesting same TC configuration as already enabled */
+-	if (enabled_tc == vsi->tc_config.enabled_tc)
++	if (enabled_tc == vsi->tc_config.enabled_tc &&
++	    hw != TC_MQPRIO_HW_OFFLOAD)
+ 		return 0;
+ 
+ 	/* Quiesce VSI queues */
+ 	i40e_quiesce_vsi(vsi);
+ 
++	if (!hw && !(pf->flags & I40E_FLAG_TC_MQPRIO))
++		i40e_remove_queue_channels(vsi);
++
+ 	/* Configure VSI for enabled TCs */
+ 	ret = i40e_vsi_config_tc(vsi, enabled_tc);
+ 	if (ret) {
+ 		netdev_info(netdev, "Failed configuring TC for VSI seid=%d\n",
+ 			    vsi->seid);
+-		goto exit;
++		goto reset;
+ 	}
+ 
+ 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
+@@ -6307,27 +6642,31 @@ static int i40e_setup_tc(struct net_device *netdev, u8 tc)
+ 		if (ret) {
+ 			netdev_info(netdev,
+ 				    "Failed configuring queue channels\n");
+-			goto exit;
++			goto reset;
+ 		}
+ 	}
+ 
+-exit:
++	goto out;
++reset:
++	/* Reset the configuration data to defaults, only TC0 is enabled */
++	i40e_vsi_set_default_tc_config(vsi);
++out:
+ 	/* Unquiesce VSI */
+ 	i40e_unquiesce_vsi(vsi);
++exit:
+ 	return ret;
+ }
+ 
+ static int __i40e_setup_tc(struct net_device *netdev, enum tc_setup_type type,
+ 			   void *type_data)
+ {
+-	struct tc_mqprio_qopt *mqprio = type_data;
+-
+-	if (type != TC_SETUP_MQPRIO)
++	switch (type) {
++	case TC_SETUP_MQPRIO:
++	case TC_SETUP_MQPRIO_EXT:
++		return i40e_setup_tc(netdev, type, type_data);
++	default:
+ 		return -EOPNOTSUPP;
+-
+-	mqprio->hw = TC_MQPRIO_HW_OFFLOAD_TCS;
+-
+-	return i40e_setup_tc(netdev, mqprio->num_tc);
++	}
+ }
+ 
+ /**
+@@ -9174,45 +9513,6 @@ static int i40e_setup_misc_vector(struct i40e_pf *pf)
+ }
+ 
+ /**
+- * i40e_config_rss_aq - Prepare for RSS using AQ commands
+- * @vsi: vsi structure
+- * @seed: RSS hash seed
+- **/
+-static int i40e_config_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
+-			      u8 *lut, u16 lut_size)
+-{
+-	struct i40e_pf *pf = vsi->back;
+-	struct i40e_hw *hw = &pf->hw;
+-	int ret = 0;
+-
+-	if (seed) {
+-		struct i40e_aqc_get_set_rss_key_data *seed_dw =
+-			(struct i40e_aqc_get_set_rss_key_data *)seed;
+-		ret = i40e_aq_set_rss_key(hw, vsi->id, seed_dw);
+-		if (ret) {
+-			dev_info(&pf->pdev->dev,
+-				 "Cannot set RSS key, err %s aq_err %s\n",
+-				 i40e_stat_str(hw, ret),
+-				 i40e_aq_str(hw, hw->aq.asq_last_status));
+-			return ret;
+-		}
+-	}
+-	if (lut) {
+-		bool pf_lut = vsi->type == I40E_VSI_MAIN ? true : false;
+-
+-		ret = i40e_aq_set_rss_lut(hw, vsi->id, pf_lut, lut, lut_size);
+-		if (ret) {
+-			dev_info(&pf->pdev->dev,
+-				 "Cannot set RSS lut, err %s aq_err %s\n",
+-				 i40e_stat_str(hw, ret),
+-				 i40e_aq_str(hw, hw->aq.asq_last_status));
+-			return ret;
+-		}
+-	}
+-	return ret;
+-}
+-
+-/**
+  * i40e_get_rss_aq - Get RSS keys and lut by using AQ commands
+  * @vsi: Pointer to vsi structure
+  * @seed: Buffter to store the hash keys
+@@ -9259,46 +9559,6 @@ static int i40e_get_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
+ }
+ 
+ /**
+- * i40e_vsi_config_rss - Prepare for VSI(VMDq) RSS if used
+- * @vsi: VSI structure
+- **/
+-static int i40e_vsi_config_rss(struct i40e_vsi *vsi)
+-{
+-	u8 seed[I40E_HKEY_ARRAY_SIZE];
+-	struct i40e_pf *pf = vsi->back;
+-	u8 *lut;
+-	int ret;
+-
+-	if (!(pf->hw_features & I40E_HW_RSS_AQ_CAPABLE))
+-		return 0;
+-
+-	if (!vsi->rss_size)
+-		vsi->rss_size = min_t(int, pf->alloc_rss_size,
+-				      vsi->num_queue_pairs);
+-	if (!vsi->rss_size)
+-		return -EINVAL;
+-
+-	lut = kzalloc(vsi->rss_table_size, GFP_KERNEL);
+-	if (!lut)
+-		return -ENOMEM;
+-	/* Use the user configured hash keys and lookup table if there is one,
+-	 * otherwise use default
+-	 */
+-	if (vsi->rss_lut_user)
+-		memcpy(lut, vsi->rss_lut_user, vsi->rss_table_size);
+-	else
+-		i40e_fill_rss_lut(pf, lut, vsi->rss_table_size, vsi->rss_size);
+-	if (vsi->rss_hkey_user)
+-		memcpy(seed, vsi->rss_hkey_user, I40E_HKEY_ARRAY_SIZE);
+-	else
+-		netdev_rss_key_fill((void *)seed, I40E_HKEY_ARRAY_SIZE);
+-	ret = i40e_config_rss_aq(vsi, seed, lut, vsi->rss_table_size);
+-	kfree(lut);
+-
+-	return ret;
+-}
+-
+-/**
+  * i40e_config_rss_reg - Configure RSS keys and lut by writing registers
+  * @vsi: Pointer to vsi structure
+  * @seed: RSS hash seed
 
