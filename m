@@ -1,208 +1,362 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Thu, 17 Aug 2017 12:43:49 -0700
-Subject: [Intel-wired-lan] [PATCH v2 5/6] [net-next]net: i40e: Refactor
- VF BW rate limiting function to be reused on the PF as well
-In-Reply-To: <150296407028.16167.6134503766227542081.stgit@anamdev.jf.intel.com>
-References: <150296373549.16167.14331445560838257351.stgit@anamdev.jf.intel.com>
- <150296407028.16167.6134503766227542081.stgit@anamdev.jf.intel.com>
-Message-ID: <260851c3-a339-5459-5d82-152db54ffb60@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 18 Aug 2017 07:51:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 014cd0a368dc6351c65d51e4ee34f8573a4a1543
+Message-ID: <59962bec.4KEPfXGSGewsdTll%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/17/2017 3:01 AM, Amritha Nambiar wrote:
-> This patch refactors the BW rate limiting for Tx traffic
-> on the VF to be reused in the next patch for rate limiting Tx
-> traffic for the VSIs on the PF as well.
-> 
-> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e.h             |    5 ++
->   drivers/net/ethernet/intel/i40e/i40e_main.c        |   63 ++++++++++++++++++++
->   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   45 +-------------
->   3 files changed, 70 insertions(+), 43 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-> index 2565280..304921e 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-> @@ -128,6 +128,10 @@
->   /* default to trying for four seconds */
->   #define I40E_TRY_LINK_TIMEOUT	(4 * HZ)
->   
-> +/* BW rate limiting */
-> +#define I40E_BW_CREDIT_DIVISOR		50 /* 50Mbps per BW credit */
-> +#define I40E_MAX_BW_INACTIVE_ACCUM	4  /* accumulate 4 credits max */
-> +
->   /* driver state flags */
->   enum i40e_state_t {
->   	__I40E_TESTING,
-> @@ -1042,4 +1046,5 @@ static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
->   }
->   
->   int i40e_create_queue_channel(struct i40e_vsi *vsi, struct i40e_channel *ch);
-> +int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate);
->   #endif /* _I40E_H_ */
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 5b783fc..fcf563a 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -5405,6 +5405,69 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
->   }
->   
->   /**
-> + * i40e_get_link_speed - Returns link speed for the interface
-> + * @vsi: VSI to be configured
-> + *
-> + **/
-> +int i40e_get_link_speed(struct i40e_vsi *vsi)
-> +{
-> +	struct i40e_pf *pf = vsi->back;
-> +
-> +	switch (pf->hw.phy.link_info.link_speed) {
-> +	case I40E_LINK_SPEED_40GB:
-> +		return 40000;
-> +	case I40E_LINK_SPEED_25GB:
-> +		return 25000;
-> +	case I40E_LINK_SPEED_20GB:
-> +		return 20000;
-> +	case I40E_LINK_SPEED_10GB:
-> +		return 10000;
-> +	case I40E_LINK_SPEED_1GB:
-> +		return 1000;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +/**
-> + * i40e_set_bw_limit - setup BW limit for Tx traffic based on max_tx_rate
-> + * @vsi: VSI to be configured
-> + * @seid: seid of the channel/VSI
-> + * @max_tx_rate: max TX rate to be configured as BW limit
-> + *
-> + * Helper function to set BW limit for a given VSI
-> + **/
-> +int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
-> +{
-> +	struct i40e_pf *pf = vsi->back;
-> +	int speed = 0;
-> +	int ret = 0;
-> +
-> +	speed = i40e_get_link_speed(vsi);
-> +	if (max_tx_rate > speed) {
-> +		dev_err(&pf->pdev->dev,
-> +			"Invalid max tx rate %llu specified for VSI seid %d.",
-> +			max_tx_rate, seid);
-> +		return -EINVAL;
-> +	}
-> +	if ((max_tx_rate < 50) && (max_tx_rate > 0)) {
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+014cd0a368dc6351c65d51e4ee34f8573a4a1543  bpf: Update sysctl documentation to list all supported architectures
 
-if (max_tx_rate && (max_tx_rate < 50)) {
+elapsed time: 400m
 
-> +		dev_warn(&pf->pdev->dev,
-> +			 "Setting max tx rate to minimum usable value of 50Mbps.\n");
-> +		max_tx_rate = 50;
-> +	}
-> +
-> +       /* Tx rate credits are in values of 50Mbps, 0 is disabled*/
+configs tested: 338
 
-This should be indented with a tab, not spaces
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> +	ret = i40e_aq_config_vsi_bw_limit(&pf->hw, seid,
-> +					  max_tx_rate / I40E_BW_CREDIT_DIVISOR,
-> +					  I40E_MAX_BW_INACTIVE_ACCUM, NULL);
-> +	if (ret)
-> +		dev_err(&pf->pdev->dev,
-> +			"Failed set tx rate (%llu Mbps) for vsi->seid %u, error code %d.\n",
-> +			max_tx_rate, seid, ret);
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+m68k                        mvme147_defconfig
+s390                             allyesconfig
+xtensa                            allnoconfig
+arm                         ebsa110_defconfig
+powerpc                 mpc85xx_cds_defconfig
+sh                                allnoconfig
+arm                      integrator_defconfig
+m68k                          sun3x_defconfig
+powerpc                         wii_defconfig
+arm                           stm32_defconfig
+powerpc                          g5_defconfig
+xtensa                       common_defconfig
+powerpc               mpc86xx_basic_defconfig
+powerpc                  storcenter_defconfig
+tile                              allnoconfig
+ia64                            sim_defconfig
+parisc                generic-64bit_defconfig
+um                               alldefconfig
+arm                           spitz_defconfig
+xtensa                           allmodconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                               allnoconfig
+arm                             ezx_defconfig
+powerpc                       ebony_defconfig
+mips                        jmr3927_defconfig
+sh                           se7343_defconfig
+tile                         tilegx_defconfig
+arm                        vexpress_defconfig
+mips                          rm200_defconfig
+powerpc                 mpc8272_ads_defconfig
+m32r                             allmodconfig
+mips                         bigsur_defconfig
+i386                   randconfig-c0-08180458
+i386                   randconfig-c0-08180521
+i386                   randconfig-c0-08180553
+i386                   randconfig-c0-08180632
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                          tiger_defconfig
+mips                           ci20_defconfig
+powerpc                      ppc44x_defconfig
+m32r                       mappi.up_defconfig
+openrisc                    or1ksim_defconfig
+sh                           se7712_defconfig
+arm                              allmodconfig
+powerpc                 xes_mpc85xx_defconfig
+arm                           sunxi_defconfig
+s390                              allnoconfig
+arm                       mainstone_defconfig
+cris                             allmodconfig
+s390                    performance_defconfig
+i386                   randconfig-x010-201733
+i386                   randconfig-x011-201733
+i386                   randconfig-x012-201733
+i386                   randconfig-x013-201733
+i386                   randconfig-x014-201733
+i386                   randconfig-x015-201733
+i386                   randconfig-x016-201733
+i386                   randconfig-x017-201733
+i386                   randconfig-x018-201733
+i386                   randconfig-x019-201733
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-n0-201733
+x86_64                 randconfig-x007-201733
+x86_64                 randconfig-x001-201733
+x86_64                 randconfig-x000-201733
+x86_64                 randconfig-x006-201733
+x86_64                 randconfig-x003-201733
+x86_64                 randconfig-x004-201733
+x86_64                 randconfig-x009-201733
+x86_64                 randconfig-x005-201733
+x86_64                 randconfig-x008-201733
+x86_64                 randconfig-x002-201733
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                           sama5_defconfig
+mips                    maltaup_xpa_defconfig
+s390                        default_defconfig
+powerpc                     ksi8560_defconfig
+powerpc                    mvme5100_defconfig
+powerpc                     ep8248e_defconfig
+powerpc                     kilauea_defconfig
+arm                         s3c6400_defconfig
+m68k                             allmodconfig
+mips                         tb0287_defconfig
+mips                        maltaup_defconfig
+mips                        msp71xx_defconfig
+mips                        qi_lb60_defconfig
+arm64                            allmodconfig
+m32r                   mappi2.vdec2_defconfig
+powerpc                 mpc837x_mds_defconfig
+sh                          r7780mp_defconfig
+tile                             allmodconfig
+arm                           viper_defconfig
+powerpc                 mpc836x_rdk_defconfig
+xtensa                           alldefconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+i386                     randconfig-a0-201733
+i386                     randconfig-a1-201733
+x86_64                 randconfig-s0-08180522
+x86_64                 randconfig-s1-08180522
+x86_64                 randconfig-s2-08180522
+x86_64                 randconfig-s0-08180606
+x86_64                 randconfig-s1-08180606
+x86_64                 randconfig-s2-08180606
+x86_64                 randconfig-s0-08180632
+x86_64                 randconfig-s1-08180632
+x86_64                 randconfig-s2-08180632
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                                defconfig
+arm                         socfpga_defconfig
+mips                        workpad_defconfig
+sh                        apsh4ad0a_defconfig
+m68k                         amcore_defconfig
+mips                        bcm63xx_defconfig
+powerpc                    socrates_defconfig
+sh                        sh7763rdp_defconfig
+arm                       aspeed_g5_defconfig
+powerpc                      pmac32_defconfig
+sh                          sdk7786_defconfig
+arm                            dove_defconfig
+arm                          imote2_defconfig
+m68k                       bvme6000_defconfig
+sh                           se7206_defconfig
+arm                       aspeed_g4_defconfig
+cris                        etraxfs_defconfig
+mips                malta_qemu_32r6_defconfig
+sh                           se7751_defconfig
+c6x                        evmc6678_defconfig
+sh                         ecovec24_defconfig
+sh                        sh7785lcr_defconfig
+x86_64                 randconfig-x016-201733
+x86_64                 randconfig-x011-201733
+x86_64                 randconfig-x014-201733
+x86_64                 randconfig-x019-201733
+x86_64                 randconfig-x012-201733
+x86_64                 randconfig-x018-201733
+x86_64                 randconfig-x013-201733
+x86_64                 randconfig-x015-201733
+x86_64                 randconfig-x010-201733
+x86_64                 randconfig-x017-201733
+i386                              allnoconfig
+i386                             alldefconfig
+i386                   randconfig-s0-08141822
+i386                   randconfig-s1-08141822
+x86_64                 randconfig-s3-08180513
+x86_64                 randconfig-s4-08180513
+x86_64                 randconfig-s5-08180513
+x86_64                 randconfig-s3-08180532
+x86_64                 randconfig-s4-08180532
+x86_64                 randconfig-s5-08180532
+x86_64                 randconfig-s3-08180642
+x86_64                 randconfig-s4-08180642
+x86_64                 randconfig-s5-08180642
+arm                         cm_x2xx_defconfig
+m68k                             allyesconfig
+mips                              allnoconfig
+sh                          lboxre2_defconfig
+arm                           omap1_defconfig
+h8300                       h8s-sim_defconfig
+mips                           ip32_defconfig
+sh                   sh7724_generic_defconfig
+arm                            hisi_defconfig
+mips                         rt305x_defconfig
+x86_64                              defconfig
+blackfin                   CM-BF561_defconfig
+powerpc                 canyonlands_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+i386                   randconfig-b0-08180548
+i386                   randconfig-b0-08180635
+i386                   randconfig-b0-08180701
+i386                   randconfig-b0-08180718
+arm                          iop33x_defconfig
+arm                             mxs_defconfig
+powerpc                          alldefconfig
+arm                       versatile_defconfig
+m32r                    mappi2.opsp_defconfig
+powerpc                      pcm030_defconfig
+mips                  cavium_octeon_defconfig
+mips                           ip28_defconfig
+sh                          sdk7780_defconfig
+mips                  mips_paravirt_defconfig
+sh                      rts7751r2d1_defconfig
+i386                     randconfig-i0-201733
+i386                     randconfig-i1-201733
+x86_64                 randconfig-b0-08180515
+x86_64                 randconfig-b0-08180540
+x86_64                 randconfig-b0-08180706
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                                 defconfig
+powerpc                     tqm8541_defconfig
+sh                           se7722_defconfig
+arm                      jornada720_defconfig
+mips                      maltasmvp_defconfig
+sh                           se7724_defconfig
+powerpc                   currituck_defconfig
+xtensa                  nommu_kc705_defconfig
+x86_64                 randconfig-u0-08180557
+arm                        magician_defconfig
+xtensa                  cadence_csp_defconfig
+sparc                       sparc32_defconfig
+arm                      tct_hammer_defconfig
+powerpc                      arches_defconfig
+m32r                      mappi.smp_defconfig
+arm                            mps2_defconfig
+sparc64                          allyesconfig
+x86_64                 randconfig-h0-08180700
+sh                          rsk7203_defconfig
+arm                       cns3420vb_defconfig
+powerpc                     sbc834x_defconfig
+m32r                    m32700ut.up_defconfig
+powerpc                      katmai_defconfig
+ia64                        generic_defconfig
+blackfin                    DNP5370_defconfig
+parisc                          712_defconfig
+arm                       netwinder_defconfig
+powerpc                        icon_defconfig
+sh                        edosk7705_defconfig
+i386                  randconfig-sb0-08180639
+i386                   randconfig-x000-201733
+i386                   randconfig-x001-201733
+i386                   randconfig-x002-201733
+i386                   randconfig-x003-201733
+i386                   randconfig-x004-201733
+i386                   randconfig-x005-201733
+i386                   randconfig-x006-201733
+i386                   randconfig-x007-201733
+i386                   randconfig-x008-201733
+i386                   randconfig-x009-201733
+x86_64                           allmodconfig
+parisc                         a500_defconfig
+mips                             alldefconfig
+mips                 pnx8335_stb225_defconfig
+arm                           h5000_defconfig
+mips                malta_kvm_guest_defconfig
+powerpc                      virtex_defconfig
+x86_64                randconfig-ws0-08180526
+x86_64                randconfig-ws0-08180637
+um                                  defconfig
+sh                                  defconfig
+blackfin                          allnoconfig
+powerpc                 mpc834x_itx_defconfig
+x86_64                randconfig-ws0-08180532
+x86_64                randconfig-ws0-08180641
+i386                   randconfig-x075-201733
+i386                   randconfig-x076-201733
+i386                   randconfig-x071-201733
+i386                   randconfig-x074-201733
+i386                   randconfig-x070-201733
+i386                   randconfig-x072-201733
+i386                   randconfig-x079-201733
+i386                   randconfig-x077-201733
+i386                   randconfig-x073-201733
+i386                   randconfig-x078-201733
+blackfin             BF527-EZKIT-V2_defconfig
+x86_64                            allnoconfig
+sh                           se7721_defconfig
+arm                            qcom_defconfig
+powerpc                mpc7448_hpc2_defconfig
+powerpc                    adder875_defconfig
+nios2                         3c120_defconfig
+powerpc                 linkstation_defconfig
+arm                     eseries_pxa_defconfig
+m68k                        m5272c3_defconfig
+xtensa                              defconfig
+mn10300                          allyesconfig
+sh                         ap325rxa_defconfig
+sh                   sh7770_generic_defconfig
+x86_64                 randconfig-r0-08180522
+x86_64                 randconfig-r0-08180602
+x86_64                 randconfig-r0-08180637
+x86_64                 randconfig-r0-08180658
+i386                             allmodconfig
+sh                        dreamcast_defconfig
+blackfin                BF561-EZKIT_defconfig
+powerpc                         ps3_defconfig
+tile                                defconfig
+i386                   randconfig-x0-08180539
+i386                   randconfig-x0-08180638
 
-Please do the AQ error decode here with i40e_stat_str() and i40e_aq_str()
-
-> +	return ret;
-> +}
-> +
-> +/**
->    * i40e_remove_queue_channels - Remove queue channels for the TCs
->    * @vsi: VSI to be configured
->    *
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> index 92fe06d..a1d2391 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> @@ -3061,8 +3061,6 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
->   	return ret;
->   }
->   
-> -#define I40E_BW_CREDIT_DIVISOR 50     /* 50Mbps per BW credit */
-> -#define I40E_MAX_BW_INACTIVE_ACCUM 4  /* device can accumulate 4 credits max */
->   /**
->    * i40e_ndo_set_vf_bw
->    * @netdev: network interface device structure
-> @@ -3078,7 +3076,6 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
->   	struct i40e_pf *pf = np->vsi->back;
->   	struct i40e_vsi *vsi;
->   	struct i40e_vf *vf;
-> -	int speed = 0;
->   	int ret = 0;
->   
->   	/* validate the request */
-> @@ -3103,48 +3100,10 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
->   		goto error;
->   	}
->   
-> -	switch (pf->hw.phy.link_info.link_speed) {
-> -	case I40E_LINK_SPEED_40GB:
-> -		speed = 40000;
-> -		break;
-> -	case I40E_LINK_SPEED_25GB:
-> -		speed = 25000;
-> -		break;
-> -	case I40E_LINK_SPEED_20GB:
-> -		speed = 20000;
-> -		break;
-> -	case I40E_LINK_SPEED_10GB:
-> -		speed = 10000;
-> -		break;
-> -	case I40E_LINK_SPEED_1GB:
-> -		speed = 1000;
-> -		break;
-> -	default:
-> -		break;
-> -	}
-> -
-> -	if (max_tx_rate > speed) {
-> -		dev_err(&pf->pdev->dev, "Invalid max tx rate %d specified for VF %d.\n",
-> -			max_tx_rate, vf->vf_id);
-> -		ret = -EINVAL;
-> +	ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
-> +	if (ret)
->   		goto error;
-> -	}
->   
-> -	if ((max_tx_rate < 50) && (max_tx_rate > 0)) {
-> -		dev_warn(&pf->pdev->dev, "Setting max Tx rate to minimum usable value of 50Mbps.\n");
-> -		max_tx_rate = 50;
-> -	}
-> -
-> -	/* Tx rate credits are in values of 50Mbps, 0 is disabled*/
-> -	ret = i40e_aq_config_vsi_bw_limit(&pf->hw, vsi->seid,
-> -					  max_tx_rate / I40E_BW_CREDIT_DIVISOR,
-> -					  I40E_MAX_BW_INACTIVE_ACCUM, NULL);
-> -	if (ret) {
-> -		dev_err(&pf->pdev->dev, "Unable to set max tx rate, error code %d.\n",
-> -			ret);
-> -		ret = -EIO;
-> -		goto error;
-> -	}
->   	vf->tx_rate = max_tx_rate;
->   error:
->   	return ret;
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
+Thanks,
+Fengguang
