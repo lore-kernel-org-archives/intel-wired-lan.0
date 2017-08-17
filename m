@@ -1,135 +1,72 @@
-From: Stefano Brivio <sbrivio@redhat.com>
-Date: Thu, 17 Aug 2017 11:24:34 +0200
-Subject: [Intel-wired-lan] [PATCH] i40e{,
- vf}: Fix out-of-bound cpumask read in IRQ affinity handler
-In-Reply-To: <ae9c9586f61e914dc1c6fe2e6ac1fb2bf07283bc.1502792828.git.sbrivio@redhat.com>
-References: <ae9c9586f61e914dc1c6fe2e6ac1fb2bf07283bc.1502792828.git.sbrivio@redhat.com>
-Message-ID: <20170817112434.28e9e35c@elisabeth>
+From: Amritha Nambiar <amritha.nambiar@intel.com>
+Date: Thu, 17 Aug 2017 03:00:44 -0700
+Subject: [Intel-wired-lan] [PATCH v2 0/6] Configuring traffic classes via
+ new hardware offload mechanism in tc/mqprio
+Message-ID: <150296373549.16167.14331445560838257351.stgit@anamdev.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jeff, Dave,
+The following series introduces a new hardware offload mode in
+tc/mqprio where the TCs, the queue configurations and
+bandwidth rate limits are offloaded to the hardware. The existing
+mqprio framework is extended to configure the queue counts and
+layout and also added support for rate limiting. This is achieved
+by setting the value 2 for the "hw" mode. Legacy devices can fall
+back to the existing setup supporting hw mode 1 where only the
+TCs are offloaded, however if hw mode 2 is specified, then this
+type of offload fails to initialize if the requested mode is not
+supported. The i40e driver enables the new mqprio hardware offload
+mechanism factoring the TCs, queue configuration and bandwidth
+rates by creating HW channel VSIs.
 
-This is a pretty bad issue as one can crash a kernel quite easily by
-forcing interrupt affinity changes.
+In this new mode, the priority to traffic class mapping and the
+user specified queue ranges are used to configure the traffic
+class when the 'hw' option is set to 2. This is achieved by
+creating HW channels(VSI). A new channel is created for each
+of the traffic class configuration offloaded via mqprio
+framework except for the first TC (TC0) which is for the main
+VSI. TC0 for the main VSI is also reconfigured as per user
+provided queue parameters. Finally, bandwidth rate limits are
+set on these traffic classes through the mqprio offload
+framework by sending these rates in addition to the number of
+TCs and the queue configurations.
 
-We now have three versions of this patch, with exactly the same code
-changes. I posted mine as I independently found this issue last week
-and didn't notice Juergen patch which was posted two days earlier.
+Example:
+# tc qdisc add dev eth0 root mqprio num_tc 2  map 0 0 0 0 1 1 1 1\
+  queues 4 at 0 4 at 4 max_rate 55Mbit 60Mbit hw 2
 
-I didn't notice the other patch in the pull request from Jeff either, I
-just checked his tree and it wasn't there until yesterday. Frankly
-speaking, I think this was quite vaguely worded and hidden in the cover
-letter, and queued up for net-next, while it should really go to net as
-it fixes a panic in mainline.
+To dump the bandwidth rates:
 
-FWIW, I don't care too much about which version ends up applied, even
-though I'd prefer one which a commit message which clearly describes
-the issue with its implications and reports the right Fixed: tag. Both
-my patch and Juergen's v2, posted later, are fine by me (I still think
-mine is a bit clearer).
+# tc qdisc show dev eth0
+  qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
+               queues:(0:3) (4:7)
+               min_rate:0bit 0bit
+               max_rate:55Mbit 60Mbit
+
+---
+
+Amritha Nambiar (6):
+      [net-next]net: mqprio: Introduce new hardware offload mode in mqprio for offloading full TC configurations
+      [net-next]net: i40e: Add macro for PF reset bit
+      [net-next]net: i40e: Add infrastructure for queue channel support with the TCs and queue configurations offloaded via mqprio scheduler
+      [net-next]net: i40e: Enable mqprio full offload mode in the i40e driver for configuring TCs and queue mapping
+      [net-next]net: i40e: Refactor VF BW rate limiting function to be reused on the PF as well
+      [net-next]net: i40e: Add support to set max bandwidth rates for TCs offloaded via tc/mqprio
+
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |   45 +
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |    3 
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |    8 
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 1520 +++++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |    2 
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   50 -
+ include/linux/netdevice.h                          |    1 
+ include/net/pkt_cls.h                              |    7 
+ include/uapi/linux/pkt_sched.h                     |   13 
+ net/sched/sch_mqprio.c                             |  167 ++
+ 10 files changed, 1563 insertions(+), 253 deletions(-)
 
 --
-Stefano
-
-On Tue, 15 Aug 2017 12:30:14 +0200
-Stefano Brivio <sbrivio@redhat.com> wrote:
-
-> The cpumask used in i40e{,vf}_irq_affinity_notify() is allocated
-> by irq_affinity_notify() with alloc_cpumask_var(), which doesn't
-> allocate NR_CPUS bits, but only nr_cpumask_bits bits. If we just
-> dereference it, we'll read way more than what is allocated, e.g.
-> 1024 bytes vs. 8 bytes allocated on x86_64 machine with 24 CPUs.
-> 
-> Use cpumask_copy() instead. A comprehensive explanation is given
-> in the comments about cpumask_var_t, in include/linux/cpumask.h.
-> 
-> KASAN reports:
-> [   25.242312] BUG: KASAN: slab-out-of-bounds in i40e_irq_affinity_notify+0x30/0x50 [i40e] at addr ffff880462eea960
-> [   25.242315] Read of size 1024 by task kworker/2:1/170
-> [   25.242322] CPU: 2 PID: 170 Comm: kworker/2:1 Not tainted 4.11.0-22.el7a.x86_64 #1
-> [   25.242325] Hardware name: HP ProLiant DL380 Gen9, BIOS P89 05/06/2015
-> [   25.242336] Workqueue: events irq_affinity_notify
-> [   25.242340] Call Trace:
-> [   25.242350]  dump_stack+0x63/0x8d
-> [   25.242358]  kasan_object_err+0x21/0x70
-> [   25.242364]  kasan_report+0x288/0x540
-> [   25.242397]  ? i40e_irq_affinity_notify+0x30/0x50 [i40e]
-> [   25.242403]  check_memory_region+0x13c/0x1a0
-> [   25.242408]  __asan_loadN+0xf/0x20
-> [   25.242440]  i40e_irq_affinity_notify+0x30/0x50 [i40e]
-> [   25.242446]  irq_affinity_notify+0x1b4/0x230
-> [   25.242452]  ? irq_set_affinity_notifier+0x130/0x130
-> [   25.242457]  ? kasan_slab_free+0x89/0xc0
-> [   25.242466]  process_one_work+0x32f/0x6f0
-> [   25.242472]  worker_thread+0x89/0x770
-> [   25.242481]  ? pci_mmcfg_check_reserved+0xc0/0xc0
-> [   25.242488]  kthread+0x18c/0x1e0
-> [   25.242493]  ? process_one_work+0x6f0/0x6f0
-> [   25.242499]  ? kthread_create_on_node+0xc0/0xc0
-> [   25.242506]  ret_from_fork+0x2c/0x40
-> [   25.242511] Object at ffff880462eea960, in cache kmalloc-8 size: 8
-> [   25.242513] Allocated:
-> [   25.242514] PID = 170
-> [   25.242522]  save_stack_trace+0x1b/0x20
-> [   25.242529]  save_stack+0x46/0xd0
-> [   25.242533]  kasan_kmalloc+0xad/0xe0
-> [   25.242537]  __kmalloc_node+0x12c/0x2b0
-> [   25.242542]  alloc_cpumask_var_node+0x3c/0x60
-> [   25.242546]  alloc_cpumask_var+0xe/0x10
-> [   25.242550]  irq_affinity_notify+0x94/0x230
-> [   25.242555]  process_one_work+0x32f/0x6f0
-> [   25.242559]  worker_thread+0x89/0x770
-> [   25.242564]  kthread+0x18c/0x1e0
-> [   25.242568]  ret_from_fork+0x2c/0x40
-> [   25.242569] Freed:
-> [   25.242570] PID = 0
-> [   25.242572] (stack is not available)
-> [   25.242573] Memory state around the buggy address:
-> [   25.242578]  ffff880462eea800: fc fc 00 fc fc 00 fc fc 00 fc fc 00 fc fc fb fc
-> [   25.242582]  ffff880462eea880: fc fb fc fc fb fc fc 00 fc fc 00 fc fc 00 fc fc
-> [   25.242586] >ffff880462eea900: 00 fc fc 00 fc fc 00 fc fc fb fc fc 00 fc fc fc
-> [   25.242588]                                                           ^
-> [   25.242592]  ffff880462eea980: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
-> [   25.242596]  ffff880462eeaa00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
-> [   25.242597] ==================================================================
-> 
-> Fixes: 96db776a3682 ("i40e/i40evf: fix interrupt affinity bug")
-> Signed-off-by: Stefano Brivio <sbrivio@redhat.com>
-> ---
-> This should be considered for -stable, back to 4.10.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 2db93d3f6d23..c0e42d162c7c 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -3495,7 +3495,7 @@ static void i40e_irq_affinity_notify(struct irq_affinity_notify *notify,
->  	struct i40e_q_vector *q_vector =
->  		container_of(notify, struct i40e_q_vector, affinity_notify);
->  
-> -	q_vector->affinity_mask = *mask;
-> +	cpumask_copy(&q_vector->affinity_mask, mask);
->  }
->  
->  /**
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> index 7c213a347909..a4b60367ecce 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> @@ -520,7 +520,7 @@ static void i40evf_irq_affinity_notify(struct irq_affinity_notify *notify,
->  	struct i40e_q_vector *q_vector =
->  		container_of(notify, struct i40e_q_vector, affinity_notify);
->  
-> -	q_vector->affinity_mask = *mask;
-> +	cpumask_copy(&q_vector->affinity_mask, mask);
->  }
->  
->  /**
-
