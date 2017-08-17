@@ -1,365 +1,119 @@
 From: Amritha Nambiar <amritha.nambiar@intel.com>
-Date: Thu, 17 Aug 2017 03:00:49 -0700
-Subject: [Intel-wired-lan] [PATCH v2 1/6] [net-next]net: mqprio: Introduce
- new hardware offload mode in mqprio for offloading full TC configurations
+Date: Thu, 17 Aug 2017 03:00:55 -0700
+Subject: [Intel-wired-lan] [PATCH v2 2/6] [net-next]net: i40e: Add macro for
+	PF reset bit
 In-Reply-To: <150296373549.16167.14331445560838257351.stgit@anamdev.jf.intel.com>
 References: <150296373549.16167.14331445560838257351.stgit@anamdev.jf.intel.com>
-Message-ID: <150296404972.16167.10089566618280478918.stgit@anamdev.jf.intel.com>
+Message-ID: <150296405502.16167.9720405534691757130.stgit@anamdev.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch introduces a new hardware offload mode in mqprio
-which makes full use of the mqprio options, the TCs, the
-queue configurations and the bandwidth rates for the TCs.
-This is achieved by setting the value 2 for the "hw" option.
-This new offload mode supports new attributes for traffic
-class such as minimum and maximum values for bandwidth rate limits.
-
-Introduces a new datastructure 'tc_mqprio_qopt_offload' for offloading
-mqprio queue options and use this to be shared between the kernel and
-device driver. This contains a copy of the exisiting datastructure
-for mqprio queue options. This new datastructure can be extended when
-adding new attributes for traffic class such as bandwidth rate limits. The
-existing datastructure for mqprio queue options will be shared between the
-kernel and userspace.
-
-This patch enables configuring additional attributes associated
-with a traffic class such as minimum and maximum bandwidth
-rates and can be offloaded to the hardware in the new offload mode.
-The min and max limits for bandwidth rates are provided
-by the user along with the the TCs and the queue configurations
-when creating the mqprio qdisc.
-
-Example:
-# tc qdisc add dev eth0 root mqprio num_tc 2 map 0 0 0 0 1 1 1 1\
-  queues 4 at 0 4 at 4 min_rate 10Mbit 20Mbit max_rate 55Mbit 60Mbit hw 2
-
-To dump the bandwidth rates:
-
-# tc qdisc show dev eth0
-
-qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
-             queues:(0:3) (4:7)
-             min_rate:10Mbit 20Mbit
-             max_rate:55Mbit 60Mbit
-
-v2 : Jiri's changes accepted upstream removes the struct
-tc_to_netdev. Clean up the full offload related changes added to
-mqprio_init() and mqprio_destroy() to rebase on these changes.
+Introduce a macro for the bit setting the PF reset flag and
+update its usages. This makes it easier to use this flag
+in functions to be introduced in future without encountering
+checkpatch issues related to alignment and line over 80
+characters.
 
 Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
 ---
- include/linux/netdevice.h      |    1 
- include/net/pkt_cls.h          |    7 ++
- include/uapi/linux/pkt_sched.h |   13 +++
- net/sched/sch_mqprio.c         |  167 ++++++++++++++++++++++++++++++++++++++--
- 4 files changed, 178 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h             |    2 ++
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |    3 +--
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |    9 ++++-----
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |    5 ++---
+ 4 files changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 0f1c4cb..631f314 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -777,6 +777,7 @@ enum tc_setup_type {
- 	TC_SETUP_CLSFLOWER,
- 	TC_SETUP_CLSMATCHALL,
- 	TC_SETUP_CLSBPF,
-+	TC_SETUP_MQPRIO_EXT,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 890508f..0e53838 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -157,6 +157,8 @@ enum i40e_state_t {
+ 	__I40E_STATE_SIZE__,
  };
  
- /* These structures hold the attributes of xdp state that are being passed
-diff --git a/include/net/pkt_cls.h b/include/net/pkt_cls.h
-index e80edd8..55bf148 100644
---- a/include/net/pkt_cls.h
-+++ b/include/net/pkt_cls.h
-@@ -546,6 +546,13 @@ struct tc_cls_bpf_offload {
- 	u32 gen_flags;
- };
- 
-+struct tc_mqprio_qopt_offload {
-+	/* struct tc_mqprio_qopt must always be the first element */
-+	struct tc_mqprio_qopt qopt;
-+	u32 flags;
-+	u64 min_rate[TC_QOPT_MAX_QUEUE];
-+	u64 max_rate[TC_QOPT_MAX_QUEUE];
-+};
- 
- /* This structure holds cookie structure that is passed from user
-  * to the kernel for actions and classifiers
-diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
-index 099bf55..cf2a146 100644
---- a/include/uapi/linux/pkt_sched.h
-+++ b/include/uapi/linux/pkt_sched.h
-@@ -620,6 +620,7 @@ struct tc_drr_stats {
- enum {
- 	TC_MQPRIO_HW_OFFLOAD_NONE,	/* no offload requested */
- 	TC_MQPRIO_HW_OFFLOAD_TCS,	/* offload TCs, no queue counts */
-+	TC_MQPRIO_HW_OFFLOAD,		/* fully supported offload */
- 	__TC_MQPRIO_HW_OFFLOAD_MAX
- };
- 
-@@ -633,6 +634,18 @@ struct tc_mqprio_qopt {
- 	__u16	offset[TC_QOPT_MAX_QUEUE];
- };
- 
-+#define TC_MQPRIO_F_MIN_RATE  0x1
-+#define TC_MQPRIO_F_MAX_RATE  0x2
++#define I40E_PF_RESET_FLAG	BIT_ULL(__I40E_PF_RESET_REQUESTED)
 +
-+enum {
-+	TCA_MQPRIO_UNSPEC,
-+	TCA_MQPRIO_MIN_RATE64,
-+	TCA_MQPRIO_MAX_RATE64,
-+	__TCA_MQPRIO_MAX,
-+};
-+
-+#define TCA_MQPRIO_MAX (__TCA_MQPRIO_MAX - 1)
-+
- /* SFB */
+ /* VSI state flags */
+ enum i40e_vsi_state_t {
+ 	__I40E_VSI_DOWN,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index 8f326f8..b46117e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -798,8 +798,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+ 		 */
+ 		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
+ 			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
+-			i40e_do_reset_safe(pf,
+-					   BIT_ULL(__I40E_PF_RESET_REQUESTED));
++			i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
+ 		}
  
- enum {
-diff --git a/net/sched/sch_mqprio.c b/net/sched/sch_mqprio.c
-index 2165a05..d913111 100644
---- a/net/sched/sch_mqprio.c
-+++ b/net/sched/sch_mqprio.c
-@@ -18,10 +18,13 @@
- #include <net/netlink.h>
- #include <net/pkt_sched.h>
- #include <net/sch_generic.h>
-+#include <net/pkt_cls.h>
+ 		vsi = i40e_vsi_setup(pf, I40E_VSI_VMDQ2, vsi_seid, 0);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index d2ca98f..9392c5a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -5753,7 +5753,7 @@ int i40e_vsi_open(struct i40e_vsi *vsi)
+ err_setup_tx:
+ 	i40e_vsi_free_tx_resources(vsi);
+ 	if (vsi == pf->vsi[pf->lan_vsi])
+-		i40e_do_reset(pf, BIT_ULL(__I40E_PF_RESET_REQUESTED), true);
++		i40e_do_reset(pf, I40E_PF_RESET_FLAG, true);
  
- struct mqprio_sched {
- 	struct Qdisc		**qdiscs;
- 	int hw_offload;
-+	u32 flags;
-+	u64 min_rate[TC_QOPT_MAX_QUEUE], max_rate[TC_QOPT_MAX_QUEUE];
- };
+ 	return err;
+ }
+@@ -5881,7 +5881,7 @@ void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags, bool lock_acquired)
+ 		wr32(&pf->hw, I40E_GLGEN_RTRIG, val);
+ 		i40e_flush(&pf->hw);
  
- static void mqprio_destroy(struct Qdisc *sch)
-@@ -39,9 +42,20 @@ static void mqprio_destroy(struct Qdisc *sch)
- 	}
+-	} else if (reset_flags & BIT_ULL(__I40E_PF_RESET_REQUESTED)) {
++	} else if (reset_flags & I40E_PF_RESET_FLAG) {
  
- 	if (priv->hw_offload && dev->netdev_ops->ndo_setup_tc) {
--		struct tc_mqprio_qopt mqprio = {};
-+		struct tc_mqprio_qopt_offload mqprio = { { 0 } };
+ 		/* Request a PF Reset
+ 		 *
+@@ -9209,7 +9209,7 @@ static int i40e_set_features(struct net_device *netdev,
+ 	need_reset = i40e_set_ntuple(pf, features);
  
--		dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_MQPRIO, &mqprio);
-+		switch (priv->hw_offload) {
-+		case TC_MQPRIO_HW_OFFLOAD_TCS:
-+			dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_MQPRIO,
-+						      &mqprio.qopt);
-+			break;
-+		case TC_MQPRIO_HW_OFFLOAD:
-+			dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_MQPRIO_EXT,
-+						      &mqprio);
-+			break;
-+		default:
-+			return;
-+		}
- 	} else {
- 		netdev_set_num_tc(dev, 0);
- 	}
-@@ -97,6 +111,24 @@ static int mqprio_parse_opt(struct net_device *dev, struct tc_mqprio_qopt *qopt)
+ 	if (need_reset)
+-		i40e_do_reset(pf, BIT_ULL(__I40E_PF_RESET_REQUESTED), true);
++		i40e_do_reset(pf, I40E_PF_RESET_FLAG, true);
+ 
  	return 0;
  }
- 
-+static const struct nla_policy mqprio_policy[TCA_MQPRIO_MAX + 1] = {
-+	[TCA_MQPRIO_MIN_RATE64] = { .type = NLA_NESTED },
-+	[TCA_MQPRIO_MAX_RATE64] = { .type = NLA_NESTED },
-+};
-+
-+static int parse_attr(struct nlattr *tb[], int maxtype, struct nlattr *nla,
-+		      const struct nla_policy *policy, int len)
-+{
-+	int nested_len = nla_len(nla) - NLA_ALIGN(len);
-+
-+	if (nested_len >= nla_attr_size(0))
-+		return nla_parse(tb, maxtype, nla_data(nla) + NLA_ALIGN(len),
-+				 nested_len, policy, NULL);
-+
-+	memset(tb, 0, sizeof(struct nlattr *) * (maxtype + 1));
-+	return 0;
-+}
-+
- static int mqprio_init(struct Qdisc *sch, struct nlattr *opt)
- {
- 	struct net_device *dev = qdisc_dev(sch);
-@@ -105,6 +137,10 @@ static int mqprio_init(struct Qdisc *sch, struct nlattr *opt)
- 	struct Qdisc *qdisc;
- 	int i, err = -EOPNOTSUPP;
- 	struct tc_mqprio_qopt *qopt = NULL;
-+	struct nlattr *tb[TCA_MQPRIO_MAX + 1];
-+	struct nlattr *attr;
-+	int rem;
-+	int len = nla_len(opt) - NLA_ALIGN(sizeof(*qopt));
- 
- 	BUILD_BUG_ON(TC_MAX_QUEUE != TC_QOPT_MAX_QUEUE);
- 	BUILD_BUG_ON(TC_BITMASK != TC_QOPT_BITMASK);
-@@ -122,6 +158,51 @@ static int mqprio_init(struct Qdisc *sch, struct nlattr *opt)
- 	if (mqprio_parse_opt(dev, qopt))
+@@ -9461,8 +9461,7 @@ static int i40e_ndo_bridge_setlink(struct net_device *dev,
+ 				pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
+ 			else
+ 				pf->flags &= ~I40E_FLAG_VEB_MODE_ENABLED;
+-			i40e_do_reset(pf, BIT_ULL(__I40E_PF_RESET_REQUESTED),
+-				      true);
++			i40e_do_reset(pf, I40E_PF_RESET_FLAG, true);
+ 			break;
+ 		}
+ 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index e156096..92fe06d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1400,8 +1400,7 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
+ 	if (num_vfs) {
+ 		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
+ 			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
+-			i40e_do_reset_safe(pf,
+-					   BIT_ULL(__I40E_PF_RESET_REQUESTED));
++			i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
+ 		}
+ 		return i40e_pci_sriov_enable(pdev, num_vfs);
+ 	}
+@@ -1409,7 +1408,7 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
+ 	if (!pci_vfs_assigned(pf->pdev)) {
+ 		i40e_free_vfs(pf);
+ 		pf->flags &= ~I40E_FLAG_VEB_MODE_ENABLED;
+-		i40e_do_reset_safe(pf, BIT_ULL(__I40E_PF_RESET_REQUESTED));
++		i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
+ 	} else {
+ 		dev_warn(&pdev->dev, "Unable to free VFs because some are assigned to VMs.\n");
  		return -EINVAL;
- 
-+	if (len > 0) {
-+		err = parse_attr(tb, TCA_MQPRIO_MAX, opt, mqprio_policy,
-+				 sizeof(*qopt));
-+		if (err < 0)
-+			return err;
-+
-+		if (tb[TCA_MQPRIO_MIN_RATE64]) {
-+			if (qopt->hw != TC_MQPRIO_HW_OFFLOAD)
-+				return -EINVAL;
-+
-+			i = 0;
-+			nla_for_each_nested(attr, tb[TCA_MQPRIO_MIN_RATE64],
-+					    rem) {
-+				if (nla_type(attr) != TCA_MQPRIO_MIN_RATE64)
-+					return -EINVAL;
-+
-+				if (i >= qopt->num_tc)
-+					return -EINVAL;
-+
-+				priv->min_rate[i] = *(u64 *)nla_data(attr);
-+				i++;
-+			}
-+			priv->flags |= TC_MQPRIO_F_MIN_RATE;
-+		}
-+
-+		if (tb[TCA_MQPRIO_MAX_RATE64]) {
-+			if (qopt->hw != TC_MQPRIO_HW_OFFLOAD)
-+				return -EINVAL;
-+
-+			i = 0;
-+			nla_for_each_nested(attr, tb[TCA_MQPRIO_MAX_RATE64],
-+					    rem) {
-+				if (nla_type(attr) != TCA_MQPRIO_MAX_RATE64)
-+					return -EINVAL;
-+
-+				if (i >= qopt->num_tc)
-+					return -EINVAL;
-+
-+				priv->max_rate[i] = *(u64 *)nla_data(attr);
-+				i++;
-+			}
-+			priv->flags |= TC_MQPRIO_F_MAX_RATE;
-+		}
-+	}
-+
- 	/* pre-allocate qdisc, attachment can't fail */
- 	priv->qdiscs = kcalloc(dev->num_tx_queues, sizeof(priv->qdiscs[0]),
- 			       GFP_KERNEL);
-@@ -146,14 +227,35 @@ static int mqprio_init(struct Qdisc *sch, struct nlattr *opt)
- 	 * supplied and verified mapping
- 	 */
- 	if (qopt->hw) {
--		struct tc_mqprio_qopt mqprio = *qopt;
-+		struct tc_mqprio_qopt_offload mqprio = {.qopt = *qopt};
- 
--		err = dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_MQPRIO,
--						    &mqprio);
-+		switch (qopt->hw) {
-+		case TC_MQPRIO_HW_OFFLOAD_TCS:
-+			err = dev->netdev_ops->ndo_setup_tc(dev,
-+							    TC_SETUP_MQPRIO,
-+							    &mqprio.qopt);
-+			break;
-+		case TC_MQPRIO_HW_OFFLOAD:
-+			mqprio.flags = priv->flags;
-+			if (priv->flags & TC_MQPRIO_F_MIN_RATE)
-+				for (i = 0; i < mqprio.qopt.num_tc; i++)
-+					mqprio.min_rate[i] = priv->min_rate[i];
-+
-+			if (priv->flags & TC_MQPRIO_F_MAX_RATE)
-+				for (i = 0; i < mqprio.qopt.num_tc; i++)
-+					mqprio.max_rate[i] = priv->max_rate[i];
-+
-+			err = dev->netdev_ops->ndo_setup_tc(dev,
-+							    TC_SETUP_MQPRIO_EXT,
-+							    &mqprio);
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
- 		if (err)
- 			return err;
- 
--		priv->hw_offload = mqprio.hw;
-+		priv->hw_offload = mqprio.qopt.hw;
- 	} else {
- 		netdev_set_num_tc(dev, qopt->num_tc);
- 		for (i = 0; i < qopt->num_tc; i++)
-@@ -223,11 +325,51 @@ static int mqprio_graft(struct Qdisc *sch, unsigned long cl, struct Qdisc *new,
- 	return 0;
- }
- 
-+static int dump_rates(struct mqprio_sched *priv,
-+		      struct tc_mqprio_qopt *opt, struct sk_buff *skb)
-+{
-+	struct nlattr *nest;
-+	int i;
-+
-+	if (priv->flags & TC_MQPRIO_F_MIN_RATE) {
-+		nest = nla_nest_start(skb, TCA_MQPRIO_MIN_RATE64);
-+		if (!nest)
-+			goto nla_put_failure;
-+
-+		for (i = 0; i < opt->num_tc; i++) {
-+			if (nla_put(skb, TCA_MQPRIO_MIN_RATE64,
-+				    sizeof(priv->min_rate[i]),
-+				    &priv->min_rate[i]))
-+				goto nla_put_failure;
-+		}
-+		nla_nest_end(skb, nest);
-+	}
-+
-+	if (priv->flags & TC_MQPRIO_F_MAX_RATE) {
-+		nest = nla_nest_start(skb, TCA_MQPRIO_MAX_RATE64);
-+		if (!nest)
-+			goto nla_put_failure;
-+
-+		for (i = 0; i < opt->num_tc; i++) {
-+			if (nla_put(skb, TCA_MQPRIO_MAX_RATE64,
-+				    sizeof(priv->max_rate[i]),
-+				    &priv->max_rate[i]))
-+				goto nla_put_failure;
-+		}
-+		nla_nest_end(skb, nest);
-+	}
-+	return 0;
-+
-+nla_put_failure:
-+	nla_nest_cancel(skb, nest);
-+	return -1;
-+}
-+
- static int mqprio_dump(struct Qdisc *sch, struct sk_buff *skb)
- {
- 	struct net_device *dev = qdisc_dev(sch);
- 	struct mqprio_sched *priv = qdisc_priv(sch);
--	unsigned char *b = skb_tail_pointer(skb);
-+	struct nlattr *nla = (struct nlattr *)skb_tail_pointer(skb);
- 	struct tc_mqprio_qopt opt = { 0 };
- 	struct Qdisc *qdisc;
- 	unsigned int i;
-@@ -258,12 +400,17 @@ static int mqprio_dump(struct Qdisc *sch, struct sk_buff *skb)
- 		opt.offset[i] = dev->tc_to_txq[i].offset;
- 	}
- 
--	if (nla_put(skb, TCA_OPTIONS, sizeof(opt), &opt))
-+	if (nla_put(skb, TCA_OPTIONS, NLA_ALIGN(sizeof(opt)), &opt))
- 		goto nla_put_failure;
- 
--	return skb->len;
-+	if (priv->flags & TC_MQPRIO_F_MIN_RATE ||
-+	    priv->flags & TC_MQPRIO_F_MAX_RATE)
-+		if (dump_rates(priv, &opt, skb) != 0)
-+			goto nla_put_failure;
-+
-+	return nla_nest_end(skb, nla);
- nla_put_failure:
--	nlmsg_trim(skb, b);
-+	nlmsg_trim(skb, nla);
- 	return -1;
- }
- 
 
