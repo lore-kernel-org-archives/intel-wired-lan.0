@@ -1,40 +1,76 @@
 From: Ding Tianhong <dingtianhong@huawei.com>
-Date: Thu, 17 Aug 2017 09:22:46 +0800
-Subject: [Intel-wired-lan] [PATCH net 0/2] net: ixgbe: Use new flag to
- disable Relaxed Ordering
-In-Reply-To: <20170816.105647.341781221143669151.davem@davemloft.net>
-References: <1502876507-9360-1-git-send-email-dingtianhong@huawei.com>
- <20170816.105647.341781221143669151.davem@davemloft.net>
-Message-ID: <ea51f2cc-49f7-3689-d503-23c56e6fe90b@huawei.com>
+Date: Thu, 17 Aug 2017 11:25:15 +0800
+Subject: [Intel-wired-lan] [PATCH net v2 1/2] Revert commit 1a8b6d76dc5b
+	("net:add one common config...")
+In-Reply-To: <1502940316-13384-1-git-send-email-dingtianhong@huawei.com>
+References: <1502940316-13384-1-git-send-email-dingtianhong@huawei.com>
+Message-ID: <1502940316-13384-2-git-send-email-dingtianhong@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+The new flag PCI_DEV_FLAGS_NO_RELAXED_ORDERING has been added
+to indicate that Relaxed Ordering Attributes (RO) should not
+be used for Transaction Layer Packets (TLP) targeted toward
+these affected Root Port, it will clear the bit4 in the PCIe
+Device Control register, so the PCIe device drivers could
+query PCIe configuration space to determine if it can send
+TLPs to Root Port with the Relaxed Ordering Attributes set.
 
+With this new flag  we don't need the config ARCH_WANT_RELAX_ORDER
+to control the Relaxed Ordering Attributes for the ixgbe drivers
+just like the commit 1a8b6d76dc5b ("net:add one common config...") did,
+so revert this commit.
 
-On 2017/8/17 1:56, David Miller wrote:
-> From: Ding Tianhong <dingtianhong@huawei.com>
-> Date: Wed, 16 Aug 2017 17:41:45 +0800
-> 
->> The new flag PCI_DEV_FLAGS_NO_RELAXED_ORDERING has been added
->> to indicate that Relaxed Ordering Attributes (RO) should not
->> be used for Transaction Layer Packets (TLP) targeted toward
->> these affected Root Port, it will clear the bit4 in the PCIe
->> Device Control register, so the PCIe device drivers could
->> query PCIe configuration space to determine if it can send
->> TLPs to Root Port with the Relaxed Ordering Attributes set.
->>
->> The ixgbe driver could use this flag to determine if it can
->> send TLPs to Root Port with the Relaxed Ordering Attributes set.
-> 
-> I'll let the Intel guys pick this up.
-> 
-Thanks David, but I am not sure when the Intel guys would take over,
-just Alex has replied, so I will release a new version according Alex's
-suggestion.
+Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
+---
+ arch/Kconfig                                    | 3 ---
+ arch/sparc/Kconfig                              | 1 -
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
+ 3 files changed, 1 insertion(+), 5 deletions(-)
 
-> .
-> 
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 21d0089..00cfc63 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -928,9 +928,6 @@ config STRICT_MODULE_RWX
+ 	  and non-text memory will be made non-executable. This provides
+ 	  protection against certain security exploits (e.g. writing to text)
+ 
+-config ARCH_WANT_RELAX_ORDER
+-	bool
+-
+ config REFCOUNT_FULL
+ 	bool "Perform full reference count validation at the expense of speed"
+ 	help
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index a4a6261..987a575 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -44,7 +44,6 @@ config SPARC
+ 	select ARCH_HAS_SG_CHAIN
+ 	select CPU_NO_EFFICIENT_FFS
+ 	select LOCKDEP_SMALL if LOCKDEP
+-	select ARCH_WANT_RELAX_ORDER
+ 
+ config SPARC32
+ 	def_bool !64BIT
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 4e35e70..d4933d2 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -350,7 +350,7 @@ s32 ixgbe_start_hw_gen2(struct ixgbe_hw *hw)
+ 	}
+ 	IXGBE_WRITE_FLUSH(hw);
+ 
+-#ifndef CONFIG_ARCH_WANT_RELAX_ORDER
++#ifndef CONFIG_SPARC
+ 	/* Disable relaxed ordering */
+ 	for (i = 0; i < hw->mac.max_tx_queues; i++) {
+ 		u32 regval;
+-- 
+1.8.3.1
+
 
