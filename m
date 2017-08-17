@@ -1,259 +1,272 @@
 From: Amritha Nambiar <amritha.nambiar@intel.com>
-Date: Thu, 17 Aug 2017 03:01:15 -0700
-Subject: [Intel-wired-lan] [PATCH v2 6/6] [net-next]net: i40e: Add support
- to set max bandwidth rates for TCs offloaded via tc/mqprio
-In-Reply-To: <150296373549.16167.14331445560838257351.stgit@anamdev.jf.intel.com>
-References: <150296373549.16167.14331445560838257351.stgit@anamdev.jf.intel.com>
-Message-ID: <150296407551.16167.8723726116003551646.stgit@anamdev.jf.intel.com>
+Date: Thu, 17 Aug 2017 03:26:50 -0700
+Subject: [Intel-wired-lan] [RFC PATCH v2 1/6] [net-next]net: sched:
+ act_mirred: Extend redirect action to accept a traffic class
+In-Reply-To: <150296538797.16910.13738130623106637990.stgit@anamdev.jf.intel.com>
+References: <150296538797.16910.13738130623106637990.stgit@anamdev.jf.intel.com>
+Message-ID: <150296561068.16910.8958234153804004329.stgit@anamdev.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch enables setting up maximum Tx rates for the traffic
-classes in i40e. The maximum rate offloaded to the hardware through
-the mqprio framework is configured for the VSI. Configuring
-minimum Tx rate limit is not supported in the device. The minimum
-usable value for Tx rate is 50Mbps.
+The Mirred/redirect action is extended to forward to a traffic
+class on the device. The traffic class index needs to be
+provided in addition to the device's ifindex.
 
 Example:
-# tc qdisc add dev eth0 root mqprio num_tc 2  map 0 0 0 0 1 1 1 1\
-  queues 4 at 0 4 at 4 max_rate 55Mbit 60Mbit hw 2
+# tc filter add dev eth0 protocol ip parent ffff: prio 1 flower\
+  dst_ip 192.168.1.1/32 ip_proto udp dst_port 22\
+  skip_sw action mirred ingress redirect dev eth0 tclass 1
 
-To dump the bandwidth rates:
-# tc qdisc show dev eth0
-
-qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
-             queues:(0:3) (4:7)
-             min_rate:0bit 0bit
-             max_rate:55Mbit 60Mbit
+v2: Introduced is_tcf_mirred_tc() helper function to check if
+the rule is supported in current offloaders. Removed the
+additional definitions for max number of TCs and its bitmask
+and replaced their usages with existing defines in linux/netdevice.h.
 
 Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |    2 +
- drivers/net/ethernet/intel/i40e/i40e_main.c |   99 +++++++++++++++++++++++++--
- 2 files changed, 92 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_u32.c  |    2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      |    2 +-
+ drivers/net/ethernet/mellanox/mlx5/core/en_tc.c    |    2 +-
+ drivers/net/ethernet/mellanox/mlxsw/spectrum.c     |    3 ++-
+ .../net/ethernet/mellanox/mlxsw/spectrum_flower.c  |    3 ++-
+ drivers/net/ethernet/netronome/nfp/bpf/offload.c   |    1 +
+ drivers/net/ethernet/netronome/nfp/flower/action.c |    4 ++--
+ include/net/tc_act/tc_mirred.h                     |   16 ++++++++++++++++
+ include/uapi/linux/tc_act/tc_mirred.h              |    3 +++
+ net/dsa/slave.c                                    |    3 ++-
+ net/sched/act_mirred.c                             |   15 +++++++++++++++
+ 11 files changed, 46 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 304921e..8852ac0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -359,6 +359,8 @@ struct i40e_channel {
- 	u8 enabled_tc;
- 	struct i40e_aqc_vsi_properties_data info;
+diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_u32.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_u32.c
+index 48970ba..54a7004 100644
+--- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_u32.c
++++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_u32.c
+@@ -113,7 +113,7 @@ static int fill_action_fields(struct adapter *adap,
+ 		}
  
-+	u64 max_tx_rate;
-+
- 	/* track this channel belongs to which VSI */
- 	struct i40e_vsi *parent_vsi;
+ 		/* Re-direct to specified port in hardware. */
+-		if (is_tcf_mirred_egress_redirect(a)) {
++		if (is_tcf_mirred_egress_redirect(a) && !is_tcf_mirred_tc(a)) {
+ 			struct net_device *n_dev;
+ 			unsigned int i, index;
+ 			bool found = false;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 5d674f9..5b67cf0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8995,7 +8995,7 @@ static int parse_tc_actions(struct ixgbe_adapter *adapter,
+ 		}
+ 
+ 		/* Redirect to a VF or a offloaded macvlan */
+-		if (is_tcf_mirred_egress_redirect(a)) {
++		if (is_tcf_mirred_egress_redirect(a) && !is_tcf_mirred_tc(a)) {
+ 			int ifindex = tcf_mirred_ifindex(a);
+ 
+ 			err = handle_redirect_action(adapter, ifindex, queue,
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_tc.c b/drivers/net/ethernet/mellanox/mlx5/core/en_tc.c
+index 3b10d3d..eae02f8 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en_tc.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en_tc.c
+@@ -1871,7 +1871,7 @@ static int parse_tc_fdb_actions(struct mlx5e_priv *priv, struct tcf_exts *exts,
+ 			return -EOPNOTSUPP;
+ 		}
+ 
+-		if (is_tcf_mirred_egress_redirect(a)) {
++		if (is_tcf_mirred_egress_redirect(a) && !is_tcf_mirred_tc(a)) {
+ 			int ifindex = tcf_mirred_ifindex(a);
+ 			struct net_device *out_dev, *encap_dev = NULL;
+ 			struct mlx5e_priv *out_priv;
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/spectrum.c b/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
+index 90a95cd..ce0b114 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
+@@ -1639,7 +1639,8 @@ static int mlxsw_sp_port_add_cls_matchall(struct mlxsw_sp_port *mlxsw_sp_port,
+ 	tcf_exts_to_list(f->exts, &actions);
+ 	a = list_first_entry(&actions, struct tc_action, list);
+ 
+-	if (is_tcf_mirred_egress_mirror(a) && protocol == htons(ETH_P_ALL)) {
++	if (is_tcf_mirred_egress_mirror(a) && !is_tcf_mirred_tc(a) &&
++	    protocol == htons(ETH_P_ALL)) {
+ 		struct mlxsw_sp_port_mall_mirror_tc_entry *mirror;
+ 
+ 		mall_tc_entry->type = MLXSW_SP_PORT_MALL_MIRROR;
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/spectrum_flower.c b/drivers/net/ethernet/mellanox/mlxsw/spectrum_flower.c
+index 95428b4..8ed3a0a 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/spectrum_flower.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/spectrum_flower.c
+@@ -71,7 +71,8 @@ static int mlxsw_sp_flower_parse_actions(struct mlxsw_sp *mlxsw_sp,
+ 			err = mlxsw_sp_acl_rulei_act_trap(rulei);
+ 			if (err)
+ 				return err;
+-		} else if (is_tcf_mirred_egress_redirect(a)) {
++		} else if (is_tcf_mirred_egress_redirect(a) &&
++			   !is_tcf_mirred_tc(a)) {
+ 			int ifindex = tcf_mirred_ifindex(a);
+ 			struct net_device *out_dev;
+ 			struct mlxsw_sp_fid *fid;
+diff --git a/drivers/net/ethernet/netronome/nfp/bpf/offload.c b/drivers/net/ethernet/netronome/nfp/bpf/offload.c
+index a88bb5b..3b00d4b 100644
+--- a/drivers/net/ethernet/netronome/nfp/bpf/offload.c
++++ b/drivers/net/ethernet/netronome/nfp/bpf/offload.c
+@@ -131,6 +131,7 @@ nfp_net_bpf_get_act(struct nfp_net *nn, struct tc_cls_bpf_offload *cls_bpf)
+ 			return NN_ACT_TC_DROP;
+ 
+ 		if (is_tcf_mirred_egress_redirect(a) &&
++		    !is_tcf_mirred_tc(a) &&
+ 		    tcf_mirred_ifindex(a) == nn->dp.netdev->ifindex)
+ 			return NN_ACT_TC_REDIR;
+ 	}
+diff --git a/drivers/net/ethernet/netronome/nfp/flower/action.c b/drivers/net/ethernet/netronome/nfp/flower/action.c
+index db97506..7ceeaa9 100644
+--- a/drivers/net/ethernet/netronome/nfp/flower/action.c
++++ b/drivers/net/ethernet/netronome/nfp/flower/action.c
+@@ -132,7 +132,7 @@ nfp_flower_loop_action(const struct tc_action *a,
+ 
+ 	if (is_tcf_gact_shot(a)) {
+ 		nfp_fl->meta.shortcut = cpu_to_be32(NFP_FL_SC_ACT_DROP);
+-	} else if (is_tcf_mirred_egress_redirect(a)) {
++	} else if (is_tcf_mirred_egress_redirect(a) && !is_tcf_mirred_tc(a)) {
+ 		if (*a_len + sizeof(struct nfp_fl_output) > NFP_FL_MAX_A_SIZ)
+ 			return -EOPNOTSUPP;
+ 
+@@ -142,7 +142,7 @@ nfp_flower_loop_action(const struct tc_action *a,
+ 			return err;
+ 
+ 		*a_len += sizeof(struct nfp_fl_output);
+-	} else if (is_tcf_mirred_egress_mirror(a)) {
++	} else if (is_tcf_mirred_egress_mirror(a) && !is_tcf_mirred_tc(a)) {
+ 		if (*a_len + sizeof(struct nfp_fl_output) > NFP_FL_MAX_A_SIZ)
+ 			return -EOPNOTSUPP;
+ 
+diff --git a/include/net/tc_act/tc_mirred.h b/include/net/tc_act/tc_mirred.h
+index 604bc31..59cb935 100644
+--- a/include/net/tc_act/tc_mirred.h
++++ b/include/net/tc_act/tc_mirred.h
+@@ -9,6 +9,8 @@ struct tcf_mirred {
+ 	int			tcfm_eaction;
+ 	int			tcfm_ifindex;
+ 	bool			tcfm_mac_header_xmit;
++	u8			tcfm_tc;
++	u32			flags;
+ 	struct net_device __rcu	*tcfm_dev;
+ 	struct list_head	tcfm_list;
  };
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index fcf563a..601a86d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5201,9 +5201,16 @@ static int i40e_vsi_configure_bw_alloc(struct i40e_vsi *vsi, u8 enabled_tc,
- 	i40e_status ret;
- 	int i;
+@@ -37,4 +39,18 @@ static inline int tcf_mirred_ifindex(const struct tc_action *a)
+ 	return to_mirred(a)->tcfm_ifindex;
+ }
  
--	if ((vsi->back->flags & I40E_FLAG_TC_MQPRIO) ||
--	    !vsi->mqprio_qopt.qopt.hw)
-+	if (vsi->back->flags & I40E_FLAG_TC_MQPRIO)
- 		return 0;
-+	if (!vsi->mqprio_qopt.qopt.hw) {
-+		ret = i40e_set_bw_limit(vsi, vsi->seid, 0);
-+		if (ret)
-+			dev_info(&vsi->back->pdev->dev,
-+				 "Failed to reset tx rate for vsi->seid %u\n",
-+				 vsi->seid);
-+		return ret;
-+	}
- 	bw_data.tc_valid_bits = enabled_tc;
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++)
- 		bw_data.tc_bw_credits[i] = bw_share[i];
-@@ -5509,6 +5516,13 @@ static void i40e_remove_queue_channels(struct i40e_vsi *vsi)
- 			rx_ring->ch = NULL;
- 		}
- 
-+		/* Reset BW configured for this VSI via mqprio */
-+		ret = i40e_set_bw_limit(vsi, ch->seid, 0);
-+		if (ret)
-+			dev_info(&vsi->back->pdev->dev,
-+				 "Failed to reset tx rate for ch->seid %u\n",
-+				 ch->seid);
++static inline bool is_tcf_mirred_tc(const struct tc_action *a)
++{
++#ifdef CONFIG_NET_CLS_ACT
++	if (a->ops && a->ops->type == TCA_ACT_MIRRED)
++		return to_mirred(a)->flags == MIRRED_F_TCLASS;
++#endif
++	return false;
++}
 +
- 		/* delete VSI from FW */
- 		ret = i40e_aq_delete_element(&vsi->back->hw, ch->seid,
- 					     NULL);
-@@ -6081,6 +6095,17 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
- 		 "Setup channel (id:%u) utilizing num_queues %d\n",
- 		 ch->seid, ch->num_queue_pairs);
- 
-+	/* configure VSI for BW limit */
-+	if (ch->max_tx_rate) {
-+		if (i40e_set_bw_limit(vsi, ch->seid, ch->max_tx_rate))
-+			return -EINVAL;
++static inline u8 tcf_mirred_tc(const struct tc_action *a)
++{
++	return to_mirred(a)->tcfm_tc;
++}
 +
-+		dev_dbg(&pf->pdev->dev,
-+			"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
-+			ch->max_tx_rate,
-+			ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR, ch->seid);
-+	}
+ #endif /* __NET_TC_MIR_H */
+diff --git a/include/uapi/linux/tc_act/tc_mirred.h b/include/uapi/linux/tc_act/tc_mirred.h
+index 3d7a2b3..ea06a47 100644
+--- a/include/uapi/linux/tc_act/tc_mirred.h
++++ b/include/uapi/linux/tc_act/tc_mirred.h
+@@ -9,6 +9,8 @@
+ #define TCA_EGRESS_MIRROR 2 /* mirror packet to EGRESS */
+ #define TCA_INGRESS_REDIR 3  /* packet redirect to INGRESS*/
+ #define TCA_INGRESS_MIRROR 4 /* mirror packet to INGRESS */
 +
- 	/* in case of VF, this will be main SRIOV VSI */
- 	ch->parent_vsi = vsi;
++#define MIRRED_F_TCLASS	0x1
+                                                                                 
+ struct tc_mirred {
+ 	tc_gen;
+@@ -21,6 +23,7 @@ enum {
+ 	TCA_MIRRED_TM,
+ 	TCA_MIRRED_PARMS,
+ 	TCA_MIRRED_PAD,
++	TCA_MIRRED_TCLASS,
+ 	__TCA_MIRRED_MAX
+ };
+ #define TCA_MIRRED_MAX (__TCA_MIRRED_MAX - 1)
+diff --git a/net/dsa/slave.c b/net/dsa/slave.c
+index 78e78a6..b056499 100644
+--- a/net/dsa/slave.c
++++ b/net/dsa/slave.c
+@@ -846,7 +846,8 @@ static int dsa_slave_add_cls_matchall(struct net_device *dev,
+ 	tcf_exts_to_list(cls->exts, &actions);
+ 	a = list_first_entry(&actions, struct tc_action, list);
  
-@@ -6116,6 +6141,12 @@ static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
- 			ch->base_queue =
- 				vsi->tc_config.tc_info[i].qoffset;
+-	if (is_tcf_mirred_egress_mirror(a) && protocol == htons(ETH_P_ALL)) {
++	if (is_tcf_mirred_egress_mirror(a) && !is_tcf_mirred_tc(a) &&
++	    protocol == htons(ETH_P_ALL)) {
+ 		struct dsa_mall_mirror_tc_entry *mirror;
  
-+			/* Bandwidth limit through tc interface is in bytes/s,
-+			 * change to Mbit/s
-+			 */
-+			ch->max_tx_rate =
-+				(vsi->mqprio_qopt.max_rate[i] * 8) / 1000000;
-+
- 			list_add_tail(&ch->list, &vsi->ch_list);
+ 		ifindex = tcf_mirred_ifindex(a);
+diff --git a/net/sched/act_mirred.c b/net/sched/act_mirred.c
+index 1b5549a..43b8896 100644
+--- a/net/sched/act_mirred.c
++++ b/net/sched/act_mirred.c
+@@ -67,6 +67,7 @@ static void tcf_mirred_release(struct tc_action *a, int bind)
  
- 			ret = i40e_create_queue_channel(vsi, ch);
-@@ -6541,6 +6572,7 @@ void i40e_down(struct i40e_vsi *vsi)
- static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
- 				     struct tc_mqprio_qopt_offload *mqprio_qopt)
- {
-+	u64 sum_max_rate = 0;
- 	int i;
+ static const struct nla_policy mirred_policy[TCA_MIRRED_MAX + 1] = {
+ 	[TCA_MIRRED_PARMS]	= { .len = sizeof(struct tc_mirred) },
++	[TCA_MIRRED_TCLASS]	= { .type = NLA_U8 },
+ };
  
- 	if ((mqprio_qopt->qopt.offset[0] != 0) ||
-@@ -6550,8 +6582,13 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
- 	for (i = 0; ; i++) {
- 		if (!mqprio_qopt->qopt.count[i])
- 			return -EINVAL;
--		if (mqprio_qopt->min_rate[i] || mqprio_qopt->max_rate[i])
-+		if (mqprio_qopt->min_rate[i]) {
-+			dev_err(&vsi->back->pdev->dev,
-+				"Invalid min tx rate (greater than 0) specified\n");
- 			return -EINVAL;
-+		}
-+		sum_max_rate += ((mqprio_qopt->max_rate[i] * 8) / 1000000);
-+
- 		if (i >= mqprio_qopt->qopt.num_tc - 1)
- 			break;
- 		if (mqprio_qopt->qopt.offset[i + 1] !=
-@@ -6562,6 +6599,11 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
- 	    (mqprio_qopt->qopt.offset[i] + mqprio_qopt->qopt.count[i])) {
+ static unsigned int mirred_net_id;
+@@ -83,6 +84,8 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+ 	struct tcf_mirred *m;
+ 	struct net_device *dev;
+ 	bool exists = false;
++	u8 *tclass = NULL;
++	u32 flags = 0;
+ 	int ret;
+ 
+ 	if (nla == NULL)
+@@ -92,6 +95,12 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+ 		return ret;
+ 	if (tb[TCA_MIRRED_PARMS] == NULL)
  		return -EINVAL;
- 	}
-+	if (sum_max_rate > i40e_get_link_speed(vsi)) {
-+		dev_err(&vsi->back->pdev->dev,
-+			"Invalid max tx rate specified\n");
-+		return -EINVAL;
++	if (tb[TCA_MIRRED_TCLASS]) {
++		tclass = nla_data(tb[TCA_MIRRED_TCLASS]);
++		if (*tclass >= TC_MAX_QUEUE)
++			return -EINVAL;
++		flags |= MIRRED_F_TCLASS;
 +	}
- 	return 0;
- }
+ 	parm = nla_data(tb[TCA_MIRRED_PARMS]);
  
-@@ -6701,6 +6743,19 @@ static int i40e_setup_tc(struct net_device *netdev, enum tc_setup_type type,
+ 	exists = tcf_hash_check(tn, parm->index, a, bind);
+@@ -139,6 +148,7 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+ 	ASSERT_RTNL();
+ 	m->tcf_action = parm->action;
+ 	m->tcfm_eaction = parm->eaction;
++	m->flags = flags;
+ 	if (dev != NULL) {
+ 		m->tcfm_ifindex = parm->ifindex;
+ 		if (ret != ACT_P_CREATED)
+@@ -146,6 +156,8 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
+ 		dev_hold(dev);
+ 		rcu_assign_pointer(m->tcfm_dev, dev);
+ 		m->tcfm_mac_header_xmit = mac_header_xmit;
++		if (flags & MIRRED_F_TCLASS)
++			m->tcfm_tc = *tclass & TC_BITMASK;
  	}
  
- 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
-+		if (vsi->mqprio_qopt.max_rate[0]) {
-+			u64 max_tx_rate = (vsi->mqprio_qopt.max_rate[0] * 8) /
-+								1000000;
-+			ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
-+			if (!ret)
-+				dev_dbg(&vsi->back->pdev->dev,
-+					"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
-+					max_tx_rate,
-+					max_tx_rate / I40E_BW_CREDIT_DIVISOR,
-+					vsi->seid);
-+			else
-+				goto reset;
-+		}
- 		ret = i40e_configure_queue_channels(vsi);
- 		if (ret) {
- 			netdev_info(netdev,
-@@ -8140,6 +8195,18 @@ static int i40e_rebuild_channels(struct i40e_vsi *vsi)
- 				 vsi->uplink_seid);
- 			return ret;
- 		}
-+		if (ch->max_tx_rate) {
-+			if (i40e_set_bw_limit(vsi, ch->seid,
-+					      ch->max_tx_rate))
-+				return -EINVAL;
-+
-+			dev_dbg(&vsi->back->pdev->dev,
-+				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
-+				ch->max_tx_rate,
-+				ch->max_tx_rate /
-+						I40E_BW_CREDIT_DIVISOR,
-+				ch->seid);
-+		}
- 	}
- 	return 0;
- }
-@@ -8280,6 +8347,7 @@ static int i40e_reset(struct i40e_pf *pf)
-  **/
- static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- {
-+	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
- 	struct i40e_hw *hw = &pf->hw;
- 	u8 set_fc_aq_fail = 0;
- 	i40e_status ret;
-@@ -8362,7 +8430,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 	 * If there were VEBs but the reconstitution failed, we'll try
- 	 * try to recover minimal use by getting the basic PF VSI working.
- 	 */
--	if (pf->vsi[pf->lan_vsi]->uplink_seid != pf->mac_seid) {
-+	if (vsi->uplink_seid != pf->mac_seid) {
- 		dev_dbg(&pf->pdev->dev, "attempting to rebuild switch\n");
- 		/* find the one VEB connected to the MAC, and find orphans */
- 		for (v = 0; v < I40E_MAX_VEB; v++) {
-@@ -8386,8 +8454,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 					dev_info(&pf->pdev->dev,
- 						 "rebuild of switch failed: %d, will try to set up simple PF connection\n",
- 						 ret);
--					pf->vsi[pf->lan_vsi]->uplink_seid
--								= pf->mac_seid;
-+					vsi->uplink_seid = pf->mac_seid;
- 					break;
- 				} else if (pf->veb[v]->uplink_seid == 0) {
- 					dev_info(&pf->pdev->dev,
-@@ -8398,10 +8465,10 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 		}
- 	}
+ 	if (ret == ACT_P_CREATED) {
+@@ -259,6 +271,9 @@ static int tcf_mirred_dump(struct sk_buff *skb, struct tc_action *a, int bind,
  
--	if (pf->vsi[pf->lan_vsi]->uplink_seid == pf->mac_seid) {
-+	if (vsi->uplink_seid == pf->mac_seid) {
- 		dev_dbg(&pf->pdev->dev, "attempting to rebuild PF VSI\n");
- 		/* no VEB, so rebuild only the Main VSI */
--		ret = i40e_add_vsi(pf->vsi[pf->lan_vsi]);
-+		ret = i40e_add_vsi(vsi);
- 		if (ret) {
- 			dev_info(&pf->pdev->dev,
- 				 "rebuild of Main VSI failed: %d\n", ret);
-@@ -8409,10 +8476,24 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 		}
- 	}
+ 	if (nla_put(skb, TCA_MIRRED_PARMS, sizeof(opt), &opt))
+ 		goto nla_put_failure;
++	if ((m->flags & MIRRED_F_TCLASS) &&
++	    nla_put_u8(skb, TCA_MIRRED_TCLASS, m->tcfm_tc))
++		goto nla_put_failure;
  
-+	if (vsi->mqprio_qopt.max_rate[0]) {
-+		u64 max_tx_rate = (vsi->mqprio_qopt.max_rate[0] * 8) / 1000000;
-+
-+		ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
-+		if (!ret)
-+			dev_dbg(&vsi->back->pdev->dev,
-+				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
-+				max_tx_rate,
-+				max_tx_rate / I40E_BW_CREDIT_DIVISOR,
-+				vsi->seid);
-+		else
-+			goto end_unlock;
-+	}
-+
- 	/* PF Main VSI is rebuild by now, go ahead and rebuild channel VSIs
- 	 * for this main VSI if they exist
- 	 */
--	ret = i40e_rebuild_channels(pf->vsi[pf->lan_vsi]);
-+	ret = i40e_rebuild_channels(vsi);
- 	if (ret)
- 		goto end_unlock;
- 
+ 	tcf_tm_dump(&t, &m->tcf_tm);
+ 	if (nla_put_64bit(skb, TCA_MIRRED_TM, sizeof(t), &t, TCA_MIRRED_PAD))
 
