@@ -1,227 +1,71 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 18 Aug 2017 12:36:14 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 4414176fbfc1e3c06d111b7b4fe36f894e6dcc19
-Message-ID: <59966ebe.ItFeADpopj0ss/mB%fengguang.wu@intel.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Fri, 18 Aug 2017 05:04:03 +0000
+Subject: [Intel-wired-lan] [PATCH net v2 2/2] net: ixgbe: Use new
+ PCI_DEV_FLAGS_NO_RELAXED_ORDERING flag
+In-Reply-To: <2a7fc27b-c2f4-a7a1-9318-3a93531e7670@huawei.com>
+References: <1502940316-13384-1-git-send-email-dingtianhong@huawei.com>
+ <1502940316-13384-3-git-send-email-dingtianhong@huawei.com>
+ <87618083B2453E4A8714035B62D67992B4094F7A@FMSMSX105.amr.corp.intel.com>
+ <2a7fc27b-c2f4-a7a1-9318-3a93531e7670@huawei.com>
+Message-ID: <87618083B2453E4A8714035B62D67992B4095363@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-4414176fbfc1e3c06d111b7b4fe36f894e6dcc19  net: ixgbe: Use new IXGBE_FLAG2_ROOT_NO_RELAXED_ORDERING flag
+>-----Original Message-----
+>From: Ding Tianhong [mailto:dingtianhong at huawei.com]
+>Sent: Thursday, August 17, 2017 5:39 PM
+>To: Tantilov, Emil S <emil.s.tantilov@intel.com>; davem at davemloft.net;
+>Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; keescook at chromium.org;
+>linux-kernel at vger.kernel.org; sparclinux at vger.kernel.org; intel-wired-
+>lan at lists.osuosl.org; alexander.duyck at gmail.com; netdev at vger.kernel.org;
+>linuxarm at huawei.com
+>Subject: Re: [PATCH net v2 2/2] net: ixgbe: Use new
+>PCI_DEV_FLAGS_NO_RELAXED_ORDERING flag
+>
+>
+>
+>On 2017/8/17 22:17, Tantilov, Emil S wrote:
+>
+>>> 	ret_val = ixgbe_start_hw_generic(hw);
+>>>
+>>> -#ifndef CONFIG_SPARC
+>>> -	/* Disable relaxed ordering */
+>>> -	for (i = 0; ((i < hw->mac.max_tx_queues) &&
+>>> -	     (i < IXGBE_DCA_MAX_QUEUES_82598)); i++) {
+>>> -		regval = IXGBE_READ_REG(hw, IXGBE_DCA_TXCTRL(i));
+>>> -		regval &= ~IXGBE_DCA_TXCTRL_DESC_WRO_EN;
+>>> -		IXGBE_WRITE_REG(hw, IXGBE_DCA_TXCTRL(i), regval);
+>>> -	}
+>>> +	if (!pcie_relaxed_ordering_enabled(adapter->pdev)) {
+>>
+>> As Alex mentioned there is no need for this check in any form.
+>>
+>> The HW defaults to Relaxed Ordering enabled unless it is disabled in
+>> the PCIe Device Control Register. So the above logic is already done by
+>HW.
+>>
+>> All you have to do is strip the code disabling relaxed ordering.
+>>
+>
+>Hi Tantilov:
+>
+>I misunderstood Alex's suggestion, But I still couldn't find the logic
+>where
+>the HW disable the Relaxed Ordering when the PCIe Device Control Register
+>disable it, can you point it out?
 
-elapsed time: 229m
+If you look at the datasheet (82599) - the description of CTRL_EXT.RO_DIS (bit 17, 0b):
 
-configs tested: 203
+Relaxed Ordering Disable. When set to 1b, the device does not request any relaxed
+ordering transactions. When this bit is cleared and the Enable Relaxed Ordering bit in
+the Device Control register is set, the device requests relaxed ordering transactions per queues as configured in the DCA_RXCTRL[n] and DCA_TXCTRL[n] registers.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-powerpc                      pasemi_defconfig
-s390                             alldefconfig
-sh                           se7206_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-arm                        spear6xx_defconfig
-mips                             allmodconfig
-powerpc                    amigaone_defconfig
-i386                   randconfig-c0-08180911
-arm                         hackkit_defconfig
-arm                      pxa255-idp_defconfig
-ia64                        generic_defconfig
-arm                       mainstone_defconfig
-cris                             allmodconfig
-s390                    performance_defconfig
-i386                   randconfig-x019-201733
-i386                   randconfig-x013-201733
-i386                   randconfig-x016-201733
-i386                   randconfig-x012-201733
-i386                   randconfig-x018-201733
-i386                   randconfig-x010-201733
-i386                   randconfig-x015-201733
-i386                   randconfig-x011-201733
-i386                   randconfig-x017-201733
-i386                   randconfig-x014-201733
-i386                     randconfig-n0-201733
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-arm                  colibri_pxa270_defconfig
-ia64                      gensparse_defconfig
-powerpc                 xes_mpc85xx_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201733
-i386                     randconfig-a1-201733
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                          tango4_defconfig
-blackfin                         alldefconfig
-cris                          dev88_defconfig
-ia64                          tiger_defconfig
-m68k                        mvme16x_defconfig
-x86_64                 randconfig-x016-201733
-x86_64                 randconfig-x011-201733
-x86_64                 randconfig-x014-201733
-x86_64                 randconfig-x019-201733
-x86_64                 randconfig-x012-201733
-x86_64                 randconfig-x018-201733
-x86_64                 randconfig-x013-201733
-x86_64                 randconfig-x015-201733
-x86_64                 randconfig-x010-201733
-x86_64                 randconfig-x017-201733
-i386                   randconfig-s0-08141822
-i386                   randconfig-s1-08141822
-x86_64                 randconfig-s3-08180901
-x86_64                 randconfig-s4-08180901
-x86_64                 randconfig-s5-08180901
-x86_64                            allnoconfig
-arm                       aspeed_g5_defconfig
-frv                              allyesconfig
-powerpc                      walnut_defconfig
-i386                   randconfig-b0-08180858
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201733
-i386                     randconfig-i1-201733
-i386                             allyesconfig
-x86_64                 randconfig-b0-08180843
-arm                          nuc910_defconfig
-x86_64                 randconfig-u0-08180843
-arm                            u300_defconfig
-powerpc                      obs600_defconfig
-arm                            qcom_defconfig
-mips                  maltasmvp_eva_defconfig
-powerpc                    gamecube_defconfig
-sh                               allyesconfig
-arm                            hisi_defconfig
-arm                            mps2_defconfig
-sparc64                          allyesconfig
-x86_64                 randconfig-h0-08180847
-arm                         socfpga_defconfig
-blackfin                    PNAV-10_defconfig
-mips                       lemote2f_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-08180753
-x86_64                           allmodconfig
-i386                   randconfig-x000-201733
-i386                   randconfig-x003-201733
-i386                   randconfig-x009-201733
-i386                   randconfig-x004-201733
-i386                   randconfig-x001-201733
-i386                   randconfig-x008-201733
-i386                   randconfig-x005-201733
-i386                   randconfig-x007-201733
-i386                   randconfig-x002-201733
-i386                   randconfig-x006-201733
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-x007-201733
-x86_64                 randconfig-x001-201733
-x86_64                 randconfig-x000-201733
-x86_64                 randconfig-x006-201733
-x86_64                 randconfig-x003-201733
-x86_64                 randconfig-x004-201733
-x86_64                 randconfig-x009-201733
-x86_64                 randconfig-x005-201733
-x86_64                 randconfig-x008-201733
-x86_64                 randconfig-x002-201733
-mips                          malta_defconfig
-x86_64                randconfig-ws0-08180901
-arm                              zx_defconfig
-powerpc                      mgcoge_defconfig
-xtensa                           allyesconfig
-x86_64                randconfig-ws0-08180826
-i386                   randconfig-x075-201733
-i386                   randconfig-x076-201733
-i386                   randconfig-x071-201733
-i386                   randconfig-x074-201733
-i386                   randconfig-x070-201733
-i386                   randconfig-x072-201733
-i386                   randconfig-x079-201733
-i386                   randconfig-x077-201733
-i386                   randconfig-x073-201733
-i386                   randconfig-x078-201733
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-blackfin                   CM-BF527_defconfig
-mips                                defconfig
-x86_64                 randconfig-r0-08180843
-i386                             allmodconfig
-arm                    vt8500_v6_v7_defconfig
-mips                            e55_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-08180907
+So if you remove the code that clears the bits in DCA_T/RXCTRL relaxed ordering should
+be enabled by HW when the bus allows it.
 
 Thanks,
-Fengguang
+Emil
+
