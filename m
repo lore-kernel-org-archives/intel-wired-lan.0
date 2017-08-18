@@ -1,55 +1,48 @@
-From: Ding Tianhong <dingtianhong@huawei.com>
-Date: Fri, 18 Aug 2017 08:39:23 +0800
-Subject: [Intel-wired-lan] [PATCH net v2 2/2] net: ixgbe: Use new
- PCI_DEV_FLAGS_NO_RELAXED_ORDERING flag
-In-Reply-To: <87618083B2453E4A8714035B62D67992B4094F7A@FMSMSX105.amr.corp.intel.com>
-References: <1502940316-13384-1-git-send-email-dingtianhong@huawei.com>
- <1502940316-13384-3-git-send-email-dingtianhong@huawei.com>
- <87618083B2453E4A8714035B62D67992B4094F7A@FMSMSX105.amr.corp.intel.com>
-Message-ID: <2a7fc27b-c2f4-a7a1-9318-3a93531e7670@huawei.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 18 Aug 2017 02:56:34 +0000
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: fix buffer overrun
+ while	the I219 is processing DMA transactions
+In-Reply-To: <20170806134918.9222-1-sasha.neftin@intel.com>
+References: <20170806134918.9222-1-sasha.neftin@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C682080@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On 2017/8/17 22:17, Tantilov, Emil S wrote:
-
->> 	ret_val = ixgbe_start_hw_generic(hw);
->>
->> -#ifndef CONFIG_SPARC
->> -	/* Disable relaxed ordering */
->> -	for (i = 0; ((i < hw->mac.max_tx_queues) &&
->> -	     (i < IXGBE_DCA_MAX_QUEUES_82598)); i++) {
->> -		regval = IXGBE_READ_REG(hw, IXGBE_DCA_TXCTRL(i));
->> -		regval &= ~IXGBE_DCA_TXCTRL_DESC_WRO_EN;
->> -		IXGBE_WRITE_REG(hw, IXGBE_DCA_TXCTRL(i), regval);
->> -	}
->> +	if (!pcie_relaxed_ordering_enabled(adapter->pdev)) {
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
+> Of Sasha Neftin
+> Sent: Sunday, August 6, 2017 6:49 AM
+> To: Neftin, Sasha <sasha.neftin@intel.com>; Ruinskiy, Dima
+> <dima.ruinskiy@intel.com>; Avargil, Raanan <raanan.avargil@intel.com>;
+> intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: fix buffer overrun while the
+> I219 is processing DMA transactions
 > 
-> As Alex mentioned there is no need for this check in any form.
+> Description: Intel? 100/200 Series Chipset platforms
+> reduced the round-trip latency for the LAN Controller
+> DMA accesses, causing in some high performance cases a buffer
+> overrun while the I219 LAN Connected Device is processing
+> the DMA transactions. I219LM and I219V devices can fall into
+> unrecovered Tx hang under very stressfully UDP traffic and multiple
+> reconnection of Ethernet cable. This Tx hang of the LAN Controller
+> is only recovered if the system is rebooted. Slightly slow down
+> DMA access by reducing the number of outstanding requests.
+> This workaround could have an impact on TCP traffic performance
+> on the platform. Disabling TSO eliminates performance loss for TCP
+> traffic without a noticeable impact on CPU performance.
 > 
-> The HW defaults to Relaxed Ordering enabled unless it is disabled in 
-> the PCIe Device Control Register. So the above logic is already done by HW.
+> Please, refer to I218/I219 specification update:
+> https://www.intel.com/content/www/us/en/embedded/products/networki
+> ng/
+> ethernet-connection-i218-family-documentation.html
 > 
-> All you have to do is strip the code disabling relaxed ordering.
-> 
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> Reviewed-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+> Reviewed-by: Raanan Avargil <raanan.avargil@intel.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
 
-Hi Tantilov:
-
-I misunderstood Alex's suggestion, But I still couldn't find the logic where
-the HW disable the Relaxed Ordering when the PCIe Device Control Register
-disable it, can you point it out?
-
-Thanks
-Ding
-
-> Thanks,
-> Emil
-> 
-> 
-> .
-> 
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
