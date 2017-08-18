@@ -1,76 +1,35 @@
-From: Ding Tianhong <dingtianhong@huawei.com>
-Date: Fri, 18 Aug 2017 14:21:04 +0800
-Subject: [Intel-wired-lan] [PATCH v3 net 1/2] Revert commit 1a8b6d76dc5b
-	("net:add one common config...")
-In-Reply-To: <1503037265-11144-1-git-send-email-dingtianhong@huawei.com>
-References: <1503037265-11144-1-git-send-email-dingtianhong@huawei.com>
-Message-ID: <1503037265-11144-2-git-send-email-dingtianhong@huawei.com>
+From: Rami Rosen <rami.rosen@intel.com>
+Date: Sat, 19 Aug 2017 00:20:31 +0300
+Subject: [Intel-wired-lan] [PATCH net-next] i40e: fix a typo in i40e_pf
+	documentation.
+Message-ID: <1503091231-5869-1-git-send-email-rami.rosen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The new flag PCI_DEV_FLAGS_NO_RELAXED_ORDERING has been added
-to indicate that Relaxed Ordering Attributes (RO) should not
-be used for Transaction Layer Packets (TLP) targeted toward
-these affected Root Port, it will clear the bit4 in the PCIe
-Device Control register, so the PCIe device drivers could
-query PCIe configuration space to determine if it can send
-TLPs to Root Port with the Relaxed Ordering Attributes set.
+This patch fixes a typo in i40e_pf object documentation; num_req_vfs 
+refers to the number of VFs requested for the PF.
 
-With this new flag  we don't need the config ARCH_WANT_RELAX_ORDER
-to control the Relaxed Ordering Attributes for the ixgbe drivers
-just like the commit 1a8b6d76dc5b ("net:add one common config...") did,
-so revert this commit.
-
-Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
+Signed-off-by: Rami Rosen <rami.rosen@intel.com>
 ---
- arch/Kconfig                                    | 3 ---
- arch/sparc/Kconfig                              | 1 -
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
- 3 files changed, 1 insertion(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 21d0089..00cfc63 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -928,9 +928,6 @@ config STRICT_MODULE_RWX
- 	  and non-text memory will be made non-executable. This provides
- 	  protection against certain security exploits (e.g. writing to text)
- 
--config ARCH_WANT_RELAX_ORDER
--	bool
--
- config REFCOUNT_FULL
- 	bool "Perform full reference count validation at the expense of speed"
- 	help
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index a4a6261..987a575 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -44,7 +44,6 @@ config SPARC
- 	select ARCH_HAS_SG_CHAIN
- 	select CPU_NO_EFFICIENT_FFS
- 	select LOCKDEP_SMALL if LOCKDEP
--	select ARCH_WANT_RELAX_ORDER
- 
- config SPARC32
- 	def_bool !64BIT
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 4e35e70..d4933d2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -350,7 +350,7 @@ s32 ixgbe_start_hw_gen2(struct ixgbe_hw *hw)
- 	}
- 	IXGBE_WRITE_FLUSH(hw);
- 
--#ifndef CONFIG_ARCH_WANT_RELAX_ORDER
-+#ifndef CONFIG_SPARC
- 	/* Disable relaxed ordering */
- 	for (i = 0; i < hw->mac.max_tx_queues; i++) {
- 		u32 regval;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index d616f69..cadbbec 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -348,7 +348,7 @@ struct i40e_pf {
+ 	u16 num_vmdq_vsis;         /* num vmdq vsis this PF has set up */
+ 	u16 num_vmdq_qps;          /* num queue pairs per vmdq pool */
+ 	u16 num_vmdq_msix;         /* num queue vectors per vmdq pool */
+-	u16 num_req_vfs;           /* num VFs requested for this VF */
++	u16 num_req_vfs;           /* num VFs requested for this PF */
+ 	u16 num_vf_qps;            /* num queue pairs per VF */
+ 	u16 num_lan_qps;           /* num lan queues this PF has set up */
+ 	u16 num_lan_msix;          /* num queue vectors for the base PF vsi */
 -- 
-1.8.3.1
-
+1.9.1
 
