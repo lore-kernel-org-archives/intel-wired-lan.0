@@ -1,52 +1,65 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 22 Aug 2017 06:57:53 -0400
-Subject: [Intel-wired-lan] [next PATCH S78-V8 11/12] i40e: fix client notify
-	of VF reset
+Date: Tue, 22 Aug 2017 06:57:51 -0400
+Subject: [Intel-wired-lan] [next PATCH S78-V8 09/12] i40e: make
+	i40evf_map_rings_to_vectors void
 In-Reply-To: <20170822105754.29486-1-alice.michael@intel.com>
 References: <20170822105754.29486-1-alice.michael@intel.com>
-Message-ID: <20170822105754.29486-12-alice.michael@intel.com>
+Message-ID: <20170822105754.29486-10-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Currently there is a bug in which the PF driver fails to inform clients
-of a VF reset which then causes clients to leak resources.  The bug
-exists because we were incorrectly checking the I40E_VF_STATE_PRE_ENABLE
-bit.
+This function cannot fail, so why is it returning a value? And why are
+we checking it? Why shouldn't we just make it void? Why is this commit
+message made up of only questions?
 
-When a VF is first init we go through a reset to initialize variables
-and allocate resources but we don't want to inform clients of this first
-reset since the client isn't fully enabled yet so we set a state bit
-signifying we're in a "pre-enabled" client state.  During the first
-reset we should be clearing the bit, allowing all following resets to
-notify the client of the reset when the bit is not set.  This patch
-fixes the issue by negating the 'test_and_clear_bit' check to accurately
-reflect the behavior we want.
-
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index e51fa2d..8bedc74c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1047,8 +1047,8 @@ static void i40e_cleanup_reset_vf(struct i40e_vf *vf)
- 		set_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states);
- 		clear_bit(I40E_VF_STATE_DISABLED, &vf->vf_states);
- 		/* Do not notify the client during VF init */
--		if (test_and_clear_bit(I40E_VF_STATE_PRE_ENABLE,
--				       &vf->vf_states))
-+		if (!test_and_clear_bit(I40E_VF_STATE_PRE_ENABLE,
-+					&vf->vf_states))
- 			i40e_notify_client_of_vf_reset(pf, abs_vf_id);
- 		vf->num_vlan = 0;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index a803c6b..85e66db 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -430,12 +430,11 @@ i40evf_map_vector_to_txq(struct i40evf_adapter *adapter, int v_idx, int t_idx)
+  * group the rings as "efficiently" as possible.  You would add new
+  * mapping configurations in here.
+  **/
+-static int i40evf_map_rings_to_vectors(struct i40evf_adapter *adapter)
++static void i40evf_map_rings_to_vectors(struct i40evf_adapter *adapter)
+ {
+ 	int rings_remaining = adapter->num_active_queues;
+ 	int ridx = 0, vidx = 0;
+ 	int q_vectors;
+-	int err = 0;
+ 
+ 	q_vectors = adapter->num_msix_vectors - NONQ_VECS;
+ 
+@@ -451,8 +450,6 @@ static int i40evf_map_rings_to_vectors(struct i40evf_adapter *adapter)
  	}
+ 
+ 	adapter->aq_required |= I40EVF_FLAG_AQ_MAP_VECTORS;
+-
+-	return err;
+ }
+ 
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+@@ -1578,9 +1575,7 @@ static int i40evf_reinit_interrupt_scheme(struct i40evf_adapter *adapter)
+ 
+ 	set_bit(__I40E_VSI_DOWN, adapter->vsi.state);
+ 
+-	err = i40evf_map_rings_to_vectors(adapter);
+-	if (err)
+-		goto err;
++	i40evf_map_rings_to_vectors(adapter);
+ 
+ 	if (RSS_AQ(adapter))
+ 		adapter->aq_required |= I40EVF_FLAG_AQ_CONFIGURE_RSS;
 -- 
 2.9.4
 
