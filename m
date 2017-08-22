@@ -1,347 +1,234 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 22 Aug 2017 06:57:50 -0400
-Subject: [Intel-wired-lan] [next PATCH S78-V8 08/12] i40evf: Enable VF to
-	request an alternate queue allocation
+Date: Tue, 22 Aug 2017 06:57:45 -0400
+Subject: [Intel-wired-lan] [next PATCH S78-V8 03/12] i40e: use admin queue
+	for setting LEDs behavior
 In-Reply-To: <20170822105754.29486-1-alice.michael@intel.com>
 References: <20170822105754.29486-1-alice.michael@intel.com>
-Message-ID: <20170822105754.29486-9-alice.michael@intel.com>
+Message-ID: <20170822105754.29486-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Mariusz Stachura <mariusz.stachura@intel.com>
 
-Currently the VF gets a default number of allocated queues from HW on
-init and it could choose to enable or disable those allocated queues.
-This makes it such that the VF can request more or less underlying
-allocated queues from the PF.
+Instead of accessing register directly, use newly added AQC in
+order to blink LEDs. Introduce and utilize a new flag to prevent
+excessive API version checking.
 
-First the VF negotiates the number of queues it wants that can be
-supported by the PF and if successful asks for a reset.  During reset
-the PF will reallocate the HW queues for the VF and will then remap the
-new queues.
-
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  4 +
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 38 ++++++++-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 94 ++++++++++++++++++++--
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 44 +++++++++-
- 4 files changed, 173 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c |   6 ++
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 115 ++++++++++++++++++++------
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |   1 +
+ drivers/net/ethernet/intel/i40evf/i40e_type.h |   2 +
+ 4 files changed, 100 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index a1af9b1..de0af52 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -102,6 +102,7 @@ struct i40e_vsi {
- #define I40E_TX_CTXTDESC(R, i) \
- 	(&(((struct i40e_tx_context_desc *)((R)->desc))[i]))
- #define MAX_QUEUES 16
-+#define I40EVF_MAX_REQ_QUEUES 4
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index ba04988..08f6322 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -607,6 +607,12 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
+ 			   &oem_lo);
+ 	hw->nvm.oem_ver = ((u32)oem_hi << 16) | oem_lo;
  
- #define I40EVF_HKEY_ARRAY_SIZE ((I40E_VFQF_HKEY_MAX_INDEX + 1) * 4)
- #define I40EVF_HLUT_ARRAY_SIZE ((I40E_VFQF_HLUT_MAX_INDEX + 1) * 4)
-@@ -200,6 +201,7 @@ struct i40evf_adapter {
- 	struct list_head vlan_filter_list;
- 	char misc_vector_name[IFNAMSIZ + 9];
- 	int num_active_queues;
-+	int num_req_queues;
- 
- 	/* TX */
- 	struct i40e_ring *tx_rings;
-@@ -235,6 +237,7 @@ struct i40evf_adapter {
- #define I40EVF_FLAG_PROMISC_ON			BIT(13)
- #define I40EVF_FLAG_ALLMULTI_ON			BIT(14)
- #define I40EVF_FLAG_LEGACY_RX			BIT(15)
-+#define I40EVF_FLAG_REINIT_ITR_NEEDED		BIT(16)
- /* duplicates for common code */
- #define I40E_FLAG_DCB_ENABLED			0
- #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
-@@ -349,6 +352,7 @@ void i40evf_deconfigure_queues(struct i40evf_adapter *adapter);
- void i40evf_enable_queues(struct i40evf_adapter *adapter);
- void i40evf_disable_queues(struct i40evf_adapter *adapter);
- void i40evf_map_queues(struct i40evf_adapter *adapter);
-+int i40evf_request_queues(struct i40evf_adapter *adapter, int num);
- void i40evf_add_ether_addrs(struct i40evf_adapter *adapter);
- void i40evf_del_ether_addrs(struct i40evf_adapter *adapter);
- void i40evf_add_vlans(struct i40evf_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index 65874d6..da006fa 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -669,7 +669,7 @@ static void i40evf_get_channels(struct net_device *netdev,
- 	struct i40evf_adapter *adapter = netdev_priv(netdev);
- 
- 	/* Report maximum channels */
--	ch->max_combined = adapter->num_active_queues;
-+	ch->max_combined = I40EVF_MAX_REQ_QUEUES;
- 
- 	ch->max_other = NONQ_VECS;
- 	ch->other_count = NONQ_VECS;
-@@ -678,6 +678,41 @@ static void i40evf_get_channels(struct net_device *netdev,
++	if (hw->mac.type == I40E_MAC_XL710 &&
++	    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
++	    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
++		hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
++	}
++
+ 	if (hw->aq.api_maj_ver > I40E_FW_API_VERSION_MAJOR) {
+ 		ret_code = I40E_ERR_FIRMWARE_API_VERSION;
+ 		goto init_adminq_free_arq;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index e74c5c6..0e41b35 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -4842,6 +4842,74 @@ i40e_status i40e_blink_phy_link_led(struct i40e_hw *hw,
  }
  
  /**
-+ * i40evf_set_channels: set the new channel count
-+ * @netdev: network interface device structure
-+ * @ch: channel information structure
-+ *
-+ * Negotiate a new number of channels with the PF then do a reset.  During
-+ * reset we'll realloc queues and fix the RSS table.  Returns 0 on success,
-+ * negative on failure.
++ * i40e_led_get_reg - read LED register
++ * @hw: pointer to the HW structure
++ * @led_addr: LED register address
++ * @reg_val: read register value
 + **/
-+static int i40evf_set_channels(struct net_device *netdev,
-+			       struct ethtool_channels *ch)
++static enum i40e_status_code i40e_led_get_reg(struct i40e_hw *hw, u16 led_addr,
++					      u32 *reg_val)
 +{
-+	struct i40evf_adapter *adapter = netdev_priv(netdev);
-+	int num_req = ch->combined_count;
++	enum i40e_status_code status;
++	u8 phy_addr = 0;
++	u8 port_num;
++	u32 i;
 +
-+	if (num_req != adapter->num_active_queues &&
-+	    !(adapter->vf_res->vf_cap_flags &
-+	      VIRTCHNL_VF_OFFLOAD_REQ_QUEUES)) {
-+		dev_info(&adapter->pdev->dev, "PF is not capable of queue negotiation.\n");
-+		return -EINVAL;
++	*reg_val = 0;
++	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
++		status =
++		       i40e_aq_get_phy_register(hw,
++						I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
++						I40E_PHY_COM_REG_PAGE,
++						I40E_PHY_LED_PROV_REG_1,
++						reg_val, NULL);
++	} else {
++		i = rd32(hw, I40E_PFGEN_PORTNUM);
++		port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
++		phy_addr = i40e_get_phy_address(hw, port_num);
++		status = i40e_read_phy_register_clause45(hw,
++							 I40E_PHY_COM_REG_PAGE,
++							 led_addr, phy_addr,
++							 (u16 *)reg_val);
 +	}
-+
-+	/* All of these should have already been checked by ethtool before this
-+	 * even gets to us, but just to be sure.
-+	 */
-+	if (num_req <= 0 || num_req > I40EVF_MAX_REQ_QUEUES)
-+		return -EINVAL;
-+
-+	if (ch->rx_count || ch->tx_count || ch->other_count != NONQ_VECS)
-+		return -EINVAL;
-+
-+	adapter->num_req_queues = num_req;
-+	return i40evf_request_queues(adapter, num_req);
++	return status;
 +}
 +
 +/**
-  * i40evf_get_rxfh_key_size - get the RSS hash key size
-  * @netdev: network interface device structure
-  *
-@@ -785,6 +820,7 @@ static const struct ethtool_ops i40evf_ethtool_ops = {
- 	.get_rxfh		= i40evf_get_rxfh,
- 	.set_rxfh		= i40evf_set_rxfh,
- 	.get_channels		= i40evf_get_channels,
-+	.set_channels		= i40evf_set_channels,
- 	.get_rxfh_key_size	= i40evf_get_rxfh_key_size,
- 	.get_link_ksettings	= i40evf_get_link_ksettings,
- };
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index a216fd2..a803c6b 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1189,9 +1189,18 @@ static int i40evf_alloc_queues(struct i40evf_adapter *adapter)
- {
- 	int i, num_active_queues;
- 
--	num_active_queues = min_t(int,
--				  adapter->vsi_res->num_queue_pairs,
--				  (int)(num_online_cpus()));
-+	/* If we're in reset reallocating queues we don't actually know yet for
-+	 * certain the PF gave us the number of queues we asked for but we'll
-+	 * assume it did.  Once basic reset is finished we'll confirm once we
-+	 * start negotiating config with PF.
-+	 */
-+	if (adapter->num_req_queues)
-+		num_active_queues = adapter->num_req_queues;
-+	else
-+		num_active_queues = min_t(int,
-+					  adapter->vsi_res->num_queue_pairs,
-+					  (int)(num_online_cpus()));
-+
- 
- 	adapter->tx_rings = kcalloc(num_active_queues,
- 				    sizeof(struct i40e_ring), GFP_KERNEL);
-@@ -1540,6 +1549,48 @@ static void i40evf_free_rss(struct i40evf_adapter *adapter)
- }
- 
- /**
-+ * i40evf_reinit_interrupt_scheme - Reallocate queues and vectors
-+ * @adapter: board private structure
-+ *
-+ * Returns 0 on success, negative on failure
++ * i40e_led_set_reg - write LED register
++ * @hw: pointer to the HW structure
++ * @led_addr: LED register address
++ * @reg_val: register value to write
 + **/
-+static int i40evf_reinit_interrupt_scheme(struct i40evf_adapter *adapter)
++static enum i40e_status_code i40e_led_set_reg(struct i40e_hw *hw, u16 led_addr,
++					      u32 reg_val)
 +{
-+	struct net_device *netdev = adapter->netdev;
-+	int err;
++	enum i40e_status_code status;
++	u8 phy_addr = 0;
++	u8 port_num;
++	u32 i;
 +
-+	if (netif_running(netdev))
-+		i40evf_free_traffic_irqs(adapter);
-+	i40evf_free_misc_irq(adapter);
-+	i40evf_reset_interrupt_capability(adapter);
-+	i40evf_free_q_vectors(adapter);
-+	i40evf_free_queues(adapter);
++	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
++		status =
++		       i40e_aq_set_phy_register(hw,
++						I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
++						I40E_PHY_COM_REG_PAGE,
++						I40E_PHY_LED_PROV_REG_1,
++						reg_val, NULL);
++	} else {
++		i = rd32(hw, I40E_PFGEN_PORTNUM);
++		port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
++		phy_addr = i40e_get_phy_address(hw, port_num);
++		status = i40e_write_phy_register_clause45(hw,
++							  I40E_PHY_COM_REG_PAGE,
++							  led_addr, phy_addr,
++							  (u16)reg_val);
++	}
 +
-+	err =  i40evf_init_interrupt_scheme(adapter);
-+	if (err)
-+		goto err;
-+
-+	netif_tx_stop_all_queues(netdev);
-+
-+	err = i40evf_request_misc_irq(adapter);
-+	if (err)
-+		goto err;
-+
-+	set_bit(__I40E_VSI_DOWN, adapter->vsi.state);
-+
-+	err = i40evf_map_rings_to_vectors(adapter);
-+	if (err)
-+		goto err;
-+
-+	if (RSS_AQ(adapter))
-+		adapter->aq_required |= I40EVF_FLAG_AQ_CONFIGURE_RSS;
-+	else
-+		err = i40evf_init_rss(adapter);
-+err:
-+	return err;
++	return status;
 +}
 +
 +/**
-  * i40evf_watchdog_timer - Periodic call-back timer
-  * @data: pointer to adapter disguised as unsigned long
-  **/
-@@ -1885,8 +1936,15 @@ static void i40evf_reset_task(struct work_struct *work)
- 	if (err)
- 		dev_info(&adapter->pdev->dev, "Failed to init adminq: %d\n",
- 			 err);
-+	adapter->aq_required = 0;
- 
--	adapter->aq_required = I40EVF_FLAG_AQ_GET_CONFIG;
-+	if (adapter->flags & I40EVF_FLAG_REINIT_ITR_NEEDED) {
-+		err = i40evf_reinit_interrupt_scheme(adapter);
-+		if (err)
-+			goto reset_err;
+  * i40e_led_get_phy - return current on/off mode
+  * @hw: pointer to the hw struct
+  * @led_addr: address of led register to use
+@@ -4858,7 +4926,19 @@ i40e_status i40e_led_get_phy(struct i40e_hw *hw, u16 *led_addr,
+ 	u16 temp_addr;
+ 	u8 port_num;
+ 	u32 i;
+-
++	u32 reg_val_aq;
++
++	if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE) {
++		status =
++		      i40e_aq_get_phy_register(hw,
++					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
++					       I40E_PHY_COM_REG_PAGE,
++					       I40E_PHY_LED_PROV_REG_1,
++					       &reg_val_aq, NULL);
++		if (status == I40E_SUCCESS)
++			*val = (u16)reg_val_aq;
++		return status;
 +	}
-+
-+	adapter->aq_required |= I40EVF_FLAG_AQ_GET_CONFIG;
- 	adapter->aq_required |= I40EVF_FLAG_AQ_MAP_VECTORS;
- 
- 	/* re-add all MAC filters */
-@@ -1916,6 +1974,15 @@ static void i40evf_reset_task(struct work_struct *work)
- 		if (err)
- 			goto reset_err;
- 
-+		if (adapter->flags & I40EVF_FLAG_REINIT_ITR_NEEDED) {
-+			err = i40evf_request_traffic_irqs(adapter,
-+							  netdev->name);
-+			if (err)
-+				goto reset_err;
-+
-+			adapter->flags &= ~I40EVF_FLAG_REINIT_ITR_NEEDED;
-+		}
-+
- 		i40evf_configure(adapter);
- 
- 		i40evf_up_complete(adapter);
-@@ -2432,9 +2499,9 @@ static int i40evf_check_reset_complete(struct i40e_hw *hw)
- int i40evf_process_config(struct i40evf_adapter *adapter)
+ 	temp_addr = I40E_PHY_LED_PROV_REG_1;
+ 	i = rd32(hw, I40E_PFGEN_PORTNUM);
+ 	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
+@@ -4893,51 +4973,38 @@ i40e_status i40e_led_set_phy(struct i40e_hw *hw, bool on,
+ 			     u16 led_addr, u32 mode)
  {
- 	struct virtchnl_vf_resource *vfres = adapter->vf_res;
-+	int i, num_req_queues = adapter->num_req_queues;
- 	struct net_device *netdev = adapter->netdev;
- 	struct i40e_vsi *vsi = &adapter->vsi;
--	int i;
- 	netdev_features_t hw_enc_features;
- 	netdev_features_t hw_features;
+ 	i40e_status status = 0;
+-	u16 led_ctl = 0;
+-	u16 led_reg = 0;
+-	u8 phy_addr = 0;
+-	u8 port_num;
+-	u32 i;
++	u32 led_ctl = 0;
++	u32 led_reg = 0;
  
-@@ -2448,6 +2515,23 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 		return -ENODEV;
+-	i = rd32(hw, I40E_PFGEN_PORTNUM);
+-	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
+-	phy_addr = i40e_get_phy_address(hw, port_num);
+-	status = i40e_read_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
+-						 led_addr, phy_addr, &led_reg);
++	status = i40e_led_get_reg(hw, led_addr, &led_reg);
+ 	if (status)
+ 		return status;
+ 	led_ctl = led_reg;
+ 	if (led_reg & I40E_PHY_LED_LINK_MODE_MASK) {
+ 		led_reg = 0;
+-		status = i40e_write_phy_register_clause45(hw,
+-							  I40E_PHY_COM_REG_PAGE,
+-							  led_addr, phy_addr,
+-							  led_reg);
++		status = i40e_led_set_reg(hw, led_addr, led_reg);
+ 		if (status)
+ 			return status;
  	}
- 
-+	if (num_req_queues &&
-+	    num_req_queues != adapter->vsi_res->num_queue_pairs) {
-+		/* Problem.  The PF gave us fewer queues than what we had
-+		 * negotiated in our request.  Need a reset to see if we can't
-+		 * get back to a working state.
-+		 */
-+		dev_err(&adapter->pdev->dev,
-+			"Requested %d queues, but PF only gave us %d.\n",
-+			num_req_queues,
-+			adapter->vsi_res->num_queue_pairs);
-+		adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
-+		adapter->num_req_queues = adapter->vsi_res->num_queue_pairs;
-+		i40evf_schedule_reset(adapter);
-+		return -ENODEV;
-+	}
-+	adapter->num_req_queues = 0;
+-	status = i40e_read_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
+-						 led_addr, phy_addr, &led_reg);
++	status = i40e_led_get_reg(hw, led_addr, &led_reg);
+ 	if (status)
+ 		goto restore_config;
+ 	if (on)
+ 		led_reg = I40E_PHY_LED_MANUAL_ON;
+ 	else
+ 		led_reg = 0;
+-	status = i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
+-						  led_addr, phy_addr, led_reg);
 +
- 	hw_enc_features = NETIF_F_SG			|
- 			  NETIF_F_IP_CSUM		|
- 			  NETIF_F_IPV6_CSUM		|
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 2bb0fe0..2bb81c3 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -160,7 +160,8 @@ int i40evf_send_vf_config_msg(struct i40evf_adapter *adapter)
- 	       VIRTCHNL_VF_OFFLOAD_WB_ON_ITR |
- 	       VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2 |
- 	       VIRTCHNL_VF_OFFLOAD_ENCAP |
--	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM;
-+	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM |
-+	       VIRTCHNL_VF_OFFLOAD_REQ_QUEUES;
- 
- 	adapter->current_op = VIRTCHNL_OP_GET_VF_RESOURCES;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_GET_CONFIG;
-@@ -385,6 +386,32 @@ void i40evf_map_queues(struct i40evf_adapter *adapter)
++	status = i40e_led_set_reg(hw, led_addr, led_reg);
+ 	if (status)
+ 		goto restore_config;
+ 	if (mode & I40E_PHY_LED_MODE_ORIG) {
+ 		led_ctl = (mode & I40E_PHY_LED_MODE_MASK);
+-		status = i40e_write_phy_register_clause45(hw,
+-						 I40E_PHY_COM_REG_PAGE,
+-						 led_addr, phy_addr, led_ctl);
++		status = i40e_led_set_reg(hw, led_addr, led_ctl);
+ 	}
+ 	return status;
++
+ restore_config:
+-	status = i40e_write_phy_register_clause45(hw, I40E_PHY_COM_REG_PAGE,
+-						  led_addr, phy_addr, led_ctl);
++	status = i40e_led_set_reg(hw, led_addr, led_ctl);
+ 	return status;
  }
  
- /**
-+ * i40evf_request_queues
-+ * @adapter: adapter structure
-+ * @num: number of requested queues
-+ *
-+ * We get a default number of queues from the PF.  This enables us to request a
-+ * different number.  Returns 0 on success, negative on failure
-+ **/
-+int i40evf_request_queues(struct i40evf_adapter *adapter, int num)
-+{
-+	struct virtchnl_vf_res_request vfres;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 4bb5914..8b0b9f8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -610,6 +610,7 @@ struct i40e_hw {
+ 	struct i40e_dcbx_config desired_dcbx_config; /* CEE Desired Cfg */
+ 
+ #define I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE BIT_ULL(0)
++#define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
+ 	u64 flags;
+ 
+ 	/* debug mask */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index b53584e..48eacf5 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -568,6 +568,8 @@ struct i40e_hw {
+ 	/* LLDP/DCBX Status */
+ 	u16 dcbx_status;
+ 
++#define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
 +
-+	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
-+		/* bail because we already have a command pending */
-+		dev_err(&adapter->pdev->dev, "Cannot request queues, command %d pending\n",
-+			adapter->current_op);
-+		return -EBUSY;
-+	}
-+
-+	vfres.num_queue_pairs = num;
-+
-+	adapter->current_op = VIRTCHNL_OP_REQUEST_QUEUES;
-+	return i40evf_send_pf_msg(adapter, VIRTCHNL_OP_REQUEST_QUEUES,
-+				  (u8 *)&vfres, sizeof(vfres));
-+}
-+
-+/**
-  * i40evf_add_ether_addrs
-  * @adapter: adapter structure
-  * @addrs: the MAC address filters to add (contiguous)
-@@ -1068,6 +1095,21 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 				 "Invalid message %d from PF\n", v_opcode);
- 		}
- 		break;
-+	case VIRTCHNL_OP_REQUEST_QUEUES: {
-+		struct virtchnl_vf_res_request *vfres =
-+			(struct virtchnl_vf_res_request *)msg;
-+		if (vfres->num_queue_pairs == adapter->num_req_queues) {
-+			adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
-+			i40evf_schedule_reset(adapter);
-+		} else {
-+			dev_info(&adapter->pdev->dev,
-+				 "Requested %d queues, PF can support %d\n",
-+				 adapter->num_req_queues,
-+				 vfres->num_queue_pairs);
-+			adapter->num_req_queues = 0;
-+		}
-+		}
-+		break;
- 	default:
- 		if (adapter->current_op && (v_opcode != adapter->current_op))
- 			dev_warn(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
+ 	/* DCBX info */
+ 	struct i40e_dcbx_config local_dcbx_config; /* Oper/Local Cfg */
+ 	struct i40e_dcbx_config remote_dcbx_config; /* Peer Cfg */
 -- 
 2.9.4
 
