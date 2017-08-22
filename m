@@ -1,43 +1,38 @@
-From: Benjamin Poirier <benjamin.poirier@gmail.com>
-Date: Mon, 21 Aug 2017 10:17:15 -0700
-Subject: [Intel-wired-lan] [PATCH 5/5] e1000e: Avoid receiver overrun
-	interrupt bursts
-In-Reply-To: <20170721183627.13373-5-bpoirier@suse.com>
-References: <20170721160937.GA22632@csclub.uwaterloo.ca>
- <20170721183627.13373-1-bpoirier@suse.com>
- <20170721183627.13373-5-bpoirier@suse.com>
-Message-ID: <20170821171715.iutchfoz3ksutcvw@f1.synalogic.ca>
+From: Alice Michael <alice.michael@intel.com>
+Date: Tue, 22 Aug 2017 06:57:42 -0400
+Subject: [Intel-wired-lan] [next PATCH S78-V8 00/12] Change Log
+Message-ID: <20170822105754.29486-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2017/07/21 11:36, Benjamin Poirier wrote:
-> When e1000e_poll() is not fast enough to keep up with incoming traffic, the
-> adapter (when operating in msix mode) raises the Other interrupt to signal
-> Receiver Overrun.
-> 
-> This is a double problem because 1) at the moment e1000_msix_other()
-> assumes that it is only called in case of Link Status Change and 2) if the
-> condition persists, the interrupt is repeatedly raised again in quick
-> succession.
-> 
-> Ideally we would configure the Other interrupt to not be raised in case of
-> receiver overrun but this doesn't seem possible on this adapter. Instead,
-> we handle the first part of the problem by reverting to the practice of
-> reading ICR in the other interrupt handler, like before commit 16ecba59bc33
-> ("e1000e: Do not read ICR in Other interrupt"). Thanks to commit
-> 0a8047ac68e5 ("e1000e: Fix msi-x interrupt automask") which cleared IAME
-> from CTRL_EXT, reading ICR doesn't interfere with RxQ0, TxQ0 interrupts
-> anymore. We handle the second part of the problem by not re-enabling the
-> Other interrupt right away when there is overrun. Instead, we wait until
-> traffic subsides, napi polling mode is exited and interrupts are
-> re-enabled.
-> 
-> Reported-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-> Fixes: 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt")
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+V4: Submission to Jeff's tree
+V5: Re-ordered patches
+V6: Sync with Jeff's latest tree
+V7: Changes to patches 1 and 2 as per community feedback
+V8: Changes to patch 3 as per community feedback
 
-What's the status on these patches please? One month later they still
-show up as "new" in patchwork.
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c      |  12 ++
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  55 +++++-
+ drivers/net/ethernet/intel/i40e/i40e_common.c      | 201 ++++++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 154 ++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |   7 +
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   9 +
+ drivers/net/ethernet/intel/i40e/i40e_type.h        |  19 ++
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  97 +++++++---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   5 +-
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  55 +++++-
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    |  69 +++++++
+ drivers/net/ethernet/intel/i40evf/i40e_prototype.h |   9 +
+ drivers/net/ethernet/intel/i40evf/i40e_type.h      |  20 ++
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |   4 +
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  38 +++-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  97 +++++++++-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  44 ++++-
+ 17 files changed, 827 insertions(+), 68 deletions(-)
+
+-- 
+2.9.4
+
