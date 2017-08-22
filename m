@@ -1,109 +1,49 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 22 Aug 2017 06:57:46 -0400
-Subject: [Intel-wired-lan] [next PATCH S78-V8 04/12] i40e: don't hold
-	spinlock while resetting VF
-In-Reply-To: <20170822105754.29486-1-alice.michael@intel.com>
-References: <20170822105754.29486-1-alice.michael@intel.com>
-Message-ID: <20170822105754.29486-5-alice.michael@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 22 Aug 2017 19:15:02 +0000
+Subject: [Intel-wired-lan] [PATCH v3 net 1/2 RESEND] Revert
+	commit	1a8b6d76dc5b ("net:add one common config...")
+In-Reply-To: <1503223855-24616-2-git-send-email-dingtianhong@huawei.com>
+References: <1503223855-24616-1-git-send-email-dingtianhong@huawei.com>
+ <1503223855-24616-2-git-send-email-dingtianhong@huawei.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E9F0E9@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Ding Tianhong
+> Sent: Sunday, August 20, 2017 3:11 AM
+> To: davem at davemloft.net; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
+> keescook at chromium.org; linux-kernel at vger.kernel.org;
+> sparclinux at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
+> alexander.duyck at gmail.com; netdev at vger.kernel.org;
+> linuxarm at huawei.com
+> Cc: Ding Tianhong <dingtianhong@huawei.com>
+> Subject: [Intel-wired-lan] [PATCH v3 net 1/2 RESEND] Revert commit
+> 1a8b6d76dc5b ("net:add one common config...")
+> 
+> The new flag PCI_DEV_FLAGS_NO_RELAXED_ORDERING has been added to
+> indicate that Relaxed Ordering Attributes (RO) should not be used for
+> Transaction Layer Packets (TLP) targeted toward these affected Root Port, it
+> will clear the bit4 in the PCIe Device Control register, so the PCIe device
+> drivers could query PCIe configuration space to determine if it can send TLPs
+> to Root Port with the Relaxed Ordering Attributes set.
+> 
+> With this new flag  we don't need the config ARCH_WANT_RELAX_ORDER to
+> control the Relaxed Ordering Attributes for the ixgbe drivers just like the
+> commit 1a8b6d76dc5b ("net:add one common config...") did, so revert this
+> commit.
+> 
+> Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
+> ---
+>  arch/Kconfig                                    | 3 ---
+>  arch/sparc/Kconfig                              | 1 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
+>  3 files changed, 1 insertion(+), 5 deletions(-)
 
-When we refactored handling of the PVID in commit 9af52f60b2d9
-("i40e: use (add|rm)_vlan_all_mac helper functions when changing PVID")
-we introduced a scheduling while atomic regression.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-This occurred because we now held the spinlock across a call to
-i40e_reset_vf(), which results in a usleep_range() call that triggers
-a scheduling while atomic bug. This was rare as it only occurred if the
-user configured a VLAN on a VF and also attempted to reconfigure the VF
-from the host system with a port VLAN.
-
-We do need to hold the lock while calling i40e_is_vsi_in_vlan(), but we
-should not be holding it while we reset the VF.
-
-We'll fix this by introducing a separate helper function
-i40e_vsi_has_vlans which checks whether we have a PVID and whether the
-VSI has configured VLANs. This helper function will manage its own need
-for the mac_filter_hash_lock.
-
-Then, we can move the acquiring of the spinlock until after we reset the
-VF, which ensures that we do not sleep while holding the lock.
-
-Using a separate function like this makes the code more clear and is
-easier to read than attempting to release and re-acquire the spinlock
-when we reset the VF.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 36 +++++++++++++++++++---
- 1 file changed, 32 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index e156096..25628f5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2923,6 +2923,34 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- }
- 
- /**
-+ * i40e_vsi_has_vlans - True if VSI has configured VLANs
-+ * @vsi: pointer to the vsi
-+ *
-+ * Check if a VSI has configured any VLANs. False if we have a port VLAN or if
-+ * we have no configured VLANs. Do not call while holding the
-+ * mac_filter_hash_lock.
-+ */
-+static bool i40e_vsi_has_vlans(struct i40e_vsi *vsi)
-+{
-+	bool have_vlans;
-+
-+	/* If we have a port VLAN, then the VSI cannot have any VLANs
-+	 * configured, as all MAC/VLAN filters will be assigned to the PVID.
-+	 */
-+	if (vsi->info.pvid)
-+		return false;
-+
-+	/* Since we don't have a PVID, we know that if the device is in VLAN
-+	 * mode it must be because of a VLAN filter configured on this VSI.
-+	 */
-+	spin_lock_bh(&vsi->mac_filter_hash_lock);
-+	have_vlans = i40e_is_vsi_in_vlan(vsi);
-+	spin_unlock_bh(&vsi->mac_filter_hash_lock);
-+
-+	return have_vlans;
-+}
-+
-+/**
-  * i40e_ndo_set_vf_port_vlan
-  * @netdev: network interface device structure
-  * @vf_id: VF identifier
-@@ -2974,10 +3002,7 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 		/* duplicate request, so just return success */
- 		goto error_pvid;
- 
--	/* Locked once because multiple functions below iterate list */
--	spin_lock_bh(&vsi->mac_filter_hash_lock);
--
--	if (le16_to_cpu(vsi->info.pvid) == 0 && i40e_is_vsi_in_vlan(vsi)) {
-+	if (i40e_vsi_has_vlans(vsi)) {
- 		dev_err(&pf->pdev->dev,
- 			"VF %d has already configured VLAN filters and the administrator is requesting a port VLAN override.\nPlease unload and reload the VF driver for this change to take effect.\n",
- 			vf_id);
-@@ -2990,6 +3015,9 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 		vsi = pf->vsi[vf->lan_vsi_idx];
- 	}
- 
-+	/* Locked once because multiple functions below iterate list */
-+	spin_lock_bh(&vsi->mac_filter_hash_lock);
-+
- 	/* Check for condition where there was already a port VLAN ID
- 	 * filter set and now it is being deleted by setting it to zero.
- 	 * Additionally check for the condition where there was a port
--- 
-2.9.4
 
