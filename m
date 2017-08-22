@@ -1,66 +1,62 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 22 Aug 2017 06:57:52 -0400
-Subject: [Intel-wired-lan] [next PATCH S78-V8 10/12] i40e: fix handling of
-	vf_states variable
+Date: Tue, 22 Aug 2017 06:57:47 -0400
+Subject: [Intel-wired-lan] [next PATCH S78-V8 05/12] i40e: drop i40e_pf *pf
+	from i40e_vc_disable_vf()
 In-Reply-To: <20170822105754.29486-1-alice.michael@intel.com>
 References: <20170822105754.29486-1-alice.michael@intel.com>
-Message-ID: <20170822105754.29486-11-alice.michael@intel.com>
+Message-ID: <20170822105754.29486-6-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Currently we inappropriately clear the vf_states variable with a null
-assignment.  This is problematic because we should be using atomic
-bitops on this variable and we don't actually want to clear all the
-flags.  We should just clear the ones we know we want to clear.
-Additionally remove the I40E_VF_STATE_FCOEENA bit because it is no
-longer being used.
+It's never used, and the vf structure could get back to the PF if
+necessary. Lets just drop the extra unneeded parameter.
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 ++++-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h | 1 -
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 5b30192..e51fa2d 100644
+index 25628f5..d0ae545 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -876,7 +876,8 @@ static void i40e_free_vf_res(struct i40e_vf *vf)
- 	}
- 	/* reset some of the state variables keeping track of the resources */
- 	vf->num_queue_pairs = 0;
--	vf->vf_states = 0;
-+	clear_bit(I40E_VF_STATE_MC_PROMISC, &vf->vf_states);
-+	clear_bit(I40E_VF_STATE_UC_PROMISC, &vf->vf_states);
- }
+@@ -154,12 +154,11 @@ void i40e_vc_notify_vf_reset(struct i40e_vf *vf)
  
  /**
-@@ -1583,6 +1584,8 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 	    (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_IWARP)) {
- 		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_IWARP;
- 		set_bit(I40E_VF_STATE_IWARPENA, &vf->vf_states);
-+	} else {
-+		clear_bit(I40E_VF_STATE_IWARPENA, &vf->vf_states);
+  * i40e_vc_disable_vf
+- * @pf: pointer to the PF info
+  * @vf: pointer to the VF info
+  *
+  * Disable the VF through a SW reset
+  **/
+-static inline void i40e_vc_disable_vf(struct i40e_pf *pf, struct i40e_vf *vf)
++static inline void i40e_vc_disable_vf(struct i40e_vf *vf)
+ {
+ 	i40e_vc_notify_vf_reset(vf);
+ 	i40e_reset_vf(vf, false);
+@@ -2915,7 +2914,7 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
  	}
  
- 	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RSS_PF) {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 5ea42ad..5efc4f9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -56,7 +56,6 @@ enum i40e_vf_states {
- 	I40E_VF_STATE_INIT = 0,
- 	I40E_VF_STATE_ACTIVE,
- 	I40E_VF_STATE_IWARPENA,
--	I40E_VF_STATE_FCOEENA,
- 	I40E_VF_STATE_DISABLED,
- 	I40E_VF_STATE_MC_PROMISC,
- 	I40E_VF_STATE_UC_PROMISC,
+ 	/* Force the VF driver stop so it has to reload with new MAC address */
+-	i40e_vc_disable_vf(pf, vf);
++	i40e_vc_disable_vf(vf);
+ 	dev_info(&pf->pdev->dev, "Reload the VF driver to make this change effective.\n");
+ 
+ error_param:
+@@ -3010,7 +3009,7 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
+ 		 * the right thing by reconfiguring his network correctly
+ 		 * and then reloading the VF driver.
+ 		 */
+-		i40e_vc_disable_vf(pf, vf);
++		i40e_vc_disable_vf(vf);
+ 		/* During reset the VF got a new VSI, so refresh the pointer. */
+ 		vsi = pf->vsi[vf->lan_vsi_idx];
+ 	}
 -- 
 2.9.4
 
