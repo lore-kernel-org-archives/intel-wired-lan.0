@@ -1,43 +1,60 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 23 Aug 2017 03:43:27 -0700
-Subject: [Intel-wired-lan] [RFC PATCH v2 3/6] [net-next]net: i40e:
- Extend set switch config command to accept cloud filter mode
-In-Reply-To: <150296562149.16910.5659916522674039966.stgit@anamdev.jf.intel.com>
-References: <150296538797.16910.13738130623106637990.stgit@anamdev.jf.intel.com>
- <150296562149.16910.5659916522674039966.stgit@anamdev.jf.intel.com>
-Message-ID: <1503485007.43048.31.camel@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 23 Aug 2017 14:39:09 +0000
+Subject: [Intel-wired-lan] [PATCH v3 net 2/2] net: ixgbe: Use new
+ PCI_DEV_FLAGS_NO_RELAXED_ORDERING flag
+In-Reply-To: <87618083B2453E4A8714035B62D67992B4095D65@FMSMSX105.amr.corp.intel.com>
+References: <1503037265-11144-1-git-send-email-dingtianhong@huawei.com>
+ <1503037265-11144-3-git-send-email-dingtianhong@huawei.com>
+ <87618083B2453E4A8714035B62D67992B4095D65@FMSMSX105.amr.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E9F252@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2017-08-17 at 03:27 -0700, Amritha Nambiar wrote:
-> Add definitions for L4 filters and switch modes based on cloud
-> filters
-> modes and extend the set switch config command to include the
-> additional cloud filter mode.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tantilov, Emil S
+> Sent: Monday, August 21, 2017 10:36 AM
+> To: Ding Tianhong <dingtianhong@huawei.com>; davem at davemloft.net;
+> Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; keescook at chromium.org;
+> linux-kernel at vger.kernel.org; sparclinux at vger.kernel.org; intel-wired-
+> lan at lists.osuosl.org; alexander.duyck at gmail.com; netdev at vger.kernel.org;
+> linuxarm at huawei.com
+> Subject: Re: [Intel-wired-lan] [PATCH v3 net 2/2] net: ixgbe: Use new
+> PCI_DEV_FLAGS_NO_RELAXED_ORDERING flag
 > 
-> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h |   31
-> ++++++++++++++++++++-
->  drivers/net/ethernet/intel/i40e/i40e_common.c     |    4 ++-
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c    |    2 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c       |    2 +
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h  |    2 +
->  drivers/net/ethernet/intel/i40e/i40e_type.h       |    9 ++++++
->  6 files changed, 45 insertions(+), 5 deletions(-)
+> >-----Original Message-----
+> >From: linux-kernel-owner at vger.kernel.org [mailto:linux-kernel-
+> >owner at vger.kernel.org] On Behalf Of Ding Tianhong
+> >Sent: Thursday, August 17, 2017 11:21 PM
+> >To: davem at davemloft.net; Kirsher, Jeffrey T
+> ><jeffrey.t.kirsher@intel.com>; keescook at chromium.org;
+> >linux-kernel at vger.kernel.org; sparclinux at vger.kernel.org;
+> >intel-wired-lan at lists.osuosl.org; alexander.duyck at gmail.com;
+> >netdev at vger.kernel.org; linuxarm at huawei.com
+> >Cc: Ding Tianhong <dingtianhong@huawei.com>
+> >Subject: [PATCH v3 net 2/2] net: ixgbe: Use new
+> >PCI_DEV_FLAGS_NO_RELAXED_ORDERING flag
+> >
+> >The ixgbe driver use the compile check to determine if it can send TLPs
+> >to Root Port with the Relaxed Ordering Attribute set, this is too
+> >inconvenient, now the new flag PCI_DEV_FLAGS_NO_RELAXED_ORDERING
+> has
+> >been added to the kernel and we could check the bit4 in the PCIe Device
+> >Control register to determine whether we should use the Relaxed
+> >Ordering Attributes or not, so use this new way in the ixgbe driver.
+> >
+> >Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
+> >---
+> > drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c  | 22
+> >---------------------
+> >-
+> > drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 19
+> >-------------------
+> > 2 files changed, 41 deletions(-)
 
-Unfortunately, this does not apply (not even close).  Since you are
-needing to make changes to the first set of 6 patches, please rebase
-your entire set of patches to my latest tree and that should fix the
-issue.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170823/874926b8/attachment.asc>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
