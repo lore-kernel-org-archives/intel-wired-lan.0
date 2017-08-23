@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 23 Aug 2017 16:29:16 +0000
-Subject: [Intel-wired-lan] [next PATCH S78-V8 02/12] i40e: Add support
- for	'ethtool -m'
-In-Reply-To: <20170822105754.29486-3-alice.michael@intel.com>
+Date: Wed, 23 Aug 2017 16:29:46 +0000
+Subject: [Intel-wired-lan] [next PATCH S78-V8 03/12] i40e: use admin
+ queue	for setting LEDs behavior
+In-Reply-To: <20170822105754.29486-4-alice.michael@intel.com>
 References: <20170822105754.29486-1-alice.michael@intel.com>
- <20170822105754.29486-3-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E9F287@ORSMSX104.amr.corp.intel.com>
+ <20170822105754.29486-4-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E9F293@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,28 +18,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, August 22, 2017 3:58 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: Sadowski, Filip <filip.sadowski@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S78-V8 02/12] i40e: Add support for
-> 'ethtool -m'
+> Cc: Stachura, Mariusz <mariusz.stachura@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S78-V8 03/12] i40e: use admin queue
+> for setting LEDs behavior
 > 
-> From: Filip Sadowski <filip.sadowski@intel.com>
+> From: Mariusz Stachura <mariusz.stachura@intel.com>
 > 
-> This patch adds support for 'ethtool -m' command which displays information
-> about (Q)SFP+ module plugged into NIC's cage.
+> Instead of accessing register directly, use newly added AQC in order to blink
+> LEDs. Introduce and utilize a new flag to prevent excessive API version
+> checking.
 > 
-> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  18 +++
->  drivers/net/ethernet/intel/i40e/i40e_common.c      |  69 +++++++++
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 154
-> +++++++++++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   9 ++
->  drivers/net/ethernet/intel/i40e/i40e_type.h        |  12 ++
->  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  18 +++
->  drivers/net/ethernet/intel/i40evf/i40e_common.c    |  69 +++++++++
->  drivers/net/ethernet/intel/i40evf/i40e_prototype.h |   9 ++
->  drivers/net/ethernet/intel/i40evf/i40e_type.h      |  12 ++
->  9 files changed, 370 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c |   6 ++
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 115
+> ++++++++++++++++++++------
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   |   1 +
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h |   2 +
+>  4 files changed, 100 insertions(+), 24 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
