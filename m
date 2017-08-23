@@ -1,69 +1,45 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 22 Aug 2017 21:48:40 +0000
-Subject: [Intel-wired-lan] [PATCH v2] i40e/i40evf: fix out-of-bounds
-	read of cpumask
-In-Reply-To: <20170822232349.52b9ad06@elisabeth>
-References: <20170822210442.18006-1-jacob.e.keller@intel.com>
- <20170822232349.52b9ad06@elisabeth>
-Message-ID: <02874ECE860811409154E81DA85FBB5882A63183@ORSMSX115.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Tue, 22 Aug 2017 17:30:08 -0700
+Subject: [Intel-wired-lan] [PATCH] e1000: changed some expensive calls
+ of udelay to usleep_range
+In-Reply-To: <1503435747-29639-1-git-send-email-matthew.tan_1@nxp.com>
+References: <1503435747-29639-1-git-send-email-matthew.tan_1@nxp.com>
+Message-ID: <1503448208.43048.12.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org] On
-> Behalf Of Stefano Brivio
-> Sent: Tuesday, August 22, 2017 2:24 PM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>
-> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>; netdev at vger.kernel.org;
-> stable at vger.kernel.org; Juergen Gross <jgross@suse.com>
-> Subject: Re: [PATCH v2] i40e/i40evf: fix out-of-bounds read of cpumask
+On Tue, 2017-08-22 at 16:02 -0500, nxf23276 wrote:
+>     Calls to udelay are not preemtable by userspace so userspace
+>     applications experience a large (~200us) latency when running on
+> core
+>     0. Instead usleep_range can be used to be more friendly to
+> userspace
+>     since it is preemtable. This is due to udelay using busy-wait
+> loops
+>     while usleep_rang uses hrtimers instead. It is recommended to use
+>     udelay when the delay is <10us since@that precision overhead
+> of
+>     usleep_range hrtimer setup causes issues. However, the replaced
+> calls
+>     are for 50us and 100us so this should not be not an issue.
 > 
-> [Fixed Cc: address for stable, Cc'ed Juergen]
-> 
-> On Tue, 22 Aug 2017 14:04:42 -0700
-> Jacob Keller <jacob.e.keller@intel.com> wrote:
-> 
-> > When responding to an affinity hint we directly copied a cpumask value,
-> > intsead of using cpumask_copy. According to cpumask.h this is not
-> > correct because cpumask_t is only guaranteed to have enough space for
-> > the number of CPUs in the system, and may not be as big as we expect.
-> > Thus a direct copy results in an out-of-bound read and potentially
-> > a crash if the pages are aligned just right. This will be easily
-> > detected on a kernel with KASAN enabled:
-> 
-> I still think commit message of my patch
-> (ae9c9586f61e914dc1c6fe2e6ac1fb2bf07283bc.1502792828.git.sbrivio at redhat.co
-> m)
-> was perhaps a bit clearer, but okay, this is also clear, fair enough.
-> 
-> > KASAN reports:
-> > [   25.242312] BUG: KASAN: slab-out-of-bounds in
-> i40e_irq_affinity_notify+0x30/0x50 [i40e] at addr ffff880462eea960
-> [...]
-> > [   25.242597]
-> ==================================================================
-> 
-> This is also taken from my message, not terribly happy about it
-> (and still happier with it than without). Fair enough, whatever it
-> takes to get this applied as soon as possible...
-> 
-> > Fixes: 96db776a3682 ("i40e/i40evf: fix interrupt affinity bug", 2016-09-14)
-> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > Cc: stable at vger.kernel.org # 4.10+
-> 
-> FWIW,
-> 
-> Acked-by: Stefano Brivio <sbrivio@redhat.com>
-> 
+> Signed-off-by: nxf23276 <matthew.tan_1@nxp.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/phy.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-I don't really care which message gets applied either, as long as we get it fixed. Either patch is fine with me.
+First of all, your name is nxf23276?  Really??
 
-Thanks,
-Jake
-
-> 
-> --
-> Stefano
+Second, you titled your patch that you were makeding changes to e1000
+driver, yet you are asking to modify e1000e.  Just based on these 2
+needed changes, I am dropping your patch.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170822/082cc422/attachment.asc>
