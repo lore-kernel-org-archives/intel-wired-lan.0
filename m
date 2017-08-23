@@ -1,210 +1,68 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 24 Aug 2017 00:59:46 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 8e5bc37200e0650b6e08d34ae0a7537bb725126a
-Message-ID: <599db482.iOesQ9QFFoBWBLJ4%fengguang.wu@intel.com>
+From: Matthew Tan <matthew.tan_1@nxp.com>
+Date: Wed, 23 Aug 2017 10:59:45 -0500
+Subject: [Intel-wired-lan] [PATCH] e1000e: changed some expensive calls of
+	udelay to usleep_range
+Message-ID: <1503503985-3869-1-git-send-email-matthew.tan_1@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-8e5bc37200e0650b6e08d34ae0a7537bb725126a  ixgbe: add error checks when initializing the PHY
+    Calls to udelay are not preemtable by userspace so userspace
+    applications experience a large (~200us) latency when running on core
+    0. Instead usleep_range can be used to be more friendly to userspace
+    since it is preemtable. This is due to udelay using busy-wait loops
+    while usleep_rang uses hrtimers instead. It is recommended to use
+    udelay when the delay is <10us since at that precision overhead of
+    usleep_range hrtimer setup causes issues. However, the replaced calls
+    are for 50us and 100us so this should not be not an issue.
 
-elapsed time: 344m
+Signed-off-by: Matthew Tan <matthew.tan_1@nxp.com>
+---
+ drivers/net/ethernet/intel/e1000e/phy.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-configs tested: 186
+diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+index de13aea..e318fdc 100644
+--- a/drivers/net/ethernet/intel/e1000e/phy.c
++++ b/drivers/net/ethernet/intel/e1000e/phy.c
+@@ -158,7 +158,7 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+ 	 * the lower time out
+ 	 */
+ 	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
+-		udelay(50);
++		usleep_range(40, 60);
+ 		mdic = er32(MDIC);
+ 		if (mdic & E1000_MDIC_READY)
+ 			break;
+@@ -183,7 +183,7 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+ 	 * reading duplicate data in the next MDIC transaction.
+ 	 */
+ 	if (hw->mac.type == e1000_pch2lan)
+-		udelay(100);
++		usleep_range(90, 100);
+ 
+ 	return 0;
+ }
+@@ -222,7 +222,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+ 	 * the lower time out
+ 	 */
+ 	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
+-		udelay(50);
++		usleep_range(40, 60);
+ 		mdic = er32(MDIC);
+ 		if (mdic & E1000_MDIC_READY)
+ 			break;
+@@ -246,7 +246,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+ 	 * reading duplicate data in the next MDIC transaction.
+ 	 */
+ 	if (hw->mac.type == e1000_pch2lan)
+-		udelay(100);
++		usleep_range(90, 110);
+ 
+ 	return 0;
+ }
+-- 
+2.7.4
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-mips                   sb1250_swarm_defconfig
-powerpc                          g5_defconfig
-tile                              allnoconfig
-x86_64                 randconfig-a0-08232001
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                         hackkit_defconfig
-arm64                            alldefconfig
-blackfin              BF561-ACVILON_defconfig
-arm                             ezx_defconfig
-arm                           spitz_defconfig
-m68k                             allmodconfig
-x86_64                randconfig-in0-08232053
-x86_64                randconfig-in0-08240034
-i386                             allyesconfig
-c6x                        evmc6474_defconfig
-sh                        sh7757lcr_defconfig
-x86_64                randconfig-it0-08231944
-x86_64                randconfig-it0-08240011
-i386                 randconfig-x010-08230619
-i386                 randconfig-x011-08230619
-i386                 randconfig-x012-08230619
-i386                 randconfig-x013-08230619
-i386                 randconfig-x014-08230619
-i386                 randconfig-x015-08230619
-i386                 randconfig-x016-08230619
-i386                 randconfig-x017-08230619
-i386                 randconfig-x018-08230619
-i386                 randconfig-x019-08230619
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-08230619
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-x86_64               randconfig-x010-08231326
-x86_64               randconfig-x013-08231326
-x86_64               randconfig-x019-08231326
-x86_64               randconfig-x016-08231326
-x86_64               randconfig-x018-08231326
-x86_64               randconfig-x015-08231326
-x86_64               randconfig-x017-08231326
-x86_64               randconfig-x014-08231326
-x86_64               randconfig-x011-08231326
-x86_64               randconfig-x012-08231326
-i386                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                          rm200_defconfig
-powerpc                 mpc832x_mds_defconfig
-s390                       zfcpdump_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-i0-08231446
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-i0-08231856
-i386                   randconfig-i1-08231856
-blackfin                            defconfig
-mips                                defconfig
-x86_64                 randconfig-u0-08231335
-x86_64                 randconfig-u0-08231546
-arm                         s3c6400_defconfig
-powerpc                     taishan_defconfig
-frv                              allmodconfig
-powerpc                      obs600_defconfig
-x86_64                randconfig-ne0-08232016
-x86_64                randconfig-ne0-08240010
-i386                               tinyconfig
-arm                        magician_defconfig
-mips                           xway_defconfig
-i386                 randconfig-x070-07260351
-i386                 randconfig-x071-07260351
-i386                 randconfig-x072-07260351
-i386                 randconfig-x073-07260351
-i386                 randconfig-x074-07260351
-i386                 randconfig-x075-07260351
-i386                 randconfig-x076-07260351
-i386                 randconfig-x077-07260351
-i386                 randconfig-x078-07260351
-i386                 randconfig-x079-07260351
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-x86_64               randconfig-x003-08231901
-x86_64               randconfig-x000-08231901
-x86_64               randconfig-x005-08231901
-x86_64               randconfig-x008-08231901
-x86_64               randconfig-x002-08231901
-x86_64               randconfig-x006-08231901
-x86_64               randconfig-x007-08231901
-x86_64               randconfig-x004-08231901
-x86_64               randconfig-x001-08231901
-x86_64               randconfig-x009-08231901
-i386                 randconfig-x073-08231925
-i386                 randconfig-x074-08231925
-i386                 randconfig-x076-08231925
-i386                 randconfig-x078-08231925
-i386                 randconfig-x072-08231925
-i386                 randconfig-x075-08231925
-i386                 randconfig-x077-08231925
-i386                 randconfig-x070-08231925
-i386                 randconfig-x071-08231925
-i386                 randconfig-x079-08231925
-x86_64               randconfig-x000-08231812
-x86_64               randconfig-x001-08231812
-x86_64               randconfig-x002-08231812
-x86_64               randconfig-x003-08231812
-x86_64               randconfig-x004-08231812
-x86_64               randconfig-x005-08231812
-x86_64               randconfig-x006-08231812
-x86_64               randconfig-x007-08231812
-x86_64               randconfig-x008-08231812
-x86_64               randconfig-x009-08231812
-arm                       netwinder_defconfig
-ia64                            sim_defconfig
-arm                        raumfeld_defconfig
-blackfin                   CM-BF561_defconfig
-i386                   randconfig-x003-201734
-i386                   randconfig-x000-201734
-i386                   randconfig-x004-201734
-i386                   randconfig-x009-201734
-i386                   randconfig-x005-201734
-i386                   randconfig-x008-201734
-i386                   randconfig-x001-201734
-i386                   randconfig-x007-201734
-i386                   randconfig-x006-201734
-i386                   randconfig-x002-201734
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-x0-08231940
-
-Thanks,
-Fengguang
