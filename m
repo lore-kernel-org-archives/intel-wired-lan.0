@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 23 Aug 2017 20:53:59 +0000
-Subject: [Intel-wired-lan] [next PATCH S78-V8 11/12] i40e: fix client
- notify	of VF reset
-In-Reply-To: <20170822105754.29486-12-alice.michael@intel.com>
+Date: Wed, 23 Aug 2017 20:54:34 +0000
+Subject: [Intel-wired-lan] [next PATCH S78-V8 12/12] i40e: Stop
+	dropping	802.1ad tags (eth proto 0x88a8
+In-Reply-To: <20170822105754.29486-13-alice.michael@intel.com>
 References: <20170822105754.29486-1-alice.michael@intel.com>
- <20170822105754.29486-12-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E9F388@ORSMSX104.amr.corp.intel.com>
+ <20170822105754.29486-13-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10E9F398@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,27 +18,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, August 22, 2017 3:58 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S78-V8 11/12] i40e: fix client notify of
-> VF reset
+> Subject: [Intel-wired-lan] [next PATCH S78-V8 12/12] i40e: Stop dropping
+> 802.1ad tags (eth proto 0x88a8
 > 
-> From: Alan Brady <alan.brady@intel.com>
+> From: Scott Peterson <scott.d.peterson@intel.com>
 > 
-> Currently there is a bug in which the PF driver fails to inform clients of a VF
-> reset which then causes clients to leak resources.  The bug exists because we
-> were incorrectly checking the I40E_VF_STATE_PRE_ENABLE bit.
+> Enable i40e to pass traffic with VLAN tags using the 802.1ad ethernet protocol
+> ID (0x88a8).
 > 
-> When a VF is first init we go through a reset to initialize variables and allocate
-> resources but we don't want to inform clients of this first reset since the
-> client isn't fully enabled yet so we set a state bit signifying we're in a "pre-
-> enabled" client state.  During the first reset we should be clearing the bit,
-> allowing all following resets to notify the client of the reset when the bit is
-> not set.  This patch fixes the issue by negating the 'test_and_clear_bit' check
-> to accurately reflect the behavior we want.
+> This requires NIC firmware providing version 1.7 of the API. With older NIC
+> firmware 802.1ad tagged packets will continue to be dropped.
 > 
-> Signed-off-by: Alan Brady <alan.brady@intel.com>
+> No VLAN offloads nor RSS are supported for 802.1ad VLANs.
+> 
+> Signed-off-by: Scott Peterson <scott.d.peterson@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c       |  6 ++++++
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 17
+> ++++++++++++++++-
+>  drivers/net/ethernet/intel/i40e/i40e_common.c       |  6 +++++-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c         |  7 +++++++
+>  drivers/net/ethernet/intel/i40e/i40e_type.h         |  6 ++++++
+>  drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 17
+> ++++++++++++++++-
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h       |  6 ++++++
+>  7 files changed, 62 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
