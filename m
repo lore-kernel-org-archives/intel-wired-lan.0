@@ -1,170 +1,127 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 25 Aug 2017 18:24:13 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- e80209823414081b665f1cbe117dbe63f76048c4
-Message-ID: <599ffacd.zDRr/6jrDQWkoraP%fengguang.wu@intel.com>
+From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
+Date: Fri, 25 Aug 2017 11:06:26 -0400
+Subject: [Intel-wired-lan] [PATCH] e1000e: apply burst mode settings only on
+	default
+Message-ID: <20170825150626.2843-1-willemdebruijn.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-e80209823414081b665f1cbe117dbe63f76048c4  ixgbe: Use new PCI_DEV_FLAGS_NO_RELAXED_ORDERING flag
+From: Willem de Bruijn <willemb@google.com>
 
-elapsed time: 194m
+Devices that support FLAG2_DMA_BURST have different default values
+for RDTR and RADV. Apply burst mode default settings only when no
+explicit value was passed at module load.
 
-configs tested: 146
+The RDTR default is zero. If the module is loaded for low latency
+operation with RxIntDelay=0, do not override this value with a burst
+default of 32.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Move the decision to apply burst values earlier, where explicitly
+initialized module variables can be distinguished from defaults.
 
-x86_64                           allmodconfig
-i386                               tinyconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201734
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x016-201734
-x86_64                 randconfig-x011-201734
-x86_64                 randconfig-x012-201734
-x86_64                 randconfig-x019-201734
-x86_64                 randconfig-x014-201734
-x86_64                 randconfig-x013-201734
-x86_64                 randconfig-x018-201734
-x86_64                 randconfig-x015-201734
-x86_64                 randconfig-x010-201734
-x86_64                 randconfig-x017-201734
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-i386                     randconfig-a0-201734
-i386                     randconfig-a1-201734
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201734
-i386                     randconfig-s0-201734
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201734
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201734
-i386                     randconfig-i0-201734
-i386                   randconfig-x019-201734
-i386                   randconfig-x013-201734
-i386                   randconfig-x012-201734
-i386                   randconfig-x016-201734
-i386                   randconfig-x018-201734
-i386                   randconfig-x010-201734
-i386                   randconfig-x011-201734
-i386                   randconfig-x015-201734
-i386                   randconfig-x014-201734
-i386                   randconfig-x017-201734
-i386                   randconfig-x076-201734
-i386                   randconfig-x075-201734
-i386                   randconfig-x071-201734
-i386                   randconfig-x070-201734
-i386                   randconfig-x074-201734
-i386                   randconfig-x079-201734
-i386                   randconfig-x072-201734
-i386                   randconfig-x078-201734
-i386                   randconfig-x073-201734
-i386                   randconfig-x077-201734
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                 randconfig-x001-201734
-x86_64                 randconfig-x007-201734
-x86_64                 randconfig-x000-201734
-x86_64                 randconfig-x006-201734
-x86_64                 randconfig-x003-201734
-x86_64                 randconfig-x009-201734
-x86_64                 randconfig-x004-201734
-x86_64                 randconfig-x008-201734
-x86_64                 randconfig-x005-201734
-x86_64                 randconfig-x002-201734
-i386                   randconfig-x003-201734
-i386                   randconfig-x000-201734
-i386                   randconfig-x004-201734
-i386                   randconfig-x009-201734
-i386                   randconfig-x005-201734
-i386                   randconfig-x008-201734
-i386                   randconfig-x001-201734
-i386                   randconfig-x007-201734
-i386                   randconfig-x006-201734
-i386                   randconfig-x002-201734
+Signed-off-by: Willem de Bruijn <willemb@google.com>
+---
+ drivers/net/ethernet/intel/e1000e/e1000.h  |  4 ----
+ drivers/net/ethernet/intel/e1000e/netdev.c |  8 --------
+ drivers/net/ethernet/intel/e1000e/param.c  | 16 +++++++++++++++-
+ 3 files changed, 15 insertions(+), 13 deletions(-)
 
-Thanks,
-Fengguang
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index 98e68888abb1..2311b31bdcac 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -94,10 +94,6 @@ struct e1000_info;
+  */
+ #define E1000_CHECK_RESET_COUNT		25
+ 
+-#define DEFAULT_RDTR			0
+-#define DEFAULT_RADV			8
+-#define BURST_RDTR			0x20
+-#define BURST_RADV			0x20
+ #define PCICFG_DESC_RING_STATUS		0xe4
+ #define FLUSH_DESC_REQUIRED		0x100
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 327dfe5bedc0..47b89aac7969 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3223,14 +3223,6 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
+ 		 */
+ 		ew32(RXDCTL(0), E1000_RXDCTL_DMA_BURST_ENABLE);
+ 		ew32(RXDCTL(1), E1000_RXDCTL_DMA_BURST_ENABLE);
+-
+-		/* override the delay timers for enabling bursting, only if
+-		 * the value was not set by the user via module options
+-		 */
+-		if (adapter->rx_int_delay == DEFAULT_RDTR)
+-			adapter->rx_int_delay = BURST_RDTR;
+-		if (adapter->rx_abs_int_delay == DEFAULT_RADV)
+-			adapter->rx_abs_int_delay = BURST_RADV;
+ 	}
+ 
+ 	/* set the Receive Delay Timer Register */
+diff --git a/drivers/net/ethernet/intel/e1000e/param.c b/drivers/net/ethernet/intel/e1000e/param.c
+index 6d8c39abee16..bb696c98f9b0 100644
+--- a/drivers/net/ethernet/intel/e1000e/param.c
++++ b/drivers/net/ethernet/intel/e1000e/param.c
+@@ -73,17 +73,25 @@ E1000_PARAM(TxAbsIntDelay, "Transmit Absolute Interrupt Delay");
+ /* Receive Interrupt Delay in units of 1.024 microseconds
+  * hardware will likely hang if you set this to anything but zero.
+  *
++ * Burst variant is used as default if device has FLAG2_DMA_BURST.
++ *
+  * Valid Range: 0-65535
+  */
+ E1000_PARAM(RxIntDelay, "Receive Interrupt Delay");
++#define DEFAULT_RDTR			0
++#define BURST_RDTR			0x20
+ #define MAX_RXDELAY 0xFFFF
+ #define MIN_RXDELAY 0
+ 
+ /* Receive Absolute Interrupt Delay in units of 1.024 microseconds
++ *
++ * Burst variant is used as default if device has FLAG2_DMA_BURST.
+  *
+  * Valid Range: 0-65535
+  */
+ E1000_PARAM(RxAbsIntDelay, "Receive Absolute Interrupt Delay");
++#define DEFAULT_RADV			8
++#define BURST_RADV			0x20
+ #define MAX_RXABSDELAY 0xFFFF
+ #define MIN_RXABSDELAY 0
+ 
+@@ -297,6 +305,9 @@ void e1000e_check_options(struct e1000_adapter *adapter)
+ 					 .max = MAX_RXDELAY } }
+ 		};
+ 
++		if (adapter->flags2 & FLAG2_DMA_BURST)
++			opt.def = BURST_RDTR;
++
+ 		if (num_RxIntDelay > bd) {
+ 			adapter->rx_int_delay = RxIntDelay[bd];
+ 			e1000_validate_option(&adapter->rx_int_delay, &opt,
+@@ -307,7 +318,7 @@ void e1000e_check_options(struct e1000_adapter *adapter)
+ 	}
+ 	/* Receive Absolute Interrupt Delay */
+ 	{
+-		static const struct e1000_option opt = {
++		static struct e1000_option opt = {
+ 			.type = range_option,
+ 			.name = "Receive Absolute Interrupt Delay",
+ 			.err  = "using default of "
+@@ -317,6 +328,9 @@ void e1000e_check_options(struct e1000_adapter *adapter)
+ 					 .max = MAX_RXABSDELAY } }
+ 		};
+ 
++		if (adapter->flags2 & FLAG2_DMA_BURST)
++			opt.def = BURST_RADV;
++
+ 		if (num_RxAbsIntDelay > bd) {
+ 			adapter->rx_abs_int_delay = RxAbsIntDelay[bd];
+ 			e1000_validate_option(&adapter->rx_abs_int_delay, &opt,
+-- 
+2.14.1.342.g6490525c54-goog
+
