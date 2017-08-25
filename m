@@ -1,127 +1,74 @@
-From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
-Date: Fri, 25 Aug 2017 11:06:26 -0400
-Subject: [Intel-wired-lan] [PATCH] e1000e: apply burst mode settings only on
-	default
-Message-ID: <20170825150626.2843-1-willemdebruijn.kernel@gmail.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Fri, 25 Aug 2017 09:47:50 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2] e1000e: Be drop monitor
+	friendly
+In-Reply-To: <20170825035824.26935-1-f.fainelli@gmail.com>
+References: <20170825035824.26935-1-f.fainelli@gmail.com>
+Message-ID: <f5ceb680-39a2-60ae-b1b6-fe82f639cb2e@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Willem de Bruijn <willemb@google.com>
+On 08/24/2017 08:58 PM, Florian Fainelli wrote:
+> e1000_put_txbuf() cleans up the successfully transmitted TX packets,
+> e1000e_tx_hwtstamp_work() also does the successfully completes the
+> timestamped TX packets, e1000_clean_rx_ring() cleans up the RX ring and
+> e1000_remove() cleans up the timestampted packets. None of these
+> functions should be reporting dropped packets, so make them use
+> dev_consume_skb_any() to be drop monitor friendly.
+> 
+> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 327dfe5bedc0..a90e459c5b8a 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -1085,7 +1085,7 @@ static void e1000_put_txbuf(struct e1000_ring *tx_ring,
+>  		buffer_info->dma = 0;
+>  	}
+>  	if (buffer_info->skb) {
+> -		dev_kfree_skb_any(buffer_info->skb);
+> +		dev_consume_skb_any(buffer_info->skb);
+>  		buffer_info->skb = NULL;
+>  	}
+>  	buffer_info->time_stamp = 0;
+> @@ -1199,7 +1199,7 @@ static void e1000e_tx_hwtstamp_work(struct work_struct *work)
+>  		wmb(); /* force write prior to skb_tstamp_tx */
+>  
+>  		skb_tstamp_tx(skb, &shhwtstamps);
+> -		dev_kfree_skb_any(skb);
+> +		dev_consume_skb_any(skb);
+>  	} else if (time_after(jiffies, adapter->tx_hwtstamp_start
+>  			      + adapter->tx_timeout_factor * HZ)) {
+>  		dev_kfree_skb_any(adapter->tx_hwtstamp_skb);
+> @@ -1716,7 +1716,7 @@ static void e1000_clean_rx_ring(struct e1000_ring *rx_ring)
+>  		}
+>  
+>  		if (buffer_info->skb) {
+> -			dev_kfree_skb(buffer_info->skb);
+> +			dev_consume_skb_any(buffer_info->skb);
 
-Devices that support FLAG2_DMA_BURST have different default values
-for RDTR and RADV. Apply burst mode default settings only when no
-explicit value was passed at module load.
+This one is not actually needed since dev_kfree_skb() is an alias for
+consume_skb().
 
-The RDTR default is zero. If the module is loaded for low latency
-operation with RxIntDelay=0, do not override this value with a burst
-default of 32.
+>  			buffer_info->skb = NULL;
+>  		}
+>  
+> @@ -1734,7 +1734,7 @@ static void e1000_clean_rx_ring(struct e1000_ring *rx_ring)
+>  
+>  	/* there also may be some cached data from a chained receive */
+>  	if (rx_ring->rx_skb_top) {
+> -		dev_kfree_skb(rx_ring->rx_skb_top);
+> +		dev_consume_skb_any(rx_ring->rx_skb_top);
 
-Move the decision to apply burst values earlier, where explicitly
-initialized module variables can be distinguished from defaults.
+Same here.
 
-Signed-off-by: Willem de Bruijn <willemb@google.com>
----
- drivers/net/ethernet/intel/e1000e/e1000.h  |  4 ----
- drivers/net/ethernet/intel/e1000e/netdev.c |  8 --------
- drivers/net/ethernet/intel/e1000e/param.c  | 16 +++++++++++++++-
- 3 files changed, 15 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
-index 98e68888abb1..2311b31bdcac 100644
---- a/drivers/net/ethernet/intel/e1000e/e1000.h
-+++ b/drivers/net/ethernet/intel/e1000e/e1000.h
-@@ -94,10 +94,6 @@ struct e1000_info;
-  */
- #define E1000_CHECK_RESET_COUNT		25
- 
--#define DEFAULT_RDTR			0
--#define DEFAULT_RADV			8
--#define BURST_RDTR			0x20
--#define BURST_RADV			0x20
- #define PCICFG_DESC_RING_STATUS		0xe4
- #define FLUSH_DESC_REQUIRED		0x100
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 327dfe5bedc0..47b89aac7969 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3223,14 +3223,6 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
- 		 */
- 		ew32(RXDCTL(0), E1000_RXDCTL_DMA_BURST_ENABLE);
- 		ew32(RXDCTL(1), E1000_RXDCTL_DMA_BURST_ENABLE);
--
--		/* override the delay timers for enabling bursting, only if
--		 * the value was not set by the user via module options
--		 */
--		if (adapter->rx_int_delay == DEFAULT_RDTR)
--			adapter->rx_int_delay = BURST_RDTR;
--		if (adapter->rx_abs_int_delay == DEFAULT_RADV)
--			adapter->rx_abs_int_delay = BURST_RADV;
- 	}
- 
- 	/* set the Receive Delay Timer Register */
-diff --git a/drivers/net/ethernet/intel/e1000e/param.c b/drivers/net/ethernet/intel/e1000e/param.c
-index 6d8c39abee16..bb696c98f9b0 100644
---- a/drivers/net/ethernet/intel/e1000e/param.c
-+++ b/drivers/net/ethernet/intel/e1000e/param.c
-@@ -73,17 +73,25 @@ E1000_PARAM(TxAbsIntDelay, "Transmit Absolute Interrupt Delay");
- /* Receive Interrupt Delay in units of 1.024 microseconds
-  * hardware will likely hang if you set this to anything but zero.
-  *
-+ * Burst variant is used as default if device has FLAG2_DMA_BURST.
-+ *
-  * Valid Range: 0-65535
-  */
- E1000_PARAM(RxIntDelay, "Receive Interrupt Delay");
-+#define DEFAULT_RDTR			0
-+#define BURST_RDTR			0x20
- #define MAX_RXDELAY 0xFFFF
- #define MIN_RXDELAY 0
- 
- /* Receive Absolute Interrupt Delay in units of 1.024 microseconds
-+ *
-+ * Burst variant is used as default if device has FLAG2_DMA_BURST.
-  *
-  * Valid Range: 0-65535
-  */
- E1000_PARAM(RxAbsIntDelay, "Receive Absolute Interrupt Delay");
-+#define DEFAULT_RADV			8
-+#define BURST_RADV			0x20
- #define MAX_RXABSDELAY 0xFFFF
- #define MIN_RXABSDELAY 0
- 
-@@ -297,6 +305,9 @@ void e1000e_check_options(struct e1000_adapter *adapter)
- 					 .max = MAX_RXDELAY } }
- 		};
- 
-+		if (adapter->flags2 & FLAG2_DMA_BURST)
-+			opt.def = BURST_RDTR;
-+
- 		if (num_RxIntDelay > bd) {
- 			adapter->rx_int_delay = RxIntDelay[bd];
- 			e1000_validate_option(&adapter->rx_int_delay, &opt,
-@@ -307,7 +318,7 @@ void e1000e_check_options(struct e1000_adapter *adapter)
- 	}
- 	/* Receive Absolute Interrupt Delay */
- 	{
--		static const struct e1000_option opt = {
-+		static struct e1000_option opt = {
- 			.type = range_option,
- 			.name = "Receive Absolute Interrupt Delay",
- 			.err  = "using default of "
-@@ -317,6 +328,9 @@ void e1000e_check_options(struct e1000_adapter *adapter)
- 					 .max = MAX_RXABSDELAY } }
- 		};
- 
-+		if (adapter->flags2 & FLAG2_DMA_BURST)
-+			opt.def = BURST_RADV;
-+
- 		if (num_RxAbsIntDelay > bd) {
- 			adapter->rx_abs_int_delay = RxAbsIntDelay[bd];
- 			e1000_validate_option(&adapter->rx_abs_int_delay, &opt,
+I will make a repost of this patch later, Jeff please drop it if you
+have it queued already, thanks!
 -- 
-2.14.1.342.g6490525c54-goog
-
+Florian
