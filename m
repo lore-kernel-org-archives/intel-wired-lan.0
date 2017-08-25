@@ -1,74 +1,38 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Date: Fri, 25 Aug 2017 09:47:50 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2] e1000e: Be drop monitor
-	friendly
-In-Reply-To: <20170825035824.26935-1-f.fainelli@gmail.com>
-References: <20170825035824.26935-1-f.fainelli@gmail.com>
-Message-ID: <f5ceb680-39a2-60ae-b1b6-fe82f639cb2e@gmail.com>
+From: Stefano Brivio <sbrivio@redhat.com>
+Date: Fri, 25 Aug 2017 22:52:15 +0200
+Subject: [Intel-wired-lan] how to submit fixes for i40e/i40evf?
+Message-ID: <20170825225215.35fc6b59@elisabeth>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 08/24/2017 08:58 PM, Florian Fainelli wrote:
-> e1000_put_txbuf() cleans up the successfully transmitted TX packets,
-> e1000e_tx_hwtstamp_work() also does the successfully completes the
-> timestamped TX packets, e1000_clean_rx_ring() cleans up the RX ring and
-> e1000_remove() cleans up the timestampted packets. None of these
-> functions should be reporting dropped packets, so make them use
-> dev_consume_skb_any() to be drop monitor friendly.
-> 
-> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 327dfe5bedc0..a90e459c5b8a 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -1085,7 +1085,7 @@ static void e1000_put_txbuf(struct e1000_ring *tx_ring,
->  		buffer_info->dma = 0;
->  	}
->  	if (buffer_info->skb) {
-> -		dev_kfree_skb_any(buffer_info->skb);
-> +		dev_consume_skb_any(buffer_info->skb);
->  		buffer_info->skb = NULL;
->  	}
->  	buffer_info->time_stamp = 0;
-> @@ -1199,7 +1199,7 @@ static void e1000e_tx_hwtstamp_work(struct work_struct *work)
->  		wmb(); /* force write prior to skb_tstamp_tx */
->  
->  		skb_tstamp_tx(skb, &shhwtstamps);
-> -		dev_kfree_skb_any(skb);
-> +		dev_consume_skb_any(skb);
->  	} else if (time_after(jiffies, adapter->tx_hwtstamp_start
->  			      + adapter->tx_timeout_factor * HZ)) {
->  		dev_kfree_skb_any(adapter->tx_hwtstamp_skb);
-> @@ -1716,7 +1716,7 @@ static void e1000_clean_rx_ring(struct e1000_ring *rx_ring)
->  		}
->  
->  		if (buffer_info->skb) {
-> -			dev_kfree_skb(buffer_info->skb);
-> +			dev_consume_skb_any(buffer_info->skb);
+Hi,
 
-This one is not actually needed since dev_kfree_skb() is an alias for
-consume_skb().
+As I'm currently preparing another fix for i40e, and the last one I
+submitted has been stuck for about two weeks now, I would like to ask
+some details about the process to submit fixes for i40e/i40evf drivers,
+before I do something wrong again.
 
->  			buffer_info->skb = NULL;
->  		}
->  
-> @@ -1734,7 +1734,7 @@ static void e1000_clean_rx_ring(struct e1000_ring *rx_ring)
->  
->  	/* there also may be some cached data from a chained receive */
->  	if (rx_ring->rx_skb_top) {
-> -		dev_kfree_skb(rx_ring->rx_skb_top);
-> +		dev_consume_skb_any(rx_ring->rx_skb_top);
+Do all the patches have to go through Intel's patchwork, no matter
+what's the perceived severity of the issue? Should I still submit them
+to netdev anyway?
 
-Same here.
+Which trees should I check before submitting a patch? Is it enough to
+check the master branch of jkirsher/net-queue.git and
+jkirsher/next-queue.git?
 
-I will make a repost of this patch later, Jeff please drop it if you
-have it queued already, thanks!
--- 
-Florian
+Once patches reach Intel's patchwork, will they need to wait for some
+kind of periodically scheduled pull request process?
+
+I don't know if a process is actually defined at this level of detail,
+but still I feel it's wrong that an obvious fix for a potential crash is
+waiting in some sort of limbo for 10 days now. Sure, worse things
+happen in the world, but I can't understand what this patch is waiting
+for.
+
+Any answer is appreciated. Thanks,
+
+--
+Stefano
