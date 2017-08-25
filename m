@@ -1,74 +1,28 @@
 From: Florian Fainelli <f.fainelli@gmail.com>
-Date: Thu, 24 Aug 2017 18:36:50 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] e1000e: Be drop monitor friendly
-Message-ID: <20170825013650.27463-1-f.fainelli@gmail.com>
+Date: Thu, 24 Aug 2017 20:06:42 -0700
+Subject: [Intel-wired-lan] [PATCH net-next] e1000e: Be drop monitor
+	friendly
+In-Reply-To: <20170825013650.27463-1-f.fainelli@gmail.com>
+References: <20170825013650.27463-1-f.fainelli@gmail.com>
+Message-ID: <6475bbf2-9035-5630-e03e-66c2fdf1af0d@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-e1000_put_txbuf() cleans up the successfully transmitted TX packets,
-e1000e_tx_hwtstamp_work() also does the successfully completes the
-timestamped TX packets, e1000_clean_rx_ring() cleans up the RX ring and
-e1000_remove() cleans up the timestampted packets. None of these
-functions should be reporting dropped packets, so make them use
-dev_consume_skb*() to be drop monitor friendly.
 
-Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 327dfe5bedc0..91303544975a 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1085,7 +1085,7 @@ static void e1000_put_txbuf(struct e1000_ring *tx_ring,
- 		buffer_info->dma = 0;
- 	}
- 	if (buffer_info->skb) {
--		dev_kfree_skb_any(buffer_info->skb);
-+		dev_consume_skb_any(buffer_info->skb);
- 		buffer_info->skb = NULL;
- 	}
- 	buffer_info->time_stamp = 0;
-@@ -1199,7 +1199,7 @@ static void e1000e_tx_hwtstamp_work(struct work_struct *work)
- 		wmb(); /* force write prior to skb_tstamp_tx */
- 
- 		skb_tstamp_tx(skb, &shhwtstamps);
--		dev_kfree_skb_any(skb);
-+		dev_consume_skb_any(skb);
- 	} else if (time_after(jiffies, adapter->tx_hwtstamp_start
- 			      + adapter->tx_timeout_factor * HZ)) {
- 		dev_kfree_skb_any(adapter->tx_hwtstamp_skb);
-@@ -1716,7 +1716,7 @@ static void e1000_clean_rx_ring(struct e1000_ring *rx_ring)
- 		}
- 
- 		if (buffer_info->skb) {
--			dev_kfree_skb(buffer_info->skb);
-+			dev_consume_skb(buffer_info->skb);
- 			buffer_info->skb = NULL;
- 		}
- 
-@@ -1734,7 +1734,7 @@ static void e1000_clean_rx_ring(struct e1000_ring *rx_ring)
- 
- 	/* there also may be some cached data from a chained receive */
- 	if (rx_ring->rx_skb_top) {
--		dev_kfree_skb(rx_ring->rx_skb_top);
-+		dev_consume_skb(rx_ring->rx_skb_top);
- 		rx_ring->rx_skb_top = NULL;
- 	}
- 
-@@ -7411,7 +7411,7 @@ static void e1000_remove(struct pci_dev *pdev)
- 	if (adapter->flags & FLAG_HAS_HW_TIMESTAMP) {
- 		cancel_work_sync(&adapter->tx_hwtstamp_work);
- 		if (adapter->tx_hwtstamp_skb) {
--			dev_kfree_skb_any(adapter->tx_hwtstamp_skb);
-+			dev_consume_skb_any(adapter->tx_hwtstamp_skb);
- 			adapter->tx_hwtstamp_skb = NULL;
- 		}
- 	}
+On 08/24/2017 06:36 PM, Florian Fainelli wrote:
+> e1000_put_txbuf() cleans up the successfully transmitted TX packets,
+> e1000e_tx_hwtstamp_work() also does the successfully completes the
+> timestamped TX packets, e1000_clean_rx_ring() cleans up the RX ring and
+> e1000_remove() cleans up the timestampted packets. None of these
+> functions should be reporting dropped packets, so make them use
+> dev_consume_skb*() to be drop monitor friendly.
+
+This also won't compile, I marked it a Superseded in patchwork since
+there is a v2 coming.
+
 -- 
-2.9.3
-
+Florian
