@@ -1,60 +1,209 @@
-From: Stefano Brivio <sbrivio@redhat.com>
-Date: Sat, 26 Aug 2017 00:28:52 +0200
-Subject: [Intel-wired-lan] how to submit fixes for i40e/i40evf?
-In-Reply-To: <CAKgT0UcLAw0958zJ4o9V9Vyamvd1mBQX1+9GAaZw-hZubMqXnw@mail.gmail.com>
-References: <20170825225215.35fc6b59@elisabeth>
- <CAKgT0UcLAw0958zJ4o9V9Vyamvd1mBQX1+9GAaZw-hZubMqXnw@mail.gmail.com>
-Message-ID: <20170826002852.751d5f07@elisabeth>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 26 Aug 2017 08:28:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
+ 2bf01935ec5362aee6ff9ffc2476043af321aa42
+Message-ID: <59a0c0c5.WKwh6Ipj3w6RLCqX%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 25 Aug 2017 15:10:08 -0700
-Alexander Duyck <alexander.duyck@gmail.com> wrote:
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+2bf01935ec5362aee6ff9ffc2476043af321aa42  i40e: synchronize nvmupdate command and adminq subtask
 
-> On Fri, Aug 25, 2017 at 1:52 PM, Stefano Brivio <sbrivio@redhat.com> wrote:
->
-> [...]
->
-> > Once patches reach Intel's patchwork, will they need to wait for some
-> > kind of periodically scheduled pull request process?  
-> 
-> Once in the patchwork they go through testing and after they have
-> passed testing Jeff will try to push them to Dave.
+elapsed time: 147m
 
-Ok, the whole part above is clear, thanks a lot for clarifying.
+configs tested: 186
 
-> > I don't know if a process is actually defined at this level of detail,
-> > but still I feel it's wrong that an obvious fix for a potential crash is
-> > waiting in some sort of limbo for 10 days now. Sure, worse things
-> > happen in the world, but I can't understand what this patch is waiting
-> > for.  
-> 
-> Well in the case of your patch it was rejected as it didn't apply to
-> Jeff's tree
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-It actually did when I posted it.
+c6x                         dsk6455_defconfig
+mips                        jmr3927_defconfig
+powerpc                 mpc8272_ads_defconfig
+x86_64                 randconfig-a0-08260637
+blackfin                   CM-BF561_defconfig
+powerpc64                        allyesconfig
+tile                         tilegx_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-08260651
+x86_64                randconfig-in0-08260706
+i386                               tinyconfig
+i386                   randconfig-x019-201734
+i386                   randconfig-x013-201734
+i386                   randconfig-x012-201734
+i386                   randconfig-x016-201734
+i386                   randconfig-x018-201734
+i386                   randconfig-x010-201734
+i386                   randconfig-x011-201734
+i386                   randconfig-x015-201734
+i386                   randconfig-x014-201734
+i386                   randconfig-x017-201734
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201734
+x86_64                 randconfig-x001-201734
+x86_64                 randconfig-x007-201734
+x86_64                 randconfig-x000-201734
+x86_64                 randconfig-x006-201734
+x86_64                 randconfig-x003-201734
+x86_64                 randconfig-x009-201734
+x86_64                 randconfig-x004-201734
+x86_64                 randconfig-x008-201734
+x86_64                 randconfig-x005-201734
+x86_64                 randconfig-x002-201734
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x016-201734
+x86_64                 randconfig-x011-201734
+x86_64                 randconfig-x012-201734
+x86_64                 randconfig-x019-201734
+x86_64                 randconfig-x014-201734
+x86_64                 randconfig-x013-201734
+x86_64                 randconfig-x018-201734
+x86_64                 randconfig-x015-201734
+x86_64                 randconfig-x010-201734
+x86_64                 randconfig-x017-201734
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201734
+i386                     randconfig-a1-201734
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+m68k                          atari_defconfig
+mips                          rb532_defconfig
+powerpc                       maple_defconfig
+i386                     randconfig-s1-201734
+i386                     randconfig-s0-201734
+x86_64                           allmodconfig
+ia64                            zx1_defconfig
+mips                          ath25_defconfig
+powerpc               mpc85xx_basic_defconfig
+sh                          r7785rp_defconfig
+x86_64                   randconfig-i0-201734
+i386                   randconfig-b0-08260718
+arm                       versatile_defconfig
+cris                              allnoconfig
+m68k                        m5307c3_defconfig
+sh                         microdev_defconfig
+i386                     randconfig-i0-201734
+i386                     randconfig-i1-201734
+x86_64                 randconfig-b0-08260637
+blackfin                   CM-BF527_defconfig
+blackfin                   CM-BF548_defconfig
+arm                          tango4_defconfig
+ia64                        generic_defconfig
+mips                           xway_defconfig
+xtensa                    smp_lx200_defconfig
+blackfin                  CM-BF537E_defconfig
+m32r                             alldefconfig
+x86_64                 randconfig-h0-08260741
+m68k                        mvme147_defconfig
+tile                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                  randconfig-sb0-08260334
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                          iop33x_defconfig
+sh                ecovec24-romimage_defconfig
+i386                   randconfig-x076-201734
+i386                   randconfig-x075-201734
+i386                   randconfig-x071-201734
+i386                   randconfig-x070-201734
+i386                   randconfig-x074-201734
+i386                   randconfig-x079-201734
+i386                   randconfig-x072-201734
+i386                   randconfig-x078-201734
+i386                   randconfig-x073-201734
+i386                   randconfig-x077-201734
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+arm                        neponset_defconfig
+m32r                                defconfig
+mips                  maltasmvp_eva_defconfig
+x86_64                 randconfig-r0-08260648
+i386                   randconfig-x003-201734
+i386                   randconfig-x000-201734
+i386                   randconfig-x004-201734
+i386                   randconfig-x009-201734
+i386                   randconfig-x005-201734
+i386                   randconfig-x008-201734
+i386                   randconfig-x001-201734
+i386                   randconfig-x007-201734
+i386                   randconfig-x006-201734
+i386                   randconfig-x002-201734
 
-> and conflicted with Jacob Keller's patch. He submitted a v2 on Tuesday
-> which has only been applied for a few days. Once it receives a
-> "Tested-by:"
-
-Which, if I understood correctly, only comes after some internal testing
-process, right?
-
-> it will be ready for submission assuming it passes testing.
-
-Now that patch is again in a v2 pull request for net-next, without the
-changes I suggested for the commit message. And the same exact code
-changes were around for two weeks. IMHO there's room for improvement,
-so to speak.
-
-> I hope that helps to clarify things.
-
-It did to some extent, and thanks again for that.
-
-
---
-Stefano
+Thanks,
+Fengguang
