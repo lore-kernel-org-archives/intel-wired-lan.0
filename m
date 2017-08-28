@@ -1,66 +1,59 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 28 Aug 2017 10:00:54 -0700
-Subject: [Intel-wired-lan] how to submit fixes for i40e/i40evf?
-In-Reply-To: <20170826002852.751d5f07@elisabeth>
-References: <20170825225215.35fc6b59@elisabeth>
- <CAKgT0UcLAw0958zJ4o9V9Vyamvd1mBQX1+9GAaZw-hZubMqXnw@mail.gmail.com>
- <20170826002852.751d5f07@elisabeth>
-Message-ID: <CAKgT0UfjBqma9=71DMVJkxfHGMB15CmPw3uVFaj=-N6gqygE6Q@mail.gmail.com>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Mon, 28 Aug 2017 19:12:30 +0200
+Subject: [Intel-wired-lan] [PATCH] igb: check memory allocation failure
+In-Reply-To: <E0D909EE5BB15A4699798539EA149D7F0779685B@ORSMSX103.amr.corp.intel.com>
+References: <20170827063951.5975-1-christophe.jaillet@wanadoo.fr>
+ <E0D909EE5BB15A4699798539EA149D7F0779685B@ORSMSX103.amr.corp.intel.com>
+Message-ID: <95a0bc80-8b41-d74f-8059-ae7181493120@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Aug 25, 2017 at 3:28 PM, Stefano Brivio <sbrivio@redhat.com> wrote:
-> On Fri, 25 Aug 2017 15:10:08 -0700
-> Alexander Duyck <alexander.duyck@gmail.com> wrote:
->
->> On Fri, Aug 25, 2017 at 1:52 PM, Stefano Brivio <sbrivio@redhat.com> wrote:
+Le 28/08/2017 ? 01:09, Waskiewicz Jr, Peter a ?crit?:
+> On 8/27/17 2:42 AM, Christophe JAILLET wrote:
+>> Check memory allocation failures and return -ENOMEM in such cases, as
+>> already done for other memory allocations in this function.
 >>
->> [...]
+>> This avoids NULL pointers dereference.
 >>
->> > Once patches reach Intel's patchwork, will they need to wait for some
->> > kind of periodically scheduled pull request process?
+>> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+>> ---
+>>    drivers/net/ethernet/intel/igb/igb_main.c | 2 ++
+>>    1 file changed, 2 insertions(+)
 >>
->> Once in the patchwork they go through testing and after they have
->> passed testing Jeff will try to push them to Dave.
+>> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+>> index fd4a46b03cc8..837d9b46a390 100644
+>> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+>> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+>> @@ -3162,6 +3162,8 @@ static int igb_sw_init(struct igb_adapter *adapter)
+>>    	/* Setup and initialize a copy of the hw vlan table array */
+>>    	adapter->shadow_vfta = kcalloc(E1000_VLAN_FILTER_TBL_SIZE, sizeof(u32),
+>>    				       GFP_ATOMIC);
+>> +	if (!adapter->shadow_vfta)
+>> +		return -ENOMEM;
+> Looks reasonable to me.
 >
-> Ok, the whole part above is clear, thanks a lot for clarifying.
+> A larger issue though I see in this function is that if we return
+> -ENOMEM here, and if we return -ENOMEM from igb_init_interrupt_scheme()
+> below on failure, we leak adapter->mac_table (and adapter->shadow_vfta
+> in the latter).  We should add a proper unwind to free up the memory on
+> failure.
 >
->> > I don't know if a process is actually defined at this level of detail,
->> > but still I feel it's wrong that an obvious fix for a potential crash is
->> > waiting in some sort of limbo for 10 days now. Sure, worse things
->> > happen in the world, but I can't understand what this patch is waiting
->> > for.
->>
->> Well in the case of your patch it was rejected as it didn't apply to
->> Jeff's tree
+> -PJ
 >
-> It actually did when I posted it.
->
->> and conflicted with Jacob Keller's patch. He submitted a v2 on Tuesday
->> which has only been applied for a few days. Once it receives a
->> "Tested-by:"
->
-> Which, if I understood correctly, only comes after some internal testing
-> process, right?
->
->> it will be ready for submission assuming it passes testing.
->
-> Now that patch is again in a v2 pull request for net-next, without the
-> changes I suggested for the commit message. And the same exact code
-> changes were around for two weeks. IMHO there's room for improvement,
-> so to speak.
->
->> I hope that helps to clarify things.
->
-> It did to some extent, and thanks again for that.
+Hi,
 
-One other thing I forgot that adds to the confusion is that you will
-probably want to base you patch on the dev-queue branch of those
-trees, not the master branch. The master branch is what Jeff submits
-to Dave if I am not mistaken, while dev-queue is the location for the
-ongoing development.
+in fact, there is no leak because the only caller of 'igb_sw_init()' 
+(i.e. 'igb_probe()'), already frees these resources in case of error, 
+see [1]
 
-- Alex
+These resources are also freed? in 'igb_remove()'.
+
+Best reagrds,
+CJ
+
+[1]: 
+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/drivers/net/ethernet/intel/igb/igb_main.c#n2775
+
