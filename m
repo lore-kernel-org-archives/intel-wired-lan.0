@@ -1,93 +1,86 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 29 Aug 2017 05:32:35 -0400
-Subject: [Intel-wired-lan] [next PATCH S79-V2 06/13] i40e/i40evf: use
-	DECLARE_BITMAP for state
+Date: Tue, 29 Aug 2017 05:32:41 -0400
+Subject: [Intel-wired-lan] [next PATCH S79-V2 12/13] i40evf: enable support
+	for VF VLAN tag stripping control
 In-Reply-To: <20170829093242.41026-1-alice.michael@intel.com>
 References: <20170829093242.41026-1-alice.michael@intel.com>
-Message-ID: <20170829093242.41026-6-alice.michael@intel.com>
+Message-ID: <20170829093242.41026-12-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-When using set_bit and friends, we should be using actual
-bitmaps, and fix all the locations where we might access
-it.
+A recent commit 809481484e5d ("i40e/i40evf: support for VF VLAN tag
+stripping control") added support for VFs to negotiate the control of
+VLAN tag stripping. This should have allowed VFs to disable the feature.
+Unfortunately, the flag was set only in netdev->feature flags and not in
+netdev->hw_features.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+This ultimately causes the stack to assume that it cannot change the
+flag, so it was unchangeable and marked as [fixed] in the ethtool -k
+output.
+
+Fix this by setting the feature in hw_features first, just as we do for
+the PF code. This enables ethtool -K to disable the feature correctly,
+and fully enables user control of the VLAN tag stripping feature.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c   | 4 ++--
- drivers/net/ethernet/intel/i40e/i40e_txrx.h   | 3 ++-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h | 3 ++-
- 3 files changed, 6 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index e9fc34c..1764fd2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2892,7 +2892,7 @@ static void i40e_config_xps_tx_ring(struct i40e_ring *ring)
- 		return;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 70a033c..5caa1bd 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2425,10 +2425,6 @@ static netdev_features_t i40evf_features_check(struct sk_buff *skb,
+ 	return features & ~(NETIF_F_CSUM_MASK | NETIF_F_GSO_MASK);
+ }
  
- 	if ((vsi->tc_config.numtc <= 1) &&
--	    !test_and_set_bit(__I40E_TX_XPS_INIT_DONE, &ring->state)) {
-+	    !test_and_set_bit(__I40E_TX_XPS_INIT_DONE, ring->state)) {
- 		cpu = cpumask_local_spread(ring->q_vector->v_idx, -1);
- 		netif_set_xps_queue(ring->netdev, get_cpu_mask(cpu),
- 				    ring->queue_index);
-@@ -3011,7 +3011,7 @@ static int i40e_configure_rx_ring(struct i40e_ring *ring)
- 	struct i40e_hmc_obj_rxq rx_ctx;
- 	i40e_status err = 0;
+-#define I40EVF_VLAN_FEATURES (NETIF_F_HW_VLAN_CTAG_TX |\
+-			      NETIF_F_HW_VLAN_CTAG_RX |\
+-			      NETIF_F_HW_VLAN_CTAG_FILTER)
+-
+ /**
+  * i40evf_fix_features - fix up the netdev feature bits
+  * @netdev: our net device
+@@ -2441,9 +2437,11 @@ static netdev_features_t i40evf_fix_features(struct net_device *netdev,
+ {
+ 	struct i40evf_adapter *adapter = netdev_priv(netdev);
  
--	ring->state = 0;
-+	bitmap_zero(ring->state, __I40E_RING_STATE_NBITS);
+-	features &= ~I40EVF_VLAN_FEATURES;
+-	if (adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_VLAN)
+-		features |= I40EVF_VLAN_FEATURES;
++	if (!(adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_VLAN))
++		features &= ~(NETIF_F_HW_VLAN_CTAG_TX |
++			      NETIF_F_HW_VLAN_CTAG_RX |
++			      NETIF_F_HW_VLAN_CTAG_FILTER);
++
+ 	return features;
+ }
  
- 	/* clear the context structure first */
- 	memset(&rx_ctx, 0, sizeof(rx_ctx));
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index 2f848bc..a4e3e66 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -342,6 +342,7 @@ struct i40e_rx_queue_stats {
- enum i40e_ring_state_t {
- 	__I40E_TX_FDIR_INIT_DONE,
- 	__I40E_TX_XPS_INIT_DONE,
-+	__I40E_RING_STATE_NBITS /* must be last */
- };
+@@ -2574,9 +2572,17 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
+ 	 */
+ 	hw_features = hw_enc_features;
  
- /* some useful defines for virtchannel interface, which
-@@ -366,7 +367,7 @@ struct i40e_ring {
- 		struct i40e_tx_buffer *tx_bi;
- 		struct i40e_rx_buffer *rx_bi;
- 	};
--	unsigned long state;
-+	DECLARE_BITMAP(state, __I40E_RING_STATE_NBITS);
- 	u16 queue_index;		/* Queue number of ring */
- 	u8 dcb_tc;			/* Traffic class of ring */
- 	u8 __iomem *tail;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index 0d9f98b..d8ca802 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -325,6 +325,7 @@ struct i40e_rx_queue_stats {
- enum i40e_ring_state_t {
- 	__I40E_TX_FDIR_INIT_DONE,
- 	__I40E_TX_XPS_INIT_DONE,
-+	__I40E_RING_STATE_NBITS /* must be last */
- };
++	/* Enable VLAN features if supported */
++	if (vfres->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_VLAN)
++		hw_features |= (NETIF_F_HW_VLAN_CTAG_TX |
++				NETIF_F_HW_VLAN_CTAG_RX);
++
+ 	netdev->hw_features |= hw_features;
  
- /* some useful defines for virtchannel interface, which
-@@ -348,7 +349,7 @@ struct i40e_ring {
- 		struct i40e_tx_buffer *tx_bi;
- 		struct i40e_rx_buffer *rx_bi;
- 	};
--	unsigned long state;
-+	DECLARE_BITMAP(state, __I40E_RING_STATE_NBITS);
- 	u16 queue_index;		/* Queue number of ring */
- 	u8 dcb_tc;			/* Traffic class of ring */
- 	u8 __iomem *tail;
+-	netdev->features |= hw_features | I40EVF_VLAN_FEATURES;
++	netdev->features |= hw_features;
++
++	if (vfres->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_VLAN)
++		netdev->features |= NETIF_F_HW_VLAN_CTAG_FILTER;
+ 
+ 	adapter->vsi.id = adapter->vsi_res->vsi_id;
+ 
 -- 
 2.9.4
 
