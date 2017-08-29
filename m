@@ -1,124 +1,222 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Tue, 29 Aug 2017 12:21:48 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: split Tx/Rx ring clearing for
-	ethtool loopback test
-Message-ID: <20170829192148.19519.80519.stgit@localhost6.localdomain6>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Tue, 29 Aug 2017 14:33:45 -0700
+Subject: [Intel-wired-lan] [PATCH v2] i40e/i40evf: organize and re-number
+	feature flags
+Message-ID: <20170829213345.28510-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit: fed21bcee7a5
-("ixgbe: Don't bother clearing buffer memory for descriptor rings)
+Now that we've reduced the number of flags, organize similar flags
+together and re-number them accordingly.
 
-exposed some issues with the logic in the current implementation of
-ixgbe_clean_test_rings() that are being addressed in this patch:
+Since we don't yet have more than 32 flags, we'll use a u32 for both the
+hw_features and flag field. Should we gain more flags in the future, we
+may need to convert to a u64 or separate flags out into two fields.
 
-- Split the clearing of the Tx and Rx rings in separate loops. Previously
-both Tx and Rx rings were cleared in a rx_desc->wb.upper.length based
-loop which could lead to issues if for w/e reason packets were received
-outside of the frames transmitted for the loopback test.
+One alternative approach considered, but not implemented here, was to
+use an enumeration for the flag variables, and create a macro
+I40E_FLAG() which used string concatenation to generate BIT_ULL values.
+This has the advantage of making the actual bit values compile-time
+dynamic so that we do not need to worry about matching the order to the
+bit value. However, this does produce a high level of code churn, and
+makes it more difficult to read a dumped flags value when debugging.
 
-- Add check for IXGBE_TXD_STAT_DD to avoid clearing the rings if the
-transmits have not comlpeted by the time we enter ixgbe_clean_test_rings()
-
-- Exit early on ixgbe_check_lbtest_frame() failure.
-
-This change fixes a crash during ethtool diagnostic (ethtool -t).
-
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I8653fff69453cd547d6fe98d29dfa9d8710387d1
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   53 ++++++++++++++--------
- 1 file changed, 34 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 18f5576..108db29 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -1918,8 +1918,6 @@ static u16 ixgbe_clean_test_rings(struct ixgbe_ring *rx_ring,
- 				  unsigned int size)
- {
- 	union ixgbe_adv_rx_desc *rx_desc;
--	struct ixgbe_rx_buffer *rx_buffer;
--	struct ixgbe_tx_buffer *tx_buffer;
- 	u16 rx_ntc, tx_ntc, count = 0;
+This patch replaces the same named patch in Jeff's queue and addresses
+Dave Miller's comments regarding use of a u64 instead of a u32. It may
+conflict with "[next PATCH S79-V2 01/13] i40e: add private flag to
+control source pruning", as that patch adds a new flag.
+
+ drivers/net/ethernet/intel/i40e/i40e.h         | 97 +++++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  6 +-
+ drivers/net/ethernet/intel/i40evf/i40evf.h     | 30 ++++----
+ 3 files changed, 67 insertions(+), 66 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index d0c1bf5441d8..d12a5b887f3a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -401,55 +401,56 @@ struct i40e_pf {
+ 	struct timer_list service_timer;
+ 	struct work_struct service_task;
  
- 	/* initialize next to clean and descriptor values */
-@@ -1927,7 +1925,38 @@ static u16 ixgbe_clean_test_rings(struct ixgbe_ring *rx_ring,
- 	tx_ntc = tx_ring->next_to_clean;
- 	rx_desc = IXGBE_RX_DESC(rx_ring, rx_ntc);
+-	u64 hw_features;
+-#define I40E_HW_RSS_AQ_CAPABLE			BIT_ULL(0)
+-#define I40E_HW_128_QP_RSS_CAPABLE		BIT_ULL(1)
+-#define I40E_HW_ATR_EVICT_CAPABLE		BIT_ULL(2)
+-#define I40E_HW_WB_ON_ITR_CAPABLE		BIT_ULL(3)
+-#define I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE	BIT_ULL(4)
+-#define I40E_HW_NO_PCI_LINK_CHECK		BIT_ULL(5)
+-#define I40E_HW_100M_SGMII_CAPABLE		BIT_ULL(6)
+-#define I40E_HW_NO_DCB_SUPPORT			BIT_ULL(7)
+-#define I40E_HW_USE_SET_LLDP_MIB		BIT_ULL(8)
+-#define I40E_HW_GENEVE_OFFLOAD_CAPABLE		BIT_ULL(9)
+-#define I40E_HW_PTP_L4_CAPABLE			BIT_ULL(10)
+-#define I40E_HW_WOL_MC_MAGIC_PKT_WAKE		BIT_ULL(11)
+-#define I40E_HW_MPLS_HDR_OFFLOAD_CAPABLE	BIT_ULL(12)
+-#define I40E_HW_HAVE_CRT_RETIMER		BIT_ULL(13)
+-#define I40E_HW_OUTER_UDP_CSUM_CAPABLE		BIT_ULL(14)
+-#define I40E_HW_PHY_CONTROLS_LEDS		BIT_ULL(15)
+-#define I40E_HW_STOP_FW_LLDP			BIT_ULL(16)
+-#define I40E_HW_PORT_ID_VALID			BIT_ULL(17)
+-#define I40E_HW_RESTART_AUTONEG			BIT_ULL(18)
++	u32 hw_features;
++#define I40E_HW_RSS_AQ_CAPABLE			BIT(0)
++#define I40E_HW_128_QP_RSS_CAPABLE		BIT(1)
++#define I40E_HW_ATR_EVICT_CAPABLE		BIT(2)
++#define I40E_HW_WB_ON_ITR_CAPABLE		BIT(3)
++#define I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE	BIT(4)
++#define I40E_HW_NO_PCI_LINK_CHECK		BIT(5)
++#define I40E_HW_100M_SGMII_CAPABLE		BIT(6)
++#define I40E_HW_NO_DCB_SUPPORT			BIT(7)
++#define I40E_HW_USE_SET_LLDP_MIB		BIT(8)
++#define I40E_HW_GENEVE_OFFLOAD_CAPABLE		BIT(9)
++#define I40E_HW_PTP_L4_CAPABLE			BIT(10)
++#define I40E_HW_WOL_MC_MAGIC_PKT_WAKE		BIT(11)
++#define I40E_HW_MPLS_HDR_OFFLOAD_CAPABLE	BIT(12)
++#define I40E_HW_HAVE_CRT_RETIMER		BIT(13)
++#define I40E_HW_OUTER_UDP_CSUM_CAPABLE		BIT(14)
++#define I40E_HW_PHY_CONTROLS_LEDS		BIT(15)
++#define I40E_HW_STOP_FW_LLDP			BIT(16)
++#define I40E_HW_PORT_ID_VALID			BIT(17)
++#define I40E_HW_RESTART_AUTONEG			BIT(18)
  
-+	while (tx_ntc != tx_ring->next_to_use) {
-+		union ixgbe_adv_tx_desc *tx_desc;
-+		struct ixgbe_tx_buffer *tx_buffer;
-+
-+		tx_desc = IXGBE_TX_DESC(tx_ring, tx_ntc);
-+
-+		/* if DD is not set transmit has not completed */
-+		if (!(tx_desc->wb.status & cpu_to_le32(IXGBE_TXD_STAT_DD)))
-+			return count;
-+
-+		/* unmap buffer on Tx side */
-+		tx_buffer = &tx_ring->tx_buffer_info[tx_ntc];
-+
-+		/* Free all the Tx ring sk_buffs */
-+		dev_kfree_skb_any(tx_buffer->skb);
-+
-+		/* unmap skb header data */
-+		dma_unmap_single(tx_ring->dev,
-+				 dma_unmap_addr(tx_buffer, dma),
-+				 dma_unmap_len(tx_buffer, len),
-+				 DMA_TO_DEVICE);
-+		dma_unmap_len_set(tx_buffer, len, 0);
-+
-+		/* increment Tx next to clean counter */
-+		tx_ntc++;
-+		if (tx_ntc == tx_ring->count)
-+			tx_ntc = 0;
-+	}
-+
- 	while (rx_desc->wb.upper.length) {
-+		struct ixgbe_rx_buffer *rx_buffer;
-+
- 		/* check Rx buffer */
- 		rx_buffer = &rx_ring->rx_buffer_info[rx_ntc];
+-	u64 flags;
+-#define I40E_FLAG_RX_CSUM_ENABLED		BIT_ULL(1)
+-#define I40E_FLAG_MSI_ENABLED			BIT_ULL(2)
+-#define I40E_FLAG_MSIX_ENABLED			BIT_ULL(3)
+-#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(4)
+-#define I40E_FLAG_RSS_ENABLED			BIT_ULL(6)
+-#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(7)
+-#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(10)
+-#define I40E_FLAG_FILTER_SYNC			BIT_ULL(15)
+-#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(16)
+-#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(19)
+-#define I40E_FLAG_DCB_ENABLED			BIT_ULL(20)
+-#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(21)
+-#define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
+-#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(23)
+-#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(24)
+-#define I40E_FLAG_PTP				BIT_ULL(25)
+-#define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
+-#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(27)
+-#define I40E_FLAG_DCB_CAPABLE			BIT_ULL(29)
+-#define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(37)
+-#define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(39)
+-#define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(40)
+-#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(51)
+-#define I40E_FLAG_CLIENT_RESET			BIT_ULL(54)
+-#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(55)
+-#define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(56)
+-#define I40E_FLAG_LEGACY_RX			BIT_ULL(58)
++	u32 flags;
++#define I40E_FLAG_RX_CSUM_ENABLED		BIT(0)
++#define I40E_FLAG_MSI_ENABLED			BIT(1)
++#define I40E_FLAG_MSIX_ENABLED			BIT(2)
++#define I40E_FLAG_RSS_ENABLED			BIT(3)
++#define I40E_FLAG_VMDQ_ENABLED			BIT(4)
++#define I40E_FLAG_FILTER_SYNC			BIT(5)
++#define I40E_FLAG_SRIOV_ENABLED			BIT(6)
++#define I40E_FLAG_DCB_CAPABLE			BIT(7)
++#define I40E_FLAG_DCB_ENABLED			BIT(8)
++#define I40E_FLAG_FD_SB_ENABLED			BIT(9)
++#define I40E_FLAG_FD_ATR_ENABLED		BIT(10)
++#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT(11)
++#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT(12)
++#define I40E_FLAG_MFP_ENABLED			BIT(13)
++#define I40E_FLAG_UDP_FILTER_SYNC		BIT(14)
++#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT(15)
++#define I40E_FLAG_VEB_MODE_ENABLED		BIT(16)
++#define I40E_FLAG_VEB_STATS_ENABLED		BIT(17)
++#define I40E_FLAG_LINK_POLLING_ENABLED		BIT(18)
++#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT(19)
++#define I40E_FLAG_TEMP_LINK_POLLING		BIT(20)
++#define I40E_FLAG_LEGACY_RX			BIT(21)
++#define I40E_FLAG_PTP				BIT(22)
++#define I40E_FLAG_IWARP_ENABLED			BIT(23)
++#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT(24)
++#define I40E_FLAG_CLIENT_L2_CHANGE		BIT(25)
++#define I40E_FLAG_CLIENT_RESET			BIT(26)
++#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT(27)
  
-@@ -1940,6 +1969,8 @@ static u16 ixgbe_clean_test_rings(struct ixgbe_ring *rx_ring,
- 		/* verify contents of skb */
- 		if (ixgbe_check_lbtest_frame(rx_buffer, size))
- 			count++;
-+		else
-+			break;
+ 	struct i40e_client_instance *cinst;
+ 	bool stat_offsets_loaded;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 05e89864f781..d64fa6934181 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -4090,7 +4090,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	struct i40e_netdev_priv *np = netdev_priv(dev);
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+-	u64 orig_flags, new_flags, changed_flags;
++	u32 orig_flags, new_flags, changed_flags;
+ 	u32 i, j;
  
- 		/* sync Rx buffer for device write */
- 		dma_sync_single_for_device(rx_ring->dev,
-@@ -1947,26 +1978,10 @@ static u16 ixgbe_clean_test_rings(struct ixgbe_ring *rx_ring,
- 					   ixgbe_rx_bufsz(rx_ring),
- 					   DMA_FROM_DEVICE);
+ 	orig_flags = READ_ONCE(pf->flags);
+@@ -4142,12 +4142,12 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 		return -EOPNOTSUPP;
  
--		/* unmap buffer on Tx side */
--		tx_buffer = &tx_ring->tx_buffer_info[tx_ntc];
--
--		/* Free all the Tx ring sk_buffs */
--		dev_kfree_skb_any(tx_buffer->skb);
--
--		/* unmap skb header data */
--		dma_unmap_single(tx_ring->dev,
--				 dma_unmap_addr(tx_buffer, dma),
--				 dma_unmap_len(tx_buffer, len),
--				 DMA_TO_DEVICE);
--		dma_unmap_len_set(tx_buffer, len, 0);
--
--		/* increment Rx/Tx next to clean counters */
-+		/* increment Rx next to clean counter */
- 		rx_ntc++;
- 		if (rx_ntc == rx_ring->count)
- 			rx_ntc = 0;
--		tx_ntc++;
--		if (tx_ntc == tx_ring->count)
--			tx_ntc = 0;
+ 	/* Compare and exchange the new flags into place. If we failed, that
+-	 * is if cmpxchg64 returns anything but the old value, this means that
++	 * is if cmpxchg returns anything but the old value, this means that
+ 	 * something else has modified the flags variable since we copied it
+ 	 * originally. We'll just punt with an error and log something in the
+ 	 * message buffer.
+ 	 */
+-	if (cmpxchg64(&pf->flags, orig_flags, new_flags) != orig_flags) {
++	if (cmpxchg(&pf->flags, orig_flags, new_flags) != orig_flags) {
+ 		dev_warn(&pf->pdev->dev,
+ 			 "Unable to update pf->flags as it was modified by another thread...\n");
+ 		return -EAGAIN;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index 82f69031e5cd..a1af9b1c3d15 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -220,21 +220,21 @@ struct i40evf_adapter {
  
- 		/* fetch next descriptor */
- 		rx_desc = IXGBE_RX_DESC(rx_ring, rx_ntc);
+ 	u32 flags;
+ #define I40EVF_FLAG_RX_CSUM_ENABLED		BIT(0)
+-#define I40EVF_FLAG_IMIR_ENABLED		BIT(5)
+-#define I40EVF_FLAG_MQ_CAPABLE			BIT(6)
+-#define I40EVF_FLAG_PF_COMMS_FAILED		BIT(8)
+-#define I40EVF_FLAG_RESET_PENDING		BIT(9)
+-#define I40EVF_FLAG_RESET_NEEDED		BIT(10)
+-#define I40EVF_FLAG_WB_ON_ITR_CAPABLE		BIT(11)
+-#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE	BIT(12)
+-#define I40EVF_FLAG_ADDR_SET_BY_PF		BIT(13)
+-#define I40EVF_FLAG_SERVICE_CLIENT_REQUESTED	BIT(14)
+-#define I40EVF_FLAG_CLIENT_NEEDS_OPEN		BIT(15)
+-#define I40EVF_FLAG_CLIENT_NEEDS_CLOSE		BIT(16)
+-#define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(17)
+-#define I40EVF_FLAG_PROMISC_ON			BIT(18)
+-#define I40EVF_FLAG_ALLMULTI_ON			BIT(19)
+-#define I40EVF_FLAG_LEGACY_RX			BIT(20)
++#define I40EVF_FLAG_IMIR_ENABLED		BIT(1)
++#define I40EVF_FLAG_MQ_CAPABLE			BIT(2)
++#define I40EVF_FLAG_PF_COMMS_FAILED		BIT(3)
++#define I40EVF_FLAG_RESET_PENDING		BIT(4)
++#define I40EVF_FLAG_RESET_NEEDED		BIT(5)
++#define I40EVF_FLAG_WB_ON_ITR_CAPABLE		BIT(6)
++#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE	BIT(7)
++#define I40EVF_FLAG_ADDR_SET_BY_PF		BIT(8)
++#define I40EVF_FLAG_SERVICE_CLIENT_REQUESTED	BIT(9)
++#define I40EVF_FLAG_CLIENT_NEEDS_OPEN		BIT(10)
++#define I40EVF_FLAG_CLIENT_NEEDS_CLOSE		BIT(11)
++#define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(12)
++#define I40EVF_FLAG_PROMISC_ON			BIT(13)
++#define I40EVF_FLAG_ALLMULTI_ON			BIT(14)
++#define I40EVF_FLAG_LEGACY_RX			BIT(15)
+ /* duplicates for common code */
+ #define I40E_FLAG_DCB_ENABLED			0
+ #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
+-- 
+2.14.1.436.g33e61a4f0239
 
