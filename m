@@ -1,86 +1,124 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 29 Aug 2017 05:32:41 -0400
-Subject: [Intel-wired-lan] [next PATCH S79-V2 12/13] i40evf: enable support
-	for VF VLAN tag stripping control
-In-Reply-To: <20170829093242.41026-1-alice.michael@intel.com>
-References: <20170829093242.41026-1-alice.michael@intel.com>
-Message-ID: <20170829093242.41026-12-alice.michael@intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Tue, 29 Aug 2017 12:21:48 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: split Tx/Rx ring clearing for
+	ethtool loopback test
+Message-ID: <20170829192148.19519.80519.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+Commit: fed21bcee7a5
+("ixgbe: Don't bother clearing buffer memory for descriptor rings)
 
-A recent commit 809481484e5d ("i40e/i40evf: support for VF VLAN tag
-stripping control") added support for VFs to negotiate the control of
-VLAN tag stripping. This should have allowed VFs to disable the feature.
-Unfortunately, the flag was set only in netdev->feature flags and not in
-netdev->hw_features.
+exposed some issues with the logic in the current implementation of
+ixgbe_clean_test_rings() that are being addressed in this patch:
 
-This ultimately causes the stack to assume that it cannot change the
-flag, so it was unchangeable and marked as [fixed] in the ethtool -k
-output.
+- Split the clearing of the Tx and Rx rings in separate loops. Previously
+both Tx and Rx rings were cleared in a rx_desc->wb.upper.length based
+loop which could lead to issues if for w/e reason packets were received
+outside of the frames transmitted for the loopback test.
 
-Fix this by setting the feature in hw_features first, just as we do for
-the PF code. This enables ethtool -K to disable the feature correctly,
-and fully enables user control of the VLAN tag stripping feature.
+- Add check for IXGBE_TXD_STAT_DD to avoid clearing the rings if the
+transmits have not comlpeted by the time we enter ixgbe_clean_test_rings()
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+- Exit early on ixgbe_check_lbtest_frame() failure.
+
+This change fixes a crash during ethtool diagnostic (ethtool -t).
+
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 22 ++++++++++++++--------
- 1 file changed, 14 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   53 ++++++++++++++--------
+ 1 file changed, 34 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 70a033c..5caa1bd 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2425,10 +2425,6 @@ static netdev_features_t i40evf_features_check(struct sk_buff *skb,
- 	return features & ~(NETIF_F_CSUM_MASK | NETIF_F_GSO_MASK);
- }
- 
--#define I40EVF_VLAN_FEATURES (NETIF_F_HW_VLAN_CTAG_TX |\
--			      NETIF_F_HW_VLAN_CTAG_RX |\
--			      NETIF_F_HW_VLAN_CTAG_FILTER)
--
- /**
-  * i40evf_fix_features - fix up the netdev feature bits
-  * @netdev: our net device
-@@ -2441,9 +2437,11 @@ static netdev_features_t i40evf_fix_features(struct net_device *netdev,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 18f5576..108db29 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -1918,8 +1918,6 @@ static u16 ixgbe_clean_test_rings(struct ixgbe_ring *rx_ring,
+ 				  unsigned int size)
  {
- 	struct i40evf_adapter *adapter = netdev_priv(netdev);
+ 	union ixgbe_adv_rx_desc *rx_desc;
+-	struct ixgbe_rx_buffer *rx_buffer;
+-	struct ixgbe_tx_buffer *tx_buffer;
+ 	u16 rx_ntc, tx_ntc, count = 0;
  
--	features &= ~I40EVF_VLAN_FEATURES;
--	if (adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_VLAN)
--		features |= I40EVF_VLAN_FEATURES;
-+	if (!(adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_VLAN))
-+		features &= ~(NETIF_F_HW_VLAN_CTAG_TX |
-+			      NETIF_F_HW_VLAN_CTAG_RX |
-+			      NETIF_F_HW_VLAN_CTAG_FILTER);
+ 	/* initialize next to clean and descriptor values */
+@@ -1927,7 +1925,38 @@ static u16 ixgbe_clean_test_rings(struct ixgbe_ring *rx_ring,
+ 	tx_ntc = tx_ring->next_to_clean;
+ 	rx_desc = IXGBE_RX_DESC(rx_ring, rx_ntc);
+ 
++	while (tx_ntc != tx_ring->next_to_use) {
++		union ixgbe_adv_tx_desc *tx_desc;
++		struct ixgbe_tx_buffer *tx_buffer;
 +
- 	return features;
- }
- 
-@@ -2574,9 +2572,17 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 	 */
- 	hw_features = hw_enc_features;
- 
-+	/* Enable VLAN features if supported */
-+	if (vfres->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_VLAN)
-+		hw_features |= (NETIF_F_HW_VLAN_CTAG_TX |
-+				NETIF_F_HW_VLAN_CTAG_RX);
++		tx_desc = IXGBE_TX_DESC(tx_ring, tx_ntc);
 +
- 	netdev->hw_features |= hw_features;
- 
--	netdev->features |= hw_features | I40EVF_VLAN_FEATURES;
-+	netdev->features |= hw_features;
++		/* if DD is not set transmit has not completed */
++		if (!(tx_desc->wb.status & cpu_to_le32(IXGBE_TXD_STAT_DD)))
++			return count;
 +
-+	if (vfres->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_VLAN)
-+		netdev->features |= NETIF_F_HW_VLAN_CTAG_FILTER;
++		/* unmap buffer on Tx side */
++		tx_buffer = &tx_ring->tx_buffer_info[tx_ntc];
++
++		/* Free all the Tx ring sk_buffs */
++		dev_kfree_skb_any(tx_buffer->skb);
++
++		/* unmap skb header data */
++		dma_unmap_single(tx_ring->dev,
++				 dma_unmap_addr(tx_buffer, dma),
++				 dma_unmap_len(tx_buffer, len),
++				 DMA_TO_DEVICE);
++		dma_unmap_len_set(tx_buffer, len, 0);
++
++		/* increment Tx next to clean counter */
++		tx_ntc++;
++		if (tx_ntc == tx_ring->count)
++			tx_ntc = 0;
++	}
++
+ 	while (rx_desc->wb.upper.length) {
++		struct ixgbe_rx_buffer *rx_buffer;
++
+ 		/* check Rx buffer */
+ 		rx_buffer = &rx_ring->rx_buffer_info[rx_ntc];
  
- 	adapter->vsi.id = adapter->vsi_res->vsi_id;
+@@ -1940,6 +1969,8 @@ static u16 ixgbe_clean_test_rings(struct ixgbe_ring *rx_ring,
+ 		/* verify contents of skb */
+ 		if (ixgbe_check_lbtest_frame(rx_buffer, size))
+ 			count++;
++		else
++			break;
  
--- 
-2.9.4
+ 		/* sync Rx buffer for device write */
+ 		dma_sync_single_for_device(rx_ring->dev,
+@@ -1947,26 +1978,10 @@ static u16 ixgbe_clean_test_rings(struct ixgbe_ring *rx_ring,
+ 					   ixgbe_rx_bufsz(rx_ring),
+ 					   DMA_FROM_DEVICE);
+ 
+-		/* unmap buffer on Tx side */
+-		tx_buffer = &tx_ring->tx_buffer_info[tx_ntc];
+-
+-		/* Free all the Tx ring sk_buffs */
+-		dev_kfree_skb_any(tx_buffer->skb);
+-
+-		/* unmap skb header data */
+-		dma_unmap_single(tx_ring->dev,
+-				 dma_unmap_addr(tx_buffer, dma),
+-				 dma_unmap_len(tx_buffer, len),
+-				 DMA_TO_DEVICE);
+-		dma_unmap_len_set(tx_buffer, len, 0);
+-
+-		/* increment Rx/Tx next to clean counters */
++		/* increment Rx next to clean counter */
+ 		rx_ntc++;
+ 		if (rx_ntc == rx_ring->count)
+ 			rx_ntc = 0;
+-		tx_ntc++;
+-		if (tx_ntc == tx_ring->count)
+-			tx_ntc = 0;
+ 
+ 		/* fetch next descriptor */
+ 		rx_desc = IXGBE_RX_DESC(rx_ring, rx_ntc);
 
