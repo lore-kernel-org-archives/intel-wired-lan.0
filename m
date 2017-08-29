@@ -1,136 +1,59 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 29 Aug 2017 05:32:31 -0400
-Subject: [Intel-wired-lan] [next PATCH S79-V2 02/13] i40e/i40evf: spread CPU
-	affinity hints across online CPUs only
+Date: Tue, 29 Aug 2017 05:32:33 -0400
+Subject: [Intel-wired-lan] [next PATCH S79-V2 04/13] i40e: redfine
+	I40E_PHY_TYPE_MAX
 In-Reply-To: <20170829093242.41026-1-alice.michael@intel.com>
 References: <20170829093242.41026-1-alice.michael@intel.com>
-Message-ID: <20170829093242.41026-2-alice.michael@intel.com>
+Message-ID: <20170829093242.41026-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Currently, when setting up the IRQ for a q_vector, we set an affinity
-hint based on the v_idx of that q_vector. Meaning a loop iterates on
-v_idx, which is an incremental value, and the cpumask is created based
-on this value.
+Since I40E_PHY_TYPE_MAX is used as an iterator, ususally combined with
+some sort of bit-shifting, it should only include actual PHY types and
+not error cases. Move it up in the enum declaration so that loops only
+iterate across valid PHY types.
 
-This is a problem in systems with multiple logical CPUs per core (like in
-SMT scenarios). If we disable some logical CPUs, by turning SMT off for
-example, we will end up with a sparse cpu_online_mask, i.e., only the first
-CPU in a core is online, and incremental filling in q_vector cpumask might
-lead to multiple offline CPUs being assigned to q_vectors.
-
-Example: if we have a system with 8 cores each one containing 8 logical
-CPUs (SMT == 8 in this case), we have 64 CPUs in total. But if SMT is
-disabled, only the 1st CPU in each core remains online, so the
-cpu_online_mask in this case would have only 8 bits set, in a sparse way.
-
-In general case, when SMT is off the cpu_online_mask has only C bits set:
-0, 1*N, 2*N, ..., C*(N-1)  where
-C == # of cores;
-N == # of logical CPUs per core.
-In our example, only bits 0, 8, 16, 24, 32, 40, 48, 56 would be set.
-
-Instead, we should only assign hints for CPUs which are online. Even
-better, the kernel already provides a function, cpumask_local_spread()
-which takes an index and returns a CPU, spreading the interrupts across
-local NUMA nodes first, and then remote ones if necessary.
-
-Since we generally have a 1:1 mapping between vectors and CPUs, there
-is no real advantage to spreading vectors to local CPUs first. In order
-to avoid mismatch of the default XPS hints, we'll pass -1 so that it
-spreads across all CPUs without regard to the node locality.
-
-Note that we don't need to change the q_vector->affinity_mask as this is
-initialized to cpu_possible_mask, until an actual affinity is set and
-then notified back to us.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 16 +++++++++++-----
- drivers/net/ethernet/intel/i40evf/i40evf_main.c |  9 ++++++---
- 2 files changed, 17 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 0083bf4..e54163b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2886,14 +2886,15 @@ static void i40e_vsi_free_rx_resources(struct i40e_vsi *vsi)
- static void i40e_config_xps_tx_ring(struct i40e_ring *ring)
- {
- 	struct i40e_vsi *vsi = ring->vsi;
-+	int cpu;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 4c85ea9..50c5a4c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -1771,9 +1771,9 @@ enum i40e_aq_phy_type {
+ 	I40E_PHY_TYPE_25GBASE_CR		= 0x20,
+ 	I40E_PHY_TYPE_25GBASE_SR		= 0x21,
+ 	I40E_PHY_TYPE_25GBASE_LR		= 0x22,
++	I40E_PHY_TYPE_MAX,
+ 	I40E_PHY_TYPE_EMPTY			= 0xFE,
+ 	I40E_PHY_TYPE_DEFAULT			= 0xFF,
+-	I40E_PHY_TYPE_MAX
+ };
  
- 	if (!ring->q_vector || !ring->netdev)
- 		return;
+ #define I40E_LINK_SPEED_100MB_SHIFT	0x1
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index ed5602f..dc6fc8b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -1767,9 +1767,9 @@ enum i40e_aq_phy_type {
+ 	I40E_PHY_TYPE_25GBASE_CR		= 0x20,
+ 	I40E_PHY_TYPE_25GBASE_SR		= 0x21,
+ 	I40E_PHY_TYPE_25GBASE_LR		= 0x22,
++	I40E_PHY_TYPE_MAX,
+ 	I40E_PHY_TYPE_EMPTY			= 0xFE,
+ 	I40E_PHY_TYPE_DEFAULT			= 0xFF,
+-	I40E_PHY_TYPE_MAX
+ };
  
- 	if ((vsi->tc_config.numtc <= 1) &&
- 	    !test_and_set_bit(__I40E_TX_XPS_INIT_DONE, &ring->state)) {
--		netif_set_xps_queue(ring->netdev,
--				    get_cpu_mask(ring->q_vector->v_idx),
-+		cpu = cpumask_local_spread(ring->q_vector->v_idx, -1);
-+		netif_set_xps_queue(ring->netdev, get_cpu_mask(cpu),
- 				    ring->queue_index);
- 	}
- 
-@@ -3483,6 +3484,7 @@ static int i40e_vsi_request_irq_msix(struct i40e_vsi *vsi, char *basename)
- 	int tx_int_idx = 0;
- 	int vector, err;
- 	int irq_num;
-+	int cpu;
- 
- 	for (vector = 0; vector < q_vectors; vector++) {
- 		struct i40e_q_vector *q_vector = vsi->q_vectors[vector];
-@@ -3518,10 +3520,14 @@ static int i40e_vsi_request_irq_msix(struct i40e_vsi *vsi, char *basename)
- 		q_vector->affinity_notify.notify = i40e_irq_affinity_notify;
- 		q_vector->affinity_notify.release = i40e_irq_affinity_release;
- 		irq_set_affinity_notifier(irq_num, &q_vector->affinity_notify);
--		/* get_cpu_mask returns a static constant mask with
--		 * a permanent lifetime so it's ok to use here.
-+		/* Spread affinity hints out across online CPUs.
-+		 *
-+		 * get_cpu_mask returns a static constant mask with
-+		 * a permanent lifetime so it's ok to pass to
-+		 * irq_set_affinity_hint without making a copy.
- 		 */
--		irq_set_affinity_hint(irq_num, get_cpu_mask(q_vector->v_idx));
-+		cpu = cpumask_local_spread(q_vector->v_idx, -1);
-+		irq_set_affinity_hint(irq_num, get_cpu_mask(cpu));
- 	}
- 
- 	vsi->irqs_ready = true;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 85e66db..e495856 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -515,6 +515,7 @@ i40evf_request_traffic_irqs(struct i40evf_adapter *adapter, char *basename)
- 	unsigned int vector, q_vectors;
- 	unsigned int rx_int_idx = 0, tx_int_idx = 0;
- 	int irq_num, err;
-+	int cpu;
- 
- 	i40evf_irq_disable(adapter);
- 	/* Decrement for Other and TCP Timer vectors */
-@@ -553,10 +554,12 @@ i40evf_request_traffic_irqs(struct i40evf_adapter *adapter, char *basename)
- 		q_vector->affinity_notify.release =
- 						   i40evf_irq_affinity_release;
- 		irq_set_affinity_notifier(irq_num, &q_vector->affinity_notify);
--		/* get_cpu_mask returns a static constant mask with
--		 * a permanent lifetime so it's ok to use here.
-+		/* Spread the IRQ affinity hints across online CPUs. Note that
-+		 * get_cpu_mask returns a mask with a permanent lifetime so
-+		 * it's safe to use as a hint for irq_set_affinity_hint.
- 		 */
--		irq_set_affinity_hint(irq_num, get_cpu_mask(q_vector->v_idx));
-+		cpu = cpumask_local_spread(q_vector->v_idx, -1);
-+		irq_set_affinity_hint(irq_num, get_cpu_mask(cpu));
- 	}
- 
- 	return 0;
+ #define I40E_LINK_SPEED_100MB_SHIFT	0x1
 -- 
 2.9.4
 
