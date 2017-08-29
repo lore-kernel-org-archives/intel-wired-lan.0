@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 29 Aug 2017 05:32:39 -0400
-Subject: [Intel-wired-lan] [next PATCH S79-V2 10/13] i40e: implement split
-	PCI error reset handler
+Date: Tue, 29 Aug 2017 05:32:32 -0400
+Subject: [Intel-wired-lan] [next PATCH S79-V2 03/13] i40e: re-enable PTP L4
+	capabilities for XL710 if FW >6.0
 In-Reply-To: <20170829093242.41026-1-alice.michael@intel.com>
 References: <20170829093242.41026-1-alice.michael@intel.com>
-Message-ID: <20170829093242.41026-10-alice.michael@intel.com>
+Message-ID: <20170829093242.41026-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,58 +13,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alan Brady <alan.brady@intel.com>
 
-This patch implements the PCI error handler reset_prepare and reset_done.
-This allows us to handle function level reset.  Without this patch we
-are unable to perform and recover from an FLR correctly and this will cause
-VFs to be unable to recover from an FLR on the PF.
+Starting with XL710 FW 5.3 PTP L4 was disabled for XL710 due to a bug.  The
+bug has since been resolved in XL710 FW >6.0 and PTP L4 can now be
+re-enabled on those devices with updated firmware.
 
 Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 2fdd130..eee2e53 100644
+index e54163b..e9fc34c 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -12047,6 +12047,28 @@ static pci_ers_result_t i40e_pci_error_slot_reset(struct pci_dev *pdev)
- }
+@@ -9075,6 +9075,11 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 	    (pf->hw.aq.fw_maj_ver >= 5)))
+ 		pf->hw_features |= I40E_HW_USE_SET_LLDP_MIB;
  
- /**
-+ * i40e_pci_error_reset_prepare - prepare device driver for pci reset
-+ * @pdev: PCI device information struct
-+ */
-+static void i40e_pci_error_reset_prepare(struct pci_dev *pdev)
-+{
-+	struct i40e_pf *pf = pci_get_drvdata(pdev);
++	/* Enable PTP L4 if FW > v6.0 */
++	if ((pf->hw.mac.type == I40E_MAC_XL710) &&
++	    (pf->hw.aq.fw_maj_ver >= 6))
++		pf->hw_features |= I40E_HW_PTP_L4_CAPABLE;
 +
-+	i40e_prep_for_reset(pf, false);
-+}
-+
-+/**
-+ * i40e_pci_error_reset_done - pci reset done, device driver reset can begin
-+ * @pdev: PCI device information struct
-+ */
-+static void i40e_pci_error_reset_done(struct pci_dev *pdev)
-+{
-+	struct i40e_pf *pf = pci_get_drvdata(pdev);
-+
-+	i40e_reset_and_rebuild(pf, false, false);
-+}
-+
-+/**
-  * i40e_pci_error_resume - restart operations after PCI error recovery
-  * @pdev: PCI device information struct
-  *
-@@ -12236,6 +12258,8 @@ static int i40e_resume(struct device *dev)
- static const struct pci_error_handlers i40e_err_handler = {
- 	.error_detected = i40e_pci_error_detected,
- 	.slot_reset = i40e_pci_error_slot_reset,
-+	.reset_prepare = i40e_pci_error_reset_prepare,
-+	.reset_done = i40e_pci_error_reset_done,
- 	.resume = i40e_pci_error_resume,
- };
- 
+ 	if (pf->hw.func_caps.vmdq) {
+ 		pf->num_vmdq_vsis = I40E_DEFAULT_NUM_VMDQ_VSI;
+ 		pf->flags |= I40E_FLAG_VMDQ_ENABLED;
 -- 
 2.9.4
 
