@@ -1,43 +1,52 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 29 Aug 2017 05:32:32 -0400
-Subject: [Intel-wired-lan] [next PATCH S79-V2 03/13] i40e: re-enable PTP L4
-	capabilities for XL710 if FW >6.0
+Date: Tue, 29 Aug 2017 05:32:40 -0400
+Subject: [Intel-wired-lan] [next PATCH S79-V2 11/13] i40e: do not enter PHY
+	debug mode while setting LEDs behaviour
 In-Reply-To: <20170829093242.41026-1-alice.michael@intel.com>
 References: <20170829093242.41026-1-alice.michael@intel.com>
-Message-ID: <20170829093242.41026-3-alice.michael@intel.com>
+Message-ID: <20170829093242.41026-11-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Mariusz Stachura <mariusz.stachura@intel.com>
 
-Starting with XL710 FW 5.3 PTP L4 was disabled for XL710 due to a bug.  The
-bug has since been resolved in XL710 FW >6.0 and PTP L4 can now be
-re-enabled on those devices with updated firmware.
+Previous implementation of LED set/get functions required to enter
+PHY debug mode, in order to prevent access to it from FW and SW at
+the same time. Reset of all ports was a unwanted side effect.
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index e54163b..e9fc34c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9075,6 +9075,11 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 	    (pf->hw.aq.fw_maj_ver >= 5)))
- 		pf->hw_features |= I40E_HW_USE_SET_LLDP_MIB;
- 
-+	/* Enable PTP L4 if FW > v6.0 */
-+	if ((pf->hw.mac.type == I40E_MAC_XL710) &&
-+	    (pf->hw.aq.fw_maj_ver >= 6))
-+		pf->hw_features |= I40E_HW_PTP_L4_CAPABLE;
-+
- 	if (pf->hw.func_caps.vmdq) {
- 		pf->num_vmdq_vsis = I40E_DEFAULT_NUM_VMDQ_VSI;
- 		pf->flags |= I40E_FLAG_VMDQ_ENABLED;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 5fab6c5..72da511 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2010,7 +2010,9 @@ static int i40e_set_phys_id(struct net_device *netdev,
+ 		if (!(pf->hw_features & I40E_HW_PHY_CONTROLS_LEDS)) {
+ 			pf->led_status = i40e_led_get(hw);
+ 		} else {
+-			i40e_aq_set_phy_debug(hw, I40E_PHY_DEBUG_ALL, NULL);
++			if (!(hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE))
++				i40e_aq_set_phy_debug(hw, I40E_PHY_DEBUG_ALL,
++						      NULL);
+ 			ret = i40e_led_get_phy(hw, &temp_status,
+ 					       &pf->phy_led_val);
+ 			pf->led_status = temp_status;
+@@ -2035,7 +2037,8 @@ static int i40e_set_phys_id(struct net_device *netdev,
+ 			ret = i40e_led_set_phy(hw, false, pf->led_status,
+ 					       (pf->phy_led_val |
+ 					       I40E_PHY_LED_MODE_ORIG));
+-			i40e_aq_set_phy_debug(hw, 0, NULL);
++			if (!(hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE))
++				i40e_aq_set_phy_debug(hw, 0, NULL);
+ 		}
+ 		break;
+ 	default:
 -- 
 2.9.4
 
