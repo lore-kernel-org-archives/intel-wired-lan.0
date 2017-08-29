@@ -1,39 +1,72 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 29 Aug 2017 15:11:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 1456/1532] ERROR:
- "ncsi_vlan_rx_kill_vid" [drivers/net/ethernet/faraday/ftgmac100.ko]
- undefined!
-Message-ID: <201708291530.5IwdGdNU%fengguang.wu@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Tue, 29 Aug 2017 10:19:09 +0300
+Subject: [Intel-wired-lan] [PATCH] e1000e: changed some expensive calls
+ of udelay to usleep_range
+In-Reply-To: <1503503985-3869-1-git-send-email-matthew.tan_1@nxp.com>
+References: <1503503985-3869-1-git-send-email-matthew.tan_1@nxp.com>
+Message-ID: <a2ff6002-3d8f-1094-c05e-696b1cd07256@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   7e65674d184b2ffda5f2dea1dd401bc990234aad
-commit: 51564585d8c6de28931ceff51f73eb800147221d [1456/1532] ftgmac100: Support NCSI VLAN filtering when available
-config: arm-allmodconfig (attached as .config)
-compiler: arm-linux-gnueabi-gcc (Debian 6.1.1-9) 6.1.1 20160705
-reproduce:
-        wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 51564585d8c6de28931ceff51f73eb800147221d
-        # save the attached .config to linux build tree
-        make.cross ARCH=arm 
+On 8/23/2017 18:59, Matthew Tan wrote:
+>      Calls to udelay are not preemtable by userspace so userspace
+>      applications experience a large (~200us) latency when running on core
+>      0. Instead usleep_range can be used to be more friendly to userspace
+>      since it is preemtable. This is due to udelay using busy-wait loops
+>      while usleep_rang uses hrtimers instead. It is recommended to use
+>      udelay when the delay is <10us since@that precision overhead of
+>      usleep_range hrtimer setup causes issues. However, the replaced calls
+>      are for 50us and 100us so this should not be not an issue.
+>
+> Signed-off-by: Matthew Tan <matthew.tan_1@nxp.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/phy.c | 8 ++++----
+>   1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+> index de13aea..e318fdc 100644
+> --- a/drivers/net/ethernet/intel/e1000e/phy.c
+> +++ b/drivers/net/ethernet/intel/e1000e/phy.c
+> @@ -158,7 +158,7 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+>   	 * the lower time out
+>   	 */
+>   	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
+> -		udelay(50);
+> +		usleep_range(40, 60);
+>   		mdic = er32(MDIC);
+>   		if (mdic & E1000_MDIC_READY)
+>   			break;
+> @@ -183,7 +183,7 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+>   	 * reading duplicate data in the next MDIC transaction.
+>   	 */
+>   	if (hw->mac.type == e1000_pch2lan)
+> -		udelay(100);
+> +		usleep_range(90, 100);
+>   
+>   	return 0;
+>   }
+> @@ -222,7 +222,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+>   	 * the lower time out
+>   	 */
+>   	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
+> -		udelay(50);
+> +		usleep_range(40, 60);
+>   		mdic = er32(MDIC);
+>   		if (mdic & E1000_MDIC_READY)
+>   			break;
+> @@ -246,7 +246,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+>   	 * reading duplicate data in the next MDIC transaction.
+>   	 */
+>   	if (hw->mac.type == e1000_pch2lan)
+> -		udelay(100);
+> +		usleep_range(90, 110);
+>   
+>   	return 0;
+>   }
 
-All errors (new ones prefixed by >>):
+Reasonable. Do you have any open bug or other reference describe this 
+problem?
 
->> ERROR: "ncsi_vlan_rx_kill_vid" [drivers/net/ethernet/faraday/ftgmac100.ko] undefined!
->> ERROR: "ncsi_vlan_rx_add_vid" [drivers/net/ethernet/faraday/ftgmac100.ko] undefined!
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 63444 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170829/af22fa7c/attachment-0001.bin>
