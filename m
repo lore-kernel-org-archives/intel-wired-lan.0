@@ -1,153 +1,108 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 29 Aug 2017 18:50:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 3cfc4a120a7258ba8bf3929071c3312168b6e10b
-Message-ID: <59a546df.Ns6WawYr3sH3Bks4%fengguang.wu@intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Tue, 29 Aug 2017 05:32:30 -0400
+Subject: [Intel-wired-lan] [next PATCH S79-V2 01/13] i40e: add private flag
+	to control source pruning
+Message-ID: <20170829093242.41026-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-3cfc4a120a7258ba8bf3929071c3312168b6e10b  ixgbe: add error checks when initializing the PHY
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-elapsed time: 214m
+By default, our devices do source pruning, that is, they drop receive
+packets that have the source MAC matching one of the receive filters.
+Unfortunately, this breaks ARP monitoring in channel bonding, as the
+bonding driver expects devices to receive ARPs containing their own
+source address.
 
-configs tested: 129
+Add an ethtool private flag to control this feature.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Also, remove the netif_running() check when we process our private
+flags. It's OK to reset when the device is closed and in most cases we
+need the reset the apply these changes.
 
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-i386                               tinyconfig
-i386                   randconfig-x019-201735
-i386                   randconfig-x013-201735
-i386                   randconfig-x012-201735
-i386                   randconfig-x016-201735
-i386                   randconfig-x018-201735
-i386                   randconfig-x010-201735
-i386                   randconfig-x011-201735
-i386                   randconfig-x015-201735
-i386                   randconfig-x014-201735
-i386                   randconfig-x017-201735
-i386                     randconfig-n0-201735
-x86_64                 randconfig-x001-201735
-x86_64                 randconfig-x007-201735
-x86_64                 randconfig-x000-201735
-x86_64                 randconfig-x006-201735
-x86_64                 randconfig-x003-201735
-x86_64                 randconfig-x009-201735
-x86_64                 randconfig-x004-201735
-x86_64                 randconfig-x008-201735
-x86_64                 randconfig-x005-201735
-x86_64                 randconfig-x002-201735
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-x86_64                 randconfig-x016-201735
-x86_64                 randconfig-x011-201735
-x86_64                 randconfig-x012-201735
-x86_64                 randconfig-x019-201735
-x86_64                 randconfig-x014-201735
-x86_64                 randconfig-x018-201735
-x86_64                 randconfig-x013-201735
-x86_64                 randconfig-x015-201735
-x86_64                 randconfig-x010-201735
-x86_64                 randconfig-x017-201735
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-a0-201735
-i386                     randconfig-a1-201735
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                   randconfig-s1-08281739
-i386                   randconfig-s0-08281739
-x86_64                           allmodconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                             allmodconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-x003-201735
-i386                   randconfig-x000-201735
-i386                   randconfig-x004-201735
-i386                   randconfig-x009-201735
-i386                   randconfig-x005-201735
-i386                   randconfig-x008-201735
-i386                   randconfig-x001-201735
-i386                   randconfig-x007-201735
-i386                   randconfig-x006-201735
-i386                   randconfig-x002-201735
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-i386                   randconfig-x076-201735
-i386                   randconfig-x075-201735
-i386                   randconfig-x071-201735
-i386                   randconfig-x070-201735
-i386                   randconfig-x074-201735
-i386                   randconfig-x079-201735
-i386                   randconfig-x072-201735
-i386                   randconfig-x073-201735
-i386                   randconfig-x078-201735
-i386                   randconfig-x077-201735
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e.h         |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  7 +++++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 25 +++++++++++++++++++++++++
+ 3 files changed, 31 insertions(+), 2 deletions(-)
 
-Thanks,
-Fengguang
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 890508f..1d1d51f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -453,6 +453,7 @@ struct i40e_pf {
+ #define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(25)
+ #define I40E_FLAG_CLIENT_RESET			BIT_ULL(26)
+ #define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT_ULL(27)
++#define I40E_FLAG_SOURCE_PRUNING_DISABLED       BIT_ULL(29)
+ 
+ 	struct i40e_client_instance *cinst;
+ 	bool stat_offsets_loaded;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 9c6c63a..5fab6c5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -227,6 +227,8 @@ static const struct i40e_priv_flags i40e_gstrings_priv_flags[] = {
+ 	I40E_PRIV_FLAG("veb-stats", I40E_FLAG_VEB_STATS_ENABLED, 0),
+ 	I40E_PRIV_FLAG("hw-atr-eviction", I40E_FLAG_HW_ATR_EVICT_ENABLED, 0),
+ 	I40E_PRIV_FLAG("legacy-rx", I40E_FLAG_LEGACY_RX, 0),
++	I40E_PRIV_FLAG("disable-source-pruning",
++		       I40E_FLAG_SOURCE_PRUNING_DISABLED, 0),
+ };
+ 
+ #define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gstrings_priv_flags)
+@@ -4189,8 +4191,9 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	/* Issue reset to cause things to take effect, as additional bits
+ 	 * are added we will need to create a mask of bits requiring reset
+ 	 */
+-	if ((changed_flags & I40E_FLAG_VEB_STATS_ENABLED) ||
+-	    ((changed_flags & I40E_FLAG_LEGACY_RX) && netif_running(dev)))
++	if (changed_flags & (I40E_FLAG_VEB_STATS_ENABLED |
++			     I40E_FLAG_LEGACY_RX |
++			     I40E_FLAG_SOURCE_PRUNING_DISABLED))
+ 		i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED), true);
+ 
+ 	return 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 32c1914..0083bf4 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -9904,6 +9904,31 @@ static int i40e_add_vsi(struct i40e_vsi *vsi)
+ 
+ 		enabled_tc = i40e_pf_get_tc_map(pf);
+ 
++		/* Source pruning is enabled by default, so the flag is
++		 * negative logic - if it's set, we need to fiddle with
++		 * the VSI to disable source pruning.
++		 */
++		if (pf->flags & I40E_FLAG_SOURCE_PRUNING_DISABLED) {
++			memset(&ctxt, 0, sizeof(ctxt));
++			ctxt.seid = pf->main_vsi_seid;
++			ctxt.pf_num = pf->hw.pf_id;
++			ctxt.vf_num = 0;
++			ctxt.info.valid_sections |=
++			     cpu_to_le16(I40E_AQ_VSI_PROP_SWITCH_VALID);
++			ctxt.info.switch_id =
++				   cpu_to_le16(I40E_AQ_VSI_SW_ID_FLAG_LOCAL_LB);
++			ret = i40e_aq_update_vsi_params(hw, &ctxt, NULL);
++			if (ret) {
++				dev_info(&pf->pdev->dev,
++					 "update vsi failed, err %s aq_err %s\n",
++					 i40e_stat_str(&pf->hw, ret),
++					 i40e_aq_str(&pf->hw,
++						    pf->hw.aq.asq_last_status));
++				ret = -ENOENT;
++				goto err;
++			}
++		}
++
+ 		/* MFP mode setup queue map and update VSI */
+ 		if ((pf->flags & I40E_FLAG_MFP_ENABLED) &&
+ 		    !(pf->hw.func_caps.iscsi)) { /* NIC type PF */
+-- 
+2.9.4
+
