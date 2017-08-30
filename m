@@ -1,222 +1,168 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 29 Aug 2017 14:33:45 -0700
-Subject: [Intel-wired-lan] [PATCH v2] i40e/i40evf: organize and re-number
-	feature flags
-Message-ID: <20170829213345.28510-1-jacob.e.keller@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 30 Aug 2017 09:18:43 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 183db481279437590f75a8a0479d512e5dd597de
+Message-ID: <59a61273.rVguW64VZ4hH2S7a%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Now that we've reduced the number of flags, organize similar flags
-together and re-number them accordingly.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+183db481279437590f75a8a0479d512e5dd597de  drivers: net: xgene: Correct probe sequence handling
 
-Since we don't yet have more than 32 flags, we'll use a u32 for both the
-hw_features and flag field. Should we gain more flags in the future, we
-may need to convert to a u64 or separate flags out into two fields.
+elapsed time: 123m
 
-One alternative approach considered, but not implemented here, was to
-use an enumeration for the flag variables, and create a macro
-I40E_FLAG() which used string concatenation to generate BIT_ULL values.
-This has the advantage of making the actual bit values compile-time
-dynamic so that we do not need to worry about matching the order to the
-bit value. However, this does produce a high level of code churn, and
-makes it more difficult to read a dumped flags value when debugging.
+configs tested: 144
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I8653fff69453cd547d6fe98d29dfa9d8710387d1
----
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-This patch replaces the same named patch in Jeff's queue and addresses
-Dave Miller's comments regarding use of a u64 instead of a u32. It may
-conflict with "[next PATCH S79-V2 01/13] i40e: add private flag to
-control source pruning", as that patch adds a new flag.
+i386                               tinyconfig
+i386                   randconfig-x019-201735
+i386                   randconfig-x013-201735
+i386                   randconfig-x012-201735
+i386                   randconfig-x016-201735
+i386                   randconfig-x018-201735
+i386                   randconfig-x010-201735
+i386                   randconfig-x011-201735
+i386                   randconfig-x015-201735
+i386                   randconfig-x014-201735
+i386                   randconfig-x017-201735
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201735
+x86_64                 randconfig-x001-201735
+x86_64                 randconfig-x007-201735
+x86_64                 randconfig-x000-201735
+x86_64                 randconfig-x006-201735
+x86_64                 randconfig-x003-201735
+x86_64                 randconfig-x009-201735
+x86_64                 randconfig-x004-201735
+x86_64                 randconfig-x008-201735
+x86_64                 randconfig-x005-201735
+x86_64                 randconfig-x002-201735
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x016-201735
+x86_64                 randconfig-x011-201735
+x86_64                 randconfig-x012-201735
+x86_64                 randconfig-x019-201735
+x86_64                 randconfig-x014-201735
+x86_64                 randconfig-x018-201735
+x86_64                 randconfig-x013-201735
+x86_64                 randconfig-x015-201735
+x86_64                 randconfig-x010-201735
+x86_64                 randconfig-x017-201735
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201735
+i386                     randconfig-a1-201735
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s1-201735
+i386                     randconfig-s0-201735
+x86_64                 randconfig-i0-08290221
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+x86_64                                    lkp
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x003-201735
+i386                   randconfig-x000-201735
+i386                   randconfig-x004-201735
+i386                   randconfig-x009-201735
+i386                   randconfig-x005-201735
+i386                   randconfig-x008-201735
+i386                   randconfig-x001-201735
+i386                   randconfig-x007-201735
+i386                   randconfig-x006-201735
+i386                   randconfig-x002-201735
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x076-201735
+i386                   randconfig-x075-201735
+i386                   randconfig-x071-201735
+i386                   randconfig-x070-201735
+i386                   randconfig-x074-201735
+i386                   randconfig-x079-201735
+i386                   randconfig-x072-201735
+i386                   randconfig-x073-201735
+i386                   randconfig-x078-201735
+i386                   randconfig-x077-201735
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
 
- drivers/net/ethernet/intel/i40e/i40e.h         | 97 +++++++++++++-------------
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  6 +-
- drivers/net/ethernet/intel/i40evf/i40evf.h     | 30 ++++----
- 3 files changed, 67 insertions(+), 66 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index d0c1bf5441d8..d12a5b887f3a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -401,55 +401,56 @@ struct i40e_pf {
- 	struct timer_list service_timer;
- 	struct work_struct service_task;
- 
--	u64 hw_features;
--#define I40E_HW_RSS_AQ_CAPABLE			BIT_ULL(0)
--#define I40E_HW_128_QP_RSS_CAPABLE		BIT_ULL(1)
--#define I40E_HW_ATR_EVICT_CAPABLE		BIT_ULL(2)
--#define I40E_HW_WB_ON_ITR_CAPABLE		BIT_ULL(3)
--#define I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE	BIT_ULL(4)
--#define I40E_HW_NO_PCI_LINK_CHECK		BIT_ULL(5)
--#define I40E_HW_100M_SGMII_CAPABLE		BIT_ULL(6)
--#define I40E_HW_NO_DCB_SUPPORT			BIT_ULL(7)
--#define I40E_HW_USE_SET_LLDP_MIB		BIT_ULL(8)
--#define I40E_HW_GENEVE_OFFLOAD_CAPABLE		BIT_ULL(9)
--#define I40E_HW_PTP_L4_CAPABLE			BIT_ULL(10)
--#define I40E_HW_WOL_MC_MAGIC_PKT_WAKE		BIT_ULL(11)
--#define I40E_HW_MPLS_HDR_OFFLOAD_CAPABLE	BIT_ULL(12)
--#define I40E_HW_HAVE_CRT_RETIMER		BIT_ULL(13)
--#define I40E_HW_OUTER_UDP_CSUM_CAPABLE		BIT_ULL(14)
--#define I40E_HW_PHY_CONTROLS_LEDS		BIT_ULL(15)
--#define I40E_HW_STOP_FW_LLDP			BIT_ULL(16)
--#define I40E_HW_PORT_ID_VALID			BIT_ULL(17)
--#define I40E_HW_RESTART_AUTONEG			BIT_ULL(18)
-+	u32 hw_features;
-+#define I40E_HW_RSS_AQ_CAPABLE			BIT(0)
-+#define I40E_HW_128_QP_RSS_CAPABLE		BIT(1)
-+#define I40E_HW_ATR_EVICT_CAPABLE		BIT(2)
-+#define I40E_HW_WB_ON_ITR_CAPABLE		BIT(3)
-+#define I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE	BIT(4)
-+#define I40E_HW_NO_PCI_LINK_CHECK		BIT(5)
-+#define I40E_HW_100M_SGMII_CAPABLE		BIT(6)
-+#define I40E_HW_NO_DCB_SUPPORT			BIT(7)
-+#define I40E_HW_USE_SET_LLDP_MIB		BIT(8)
-+#define I40E_HW_GENEVE_OFFLOAD_CAPABLE		BIT(9)
-+#define I40E_HW_PTP_L4_CAPABLE			BIT(10)
-+#define I40E_HW_WOL_MC_MAGIC_PKT_WAKE		BIT(11)
-+#define I40E_HW_MPLS_HDR_OFFLOAD_CAPABLE	BIT(12)
-+#define I40E_HW_HAVE_CRT_RETIMER		BIT(13)
-+#define I40E_HW_OUTER_UDP_CSUM_CAPABLE		BIT(14)
-+#define I40E_HW_PHY_CONTROLS_LEDS		BIT(15)
-+#define I40E_HW_STOP_FW_LLDP			BIT(16)
-+#define I40E_HW_PORT_ID_VALID			BIT(17)
-+#define I40E_HW_RESTART_AUTONEG			BIT(18)
- 
--	u64 flags;
--#define I40E_FLAG_RX_CSUM_ENABLED		BIT_ULL(1)
--#define I40E_FLAG_MSI_ENABLED			BIT_ULL(2)
--#define I40E_FLAG_MSIX_ENABLED			BIT_ULL(3)
--#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(4)
--#define I40E_FLAG_RSS_ENABLED			BIT_ULL(6)
--#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(7)
--#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(10)
--#define I40E_FLAG_FILTER_SYNC			BIT_ULL(15)
--#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(16)
--#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(19)
--#define I40E_FLAG_DCB_ENABLED			BIT_ULL(20)
--#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(21)
--#define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
--#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(23)
--#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(24)
--#define I40E_FLAG_PTP				BIT_ULL(25)
--#define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
--#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(27)
--#define I40E_FLAG_DCB_CAPABLE			BIT_ULL(29)
--#define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(37)
--#define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(39)
--#define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(40)
--#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(51)
--#define I40E_FLAG_CLIENT_RESET			BIT_ULL(54)
--#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(55)
--#define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(56)
--#define I40E_FLAG_LEGACY_RX			BIT_ULL(58)
-+	u32 flags;
-+#define I40E_FLAG_RX_CSUM_ENABLED		BIT(0)
-+#define I40E_FLAG_MSI_ENABLED			BIT(1)
-+#define I40E_FLAG_MSIX_ENABLED			BIT(2)
-+#define I40E_FLAG_RSS_ENABLED			BIT(3)
-+#define I40E_FLAG_VMDQ_ENABLED			BIT(4)
-+#define I40E_FLAG_FILTER_SYNC			BIT(5)
-+#define I40E_FLAG_SRIOV_ENABLED			BIT(6)
-+#define I40E_FLAG_DCB_CAPABLE			BIT(7)
-+#define I40E_FLAG_DCB_ENABLED			BIT(8)
-+#define I40E_FLAG_FD_SB_ENABLED			BIT(9)
-+#define I40E_FLAG_FD_ATR_ENABLED		BIT(10)
-+#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT(11)
-+#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT(12)
-+#define I40E_FLAG_MFP_ENABLED			BIT(13)
-+#define I40E_FLAG_UDP_FILTER_SYNC		BIT(14)
-+#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT(15)
-+#define I40E_FLAG_VEB_MODE_ENABLED		BIT(16)
-+#define I40E_FLAG_VEB_STATS_ENABLED		BIT(17)
-+#define I40E_FLAG_LINK_POLLING_ENABLED		BIT(18)
-+#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT(19)
-+#define I40E_FLAG_TEMP_LINK_POLLING		BIT(20)
-+#define I40E_FLAG_LEGACY_RX			BIT(21)
-+#define I40E_FLAG_PTP				BIT(22)
-+#define I40E_FLAG_IWARP_ENABLED			BIT(23)
-+#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT(24)
-+#define I40E_FLAG_CLIENT_L2_CHANGE		BIT(25)
-+#define I40E_FLAG_CLIENT_RESET			BIT(26)
-+#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT(27)
- 
- 	struct i40e_client_instance *cinst;
- 	bool stat_offsets_loaded;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 05e89864f781..d64fa6934181 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -4090,7 +4090,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
--	u64 orig_flags, new_flags, changed_flags;
-+	u32 orig_flags, new_flags, changed_flags;
- 	u32 i, j;
- 
- 	orig_flags = READ_ONCE(pf->flags);
-@@ -4142,12 +4142,12 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 		return -EOPNOTSUPP;
- 
- 	/* Compare and exchange the new flags into place. If we failed, that
--	 * is if cmpxchg64 returns anything but the old value, this means that
-+	 * is if cmpxchg returns anything but the old value, this means that
- 	 * something else has modified the flags variable since we copied it
- 	 * originally. We'll just punt with an error and log something in the
- 	 * message buffer.
- 	 */
--	if (cmpxchg64(&pf->flags, orig_flags, new_flags) != orig_flags) {
-+	if (cmpxchg(&pf->flags, orig_flags, new_flags) != orig_flags) {
- 		dev_warn(&pf->pdev->dev,
- 			 "Unable to update pf->flags as it was modified by another thread...\n");
- 		return -EAGAIN;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index 82f69031e5cd..a1af9b1c3d15 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -220,21 +220,21 @@ struct i40evf_adapter {
- 
- 	u32 flags;
- #define I40EVF_FLAG_RX_CSUM_ENABLED		BIT(0)
--#define I40EVF_FLAG_IMIR_ENABLED		BIT(5)
--#define I40EVF_FLAG_MQ_CAPABLE			BIT(6)
--#define I40EVF_FLAG_PF_COMMS_FAILED		BIT(8)
--#define I40EVF_FLAG_RESET_PENDING		BIT(9)
--#define I40EVF_FLAG_RESET_NEEDED		BIT(10)
--#define I40EVF_FLAG_WB_ON_ITR_CAPABLE		BIT(11)
--#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE	BIT(12)
--#define I40EVF_FLAG_ADDR_SET_BY_PF		BIT(13)
--#define I40EVF_FLAG_SERVICE_CLIENT_REQUESTED	BIT(14)
--#define I40EVF_FLAG_CLIENT_NEEDS_OPEN		BIT(15)
--#define I40EVF_FLAG_CLIENT_NEEDS_CLOSE		BIT(16)
--#define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(17)
--#define I40EVF_FLAG_PROMISC_ON			BIT(18)
--#define I40EVF_FLAG_ALLMULTI_ON			BIT(19)
--#define I40EVF_FLAG_LEGACY_RX			BIT(20)
-+#define I40EVF_FLAG_IMIR_ENABLED		BIT(1)
-+#define I40EVF_FLAG_MQ_CAPABLE			BIT(2)
-+#define I40EVF_FLAG_PF_COMMS_FAILED		BIT(3)
-+#define I40EVF_FLAG_RESET_PENDING		BIT(4)
-+#define I40EVF_FLAG_RESET_NEEDED		BIT(5)
-+#define I40EVF_FLAG_WB_ON_ITR_CAPABLE		BIT(6)
-+#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE	BIT(7)
-+#define I40EVF_FLAG_ADDR_SET_BY_PF		BIT(8)
-+#define I40EVF_FLAG_SERVICE_CLIENT_REQUESTED	BIT(9)
-+#define I40EVF_FLAG_CLIENT_NEEDS_OPEN		BIT(10)
-+#define I40EVF_FLAG_CLIENT_NEEDS_CLOSE		BIT(11)
-+#define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(12)
-+#define I40EVF_FLAG_PROMISC_ON			BIT(13)
-+#define I40EVF_FLAG_ALLMULTI_ON			BIT(14)
-+#define I40EVF_FLAG_LEGACY_RX			BIT(15)
- /* duplicates for common code */
- #define I40E_FLAG_DCB_ENABLED			0
- #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
--- 
-2.14.1.436.g33e61a4f0239
-
+Thanks,
+Fengguang
