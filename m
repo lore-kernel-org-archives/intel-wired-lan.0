@@ -1,47 +1,58 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 1 Sep 2017 18:39:43 +0000
-Subject: [Intel-wired-lan] [next PATCH S79-V2 12/13] i40evf: enable
- support	for VF VLAN tag stripping control
-In-Reply-To: <20170829093242.41026-12-alice.michael@intel.com>
-References: <20170829093242.41026-1-alice.michael@intel.com>
- <20170829093242.41026-12-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EA96A5@ORSMSX104.amr.corp.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Fri, 1 Sep 2017 19:19:39 +0000
+Subject: [Intel-wired-lan] [PATCH 0/2] i40e: fix firmware update
+In-Reply-To: <20170901140234.7840-1-sassmann@kpanic.de>
+References: <20170901140234.7840-1-sassmann@kpanic.de>
+Message-ID: <02874ECE860811409154E81DA85FBB5882A98333@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Tuesday, August 29, 2017 2:33 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S79-V2 12/13] i40evf: enable support
-> for VF VLAN tag stripping control
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> A recent commit 809481484e5d ("i40e/i40evf: support for VF VLAN tag
-> stripping control") added support for VFs to negotiate the control of VLAN
-> tag stripping. This should have allowed VFs to disable the feature.
-> Unfortunately, the flag was set only in netdev->feature flags and not in
-> netdev->hw_features.
-> 
-> This ultimately causes the stack to assume that it cannot change the flag, so it
-> was unchangeable and marked as [fixed] in the ethtool -k output.
-> 
-> Fix this by setting the feature in hw_features first, just as we do for the PF
-> code. This enables ethtool -K to disable the feature correctly, and fully
-> enables user control of the VLAN tag stripping feature.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 22 ++++++++++++++-----
-> ---
->  1 file changed, 14 insertions(+), 8 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+> -----Original Message-----
+> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org]
+> On Behalf Of Stefan Assmann
+> Sent: Friday, September 01, 2017 7:03 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; davem at davemloft.net; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; sassmann at kpanic.de
+> Subject: [PATCH 0/2] i40e: fix firmware update
+> 
+> The first patch fixes the firmware update which is currently broken and
+> results in a bad flash (corrupt firmware). Recovery is possible with a
+> fixed driver.
+> The second patch reverts a commit that causes the firmware checksum
+> verification to fail right after a successful flash. This is related to
+> a recent workqueue change. Haven't gotten to the bottom of this yet, but
+> for the sake of a smooth firmware update experience let's revert the
+> commit for now.
+
+Hi Stefan,
+
+Thanks for these patches, I apologize for the time it took for us to respond to this. 
+
+The first patch is functionally correct, and I'm surprised we missed sending an equivalent ourselves. It looks like some related changes occurred around this code, and we failed to submit the patch.
+
+I think Jeff would prefer if we send the version based directly on the out-of-tree code, which I will be reviving and submitting shortly.
+
+The second issue I believe is not fixed correctly by the patch, I'm unsure why exactly changing the WQ would cause this but I believe that a similar patch which creates a non-locked version of i40e_nvm_read_buffer() will resolve this, and I will be sending that patch as well, which I believe is the real fix versus halting the work queue.
+
+Thanks,
+Jake
+
+> 
+> Stefan Assmann (2):
+>   i40e: use non-locking i40e_read_nvm_word() function during nvmupdate
+>   Revert "i40e: remove WQ_UNBOUND and the task limit of our workqueue"
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++-------
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c  | 24 ++++++++++++++++++++++--
+>  2 files changed, 27 insertions(+), 9 deletions(-)
+> 
+> --
+> 2.13.5
 
 
