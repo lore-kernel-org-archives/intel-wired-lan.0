@@ -1,240 +1,160 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Thu, 31 Aug 2017 18:26:20 -0700
-Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based config
-	interfaces for traffic shapers
-Message-ID: <20170901012625.14838-1-vinicius.gomes@intel.com>
+Date: Thu, 31 Aug 2017 18:26:25 -0700
+Subject: [Intel-wired-lan] [RFC net-next 5/5] samples/tsn: Add script for
+	calculating CBS config
+In-Reply-To: <20170901012625.14838-1-vinicius.gomes@intel.com>
+References: <20170901012625.14838-1-vinicius.gomes@intel.com>
+Message-ID: <20170901012625.14838-6-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+From: Andre Guedes <andre.guedes@intel.com>
 
-This patchset is an RFC on a proposal of how the Traffic Control subsystem can
-be used to offload the configuration of traffic shapers into network devices
-that provide support for them in HW. Our goal here is to start upstreaming
-support for features related to the Time-Sensitive Networking (TSN) set of
-standards into the kernel.
+Add a script that takes as input the parameters of the Credit-based
+shaper used on FQTSS - link rate, max frame size of best effort
+traffic, idleslope and maximum frame size of the time-sensitive
+traffic class - for SR classes A and B, and calculates how the CBS
+qdisc must be configured for each traffic class.
 
-As part of this work, we've assessed previous public discussions related to TSN
-enabling: patches from Henrik Austad (Cisco), the presentation from Eric Mann
-at Linux Plumbers 2012, patches from Gangfeng Huang (National Instruments) and
-the current state of the OpenAVNU project (https://github.com/AVnu/OpenAvnu/).
+For example, if you want to have Class A with a bandwidth of 300 Mbps
+and Class B of 200 Mbps, and the max frame size of both classes'
+traffic is 1500 bytes:
 
-Please note that the patches provided as part of this RFC are implementing what
-is needed only for 802.1Qav (FQTSS) only, but we'd like to take advantage of
-this discussion and share our WIP ideas for the 802.1Qbv and 802.1Qbu interfaces
-as well. The current patches are only providing support for HW offload of the
-configs.
+$ ./calculate_cbs_params.py -A 300000 -a 1500 -B 200000 -b 1500
 
+would give you the correct cbs qdisc config command lines to be used.
 
-Overview
-========
+This script is just a helper to ease testing of the TSN samples -
+talker and listener - and shouldn't be taken as highly accurate.
 
-Time-sensitive Networking (TSN) is a set of standards that aim to address
-resources availability for providing bandwidth reservation and bounded latency
-on Ethernet based LANs. The proposal described here aims to cover mainly what is
-needed to enable the following standards: 802.1Qat, 802.1Qav, 802.1Qbv and
-802.1Qbu.
-
-The initial target of this work is the Intel i210 NIC, but other controllers'
-datasheet were also taken into account, like the Renesas RZ/A1H RZ/A1M group and
-the Synopsis DesignWare Ethernet QoS controller.
-
-
-Proposal
-========
-
-Feature-wise, what is covered here are configuration interfaces for HW
-implementations of the Credit-Based shaper (CBS, 802.1Qav), Time-Aware shaper
-(802.1Qbv) and Frame Preemption (802.1Qbu). CBS is a per-queue shaper, while
-Qbv and Qbu must be configured per port, with the configuration covering all
-queues. Given that these features are related to traffic shaping, and that the
-traffic control subsystem already provides a queueing discipline that offloads
-config into the device driver (i.e. mqprio), designing new qdiscs for the
-specific purpose of offloading the config for each shaper seemed like a good
-fit.
-
-For steering traffic into the correct queues, we use the socket option
-SO_PRIORITY and then a mechanism to map priority to traffic classes / Tx queues.
-The qdisc mqprio is currently used in our tests.
-
-As for the shapers config interface:
-
- * CBS (802.1Qav)
-
-   This patchset is proposing a new qdisc called 'cbs'. Its 'tc' cmd line is:
-   $ tc qdisc add dev IFACE parent ID cbs locredit N hicredit M sendslope S \
-     idleslope I
-
-   Note that the parameters for this qdisc are the ones defined by the
-   802.1Q-2014 spec, so no hardware specific functionality is exposed here.
-
-
- * Time-aware shaper (802.1Qbv):
-
-   The idea we are currently exploring is to add a "time-aware", priority based
-   qdisc, that also exposes the Tx queues available and provides a mechanism for
-   mapping priority <-> traffic class <-> Tx queues in a similar fashion as
-   mqprio. We are calling this qdisc 'taprio', and its 'tc' cmd line would be:
-
-   $ $ tc qdisc add dev ens4 parent root handle 100 taprio num_tc 4    \
-     	   map 2 2 1 0 3 3 3 3 3 3 3 3 3 3 3 3                         \
-	   queues 0 1 2 3                                              \
-     	   sched-file gates.sched [base-time <interval>]               \
-           [cycle-time <interval>] [extension-time <interval>]
-
-   <file> is multi-line, with each line being of the following format:
-   <cmd> <gate mask> <interval in nanoseconds>
-
-   Qbv only defines one <cmd>: "S" for 'SetGates'
-
-   For example:
-
-   S 0x01 300
-   S 0x03 500
-
-   This means that there are two intervals, the first will have the gate
-   for traffic class 0 open for 300 nanoseconds, the second will have
-   both traffic classes open for 500 nanoseconds.
-
-   Additionally, an option to set just one entry of the gate control list will
-   also be provided by 'taprio':
-
-   $ tc qdisc (...) \
-        sched-row <row number> <cmd> <gate mask> <interval>  \
-        [base-time <interval>] [cycle-time <interval>] \
-        [extension-time <interval>]
-
-
- * Frame Preemption (802.1Qbu):
-
-   To control even further the latency, it may prove useful to signal which
-   traffic classes are marked as preemptable. For that, 'taprio' provides the
-   preemption command so you set each traffic class as preemptable or not:
-
-   $ tc qdisc (...) \
-        preemption 0 1 1 1
-
-
- * Time-aware shaper + Preemption:
-
-   As an example of how Qbv and Qbu can be used together, we may specify
-   both the schedule and the preempt-mask, and this way we may also
-   specify the Set-Gates-and-Hold and Set-Gates-and-Release commands as
-   specified in the Qbu spec:
-
-   $ tc qdisc add dev ens4 parent root handle 100 taprio num_tc 4 \
-     	   map 2 2 1 0 3 3 3 3 3 3 3 3 3 3 3 3                    \
-	   queues 0 1 2 3                                         \
-     	   preemption 0 1 1 1                                     \
-	   sched-file preempt_gates.sched
-
-    <file> is multi-line, with each line being of the following format:
-    <cmd> <gate mask> <interval in nanoseconds>
-
-    For this case, two new commands are introduced:
-
-    "H" for 'set gates and hold'
-    "R" for 'set gates and release'
-
-    H 0x01 300
-    R 0x03 500
-
-
-
-Testing this RFC
-================
-
-For testing the patches of this RFC only, you can refer to the samples and
-helper script being added to samples/tsn/ and the use the 'mqprio' qdisc to
-setup the priorities to Tx queues mapping, together with the 'cbs' qdisc to
-configure the HW shaper of the i210 controller:
-
-1) Setup priorities to traffic classes to hardware queues mapping
-$ tc qdisc replace dev enp3s0 parent root mqprio num_tc 3 \
-     map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 queues 1 at 0 1 at 1 2 at 2 hw 0
-
-2) Check scheme. You want to get the inner qdiscs ID from the bottom up
-$ tc -g  class show dev enp3s0
-
-Ex.:
-+---(802a:3) mqprio
-|    +---(802a:6) mqprio
-|    +---(802a:7) mqprio
-|
-+---(802a:2) mqprio
-|    +---(802a:5) mqprio
-|
-+---(802a:1) mqprio
-     +---(802a:4) mqprio
-
- * Here '802a:4' is Tx Queue #0 and '802a:5' is Tx Queue #1.
-
-3) Calculate CBS parameters for classes A and B. i.e. BW for A is 20Mbps and
-   for B is 10Mbps:
-$ ./samples/tsn/calculate_cbs_params.py -A 20000 -a 1500 -B 10000 -b 1500
-
-4) Configure CBS for traffic class A (priority 3) as provided by the script:
-$ tc qdisc replace dev enp3s0 parent 802a:4 cbs locredit -1470 \
-     hicredit 30 sendslope -980000 idleslope 20000
-
-5) Configure CBS for traffic class B (priority 2):
-$ tc qdisc replace dev enp3s0 parent 802a:5 cbs \
-     locredit -1485 hicredit 31 sendslope -990000 idleslope 10000
-
-6) Run Listener, compiled from samples/tsn/listener.c
-$ ./listener -i enp3s0
-
-7) Run Talker for class A (prio 3 here), compiled from samples/tsn/talker.c
-$ ./talker -i enp3s0 -p 3
-
- * The bandwidth displayed on the listener output at this stage should be very
-   close to the one configured for class A.
-
-8) You can also run a Talker for class B (prio 2 here)
-$ ./talker -i enp3s0 -p 2
-
- * The bandwidth displayed on the listener output now should increase to very
-   close to the one configured for class A + class B.
-
-Authors
-=======
- - Andre Guedes <andre.guedes@intel.com>
- - Ivan Briano <ivan.briano@intel.com>
- - Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
- - Vinicius Gomes <vinicius.gomes@intel.com>
-
-
-Andre Guedes (2):
-  igb: Add support for CBS offload
-  samples/tsn: Add script for calculating CBS config
-
-Jesus Sanchez-Palencia (1):
-  sample: Add TSN Talker and Listener examples
-
-Vinicius Costa Gomes (2):
-  net/sched: Introduce the user API for the CBS shaper
-  net/sched: Introduce Credit Based Shaper (CBS) qdisc
-
- drivers/net/ethernet/intel/igb/e1000_defines.h |  23 ++
- drivers/net/ethernet/intel/igb/e1000_regs.h    |   8 +
- drivers/net/ethernet/intel/igb/igb.h           |   6 +
- drivers/net/ethernet/intel/igb/igb_main.c      | 349 +++++++++++++++++++++++++
- include/linux/netdevice.h                      |   1 +
- include/uapi/linux/pkt_sched.h                 |  29 ++
- net/sched/Kconfig                              |  11 +
- net/sched/Makefile                             |   1 +
- net/sched/sch_cbs.c                            | 286 ++++++++++++++++++++
- samples/tsn/calculate_cbs_params.py            | 112 ++++++++
- samples/tsn/listener.c                         | 254 ++++++++++++++++++
- samples/tsn/talker.c                           | 136 ++++++++++
- 12 files changed, 1216 insertions(+)
- create mode 100644 net/sched/sch_cbs.c
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+---
+ samples/tsn/calculate_cbs_params.py | 112 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 112 insertions(+)
  create mode 100755 samples/tsn/calculate_cbs_params.py
- create mode 100644 samples/tsn/listener.c
- create mode 100644 samples/tsn/talker.c
 
---
+diff --git a/samples/tsn/calculate_cbs_params.py b/samples/tsn/calculate_cbs_params.py
+new file mode 100755
+index 000000000000..9c46210b699f
+--- /dev/null
++++ b/samples/tsn/calculate_cbs_params.py
+@@ -0,0 +1,112 @@
++#!/usr/bin/env python3
++#
++# Copyright (c) 2017, Intel Corporation
++#
++# Redistribution and use in source and binary forms, with or without
++# modification, are permitted provided that the following conditions are met:
++#
++#     * Redistributions of source code must retain the above copyright notice,
++#       this list of conditions and the following disclaimer.
++#     * Redistributions in binary form must reproduce the above copyright
++#       notice, this list of conditions and the following disclaimer in the
++#       documentation and/or other materials provided with the distribution.
++#     * Neither the name of Intel Corporation nor the names of its contributors
++#       may be used to endorse or promote products derived from this software
++#       without specific prior written permission.
++#
++# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
++# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
++# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
++# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
++# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++import argparse
++import math
++import sys
++
++def print_cbs_params_for_class_a(args):
++    idleslope = args.idleslope_a
++    sendslope = idleslope - args.link_speed
++
++    # According to 802.1Q-2014 spec, Annex L, hiCredit and
++    # loCredit for SR class A are calculated following the
++    # equations L-10 and L-12, respectively.
++    hicredit = math.ceil(idleslope * args.frame_non_sr / args.link_speed)
++    locredit = math.ceil(sendslope * args.frame_a / args.link_speed)
++
++    print("Class A --> # tc qdisc replace dev IFACE parent ID cbs " \
++          "locredit %d hicredit %d sendslope %d idleslope %d" % \
++          (locredit, hicredit, sendslope, idleslope))
++
++def print_cbs_params_for_class_b(args):
++    idleslope = args.idleslope_b
++    sendslope = idleslope - args.link_speed
++
++    # Annex L doesn't present a straightforward equation to
++    # calculate hiCredit for Class B so we have to derive it
++    # based on generic equations presented in that Annex.
++    #
++    # L-3 is the primary equation to calculate hiCredit. Section
++    # L.2 states that the 'maxInterferenceSize' for SR class B
++    # is the maximum burst size for SR class A plus the
++    # maxInterferenceSize from SR class A (which is equal to the
++    # maximum frame from non-SR traffic).
++    #
++    # The maximum burst size for SR class A equation is shown in
++    # L-16. Merging L-16 into L-3 we get the resulting equation
++    # which calculates hiCredit B (refer to section L.3 in case
++    # you're not familiar with the legend):
++    #
++    # hiCredit B = Rb * (     Mo         Ma   )
++    #                     ---------- + ------
++    #                      Ro - Ra       Ro
++    #
++    hicredit = math.ceil(idleslope * \
++               ((args.frame_non_sr / (args.link_speed - args.idleslope_a)) + \
++               (args.frame_a / args.link_speed)))
++
++    # loCredit B is calculated following equation L-2.
++    locredit = math.ceil(sendslope * args.frame_b / args.link_speed)
++
++    print("Class B --> # tc qdisc replace dev IFACE parent ID cbs " \
++          "locredit %d hicredit %d sendslope %d idleslope %d" % \
++          (locredit, hicredit, sendslope, idleslope))
++
++def main():
++    parser = argparse.ArgumentParser()
++
++    parser.add_argument('-S', dest='link_speed', default=1000000.0, type=float,
++                        help='Link speed in kbps (default=1000000)')
++    parser.add_argument('-s', dest='frame_non_sr', default=1500.0, type=float,
++                        help='Maximum frame size from non-SR traffic (MTU size'
++                        ' usually, default=1500)')
++    parser.add_argument('-A', dest='idleslope_a', default=0, type=float,
++                        help='Idleslope for SR class A in kbps')
++    parser.add_argument('-a', dest='frame_a', default=0, type=float,
++                        help='Maximum frame size for SR class A traffic')
++    parser.add_argument('-B', dest='idleslope_b', default=0, type=float,
++                        help='Idleslope for SR class B in kbps')
++    parser.add_argument('-b', dest='frame_b', default=0, type=float,
++                        help='Maximum frame size for SR class B traffic')
++
++    args = parser.parse_args()
++
++    if not len(sys.argv) > 1:
++        parser.print_help()
++    else:
++        print("\nConfiguration lines to be used are:")
++
++    if args.idleslope_a > 0:
++        print_cbs_params_for_class_a(args)
++
++    if args.idleslope_b > 0:
++        print_cbs_params_for_class_b(args)
++
++
++if __name__ == "__main__":
++    main()
+-- 
 2.14.1
+
