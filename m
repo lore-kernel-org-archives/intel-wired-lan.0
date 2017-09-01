@@ -1,46 +1,57 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Fri, 1 Sep 2017 15:03:11 +0200
-Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
- config interfaces for traffic shapers
-In-Reply-To: <20170901012625.14838-1-vinicius.gomes@intel.com>
-References: <20170901012625.14838-1-vinicius.gomes@intel.com>
-Message-ID: <20170901130311.v5nyx6e6gfats5dg@localhost>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Fri,  1 Sep 2017 16:02:34 +0200
+Subject: [Intel-wired-lan] [PATCH 2/2] Revert "i40e: remove WQ_UNBOUND and
+	the task limit of our workqueue"
+In-Reply-To: <20170901140234.7840-1-sassmann@kpanic.de>
+References: <20170901140234.7840-1-sassmann@kpanic.de>
+Message-ID: <20170901140234.7840-3-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+This reverts commit 4d5957cbdecdbb77d24c1465caadd801c07afa4a.
 
-I happy to see this posted.  At first glance, it seems like a step in
-the right direction.
+Due to this workqueue change the eeprom check right after flashing
+firmware fails, although the flash itself completed successfully.
+The error observed looks like this
+i40e 0000:88:00.0: eeprom check failed (-62), Tx/Rx traffic disabled
+The NIC is fully operational after the flash and even after a cold boot
+any follow-up eeprom checks succeed.
 
-On Thu, Aug 31, 2017 at 06:26:20PM -0700, Vinicius Costa Gomes wrote:
->  * Time-aware shaper (802.1Qbv):
-...
->    S 0x01 300
->    S 0x03 500
-> 
->    This means that there are two intervals, the first will have the gate
->    for traffic class 0 open for 300 nanoseconds, the second will have
->    both traffic classes open for 500 nanoseconds.
+This needs to be investigated, but for now it should be more important
+to make sure the firmware update works as expected.
 
-The i210 doesn't support this in HW, or does it?
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
->  * Frame Preemption (802.1Qbu):
-> 
->    To control even further the latency, it may prove useful to signal which
->    traffic classes are marked as preemptable. For that, 'taprio' provides the
->    preemption command so you set each traffic class as preemptable or not:
-> 
->    $ tc qdisc (...) \
->         preemption 0 1 1 1
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 6498da8806cb..069b6683e1b0 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -12160,14 +12160,12 @@ static int __init i40e_init_module(void)
+ 		i40e_driver_string, i40e_driver_version_str);
+ 	pr_info("%s: %s\n", i40e_driver_name, i40e_copyright);
+ 
+-	/* There is no need to throttle the number of active tasks because
+-	 * each device limits its own task using a state bit for scheduling
+-	 * the service task, and the device tasks do not interfere with each
+-	 * other, so we don't set a max task limit. We must set WQ_MEM_RECLAIM
+-	 * since we need to be able to guarantee forward progress even under
+-	 * memory pressure.
++	/* we will see if single thread per module is enough for now,
++	 * it can't be any worse than using the system workqueue which
++	 * was already single threaded
+ 	 */
+-	i40e_wq = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0, i40e_driver_name);
++	i40e_wq = alloc_workqueue("%s", WQ_UNBOUND | WQ_MEM_RECLAIM, 1,
++				  i40e_driver_name);
+ 	if (!i40e_wq) {
+ 		pr_err("%s: Failed to create workqueue\n", i40e_driver_name);
+ 		return -ENOMEM;
+-- 
+2.13.5
 
-Neither can the i210 preempt frames, or what am I missing?
-
-The timing of this RFC is good, as I am just finishing up an RFC that
-implements time-based transmit using the i210.  I'll try and get that
-out ASAP.
-
-Thanks,
-Richard
