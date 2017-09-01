@@ -1,526 +1,457 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Thu, 31 Aug 2017 18:26:23 -0700
-Subject: [Intel-wired-lan] [RFC net-next 3/5] igb: Add support for CBS
-	offload
+Date: Thu, 31 Aug 2017 18:26:24 -0700
+Subject: [Intel-wired-lan] [RFC net-next 4/5] sample: Add TSN Talker and
+	Listener examples
 In-Reply-To: <20170901012625.14838-1-vinicius.gomes@intel.com>
 References: <20170901012625.14838-1-vinicius.gomes@intel.com>
-Message-ID: <20170901012625.14838-4-vinicius.gomes@intel.com>
+Message-ID: <20170901012625.14838-5-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Andre Guedes <andre.guedes@intel.com>
+From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 
-This patch adds support for Credit-Based Shaper (CBS) qdisc offload
-from Traffic Control system. This support enable us to leverage the
-Forwarding and Queuing for Time-Sensitive Streams (FQTSS) features
-from Intel i210 Ethernet Controller. FQTSS is the former 802.1Qav
-standard which was merged into 802.1Q in 2014. It enables traffic
-prioritization and bandwidth reservation via the Credit-Based Shaper
-which is implemented in hardware by i210 controller.
+Add two examples so one can easily test a 'TSN distributed system'
+running with standard kernel interfaces. Both 'talker' and 'listener'
+sides are provided, and use a AF_PACKET for Tx / Rx of frames.
 
-The patch introduces the igb_setup_tc() function which implements the
-support for CBS qdisc hardware offload in the IGB driver. CBS offload
-is the only traffic control offload supported by the driver at the
-moment.
+Running the examples is rather simple.
+For the talker, just the interface and SO_PRIORITY are expected as
+parameters:
 
-FQTSS transmission mode from i210 controller is automatically enabled
-by the IGB driver when the CBS is enabled for the first hardware
-queue. Likewise, FQTSS mode is automatically disabled when CBS is
-disabled for the last hardware queue. Changing FQTSS mode requires NIC
-reset.
+$ ./talker -i enp3s0 -p 3
 
-FQTSS feature is supported by i210 controller only.
+For the listener, only the interface is needed:
 
-Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+$ ./listener -i enp3s0
+
+The multicast MAC address being used is currently hardcoded on both
+examples for simplicity.
+
+Note that the listener side uses a BPF filter so only frames sent to
+the correct "stream" destination address are received by the socket.
+If you modify the address used by the talker, you must also adapt
+the BPF filter otherwise no frames will be received by the socket.
+
+The listener example will print the rate of packets reception after
+every 1 second. This makes it easier to verify if the bandwidth
+configured for a traffic class is being respected or not.
+
 Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+Signed-off-by: Iv?n Briano <ivan.briano@intel.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_defines.h |  23 ++
- drivers/net/ethernet/intel/igb/e1000_regs.h    |   8 +
- drivers/net/ethernet/intel/igb/igb.h           |   6 +
- drivers/net/ethernet/intel/igb/igb_main.c      | 349 +++++++++++++++++++++++++
- 4 files changed, 386 insertions(+)
+ samples/tsn/listener.c | 254 +++++++++++++++++++++++++++++++++++++++++++++++++
+ samples/tsn/talker.c   | 136 ++++++++++++++++++++++++++
+ 2 files changed, 390 insertions(+)
+ create mode 100644 samples/tsn/listener.c
+ create mode 100644 samples/tsn/talker.c
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index 1de82f247312..83cabff1e0ab 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -353,7 +353,18 @@
- #define E1000_RXPBS_CFG_TS_EN           0x80000000
- 
- #define I210_RXPBSIZE_DEFAULT		0x000000A2 /* RXPBSIZE default */
-+#define I210_RXPBSIZE_MASK		0x0000003F
-+#define I210_RXPBSIZE_PB_32KB		0x00000020
- #define I210_TXPBSIZE_DEFAULT		0x04000014 /* TXPBSIZE default */
-+#define I210_TXPBSIZE_MASK		0xC0FFFFFF
-+#define I210_TXPBSIZE_PB0_8KB		(8 << 0)
-+#define I210_TXPBSIZE_PB1_8KB		(8 << 6)
-+#define I210_TXPBSIZE_PB2_4KB		(4 << 12)
-+#define I210_TXPBSIZE_PB3_4KB		(4 << 18)
-+
-+#define I210_DTXMXPKTSZ_DEFAULT		0x00000098
-+
-+#define I210_SR_QUEUES_NUM		2
- 
- /* SerDes Control */
- #define E1000_SCTL_DISABLE_SERDES_LOOPBACK 0x0400
-@@ -1051,4 +1062,16 @@
- #define E1000_VLAPQF_P_VALID(_n)	(0x1 << (3 + (_n) * 4))
- #define E1000_VLAPQF_QUEUE_MASK	0x03
- 
-+/* TX Qav Control fields */
-+#define E1000_TQAVCTRL_XMIT_MODE	BIT(0)
-+#define E1000_TQAVCTRL_DATAFETCHARB	BIT(4)
-+#define E1000_TQAVCTRL_DATATRANARB	BIT(8)
-+
-+/* TX Qav Credit Control fields */
-+#define E1000_TQAVCC_IDLESLOPE_MASK	0xFFFF
-+#define E1000_TQAVCC_QUEUEMODE		BIT(31)
-+
-+/* Transmit Descriptor Control fields */
-+#define E1000_TXDCTL_PRIORITY		BIT(27)
-+
- #endif
-diff --git a/drivers/net/ethernet/intel/igb/e1000_regs.h b/drivers/net/ethernet/intel/igb/e1000_regs.h
-index 58adbf234e07..8eee081d395f 100644
---- a/drivers/net/ethernet/intel/igb/e1000_regs.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_regs.h
-@@ -421,6 +421,14 @@ do { \
- 
- #define E1000_I210_FLA		0x1201C
- 
-+#define E1000_I210_DTXMXPKTSZ	0x355C
-+
-+#define E1000_I210_TXDCTL(_n)	(0x0E028 + ((_n) * 0x40))
-+
-+#define E1000_I210_TQAVCTRL	0x3570
-+#define E1000_I210_TQAVCC(_n)	(0x3004 + ((_n) * 0x40))
-+#define E1000_I210_TQAVHC(_n)	(0x300C + ((_n) * 0x40))
-+
- #define E1000_INVM_DATA_REG(_n)	(0x12120 + 4*(_n))
- #define E1000_INVM_SIZE		64 /* Number of INVM Data Registers */
- 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 06ffb2bc713e..92845692087a 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -281,6 +281,11 @@ struct igb_ring {
- 	u16 count;			/* number of desc. in the ring */
- 	u8 queue_index;			/* logical index of the ring*/
- 	u8 reg_idx;			/* physical index of the ring */
-+	bool cbs_enable;		/* indicates if CBS is enabled */
-+	s32 idleslope;			/* idleSlope in kbps */
-+	s32 sendslope;			/* sendSlope in kbps */
-+	s32 hicredit;			/* hiCredit in bytes */
-+	s32 locredit;			/* loCredit in bytes */
- 
- 	/* everything past this point are written often */
- 	u16 next_to_clean;
-@@ -621,6 +626,7 @@ struct igb_adapter {
- #define IGB_FLAG_EEE			BIT(14)
- #define IGB_FLAG_VLAN_PROMISC		BIT(15)
- #define IGB_FLAG_RX_LEGACY		BIT(16)
-+#define IGB_FLAG_FQTSS			BIT(17)
- 
- /* Media Auto Sense */
- #define IGB_MAS_ENABLE_0		0X0001
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index fd4a46b03cc8..47cabca0c99a 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -62,6 +62,17 @@
- #define BUILD 0
- #define DRV_VERSION __stringify(MAJ) "." __stringify(MIN) "." \
- __stringify(BUILD) "-k"
-+
-+enum queue_mode {
-+	QUEUE_MODE_STRICT_PRIORITY,
-+	QUEUE_MODE_STREAM_RESERVATION,
-+};
-+
-+enum tx_queue_prio {
-+	TX_QUEUE_PRIO_HIGH,
-+	TX_QUEUE_PRIO_LOW,
-+};
-+
- char igb_driver_name[] = "igb";
- char igb_driver_version[] = DRV_VERSION;
- static const char igb_driver_string[] =
-@@ -1271,6 +1282,12 @@ static int igb_alloc_q_vector(struct igb_adapter *adapter,
- 		ring->count = adapter->tx_ring_count;
- 		ring->queue_index = txr_idx;
- 
-+		ring->cbs_enable = false;
-+		ring->idleslope = 0;
-+		ring->sendslope = 0;
-+		ring->hicredit = 0;
-+		ring->locredit = 0;
-+
- 		u64_stats_init(&ring->tx_syncp);
- 		u64_stats_init(&ring->tx_syncp2);
- 
-@@ -1598,6 +1615,292 @@ static void igb_get_hw_control(struct igb_adapter *adapter)
- 			ctrl_ext | E1000_CTRL_EXT_DRV_LOAD);
- }
- 
-+static void enable_fqtss(struct igb_adapter *adapter, bool enable)
-+{
-+	struct net_device *netdev = adapter->netdev;
-+
-+	if (enable)
-+		adapter->flags |= IGB_FLAG_FQTSS;
-+	else
-+		adapter->flags &= ~IGB_FLAG_FQTSS;
-+
-+	if (netif_running(netdev))
-+		schedule_work(&adapter->reset_task);
-+	else
-+		igb_reset(adapter);
-+}
-+
-+static bool is_fqtss_enabled(struct igb_adapter *adapter)
-+{
-+	return (adapter->flags & IGB_FLAG_FQTSS) ? true : false;
-+}
-+
-+static int set_tx_desc_fetch_prio(struct e1000_hw *hw, int queue,
-+				  enum tx_queue_prio prio)
-+{
-+	u32 val;
-+
-+	WARN_ON(hw->mac.type != e1000_i210);
-+
-+	if (queue < 0 || queue > 4)
-+		return -EINVAL;
-+
-+	val = rd32(E1000_I210_TXDCTL(queue));
-+
-+	if (prio == TX_QUEUE_PRIO_HIGH)
-+		val |= E1000_TXDCTL_PRIORITY;
-+	else
-+		val &= ~E1000_TXDCTL_PRIORITY;
-+
-+	wr32(E1000_I210_TXDCTL(queue), val);
-+	return 0;
-+}
-+
-+static int set_queue_mode(struct e1000_hw *hw, int queue, enum queue_mode mode)
-+{
-+	u32 val;
-+
-+	WARN_ON(hw->mac.type != e1000_i210);
-+
-+	/* Stream reservation is only supported for queue 0 and 1. */
-+	if (queue < 0 || queue > 1)
-+		return -EINVAL;
-+
-+	val = rd32(E1000_I210_TQAVCC(queue));
-+
-+	if (mode == QUEUE_MODE_STREAM_RESERVATION)
-+		val |= E1000_TQAVCC_QUEUEMODE;
-+	else
-+		val &= ~E1000_TQAVCC_QUEUEMODE;
-+
-+	wr32(E1000_I210_TQAVCC(queue), val);
-+	return 0;
-+}
-+
-+/**
-+ *  igb_configure_cbs - Configure Credit-Based Shaper (CBS)
-+ *  @adapter: pointer to adapter struct
-+ *  @queue: queue number
-+ *  @enable: true = enable CBS, false = disable CBS
-+ *  @idleslope: idleSlope in kbps
-+ *  @sendslope: sendSlope in kbps
-+ *  @hicredit: hiCredit in bytes
-+ *  @locredit: loCredit in bytes
+diff --git a/samples/tsn/listener.c b/samples/tsn/listener.c
+new file mode 100644
+index 000000000000..2d17bdfbea99
+--- /dev/null
++++ b/samples/tsn/listener.c
+@@ -0,0 +1,254 @@
++/*
++ * Copyright (c) 2017, Intel Corporation
 + *
-+ *  Configure CBS for a given hardware queue. When disabling, idleslope,
-+ *  sendslope, hicredit, locredit arguments are ignored. Returns 0 if
-+ *  success. Negative otherwise.
-+ **/
-+static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
-+			      bool enable, int idleslope, int sendslope,
-+			      int hicredit, int locredit)
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *
++ *     * Redistributions of source code must retain the above copyright notice,
++ *       this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Intel Corporation nor the names of its contributors
++ *       may be used to endorse or promote products derived from this software
++ *       without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
++ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
++ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
++ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
++ * OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include <alloca.h>
++#include <argp.h>
++#include <arpa/inet.h>
++#include <inttypes.h>
++#include <linux/filter.h>
++#include <linux/if.h>
++#include <linux/if_ether.h>
++#include <linux/if_packet.h>
++#include <poll.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/timerfd.h>
++#include <unistd.h>
++
++#define MAX_FRAME_SIZE 1500
++
++/* XXX: If this address is changed, the BPF filter must be adjusted. */
++static uint8_t multicast_macaddr[] = { 0xBB, 0xAA, 0xBB, 0xAA, 0xBB, 0xAA };
++static char ifname[IFNAMSIZ];
++static uint64_t data_count;
++static int arg_count;
++
++/*
++ * BPF Filter so we only receive frames from the destination MAC address of our
++ * SRP stream. This is hardcoded in multicast_macaddr[].
++ */
++static struct sock_filter dst_addr_filter[] = {
++	{ 0x20,  0,  0, 0000000000 }, /* Load DST address: first 32bits only */
++	{ 0x15,  0,  3, 0xbbaabbaa }, /* Compare with first 32bits from MAC */
++	{ 0x28,  0,  0, 0x00000004 }, /* Load DST address: remaining 16bits */
++	{ 0x15,  0,  1, 0x0000bbaa }, /* Compare with last 16bits from MAC */
++	{ 0x06,  0,  0, 0xffffffff },
++	{ 0x06,  0,  0, 0000000000 }, /* Ret 0. Jump here if any mismatches. */
++};
++
++/* BPF program */
++static struct sock_fprog bpf = {
++	.len = 6, /* Number of instructions on BPF filter */
++	.filter = dst_addr_filter,
++};
++
++static struct argp_option options[] = {
++	{"ifname", 'i', "IFNAME", 0, "Network Interface" },
++	{ 0 }
++};
++
++static error_t parser(int key, char *arg, struct argp_state *s)
 +{
-+	struct net_device *netdev = adapter->netdev;
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 tqavcc;
-+	u16 value;
-+
-+	WARN_ON(hw->mac.type != e1000_i210);
-+	WARN_ON(queue < 0 || queue > 1);
-+	WARN_ON(adapter->num_tx_queues < 2);
-+
-+	if (enable) {
-+		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_HIGH);
-+		set_queue_mode(hw, queue, QUEUE_MODE_STREAM_RESERVATION);
-+
-+		/* According to i210 datasheet section 7.2.7.7, we should set
-+		 * the 'idleSlope' field from TQAVCC register following the
-+		 * equation:
-+		 *
-+		 * For 100 Mbps link speed:
-+		 *
-+		 *     value = BW * 0x7735 * 0.2                          (E1)
-+		 *
-+		 * For 1000Mbps link speed:
-+		 *
-+		 *     value = BW * 0x7735 * 2                            (E2)
-+		 *
-+		 * E1 and E2 can be merged into one equation as shown below.
-+		 * Note that 'link-speed' is in Mbps.
-+		 *
-+		 *     value = BW * 0x7735 * 2 * link-speed
-+		 *                           --------------               (E3)
-+		 *                                1000
-+		 *
-+		 * 'BW' is the percentage bandwidth out of full link speed
-+		 * which can be found with the following equation. Note that
-+		 * idleSlope here is the parameter from this function which
-+		 * is in kbps.
-+		 *
-+		 *     BW =     idleSlope
-+		 *          -----------------                             (E4)
-+		 *          link-speed * 1000
-+		 *
-+		 * That said, we can come up with a generic equation to
-+		 * calculate the value we should set it TQAVCC register by
-+		 * replacing 'BW' in E3 by E4. The resulting equation is:
-+		 *
-+		 * value =     idleSlope     * 0x7735 * 2 * link-speed
-+		 *         -----------------            --------------    (E5)
-+		 *         link-speed * 1000                 1000
-+		 *
-+		 * 'link-speed' is present in both sides of the fraction so
-+		 * it is canceled out. The final equation is the following:
-+		 *
-+		 *     value = idleSlope * 61034
-+		 *             -----------------                          (E6)
-+		 *                  1000000
-+		 */
-+		value = DIV_ROUND_UP_ULL(idleslope * 61034ULL, 1000000);
-+
-+		tqavcc = rd32(E1000_I210_TQAVCC(queue));
-+		tqavcc &= ~E1000_TQAVCC_IDLESLOPE_MASK;
-+		tqavcc |= value;
-+		wr32(E1000_I210_TQAVCC(queue), tqavcc);
-+
-+		wr32(E1000_I210_TQAVHC(queue), 0x80000000 + hicredit * 0x7735);
-+	} else {
-+		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_LOW);
-+		set_queue_mode(hw, queue, QUEUE_MODE_STRICT_PRIORITY);
-+
-+		/* Set idleSlope to zero. */
-+		tqavcc = rd32(E1000_I210_TQAVCC(queue));
-+		tqavcc &= ~E1000_TQAVCC_IDLESLOPE_MASK;
-+		wr32(E1000_I210_TQAVCC(queue), tqavcc);
-+
-+		/* Set hiCredit to zero. */
-+		wr32(E1000_I210_TQAVHC(queue), 0);
-+	}
-+
-+	/* XXX: In i210 controller the sendSlope and loCredit
-+	 * parameters from CBS are not configurable by software so we
-+	 * don't do any 'controller configuration' in respect to these
-+	 * parameters.
-+	 */
-+
-+	netdev_dbg(netdev, "CBS %s: queue %d idleslope %d sendslope %d "
-+		   "hiCredit %d locredit %d\n",
-+		   (enable) ? "enabled" : "disabled", queue,
-+		   idleslope, sendslope, hicredit, locredit);
-+}
-+
-+static void igb_save_cbs_params(struct igb_adapter *adapter, int queue,
-+				bool enable, int idleslope, int sendslope,
-+				int hicredit, int locredit)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct igb_ring *ring;
-+
-+	WARN_ON(hw->mac.type != e1000_i210);
-+	WARN_ON(queue < 0 || queue > 1);
-+	WARN_ON(adapter->num_tx_queues < 2);
-+
-+	ring = adapter->tx_ring[queue];
-+
-+	ring->cbs_enable = enable;
-+	ring->idleslope = idleslope;
-+	ring->sendslope = sendslope;
-+	ring->hicredit = hicredit;
-+	ring->locredit = locredit;
-+}
-+
-+static bool is_any_cbs_enabled(struct igb_adapter *adapter)
-+{
-+	struct igb_ring *ring;
-+	int i;
-+
-+	WARN_ON(adapter->num_tx_queues < 2);
-+
-+	for (i = 0; i < I210_SR_QUEUES_NUM; i++) {
-+		ring = adapter->tx_ring[i];
-+
-+		if (ring->cbs_enable)
-+			return true;
-+	}
-+
-+	return false;
-+}
-+
-+static void igb_setup_tx_mode(struct igb_adapter *adapter)
-+{
-+	struct net_device *netdev = adapter->netdev;
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 val;
-+	int i;
-+
-+	/* Only i210 controller supports changing the transmission mode. */
-+	if (hw->mac.type != e1000_i210)
-+		return;
-+
-+	if (is_fqtss_enabled(adapter)) {
-+		/* Configure TQAVCTRL register: set transmit mode to 'Qav',
-+		 * set data fetch arbitration to 'round robin' and set data
-+		 * transfer arbitration to 'credit shaper algorithm.
-+		 */
-+		val = rd32(E1000_I210_TQAVCTRL);
-+		val |= E1000_TQAVCTRL_XMIT_MODE | E1000_TQAVCTRL_DATATRANARB;
-+		val &= ~E1000_TQAVCTRL_DATAFETCHARB;
-+		wr32(E1000_I210_TQAVCTRL, val);
-+
-+		/* Configure Tx and Rx packet buffers sizes as described in
-+		 * i210 datasheet section 7.2.7.7.
-+		 */
-+		val = rd32(E1000_TXPBS);
-+		val &= ~I210_TXPBSIZE_MASK;
-+		val |= I210_TXPBSIZE_PB0_8KB | I210_TXPBSIZE_PB1_8KB |
-+			I210_TXPBSIZE_PB2_4KB | I210_TXPBSIZE_PB3_4KB;
-+		wr32(E1000_TXPBS, val);
-+
-+		val = rd32(E1000_RXPBS);
-+		val &= ~I210_RXPBSIZE_MASK;
-+		val |= I210_RXPBSIZE_PB_32KB;
-+		wr32(E1000_RXPBS, val);
-+
-+		/* Section 8.12.9 states that MAX_TPKT_SIZE from DTXMXPKTSZ
-+		 * register should not exceed the buffer size programmed in
-+		 * TXPBS. The smallest buffer size programmed in TXPBS is 4kB
-+		 * so according to the datasheet we should set MAX_TPKT_SIZE to
-+		 * 4kB / 64.
-+		 *
-+		 * However, when we do so, no frame from queue 2 and 3 are
-+		 * transmitted.  It seems the MAX_TPKT_SIZE should not be great
-+		 * or _equal_ to the buffer size programmed in TXPBS. For this
-+		 * reason, we set set MAX_ TPKT_SIZE to (4kB - 1) / 64.
-+		 */
-+		val = (4096 - 1) / 64;
-+		wr32(E1000_I210_DTXMXPKTSZ, val);
-+
-+		/* Since FQTSS mode is enabled, apply any CBS configuration
-+		 * previously set. If no previous CBS configuration has been
-+		 * done, then the initial configuration is applied, which means
-+		 * CBS is disabled. CBS configuration is only supported by SR
-+		 * queues i.e. queue 0 and queue 1.
-+		 */
-+		for (i = 0; i < I210_SR_QUEUES_NUM; i++) {
-+			struct igb_ring *ring = adapter->tx_ring[i];
-+
-+			igb_configure_cbs(adapter, i, ring->cbs_enable,
-+					  ring->idleslope, ring->sendslope,
-+					  ring->hicredit, ring->locredit);
-+		}
-+	} else {
-+		wr32(E1000_RXPBS, I210_RXPBSIZE_DEFAULT);
-+		wr32(E1000_TXPBS, I210_TXPBSIZE_DEFAULT);
-+		wr32(E1000_I210_DTXMXPKTSZ, I210_DTXMXPKTSZ_DEFAULT);
-+
-+		val = rd32(E1000_I210_TQAVCTRL);
-+		/* According to Section 8.12.21, the other flags we've set when
-+		 * enabling FQTSS are not relevant when disabling FQTSS so we
-+		 * don't set they here.
-+		 */
-+		val &= ~E1000_TQAVCTRL_XMIT_MODE;
-+		wr32(E1000_I210_TQAVCTRL, val);
-+	}
-+
-+	netdev_dbg(netdev, "FQTSS %s\n", (is_fqtss_enabled(adapter)) ?
-+		   "enabled" : "disabled");
-+}
-+
- /**
-  *  igb_configure - configure the hardware for RX and TX
-  *  @adapter: private board structure
-@@ -1609,6 +1912,7 @@ static void igb_configure(struct igb_adapter *adapter)
- 
- 	igb_get_hw_control(adapter);
- 	igb_set_rx_mode(netdev);
-+	igb_setup_tx_mode(adapter);
- 
- 	igb_restore_vlan(adapter);
- 
-@@ -2150,6 +2454,50 @@ igb_features_check(struct sk_buff *skb, struct net_device *dev,
- 	return features;
- }
- 
-+static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
-+			void *type_data)
-+{
-+	struct igb_adapter *adapter = netdev_priv(dev);
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct tc_cbs_qopt_offload *cbs;
-+
-+	if (hw->mac.type != e1000_i210)
-+		return -ENOTSUPP;
-+
-+	if (type != TC_SETUP_CBS)
-+		return -ENOTSUPP;
-+
-+	/* In order to support FQTSS feature, we must have at least 2 Tx
-+	 * queues enabled.
-+	 */
-+	if (adapter->num_tx_queues < 2)
-+		return -ENOTSUPP;
-+
-+	cbs = type_data;
-+
-+	/* Only queues 0 and 1 support CBS configuration. */
-+	if (cbs->queue < 0 || cbs->queue > 1)
-+		return -EINVAL;
-+
-+	igb_save_cbs_params(adapter, cbs->queue, cbs->enable,
-+			    cbs->idleslope, cbs->sendslope,
-+			    cbs->hicredit, cbs->locredit);
-+
-+	if (is_fqtss_enabled(adapter)) {
-+		igb_configure_cbs(adapter, cbs->queue, cbs->enable,
-+				  cbs->idleslope, cbs->sendslope,
-+				  cbs->hicredit, cbs->locredit);
-+
-+		if (!is_any_cbs_enabled(adapter))
-+			enable_fqtss(adapter, false);
-+
-+	} else {
-+		enable_fqtss(adapter, true);
++	switch (key) {
++	case 'i':
++		strncpy(ifname, arg, sizeof(ifname) - 1);
++		arg_count++;
++		break;
++	case ARGP_KEY_END:
++		if (arg_count < 1)
++			argp_failure(s, 1, 0, "Options missing. Check --help");
++		break;
 +	}
 +
 +	return 0;
 +}
 +
- static const struct net_device_ops igb_netdev_ops = {
- 	.ndo_open		= igb_open,
- 	.ndo_stop		= igb_close,
-@@ -2175,6 +2523,7 @@ static const struct net_device_ops igb_netdev_ops = {
- 	.ndo_set_features	= igb_set_features,
- 	.ndo_fdb_add		= igb_ndo_fdb_add,
- 	.ndo_features_check	= igb_features_check,
-+	.ndo_setup_tc		= igb_setup_tc,
- };
- 
- /**
++static struct argp argp = { options, parser };
++
++static int setup_1s_timer(void)
++{
++	struct itimerspec tspec = { 0 };
++	int fd, res;
++
++	fd = timerfd_create(CLOCK_MONOTONIC, 0);
++	if (fd < 0) {
++		perror("Couldn't create timer");
++		return -1;
++	}
++
++	tspec.it_value.tv_sec = 1;
++	tspec.it_interval.tv_sec = 1;
++
++	res = timerfd_settime(fd, 0, &tspec, NULL);
++	if (res < 0) {
++		perror("Couldn't set timer");
++		close(fd);
++		return -1;
++	}
++
++	return fd;
++}
++
++static int setup_socket(void)
++{
++	struct sockaddr_ll sk_addr = {
++		.sll_family = AF_PACKET,
++		.sll_protocol = htons(ETH_P_TSN),
++	};
++	struct packet_mreq mreq;
++	struct ifreq req;
++	int fd, res;
++
++	fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_TSN));
++	if (fd < 0) {
++		perror("Couldn't open socket");
++		return -1;
++	}
++
++	res = setsockopt(fd, SOL_SOCKET, SO_ATTACH_FILTER, &bpf, sizeof(bpf));
++	if (res < 0) {
++		perror("Couldn't attach bpf filter");
++		goto err;
++	}
++
++	strncpy(req.ifr_name, ifname, sizeof(req.ifr_name));
++	res = ioctl(fd, SIOCGIFINDEX, &req);
++	if (res < 0) {
++		perror("Couldn't get interface index");
++		goto err;
++	}
++
++	sk_addr.sll_ifindex = req.ifr_ifindex;
++	res = bind(fd, (struct sockaddr *) &sk_addr, sizeof(sk_addr));
++	if (res < 0) {
++		perror("Couldn't bind() to interface");
++		goto err;
++	}
++
++	/* Use PACKET_ADD_MEMBERSHIP to add a binding to the Multicast Addr */
++	mreq.mr_ifindex = sk_addr.sll_ifindex;
++	mreq.mr_type = PACKET_MR_MULTICAST;
++	mreq.mr_alen = ETH_ALEN;
++	memcpy(&mreq.mr_address, multicast_macaddr, ETH_ALEN);
++
++	res = setsockopt(fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP,
++				&mreq, sizeof(struct packet_mreq));
++	if (res < 0) {
++		perror("Couldn't set PACKET_ADD_MEMBERSHIP");
++		goto err;
++	}
++
++	return fd;
++
++err:
++	close(fd);
++	return -1;
++}
++
++static void recv_packet(int fd)
++{
++	uint8_t *data = alloca(MAX_FRAME_SIZE);
++	ssize_t n = recv(fd, data, MAX_FRAME_SIZE, 0);
++
++	if (n < 0) {
++		perror("Failed to receive data");
++		return;
++	}
++
++	if (n != MAX_FRAME_SIZE)
++		printf("Size mismatch: expected %d, got %zd\n",
++		       MAX_FRAME_SIZE, n);
++
++	data_count += n;
++}
++
++static void report_bw(int fd)
++{
++	uint64_t expirations;
++	ssize_t n = read(fd, &expirations, sizeof(uint64_t));
++
++	if (n < 0) {
++		perror("Couldn't read timerfd");
++		return;
++	}
++
++	if (expirations != 1)
++		printf("Something went wrong with timerfd\n");
++
++	/* Report how much data was received in 1s. */
++	printf("Data rate: %zu kbps\n", (data_count * 8) / 1000);
++
++	data_count = 0;
++}
++
++int main(int argc, char *argv[])
++{
++	int sk_fd, timer_fd, res;
++	struct pollfd fds[2];
++
++	argp_parse(&argp, argc, argv, 0, NULL, NULL);
++
++	sk_fd = setup_socket();
++	if (sk_fd < 0)
++		return 1;
++
++	timer_fd = setup_1s_timer();
++	if (timer_fd < 0) {
++		close(sk_fd);
++		return 1;
++	}
++
++	fds[0].fd = sk_fd;
++	fds[0].events = POLLIN;
++	fds[1].fd = timer_fd;
++	fds[1].events = POLLIN;
++
++	printf("Waiting for packets...\n");
++
++	while (1) {
++		res = poll(fds, 2, -1);
++		if (res < 0) {
++			perror("Error on poll()");
++			goto err;
++		}
++
++		if (fds[0].revents & POLLIN)
++			recv_packet(fds[0].fd);
++
++		if (fds[1].revents & POLLIN)
++			report_bw(fds[1].fd);
++	}
++
++err:
++	close(timer_fd);
++	close(sk_fd);
++	return 1;
++}
+diff --git a/samples/tsn/talker.c b/samples/tsn/talker.c
+new file mode 100644
+index 000000000000..35e6f99b48f6
+--- /dev/null
++++ b/samples/tsn/talker.c
+@@ -0,0 +1,136 @@
++/*
++ * Copyright (c) 2017, Intel Corporation
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *
++ *     * Redistributions of source code must retain the above copyright notice,
++ *       this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Intel Corporation nor the names of its contributors
++ *       may be used to endorse or promote products derived from this software
++ *       without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
++ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
++ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
++ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
++ * OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include <alloca.h>
++#include <argp.h>
++#include <arpa/inet.h>
++#include <inttypes.h>
++#include <linux/if.h>
++#include <linux/if_ether.h>
++#include <linux/if_packet.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <unistd.h>
++
++#define MAX_FRAME_SIZE 1500
++
++static uint8_t multicast_macaddr[] = { 0xBB, 0xAA, 0xBB, 0xAA, 0xBB, 0xAA };
++static char ifname[IFNAMSIZ];
++static int prio = -1;
++static int arg_count;
++
++static struct argp_option options[] = {
++	{"ifname", 'i', "IFNAME", 0, "Network Interface" },
++	{"prio", 'p', "NUM", 0, "SO_PRIORITY to be set in socket" },
++	{ 0 }
++};
++
++static error_t parser(int key, char *arg, struct argp_state *s)
++{
++	switch (key) {
++	case 'i':
++		strncpy(ifname, arg, sizeof(ifname) - 1);
++		arg_count++;
++		break;
++	case 'p':
++		prio = atoi(arg);
++		if (prio < 0)
++			argp_failure(s, 1, 0, "Priority must be >=0\n");
++		arg_count++;
++		break;
++	case ARGP_KEY_END:
++		if (arg_count < 2)
++			argp_failure(s, 1, 0,
++				     "Options missing. Check --help\n");
++		break;
++	}
++
++	return 0;
++}
++
++static struct argp argp = { options, parser };
++
++int main(int argc, char *argv[])
++{
++	struct sockaddr_ll dst_ll_addr = {
++		.sll_family = AF_PACKET,
++		.sll_protocol = htons(ETH_P_TSN),
++		.sll_halen = ETH_ALEN,
++	};
++	struct ifreq req;
++	uint8_t *payload;
++	int fd, res;
++
++	argp_parse(&argp, argc, argv, 0, NULL, NULL);
++
++	fd = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_TSN));
++	if (fd < 0) {
++		perror("Couldn't open socket");
++		return 1;
++	}
++
++	strncpy(req.ifr_name, ifname, sizeof(req.ifr_name));
++	res = ioctl(fd, SIOCGIFINDEX, &req);
++	if (res < 0) {
++		perror("Couldn't get interface index");
++		goto err;
++	}
++
++	dst_ll_addr.sll_ifindex = req.ifr_ifindex;
++	memcpy(&dst_ll_addr.sll_addr, multicast_macaddr, ETH_ALEN);
++
++	res = setsockopt(fd, SOL_SOCKET, SO_PRIORITY, &prio, sizeof(prio));
++	if (res < 0) {
++		perror("Couldn't set priority");
++		goto err;
++	}
++
++	payload = alloca(MAX_FRAME_SIZE);
++	memset(payload, 0xBE, MAX_FRAME_SIZE);
++
++	printf("Sending packets...\n");
++
++	while (1) {
++		ssize_t n = sendto(fd, payload, MAX_FRAME_SIZE, 0,
++				(struct sockaddr *) &dst_ll_addr,
++				sizeof(dst_ll_addr));
++
++		if (n < 0)
++			perror("Failed to send data");
++
++		/* Sleep for 500us to avoid starvation from a 20Mbps stream. */
++		usleep(500);
++	}
++
++err:
++	close(fd);
++	return 1;
++}
 -- 
 2.14.1
 
