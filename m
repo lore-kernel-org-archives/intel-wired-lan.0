@@ -1,154 +1,171 @@
-From: Kushal Gautam <kushal.gautam@gmail.com>
-Date: Sun, 10 Sep 2017 20:09:57 +0200
-Subject: [Intel-wired-lan] Tuning the napi_poll function.
-In-Reply-To: <CAGv3bDcPo7aY6OcJrxBhch0H=o1_+vOU_duK2OmGAk3sie79cw@mail.gmail.com>
-References: <CAGv3bDfGVD75dEQGwjUFQt0EpCsJwvO-L60WMXO+_vA4zF+ejw@mail.gmail.com>
- <1504799550.21804.28.camel@intel.com>
- <CAGv3bDcPo7aY6OcJrxBhch0H=o1_+vOU_duK2OmGAk3sie79cw@mail.gmail.com>
-Message-ID: <CAGv3bDfXodesP8eT=t+prEBNwCcSypv5hYw-bNt-Wq1Dwtg3wQ@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 01 Sep 2017 14:39:38 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 17b225047f7459bf916ceadf802f7b4568643ea9
+Message-ID: <59a900aa.9VG5CoV/6GbCaG1l%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi again, sorry for the last paragraph, it was sent by mistake. I was on my
-way to complete my sentence.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+17b225047f7459bf916ceadf802f7b4568643ea9  
 
-Yes, based on your suggestions, for the time being, I have set an HR Timer
-> for given xx ms time interval. The timer tick handler works fine enough.
-> But the issue that I am facing right now is to invoke NAPI Poll at every
-> timer tick handler event. At the interval elapsed event, I have called
-> napi_schedule(napi);. This simply does not trigger napi poll  I thougth,
-> it would do that( as I saw similar invocatio in Do I need to take care of
-> other variables as well ? I tried changing the napi->state as napi->state =
-> 1 ( as it was set to 0). But this stalls the system. A solution to this
-> issue would give me a preliminary progress to monitor my result.
+elapsed time: 325m
 
+configs tested: 147
 
- I thougth, it would do that( as I saw similar invocatio
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-
-I saw similar method in i40e_msix_clean_rings(int irq, void *data) function.
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+arm                         bcm2835_defconfig
+mips                        xilfpga_defconfig
+powerpc                    amigaone_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-c0-09011244
+arm                       spear13xx_defconfig
+m68k                             allyesconfig
+sh                     magicpanelr2_defconfig
+x86_64                randconfig-in0-09011229
+arm                           spitz_defconfig
+mips                        workpad_defconfig
+xtensa                generic_kc705_defconfig
+x86_64                randconfig-it0-09011235
+i386                               tinyconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201735
+x86_64                 randconfig-x001-201735
+x86_64                 randconfig-x007-201735
+x86_64                 randconfig-x000-201735
+x86_64                 randconfig-x006-201735
+x86_64                 randconfig-x003-201735
+x86_64                 randconfig-x009-201735
+x86_64                 randconfig-x004-201735
+x86_64                 randconfig-x008-201735
+x86_64                 randconfig-x005-201735
+x86_64                 randconfig-x002-201735
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+m68k                        mvme16x_defconfig
+sh                 kfr2r09-romimage_defconfig
+sh                          sdk7786_defconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                             allmodconfig
+x86_64                                  kexec
+i386                     randconfig-a0-201735
+i386                     randconfig-a1-201735
+x86_64                 randconfig-s0-09011218
+x86_64                 randconfig-s1-09011218
+x86_64                 randconfig-s2-09011218
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201735
+arm                      tct_hammer_defconfig
+powerpc                      walnut_defconfig
+x86_64                randconfig-ne0-09011209
+i386                   randconfig-x019-201735
+i386                   randconfig-x013-201735
+i386                   randconfig-x012-201735
+i386                   randconfig-x016-201735
+i386                   randconfig-x018-201735
+i386                   randconfig-x010-201735
+i386                   randconfig-x011-201735
+i386                   randconfig-x015-201735
+i386                   randconfig-x014-201735
+i386                   randconfig-x017-201735
+arm                           h5000_defconfig
+arm                          iop33x_defconfig
+parisc                generic-32bit_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                  randconfig-sb0-09011228
+x86_64                           allmodconfig
+i386                   randconfig-x003-201735
+i386                   randconfig-x000-201735
+i386                   randconfig-x004-201735
+i386                   randconfig-x009-201735
+i386                   randconfig-x005-201735
+i386                   randconfig-x008-201735
+i386                   randconfig-x001-201735
+i386                   randconfig-x007-201735
+i386                   randconfig-x006-201735
+i386                   randconfig-x002-201735
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x076-201735
+i386                   randconfig-x075-201735
+i386                   randconfig-x071-201735
+i386                   randconfig-x070-201735
+i386                   randconfig-x074-201735
+i386                   randconfig-x079-201735
+i386                   randconfig-x072-201735
+i386                   randconfig-x073-201735
+i386                   randconfig-x078-201735
+i386                   randconfig-x077-201735
+blackfin                BF609-EZKIT_defconfig
+sh                         apsh4a3a_defconfig
+x86_64                 randconfig-r0-09011302
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
 
 Thanks,
-Kushal.
-
-On Sun, Sep 10, 2017 at 8:07 PM, Kushal Gautam <kushal.gautam@gmail.com>
-wrote:
-
-> Hi Alex,
->
-> Thank you for your response.
->
->
->> Have you looked at busy polling at all?
->
->
-> Will X710 support busy poll at all? I guess, it has support for Mellanox,
-> right ? And for the time being, my access is restricted to only one NIC.
->
-> Other than the i40e driver in the kernel you might also want to look at
->> the i40e code for the DPDK driver
->
->
-> Yes, I had looked at the i40e driver from the Kernel source tree.
-> Surprisingly, the flow director in that driver package seems to have flaws.
-> I had posted about this issue in this mailing list well as Intel Community
-> forum as well. But, there was no particular solution on this problem. Thus,
-> I switched to i40e-2.0.30.
-> Regarding DPDK. yes, I looked at it too. Essentially, I did understand the
-> logic for it (regarding the memory allocation and stuffs), but I could not
-> understand the polling mode properly, since they have completely revamped
-> the driver code. May be, for this I should post in the DPDK forum once.
->
->  As far as having NAPI execute every 500ms probably the easiest way to do
->> that would be to just drop the use of the device interrupts and instead
->> setup a timer and have the timer schedule NAPI for the queue from the timer
->> interrupt
->
->
-> Yes, based on your suggestions, for the time being, I have set an HR Timer
-> for given xx ms time interval. The timer tick handler works fine enough.
-> But the issue that I am facing right now is to invoke NAPI Poll at every
-> timer tick handler event. At the interval elapsed event, I have called
-> napi_schedule(napi);. This simply does not trigger napi poll  I thougth,
-> it would do that( as I saw similar invocatio in Do I need to take care of
-> other variables as well ? I tried changing the napi->state as napi->state =
-> 1 ( as it was set to 0). But this stalls the system. A solution to this
-> issue would give me a preliminary progress to monitor my result.
->
-> Any inputs on this would be very helpful.
->
-> Thanks,
-> Kushal.
->
-> On Thu, Sep 7, 2017 at 5:52 PM, Duyck, Alexander H <
-> alexander.h.duyck at intel.com> wrote:
->
->> On Thu, 2017-09-07 at 16:56 +0200, Kushal Gautam wrote:
->>
->> I have gone through multiple posts (in and outside Stackoverflow)
->> regarding this topic. Currently, I am working on to modify the i40e-2.0.30
->> driver for Intel X710 NIC.
->>
->> My query is particularly concerned with the NAPI Poll mechanism. I
->> understand that napi_poll function is triggered when a packet arrives, and
->> if the amount of work done while receiving the packets exceeds the
->> allocated budget, NAPI Polling continues; else polling stops.
->>
->> Based on this information, I modified my driver to keep polling if a
->> particular signature of data arrives on a particular queue ( using flow
->> director), e.g. UDP Packets on Port XXX for 10,000 poll cycles. But, I am
->> trying to eliminate the possibility of interrupts as much as possible.
->>
->> Have you looked at busy polling at all? If you have a socket application
->> listening for those packets it might be able to use busy polling to keep
->> NAPI going by having the application itself poll for the packets instead of
->> relying on an interrupt to initiate polling.
->>
->> One caveat with the X710 though is that it will need to have interrupts
->> enabled while busy polling is running in order to trigger descriptor
->> flushes when there are 3 or fewer descriptors (or packets assuming frame
->> size <= 1514) that need to be written back to memory from the device. We
->> are investigating to see if there is a way to optimize this behavior to
->> avoid unnecessary re-enabling of the interrupts, but we don't have any ETA
->> on when we might have patches to do that available.
->>
->> Thus, here is my main question. Will I be able to schedule the NAPI poll
->> to be executed at a certain point in time ? Like, I want NAPI poll to be
->> executed every 500 ms and may be last for 20ms. For instance, I will be
->> expecting my packet at time *T ms*, while I might start the polling at
->> time *(T-10) ms* and stop polling at *(T + 10) ms*. This may, I might be
->> able to reduce the usage of interrupts. Right now, I have been resetting
->> the interrupts every 10,000 poll cycles.
->>
->> Any explanation or reference on this would be really helpful.
->>
->> As far as having NAPI execute every 500ms probably the easiest way to do
->> that would be to just drop the use of the device interrupts and instead
->> setup a timer and have the timer schedule NAPI for the queue from the timer
->> interrupt.
->>
->> Other than the i40e driver in the kernel you might also want to look at
->> the i40e code for the DPDK driver at http://www.dpdk.org/browse/dpd
->> k-stable/tree/drivers/net/i40e. The reason I suggest that is that DPDK
->> can use a poll mode driver similar to what you have described in order to
->> allow a userspace process to poll for packets on the device. You may be
->> able to review that code to get a better idea of how to implement your own
->> poll mode driver.
->>
->>
->> Regards,
->> Kushal.
->>
->>
->> Thanks.
->>
->> - Alex
->>
->
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170910/702dffbc/attachment-0001.html>
+Fengguang
