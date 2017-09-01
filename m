@@ -1,224 +1,70 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri,  1 Sep 2017 13:54:07 -0700
-Subject: [Intel-wired-lan] [next-queue v3] i40e/i40evf: organize and
-	re-number feature flags
-Message-ID: <20170901205407.41800-1-jeffrey.t.kirsher@intel.com>
+From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+Date: Fri, 1 Sep 2017 09:12:17 -0700
+Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
+ config interfaces for traffic shapers
+In-Reply-To: <20170901130311.v5nyx6e6gfats5dg@localhost>
+References: <20170901012625.14838-1-vinicius.gomes@intel.com>
+ <20170901130311.v5nyx6e6gfats5dg@localhost>
+Message-ID: <1519366e-5418-4dda-db00-5bf50a1c67c4@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+Hi Richard,
 
-Now that we've reduced the number of flags, organize similar flags
-together and re-number them accordingly.
 
-Since we don't yet have more than 32 flags, we'll use a u32 for both the
-hw_features and flag field. Should we gain more flags in the future, we
-may need to convert to a u64 or separate flags out into two fields.
+On 09/01/2017 06:03 AM, Richard Cochran wrote:
+> 
+> I happy to see this posted.  At first glance, it seems like a step in
+> the right direction.
+> 
+> On Thu, Aug 31, 2017 at 06:26:20PM -0700, Vinicius Costa Gomes wrote:
+>>  * Time-aware shaper (802.1Qbv):
+> ...
+>>    S 0x01 300
+>>    S 0x03 500
+>>
+>>    This means that there are two intervals, the first will have the gate
+>>    for traffic class 0 open for 300 nanoseconds, the second will have
+>>    both traffic classes open for 500 nanoseconds.
+> 
+> The i210 doesn't support this in HW, or does it?
 
-One alternative approach considered, but not implemented here, was to
-use an enumeration for the flag variables, and create a macro
-I40E_FLAG() which used string concatenation to generate BIT_ULL values.
-This has the advantage of making the actual bit values compile-time
-dynamic so that we do not need to worry about matching the order to the
-bit value. However, this does produce a high level of code churn, and
-makes it more difficult to read a dumped flags value when debugging.
 
-v3: rebased patch based on the current dev-queue branch
+No, it does not. i210 only provides support for a per-packet feature called
+LaunchTime that can be used control both the fetch and the transmission time of
+packets.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I8653fff69453cd547d6fe98d29dfa9d8710387d1
----
- drivers/net/ethernet/intel/i40e/i40e.h         | 98 +++++++++++++-------------
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  6 +-
- drivers/net/ethernet/intel/i40evf/i40evf.h     | 32 ++++-----
- 3 files changed, 68 insertions(+), 68 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 4dc6d43f8812..18c453a3e728 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -403,57 +403,57 @@ struct i40e_pf {
- 	struct timer_list service_timer;
- 	struct work_struct service_task;
- 
--	u64 hw_features;
--#define I40E_HW_RSS_AQ_CAPABLE			BIT_ULL(0)
--#define I40E_HW_128_QP_RSS_CAPABLE		BIT_ULL(1)
--#define I40E_HW_ATR_EVICT_CAPABLE		BIT_ULL(2)
--#define I40E_HW_WB_ON_ITR_CAPABLE		BIT_ULL(3)
--#define I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE	BIT_ULL(4)
--#define I40E_HW_NO_PCI_LINK_CHECK		BIT_ULL(5)
--#define I40E_HW_100M_SGMII_CAPABLE		BIT_ULL(6)
--#define I40E_HW_NO_DCB_SUPPORT			BIT_ULL(7)
--#define I40E_HW_USE_SET_LLDP_MIB		BIT_ULL(8)
--#define I40E_HW_GENEVE_OFFLOAD_CAPABLE		BIT_ULL(9)
--#define I40E_HW_PTP_L4_CAPABLE			BIT_ULL(10)
--#define I40E_HW_WOL_MC_MAGIC_PKT_WAKE		BIT_ULL(11)
--#define I40E_HW_MPLS_HDR_OFFLOAD_CAPABLE	BIT_ULL(12)
--#define I40E_HW_HAVE_CRT_RETIMER		BIT_ULL(13)
--#define I40E_HW_OUTER_UDP_CSUM_CAPABLE		BIT_ULL(14)
--#define I40E_HW_PHY_CONTROLS_LEDS		BIT_ULL(15)
--#define I40E_HW_STOP_FW_LLDP			BIT_ULL(16)
--#define I40E_HW_PORT_ID_VALID			BIT_ULL(17)
--#define I40E_HW_RESTART_AUTONEG			BIT_ULL(18)
-+	u32 hw_features;
-+#define I40E_HW_RSS_AQ_CAPABLE			BIT(0)
-+#define I40E_HW_128_QP_RSS_CAPABLE		BIT(1)
-+#define I40E_HW_ATR_EVICT_CAPABLE		BIT(2)
-+#define I40E_HW_WB_ON_ITR_CAPABLE		BIT(3)
-+#define I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE	BIT(4)
-+#define I40E_HW_NO_PCI_LINK_CHECK		BIT(5)
-+#define I40E_HW_100M_SGMII_CAPABLE		BIT(6)
-+#define I40E_HW_NO_DCB_SUPPORT			BIT(7)
-+#define I40E_HW_USE_SET_LLDP_MIB		BIT(8)
-+#define I40E_HW_GENEVE_OFFLOAD_CAPABLE		BIT(9)
-+#define I40E_HW_PTP_L4_CAPABLE			BIT(10)
-+#define I40E_HW_WOL_MC_MAGIC_PKT_WAKE		BIT(11)
-+#define I40E_HW_MPLS_HDR_OFFLOAD_CAPABLE	BIT(12)
-+#define I40E_HW_HAVE_CRT_RETIMER		BIT(13)
-+#define I40E_HW_OUTER_UDP_CSUM_CAPABLE		BIT(14)
-+#define I40E_HW_PHY_CONTROLS_LEDS		BIT(15)
-+#define I40E_HW_STOP_FW_LLDP			BIT(16)
-+#define I40E_HW_PORT_ID_VALID			BIT(17)
-+#define I40E_HW_RESTART_AUTONEG			BIT(18)
- 
- 	u64 flags;
--#define I40E_FLAG_RX_CSUM_ENABLED		BIT_ULL(1)
--#define I40E_FLAG_MSI_ENABLED			BIT_ULL(2)
--#define I40E_FLAG_MSIX_ENABLED			BIT_ULL(3)
--#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(4)
--#define I40E_FLAG_RSS_ENABLED			BIT_ULL(6)
--#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(7)
--#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(10)
--#define I40E_FLAG_FILTER_SYNC			BIT_ULL(15)
--#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(16)
--#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(19)
--#define I40E_FLAG_DCB_ENABLED			BIT_ULL(20)
--#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(21)
--#define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
--#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(23)
--#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(24)
--#define I40E_FLAG_PTP				BIT_ULL(25)
--#define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
--#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(27)
--#define I40E_FLAG_DCB_CAPABLE			BIT_ULL(29)
--#define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(37)
--#define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(39)
--#define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(40)
--#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(51)
--#define I40E_FLAG_CLIENT_RESET			BIT_ULL(54)
--#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(55)
--#define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(56)
--#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT_ULL(57)
--#define I40E_FLAG_LEGACY_RX			BIT_ULL(58)
--#define I40E_FLAG_SOURCE_PRUNING_DISABLED	BIT_ULL(59)
-+#define I40E_FLAG_RX_CSUM_ENABLED		BIT(0)
-+#define I40E_FLAG_MSI_ENABLED			BIT(1)
-+#define I40E_FLAG_MSIX_ENABLED			BIT(2)
-+#define I40E_FLAG_RSS_ENABLED			BIT(3)
-+#define I40E_FLAG_VMDQ_ENABLED			BIT(4)
-+#define I40E_FLAG_FILTER_SYNC			BIT(5)
-+#define I40E_FLAG_SRIOV_ENABLED			BIT(6)
-+#define I40E_FLAG_DCB_CAPABLE			BIT(7)
-+#define I40E_FLAG_DCB_ENABLED			BIT(8)
-+#define I40E_FLAG_FD_SB_ENABLED			BIT(9)
-+#define I40E_FLAG_FD_ATR_ENABLED		BIT(10)
-+#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT(11)
-+#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT(12)
-+#define I40E_FLAG_MFP_ENABLED			BIT(13)
-+#define I40E_FLAG_UDP_FILTER_SYNC		BIT(14)
-+#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT(15)
-+#define I40E_FLAG_VEB_MODE_ENABLED		BIT(16)
-+#define I40E_FLAG_VEB_STATS_ENABLED		BIT(17)
-+#define I40E_FLAG_LINK_POLLING_ENABLED		BIT(18)
-+#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT(19)
-+#define I40E_FLAG_TEMP_LINK_POLLING		BIT(20)
-+#define I40E_FLAG_LEGACY_RX			BIT(21)
-+#define I40E_FLAG_PTP				BIT(22)
-+#define I40E_FLAG_IWARP_ENABLED			BIT(23)
-+#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT(24)
-+#define I40E_FLAG_CLIENT_L2_CHANGE		BIT(25)
-+#define I40E_FLAG_CLIENT_RESET			BIT(26)
-+#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT(27)
-+#define I40E_FLAG_SOURCE_PRUNING_DISABLED	BIT(28)
- 
- 	struct i40e_client_instance *cinst;
- 	bool stat_offsets_loaded;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 389e3903ec26..b531aa3cc2d5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -4095,7 +4095,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
--	u64 orig_flags, new_flags, changed_flags;
-+	u32 orig_flags, new_flags, changed_flags;
- 	u32 i, j;
- 
- 	orig_flags = READ_ONCE(pf->flags);
-@@ -4147,12 +4147,12 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 		return -EOPNOTSUPP;
- 
- 	/* Compare and exchange the new flags into place. If we failed, that
--	 * is if cmpxchg64 returns anything but the old value, this means that
-+	 * is if cmpxchg returns anything but the old value, this means that
- 	 * something else has modified the flags variable since we copied it
- 	 * originally. We'll just punt with an error and log something in the
- 	 * message buffer.
- 	 */
--	if (cmpxchg64(&pf->flags, orig_flags, new_flags) != orig_flags) {
-+	if (cmpxchg(&pf->flags, orig_flags, new_flags) != orig_flags) {
- 		dev_warn(&pf->pdev->dev,
- 			 "Unable to update pf->flags as it was modified by another thread...\n");
- 		return -EAGAIN;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index 5982362c5643..de0af521d602 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -222,22 +222,22 @@ struct i40evf_adapter {
- 
- 	u32 flags;
- #define I40EVF_FLAG_RX_CSUM_ENABLED		BIT(0)
--#define I40EVF_FLAG_IMIR_ENABLED		BIT(5)
--#define I40EVF_FLAG_MQ_CAPABLE			BIT(6)
--#define I40EVF_FLAG_PF_COMMS_FAILED		BIT(8)
--#define I40EVF_FLAG_RESET_PENDING		BIT(9)
--#define I40EVF_FLAG_RESET_NEEDED		BIT(10)
--#define I40EVF_FLAG_WB_ON_ITR_CAPABLE		BIT(11)
--#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE	BIT(12)
--#define I40EVF_FLAG_ADDR_SET_BY_PF		BIT(13)
--#define I40EVF_FLAG_SERVICE_CLIENT_REQUESTED	BIT(14)
--#define I40EVF_FLAG_CLIENT_NEEDS_OPEN		BIT(15)
--#define I40EVF_FLAG_CLIENT_NEEDS_CLOSE		BIT(16)
--#define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(17)
--#define I40EVF_FLAG_PROMISC_ON			BIT(18)
--#define I40EVF_FLAG_ALLMULTI_ON			BIT(19)
--#define I40EVF_FLAG_LEGACY_RX			BIT(20)
--#define I40EVF_FLAG_REINIT_ITR_NEEDED		BIT(21)
-+#define I40EVF_FLAG_IMIR_ENABLED		BIT(1)
-+#define I40EVF_FLAG_MQ_CAPABLE			BIT(2)
-+#define I40EVF_FLAG_PF_COMMS_FAILED		BIT(3)
-+#define I40EVF_FLAG_RESET_PENDING		BIT(4)
-+#define I40EVF_FLAG_RESET_NEEDED		BIT(5)
-+#define I40EVF_FLAG_WB_ON_ITR_CAPABLE		BIT(6)
-+#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE	BIT(7)
-+#define I40EVF_FLAG_ADDR_SET_BY_PF		BIT(8)
-+#define I40EVF_FLAG_SERVICE_CLIENT_REQUESTED	BIT(9)
-+#define I40EVF_FLAG_CLIENT_NEEDS_OPEN		BIT(10)
-+#define I40EVF_FLAG_CLIENT_NEEDS_CLOSE		BIT(11)
-+#define I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS	BIT(12)
-+#define I40EVF_FLAG_PROMISC_ON			BIT(13)
-+#define I40EVF_FLAG_ALLMULTI_ON			BIT(14)
-+#define I40EVF_FLAG_LEGACY_RX			BIT(15)
-+#define I40EVF_FLAG_REINIT_ITR_NEEDED		BIT(16)
- /* duplicates for common code */
- #define I40E_FLAG_DCB_ENABLED			0
- #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
--- 
-2.14.1
+> 
+>>  * Frame Preemption (802.1Qbu):
+>>
+>>    To control even further the latency, it may prove useful to signal which
+>>    traffic classes are marked as preemptable. For that, 'taprio' provides the
+>>    preemption command so you set each traffic class as preemptable or not:
+>>
+>>    $ tc qdisc (...) \
+>>         preemption 0 1 1 1
+> 
+> Neither can the i210 preempt frames, or what am I missing?
 
+No, it does not.
+
+But when we started working on the shapers we decided to look ahead and try to
+come up with interfaces that could cover beyond 802.1Qav. These are just some
+ideas we've been prototyping here together with the 'cbs' qdisc.
+
+
+> 
+> The timing of this RFC is good, as I am just finishing up an RFC that
+> implements time-based transmit using the i210.  I'll try and get that
+> out ASAP.
+
+
+Is it correct to assume you are referring to an interface for Launchtime here?
+
+
+Thanks,
+Jesus
