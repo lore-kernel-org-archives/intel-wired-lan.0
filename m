@@ -1,51 +1,53 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 02 Sep 2017 07:29:12 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 08f91a425600cdae9ff6637b7619ef6e25aa3938
-Message-ID: <59a9ed48.0mM9EbpuFHWpk16k%fengguang.wu@intel.com>
+Date: Sat, 02 Sep 2017 08:57:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ d56ad2342d7322c8bf2db640fc004eb83a6c7c28
+Message-ID: <59aa0201.0eei1Pdfz5No2HL/%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-08f91a425600cdae9ff6637b7619ef6e25aa3938  igb: check memory allocation failure
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+d56ad2342d7322c8bf2db640fc004eb83a6c7c28  ixgbe: Use new PCI_DEV_FLAGS_NO_RELAXED_ORDERING flag
 
-arch/x86/include/asm/cmpxchg.h:127:3: error: call to '__cmpxchg_wrong_size' declared with attribute error: Bad argument size for cmpxchg
-arch/x86/include/asm/cmpxchg.h:133:2: note: in expansion of macro '__raw_cmpxchg'
-arch/x86/include/asm/cmpxchg.h:148:2: note: in expansion of macro '__cmpxchg'
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c:4155:5: warning: '__ret' may be used uninitialized in this function [-Wmaybe-uninitialized]
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c:4155:6: note: in expansion of macro 'cmpxchg'
+elapsed time: 394m
 
-Error ids grouped by kconfigs:
+configs tested: 182
 
-recent_errors
-??? i386-allmodconfig
-??? ??? arch-x86-include-asm-cmpxchg.h:error:call-to-__cmpxchg_wrong_size-declared-with-attribute-error:Bad-argument-size-for-cmpxchg
-??? ??? arch-x86-include-asm-cmpxchg.h:note:in-expansion-of-macro-__cmpxchg
-??? ??? arch-x86-include-asm-cmpxchg.h:note:in-expansion-of-macro-__raw_cmpxchg
-??? ??? drivers-net-ethernet-intel-i40e-i40e_ethtool.c:note:in-expansion-of-macro-cmpxchg
-??? ??? drivers-net-ethernet-intel-i40e-i40e_ethtool.c:warning:__ret-may-be-used-uninitialized-in-this-function
-??? i386-randconfig-x002-201735
-    ??? arch-x86-include-asm-cmpxchg.h:error:call-to-__cmpxchg_wrong_size-declared-with-attribute-error:Bad-argument-size-for-cmpxchg
-    ??? arch-x86-include-asm-cmpxchg.h:note:in-expansion-of-macro-__cmpxchg
-    ??? arch-x86-include-asm-cmpxchg.h:note:in-expansion-of-macro-__raw_cmpxchg
-    ??? drivers-net-ethernet-intel-i40e-i40e_ethtool.c:note:in-expansion-of-macro-cmpxchg
-    ??? drivers-net-ethernet-intel-i40e-i40e_ethtool.c:warning:__ret-may-be-used-uninitialized-in-this-function
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-elapsed time: 135m
-
-configs tested: 137
-
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
 alpha                               defconfig
 parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                         lubbock_defconfig
+microblaze                          defconfig
+sh                           se7705_defconfig
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+mips                         bigsur_defconfig
+powerpc                     pseries_defconfig
+powerpc64                        alldefconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-09020755
+x86_64                           allmodconfig
+blackfin                  CM-BF537E_defconfig
+mips                             alldefconfig
+sh                   secureedge5410_defconfig
+i386                               tinyconfig
 i386                   randconfig-x019-201735
 i386                   randconfig-x013-201735
 i386                   randconfig-x012-201735
@@ -56,10 +58,29 @@ i386                   randconfig-x011-201735
 i386                   randconfig-x015-201735
 i386                   randconfig-x014-201735
 i386                   randconfig-x017-201735
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
 i386                     randconfig-n0-201735
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
+x86_64                 randconfig-x001-201735
+x86_64                 randconfig-x007-201735
+x86_64                 randconfig-x000-201735
+x86_64                 randconfig-x006-201735
+x86_64                 randconfig-x003-201735
+x86_64                 randconfig-x009-201735
+x86_64                 randconfig-x004-201735
+x86_64                 randconfig-x008-201735
+x86_64                 randconfig-x005-201735
+x86_64                 randconfig-x002-201735
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+arm64                               defconfig
+mips                             allmodconfig
+sparc64                           allnoconfig
+x86_64                 randconfig-g0-09020806
+i386                             allmodconfig
 arm                       omap2plus_defconfig
 arm                                    sa1100
 arm                              allmodconfig
@@ -75,45 +96,55 @@ arm                                        sh
 arm                                     arm67
 i386                     randconfig-a0-201735
 i386                     randconfig-a1-201735
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                               allnoconfig
-m32r                   mappi2.vdec2_defconfig
-mips                  cavium_octeon_defconfig
-mips                        qi_lb60_defconfig
-powerpc                      bamboo_defconfig
+x86_64                 randconfig-s0-09020809
+x86_64                 randconfig-s1-09020809
+x86_64                 randconfig-s2-09020809
+arm                        multi_v7_defconfig
+m68k                          hp300_defconfig
+mips                           mtx1_defconfig
+powerpc                   bluestone_defconfig
+sh                        sh7785lcr_defconfig
+x86_64                 randconfig-x016-201735
+x86_64                 randconfig-x011-201735
+x86_64                 randconfig-x012-201735
+x86_64                 randconfig-x019-201735
+x86_64                 randconfig-x014-201735
+x86_64                 randconfig-x018-201735
+x86_64                 randconfig-x013-201735
+x86_64                 randconfig-x015-201735
+x86_64                 randconfig-x010-201735
+x86_64                 randconfig-x017-201735
+i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
-i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
 i386                     randconfig-s1-201735
 i386                     randconfig-s0-201735
-x86_64                           allmodconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
 x86_64                   randconfig-i0-201735
 sparc                               defconfig
-sparc64                           allnoconfig
 sparc64                             defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+m68k                             allyesconfig
+powerpc                      ppc44x_defconfig
+x86_64                randconfig-ne0-09020751
+i386                   randconfig-h0-09020750
+i386                   randconfig-h1-09020750
+arm                         s3c2410_defconfig
+m32r                              allnoconfig
+powerpc                      pasemi_defconfig
+x86_64                 randconfig-h0-09020815
+m32r                             allmodconfig
+mips                     loongson1c_defconfig
 i386                   randconfig-x003-201735
 i386                   randconfig-x000-201735
 i386                   randconfig-x004-201735
@@ -124,15 +155,6 @@ i386                   randconfig-x001-201735
 i386                   randconfig-x007-201735
 i386                   randconfig-x006-201735
 i386                   randconfig-x002-201735
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
 c6x                        evmc6678_defconfig
 h8300                    h8300h-sim_defconfig
 m32r                       m32104ut_defconfig
@@ -143,28 +165,19 @@ nios2                         10m50_defconfig
 score                      spct6600_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
-x86_64                 randconfig-x001-201735
-x86_64                 randconfig-x007-201735
-x86_64                 randconfig-x000-201735
-x86_64                 randconfig-x006-201735
-x86_64                 randconfig-x003-201735
-x86_64                 randconfig-x009-201735
-x86_64                 randconfig-x004-201735
-x86_64                 randconfig-x008-201735
-x86_64                 randconfig-x005-201735
-x86_64                 randconfig-x002-201735
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                randconfig-ws0-09020650
+arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
 arm                          exynos_defconfig
 arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
 arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                             allnoconfig
-arm64                               defconfig
+x86_64                randconfig-ws0-09020805
 i386                   randconfig-x076-201735
 i386                   randconfig-x075-201735
 i386                   randconfig-x071-201735
@@ -175,6 +188,19 @@ i386                   randconfig-x072-201735
 i386                   randconfig-x073-201735
 i386                   randconfig-x078-201735
 i386                   randconfig-x077-201735
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+blackfin                   CM-BF561_defconfig
+openrisc                            defconfig
+x86_64                 randconfig-r0-09020801
+openrisc                         allmodconfig
+powerpc                      arches_defconfig
+sh                         ap325rxa_defconfig
+i386                   randconfig-x0-09020704
 
 Thanks,
 Fengguang
