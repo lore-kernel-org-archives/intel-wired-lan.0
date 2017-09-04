@@ -1,66 +1,50 @@
-From: Vincenzo Maffione <v.maffione@gmail.com>
-Date: Sat, 16 Sep 2017 18:00:00 +0200
-Subject: [Intel-wired-lan] [PATCH net] driver: e1000: fix race condition
-	between e1000_down() and e1000_watchdog
-Message-ID: <20170916160000.3560-1-v.maffione@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Mon, 4 Sep 2017 18:25:55 +0200
+Subject: [Intel-wired-lan] [PATCH] e1000e: changed some expensive calls
+ of udelay to usleep_range
+In-Reply-To: <1503503985-3869-1-git-send-email-matthew.tan_1@nxp.com>
+References: <1503503985-3869-1-git-send-email-matthew.tan_1@nxp.com>
+Message-ID: <20170904162555.GB21849@amd>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes a race condition that can result into the interface being
-up and carrier on, but with transmits disabled in the hardware.
-The bug may show up by repeatedly IFF_DOWN+IFF_UP the interface, which
-allows e1000_watchdog() interleave with e1000_down().
+Hi!
 
-    CPU x                           CPU y
-    --------------------------------------------------------------------
-    e1000_down():
-        netif_carrier_off()
-                                    e1000_watchdog():
-                                        if (carrier == off) {
-                                            netif_carrier_on();
-                                            enable_hw_transmit();
-                                        }
-        disable_hw_transmit();
-                                    e1000_watchdog():
-                                        /* carrier on, do nothing */
+> @@ -183,7 +183,7 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+>  	 * reading duplicate data in the next MDIC transaction.
+>  	 */
+>  	if (hw->mac.type == e1000_pch2lan)
+> -		udelay(100);
+> +		usleep_range(90, 100);
+>  
+>  	return 0;
+>  }
 
-Signed-off-by: Vincenzo Maffione <v.maffione@gmail.com>
----
- drivers/net/ethernet/intel/e1000/e1000_main.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+Can you explain why shortening the delay is acceptable here?
+										
+> @@ -246,7 +246,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+>  	 * reading duplicate data in the next MDIC transaction.
+>  	 */
+>  	if (hw->mac.type == e1000_pch2lan)
+> -		udelay(100);
+> +		usleep_range(90, 110);
+>  
+>  	return 0;
+>  }
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 98375e1e1185..1982f7917a8d 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -520,8 +520,6 @@ void e1000_down(struct e1000_adapter *adapter)
- 	struct net_device *netdev = adapter->netdev;
- 	u32 rctl, tctl;
- 
--	netif_carrier_off(netdev);
--
- 	/* disable receives in the hardware */
- 	rctl = er32(RCTL);
- 	ew32(RCTL, rctl & ~E1000_RCTL_EN);
-@@ -537,6 +535,15 @@ void e1000_down(struct e1000_adapter *adapter)
- 	E1000_WRITE_FLUSH();
- 	msleep(10);
- 
-+	/* Set the carrier off after transmits have been disabled in the
-+	 * hardware, to avoid race conditions with e1000_watchdog() (which
-+	 * may be running concurrently to us, checking for the carrier
-+	 * bit to decide whether it should enable transmits again). Such
-+	 * a race condition would result into transmission being disabled
-+	 * in the hardware until the next IFF_DOWN+IFF_UP cycle.
-+	 */
-+	netif_carrier_off(netdev);
-+
- 	napi_disable(&adapter->napi);
- 
- 	e1000_irq_disable(adapter);
+And here?
+										Pavel
+
 -- 
-2.14.1
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 181 bytes
+Desc: Digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170904/9f59a019/attachment.asc>
