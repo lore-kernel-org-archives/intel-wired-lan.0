@@ -1,49 +1,73 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 6 Sep 2017 17:42:33 +0000
-Subject: [Intel-wired-lan] [net-next PATCH V2] ixgbe: add counter for
- times rx pages gets allocated, not recycled
-In-Reply-To: <150455042211.455.6804897285651927718.stgit@firesoul>
-References: <150455042211.455.6804897285651927718.stgit@firesoul>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EA9ACE@ORSMSX104.amr.corp.intel.com>
+From: Kardonik Michael <Michael.Kardonik@nxp.com>
+Date: Tue, 5 Sep 2017 15:27:24 -0500
+Subject: [Intel-wired-lan] [PATCH] e1000e: changed some expensive calls of
+	udelay to usleep_range
+Message-ID: <1504643244-9233-1-git-send-email-Michael.Kardonik@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jesper Dangaard Brouer
-> Sent: Monday, September 4, 2017 11:40 AM
-> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; Jesper Dangaard Brouer <brouer@redhat.com>
-> Subject: [Intel-wired-lan] [net-next PATCH V2] ixgbe: add counter for times
-> rx pages gets allocated, not recycled
-> 
-> The ixgbe driver have page recycle scheme based around the RX-ring queue,
-> where a RX page is shared between two packets. Based on the refcnt, the
-> driver can determine if the RX-page is currently only used by a single packet,
-> if so it can then directly refill/recycle the RX-slot by with the opposite "side"
-> of the page.
-> 
-> While this is a clever trick, it is hard to determine when this recycling is
-> successful and when it fails.  Adding a counter, which is available via ethtool --
-> statistics as 'alloc_rx_page'.  Which counts the number of times the recycle
-> fails and the real page allocator is invoked.  When interpreting the stats, do
-> remember that every alloc will serve two packets.
-> 
-> The counter is collected per rx_ring, but is summed and ethtool exported as
-> 'alloc_rx_page'.  It would be relevant to know what rx_ring that cannot keep
-> up, but that can be exported later if someone experience a need for this.
-> 
-> Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    2 ++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |    4 ++++
->  3 files changed, 7 insertions(+)
+Calls to udelay are not preemtable by userspace so userspace
+applications experience a large (~200us) latency when running on core0. 
+Instead usleep_range can be used to be more friendly to userspace
+since it is preemtable. This is due to udelay using busy-wait loops
+while usleep_rang uses hrtimers instead. It is recommended to use
+udelay when the delay is <10us since at that precision overhead of
+usleep_range hrtimer setup causes issues. However, the replaced calls
+are for 50us and 100us so this should not be not an issue.
+There is no open bug that this patch is fixing, but we see a good
+boost in zero loss performance of specific user space application 
+(dpdk l3fwd) when this patch is applied: we get from 32% of 10Gb line 
+to 49%.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Matthew Tan <matthew.tan_1@nxp.com>
+Signed-off-by: Michael Kardonik <michael.kardonik@nxp.com>
 
+---
+ drivers/net/ethernet/intel/e1000e/phy.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+index de13aea..e318fdc 100644
+--- a/drivers/net/ethernet/intel/e1000e/phy.c
++++ b/drivers/net/ethernet/intel/e1000e/phy.c
+@@ -158,7 +158,7 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+ 	 * the lower time out
+ 	 */
+ 	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
+-		udelay(50);
++		usleep_range(50, 60);
+ 		mdic = er32(MDIC);
+ 		if (mdic & E1000_MDIC_READY)
+ 			break;
+@@ -183,7 +183,7 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+ 	 * reading duplicate data in the next MDIC transaction.
+ 	 */
+ 	if (hw->mac.type == e1000_pch2lan)
+-		udelay(100);
++		usleep_range(100, 110);
+ 
+ 	return 0;
+ }
+@@ -222,7 +222,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+ 	 * the lower time out
+ 	 */
+ 	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
+-		udelay(50);
++		usleep_range(50, 60);
+ 		mdic = er32(MDIC);
+ 		if (mdic & E1000_MDIC_READY)
+ 			break;
+@@ -246,7 +246,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+ 	 * reading duplicate data in the next MDIC transaction.
+ 	 */
+ 	if (hw->mac.type == e1000_pch2lan)
+-		udelay(100);
++		usleep_range(100, 110);
+ 
+ 	return 0;
+ }
+-- 
+2.7.4
