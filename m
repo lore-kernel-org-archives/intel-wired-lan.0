@@ -1,91 +1,40 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 5 Sep 2017 22:00:27 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: avoid NVM acquire deadlock
-	during NVM update
-In-Reply-To: <63fe2862-d5f7-8ad5-a171-a1a3af89a1bb@kpanic.de>
-References: <20170901204249.3835-1-jacob.e.keller@intel.com>
- <63fe2862-d5f7-8ad5-a171-a1a3af89a1bb@kpanic.de>
-Message-ID: <02874ECE860811409154E81DA85FBB5882A9B0C1@ORSMSX115.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 5 Sep 2017 22:45:26 +0000
+Subject: [Intel-wired-lan] [next PATCH S79-V2 08/13] i40e: Display
+	error	message if module does not meet thermal requirements
+In-Reply-To: <20170829093242.41026-8-alice.michael@intel.com>
+References: <20170829093242.41026-1-alice.michael@intel.com>
+ <20170829093242.41026-8-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EA99EF@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
 > -----Original Message-----
-> From: Stefan Assmann [mailto:sassmann at kpanic.de]
-> Sent: Saturday, September 02, 2017 10:35 PM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>; Intel Wired LAN <intel-wired-
-> lan at lists.osuosl.org>
-> Cc: Singhai, Anjali <anjali.singhai@intel.com>
-> Subject: Re: [PATCH] i40e: avoid NVM acquire deadlock during NVM update
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Tuesday, August 29, 2017 2:33 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: Sadowski, Filip <filip.sadowski@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S79-V2 08/13] i40e: Display error
+> message if module does not meet thermal requirements
 > 
-> On 01.09.2017 22:42, Jacob Keller wrote:
-> > From: Anjali Singhai Jain <anjali.singhai@intel.com>
-> >
-> > X722 devices use the AdminQ to access the NVM, and this requires taking
-> > the AdminQ lock. Because of this, we lock the AdminQ during
-> > i40e_read_nvm(), which is also called in places where the lock is
-> > already held, such as the firmware update path which wants to lock once
-> > and then unlock when finished after performing several tasks.
-> >
-> > Although this should have only affected X722 devices, commit
-> > 96a39aed25e6 ("i40e: Acquire NVM lock before reads on all devices",
-> > 2016-12-02) added locking for all NVM reads, regardless of device
-> > family.
-> >
-> > This resulted in us accidentally causing NVM acquire timeouts on all
-> > devices, causing failed firmware updates which left the eeprom in
-> > a corrupt state.
-> >
-> > Create unsafe non-locked variants of i40e_read_nvm_word and
-> > i40e_read_nvm_buffer, __i40e_read_nvm_word and __i40e_read_nvm_buffer
-> > respectively. These variants will not take the NVM lock and are expected
-> > to only be called in places where the NVM lock is already held if
-> > needed.
-> >
-> > Since the only caller of i40e_read_nvm_buffer() was in such a path,
-> > remove it entirely in favor of the unsafe version. If necessary we can
-> > always add it back in the future.
-> >
-> > Additionally, we now need to hold the NVM lock in i40e_validate_checksum
-> > because the call to i40e_calc_nvm_checksum now assumes that the NVM lock
-> > is held. We can further move the call to read I40E_SR_SW_CHECKSUM_WORD
-> > up a bit so that we do not need to acquire the NVM lock twice.
-> >
-> > This should resolve firmware updates and also fix potential raise that
-> > could have caused the driver to report an invalid NVM checksum upon
-> > driver load.
-> >
-> > Reported-by: Stefan Assmann <sassmann@kpanic.de>
-> > Fixes: 96a39aed25e6 ("i40e: Acquire NVM lock before reads on all devices", 2016-
-> 12-02)
-> > Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > ---
-> >
-> > This is a more complete version of the patch suggested by Stefan, found
-> > at https://patchwork.ozlabs.org/patch/808699/ and it should be able to
-> > avoid needing the 2nd patch in his series, which reverted a workqueue
-> > change. The code is slightly refactored from what he suggested, and also
-> > includes the i40e_nvm_read_buffer() function, as well as fixing up the
-> > issues in i40e_validate_checksum().
-> >
-> > Stefan, can you let me know if this works for you? I didn't have any
-> > issues, but I'd like to confirm this fix is acceptable to you.
+> From: Filip Sadowski <filip.sadowski@intel.com>
 > 
-> Hi Jacob,
+> This patch causes error message to be displayed when NIC detects insertion
+> of module that does not meet thermal requirements.
 > 
-> I've reflashed all the NICs I had available, everything went smoothly.
-> Let's get your patch in asap.
-> 
-> Thanks!
-> 
->   Stefan
+> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 24 +++++++++++++++++-
+> ----
+>  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  1 +
+>  3 files changed, 21 insertions(+), 5 deletions(-)
 
-Excellent news!
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Thanks,
-Jake
+
