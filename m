@@ -1,105 +1,26 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Mon, 04 Sep 2017 20:40:22 +0200
-Subject: [Intel-wired-lan] [net-next PATCH V2] ixgbe: add counter for times
- rx pages gets allocated, not recycled
-Message-ID: <150455042211.455.6804897285651927718.stgit@firesoul>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue, 5 Sep 2017 09:20:58 +0200
+Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
+ config interfaces for traffic shapers
+In-Reply-To: <1519366e-5418-4dda-db00-5bf50a1c67c4@intel.com>
+References: <20170901012625.14838-1-vinicius.gomes@intel.com>
+ <20170901130311.v5nyx6e6gfats5dg@localhost>
+ <1519366e-5418-4dda-db00-5bf50a1c67c4@intel.com>
+Message-ID: <20170905072058.giqnqfhcooqzc46w@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ixgbe driver have page recycle scheme based around the RX-ring
-queue, where a RX page is shared between two packets. Based on the
-refcnt, the driver can determine if the RX-page is currently only used
-by a single packet, if so it can then directly refill/recycle the
-RX-slot by with the opposite "side" of the page.
+On Fri, Sep 01, 2017 at 09:12:17AM -0700, Jesus Sanchez-Palencia wrote:
+> On 09/01/2017 06:03 AM, Richard Cochran wrote:
+> > The timing of this RFC is good, as I am just finishing up an RFC that
+> > implements time-based transmit using the i210.  I'll try and get that
+> > out ASAP.
 
-While this is a clever trick, it is hard to determine when this
-recycling is successful and when it fails.  Adding a counter, which is
-available via ethtool --statistics as 'alloc_rx_page'.  Which counts
-the number of times the recycle fails and the real page allocator is
-invoked.  When interpreting the stats, do remember that every alloc
-will serve two packets.
+I have an RFC series ready for net-next, but the the merge window just
+started.  I'll post it when the window closes again...
 
-The counter is collected per rx_ring, but is summed and ethtool
-exported as 'alloc_rx_page'.  It would be relevant to know what
-rx_ring that cannot keep up, but that can be exported later if
-someone experience a need for this.
-
-Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |    4 ++++
- 3 files changed, 7 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index dd5578756ae0..008d0085e01f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -275,6 +275,7 @@ struct ixgbe_rx_queue_stats {
- 	u64 rsc_count;
- 	u64 rsc_flush;
- 	u64 non_eop_descs;
-+	u64 alloc_rx_page;
- 	u64 alloc_rx_page_failed;
- 	u64 alloc_rx_buff_failed;
- 	u64 csum_err;
-@@ -655,6 +656,7 @@ struct ixgbe_adapter {
- 	u64 rsc_total_count;
- 	u64 rsc_total_flush;
- 	u64 non_eop_descs;
-+	u32 alloc_rx_page;
- 	u32 alloc_rx_page_failed;
- 	u32 alloc_rx_buff_failed;
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 72c565712a5f..d96d9d6c3492 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -104,6 +104,7 @@ static const struct ixgbe_stats ixgbe_gstrings_stats[] = {
- 	{"tx_flow_control_xoff", IXGBE_STAT(stats.lxofftxc)},
- 	{"rx_flow_control_xoff", IXGBE_STAT(stats.lxoffrxc)},
- 	{"rx_csum_offload_errors", IXGBE_STAT(hw_csum_rx_error)},
-+	{"alloc_rx_page", IXGBE_STAT(alloc_rx_page)},
- 	{"alloc_rx_page_failed", IXGBE_STAT(alloc_rx_page_failed)},
- 	{"alloc_rx_buff_failed", IXGBE_STAT(alloc_rx_buff_failed)},
- 	{"rx_no_dma_resources", IXGBE_STAT(hw_rx_no_dma_resources)},
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index d962368d08d0..d6ac9da8d628 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1620,6 +1620,7 @@ static bool ixgbe_alloc_mapped_page(struct ixgbe_ring *rx_ring,
- 	bi->page = page;
- 	bi->page_offset = ixgbe_rx_offset(rx_ring);
- 	bi->pagecnt_bias = 1;
-+	rx_ring->rx_stats.alloc_rx_page++;
- 
- 	return true;
- }
-@@ -6771,6 +6772,7 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
- 	u32 i, missed_rx = 0, mpc, bprc, lxon, lxoff, xon_off_tot;
- 	u64 non_eop_descs = 0, restart_queue = 0, tx_busy = 0;
- 	u64 alloc_rx_page_failed = 0, alloc_rx_buff_failed = 0;
-+	u64 alloc_rx_page = 0;
- 	u64 bytes = 0, packets = 0, hw_csum_rx_error = 0;
- 
- 	if (test_bit(__IXGBE_DOWN, &adapter->state) ||
-@@ -6791,6 +6793,7 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
- 	for (i = 0; i < adapter->num_rx_queues; i++) {
- 		struct ixgbe_ring *rx_ring = adapter->rx_ring[i];
- 		non_eop_descs += rx_ring->rx_stats.non_eop_descs;
-+		alloc_rx_page += rx_ring->rx_stats.alloc_rx_page;
- 		alloc_rx_page_failed += rx_ring->rx_stats.alloc_rx_page_failed;
- 		alloc_rx_buff_failed += rx_ring->rx_stats.alloc_rx_buff_failed;
- 		hw_csum_rx_error += rx_ring->rx_stats.csum_err;
-@@ -6798,6 +6801,7 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
- 		packets += rx_ring->stats.packets;
- 	}
- 	adapter->non_eop_descs = non_eop_descs;
-+	adapter->alloc_rx_page = alloc_rx_page;
- 	adapter->alloc_rx_page_failed = alloc_rx_page_failed;
- 	adapter->alloc_rx_buff_failed = alloc_rx_buff_failed;
- 	adapter->hw_csum_rx_error = hw_csum_rx_error;
-
+Thanks,
+Richard
