@@ -1,26 +1,50 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Tue, 5 Sep 2017 09:20:58 +0200
-Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
- config interfaces for traffic shapers
-In-Reply-To: <1519366e-5418-4dda-db00-5bf50a1c67c4@intel.com>
-References: <20170901012625.14838-1-vinicius.gomes@intel.com>
- <20170901130311.v5nyx6e6gfats5dg@localhost>
- <1519366e-5418-4dda-db00-5bf50a1c67c4@intel.com>
-Message-ID: <20170905072058.giqnqfhcooqzc46w@localhost>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 5 Sep 2017 18:45:48 +0000
+Subject: [Intel-wired-lan] [next PATCH S79-V2 09/13] i40e: Properly
+ maintain	flow director filters list
+In-Reply-To: <20170829093242.41026-9-alice.michael@intel.com>
+References: <20170829093242.41026-1-alice.michael@intel.com>
+ <20170829093242.41026-9-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EA9943@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Sep 01, 2017 at 09:12:17AM -0700, Jesus Sanchez-Palencia wrote:
-> On 09/01/2017 06:03 AM, Richard Cochran wrote:
-> > The timing of this RFC is good, as I am just finishing up an RFC that
-> > implements time-based transmit using the i210.  I'll try and get that
-> > out ASAP.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Tuesday, August 29, 2017 2:33 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: Sadowski, Filip <filip.sadowski@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S79-V2 09/13] i40e: Properly maintain
+> flow director filters list
+> 
+> From: Filip Sadowski <filip.sadowski@intel.com>
+> 
+> When there is no space for more flow director filters and user requested to
+> add a new one it is rejected by firmware and automatically removed from
+> the filter list maintained by driver. This behaviour is correct. Afterwards
+> existing filter can be removed making free slot for the new one. This
+> however causes the newly added filter to be accepted by firmware but
+> removed from driver filter list resulting in not showing after issuing 'ethtool -
+> n <dev_name>'.
+> 
+> This happended due to not clearing the variable pf->fd_inv which stores filter
+> number to be removed from the list when firmware refused to add the
+> requested filter. It caused the filter with this specific ID to be constantly
+> removed once it was added to the list although it has been accepted by
+> firmware and effectively applied to the NIC.
+> It was fixed by clearing pf->fd_inv variable after removal of the filter from
+> the list when it was rejected by firmware.
+> 
+> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-I have an RFC series ready for net-next, but the the merge window just
-started.  I'll post it when the window closes again...
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Thanks,
-Richard
+
