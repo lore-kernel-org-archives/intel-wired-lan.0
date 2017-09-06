@@ -1,195 +1,109 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 06 Sep 2017 13:45:31 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:40GbE] BUILD SUCCESS
- 3c8f3e96af3a6799841761923d000566645f0942
-Message-ID: <59af8b7b.CIE/Em/4VRXpXTmS%fengguang.wu@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Wed, 6 Sep 2017 10:06:39 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v3] e1000e: Be drop monitor
+ friendly
+In-Reply-To: <20170826011424.27251-1-f.fainelli@gmail.com>
+References: <20170826011424.27251-1-f.fainelli@gmail.com>
+Message-ID: <bdd7d5a3-2004-ad2e-3c09-8198d76acafa@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  40GbE
-3c8f3e96af3a6799841761923d000566645f0942  i40e: point wb_desc at the nvm_wb_desc during i40e_read_nvm_aq
+On 8/26/2017 04:14, Florian Fainelli wrote:
+> e1000e_put_txbuf() can be called from normal reclamation path as well as
+> when a DMA mapping failure, so we need to differentiate these two cases
+> when freeing SKBs to be drop monitor friendly. e1000e_tx_hwtstamp_work()
+> and e1000_remove() are processing TX timestamped SKBs and those should
+> not be accounted as drops either.
+>
+> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+> ---
+> Changes in v3:
+>
+> - differentiate normal reclamation from TX DMA fragment mapping errors
+> - removed a few invalid dev_kfree_skb() replacements (those are already
+>    drop monitor friendly)
+>
+> Changes in v2:
+>
+> - make it compile
+>
+>   drivers/net/ethernet/intel/e1000e/netdev.c | 18 +++++++++++-------
+>   1 file changed, 11 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 327dfe5bedc0..cfd21858c095 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -1071,7 +1071,8 @@ static bool e1000_clean_rx_irq(struct e1000_ring *rx_ring, int *work_done,
+>   }
+>   
+>   static void e1000_put_txbuf(struct e1000_ring *tx_ring,
+> -			    struct e1000_buffer *buffer_info)
+> +			    struct e1000_buffer *buffer_info,
+> +			    bool drop)
+>   {
+>   	struct e1000_adapter *adapter = tx_ring->adapter;
+>   
+> @@ -1085,7 +1086,10 @@ static void e1000_put_txbuf(struct e1000_ring *tx_ring,
+>   		buffer_info->dma = 0;
+>   	}
+>   	if (buffer_info->skb) {
+> -		dev_kfree_skb_any(buffer_info->skb);
+> +		if (drop)
+> +			dev_kfree_skb_any(buffer_info->skb);
+> +		else
+> +			dev_consume_skb_any(buffer_info->skb);
+>   		buffer_info->skb = NULL;
+>   	}
+>   	buffer_info->time_stamp = 0;
+> @@ -1199,7 +1203,7 @@ static void e1000e_tx_hwtstamp_work(struct work_struct *work)
+>   		wmb(); /* force write prior to skb_tstamp_tx */
+>   
+>   		skb_tstamp_tx(skb, &shhwtstamps);
+> -		dev_kfree_skb_any(skb);
+> +		dev_consume_skb_any(skb);
+>   	} else if (time_after(jiffies, adapter->tx_hwtstamp_start
+>   			      + adapter->tx_timeout_factor * HZ)) {
+>   		dev_kfree_skb_any(adapter->tx_hwtstamp_skb);
+> @@ -1254,7 +1258,7 @@ static bool e1000_clean_tx_irq(struct e1000_ring *tx_ring)
+>   				}
+>   			}
+>   
+> -			e1000_put_txbuf(tx_ring, buffer_info);
+> +			e1000_put_txbuf(tx_ring, buffer_info, false);
+>   			tx_desc->upper.data = 0;
+>   
+>   			i++;
+> @@ -2421,7 +2425,7 @@ static void e1000_clean_tx_ring(struct e1000_ring *tx_ring)
+>   
+>   	for (i = 0; i < tx_ring->count; i++) {
+>   		buffer_info = &tx_ring->buffer_info[i];
+> -		e1000_put_txbuf(tx_ring, buffer_info);
+> +		e1000_put_txbuf(tx_ring, buffer_info, false);
+>   	}
+>   
+>   	netdev_reset_queue(adapter->netdev);
+> @@ -5614,7 +5618,7 @@ static int e1000_tx_map(struct e1000_ring *tx_ring, struct sk_buff *skb,
+>   			i += tx_ring->count;
+>   		i--;
+>   		buffer_info = &tx_ring->buffer_info[i];
+> -		e1000_put_txbuf(tx_ring, buffer_info);
+> +		e1000_put_txbuf(tx_ring, buffer_info, true);
+>   	}
+>   
+>   	return 0;
+> @@ -7411,7 +7415,7 @@ static void e1000_remove(struct pci_dev *pdev)
+>   	if (adapter->flags & FLAG_HAS_HW_TIMESTAMP) {
+>   		cancel_work_sync(&adapter->tx_hwtstamp_work);
+>   		if (adapter->tx_hwtstamp_skb) {
+> -			dev_kfree_skb_any(adapter->tx_hwtstamp_skb);
+> +			dev_consume_skb_any(adapter->tx_hwtstamp_skb);
+>   			adapter->tx_hwtstamp_skb = NULL;
+>   		}
+>   	}
 
-elapsed time: 101m
+i am ok with this patch
 
-configs tested: 171
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                 randconfig-a0-09061216
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                               tinyconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201736
-x86_64                 randconfig-x001-201736
-x86_64                 randconfig-x007-201736
-x86_64                 randconfig-x000-201736
-x86_64                 randconfig-x006-201736
-x86_64                 randconfig-x003-201736
-x86_64                 randconfig-x009-201736
-x86_64                 randconfig-x004-201736
-x86_64                 randconfig-x008-201736
-x86_64                 randconfig-x005-201736
-x86_64                 randconfig-x002-201736
-x86_64                 randconfig-g0-09061249
-x86_64                 randconfig-x016-201736
-x86_64                 randconfig-x011-201736
-x86_64                 randconfig-x012-201736
-x86_64                 randconfig-x014-201736
-x86_64                 randconfig-x019-201736
-x86_64                 randconfig-x013-201736
-x86_64                 randconfig-x018-201736
-x86_64                 randconfig-x015-201736
-x86_64                 randconfig-x010-201736
-x86_64                 randconfig-x017-201736
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201736
-i386                     randconfig-a1-201736
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-cris                              allnoconfig
-m68k                              allnoconfig
-powerpc                 mpc8313_rdb_defconfig
-powerpc64                         allnoconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201736
-i386                     randconfig-s0-201736
-x86_64                           allmodconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-arm                          pcm027_defconfig
-m68k                        mvme147_defconfig
-powerpc               mpc85xx_basic_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201736
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201736
-i386                     randconfig-i0-201736
-parisc                           allyesconfig
-powerpc                     ppa8548_defconfig
-sh                            hp6xx_defconfig
-i386                   randconfig-x019-201736
-i386                   randconfig-x013-201736
-i386                   randconfig-x012-201736
-i386                   randconfig-x016-201736
-i386                   randconfig-x018-201736
-i386                   randconfig-x010-201736
-i386                   randconfig-x011-201736
-i386                   randconfig-x015-201736
-i386                   randconfig-x014-201736
-i386                   randconfig-x017-201736
-arm64                               defconfig
-blackfin                         alldefconfig
-x86_64                randconfig-ne0-09061238
-arm                       aspeed_g4_defconfig
-arm                          nuc950_defconfig
-mips                        msp71xx_defconfig
-x86_64                                  kexec
-x86_64                               rhel-7.2
-mips                        bcm63xx_defconfig
-mips                         rt305x_defconfig
-i386                   randconfig-x003-201736
-i386                   randconfig-x000-201736
-i386                   randconfig-x004-201736
-i386                   randconfig-x009-201736
-i386                   randconfig-x005-201736
-i386                   randconfig-x001-201736
-i386                   randconfig-x008-201736
-i386                   randconfig-x007-201736
-i386                   randconfig-x006-201736
-i386                   randconfig-x002-201736
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                             ezx_defconfig
-powerpc                    mvme5100_defconfig
-x86_64                randconfig-ws0-09061254
-x86_64                randconfig-ws0-09061302
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-i386                   randconfig-x076-201736
-i386                   randconfig-x075-201736
-i386                   randconfig-x071-201736
-i386                   randconfig-x070-201736
-i386                   randconfig-x074-201736
-i386                   randconfig-x079-201736
-i386                   randconfig-x072-201736
-i386                   randconfig-x078-201736
-i386                   randconfig-x073-201736
-i386                   randconfig-x077-201736
-ia64                          tiger_defconfig
-openrisc                         allmodconfig
-sh                           se7724_defconfig
-i386                   randconfig-x0-09061227
-
-Thanks,
-Fengguang
