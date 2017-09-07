@@ -1,73 +1,31 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Thu, 07 Sep 2017 10:32:48 -0700
-Subject: [Intel-wired-lan] [net PATCH] ixgbe: incorrect xdp ring accounting
- in ethtool tx_frame param
-Message-ID: <20170907173248.7589.44547.stgit@john-Precision-Tower-5810>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 7 Sep 2017 10:38:32 -0700
+Subject: [Intel-wired-lan] [RFC PATCH v3 0/6] Configuring traffic
+ classes via new hardware offload mechanism in tc/mqprio
+In-Reply-To: <bd18cda5-4827-2246-f736-630527a9fcbc@intel.com>
+References: <150478158684.24662.17975701233699487888.stgit@anamdev.jf.intel.com>
+ <a37ba2ca-145a-0228-961d-c805434e7d40@oracle.com>
+ <bd18cda5-4827-2246-f736-630527a9fcbc@intel.com>
+Message-ID: <c18fa196-439a-66d4-8a86-a8b661d03116@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Changing the TX ring parameters with an XDP program attached may
-cause the XDP queues to be cleared and the TX rings to be incorrectly
-configured.
+On 9/7/2017 10:22 AM, Nambiar, Amritha wrote:
+> On 9/7/2017 9:45 AM, Shannon Nelson wrote:
+[...]
+>>
+>> It would be nice to know what has changed since the last review, either
+>> summarized here or in the individual patch files. 
+[...]
+> 
+> For all those patch files that have changed since the last revision, I
+> have captured all the new changes in the section titled "v3: " of each
+> patch file. 
 
-Fix by doing correct ring accounting in setup call.
+Mea culpa.
 
-Fixes: 33fdc82f0883 ("ixgbe: add support for XDP_TX action")
-Signed-off-by: John Fastabend <john.fastabend@gmail.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 72c5657..c3e7a81 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -1048,7 +1048,7 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
- 	struct ixgbe_ring *temp_ring;
--	int i, err = 0;
-+	int i, j, err = 0;
- 	u32 new_rx_count, new_tx_count;
- 
- 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
-@@ -1085,8 +1085,8 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
- 	}
- 
- 	/* allocate temporary buffer to store rings in */
--	i = max_t(int, adapter->num_tx_queues, adapter->num_rx_queues);
--	i = max_t(int, i, adapter->num_xdp_queues);
-+	i = max_t(int, adapter->num_tx_queues + adapter->num_xdp_queues,
-+		  adapter->num_rx_queues);
- 	temp_ring = vmalloc(i * sizeof(struct ixgbe_ring));
- 
- 	if (!temp_ring) {
-@@ -1118,8 +1118,8 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
- 			}
- 		}
- 
--		for (i = 0; i < adapter->num_xdp_queues; i++) {
--			memcpy(&temp_ring[i], adapter->xdp_ring[i],
-+		for (j = 0; j < adapter->num_xdp_queues; j++, i++) {
-+			memcpy(&temp_ring[i], adapter->xdp_ring[j],
- 			       sizeof(struct ixgbe_ring));
- 
- 			temp_ring[i].count = new_tx_count;
-@@ -1139,10 +1139,10 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
- 			memcpy(adapter->tx_ring[i], &temp_ring[i],
- 			       sizeof(struct ixgbe_ring));
- 		}
--		for (i = 0; i < adapter->num_xdp_queues; i++) {
--			ixgbe_free_tx_resources(adapter->xdp_ring[i]);
-+		for (j = 0; j < adapter->num_xdp_queues; j++, i++) {
-+			ixgbe_free_tx_resources(adapter->xdp_ring[j]);
- 
--			memcpy(adapter->xdp_ring[i], &temp_ring[i],
-+			memcpy(adapter->xdp_ring[j], &temp_ring[i],
- 			       sizeof(struct ixgbe_ring));
- 		}
- 
-
+ugh.
+sln
