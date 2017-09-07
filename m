@@ -1,89 +1,91 @@
-From: Henrik Austad <henrik@austad.us>
-Date: Thu, 7 Sep 2017 18:18:38 +0200
-Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
- config interfaces for traffic shapers
-In-Reply-To: <20170907155315.5gqy5e4susl25wa2@localhost>
-References: <20170901012625.14838-1-vinicius.gomes@intel.com>
- <20170907053411.GA6580@sisyphus.home.austad.us>
- <20170907124018.deinzo3c4ice3q7n@localhost>
- <20170907152751.GA9064@sisyphus.home.austad.us>
- <20170907155315.5gqy5e4susl25wa2@localhost>
-Message-ID: <20170907161838.GB9064@sisyphus.home.austad.us>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 7 Sep 2017 09:45:33 -0700
+Subject: [Intel-wired-lan] [RFC PATCH v3 0/6] Configuring traffic
+ classes via new hardware offload mechanism in tc/mqprio
+In-Reply-To: <150478158684.24662.17975701233699487888.stgit@anamdev.jf.intel.com>
+References: <150478158684.24662.17975701233699487888.stgit@anamdev.jf.intel.com>
+Message-ID: <a37ba2ca-145a-0228-961d-c805434e7d40@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Sep 07, 2017 at 05:53:15PM +0200, Richard Cochran wrote:
-> On Thu, Sep 07, 2017 at 05:27:51PM +0200, Henrik Austad wrote:
-> > On Thu, Sep 07, 2017 at 02:40:18PM +0200, Richard Cochran wrote:
-> > And if you want to this driver to act as a bridge, how do you accomodate 
-> > change in network requirements? (i.e. how does this work with switchdev?)
+On 9/7/2017 4:00 AM, Amritha Nambiar wrote:
+> The following series introduces a new hardware offload mode in
+> tc/mqprio where the TCs, the queue configurations and
+> bandwidth rate limits are offloaded to the hardware. The existing
+> mqprio framework is extended to configure the queue counts and
+> layout and also added support for rate limiting. This is achieved
+> through new netlink attributes for the 'mode' option which takes
+> values such as 'dcb' (default) and 'channel' and a 'shaper' option
+> for QoS attributes such as bandwidth rate limits in hw mode 1.
+> Legacy devices can fall back to the existing setup supporting hw mode
+> 1 without these additional options where only the TCs are offloaded
+> and then the 'mode' and 'shaper' options defaults to DCB support.
+> The i40e driver enables the new mqprio hardware offload mechanism
+> factoring the TCs, queue configuration and bandwidth rates by
+> creating HW channel VSIs.
 > 
-> To my understanding, this Qdisc idea provides QoS for the host's
-> transmitted traffic, and nothing more.
-
-Ok, then we're on the same page.
-
-> > - Or am I overthinking this?
+> In this new mode, the priority to traffic class mapping and the
+> user specified queue ranges are used to configure the traffic
+> class when the 'mode' option is set to 'channel'. This is achieved by
+> creating HW channels(VSI). A new channel is created for each of the
+> traffic class configuration offloaded via mqprio framework except for
+> the first TC (TC0) which is for the main VSI. TC0 for the main VSI is
+> also reconfigured as per user provided queue parameters. Finally,
+> bandwidth rate limits are set on these traffic classes through the
+> shaper attribute by sending these rates in addition to the number of
+> TCs and the queue configurations.
 > 
-> Being able to configure the external ports of a switchdev is probably
-> a nice feature, but that is another story.  (But maybe I misunderstood
-> the authors' intent!)
-
-ok, chalk that one up for later perhaps
-
-> > If you have more than 1 application in userspace that wants to send data 
-> > using this scheduler, how do you ensure fair transmission of frames? (both 
-> > how much bandwidth they use,
+> Example:
+>      # tc qdisc add dev eth0 root mqprio num_tc 2 map 0 0 0 0 1 1 1 1\
+>        queues 4 at 0 4 at 4 hw 1 mode channel shaper bw_rlimit\
+>        min_rate 1Gbit 2Gbit max_rate 4Gbit 5Gbit
 > 
-> There are many ways to handle this, and we shouldn't put any of that
-> policy into the kernel.  For example, there might be a monolithic
-> application with configurable threads, or an allocation server that
-> grants bandwidth to applications via IPC, or a multiplexing stream
-> server like jack, pulse, etc, and so on...
-
-true
-
-> > but also ordering of frames from each application)
+>      To dump the bandwidth rates:
 > 
-> Not sure what you mean by this.
-
-Fair enough, I'm not that good at making myself clear :)
-
-Let's see if I can make a better attempt:
-
-If you have 2 separate applications that have their own streams going to 
-different endpoints - but both are in the same class, then they will 
-share the qdisc bandwidth.
-
-So application 
-- A sends frame A1, A2, A3, .. An
-- B sends B1, B2, .. Bn
-
-What I was trying to describe was: if application A send 2 frames, and B 
-sends 2 frames at the same time, then you would hope that the order would 
-be A1, B1, A2, B2, and not A1, A2, B1, B2.
-
-None of this would be a problem if you expect a *single* user, like the 
-allocation server you described above. Again, I think this is just me 
-overthinking the problem right now :)
-
-> > Do you expect all of this to be handled in userspace?
+>      # tc qdisc show dev eth0
 > 
-> Yes, I do.
+>      qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
+>                   queues:(0:3) (4:7)
+>                   mode:channel
+>                   shaper:bw_rlimit   min_rate:1Gbit 2Gbit   max_rate:4Gbit 5Gbit
+> 
+> ---
+> 
+> Amritha Nambiar (6):
+>        mqprio: Introduce new hardware offload mode and shaper in mqprio
+>        i40e: Add macro for PF reset bit
+>        i40e: Add infrastructure for queue channel support
+>        i40e: Enable 'channel' mode in mqprio for TC configs
+>        i40e: Refactor VF BW rate limiting
+>        i40e: Add support setting TC max bandwidth rates
+> 
 
-ok, fair enough
+It would be nice to know what has changed since the last review, either 
+summarized here or in the individual patch files.  This helps in knowing 
+how much attention should be given to this new set of patches, and 
+encourages further review.  I don't remember seeing any responses to my 
+previous comments, and it looks like not all of them were acted upon.
 
-Thanks for answering my questions!
+sln
 
--- 
-Henrik Austad
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 181 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170907/9b81992f/attachment.asc>
+> 
+>   drivers/net/ethernet/intel/i40e/i40e.h             |   44 +
+>   drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |    3
+>   drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |    8
+>   drivers/net/ethernet/intel/i40e/i40e_main.c        | 1463 +++++++++++++++++---
+>   drivers/net/ethernet/intel/i40e/i40e_txrx.h        |    2
+>   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   50 -
+>   include/net/pkt_cls.h                              |    9
+>   include/uapi/linux/pkt_sched.h                     |   32
+>   net/sched/sch_mqprio.c                             |  183 ++-
+>   9 files changed, 1551 insertions(+), 243 deletions(-)
+> 
+> --
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
