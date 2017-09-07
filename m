@@ -1,48 +1,50 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 7 Sep 2017 22:21:02 +0000
-Subject: [Intel-wired-lan] [next-queue v3] i40e/i40evf: organize and
- re-number feature flags
-In-Reply-To: <20170901205407.41800-1-jeffrey.t.kirsher@intel.com>
-References: <20170901205407.41800-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5882A9EE9F@ORSMSX115.amr.corp.intel.com>
+From: Guedes, Andre <andre.guedes@intel.com>
+Date: Thu, 7 Sep 2017 21:51:53 +0000
+Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
+ config interfaces for traffic shapers
+In-Reply-To: <20170907161838.GB9064@sisyphus.home.austad.us>
+References: <20170901012625.14838-1-vinicius.gomes@intel.com>
+ <20170907053411.GA6580@sisyphus.home.austad.us>
+ <20170907124018.deinzo3c4ice3q7n@localhost>
+ <20170907152751.GA9064@sisyphus.home.austad.us>
+ <20170907155315.5gqy5e4susl25wa2@localhost>
+ <20170907161838.GB9064@sisyphus.home.austad.us>
+Message-ID: <1504821112.2117.8.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Kirsher, Jeffrey T
-> Sent: Friday, September 01, 2017 1:54 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Keller, Jacob E <jacob.e.keller@intel.com>
-> Subject: [next-queue v3] i40e/i40evf: organize and re-number feature flags
+On Thu, 2017-09-07 at 18:18 +0200, Henrik Austad wrote:
+> On Thu, Sep 07, 2017 at 05:53:15PM +0200, Richard Cochran wrote:
+> > On Thu, Sep 07, 2017 at 05:27:51PM +0200, Henrik Austad wrote:
+> > > On Thu, Sep 07, 2017 at 02:40:18PM +0200, Richard Cochran wrote:
+> > > And if you want to this driver to act as a bridge, how do you accomodate?
+> > > change in network requirements? (i.e. how does this work with switchdev?)
+> >?
+> > To my understanding, this Qdisc idea provides QoS for the host's
+> > transmitted traffic, and nothing more.
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> Ok, then we're on the same page.
 > 
-> Now that we've reduced the number of flags, organize similar flags
-> together and re-number them accordingly.
+> > > - Or am I overthinking this?
+> >?
+> > Being able to configure the external ports of a switchdev is probably
+> > a nice feature, but that is another story.? (But maybe I misunderstood
+> > the authors' intent!)
 > 
-> Since we don't yet have more than 32 flags, we'll use a u32 for both the
-> hw_features and flag field. Should we gain more flags in the future, we
-> may need to convert to a u64 or separate flags out into two fields.
-> 
-> One alternative approach considered, but not implemented here, was to
-> use an enumeration for the flag variables, and create a macro
-> I40E_FLAG() which used string concatenation to generate BIT_ULL values.
-> This has the advantage of making the actual bit values compile-time
-> dynamic so that we do not need to worry about matching the order to the
-> bit value. However, this does produce a high level of code churn, and
-> makes it more difficult to read a dumped flags value when debugging.
-> 
-> v3: rebased patch based on the current dev-queue branch
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Reviewed-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I8653fff69453cd547d6fe98d29dfa9d8710387d1
-> ---
+> ok, chalk that one up for later perhaps
 
-This version has a u64 instead of u32 for the flags variable, and that causes cmpxchg warnings. I sent a v4 to resolve this.
+Just to clarify, we've been most focused on end-station use-cases. We've
+considered some bridge use-cases as well just to verify that the proposed
+design won't be an issue if someone else goes for it.
 
-Thanks,
-Jake
+- Andre
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3262 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170907/83455e39/attachment-0001.bin>
