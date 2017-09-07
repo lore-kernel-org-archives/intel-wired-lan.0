@@ -1,73 +1,33 @@
-From: Kardonik Michael <Michael.Kardonik@nxp.com>
-Date: Tue, 5 Sep 2017 15:27:24 -0500
-Subject: [Intel-wired-lan] [PATCH] e1000e: changed some expensive calls of
-	udelay to usleep_range
-Message-ID: <1504643244-9233-1-git-send-email-Michael.Kardonik@nxp.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 06 Sep 2017 18:13:18 -0700
+Subject: [Intel-wired-lan] [PATCH net 2/2] i40e: Avoid some useless
+ variables and initializers in nvm functions
+In-Reply-To: <d0881adf53a3f0a546b3e7940b92b4ce938e7e50.1504684488.git.sbrivio@redhat.com>
+References: <cover.1504684488.git.sbrivio@redhat.com>
+ <d0881adf53a3f0a546b3e7940b92b4ce938e7e50.1504684488.git.sbrivio@redhat.com>
+Message-ID: <1504746798.3922.80.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Calls to udelay are not preemtable by userspace so userspace
-applications experience a large (~200us) latency when running on core0. 
-Instead usleep_range can be used to be more friendly to userspace
-since it is preemtable. This is due to udelay using busy-wait loops
-while usleep_rang uses hrtimers instead. It is recommended to use
-udelay when the delay is <10us since at that precision overhead of
-usleep_range hrtimer setup causes issues. However, the replaced calls
-are for 50us and 100us so this should not be not an issue.
-There is no open bug that this patch is fixing, but we see a good
-boost in zero loss performance of specific user space application 
-(dpdk l3fwd) when this patch is applied: we get from 32% of 10Gb line 
-to 49%.
+On Wed, 2017-09-06 at 10:11 +0200, Stefano Brivio wrote:
+> Fixes: 09f79fd49d94 ("i40e: avoid NVM acquire deadlock during NVM
+> update")
+> Signed-off-by: Stefano Brivio <sbrivio@redhat.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c | 20 +++++++-------------
+>  1 file changed, 7 insertions(+), 13 deletions(-)
 
-Signed-off-by: Matthew Tan <matthew.tan_1@nxp.com>
-Signed-off-by: Michael Kardonik <michael.kardonik@nxp.com>
-
----
- drivers/net/ethernet/intel/e1000e/phy.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
-index de13aea..e318fdc 100644
---- a/drivers/net/ethernet/intel/e1000e/phy.c
-+++ b/drivers/net/ethernet/intel/e1000e/phy.c
-@@ -158,7 +158,7 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
- 	 * the lower time out
- 	 */
- 	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
--		udelay(50);
-+		usleep_range(50, 60);
- 		mdic = er32(MDIC);
- 		if (mdic & E1000_MDIC_READY)
- 			break;
-@@ -183,7 +183,7 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
- 	 * reading duplicate data in the next MDIC transaction.
- 	 */
- 	if (hw->mac.type == e1000_pch2lan)
--		udelay(100);
-+		usleep_range(100, 110);
- 
- 	return 0;
- }
-@@ -222,7 +222,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
- 	 * the lower time out
- 	 */
- 	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
--		udelay(50);
-+		usleep_range(50, 60);
- 		mdic = er32(MDIC);
- 		if (mdic & E1000_MDIC_READY)
- 			break;
-@@ -246,7 +246,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
- 	 * reading duplicate data in the next MDIC transaction.
- 	 */
- 	if (hw->mac.type == e1000_pch2lan)
--		udelay(100);
-+		usleep_range(100, 110);
- 
- 	return 0;
- }
--- 
-2.7.4
+This is NOT a fix, it is a coding style preference whether or not you
+like multiple returns or a single return in functions.  I do not mind
+picking this up for net-next (4.15 kernel), but this does not qualify
+for a fix for Dave's net tree.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170906/b948ff49/attachment.asc>
