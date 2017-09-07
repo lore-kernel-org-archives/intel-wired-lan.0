@@ -1,195 +1,263 @@
 From: Amritha Nambiar <amritha.nambiar@intel.com>
-Date: Thu, 07 Sep 2017 04:00:27 -0700
-Subject: [Intel-wired-lan] [RFC PATCH v3 5/6] i40e: Refactor VF BW rate
-	limiting
+Date: Thu, 07 Sep 2017 04:00:32 -0700
+Subject: [Intel-wired-lan] [RFC PATCH v3 6/6] i40e: Add support setting TC
+	max bandwidth rates
 In-Reply-To: <150478158684.24662.17975701233699487888.stgit@anamdev.jf.intel.com>
 References: <150478158684.24662.17975701233699487888.stgit@anamdev.jf.intel.com>
-Message-ID: <150478202784.24662.17062791162973773248.stgit@anamdev.jf.intel.com>
+Message-ID: <150478203291.24662.3361290802097939640.stgit@anamdev.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch refactors the BW rate limiting for Tx traffic
-on the VF to be reused in the next patch for rate limiting Tx
-traffic for the VSIs on the PF as well.
+This patch enables setting up maximum Tx rates for the traffic
+classes in i40e. The maximum rate is offloaded to the hardware through
+the mqprio framework by specifying the mode option as 'channel' and
+shaper option as 'bw_rlimit' and is configured for the VSI. Configuring
+minimum Tx rate limit is not supported in the device. The minimum
+usable value for Tx rate is 50Mbps.
 
-v3: Minor fixes, clean up log messages based on Shannon's comments.
+Example:
+# tc qdisc add dev eth0 root mqprio num_tc 2  map 0 0 0 0 1 1 1 1\
+  queues 4 at 0 4 at 4 hw 1 mode channel shaper bw_rlimit\
+  max_rate 4Gbit 5Gbit
+
+To dump the bandwidth rates:
+# tc qdisc show dev eth0
+
+qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
+             queues:(0:3) (4:7)
+             mode:channel
+             shaper:bw_rlimit   max_rate:4Gbit 5Gbit
 
 Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h             |    5 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c        |   64 ++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   45 +-------------
- 3 files changed, 71 insertions(+), 43 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h      |    2 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c |  101 +++++++++++++++++++++++++--
+ 2 files changed, 94 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index ddb7292..2ee0197 100644
+index 2ee0197..02cae34 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -128,6 +128,10 @@
- /* default to trying for four seconds */
- #define I40E_TRY_LINK_TIMEOUT	(4 * HZ)
+@@ -359,6 +359,8 @@ struct i40e_channel {
+ 	u8 enabled_tc;
+ 	struct i40e_aqc_vsi_properties_data info;
  
-+/* BW rate limiting */
-+#define I40E_BW_CREDIT_DIVISOR		50 /* 50Mbps per BW credit */
-+#define I40E_MAX_BW_INACTIVE_ACCUM	4  /* accumulate 4 credits max */
++	u64 max_tx_rate;
 +
- /* driver state flags */
- enum i40e_state_t {
- 	__I40E_TESTING,
-@@ -1042,4 +1046,5 @@ static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
- }
- 
- int i40e_create_queue_channel(struct i40e_vsi *vsi, struct i40e_channel *ch);
-+int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate);
- #endif /* _I40E_H_ */
+ 	/* track this channel belongs to which VSI */
+ 	struct i40e_vsi *parent_vsi;
+ };
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a953c2e..7f13bc7 100644
+index 7f13bc7..14a177b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5406,6 +5406,70 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
- }
+@@ -5202,9 +5202,16 @@ static int i40e_vsi_configure_bw_alloc(struct i40e_vsi *vsi, u8 enabled_tc,
+ 	i40e_status ret;
+ 	int i;
  
- /**
-+ * i40e_get_link_speed - Returns link speed for the interface
-+ * @vsi: VSI to be configured
-+ *
-+ **/
-+int i40e_get_link_speed(struct i40e_vsi *vsi)
-+{
-+	struct i40e_pf *pf = vsi->back;
+-	if ((vsi->back->flags & I40E_FLAG_TC_MQPRIO) ||
+-	    !vsi->mqprio_qopt.qopt.hw)
++	if (vsi->back->flags & I40E_FLAG_TC_MQPRIO)
+ 		return 0;
++	if (!vsi->mqprio_qopt.qopt.hw) {
++		ret = i40e_set_bw_limit(vsi, vsi->seid, 0);
++		if (ret)
++			dev_info(&vsi->back->pdev->dev,
++				 "Failed to reset tx rate for vsi->seid %u\n",
++				 vsi->seid);
++		return ret;
++	}
+ 	bw_data.tc_valid_bits = enabled_tc;
+ 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++)
+ 		bw_data.tc_bw_credits[i] = bw_share[i];
+@@ -5511,6 +5518,13 @@ static void i40e_remove_queue_channels(struct i40e_vsi *vsi)
+ 			rx_ring->ch = NULL;
+ 		}
+ 
++		/* Reset BW configured for this VSI via mqprio */
++		ret = i40e_set_bw_limit(vsi, ch->seid, 0);
++		if (ret)
++			dev_info(&vsi->back->pdev->dev,
++				 "Failed to reset tx rate for ch->seid %u\n",
++				 ch->seid);
 +
-+	switch (pf->hw.phy.link_info.link_speed) {
-+	case I40E_LINK_SPEED_40GB:
-+		return 40000;
-+	case I40E_LINK_SPEED_25GB:
-+		return 25000;
-+	case I40E_LINK_SPEED_20GB:
-+		return 20000;
-+	case I40E_LINK_SPEED_10GB:
-+		return 10000;
-+	case I40E_LINK_SPEED_1GB:
-+		return 1000;
-+	default:
+ 		/* delete VSI from FW */
+ 		ret = i40e_aq_delete_element(&vsi->back->hw, ch->seid,
+ 					     NULL);
+@@ -6053,6 +6067,17 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
+ 		 "Setup channel (id:%u) utilizing num_queues %d\n",
+ 		 ch->seid, ch->num_queue_pairs);
+ 
++	/* configure VSI for BW limit */
++	if (ch->max_tx_rate) {
++		if (i40e_set_bw_limit(vsi, ch->seid, ch->max_tx_rate))
++			return -EINVAL;
++
++		dev_dbg(&pf->pdev->dev,
++			"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++			ch->max_tx_rate,
++			ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR, ch->seid);
++	}
++
+ 	/* in case of VF, this will be main SRIOV VSI */
+ 	ch->parent_vsi = vsi;
+ 
+@@ -6088,6 +6113,12 @@ static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
+ 			ch->base_queue =
+ 				vsi->tc_config.tc_info[i].qoffset;
+ 
++			/* Bandwidth limit through tc interface is in bytes/s,
++			 * change to Mbit/s
++			 */
++			ch->max_tx_rate =
++				vsi->mqprio_qopt.max_rate[i] / (1000000 / 8);
++
+ 			list_add_tail(&ch->list, &vsi->ch_list);
+ 
+ 			ret = i40e_create_queue_channel(vsi, ch);
+@@ -6514,6 +6545,7 @@ void i40e_down(struct i40e_vsi *vsi)
+ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
+ 				     struct tc_mqprio_qopt_offload *mqprio_qopt)
+ {
++	u64 sum_max_rate = 0;
+ 	int i;
+ 
+ 	if ((mqprio_qopt->qopt.offset[0] != 0) ||
+@@ -6523,8 +6555,13 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
+ 	for (i = 0; ; i++) {
+ 		if (!mqprio_qopt->qopt.count[i])
+ 			return -EINVAL;
+-		if (mqprio_qopt->min_rate[i] || mqprio_qopt->max_rate[i])
++		if (mqprio_qopt->min_rate[i]) {
++			dev_err(&vsi->back->pdev->dev,
++				"Invalid min tx rate (greater than 0) specified\n");
+ 			return -EINVAL;
++		}
++		sum_max_rate += (mqprio_qopt->max_rate[i] / (1000000 / 8));
++
+ 		if (i >= mqprio_qopt->qopt.num_tc - 1)
+ 			break;
+ 		if (mqprio_qopt->qopt.offset[i + 1] !=
+@@ -6535,6 +6572,11 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
+ 	    (mqprio_qopt->qopt.offset[i] + mqprio_qopt->qopt.count[i])) {
+ 		return -EINVAL;
+ 	}
++	if (sum_max_rate > i40e_get_link_speed(vsi)) {
++		dev_err(&vsi->back->pdev->dev,
++			"Invalid max tx rate specified\n");
 +		return -EINVAL;
 +	}
-+}
-+
-+/**
-+ * i40e_set_bw_limit - setup BW limit for Tx traffic based on max_tx_rate
-+ * @vsi: VSI to be configured
-+ * @seid: seid of the channel/VSI
-+ * @max_tx_rate: max TX rate to be configured as BW limit
-+ *
-+ * Helper function to set BW limit for a given VSI
-+ **/
-+int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
-+{
-+	struct i40e_pf *pf = vsi->back;
-+	int speed = 0;
-+	int ret = 0;
-+
-+	speed = i40e_get_link_speed(vsi);
-+	if (max_tx_rate > speed) {
-+		dev_err(&pf->pdev->dev,
-+			"Invalid max tx rate %llu specified for VSI seid %d.",
-+			max_tx_rate, seid);
-+		return -EINVAL;
-+	}
-+	if (max_tx_rate && max_tx_rate < 50) {
-+		dev_warn(&pf->pdev->dev,
-+			 "Setting max tx rate to minimum usable value of 50Mbps.\n");
-+		max_tx_rate = 50;
-+	}
-+
-+	/* Tx rate credits are in values of 50Mbps, 0 is disabled */
-+	ret = i40e_aq_config_vsi_bw_limit(&pf->hw, seid,
-+					  max_tx_rate / I40E_BW_CREDIT_DIVISOR,
-+					  I40E_MAX_BW_INACTIVE_ACCUM, NULL);
-+	if (ret)
-+		dev_err(&pf->pdev->dev,
-+			"Failed set tx rate (%llu Mbps) for vsi->seid %u, err %s aq_err %s\n",
-+			max_tx_rate, seid, i40e_stat_str(&pf->hw, ret),
-+			i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
-+	return ret;
-+}
-+
-+/**
-  * i40e_remove_queue_channels - Remove queue channels for the TCs
-  * @vsi: VSI to be configured
-  *
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index ac88d96..06b2548 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -3115,8 +3115,6 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 	return ret;
+ 	return 0;
  }
  
--#define I40E_BW_CREDIT_DIVISOR 50     /* 50Mbps per BW credit */
--#define I40E_MAX_BW_INACTIVE_ACCUM 4  /* device can accumulate 4 credits max */
- /**
-  * i40e_ndo_set_vf_bw
-  * @netdev: network interface device structure
-@@ -3132,7 +3130,6 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 	struct i40e_pf *pf = np->vsi->back;
- 	struct i40e_vsi *vsi;
- 	struct i40e_vf *vf;
--	int speed = 0;
- 	int ret = 0;
- 
- 	/* validate the request */
-@@ -3157,48 +3154,10 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 		goto error;
+@@ -6661,6 +6703,21 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
  	}
  
--	switch (pf->hw.phy.link_info.link_speed) {
--	case I40E_LINK_SPEED_40GB:
--		speed = 40000;
--		break;
--	case I40E_LINK_SPEED_25GB:
--		speed = 25000;
--		break;
--	case I40E_LINK_SPEED_20GB:
--		speed = 20000;
--		break;
--	case I40E_LINK_SPEED_10GB:
--		speed = 10000;
--		break;
--	case I40E_LINK_SPEED_1GB:
--		speed = 1000;
--		break;
--	default:
--		break;
--	}
--
--	if (max_tx_rate > speed) {
--		dev_err(&pf->pdev->dev, "Invalid max tx rate %d specified for VF %d.\n",
--			max_tx_rate, vf->vf_id);
--		ret = -EINVAL;
-+	ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
-+	if (ret)
- 		goto error;
--	}
+ 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
++		if (vsi->mqprio_qopt.max_rate[0]) {
++			u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0] /
++								(1000000 / 8);
++			ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
++			if (!ret) {
++				dev_dbg(&vsi->back->pdev->dev,
++					"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++					max_tx_rate,
++					max_tx_rate / I40E_BW_CREDIT_DIVISOR,
++					vsi->seid);
++			} else {
++				need_reset = true;
++				goto exit;
++			}
++		}
+ 		ret = i40e_configure_queue_channels(vsi);
+ 		if (ret) {
+ 			netdev_info(netdev,
+@@ -8114,6 +8171,18 @@ static int i40e_rebuild_channels(struct i40e_vsi *vsi)
+ 				 vsi->uplink_seid);
+ 			return ret;
+ 		}
++		if (ch->max_tx_rate) {
++			if (i40e_set_bw_limit(vsi, ch->seid,
++					      ch->max_tx_rate))
++				return -EINVAL;
++
++			dev_dbg(&vsi->back->pdev->dev,
++				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++				ch->max_tx_rate,
++				ch->max_tx_rate /
++						I40E_BW_CREDIT_DIVISOR,
++				ch->seid);
++		}
+ 	}
+ 	return 0;
+ }
+@@ -8254,6 +8323,7 @@ static int i40e_reset(struct i40e_pf *pf)
+  **/
+ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ {
++	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
+ 	struct i40e_hw *hw = &pf->hw;
+ 	u8 set_fc_aq_fail = 0;
+ 	i40e_status ret;
+@@ -8336,7 +8406,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 	 * If there were VEBs but the reconstitution failed, we'll try
+ 	 * try to recover minimal use by getting the basic PF VSI working.
+ 	 */
+-	if (pf->vsi[pf->lan_vsi]->uplink_seid != pf->mac_seid) {
++	if (vsi->uplink_seid != pf->mac_seid) {
+ 		dev_dbg(&pf->pdev->dev, "attempting to rebuild switch\n");
+ 		/* find the one VEB connected to the MAC, and find orphans */
+ 		for (v = 0; v < I40E_MAX_VEB; v++) {
+@@ -8360,8 +8430,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 					dev_info(&pf->pdev->dev,
+ 						 "rebuild of switch failed: %d, will try to set up simple PF connection\n",
+ 						 ret);
+-					pf->vsi[pf->lan_vsi]->uplink_seid
+-								= pf->mac_seid;
++					vsi->uplink_seid = pf->mac_seid;
+ 					break;
+ 				} else if (pf->veb[v]->uplink_seid == 0) {
+ 					dev_info(&pf->pdev->dev,
+@@ -8372,10 +8441,10 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 		}
+ 	}
  
--	if ((max_tx_rate < 50) && (max_tx_rate > 0)) {
--		dev_warn(&pf->pdev->dev, "Setting max Tx rate to minimum usable value of 50Mbps.\n");
--		max_tx_rate = 50;
--	}
--
--	/* Tx rate credits are in values of 50Mbps, 0 is disabled*/
--	ret = i40e_aq_config_vsi_bw_limit(&pf->hw, vsi->seid,
--					  max_tx_rate / I40E_BW_CREDIT_DIVISOR,
--					  I40E_MAX_BW_INACTIVE_ACCUM, NULL);
--	if (ret) {
--		dev_err(&pf->pdev->dev, "Unable to set max tx rate, error code %d.\n",
--			ret);
--		ret = -EIO;
--		goto error;
--	}
- 	vf->tx_rate = max_tx_rate;
- error:
- 	return ret;
+-	if (pf->vsi[pf->lan_vsi]->uplink_seid == pf->mac_seid) {
++	if (vsi->uplink_seid == pf->mac_seid) {
+ 		dev_dbg(&pf->pdev->dev, "attempting to rebuild PF VSI\n");
+ 		/* no VEB, so rebuild only the Main VSI */
+-		ret = i40e_add_vsi(pf->vsi[pf->lan_vsi]);
++		ret = i40e_add_vsi(vsi);
+ 		if (ret) {
+ 			dev_info(&pf->pdev->dev,
+ 				 "rebuild of Main VSI failed: %d\n", ret);
+@@ -8383,10 +8452,24 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 		}
+ 	}
+ 
++	if (vsi->mqprio_qopt.max_rate[0]) {
++		u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0] / (1000000 / 8);
++
++		ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
++		if (!ret)
++			dev_dbg(&vsi->back->pdev->dev,
++				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++				max_tx_rate,
++				max_tx_rate / I40E_BW_CREDIT_DIVISOR,
++				vsi->seid);
++		else
++			goto end_unlock;
++	}
++
+ 	/* PF Main VSI is rebuild by now, go ahead and rebuild channel VSIs
+ 	 * for this main VSI if they exist
+ 	 */
+-	ret = i40e_rebuild_channels(pf->vsi[pf->lan_vsi]);
++	ret = i40e_rebuild_channels(vsi);
+ 	if (ret)
+ 		goto end_unlock;
+ 
 
