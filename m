@@ -1,103 +1,73 @@
-From: Nambiar, Amritha <amritha.nambiar@intel.com>
-Date: Thu, 7 Sep 2017 10:22:50 -0700
-Subject: [Intel-wired-lan] [RFC PATCH v3 0/6] Configuring traffic
- classes via new hardware offload mechanism in tc/mqprio
-In-Reply-To: <a37ba2ca-145a-0228-961d-c805434e7d40@oracle.com>
-References: <150478158684.24662.17975701233699487888.stgit@anamdev.jf.intel.com>
- <a37ba2ca-145a-0228-961d-c805434e7d40@oracle.com>
-Message-ID: <bd18cda5-4827-2246-f736-630527a9fcbc@intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Thu, 07 Sep 2017 10:32:48 -0700
+Subject: [Intel-wired-lan] [net PATCH] ixgbe: incorrect xdp ring accounting
+ in ethtool tx_frame param
+Message-ID: <20170907173248.7589.44547.stgit@john-Precision-Tower-5810>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/7/2017 9:45 AM, Shannon Nelson wrote:
-> On 9/7/2017 4:00 AM, Amritha Nambiar wrote:
->> The following series introduces a new hardware offload mode in
->> tc/mqprio where the TCs, the queue configurations and
->> bandwidth rate limits are offloaded to the hardware. The existing
->> mqprio framework is extended to configure the queue counts and
->> layout and also added support for rate limiting. This is achieved
->> through new netlink attributes for the 'mode' option which takes
->> values such as 'dcb' (default) and 'channel' and a 'shaper' option
->> for QoS attributes such as bandwidth rate limits in hw mode 1.
->> Legacy devices can fall back to the existing setup supporting hw mode
->> 1 without these additional options where only the TCs are offloaded
->> and then the 'mode' and 'shaper' options defaults to DCB support.
->> The i40e driver enables the new mqprio hardware offload mechanism
->> factoring the TCs, queue configuration and bandwidth rates by
->> creating HW channel VSIs.
->>
->> In this new mode, the priority to traffic class mapping and the
->> user specified queue ranges are used to configure the traffic
->> class when the 'mode' option is set to 'channel'. This is achieved by
->> creating HW channels(VSI). A new channel is created for each of the
->> traffic class configuration offloaded via mqprio framework except for
->> the first TC (TC0) which is for the main VSI. TC0 for the main VSI is
->> also reconfigured as per user provided queue parameters. Finally,
->> bandwidth rate limits are set on these traffic classes through the
->> shaper attribute by sending these rates in addition to the number of
->> TCs and the queue configurations.
->>
->> Example:
->>      # tc qdisc add dev eth0 root mqprio num_tc 2 map 0 0 0 0 1 1 1 1\
->>        queues 4 at 0 4 at 4 hw 1 mode channel shaper bw_rlimit\
->>        min_rate 1Gbit 2Gbit max_rate 4Gbit 5Gbit
->>
->>      To dump the bandwidth rates:
->>
->>      # tc qdisc show dev eth0
->>
->>      qdisc mqprio 804a: root  tc 2 map 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0
->>                   queues:(0:3) (4:7)
->>                   mode:channel
->>                   shaper:bw_rlimit   min_rate:1Gbit 2Gbit   max_rate:4Gbit 5Gbit
->>
->> ---
->>
->> Amritha Nambiar (6):
->>        mqprio: Introduce new hardware offload mode and shaper in mqprio
->>        i40e: Add macro for PF reset bit
->>        i40e: Add infrastructure for queue channel support
->>        i40e: Enable 'channel' mode in mqprio for TC configs
->>        i40e: Refactor VF BW rate limiting
->>        i40e: Add support setting TC max bandwidth rates
->>
-> 
-> It would be nice to know what has changed since the last review, either 
-> summarized here or in the individual patch files.  This helps in knowing 
-> how much attention should be given to this new set of patches, and 
-> encourages further review.  I don't remember seeing any responses to my 
-> previous comments, and it looks like not all of them were acted upon.
+Changing the TX ring parameters with an XDP program attached may
+cause the XDP queues to be cleared and the TX rings to be incorrectly
+configured.
 
-For all those patch files that have changed since the last revision, I
-have captured all the new changes in the section titled "v3: " of each
-patch file. Also, I had replied to most of your comments that they'll be
-fixed in v3 and the one in the mqprio patch that error handling was
-already being done and these responses can be verified in patchwork. I
-missed to respond to your comment regarding supporting macvlan offloads
-through these channels, that will not be a part of this series and will
-be looked upon at a later time in a subsequent patch series.
+Fix by doing correct ring accounting in setup call.
 
-> 
-> sln
-> 
->>
->>   drivers/net/ethernet/intel/i40e/i40e.h             |   44 +
->>   drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |    3
->>   drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |    8
->>   drivers/net/ethernet/intel/i40e/i40e_main.c        | 1463 +++++++++++++++++---
->>   drivers/net/ethernet/intel/i40e/i40e_txrx.h        |    2
->>   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   50 -
->>   include/net/pkt_cls.h                              |    9
->>   include/uapi/linux/pkt_sched.h                     |   32
->>   net/sched/sch_mqprio.c                             |  183 ++-
->>   9 files changed, 1551 insertions(+), 243 deletions(-)
->>
->> --
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->>
+Fixes: 33fdc82f0883 ("ixgbe: add support for XDP_TX action")
+Signed-off-by: John Fastabend <john.fastabend@gmail.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 72c5657..c3e7a81 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -1048,7 +1048,7 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
+ {
+ 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	struct ixgbe_ring *temp_ring;
+-	int i, err = 0;
++	int i, j, err = 0;
+ 	u32 new_rx_count, new_tx_count;
+ 
+ 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+@@ -1085,8 +1085,8 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
+ 	}
+ 
+ 	/* allocate temporary buffer to store rings in */
+-	i = max_t(int, adapter->num_tx_queues, adapter->num_rx_queues);
+-	i = max_t(int, i, adapter->num_xdp_queues);
++	i = max_t(int, adapter->num_tx_queues + adapter->num_xdp_queues,
++		  adapter->num_rx_queues);
+ 	temp_ring = vmalloc(i * sizeof(struct ixgbe_ring));
+ 
+ 	if (!temp_ring) {
+@@ -1118,8 +1118,8 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
+ 			}
+ 		}
+ 
+-		for (i = 0; i < adapter->num_xdp_queues; i++) {
+-			memcpy(&temp_ring[i], adapter->xdp_ring[i],
++		for (j = 0; j < adapter->num_xdp_queues; j++, i++) {
++			memcpy(&temp_ring[i], adapter->xdp_ring[j],
+ 			       sizeof(struct ixgbe_ring));
+ 
+ 			temp_ring[i].count = new_tx_count;
+@@ -1139,10 +1139,10 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
+ 			memcpy(adapter->tx_ring[i], &temp_ring[i],
+ 			       sizeof(struct ixgbe_ring));
+ 		}
+-		for (i = 0; i < adapter->num_xdp_queues; i++) {
+-			ixgbe_free_tx_resources(adapter->xdp_ring[i]);
++		for (j = 0; j < adapter->num_xdp_queues; j++, i++) {
++			ixgbe_free_tx_resources(adapter->xdp_ring[j]);
+ 
+-			memcpy(adapter->xdp_ring[i], &temp_ring[i],
++			memcpy(adapter->xdp_ring[j], &temp_ring[i],
+ 			       sizeof(struct ixgbe_ring));
+ 		}
+ 
+
