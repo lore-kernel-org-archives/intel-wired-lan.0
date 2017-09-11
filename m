@@ -1,55 +1,39 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Mon, 11 Sep 2017 14:21:31 -0700
-Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: fix use of uninitialized
-	padding
-Message-ID: <20170911212131.27262.52988.stgit@localhost6.localdomain6>
+Date: Mon, 11 Sep 2017 14:21:36 -0700
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: fix the FWSM.PT check in
+	ixgbe_mng_present()
+In-Reply-To: <20170911212131.27262.52988.stgit@localhost6.localdomain6>
+References: <20170911212131.27262.52988.stgit@localhost6.localdomain6>
+Message-ID: <20170911212136.27262.78426.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is resolving Coverity hits where padding in a structure could
-be used uninitialized.
+Bits other than FWSM.PT can be set in IXGBE_SWFW_MODE_MASK making the
+previous check invalid.
 
-- Initialize fwd_cmd.pad/2 before ixgbe_calculate_checksum()
-
-- Initialize buffer.pad2/3 before ixgbe_hic_unlocked()
+Change the check for MNG present to be only based on FWSM.PT bit.
 
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    4 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |    2 ++
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 2c19070..041940c 100644
+index 041940c..4e5c92d 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3800,10 +3800,10 @@ s32 ixgbe_set_fw_drv_ver_generic(struct ixgbe_hw *hw, u8 maj, u8 min,
- 	fw_cmd.ver_build = build;
- 	fw_cmd.ver_sub = sub;
- 	fw_cmd.hdr.checksum = 0;
--	fw_cmd.hdr.checksum = ixgbe_calculate_checksum((u8 *)&fw_cmd,
--				(FW_CEM_HDR_LEN + fw_cmd.hdr.buf_len));
- 	fw_cmd.pad = 0;
- 	fw_cmd.pad2 = 0;
-+	fw_cmd.hdr.checksum = ixgbe_calculate_checksum((u8 *)&fw_cmd,
-+				(FW_CEM_HDR_LEN + fw_cmd.hdr.buf_len));
+@@ -4100,8 +4100,8 @@ bool ixgbe_mng_present(struct ixgbe_hw *hw)
+ 		return false;
  
- 	for (i = 0; i <= FW_CEM_MAX_RETRIES; i++) {
- 		ret_val = ixgbe_host_interface_command(hw, &fw_cmd,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 1974f8f..54cdbcd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1000,6 +1000,8 @@ static s32 ixgbe_read_ee_hostif_buffer_X550(struct ixgbe_hw *hw,
- 		/* convert offset from words to bytes */
- 		buffer.address = cpu_to_be32((offset + current_word) * 2);
- 		buffer.length = cpu_to_be16(words_to_read * 2);
-+		buffer.pad2 = 0;
-+		buffer.pad3 = 0;
+ 	fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM(hw));
+-	fwsm &= IXGBE_FWSM_MODE_MASK;
+-	return fwsm == IXGBE_FWSM_FW_MODE_PT;
++
++	return !!(fwsm & IXGBE_FWSM_FW_MODE_PT);
+ }
  
- 		status = ixgbe_hic_unlocked(hw, (u32 *)&buffer, sizeof(buffer),
- 					    IXGBE_HI_COMMAND_TIMEOUT);
+ /**
 
