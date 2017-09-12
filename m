@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 12 Sep 2017 16:53:18 +0000
-Subject: [Intel-wired-lan] [next PATCH S80-V3 01/11] i40e: use the safe
- hash	table iterator when deleting mac filters
-In-Reply-To: <20170907120556.45699-1-alice.michael@intel.com>
+Date: Tue, 12 Sep 2017 20:23:50 +0000
+Subject: [Intel-wired-lan] [next PATCH S80-V3 02/11] i40evf: fix mac
+ filter	removal timing issue
+In-Reply-To: <20170907120556.45699-2-alice.michael@intel.com>
 References: <20170907120556.45699-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAA039@ORSMSX104.amr.corp.intel.com>
+ <20170907120556.45699-2-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAA0A1@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +18,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Thursday, September 7, 2017 5:06 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S80-V3 01/11] i40e: use the safe hash
-> table iterator when deleting mac filters
+> Subject: [Intel-wired-lan] [next PATCH S80-V3 02/11] i40evf: fix mac filter
+> removal timing issue
 > 
-> From: Lihong Yang <lihong.yang@intel.com>
+> From: Alan Brady <alan.brady@intel.com>
 > 
-> This patch replaces hash_for_each function with hash_for_each_safe when
-> calling  __i40e_del_filter. The hash_for_each_safe function is the right one
-> to use when iterating over a hash table to safely remove a hash entry.
-> Otherwise, incorrect values may be read from freed memory.
+> Due to the asynchronous nature in which mac filters are added and deleted,
+> there exists a bug in which filters are erroneously removed if removed then
+> added again quickly.
 > 
-> Detected by CoverityScan, CID 1402048 Read from pointer after free
+> The events are as such:
+>     - filter marked for removal
+>     - same filter is re-added before watchdog that cleans up filters
+>     - we skip re-adding the filter because we have it already in the list
+>     - watchdog filter cleanup kicks off and filter is removed
 > 
-> Signed-off-by: Lihong Yang <lihong.yang@intel.com>
+> So when we were re-adding the same filter, it didn't actually get added
+> because it already existed in the list, but was marked for removal and had yet
+> to actually be removed.
+> 
+> This patch fixes the issue by making sure that when adding a filter, if we find
+> it already existing in our list, make sure it is not marked to be removed.
+> 
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 ++
+>  1 file changed, 2 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
