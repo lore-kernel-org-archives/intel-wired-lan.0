@@ -1,63 +1,23 @@
 From: Jiri Pirko <jiri@resnulli.us>
-Date: Wed, 13 Sep 2017 12:12:12 +0200
-Subject: [Intel-wired-lan] [RFC PATCH v3 0/7] tc-flower based cloud
-	filters in i40e
-In-Reply-To: <150529632024.57063.15338545678487601430.stgit@anamdev.jf.intel.com>
+Date: Wed, 13 Sep 2017 15:18:43 +0200
+Subject: [Intel-wired-lan] [RFC PATCH v3 2/7] sched: act_mirred: Traffic
+ class option for mirror/redirect action
+In-Reply-To: <150529676456.57063.7605464456122745976.stgit@anamdev.jf.intel.com>
 References: <150529632024.57063.15338545678487601430.stgit@anamdev.jf.intel.com>
-Message-ID: <20170913101212.GA1981@nanopsycho>
+ <150529676456.57063.7605464456122745976.stgit@anamdev.jf.intel.com>
+Message-ID: <20170913131843.GB1981@nanopsycho>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Wed, Sep 13, 2017 at 11:59:13AM CEST, amritha.nambiar at intel.com wrote:
->This patch series enables configuring cloud filters in i40e
->using the tc-flower classifier. The only tc-filter action
->supported is to redirect packets to a traffic class on the
->same device. The mirror/redirect action is extended to
->accept a traffic class to achieve this.
->
->The cloud filters are added for a VSI and are cleaned up when
->the VSI is deleted. The filters that match on L4 ports needs
->enhanced admin queue functions with big buffer support for
->extended fields in cloud filter commands.
->
->Example:
-># tc qdisc add dev eth0 ingress
->
-># ethtool -K eth0 hw-tc-offload on
->
-># tc filter add dev eth0 protocol ip parent ffff: prio 1 flower\
->  dst_ip 192.168.1.1/32 ip_proto udp dst_port 22\
->  skip_sw action mirred ingress redirect dev eth0 tclass 1
->
-># tc filter show dev eth0 parent ffff:
->filter protocol ip pref 1 flower chain 0
->filter protocol ip pref 1 flower chain 0 handle 0x1
->  eth_type ipv4
->  ip_proto udp
->  dst_ip 192.168.1.1
->  dst_port 22
->  skip_sw
->  in_hw
->        action order 1: mirred (Ingress Redirect to device eth0) stolen tclass 1
->        index 7 ref 1 bind 1
->
->v3: Added an extra patch to clean up white-space noise. Cleaned up
->some lengthy function names. Used __be32 array for ipv6 address.
->Used macro for IP version. Minor formatting changes.
->
->---
->
->Amritha Nambiar (7):
->      tc_mirred: Clean up white-space noise
->      sched: act_mirred: Traffic class option for mirror/redirect action
->      i40e: Map TCs with the VSI seids
->      i40e: Cloud filter mode for set_switch_config command
->      i40e: Admin queue definitions for cloud filters
->      i40e: Clean up of cloud filters
->      i40e: Enable cloud filters via tc-flower
+Wed, Sep 13, 2017 at 11:59:24AM CEST, amritha.nambiar at intel.com wrote:
+>Adds optional traffic class parameter to the mirror/redirect action.
+>The mirror/redirect action is extended to forward to a traffic
+>class on the device if the traffic class index is provided in
+>addition to the device's ifindex.
 
-Would be good to use get_maintainers script and cc people if you want
-comments.
+Do I understand it correctly that you just abuse mirred to pas tcclass
+index down to the driver, without actually doing anything with the value
+inside mirred-code ? That is a bit confusing for me.
