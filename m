@@ -1,60 +1,31 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 14 Sep 2017 02:24:37 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: check memory allocation failure
-In-Reply-To: <95a0bc80-8b41-d74f-8059-ae7181493120@wanadoo.fr>
-References: <20170827063951.5975-1-christophe.jaillet@wanadoo.fr>
- <E0D909EE5BB15A4699798539EA149D7F0779685B@ORSMSX103.amr.corp.intel.com>
- <95a0bc80-8b41-d74f-8059-ae7181493120@wanadoo.fr>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C6A028B@ORSMSX101.amr.corp.intel.com>
+From: Nambiar, Amritha <amritha.nambiar@intel.com>
+Date: Thu, 14 Sep 2017 00:58:47 -0700
+Subject: [Intel-wired-lan] [RFC PATCH v3 2/7] sched: act_mirred: Traffic
+ class option for mirror/redirect action
+In-Reply-To: <20170913131843.GB1981@nanopsycho>
+References: <150529632024.57063.15338545678487601430.stgit@anamdev.jf.intel.com>
+ <150529676456.57063.7605464456122745976.stgit@anamdev.jf.intel.com>
+ <20170913131843.GB1981@nanopsycho>
+Message-ID: <7bb9f703-af45-a873-d964-f9f49c869375@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
-> Of Christophe JAILLET
-> Sent: Monday, August 28, 2017 10:13 AM
-> To: Waskiewicz Jr, Peter <peter.waskiewicz.jr@intel.com>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; kernel-janitors at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org; linux-kernel at vger.kernel.org
-> Subject: Re: [Intel-wired-lan] [PATCH] igb: check memory allocation failure
+On 9/13/2017 6:18 AM, Jiri Pirko wrote:
+> Wed, Sep 13, 2017 at 11:59:24AM CEST, amritha.nambiar at intel.com wrote:
+>> Adds optional traffic class parameter to the mirror/redirect action.
+>> The mirror/redirect action is extended to forward to a traffic
+>> class on the device if the traffic class index is provided in
+>> addition to the device's ifindex.
 > 
-> Le 28/08/2017 ? 01:09, Waskiewicz Jr, Peter a ?crit?:
-> > On 8/27/17 2:42 AM, Christophe JAILLET wrote:
-> >> Check memory allocation failures and return -ENOMEM in such cases, as
-> >> already done for other memory allocations in this function.
-> >>
-> >> This avoids NULL pointers dereference.
-> >>
-> >> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> >> ---
-> >>    drivers/net/ethernet/intel/igb/igb_main.c | 2 ++
-> >>    1 file changed, 2 insertions(+)
-> >>
-
-This seems to be fine from a "it does not break in testing" perspective, so...
-
-Tested-by: Aaron Brown <aaron.f.brown@intel.com
-
-> > -PJ
-> >
-> Hi,
+> Do I understand it correctly that you just abuse mirred to pas tcclass
+> index down to the driver, without actually doing anything with the value
+> inside mirred-code ? That is a bit confusing for me.
 > 
-> in fact, there is no leak because the only caller of 'igb_sw_init()'
-> (i.e. 'igb_probe()'), already frees these resources in case of error,
-> see [1]
-> 
-> These resources are also freed? in 'igb_remove()'.
-> 
-> Best reagrds,
-> CJ
-> 
-> [1]:
-> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-
-> next.git/tree/drivers/net/ethernet/intel/igb/igb_main.c#n2775
 
-But is PJ's comment saying that it is not really necessary?  If so I tend to lean towards the don't touch it if it's not broken perspective.
- 
-
+I think I get your point, I was looking at it more from a hardware
+angle, and the 'redirect' action looked quite close to how this actually
+works in the hardware. I agree the tclass value in the mirred-code is
+not very useful other than offloading it.
