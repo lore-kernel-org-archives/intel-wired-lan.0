@@ -1,211 +1,88 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 15 Sep 2017 08:35:37 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- db06b4ea2f1c9b247df4d901de16d1111bcb4407
-Message-ID: <59bb2059.oSSlY1s/zqYel/AL%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 15 Sep 2017 00:38:22 +0000
+Subject: [Intel-wired-lan] [PATCH 5/5] e1000e: Avoid receiver
+	overrun	interrupt bursts
+In-Reply-To: <20170721183627.13373-5-bpoirier@suse.com>
+References: <20170721160937.GA22632@csclub.uwaterloo.ca>
+ <20170721183627.13373-1-bpoirier@suse.com>
+ <20170721183627.13373-5-bpoirier@suse.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C6A05EC@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-db06b4ea2f1c9b247df4d901de16d1111bcb4407  ixgbe: fix the FWSM.PT check in ixgbe_mng_present()
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
+> Of Benjamin Poirier
+> Sent: Friday, July 21, 2017 11:36 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org; Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+> Subject: [Intel-wired-lan] [PATCH 5/5] e1000e: Avoid receiver overrun
+> interrupt bursts
+> 
+> When e1000e_poll() is not fast enough to keep up with incoming traffic, the
+> adapter (when operating in msix mode) raises the Other interrupt to signal
+> Receiver Overrun.
+> 
+> This is a double problem because 1) at the moment e1000_msix_other()
+> assumes that it is only called in case of Link Status Change and 2) if the
+> condition persists, the interrupt is repeatedly raised again in quick
+> succession.
+> 
+> Ideally we would configure the Other interrupt to not be raised in case of
+> receiver overrun but this doesn't seem possible on this adapter. Instead,
+> we handle the first part of the problem by reverting to the practice of
+> reading ICR in the other interrupt handler, like before commit 16ecba59bc33
+> ("e1000e: Do not read ICR in Other interrupt"). Thanks to commit
+> 0a8047ac68e5 ("e1000e: Fix msi-x interrupt automask") which cleared IAME
+> from CTRL_EXT, reading ICR doesn't interfere with RxQ0, TxQ0 interrupts
+> anymore. We handle the second part of the problem by not re-enabling the
+> Other interrupt right away when there is overrun. Instead, we wait until
+> traffic subsides, napi polling mode is exited and interrupts are
+> re-enabled.
+> 
+> Reported-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+> Fixes: 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt")
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/defines.h |  1 +
+>  drivers/net/ethernet/intel/e1000e/netdev.c  | 33
+> +++++++++++++++++++++++------
+>  2 files changed, 27 insertions(+), 7 deletions(-)
+> 
 
-elapsed time: 98m
+I get an error and a few warnings out of checkpatch from this, but I think the error is false (thinking the reference to a commit in the description is this commit, a fixes commit or something like that) and I'm more concerned with the fix than the warnings, so...
 
-configs tested: 187
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Here is the checkpatch output in case anyone has a different opinion on the severity:
+-------------
+u1484:[0]/usr/src/kernels/next-queue> git format-patch d81d1e6 -1 --stdout|./scripts/checkpatch.pl -
+ERROR: Please use git commit description style 'commit <12+ chars of sha1> ("<title line>")' - ie: 'commit 0a8047ac68e5 ("e1000e: Fix msi-x interrupt automask")'
+#20:
+0a8047ac68e5 ("e1000e: Fix msi-x interrupt automask") which cleared IAME
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                              allnoconfig
-arm                        mvebu_v7_defconfig
-s390                             allyesconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-microblaze                        allnoconfig
-powerpc                     ksi8560_defconfig
-um                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-m68k                              allnoconfig
-sh                 kfr2r09-romimage_defconfig
-sh                          sdk7780_defconfig
-arm                  colibri_pxa270_defconfig
-blackfin                       IP0X_defconfig
-powerpc                      acadia_defconfig
-x86_64                randconfig-it0-09150541
-i386                   randconfig-x019-201737
-i386                   randconfig-x013-201737
-i386                   randconfig-x012-201737
-i386                   randconfig-x016-201737
-i386                   randconfig-x018-201737
-i386                   randconfig-x010-201737
-i386                   randconfig-x011-201737
-i386                   randconfig-x015-201737
-i386                   randconfig-x014-201737
-i386                   randconfig-x017-201737
-i386                     randconfig-n0-201737
-arm                          pxa3xx_defconfig
-m32r                                defconfig
-m68k                       m5275evb_defconfig
-x86_64                 randconfig-v0-09150717
-powerpc                      pasemi_defconfig
-sh                   secureedge5410_defconfig
-x86_64                 randconfig-g0-09150716
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x016-201737
-x86_64                 randconfig-x011-201737
-x86_64                 randconfig-x012-201737
-x86_64                 randconfig-x014-201737
-x86_64                 randconfig-x019-201737
-x86_64                 randconfig-x018-201737
-x86_64                 randconfig-x013-201737
-x86_64                 randconfig-x015-201737
-x86_64                 randconfig-x010-201737
-x86_64                 randconfig-x017-201737
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201737
-i386                     randconfig-a1-201737
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                                defconfig
-i386                             alldefconfig
-i386                     randconfig-s1-201737
-i386                     randconfig-s0-201737
-x86_64                   randconfig-i0-201737
-i386                   randconfig-b0-09150724
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201737
-i386                     randconfig-i0-201737
-x86_64                           allmodconfig
-powerpc                        icon_defconfig
-powerpc                      tqm8xx_defconfig
-xtensa                           alldefconfig
-x86_64                 randconfig-u0-09150723
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                randconfig-ne0-09150731
-i386                   randconfig-h0-09150640
-i386                   randconfig-h1-09150640
-arm                         lubbock_defconfig
-xtensa                  audio_kc705_defconfig
-x86_64                 randconfig-h0-09150743
-sh                         ap325rxa_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                         em_x270_defconfig
-arm                             rpc_defconfig
-mips                        maltaup_defconfig
-i386                  randconfig-sb0-09150658
-i386                   randconfig-x003-201737
-i386                   randconfig-x000-201737
-i386                   randconfig-x004-201737
-i386                   randconfig-x009-201737
-i386                   randconfig-x005-201737
-i386                   randconfig-x001-201737
-i386                   randconfig-x008-201737
-i386                   randconfig-x007-201737
-i386                   randconfig-x006-201737
-i386                   randconfig-x002-201737
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                randconfig-ws0-09150701
-i386                   randconfig-x076-201737
-i386                   randconfig-x075-201737
-i386                   randconfig-x071-201737
-i386                   randconfig-x070-201737
-i386                   randconfig-x074-201737
-i386                   randconfig-x079-201737
-i386                   randconfig-x072-201737
-i386                   randconfig-x073-201737
-i386                   randconfig-x078-201737
-i386                   randconfig-x077-201737
-powerpc                      cm5200_defconfig
-powerpc                      pmac32_defconfig
-powerpc                      ppc6xx_defconfig
-x86_64                 randconfig-x001-201737
-x86_64                 randconfig-x007-201737
-x86_64                 randconfig-x000-201737
-x86_64                 randconfig-x006-201737
-x86_64                 randconfig-x003-201737
-x86_64                 randconfig-x009-201737
-x86_64                 randconfig-x004-201737
-x86_64                 randconfig-x008-201737
-x86_64                 randconfig-x005-201737
-x86_64                 randconfig-x002-201737
-x86_64                 randconfig-r0-09150641
-mips                         tb0219_defconfig
-sparc                            alldefconfig
-i386                   randconfig-x0-09150653
+WARNING: braces {} are not necessary for single statement blocks
+#73: FILE: drivers/net/ethernet/intel/e1000e/netdev.c:1931:
++               if (!test_bit(__E1000_DOWN, &adapter->state)) {
++                       mod_timer(&adapter->watchdog_timer, jiffies + 1);
++               }
 
-Thanks,
-Fengguang
+WARNING: braces {} are not necessary for single statement blocks
+#83: FILE: drivers/net/ethernet/intel/e1000e/netdev.c:1936:
++       if (enable && !test_bit(__E1000_DOWN, &adapter->state)) {
+                ew32(IMS, E1000_IMS_OTHER);
+        }
+
+total: 1 errors, 2 warnings, 0 checks, 59 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+u1484:[0]/usr/src/kernels/next-queue>
