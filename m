@@ -1,50 +1,211 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 15 Sep 2017 00:27:46 +0000
-Subject: [Intel-wired-lan] [PATCH 4/5] e1000e: Separate signaling for
- link check/link up
-In-Reply-To: <20170802144922.txmee23d35o4r7mh@f1.synalogic.ca>
-References: <20170721160937.GA22632@csclub.uwaterloo.ca>
- <20170721183627.13373-1-bpoirier@suse.com>
- <20170721183627.13373-4-bpoirier@suse.com>
- <14acedf3-e5d9-31e8-9ff6-fabc2127c021@intel.com>
- <20170802143437.ggdlmsszqinuvcmc@csclub.uwaterloo.ca>
- <20170802144922.txmee23d35o4r7mh@f1.synalogic.ca>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C6A05C9@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 15 Sep 2017 08:35:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ db06b4ea2f1c9b247df4d901de16d1111bcb4407
+Message-ID: <59bb2059.oSSlY1s/zqYel/AL%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+db06b4ea2f1c9b247df4d901de16d1111bcb4407  ixgbe: fix the FWSM.PT check in ixgbe_mng_present()
 
-On 7/21/2017 21:36, Benjamin Poirier wrote:
-> Lennart reported the following race condition:
->
-> \ e1000_watchdog_task
->      \ e1000e_has_link
->          \ hw->mac.ops.check_for_link() === e1000e_check_for_copper_link
->              /* link is up */
->              mac->get_link_status = false;
->
->                              /* interrupt */
->                              \ e1000_msix_other
->                                  hw->mac.get_link_status = true;
->
->          link_active = !hw->mac.get_link_status
->          /* link_active is false, wrongly */
->
-> This problem arises because the single flag get_link_status is used to
-> signal two different states: link status needs checking and link status is
-> down.
->
-> Avoid the problem by using the return value of .check_for_link to signal
-> the link status to e1000e_has_link().
->
-> Reported-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/mac.c    | 11 ++++++++---
->   drivers/net/ethernet/intel/e1000e/netdev.c |  2 +-
->   2 files changed, 9 insertions(+), 4 deletions(-)
+elapsed time: 98m
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+configs tested: 187
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                              allnoconfig
+arm                        mvebu_v7_defconfig
+s390                             allyesconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+microblaze                        allnoconfig
+powerpc                     ksi8560_defconfig
+um                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+m68k                              allnoconfig
+sh                 kfr2r09-romimage_defconfig
+sh                          sdk7780_defconfig
+arm                  colibri_pxa270_defconfig
+blackfin                       IP0X_defconfig
+powerpc                      acadia_defconfig
+x86_64                randconfig-it0-09150541
+i386                   randconfig-x019-201737
+i386                   randconfig-x013-201737
+i386                   randconfig-x012-201737
+i386                   randconfig-x016-201737
+i386                   randconfig-x018-201737
+i386                   randconfig-x010-201737
+i386                   randconfig-x011-201737
+i386                   randconfig-x015-201737
+i386                   randconfig-x014-201737
+i386                   randconfig-x017-201737
+i386                     randconfig-n0-201737
+arm                          pxa3xx_defconfig
+m32r                                defconfig
+m68k                       m5275evb_defconfig
+x86_64                 randconfig-v0-09150717
+powerpc                      pasemi_defconfig
+sh                   secureedge5410_defconfig
+x86_64                 randconfig-g0-09150716
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x016-201737
+x86_64                 randconfig-x011-201737
+x86_64                 randconfig-x012-201737
+x86_64                 randconfig-x014-201737
+x86_64                 randconfig-x019-201737
+x86_64                 randconfig-x018-201737
+x86_64                 randconfig-x013-201737
+x86_64                 randconfig-x015-201737
+x86_64                 randconfig-x010-201737
+x86_64                 randconfig-x017-201737
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201737
+i386                     randconfig-a1-201737
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                                defconfig
+i386                             alldefconfig
+i386                     randconfig-s1-201737
+i386                     randconfig-s0-201737
+x86_64                   randconfig-i0-201737
+i386                   randconfig-b0-09150724
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201737
+i386                     randconfig-i0-201737
+x86_64                           allmodconfig
+powerpc                        icon_defconfig
+powerpc                      tqm8xx_defconfig
+xtensa                           alldefconfig
+x86_64                 randconfig-u0-09150723
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                randconfig-ne0-09150731
+i386                   randconfig-h0-09150640
+i386                   randconfig-h1-09150640
+arm                         lubbock_defconfig
+xtensa                  audio_kc705_defconfig
+x86_64                 randconfig-h0-09150743
+sh                         ap325rxa_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                         em_x270_defconfig
+arm                             rpc_defconfig
+mips                        maltaup_defconfig
+i386                  randconfig-sb0-09150658
+i386                   randconfig-x003-201737
+i386                   randconfig-x000-201737
+i386                   randconfig-x004-201737
+i386                   randconfig-x009-201737
+i386                   randconfig-x005-201737
+i386                   randconfig-x001-201737
+i386                   randconfig-x008-201737
+i386                   randconfig-x007-201737
+i386                   randconfig-x006-201737
+i386                   randconfig-x002-201737
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                randconfig-ws0-09150701
+i386                   randconfig-x076-201737
+i386                   randconfig-x075-201737
+i386                   randconfig-x071-201737
+i386                   randconfig-x070-201737
+i386                   randconfig-x074-201737
+i386                   randconfig-x079-201737
+i386                   randconfig-x072-201737
+i386                   randconfig-x073-201737
+i386                   randconfig-x078-201737
+i386                   randconfig-x077-201737
+powerpc                      cm5200_defconfig
+powerpc                      pmac32_defconfig
+powerpc                      ppc6xx_defconfig
+x86_64                 randconfig-x001-201737
+x86_64                 randconfig-x007-201737
+x86_64                 randconfig-x000-201737
+x86_64                 randconfig-x006-201737
+x86_64                 randconfig-x003-201737
+x86_64                 randconfig-x009-201737
+x86_64                 randconfig-x004-201737
+x86_64                 randconfig-x008-201737
+x86_64                 randconfig-x005-201737
+x86_64                 randconfig-x002-201737
+x86_64                 randconfig-r0-09150641
+mips                         tb0219_defconfig
+sparc                            alldefconfig
+i386                   randconfig-x0-09150653
+
+Thanks,
+Fengguang
