@@ -1,34 +1,66 @@
-From: Rami Rosen <rami.rosen@intel.com>
-Date: Sat, 16 Sep 2017 05:49:48 +0300
-Subject: [Intel-wired-lan] [PATCH] i40e: fix a typo.
-Message-ID: <1505530188-3220-1-git-send-email-rami.rosen@intel.com>
+From: Vincenzo Maffione <v.maffione@gmail.com>
+Date: Sat, 16 Sep 2017 18:00:00 +0200
+Subject: [Intel-wired-lan] [PATCH net] driver: e1000: fix race condition
+	between e1000_down() and e1000_watchdog
+Message-ID: <20170916160000.3560-1-v.maffione@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes a typo in i40e_vsi_alloc_arrays() documentation.
-The first parameter name should be "vsi" instead of "type".
+This patch fixes a race condition that can result into the interface being
+up and carrier on, but with transmits disabled in the hardware.
+The bug may show up by repeatedly IFF_DOWN+IFF_UP the interface, which
+allows e1000_watchdog() interleave with e1000_down().
 
-Signed-off-by: Rami Rosen <rami.rosen@intel.com>
+    CPU x                           CPU y
+    --------------------------------------------------------------------
+    e1000_down():
+        netif_carrier_off()
+                                    e1000_watchdog():
+                                        if (carrier == off) {
+                                            netif_carrier_on();
+                                            enable_hw_transmit();
+                                        }
+        disable_hw_transmit();
+                                    e1000_watchdog():
+                                        /* carrier on, do nothing */
+
+Signed-off-by: Vincenzo Maffione <v.maffione@gmail.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5ef392781de1..ef4e7ac7a29a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8860,7 +8860,7 @@ static int i40e_set_num_rings_in_vsi(struct i40e_vsi *vsi)
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 98375e1e1185..1982f7917a8d 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -520,8 +520,6 @@ void e1000_down(struct e1000_adapter *adapter)
+ 	struct net_device *netdev = adapter->netdev;
+ 	u32 rctl, tctl;
  
- /**
-  * i40e_vsi_alloc_arrays - Allocate queue and vector pointer arrays for the vsi
-- * @type: VSI pointer
-+ * @vsi: VSI pointer
-  * @alloc_qvectors: a bool to specify if q_vectors need to be allocated.
-  *
-  * On error: returns error code (negative)
+-	netif_carrier_off(netdev);
+-
+ 	/* disable receives in the hardware */
+ 	rctl = er32(RCTL);
+ 	ew32(RCTL, rctl & ~E1000_RCTL_EN);
+@@ -537,6 +535,15 @@ void e1000_down(struct e1000_adapter *adapter)
+ 	E1000_WRITE_FLUSH();
+ 	msleep(10);
+ 
++	/* Set the carrier off after transmits have been disabled in the
++	 * hardware, to avoid race conditions with e1000_watchdog() (which
++	 * may be running concurrently to us, checking for the carrier
++	 * bit to decide whether it should enable transmits again). Such
++	 * a race condition would result into transmission being disabled
++	 * in the hardware until the next IFF_DOWN+IFF_UP cycle.
++	 */
++	netif_carrier_off(netdev);
++
+ 	napi_disable(&adapter->napi);
+ 
+ 	e1000_irq_disable(adapter);
 -- 
-2.7.4
+2.14.1
 
