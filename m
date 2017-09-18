@@ -1,34 +1,31 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Mon, 18 Sep 2017 08:18:54 -0700
-Subject: [Intel-wired-lan] [PATCH RFC V1 net-next 1/6] net: Add a new
- socket option for a future transmit time.
-In-Reply-To: <ad6e265b97b66bcdb19b815e6d9092ffbcb461ba.1505719061.git.rcochran@linutronix.de>
+From: David Miller <davem@davemloft.net>
+Date: Mon, 18 Sep 2017 09:34:36 -0700 (PDT)
+Subject: [Intel-wired-lan] [PATCH RFC V1 net-next 0/6] Time based packet
+	transmission
+In-Reply-To: <cover.1505719061.git.rcochran@linutronix.de>
 References: <cover.1505719061.git.rcochran@linutronix.de>
- <ad6e265b97b66bcdb19b815e6d9092ffbcb461ba.1505719061.git.rcochran@linutronix.de>
-Message-ID: <1505747934.29839.21.camel@edumazet-glaptop3.roam.corp.google.com>
+Message-ID: <20170918.093436.1069699729581966538.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2017-09-18 at 09:41 +0200, Richard Cochran wrote:
+From: Richard Cochran <rcochran@linutronix.de>
+Date: Mon, 18 Sep 2017 09:41:15 +0200
 
-> +	case SO_TXTIME:
-> +		if (!sock_flag(sk, SOCK_TXTIME))
-> +			return -EINVAL;
-> +		sockc->transmit_time = *(u64 *)CMSG_DATA(cmsg);
+>   - The driver does not handle out of order packets.  If user space
+>     sends a packet with an earlier Tx time, then the code should stop
+>     the queue, reshuffle the descriptors accordingly, and then
+>     restart the queue.
 
-1) No guarantee the CMSG is properly aligned on arches that might trap
-on unaligned access.
+The user should simply be not allowed to do this.
 
-2) No guarantee user provided 8 bytes here.
+Once the packet is in the device queue, that's it.  You cannot insert
+a new packet to be transmitted before an already hw queued packet,
+period.
 
-Also, what would be the time base here ?
+Any out of order request should be rejected with an error.
 
-> +		break;
->  	/* SCM_RIGHTS and SCM_CREDENTIALS are semantically in SOL_UNIX. */
->  	case SCM_RIGHTS:
->  	case SCM_CREDENTIALS:
-
-
+I'd say the same is true for requests to send packets timed
+in the past.
