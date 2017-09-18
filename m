@@ -1,43 +1,190 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 18 Sep 2017 17:24:54 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] fm10k: reschedule service event
- if we	stall the PF<->SM mailbox
-In-Reply-To: <20170308235543.16537-2-jacob.e.keller@intel.com>
-References: <20170308235543.16537-1-jacob.e.keller@intel.com>
- <20170308235543.16537-2-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64AF6835@ORSMSX103.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 19 Sep 2017 04:52:56 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 34d49c840425bb935d83040dbfe95beb5d8f583d
+Message-ID: <59c03228.tmLXaf+0JuQgCb7g%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+34d49c840425bb935d83040dbfe95beb5d8f583d  ixgbe: fix the FWSM.PT check in ixgbe_mng_present()
 
+elapsed time: 145m
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Wednesday, March 8, 2017 3:56 PM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH 2/2] fm10k: reschedule service event if we
-> stall the PF<->SM mailbox
-> 
-> When we are handling PF<->VF mailbox messages, it is possible that the
-> VF will send us so many messages that the PF<->SM FIFO will fill up. In
-> this case, we stop the loop and wait until the service event is
-> rescheduled.
-> 
-> Normally this should happen due to an interrupt. But it is possible that
-> we don't get another interrupt for a while and it isn't until the
-> service timer actually reschedules us. Instead, simply reschedule
-> immediately which will cause the service event to be run again as soon
-> as we exit.
-> 
-> This ensures that we promptly handle all of the PF<->VF messages with
-> minimal delay, while still giving time for the SM mailbox to drain.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
+configs tested: 166
 
-Tested-by: Krishneil Singh  <krishneil.k.singh@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+mips                     loongson1c_defconfig
+mips                malta_kvm_guest_defconfig
+sh                            hp6xx_defconfig
+m32r                         opsput_defconfig
+mips                       capcella_defconfig
+parisc                      default_defconfig
+x86_64                 randconfig-a0-09190351
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-09190255
+i386                   randconfig-x010-201738
+i386                   randconfig-x011-201738
+i386                   randconfig-x012-201738
+i386                   randconfig-x013-201738
+i386                   randconfig-x014-201738
+i386                   randconfig-x015-201738
+i386                   randconfig-x016-201738
+i386                   randconfig-x017-201738
+i386                   randconfig-x018-201738
+i386                   randconfig-x019-201738
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-09180828
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                   randconfig-a0-09180847
+i386                   randconfig-a1-09180847
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                          pxa3xx_defconfig
+m68k                              allnoconfig
+m68k                          multi_defconfig
+mips                      pic32mzda_defconfig
+m32r                             allyesconfig
+powerpc               mpc834x_itxgp_defconfig
+sh                     sh7710voipgw_defconfig
+sparc                             allnoconfig
+x86_64               randconfig-x018-09180916
+x86_64               randconfig-x014-09180916
+x86_64               randconfig-x015-09180916
+x86_64               randconfig-x010-09180916
+x86_64               randconfig-x017-09180916
+x86_64               randconfig-x016-09180916
+x86_64               randconfig-x012-09180916
+x86_64               randconfig-x019-09180916
+x86_64               randconfig-x011-09180916
+x86_64               randconfig-x013-09180916
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-09180916
+i386                   randconfig-s1-09180916
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-i0-09180529
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201738
+i386                     randconfig-i0-201738
+x86_64                           allmodconfig
+powerpc                 mpc837x_rdb_defconfig
+powerpc                 mpc85xx_cds_defconfig
+powerpc                 mpc8315_rdb_defconfig
+s390                    performance_defconfig
+x86_64                                  kexec
+x86_64                               rhel-7.2
+i386                   randconfig-x000-201738
+i386                   randconfig-x003-201738
+i386                   randconfig-x009-201738
+i386                   randconfig-x004-201738
+i386                   randconfig-x008-201738
+i386                   randconfig-x001-201738
+i386                   randconfig-x005-201738
+i386                   randconfig-x002-201738
+i386                   randconfig-x006-201738
+i386                   randconfig-x007-201738
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-x000-201738
+x86_64                 randconfig-x007-201738
+x86_64                 randconfig-x001-201738
+x86_64                 randconfig-x006-201738
+x86_64                 randconfig-x004-201738
+x86_64                 randconfig-x009-201738
+x86_64                 randconfig-x003-201738
+x86_64                 randconfig-x002-201738
+x86_64                 randconfig-x005-201738
+x86_64                 randconfig-x008-201738
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x075-201738
+i386                   randconfig-x076-201738
+i386                   randconfig-x071-201738
+i386                   randconfig-x074-201738
+i386                   randconfig-x070-201738
+i386                   randconfig-x077-201738
+i386                   randconfig-x078-201738
+i386                   randconfig-x073-201738
+i386                   randconfig-x072-201738
+i386                   randconfig-x079-201738
+x86_64                 randconfig-r0-09190317
+arm                      footbridge_defconfig
+powerpc                        warp_defconfig
+
+Thanks,
+Fengguang
