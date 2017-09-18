@@ -1,190 +1,109 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 19 Sep 2017 04:52:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 34d49c840425bb935d83040dbfe95beb5d8f583d
-Message-ID: <59c03228.tmLXaf+0JuQgCb7g%fengguang.wu@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 18 Sep 2017 16:06:28 -0700
+Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
+	config interfaces for traffic shapers
+In-Reply-To: <20170918080214.yrejz67wwnp2pjzf@localhost>
+References: <20170901012625.14838-1-vinicius.gomes@intel.com>
+ <20170918080214.yrejz67wwnp2pjzf@localhost>
+Message-ID: <87k20vip3f.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-34d49c840425bb935d83040dbfe95beb5d8f583d  ixgbe: fix the FWSM.PT check in ixgbe_mng_present()
+Hi Richard,
 
-elapsed time: 145m
+Richard Cochran <richardcochran@gmail.com> writes:
 
-configs tested: 166
+> On Thu, Aug 31, 2017 at 06:26:20PM -0700, Vinicius Costa Gomes wrote:
+>>  * Time-aware shaper (802.1Qbv):
+>
+> I just posted a working alternative showing how to handle 802.1Qbv and
+> many other Ethernet field buses.
+>
+>>    The idea we are currently exploring is to add a "time-aware", priority based
+>>    qdisc, that also exposes the Tx queues available and provides a mechanism for
+>>    mapping priority <-> traffic class <-> Tx queues in a similar fashion as
+>>    mqprio. We are calling this qdisc 'taprio', and its 'tc' cmd line would be:
+>>
+>>    $ $ tc qdisc add dev ens4 parent root handle 100 taprio num_tc 4    \
+>>      	   map 2 2 1 0 3 3 3 3 3 3 3 3 3 3 3 3                         \
+>> 	   queues 0 1 2 3                                              \
+>>      	   sched-file gates.sched [base-time <interval>]               \
+>>            [cycle-time <interval>] [extension-time <interval>]
+>>
+>>    <file> is multi-line, with each line being of the following format:
+>>    <cmd> <gate mask> <interval in nanoseconds>
+>>
+>>    Qbv only defines one <cmd>: "S" for 'SetGates'
+>>
+>>    For example:
+>>
+>>    S 0x01 300
+>>    S 0x03 500
+>>
+>>    This means that there are two intervals, the first will have the gate
+>>    for traffic class 0 open for 300 nanoseconds, the second will have
+>>    both traffic classes open for 500 nanoseconds.
+>
+> The idea of the schedule file will not work in practice.  Consider the
+> fact that the application wants to deliver time critical data in a
+> particular slot.  How can it find out a) what the time slots are and
+> b) when the next slot is scheduled?  With this Qdisc, it cannot do
+> this, AFAICT.  The admin might delete the file after configuring the
+> Qdisc!
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+That's the point, the application does not need to know that, and asking
+that would be stupid. From the point of view of the Qbv specification,
+applications only need to care about its basic bandwidth requirements:
+its interval, frame size, frames per interval (using the terms of the
+SRP section of 802.1Q). The traffic schedule is provided (off band) by a
+"god box" which knows all the requirements of all applications in all
+the nodes and how they are connected.
 
-mips                     loongson1c_defconfig
-mips                malta_kvm_guest_defconfig
-sh                            hp6xx_defconfig
-m32r                         opsput_defconfig
-mips                       capcella_defconfig
-parisc                      default_defconfig
-x86_64                 randconfig-a0-09190351
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-09190255
-i386                   randconfig-x010-201738
-i386                   randconfig-x011-201738
-i386                   randconfig-x012-201738
-i386                   randconfig-x013-201738
-i386                   randconfig-x014-201738
-i386                   randconfig-x015-201738
-i386                   randconfig-x016-201738
-i386                   randconfig-x017-201738
-i386                   randconfig-x018-201738
-i386                   randconfig-x019-201738
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-09180828
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                   randconfig-a0-09180847
-i386                   randconfig-a1-09180847
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                          pxa3xx_defconfig
-m68k                              allnoconfig
-m68k                          multi_defconfig
-mips                      pic32mzda_defconfig
-m32r                             allyesconfig
-powerpc               mpc834x_itxgp_defconfig
-sh                     sh7710voipgw_defconfig
-sparc                             allnoconfig
-x86_64               randconfig-x018-09180916
-x86_64               randconfig-x014-09180916
-x86_64               randconfig-x015-09180916
-x86_64               randconfig-x010-09180916
-x86_64               randconfig-x017-09180916
-x86_64               randconfig-x016-09180916
-x86_64               randconfig-x012-09180916
-x86_64               randconfig-x019-09180916
-x86_64               randconfig-x011-09180916
-x86_64               randconfig-x013-09180916
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-09180916
-i386                   randconfig-s1-09180916
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-i0-09180529
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201738
-i386                     randconfig-i0-201738
-x86_64                           allmodconfig
-powerpc                 mpc837x_rdb_defconfig
-powerpc                 mpc85xx_cds_defconfig
-powerpc                 mpc8315_rdb_defconfig
-s390                    performance_defconfig
-x86_64                                  kexec
-x86_64                               rhel-7.2
-i386                   randconfig-x000-201738
-i386                   randconfig-x003-201738
-i386                   randconfig-x009-201738
-i386                   randconfig-x004-201738
-i386                   randconfig-x008-201738
-i386                   randconfig-x001-201738
-i386                   randconfig-x005-201738
-i386                   randconfig-x002-201738
-i386                   randconfig-x006-201738
-i386                   randconfig-x007-201738
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-x000-201738
-x86_64                 randconfig-x007-201738
-x86_64                 randconfig-x001-201738
-x86_64                 randconfig-x006-201738
-x86_64                 randconfig-x004-201738
-x86_64                 randconfig-x009-201738
-x86_64                 randconfig-x003-201738
-x86_64                 randconfig-x002-201738
-x86_64                 randconfig-x005-201738
-x86_64                 randconfig-x008-201738
-x86_64                                   rhel
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x075-201738
-i386                   randconfig-x076-201738
-i386                   randconfig-x071-201738
-i386                   randconfig-x074-201738
-i386                   randconfig-x070-201738
-i386                   randconfig-x077-201738
-i386                   randconfig-x078-201738
-i386                   randconfig-x073-201738
-i386                   randconfig-x072-201738
-i386                   randconfig-x079-201738
-x86_64                 randconfig-r0-09190317
-arm                      footbridge_defconfig
-powerpc                        warp_defconfig
+(And that's another nice point of how 802.1Qbv works, applications do
+not need to be changed to use it, and I think we should work to achieve
+this on the Linux side)
 
-Thanks,
-Fengguang
+That being said, that only works for kinds of traffic that maps well to
+this configuration in advance model, which is the model that the IEEE
+(see 802.1Qcc) and the AVNU Alliance[1] are pushing for.
+
+In the real world, I can see multiple types of applications, some using
+something like TXTIME, and some configured in advance.
+
+>
+> Using the SO_TXTIME option, the application has total control over the
+> scheduling.  The great advantages of this approach is that we can
+> support any possible combination of periodic or aperiodic scheduling
+> and we can support any priority scheme user space dreams up.
+
+It has the disavantage of that the scheduling information has to be
+in-band with the data. I *really* think that for scheduled traffic,
+there should be a clear separation, we should not mix the dataflow with
+scheduling. In short, an application in the network don't need to have
+all the information necessary to schedule its own traffic well.
+
+I have two points here: 1. I see both "solutions" (taprio and SO_TXTIME)
+as being ortoghonal and useful, both; 2. trying to make one do the job
+of the other, however, looks like "If all I have is a hammer, everything
+looks like a nail".
+
+In short, I see a per-packet transmission time and a per-queue schedule
+as solutions to different problems.
+
+>
+> For example, one can imaging running two or more loops that only
+> occasionally collide.  When they do collide, which packet should be
+> sent first?  Just let user space decide.
+>
+> Thanks,
+> Richard
+
+Cheers,
+--
+Vinicius
+
+[1]
+http://avnu.org/theory-of-operation-for-tsn-enabled-industrial-systems/
