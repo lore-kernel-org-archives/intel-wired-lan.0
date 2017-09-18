@@ -1,303 +1,541 @@
 From: Richard Cochran <rcochran@linutronix.de>
-Date: Mon, 18 Sep 2017 09:41:21 +0200
-Subject: [Intel-wired-lan] [PATCH RFC V1 net-next 6/6] net: igb: Implement
-	time based transmission.
-In-Reply-To: <cover.1505719061.git.rcochran@linutronix.de>
-References: <cover.1505719061.git.rcochran@linutronix.de>
-Message-ID: <9ecfd21da8e8ad93a5f757b009cf123b6929255f.1505719061.git.rcochran@linutronix.de>
+Date: Mon, 18 Sep 2017 09:41:15 +0200
+Subject: [Intel-wired-lan] [PATCH RFC V1 net-next 0/6] Time based packet
+	transmission
+Message-ID: <cover.1505719061.git.rcochran@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch configures the i210 transmit queues to reserve the first queue
-for time based transmit arbitration, placing all other traffic into the
-second queue.  This configuration is hard coded and does not make use of
-the two spare queues.
+This series is an early RFC that introduces a new socket option
+allowing time based transmission of packets.  This option will be
+useful in implementing various real time protocols over Ethernet,
+including but not limited to P802.1Qbv, which is currently finding
+its way into 802.1Q.
 
-Signed-off-by: Richard Cochran <rcochran@linutronix.de>
----
+* Open questions about SO_TXTIME semantics
+
+  - What should the kernel do if the dialed Tx time is in the past?
+    Should the packet be sent ASAP, or should we throw an error?
+
+  - Should the kernel inform the user if it detects a missed deadline,
+    via the error queue for example?
+
+  - What should the timescale be for the dialed Tx time?  Should the
+    kernel select UTC when using the SW Qdisc and the HW time
+    otherwise?  Or should the socket option include a clockid_t?
+
+* Things todo
+
+  - Design a Qdisc for purpose of configuring SO_TXTIME.  There should
+    be one option to dial HW offloading or SW best effort.
+
+  - Implement the SW best effort variant.  Here is my back of the
+    napkin sketch.  Each interface has its own timerqueue keeping the
+    TXTIME packets in order and a FIFO for all other traffic.  A guard
+    window starts at the earliest deadline minus the maximum MTU minus
+    a configurable fudge factor.  The Qdisc uses a hrtimer to transmit
+    the next packet in the timerqueue.  During the guard window, all
+    other traffic is defered unless the next packet can be transmitted
+    before the guard window expires.
+
+* Current limitations
+
+  - The driver does not handle out of order packets.  If user space
+    sends a packet with an earlier Tx time, then the code should stop
+    the queue, reshuffle the descriptors accordingly, and then
+    restart the queue.
+
+  - The driver does not correctly queue up packets in the distant
+    future.  The i210 has a limited time window of +/- 0.5 seconds.
+    Packets with a Tx time greater than that should be deferred in
+    order to enqueue them later on.
+
+* Performance measurements
+
+  1. Prepared a PC and the Device Under Test (DUT) each with an Intel
+     i210 card connected with a crossover cable.
+  2. The DUT was a Pentium(R) D CPU 2.80GHz running PREEMPT_RT
+     4.9.40-rt30 with about 50 usec maximum latency under cyclictest.
+  3. Synchronized the DUT's PHC to the PC's PHC using ptp4l.
+  4. Synchronized the DUT's system clock to its PHC using phc2sys.
+  5. Started netperf to produce some network load.
+  6. Measured the arrival time of the packets at the PC's PHC using
+     hardware time stamping.
+
+  I ran ten minute tests both with and without using the so_txtime
+  option, with a period was 1 millisecond.  I then repeated the
+  so_txtime case but with a 250 microsecond period.  The measured
+  offset from the expected period (in nanoseconds) is shown in the
+  following table.
+
+  |         | plain preempt_rt |     so_txtime | txtime @ 250 us |
+  |---------+------------------+---------------+-----------------|
+  | min:    |    +1.940800e+04 | +4.720000e+02 |   +4.720000e+02 |
+  | max:    |    +7.556000e+04 | +5.680000e+02 |   +5.760000e+02 |
+  | pk-pk:  |    +5.615200e+04 | +9.600000e+01 |   +1.040000e+02 |
+  | mean:   |    +3.292776e+04 | +5.072274e+02 |   +5.073602e+02 |
+  | stddev: |    +6.514709e+03 | +1.310849e+01 |   +1.507144e+01 |
+  | count:  |           600000 |        600000 |         2400000 |
+
+  Using so_txtime, the peak to peak jitter is about 100 nanoseconds,
+  independent of the period.  In contrast, plain preempt_rt shows a
+  jitter of of 56 microseconds.  The average delay of 507 nanoseconds
+  when using so_txtime is explained by the documented input and output
+  delays on the i210 cards.
+
+  The test program is appended, below.  If anyone is interested in
+  reproducing this test, I can provide helper scripts.
+
+Thanks,
+Richard
+
+
+Richard Cochran (6):
+  net: Add a new socket option for a future transmit time.
+  net: skbuff: Add a field to support time based transmission.
+  net: ipv4: raw: Hook into time based transmission.
+  net: ipv4: udp: Hook into time based transmission.
+  net: packet: Hook into time based transmission.
+  net: igb: Implement time based transmission.
+
+ arch/alpha/include/uapi/asm/socket.h           |  3 ++
+ arch/frv/include/uapi/asm/socket.h             |  3 ++
+ arch/ia64/include/uapi/asm/socket.h            |  3 ++
+ arch/m32r/include/uapi/asm/socket.h            |  3 ++
+ arch/mips/include/uapi/asm/socket.h            |  3 ++
+ arch/mn10300/include/uapi/asm/socket.h         |  3 ++
+ arch/parisc/include/uapi/asm/socket.h          |  3 ++
+ arch/powerpc/include/uapi/asm/socket.h         |  3 ++
+ arch/s390/include/uapi/asm/socket.h            |  3 ++
+ arch/sparc/include/uapi/asm/socket.h           |  3 ++
+ arch/xtensa/include/uapi/asm/socket.h          |  3 ++
  drivers/net/ethernet/intel/igb/e1000_82575.h   |  1 +
  drivers/net/ethernet/intel/igb/e1000_defines.h | 68 +++++++++++++++++++++++++-
  drivers/net/ethernet/intel/igb/e1000_regs.h    |  5 ++
  drivers/net/ethernet/intel/igb/igb.h           |  3 +-
  drivers/net/ethernet/intel/igb/igb_main.c      | 68 +++++++++++++++++++++++---
- 5 files changed, 136 insertions(+), 9 deletions(-)
+ include/linux/skbuff.h                         |  2 +
+ include/net/sock.h                             |  2 +
+ include/uapi/asm-generic/socket.h              |  3 ++
+ net/core/sock.c                                | 12 +++++
+ net/ipv4/raw.c                                 |  2 +
+ net/ipv4/udp.c                                 |  5 +-
+ net/packet/af_packet.c                         |  6 +++
+ 23 files changed, 200 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.h b/drivers/net/ethernet/intel/igb/e1000_82575.h
-index acf06051e111..4c107377540d 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.h
-@@ -159,6 +159,7 @@ struct e1000_adv_tx_context_desc {
- /* Additional Transmit Descriptor Control definitions */
- #define E1000_TXDCTL_QUEUE_ENABLE  0x02000000 /* Enable specific Tx Queue */
- /* Tx Queue Arbitration Priority 0=low, 1=high */
-+#define E1000_TXDCTL_HIGH_PRIORITY 0x08000000
- 
- /* Additional Receive Descriptor Control definitions */
- #define E1000_RXDCTL_QUEUE_ENABLE  0x02000000 /* Enable specific Rx Queue */
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index 1de82f247312..51ab8d0b3dd6 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -352,8 +352,35 @@
- /* Timestamp in Rx buffer */
- #define E1000_RXPBS_CFG_TS_EN           0x80000000
- 
--#define I210_RXPBSIZE_DEFAULT		0x000000A2 /* RXPBSIZE default */
--#define I210_TXPBSIZE_DEFAULT		0x04000014 /* TXPBSIZE default */
-+/*
-+ * Internal Packet Buffer Size Registers
-+ * For transmit, Section 7.2.7.7 on page 312 recommends 8, 8, 4, and 4 KB.
-+ * TXPB[0-3]SIZE are in KB for TxQ[0-3].
-+ */
-+#define RXPBSIZE	0x22
-+#define BMC2OSPBSIZE	0x02
-+#define TXPB0SIZE	8
-+#define TXPB1SIZE	12
-+#define TXPB2SIZE	0
-+#define TXPB3SIZE	0
-+#define OS2BMCPBSIZE	4
-+
-+#define TOTAL_RXTX_PBSIZE \
-+	(RXPBSIZE + BMC2OSPBSIZE + \
-+	 TXPB0SIZE + TXPB1SIZE + TXPB2SIZE + TXPB3SIZE + OS2BMCPBSIZE)
-+
-+#if TOTAL_RXTX_PBSIZE > 60
-+#error RX TX PBSIZE exceeds 60 KB.
-+#elif TOTAL_RXTX_PBSIZE < 60
-+#error RX TX PBSIZE too small.
-+#endif
-+
-+#define I210_TXPBSIZE_DEFAULT \
-+	(TXPB0SIZE | (TXPB1SIZE << 6) | (TXPB2SIZE << 12) | \
-+	 (TXPB3SIZE << 18) | (OS2BMCPBSIZE << 24))
-+
-+#define I210_RXPBSIZE_DEFAULT \
-+	(RXPBSIZE | (BMC2OSPBSIZE << 6))
- 
- /* SerDes Control */
- #define E1000_SCTL_DISABLE_SERDES_LOOPBACK 0x0400
-@@ -1051,4 +1078,41 @@
- #define E1000_VLAPQF_P_VALID(_n)	(0x1 << (3 + (_n) * 4))
- #define E1000_VLAPQF_QUEUE_MASK	0x03
- 
-+/* DMA TX Maximum Packet Size */
-+#define E1000_DMA_TX_MAXIMUM_PACKET_SIZE (1536 >> 6) /* Units of 64 bytes. */
-+
-+/* TX Qav Credit Control fields */
-+#define E1000_TQAVCC_QUEUEMODE_STREAM_RESERVATION BIT(31)
-+
-+/* Tx Qav Control */
-+#define E1000_TQAVCTRL_TRANSMITMODE_QAV			BIT(0)
-+#define E1000_TQAVCTRL_1588_STAT_EN			BIT(2)
-+#define E1000_TQAVCTRL_DATA_FETCH_ARB_MOSTEMPTY		BIT(4)
-+#define E1000_TQAVCTRL_DATA_TRAN_ARB_CREDITSHAPER	BIT(8)
-+#define E1000_TQAVCTRL_DATA_TRAN_TIM			BIT(9)
-+#define E1000_TQAVCTRL_SP_WAIT_SR			BIT(10)
-+#define E1000_TQAVCTRL_FETCH_TIM_DELTA_SHIFT		16
-+/*
-+ * Fetch Time Delta - bits 31:16
-+ *
-+ * This field holds the value to be reduced from the launch time for
-+ * fetch time decision. The FetchTimeDelta value is defined in 32 ns
-+ * granularity.
-+ *
-+ * This field is 16 bits wide, and so the maximum value is:
-+ *
-+ * 65535 * 32 = 2097120 ~= 2 msec
-+ *
-+ * Is there any reason not to dial max here?
-+ */
-+#define E1000_FETCH_TIME_DELTA 0xffff
-+
-+#define	E1000_DEFAULT_TQAVCTRL (			\
-+	E1000_TQAVCTRL_TRANSMITMODE_QAV |		\
-+	E1000_TQAVCTRL_DATA_FETCH_ARB_MOSTEMPTY |	\
-+	E1000_TQAVCTRL_DATA_TRAN_TIM |			\
-+	E1000_TQAVCTRL_SP_WAIT_SR |			\
-+	(E1000_FETCH_TIME_DELTA << E1000_TQAVCTRL_FETCH_TIM_DELTA_SHIFT) \
-+)
-+
- #endif
-diff --git a/drivers/net/ethernet/intel/igb/e1000_regs.h b/drivers/net/ethernet/intel/igb/e1000_regs.h
-index 58adbf234e07..a2ac3331877c 100644
---- a/drivers/net/ethernet/intel/igb/e1000_regs.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_regs.h
-@@ -421,6 +421,11 @@ do { \
- 
- #define E1000_I210_FLA		0x1201C
- 
-+#define E1000_I210_TQAVCC0	0x3004
-+#define E1000_I210_TQAVCC1	0x3044
-+#define E1000_I210_DTXMXPKTSZ	0x355C /* DMA TX Maximum Packet Size */
-+#define E1000_I210_TQAVCTRL	0x3570 /* Tx Qav Control */
-+
- #define E1000_INVM_DATA_REG(_n)	(0x12120 + 4*(_n))
- #define E1000_INVM_SIZE		64 /* Number of INVM Data Registers */
- 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 06ffb2bc713e..95f20eee8194 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -328,7 +328,8 @@ enum e1000_ring_flags_t {
- 	IGB_RING_FLAG_RX_SCTP_CSUM,
- 	IGB_RING_FLAG_RX_LB_VLAN_BSWAP,
- 	IGB_RING_FLAG_TX_CTX_IDX,
--	IGB_RING_FLAG_TX_DETECT_HANG
-+	IGB_RING_FLAG_TX_DETECT_HANG,
-+	IGB_RING_FLAG_HIGH_PRIORITY
- };
- 
- #define ring_uses_large_buffer(ring) \
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index fd4a46b03cc8..69c877290d52 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1598,6 +1598,40 @@ static void igb_get_hw_control(struct igb_adapter *adapter)
- 			ctrl_ext | E1000_CTRL_EXT_DRV_LOAD);
- }
- 
-+static void igb_qav_config(struct igb_adapter *adapter)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+
-+	/*
-+	 * Global Qav configuration  (see 7.2.7.7 on page 312)
-+	 */
-+	wr32(E1000_I210_DTXMXPKTSZ, 1536 >> 6);
-+	wr32(E1000_I210_TQAVCTRL, (u32) E1000_DEFAULT_TQAVCTRL);
-+
-+	/*
-+	 * Per Queue (0/1) Qav configuration
-+	 *
-+	 * Note: Queue0 QueueMode must be set to 1
-+	 *       when TransmitMode is set to Qav.
-+	 */
-+	wr32(E1000_I210_TQAVCC0, E1000_TQAVCC_QUEUEMODE_STREAM_RESERVATION);
-+}
-+
-+static u16 igb_select_queue(struct net_device *netdev, struct sk_buff *skb,
-+				 void *accel, select_queue_fallback_t fallback)
-+{
-+	struct igb_adapter *adapter = netdev_priv(netdev);
-+	struct e1000_hw *hw = &adapter->hw;
-+
-+	if (hw->mac.type != e1000_i210)
-+		return fallback(netdev, skb);
-+
-+	if (skb->transmit_time)
-+		return 0;
-+	else
-+		return 1;
-+}
-+
- /**
-  *  igb_configure - configure the hardware for RX and TX
-  *  @adapter: private board structure
-@@ -1616,6 +1650,8 @@ static void igb_configure(struct igb_adapter *adapter)
- 	igb_setup_mrqc(adapter);
- 	igb_setup_rctl(adapter);
- 
-+	igb_qav_config(adapter);
-+
- 	igb_nfc_filter_restore(adapter);
- 	igb_configure_tx(adapter);
- 	igb_configure_rx(adapter);
-@@ -2175,6 +2211,7 @@ static const struct net_device_ops igb_netdev_ops = {
- 	.ndo_set_features	= igb_set_features,
- 	.ndo_fdb_add		= igb_ndo_fdb_add,
- 	.ndo_features_check	= igb_features_check,
-+	.ndo_select_queue	= igb_select_queue,
- };
- 
- /**
-@@ -3062,7 +3099,11 @@ static void igb_init_queue_configuration(struct igb_adapter *adapter)
- 		break;
- 	}
- 
--	adapter->rss_queues = min_t(u32, max_rss_queues, num_online_cpus());
-+	/*
-+	 * For time based Tx, we must configure four Tx queues.
-+	 */
-+	adapter->rss_queues = hw->mac.type == e1000_i210 ?
-+		max_rss_queues : min_t(u32, max_rss_queues, num_online_cpus());
- 
- 	igb_set_flag_queue_pairs(adapter, max_rss_queues);
- }
-@@ -3462,6 +3503,9 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
- 	memset(ring->tx_buffer_info, 0,
- 	       sizeof(struct igb_tx_buffer) * ring->count);
- 
-+	if (ring->flags & IGB_RING_FLAG_HIGH_PRIORITY)
-+		txdctl |= E1000_TXDCTL_HIGH_PRIORITY;
-+
- 	txdctl |= E1000_TXDCTL_QUEUE_ENABLE;
- 	wr32(E1000_TXDCTL(reg_idx), txdctl);
- }
-@@ -3476,6 +3520,11 @@ static void igb_configure_tx(struct igb_adapter *adapter)
- {
- 	int i;
- 
-+	/*
-+	 * Reserve the first queue for time based Tx.
-+	 */
-+	adapter->tx_ring[0]->flags |= IGB_RING_FLAG_HIGH_PRIORITY;
-+
- 	for (i = 0; i < adapter->num_tx_queues; i++)
- 		igb_configure_tx_ring(adapter, adapter->tx_ring[i]);
- }
-@@ -4948,11 +4997,12 @@ static void igb_set_itr(struct igb_q_vector *q_vector)
- 	}
- }
- 
--static void igb_tx_ctxtdesc(struct igb_ring *tx_ring, u32 vlan_macip_lens,
--			    u32 type_tucmd, u32 mss_l4len_idx)
-+static void igb_tx_ctxtdesc(struct igb_ring *tx_ring, struct igb_tx_buffer *first,
-+			    u32 vlan_macip_lens, u32 type_tucmd, u32 mss_l4len_idx)
- {
- 	struct e1000_adv_tx_context_desc *context_desc;
- 	u16 i = tx_ring->next_to_use;
-+	struct timespec64 ts;
- 
- 	context_desc = IGB_TX_CTXTDESC(tx_ring, i);
- 
-@@ -4967,9 +5017,15 @@ static void igb_tx_ctxtdesc(struct igb_ring *tx_ring, u32 vlan_macip_lens,
- 		mss_l4len_idx |= tx_ring->reg_idx << 4;
- 
- 	context_desc->vlan_macip_lens	= cpu_to_le32(vlan_macip_lens);
--	context_desc->seqnum_seed	= 0;
- 	context_desc->type_tucmd_mlhl	= cpu_to_le32(type_tucmd);
- 	context_desc->mss_l4len_idx	= cpu_to_le32(mss_l4len_idx);
-+
-+	if (tx_ring->flags & IGB_RING_FLAG_HIGH_PRIORITY && tx_ring->reg_idx == 0) {
-+		ts = ns_to_timespec64(first->skb->transmit_time);
-+		context_desc->seqnum_seed = cpu_to_le32(ts.tv_nsec / 32);
-+	} else {
-+		context_desc->seqnum_seed = 0;
-+	}
- }
- 
- static int igb_tso(struct igb_ring *tx_ring,
-@@ -5052,7 +5108,7 @@ static int igb_tso(struct igb_ring *tx_ring,
- 	vlan_macip_lens |= (ip.hdr - skb->data) << E1000_ADVTXD_MACLEN_SHIFT;
- 	vlan_macip_lens |= first->tx_flags & IGB_TX_FLAGS_VLAN_MASK;
- 
--	igb_tx_ctxtdesc(tx_ring, vlan_macip_lens, type_tucmd, mss_l4len_idx);
-+	igb_tx_ctxtdesc(tx_ring, first, vlan_macip_lens, type_tucmd, mss_l4len_idx);
- 
- 	return 1;
- }
-@@ -5107,7 +5163,7 @@ static void igb_tx_csum(struct igb_ring *tx_ring, struct igb_tx_buffer *first)
- 	vlan_macip_lens |= skb_network_offset(skb) << E1000_ADVTXD_MACLEN_SHIFT;
- 	vlan_macip_lens |= first->tx_flags & IGB_TX_FLAGS_VLAN_MASK;
- 
--	igb_tx_ctxtdesc(tx_ring, vlan_macip_lens, type_tucmd, 0);
-+	igb_tx_ctxtdesc(tx_ring, first, vlan_macip_lens, type_tucmd, 0);
- }
- 
- #define IGB_SET_FLAG(_input, _flag, _result) \
 -- 
 2.11.0
 
+---8<---
+/*
+ * This program demonstrates transmission of UDP packets using the
+ * system TAI timer.
+ *
+ * Copyright (C) 2017 linutronix GmbH
+ *
+ * Large portions taken from the linuxptp stack.
+ * Copyright (C) 2011, 2012 Richard Cochran <richardcochran@gmail.com>
+ *
+ * Some portions taken from the sgd test program.
+ * Copyright (C) 2015 linutronix GmbH
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+#define _GNU_SOURCE /*for CPU_SET*/
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <ifaddrs.h>
+#include <linux/ethtool.h>
+#include <linux/net_tstamp.h>
+#include <linux/sockios.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <pthread.h>
+#include <sched.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#define DEFAULT_PERIOD	1000000
+#define DEFAULT_DELAY	500000
+#define MCAST_IPADDR	"239.1.1.1"
+#define UDP_PORT	7788
+
+#ifndef SO_TXTIME
+#define SO_TXTIME	61
+#endif
+
+#define pr_err(s)	fprintf(stderr, s "\n")
+#define pr_info(s)	fprintf(stdout, s "\n")
+
+static int running = 1, use_so_txtime = 1;
+static int period_nsec = DEFAULT_PERIOD;
+static int waketx_delay = DEFAULT_DELAY;
+static struct in_addr mcast_addr;
+
+static int mcast_bind(int fd, int index)
+{
+	int err;
+	struct ip_mreqn req;
+	memset(&req, 0, sizeof(req));
+	req.imr_ifindex = index;
+	err = setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF, &req, sizeof(req));
+	if (err) {
+		pr_err("setsockopt IP_MULTICAST_IF failed: %m");
+		return -1;
+	}
+	return 0;
+}
+
+static int mcast_join(int fd, int index, const struct sockaddr *grp,
+		      socklen_t grplen)
+{
+	int err, off = 0;
+	struct ip_mreqn req;
+	struct sockaddr_in *sa = (struct sockaddr_in *) grp;
+
+	memset(&req, 0, sizeof(req));
+	memcpy(&req.imr_multiaddr, &sa->sin_addr, sizeof(struct in_addr));
+	req.imr_ifindex = index;
+	err = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &req, sizeof(req));
+	if (err) {
+		pr_err("setsockopt IP_ADD_MEMBERSHIP failed: %m");
+		return -1;
+	}
+	err = setsockopt(fd, IPPROTO_IP, IP_MULTICAST_LOOP, &off, sizeof(off));
+	if (err) {
+		pr_err("setsockopt IP_MULTICAST_LOOP failed: %m");
+		return -1;
+	}
+	return 0;
+}
+
+static void normalize(struct timespec *ts)
+{
+	while (ts->tv_nsec > 999999999) {
+		ts->tv_sec += 1;
+		ts->tv_nsec -= 1000000000;
+	}
+}
+
+static int sk_interface_index(int fd, const char *name)
+{
+	struct ifreq ifreq;
+	int err;
+
+	memset(&ifreq, 0, sizeof(ifreq));
+	strncpy(ifreq.ifr_name, name, sizeof(ifreq.ifr_name) - 1);
+	err = ioctl(fd, SIOCGIFINDEX, &ifreq);
+	if (err < 0) {
+		pr_err("ioctl SIOCGIFINDEX failed: %m");
+		return err;
+	}
+	return ifreq.ifr_ifindex;
+}
+
+static int open_socket(const char *name, struct in_addr mc_addr, short port)
+{
+	struct sockaddr_in addr;
+	int fd, index, on = 1;
+
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(port);
+
+	fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (fd < 0) {
+		pr_err("socket failed: %m");
+		goto no_socket;
+	}
+	index = sk_interface_index(fd, name);
+	if (index < 0)
+		goto no_option;
+
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) {
+		pr_err("setsockopt SO_REUSEADDR failed: %m");
+		goto no_option;
+	}
+	if (bind(fd, (struct sockaddr *) &addr, sizeof(addr))) {
+		pr_err("bind failed: %m");
+		goto no_option;
+	}
+	if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, name, strlen(name))) {
+		pr_err("setsockopt SO_BINDTODEVICE failed: %m");
+		goto no_option;
+	}
+	addr.sin_addr = mc_addr;
+	if (mcast_join(fd, index, (struct sockaddr *) &addr, sizeof(addr))) {
+		pr_err("mcast_join failed");
+		goto no_option;
+	}
+	if (mcast_bind(fd, index)) {
+		goto no_option;
+	}
+	if (use_so_txtime && setsockopt(fd, SOL_SOCKET, SO_TXTIME, &on, sizeof(on))) {
+		pr_err("setsockopt SO_TXTIME failed: %m");
+		goto no_option;
+	}
+
+	return fd;
+no_option:
+	close(fd);
+no_socket:
+	return -1;
+}
+
+static int udp_open(const char *name)
+{
+	int fd;
+
+	if (!inet_aton(MCAST_IPADDR, &mcast_addr))
+		return -1;
+
+	fd = open_socket(name, mcast_addr, UDP_PORT);
+
+	return fd;
+}
+
+static int udp_send(int fd, void *buf, int len, __u64 txtime)
+{
+	union {
+		char buf[CMSG_SPACE(sizeof(__u64))];
+		struct cmsghdr align;
+	} u;
+	struct sockaddr_in sin;
+	struct cmsghdr *cmsg;
+	struct msghdr msg;
+	struct iovec iov;
+	ssize_t cnt;
+
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_family = AF_INET;
+	sin.sin_addr = mcast_addr;
+	sin.sin_port = htons(UDP_PORT);
+
+	iov.iov_base = buf;
+	iov.iov_len = len;
+
+	memset(&msg, 0, sizeof(msg));
+	msg.msg_name = &sin;
+	msg.msg_namelen = sizeof(sin);
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+
+	/*
+	 * We specify the transmission time in the CMSG.
+	 */
+	if (use_so_txtime) {
+		msg.msg_control = u.buf;
+		msg.msg_controllen = sizeof(u.buf);
+		cmsg = CMSG_FIRSTHDR(&msg);
+		cmsg->cmsg_level = SOL_SOCKET;
+		cmsg->cmsg_type = SO_TXTIME;
+		cmsg->cmsg_len = CMSG_LEN(sizeof(__u64));
+		*((__u64 *) CMSG_DATA(cmsg)) = txtime;
+	}
+	cnt = sendmsg(fd, &msg, 0);
+	if (cnt < 1) {
+		pr_err("sendmsg failed: %m");
+		return cnt;
+	}
+	return cnt;
+}
+
+static unsigned char tx_buffer[256];
+static int marker;
+
+static int run_nanosleep(clockid_t clkid, int fd)
+{
+	struct timespec ts;
+	int cnt, err;
+	__u64 txtime;
+
+	clock_gettime(clkid, &ts);
+
+	/* Start one to two seconds in the future. */
+	ts.tv_sec += 1;
+	ts.tv_nsec = 1000000000 - waketx_delay;
+	normalize(&ts);
+
+	txtime = ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+	txtime += waketx_delay;
+
+	while (running) {
+		err = clock_nanosleep(clkid, TIMER_ABSTIME, &ts, NULL);
+		switch (err) {
+		case 0:
+			cnt = udp_send(fd, tx_buffer, sizeof(tx_buffer), txtime);
+			if (cnt != sizeof(tx_buffer)) {
+				pr_err("udp_send failed");
+			}
+			memset(tx_buffer, marker++, sizeof(tx_buffer));
+			ts.tv_nsec += period_nsec;
+			normalize(&ts);
+			txtime += period_nsec;
+			break;
+		case EINTR:
+			continue;
+		default:
+			fprintf(stderr, "clock_nanosleep returned %d: %s",
+				err, strerror(err));
+			return err;
+		}
+	}
+
+	return 0;
+}
+
+static int set_realtime(pthread_t thread, int priority, int cpu)
+{
+	cpu_set_t cpuset;
+	struct sched_param sp;
+	int err, policy;
+
+	int min = sched_get_priority_min(SCHED_FIFO);
+	int max = sched_get_priority_max(SCHED_FIFO);
+
+	fprintf(stderr, "min %d max %d\n", min, max);
+
+	if (priority < 0) {
+		return 0;
+	}
+
+	err = pthread_getschedparam(thread, &policy, &sp);
+	if (err) {
+		fprintf(stderr, "pthread_getschedparam: %s\n", strerror(err));
+		return -1;
+	}
+
+	sp.sched_priority = priority;
+
+	err = pthread_setschedparam(thread, SCHED_FIFO, &sp);
+	if (err) {
+		fprintf(stderr, "pthread_setschedparam: %s\n", strerror(err));
+		return -1;
+	}
+
+	if (cpu < 0) {
+		return 0;
+	}
+	CPU_ZERO(&cpuset);
+	CPU_SET(cpu, &cpuset);
+	err = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+	if (err) {
+		fprintf(stderr, "pthread_setaffinity_np: %s\n", strerror(err));
+		return -1;
+	}
+
+	return 0;
+}
+
+static void usage(char *progname)
+{
+	fprintf(stderr,
+		"\n"
+		"usage: %s [options]\n"
+		"\n"
+		" -c [num]   run on CPU 'num'\n"
+		" -d [num]   delay from wake up to transmission in nanoseconds (default %d)\n"
+		" -h         prints this message and exits\n"
+		" -i [name]  use network interface 'name'\n"
+		" -p [num]   run with RT priorty 'num'\n"
+		" -P [num]   period in nanoseconds (default %d)\n"
+		" -u         do not use SO_TXTIME\n"
+		"\n",
+		progname, DEFAULT_DELAY, DEFAULT_PERIOD);
+}
+
+int main(int argc, char *argv[])
+{
+	int c, cpu = -1, err, fd, priority = -1;
+	clockid_t clkid = CLOCK_TAI;
+	char *iface = NULL, *progname;
+
+	/* Process the command line arguments. */
+	progname = strrchr(argv[0], '/');
+	progname = progname ? 1 + progname : argv[0];
+	while (EOF != (c = getopt(argc, argv, "c:d:hi:p:P:u"))) {
+		switch (c) {
+		case 'c':
+			cpu = atoi(optarg);
+			break;
+		case 'd':
+			waketx_delay = atoi(optarg);
+			break;
+		case 'h':
+			usage(progname);
+			return 0;
+		case 'i':
+			iface = optarg;
+			break;
+		case 'p':
+			priority = atoi(optarg);
+			break;
+		case 'P':
+			period_nsec = atoi(optarg);
+			break;
+		case 'u':
+			use_so_txtime = 0;
+			break;
+		case '?':
+			usage(progname);
+			return -1;
+		}
+	}
+
+	if (waketx_delay > 999999999 || waketx_delay < 0) {
+		pr_err("Bad wake up to transmission delay.");
+		usage(progname);
+		return -1;
+	}
+
+	if (period_nsec < 1000) {
+		pr_err("Bad period.");
+		usage(progname);
+		return -1;
+	}
+
+	if (!iface) {
+		pr_err("Need a network interface.");
+		usage(progname);
+		return -1;
+	}
+
+	if (set_realtime(pthread_self(), priority, cpu)) {
+		return -1;
+	}
+
+	fd = udp_open(iface);
+	if (fd < 0) {
+		return -1;
+	}
+
+	err = run_nanosleep(clkid, fd);
+
+	close(fd);
+	return err;
+}
