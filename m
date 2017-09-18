@@ -1,11 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 18 Sep 2017 17:12:37 +0000
-Subject: [Intel-wired-lan] [PATCH v3 08/16] fm10k: avoid divide by zero
- in	rare cases when device is resetting
-In-Reply-To: <20170710202319.22110-8-jacob.e.keller@intel.com>
+Date: Mon, 18 Sep 2017 17:14:51 +0000
+Subject: [Intel-wired-lan] [PATCH v3 09/16] fm10k:
+	move	fm10k_prepare_for_reset and fm10k_handle_reset
+In-Reply-To: <20170710202319.22110-9-jacob.e.keller@intel.com>
 References: <20170710202319.22110-1-jacob.e.keller@intel.com>
- <20170710202319.22110-8-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64AF66E8@ORSMSX103.amr.corp.intel.com>
+ <20170710202319.22110-9-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64AF670F@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,14 +20,11 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, July 10, 2017 1:23 PM
 > To: jtkirhse at osuosl.org; Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
 > Cc: jekeller at osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 08/16] fm10k: avoid divide by zero in rare
-> cases when device is resetting
+> Subject: [Intel-wired-lan] [PATCH v3 09/16] fm10k: move
+> fm10k_prepare_for_reset and fm10k_handle_reset
 > 
-> It is possible that under rare circumstances the device is undergoing
-> a reset, such as when a PFLR occurs, and the device may be transmitting
-> simultaneously. In this case, we might attempt to divide by zero when
-> finding the proper r_idx. Instead, lets read the num_tx_queues once,
-> and make sure it's non-zero.
+> A future patch needs these functions defined earlier in the file. Move
+> them closer to above where they will be called.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
