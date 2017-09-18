@@ -1,11 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 18 Sep 2017 17:14:51 +0000
-Subject: [Intel-wired-lan] [PATCH v3 09/16] fm10k:
-	move	fm10k_prepare_for_reset and fm10k_handle_reset
-In-Reply-To: <20170710202319.22110-9-jacob.e.keller@intel.com>
+Date: Mon, 18 Sep 2017 17:15:34 +0000
+Subject: [Intel-wired-lan] [PATCH v3 10/16] fm10k: prevent race
+ condition of	__FM10K_SERVICE_SCHED
+In-Reply-To: <20170710202319.22110-10-jacob.e.keller@intel.com>
 References: <20170710202319.22110-1-jacob.e.keller@intel.com>
- <20170710202319.22110-9-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64AF670F@ORSMSX103.amr.corp.intel.com>
+ <20170710202319.22110-10-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64AF672C@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,11 +20,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, July 10, 2017 1:23 PM
 > To: jtkirhse at osuosl.org; Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
 > Cc: jekeller at osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 09/16] fm10k: move
-> fm10k_prepare_for_reset and fm10k_handle_reset
+> Subject: [Intel-wired-lan] [PATCH v3 10/16] fm10k: prevent race condition of
+> __FM10K_SERVICE_SCHED
 > 
-> A future patch needs these functions defined earlier in the file. Move
-> them closer to above where they will be called.
+> Although very unlikely, it is possible that cancel_work_sync() may stop
+> the service_task before it actually started. In this case, the
+> __FM10K_SERVICE_SCHED bit will never be cleared. This results in the
+> service task being unable to reschedule in the future. Add a helper
+> function which sets the service disable bit, waits for the service task
+> to stop and clears the schedule bit, thus avoiding the race condition.
+> We know the schedule bit is safe to clear because the cancel_work_sync()
+> guarantees the service task is not running.
+> 
+> Add a helper function also to restart the service task, for symmetry.
+> This is not strictly needed but helps the mental model of how to stop
+> and start the service task.
+> 
+> This race could only happen in fm10k_suspend/fm10k_resume as this is the
+> only place where the service task is actually restarted. Thus,
+> suspend/resume testing would be ideal. However, note that the chance of
+> this happening is very slim as the service event is scheduled for
+> immediate execution, and you would have to trigger a suspend at almost
+> the exact same time as the service task was scheduled.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
