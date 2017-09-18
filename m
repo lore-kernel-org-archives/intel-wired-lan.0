@@ -1,39 +1,76 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 18 Sep 2017 17:03:47 +0000
-Subject: [Intel-wired-lan] [PATCH v3 03/16] fm10k: avoid possible
- truncation	of q_vector->name
-In-Reply-To: <20170710202319.22110-3-jacob.e.keller@intel.com>
-References: <20170710202319.22110-1-jacob.e.keller@intel.com>
- <20170710202319.22110-3-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64AF661F@ORSMSX103.amr.corp.intel.com>
+From: Richard Cochran <rcochran@linutronix.de>
+Date: Mon, 18 Sep 2017 09:41:20 +0200
+Subject: [Intel-wired-lan] [PATCH RFC V1 net-next 5/6] net: packet: Hook
+	into time based transmission.
+In-Reply-To: <cover.1505719061.git.rcochran@linutronix.de>
+References: <cover.1505719061.git.rcochran@linutronix.de>
+Message-ID: <df72b2abd0c4b3abd9b2a99ea8ba116fe5478aa7.1505719061.git.rcochran@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
-> Of Jacob Keller
-> Sent: Monday, July 10, 2017 1:23 PM
-> To: jtkirhse at osuosl.org; Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Cc: jekeller at osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 03/16] fm10k: avoid possible truncation of
-> q_vector->name
-> 
-> New versions of GCC since version 7 began warning about possible
-> truncation of calls to snprintf. We can fix this and avoid false
-> positives. First, we should pass the full buffer size to snprintf,
-> because it guarantees a NULL character as part of its passed length, so
-> passing len-1 is simply wasting a byte of possible storage.
-> 
-> Second, if we make the ri and ti variables unsigned, the compiler is
-> able to correctly reason that the value never gets larger than 256, so
-> it doesn't need to warn about the full space required to print a signed
-> integer.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
+For raw layer-2 packets, copy the desired future transmit time from
+the CMSG cookie into the skb.
 
-Tested-by: Krishneil Singh  <krishneil.k.singh@intel.com>
+Signed-off-by: Richard Cochran <rcochran@linutronix.de>
+---
+ net/packet/af_packet.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
+index c26172995511..342c6cc81a42 100644
+--- a/net/packet/af_packet.c
++++ b/net/packet/af_packet.c
+@@ -1984,6 +1984,7 @@ static int packet_sendmsg_spkt(struct socket *sock, struct msghdr *msg,
+ 		goto out_unlock;
+ 	}
+ 
++	sockc.transmit_time = 0;
+ 	sockc.tsflags = sk->sk_tsflags;
+ 	if (msg->msg_controllen) {
+ 		err = sock_cmsg_send(sk, msg, &sockc);
+@@ -1995,6 +1996,7 @@ static int packet_sendmsg_spkt(struct socket *sock, struct msghdr *msg,
+ 	skb->dev = dev;
+ 	skb->priority = sk->sk_priority;
+ 	skb->mark = sk->sk_mark;
++	skb->transmit_time = sockc.transmit_time;
+ 
+ 	sock_tx_timestamp(sk, sockc.tsflags, &skb_shinfo(skb)->tx_flags);
+ 
+@@ -2492,6 +2494,7 @@ static int tpacket_fill_skb(struct packet_sock *po, struct sk_buff *skb,
+ 	skb->dev = dev;
+ 	skb->priority = po->sk.sk_priority;
+ 	skb->mark = po->sk.sk_mark;
++	skb->transmit_time = sockc->transmit_time;
+ 	sock_tx_timestamp(&po->sk, sockc->tsflags, &skb_shinfo(skb)->tx_flags);
+ 	skb_shinfo(skb)->destructor_arg = ph.raw;
+ 
+@@ -2668,6 +2671,7 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
+ 	if (unlikely(!(dev->flags & IFF_UP)))
+ 		goto out_put;
+ 
++	sockc.transmit_time = 0;
+ 	sockc.tsflags = po->sk.sk_tsflags;
+ 	if (msg->msg_controllen) {
+ 		err = sock_cmsg_send(&po->sk, msg, &sockc);
+@@ -2863,6 +2867,7 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
+ 	if (unlikely(!(dev->flags & IFF_UP)))
+ 		goto out_unlock;
+ 
++	sockc.transmit_time = 0;
+ 	sockc.tsflags = sk->sk_tsflags;
+ 	sockc.mark = sk->sk_mark;
+ 	if (msg->msg_controllen) {
+@@ -2934,6 +2939,7 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
+ 	skb->dev = dev;
+ 	skb->priority = sk->sk_priority;
+ 	skb->mark = sockc.mark;
++	skb->transmit_time = sockc.transmit_time;
+ 
+ 	if (po->has_vnet_hdr) {
+ 		err = virtio_net_hdr_to_skb(skb, &vnet_hdr, vio_le());
+-- 
+2.11.0
 
