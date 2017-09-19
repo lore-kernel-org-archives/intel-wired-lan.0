@@ -1,167 +1,114 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 20 Sep 2017 05:43:52 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 4a55eb67111d68f5575b8728b61cd558f15c8a4b
-Message-ID: <59c18f98.qkDmrBULv03FTvtk%fengguang.wu@intel.com>
+From: Zhang Shengju <zhangshengju@cmss.chinamobile.com>
+Date: Tue, 19 Sep 2017 21:40:54 +0800
+Subject: [Intel-wired-lan] [net-next,
+	RESEND] igb: add function to get maximum RSS queues
+Message-ID: <1505828454-2826-1-git-send-email-zhangshengju@cmss.chinamobile.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-4a55eb67111d68f5575b8728b61cd558f15c8a4b  ixgbe: incorrect xdp ring accounting in ethtool tx_frame param
+This patch adds a new function igb_get_max_rss_queues() to get maximum
+RSS queues, this will reduce duplicate code and facilitate future
+maintenance.
 
-elapsed time: 178m
+Signed-off-by: Zhang Shengju <zhangshengju@cmss.chinamobile.com>
+---
+ drivers/net/ethernet/intel/igb/igb.h         |  1 +
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 32 +---------------------------
+ drivers/net/ethernet/intel/igb/igb_main.c    | 12 +++++++++--
+ 3 files changed, 12 insertions(+), 33 deletions(-)
 
-configs tested: 143
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index 06ffb2b..ca94eff 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -684,6 +684,7 @@ void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
+ int igb_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ int igb_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ void igb_set_flag_queue_pairs(struct igb_adapter *, const u32);
++unsigned int igb_get_max_rss_queues(struct igb_adapter *);
+ #ifdef CONFIG_IGB_HWMON
+ void igb_sysfs_exit(struct igb_adapter *adapter);
+ int igb_sysfs_init(struct igb_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index d06a8db..606e676 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -3338,37 +3338,7 @@ static int igb_set_rxfh(struct net_device *netdev, const u32 *indir,
+ 
+ static unsigned int igb_max_channels(struct igb_adapter *adapter)
+ {
+-	struct e1000_hw *hw = &adapter->hw;
+-	unsigned int max_combined = 0;
+-
+-	switch (hw->mac.type) {
+-	case e1000_i211:
+-		max_combined = IGB_MAX_RX_QUEUES_I211;
+-		break;
+-	case e1000_82575:
+-	case e1000_i210:
+-		max_combined = IGB_MAX_RX_QUEUES_82575;
+-		break;
+-	case e1000_i350:
+-		if (!!adapter->vfs_allocated_count) {
+-			max_combined = 1;
+-			break;
+-		}
+-		/* fall through */
+-	case e1000_82576:
+-		if (!!adapter->vfs_allocated_count) {
+-			max_combined = 2;
+-			break;
+-		}
+-		/* fall through */
+-	case e1000_82580:
+-	case e1000_i354:
+-	default:
+-		max_combined = IGB_MAX_RX_QUEUES;
+-		break;
+-	}
+-
+-	return max_combined;
++	return igb_get_max_rss_queues(adapter);
+ }
+ 
+ static void igb_get_channels(struct net_device *netdev,
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index ec62410..e6cc6b5 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3026,10 +3026,10 @@ static void igb_probe_vfs(struct igb_adapter *adapter)
+ #endif /* CONFIG_PCI_IOV */
+ }
+ 
+-static void igb_init_queue_configuration(struct igb_adapter *adapter)
++unsigned int igb_get_max_rss_queues(struct igb_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+-	u32 max_rss_queues;
++	unsigned int max_rss_queues;
+ 
+ 	/* Determine the maximum number of RSS queues supported. */
+ 	switch (hw->mac.type) {
+@@ -3060,6 +3060,14 @@ static void igb_init_queue_configuration(struct igb_adapter *adapter)
+ 		break;
+ 	}
+ 
++	return max_rss_queues;
++}
++
++static void igb_init_queue_configuration(struct igb_adapter *adapter)
++{
++	u32 max_rss_queues;
++
++	max_rss_queues = igb_get_max_rss_queues(adapter);
+ 	adapter->rss_queues = min_t(u32, max_rss_queues, num_online_cpus());
+ 
+ 	igb_set_flag_queue_pairs(adapter, max_rss_queues);
+-- 
+1.8.3.1
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-i386                   randconfig-n0-09180828
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x011-201738
-x86_64                 randconfig-x016-201738
-x86_64                 randconfig-x013-201738
-x86_64                 randconfig-x018-201738
-x86_64                 randconfig-x019-201738
-x86_64                 randconfig-x014-201738
-x86_64                 randconfig-x012-201738
-x86_64                 randconfig-x015-201738
-x86_64                 randconfig-x017-201738
-x86_64                 randconfig-x010-201738
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s1-201738
-i386                     randconfig-s0-201738
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201738
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201738
-i386                     randconfig-i0-201738
-i386                               tinyconfig
-i386                   randconfig-x013-201738
-i386                   randconfig-x019-201738
-i386                   randconfig-x018-201738
-i386                   randconfig-x016-201738
-i386                   randconfig-x012-201738
-i386                   randconfig-x015-201738
-i386                   randconfig-x011-201738
-i386                   randconfig-x010-201738
-i386                   randconfig-x017-201738
-i386                   randconfig-x014-201738
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x000-201738
-i386                   randconfig-x003-201738
-i386                   randconfig-x009-201738
-i386                   randconfig-x004-201738
-i386                   randconfig-x008-201738
-i386                   randconfig-x001-201738
-i386                   randconfig-x005-201738
-i386                   randconfig-x002-201738
-i386                   randconfig-x006-201738
-i386                   randconfig-x007-201738
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x000-201738
-x86_64                 randconfig-x007-201738
-x86_64                 randconfig-x001-201738
-x86_64                 randconfig-x006-201738
-x86_64                 randconfig-x004-201738
-x86_64                 randconfig-x009-201738
-x86_64                 randconfig-x003-201738
-x86_64                 randconfig-x002-201738
-x86_64                 randconfig-x005-201738
-x86_64                 randconfig-x008-201738
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-x075-201738
-i386                   randconfig-x076-201738
-i386                   randconfig-x071-201738
-i386                   randconfig-x074-201738
-i386                   randconfig-x070-201738
-i386                   randconfig-x077-201738
-i386                   randconfig-x078-201738
-i386                   randconfig-x073-201738
-i386                   randconfig-x072-201738
-i386                   randconfig-x079-201738
 
-Thanks,
-Fengguang
