@@ -1,29 +1,31 @@
-From: Benjamin Poirier <bpoirier@suse.com>
-Date: Tue, 19 Sep 2017 21:41:02 +0200
-Subject: [Intel-wired-lan] [5/5] e1000e: Avoid receiver overrun
-	interrupt bursts
-In-Reply-To: <DDD41C67-CDF2-4443-9F49-0DC5489D9243@redfish-solutions.com>
-References: <20170721183627.13373-5-bpoirier@suse.com>
- <DDD41C67-CDF2-4443-9F49-0DC5489D9243@redfish-solutions.com>
-Message-ID: <20170919194102.h2nu72evbqhpu765@f1.synalogic.ca>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 19 Sep 2017 21:42:28 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: fix a typo.
+In-Reply-To: <1505530188-3220-1-git-send-email-rami.rosen@intel.com>
+References: <1505530188-3220-1-git-send-email-rami.rosen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAA958@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2017/09/19 12:38, Philip Prindeville wrote:
-> Hi.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Rami Rosen
+> Sent: Friday, September 15, 2017 7:50 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] i40e: fix a typo.
 > 
-> We?ve been running this patchset (all 5) for about as long as they?ve been under review? about 2 months.  And in a burn-in lab with heavy traffic.
+> This patch fixes a typo in i40e_vsi_alloc_arrays() documentation.
+> The first parameter name should be "vsi" instead of "type".
 > 
-> We?ve not seen a single link-flap in hundreds of ours of saturated traffic.
-> 
-> Would love to see some resolution soon on this as we don?t want to ship a release with unsanctioned patches.
-> 
-> Is there an estimate on when that might be?
+> Signed-off-by: Rami Rosen <rami.rosen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-The patches have been added to Jeff Kirsher's next-queue tree. I guess
-they will be submitted for v4.15 which might be released in early
-2018...
-http://phb-crystal-ball.org/
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
