@@ -1,124 +1,54 @@
-From: Henrik Austad <henrik@austad.us>
-Date: Tue, 19 Sep 2017 15:14:43 +0200
-Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
- config interfaces for traffic shapers
-In-Reply-To: <20170919052244.77umdxuze53t6j22@localhost>
-References: <20170901012625.14838-1-vinicius.gomes@intel.com>
- <20170918080214.yrejz67wwnp2pjzf@localhost>
- <87k20vip3f.fsf@intel.com>
- <20170919052244.77umdxuze53t6j22@localhost>
-Message-ID: <20170919131443.GA28667@sisyphus.home.austad.us>
+From: Miroslav Lichvar <mlichvar@redhat.com>
+Date: Tue, 19 Sep 2017 16:43:02 +0200
+Subject: [Intel-wired-lan] [PATCH RFC V1 net-next 0/6] Time based packet
+	transmission
+In-Reply-To: <cover.1505719061.git.rcochran@linutronix.de>
+References: <cover.1505719061.git.rcochran@linutronix.de>
+Message-ID: <20170919144302.GB4347@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi all,
+On Mon, Sep 18, 2017 at 09:41:15AM +0200, Richard Cochran wrote:
+> This series is an early RFC that introduces a new socket option
+> allowing time based transmission of packets.  This option will be
+> useful in implementing various real time protocols over Ethernet,
+> including but not limited to P802.1Qbv, which is currently finding
+> its way into 802.1Q.
 
-On Tue, Sep 19, 2017 at 07:22:44AM +0200, Richard Cochran wrote:
-> On Mon, Sep 18, 2017 at 04:06:28PM -0700, Vinicius Costa Gomes wrote:
-> > That's the point, the application does not need to know that, and asking
-> > that would be stupid.
+If I understand it correctly, this also allows us to make a PTP/NTP
+"one-step" clock with HW that doesn't support it directly.
+
+> * Open questions about SO_TXTIME semantics
 > 
-> On the contrary, this information is essential to the application.
-> Probably you have never seen an actual Ethernet field bus in
-> operation?  In any case, you are missing the point.
+>   - What should the kernel do if the dialed Tx time is in the past?
+>     Should the packet be sent ASAP, or should we throw an error?
+
+Dropping the packet with an error would make more sense to me.
+
+>   - What should the timescale be for the dialed Tx time?  Should the
+>     kernel select UTC when using the SW Qdisc and the HW time
+>     otherwise?  Or should the socket option include a clockid_t?
+
+I think for applications that don't (want to) bind their socket to a
+specific interface it would be useful if the cmsg specified clockid_t
+or maybe if_index. If the packet would be sent using a different
+PHC/interface, it should be dropped.
+
+>   |         | plain preempt_rt |     so_txtime | txtime @ 250 us |
+>   |---------+------------------+---------------+-----------------|
+>   | min:    |    +1.940800e+04 | +4.720000e+02 |   +4.720000e+02 |
+>   | max:    |    +7.556000e+04 | +5.680000e+02 |   +5.760000e+02 |
+>   | pk-pk:  |    +5.615200e+04 | +9.600000e+01 |   +1.040000e+02 |
+>   | mean:   |    +3.292776e+04 | +5.072274e+02 |   +5.073602e+02 |
+>   | stddev: |    +6.514709e+03 | +1.310849e+01 |   +1.507144e+01 |
+>   | count:  |           600000 |        600000 |         2400000 |
 > 
-> > (And that's another nice point of how 802.1Qbv works, applications do
-> > not need to be changed to use it, and I think we should work to achieve
-> > this on the Linux side)
-> 
-> Once you start to care about real time performance, then you need to
-> consider the applications.  This is industrial control, not streaming
-> your tunes from your ipod.
+>   Using so_txtime, the peak to peak jitter is about 100 nanoseconds,
 
-Do not underestimate the need for media over TSN. I fully see your point of 
-real-time systems, but they are not the only valid use-cases for TSN.
+Nice!
 
-> > That being said, that only works for kinds of traffic that maps well to
-> > this configuration in advance model, which is the model that the IEEE
-> > (see 802.1Qcc) and the AVNU Alliance[1] are pushing for.
-> 
-> Again, you are missing the point of what they aiming for.  I have
-> looked at a number of production systems, and in each case the
-> developers want total control over the transmission, in order to
-> reduce latency to an absolute minimum.  Typically the data to be sent
-> are available only microseconds before the transmission deadline.
-> 
-> Consider OpenAVB on github that people are already using.  Take a look
-> at simple_talker.c and explain how "applications do not need to be
-> changed to use it."
-
-I do not think simple-talker was everintended to be how users of AVB should 
-be implemented, but as a demonstration of what the protocol could do.
-
-ALSA/V4L2 should supply some interface to this so that you can attach 
-media-applications to it without the application itself having to be "TSN 
-aware".
-
-> > [1]
-> > http://avnu.org/theory-of-operation-for-tsn-enabled-industrial-systems/
-> 
-> Did you even read this?
-> 
->     [page 24]
-> 
->     As described in section 2, some industrial control systems require
->     predictable, very low latency and cycle-to-cycle variation to meet
->     hard real-time application requirements. In these systems,
->     multiple distributed controllers commonly synchronize their
->     sensor/actuator operations with other controllers by scheduling
->     these operations in time, typically using a repeating control
->     cycle.
->     ...
->     The gate control mechanism is itself a time-aware PTP application
->     operating within a bridge or end station port.
-> 
-> It is an application, not a "god box."
->
-> > In short, I see a per-packet transmission time and a per-queue schedule
-> > as solutions to different problems.
-> 
-> Well, I can agree with that.  For some non real-time applications,
-> bandwidth shaping is enough, and your Qdisc idea is sufficient.  For
-> the really challenging TSN targets (industrial control, automotive),
-> your idea of an opaque schedule file won't fly.
-
-Would it make sense to adapt the proposed Qdisc here as well as the 
-back-o-the-napkin idea in the other thread to to a per-socket queue for 
-each priority and then sort those sockets based on SO_TXTIME?
-
-TSN operates on a per-StreamID basis, and that should map fairly well to a 
-per-socket approach I think (let us just assume that an application that 
-sends TSN traffic will open up a separate socket for each stream.
-
-This should allow a userspace application that is _very_ aware of its 
-timing constraints to send frames exactly when it needs to as you have 
-SO_TXTIME available. It would also let applications that basically want a 
-fine-grained rate control (audio and video comes to mind) to use the same 
-qdisc.
-
-For those sockets that do not support SO_TXTIME, but still map to a 
-priority handled by sch_cbs (or whatever it'll end up being called) you can 
-set the transmit-time to be the time of the last skb in the queue + an 
-delta which will give you the correct rate (TSN operates on observation 
-intervals which you can specify via tc when you create the queues).
-
-Then you can have, as you propose in your other series, a hrtimer that is 
-being called when the next SO_TXTIME enters, grab a skb and move it to the 
-hw-queue. This should also allow you to keep a sorted per-socket queue 
-should an application send frames in the wrong order, without having to 
-rearrange descriptors for the DMA machinery.
-
-If this makes sense, I am more than happy to give it a stab and see how it 
-goes.
-
--Henrik
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 181 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170919/05b03c2f/attachment.asc>
+-- 
+Miroslav Lichvar
