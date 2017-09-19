@@ -1,35 +1,156 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 19 Sep 2017 19:20:12 +0000
-Subject: [Intel-wired-lan] [net PATCH] ixgbe: incorrect xdp ring
- accounting in ethtool tx_frame param
-In-Reply-To: <20170907173248.7589.44547.stgit@john-Precision-Tower-5810>
-References: <20170907173248.7589.44547.stgit@john-Precision-Tower-5810>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAA911@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 20 Sep 2017 03:31:21 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 44f75908551c04fb16ace9cbf93319c9f3593b28
+Message-ID: <59c17089.QTkj0ycGi7lnn+oz%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of John Fastabend
-> Sent: Thursday, September 7, 2017 10:33 AM
-> To: intel-wired-lan at osuosl.org
-> Subject: [Intel-wired-lan] [net PATCH] ixgbe: incorrect xdp ring accounting in
-> ethtool tx_frame param
-> 
-> Changing the TX ring parameters with an XDP program attached may cause
-> the XDP queues to be cleared and the TX rings to be incorrectly configured.
-> 
-> Fix by doing correct ring accounting in setup call.
-> 
-> Fixes: 33fdc82f0883 ("ixgbe: add support for XDP_TX action")
-> Signed-off-by: John Fastabend <john.fastabend@gmail.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+44f75908551c04fb16ace9cbf93319c9f3593b28  ixgbe: fix the FWSM.PT check in ixgbe_mng_present()
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 47m
 
+configs tested: 132
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                 randconfig-a0-09200253
+i386                   randconfig-n0-09180828
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x011-201738
+x86_64                 randconfig-x016-201738
+x86_64                 randconfig-x013-201738
+x86_64                 randconfig-x018-201738
+x86_64                 randconfig-x019-201738
+x86_64                 randconfig-x014-201738
+x86_64                 randconfig-x012-201738
+x86_64                 randconfig-x015-201738
+x86_64                 randconfig-x017-201738
+x86_64                 randconfig-x010-201738
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s1-201738
+i386                     randconfig-s0-201738
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201738
+i386                     randconfig-i1-201738
+i386                     randconfig-i0-201738
+powerpc               ps3_petitboot_defconfig
+sh                                  defconfig
+x86_64                randconfig-ne0-09200243
+i386                   randconfig-x013-201738
+i386                   randconfig-x019-201738
+i386                   randconfig-x018-201738
+i386                   randconfig-x016-201738
+i386                   randconfig-x012-201738
+i386                   randconfig-x015-201738
+i386                   randconfig-x011-201738
+i386                   randconfig-x010-201738
+i386                   randconfig-x017-201738
+i386                   randconfig-x014-201738
+i386                   randconfig-x000-201738
+i386                   randconfig-x003-201738
+i386                   randconfig-x009-201738
+i386                   randconfig-x004-201738
+i386                   randconfig-x008-201738
+i386                   randconfig-x001-201738
+i386                   randconfig-x005-201738
+i386                   randconfig-x002-201738
+i386                   randconfig-x006-201738
+i386                   randconfig-x007-201738
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x075-201738
+i386                   randconfig-x076-201738
+i386                   randconfig-x071-201738
+i386                   randconfig-x074-201738
+i386                   randconfig-x070-201738
+i386                   randconfig-x077-201738
+i386                   randconfig-x078-201738
+i386                   randconfig-x073-201738
+i386                   randconfig-x072-201738
+i386                   randconfig-x079-201738
+x86_64                 randconfig-x000-201738
+x86_64                 randconfig-x007-201738
+x86_64                 randconfig-x001-201738
+x86_64                 randconfig-x006-201738
+x86_64                 randconfig-x004-201738
+x86_64                 randconfig-x009-201738
+x86_64                 randconfig-x003-201738
+x86_64                 randconfig-x002-201738
+x86_64                 randconfig-x005-201738
+x86_64                 randconfig-x008-201738
+mips                       rbtx49xx_defconfig
+powerpc                         ps3_defconfig
+um                                  defconfig
+i386                   randconfig-x0-09200305
+
+Thanks,
+Fengguang
