@@ -1,79 +1,63 @@
 From: Richard Cochran <richardcochran@gmail.com>
-Date: Wed, 20 Sep 2017 07:25:58 +0200
-Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
- config interfaces for traffic shapers
-In-Reply-To: <87wp4ufchl.fsf@intel.com>
-References: <20170901012625.14838-1-vinicius.gomes@intel.com>
- <20170918080214.yrejz67wwnp2pjzf@localhost>
- <87k20vip3f.fsf@intel.com>
- <20170919052244.77umdxuze53t6j22@localhost>
- <87wp4ufchl.fsf@intel.com>
-Message-ID: <20170920052558.h6c4lkqmzk2h2pdq@localhost>
+Date: Wed, 20 Sep 2017 07:49:19 +0200
+Subject: [Intel-wired-lan] TSN Scorecard,
+ was Re: [RFC net-next 0/5] TSN: Add qdisc-based config interfaces
+ for traffic shapers
+In-Reply-To: <20170920051754.21745-1-levipearson@gmail.com>
+References: <20170918081248.txhars53icbqsvld@localhost>
+ <20170920051754.21745-1-levipearson@gmail.com>
+Message-ID: <20170920054919.jtqckuybsu42tvpk@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Sep 19, 2017 at 05:19:18PM -0700, Vinicius Costa Gomes wrote:
-> One of the problems with OpenAVNU is that it's too coupled with the i210
-> NIC. One of the things we want is to decouple OpenAVNU from the
-> controller.
+On Tue, Sep 19, 2017 at 11:17:54PM -0600, levipearson at gmail.com wrote:
+> In addition to OpenAvnu, Renesas has a number of github repositories with what looks like a fairly
+> complete media streaming system:
 
-Yes, I want that, too.
+Is it a generic stack or a set of hacks for their HW?
 
-> The way we thought best was to propose interfaces (that
-> would work along side to the Linux networking stack) as close as
-> possible to what the current standards define, that means the IEEE
-> 802.1Q family of specifications, in the hope that network controller
-> vendors would also look at the specifications when designing their
-> controllers.
+> Although your SO_TXTIME proposal could certainly form the basis of an endpoint's implementation of Qbv, I
+> think it is a stretch to consider it a Qbv implementation in itself, if that's what you mean by this.
 
-These standard define the *behavior*, not the programming APIs.  Our
-task as kernel developers is to invent the best interfaces for
-supporting 802.1Q and other standards, the hardware capabilities, and
-the widest range of applications (not jut AVB).
+No, that is not what I meant.  We need some minimal additional kernel
+support in order to fully implement the TSN family of standards.  Of
+course, the bulk will have to be done in user space.  It would be a
+mistake to cram the stuff that belongs in userland into the kernel.
 
-> Our objective with the Qdiscs we are proposing (both cbs and taprio) is
-> to provide a sane way to configure controllers that support TSN features
-> (we were looking specifically at the IEEE specs).
+Looking at the table, and reading your descriptions of the state of
+OpenAVB, I remained convinced that the kernel needs only three
+additions:
 
-I can see how your proposed Qdiscs are inspired by the IEEE standards.
-However, in the case of time based transmission, I think there is a
-better way to do it, namely with SO_TXTIME (which BTW was originally
-proposed by Eric Mann).
- 
-> After we have some rough consensus on the interfaces to use, then we can
-> start working on OpenAVNU.
+1. SO_TXTIME
+2. CBS Qdisc
+3. ALSA support for DAC clock control (but that is another story)
 
-Did you see my table in the other mail?  Any comments?
+> The proper interfaces for the Qbv configuration and managing of switch-level PTP timestamps are not yet
+> in place, so there's nothing even at RFC stage to present yet, but Qbv-capable Linux-managed switch
+> hardware is available and we hope to get some reusable code published even if it's not yet ready to be
+> integrated in the kernel.
 
-> (Sorry if I am being annoying here, but the idea of an opaque schedule
-> is not ours, that comes from the people who wrote the Qbv specification)
+Right, configuring Qbv in an attached DSA switch needs its own
+interface.
 
-The schedule is easy to implement using SO_TXTIME.
- 
-> I have a question, what about a controller that doesn't provide a way to
-> set a per-packet transmission time, but it supports Qbv/Qbu. What would
-> be your proposal to configure it?
+Regarding PHC support for DSA switches, I have something in the works
+to be published soon.
 
-SO_TXTIME will have a generic SW fallback.
+> A bit of progress has been made since that was written, although it is true that it's still not
+> quite complete and certainly not turnkey.
 
-BTW, regarding the i210, there is no sensible way to configure both
-CBS and time based transmission at the same time.  The card performs a
-logical AND to make the launch decision.  The effect of this is that
-each and every packet needs a LaunchTime, and the driver would be
-forced to guess the time for a packet before entering it into its
-queue.
+So OpenAVB is neither complete nor turnkey.  That was my impression,
+too.
 
-So if we end up merging CBS and SO_TXTIME, then we'll have to make
-them exclusive of each other (in the case of the i210) and manage the
-i210 queue configurations correctly.
+> Things are maybe a bit farther along than they seemed, but there is still important kernel work to be
+> done to reduce the need for out-of-tree drivers and to get everyone on the same interfaces. I plan
+> to be an active participant going forward.
 
-> (I think LaunchTime is something specific to the i210, right?)
-
-To my knowledge yes.  However, if TSN does take hold, then other MAC
-vendors will copy it.
+You mentioned a couple of different kernel things you implemented.
+I would encourage you to post the work already done.
 
 Thanks,
 Richard
