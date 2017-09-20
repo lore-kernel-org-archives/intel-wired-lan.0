@@ -1,114 +1,111 @@
-From: Zhang Shengju <zhangshengju@cmss.chinamobile.com>
-Date: Tue, 19 Sep 2017 21:40:54 +0800
-Subject: [Intel-wired-lan] [net-next,
-	RESEND] igb: add function to get maximum RSS queues
-Message-ID: <1505828454-2826-1-git-send-email-zhangshengju@cmss.chinamobile.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Tue, 19 Sep 2017 17:19:18 -0700
+Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
+	config interfaces for traffic shapers
+In-Reply-To: <20170919052244.77umdxuze53t6j22@localhost>
+References: <20170901012625.14838-1-vinicius.gomes@intel.com>
+ <20170918080214.yrejz67wwnp2pjzf@localhost> <87k20vip3f.fsf@intel.com>
+ <20170919052244.77umdxuze53t6j22@localhost>
+Message-ID: <87wp4ufchl.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds a new function igb_get_max_rss_queues() to get maximum
-RSS queues, this will reduce duplicate code and facilitate future
-maintenance.
+Hi Richard,
 
-Signed-off-by: Zhang Shengju <zhangshengju@cmss.chinamobile.com>
----
- drivers/net/ethernet/intel/igb/igb.h         |  1 +
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 32 +---------------------------
- drivers/net/ethernet/intel/igb/igb_main.c    | 12 +++++++++--
- 3 files changed, 12 insertions(+), 33 deletions(-)
+Richard Cochran <richardcochran@gmail.com> writes:
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 06ffb2b..ca94eff 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -684,6 +684,7 @@ void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
- int igb_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
- int igb_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
- void igb_set_flag_queue_pairs(struct igb_adapter *, const u32);
-+unsigned int igb_get_max_rss_queues(struct igb_adapter *);
- #ifdef CONFIG_IGB_HWMON
- void igb_sysfs_exit(struct igb_adapter *adapter);
- int igb_sysfs_init(struct igb_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index d06a8db..606e676 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -3338,37 +3338,7 @@ static int igb_set_rxfh(struct net_device *netdev, const u32 *indir,
- 
- static unsigned int igb_max_channels(struct igb_adapter *adapter)
- {
--	struct e1000_hw *hw = &adapter->hw;
--	unsigned int max_combined = 0;
--
--	switch (hw->mac.type) {
--	case e1000_i211:
--		max_combined = IGB_MAX_RX_QUEUES_I211;
--		break;
--	case e1000_82575:
--	case e1000_i210:
--		max_combined = IGB_MAX_RX_QUEUES_82575;
--		break;
--	case e1000_i350:
--		if (!!adapter->vfs_allocated_count) {
--			max_combined = 1;
--			break;
--		}
--		/* fall through */
--	case e1000_82576:
--		if (!!adapter->vfs_allocated_count) {
--			max_combined = 2;
--			break;
--		}
--		/* fall through */
--	case e1000_82580:
--	case e1000_i354:
--	default:
--		max_combined = IGB_MAX_RX_QUEUES;
--		break;
--	}
--
--	return max_combined;
-+	return igb_get_max_rss_queues(adapter);
- }
- 
- static void igb_get_channels(struct net_device *netdev,
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index ec62410..e6cc6b5 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3026,10 +3026,10 @@ static void igb_probe_vfs(struct igb_adapter *adapter)
- #endif /* CONFIG_PCI_IOV */
- }
- 
--static void igb_init_queue_configuration(struct igb_adapter *adapter)
-+unsigned int igb_get_max_rss_queues(struct igb_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
--	u32 max_rss_queues;
-+	unsigned int max_rss_queues;
- 
- 	/* Determine the maximum number of RSS queues supported. */
- 	switch (hw->mac.type) {
-@@ -3060,6 +3060,14 @@ static void igb_init_queue_configuration(struct igb_adapter *adapter)
- 		break;
- 	}
- 
-+	return max_rss_queues;
-+}
-+
-+static void igb_init_queue_configuration(struct igb_adapter *adapter)
-+{
-+	u32 max_rss_queues;
-+
-+	max_rss_queues = igb_get_max_rss_queues(adapter);
- 	adapter->rss_queues = min_t(u32, max_rss_queues, num_online_cpus());
- 
- 	igb_set_flag_queue_pairs(adapter, max_rss_queues);
--- 
-1.8.3.1
+> On Mon, Sep 18, 2017 at 04:06:28PM -0700, Vinicius Costa Gomes wrote:
+>> That's the point, the application does not need to know that, and asking
+>> that would be stupid.
+>
+> On the contrary, this information is essential to the application.
+> Probably you have never seen an actual Ethernet field bus in
+> operation?  In any case, you are missing the point.
+>
+>> (And that's another nice point of how 802.1Qbv works, applications do
+>> not need to be changed to use it, and I think we should work to achieve
+>> this on the Linux side)
+>
+> Once you start to care about real time performance, then you need to
+> consider the applications.  This is industrial control, not streaming
+> your tunes from your ipod.
+>
+>> That being said, that only works for kinds of traffic that maps well to
+>> this configuration in advance model, which is the model that the IEEE
+>> (see 802.1Qcc) and the AVNU Alliance[1] are pushing for.
+>
+> Again, you are missing the point of what they aiming for.  I have
+> looked at a number of production systems, and in each case the
+> developers want total control over the transmission, in order to
+> reduce latency to an absolute minimum.  Typically the data to be sent
+> are available only microseconds before the transmission deadline.
+>
+> Consider OpenAVB on github that people are already using.  Take a look
+> at simple_talker.c and explain how "applications do not need to be
+> changed to use it."
+
+Just let me use the mention of OpenAVNU as a hook to explain what we
+(the team I am part of) are working to do, perhaps it will make our
+choices and designs clearer.
+
+One of the problems with OpenAVNU is that it's too coupled with the i210
+NIC. One of the things we want is to decouple OpenAVNU from the
+controller. The way we thought best was to propose interfaces (that
+would work along side to the Linux networking stack) as close as
+possible to what the current standards define, that means the IEEE
+802.1Q family of specifications, in the hope that network controller
+vendors would also look at the specifications when designing their
+controllers.
+
+Our objective with the Qdiscs we are proposing (both cbs and taprio) is
+to provide a sane way to configure controllers that support TSN features
+(we were looking specifically at the IEEE specs).
+
+After we have some rough consensus on the interfaces to use, then we can
+start working on OpenAVNU.
+
+>
+>> [1]
+>> http://avnu.org/theory-of-operation-for-tsn-enabled-industrial-systems/
+>
+> Did you even read this?
+>
+>     [page 24]
+>
+>     As described in section 2, some industrial control systems require
+>     predictable, very low latency and cycle-to-cycle variation to meet
+>     hard real-time application requirements. In these systems,
+>     multiple distributed controllers commonly synchronize their
+>     sensor/actuator operations with other controllers by scheduling
+>     these operations in time, typically using a repeating control
+>     cycle.
+>     ...
+>     The gate control mechanism is itself a time-aware PTP application
+>     operating within a bridge or end station port.
+>
+> It is an application, not a "god box."
+>
+>> In short, I see a per-packet transmission time and a per-queue schedule
+>> as solutions to different problems.
+>
+> Well, I can agree with that.  For some non real-time applications,
+> bandwidth shaping is enough, and your Qdisc idea is sufficient.  For
+> the really challenging TSN targets (industrial control, automotive),
+> your idea of an opaque schedule file won't fly.
+
+(Sorry if I am being annoying here, but the idea of an opaque schedule
+is not ours, that comes from the people who wrote the Qbv specification)
+
+I have a question, what about a controller that doesn't provide a way to
+set a per-packet transmission time, but it supports Qbv/Qbu. What would
+be your proposal to configure it?
+
+(I think LaunchTime is something specific to the i210, right?)
 
 
-
+Cheers,
+--
+Vinicius
