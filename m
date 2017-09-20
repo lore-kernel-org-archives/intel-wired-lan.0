@@ -1,33 +1,55 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Wed, 20 Sep 2017 22:11:53 +0200
-Subject: [Intel-wired-lan] [PATCH RFC V1 net-next 0/6] Time based packet
-	transmission
-In-Reply-To: <20170920173533.32537-1-levipearson@gmail.com>
-References: <cover.1505719061.git.rcochran@linutronix.de>
- <20170920173533.32537-1-levipearson@gmail.com>
-Message-ID: <20170920201153.d3o3h62y2snuacef@localhost>
+From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+Date: Wed, 20 Sep 2017 14:29:51 -0700
+Subject: [Intel-wired-lan] TSN Scorecard,
+ was Re: [RFC net-next 0/5] TSN: Add qdisc-based config interfaces
+ for traffic shapers
+In-Reply-To: <20170920054919.jtqckuybsu42tvpk@localhost>
+References: <20170918081248.txhars53icbqsvld@localhost>
+ <20170920051754.21745-1-levipearson@gmail.com>
+ <20170920054919.jtqckuybsu42tvpk@localhost>
+Message-ID: <b16a7f61-0be3-b91c-990e-b1c06ca159df@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Sep 20, 2017 at 11:35:33AM -0600, levipearson at gmail.com wrote:
-> Anyway, I am wholly in favor of this proposal--in fact, it is very similar to
-> a patch set I shared with Eric Mann and others at Intel in early Dec 2016 with
-> the intention to get some early feedback before submitting here. I never heard
-> back and got busy with other things. I only mention this since you said
-> elsewhere that you got this idea from Eric Mann yourself, and I am curious
-> whether Eric and I came up with it independently (which I would not be
-> surprised at).
+Hi,
 
-Well, I actually thought of placing the Tx time in a CMSG all by
-myself, but later I found Eric's talk from 2012,
 
-  https://linuxplumbers.ubicast.tv/videos/linux-network-enabling-requirements-for-audiovideo-bridging-avb/
+On 09/19/2017 10:49 PM, Richard Cochran wrote:
+(...)
 
-and so I wanted to give him credit.
+> 
+> No, that is not what I meant.  We need some minimal additional kernel
+> support in order to fully implement the TSN family of standards.  Of
+> course, the bulk will have to be done in user space.  It would be a
+> mistake to cram the stuff that belongs in userland into the kernel.
+> 
+> Looking at the table, and reading your descriptions of the state of
+> OpenAVB, I remained convinced that the kernel needs only three
+> additions:
+> 
+> 1. SO_TXTIME
+> 2. CBS Qdisc
+> 3. ALSA support for DAC clock control (but that is another story)
 
-Thanks,
-Richard
+
+We'll be posting the CBS v1 series for review soon.
+
+The current SO_TXTIME RFC for the purpose of Launchtime looks great, and we are
+looking forward for the v1 + its companion qdisc so we can test / review and
+provide feedback.
+
+We are still under the impression that a config interface for HW offload of Qbv
+/ Qbu config will be needed, but we'll be deferring the 'taprio' proposal until
+there are NICs (end stations) that support these standards available. We can
+revisit it if that ever happens, and if it's still needed, but then taking into
+account SO_TXTIME (and its related qdisc).
+
+Thanks everyone for all the feedback so far.
+
+Regards,
+Jesus
+
 
