@@ -1,40 +1,28 @@
 From: Richard Cochran <richardcochran@gmail.com>
-Date: Wed, 20 Sep 2017 07:56:16 +0200
+Date: Wed, 20 Sep 2017 07:58:29 +0200
 Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
  config interfaces for traffic shapers
-In-Reply-To: <20170920015911.18999-1-levipearson@gmail.com>
+In-Reply-To: <87wp4ufchl.fsf@intel.com>
 References: <20170901012625.14838-1-vinicius.gomes@intel.com>
- <20170920015911.18999-1-levipearson@gmail.com>
-Message-ID: <20170920055616.snd6tndvbdnesnck@localhost>
+ <20170918080214.yrejz67wwnp2pjzf@localhost>
+ <87k20vip3f.fsf@intel.com>
+ <20170919052244.77umdxuze53t6j22@localhost>
+ <87wp4ufchl.fsf@intel.com>
+Message-ID: <20170920055829.bhwn6pd332ldjkeg@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Sep 19, 2017 at 07:59:11PM -0600, levipearson at gmail.com wrote:
-> If some endpoint device shows up with direct Qbv support, this interface would
-> probably work well there too, although a talker would need to be able to
-> schedule its transmits pretty precisely to achieve the lowest possible latency.
+On Tue, Sep 19, 2017 at 05:19:18PM -0700, Vinicius Costa Gomes wrote:
+> (I think LaunchTime is something specific to the i210, right?)
 
-This is an argument for SO_TXTIME.
+Levi just told us:
 
-> One concern here is calling the base-time parameter an interval; it's really
-> an absolute time with respect to the PTP timescale. Good documentation will
-> be important to this one, since the specification discusses some subtleties
-> regarding the impact of different time values chosen here.
-> 
-> The format for specifying the actual intervals such as cycle-time could prove
-> to be an important detail as well; Qbv specifies cycle-time as a ratio of two
-> integers expressed in seconds, while extension-time is specified as an integer
-> number of nanoseconds.
-> 
-> Precision with the cycle-time is especially important, since base-time can be
-> almost arbitrarily far in the past or future, and any given cycle start should
-> be calculable from the base-time plus/minus some integer multiple of cycle-
-> time.
-
-The above three points also.
+   Recent SoCs from NXP (the i.MX 6 SoloX, and all the i.MX 7 and 8
+   parts) support Qav shaping as well as scheduled launch
+   functionality;
 
 Thanks,
 Richard
