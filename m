@@ -1,36 +1,65 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 22 Sep 2017 09:44:02 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: make const array patterns
- static, reduces object code size
-In-Reply-To: <20170922141138.13038-1-colin.king@canonical.com>
-References: <20170922141138.13038-1-colin.king@canonical.com>
-Message-ID: <20170922094402.00001ad2@intel.com>
+From: Colin King <colin.king@canonical.com>
+Date: Fri, 22 Sep 2017 18:13:48 +0100
+Subject: [Intel-wired-lan] [PATCH][V3] e1000: avoid null pointer dereference
+	on invalid stat type
+Message-ID: <20170922171348.17630-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 22 Sep 2017 15:11:38 +0100
-Colin King <colin.king@canonical.com> wrote:
+From: Colin Ian King <colin.king@canonical.com>
 
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Don't populate const array patterns on the stack, instead make it
-> static. Makes the object code smaller by over 60 bytes:
-> 
-> Before:
->    text	   data	    bss	    dec	    hex	filename
->    1953	    496	      0	   2449	    991	i40e_diag.o
-> 
-> After:
->    text	   data	    bss	    dec	    hex	filename
->    1798	    584	      0	   2382	    94e	i40e_diag.o
-> 
-> (gcc 6.3.0, x86-64)
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Currently if the stat type is invalid then data[i] is being set
+either by dereferencing a null pointer p, or it is reading from
+an incorrect previous location if we had a valid stat type
+previously.  Fix this by skipping over the read of p on an invalid
+stat type.
 
-Looks good, thanks Colin!
+Detected by CoverityScan, CID#113385 ("Explicit null dereferenced")
 
-Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+index ec8aa4562cc9..3b3983a1ffbb 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+@@ -1824,11 +1824,12 @@ static void e1000_get_ethtool_stats(struct net_device *netdev,
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	int i;
+-	char *p = NULL;
+ 	const struct e1000_stats *stat = e1000_gstrings_stats;
+ 
+ 	e1000_update_stats(adapter);
+-	for (i = 0; i < E1000_GLOBAL_STATS_LEN; i++) {
++	for (i = 0; i < E1000_GLOBAL_STATS_LEN; i++, stat++) {
++		char *p;
++
+ 		switch (stat->type) {
+ 		case NETDEV_STATS:
+ 			p = (char *)netdev + stat->stat_offset;
+@@ -1839,15 +1840,13 @@ static void e1000_get_ethtool_stats(struct net_device *netdev,
+ 		default:
+ 			WARN_ONCE(1, "Invalid E1000 stat type: %u index %d\n",
+ 				  stat->type, i);
+-			break;
++			continue;
+ 		}
+ 
+ 		if (stat->sizeof_stat == sizeof(u64))
+ 			data[i] = *(u64 *)p;
+ 		else
+ 			data[i] = *(u32 *)p;
+-
+-		stat++;
+ 	}
+ /* BUG_ON(i != E1000_STATS_LEN); */
+ }
+-- 
+2.14.1
+
