@@ -1,77 +1,36 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 22 Sep 2017 11:09:16 -0700
-Subject: [Intel-wired-lan] [PATCH][V3] e1000: avoid null pointer
- dereference on invalid stat type
-In-Reply-To: <20170922171348.17630-1-colin.king@canonical.com>
-References: <20170922171348.17630-1-colin.king@canonical.com>
-Message-ID: <CAKgT0Ucvfg_p=uMsDLe2DYA-KLcf+7WieOsOx4pP6R5pe8rm-Q@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sun, 24 Sep 2017 14:44:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 103/109]
+ i40e_main.c:undefined reference to `__udivdi3'
+Message-ID: <201709241437.Ry9Z9Jyt%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Sep 22, 2017 at 10:13 AM, Colin King <colin.king@canonical.com> wrote:
-> From: Colin Ian King <colin.king@canonical.com>
->
-> Currently if the stat type is invalid then data[i] is being set
-> either by dereferencing a null pointer p, or it is reading from
-> an incorrect previous location if we had a valid stat type
-> previously.  Fix this by skipping over the read of p on an invalid
-> stat type.
->
-> Detected by CoverityScan, CID#113385 ("Explicit null dereferenced")
->
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   b4f0b6a5a1092bc70e1ad42af295037974075f13
+commit: f2fb739e8b8396be3106d1435240808ed59e32eb [103/109] i40e: Refactor VF BW rate limiting
+config: i386-randconfig-sb0-09241307 (attached as .config)
+compiler: gcc-5 (Debian 5.4.1-2) 5.4.1 20160904
+reproduce:
+        git checkout f2fb739e8b8396be3106d1435240808ed59e32eb
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-Looks good to me.
+All errors (new ones prefixed by >>):
 
-Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
+   drivers/net/ethernet/intel/i40e/i40e_main.o: In function `i40e_set_bw_limit':
+>> i40e_main.c:(.text+0x61fb): undefined reference to `__udivdi3'
 
-> ---
->  drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
-> index ec8aa4562cc9..3b3983a1ffbb 100644
-> --- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
-> +++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
-> @@ -1824,11 +1824,12 @@ static void e1000_get_ethtool_stats(struct net_device *netdev,
->  {
->         struct e1000_adapter *adapter = netdev_priv(netdev);
->         int i;
-> -       char *p = NULL;
->         const struct e1000_stats *stat = e1000_gstrings_stats;
->
->         e1000_update_stats(adapter);
-> -       for (i = 0; i < E1000_GLOBAL_STATS_LEN; i++) {
-> +       for (i = 0; i < E1000_GLOBAL_STATS_LEN; i++, stat++) {
-> +               char *p;
-> +
->                 switch (stat->type) {
->                 case NETDEV_STATS:
->                         p = (char *)netdev + stat->stat_offset;
-> @@ -1839,15 +1840,13 @@ static void e1000_get_ethtool_stats(struct net_device *netdev,
->                 default:
->                         WARN_ONCE(1, "Invalid E1000 stat type: %u index %d\n",
->                                   stat->type, i);
-> -                       break;
-> +                       continue;
->                 }
->
->                 if (stat->sizeof_stat == sizeof(u64))
->                         data[i] = *(u64 *)p;
->                 else
->                         data[i] = *(u32 *)p;
-> -
-> -               stat++;
->         }
->  /* BUG_ON(i != E1000_STATS_LEN); */
->  }
-> --
-> 2.14.1
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 28555 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170924/12379c27/attachment-0001.bin>
