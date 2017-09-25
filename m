@@ -1,184 +1,247 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Thu, 31 Aug 2017 18:26:46 -0700
-Subject: [Intel-wired-lan] [RFC iproute2 2/2] tc: Add support for the CBS
-	qdisc
-In-Reply-To: <20170901012646.14939-1-vinicius.gomes@intel.com>
-References: <20170901012646.14939-1-vinicius.gomes@intel.com>
-Message-ID: <20170901012646.14939-2-vinicius.gomes@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 25 Sep 2017 22:54:14 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 1f147da0a4ea86c8634c23faa5ac1fcd59fbadb8
+Message-ID: <59c91896.2ndNo/t1LbO9qJJn%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The Credit Based Shaper (CBS) queueing discipline allows bandwidth
-reservation with sub-milisecond precision. It is defined by the
-802.1Q-2014 specification (section 8.6.8.2 and Annex L).
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+1f147da0a4ea86c8634c23faa5ac1fcd59fbadb8  i40e: fix a typo
 
-The syntax is:
+ERROR: "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
 
-tc qdisc add dev DEV parent NODE cbs locredit <LOCREDIT> hicredit
-<HICREDIT> sendslope <SENDSLOPE> idleslope <IDLESLOPE>
+Error ids grouped by kconfigs:
 
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
----
- tc/Makefile |   1 +
- tc/q_cbs.c  | 134 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 135 insertions(+)
- create mode 100644 tc/q_cbs.c
+recent_errors
+??? i386-allmodconfig
+    ??? ERROR:__udivdi3-drivers-net-ethernet-intel-i40e-i40e.ko-undefined
 
-diff --git a/tc/Makefile b/tc/Makefile
-index a9b4b8e6..f0091217 100644
---- a/tc/Makefile
-+++ b/tc/Makefile
-@@ -73,6 +73,7 @@ TCMODULES += q_hhf.o
- TCMODULES += q_clsact.o
- TCMODULES += e_bpf.o
- TCMODULES += f_matchall.o
-+TCMODULES += q_cbs.o
- 
- TCSO :=
- ifeq ($(TC_CONFIG_ATM),y)
-diff --git a/tc/q_cbs.c b/tc/q_cbs.c
-new file mode 100644
-index 00000000..0120e838
---- /dev/null
-+++ b/tc/q_cbs.c
-@@ -0,0 +1,134 @@
-+/*
-+ * q_tbf.c		TBF.
-+ *
-+ *		This program is free software; you can redistribute it and/or
-+ *		modify it under the terms of the GNU General Public License
-+ *		as published by the Free Software Foundation; either version
-+ *		2 of the License, or (at your option) any later version.
-+ *
-+ * Authors:	Alexey Kuznetsov, <kuznet@ms2.inr.ac.ru>
-+ *
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <syslog.h>
-+#include <fcntl.h>
-+#include <sys/socket.h>
-+#include <netinet/in.h>
-+#include <arpa/inet.h>
-+#include <string.h>
-+
-+#include "utils.h"
-+#include "tc_util.h"
-+
-+static void explain(void)
-+{
-+	fprintf(stderr, "Usage: ... tbf hicredit BYTES locredit BYTES sendslope BPS idleslope BPS\n");
-+}
-+
-+static void explain1(const char *arg, const char *val)
-+{
-+	fprintf(stderr, "cbs: illegal value for \"%s\": \"%s\"\n", arg, val);
-+}
-+
-+static int cbs_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct nlmsghdr *n)
-+{
-+	int ok = 0;
-+	struct tc_cbs_qopt opt = {};
-+	struct rtattr *tail;
-+
-+	while (argc > 0) {
-+		if (matches(*argv, "hicredit") == 0) {
-+			NEXT_ARG();
-+			if (opt.hicredit) {
-+				fprintf(stderr, "cbs: duplicate \"hicredit\" specification\n");
-+				return -1;
-+			}
-+			if (get_s32(&opt.hicredit, *argv, 0)) {
-+				explain1("hicredit", *argv);
-+				return -1;
-+			}
-+			ok++;
-+		} else if (matches(*argv, "locredit") == 0) {
-+			NEXT_ARG();
-+			if (opt.locredit) {
-+				fprintf(stderr, "cbs: duplicate \"locredit\" specification\n");
-+				return -1;
-+			}
-+			if (get_s32(&opt.locredit, *argv, 0)) {
-+				explain1("locredit", *argv);
-+				return -1;
-+			}
-+			ok++;
-+		} else if (matches(*argv, "sendslope") == 0) {
-+			NEXT_ARG();
-+			if (opt.sendslope) {
-+				fprintf(stderr, "cbs: duplicate \"sendslope\" specification\n");
-+				return -1;
-+			}
-+			if (get_s32(&opt.sendslope, *argv, 0)) {
-+				explain1("sendslope", *argv);
-+				return -1;
-+			}
-+			ok++;
-+		} else if (matches(*argv, "idleslope") == 0) {
-+			NEXT_ARG();
-+			if (opt.idleslope) {
-+				fprintf(stderr, "cbs: duplicate \"idleslope\" specification\n");
-+				return -1;
-+			}
-+			if (get_s32(&opt.idleslope, *argv, 0)) {
-+				explain1("idleslope", *argv);
-+				return -1;
-+			}
-+			ok++;
-+		} else if (strcmp(*argv, "help") == 0) {
-+			explain();
-+			return -1;
-+		} else {
-+			fprintf(stderr, "cbs: unknown parameter \"%s\"\n", *argv);
-+			explain();
-+			return -1;
-+		}
-+		argc--; argv++;
-+	}
-+
-+	tail = NLMSG_TAIL(n);
-+	addattr_l(n, 1024, TCA_OPTIONS, NULL, 0);
-+	addattr_l(n, 2024, TCA_CBS_PARMS, &opt, sizeof(opt));
-+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
-+	return 0;
-+}
-+
-+static int cbs_print_opt(struct qdisc_util *qu, FILE *f, struct rtattr *opt)
-+{
-+	struct rtattr *tb[TCA_TBF_MAX+1];
-+	struct tc_cbs_qopt *qopt;
-+
-+	if (opt == NULL)
-+		return 0;
-+
-+	parse_rtattr_nested(tb, TCA_CBS_MAX, opt);
-+
-+	if (tb[TCA_CBS_PARMS] == NULL)
-+		return -1;
-+
-+	qopt = RTA_DATA(tb[TCA_CBS_PARMS]);
-+	if (RTA_PAYLOAD(tb[TCA_CBS_PARMS])  < sizeof(*qopt))
-+		return -1;
-+
-+	fprintf(f, "hicredit %d ", qopt->hicredit);
-+	fprintf(f, "locredit %d ", qopt->locredit);
-+	fprintf(f, "sendslope %d ", qopt->sendslope);
-+	fprintf(f, "idleslope %d ", qopt->idleslope);
-+
-+	return 0;
-+}
-+
-+struct qdisc_util cbs_qdisc_util = {
-+	.id		= "cbs",
-+	.parse_qopt	= cbs_parse_opt,
-+	.print_qopt	= cbs_print_opt,
-+};
--- 
-2.14.1
+elapsed time: 249m
 
+configs tested: 219
+
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+m68k                           sun3_defconfig
+mips                         cobalt_defconfig
+parisc                        c8000_defconfig
+powerpc                 mpc834x_itx_defconfig
+powerpc64                           defconfig
+sparc                       sparc32_defconfig
+x86_64                randconfig-in0-09252029
+x86_64                randconfig-in0-09252159
+microblaze                       allyesconfig
+powerpc                     rainier_defconfig
+sh                           se7206_defconfig
+x86_64                randconfig-it0-09252047
+x86_64                randconfig-it0-09252222
+i386                   randconfig-n0-09250914
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                                   samsung
+arm                        mvebu_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       imx_v6_v7_defconfig
+arm64                            allmodconfig
+arm                           tegra_defconfig
+arm                                      arm5
+arm64                            alldefconfig
+arm                                        sh
+arm                                     arm67
+i386                   randconfig-a0-09250859
+i386                   randconfig-a1-09250859
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64               randconfig-x015-09251119
+x86_64               randconfig-x011-09251119
+x86_64               randconfig-x016-09251119
+x86_64               randconfig-x019-09251119
+x86_64               randconfig-x017-09251119
+x86_64               randconfig-x010-09251119
+x86_64               randconfig-x013-09251119
+x86_64               randconfig-x018-09251119
+x86_64               randconfig-x014-09251119
+x86_64               randconfig-x012-09251119
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                   randconfig-s1-09251119
+i386                   randconfig-s0-09251119
+i386                               tinyconfig
+i386                             allmodconfig
+m68k                             allyesconfig
+powerpc                      arches_defconfig
+powerpc                   currituck_defconfig
+powerpc                      ppc44x_defconfig
+arm                            zeus_defconfig
+blackfin                    DNP5370_defconfig
+powerpc                      makalu_defconfig
+um                               allmodconfig
+arm                       aspeed_g5_defconfig
+arm                       mainstone_defconfig
+c6x                        evmc6474_defconfig
+openrisc                         allmodconfig
+blackfin                       IP0X_defconfig
+powerpc                 linkstation_defconfig
+powerpc                      mgcoge_defconfig
+arm                       cns3420vb_defconfig
+blackfin                  CM-BF537U_defconfig
+m68k                              allnoconfig
+xtensa                              defconfig
+c6x                         dsk6455_defconfig
+powerpc                 canyonlands_defconfig
+powerpc                     tqm5200_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201739
+i386                   randconfig-b0-09252035
+i386                   randconfig-b0-09252052
+i386                   randconfig-b0-09252111
+i386                   randconfig-b0-09252142
+i386                   randconfig-b0-09252237
+arm                         lubbock_defconfig
+powerpc                     asp8347_defconfig
+powerpc                       holly_defconfig
+sh                        dreamcast_defconfig
+arm                         ebsa110_defconfig
+powerpc                      acadia_defconfig
+powerpc                    amigaone_defconfig
+powerpc                         ps3_defconfig
+alpha                            alldefconfig
+arm                           omap1_defconfig
+powerpc                  mpc866_ads_defconfig
+ia64                             allmodconfig
+mips                         rt305x_defconfig
+powerpc64                         allnoconfig
+i386                     randconfig-i1-201739
+i386                     randconfig-i0-201739
+i386                             allyesconfig
+x86_64                 randconfig-b0-09252104
+x86_64                 randconfig-b0-09252119
+x86_64                 randconfig-b0-09252133
+sh                             sh03_defconfig
+m68k                       bvme6000_defconfig
+parisc                           allyesconfig
+x86_64                randconfig-ne0-09252018
+i386                 randconfig-x014-09250401
+i386                 randconfig-x015-09250401
+i386                 randconfig-x010-09250401
+i386                 randconfig-x013-09250401
+i386                 randconfig-x019-09250401
+i386                 randconfig-x018-09250401
+i386                 randconfig-x016-09250401
+i386                 randconfig-x011-09250401
+i386                 randconfig-x017-09250401
+i386                 randconfig-x012-09250401
+mips                         mpc30x_defconfig
+powerpc                 mpc8560_ads_defconfig
+sh                        apsh4ad0a_defconfig
+arm                  colibri_pxa300_defconfig
+mips                             allmodconfig
+powerpc                      bamboo_defconfig
+x86_64                 randconfig-h0-09252214
+cris                    etrax-100lx_defconfig
+arm                          tango4_defconfig
+xtensa                          iss_defconfig
+x86_64                           allyesconfig
+m32r                      mappi.smp_defconfig
+x86_64                                  kexec
+x86_64                               rhel-7.2
+x86_64                 randconfig-n0-09252103
+x86_64                           allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+x86_64                 randconfig-x000-201739
+x86_64                 randconfig-x007-201739
+x86_64                 randconfig-x001-201739
+x86_64                 randconfig-x006-201739
+x86_64                 randconfig-x004-201739
+x86_64                 randconfig-x009-201739
+x86_64                 randconfig-x003-201739
+x86_64                 randconfig-x002-201739
+x86_64                 randconfig-x005-201739
+x86_64                 randconfig-x008-201739
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x075-201739
+i386                   randconfig-x076-201739
+i386                   randconfig-x071-201739
+i386                   randconfig-x074-201739
+i386                   randconfig-x070-201739
+i386                   randconfig-x077-201739
+i386                   randconfig-x073-201739
+i386                   randconfig-x078-201739
+i386                   randconfig-x072-201739
+i386                   randconfig-x079-201739
+x86_64                                   rhel
+i386                   randconfig-x000-201739
+i386                   randconfig-x003-201739
+i386                   randconfig-x009-201739
+i386                   randconfig-x004-201739
+i386                   randconfig-x008-201739
+i386                   randconfig-x001-201739
+i386                   randconfig-x005-201739
+i386                   randconfig-x002-201739
+i386                   randconfig-x006-201739
+i386                   randconfig-x007-201739
+
+Thanks,
+Fengguang
