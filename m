@@ -1,37 +1,136 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 25 Sep 2017 23:27:36 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 103/109] ERROR:
- "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
-Message-ID: <201709252332.9DgWIvGW%fengguang.wu@intel.com>
+Date: Tue, 26 Sep 2017 05:21:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 0cc46aa9af2f66f1c822a51aff3118d4f158e5ea
+Message-ID: <59c97346.d3kuDOcOplvdsUdL%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   1f147da0a4ea86c8634c23faa5ac1fcd59fbadb8
-commit: fb5b9ae97b5be1b46c6602cb19c8c31483805698 [103/109] i40e: Refactor VF BW rate limiting
-config: arm-allmodconfig (attached as .config)
-compiler: arm-linux-gnueabi-gcc (Debian 6.1.1-9) 6.1.1 20160705
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout fb5b9ae97b5be1b46c6602cb19c8c31483805698
-        # save the attached .config to linux build tree
-        make.cross ARCH=arm 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+0cc46aa9af2f66f1c822a51aff3118d4f158e5ea  ixgbe: incorrect xdp ring accounting in ethtool tx_frame param
 
-All errors (new ones prefixed by >>):
+elapsed time: 181m
 
->> ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
+configs tested: 112
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 63992 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170925/48995780/attachment-0001.bin>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                               tinyconfig
+i386                 randconfig-x014-09250914
+i386                 randconfig-x017-09250914
+i386                 randconfig-x011-09250914
+i386                 randconfig-x016-09250914
+i386                 randconfig-x013-09250914
+i386                 randconfig-x012-09250914
+i386                 randconfig-x018-09250914
+i386                 randconfig-x015-09250914
+i386                 randconfig-x019-09250914
+i386                 randconfig-x010-09250914
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                             allmodconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x011-201739
+x86_64                 randconfig-x016-201739
+x86_64                 randconfig-x018-201739
+x86_64                 randconfig-x013-201739
+x86_64                 randconfig-x019-201739
+x86_64                 randconfig-x014-201739
+x86_64                 randconfig-x012-201739
+x86_64                 randconfig-x015-201739
+x86_64                 randconfig-x017-201739
+x86_64                 randconfig-x010-201739
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                   randconfig-s1-09251119
+i386                   randconfig-s0-09251119
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201739
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-x000-201739
+i386                   randconfig-x001-201739
+i386                   randconfig-x002-201739
+i386                   randconfig-x003-201739
+i386                   randconfig-x004-201739
+i386                   randconfig-x005-201739
+i386                   randconfig-x006-201739
+i386                   randconfig-x007-201739
+i386                   randconfig-x008-201739
+i386                   randconfig-x009-201739
+x86_64                 randconfig-x000-201739
+x86_64                 randconfig-x007-201739
+x86_64                 randconfig-x001-201739
+x86_64                 randconfig-x006-201739
+x86_64                 randconfig-x004-201739
+x86_64                 randconfig-x009-201739
+x86_64                 randconfig-x003-201739
+x86_64                 randconfig-x002-201739
+x86_64                 randconfig-x005-201739
+x86_64                 randconfig-x008-201739
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                   randconfig-x075-201739
+i386                   randconfig-x076-201739
+i386                   randconfig-x071-201739
+i386                   randconfig-x074-201739
+i386                   randconfig-x070-201739
+i386                   randconfig-x077-201739
+i386                   randconfig-x073-201739
+i386                   randconfig-x078-201739
+i386                   randconfig-x072-201739
+i386                   randconfig-x079-201739
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+
+Thanks,
+Fengguang
