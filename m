@@ -1,247 +1,37 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 25 Sep 2017 22:54:14 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 1f147da0a4ea86c8634c23faa5ac1fcd59fbadb8
-Message-ID: <59c91896.2ndNo/t1LbO9qJJn%fengguang.wu@intel.com>
+Date: Mon, 25 Sep 2017 23:27:36 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 103/109] ERROR:
+ "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
+Message-ID: <201709252332.9DgWIvGW%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-1f147da0a4ea86c8634c23faa5ac1fcd59fbadb8  i40e: fix a typo
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   1f147da0a4ea86c8634c23faa5ac1fcd59fbadb8
+commit: fb5b9ae97b5be1b46c6602cb19c8c31483805698 [103/109] i40e: Refactor VF BW rate limiting
+config: arm-allmodconfig (attached as .config)
+compiler: arm-linux-gnueabi-gcc (Debian 6.1.1-9) 6.1.1 20160705
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout fb5b9ae97b5be1b46c6602cb19c8c31483805698
+        # save the attached .config to linux build tree
+        make.cross ARCH=arm 
 
-ERROR: "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
+All errors (new ones prefixed by >>):
 
-Error ids grouped by kconfigs:
+>> ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
 
-recent_errors
-??? i386-allmodconfig
-    ??? ERROR:__udivdi3-drivers-net-ethernet-intel-i40e-i40e.ko-undefined
-
-elapsed time: 249m
-
-configs tested: 219
-
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-m68k                           sun3_defconfig
-mips                         cobalt_defconfig
-parisc                        c8000_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc64                           defconfig
-sparc                       sparc32_defconfig
-x86_64                randconfig-in0-09252029
-x86_64                randconfig-in0-09252159
-microblaze                       allyesconfig
-powerpc                     rainier_defconfig
-sh                           se7206_defconfig
-x86_64                randconfig-it0-09252047
-x86_64                randconfig-it0-09252222
-i386                   randconfig-n0-09250914
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-i386                   randconfig-a0-09250859
-i386                   randconfig-a1-09250859
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64               randconfig-x015-09251119
-x86_64               randconfig-x011-09251119
-x86_64               randconfig-x016-09251119
-x86_64               randconfig-x019-09251119
-x86_64               randconfig-x017-09251119
-x86_64               randconfig-x010-09251119
-x86_64               randconfig-x013-09251119
-x86_64               randconfig-x018-09251119
-x86_64               randconfig-x014-09251119
-x86_64               randconfig-x012-09251119
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-s1-09251119
-i386                   randconfig-s0-09251119
-i386                               tinyconfig
-i386                             allmodconfig
-m68k                             allyesconfig
-powerpc                      arches_defconfig
-powerpc                   currituck_defconfig
-powerpc                      ppc44x_defconfig
-arm                            zeus_defconfig
-blackfin                    DNP5370_defconfig
-powerpc                      makalu_defconfig
-um                               allmodconfig
-arm                       aspeed_g5_defconfig
-arm                       mainstone_defconfig
-c6x                        evmc6474_defconfig
-openrisc                         allmodconfig
-blackfin                       IP0X_defconfig
-powerpc                 linkstation_defconfig
-powerpc                      mgcoge_defconfig
-arm                       cns3420vb_defconfig
-blackfin                  CM-BF537U_defconfig
-m68k                              allnoconfig
-xtensa                              defconfig
-c6x                         dsk6455_defconfig
-powerpc                 canyonlands_defconfig
-powerpc                     tqm5200_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201739
-i386                   randconfig-b0-09252035
-i386                   randconfig-b0-09252052
-i386                   randconfig-b0-09252111
-i386                   randconfig-b0-09252142
-i386                   randconfig-b0-09252237
-arm                         lubbock_defconfig
-powerpc                     asp8347_defconfig
-powerpc                       holly_defconfig
-sh                        dreamcast_defconfig
-arm                         ebsa110_defconfig
-powerpc                      acadia_defconfig
-powerpc                    amigaone_defconfig
-powerpc                         ps3_defconfig
-alpha                            alldefconfig
-arm                           omap1_defconfig
-powerpc                  mpc866_ads_defconfig
-ia64                             allmodconfig
-mips                         rt305x_defconfig
-powerpc64                         allnoconfig
-i386                     randconfig-i1-201739
-i386                     randconfig-i0-201739
-i386                             allyesconfig
-x86_64                 randconfig-b0-09252104
-x86_64                 randconfig-b0-09252119
-x86_64                 randconfig-b0-09252133
-sh                             sh03_defconfig
-m68k                       bvme6000_defconfig
-parisc                           allyesconfig
-x86_64                randconfig-ne0-09252018
-i386                 randconfig-x014-09250401
-i386                 randconfig-x015-09250401
-i386                 randconfig-x010-09250401
-i386                 randconfig-x013-09250401
-i386                 randconfig-x019-09250401
-i386                 randconfig-x018-09250401
-i386                 randconfig-x016-09250401
-i386                 randconfig-x011-09250401
-i386                 randconfig-x017-09250401
-i386                 randconfig-x012-09250401
-mips                         mpc30x_defconfig
-powerpc                 mpc8560_ads_defconfig
-sh                        apsh4ad0a_defconfig
-arm                  colibri_pxa300_defconfig
-mips                             allmodconfig
-powerpc                      bamboo_defconfig
-x86_64                 randconfig-h0-09252214
-cris                    etrax-100lx_defconfig
-arm                          tango4_defconfig
-xtensa                          iss_defconfig
-x86_64                           allyesconfig
-m32r                      mappi.smp_defconfig
-x86_64                                  kexec
-x86_64                               rhel-7.2
-x86_64                 randconfig-n0-09252103
-x86_64                           allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-x86_64                 randconfig-x000-201739
-x86_64                 randconfig-x007-201739
-x86_64                 randconfig-x001-201739
-x86_64                 randconfig-x006-201739
-x86_64                 randconfig-x004-201739
-x86_64                 randconfig-x009-201739
-x86_64                 randconfig-x003-201739
-x86_64                 randconfig-x002-201739
-x86_64                 randconfig-x005-201739
-x86_64                 randconfig-x008-201739
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x075-201739
-i386                   randconfig-x076-201739
-i386                   randconfig-x071-201739
-i386                   randconfig-x074-201739
-i386                   randconfig-x070-201739
-i386                   randconfig-x077-201739
-i386                   randconfig-x073-201739
-i386                   randconfig-x078-201739
-i386                   randconfig-x072-201739
-i386                   randconfig-x079-201739
-x86_64                                   rhel
-i386                   randconfig-x000-201739
-i386                   randconfig-x003-201739
-i386                   randconfig-x009-201739
-i386                   randconfig-x004-201739
-i386                   randconfig-x008-201739
-i386                   randconfig-x001-201739
-i386                   randconfig-x005-201739
-i386                   randconfig-x002-201739
-i386                   randconfig-x006-201739
-i386                   randconfig-x007-201739
-
-Thanks,
-Fengguang
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 63992 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20170925/48995780/attachment-0001.bin>
