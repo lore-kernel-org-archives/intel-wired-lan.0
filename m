@@ -1,21 +1,84 @@
-From: Stephen Hemminger <stephen@networkplumber.org>
-Date: Wed, 27 Sep 2017 08:38:15 +0100
-Subject: [Intel-wired-lan] [iproute2 net-next 1/3] update headers with
-	CBS API
-In-Reply-To: <20170926233958.12027-1-vinicius.gomes@intel.com>
-References: <20170926233958.12027-1-vinicius.gomes@intel.com>
-Message-ID: <20170927083815.579f5dae@shemminger-XPS-13-9360>
+From: w00273186 <wangyunjian@huawei.com>
+Date: Wed, 27 Sep 2017 14:58:17 +0800
+Subject: [Intel-wired-lan] [PATCH net] i40e: Fix limit imprecise of the
+	number of MAC/VLAN that can be added for VFs
+Message-ID: <1506495497-10736-1-git-send-email-wangyunjian@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 26 Sep 2017 16:39:56 -0700
-Vinicius Costa Gomes <vinicius.gomes@intel.com> wrote:
+From: Yunjian Wang <wangyunjian@huawei.com>
 
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Now it don't limit the number of MAC/VLAN strictly. When there is more
+elements in the virtchnl MAC/VLAN list, it can still add successfully.
 
-I won't apply this patch directly, instead will pick up pkt_sched.h on
-next update of net-next headers.
+Signed-off-by: Yunjian Wang <wangyunjian@huawei.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 27 +++++++++++++---------
+ 1 file changed, 16 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 4d1e670..285b96a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2065,11 +2065,6 @@ static inline int i40e_check_vf_permission(struct i40e_vf *vf, u8 *macaddr)
+ 		dev_err(&pf->pdev->dev,
+ 			"VF attempting to override administratively set MAC address, reload the VF driver to resume normal operation\n");
+ 		ret = -EPERM;
+-	} else if ((vf->num_mac >= I40E_VC_MAX_MAC_ADDR_PER_VF) &&
+-		   !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
+-		dev_err(&pf->pdev->dev,
+-			"VF is not trusted, switch the VF to trusted to add more functionality\n");
+-		ret = -EPERM;
+ 	}
+ 	return ret;
+ }
+@@ -2128,6 +2123,15 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ 		} else {
+ 			vf->num_mac++;
+ 		}
++
++		if ((vf->num_mac >= I40E_VC_MAX_MAC_ADDR_PER_VF) &&
++		    !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
++			dev_err(&pf->pdev->dev,
++				"VF is not trusted, switch the VF to trusted to add more functionality\n");
++			ret = -EPERM;
++			spin_unlock_bh(&vsi->mac_filter_hash_lock);
++			goto error_param;
++		}
+ 	}
+ 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
+ 
+@@ -2221,12 +2225,6 @@ static int i40e_vc_add_vlan_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ 	i40e_status aq_ret = 0;
+ 	int i;
+ 
+-	if ((vf->num_vlan >= I40E_VC_MAX_VLAN_PER_VF) &&
+-	    !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
+-		dev_err(&pf->pdev->dev,
+-			"VF is not trusted, switch the VF to trusted to add more VLAN addresses\n");
+-		goto error_param;
+-	}
+ 	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states) ||
+ 	    !i40e_vc_isvalid_vsi_id(vf, vsi_id)) {
+ 		aq_ret = I40E_ERR_PARAM;
+@@ -2269,6 +2267,13 @@ static int i40e_vc_add_vlan_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ 			dev_err(&pf->pdev->dev,
+ 				"Unable to add VLAN filter %d for VF %d, error %d\n",
+ 				vfl->vlan_id[i], vf->vf_id, ret);
++		if ((vf->num_vlan >= I40E_VC_MAX_VLAN_PER_VF) &&
++		    !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
++			dev_err(&pf->pdev->dev,
++				"VF is not trusted, switch the VF to trusted to add more VLAN addresses\n");
++			aq_ret = -EPERM;
++			goto error_param;
++		}
+ 	}
+ 
+ error_param:
+-- 
+1.8.3.1
+
 
