@@ -1,42 +1,45 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Thu, 28 Sep 2017 16:07:25 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH 2/3] net/sched: Introduce
-	Credit Based Shaper (CBS) qdisc
-In-Reply-To: <CAM_iQpUUUrYeyqYK-CDAXzuKcy9FDtq_etQQvO4D4uCjV6As-w@mail.gmail.com>
-References: <20170926233916.11774-1-vinicius.gomes@intel.com>
- <20170926233916.11774-3-vinicius.gomes@intel.com>
- <CAM_iQpVrz+e=TYHYqaYyUWRP528GSZXx8EnN1yPhZK8eLvP4Yw@mail.gmail.com>
- <87lgkzg7xv.fsf@intel.com>
- <CAM_iQpUUUrYeyqYK-CDAXzuKcy9FDtq_etQQvO4D4uCjV6As-w@mail.gmail.com>
-Message-ID: <87ing2fmmq.fsf@intel.com>
+From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+Date: Thu, 28 Sep 2017 23:27:54 +0000
+Subject: [Intel-wired-lan] i40e MDD events
+In-Reply-To: <CAOZ2QJPbOrGLoZWnZUY268owFsFxFq-UcdYLbUn1Kf7tzE9oHg@mail.gmail.com>
+References: <CAOZ2QJPbOrGLoZWnZUY268owFsFxFq-UcdYLbUn1Kf7tzE9oHg@mail.gmail.com>
+Message-ID: <9BBC4E0CF881AA4299206E2E1412B6265A15909B@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Dan Streetman
+> Sent: Thursday, September 28, 2017 1:53 PM
+> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; Duyck, Alexander H
+> <alexander.h.duyck@intel.com>
+> Subject: [Intel-wired-lan] i40e MDD events
+> 
+> Hi, I'm from Canonical support, and I have reports from an Ubuntu user
+> seeing MDD events occurring on a i40e nic, from the PF (not a VF)
+> while using the Ubuntu 4.4 kernel.  I found two commits that I thought
+> addressed this problem, but they did not help - the reporter still is
+> seeing MDD events, which reset the PF for every MDD event.  The
+> commits I thought fixed this, which have been added but still don't
+> fix the MDD events, are:
+> 
 
-Cong Wang <xiyou.wangcong@gmail.com> writes:
+Hello Dan,
 
-[...]
+What is the firmware version on the device?  ethtool -i output or dmesg log should provide it.  I believe the device needs a fw update.   They are available  on our download center here:  https://downloadcenter.intel.com/download/24769
+A fw update will usually require a driver update as well, but the fw version info from the user will help with this determination.
 
->>>
->>> I am not sure how we can solve this elegantly, perhaps you should
->>> extend mqprio rather than add a new one?
->>
->> Is the alternative hinted in the FIXME worse? Instead of passing the
->> index of the hardware queue to the driver we pass the pointer to a
->> netdev_queue to the driver and it "discovers" the HW queue from that.
->
-> Does this way solve the dependency on mqprio? If yes then it is good.
-> And you have to fix it before merge, we don't have any qdisc depending
-> a specific type of qdisc to be its parent.
+Thanks,
 
-Yes, it does. And if we do like Jesus pointed out, we can do this on the
-CBS qdisc side, no need to change the driver.
+Carolyn
+
+Carolyn Wyborny 
+Linux Development 
+Networking Division 
+Intel Corporation 
 
 
-Cheers,
---
-Vinicius
