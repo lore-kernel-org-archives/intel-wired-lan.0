@@ -1,199 +1,111 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 30 Sep 2017 05:24:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 22b96551f213d7e7d743442c923c266a10306b9b
-Message-ID: <59ceba1d.ZZrDEh6UqGyHU2kK%fengguang.wu@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri, 29 Sep 2017 17:26:54 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v2 2/5] net/sched: Fix
+	accessing invalid dev_queue
+In-Reply-To: <20170930002657.15291-1-vinicius.gomes@intel.com>
+References: <20170930002657.15291-1-vinicius.gomes@intel.com>
+Message-ID: <20170930002657.15291-3-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-22b96551f213d7e7d743442c923c266a10306b9b  i40e: refactor FW version checking
+From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 
-elapsed time: 92m
+In qdisc_alloc() the dev_queue pointer was used without any checks being
+performed. If qdisc_create() gets a null dev_queue pointer, it just
+passes it along to qdisc_alloc(), leading to a crash. That happens if a
+root qdisc implements select_queue() and returns a null dev_queue
+pointer for an "invalid handle", for example.
 
-configs tested: 175
+One way to reproduce that is:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+1) Setup mqprio
+$ tc qdisc replace dev enp3s0 parent root mqprio num_tc 3 \
+     	   map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 queues 1 at 0 1 at 1 2 at 2 hw 0
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                           spitz_defconfig
-mips                    maltaup_xpa_defconfig
-sh                         microdev_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                   lite5200b_defconfig
-powerpc               mpc85xx_basic_defconfig
-powerpc                     powernv_defconfig
-arm                           acs5k_defconfig
-powerpc                     kmeter1_defconfig
-s390                    performance_defconfig
-x86_64                randconfig-it0-09300359
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201739
-x86_64                 randconfig-v0-09300329
-arm                        magician_defconfig
-arm                           sunxi_defconfig
-sparc64                           allnoconfig
-x86_64                 randconfig-g0-09300333
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-s0-09300346
-x86_64                 randconfig-s1-09300346
-x86_64                 randconfig-s2-09300346
-arm                       multi_v4t_defconfig
-blackfin                         alldefconfig
-m68k                                defconfig
-powerpc                 xes_mpc85xx_defconfig
-sparc                       sparc32_defconfig
-x86_64                 randconfig-x011-201739
-x86_64                 randconfig-x016-201739
-x86_64                 randconfig-x018-201739
-x86_64                 randconfig-x013-201739
-x86_64                 randconfig-x019-201739
-x86_64                 randconfig-x014-201739
-x86_64                 randconfig-x012-201739
-x86_64                 randconfig-x015-201739
-x86_64                 randconfig-x017-201739
-x86_64                 randconfig-x010-201739
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-s0-201739
-i386                     randconfig-s1-201739
-arm                    vt8500_v6_v7_defconfig
-m32r                    m32700ut.up_defconfig
-mips                        bcm63xx_defconfig
-mips                          malta_defconfig
-x86_64                   randconfig-i0-201739
-i386                   randconfig-b0-09300359
-sparc                               defconfig
-sparc64                             defconfig
-arm                         axm55xx_defconfig
-parisc                           allmodconfig
-i386                     randconfig-i0-201739
-i386                     randconfig-i1-201739
-x86_64                 randconfig-b0-09300402
-m68k                             alldefconfig
-mn10300                     asb2364_defconfig
-powerpc                     tqm8541_defconfig
-x86_64                 randconfig-u0-09300349
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                         vf610m4_defconfig
-powerpc                      acadia_defconfig
-x86_64                randconfig-ne0-09300124
-i386                               tinyconfig
-i386                   randconfig-x013-201739
-i386                   randconfig-x019-201739
-i386                   randconfig-x018-201739
-i386                   randconfig-x016-201739
-i386                   randconfig-x012-201739
-i386                   randconfig-x015-201739
-i386                   randconfig-x011-201739
-i386                   randconfig-x010-201739
-i386                   randconfig-x017-201739
-i386                   randconfig-x014-201739
-microblaze                       allyesconfig
-xtensa                  audio_kc705_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-09300409
-x86_64                           allmodconfig
-i386                   randconfig-x000-201739
-i386                   randconfig-x003-201739
-i386                   randconfig-x009-201739
-i386                   randconfig-x004-201739
-i386                   randconfig-x008-201739
-i386                   randconfig-x001-201739
-i386                   randconfig-x005-201739
-i386                   randconfig-x002-201739
-i386                   randconfig-x006-201739
-i386                   randconfig-x007-201739
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-x000-201739
-x86_64                 randconfig-x007-201739
-x86_64                 randconfig-x001-201739
-x86_64                 randconfig-x006-201739
-x86_64                 randconfig-x004-201739
-x86_64                 randconfig-x009-201739
-x86_64                 randconfig-x003-201739
-x86_64                 randconfig-x002-201739
-x86_64                 randconfig-x005-201739
-x86_64                 randconfig-x008-201739
-x86_64                randconfig-ws0-09300309
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-mips                        qi_lb60_defconfig
-sh                           se7712_defconfig
-x86_64                randconfig-ws0-09300319
-i386                   randconfig-x075-201739
-i386                   randconfig-x076-201739
-i386                   randconfig-x071-201739
-i386                   randconfig-x074-201739
-i386                   randconfig-x070-201739
-i386                   randconfig-x077-201739
-i386                   randconfig-x073-201739
-i386                   randconfig-x078-201739
-i386                   randconfig-x072-201739
-i386                   randconfig-x079-201739
-frv                                 defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-sparc64                          allmodconfig
-arm                           corgi_defconfig
-openrisc                          allnoconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-09300403
+2) Replace the first inner qdisc
+$ tc qdisc replace dev enp3s0 parent 8001:1 pfifo_fast
 
-Thanks,
-Fengguang
+This will lead to the following crash:
+
+[15274.874506] BUG: unable to handle kernel NULL pointer dereference at 0000000000000058
+[15274.875044] IP: qdisc_alloc+0xd/0xf0
+[15274.875253] PGD 1a37d067 P4D 1a37d067 PUD 1a0cb067 PMD 0
+[15274.875566] Oops: 0000 [#1] SMP
+[15274.875813] Modules linked in:
+[15274.875993] CPU: 0 PID: 2006 Comm: tc Not tainted 4.14.0-rc1+ #42
+[15274.876415] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.10.2-20170228_101828-anatol 04/01/2014
+[15274.877019] task: ffff88001eb91d00 task.stack: ffffc90000734000
+[15274.877359] RIP: 0010:qdisc_alloc+0xd/0xf0
+[15274.877606] RSP: 0018:ffffc90000737a88 EFLAGS: 00010286
+[15274.877904] RAX: ffffffff81ef0da0 RBX: 0000000000000000 RCX: 0000000000000000
+[15274.878331] RDX: ffff88001a046830 RSI: ffffffff81ef0da0 RDI: 0000000000000000
+[15274.878757] RBP: 0000000001000001 R08: 000000000000006c R09: ffffc90000737b40
+[15274.879165] R10: fffffffffffffc20 R11: 0000000000000000 R12: ffff88001e308000
+[15274.879571] R13: 0000000000000088 R14: ffffc90000737b40 R15: 0000000000000000
+[15274.879978] FS:  00007f790a90a700(0000) GS:ffff88001fc00000(0000) knlGS:0000000000000000
+[15274.880457] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[15274.880784] CR2: 0000000000000058 CR3: 000000001a003004 CR4: 00000000003606f0
+[15274.881203] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[15274.881620] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[15274.882026] Call Trace:
+[15274.882179]  qdisc_create+0xb0/0x380
+[15274.882388]  ? security_capable+0x2e/0x50
+[15274.882616]  ? nla_parse+0x32/0x100
+[15274.882818]  tc_modify_qdisc+0x47f/0x560
+[15274.883046]  rtnetlink_rcv_msg+0x1db/0x200
+[15274.883284]  ? __skb_try_recv_datagram+0xd6/0x150
+[15274.883555]  ? rtnl_calcit.isra.21+0xe0/0xe0
+[15274.883814]  netlink_rcv_skb+0x92/0xf0
+[15274.884031]  netlink_unicast+0x12c/0x1d0
+[15274.884258]  netlink_sendmsg+0x2ee/0x330
+[15274.884486]  sock_sendmsg+0x28/0x40
+[15274.884689]  ___sys_sendmsg+0x25d/0x280
+[15274.884913]  ? __alloc_pages_nodemask+0x120/0x180
+[15274.885185]  ? page_add_new_anon_rmap+0x90/0xb0
+[15274.885448]  ? __handle_mm_fault+0x74e/0xc40
+[15274.885695]  ? __sys_sendmsg+0x3e/0x70
+[15274.885912]  __sys_sendmsg+0x3e/0x70
+[15274.886123]  entry_SYSCALL_64_fastpath+0x13/0x94
+[15274.886387] RIP: 0033:0x7f7909b1a1b7
+[15274.886594] RSP: 002b:00007ffe14315028 EFLAGS: 00000246 ORIG_RAX: 000000000000002e
+[15274.887042] RAX: ffffffffffffffda RBX: 0000000000661860 RCX: 00007f7909b1a1b7
+[15274.887450] RDX: 0000000000000000 RSI: 00007ffe143150a0 RDI: 0000000000000003
+[15274.887854] RBP: 00007ffe143150a0 R08: 0000000000000001 R09: 0000000000000000
+[15274.888256] R10: 00000000000005f1 R11: 0000000000000246 R12: 00007ffe143150e0
+[15274.888660] R13: 000000000066e620 R14: 00007ffe1431d180 R15: 0000000000000000
+[15274.889070] Code: a8 01 74 09 48 89 df 5b e9 71 ff ff ff 5b c3 f3 c3 0f 1f 00 66 2e 0f 1f 84 00 00 00 00 00 41 55 41 54 55 53 48 89 fb 44 8b 6e 20 <8b> 57 58 48 89 f5 4c 8b 27 be c0 80 40 01 41 8d bd 40 01 00 00
+[15274.890154] RIP: qdisc_alloc+0xd/0xf0 RSP: ffffc90000737a88
+[15274.890479] CR2: 0000000000000058
+[15274.890677] ---[ end trace 6d0e946c11e46095 ]---
+
+Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+---
+ net/sched/sch_generic.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+index a0a198768aad..de2408f1ccd3 100644
+--- a/net/sched/sch_generic.c
++++ b/net/sched/sch_generic.c
+@@ -603,8 +603,14 @@ struct Qdisc *qdisc_alloc(struct netdev_queue *dev_queue,
+ 	struct Qdisc *sch;
+ 	unsigned int size = QDISC_ALIGN(sizeof(*sch)) + ops->priv_size;
+ 	int err = -ENOBUFS;
+-	struct net_device *dev = dev_queue->dev;
++	struct net_device *dev;
++
++	if (!dev_queue) {
++		err = -EINVAL;
++		goto errout;
++	}
+ 
++	dev = dev_queue->dev;
+ 	p = kzalloc_node(size, GFP_KERNEL,
+ 			 netdev_queue_numa_node_read(dev_queue));
+ 
+-- 
+2.14.2
+
