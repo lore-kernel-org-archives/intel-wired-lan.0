@@ -1,5 +1,5 @@
 From: Robin Nie <robin.nie@ericsson.com>
-Date: Sun, 1 Oct 2017 01:19:42 +0000
+Date: Sun, 1 Oct 2017 02:04:28 +0000
 Subject: [Intel-wired-lan] Igb driver: Kernel panic as soon as any
  packet received
 In-Reply-To: <CAKgT0Ucao7GJT=vfe_JXaq_JPZTd9VVO-Pk+9U0SGesyq0yHpA@mail.gmail.com>
@@ -9,7 +9,7 @@ References: <DBXPR07MB36855D8C0F51BE3436817BDE3790@DBXPR07MB368.eurprd07.prod.ou
  <CAKgT0UdT+7Q1GDh0eH70yrJCoRog0wV89CMUvJuoj0-WHrL0jQ@mail.gmail.com>
  <DBXPR07MB368B5FD73C0E5052DF94899E37F0@DBXPR07MB368.eurprd07.prod.outlook.com>
  <CAKgT0Ucao7GJT=vfe_JXaq_JPZTd9VVO-Pk+9U0SGesyq0yHpA@mail.gmail.com>
-Message-ID: <AM3PR07MB050482FD992A81A6C420DCFD9D7C0@AM3PR07MB0504.eurprd07.prod.outlook.com>
+Message-ID: <AM3PR07MB050460078BCA4463E988B77C9D7C0@AM3PR07MB0504.eurprd07.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,9 +18,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Hi Alex,
 
-Thanks for your info.
-We will check the issues and bugs in this kernel version.
+At the same time, we happened to find that the kernel panic issue cannot be triggered again after rebuilding our BIOS image using different compiling and linking tool chain without any code change.
+According to our current investigation and test result, it seems that the kernel panic is triggered by special BIOS image and bugs of Kernel 3.12.53-60.30 combination.
 
+Because we are from BIOS team,  we are more concern about if it is a BIOS issue or BIOS building environment issue.
+Do you have any comments or suggestion on BIOS side?
+
+The attachment is the difference of map files of BIOS's CSMCORE module from 2 different build environment.
+We can see .data and .bss segment size is obviously different.
+
+Thanks,
 BR/Robin
 
 -----Original Message-----
@@ -297,3 +304,10 @@ On Fri, Sep 29, 2017 at 11:34 PM, Lijun Shen <lijun.shen@ericsson.com> wrote:
 >> Thanks.
 >>
 >> - Alex
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: csmcore.map.docx
+Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+Size: 772080 bytes
+Desc: csmcore.map.docx
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171001/465ca147/attachment-0001.docx>
