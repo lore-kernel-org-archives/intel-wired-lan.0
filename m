@@ -1,168 +1,50 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 28 Oct 2017 09:24:50 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
- 05f9d3e1ae6eaf7507e3bd95b0eef2acd4b84ea8
-Message-ID: <59f3dc62./gblp+tWs3MVXxRZ%fengguang.wu@intel.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Mon, 2 Oct 2017 14:56:03 +0200
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH] ixgbe: Update
+ adaptive ITR algorithm
+In-Reply-To: <20170925215225.15616.63705.stgit@localhost.localdomain>
+References: <20170925215225.15616.63705.stgit@localhost.localdomain>
+Message-ID: <20171002145603.32e61b6b@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
-branch HEAD: 05f9d3e1ae6eaf7507e3bd95b0eef2acd4b84ea8  igb: Add support for CBS offload
+On Mon, 25 Sep 2017 14:55:36 -0700
+Alexander Duyck <alexander.duyck@gmail.com> wrote:
 
-elapsed time: 266m
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> 
+> The following change is meant to update the adaptive ITR algorithm to
+> better support the needs of the network. Specifically with this change what
+> I have done is make it so that our ITR algorithm will try to prevent either
+> starving a socket buffer for memory in the case of Tx, or overruing an Rx
+> socket buffer on receive.
+> 
+> In addition a side effect of the calculations used is that we should
+> function better with new features such as XDP which can handle small
+> packets at high rates without needing to lock us into NAPI polling mode.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> ---
+> 
+> So I am putting this out to a wider distribution list than normal for a
+> patch like this in order to get feedback on if there are any areas I may
+> have overlooked. With this patch is should address many of the performance
+> limitations seen with pktgen and XDP in terms of workloads that the old
+> adaptive scheme wasn't handling.
 
-configs tested: 144
+Thanks a lot Alex!
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I've tested the patch with XDP redirect (map), and the issue I reported
+in [1] is solved with this patch.
 
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-i386                             allmodconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-i386                     randconfig-a0-201743
-i386                     randconfig-a1-201743
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-x018-201743
-x86_64                 randconfig-x011-201743
-x86_64                 randconfig-x012-201743
-x86_64                 randconfig-x013-201743
-x86_64                 randconfig-x019-201743
-x86_64                 randconfig-x017-201743
-x86_64                 randconfig-x014-201743
-x86_64                 randconfig-x015-201743
-x86_64                 randconfig-x016-201743
-x86_64                 randconfig-x010-201743
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201743
-i386                     randconfig-s1-201743
-x86_64                   randconfig-i0-201743
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201743
-i386                     randconfig-i0-201743
-x86_64                           allmodconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-i386                   randconfig-x015-201743
-i386                   randconfig-x014-201743
-i386                   randconfig-x013-201743
-i386                   randconfig-x019-201743
-i386                   randconfig-x011-201743
-i386                   randconfig-x018-201743
-i386                   randconfig-x010-201743
-i386                   randconfig-x012-201743
-i386                   randconfig-x017-201743
-i386                   randconfig-x016-201743
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-x001-201743
-i386                   randconfig-x008-201743
-i386                   randconfig-x002-201743
-i386                   randconfig-x003-201743
-i386                   randconfig-x004-201743
-i386                   randconfig-x006-201743
-i386                   randconfig-x007-201743
-i386                   randconfig-x009-201743
-i386                   randconfig-x005-201743
-i386                   randconfig-x000-201743
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-x001-201743
-x86_64                 randconfig-x000-201743
-x86_64                 randconfig-x004-201743
-x86_64                 randconfig-x008-201743
-x86_64                 randconfig-x007-201743
-x86_64                 randconfig-x006-201743
-x86_64                 randconfig-x005-201743
-x86_64                 randconfig-x009-201743
-x86_64                 randconfig-x003-201743
-x86_64                 randconfig-x002-201743
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-i386                   randconfig-x074-201743
-i386                   randconfig-x077-201743
-i386                   randconfig-x076-201743
-i386                   randconfig-x071-201743
-i386                   randconfig-x073-201743
-i386                   randconfig-x079-201743
-i386                   randconfig-x078-201743
-i386                   randconfig-x072-201743
-i386                   randconfig-x070-201743
-i386                   randconfig-x075-201743
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
+[1] Subject: "XDP redirect measurements, gotchas and tracepoints"
+ http://lkml.kernel.org/r/20170821212506.1cb0d5d6 at redhat.com
 
-Thanks,
-Fengguang
+-- 
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
