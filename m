@@ -1,29 +1,58 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Mon, 2 Oct 2017 16:07:36 +0300
+From: Kalle Valo <kvalo@codeaurora.org>
+Date: Mon, 02 Oct 2017 16:46:29 +0300
 Subject: [Intel-wired-lan] [PATCH 05/18] net: use ARRAY_SIZE
 In-Reply-To: <20171001193101.8898-6-jeremy.lefaure@lse.epita.fr>
+ (=?utf-8?B?IkrDqXLDqW15?=
+ Lefaure"'s message of "Sun, 1 Oct 2017 15:30:43 -0400")
 References: <20171001193101.8898-1-jeremy.lefaure@lse.epita.fr>
  <20171001193101.8898-6-jeremy.lefaure@lse.epita.fr>
-Message-ID: <CAHp75VfC2e+h8GCiB-1Rbe=_z3siBBo0WfqEf3qz8yWh8Cm3RQ@mail.gmail.com>
+Message-ID: <87h8vh64sq.fsf@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Oct 1, 2017 at 10:30 PM, J?r?my Lefaure
-<jeremy.lefaure@lse.epita.fr> wrote:
+J?r?my Lefaure <jeremy.lefaure@lse.epita.fr> writes:
+
 > Using the ARRAY_SIZE macro improves the readability of the code. Also,
 > it is not always useful to use a variable to store this constant
 > calculated at compile time.
 >
+> Found with Coccinelle with the following semantic patch:
+> @r depends on (org || report)@
+> type T;
+> T[] E;
+> position p;
+> @@
+> (
+>  (sizeof(E)@p /sizeof(*E))
+> |
+>  (sizeof(E)@p /sizeof(E[...]))
+> |
+>  (sizeof(E)@p /sizeof(T))
+> )
+>
+> Signed-off-by: J?r?my Lefaure <jeremy.lefaure@lse.epita.fr>
+> ---
+>  drivers/net/ethernet/emulex/benet/be_cmds.c        |   4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.h      |   3 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_adminq.h    |   3 +-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c      |   3 +-
+>  drivers/net/ethernet/intel/ixgbevf/vf.c            |  17 +-
+>  drivers/net/usb/kalmia.c                           |   9 +-
+>  .../broadcom/brcm80211/brcmsmac/phy/phytbl_n.c     | 473 ++++++---------------
+>  .../net/wireless/realtek/rtlwifi/rtl8723be/hw.c    |   9 +-
+>  .../net/wireless/realtek/rtlwifi/rtl8723be/phy.c   |  12 +-
+>  .../net/wireless/realtek/rtlwifi/rtl8723be/table.c |  14 +-
+>  .../net/wireless/realtek/rtlwifi/rtl8821ae/table.c |  34 +-
+>  include/net/bond_3ad.h                             |   3 +-
+>  net/ipv6/seg6_local.c                              |   6 +-
+>  13 files changed, 177 insertions(+), 413 deletions(-)
 
-> +       {&gainctrl_lut_core0_rev0, ARRAY_SIZE(gainctrl_lut_core0_rev0), 26, 192,
-> +        32},
-
-For all such cases I would rather put on one line disregard checkpatch
-warning for better readability.
+We have a tree for wireless so usually it's better to submit wireless
+changes on their own but here I assume Dave will apply this to his tree.
+If not, please resubmit the wireless part in a separate patch.
 
 -- 
-With Best Regards,
-Andy Shevchenko
+Kalle Valo
