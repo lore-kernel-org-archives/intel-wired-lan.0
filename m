@@ -1,58 +1,45 @@
-From: Kalle Valo <kvalo@codeaurora.org>
-Date: Mon, 02 Oct 2017 16:46:29 +0300
-Subject: [Intel-wired-lan] [PATCH 05/18] net: use ARRAY_SIZE
-In-Reply-To: <20171001193101.8898-6-jeremy.lefaure@lse.epita.fr>
- (=?utf-8?B?IkrDqXLDqW15?=
- Lefaure"'s message of "Sun, 1 Oct 2017 15:30:43 -0400")
-References: <20171001193101.8898-1-jeremy.lefaure@lse.epita.fr>
- <20171001193101.8898-6-jeremy.lefaure@lse.epita.fr>
-Message-ID: <87h8vh64sq.fsf@codeaurora.org>
+From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+Date: Mon, 2 Oct 2017 08:57:06 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v2 2/5] net/sched: Fix
+ accessing invalid dev_queue
+In-Reply-To: <CAM_iQpW7YtS2=rRw814=zWcJaUOGmkWQ+NHQKPwsBF4hMQSRVg@mail.gmail.com>
+References: <20170930002657.15291-1-vinicius.gomes@intel.com>
+ <20170930002657.15291-3-vinicius.gomes@intel.com>
+ <CAM_iQpW7YtS2=rRw814=zWcJaUOGmkWQ+NHQKPwsBF4hMQSRVg@mail.gmail.com>
+Message-ID: <bb111622-1a5c-2a8b-f526-c94f7b77d454@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-J?r?my Lefaure <jeremy.lefaure@lse.epita.fr> writes:
+Hi,
 
-> Using the ARRAY_SIZE macro improves the readability of the code. Also,
-> it is not always useful to use a variable to store this constant
-> calculated at compile time.
->
-> Found with Coccinelle with the following semantic patch:
-> @r depends on (org || report)@
-> type T;
-> T[] E;
-> position p;
-> @@
-> (
->  (sizeof(E)@p /sizeof(*E))
-> |
->  (sizeof(E)@p /sizeof(E[...]))
-> |
->  (sizeof(E)@p /sizeof(T))
-> )
->
-> Signed-off-by: J?r?my Lefaure <jeremy.lefaure@lse.epita.fr>
-> ---
->  drivers/net/ethernet/emulex/benet/be_cmds.c        |   4 +-
->  drivers/net/ethernet/intel/i40e/i40e_adminq.h      |   3 +-
->  drivers/net/ethernet/intel/i40evf/i40e_adminq.h    |   3 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c      |   3 +-
->  drivers/net/ethernet/intel/ixgbevf/vf.c            |  17 +-
->  drivers/net/usb/kalmia.c                           |   9 +-
->  .../broadcom/brcm80211/brcmsmac/phy/phytbl_n.c     | 473 ++++++---------------
->  .../net/wireless/realtek/rtlwifi/rtl8723be/hw.c    |   9 +-
->  .../net/wireless/realtek/rtlwifi/rtl8723be/phy.c   |  12 +-
->  .../net/wireless/realtek/rtlwifi/rtl8723be/table.c |  14 +-
->  .../net/wireless/realtek/rtlwifi/rtl8821ae/table.c |  34 +-
->  include/net/bond_3ad.h                             |   3 +-
->  net/ipv6/seg6_local.c                              |   6 +-
->  13 files changed, 177 insertions(+), 413 deletions(-)
+On 09/30/2017 05:22 PM, Cong Wang wrote:
+> On Fri, Sep 29, 2017 at 5:26 PM, Vinicius Costa Gomes
+> <vinicius.gomes@intel.com> wrote:
+>> From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+>>
+>> In qdisc_alloc() the dev_queue pointer was used without any checks being
+>> performed. If qdisc_create() gets a null dev_queue pointer, it just
+>> passes it along to qdisc_alloc(), leading to a crash. That happens if a
+>> root qdisc implements select_queue() and returns a null dev_queue
+>> pointer for an "invalid handle", for example.
+> 
+> Does it make sense to let mqprio_select_queue() always return
+> non-NULL?
+> 
+> At least mq_select_queue() returns queue #0 as a fallback.
 
-We have a tree for wireless so usually it's better to submit wireless
-changes on their own but here I assume Dave will apply this to his tree.
-If not, please resubmit the wireless part in a separate patch.
+I had seen that, but my understanding was that for mqprio the inner qdiscs are
+always related to one of the Tx netdev_queue per design. Returning any other
+queue as a fallback seemed like going against that to me.
 
--- 
-Kalle Valo
+I'd rather keep this function as the patch is proposing, thus either returning
+the correct netdev_queue for a given handle, or NULL as a way to flag that
+something was 'wrong' with it. Returning queue #0 is misleading in that sense, imo.
+
+What do you think?
+
+Regards,
+Jesus
