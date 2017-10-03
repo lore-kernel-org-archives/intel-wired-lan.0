@@ -1,10 +1,10 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue,  3 Oct 2017 16:44:31 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v3 3/4] net/sched: Introduce
+Date: Tue,  3 Oct 2017 16:44:34 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v2 4/5] net/sched: Introduce
 	Credit Based Shaper (CBS) qdisc
 In-Reply-To: <20171003234435.8979-1-vinicius.gomes@intel.com>
 References: <20171003234435.8979-1-vinicius.gomes@intel.com>
-Message-ID: <20171003234435.8979-4-vinicius.gomes@intel.com>
+Message-ID: <20171003234435.8979-7-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -27,17 +27,16 @@ on being installed "under" mqprio can be lifted.
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 ---
- include/linux/netdevice.h      |   1 +
- include/net/pkt_sched.h        |   9 ++
- include/uapi/linux/pkt_sched.h |  17 ++++
- net/sched/Kconfig              |  11 ++
- net/sched/Makefile             |   1 +
- net/sched/sch_cbs.c            | 225 +++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 264 insertions(+)
+ include/linux/netdevice.h |   1 +
+ include/net/pkt_sched.h   |   9 ++
+ net/sched/Kconfig         |  11 +++
+ net/sched/Makefile        |   1 +
+ net/sched/sch_cbs.c       | 225 ++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 247 insertions(+)
  create mode 100644 net/sched/sch_cbs.c
 
 diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index e1d6ef130611..b8798adc214f 100644
+index f535779d9dc1..5d6fb06fd80f 100644
 --- a/include/linux/netdevice.h
 +++ b/include/linux/netdevice.h
 @@ -775,6 +775,7 @@ enum tc_setup_type {
@@ -64,32 +63,6 @@ index 259bc191ba59..7c597b050b36 100644
 +	s32 idleslope;
 +	s32 sendslope;
 +};
-+
- #endif
-diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
-index 099bf5528fed..27c849c053cf 100644
---- a/include/uapi/linux/pkt_sched.h
-+++ b/include/uapi/linux/pkt_sched.h
-@@ -871,4 +871,21 @@ struct tc_pie_xstats {
- 	__u32 maxq;             /* maximum queue size */
- 	__u32 ecn_mark;         /* packets marked with ecn*/
- };
-+
-+/* CBS */
-+struct tc_cbs_qopt {
-+	__s32 hicredit;
-+	__s32 locredit;
-+	__s32 idleslope;
-+	__s32 sendslope;
-+};
-+
-+enum {
-+	TCA_CBS_UNSPEC,
-+	TCA_CBS_PARMS,
-+	__TCA_CBS_MAX,
-+};
-+
-+#define TCA_CBS_MAX (__TCA_CBS_MAX - 1)
 +
  #endif
 diff --git a/net/sched/Kconfig b/net/sched/Kconfig
