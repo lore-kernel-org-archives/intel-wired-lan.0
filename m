@@ -1,46 +1,46 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Tue, 03 Oct 2017 20:47:11 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v3 2/4] net/sched: Fix
- accessing invalid dev_queue
-In-Reply-To: <20171003234435.8979-3-vinicius.gomes@intel.com>
-References: <20171003234435.8979-1-vinicius.gomes@intel.com>
- <20171003234435.8979-3-vinicius.gomes@intel.com>
-Message-ID: <1507088831.8061.41.camel@edumazet-glaptop3.roam.corp.google.com>
+From: Ben Hutchings <ben@decadent.org.uk>
+Date: Wed, 4 Oct 2017 02:52:08 +0100
+Subject: [Intel-wired-lan] [RFC PATCH] i40e: Build for 64-bit targets only
+Message-ID: <20171004015208.GA2971@decadent.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2017-10-03 at 16:44 -0700, Vinicius Costa Gomes wrote:
-> From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-> 
-> In qdisc_alloc() the dev_queue pointer was used without any checks being
-> performed. If qdisc_create() gets a null dev_queue pointer, it just
-> passes it along to qdisc_alloc(), leading to a crash. That happens if a
-> root qdisc implements select_queue() and returns a null dev_queue
-> pointer for an "invalid handle", for example.
-> 
-> One way to reproduce that is:
-> 
-> 1) Setup mqprio
-> $ tc qdisc replace dev enp3s0 parent root mqprio num_tc 3 \
->      	   map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 queues 1 at 0 1 at 1 2 at 2 hw 0
-> 
-> 2) Replace the first inner qdisc
-> $ tc qdisc replace dev enp3s0 parent 8001:1 pfifo_fast
-> 
-> This will lead to the following crash:
+i40e now uses cmpxchg64(), which only works on a 64-bit (or non-SMP)
+system.  (It is currently defined for many 32-bit SMP configurations,
+but not correctly!)  It seems reasonable to expect that 40G hardware
+is not used on 32-bit systems.
 
-When was this bug added ?
+Fixes: 841c950d67c6 ("i40e/i40evf: use cmpxchg64 when updating private ...")
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+I specifically found a build failure on 32-bit parisc:
 
-If this is a consequence of your prior patch (1/4), then this must come
-before it.
+https://buildd.debian.org/status/fetch.php?pkg=linux&arch=hppa&ver=4.14%7Erc3-1%7Eexp1&stamp=1507045758&raw=0
 
-No need to add a stack trace for a not existing bug.
-Instead, explain in the changelog that it is a prep work.
+Ben.
 
-We try to not break the tree on purpose, so that future bisection will
-not hit a point where the kernel crashes.
+ drivers/net/ethernet/intel/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 1feb54b6d92e..dd17bdf5561e 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -215,6 +215,7 @@ config I40E
+ 	tristate "Intel(R) Ethernet Controller XL710 Family support"
+ 	imply PTP_1588_CLOCK
+ 	depends on PCI
++	depends on 64BIT
+ 	---help---
+ 	  This driver supports Intel(R) Ethernet Controller XL710 Family of
+ 	  devices.  For more information on how to identify your adapter, go
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 811 bytes
+Desc: Digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171004/a7d4ff8b/attachment-0001.asc>
