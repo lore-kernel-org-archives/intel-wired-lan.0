@@ -1,141 +1,90 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 04 Oct 2017 08:44:43 -0700
-Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] i40e: Fix memory leak
- related filter programming status
-Message-ID: <20171004153903.13100.38029.stgit@localhost.localdomain>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed,  4 Oct 2017 08:52:58 -0700
+Subject: [Intel-wired-lan] [PATCH] PCI: Check/Set ARI capability before
+	setting numVFs
+Message-ID: <20171004155258.35634-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+This fixes a bug that can occur if an AER error is encountered while SRIOV
+devices are present.
 
-It looks like we weren't correctly placing the pages from buffers that had
-been used to return a filter programming status back on the ring. As a
-result they were being overwritten and tracking of the pages was lost.
+This issue was seen by doing the following. Inject an AER error to a device
+that has SRIOV devices.  After the device has recovered, remove the driver.
+Reload the driver and enable SRIOV which causes the following crash to
+occur:
 
-This change works to correct that by incorporating part of
-i40e_put_rx_buffer into the programming status handler code. As a result we
-should now be correctly placing the pages for those buffers on the
-re-allocation list instead of letting them stay in place.
+kernel BUG at drivers/pci/iov.c:157!
+invalid opcode: 0000 [#1] SMP
+CPU: 36 PID: 2295 Comm: bash Not tainted 4.14.0-rc1+ #74
+Hardware name: Supermicro X9DAi/X9DAi, BIOS 3.0a 04/29/2014
+task: ffff9fa41cd45a00 task.stack: ffffb4b2036e8000
+RIP: 0010:pci_iov_add_virtfn+0x2eb/0x350
+RSP: 0018:ffffb4b2036ebcb8 EFLAGS: 00010286
+RAX: 00000000fffffff0 RBX: ffff9fa42c1c8800 RCX: ffff9fa421ce2388
+RDX: 00000000df900000 RSI: ffff9fa8214fb388 RDI: 00000000df903fff
+RBP: ffffb4b2036ebd18 R08: ffff9fa421ce23b8 R09: ffffb4b2036ebc2c
+R10: ffff9fa42c1a5548 R11: 000000000000058e R12: ffff9fa8214fb000
+R13: ffff9fa42c1a5000 R14: ffff9fa8214fb388 R15: 0000000000000000
+FS:  00007f60724b6700(0000) GS:ffff9fa82f300000(0000)
+knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000559eca8b0f40 CR3: 0000000864146000 CR4: 00000000001606e0
+Call Trace:
+ pci_enable_sriov+0x353/0x440
+ ixgbe_pci_sriov_configure+0xd5/0x1f0 [ixgbe]
+ sriov_numvfs_store+0xf7/0x170
+ dev_attr_store+0x18/0x30
+ sysfs_kf_write+0x37/0x40
+ kernfs_fop_write+0x120/0x1b0
+ __vfs_write+0x37/0x170
+ ? __alloc_fd+0x3f/0x170
+ ? set_close_on_exec+0x30/0x70
+ vfs_write+0xb5/0x1a0
+ SyS_write+0x55/0xc0
+ entry_SYSCALL_64_fastpath+0x1a/0xa5
+RIP: 0033:0x7f6071bafc20
+RSP: 002b:00007ffe7d42ba48 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 0000559eca8b0f30 RCX: 00007f6071bafc20
+RDX: 0000000000000002 RSI: 0000559eca961f60 RDI: 0000000000000001
+RBP: 00007f6071e78ae0 R08: 00007f6071e7a740 R09: 00007f60724b6700
+R10: 0000000000000073 R11: 0000000000000246 R12: 0000000000000000
+R13: 0000000000000000 R14: 0000000000000000 R15: 0000559eca892170
+RIP: pci_iov_add_virtfn+0x2eb/0x350 RSP: ffffb4b2036ebcb8
 
-Fixes: 0e626ff7ccbf ("i40e: Fix support for flow director programming status")
-Reported-by: Anders K. Pedersen <akp@cohaesio.com>
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+The occurs since during AER recovery the ARI Capable Hierarchy bit,
+which can affect the values for First VF Offset and VF Stride, is not set
+until after pci_iov_set_numvfs() is called.  This can cause the iov
+structure to be populated with values that are incorrect if the bit is
+later set.   Check and set this bit, if needed, before calling
+pci_iov_set_numvfs() so that the values being populated properly take
+the ARI bit into account.
+
+CC: Alexander Duyck <alexander.h.duyck@intel.com>
+CC: Emil Tantilov <emil.s.tantilov@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
+ drivers/pci/iov.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-I'm submitting this for Jeff's net queue to undergo some additional testing
-before being submitted for net or stable to address the memory leak isue. The
-testing for this should be pretty straight forward since ATR filters seem
-to cause the issue it should be possible to trigger a pretty signficant
-amount of memory loss running something like a netperf TCP_CRR test for an
-extended period of time which will trigger multiple socket
-creation/destruction.
-
-Anders, feel free to test this patch. If you need to grab a copy of the
-diff instead of trying to work with applying the patch through email you
-should be able to find a copy at the following URL shortly after I submit
-this to intel-wired-lan:
-	http://patchwork.ozlabs.org/project/intel-wired-lan/list/
-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |   63 +++++++++++++++------------
- 1 file changed, 36 insertions(+), 27 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 94311e3e4f43..d4ae24674a70 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1038,6 +1038,32 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- }
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index 7492a65..a8896c7 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -497,6 +497,10 @@ static void sriov_restore_state(struct pci_dev *dev)
+ 	if (ctrl & PCI_SRIOV_CTRL_VFE)
+ 		return;
  
- /**
-+ * i40e_reuse_rx_page - page flip buffer and store it back on the ring
-+ * @rx_ring: rx descriptor ring to store buffers on
-+ * @old_buff: donor buffer to have page reused
-+ *
-+ * Synchronizes page for reuse by the adapter
-+ **/
-+static void i40e_reuse_rx_page(struct i40e_ring *rx_ring,
-+			       struct i40e_rx_buffer *old_buff)
-+{
-+	struct i40e_rx_buffer *new_buff;
-+	u16 nta = rx_ring->next_to_alloc;
++	if ((iov->ctrl & PCI_SRIOV_CTRL_ARI) && !(ctrl & PCI_SRIOV_CTRL_ARI))
++		pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL,
++				      ctrl | PCI_SRIOV_CTRL_ARI);
 +
-+	new_buff = &rx_ring->rx_bi[nta];
-+
-+	/* update, and store next to alloc */
-+	nta++;
-+	rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
-+
-+	/* transfer page from old buffer to new buffer */
-+	new_buff->dma		= old_buff->dma;
-+	new_buff->page		= old_buff->page;
-+	new_buff->page_offset	= old_buff->page_offset;
-+	new_buff->pagecnt_bias	= old_buff->pagecnt_bias;
-+}
-+
-+/**
-  * i40e_rx_is_programming_status - check for programming status descriptor
-  * @qw: qword representing status_error_len in CPU ordering
-  *
-@@ -1071,15 +1097,24 @@ static void i40e_clean_programming_status(struct i40e_ring *rx_ring,
- 					  union i40e_rx_desc *rx_desc,
- 					  u64 qw)
- {
--	u32 ntc = rx_ring->next_to_clean + 1;
-+	struct i40e_rx_buffer *rx_buffer;
-+	u32 ntc = rx_ring->next_to_clean;
- 	u8 id;
+ 	for (i = PCI_IOV_RESOURCES; i <= PCI_IOV_RESOURCE_END; i++)
+ 		pci_update_resource(dev, i);
  
- 	/* fetch, update, and store next to clean */
-+	rx_buffer = &rx_ring->rx_bi[ntc++];
- 	ntc = (ntc < rx_ring->count) ? ntc : 0;
- 	rx_ring->next_to_clean = ntc;
- 
- 	prefetch(I40E_RX_DESC(rx_ring, ntc));
- 
-+	/* place unused page back on the ring */
-+	i40e_reuse_rx_page(rx_ring, rx_buffer);
-+	rx_ring->rx_stats.page_reuse_count++;
-+
-+	/* clear contents of buffer_info */
-+	rx_buffer->page = NULL;
-+
- 	id = (qw & I40E_RX_PROG_STATUS_DESC_QW1_PROGID_MASK) >>
- 		  I40E_RX_PROG_STATUS_DESC_QW1_PROGID_SHIFT;
- 
-@@ -1648,32 +1683,6 @@ static bool i40e_cleanup_headers(struct i40e_ring *rx_ring, struct sk_buff *skb,
- }
- 
- /**
-- * i40e_reuse_rx_page - page flip buffer and store it back on the ring
-- * @rx_ring: rx descriptor ring to store buffers on
-- * @old_buff: donor buffer to have page reused
-- *
-- * Synchronizes page for reuse by the adapter
-- **/
--static void i40e_reuse_rx_page(struct i40e_ring *rx_ring,
--			       struct i40e_rx_buffer *old_buff)
--{
--	struct i40e_rx_buffer *new_buff;
--	u16 nta = rx_ring->next_to_alloc;
--
--	new_buff = &rx_ring->rx_bi[nta];
--
--	/* update, and store next to alloc */
--	nta++;
--	rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
--
--	/* transfer page from old buffer to new buffer */
--	new_buff->dma		= old_buff->dma;
--	new_buff->page		= old_buff->page;
--	new_buff->page_offset	= old_buff->page_offset;
--	new_buff->pagecnt_bias	= old_buff->pagecnt_bias;
--}
--
--/**
-  * i40e_page_is_reusable - check if any reuse is possible
-  * @page: page struct to check
-  *
+-- 
+2.9.5
 
