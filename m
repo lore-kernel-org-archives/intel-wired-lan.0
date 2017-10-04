@@ -1,63 +1,74 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Date: Wed, 4 Oct 2017 03:24:53 +0100
-Subject: [Intel-wired-lan] [RFC PATCH] i40e: Build for 64-bit targets
-	only
-In-Reply-To: <20171004015208.GA2971@decadent.org.uk>
-References: <20171004015208.GA2971@decadent.org.uk>
-Message-ID: <20171004022453.GB2971@decadent.org.uk>
+From: Jiri Pirko <jiri@resnulli.us>
+Date: Wed, 4 Oct 2017 08:36:50 +0200
+Subject: [Intel-wired-lan] [next-queue PATCH v4 3/4] net/sched:
+ Introduce Credit Based Shaper (CBS) qdisc
+In-Reply-To: <20171004002831.18371-4-vinicius.gomes@intel.com>
+References: <20171004002831.18371-1-vinicius.gomes@intel.com>
+ <20171004002831.18371-4-vinicius.gomes@intel.com>
+Message-ID: <20171004063650.GA1895@nanopsycho>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Oct 04, 2017 at 02:52:08AM +0100, Ben Hutchings wrote:
-> i40e now uses cmpxchg64(), which only works on a 64-bit (or non-SMP)
-> system.  (It is currently defined for many 32-bit SMP configurations,
-> but not correctly!)  It seems reasonable to expect that 40G hardware
-> is not used on 32-bit systems.
+Wed, Oct 04, 2017 at 02:28:30AM CEST, vinicius.gomes at intel.com wrote:
+>This queueing discipline implements the shaper algorithm defined by
+>the 802.1Q-2014 Section 8.6.8.2 and detailed in Annex L.
+>
+>It's primary usage is to apply some bandwidth reservation to user
+>defined traffic classes, which are mapped to different queues via the
+>mqprio qdisc.
+>
+>Initially, it only supports offloading the traffic shaping work to
+>supporting controllers.
+>
+>Later, when a software implementation is added, the current dependency
+>on being installed "under" mqprio can be lifted.
+>
+>Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+>---
+> include/linux/netdevice.h      |   1 +
+> include/net/pkt_sched.h        |   9 ++
+> include/uapi/linux/pkt_sched.h |  17 ++++
+> net/sched/Kconfig              |  11 ++
+> net/sched/Makefile             |   1 +
+> net/sched/sch_cbs.c            | 225 +++++++++++++++++++++++++++++++++++++++++
+> 6 files changed, 264 insertions(+)
+> create mode 100644 net/sched/sch_cbs.c
+>
+>diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+>index e1d6ef130611..b8798adc214f 100644
+>--- a/include/linux/netdevice.h
+>+++ b/include/linux/netdevice.h
+>@@ -775,6 +775,7 @@ enum tc_setup_type {
+> 	TC_SETUP_CLSFLOWER,
+> 	TC_SETUP_CLSMATCHALL,
+> 	TC_SETUP_CLSBPF,
+>+	TC_SETUP_CBS,
 
-Actually only mips seems to define it wrongly.  arm and x86 define
-cmpcxhg64() in some 32-bit configurations (depending on required CPU
-type).  There's not an obvious config symbol that could be used to
-check for this specifically.
+Please split this into 2 patches. One will introduce the new qdisc,
+second will add offload capabilities.
 
-Ben.
+[...]
 
-> Fixes: 841c950d67c6 ("i40e/i40evf: use cmpxchg64 when updating private ...")
-> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-> ---
-> I specifically found a build failure on 32-bit parisc:
-> 
-> https://buildd.debian.org/status/fetch.php?pkg=linux&arch=hppa&ver=4.14%7Erc3-1%7Eexp1&stamp=1507045758&raw=0
-> 
-> Ben.
-> 
->  drivers/net/ethernet/intel/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-> index 1feb54b6d92e..dd17bdf5561e 100644
-> --- a/drivers/net/ethernet/intel/Kconfig
-> +++ b/drivers/net/ethernet/intel/Kconfig
-> @@ -215,6 +215,7 @@ config I40E
->  	tristate "Intel(R) Ethernet Controller XL710 Family support"
->  	imply PTP_1588_CLOCK
->  	depends on PCI
-> +	depends on 64BIT
->  	---help---
->  	  This driver supports Intel(R) Ethernet Controller XL710 Family of
->  	  devices.  For more information on how to identify your adapter, go
+	
+>+static struct Qdisc_ops cbs_qdisc_ops __read_mostly = {
+>+	.next		=	NULL,
+>+	.id		=	"cbs",
+>+	.priv_size	=	sizeof(struct cbs_sched_data),
+>+	.enqueue	=	cbs_enqueue,
+>+	.dequeue	=	qdisc_dequeue_head,
+>+	.peek		=	qdisc_peek_dequeued,
+>+	.init		=	cbs_init,
+>+	.reset		=	qdisc_reset_queue,
+>+	.destroy	=	cbs_destroy,
+>+	.change		=	cbs_change,
+>+	.dump		=	cbs_dump,
+>+	.owner		=	THIS_MODULE,
+>+};
 
-
-
--- 
-Ben Hutchings
-One of the nice things about standards is that there are so many of them.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 811 bytes
-Desc: Digital signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171004/90c9211b/attachment-0001.asc>
+I don't see a software implementation for this. Looks like you are
+trying abuse tc subsystem to bypass kernel. Could you please explain
+this? The golden rule is: implement in kernel, then offload.
