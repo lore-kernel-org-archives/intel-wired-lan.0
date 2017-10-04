@@ -1,99 +1,141 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 4 Oct 2017 08:32:25 -0700
-Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
-	NICs
-In-Reply-To: <1507121766.30720.4.camel@cohaesio.com>
-References: <1507121766.30720.4.camel@cohaesio.com>
-Message-ID: <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
+Date: Wed, 04 Oct 2017 08:44:43 -0700
+Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] i40e: Fix memory leak
+ related filter programming status
+Message-ID: <20171004153903.13100.38029.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Oct 4, 2017 at 5:56 AM, Anders K. Pedersen | Cohaesio
-<akp@cohaesio.com> wrote:
-> Hello,
->
-> After updating one of our Linux based routers to kernel 4.13 it began
-> leaking memory quite fast (about 1 GB every half hour). To narrow we
-> tried various kernel versions and found that 4.11.12 is okay, while
-> 4.12 also leaks, so we did a bisection between 4.11 and 4.12.
->
-> The first bisection ended at
-> "[6964e53f55837b0c49ed60d36656d2e0ee4fc27b] i40e: fix handling of HW
-> ATR eviction", which fixes some flag handling that was broken by
-> 47994c119a36 "i40e: remove hw_disabled_flags in favor of using separate
-> flag bits", so I did a second bisection, where I added 6964e53f5583
-> "i40e: fix handling of HW ATR eviction" to the steps that had
-> 47994c119a36 "i40e: remove hw_disabled_flags in favor of using separate
-> flag bits" in them.
->
-> The second bisection ended at
-> "[0e626ff7ccbfc43c6cc4aeea611c40b899682382] i40e: Fix support for flow
-> director programming status", where I don't see any obvious problems,
-> so I'm hoping for some assistance.
->
-> The router is a PowerEdge R730 server (Haswell based) with three Intel
-> NICs (all using the i40e driver):
->
-> X710 quad port 10 GbE SFP+: eth0 eth1 eth2 eth3
-> X710 quad port 10 GbE SFP+: eth4 eth5 eth6 eth7
-> XL710 dual port 40 GbE QSFP+: eth8 eth9
->
-> The NICs are aggregated with LACP with the team driver:
->
-> team0: eth9 (40 GbE selected primary), and eth3, eth7 (10 GbE non-selected backups)
-> team1: eth0, eth1, eth4, eth5 (all 10 GbE selected)
->
-> team0 is used for internal networks and has one untagged and four
-> tagged VLAN interfaces, while team1 has an external uplink connection
-> without any VLANs.
->
-> The router runs an eBGP session on team1 to one of our uplinks, and
-> iBGP via team0 to our other border routers. It also runs OSPF on the
-> internal VLANs on team0. One thing I've noticed is that when OSPF is
-> not announcing a default gateway to the internal networks, so there is
-> almost no traffic coming in on team0 and out on team1, but still plenty
-> of traffic coming in on team1 and out via team0, there's no memory leak
-> (or at least it is so small that we haven't detected it). But as soon
-> as we configure OSPF to announce a default gateway to the internal
-> VLANs, so we get traffic from team0 to team1 the leaking begins.
-> Stopping the OSPF default gateway announcement again also stops the
-> leaking, but does not release already leaked memory.
->
-> So this leads to me suspect that the leaking is related to RX on team0
-> (where XL710 eth9 is normally the only active interface) or TX on team1
-> (X710 eth0, eth1, eth4, eth5). The first bad commit is related to RX
-> cleaning, which suggests RX on team0. Since we're only seeing the leak
-> for our outbound traffic, I suspect either a difference between the
-> X710 vs. XL710 NICs, or that the inbound traffic is for relatively few
-> destination addresses (only our own systems) while the outbound traffic
-> is for many different addresses on the internet. But I'm just guessing
-> here.
->
-> I've tried kmemleak, but it only found a few kB of suspected memory
-> leaks (several of which disappeared again after a while).
->
-> Below I've included more details - git bisect logs, ethtool -i, dmesg,
-> Kernel .config, and various memory related /proc files. Any help or
-> suggestions would be much appreciated, and please let me know if more
-> information is needed or there's something I should try.
->
-> Regards,
-> Anders K. Pedersen
->
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Hi Anders,
+It looks like we weren't correctly placing the pages from buffers that had
+been used to return a filter programming status back on the ring. As a
+result they were being overwritten and tracking of the pages was lost.
 
-I think I see the problem and should have a patch submitted shortly to
-address it. From what I can tell it looks like the issue is that we
-weren't properly recycling the pages associated with descriptors that
-contained an Rx programming status. For now the workaround would be to
-try disabling ATR via the "ethtool --set-priv-flags" command. I should
-have a patch out in the next hour or so that you can try testing to
-verify if it addresses the issue.
+This change works to correct that by incorporating part of
+i40e_put_rx_buffer into the programming status handler code. As a result we
+should now be correctly placing the pages for those buffers on the
+re-allocation list instead of letting them stay in place.
 
-Thanks.
+Fixes: 0e626ff7ccbf ("i40e: Fix support for flow director programming status")
+Reported-by: Anders K. Pedersen <akp@cohaesio.com>
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+---
 
-- Alex
+I'm submitting this for Jeff's net queue to undergo some additional testing
+before being submitted for net or stable to address the memory leak isue. The
+testing for this should be pretty straight forward since ATR filters seem
+to cause the issue it should be possible to trigger a pretty signficant
+amount of memory loss running something like a netperf TCP_CRR test for an
+extended period of time which will trigger multiple socket
+creation/destruction.
+
+Anders, feel free to test this patch. If you need to grab a copy of the
+diff instead of trying to work with applying the patch through email you
+should be able to find a copy at the following URL shortly after I submit
+this to intel-wired-lan:
+	http://patchwork.ozlabs.org/project/intel-wired-lan/list/
+
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c |   63 +++++++++++++++------------
+ 1 file changed, 36 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 94311e3e4f43..d4ae24674a70 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1038,6 +1038,32 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
+ }
+ 
+ /**
++ * i40e_reuse_rx_page - page flip buffer and store it back on the ring
++ * @rx_ring: rx descriptor ring to store buffers on
++ * @old_buff: donor buffer to have page reused
++ *
++ * Synchronizes page for reuse by the adapter
++ **/
++static void i40e_reuse_rx_page(struct i40e_ring *rx_ring,
++			       struct i40e_rx_buffer *old_buff)
++{
++	struct i40e_rx_buffer *new_buff;
++	u16 nta = rx_ring->next_to_alloc;
++
++	new_buff = &rx_ring->rx_bi[nta];
++
++	/* update, and store next to alloc */
++	nta++;
++	rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
++
++	/* transfer page from old buffer to new buffer */
++	new_buff->dma		= old_buff->dma;
++	new_buff->page		= old_buff->page;
++	new_buff->page_offset	= old_buff->page_offset;
++	new_buff->pagecnt_bias	= old_buff->pagecnt_bias;
++}
++
++/**
+  * i40e_rx_is_programming_status - check for programming status descriptor
+  * @qw: qword representing status_error_len in CPU ordering
+  *
+@@ -1071,15 +1097,24 @@ static void i40e_clean_programming_status(struct i40e_ring *rx_ring,
+ 					  union i40e_rx_desc *rx_desc,
+ 					  u64 qw)
+ {
+-	u32 ntc = rx_ring->next_to_clean + 1;
++	struct i40e_rx_buffer *rx_buffer;
++	u32 ntc = rx_ring->next_to_clean;
+ 	u8 id;
+ 
+ 	/* fetch, update, and store next to clean */
++	rx_buffer = &rx_ring->rx_bi[ntc++];
+ 	ntc = (ntc < rx_ring->count) ? ntc : 0;
+ 	rx_ring->next_to_clean = ntc;
+ 
+ 	prefetch(I40E_RX_DESC(rx_ring, ntc));
+ 
++	/* place unused page back on the ring */
++	i40e_reuse_rx_page(rx_ring, rx_buffer);
++	rx_ring->rx_stats.page_reuse_count++;
++
++	/* clear contents of buffer_info */
++	rx_buffer->page = NULL;
++
+ 	id = (qw & I40E_RX_PROG_STATUS_DESC_QW1_PROGID_MASK) >>
+ 		  I40E_RX_PROG_STATUS_DESC_QW1_PROGID_SHIFT;
+ 
+@@ -1648,32 +1683,6 @@ static bool i40e_cleanup_headers(struct i40e_ring *rx_ring, struct sk_buff *skb,
+ }
+ 
+ /**
+- * i40e_reuse_rx_page - page flip buffer and store it back on the ring
+- * @rx_ring: rx descriptor ring to store buffers on
+- * @old_buff: donor buffer to have page reused
+- *
+- * Synchronizes page for reuse by the adapter
+- **/
+-static void i40e_reuse_rx_page(struct i40e_ring *rx_ring,
+-			       struct i40e_rx_buffer *old_buff)
+-{
+-	struct i40e_rx_buffer *new_buff;
+-	u16 nta = rx_ring->next_to_alloc;
+-
+-	new_buff = &rx_ring->rx_bi[nta];
+-
+-	/* update, and store next to alloc */
+-	nta++;
+-	rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
+-
+-	/* transfer page from old buffer to new buffer */
+-	new_buff->dma		= old_buff->dma;
+-	new_buff->page		= old_buff->page;
+-	new_buff->page_offset	= old_buff->page_offset;
+-	new_buff->pagecnt_bias	= old_buff->pagecnt_bias;
+-}
+-
+-/**
+  * i40e_page_is_reusable - check if any reuse is possible
+  * @page: page struct to check
+  *
+
