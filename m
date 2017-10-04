@@ -1,31 +1,59 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 03 Oct 2017 16:55:41 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v2 3/5] net/sched:
-	Introduce the user API for the CBS shaper
-In-Reply-To: <20171003234435.8979-5-vinicius.gomes@intel.com>
-References: <20171003234435.8979-1-vinicius.gomes@intel.com>
- <20171003234435.8979-5-vinicius.gomes@intel.com>
-Message-ID: <87376zg51e.fsf@intel.com>
+Date: Tue,  3 Oct 2017 17:28:28 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v4 1/4] mqprio: Implement
+	select_queue class_ops
+In-Reply-To: <20171004002831.18371-1-vinicius.gomes@intel.com>
+References: <20171004002831.18371-1-vinicius.gomes@intel.com>
+Message-ID: <20171004002831.18371-2-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Vinicius Costa Gomes <vinicius.gomes@intel.com> writes:
+From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 
-> Export the API necessary for configuring the CBS shaper (implemented
-> in the next patch) via the tc tool.
->
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> ---
+When replacing a child qdisc from mqprio, tc_modify_qdisc() must fetch
+the netdev_queue pointer that the current child qdisc is associated
+with before creating the new qdisc.
 
-I forgot to clean old patches from my tree. Does sending a clean v4
-help?
+Currently, when using mqprio as root qdisc, the kernel will end up
+getting the queue #0 pointer from the mqprio (root qdisc), which leaves
+any new child qdisc with a possibly wrong netdev_queue pointer.
 
-Sorry about the confusion.
+Implementing the Qdisc_class_ops select_queue() on mqprio fixes this
+issue and avoid an inconsistent state when child qdiscs are replaced.
 
+Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+---
+ net/sched/sch_mqprio.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Cheers,
---
-Vinicius
+diff --git a/net/sched/sch_mqprio.c b/net/sched/sch_mqprio.c
+index 6bcdfe6e7b63..9d762ca4a76c 100644
+--- a/net/sched/sch_mqprio.c
++++ b/net/sched/sch_mqprio.c
+@@ -396,6 +396,12 @@ static void mqprio_walk(struct Qdisc *sch, struct qdisc_walker *arg)
+ 	}
+ }
+ 
++static struct netdev_queue *mqprio_select_queue(struct Qdisc *sch,
++					    struct tcmsg *tcm)
++{
++	return mqprio_queue_get(sch, TC_H_MIN(tcm->tcm_parent));
++}
++
+ static const struct Qdisc_class_ops mqprio_class_ops = {
+ 	.graft		= mqprio_graft,
+ 	.leaf		= mqprio_leaf,
+@@ -403,6 +409,7 @@ static const struct Qdisc_class_ops mqprio_class_ops = {
+ 	.walk		= mqprio_walk,
+ 	.dump		= mqprio_dump_class,
+ 	.dump_stats	= mqprio_dump_class_stats,
++	.select_queue	= mqprio_select_queue,
+ };
+ 
+ static struct Qdisc_ops mqprio_qdisc_ops __read_mostly = {
+-- 
+2.14.2
+
