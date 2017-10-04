@@ -1,353 +1,158 @@
 From: Alan Brady <alan.brady@intel.com>
-Date: Wed,  4 Oct 2017 10:58:27 -0700
-Subject: [Intel-wired-lan] [PATCH 01/13 net-next] i40e: rename 'cmd'
-	variables in ethtool interface
+Date: Wed,  4 Oct 2017 10:58:39 -0700
+Subject: [Intel-wired-lan] [PATCH 13/13 net-next] i40e: convert
+	i40e_set_link_ksettings to new API
 In-Reply-To: <20171004175839.28364-1-alan.brady@intel.com>
 References: <20171004175839.28364-1-alan.brady@intel.com>
-Message-ID: <20171004175839.28364-2-alan.brady@intel.com>
+Message-ID: <20171004175839.28364-14-alan.brady@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-After the switch to the new ethtool API, ethtool passes us
-ethtool_ksettings structs instead of ethtool_command structs, however we
-were still referring to them as 'cmd' variables.  This renames them to
-'ks' variables which makes the code easier to understand.
+This finishes off the conversion to the new ethtool API by removing the
+old macros being used in i40e_set_link_ksettings and replacing them with
+shiny new ones.
+
+This conversion also allows us to provide link speed support for new 25G
+and 10G macros which is included here as well.
 
 Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 139 +++++++++++++------------
- 1 file changed, 70 insertions(+), 69 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 94 ++++++++++++++++----------
+ 1 file changed, 58 insertions(+), 36 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 72d5f2cdf419..4ed5deab7e68 100644
+index f25cdd4cb860..489aecd3f5dc 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -378,12 +378,12 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
- /**
-  * i40e_get_settings_link_up - Get the Link settings for when link is up
-  * @hw: hw structure
-- * @ecmd: ethtool command to fill in
-+ * @ks: ethtool ksettings to fill in
-  * @netdev: network interface device structure
-- *
-+ * @pf: pointer to physical function struct
-  **/
- static void i40e_get_settings_link_up(struct i40e_hw *hw,
--				      struct ethtool_link_ksettings *cmd,
-+				      struct ethtool_link_ksettings *ks,
- 				      struct net_device *netdev,
- 				      struct i40e_pf *pf)
- {
-@@ -394,9 +394,9 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 	u32 supported, advertising;
- 
- 	ethtool_convert_link_mode_to_legacy_u32(&supported,
--						cmd->link_modes.supported);
-+						ks->link_modes.supported);
- 	ethtool_convert_link_mode_to_legacy_u32(&advertising,
--						cmd->link_modes.advertising);
-+						ks->link_modes.advertising);
- 
- 	/* Initialize supported and advertised settings based on phy settings */
- 	switch (hw_link_info->phy_type) {
-@@ -528,48 +528,49 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 	/* Set speed and duplex */
- 	switch (link_speed) {
- 	case I40E_LINK_SPEED_40GB:
--		cmd->base.speed = SPEED_40000;
-+		ks->base.speed = SPEED_40000;
- 		break;
- 	case I40E_LINK_SPEED_25GB:
- #ifdef SPEED_25000
--		cmd->base.speed = SPEED_25000;
-+		ks->base.speed = SPEED_25000;
- #else
- 		netdev_info(netdev,
- 			    "Speed is 25G, display not supported by this version of ethtool.\n");
- #endif
- 		break;
- 	case I40E_LINK_SPEED_20GB:
--		cmd->base.speed = SPEED_20000;
-+		ks->base.speed = SPEED_20000;
- 		break;
- 	case I40E_LINK_SPEED_10GB:
--		cmd->base.speed = SPEED_10000;
-+		ks->base.speed = SPEED_10000;
- 		break;
- 	case I40E_LINK_SPEED_1GB:
--		cmd->base.speed = SPEED_1000;
-+		ks->base.speed = SPEED_1000;
- 		break;
- 	case I40E_LINK_SPEED_100MB:
--		cmd->base.speed = SPEED_100;
-+		ks->base.speed = SPEED_100;
- 		break;
- 	default:
- 		break;
- 	}
--	cmd->base.duplex = DUPLEX_FULL;
-+	ks->base.duplex = DUPLEX_FULL;
- 
--	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-+	ethtool_convert_legacy_u32_to_link_mode(ks->link_modes.supported,
- 						supported);
--	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
-+	ethtool_convert_legacy_u32_to_link_mode(ks->link_modes.advertising,
- 						advertising);
- }
- 
- /**
-  * i40e_get_settings_link_down - Get the Link settings for when link is down
-  * @hw: hw structure
-- * @ecmd: ethtool command to fill in
-+ * @ks: ethtool ksettings to fill in
-+ * @pf: pointer to physical function struct
-  *
-  * Reports link settings that can be determined when link is down
-  **/
- static void i40e_get_settings_link_down(struct i40e_hw *hw,
--					struct ethtool_link_ksettings *cmd,
-+					struct ethtool_link_ksettings *ks,
- 					struct i40e_pf *pf)
- {
- 	u32 supported, advertising;
-@@ -579,25 +580,25 @@ static void i40e_get_settings_link_down(struct i40e_hw *hw,
- 	 */
- 	i40e_phy_type_to_ethtool(pf, &supported, &advertising);
- 
--	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-+	ethtool_convert_legacy_u32_to_link_mode(ks->link_modes.supported,
- 						supported);
--	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
-+	ethtool_convert_legacy_u32_to_link_mode(ks->link_modes.advertising,
- 						advertising);
- 
- 	/* With no link speed and duplex are unknown */
--	cmd->base.speed = SPEED_UNKNOWN;
--	cmd->base.duplex = DUPLEX_UNKNOWN;
-+	ks->base.speed = SPEED_UNKNOWN;
-+	ks->base.duplex = DUPLEX_UNKNOWN;
- }
- 
- /**
-- * i40e_get_settings - Get Link Speed and Duplex settings
-+ * i40e_get_link_ksettings - Get Link Speed and Duplex settings
-  * @netdev: network interface device structure
-- * @ecmd: ethtool command
-+ * @ks: ethtool ksettings
-  *
-  * Reports speed/duplex settings based on media_type
-  **/
- static int i40e_get_link_ksettings(struct net_device *netdev,
--				   struct ethtool_link_ksettings *cmd)
-+				   struct ethtool_link_ksettings *ks)
- {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_pf *pf = np->vsi->back;
-@@ -607,74 +608,74 @@ static int i40e_get_link_ksettings(struct net_device *netdev,
- 	u32 advertising;
- 
- 	if (link_up)
--		i40e_get_settings_link_up(hw, cmd, netdev, pf);
-+		i40e_get_settings_link_up(hw, ks, netdev, pf);
- 	else
--		i40e_get_settings_link_down(hw, cmd, pf);
-+		i40e_get_settings_link_down(hw, ks, pf);
- 
- 	/* Now set the settings that don't rely on link being up/down */
- 	/* Set autoneg settings */
--	cmd->base.autoneg = ((hw_link_info->an_info & I40E_AQ_AN_COMPLETED) ?
--			  AUTONEG_ENABLE : AUTONEG_DISABLE);
-+	ks->base.autoneg = ((hw_link_info->an_info & I40E_AQ_AN_COMPLETED) ?
-+			    AUTONEG_ENABLE : AUTONEG_DISABLE);
- 
- 	switch (hw->phy.media_type) {
- 	case I40E_MEDIA_TYPE_BACKPLANE:
--		ethtool_link_ksettings_add_link_mode(cmd, supported,
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     Autoneg);
--		ethtool_link_ksettings_add_link_mode(cmd, supported,
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     Backplane);
--		ethtool_link_ksettings_add_link_mode(cmd, advertising,
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     Autoneg);
--		ethtool_link_ksettings_add_link_mode(cmd, advertising,
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     Backplane);
--		cmd->base.port = PORT_NONE;
-+		ks->base.port = PORT_NONE;
- 		break;
- 	case I40E_MEDIA_TYPE_BASET:
--		ethtool_link_ksettings_add_link_mode(cmd, supported, TP);
--		ethtool_link_ksettings_add_link_mode(cmd, advertising, TP);
--		cmd->base.port = PORT_TP;
-+		ethtool_link_ksettings_add_link_mode(ks, supported, TP);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, TP);
-+		ks->base.port = PORT_TP;
- 		break;
- 	case I40E_MEDIA_TYPE_DA:
- 	case I40E_MEDIA_TYPE_CX4:
--		ethtool_link_ksettings_add_link_mode(cmd, supported, FIBRE);
--		ethtool_link_ksettings_add_link_mode(cmd, advertising, FIBRE);
--		cmd->base.port = PORT_DA;
-+		ethtool_link_ksettings_add_link_mode(ks, supported, FIBRE);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, FIBRE);
-+		ks->base.port = PORT_DA;
- 		break;
- 	case I40E_MEDIA_TYPE_FIBER:
--		ethtool_link_ksettings_add_link_mode(cmd, supported, FIBRE);
--		cmd->base.port = PORT_FIBRE;
-+		ethtool_link_ksettings_add_link_mode(ks, supported, FIBRE);
-+		ks->base.port = PORT_FIBRE;
- 		break;
- 	case I40E_MEDIA_TYPE_UNKNOWN:
- 	default:
--		cmd->base.port = PORT_OTHER;
-+		ks->base.port = PORT_OTHER;
- 		break;
- 	}
- 
- 	/* Set flow control settings */
--	ethtool_link_ksettings_add_link_mode(cmd, supported, Pause);
-+	ethtool_link_ksettings_add_link_mode(ks, supported, Pause);
- 
- 	switch (hw->fc.requested_mode) {
- 	case I40E_FC_FULL:
--		ethtool_link_ksettings_add_link_mode(cmd, advertising,
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     Pause);
- 		break;
- 	case I40E_FC_TX_PAUSE:
--		ethtool_link_ksettings_add_link_mode(cmd, advertising,
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     Asym_Pause);
- 		break;
- 	case I40E_FC_RX_PAUSE:
--		ethtool_link_ksettings_add_link_mode(cmd, advertising,
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     Pause);
--		ethtool_link_ksettings_add_link_mode(cmd, advertising,
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     Asym_Pause);
- 		break;
- 	default:
- 		ethtool_convert_link_mode_to_legacy_u32(
--			&advertising, cmd->link_modes.advertising);
-+			&advertising, ks->link_modes.advertising);
- 
- 		advertising &= ~(ADVERTISED_Pause | ADVERTISED_Asym_Pause);
- 
- 		ethtool_convert_legacy_u32_to_link_mode(
--			cmd->link_modes.advertising, advertising);
-+			ks->link_modes.advertising, advertising);
- 		break;
- 	}
- 
-@@ -682,14 +683,14 @@ static int i40e_get_link_ksettings(struct net_device *netdev,
- }
- 
- /**
-- * i40e_set_settings - Set Speed and Duplex
-+ * i40e_set_link_ksettings - Set Speed and Duplex
-  * @netdev: network interface device structure
-- * @ecmd: ethtool command
-+ * @ks: ethtool ksettings
-  *
-  * Set speed/duplex per media_types advertised/forced
-  **/
- static int i40e_set_link_ksettings(struct net_device *netdev,
--				   const struct ethtool_link_ksettings *cmd)
-+				   const struct ethtool_link_ksettings *ks)
- {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_aq_get_phy_abilities_resp abilities;
-@@ -697,8 +698,8 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
- 	struct i40e_pf *pf = np->vsi->back;
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_hw *hw = &pf->hw;
--	struct ethtool_link_ksettings safe_cmd;
--	struct ethtool_link_ksettings copy_cmd;
-+	struct ethtool_link_ksettings safe_ks;
-+	struct ethtool_link_ksettings copy_ks;
+@@ -855,9 +855,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
  	i40e_status status = 0;
- 	bool change = false;
  	int timeout = 50;
-@@ -733,31 +734,31 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
- 		return -EOPNOTSUPP;
- 	}
+ 	int err = 0;
+-	u32 autoneg;
+-	u32 advertise;
+-	u32 tmp;
++	u8 autoneg;
  
--	/* copy the cmd to copy_cmd to avoid modifying the origin */
--	memcpy(&copy_cmd, cmd, sizeof(struct ethtool_link_ksettings));
-+	/* copy the ksettings to copy_ks to avoid modifying the origin */
-+	memcpy(&copy_ks, ks, sizeof(struct ethtool_link_ksettings));
+ 	/* Changing port settings is not supported if this isn't the
+ 	 * port's controlling PF
+@@ -885,28 +883,35 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
+ 	/* copy the ksettings to copy_ks to avoid modifying the origin */
+ 	memcpy(&copy_ks, ks, sizeof(struct ethtool_link_ksettings));
  
++	/* save autoneg out of ksettings */
++	autoneg = copy_ks.base.autoneg;
++
++	memset(&safe_ks, 0, sizeof(safe_ks));
++	/* Get link modes supported by hardware... */
++	i40e_phy_type_to_ethtool(pf, &safe_ks);
++	/* ...and check against modes requested by user.
++	 * Return an error if unsupported mode was set.
++	 */
++	if (!bitmap_subset(copy_ks.link_modes.advertising,
++			   safe_ks.link_modes.supported,
++			   __ETHTOOL_LINK_MODE_MASK_NBITS))
++		return -EINVAL;
++
  	/* get our own copy of the bits to check against */
--	memset(&safe_cmd, 0, sizeof(struct ethtool_link_ksettings));
--	i40e_get_link_ksettings(netdev, &safe_cmd);
-+	memset(&safe_ks, 0, sizeof(struct ethtool_link_ksettings));
-+	i40e_get_link_ksettings(netdev, &safe_ks);
+ 	memset(&safe_ks, 0, sizeof(struct ethtool_link_ksettings));
++	safe_ks.base.cmd = copy_ks.base.cmd;
++	safe_ks.base.link_mode_masks_nwords =
++		copy_ks.base.link_mode_masks_nwords;
+ 	i40e_get_link_ksettings(netdev, &safe_ks);
  
--	/* save autoneg and speed out of cmd */
--	autoneg = cmd->base.autoneg;
-+	/* save autoneg and speed out of ksettings */
-+	autoneg = ks->base.autoneg;
- 	ethtool_convert_link_mode_to_legacy_u32(&advertise,
--						cmd->link_modes.advertising);
-+						ks->link_modes.advertising);
+-	/* save autoneg and speed out of ksettings */
+-	autoneg = ks->base.autoneg;
+-	ethtool_convert_link_mode_to_legacy_u32(&advertise,
+-						ks->link_modes.advertising);
+-
+-	/* set autoneg and speed back to what they currently are */
++	/* set autoneg back to what it currently is */
+ 	copy_ks.base.autoneg = safe_ks.base.autoneg;
+-	ethtool_convert_link_mode_to_legacy_u32(
+-		&tmp, safe_ks.link_modes.advertising);
+-	ethtool_convert_legacy_u32_to_link_mode(
+-		copy_ks.link_modes.advertising, tmp);
  
- 	/* set autoneg and speed back to what they currently are */
--	copy_cmd.base.autoneg = safe_cmd.base.autoneg;
-+	copy_ks.base.autoneg = safe_ks.base.autoneg;
- 	ethtool_convert_link_mode_to_legacy_u32(
--		&tmp, safe_cmd.link_modes.advertising);
-+		&tmp, safe_ks.link_modes.advertising);
- 	ethtool_convert_legacy_u32_to_link_mode(
--		copy_cmd.link_modes.advertising, tmp);
-+		copy_ks.link_modes.advertising, tmp);
- 
--	copy_cmd.base.cmd = safe_cmd.base.cmd;
-+	copy_ks.base.cmd = safe_ks.base.cmd;
- 
--	/* If copy_cmd and safe_cmd are not the same now, then they are
-+	/* If copy_ks and safe_ks are not the same now, then they are
- 	 * trying to set something that we do not support
+-	copy_ks.base.cmd = safe_ks.base.cmd;
+-
+-	/* If copy_ks and safe_ks are not the same now, then they are
+-	 * trying to set something that we do not support
++	/* If copy_ks.base and safe_ks.base are not the same now, then they are
++	 * trying to set something that we do not support.
  	 */
--	if (memcmp(&copy_cmd, &safe_cmd, sizeof(struct ethtool_link_ksettings)))
-+	if (memcmp(&copy_ks, &safe_ks, sizeof(struct ethtool_link_ksettings)))
+-	if (memcmp(&copy_ks, &safe_ks, sizeof(struct ethtool_link_ksettings)))
++	if (memcmp(&copy_ks.base, &safe_ks.base,
++		   sizeof(struct ethtool_link_settings)))
  		return -EOPNOTSUPP;
  
  	while (test_and_set_bit(__I40E_CONFIG_BUSY, pf->state)) {
-@@ -787,7 +788,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
- 		if (!(hw->phy.link_info.an_info & I40E_AQ_AN_COMPLETED)) {
- 			/* If autoneg is not supported, return error */
- 			if (!ethtool_link_ksettings_test_link_mode(
--				    &safe_cmd, supported, Autoneg)) {
-+				     &safe_ks, supported, Autoneg)) {
- 				netdev_info(netdev, "Autoneg not supported on this phy\n");
- 				err = -EINVAL;
- 				goto done;
-@@ -804,7 +805,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
- 			 * that can disable it, so otherwise return error
- 			 */
- 			if (ethtool_link_ksettings_test_link_mode(
--				    &safe_cmd, supported, Autoneg) &&
-+				     &safe_ks, supported, Autoneg) &&
- 			    hw->phy.link_info.phy_type !=
- 			    I40E_PHY_TYPE_10GBASE_T) {
- 				netdev_info(netdev, "Autoneg cannot be disabled on this phy\n");
-@@ -819,7 +820,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
+@@ -967,28 +972,45 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
+ 		}
  	}
  
- 	ethtool_convert_link_mode_to_legacy_u32(&tmp,
--						safe_cmd.link_modes.supported);
-+						safe_ks.link_modes.supported);
- 	if (advertise & ~tmp) {
- 		err = -EINVAL;
- 		goto done;
+-	ethtool_convert_link_mode_to_legacy_u32(&tmp,
+-						safe_ks.link_modes.supported);
+-	if (advertise & ~tmp) {
+-		err = -EINVAL;
+-		goto done;
+-	}
+-
+-	if (advertise & ADVERTISED_100baseT_Full)
++	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  100baseT_Full))
+ 		config.link_speed |= I40E_LINK_SPEED_100MB;
+-	if (advertise & ADVERTISED_1000baseT_Full ||
+-	    advertise & ADVERTISED_1000baseKX_Full)
++	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  1000baseT_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  1000baseX_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  1000baseKX_Full))
+ 		config.link_speed |= I40E_LINK_SPEED_1GB;
+-	if (advertise & ADVERTISED_10000baseT_Full ||
+-	    advertise & ADVERTISED_10000baseKX4_Full ||
+-	    advertise & ADVERTISED_10000baseKR_Full)
++	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  10000baseT_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  10000baseKX4_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  10000baseKR_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  10000baseCR_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  10000baseSR_Full))
+ 		config.link_speed |= I40E_LINK_SPEED_10GB;
+-	if (advertise & ADVERTISED_20000baseKR2_Full)
++	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  20000baseKR2_Full))
+ 		config.link_speed |= I40E_LINK_SPEED_20GB;
+-	if (advertise & ADVERTISED_40000baseKR4_Full ||
+-	    advertise & ADVERTISED_40000baseCR4_Full ||
+-	    advertise & ADVERTISED_40000baseSR4_Full ||
+-	    advertise & ADVERTISED_40000baseLR4_Full)
++	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  25000baseCR_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  25000baseKR_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  25000baseSR_Full))
++		config.link_speed |= I40E_LINK_SPEED_25GB;
++	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  40000baseKR4_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  40000baseCR4_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  40000baseSR4_Full) ||
++	    ethtool_link_ksettings_test_link_mode(ks, advertising,
++						  40000baseLR4_Full))
+ 		config.link_speed |= I40E_LINK_SPEED_40GB;
+ 
+ 	/* If speed didn't get set, set it to what it currently is.
 -- 
 2.14.1
 
