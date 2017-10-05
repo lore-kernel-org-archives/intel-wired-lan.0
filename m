@@ -1,163 +1,122 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 4 Oct 2017 16:47:18 -0700
-Subject: [Intel-wired-lan] [PATCH 13/13 net-next] i40e: convert
- i40e_set_link_ksettings to new API
-In-Reply-To: <20171004175839.28364-14-alan.brady@intel.com>
-References: <20171004175839.28364-1-alan.brady@intel.com>
- <20171004175839.28364-14-alan.brady@intel.com>
-Message-ID: <513e49e8-d03d-0385-5123-cc8adfcfb829@oracle.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed,  4 Oct 2017 17:33:58 -0700
+Subject: [Intel-wired-lan] [PATCH] checkpatch.pl: allow commit descriptions
+	to include date
+Message-ID: <20171005003358.3879-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/4/2017 10:58 AM, Alan Brady wrote:
-> This finishes off the conversion to the new ethtool API by removing the
-> old macros being used in i40e_set_link_ksettings and replacing them with
-> shiny new ones.
-> 
-> This conversion also allows us to provide link speed support for new 25G
-> and 10G macros which is included here as well.
-> 
-> Signed-off-by: Alan Brady <alan.brady@intel.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 94 ++++++++++++++++----------
->   1 file changed, 58 insertions(+), 36 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> index f25cdd4cb860..489aecd3f5dc 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> @@ -855,9 +855,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
->   	i40e_status status = 0;
->   	int timeout = 50;
->   	int err = 0;
-> -	u32 autoneg;
-> -	u32 advertise;
-> -	u32 tmp;
-> +	u8 autoneg;
->   
->   	/* Changing port settings is not supported if this isn't the
->   	 * port's controlling PF
-> @@ -885,28 +883,35 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
->   	/* copy the ksettings to copy_ks to avoid modifying the origin */
->   	memcpy(&copy_ks, ks, sizeof(struct ethtool_link_ksettings));
->   
-> +	/* save autoneg out of ksettings */
-> +	autoneg = copy_ks.base.autoneg;
-> +
-> +	memset(&safe_ks, 0, sizeof(safe_ks));
-> +	/* Get link modes supported by hardware... */
-> +	i40e_phy_type_to_ethtool(pf, &safe_ks);
-> +	/* ...and check against modes requested by user.
-> +	 * Return an error if unsupported mode was set.
-> +	 */
+Since commit d311cd44545f ("checkpatch: add test for commit id
+formatting style in commit log") checkpatch has supported a check that
+git commit references are done in a standardized way.
 
-Please don't split this comment, it makes things harder to read.
+Some communities (the Git mailing list, among others) advocate the
+addition of a date to the end of the description, converting
 
-sln
+  d311cd44545f ("checkpatch: add test for commit id formatting style in commit log")
 
-> +	if (!bitmap_subset(copy_ks.link_modes.advertising,
-> +			   safe_ks.link_modes.supported,
-> +			   __ETHTOOL_LINK_MODE_MASK_NBITS))
-> +		return -EINVAL;
-> +
->   	/* get our own copy of the bits to check against */
->   	memset(&safe_ks, 0, sizeof(struct ethtool_link_ksettings));
-> +	safe_ks.base.cmd = copy_ks.base.cmd;
-> +	safe_ks.base.link_mode_masks_nwords =
-> +		copy_ks.base.link_mode_masks_nwords;
->   	i40e_get_link_ksettings(netdev, &safe_ks);
->   
-> -	/* save autoneg and speed out of ksettings */
-> -	autoneg = ks->base.autoneg;
-> -	ethtool_convert_link_mode_to_legacy_u32(&advertise,
-> -						ks->link_modes.advertising);
-> -
-> -	/* set autoneg and speed back to what they currently are */
-> +	/* set autoneg back to what it currently is */
->   	copy_ks.base.autoneg = safe_ks.base.autoneg;
-> -	ethtool_convert_link_mode_to_legacy_u32(
-> -		&tmp, safe_ks.link_modes.advertising);
-> -	ethtool_convert_legacy_u32_to_link_mode(
-> -		copy_ks.link_modes.advertising, tmp);
->   
-> -	copy_ks.base.cmd = safe_ks.base.cmd;
-> -
-> -	/* If copy_ks and safe_ks are not the same now, then they are
-> -	 * trying to set something that we do not support
-> +	/* If copy_ks.base and safe_ks.base are not the same now, then they are
-> +	 * trying to set something that we do not support.
->   	 */
-> -	if (memcmp(&copy_ks, &safe_ks, sizeof(struct ethtool_link_ksettings)))
-> +	if (memcmp(&copy_ks.base, &safe_ks.base,
-> +		   sizeof(struct ethtool_link_settings)))
->   		return -EOPNOTSUPP;
->   
->   	while (test_and_set_bit(__I40E_CONFIG_BUSY, pf->state)) {
-> @@ -967,28 +972,45 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
->   		}
->   	}
->   
-> -	ethtool_convert_link_mode_to_legacy_u32(&tmp,
-> -						safe_ks.link_modes.supported);
-> -	if (advertise & ~tmp) {
-> -		err = -EINVAL;
-> -		goto done;
-> -	}
-> -
-> -	if (advertise & ADVERTISED_100baseT_Full)
-> +	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  100baseT_Full))
->   		config.link_speed |= I40E_LINK_SPEED_100MB;
-> -	if (advertise & ADVERTISED_1000baseT_Full ||
-> -	    advertise & ADVERTISED_1000baseKX_Full)
-> +	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  1000baseT_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  1000baseX_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  1000baseKX_Full))
->   		config.link_speed |= I40E_LINK_SPEED_1GB;
-> -	if (advertise & ADVERTISED_10000baseT_Full ||
-> -	    advertise & ADVERTISED_10000baseKX4_Full ||
-> -	    advertise & ADVERTISED_10000baseKR_Full)
-> +	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  10000baseT_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  10000baseKX4_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  10000baseKR_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  10000baseCR_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  10000baseSR_Full))
->   		config.link_speed |= I40E_LINK_SPEED_10GB;
-> -	if (advertise & ADVERTISED_20000baseKR2_Full)
-> +	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  20000baseKR2_Full))
->   		config.link_speed |= I40E_LINK_SPEED_20GB;
-> -	if (advertise & ADVERTISED_40000baseKR4_Full ||
-> -	    advertise & ADVERTISED_40000baseCR4_Full ||
-> -	    advertise & ADVERTISED_40000baseSR4_Full ||
-> -	    advertise & ADVERTISED_40000baseLR4_Full)
-> +	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  25000baseCR_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  25000baseKR_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  25000baseSR_Full))
-> +		config.link_speed |= I40E_LINK_SPEED_25GB;
-> +	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  40000baseKR4_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  40000baseCR4_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  40000baseSR4_Full) ||
-> +	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-> +						  40000baseLR4_Full))
->   		config.link_speed |= I40E_LINK_SPEED_40GB;
->   
->   	/* If speed didn't get set, set it to what it currently is.
-> 
+into
+
+  d311cd44545f ("checkpatch: add test for commit id formatting style in commit log", 2014-08-06)
+
+Extend checkpatch.pl to allow such a date, and add verification that the
+date matches the commit author date, if it exists.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ scripts/checkpatch.pl | 32 +++++++++++++++++++-------------
+ 1 file changed, 19 insertions(+), 13 deletions(-)
+
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index ebea4f078246..2076e9833025 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -871,15 +871,15 @@ sub seed_camelcase_includes {
+ }
+ 
+ sub git_commit_info {
+-	my ($commit, $id, $desc) = @_;
++	my ($commit, $id, $date, $desc) = @_;
+ 
+-	return ($id, $desc) if ((which("git") eq "") || !(-e ".git"));
++	return ($id, $date, $desc) if ((which("git") eq "") || !(-e ".git"));
+ 
+-	my $output = `git log --no-color --format='%H %s' -1 $commit 2>&1`;
++	my $output = `git log --date=short --no-color --format='%H %ad %s' -1 $commit 2>&1`;
+ 	$output =~ s/^\s*//gm;
+ 	my @lines = split("\n", $output);
+ 
+-	return ($id, $desc) if ($#lines < 0);
++	return ($id, $date, $desc) if ($#lines < 0);
+ 
+ 	if ($lines[0] =~ /^error: short SHA1 $commit is ambiguous\./) {
+ # Maybe one day convert this block of bash into something that returns
+@@ -895,10 +895,11 @@ sub git_commit_info {
+ 		$id = undef;
+ 	} else {
+ 		$id = substr($lines[0], 0, 12);
+-		$desc = substr($lines[0], 41);
++		$date = substr($lines[0], 41, 10);
++		$desc = substr($lines[0], 52);
+ 	}
+ 
+-	return ($id, $desc);
++	return ($id, $date, $desc);
+ }
+ 
+ $chk_signoff = 0 if ($file);
+@@ -2597,6 +2598,8 @@ sub process {
+ 			my $hasdesc = 0;
+ 			my $hasparens = 0;
+ 			my $id = '0123456789ab';
++			my $orig_date = undef;
++			my $date = "";
+ 			my $orig_desc = "commit description";
+ 			my $description = "";
+ 
+@@ -2611,29 +2614,32 @@ sub process {
+ 			$long = 1 if ($line =~ /\bcommit\s+[0-9a-f]{41,}/i);
+ 			$space = 0 if ($line =~ /\bcommit [0-9a-f]/i);
+ 			$case = 0 if ($line =~ /\b[Cc]ommit\s+[0-9a-f]{5,40}[^A-F]/);
+-			if ($line =~ /\bcommit\s+[0-9a-f]{5,}\s+\("([^"]+)"\)/i) {
++			if ($line =~ /\bcommit\s+[0-9a-f]{5,}\s+\("([^"]+)"(,\s*([-0-9]+))?\)/i) {
+ 				$orig_desc = $1;
++				$orig_date = $3;
+ 				$hasparens = 1;
+ 			} elsif ($line =~ /\bcommit\s+[0-9a-f]{5,}\s*$/i &&
+ 				 defined $rawlines[$linenr] &&
+-				 $rawlines[$linenr] =~ /^\s*\("([^"]+)"\)/) {
++				 $rawlines[$linenr] =~ /^\s*\("([^"]+)"(,\s*([-0-9]+))?\)/) {
+ 				$orig_desc = $1;
++				$orig_date = $3;
+ 				$hasparens = 1;
+ 			} elsif ($line =~ /\bcommit\s+[0-9a-f]{5,}\s+\("[^"]+$/i &&
+ 				 defined $rawlines[$linenr] &&
+-				 $rawlines[$linenr] =~ /^\s*[^"]+"\)/) {
++				 $rawlines[$linenr] =~ /^\s*[^"]+"(,\s*([-0-9]+))?\)/) {
+ 				$line =~ /\bcommit\s+[0-9a-f]{5,}\s+\("([^"]+)$/i;
+ 				$orig_desc = $1;
+-				$rawlines[$linenr] =~ /^\s*([^"]+)"\)/;
++				$rawlines[$linenr] =~ /^\s*([^"]+)"(,\s*([-0-9]+))?\)/;
+ 				$orig_desc .= " " . $1;
++				$orig_date = $3;
+ 				$hasparens = 1;
+ 			}
+ 
+-			($id, $description) = git_commit_info($orig_commit,
+-							      $id, $orig_desc);
++			($id, $date, $description) = git_commit_info($orig_commit,
++						      $id, $orig_date, $orig_desc);
+ 
+ 			if (defined($id) &&
+-			   ($short || $long || $space || $case || ($orig_desc ne $description) || !$hasparens)) {
++			   ($short || $long || $space || $case || ($orig_desc ne $description) || ($orig_date && $orig_date ne $date) || !$hasparens)) {
+ 				ERROR("GIT_COMMIT_ID",
+ 				      "Please use git commit description style 'commit <12+ chars of sha1> (\"<title line>\")' - ie: '${init_char}ommit $id (\"$description\")'\n" . $herecurr);
+ 			}
+-- 
+2.14.1.436.g33e61a4f0239
+
