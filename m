@@ -1,45 +1,29 @@
-From: Alan Brady <alan.brady@intel.com>
-Date: Thu,  5 Oct 2017 11:42:24 -0700
-Subject: [Intel-wired-lan] [PATCH v2 03/13 net-next] i40e: add function
-	header for i40e_get_rxfh
-In-Reply-To: <20171005184234.21288-1-alan.brady@intel.com>
-References: <20171005184234.21288-1-alan.brady@intel.com>
-Message-ID: <20171005184234.21288-4-alan.brady@intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Thu, 05 Oct 2017 12:05:08 -0700 (PDT)
+Subject: [Intel-wired-lan] [next-queue PATCH v4 3/4] net/sched:
+ Introduce Credit Based Shaper (CBS) qdisc
+In-Reply-To: <CY1PR0401MB1536A44D0AB459BB9618664A92700@CY1PR0401MB1536.namprd04.prod.outlook.com>
+References: <CAEYbN3RjUXGMyxo0t88-ASNVEVQdfXkMzBbMtMHAhqWScOO=Cg@mail.gmail.com>
+ <20171005.112909.2052593524154643514.davem@davemloft.net>
+ <CY1PR0401MB1536A44D0AB459BB9618664A92700@CY1PR0401MB1536.namprd04.prod.outlook.com>
+Message-ID: <20171005.120508.2267452751875787466.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Someone left this poor little function naked with no header.  This
-dresses it up in a proper function header it deserves.
+From: Rodney Cummings <rodney.cummings@ni.com>
+Date: Thu, 5 Oct 2017 18:41:48 +0000
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+> The IEEE Std 802.1Q specs for credit-based shaper require precise transmit decisions
+> within a 125 microsecond window of time.
+> 
+> Even with the Preempt RT patch or similar enhancements, that isn't very practical
+> as software-only. I doubt that software would conform to the standard's
+> requirements.
+> 
+> This is analogous to memory, or CPU.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 4fda529a464b..43294b6567c2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -3966,6 +3966,16 @@ static u32 i40e_get_rxfh_indir_size(struct net_device *netdev)
- 	return I40E_HLUT_ARRAY_SIZE;
- }
- 
-+/**
-+ * i40e_get_rxfh - get the rx flow hash indirection table
-+ * @netdev: network interface device structure
-+ * @indir: indirection table
-+ * @key: hash key
-+ * @hfunc: hash function
-+ *
-+ * Reads the indirection table directly from the hardware. Returns 0 on
-+ * success.
-+ **/
- static int i40e_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
- 			 u8 *hfunc)
- {
--- 
-2.14.1
-
+I feel like this is looking for an excuse to not have to at least try to implement
+the software version of CBS.
