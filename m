@@ -1,108 +1,80 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 05 Oct 2017 15:01:37 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 80fa5f29e881d77e3a7a0c5f6ff8d76f3ec08ca7
-Message-ID: <59d5d8d1.Kd1pFmvrAUbSj73H%fengguang.wu@intel.com>
+From: Levi Pearson <levipearson@gmail.com>
+Date: Thu, 5 Oct 2017 12:09:32 -0600
+Subject: [Intel-wired-lan] [next-queue PATCH v4 3/4] net/sched:
+ Introduce Credit Based Shaper (CBS) qdisc
+In-Reply-To: <20171004063650.GA1895@nanopsycho>
+References: <20171004002831.18371-1-vinicius.gomes@intel.com>
+ <20171004002831.18371-4-vinicius.gomes@intel.com>
+ <20171004063650.GA1895@nanopsycho>
+Message-ID: <CAEYbN3RjUXGMyxo0t88-ASNVEVQdfXkMzBbMtMHAhqWScOO=Cg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-80fa5f29e881d77e3a7a0c5f6ff8d76f3ec08ca7  ixgbe: fix crash when injecting AER after failed reset
+On Wed, Oct 4, 2017 at 12:36 AM, Jiri Pirko <jiri@resnulli.us> wrote:
 
-ERROR: "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
+>>+static struct Qdisc_ops cbs_qdisc_ops __read_mostly = {
+>>+      .next           =       NULL,
+>>+      .id             =       "cbs",
+>>+      .priv_size      =       sizeof(struct cbs_sched_data),
+>>+      .enqueue        =       cbs_enqueue,
+>>+      .dequeue        =       qdisc_dequeue_head,
+>>+      .peek           =       qdisc_peek_dequeued,
+>>+      .init           =       cbs_init,
+>>+      .reset          =       qdisc_reset_queue,
+>>+      .destroy        =       cbs_destroy,
+>>+      .change         =       cbs_change,
+>>+      .dump           =       cbs_dump,
+>>+      .owner          =       THIS_MODULE,
+>>+};
+>
+> I don't see a software implementation for this. Looks like you are
+> trying abuse tc subsystem to bypass kernel. Could you please explain
+> this? The golden rule is: implement in kernel, then offload.
 
-Error ids grouped by kconfigs:
+It would be a shame if this were blocked due to a missing software
+implementation. This module is analogous to (and designed to work
+with) the mqprio module; it directly configures the 802.1Qav
+(Forwarding and Queuing for Time-Sensitive Streams) functionality of
+multi-queue NICs with that capability. I'm not sure what makes it seem
+like an attempt to "bypass the kernel"; it's actually an attempt to
+get an appropriate configuration path *into* the kernel, which has
+been missing for some time.
 
-recent_errors
-??? i386-allmodconfig
-    ??? ERROR:__udivdi3-drivers-net-ethernet-intel-i40e-i40e.ko-undefined
+While it would be valuable to have a CBS software-only implementation,
+and Vinicius and colleagues have mentioned plans to implement one,
+most users will have chosen Qav-compliant NICs and will prefer to use
+the hardware capability. In fact they are often *already* using that
+capability, but configure it via non-standardized interfaces in
+out-of-tree or vendor-tree drivers. I believe it's valuable to have
+the "knobs" fit in with the mqprio qdisc and the overall tc subsystem
+rather than forcing users through various unrelated configuration
+tools, but ultimately the hooks just need to be in the network
+subsystem so the drivers can be told how the user wants to set the
+registers.
 
-elapsed time: 632m
+It *might* be reasonable to add the functionality of this to mqprio
+instead of a separate module, but this is only one of many possible
+802.1Q shapers that could be selected and configured (with more being
+defined by IEEE 802.1 working groups for different use cases), and it
+seems cleaner to me to have their configuration be through separate
+modules than crammed into an already-confusing one, especially since
+mqprio has much broader applicability than CBS and it probably doesn't
+make sense to burden all mqprio users with the configuration option
+overhead.
 
-configs tested: 80
+This meets a specific need in industry (this is widely used in
+automotive infotainment devices with broad hardware support across the
+SoCs targeted at that industry) that is not well-served by a software
+implementation of class-level shaping. As a maintainer of the OpenAvnu
+project (sponsored by Avnu, an industry alliance formed around the TSN
+standards), I will be integrating support for this as soon as it's
+available to our traffic shaping management userspace tools, which
+currently have to rely on out-of-tree drivers with custom interfaces
+or the HTB shaper which can be configured close to CBS, but with
+greatly increased overhead.
 
-i386                               tinyconfig
-i386                   randconfig-x013-201740
-i386                   randconfig-x014-201740
-i386                   randconfig-x015-201740
-i386                   randconfig-x019-201740
-i386                   randconfig-x011-201740
-i386                   randconfig-x018-201740
-i386                   randconfig-x010-201740
-i386                   randconfig-x017-201740
-i386                   randconfig-x012-201740
-i386                   randconfig-x016-201740
-x86_64                 randconfig-x001-201740
-x86_64                 randconfig-x000-201740
-x86_64                 randconfig-x004-201740
-x86_64                 randconfig-x008-201740
-x86_64                 randconfig-x006-201740
-x86_64                 randconfig-x007-201740
-x86_64                 randconfig-x005-201740
-x86_64                 randconfig-x009-201740
-x86_64                 randconfig-x003-201740
-x86_64                 randconfig-x002-201740
-arm                               allnoconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-i386                     randconfig-a0-201740
-x86_64                           allyesdebian
-parisc                            allnoconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-x86_64                           allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-sh                                allnoconfig
-sh                            titan_defconfig
-i386                   randconfig-x001-201740
-i386                   randconfig-x008-201740
-i386                   randconfig-x004-201740
-i386                   randconfig-x003-201740
-i386                   randconfig-x002-201740
-i386                   randconfig-x006-201740
-i386                   randconfig-x007-201740
-i386                   randconfig-x009-201740
-i386                   randconfig-x000-201740
-i386                   randconfig-x005-201740
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sparc64                           allnoconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-xtensa                       common_defconfig
-i386                   randconfig-x074-201740
-i386                   randconfig-x071-201740
-i386                   randconfig-x076-201740
-i386                   randconfig-x077-201740
-i386                   randconfig-x073-201740
-i386                   randconfig-x079-201740
-i386                   randconfig-x072-201740
-i386                   randconfig-x078-201740
-i386                   randconfig-x075-201740
-i386                   randconfig-x070-201740
-tile                         tilegx_defconfig
 
-Thanks,
-Fengguang
+Levi
