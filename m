@@ -1,60 +1,40 @@
 From: Alan Brady <alan.brady@intel.com>
-Date: Thu,  5 Oct 2017 14:53:30 -0700
-Subject: [Intel-wired-lan] [PATCH v3 00/14 net-next] i40e: refactor ethtool
-	interface
-Message-ID: <20171005215344.2886-1-alan.brady@intel.com>
+Date: Thu,  5 Oct 2017 14:53:32 -0700
+Subject: [Intel-wired-lan] [PATCH v3 02/14 net-next] i40e: remove ifdef
+	SPEED_25000
+In-Reply-To: <20171005215344.2886-1-alan.brady@intel.com>
+References: <20171005215344.2886-1-alan.brady@intel.com>
+Message-ID: <20171005215344.2886-3-alan.brady@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This series brings i40e ethtool interface back into the modern era by
-converting references to the old ethtool API to the new API.
+This 'ifdef' doesn't accomplish anything so remove it.
 
-This conversion allows us to provide much better support for new 25G and
-10G PHY types.
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-This also includes a patch which adds new function to ethtool;
-ethtool_intersect_link_masks.  i40e uses this function is used to take
-what is supported by the PHY type and intersect it with what is
-supported by the NVM, giving us what is truly supported.
-
-v2: Removed extra new line.  Fixed comment split.  Removed
-i40e_intersect_link_masks and added ethtool_intersect_link_masks to
-net/core/ethtool.c.  Removed '.' from title of commit 09/13
-
-v3: Fixed typo in "13/13 i40e: convert i40e_set_link_ksettings to new
-API"; "unsuported" to "unsupported".  Extracted the addition of
-ethtool_intersect_link_masks into its own patch.
-
-Alan Brady (13):
-  i40e: rename 'cmd' variables in ethtool interface
-  i40e: remove ifdef SPEED_25000
-  i40e: add function header for i40e_get_rxfh
-  i40e: fix clearing link masks in i40e_get_link_ksettings
-  i40e: fix i40e_phy_type_to_ethtool function header
-  i40e: fix comment typo
-  i40e: fix whitespace issues in i40e_ethtool.c
-  i40e: group autoneg PHY types together
-  ethtool: add ethtool_intersect_link_masks
-  i40e: convert i40e_phy_type_to_ethtool to new API
-  i40e: convert i40e_get_settings_link_up to new API
-  i40e: rename 'change' variable to 'autoneg_changed'
-  i40e: convert i40e_set_link_ksettings to new API
-
-Sudheer Mogilappagari (1):
-  i40e: Add new phy types for 25G AOC and ACC support
-
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |   4 +
- drivers/net/ethernet/intel/i40e/i40e_common.c      |   2 +
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 715 +++++++++++++--------
- drivers/net/ethernet/intel/i40e/i40e_type.h        |   4 +
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |   4 +
- include/linux/ethtool.h                            |  10 +
- net/core/ethtool.c                                 |  16 +
- 7 files changed, 475 insertions(+), 280 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 4ed5deab7e68..4fda529a464b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -531,12 +531,7 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 		ks->base.speed = SPEED_40000;
+ 		break;
+ 	case I40E_LINK_SPEED_25GB:
+-#ifdef SPEED_25000
+ 		ks->base.speed = SPEED_25000;
+-#else
+-		netdev_info(netdev,
+-			    "Speed is 25G, display not supported by this version of ethtool.\n");
+-#endif
+ 		break;
+ 	case I40E_LINK_SPEED_20GB:
+ 		ks->base.speed = SPEED_20000;
 -- 
 2.14.1
 
