@@ -1,73 +1,55 @@
-From: Duyck, Alexander H <alexander.h.duyck@intel.com>
-Date: Thu, 5 Oct 2017 18:31:56 +0000
-Subject: [Intel-wired-lan] [next PATCH S80-V3 04/11] i40e/i40evf: always
- set	the CLEARPBA flag when re-enabling interrupts
-In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAA0C8@ORSMSX104.amr.corp.intel.com>
-References: <20170907120556.45699-1-alice.michael@intel.com>
- <20170907120556.45699-4-alice.michael@intel.com>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAA0C8@ORSMSX104.amr.corp.intel.com>
-Message-ID: <1507228314.2098.53.camel@intel.com>
+From: Alan Brady <alan.brady@intel.com>
+Date: Thu,  5 Oct 2017 11:42:21 -0700
+Subject: [Intel-wired-lan] [PATCH v2 00/13 net-next] i40e: refactor ethtool
+	interface
+Message-ID: <20171005184234.21288-1-alan.brady@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2017-09-12 at 20:46 +0000, Bowers, AndrewX wrote:
-> > -----Original Message-----
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> > Behalf Of Alice Michael
-> > Sent: Thursday, September 7, 2017 5:06 AM
-> > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> > lan at lists.osuosl.org
-> > Subject: [Intel-wired-lan] [next PATCH S80-V3 04/11] i40e/i40evf: always set
-> > the CLEARPBA flag when re-enabling interrupts
-> > 
-> > From: Jacob Keller <jacob.e.keller@intel.com>
-> > 
-> > In the past we changed driver behavior to not clear the PBA when re-
-> > enabling interrupts. This change was motivated by the flawed belief that
-> > clearing the PBA would cause a lost interrupt if a receive interrupt occurred
-> > while interrupts were disabled.
-> > 
-> > According to empirical testing this isn't the case. Additionally, the data sheet
-> > specifically says that we should set the CLEARPBA bit when re-enabling
-> > interrupts in a polling setup.
-> > 
-> > This reverts commit 40d72a509862 ("i40e/i40evf: don't lose interrupts")
-> > 
-> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/i40e/i40e.h             |  5 +----
-> >  drivers/net/ethernet/intel/i40e/i40e_main.c        | 11 +++++------
-> >  drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  6 ++----
-> >  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  2 +-
-> >  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  4 +---
-> >  5 files changed, 10 insertions(+), 18 deletions(-)
-> 
-> Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-> 
+This series brings i40e ethtool interface back into the modern era by
+converting references to the old ethtool API  to the new API.
 
-This patch just got pointed out to me in a hallway conversation.
+This conversion allows us to provide much better support for new 25G and
+10G PHY types.
 
-I am pretty sure this _will_ cause you to lose interrupts. Specifically
-you shouldn't be clearing the PBA bit at the end of the polling routine
-unless you know you are going to poll again.
+Additionally, this includes a patch which adds a needed function to
+ethtool, ethtool_intersect_link_masks.  We use this function to take
+what the current PHY type supports versus what the NVM supports to get a
+mask of what is actually supported.
 
-The PBA bit should only be cleared if:
-1. You are at the start of your clean-up routine and want to clear it
-in case any additional work has come in since the original vector
-fired. (currently handled via an auto-clear function for MSI-X)
-2. You are at the end of your polling routine and you know you are
-going to be polling again.
+v2: Removed extra new line.  Fixed comment split.  Removed
+i40e_intersect_link_masks and added ethtool_intersect_link_masks to
+net/core/ethtool.c.  Removed '.' from title of commit 09/13.
 
-The original patch was more aggressive than it needed to be. For
-example you could probably go ahead and clear the PBA in the
-i40e_intr()q interrupt routine itself since all it is doing is
-scheduling the polling routine which will run after the interrupt
-routine has completed. You shouldn't be clearing the PBA at the end of
-NAPI poll unless you know you are not going to be exiting polling.
+Alan Brady (12):
+  i40e: rename 'cmd' variables in ethtool interface
+  i40e: remove ifdef SPEED_25000
+  i40e: add function header for i40e_get_rxfh
+  i40e: fix clearing link masks in i40e_get_link_ksettings
+  i40e: fix i40e_phy_type_to_ethtool function header
+  i40e: fix comment typo
+  i40e: fix whitespace issues in i40e_ethtool.c
+  i40e: group autoneg PHY types together
+  i40e: convert i40e_phy_type_to_ethtool to new API
+  i40e: convert i40e_get_settings_link_up to new API
+  i40e: rename 'change' variable to 'autoneg_changed'
+  i40e: convert i40e_set_link_ksettings to new API
 
-I hope this helps to clarify things.
+Sudheer Mogilappagari (1):
+  i40e: Add new phy types for 25G AOC and ACC support
 
-- Alex
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |   4 +
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |   2 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 715 +++++++++++++--------
+ drivers/net/ethernet/intel/i40e/i40e_type.h        |   4 +
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |   4 +
+ include/linux/ethtool.h                            |  10 +
+ net/core/ethtool.c                                 |  16 +
+ 7 files changed, 475 insertions(+), 280 deletions(-)
+
+-- 
+2.14.1
+
