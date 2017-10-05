@@ -1,29 +1,94 @@
-From: David Miller <davem@davemloft.net>
-Date: Thu, 05 Oct 2017 12:05:08 -0700 (PDT)
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Thu, 05 Oct 2017 12:57:34 -0700
 Subject: [Intel-wired-lan] [next-queue PATCH v4 3/4] net/sched:
- Introduce Credit Based Shaper (CBS) qdisc
-In-Reply-To: <CY1PR0401MB1536A44D0AB459BB9618664A92700@CY1PR0401MB1536.namprd04.prod.outlook.com>
-References: <CAEYbN3RjUXGMyxo0t88-ASNVEVQdfXkMzBbMtMHAhqWScOO=Cg@mail.gmail.com>
- <20171005.112909.2052593524154643514.davem@davemloft.net>
- <CY1PR0401MB1536A44D0AB459BB9618664A92700@CY1PR0401MB1536.namprd04.prod.outlook.com>
-Message-ID: <20171005.120508.2267452751875787466.davem@davemloft.net>
+	Introduce Credit Based Shaper (CBS) qdisc
+In-Reply-To: <20171004063650.GA1895@nanopsycho>
+References: <20171004002831.18371-1-vinicius.gomes@intel.com>
+ <20171004002831.18371-4-vinicius.gomes@intel.com>
+ <20171004063650.GA1895@nanopsycho>
+Message-ID: <877ew9jrkh.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Rodney Cummings <rodney.cummings@ni.com>
-Date: Thu, 5 Oct 2017 18:41:48 +0000
+Hi Jiri,
 
-> The IEEE Std 802.1Q specs for credit-based shaper require precise transmit decisions
-> within a 125 microsecond window of time.
-> 
-> Even with the Preempt RT patch or similar enhancements, that isn't very practical
-> as software-only. I doubt that software would conform to the standard's
-> requirements.
-> 
-> This is analogous to memory, or CPU.
+Jiri Pirko <jiri@resnulli.us> writes:
 
-I feel like this is looking for an excuse to not have to at least try to implement
-the software version of CBS.
+> Wed, Oct 04, 2017 at 02:28:30AM CEST, vinicius.gomes at intel.com wrote:
+>>This queueing discipline implements the shaper algorithm defined by
+>>the 802.1Q-2014 Section 8.6.8.2 and detailed in Annex L.
+>>
+>>It's primary usage is to apply some bandwidth reservation to user
+>>defined traffic classes, which are mapped to different queues via the
+>>mqprio qdisc.
+>>
+>>Initially, it only supports offloading the traffic shaping work to
+>>supporting controllers.
+>>
+>>Later, when a software implementation is added, the current dependency
+>>on being installed "under" mqprio can be lifted.
+>>
+>>Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>>Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+>>---
+>> include/linux/netdevice.h      |   1 +
+>> include/net/pkt_sched.h        |   9 ++
+>> include/uapi/linux/pkt_sched.h |  17 ++++
+>> net/sched/Kconfig              |  11 ++
+>> net/sched/Makefile             |   1 +
+>> net/sched/sch_cbs.c            | 225 +++++++++++++++++++++++++++++++++++++++++
+>> 6 files changed, 264 insertions(+)
+>> create mode 100644 net/sched/sch_cbs.c
+>>
+>>diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+>>index e1d6ef130611..b8798adc214f 100644
+>>--- a/include/linux/netdevice.h
+>>+++ b/include/linux/netdevice.h
+>>@@ -775,6 +775,7 @@ enum tc_setup_type {
+>> 	TC_SETUP_CLSFLOWER,
+>> 	TC_SETUP_CLSMATCHALL,
+>> 	TC_SETUP_CLSBPF,
+>>+	TC_SETUP_CBS,
+>
+> Please split this into 2 patches. One will introduce the new qdisc,
+> second will add offload capabilities.
+>
+
+Of course.
+
+> [...]
+>
+>
+>>+static struct Qdisc_ops cbs_qdisc_ops __read_mostly = {
+>>+	.next		=	NULL,
+>>+	.id		=	"cbs",
+>>+	.priv_size	=	sizeof(struct cbs_sched_data),
+>>+	.enqueue	=	cbs_enqueue,
+>>+	.dequeue	=	qdisc_dequeue_head,
+>>+	.peek		=	qdisc_peek_dequeued,
+>>+	.init		=	cbs_init,
+>>+	.reset		=	qdisc_reset_queue,
+>>+	.destroy	=	cbs_destroy,
+>>+	.change		=	cbs_change,
+>>+	.dump		=	cbs_dump,
+>>+	.owner		=	THIS_MODULE,
+>>+};
+>
+> I don't see a software implementation for this. Looks like you are
+> trying abuse tc subsystem to bypass kernel. Could you please explain
+> this? The golden rule is: implement in kernel, then offload.
+
+The reason was that we didn't have a use case for the software
+implementation right now, it would be added in a later series.
+
+But as that was requested (and it makes sense), I will add it for the
+next version of this series (it is already written, just need to test it
+better).
+
+
+Cheers,
+--
+Vinicius
