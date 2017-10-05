@@ -1,76 +1,169 @@
 From: Alan Brady <alan.brady@intel.com>
-Date: Thu,  5 Oct 2017 14:53:40 -0700
-Subject: [Intel-wired-lan] [PATCH v3 10/14 net-next] ethtool: add
-	ethtool_intersect_link_masks
+Date: Thu,  5 Oct 2017 14:53:38 -0700
+Subject: [Intel-wired-lan] [PATCH v3 08/14 net-next] i40e: group autoneg PHY
+	types together
 In-Reply-To: <20171005215344.2886-1-alan.brady@intel.com>
 References: <20171005215344.2886-1-alan.brady@intel.com>
-Message-ID: <20171005215344.2886-11-alan.brady@intel.com>
+Message-ID: <20171005215344.2886-9-alan.brady@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This function provides a way to intersect two link masks together to
-find the common ground between them.  For example in i40e, the driver
-first generates link masks for what is supported by the PHY type.  The
-driver then gets the link masks for what the NVM supports.  The
-resulting intersection between them yields what can truly be supported.
+This separates the setting of autoneg in i40e_phy_types_to_ethtool into
+its own conditional.  Doing this adds clarity as what PHYs
+support/advertise autoneg and makes it easier to add new PHY types in
+the future.
+
+This also fixes an issue on devices with CRT_RETIMER where advertising
+autoneg was being set, but supported autoneg was not.
 
 Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- include/linux/ethtool.h | 10 ++++++++++
- net/core/ethtool.c      | 16 ++++++++++++++++
- 2 files changed, 26 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 85 +++++++++++++-------------
+ 1 file changed, 41 insertions(+), 44 deletions(-)
 
-diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
-index 4587a4c36923..c77fa3529e15 100644
---- a/include/linux/ethtool.h
-+++ b/include/linux/ethtool.h
-@@ -163,6 +163,16 @@ extern int
- __ethtool_get_link_ksettings(struct net_device *dev,
- 			     struct ethtool_link_ksettings *link_ksettings);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 6296bb2e8bd3..08288b0a8cad 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -268,9 +268,7 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	*advertising = 0x0;
  
-+/**
-+ * ethtool_intersect_link_masks - Given two link masks, AND them together
-+ * @dst: first mask and where result is stored
-+ * @src: second mask to intersect with
-+ *
-+ * Given two link mode masks, AND them together and save the result in dst.
-+ */
-+void ethtool_intersect_link_masks(struct ethtool_link_ksettings *dst,
-+				  struct ethtool_link_ksettings *src);
-+
- void ethtool_convert_legacy_u32_to_link_mode(unsigned long *dst,
- 					     u32 legacy_u32);
- 
-diff --git a/net/core/ethtool.c b/net/core/ethtool.c
-index 3228411ada0f..0c406306792a 100644
---- a/net/core/ethtool.c
-+++ b/net/core/ethtool.c
-@@ -403,6 +403,22 @@ static int __ethtool_set_flags(struct net_device *dev, u32 data)
- 	return 0;
- }
- 
-+/* Given two link masks, AND them together and save the result in dst. */
-+void ethtool_intersect_link_masks(struct ethtool_link_ksettings *dst,
-+				  struct ethtool_link_ksettings *src)
-+{
-+	unsigned int size = BITS_TO_LONGS(__ETHTOOL_LINK_MODE_MASK_NBITS);
-+	unsigned int idx = 0;
-+
-+	for (; idx < size; idx++) {
-+		dst->link_modes.supported[idx] &=
-+			src->link_modes.supported[idx];
-+		dst->link_modes.advertising[idx] &=
-+			src->link_modes.advertising[idx];
+ 	if (phy_types & I40E_CAP_PHY_TYPE_SGMII) {
+-		*supported |= SUPPORTED_Autoneg |
+-			      SUPPORTED_1000baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_1000baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+ 			*advertising |= ADVERTISED_1000baseT_Full;
+ 		if (pf->hw_features & I40E_HW_100M_SGMII_CAPABLE) {
+@@ -289,9 +287,7 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_T ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_SR ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_LR) {
+-		*supported |= SUPPORTED_Autoneg |
+-			      SUPPORTED_10000baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_10000baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+ 			*advertising |= ADVERTISED_10000baseT_Full;
+ 	}
+@@ -301,16 +297,12 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 		*supported |= SUPPORTED_40000baseCR4_Full;
+ 	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4_CU ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4) {
+-		*supported |= SUPPORTED_Autoneg |
+-			      SUPPORTED_40000baseCR4_Full;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_40000baseCR4_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_40GB)
+ 			*advertising |= ADVERTISED_40000baseCR4_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) {
+-		*supported |= SUPPORTED_Autoneg |
+-			      SUPPORTED_100baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_100baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
+ 			*advertising |= ADVERTISED_100baseT_Full;
+ 	}
+@@ -318,9 +310,7 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_SX ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_LX ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL) {
+-		*supported |= SUPPORTED_Autoneg |
+-			      SUPPORTED_1000baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_1000baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+ 			*advertising |= ADVERTISED_1000baseT_Full;
+ 	}
+@@ -329,47 +319,54 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_LR4)
+ 		*supported |= SUPPORTED_40000baseLR4_Full;
+ 	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_KR4) {
+-		*supported |= SUPPORTED_40000baseKR4_Full |
+-			      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_40000baseKR4_Full |
+-				ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_40000baseKR4_Full;
++		*advertising |= ADVERTISED_40000baseKR4_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_20GBASE_KR2) {
+-		*supported |= SUPPORTED_20000baseKR2_Full |
+-			      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_20000baseKR2_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_20GB)
+ 			*advertising |= ADVERTISED_20000baseKR2_Full;
+ 	}
+-	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR) {
+-		if (!(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER))
+-			*supported |= SUPPORTED_10000baseKR_Full |
+-				      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_Autoneg;
+-		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+-			if (!(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER))
+-				*advertising |= ADVERTISED_10000baseKR_Full;
+-	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KX4) {
+-		*supported |= SUPPORTED_10000baseKX4_Full |
+-			      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_10000baseKX4_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+ 			*advertising |= ADVERTISED_10000baseKX4_Full;
+ 	}
+-	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX) {
+-		if (!(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER))
+-			*supported |= SUPPORTED_1000baseKX_Full |
+-				      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_Autoneg;
++	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR &&
++	    !(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER)) {
++		*supported |= SUPPORTED_10000baseKR_Full;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
++			*advertising |= ADVERTISED_10000baseKR_Full;
 +	}
-+}
-+EXPORT_SYMBOL(ethtool_intersect_link_masks);
-+
- void ethtool_convert_legacy_u32_to_link_mode(unsigned long *dst,
- 					     u32 legacy_u32)
- {
++	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX &&
++	    !(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER)) {
++		*supported |= SUPPORTED_1000baseKX_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+-			if (!(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER))
+-				*advertising |= ADVERTISED_1000baseKX_Full;
++			*advertising |= ADVERTISED_1000baseKX_Full;
+ 	}
+-	if (phy_types & I40E_CAP_PHY_TYPE_25GBASE_KR ||
+-	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_CR ||
++	/* Autoneg PHY types */
++	if (phy_types & I40E_CAP_PHY_TYPE_SGMII ||
++	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_KR4 ||
++	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4_CU ||
++	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4 ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_SR ||
+-	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_LR) {
++	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_LR ||
++	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_KR ||
++	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_CR ||
++	    phy_types & I40E_CAP_PHY_TYPE_20GBASE_KR2 ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_T ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_SR ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_LR ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_KX4 ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_CR1_CU ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_CR1 ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_SX ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_LX ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX ||
++	    phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) {
+ 		*supported |= SUPPORTED_Autoneg;
+ 		*advertising |= ADVERTISED_Autoneg;
+ 	}
 -- 
 2.14.1
 
