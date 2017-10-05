@@ -1,75 +1,169 @@
 From: Alan Brady <alan.brady@intel.com>
-Date: Thu,  5 Oct 2017 11:42:33 -0700
-Subject: [Intel-wired-lan] [PATCH v2 12/13 net-next] i40e: rename 'change'
-	variable to 'autoneg_changed'
+Date: Thu,  5 Oct 2017 11:42:29 -0700
+Subject: [Intel-wired-lan] [PATCH v2 08/13 net-next] i40e: group autoneg PHY
+	types together
 In-Reply-To: <20171005184234.21288-1-alan.brady@intel.com>
 References: <20171005184234.21288-1-alan.brady@intel.com>
-Message-ID: <20171005184234.21288-13-alan.brady@intel.com>
+Message-ID: <20171005184234.21288-9-alan.brady@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This variable isn't actually very descriptive and makes the code a bit
-confusing as to what it is being used for.  This patch enhances the
-variable with the longer name, 'autoneg_changed', which makes it clear
-we are concerned with autoneg changing in this context.
+This separates the setting of autoneg in i40e_phy_types_to_ethtool into
+its own conditional.  Doing this adds clarity as what PHYs
+support/advertise autoneg and makes it easier to add new PHY types in
+the future.
+
+This also fixes an issue on devices with CRT_RETIMER where advertising
+autoneg was being set, but supported autoneg was not.
 
 Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 85 +++++++++++++-------------
+ 1 file changed, 41 insertions(+), 44 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 2c34c82cfc54..17cb58d8d050 100644
+index 6296bb2e8bd3..08288b0a8cad 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -822,14 +822,14 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
- {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_aq_get_phy_abilities_resp abilities;
-+	struct ethtool_link_ksettings safe_ks;
-+	struct ethtool_link_ksettings copy_ks;
- 	struct i40e_aq_set_phy_config config;
- 	struct i40e_pf *pf = np->vsi->back;
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_hw *hw = &pf->hw;
--	struct ethtool_link_ksettings safe_ks;
--	struct ethtool_link_ksettings copy_ks;
-+	bool autoneg_changed = false;
- 	i40e_status status = 0;
--	bool change = false;
- 	int timeout = 50;
- 	int err = 0;
- 	u32 autoneg;
-@@ -921,7 +921,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
- 			/* Autoneg is allowed to change */
- 			config.abilities = abilities.abilities |
- 					   I40E_AQ_PHY_ENABLE_AN;
--			change = true;
-+			autoneg_changed = true;
- 		}
- 	} else {
- 		/* If autoneg is currently enabled */
-@@ -940,7 +940,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
- 			/* Autoneg is allowed to change */
- 			config.abilities = abilities.abilities &
- 					   ~I40E_AQ_PHY_ENABLE_AN;
--			change = true;
-+			autoneg_changed = true;
- 		}
- 	}
+@@ -268,9 +268,7 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	*advertising = 0x0;
  
-@@ -974,7 +974,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
- 	 */
- 	if (!config.link_speed)
- 		config.link_speed = abilities.link_speed;
--	if (change || (abilities.link_speed != config.link_speed)) {
-+	if (autoneg_changed || abilities.link_speed != config.link_speed) {
- 		/* copy over the rest of the abilities */
- 		config.phy_type = abilities.phy_type;
- 		config.phy_type_ext = abilities.phy_type_ext;
+ 	if (phy_types & I40E_CAP_PHY_TYPE_SGMII) {
+-		*supported |= SUPPORTED_Autoneg |
+-			      SUPPORTED_1000baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_1000baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+ 			*advertising |= ADVERTISED_1000baseT_Full;
+ 		if (pf->hw_features & I40E_HW_100M_SGMII_CAPABLE) {
+@@ -289,9 +287,7 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_T ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_SR ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_LR) {
+-		*supported |= SUPPORTED_Autoneg |
+-			      SUPPORTED_10000baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_10000baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+ 			*advertising |= ADVERTISED_10000baseT_Full;
+ 	}
+@@ -301,16 +297,12 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 		*supported |= SUPPORTED_40000baseCR4_Full;
+ 	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4_CU ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4) {
+-		*supported |= SUPPORTED_Autoneg |
+-			      SUPPORTED_40000baseCR4_Full;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_40000baseCR4_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_40GB)
+ 			*advertising |= ADVERTISED_40000baseCR4_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) {
+-		*supported |= SUPPORTED_Autoneg |
+-			      SUPPORTED_100baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_100baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
+ 			*advertising |= ADVERTISED_100baseT_Full;
+ 	}
+@@ -318,9 +310,7 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_SX ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_LX ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL) {
+-		*supported |= SUPPORTED_Autoneg |
+-			      SUPPORTED_1000baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_1000baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+ 			*advertising |= ADVERTISED_1000baseT_Full;
+ 	}
+@@ -329,47 +319,54 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_LR4)
+ 		*supported |= SUPPORTED_40000baseLR4_Full;
+ 	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_KR4) {
+-		*supported |= SUPPORTED_40000baseKR4_Full |
+-			      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_40000baseKR4_Full |
+-				ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_40000baseKR4_Full;
++		*advertising |= ADVERTISED_40000baseKR4_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_20GBASE_KR2) {
+-		*supported |= SUPPORTED_20000baseKR2_Full |
+-			      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_20000baseKR2_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_20GB)
+ 			*advertising |= ADVERTISED_20000baseKR2_Full;
+ 	}
+-	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR) {
+-		if (!(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER))
+-			*supported |= SUPPORTED_10000baseKR_Full |
+-				      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_Autoneg;
+-		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+-			if (!(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER))
+-				*advertising |= ADVERTISED_10000baseKR_Full;
+-	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KX4) {
+-		*supported |= SUPPORTED_10000baseKX4_Full |
+-			      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_Autoneg;
++		*supported |= SUPPORTED_10000baseKX4_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+ 			*advertising |= ADVERTISED_10000baseKX4_Full;
+ 	}
+-	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX) {
+-		if (!(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER))
+-			*supported |= SUPPORTED_1000baseKX_Full |
+-				      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_Autoneg;
++	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR &&
++	    !(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER)) {
++		*supported |= SUPPORTED_10000baseKR_Full;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
++			*advertising |= ADVERTISED_10000baseKR_Full;
++	}
++	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX &&
++	    !(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER)) {
++		*supported |= SUPPORTED_1000baseKX_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+-			if (!(pf->hw_features & I40E_HW_HAVE_CRT_RETIMER))
+-				*advertising |= ADVERTISED_1000baseKX_Full;
++			*advertising |= ADVERTISED_1000baseKX_Full;
+ 	}
+-	if (phy_types & I40E_CAP_PHY_TYPE_25GBASE_KR ||
+-	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_CR ||
++	/* Autoneg PHY types */
++	if (phy_types & I40E_CAP_PHY_TYPE_SGMII ||
++	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_KR4 ||
++	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4_CU ||
++	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4 ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_SR ||
+-	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_LR) {
++	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_LR ||
++	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_KR ||
++	    phy_types & I40E_CAP_PHY_TYPE_25GBASE_CR ||
++	    phy_types & I40E_CAP_PHY_TYPE_20GBASE_KR2 ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_T ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_SR ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_LR ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_KX4 ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_CR1_CU ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_CR1 ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_SX ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_LX ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX ||
++	    phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) {
+ 		*supported |= SUPPORTED_Autoneg;
+ 		*advertising |= ADVERTISED_Autoneg;
+ 	}
 -- 
 2.14.1
 
