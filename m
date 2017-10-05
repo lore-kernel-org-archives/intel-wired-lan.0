@@ -1,137 +1,136 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 05 Oct 2017 13:08:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- a99c110d8cc0c2787cbfbbdc194c253082238f63
-Message-ID: <59d5be6a.D2nlX/UKi1Jq2YMC%fengguang.wu@intel.com>
+From: Anders K. Pedersen | Cohaesio <akp@cohaesio.com>
+Date: Thu, 5 Oct 2017 05:19:13 +0000
+Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
+	NICs
+In-Reply-To: <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
+References: <1507121766.30720.4.camel@cohaesio.com>
+ <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
+Message-ID: <1507180753.20182.8.camel@cohaesio.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-a99c110d8cc0c2787cbfbbdc194c253082238f63  i40e: Fix memory leak related filter programming status
+On ons, 2017-10-04 at 08:32 -0700, Alexander Duyck wrote:
+> On Wed, Oct 4, 2017 at 5:56 AM, Anders K. Pedersen | Cohaesio
+> <akp@cohaesio.com> wrote:
+> > Hello,
+> > 
+> > After updating one of our Linux based routers to kernel 4.13 it
+> > began
+> > leaking memory quite fast (about 1 GB every half hour). To narrow
+> > we
+> > tried various kernel versions and found that 4.11.12 is okay, while
+> > 4.12 also leaks, so we did a bisection between 4.11 and 4.12.
+> > 
+> > The first bisection ended at
+> > "[6964e53f55837b0c49ed60d36656d2e0ee4fc27b] i40e: fix handling of
+> > HW
+> > ATR eviction", which fixes some flag handling that was broken by
+> > 47994c119a36 "i40e: remove hw_disabled_flags in favor of using
+> > separate
+> > flag bits", so I did a second bisection, where I added 6964e53f5583
+> > "i40e: fix handling of HW ATR eviction" to the steps that had
+> > 47994c119a36 "i40e: remove hw_disabled_flags in favor of using
+> > separate
+> > flag bits" in them.
+> > 
+> > The second bisection ended at
+> > "[0e626ff7ccbfc43c6cc4aeea611c40b899682382] i40e: Fix support for
+> > flow
+> > director programming status", where I don't see any obvious
+> > problems,
+> > so I'm hoping for some assistance.
+> > 
+> > The router is a PowerEdge R730 server (Haswell based) with three
+> > Intel
+> > NICs (all using the i40e driver):
+> > 
+> > X710 quad port 10 GbE SFP+: eth0 eth1 eth2 eth3
+> > X710 quad port 10 GbE SFP+: eth4 eth5 eth6 eth7
+> > XL710 dual port 40 GbE QSFP+: eth8 eth9
+> > 
+> > The NICs are aggregated with LACP with the team driver:
+> > 
+> > team0: eth9 (40 GbE selected primary), and eth3, eth7 (10 GbE non-
+> > selected backups)
+> > team1: eth0, eth1, eth4, eth5 (all 10 GbE selected)
+> > 
+> > team0 is used for internal networks and has one untagged and four
+> > tagged VLAN interfaces, while team1 has an external uplink
+> > connection
+> > without any VLANs.
+> > 
+> > The router runs an eBGP session on team1 to one of our uplinks, and
+> > iBGP via team0 to our other border routers. It also runs OSPF on
+> > the
+> > internal VLANs on team0. One thing I've noticed is that when OSPF
+> > is
+> > not announcing a default gateway to the internal networks, so there
+> > is
+> > almost no traffic coming in on team0 and out on team1, but still
+> > plenty
+> > of traffic coming in on team1 and out via team0, there's no memory
+> > leak
+> > (or at least it is so small that we haven't detected it). But as
+> > soon
+> > as we configure OSPF to announce a default gateway to the internal
+> > VLANs, so we get traffic from team0 to team1 the leaking begins.
+> > Stopping the OSPF default gateway announcement again also stops the
+> > leaking, but does not release already leaked memory.
+> > 
+> > So this leads to me suspect that the leaking is related to RX on
+> > team0
+> > (where XL710 eth9 is normally the only active interface) or TX on
+> > team1
+> > (X710 eth0, eth1, eth4, eth5). The first bad commit is related to
+> > RX
+> > cleaning, which suggests RX on team0. Since we're only seeing the
+> > leak
+> > for our outbound traffic, I suspect either a difference between the
+> > X710 vs. XL710 NICs, or that the inbound traffic is for relatively
+> > few
+> > destination addresses (only our own systems) while the outbound
+> > traffic
+> > is for many different addresses on the internet. But I'm just
+> > guessing
+> > here.
+> > 
+> > I've tried kmemleak, but it only found a few kB of suspected memory
+> > leaks (several of which disappeared again after a while).
+> > 
+> > Below I've included more details - git bisect logs, ethtool -i,
+> > dmesg,
+> > Kernel .config, and various memory related /proc files. Any help or
+> > suggestions would be much appreciated, and please let me know if
+> > more
+> > information is needed or there's something I should try.
+> > 
+> > Regards,
+> > Anders K. Pedersen
+> > 
+> 
+> Hi Anders,
+> 
+> I think I see the problem and should have a patch submitted shortly
+> to
+> address it. From what I can tell it looks like the issue is that we
+> weren't properly recycling the pages associated with descriptors that
+> contained an Rx programming status. For now the workaround would be
+> to
+> try disabling ATR via the "ethtool --set-priv-flags" command. I
+> should
+> have a patch out in the next hour or so that you can try testing to
+> verify if it addresses the issue.
+> 
+> Thanks.
+> 
+> - Alex
 
-ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
-ERROR: "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
+Thanks Alex,
 
-Error ids grouped by kconfigs:
+I will test the patch in our next service window on Tuesday morning.
 
-recent_errors
-??? arm-allmodconfig
-??? ??? ERROR:__aeabi_uldivmod-drivers-net-ethernet-intel-i40e-i40e.ko-undefined
-??? i386-allmodconfig
-    ??? ERROR:__udivdi3-drivers-net-ethernet-intel-i40e-i40e.ko-undefined
-
-elapsed time: 495m
-
-configs tested: 106
-
-x86_64                           allyesdebian
-sh                                allnoconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-x86_64                 randconfig-x018-201740
-x86_64                 randconfig-x011-201740
-x86_64                 randconfig-x012-201740
-x86_64                 randconfig-x019-201740
-x86_64                 randconfig-x013-201740
-x86_64                 randconfig-x017-201740
-x86_64                 randconfig-x015-201740
-x86_64                 randconfig-x014-201740
-x86_64                 randconfig-x016-201740
-x86_64                 randconfig-x010-201740
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                          ixp4xx_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                               tinyconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201740
-sparc64                           allnoconfig
-i386                     randconfig-i0-201740
-i386                     randconfig-i1-201740
-i386                   randconfig-x013-201740
-i386                   randconfig-x014-201740
-i386                   randconfig-x015-201740
-i386                   randconfig-x019-201740
-i386                   randconfig-x011-201740
-i386                   randconfig-x018-201740
-i386                   randconfig-x010-201740
-i386                   randconfig-x017-201740
-i386                   randconfig-x012-201740
-i386                   randconfig-x016-201740
-m68k                       m5475evb_defconfig
-i386                   randconfig-x000-201740
-i386                   randconfig-x001-201740
-i386                   randconfig-x002-201740
-i386                   randconfig-x003-201740
-i386                   randconfig-x004-201740
-i386                   randconfig-x005-201740
-i386                   randconfig-x006-201740
-i386                   randconfig-x007-201740
-i386                   randconfig-x008-201740
-i386                   randconfig-x009-201740
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-ia64                             alldefconfig
-ia64                              allnoconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-i386                   randconfig-x074-201740
-i386                   randconfig-x071-201740
-i386                   randconfig-x076-201740
-i386                   randconfig-x077-201740
-i386                   randconfig-x073-201740
-i386                   randconfig-x079-201740
-i386                   randconfig-x072-201740
-i386                   randconfig-x078-201740
-i386                   randconfig-x075-201740
-i386                   randconfig-x070-201740
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                 randconfig-x001-201740
-x86_64                 randconfig-x000-201740
-x86_64                 randconfig-x004-201740
-x86_64                 randconfig-x008-201740
-x86_64                 randconfig-x006-201740
-x86_64                 randconfig-x007-201740
-x86_64                 randconfig-x005-201740
-x86_64                 randconfig-x009-201740
-x86_64                 randconfig-x003-201740
-x86_64                 randconfig-x002-201740
-i386                             allmodconfig
-
-Thanks,
-Fengguang
+Regards,
+Anders
