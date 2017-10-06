@@ -1,92 +1,107 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Fri, 6 Oct 2017 13:19:22 -0500
-Subject: [Intel-wired-lan] [PATCH] PCI: Check/Set ARI capability before
- setting numVFs
-In-Reply-To: <20171005195959.GW25517@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171004155258.35634-1-anthony.l.nguyen@intel.com>
- <20171004230114.GO25517@bhelgaas-glaptop.roam.corp.google.com>
- <CAKgT0UfL6sASMFfUbN7qkJxAMEU9BwJgMJeFmHRZsk1fhVYzZQ@mail.gmail.com>
- <20171005195959.GW25517@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <20171006181922.GF25517@bhelgaas-glaptop.roam.corp.google.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 07 Oct 2017 04:16:51 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
+ b74f571f59a8a3dae998e3b95e0f88fac39bfef3
+Message-ID: <59d7e4b3.+iI9XklJyFkPgzaJ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Oct 05, 2017 at 04:07:41PM -0500, Bjorn Helgaas wrote:
-> On Wed, Oct 04, 2017 at 04:29:14PM -0700, Alexander Duyck wrote:
-> > On Wed, Oct 4, 2017 at 4:01 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > > On Wed, Oct 04, 2017 at 08:52:58AM -0700, Tony Nguyen wrote:
-> > >> This fixes a bug that can occur if an AER error is encountered while SRIOV
-> > >> devices are present.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+b74f571f59a8a3dae998e3b95e0f88fac39bfef3  i40e/i40evf: organize and re-number feature flags
 
-I applied the patch below with Alex's ack to pci/virtualization for v4.15.
+elapsed time: 139m
 
-> commit 95594dedd443e42ab0c16b9fba0109e955e7be13
-> Author: Tony Nguyen <anthony.l.nguyen@intel.com>
-> Date:   Wed Oct 4 08:52:58 2017 -0700
-> 
->     PCI: Restore "ARI Capable Hierarchy" before setting numVFs
->     
->     In the restore path, we previously read PCI_SRIOV_VF_OFFSET and
->     PCI_SRIOV_VF_STRIDE before restoring PCI_SRIOV_CTRL_ARI, which
->     affects the offset and stride:
->     
->       pci_restore_state
->         pci_restore_iov_state
->           sriov_restore_state
->             pci_iov_set_numvfs
->               pci_read_config_word(... PCI_SRIOV_VF_OFFSET, &iov->offset)
->             pci_write_config_word(... PCI_SRIOV_CTRL, iov->ctrl)
->     
->     The effect is that suspend/resume and AER recovery, which use
->     pci_restore_state(), may corrupt iov->offset and iov->stride.  The iov
->     state is associated with the device, not the driver, so if we reload the
->     driver, it will use the the corrupted data, which may cause crashes like
->     this:
->     
->       kernel BUG at drivers/pci/iov.c:157!
->       RIP: 0010:pci_iov_add_virtfn+0x2eb/0x350
->       Call Trace:
->        pci_enable_sriov+0x353/0x440
->        ixgbe_pci_sriov_configure+0xd5/0x1f0 [ixgbe]
->        sriov_numvfs_store+0xf7/0x170
->        dev_attr_store+0x18/0x30
->        sysfs_kf_write+0x37/0x40
->        kernfs_fop_write+0x120/0x1b0
->        vfs_write+0xb5/0x1a0
->        SyS_write+0x55/0xc0
->     
->     The occurs since during AER recovery the ARI Capable Hierarchy bit, which
->     can affect the values for First VF Offset and VF Stride, is not set until
->     after pci_iov_set_numvfs() is called.  This can cause the iov structure to
->     be populated with values that are incorrect if the bit is later set.
->     Check and set this bit, if needed, before calling pci_iov_set_numvfs() so
->     that the values being populated properly take the ARI bit into account.
->     
->     Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
->     [bhelgaas: changelog, add comment, also clear ARI if necessary]
->     Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
->     CC: Alexander Duyck <alexander.h.duyck@intel.com>
->     CC: Emil Tantilov <emil.s.tantilov@intel.com>
-> 
-> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-> index ce24cf235f01..6bacb8995e96 100644
-> --- a/drivers/pci/iov.c
-> +++ b/drivers/pci/iov.c
-> @@ -498,6 +498,14 @@ static void sriov_restore_state(struct pci_dev *dev)
->  	if (ctrl & PCI_SRIOV_CTRL_VFE)
->  		return;
->  
-> +	/*
-> +	 * Restore PCI_SRIOV_CTRL_ARI before pci_iov_set_numvfs() because
-> +	 * it reads offset & stride, which depend on PCI_SRIOV_CTRL_ARI.
-> +	 */
-> +	ctrl &= ~PCI_SRIOV_CTRL_ARI;
-> +	ctrl |= iov->ctrl & PCI_SRIOV_CTRL_ARI;
-> +	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, ctrl);
-> +
->  	for (i = PCI_IOV_RESOURCES; i <= PCI_IOV_RESOURCE_END; i++)
->  		pci_update_resource(dev, i);
->  
+configs tested: 83
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201740
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-a0-201740
+i386                     randconfig-a1-201740
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                   randconfig-s0-10032350
+i386                   randconfig-s1-10032350
+i386                               tinyconfig
+x86_64                   randconfig-i0-201740
+i386                     randconfig-i1-201740
+i386                     randconfig-i0-201740
+i386                   randconfig-x013-201740
+i386                   randconfig-x014-201740
+i386                   randconfig-x015-201740
+i386                   randconfig-x019-201740
+i386                   randconfig-x011-201740
+i386                   randconfig-x018-201740
+i386                   randconfig-x010-201740
+i386                   randconfig-x017-201740
+i386                   randconfig-x012-201740
+i386                   randconfig-x016-201740
+x86_64                randconfig-ne0-10070347
+i386                             allmodconfig
+i386                   randconfig-x001-201740
+i386                   randconfig-x008-201740
+i386                   randconfig-x004-201740
+i386                   randconfig-x003-201740
+i386                   randconfig-x002-201740
+i386                   randconfig-x006-201740
+i386                   randconfig-x007-201740
+i386                   randconfig-x009-201740
+i386                   randconfig-x000-201740
+i386                   randconfig-x005-201740
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                 randconfig-x001-201740
+x86_64                 randconfig-x000-201740
+x86_64                 randconfig-x004-201740
+x86_64                 randconfig-x008-201740
+x86_64                 randconfig-x006-201740
+x86_64                 randconfig-x007-201740
+x86_64                 randconfig-x005-201740
+x86_64                 randconfig-x009-201740
+x86_64                 randconfig-x003-201740
+x86_64                 randconfig-x002-201740
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                   randconfig-x074-201740
+i386                   randconfig-x071-201740
+i386                   randconfig-x076-201740
+i386                   randconfig-x077-201740
+i386                   randconfig-x073-201740
+i386                   randconfig-x079-201740
+i386                   randconfig-x072-201740
+i386                   randconfig-x078-201740
+i386                   randconfig-x075-201740
+i386                   randconfig-x070-201740
+x86_64         rhel+CONFIG_DEBUG_INFO_REDUCED
+
+Thanks,
+Fengguang
