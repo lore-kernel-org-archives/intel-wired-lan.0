@@ -1,214 +1,197 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 10 Oct 2017 05:56:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 4e526f98c0a1b39716b61ec6e033f42e7b5ac199
-Message-ID: <59dbf0a8.MeUv7GNQ7r4DqUra%fengguang.wu@intel.com>
+From: Alan Brady <alan.brady@intel.com>
+Date: Mon,  9 Oct 2017 15:48:45 -0700
+Subject: [Intel-wired-lan] [PATCH net-next] i40e: fix u64 division usage
+Message-ID: <20171009224845.3216-1-alan.brady@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 4e526f98c0a1b39716b61ec6e033f42e7b5ac199  i40e: convert i40e_set_link_ksettings to new API
+Commit 52eb1ff93e98 ("i40e: Add support setting TC max bandwidth rates")
+and commit 1ea6f21ae530 ("i40e: Refactor VF BW rate limiting") add some
+needed functionality for TC bandwidth rate limiting.  Unfortunately they
+introduce several usages of unsigned 64-bit division which needs to be
+handled special by the kernel to support all architectures.
 
-Regressions in current branch:
+Fixes: 52eb1ff93e98 ("i40e: Add support setting TC max bandwidth
+rates")
+Fixes: 1ea6f21ae530 ("i40e: Refactor VF BW rate limiting")
 
-ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
-ERROR: "__udivdi3" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
-i40e_main.c:(.text+0xa560): undefined reference to `__aeabi_uldivmod'
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e.h      |  3 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 59 +++++++++++++++++++----------
+ 2 files changed, 42 insertions(+), 20 deletions(-)
 
-Error ids grouped by kconfigs:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 266e1dc5e786..eb017763646d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -130,7 +130,8 @@
+ 
+ /* BW rate limiting */
+ #define I40E_BW_CREDIT_DIVISOR		50 /* 50Mbps per BW credit */
+-#define I40E_MAX_BW_INACTIVE_ACCUM	4  /* accumulate 4 credits max */
++#define I40E_BW_MBPS_DIVISOR		125000 /* rate / (1000000 / 8) Mbps */
++#define I40E_MAX_BW_INACTIVE_ACCUM	4 /* accumulate 4 credits max */
+ 
+ /* driver state flags */
+ enum i40e_state_t {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b8ab17d18cd6..303c8885d987 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -5442,6 +5442,7 @@ int i40e_get_link_speed(struct i40e_vsi *vsi)
+ int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
+ {
+ 	struct i40e_pf *pf = vsi->back;
++	u64 credits = 0;
+ 	int speed = 0;
+ 	int ret = 0;
+ 
+@@ -5459,8 +5460,9 @@ int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
+ 	}
+ 
+ 	/* Tx rate credits are in values of 50Mbps, 0 is disabled */
+-	ret = i40e_aq_config_vsi_bw_limit(&pf->hw, seid,
+-					  max_tx_rate / I40E_BW_CREDIT_DIVISOR,
++	credits = max_tx_rate;
++	do_div(credits, I40E_BW_CREDIT_DIVISOR);
++	ret = i40e_aq_config_vsi_bw_limit(&pf->hw, seid, credits,
+ 					  I40E_MAX_BW_INACTIVE_ACCUM, NULL);
+ 	if (ret)
+ 		dev_err(&pf->pdev->dev,
+@@ -6063,13 +6065,17 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
+ 
+ 	/* configure VSI for BW limit */
+ 	if (ch->max_tx_rate) {
++		u64 credits = ch->max_tx_rate;
++
+ 		if (i40e_set_bw_limit(vsi, ch->seid, ch->max_tx_rate))
+ 			return -EINVAL;
+ 
++		do_div(credits, I40E_BW_CREDIT_DIVISOR);
+ 		dev_dbg(&pf->pdev->dev,
+ 			"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
+ 			ch->max_tx_rate,
+-			ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR, ch->seid);
++			credits,
++			ch->seid);
+ 	}
+ 
+ 	/* in case of VF, this will be main SRIOV VSI */
+@@ -6090,6 +6096,7 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
+ static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
+ {
+ 	struct i40e_channel *ch;
++	u64 max_rate = 0;
+ 	int ret = 0, i;
+ 
+ 	/* Create app vsi with the TCs. Main VSI with TC0 is already set up */
+@@ -6110,8 +6117,9 @@ static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
+ 			/* Bandwidth limit through tc interface is in bytes/s,
+ 			 * change to Mbit/s
+ 			 */
+-			ch->max_tx_rate =
+-				vsi->mqprio_qopt.max_rate[i] / (1000000 / 8);
++			max_rate = vsi->mqprio_qopt.max_rate[i];
++			do_div(max_rate, I40E_BW_MBPS_DIVISOR);
++			ch->max_tx_rate = max_rate;
+ 
+ 			list_add_tail(&ch->list, &vsi->ch_list);
+ 
+@@ -6540,6 +6548,7 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
+ 				     struct tc_mqprio_qopt_offload *mqprio_qopt)
+ {
+ 	u64 sum_max_rate = 0;
++	u64 max_rate = 0;
+ 	int i;
+ 
+ 	if ((mqprio_qopt->qopt.offset[0] != 0) ||
+@@ -6554,7 +6563,9 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
+ 				"Invalid min tx rate (greater than 0) specified\n");
+ 			return -EINVAL;
+ 		}
+-		sum_max_rate += (mqprio_qopt->max_rate[i] / (1000000 / 8));
++		max_rate = mqprio_qopt->max_rate[i];
++		do_div(max_rate, I40E_BW_MBPS_DIVISOR);
++		sum_max_rate += max_rate;
+ 
+ 		if (i >= mqprio_qopt->qopt.num_tc - 1)
+ 			break;
+@@ -6698,14 +6709,18 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
+ 
+ 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
+ 		if (vsi->mqprio_qopt.max_rate[0]) {
+-			u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0] /
+-								(1000000 / 8);
++			u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0];
++
++			do_div(max_tx_rate, I40E_BW_MBPS_DIVISOR);
+ 			ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
+ 			if (!ret) {
++				u64 credits = max_tx_rate;
++
++				do_div(credits, I40E_BW_CREDIT_DIVISOR);
+ 				dev_dbg(&vsi->back->pdev->dev,
+ 					"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
+ 					max_tx_rate,
+-					max_tx_rate / I40E_BW_CREDIT_DIVISOR,
++					credits,
+ 					vsi->seid);
+ 			} else {
+ 				need_reset = true;
+@@ -8166,15 +8181,17 @@ static int i40e_rebuild_channels(struct i40e_vsi *vsi)
+ 			return ret;
+ 		}
+ 		if (ch->max_tx_rate) {
++			u64 credits = ch->max_tx_rate;
++
+ 			if (i40e_set_bw_limit(vsi, ch->seid,
+ 					      ch->max_tx_rate))
+ 				return -EINVAL;
+ 
++			do_div(credits, I40E_BW_CREDIT_DIVISOR);
+ 			dev_dbg(&vsi->back->pdev->dev,
+ 				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
+ 				ch->max_tx_rate,
+-				ch->max_tx_rate /
+-						I40E_BW_CREDIT_DIVISOR,
++				credits,
+ 				ch->seid);
+ 		}
+ 	}
+@@ -8447,17 +8464,21 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 	}
+ 
+ 	if (vsi->mqprio_qopt.max_rate[0]) {
+-		u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0] / (1000000 / 8);
++		u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0];
++		u64 credits = 0;
+ 
++		do_div(max_tx_rate, I40E_BW_MBPS_DIVISOR);
+ 		ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
+-		if (!ret)
+-			dev_dbg(&vsi->back->pdev->dev,
+-				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
+-				max_tx_rate,
+-				max_tx_rate / I40E_BW_CREDIT_DIVISOR,
+-				vsi->seid);
+-		else
++		if (ret)
+ 			goto end_unlock;
++
++		credits = max_tx_rate;
++		do_div(credits, I40E_BW_CREDIT_DIVISOR);
++		dev_dbg(&vsi->back->pdev->dev,
++			"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++			max_tx_rate,
++			credits,
++			vsi->seid);
+ 	}
+ 
+ 	/* PF Main VSI is rebuild by now, go ahead and rebuild channel VSIs
+-- 
+2.14.1
 
-recent_errors
-??? arm-allmodconfig
-??? ??? ERROR:__aeabi_uldivmod-drivers-net-ethernet-intel-i40e-i40e.ko-undefined
-??? arm-allyesconfig
-??? ??? i40e_main.c:(.text):undefined-reference-to-__aeabi_uldivmod
-??? i386-allmodconfig
-    ??? ERROR:__udivdi3-drivers-net-ethernet-intel-i40e-i40e.ko-undefined
-
-elapsed time: 162m
-
-configs tested: 178
-
-arm                            qcom_defconfig
-m68k                             allmodconfig
-sh                           sh2007_defconfig
-x86_64                 randconfig-a0-10100431
-i386                               tinyconfig
-i386                   randconfig-n0-10082251
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-v0-10100411
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                   randconfig-a0-10090129
-i386                   randconfig-a1-10090129
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin             BF527-TLL6527M_defconfig
-mips                            ar7_defconfig
-sh                           se7705_defconfig
-sh                            shmin_defconfig
-sh                             shx3_defconfig
-blackfin                BF527-EZKIT_defconfig
-powerpc                     akebono_defconfig
-powerpc                   motionpro_defconfig
-powerpc                      virtex_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-s0-201741
-i386                     randconfig-s1-201741
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                         mv78xx0_defconfig
-mn10300                          allmodconfig
-sh                        sh7763rdp_defconfig
-x86_64                   randconfig-i0-201741
-i386                   randconfig-b0-10100353
-i386                   randconfig-b0-10100451
-arm                          pxa3xx_defconfig
-arm                        raumfeld_defconfig
-arm                           spitz_defconfig
-powerpc                  iss476-smp_defconfig
-x86_64                 randconfig-b0-10100339
-arm                              allyesconfig
-arm                             ezx_defconfig
-m68k                        mvme16x_defconfig
-blackfin                    PNAV-10_defconfig
-mips                         tb0219_defconfig
-sparc64                          alldefconfig
-x86_64                 randconfig-u0-10100414
-x86_64                 randconfig-u0-10100443
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x014-201741
-i386                   randconfig-x013-201741
-i386                   randconfig-x015-201741
-i386                   randconfig-x019-201741
-i386                   randconfig-x011-201741
-i386                   randconfig-x018-201741
-i386                   randconfig-x010-201741
-i386                   randconfig-x017-201741
-i386                   randconfig-x012-201741
-i386                   randconfig-x016-201741
-cris                             alldefconfig
-powerpc                      bamboo_defconfig
-arm                       spear13xx_defconfig
-powerpc                      pcm030_defconfig
-mips                           mtx1_defconfig
-sh                          r7780mp_defconfig
-x86_64                randconfig-ne0-10100415
-x86_64                                    lkp
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-n0-10100438
-x86_64                 randconfig-n0-10100502
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-10100436
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                                  kexec
-i386                   randconfig-x074-201741
-i386                   randconfig-x076-201741
-i386                   randconfig-x071-201741
-i386                   randconfig-x077-201741
-i386                   randconfig-x073-201741
-i386                   randconfig-x079-201741
-i386                   randconfig-x072-201741
-i386                   randconfig-x078-201741
-i386                   randconfig-x075-201741
-i386                   randconfig-x070-201741
-powerpc                       maple_defconfig
-x86_64                 randconfig-x001-201741
-x86_64                 randconfig-x000-201741
-x86_64                 randconfig-x004-201741
-x86_64                 randconfig-x008-201741
-x86_64                 randconfig-x006-201741
-x86_64                 randconfig-x007-201741
-x86_64                 randconfig-x005-201741
-x86_64                 randconfig-x009-201741
-x86_64                 randconfig-x003-201741
-x86_64                 randconfig-x002-201741
-i386                   randconfig-x001-201741
-i386                   randconfig-x008-201741
-i386                   randconfig-x003-201741
-i386                   randconfig-x004-201741
-i386                   randconfig-x002-201741
-i386                   randconfig-x006-201741
-i386                   randconfig-x007-201741
-i386                   randconfig-x009-201741
-i386                   randconfig-x000-201741
-i386                   randconfig-x005-201741
-
-Thanks,
-Fengguang
