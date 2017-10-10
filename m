@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 10 Oct 2017 17:42:14 +0000
-Subject: [Intel-wired-lan] [PATCH v3 07/14 net-next] i40e: fix
- whitespace	issues in i40e_ethtool.c
-In-Reply-To: <20171005215344.2886-8-alan.brady@intel.com>
+Date: Tue, 10 Oct 2017 17:43:34 +0000
+Subject: [Intel-wired-lan] [PATCH v3 10/14 net-next] ethtool:
+	add	ethtool_intersect_link_masks
+In-Reply-To: <20171005215344.2886-11-alan.brady@intel.com>
 References: <20171005215344.2886-1-alan.brady@intel.com>
- <20171005215344.2886-8-alan.brady@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAC2A0@ORSMSX104.amr.corp.intel.com>
+ <20171005215344.2886-11-alan.brady@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAC2CE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,17 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Alan Brady
 > Sent: Thursday, October 5, 2017 2:54 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 07/14 net-next] i40e: fix whitespace
-> issues in i40e_ethtool.c
+> Subject: [Intel-wired-lan] [PATCH v3 10/14 net-next] ethtool: add
+> ethtool_intersect_link_masks
 > 
-> There's a number of minor incidental whitespace issues in this file.
-> This addresses most of the ones I could find.
+> This function provides a way to intersect two link masks together to find the
+> common ground between them.  For example in i40e, the driver first
+> generates link masks for what is supported by the PHY type.  The driver then
+> gets the link masks for what the NVM supports.  The resulting intersection
+> between them yields what can truly be supported.
 > 
 > Signed-off-by: Alan Brady <alan.brady@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 46 +++++++++++------------
-> ---
->  1 file changed, 19 insertions(+), 27 deletions(-)
+>  include/linux/ethtool.h | 10 ++++++++++
+>  net/core/ethtool.c      | 16 ++++++++++++++++
+>  2 files changed, 26 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
