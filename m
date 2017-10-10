@@ -1,10 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 10 Oct 2017 17:32:16 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: mark PM functions as
- __maybe_unused
-In-Reply-To: <20171010081847.4090496-1-arnd@arndb.de>
-References: <20171010081847.4090496-1-arnd@arndb.de>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAC218@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 10 Oct 2017 17:33:22 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] i40e: fix u64 division usage
+In-Reply-To: <20171009224845.3216-1-alan.brady@intel.com>
+References: <20171009224845.3216-1-alan.brady@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAC228@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,32 +12,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Arnd Bergmann
-> Sent: Tuesday, October 10, 2017 1:18 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>; netdev at vger.kernel.org; Williams,
-> Mitch A <mitch.a.williams@intel.com>; linux-kernel at vger.kernel.org; intel-
-> wired-lan at lists.osuosl.org; David S. Miller <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH] i40e: mark PM functions as
-> __maybe_unused
+> Behalf Of Alan Brady
+> Sent: Monday, October 9, 2017 3:49 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next] i40e: fix u64 division usage
 > 
-> A cleanup of the PM code left an incorrect #ifdef in place, leading to a
-> harmless build warning:
+> Commit 52eb1ff93e98 ("i40e: Add support setting TC max bandwidth rates")
+> and commit 1ea6f21ae530 ("i40e: Refactor VF BW rate limiting") add some
+> needed functionality for TC bandwidth rate limiting.  Unfortunately they
+> introduce several usages of unsigned 64-bit division which needs to be
+> handled special by the kernel to support all architectures.
 > 
-> drivers/net/ethernet/intel/i40e/i40e_main.c:12223:12: error: 'i40e_resume'
-> defined but not used [-Werror=unused-function]
-> drivers/net/ethernet/intel/i40e/i40e_main.c:12185:12: error: 'i40e_suspend'
-> defined but not used [-Werror=unused-function]
+> Fixes: 52eb1ff93e98 ("i40e: Add support setting TC max bandwidth
+> rates")
+> Fixes: 1ea6f21ae530 ("i40e: Refactor VF BW rate limiting")
 > 
-> It's easier to use __maybe_unused attributes here, since you can't pick the
-> wrong one.
-> 
-> Fixes: 0e5d3da40055 ("i40e: use newer generic PM support instead of legacy
-> PM callbacks")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 11 ++---------
->  1 file changed, 2 insertions(+), 9 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h      |  3 +-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 59 +++++++++++++++++++--
+> --------
+>  2 files changed, 42 insertions(+), 20 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
