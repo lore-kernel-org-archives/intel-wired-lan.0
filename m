@@ -1,176 +1,92 @@
-From: Anders K. Pedersen | Cohaesio <akp@cohaesio.com>
-Date: Tue, 10 Oct 2017 08:01:12 +0000
-Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] i40e: Fix memory
- leak related filter programming status
-In-Reply-To: <20171004153903.13100.38029.stgit@localhost.localdomain>
-References: <20171004153903.13100.38029.stgit@localhost.localdomain>
-Message-ID: <1507622471.1185.17.camel@cohaesio.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 10 Oct 2017 10:17:38 +0200
+Subject: [Intel-wired-lan] [PATCH] i40e: mark PM functions as __maybe_unused
+Message-ID: <20171010081847.4090496-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On ons, 2017-10-04 at 08:44 -0700, Alexander Duyck wrote:
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
-> 
-> It looks like we weren't correctly placing the pages from buffers
-> that had
-> been used to return a filter programming status back on the ring. As
-> a
-> result they were being overwritten and tracking of the pages was
-> lost.
-> 
-> This change works to correct that by incorporating part of
-> i40e_put_rx_buffer into the programming status handler code. As a
-> result we
-> should now be correctly placing the pages for those buffers on the
-> re-allocation list instead of letting them stay in place.
-> 
-> Fixes: 0e626ff7ccbf ("i40e: Fix support for flow director programming
-> status")
-> Reported-by: Anders K. Pedersen <akp@cohaesio.com>
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+A cleanup of the PM code left an incorrect #ifdef in place, leading
+to a harmless build warning:
 
-We rebooted the router that had memory leaks on 4.12 and 4.13 kernels 
-with 4.13.5 plus this patch this morning, and the memory leak is gone,
-so
+drivers/net/ethernet/intel/i40e/i40e_main.c:12223:12: error: 'i40e_resume' defined but not used [-Werror=unused-function]
+drivers/net/ethernet/intel/i40e/i40e_main.c:12185:12: error: 'i40e_suspend' defined but not used [-Werror=unused-function]
 
-Tested-by: Anders K. Pedersen <akp@cohaesio.com>
+It's easier to use __maybe_unused attributes here, since you
+can't pick the wrong one.
 
-Thanks,
-Anders
+Fixes: 0e5d3da40055 ("i40e: use newer generic PM support instead of legacy PM callbacks")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-> ---
-> 
-> I'm submitting this for Jeff's net queue to undergo some additional
-> testing
-> before being submitted for net or stable to address the memory leak
-> isue. The
-> testing for this should be pretty straight forward since ATR filters
-> seem
-> to cause the issue it should be possible to trigger a pretty
-> signficant
-> amount of memory loss running something like a netperf TCP_CRR test
-> for an
-> extended period of time which will trigger multiple socket
-> creation/destruction.
-> 
-> Anders, feel free to test this patch. If you need to grab a copy of
-> the
-> diff instead of trying to work with applying the patch through email
-> you
-> should be able to find a copy at the following URL shortly after I
-> submit
-> this to intel-wired-lan:
-> 	http://patchwork.ozlabs.org/project/intel-wired-lan/list/
-> 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c |   63 +++++++++++++++
-> ------------
->  1 file changed, 36 insertions(+), 27 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> index 94311e3e4f43..d4ae24674a70 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> @@ -1038,6 +1038,32 @@ static bool i40e_set_new_dynamic_itr(struct
-> i40e_ring_container *rc)
->  }
->  
->  /**
-> + * i40e_reuse_rx_page - page flip buffer and store it back on the
-> ring
-> + * @rx_ring: rx descriptor ring to store buffers on
-> + * @old_buff: donor buffer to have page reused
-> + *
-> + * Synchronizes page for reuse by the adapter
-> + **/
-> +static void i40e_reuse_rx_page(struct i40e_ring *rx_ring,
-> +			       struct i40e_rx_buffer *old_buff)
-> +{
-> +	struct i40e_rx_buffer *new_buff;
-> +	u16 nta = rx_ring->next_to_alloc;
-> +
-> +	new_buff = &rx_ring->rx_bi[nta];
-> +
-> +	/* update, and store next to alloc */
-> +	nta++;
-> +	rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
-> +
-> +	/* transfer page from old buffer to new buffer */
-> +	new_buff->dma		= old_buff->dma;
-> +	new_buff->page		= old_buff->page;
-> +	new_buff->page_offset	= old_buff->page_offset;
-> +	new_buff->pagecnt_bias	= old_buff->pagecnt_bias;
-> +}
-> +
-> +/**
->   * i40e_rx_is_programming_status - check for programming status
-> descriptor
->   * @qw: qword representing status_error_len in CPU ordering
->   *
-> @@ -1071,15 +1097,24 @@ static void
-> i40e_clean_programming_status(struct i40e_ring *rx_ring,
->  					  union i40e_rx_desc
-> *rx_desc,
->  					  u64 qw)
->  {
-> -	u32 ntc = rx_ring->next_to_clean + 1;
-> +	struct i40e_rx_buffer *rx_buffer;
-> +	u32 ntc = rx_ring->next_to_clean;
->  	u8 id;
->  
->  	/* fetch, update, and store next to clean */
-> +	rx_buffer = &rx_ring->rx_bi[ntc++];
->  	ntc = (ntc < rx_ring->count) ? ntc : 0;
->  	rx_ring->next_to_clean = ntc;
->  
->  	prefetch(I40E_RX_DESC(rx_ring, ntc));
->  
-> +	/* place unused page back on the ring */
-> +	i40e_reuse_rx_page(rx_ring, rx_buffer);
-> +	rx_ring->rx_stats.page_reuse_count++;
-> +
-> +	/* clear contents of buffer_info */
-> +	rx_buffer->page = NULL;
-> +
->  	id = (qw & I40E_RX_PROG_STATUS_DESC_QW1_PROGID_MASK) >>
->  		  I40E_RX_PROG_STATUS_DESC_QW1_PROGID_SHIFT;
->  
-> @@ -1648,32 +1683,6 @@ static bool i40e_cleanup_headers(struct
-> i40e_ring *rx_ring, struct sk_buff *skb,
->  }
->  
->  /**
-> - * i40e_reuse_rx_page - page flip buffer and store it back on the
-> ring
-> - * @rx_ring: rx descriptor ring to store buffers on
-> - * @old_buff: donor buffer to have page reused
-> - *
-> - * Synchronizes page for reuse by the adapter
-> - **/
-> -static void i40e_reuse_rx_page(struct i40e_ring *rx_ring,
-> -			       struct i40e_rx_buffer *old_buff)
-> -{
-> -	struct i40e_rx_buffer *new_buff;
-> -	u16 nta = rx_ring->next_to_alloc;
-> -
-> -	new_buff = &rx_ring->rx_bi[nta];
-> -
-> -	/* update, and store next to alloc */
-> -	nta++;
-> -	rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
-> -
-> -	/* transfer page from old buffer to new buffer */
-> -	new_buff->dma		= old_buff->dma;
-> -	new_buff->page		= old_buff->page;
-> -	new_buff->page_offset	= old_buff->page_offset;
-> -	new_buff->pagecnt_bias	= old_buff->pagecnt_bias;
-> -}
-> -
-> -/**
->   * i40e_page_is_reusable - check if any reuse is possible
->   * @page: page struct to check
->   *
-> 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 60b11fdeca2d..eb091268bc3c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8370,7 +8370,6 @@ static int i40e_init_interrupt_scheme(struct i40e_pf *pf)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_PM
+ /**
+  * i40e_restore_interrupt_scheme - Restore the interrupt scheme
+  * @pf: private board data structure
+@@ -8419,7 +8418,6 @@ static int i40e_restore_interrupt_scheme(struct i40e_pf *pf)
+ 
+ 	return err;
+ }
+-#endif /* CONFIG_PM */
+ 
+ /**
+  * i40e_setup_misc_vector - Setup the misc vector to handle non queue events
+@@ -12177,12 +12175,11 @@ static void i40e_shutdown(struct pci_dev *pdev)
+ 	}
+ }
+ 
+-#ifdef CONFIG_PM
+ /**
+  * i40e_suspend - PM callback for moving to D3
+  * @dev: generic device information structure
+  **/
+-static int i40e_suspend(struct device *dev)
++static int __maybe_unused i40e_suspend(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct i40e_pf *pf = pci_get_drvdata(pdev);
+@@ -12220,7 +12217,7 @@ static int i40e_suspend(struct device *dev)
+  * i40e_resume - PM callback for waking up from D3
+  * @dev: generic device information structure
+  **/
+-static int i40e_resume(struct device *dev)
++static int __maybe_unused i40e_resume(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct i40e_pf *pf = pci_get_drvdata(pdev);
+@@ -12252,8 +12249,6 @@ static int i40e_resume(struct device *dev)
+ 	return 0;
+ }
+ 
+-#endif /* CONFIG_PM */
+-
+ static const struct pci_error_handlers i40e_err_handler = {
+ 	.error_detected = i40e_pci_error_detected,
+ 	.slot_reset = i40e_pci_error_slot_reset,
+@@ -12269,11 +12264,9 @@ static struct pci_driver i40e_driver = {
+ 	.id_table = i40e_pci_tbl,
+ 	.probe    = i40e_probe,
+ 	.remove   = i40e_remove,
+-#ifdef CONFIG_PM
+ 	.driver   = {
+ 		.pm = &i40e_pm_ops,
+ 	},
+-#endif /* CONFIG_PM */
+ 	.shutdown = i40e_shutdown,
+ 	.err_handler = &i40e_err_handler,
+ 	.sriov_configure = i40e_pci_sriov_configure,
+-- 
+2.9.0
+
