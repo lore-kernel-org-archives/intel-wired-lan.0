@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 10 Oct 2017 17:43:34 +0000
-Subject: [Intel-wired-lan] [PATCH v3 10/14 net-next] ethtool:
-	add	ethtool_intersect_link_masks
-In-Reply-To: <20171005215344.2886-11-alan.brady@intel.com>
+Date: Tue, 10 Oct 2017 17:42:34 +0000
+Subject: [Intel-wired-lan] [PATCH v3 08/14 net-next] i40e: group autoneg
+ PHY	types together
+In-Reply-To: <20171005215344.2886-9-alan.brady@intel.com>
 References: <20171005215344.2886-1-alan.brady@intel.com>
- <20171005215344.2886-11-alan.brady@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAC2CE@ORSMSX104.amr.corp.intel.com>
+ <20171005215344.2886-9-alan.brady@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAC2AE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Alan Brady
 > Sent: Thursday, October 5, 2017 2:54 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 10/14 net-next] ethtool: add
-> ethtool_intersect_link_masks
+> Subject: [Intel-wired-lan] [PATCH v3 08/14 net-next] i40e: group autoneg
+> PHY types together
 > 
-> This function provides a way to intersect two link masks together to find the
-> common ground between them.  For example in i40e, the driver first
-> generates link masks for what is supported by the PHY type.  The driver then
-> gets the link masks for what the NVM supports.  The resulting intersection
-> between them yields what can truly be supported.
+> This separates the setting of autoneg in i40e_phy_types_to_ethtool into its
+> own conditional.  Doing this adds clarity as what PHYs support/advertise
+> autoneg and makes it easier to add new PHY types in the future.
+> 
+> This also fixes an issue on devices with CRT_RETIMER where advertising
+> autoneg was being set, but supported autoneg was not.
 > 
 > Signed-off-by: Alan Brady <alan.brady@intel.com>
 > ---
->  include/linux/ethtool.h | 10 ++++++++++
->  net/core/ethtool.c      | 16 ++++++++++++++++
->  2 files changed, 26 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 85 +++++++++++++---------
+> ----
+>  1 file changed, 41 insertions(+), 44 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+[PATCH v3 08/14 net-next] i40e: group autoneg PHY	types together
 
 
