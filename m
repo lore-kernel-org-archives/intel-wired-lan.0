@@ -1,62 +1,151 @@
-From: Diorge Tavares <diorge.tavares@flightaware.com>
-Date: Tue, 10 Oct 2017 16:45:49 +0000
-Subject: [Intel-wired-lan] Linux Ubuntu 17.04 Hung Queue Messages - Intel
-	X710 ixl driver
-Message-ID: <DC0F0577-D384-438B-BE36-35E18F418A93@flightaware.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 11 Oct 2017 03:27:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
+ 18eb86362a52f0af933cc0fd5e37027317eb2d1c
+Message-ID: <59dd1f23.2qAgEqZPapJSLTL/%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+branch HEAD: 18eb86362a52f0af933cc0fd5e37027317eb2d1c  igb: check memory allocation failure
 
-We have been working with Intel FreeBSD support and found a bug in the lastest driver release for ixl Intel XL710 NIC. It has to do with buffer sizes and MDD events occurring because of them.
+elapsed time: 164m
 
-Intel FreeBSD proposed fix
+configs tested: 127
 
-If you want to modify the driver again, then change this piece in ixl_tso_detect_sparse() in ixl_txrx.c:
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-                if (mss < 1) {
-                        if (num > IXL_SPARSE_CHAIN)
-                                return (true);
-                        num = (mss == 0) ? 0 : 1;
-                        mss += mp->m_pkthdr.tso_segsz;
-                }
+i386                   randconfig-n0-10082251
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x018-201741
+x86_64                 randconfig-x011-201741
+x86_64                 randconfig-x012-201741
+x86_64                 randconfig-x019-201741
+x86_64                 randconfig-x013-201741
+x86_64                 randconfig-x017-201741
+x86_64                 randconfig-x015-201741
+x86_64                 randconfig-x014-201741
+x86_64                 randconfig-x016-201741
+x86_64                 randconfig-x010-201741
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                   randconfig-a1-10090129
+i386                   randconfig-a0-10090129
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                           allmodconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201741
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x014-201741
+i386                   randconfig-x013-201741
+i386                   randconfig-x015-201741
+i386                   randconfig-x019-201741
+i386                   randconfig-x011-201741
+i386                   randconfig-x018-201741
+i386                   randconfig-x010-201741
+i386                   randconfig-x017-201741
+i386                   randconfig-x012-201741
+i386                   randconfig-x016-201741
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                               tinyconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                 randconfig-x001-201741
+x86_64                 randconfig-x000-201741
+x86_64                 randconfig-x004-201741
+x86_64                 randconfig-x008-201741
+x86_64                 randconfig-x006-201741
+x86_64                 randconfig-x007-201741
+x86_64                 randconfig-x005-201741
+x86_64                 randconfig-x009-201741
+x86_64                 randconfig-x003-201741
+x86_64                 randconfig-x002-201741
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                 randconfig-x072-10101357
+i386                 randconfig-x070-10101357
+i386                 randconfig-x076-10101357
+i386                 randconfig-x073-10101357
+i386                 randconfig-x079-10101357
+i386                 randconfig-x075-10101357
+i386                 randconfig-x077-10101357
+i386                 randconfig-x074-10101357
+i386                 randconfig-x078-10101357
+i386                 randconfig-x071-10101357
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                             allmodconfig
+i386                   randconfig-x001-201741
+i386                   randconfig-x008-201741
+i386                   randconfig-x003-201741
+i386                   randconfig-x004-201741
+i386                   randconfig-x002-201741
+i386                   randconfig-x006-201741
+i386                   randconfig-x007-201741
+i386                   randconfig-x009-201741
+i386                   randconfig-x000-201741
+i386                   randconfig-x005-201741
 
-to
-
-                if (num > IXL_SPARSE_CHAIN)
-                        return (true);
-                if (mss < 1) {
-                        num = (mss == 0) ? 0 : 1;
-                        mss += mp->m_pkthdr.tso_segsz;
-                }
-
-This will definitely prevent MDDs on the buffers you sent me.
-
-
-We are now experiencing similar issues with Linux (Ubuntu 17.04).. See dmesg below.
-
-Please advise how we can correct this.
-
-[2501243.181829] i40e 0000:01:00.1 eno2: VSI_seid 390, Hung TX queue 17, tx_pending_hw: 1, NTC:0x16b, HWB: 0x16b, NTU: 0x16c, TAIL: 0x16c
-
-Dmesg details about driver in use
-[    1.606179] i40e: Intel(R) Ethernet Connection XL710 Network Driver - version 1.6.25-k
-
-Details on Ubuntu in use
-[    0.000000] Linux version 4.10.0-28-generic (buildd at lgw01-11) (gcc version 6.3.0 20170406 (Ubuntu 6.3.0-12ubuntu2) ) #32-Ubuntu SMP Fri Jun 30 05:32:18 UTC 2017 (Ubuntu 4.10.0-28.32-generic 4.10.17)
-
-$ cat /etc/os-release
-NAME="Ubuntu"
-VERSION="17.04 (Zesty Zapus)"
-
---
-Diorge Tavares
-http://flightaware.com<http://flightaware.com/>
-+1 713 993-0015
-
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171010/8c0cbd67/attachment.html>
+Thanks,
+Fengguang
