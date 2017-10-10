@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 10 Oct 2017 17:42:34 +0000
-Subject: [Intel-wired-lan] [PATCH v3 08/14 net-next] i40e: group autoneg
- PHY	types together
-In-Reply-To: <20171005215344.2886-9-alan.brady@intel.com>
+Date: Tue, 10 Oct 2017 17:43:07 +0000
+Subject: [Intel-wired-lan] [PATCH v3 09/14 net-next] i40e: Add new phy
+ types	for 25G AOC and ACC support
+In-Reply-To: <20171005215344.2886-10-alan.brady@intel.com>
 References: <20171005215344.2886-1-alan.brady@intel.com>
- <20171005215344.2886-9-alan.brady@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAC2AE@ORSMSX104.amr.corp.intel.com>
+ <20171005215344.2886-10-alan.brady@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAC2C2@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Alan Brady
 > Sent: Thursday, October 5, 2017 2:54 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 08/14 net-next] i40e: group autoneg
-> PHY types together
+> Cc: Malek, Krzysztof <krzysztof.malek@intel.com>
+> Subject: [Intel-wired-lan] [PATCH v3 09/14 net-next] i40e: Add new phy
+> types for 25G AOC and ACC support
 > 
-> This separates the setting of autoneg in i40e_phy_types_to_ethtool into its
-> own conditional.  Doing this adds clarity as what PHYs support/advertise
-> autoneg and makes it easier to add new PHY types in the future.
+> From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 > 
-> This also fixes an issue on devices with CRT_RETIMER where advertising
-> autoneg was being set, but supported autoneg was not.
+> This patch adds support for 25G Active Optical Cables (AOC) and Active
+> Copper Cables (ACC) phy types.
 > 
-> Signed-off-by: Alan Brady <alan.brady@intel.com>
+> Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+> Signed-off-by: Krzysztof Malek <krzysztof.malek@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 85 +++++++++++++---------
-> ----
->  1 file changed, 41 insertions(+), 44 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 4 ++++
+>  drivers/net/ethernet/intel/i40e/i40e_common.c       | 2 ++
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c      | 2 ++
+>  drivers/net/ethernet/intel/i40e/i40e_type.h         | 4 ++++
+>  drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 4 ++++
+>  5 files changed, 16 insertions(+)
 
-[PATCH v3 08/14 net-next] i40e: group autoneg PHY	types together
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
