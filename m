@@ -1,64 +1,47 @@
-From: Jiri Pirko <jiri@resnulli.us>
-Date: Wed, 11 Oct 2017 23:28:57 +0200
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v4 0/6] tc-flower
- based cloud filters in i40e
-In-Reply-To: <20171011.141929.2232480660433567821.davem@davemloft.net>
-References: <20171011203832.GA9297@nanopsycho>
- <20171011.134652.1653141099248918341.davem@davemloft.net>
- <20171011205830.GD9297@nanopsycho>
- <20171011.141929.2232480660433567821.davem@davemloft.net>
-Message-ID: <20171011212857.GE9297@nanopsycho>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Wed, 11 Oct 2017 14:38:46 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v5 3/5] net/sched:
+	Introduce Credit Based Shaper (CBS) qdisc
+In-Reply-To: <20171011065809.GB2039@nanopsycho>
+References: <20171011004400.14946-1-vinicius.gomes@intel.com>
+ <20171011004400.14946-4-vinicius.gomes@intel.com>
+ <20171011065809.GB2039@nanopsycho>
+Message-ID: <87vajlmkk9.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Wed, Oct 11, 2017 at 11:19:29PM CEST, davem at davemloft.net wrote:
->From: Jiri Pirko <jiri@resnulli.us>
->Date: Wed, 11 Oct 2017 22:58:30 +0200
->
->> Well if I see classid, I expect it should refer to qdisc instance. So
->> far, this has been always a case. But for some drivers, this would mean
->> something totally different and unrelated. So what should I think?
->> What's next? Classid could be abused to identify something else. I don't
->> understand why.
->> 
->> classid in kernel and tclass in hw are 2 completely unrelated things.
->
->Why do they need to be different?
->
->It's qdisc instance in both cases.  The driver is just using it to
->refer to the qdisc as offloaded in the hardware.  It's a key, nothing
->more.  The context in which it is used doesn't change it's meaning.
->
->> Why they should share the same userspace api? What am I missing that
->> indicates this is not an abuse?
->
->Why invent a completely new ID space to refer to something we exactly
->have an ID for already?
->
->This duplication for the sake of "API" makes no sense to me.
->
->The handle is not going away.  It is not going to stop referring to
->a specific qdisc.
->
->So it's stable and appropriate to use to refer to a qdisc, whatever
->operation being performed, or offload being we are going to perform of
->it.
+Jiri Pirko <jiri@resnulli.us> writes:
 
-Okay, fair enough. Yet, I can't say I'm happy with it :/ But I guess
-that what you say makes sense.
+[...]
 
+>>+struct tc_cbs_qopt_offload {
+>>+	u8 enable;
+>>+	s32 queue;
+>>+	s32 hicredit;
+>>+	s32 locredit;
+>>+	s32 idleslope;
+>>+	s32 sendslope;
+>
+> Please introduce the qdisc in one patch, then offload it in second. That
+> is what I requested already. 2 patches please.
+>
+> [...]
+
+Will move these declarations to the offload patch.
 
 >
->I notice you are quite feisty lately in your reviews of other people's
->work, so I have to ask if things are very stressful in your life?
+>
+>>+static struct Qdisc_ops cbs_qdisc_ops __read_mostly = {
+>>+	.next		=	NULL,
+>
+> It is already 0, no need to re-init.
 
-:) Yeah, that is probably coincidental. Lots of odd offloading stuff is
-happening lately.
+Will fix.
 
 
->Please drink a nice warm cup of tea and calm down :-)
-
-I'm perfectly calm. But thanks for showing the care :)
+Cheers,
+--
+Vinicius
