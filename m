@@ -1,198 +1,54 @@
-From: Jiri Pirko <jiri@resnulli.us>
-Date: Wed, 11 Oct 2017 09:07:51 +0200
-Subject: [Intel-wired-lan] [next-queue PATCH v5 4/5] net/sched: Add
- support for HW offloading for CBS
-In-Reply-To: <20171011004400.14946-5-vinicius.gomes@intel.com>
-References: <20171011004400.14946-1-vinicius.gomes@intel.com>
- <20171011004400.14946-5-vinicius.gomes@intel.com>
-Message-ID: <20171011070751.GC2039@nanopsycho>
+From: Jamal Hadi Salim <jhs@mojatatu.com>
+Date: Wed, 11 Oct 2017 08:42:20 -0400
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v4 0/6] tc-flower
+ based cloud filters in i40e
+In-Reply-To: <150768099999.5320.1633617713417675266.stgit@anamdev.jf.intel.com>
+References: <150768099999.5320.1633617713417675266.stgit@anamdev.jf.intel.com>
+Message-ID: <f85aa039-cf16-a25a-5b60-1af747b44f62@mojatatu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Wed, Oct 11, 2017 at 02:43:59AM CEST, vinicius.gomes at intel.com wrote:
->This adds support for offloading the CBS algorithm to the controller,
->if supported.
+On 17-10-10 08:24 PM, Amritha Nambiar wrote:
+> This patch series enables configuring cloud filters in i40e
+> using the tc-flower classifier. The classification function
+> of the filter is to match a packet to a class. cls_flower is
+> extended to offload classid to hardware. The offloaded classid
+> is used direct matched packets to a traffic class on the device.
+> The approach here is similar to the tc 'prio' qdisc which uses
+> the classid for band selection. The ingress qdisc is called ffff:0,
+> so traffic classes are ffff:1 to ffff:8 (i40e has max of 8 TCs).
+> TC0 is minor number 1, TC1 is minor number 2 etc.
+> 
+> The cloud filters are added for a VSI and are cleaned up when
+> the VSI is deleted. The filters that match on L4 ports needs
+> enhanced admin queue functions with big buffer support for
+> extended fields in cloud filter commands.
+> 
+> Example:
+> # tc qdisc add dev eth0 ingress
+> # ethtool -K eth0 hw-tc-offload on
+> 
+> Match Dst IPv4,Dst Port and route to TC1:
+> # tc filter add dev eth0 protocol ip parent ffff: prio 1 flower\
+>    dst_ip 192.168.1.1/32 ip_proto udp dst_port 22\
+>    skip_sw classid ffff:2
+> 
+> # tc filter show dev eth0 parent ffff:
+> filter pref 1 flower chain 0
+> filter pref 1 flower chain 0 handle 0x1 classid ffff:2
+>    eth_type ipv4
+>    ip_proto udp
+>    dst_ip 192.168.1.1
+>    dst_port 22
+>    skip_sw
+>    in_hw
+> 
 
-Oh, so you have it as a separate patch, yet some bits left in the
-previous one...
+Much much better semantic. Thank you.
+Have you tested many filter mapping to the same classid?
 
-
->
->Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
->---
-> net/sched/sch_cbs.c | 92 ++++++++++++++++++++++++++++++++++++++++++++++-------
-> 1 file changed, 81 insertions(+), 11 deletions(-)
->
->diff --git a/net/sched/sch_cbs.c b/net/sched/sch_cbs.c
->index 5e1f72df1abd..2812bac4092b 100644
->--- a/net/sched/sch_cbs.c
->+++ b/net/sched/sch_cbs.c
->@@ -69,6 +69,7 @@
-> 
-> struct cbs_sched_data {
-> 	bool offload;
->+	int queue;
-> 	s64 port_rate; /* in bytes/s */
-> 	s64 last; /* timestamp in ns */
-> 	s64 credits; /* in bytes */
->@@ -81,6 +82,11 @@ struct cbs_sched_data {
-> 	struct sk_buff *(*dequeue)(struct Qdisc *sch);
-> };
-> 
->+static int cbs_enqueue_offload(struct sk_buff *skb, struct Qdisc *sch)
->+{
->+	return qdisc_enqueue_tail(skb, sch);
->+}
->+
-> static int cbs_enqueue_soft(struct sk_buff *skb, struct Qdisc *sch)
-> {
-> 	struct cbs_sched_data *q = qdisc_priv(sch);
->@@ -179,6 +185,11 @@ static struct sk_buff *cbs_dequeue_soft(struct Qdisc *sch)
-> 	return skb;
-> }
-> 
->+static struct sk_buff *cbs_dequeue_offload(struct Qdisc *sch)
->+{
->+	return qdisc_dequeue_head(sch);
->+}
->+
-> static struct sk_buff *cbs_dequeue(struct Qdisc *sch)
-> {
-> 	struct cbs_sched_data *q = qdisc_priv(sch);
->@@ -190,14 +201,37 @@ static const struct nla_policy cbs_policy[TCA_CBS_MAX + 1] = {
-> 	[TCA_CBS_PARMS]	= { .len = sizeof(struct tc_cbs_qopt) },
-> };
-> 
->+static void disable_cbs_offload(struct net_device *dev,
->+				struct cbs_sched_data *q)
->+{
->+	struct tc_cbs_qopt_offload cbs = { };
->+	const struct net_device_ops *ops;
->+	int err;
->+
->+	if (!q->offload)
->+		return;
->+
->+	ops = dev->netdev_ops;
->+	if (!ops->ndo_setup_tc)
->+		return;
->+
->+	cbs.queue = q->queue;
->+	cbs.enable = 0;
->+
->+	err = ops->ndo_setup_tc(dev, TC_SETUP_CBS, &cbs);
->+	if (err < 0)
->+		pr_warn("Couldn't disable CBS offload for queue %d\n",
->+			cbs.queue);
-
-Hmm, you have separete helper for disable, yet you have enable spread
-over cbs_change. Please push the enable code into enable_cbs_offload.
-While you are at it, change the names to cbs_ to maintain the qdisc
-prefix in function names: cbs_offload_enable/cbs_offload_disable
-
-
->+}
->+
-> static int cbs_change(struct Qdisc *sch, struct nlattr *opt)
-> {
-> 	struct cbs_sched_data *q = qdisc_priv(sch);
-> 	struct net_device *dev = qdisc_dev(sch);
->+	struct tc_cbs_qopt_offload cbs = { };
-> 	struct nlattr *tb[TCA_CBS_MAX + 1];
->-	struct ethtool_link_ksettings ecmd;
->+	const struct net_device_ops *ops;
-> 	struct tc_cbs_qopt *qopt;
->-	s64 link_speed;
-> 	int err;
-> 
-> 	err = nla_parse_nested(tb, TCA_CBS_MAX, opt, cbs_policy, NULL);
->@@ -209,18 +243,48 @@ static int cbs_change(struct Qdisc *sch, struct nlattr *opt)
-> 
-> 	qopt = nla_data(tb[TCA_CBS_PARMS]);
-> 
->-	if (qopt->offload)
->-		return -EOPNOTSUPP;
->+	q->enqueue = cbs_enqueue_offload;
->+	q->dequeue = cbs_dequeue_offload;
-> 
->-	if (!__ethtool_get_link_ksettings(dev, &ecmd))
->-		link_speed = ecmd.base.speed;
->-	else
->-		link_speed = SPEED_1000;
->+	if (!qopt->offload) {
->+		struct ethtool_link_ksettings ecmd;
->+		s64 link_speed;
-> 
->-	q->port_rate = link_speed * 1000 * BYTES_PER_KBIT;
->+		if (!__ethtool_get_link_ksettings(dev, &ecmd))
->+			link_speed = ecmd.base.speed;
->+		else
->+			link_speed = SPEED_1000;
-> 
->-	q->enqueue = cbs_enqueue_soft;
->-	q->dequeue = cbs_dequeue_soft;
->+		q->port_rate = link_speed * 1000 * BYTES_PER_KBIT;
->+
->+		q->enqueue = cbs_enqueue_soft;
->+		q->dequeue = cbs_dequeue_soft;
->+
->+		disable_cbs_offload(dev, q);
->+
->+		err = 0;
->+		goto done;
->+	}
->+
->+	cbs.queue = q->queue;
->+
->+	cbs.enable = 1;
->+	cbs.hicredit = qopt->hicredit;
->+	cbs.locredit = qopt->locredit;
->+	cbs.idleslope = qopt->idleslope;
->+	cbs.sendslope = qopt->sendslope;
->+
->+	ops = dev->netdev_ops;
->+
->+	err = -EOPNOTSUPP;
->+	if (!ops->ndo_setup_tc)
->+		goto done;
->+
->+	err = ops->ndo_setup_tc(dev, TC_SETUP_CBS, &cbs);
->+
->+done:
->+	if (err < 0)
->+		return err;
-> 
-> 	q->hicredit = qopt->hicredit;
-> 	q->locredit = qopt->locredit;
->@@ -234,10 +298,13 @@ static int cbs_change(struct Qdisc *sch, struct nlattr *opt)
-> static int cbs_init(struct Qdisc *sch, struct nlattr *opt)
-> {
-> 	struct cbs_sched_data *q = qdisc_priv(sch);
->+	struct net_device *dev = qdisc_dev(sch);
-> 
-> 	if (!opt)
-> 		return -EINVAL;
-> 
->+	q->queue = sch->dev_queue - netdev_get_tx_queue(dev, 0);
->+
-> 	qdisc_watchdog_init(&q->watchdog, sch);
-> 
-> 	return cbs_change(sch, opt);
->@@ -246,8 +313,11 @@ static int cbs_init(struct Qdisc *sch, struct nlattr *opt)
-> static void cbs_destroy(struct Qdisc *sch)
-> {
-> 	struct cbs_sched_data *q = qdisc_priv(sch);
->+	struct net_device *dev = qdisc_dev(sch);
-> 
-> 	qdisc_watchdog_cancel(&q->watchdog);
->+
->+	disable_cbs_offload(dev, q);
-> }
-> 
-> static int cbs_dump(struct Qdisc *sch, struct sk_buff *skb)
->-- 
->2.14.2
->
+cheers,
+jamal
