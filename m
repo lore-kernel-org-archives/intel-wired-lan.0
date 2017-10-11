@@ -1,195 +1,166 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 10 Oct 2017 17:46:51 -0700
-Subject: [Intel-wired-lan] [iproute2 net-next v2 2/3] tc: Add support for
-	the CBS qdisc
-In-Reply-To: <20171011004652.15630-1-vinicius.gomes@intel.com>
-References: <20171011004652.15630-1-vinicius.gomes@intel.com>
-Message-ID: <20171011004652.15630-2-vinicius.gomes@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 11 Oct 2017 08:55:33 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 53fdecd7d839082fc25c50dd822eed6e4b533a61
+Message-ID: <59dd6c05.sd6IFTTWVPGrhpsJ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The Credit Based Shaper (CBS) queueing discipline allows bandwidth
-reservation with sub-milisecond precision. It is defined by the
-802.1Q-2014 specification (section 8.6.8.2 and Annex L).
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 53fdecd7d839082fc25c50dd822eed6e4b533a61  e1000: fix race condition between e1000_down() and e1000_watchdog
 
-The syntax is:
+elapsed time: 196m
 
-tc qdisc add dev DEV parent NODE cbs locredit <LOCREDIT>
-   		hicredit <HICREDIT> sendslope <SENDSLOPE>
-		idleslope <IDLESLOPE>
+configs tested: 142
 
-(The order is not important)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
----
- tc/Makefile |   1 +
- tc/q_cbs.c  | 142 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 143 insertions(+)
- create mode 100644 tc/q_cbs.c
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                           allmodconfig
+i386                   randconfig-n0-10082251
+i386                             allmodconfig
+x86_64                 randconfig-x018-201741
+x86_64                 randconfig-x011-201741
+x86_64                 randconfig-x012-201741
+x86_64                 randconfig-x019-201741
+x86_64                 randconfig-x013-201741
+x86_64                 randconfig-x017-201741
+x86_64                 randconfig-x015-201741
+x86_64                 randconfig-x014-201741
+x86_64                 randconfig-x016-201741
+x86_64                 randconfig-x010-201741
+i386                   randconfig-a1-10090129
+i386                   randconfig-a0-10090129
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201741
+i386                     randconfig-s1-201741
+i386                               tinyconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201741
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201741
+i386                     randconfig-i0-201741
+i386                   randconfig-x014-201741
+i386                   randconfig-x013-201741
+i386                   randconfig-x015-201741
+i386                   randconfig-x019-201741
+i386                   randconfig-x011-201741
+i386                   randconfig-x018-201741
+i386                   randconfig-x010-201741
+i386                   randconfig-x017-201741
+i386                   randconfig-x012-201741
+i386                   randconfig-x016-201741
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-x070-201741
+i386                   randconfig-x071-201741
+i386                   randconfig-x072-201741
+i386                   randconfig-x073-201741
+i386                   randconfig-x074-201741
+i386                   randconfig-x075-201741
+i386                   randconfig-x076-201741
+i386                   randconfig-x077-201741
+i386                   randconfig-x078-201741
+i386                   randconfig-x079-201741
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x001-201741
+i386                   randconfig-x008-201741
+i386                   randconfig-x003-201741
+i386                   randconfig-x004-201741
+i386                   randconfig-x002-201741
+i386                   randconfig-x006-201741
+i386                   randconfig-x007-201741
+i386                   randconfig-x009-201741
+i386                   randconfig-x000-201741
+i386                   randconfig-x005-201741
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                 randconfig-x072-10101357
+i386                 randconfig-x070-10101357
+i386                 randconfig-x076-10101357
+i386                 randconfig-x073-10101357
+i386                 randconfig-x079-10101357
+i386                 randconfig-x075-10101357
+i386                 randconfig-x077-10101357
+i386                 randconfig-x074-10101357
+i386                 randconfig-x078-10101357
+i386                 randconfig-x071-10101357
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x001-201741
+x86_64                 randconfig-x000-201741
+x86_64                 randconfig-x004-201741
+x86_64                 randconfig-x008-201741
+x86_64                 randconfig-x006-201741
+x86_64                 randconfig-x007-201741
+x86_64                 randconfig-x005-201741
+x86_64                 randconfig-x009-201741
+x86_64                 randconfig-x003-201741
+x86_64                 randconfig-x002-201741
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
 
-diff --git a/tc/Makefile b/tc/Makefile
-index 777de5e6..24bd3e2e 100644
---- a/tc/Makefile
-+++ b/tc/Makefile
-@@ -69,6 +69,7 @@ TCMODULES += q_hhf.o
- TCMODULES += q_clsact.o
- TCMODULES += e_bpf.o
- TCMODULES += f_matchall.o
-+TCMODULES += q_cbs.o
- 
- TCSO :=
- ifeq ($(TC_CONFIG_ATM),y)
-diff --git a/tc/q_cbs.c b/tc/q_cbs.c
-new file mode 100644
-index 00000000..e53be654
---- /dev/null
-+++ b/tc/q_cbs.c
-@@ -0,0 +1,142 @@
-+/*
-+ * q_cbs.c		CBS.
-+ *
-+ *		This program is free software; you can redistribute it and/or
-+ *		modify it under the terms of the GNU General Public License
-+ *		as published by the Free Software Foundation; either version
-+ *		2 of the License, or (at your option) any later version.
-+ *
-+ * Authors:	Vinicius Costa Gomes <vinicius.gomes@intel.com>
-+ *
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <syslog.h>
-+#include <fcntl.h>
-+#include <sys/socket.h>
-+#include <netinet/in.h>
-+#include <arpa/inet.h>
-+#include <string.h>
-+
-+#include "utils.h"
-+#include "tc_util.h"
-+
-+static void explain(void)
-+{
-+	fprintf(stderr, "Usage: ... cbs hicredit BYTES locredit BYTES sendslope BPS idleslope BPS\n");
-+	fprintf(stderr, "           [offload 0|1]\n");
-+
-+}
-+
-+static void explain1(const char *arg, const char *val)
-+{
-+	fprintf(stderr, "cbs: illegal value for \"%s\": \"%s\"\n", arg, val);
-+}
-+
-+static int cbs_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct nlmsghdr *n)
-+{
-+	struct tc_cbs_qopt opt = {};
-+	struct rtattr *tail;
-+
-+	while (argc > 0) {
-+		if (matches(*argv, "offload") == 0) {
-+			NEXT_ARG();
-+			if (opt.offload) {
-+				fprintf(stderr, "cbs: duplicate \"offload\" specification\n");
-+				return -1;
-+			}
-+			if (get_u8(&opt.offload, *argv, 0)) {
-+				explain1("offload", *argv);
-+				return -1;
-+			}
-+		} else if (matches(*argv, "hicredit") == 0) {
-+			NEXT_ARG();
-+			if (opt.hicredit) {
-+				fprintf(stderr, "cbs: duplicate \"hicredit\" specification\n");
-+				return -1;
-+			}
-+			if (get_s32(&opt.hicredit, *argv, 0)) {
-+				explain1("hicredit", *argv);
-+				return -1;
-+			}
-+		} else if (matches(*argv, "locredit") == 0) {
-+			NEXT_ARG();
-+			if (opt.locredit) {
-+				fprintf(stderr, "cbs: duplicate \"locredit\" specification\n");
-+				return -1;
-+			}
-+			if (get_s32(&opt.locredit, *argv, 0)) {
-+				explain1("locredit", *argv);
-+				return -1;
-+			}
-+		} else if (matches(*argv, "sendslope") == 0) {
-+			NEXT_ARG();
-+			if (opt.sendslope) {
-+				fprintf(stderr, "cbs: duplicate \"sendslope\" specification\n");
-+				return -1;
-+			}
-+			if (get_s32(&opt.sendslope, *argv, 0)) {
-+				explain1("sendslope", *argv);
-+				return -1;
-+			}
-+		} else if (matches(*argv, "idleslope") == 0) {
-+			NEXT_ARG();
-+			if (opt.idleslope) {
-+				fprintf(stderr, "cbs: duplicate \"idleslope\" specification\n");
-+				return -1;
-+			}
-+			if (get_s32(&opt.idleslope, *argv, 0)) {
-+				explain1("idleslope", *argv);
-+				return -1;
-+			}
-+		} else if (strcmp(*argv, "help") == 0) {
-+			explain();
-+			return -1;
-+		} else {
-+			fprintf(stderr, "cbs: unknown parameter \"%s\"\n", *argv);
-+			explain();
-+			return -1;
-+		}
-+		argc--; argv++;
-+	}
-+
-+	tail = NLMSG_TAIL(n);
-+	addattr_l(n, 1024, TCA_OPTIONS, NULL, 0);
-+	addattr_l(n, 2024, TCA_CBS_PARMS, &opt, sizeof(opt));
-+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
-+	return 0;
-+}
-+
-+static int cbs_print_opt(struct qdisc_util *qu, FILE *f, struct rtattr *opt)
-+{
-+	struct rtattr *tb[TCA_CBS_MAX+1];
-+	struct tc_cbs_qopt *qopt;
-+
-+	if (opt == NULL)
-+		return 0;
-+
-+	parse_rtattr_nested(tb, TCA_CBS_MAX, opt);
-+
-+	if (tb[TCA_CBS_PARMS] == NULL)
-+		return -1;
-+
-+	qopt = RTA_DATA(tb[TCA_CBS_PARMS]);
-+	if (RTA_PAYLOAD(tb[TCA_CBS_PARMS])  < sizeof(*qopt))
-+		return -1;
-+
-+	fprintf(f, "hicredit %d ", qopt->hicredit);
-+	fprintf(f, "locredit %d ", qopt->locredit);
-+	fprintf(f, "sendslope %d ", qopt->sendslope);
-+	fprintf(f, "idleslope %d ", qopt->idleslope);
-+	fprintf(f, "offload %d ", qopt->offload);
-+
-+	return 0;
-+}
-+
-+struct qdisc_util cbs_qdisc_util = {
-+	.id		= "cbs",
-+	.parse_qopt	= cbs_parse_opt,
-+	.print_qopt	= cbs_print_opt,
-+};
--- 
-2.14.2
-
+Thanks,
+Fengguang
