@@ -1,92 +1,79 @@
-From: Jiri Pirko <jiri@resnulli.us>
-Date: Wed, 11 Oct 2017 14:56:35 +0200
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v4 0/6] tc-flower
- based cloud filters in i40e
-In-Reply-To: <150768099999.5320.1633617713417675266.stgit@anamdev.jf.intel.com>
-References: <150768099999.5320.1633617713417675266.stgit@anamdev.jf.intel.com>
-Message-ID: <20171011125635.GD2039@nanopsycho>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 11 Oct 2017 15:58:22 +0200
+Subject: [Intel-wired-lan] [PATCH] fm10k: mark PM functions as __maybe_unused
+Message-ID: <20171011135834.3628155-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Wed, Oct 11, 2017 at 02:24:12AM CEST, amritha.nambiar at intel.com wrote:
->This patch series enables configuring cloud filters in i40e
->using the tc-flower classifier. The classification function
->of the filter is to match a packet to a class. cls_flower is
->extended to offload classid to hardware. The offloaded classid
->is used direct matched packets to a traffic class on the device. 
->The approach here is similar to the tc 'prio' qdisc which uses
->the classid for band selection. The ingress qdisc is called ffff:0,
->so traffic classes are ffff:1 to ffff:8 (i40e has max of 8 TCs).
+A cleanup of the PM code left an incorrect #ifdef in place, leading
+to a harmless build warning:
 
+drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2502:12: error: 'fm10k_suspend' defined but not used [-Werror=unused-function]
+drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2475:12: error: 'fm10k_resume' defined but not used [-Werror=unused-function]
 
-NACK. This clearly looks like abuse of classid to something
-else. Classid is here to identify qdisc instance. However, you use it
-for hw tclass identification. This is mixing of apples and oranges.
+It's easier to use __maybe_unused attributes here, since you
+can't pick the wrong one.
 
-Why?
+Fixes: 8249c47c6ba4 ("fm10k: use generic PM hooks instead of legacy PCIe power hooks")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-Please don't try to abuse things! This is not nice.
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 1e9ae3197b17..52f8eb3c470e 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -2463,7 +2463,6 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
+ 	return err;
+ }
+ 
+-#ifdef CONFIG_PM
+ /**
+  * fm10k_resume - Generic PM resume hook
+  * @dev: generic device structure
+@@ -2472,7 +2471,7 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
+  * suspend or hibernation. This function does not need to handle lower PCIe
+  * device state as the stack takes care of that for us.
+  **/
+-static int fm10k_resume(struct device *dev)
++static int __maybe_unused fm10k_resume(struct device *dev)
+ {
+ 	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
+ 	struct net_device *netdev = interface->netdev;
+@@ -2499,7 +2498,7 @@ static int fm10k_resume(struct device *dev)
+  * system suspend or hibernation. This function does not need to handle lower
+  * PCIe device state as the stack takes care of that for us.
+  **/
+-static int fm10k_suspend(struct device *dev)
++static int __maybe_unused fm10k_suspend(struct device *dev)
+ {
+ 	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
+ 	struct net_device *netdev = interface->netdev;
+@@ -2511,8 +2510,6 @@ static int fm10k_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-#endif /* CONFIG_PM */
+-
+ /**
+  * fm10k_io_error_detected - called when PCI error is detected
+  * @pdev: Pointer to PCI device
+@@ -2643,11 +2640,9 @@ static struct pci_driver fm10k_driver = {
+ 	.id_table		= fm10k_pci_tbl,
+ 	.probe			= fm10k_probe,
+ 	.remove			= fm10k_remove,
+-#ifdef CONFIG_PM
+ 	.driver = {
+ 		.pm		= &fm10k_pm_ops,
+ 	},
+-#endif /* CONFIG_PM */
+ 	.sriov_configure	= fm10k_iov_configure,
+ 	.err_handler		= &fm10k_err_handler
+ };
+-- 
+2.9.0
 
-
-
-
->TC0 is minor number 1, TC1 is minor number 2 etc.
->
->The cloud filters are added for a VSI and are cleaned up when
->the VSI is deleted. The filters that match on L4 ports needs
->enhanced admin queue functions with big buffer support for
->extended fields in cloud filter commands.
->
->Example:
-># tc qdisc add dev eth0 ingress
-># ethtool -K eth0 hw-tc-offload on
->
->Match Dst IPv4,Dst Port and route to TC1:
-># tc filter add dev eth0 protocol ip parent ffff: prio 1 flower\
->  dst_ip 192.168.1.1/32 ip_proto udp dst_port 22\
->  skip_sw classid ffff:2
->
-># tc filter show dev eth0 parent ffff:
->filter pref 1 flower chain 0
->filter pref 1 flower chain 0 handle 0x1 classid ffff:2
->  eth_type ipv4
->  ip_proto udp
->  dst_ip 192.168.1.1
->  dst_port 22
->  skip_sw
->  in_hw
->
->v4: classid based approach to set traffic class for matched packets.
->
->Authors:
->Amritha Nambiar <amritha.nambiar@intel.com>
->Kiran Patil <kiran.patil@intel.com>
->Anjali Singhai Jain <anjali.singhai@intel.com>
->Jingjing Wu <jingjing.wu@intel.com>
->---
->
->Amritha Nambiar (6):
->      cls_flower: Offload classid to hardware
->      i40e: Map TCs with the VSI seids
->      i40e: Cloud filter mode for set_switch_config command
->      i40e: Admin queue definitions for cloud filters
->      i40e: Clean up of cloud filters
->      i40e: Enable cloud filters via tc-flower
->
->
-> drivers/net/ethernet/intel/i40e/i40e.h             |   55 +
-> drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  143 +++
-> drivers/net/ethernet/intel/i40e/i40e_common.c      |  193 ++++
-> drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |    2 
-> drivers/net/ethernet/intel/i40e/i40e_main.c        |  941 +++++++++++++++++++-
-> drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   18 
-> drivers/net/ethernet/intel/i40e/i40e_type.h        |   10 
-> .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  113 ++
-> include/net/pkt_cls.h                              |    1 
-> net/sched/cls_flower.c                             |    2 
-> 10 files changed, 1439 insertions(+), 39 deletions(-)
->
->--
