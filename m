@@ -1,112 +1,104 @@
-From: Alan Brady <alan.brady@intel.com>
-Date: Wed, 11 Oct 2017 14:49:43 -0700
-Subject: [Intel-wired-lan] [PATCH v2 2/2 net-next] i40e/i40evf: don't trust
-	VF to reset itself
-In-Reply-To: <20171011214943.7076-1-alan.brady@intel.com>
-References: <20171011214943.7076-1-alan.brady@intel.com>
-Message-ID: <20171011214943.7076-2-alan.brady@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Wed, 11 Oct 2017 22:20:16 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: mark PM functions as
+	__maybe_unused
+In-Reply-To: <20171011135834.3628155-1-arnd@arndb.de>
+References: <20171011135834.3628155-1-arnd@arndb.de>
+Message-ID: <02874ECE860811409154E81DA85FBB5882AC474E@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When using 'ethtool -L' on a VF to change number of requested queues
-from PF, we shouldn't trust the VF to reset itself after making the
-request.  Doing it that way opens the door for a potentially malicious
-VF to do nasty things to the PF which should never be the case.
 
-This makes it such that after VF makes a successful request, PF will
-then reset the VF to institute required changes.  Only if the request
-fails will PF send a message back to VF letting it know the request was
-unsuccessful.
 
-Testing-hints:
-There should be no real functional changes.  This is simply hardening
-against a potentially malicious VF.
+> -----Original Message-----
+> From: Arnd Bergmann [mailto:arnd at arndb.de]
+> Sent: Wednesday, October 11, 2017 6:58 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>; Keller, Jacob E
+> <jacob.e.keller@intel.com>; Kwan, Ngai-mint <ngai-mint.kwan@intel.com>;
+> David S. Miller <davem@davemloft.net>; Florian Westphal <fw@strlen.de>;
+> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
+> kernel at vger.kernel.org
+> Subject: [PATCH] fm10k: mark PM functions as __maybe_unused
+> 
+> A cleanup of the PM code left an incorrect #ifdef in place, leading
+> to a harmless build warning:
+> 
+> drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2502:12: error: 'fm10k_suspend'
+> defined but not used [-Werror=unused-function]
+> drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2475:12: error: 'fm10k_resume'
+> defined but not used [-Werror=unused-function]
+> 
+> It's easier to use __maybe_unused attributes here, since you
+> can't pick the wrong one.
+> 
 
-v2: remove extra commit tags
+Acked-by: Jacob Keller <jacob.e.keller@intel.com>
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c  | 9 +++++++--
- drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 7 +++----
- include/linux/avf/virtchnl.h                        | 4 ++--
- 3 files changed, 12 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index ce0981e2f605..f8a794b72462 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2045,8 +2045,9 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
-  * @msglen: msg length
-  *
-  * VFs get a default number of queues but can use this message to request a
-- * different number.  Will respond with either the number requested or the
-- * maximum we can support.
-+ * different number.  If the request is successful, PF will reset the VF and
-+ * return 0.  If unsuccessful, PF will send message informing VF of number of
-+ * available queues and return result of sending VF a message.
-  **/
- static int i40e_vc_request_queues_msg(struct i40e_vf *vf, u8 *msg, int msglen)
- {
-@@ -2077,7 +2078,11 @@ static int i40e_vc_request_queues_msg(struct i40e_vf *vf, u8 *msg, int msglen)
- 			 pf->queues_left);
- 		vfres->num_queue_pairs = pf->queues_left + cur_pairs;
- 	} else {
-+		/* successful request */
- 		vf->num_req_queues = req_pairs;
-+		i40e_vc_notify_vf_reset(vf);
-+		i40e_reset_vf(vf, false);
-+		return 0;
- 	}
- 
- 	return i40e_vc_send_msg_to_vf(vf, VIRTCHNL_OP_REQUEST_QUEUES, 0,
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 2bb81c39d85f..46c8b8a3907c 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -407,6 +407,7 @@ int i40evf_request_queues(struct i40evf_adapter *adapter, int num)
- 	vfres.num_queue_pairs = num;
- 
- 	adapter->current_op = VIRTCHNL_OP_REQUEST_QUEUES;
-+	adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
- 	return i40evf_send_pf_msg(adapter, VIRTCHNL_OP_REQUEST_QUEUES,
- 				  (u8 *)&vfres, sizeof(vfres));
- }
-@@ -1098,15 +1099,13 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 	case VIRTCHNL_OP_REQUEST_QUEUES: {
- 		struct virtchnl_vf_res_request *vfres =
- 			(struct virtchnl_vf_res_request *)msg;
--		if (vfres->num_queue_pairs == adapter->num_req_queues) {
--			adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
--			i40evf_schedule_reset(adapter);
--		} else {
-+		if (vfres->num_queue_pairs != adapter->num_req_queues) {
- 			dev_info(&adapter->pdev->dev,
- 				 "Requested %d queues, PF can support %d\n",
- 				 adapter->num_req_queues,
- 				 vfres->num_queue_pairs);
- 			adapter->num_req_queues = 0;
-+			adapter->flags &= ~I40EVF_FLAG_REINIT_ITR_NEEDED;
- 		}
- 		}
- 		break;
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 60e5d90cb18a..3ce61342fa31 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -333,8 +333,8 @@ struct virtchnl_vsi_queue_config_info {
-  * additional queues must be negotiated.  This is a best effort request as it
-  * is possible the PF does not have enough queues left to support the request.
-  * If the PF cannot support the number requested it will respond with the
-- * maximum number it is able to support; otherwise it will respond with the
-- * number requested.
-+ * maximum number it is able to support.  If the request is successful, PF will
-+ * then reset the VF to institute required changes.
-  */
- 
- /* VF resource request */
--- 
-2.14.2
+> Fixes: 8249c47c6ba4 ("fm10k: use generic PM hooks instead of legacy PCIe power
+> hooks")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 9 ++-------
+>  1 file changed, 2 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> index 1e9ae3197b17..52f8eb3c470e 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> @@ -2463,7 +2463,6 @@ static int fm10k_handle_resume(struct fm10k_intfc
+> *interface)
+>  	return err;
+>  }
+> 
+> -#ifdef CONFIG_PM
+>  /**
+>   * fm10k_resume - Generic PM resume hook
+>   * @dev: generic device structure
+> @@ -2472,7 +2471,7 @@ static int fm10k_handle_resume(struct fm10k_intfc
+> *interface)
+>   * suspend or hibernation. This function does not need to handle lower PCIe
+>   * device state as the stack takes care of that for us.
+>   **/
+> -static int fm10k_resume(struct device *dev)
+> +static int __maybe_unused fm10k_resume(struct device *dev)
+>  {
+>  	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
+>  	struct net_device *netdev = interface->netdev;
+> @@ -2499,7 +2498,7 @@ static int fm10k_resume(struct device *dev)
+>   * system suspend or hibernation. This function does not need to handle lower
+>   * PCIe device state as the stack takes care of that for us.
+>   **/
+> -static int fm10k_suspend(struct device *dev)
+> +static int __maybe_unused fm10k_suspend(struct device *dev)
+>  {
+>  	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
+>  	struct net_device *netdev = interface->netdev;
+> @@ -2511,8 +2510,6 @@ static int fm10k_suspend(struct device *dev)
+>  	return 0;
+>  }
+> 
+> -#endif /* CONFIG_PM */
+> -
+>  /**
+>   * fm10k_io_error_detected - called when PCI error is detected
+>   * @pdev: Pointer to PCI device
+> @@ -2643,11 +2640,9 @@ static struct pci_driver fm10k_driver = {
+>  	.id_table		= fm10k_pci_tbl,
+>  	.probe			= fm10k_probe,
+>  	.remove			= fm10k_remove,
+> -#ifdef CONFIG_PM
+>  	.driver = {
+>  		.pm		= &fm10k_pm_ops,
+>  	},
+> -#endif /* CONFIG_PM */
+>  	.sriov_configure	= fm10k_iov_configure,
+>  	.err_handler		= &fm10k_err_handler
+>  };
+> --
+> 2.9.0
 
