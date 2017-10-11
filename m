@@ -1,45 +1,64 @@
-From: Alan Brady <alan.brady@intel.com>
-Date: Wed, 11 Oct 2017 14:22:09 -0700
-Subject: [Intel-wired-lan] [PATCH 1/2 net-next] i40e: fix link reporting
-Message-ID: <20171011212210.4664-1-alan.brady@intel.com>
+From: Jiri Pirko <jiri@resnulli.us>
+Date: Wed, 11 Oct 2017 23:28:57 +0200
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v4 0/6] tc-flower
+ based cloud filters in i40e
+In-Reply-To: <20171011.141929.2232480660433567821.davem@davemloft.net>
+References: <20171011203832.GA9297@nanopsycho>
+ <20171011.134652.1653141099248918341.davem@davemloft.net>
+ <20171011205830.GD9297@nanopsycho>
+ <20171011.141929.2232480660433567821.davem@davemloft.net>
+Message-ID: <20171011212857.GE9297@nanopsycho>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When querying the NVM for supported phy_types, on some firmware
-versions, we were failing to actually fill out the phy_types which means
-ethtool wouldn't report any link types.
+Wed, Oct 11, 2017 at 11:19:29PM CEST, davem at davemloft.net wrote:
+>From: Jiri Pirko <jiri@resnulli.us>
+>Date: Wed, 11 Oct 2017 22:58:30 +0200
+>
+>> Well if I see classid, I expect it should refer to qdisc instance. So
+>> far, this has been always a case. But for some drivers, this would mean
+>> something totally different and unrelated. So what should I think?
+>> What's next? Classid could be abused to identify something else. I don't
+>> understand why.
+>> 
+>> classid in kernel and tclass in hw are 2 completely unrelated things.
+>
+>Why do they need to be different?
+>
+>It's qdisc instance in both cases.  The driver is just using it to
+>refer to the qdisc as offloaded in the hardware.  It's a key, nothing
+>more.  The context in which it is used doesn't change it's meaning.
+>
+>> Why they should share the same userspace api? What am I missing that
+>> indicates this is not an abuse?
+>
+>Why invent a completely new ID space to refer to something we exactly
+>have an ID for already?
+>
+>This duplication for the sake of "API" makes no sense to me.
+>
+>The handle is not going away.  It is not going to stop referring to
+>a specific qdisc.
+>
+>So it's stable and appropriate to use to refer to a qdisc, whatever
+>operation being performed, or offload being we are going to perform of
+>it.
 
-Testing-hints:
-Check 'ethtool <iface>' if you have the right (wrong?) firmware.
-Without this patch, no link modes will be reported.
+Okay, fair enough. Yet, I can't say I'm happy with it :/ But I guess
+that what you say makes sense.
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_common.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 1b85eb3e6443..8d0ee006606b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1613,8 +1613,13 @@ i40e_status i40e_aq_get_phy_capabilities(struct i40e_hw *hw,
- 	if (report_init) {
- 		if (hw->mac.type ==  I40E_MAC_XL710 &&
- 		    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
--		    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710)
-+		    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
- 			status = i40e_aq_get_link_info(hw, true, NULL, NULL);
-+		} else {
-+			hw->phy.phy_types = le32_to_cpu(abilities->phy_type);
-+			hw->phy.phy_types |=
-+					((u64)abilities->phy_type_ext << 32);
-+		}
- 	}
- 
- 	return status;
--- 
-2.14.2
+>
+>I notice you are quite feisty lately in your reviews of other people's
+>work, so I have to ask if things are very stressful in your life?
 
+:) Yeah, that is probably coincidental. Lots of odd offloading stuff is
+happening lately.
+
+
+>Please drink a nice warm cup of tea and calm down :-)
+
+I'm perfectly calm. But thanks for showing the care :)
