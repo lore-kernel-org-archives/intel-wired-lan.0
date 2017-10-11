@@ -1,53 +1,45 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed, 11 Oct 2017 14:40:00 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v5 4/5] net/sched: Add
-	support for HW offloading for CBS
-In-Reply-To: <20171011070751.GC2039@nanopsycho>
-References: <20171011004400.14946-1-vinicius.gomes@intel.com>
- <20171011004400.14946-5-vinicius.gomes@intel.com>
- <20171011070751.GC2039@nanopsycho>
-Message-ID: <87shepmki7.fsf@intel.com>
+From: Alan Brady <alan.brady@intel.com>
+Date: Wed, 11 Oct 2017 14:49:42 -0700
+Subject: [Intel-wired-lan] [PATCH v2 1/2 net-next] i40e: fix link reporting
+Message-ID: <20171011214943.7076-1-alan.brady@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jiri Pirko <jiri@resnulli.us> writes:
+When querying the NVM for supported phy_types, on some firmware
+versions, we were failing to actually fill out the phy_types which means
+ethtool wouldn't report any link types.
 
-[...]
+Testing-hints:
+Check 'ethtool <iface>' if you have the right (wrong?) firmware.
+Without this patch, no link modes will be reported.
 
->>+static void disable_cbs_offload(struct net_device *dev,
->>+				struct cbs_sched_data *q)
->>+{
->>+	struct tc_cbs_qopt_offload cbs = { };
->>+	const struct net_device_ops *ops;
->>+	int err;
->>+
->>+	if (!q->offload)
->>+		return;
->>+
->>+	ops = dev->netdev_ops;
->>+	if (!ops->ndo_setup_tc)
->>+		return;
->>+
->>+	cbs.queue = q->queue;
->>+	cbs.enable = 0;
->>+
->>+	err = ops->ndo_setup_tc(dev, TC_SETUP_CBS, &cbs);
->>+	if (err < 0)
->>+		pr_warn("Couldn't disable CBS offload for queue %d\n",
->>+			cbs.queue);
->
-> Hmm, you have separete helper for disable, yet you have enable spread
-> over cbs_change. Please push the enable code into enable_cbs_offload.
-> While you are at it, change the names to cbs_ to maintain the qdisc
-> prefix in function names: cbs_offload_enable/cbs_offload_disable
->
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Sure.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 1b85eb3e6443..8d0ee006606b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1613,8 +1613,13 @@ i40e_status i40e_aq_get_phy_capabilities(struct i40e_hw *hw,
+ 	if (report_init) {
+ 		if (hw->mac.type ==  I40E_MAC_XL710 &&
+ 		    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+-		    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710)
++		    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
+ 			status = i40e_aq_get_link_info(hw, true, NULL, NULL);
++		} else {
++			hw->phy.phy_types = le32_to_cpu(abilities->phy_type);
++			hw->phy.phy_types |=
++					((u64)abilities->phy_type_ext << 32);
++		}
+ 	}
+ 
+ 	return status;
+-- 
+2.14.2
 
-
-Cheers,
---
-Vinicius
