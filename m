@@ -1,50 +1,115 @@
-From: David Miller <davem@davemloft.net>
-Date: Wed, 11 Oct 2017 14:19:29 -0700 (PDT)
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v4 0/6] tc-flower
- based cloud filters in i40e
-In-Reply-To: <20171011205830.GD9297@nanopsycho>
-References: <20171011203832.GA9297@nanopsycho>
- <20171011.134652.1653141099248918341.davem@davemloft.net>
- <20171011205830.GD9297@nanopsycho>
-Message-ID: <20171011.141929.2232480660433567821.davem@davemloft.net>
+From: Alan Brady <alan.brady@intel.com>
+Date: Wed, 11 Oct 2017 14:22:10 -0700
+Subject: [Intel-wired-lan] [PATCH 2/2 net-next] i40e/i40evf: don't trust VF
+	to reset itself
+In-Reply-To: <20171011212210.4664-1-alan.brady@intel.com>
+References: <20171011212210.4664-1-alan.brady@intel.com>
+Message-ID: <20171011212210.4664-2-alan.brady@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jiri Pirko <jiri@resnulli.us>
-Date: Wed, 11 Oct 2017 22:58:30 +0200
+When using 'ethtool -L' on a VF to change number of requested queues
+from PF, we shouldn't trust the VF to reset itself after making the
+request.  Doing it that way opens the door for a potentially malicious
+VF to do nasty things to the PF which should never be the case.
 
-> Well if I see classid, I expect it should refer to qdisc instance. So
-> far, this has been always a case. But for some drivers, this would mean
-> something totally different and unrelated. So what should I think?
-> What's next? Classid could be abused to identify something else. I don't
-> understand why.
-> 
-> classid in kernel and tclass in hw are 2 completely unrelated things.
+This makes it such that after VF makes a successful request, PF will
+then reset the VF to institute required changes.  Only if the request
+fails will PF send a message back to VF letting it know the request was
+unsuccessful.
 
-Why do they need to be different?
+Testing-hints:
+There should be no real functional changes.  This is simply hardening
+against a potentially malicious VF.
 
-It's qdisc instance in both cases.  The driver is just using it to
-refer to the qdisc as offloaded in the hardware.  It's a key, nothing
-more.  The context in which it is used doesn't change it's meaning.
+Change-Id: Id21e31148cdbaf0936a22478ee49994d813351d0
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+Change-type: DefectResolution
+Title: i40e/i40evf: don't trust VF to reset itself
+Reviewed-on: https://git-amr-1.devtools.intel.com/gerrit/178054
+Tested-by: ND Linux CI Server <nd.linux.ci.server@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c  | 9 +++++++--
+ drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 7 +++----
+ include/linux/avf/virtchnl.h                        | 4 ++--
+ 3 files changed, 12 insertions(+), 8 deletions(-)
 
-> Why they should share the same userspace api? What am I missing that
-> indicates this is not an abuse?
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index ce0981e2f605..f8a794b72462 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2045,8 +2045,9 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+  * @msglen: msg length
+  *
+  * VFs get a default number of queues but can use this message to request a
+- * different number.  Will respond with either the number requested or the
+- * maximum we can support.
++ * different number.  If the request is successful, PF will reset the VF and
++ * return 0.  If unsuccessful, PF will send message informing VF of number of
++ * available queues and return result of sending VF a message.
+  **/
+ static int i40e_vc_request_queues_msg(struct i40e_vf *vf, u8 *msg, int msglen)
+ {
+@@ -2077,7 +2078,11 @@ static int i40e_vc_request_queues_msg(struct i40e_vf *vf, u8 *msg, int msglen)
+ 			 pf->queues_left);
+ 		vfres->num_queue_pairs = pf->queues_left + cur_pairs;
+ 	} else {
++		/* successful request */
+ 		vf->num_req_queues = req_pairs;
++		i40e_vc_notify_vf_reset(vf);
++		i40e_reset_vf(vf, false);
++		return 0;
+ 	}
+ 
+ 	return i40e_vc_send_msg_to_vf(vf, VIRTCHNL_OP_REQUEST_QUEUES, 0,
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index 2bb81c39d85f..46c8b8a3907c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -407,6 +407,7 @@ int i40evf_request_queues(struct i40evf_adapter *adapter, int num)
+ 	vfres.num_queue_pairs = num;
+ 
+ 	adapter->current_op = VIRTCHNL_OP_REQUEST_QUEUES;
++	adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
+ 	return i40evf_send_pf_msg(adapter, VIRTCHNL_OP_REQUEST_QUEUES,
+ 				  (u8 *)&vfres, sizeof(vfres));
+ }
+@@ -1098,15 +1099,13 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 	case VIRTCHNL_OP_REQUEST_QUEUES: {
+ 		struct virtchnl_vf_res_request *vfres =
+ 			(struct virtchnl_vf_res_request *)msg;
+-		if (vfres->num_queue_pairs == adapter->num_req_queues) {
+-			adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
+-			i40evf_schedule_reset(adapter);
+-		} else {
++		if (vfres->num_queue_pairs != adapter->num_req_queues) {
+ 			dev_info(&adapter->pdev->dev,
+ 				 "Requested %d queues, PF can support %d\n",
+ 				 adapter->num_req_queues,
+ 				 vfres->num_queue_pairs);
+ 			adapter->num_req_queues = 0;
++			adapter->flags &= ~I40EVF_FLAG_REINIT_ITR_NEEDED;
+ 		}
+ 		}
+ 		break;
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index 60e5d90cb18a..3ce61342fa31 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -333,8 +333,8 @@ struct virtchnl_vsi_queue_config_info {
+  * additional queues must be negotiated.  This is a best effort request as it
+  * is possible the PF does not have enough queues left to support the request.
+  * If the PF cannot support the number requested it will respond with the
+- * maximum number it is able to support; otherwise it will respond with the
+- * number requested.
++ * maximum number it is able to support.  If the request is successful, PF will
++ * then reset the VF to institute required changes.
+  */
+ 
+ /* VF resource request */
+-- 
+2.14.2
 
-Why invent a completely new ID space to refer to something we exactly
-have an ID for already?
-
-This duplication for the sake of "API" makes no sense to me.
-
-The handle is not going away.  It is not going to stop referring to
-a specific qdisc.
-
-So it's stable and appropriate to use to refer to a qdisc, whatever
-operation being performed, or offload being we are going to perform of
-it.
-
-I notice you are quite feisty lately in your reviews of other people's
-work, so I have to ask if things are very stressful in your life?
-Please drink a nice warm cup of tea and calm down :-)
