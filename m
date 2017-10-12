@@ -1,101 +1,149 @@
-From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-Date: Thu, 12 Oct 2017 09:16:40 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v6 2/5] mqprio: Implement
- select_queue class_ops
-In-Reply-To: <CAKgT0UcpSq2-LaqDKhTWKoZdemDE2SOCWggxGBjCH98qYPBGFw@mail.gmail.com>
-References: <20171012005449.26533-1-vinicius.gomes@intel.com>
- <20171012005449.26533-3-vinicius.gomes@intel.com>
- <CAKgT0Ufo1tG4GpSkGaWuUxqhzEUOT7wcBLuaZx_mZmEL+9SnXw@mail.gmail.com>
- <633dfce2-71f1-f704-7ae2-b1ef2ba9b448@intel.com>
- <CAKgT0UcpSq2-LaqDKhTWKoZdemDE2SOCWggxGBjCH98qYPBGFw@mail.gmail.com>
-Message-ID: <b5dabe15-79f3-c314-eb5f-fef686b060c6@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 13 Oct 2017 01:10:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 2b540f64f8275c81d7c695e15ff361c4298cf972
+Message-ID: <59dfa1f1.stt7Aa7C5a/uaWsM%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 2b540f64f8275c81d7c695e15ff361c4298cf972  i40e/i40evf: don't trust VF to reset itself
 
+elapsed time: 120m
 
-On 10/12/2017 09:09 AM, Alexander Duyck wrote:
-> On Thu, Oct 12, 2017 at 8:59 AM, Jesus Sanchez-Palencia
-> <jesus.sanchez-palencia@intel.com> wrote:
->> Hi Alex,
->>
->>
->> On 10/12/2017 08:21 AM, Alexander Duyck wrote:
->>> On Wed, Oct 11, 2017 at 5:54 PM, Vinicius Costa Gomes
->>> <vinicius.gomes@intel.com> wrote:
->>>> From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
->>>>
->>>> When replacing a child qdisc from mqprio, tc_modify_qdisc() must fetch
->>>> the netdev_queue pointer that the current child qdisc is associated
->>>> with before creating the new qdisc.
->>>>
->>>> Currently, when using mqprio as root qdisc, the kernel will end up
->>>> getting the queue #0 pointer from the mqprio (root qdisc), which leaves
->>>> any new child qdisc with a possibly wrong netdev_queue pointer.
->>>>
->>>> Implementing the Qdisc_class_ops select_queue() on mqprio fixes this
->>>> issue and avoid an inconsistent state when child qdiscs are replaced.
->>>>
->>>> Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
->>>> ---
->>>>  net/sched/sch_mqprio.c | 7 +++++++
->>>>  1 file changed, 7 insertions(+)
->>>>
->>>> diff --git a/net/sched/sch_mqprio.c b/net/sched/sch_mqprio.c
->>>> index 6bcdfe6e7b63..8c042ae323e3 100644
->>>> --- a/net/sched/sch_mqprio.c
->>>> +++ b/net/sched/sch_mqprio.c
->>>> @@ -396,6 +396,12 @@ static void mqprio_walk(struct Qdisc *sch, struct qdisc_walker *arg)
->>>>         }
->>>>  }
->>>>
->>>> +static struct netdev_queue *mqprio_select_queue(struct Qdisc *sch,
->>>> +                                               struct tcmsg *tcm)
->>>> +{
->>>> +       return mqprio_queue_get(sch, TC_H_MIN(tcm->tcm_parent));
->>>> +}
->>>> +
->>>
->>> So I was just comparing this against mq_selet_queue, and I was
->>> wondering why we are willing to return NULL here instead of just
->>> returning a pointer to the first Tx queue? I realize there is the fix
->>> in the first patch but it seems like if we are going to go that route
->>> then maybe we should update mq as well so that both of these qdiscs
->>> behave the same way. Either this should work like mq, or mq should
->>> work like this, but we shouldn't have them exposing different
->>> behaviors.
->>
->>
->> This was brought up by Cong Wang during the review of our v2. Based on my
->> understanding, the point I've made is that for mqprio the inner qdiscs are
->> always 'related' to one of the Tx netdev_queues per design. Returning any other
->> queue as a fallback seemed like going against that to me.
->>
->> I'm still inclined to say that we should keep this function as the patch is
->> proposing, thus either returning the correct netdev_queue for a given handle, or
->> NULL as a way to flag that something was 'wrong' with it. Returning queue #0 is
->> misleading in that sense, imho.
->>
->> As for aligning mq_select_queue() with this approach, if my reasoning behind
->> mqprio is correct and also applies to mq, I would be happy to send that fix as
->> part our v7.
->>
->> What do you think?
->>
->>
->> Thanks,
->> Jesus
-> 
-> I think it would be better to bring mq_select_queue in line with your
-> fix. You could probably just add it to your first patch. That way if
-> the user specifies a bad qdisc classid they don't get to just
-> overwrite the qdisc on Tx queue 0.
+configs tested: 125
 
-Ok, I will send the fix then, but I'm just not sure if I'll send it together
-with the patch fixing qdisc_alloc(). Looks like a change that should be together
-with this one of after it, instead.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Anyhow, it will be fixed in our v7. Thanks!
+arm                        spear3xx_defconfig
+mips                      bmips_stb_defconfig
+sparc                       sparc64_defconfig
+x86_64                 randconfig-a0-10130045
+parisc                            allnoconfig
+powerpc                        icon_defconfig
+powerpc                 linkstation_defconfig
+i386                   randconfig-x014-201741
+i386                   randconfig-x013-201741
+i386                   randconfig-x015-201741
+i386                   randconfig-x019-201741
+i386                   randconfig-x011-201741
+i386                   randconfig-x018-201741
+i386                   randconfig-x010-201741
+i386                   randconfig-x017-201741
+i386                   randconfig-x012-201741
+i386                   randconfig-x016-201741
+i386                     randconfig-n0-201741
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                              defconfig
+arm                        multi_v5_defconfig
+powerpc64                        allyesconfig
+i386                             allmodconfig
+x86_64                 randconfig-x018-201741
+x86_64                 randconfig-x011-201741
+x86_64                 randconfig-x012-201741
+x86_64                 randconfig-x019-201741
+x86_64                 randconfig-x013-201741
+x86_64                 randconfig-x017-201741
+x86_64                 randconfig-x015-201741
+x86_64                 randconfig-x014-201741
+x86_64                 randconfig-x016-201741
+x86_64                 randconfig-x010-201741
+i386                   randconfig-a1-10090129
+i386                   randconfig-a0-10090129
+alpha                               defconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201741
+i386                     randconfig-s1-201741
+i386                               tinyconfig
+x86_64                   randconfig-i0-201741
+sh                           se7721_defconfig
+sh                            shmin_defconfig
+arm                         nhk8815_defconfig
+cris                    etrax-100lx_defconfig
+sh                        edosk7760_defconfig
+arm                             ezx_defconfig
+m32r                        oaks32r_defconfig
+parisc                         a500_defconfig
+powerpc                     ksi8560_defconfig
+arm                        raumfeld_defconfig
+sparc                       sparc32_defconfig
+mips                  maltasmvp_eva_defconfig
+powerpc                     ep8248e_defconfig
+ia64                             alldefconfig
+powerpc                     asp8347_defconfig
+i386                   randconfig-x074-201741
+i386                   randconfig-x076-201741
+i386                   randconfig-x071-201741
+i386                   randconfig-x077-201741
+i386                   randconfig-x073-201741
+i386                   randconfig-x079-201741
+i386                   randconfig-x072-201741
+i386                   randconfig-x078-201741
+i386                   randconfig-x075-201741
+i386                   randconfig-x070-201741
+x86_64                           allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                          collie_defconfig
+mips                        bcm47xx_defconfig
+sh                           se7724_defconfig
+arm                        cerfcube_defconfig
+arm                      footbridge_defconfig
+powerpc                   currituck_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                 randconfig-x001-201741
+x86_64                 randconfig-x000-201741
+x86_64                 randconfig-x004-201741
+x86_64                 randconfig-x008-201741
+x86_64                 randconfig-x006-201741
+x86_64                 randconfig-x007-201741
+x86_64                 randconfig-x005-201741
+x86_64                 randconfig-x009-201741
+x86_64                 randconfig-x003-201741
+x86_64                 randconfig-x002-201741
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                 randconfig-r0-10130041
+i386                   randconfig-x001-201741
+i386                   randconfig-x008-201741
+i386                   randconfig-x003-201741
+i386                   randconfig-x004-201741
+i386                   randconfig-x002-201741
+i386                   randconfig-x006-201741
+i386                   randconfig-x007-201741
+i386                   randconfig-x009-201741
+i386                   randconfig-x000-201741
+i386                   randconfig-x005-201741
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
