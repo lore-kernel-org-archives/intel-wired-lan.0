@@ -1,34 +1,76 @@
-From: Henrik Austad <henrik@austad.us>
-Date: Thu, 12 Oct 2017 10:04:12 +0200
-Subject: [Intel-wired-lan] [next-queue PATCH v6 4/5] net/sched: Add
- support for HW offloading for CBS
-In-Reply-To: <20171012005449.26533-5-vinicius.gomes@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 12 Oct 2017 08:21:29 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v6 2/5] mqprio: Implement
+ select_queue class_ops
+In-Reply-To: <20171012005449.26533-3-vinicius.gomes@intel.com>
 References: <20171012005449.26533-1-vinicius.gomes@intel.com>
- <20171012005449.26533-5-vinicius.gomes@intel.com>
-Message-ID: <20171012080412.GB29396@sisyphus.home.austad.us>
+ <20171012005449.26533-3-vinicius.gomes@intel.com>
+Message-ID: <CAKgT0Ufo1tG4GpSkGaWuUxqhzEUOT7wcBLuaZx_mZmEL+9SnXw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Oct 11, 2017 at 05:54:48PM -0700, Vinicius Costa Gomes wrote:
-> This adds support for offloading the CBS algorithm to the controller,
-> if supported. Drivers wanting to support CBS offload must implement
-> the .ndo_setup_tc callback and handle the TC_SETUP_CBS (introduced
-> here) type.
+On Wed, Oct 11, 2017 at 5:54 PM, Vinicius Costa Gomes
+<vinicius.gomes@intel.com> wrote:
+> From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+>
+> When replacing a child qdisc from mqprio, tc_modify_qdisc() must fetch
+> the netdev_queue pointer that the current child qdisc is associated
+> with before creating the new qdisc.
+>
+> Currently, when using mqprio as root qdisc, the kernel will end up
+> getting the queue #0 pointer from the mqprio (root qdisc), which leaves
+> any new child qdisc with a possibly wrong netdev_queue pointer.
+>
+> Implementing the Qdisc_class_ops select_queue() on mqprio fixes this
+> issue and avoid an inconsistent state when child qdiscs are replaced.
+>
+> Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+> ---
+>  net/sched/sch_mqprio.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> diff --git a/net/sched/sch_mqprio.c b/net/sched/sch_mqprio.c
+> index 6bcdfe6e7b63..8c042ae323e3 100644
+> --- a/net/sched/sch_mqprio.c
+> +++ b/net/sched/sch_mqprio.c
+> @@ -396,6 +396,12 @@ static void mqprio_walk(struct Qdisc *sch, struct qdisc_walker *arg)
+>         }
+>  }
+>
+> +static struct netdev_queue *mqprio_select_queue(struct Qdisc *sch,
+> +                                               struct tcmsg *tcm)
+> +{
+> +       return mqprio_queue_get(sch, TC_H_MIN(tcm->tcm_parent));
+> +}
+> +
 
-This also answered my question in the previous patch (as to how hw 
-offloading can be enabled).
+So I was just comparing this against mq_selet_queue, and I was
+wondering why we are willing to return NULL here instead of just
+returning a pointer to the first Tx queue? I realize there is the fix
+in the first patch but it seems like if we are going to go that route
+then maybe we should update mq as well so that both of these qdiscs
+behave the same way. Either this should work like mq, or mq should
+work like this, but we shouldn't have them exposing different
+behaviors.
 
-/me goes off to test the series
-Looking good so far!
-
--Henrik
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 181 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171012/1eed015e/attachment.asc>
+>  static const struct Qdisc_class_ops mqprio_class_ops = {
+>         .graft          = mqprio_graft,
+>         .leaf           = mqprio_leaf,
+> @@ -403,6 +409,7 @@ static const struct Qdisc_class_ops mqprio_class_ops = {
+>         .walk           = mqprio_walk,
+>         .dump           = mqprio_dump_class,
+>         .dump_stats     = mqprio_dump_class_stats,
+> +       .select_queue   = mqprio_select_queue,
+>  };
+>
+>  static struct Qdisc_ops mqprio_qdisc_ops __read_mostly = {
+> --
+> 2.14.2
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
