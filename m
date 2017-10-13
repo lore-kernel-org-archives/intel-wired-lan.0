@@ -1,427 +1,210 @@
-From: Ivan Khoronzhuk <ivan.khoronzhuk@linaro.org>
-Date: Fri, 13 Oct 2017 22:59:26 +0300
-Subject: [Intel-wired-lan] [next-queue PATCH v7 4/6] net/sched:
- Introduce Credit Based Shaper (CBS) qdisc
-In-Reply-To: <20171013004005.17416-5-vinicius.gomes@intel.com>
-References: <20171013004005.17416-1-vinicius.gomes@intel.com>
- <20171013004005.17416-5-vinicius.gomes@intel.com>
-Message-ID: <20171013195924.GA19439@khorivan>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 14 Oct 2017 04:22:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 57972389877bc1ee1f5d286e99a32e0a8b36c300
+Message-ID: <59e1207a.QKiOpMV1uW78tBp7%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Oct 12, 2017 at 05:40:03PM -0700, Vinicius Costa Gomes wrote:
-> This queueing discipline implements the shaper algorithm defined by
-> the 802.1Q-2014 Section 8.6.8.2 and detailed in Annex L.
-> 
-> It's primary usage is to apply some bandwidth reservation to user
-> defined traffic classes, which are mapped to different queues via the
-> mqprio qdisc.
-> 
-> Only a simple software implementation is added for now.
-> 
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-> ---
->  include/uapi/linux/pkt_sched.h |  18 +++
->  net/sched/Kconfig              |  11 ++
->  net/sched/Makefile             |   1 +
->  net/sched/sch_cbs.c            | 314 +++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 344 insertions(+)
->  create mode 100644 net/sched/sch_cbs.c
-> 
-> diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
-> index 099bf5528fed..41e349df4bf4 100644
-> --- a/include/uapi/linux/pkt_sched.h
-> +++ b/include/uapi/linux/pkt_sched.h
-> @@ -871,4 +871,22 @@ struct tc_pie_xstats {
->  	__u32 maxq;             /* maximum queue size */
->  	__u32 ecn_mark;         /* packets marked with ecn*/
->  };
-> +
-> +/* CBS */
-> +struct tc_cbs_qopt {
-> +	__u8 offload;
-> +	__s32 hicredit;
-> +	__s32 locredit;
-> +	__s32 idleslope;
-> +	__s32 sendslope;
-> +};
-> +
-> +enum {
-> +	TCA_CBS_UNSPEC,
-> +	TCA_CBS_PARMS,
-> +	__TCA_CBS_MAX,
-> +};
-> +
-> +#define TCA_CBS_MAX (__TCA_CBS_MAX - 1)
-> +
->  #endif
-> diff --git a/net/sched/Kconfig b/net/sched/Kconfig
-> index e70ed26485a2..c03d86a7775e 100644
-> --- a/net/sched/Kconfig
-> +++ b/net/sched/Kconfig
-> @@ -172,6 +172,17 @@ config NET_SCH_TBF
->  	  To compile this code as a module, choose M here: the
->  	  module will be called sch_tbf.
->  
-> +config NET_SCH_CBS
-> +	tristate "Credit Based Shaper (CBS)"
-> +	---help---
-> +	  Say Y here if you want to use the Credit Based Shaper (CBS) packet
-> +	  scheduling algorithm.
-> +
-> +	  See the top of <file:net/sched/sch_cbs.c> for more details.
-> +
-> +	  To compile this code as a module, choose M here: the
-> +	  module will be called sch_cbs.
-> +
->  config NET_SCH_GRED
->  	tristate "Generic Random Early Detection (GRED)"
->  	---help---
-> diff --git a/net/sched/Makefile b/net/sched/Makefile
-> index 7b915d226de7..80c8f92d162d 100644
-> --- a/net/sched/Makefile
-> +++ b/net/sched/Makefile
-> @@ -52,6 +52,7 @@ obj-$(CONFIG_NET_SCH_FQ_CODEL)	+= sch_fq_codel.o
->  obj-$(CONFIG_NET_SCH_FQ)	+= sch_fq.o
->  obj-$(CONFIG_NET_SCH_HHF)	+= sch_hhf.o
->  obj-$(CONFIG_NET_SCH_PIE)	+= sch_pie.o
-> +obj-$(CONFIG_NET_SCH_CBS)	+= sch_cbs.o
->  
->  obj-$(CONFIG_NET_CLS_U32)	+= cls_u32.o
->  obj-$(CONFIG_NET_CLS_ROUTE4)	+= cls_route.o
-> diff --git a/net/sched/sch_cbs.c b/net/sched/sch_cbs.c
-> new file mode 100644
-> index 000000000000..0643587e6dc8
-> --- /dev/null
-> +++ b/net/sched/sch_cbs.c
-> @@ -0,0 +1,314 @@
-> +/*
-> + * net/sched/sch_cbs.c	Credit Based Shaper
-> + *
-> + *		This program is free software; you can redistribute it and/or
-> + *		modify it under the terms of the GNU General Public License
-> + *		as published by the Free Software Foundation; either version
-> + *		2 of the License, or (at your option) any later version.
-> + *
-> + * Authors:	Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> + *
-> + */
-> +
-> +/* Credit Based Shaper (CBS)
-> + * =========================
-> + *
-> + * This is a simple rate-limiting shaper aimed at TSN applications on
-> + * systems with known traffic workloads.
-> + *
-> + * Its algorithm is defined by the IEEE 802.1Q-2014 Specification,
-> + * Section 8.6.8.2, and explained in more detail in the Annex L of the
-> + * same specification.
-> + *
-> + * There are four tunables to be considered:
-> + *
-> + *	'idleslope': Idleslope is the rate of credits that is
-> + *	accumulated (in kilobits per second) when there is at least
-> + *	one packet waiting for transmission. Packets are transmitted
-> + *	when the current value of credits is equal or greater than
-> + *	zero. When there is no packet to be transmitted the amount of
-> + *	credits is set to zero. This is the main tunable of the CBS
-> + *	algorithm.
-> + *
-> + *	'sendslope':
-> + *	Sendslope is the rate of credits that is depleted (it should be a
-> + *	negative number of kilobits per second) when a transmission is
-> + *	ocurring. It can be calculated as follows, (IEEE 802.1Q-2014 Section
-> + *	8.6.8.2 item g):
-> + *
-> + *	sendslope = idleslope - port_transmit_rate
-> + *
-> + *	'hicredit': Hicredit defines the maximum amount of credits (in
-> + *	bytes) that can be accumulated. Hicredit depends on the
-> + *	characteristics of interfering traffic,
-> + *	'max_interference_size' is the maximum size of any burst of
-> + *	traffic that can delay the transmission of a frame that is
-> + *	available for transmission for this traffic class, (IEEE
-> + *	802.1Q-2014 Annex L, Equation L-3):
-> + *
-> + *	hicredit = max_interference_size * (idleslope / port_transmit_rate)
-> + *
-> + *	'locredit': Locredit is the minimum amount of credits that can
-> + *	be reached. It is a function of the traffic flowing through
-> + *	this qdisc (IEEE 802.1Q-2014 Annex L, Equation L-2):
-> + *
-> + *	locredit = max_frame_size * (sendslope / port_transmit_rate)
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/types.h>
-> +#include <linux/kernel.h>
-> +#include <linux/string.h>
-> +#include <linux/errno.h>
-> +#include <linux/skbuff.h>
-> +#include <net/netlink.h>
-> +#include <net/sch_generic.h>
-> +#include <net/pkt_sched.h>
-> +
-> +#define BYTES_PER_KBIT (1000 / 8)
-> +
-> +struct cbs_sched_data {
-> +	s64 port_rate; /* in bytes/s */
-> +	s64 last; /* timestamp in ns */
-> +	s64 credits; /* in bytes */
-> +	s32 locredit; /* in bytes */
-> +	s32 hicredit; /* in bytes */
-> +	s32 sendslope; /* in kbits/s */
-> +	s32 idleslope; /* in kbits/s */
-> +	struct qdisc_watchdog watchdog;
-> +	int (*enqueue)(struct sk_buff *skb, struct Qdisc *sch);
-> +	struct sk_buff *(*dequeue)(struct Qdisc *sch);
-> +};
-> +
-> +static int cbs_enqueue_soft(struct sk_buff *skb, struct Qdisc *sch)
-> +{
-> +	struct cbs_sched_data *q = qdisc_priv(sch);
-> +
-> +	if (sch->q.qlen == 0 && q->credits > 0) {
-> +		/* We need to stop accumulating credits when there's
-> +		 * no packet enqueued packets and q->credits is
-no packet -> no
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 57972389877bc1ee1f5d286e99a32e0a8b36c300  fm10k: mark PM functions as __maybe_unused
 
-> +		 * positive.
-> +		 */
-> +		q->credits = 0;
-> +		q->last = ktime_get_ns();
-> +	}
-> +
-> +	return qdisc_enqueue_tail(skb, sch);
-> +}
-> +
-> +static int cbs_enqueue(struct sk_buff *skb, struct Qdisc *sch,
-> +		       struct sk_buff **to_free)
-> +{
-> +	struct cbs_sched_data *q = qdisc_priv(sch);
-> +
-> +	return q->enqueue(skb, sch);
-> +}
-> +
-> +/* timediff is in ns, slope is in kbps */
-> +static s64 timediff_to_credits(s64 timediff, s32 slope)
-> +{
-> +	s64 credits = timediff * slope * BYTES_PER_KBIT;
-> +
-> +	do_div(credits, NSEC_PER_SEC);
-> +
-> +	return credits;
-> +}
-> +
-> +static s64 delay_from_credits(s64 credits, s32 slope)
-> +{
-> +	s64 rate = slope * BYTES_PER_KBIT;
-> +	s64 delay;
-> +
-> +	if (unlikely(rate == 0))
-> +		return S64_MAX;
-> +
-> +	delay = -credits * NSEC_PER_SEC;
-> +	do_div(delay, rate);
-> +
-> +	return delay;
-> +}
-> +
-> +static s64 credits_from_len(unsigned int len, s32 slope, s64 port_rate)
-> +{
-> +	/* As do_div() only works on unsigned quantities, convert
-> +	 * slope to a positive number here, and credits to a negative
-> +	 * number before returning.
-> +	 */
-> +	s64 rate = -slope * BYTES_PER_KBIT;
-> +	s64 credits;
-> +
-> +	if (unlikely(port_rate == 0))
-> +		return S64_MAX;
-> +
-> +	credits = len * rate;
-> +	do_div(credits, port_rate);
-> +
-> +	return -credits;
-> +}
-> +
-> +static struct sk_buff *cbs_dequeue_soft(struct Qdisc *sch)
-> +{
-> +	struct cbs_sched_data *q = qdisc_priv(sch);
-> +	s64 now = ktime_get_ns();
-> +	struct sk_buff *skb;
-> +	s64 credits;
-> +	int len;
-> +
-> +	if (q->credits < 0) {
-> +		credits = timediff_to_credits(now - q->last, q->idleslope);
-Maybe be better to add small optimization by moving some calculations from data
-path, I mean, save idle_slope in bytes instead of kbit and converting it for
-every packet. Both delay_from_credits() and timediff_to_credits() is used only
-once and with idle_slope only...and both of them converting it.
+elapsed time: 149m
 
-Same for credits_from_len() and send slope, save it in units of port_rate.
+configs tested: 186
 
-> +
-> +		credits = q->credits + credits;
-> +		q->credits = min_t(s64, credits, q->hicredit);
-> +
-> +		if (q->credits < 0) {
-> +			s64 delay;
-> +
-> +			delay = delay_from_credits(q->credits, q->idleslope);
-> +			qdisc_watchdog_schedule_ns(&q->watchdog, now + delay);
-> +
-> +			q->last = now;
-> +
-> +			return NULL;
-> +		}
-> +	}
-> +
-> +	skb = qdisc_dequeue_head(sch);
-> +	if (!skb)
-> +		return NULL;
-> +
-> +	len = qdisc_pkt_len(skb);
-> +
-> +	/* As sendslope is a negative number, this will decrease the
-> +	 * amount of q->credits.
-> +	 */
-> +	credits = credits_from_len(len, q->sendslope, q->port_rate);
-> +	credits += q->credits;
-> +
-> +	q->credits = max_t(s64, credits, q->locredit);
-> +	q->last = now;
-> +
-> +	return skb;
-> +}
-> +
-> +static struct sk_buff *cbs_dequeue(struct Qdisc *sch)
-> +{
-> +	struct cbs_sched_data *q = qdisc_priv(sch);
-> +
-> +	return q->dequeue(sch);
-> +}
-> +
-> +static const struct nla_policy cbs_policy[TCA_CBS_MAX + 1] = {
-> +	[TCA_CBS_PARMS]	= { .len = sizeof(struct tc_cbs_qopt) },
-> +};
-> +
-> +static int cbs_change(struct Qdisc *sch, struct nlattr *opt)
-> +{
-> +	struct cbs_sched_data *q = qdisc_priv(sch);
-> +	struct net_device *dev = qdisc_dev(sch);
-> +	struct nlattr *tb[TCA_CBS_MAX + 1];
-> +	struct ethtool_link_ksettings ecmd;
-> +	struct tc_cbs_qopt *qopt;
-> +	s64 link_speed;
-> +	int err;
-> +
-> +	err = nla_parse_nested(tb, TCA_CBS_MAX, opt, cbs_policy, NULL);
-> +	if (err < 0)
-> +		return err;
-> +
-> +	if (!tb[TCA_CBS_PARMS])
-> +		return -EINVAL;
-> +
-> +	qopt = nla_data(tb[TCA_CBS_PARMS]);
-> +
-> +	if (qopt->offload)
-> +		return -EOPNOTSUPP;
-> +
-> +	if (!__ethtool_get_link_ksettings(dev, &ecmd))
-> +		link_speed = ecmd.base.speed;
-> +	else
-> +		link_speed = SPEED_1000;
-> +
-> +	q->port_rate = link_speed * 1000 * BYTES_PER_KBIT;
-> +
-> +	q->enqueue = cbs_enqueue_soft;
-> +	q->dequeue = cbs_dequeue_soft;
-> +
-> +	q->hicredit = qopt->hicredit;
-> +	q->locredit = qopt->locredit;
-> +	q->idleslope = qopt->idleslope;
-> +	q->sendslope = qopt->sendslope;
-> +
-> +	return 0;
-> +}
-> +
-> +static int cbs_init(struct Qdisc *sch, struct nlattr *opt)
-> +{
-> +	struct cbs_sched_data *q = qdisc_priv(sch);
-> +
-> +	if (!opt)
-> +		return -EINVAL;
-> +
-> +	qdisc_watchdog_init(&q->watchdog, sch);
-> +
-> +	return cbs_change(sch, opt);
-> +}
-> +
-> +static void cbs_destroy(struct Qdisc *sch)
-> +{
-> +	struct cbs_sched_data *q = qdisc_priv(sch);
-> +
-> +	qdisc_watchdog_cancel(&q->watchdog);
-> +}
-> +
-> +static int cbs_dump(struct Qdisc *sch, struct sk_buff *skb)
-> +{
-> +	struct cbs_sched_data *q = qdisc_priv(sch);
-> +	struct tc_cbs_qopt opt = { };
-> +	struct nlattr *nest;
-> +
-> +	nest = nla_nest_start(skb, TCA_OPTIONS);
-> +	if (!nest)
-> +		goto nla_put_failure;
-> +
-> +	opt.hicredit = q->hicredit;
-> +	opt.locredit = q->locredit;
-> +	opt.sendslope = q->sendslope;
-> +	opt.idleslope = q->idleslope;
-> +	opt.offload = 0;
-> +
-> +	if (nla_put(skb, TCA_CBS_PARMS, sizeof(opt), &opt))
-> +		goto nla_put_failure;
-> +
-> +	return nla_nest_end(skb, nest);
-> +
-> +nla_put_failure:
-> +	nla_nest_cancel(skb, nest);
-> +	return -1;
-> +}
-> +
-> +static struct Qdisc_ops cbs_qdisc_ops __read_mostly = {
-> +	.id		=	"cbs",
-> +	.priv_size	=	sizeof(struct cbs_sched_data),
-> +	.enqueue	=	cbs_enqueue,
-> +	.dequeue	=	cbs_dequeue,
-> +	.peek		=	qdisc_peek_dequeued,
-> +	.init		=	cbs_init,
-> +	.reset		=	qdisc_reset_queue,
-> +	.destroy	=	cbs_destroy,
-> +	.change		=	cbs_change,
-> +	.dump		=	cbs_dump,
-> +	.owner		=	THIS_MODULE,
-> +};
-> +
-> +static int __init cbs_module_init(void)
-> +{
-> +	return register_qdisc(&cbs_qdisc_ops);
-> +}
-> +
-> +static void __exit cbs_module_exit(void)
-> +{
-> +	unregister_qdisc(&cbs_qdisc_ops);
-> +}
-> +module_init(cbs_module_init)
-> +module_exit(cbs_module_exit)
-> +MODULE_LICENSE("GPL");
-> -- 
-> 2.14.2
-> 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                         orion5x_defconfig
+openrisc                         allmodconfig
+x86_64                 randconfig-a0-10140305
+powerpc                      bamboo_defconfig
+sh                      rts7751r2d1_defconfig
+sparc                            alldefconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10140311
+x86_64                           allmodconfig
+i386                   randconfig-x014-201741
+i386                   randconfig-x013-201741
+i386                   randconfig-x015-201741
+i386                   randconfig-x019-201741
+i386                   randconfig-x011-201741
+i386                   randconfig-x018-201741
+i386                   randconfig-x010-201741
+i386                   randconfig-x017-201741
+i386                   randconfig-x012-201741
+i386                   randconfig-x016-201741
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-n0-201741
+alpha                             allnoconfig
+sh                          r7785rp_defconfig
+sparc                            allyesconfig
+x86_64                 randconfig-v0-10140330
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                       netwinder_defconfig
+blackfin                BF533-STAMP_defconfig
+m68k                            mac_defconfig
+x86_64                 randconfig-g0-10140334
+x86_64                 randconfig-x010-201741
+x86_64                 randconfig-x011-201741
+x86_64                 randconfig-x012-201741
+x86_64                 randconfig-x013-201741
+x86_64                 randconfig-x014-201741
+x86_64                 randconfig-x015-201741
+x86_64                 randconfig-x016-201741
+x86_64                 randconfig-x017-201741
+x86_64                 randconfig-x018-201741
+x86_64                 randconfig-x019-201741
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                                   samsung
+arm                        mvebu_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       imx_v6_v7_defconfig
+arm64                            allmodconfig
+arm                           tegra_defconfig
+arm                                      arm5
+arm64                            alldefconfig
+arm                                        sh
+arm                                     arm67
+i386                   randconfig-a1-10090129
+i386                   randconfig-a0-10090129
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                             allmodconfig
+mips                       bmips_be_defconfig
+powerpc                     akebono_defconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                      ppc6xx_defconfig
+i386                     randconfig-s0-201741
+i386                     randconfig-s1-201741
+m68k                        m5272c3_defconfig
+mips                  cavium_octeon_defconfig
+powerpc                mpc7448_hpc2_defconfig
+powerpc                       ppc64_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201741
+i386                   randconfig-b0-10140325
+i386                     randconfig-i1-201741
+i386                     randconfig-i0-201741
+x86_64                 randconfig-b0-10140252
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+parisc                           allmodconfig
+powerpc                 mpc8315_rdb_defconfig
+powerpc                     virtex5_defconfig
+powerpc                     sbc834x_defconfig
+sh                         microdev_defconfig
+x86_64                randconfig-ne0-10140307
+i386                               tinyconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-h0-10140323
+i386                   randconfig-h1-10140323
+powerpc                      cm5200_defconfig
+sparc                       sparc64_defconfig
+x86_64                                  kexec
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                   randconfig-x001-201741
+i386                   randconfig-x008-201741
+i386                   randconfig-x003-201741
+i386                   randconfig-x004-201741
+i386                   randconfig-x002-201741
+i386                   randconfig-x006-201741
+i386                   randconfig-x007-201741
+i386                   randconfig-x009-201741
+i386                   randconfig-x000-201741
+i386                   randconfig-x005-201741
+powerpc                           allnoconfig
+powerpc                             defconfig
+s390                        default_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                randconfig-ws0-10140145
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x074-201741
+i386                   randconfig-x076-201741
+i386                   randconfig-x071-201741
+i386                   randconfig-x077-201741
+i386                   randconfig-x073-201741
+i386                   randconfig-x079-201741
+i386                   randconfig-x072-201741
+i386                   randconfig-x078-201741
+i386                   randconfig-x075-201741
+i386                   randconfig-x070-201741
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                        keystone_defconfig
+x86_64                 randconfig-x001-201741
+x86_64                 randconfig-x000-201741
+x86_64                 randconfig-x004-201741
+x86_64                 randconfig-x008-201741
+x86_64                 randconfig-x006-201741
+x86_64                 randconfig-x007-201741
+x86_64                 randconfig-x005-201741
+x86_64                 randconfig-x009-201741
+x86_64                 randconfig-x003-201741
+x86_64                 randconfig-x002-201741
+x86_64                 randconfig-r0-10140319
+x86_64                           alldefconfig
+mips                         mpc30x_defconfig
+i386                   randconfig-x0-10140311
+
+Thanks,
+Fengguang
