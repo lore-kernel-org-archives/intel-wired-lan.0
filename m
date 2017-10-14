@@ -1,10 +1,10 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri, 13 Oct 2017 17:25:29 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v8 1/6] net/sched: Check for
-	null dev_queue on create flow
+Date: Fri, 13 Oct 2017 17:25:31 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v8 3/6] net/sched: Add
+	select_queue() class_ops for mqprio
 In-Reply-To: <20171014002534.19896-1-vinicius.gomes@intel.com>
 References: <20171014002534.19896-1-vinicius.gomes@intel.com>
-Message-ID: <20171014002534.19896-2-vinicius.gomes@intel.com>
+Message-ID: <20171014002534.19896-4-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,42 +13,47 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 
-In qdisc_alloc() the dev_queue pointer was used without any checks
-being performed. If qdisc_create() gets a null dev_queue pointer, it
-just passes it along to qdisc_alloc(), leading to a crash. That
-happens if a root qdisc implements select_queue() and returns a null
-dev_queue pointer for an "invalid handle", for example, or if the
-dev_queue associated with the parent qdisc is null.
+When replacing a child qdisc from mqprio, tc_modify_qdisc() must fetch
+the netdev_queue pointer that the current child qdisc is associated
+with before creating the new qdisc.
 
-This patch is in preparation for the next in this series, where
-select_queue() is being added to mqprio and as it may return a null
-dev_queue.
+Currently, when using mqprio as root qdisc, the kernel will end up
+getting the queue #0 pointer from the mqprio (root qdisc), which leaves
+any new child qdisc with a possibly wrong netdev_queue pointer.
+
+Implementing the Qdisc_class_ops select_queue() on mqprio fixes this
+issue and avoid an inconsistent state when child qdiscs are replaced.
 
 Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 ---
- net/sched/sch_generic.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ net/sched/sch_mqprio.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
-index a0a198768aad..de2408f1ccd3 100644
---- a/net/sched/sch_generic.c
-+++ b/net/sched/sch_generic.c
-@@ -603,8 +603,14 @@ struct Qdisc *qdisc_alloc(struct netdev_queue *dev_queue,
- 	struct Qdisc *sch;
- 	unsigned int size = QDISC_ALIGN(sizeof(*sch)) + ops->priv_size;
- 	int err = -ENOBUFS;
--	struct net_device *dev = dev_queue->dev;
-+	struct net_device *dev;
+diff --git a/net/sched/sch_mqprio.c b/net/sched/sch_mqprio.c
+index 6bcdfe6e7b63..8c042ae323e3 100644
+--- a/net/sched/sch_mqprio.c
++++ b/net/sched/sch_mqprio.c
+@@ -396,6 +396,12 @@ static void mqprio_walk(struct Qdisc *sch, struct qdisc_walker *arg)
+ 	}
+ }
+ 
++static struct netdev_queue *mqprio_select_queue(struct Qdisc *sch,
++						struct tcmsg *tcm)
++{
++	return mqprio_queue_get(sch, TC_H_MIN(tcm->tcm_parent));
++}
 +
-+	if (!dev_queue) {
-+		err = -EINVAL;
-+		goto errout;
-+	}
+ static const struct Qdisc_class_ops mqprio_class_ops = {
+ 	.graft		= mqprio_graft,
+ 	.leaf		= mqprio_leaf,
+@@ -403,6 +409,7 @@ static const struct Qdisc_class_ops mqprio_class_ops = {
+ 	.walk		= mqprio_walk,
+ 	.dump		= mqprio_dump_class,
+ 	.dump_stats	= mqprio_dump_class_stats,
++	.select_queue	= mqprio_select_queue,
+ };
  
-+	dev = dev_queue->dev;
- 	p = kzalloc_node(size, GFP_KERNEL,
- 			 netdev_queue_numa_node_read(dev_queue));
- 
+ static struct Qdisc_ops mqprio_qdisc_ops __read_mostly = {
 -- 
 2.14.2
 
