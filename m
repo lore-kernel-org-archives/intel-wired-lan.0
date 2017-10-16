@@ -1,31 +1,70 @@
-From: Guedes, Andre <andre.guedes@intel.com>
-Date: Mon, 16 Oct 2017 21:07:07 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH v8 0/6] TSN: Add qdisc
- based config interface for CBS
-In-Reply-To: <20171016.205146.1053238236578937188.davem@davemloft.net>
-References: <20171014002534.19896-1-vinicius.gomes@intel.com>
- <20171016.205146.1053238236578937188.davem@davemloft.net>
-Message-ID: <1508188025.5270.12.camel@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 16 Oct 2017 15:13:12 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v7 4/6] net/sched:
+	Introduce Credit Based Shaper (CBS) qdisc
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD00979BC@AcuExch.aculab.com>
+References: <20171013004005.17416-1-vinicius.gomes@intel.com>
+ <20171013004005.17416-5-vinicius.gomes@intel.com>
+ <20171013195924.GA19439@khorivan>
+ <063D6719AE5E284EB5DD2968C1650D6DD00979BC@AcuExch.aculab.com>
+Message-ID: <87376in3lz.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-+Jeff
+Hi David,
 
-Since this patchset also touches the IGB driver, Jeff suggested we merged it
-into his tree and he'd make a pull-request to your net-next tree.
+David Laight <David.Laight@ACULAB.COM> writes:
 
-@Jeff, are we moving with this approach or should David apply the patchset to
-his net-next tree directly?
+[...]
 
-Thanks,
+>> > index 099bf5528fed..41e349df4bf4 100644
+>> > --- a/include/uapi/linux/pkt_sched.h
+>> > +++ b/include/uapi/linux/pkt_sched.h
+>> > @@ -871,4 +871,22 @@ struct tc_pie_xstats {
+>> >  	__u32 maxq;             /* maximum queue size */
+>> >  	__u32 ecn_mark;         /* packets marked with ecn*/
+>> >  };
+>> > +
+>> > +/* CBS */
+>> > +struct tc_cbs_qopt {
+>> > +	__u8 offload;
+>
+> You probably don't want unnamed padding in a uapi structure.
 
-Andre
+Yeah, this needs to be fixed.
 
-On Mon, 2017-10-16 at 20:51 +0100, David Miller wrote:
-> I'm fine with this patch set.??I see it's against Jeff's next-queue, so
-> where exactly do you want this to be merged???My net-next tree?
-> 
-> Thank you.
+>
+>> > +	__s32 hicredit;
+>> > +	__s32 locredit;
+>> > +	__s32 idleslope;
+>> > +	__s32 sendslope;
+>> > +};
+>> > +
+>> > +enum {
+>> > +	TCA_CBS_UNSPEC,
+>> > +	TCA_CBS_PARMS,
+>> > +	__TCA_CBS_MAX,
+>> > +};
+>> > +
+>> > +#define TCA_CBS_MAX (__TCA_CBS_MAX - 1)
+>
+> Why not:
+> 	TCA_CBS_PARMS,
+> 	TCA_CBS_NEXT,
+> 	TCA_CBS_MAX = TCA_CBS_NEXT - 1,
+
+The way it is proposed, at least is consistent with the rest of the
+file. So, if you don't have any stronger reasons, I'd like to keep it
+this way.
+
+>
+> ...
+> 	David
+
+
+Cheers,
+--
+Vinicius
