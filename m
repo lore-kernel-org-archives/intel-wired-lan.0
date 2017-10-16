@@ -1,52 +1,59 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 16 Oct 2017 07:11:43 -0700
-Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
-	NICs
-In-Reply-To: <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
-References: <1507121766.30720.4.camel@cohaesio.com>
- <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
- <1507180753.20182.8.camel@cohaesio.com>
- <227d17ae-b040-07d0-3c57-e9acd1a3b5b4@itcare.pl>
- <c49a750f-c47c-9de0-ebf0-148db5e3d3c5@itcare.pl>
- <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
- <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
-Message-ID: <CAKgT0UeDKE6ce64+RckJTHpu+=7DZBO0GRc8FBBnkcVTwDC_xA@mail.gmail.com>
+Date: Mon, 16 Oct 2017 07:18:14 -0700
+Subject: [Intel-wired-lan] IPSec offload - ixgbe/i40e ..
+In-Reply-To: <B84047ECBD981D4B93EAE5A6245AA361013ECAA8@FRAEML521-MBX.china.huawei.com>
+References: <B84047ECBD981D4B93EAE5A6245AA361013EA800@FRAEML521-MBS.china.huawei.com>
+ <CAKgT0UdAY+c+GPOuUtk0s_Os+JY5nPRWxSmZS3vswcJbWncPfA@mail.gmail.com>
+ <B84047ECBD981D4B93EAE5A6245AA361013ECAA8@FRAEML521-MBX.china.huawei.com>
+Message-ID: <CAKgT0UdDt774v5O7JNrcXCAGr1TQMW-POMThhTWnjZFOcfiTHw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 16, 2017 at 4:20 AM, Pavlos Parissis
-<pavlos.parissis@gmail.com> wrote:
-> On 15/10/2017 02:58 ??, Alexander Duyck wrote:
->> Hi Pawel,
->>
->> To clarify is that Dave Miller's tree or Linus's that you are talking
->> about? If it is Dave's tree how long ago was it you pulled it since I
->> think the fix was just pushed by Jeff Kirsher a few days ago.
->>
->> The issue should be fixed in the following commit:
->> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972
->>
+On Sun, Oct 15, 2017 at 11:47 PM, Avi Cohen (A) <avi.cohen@huawei.com> wrote:
 >
 >
-> Do you know when it is going to be available on net-next and linux-stable repos?
->
-> Cheers,
-> Pavlos
+>> -----Original Message-----
+>> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+>> Sent: Monday, 16 October, 2017 3:15 AM
+>> To: Avi Cohen (A)
+>> Cc: intel-wired-lan at osuosl.org
+>> Subject: Re: [Intel-wired-lan] IPSec offload - ixgbe/i40e ..
+>>
+>> On Sun, Oct 15, 2017 at 8:12 AM, Avi Cohen (A) <avi.cohen@huawei.com>
+>> wrote:
+>> > Hi,
+>> > These Intel  NIC's:  X540, 82599, I40E - supports IPsec offload
+>>
+>> X540 and 82599 are Ethernet Silicon, but i40e is just a driver. I assume you
+>> mean X710 or one of the parts in that product family. Last I knew the X710 and
+>> XL710 do not support ipsec, only the 82599 and X540.
+> [Avi Cohen (A)]
+> Yes Alex - I meant the X710 family
+>>
+>> > But I don't see that the drivers  supplied by Intel - handle it (??)
+>> > Can someone tell if this is supported somewhere ?
+>> > Best Regards
+>> > Avi
+>>
+>> As far as I am aware there aren't currently any drivers available for Linux that
+>> support ipsec offload on the X540 or 82599.
+> [Avi Cohen (A)]
+> I saw that these drivers are called 'base drivers' - are there other 'enhanced' drivers for linux that do support the IPSec offload ?
+> Best Regards
+> Avi
 
-Hi Pavos,
+Hi Avi,
 
-My guess would be a week or two for net-next since it normally has to
-go from the net tree, into Linus's tree, and then back into net-next.
-As far as stable, I believe there is some queue that Dave has to
-submit the patch into for that. Beyond that I have no idea what the
-timelines are like in order for a patch to make it into any given
-stable kernel release.
+The 'base' portion of things is more in reference to the driver mode
+more than anything else. For example we have SR-IOV support so we also
+have a 'VF' driver.
 
-I added Dave to the Cc since I am kind of guessing at the process and timelines.
+At this time Intel doesn't have any 'enhanced' Linux drivers that have
+IPSec support.
 
-Hope that helps.
+I hope that helps to clarify the current state of things.
 
 - Alex
