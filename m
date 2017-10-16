@@ -1,74 +1,43 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Mon, 16 Oct 2017 09:14:11 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH v7 4/6] net/sched:
- Introduce Credit Based Shaper (CBS) qdisc
-In-Reply-To: <20171013195924.GA19439@khorivan>
-References: <20171013004005.17416-1-vinicius.gomes@intel.com>
- <20171013004005.17416-5-vinicius.gomes@intel.com>
- <20171013195924.GA19439@khorivan>
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD00979BC@AcuExch.aculab.com>
+From: Pavlos Parissis <pavlos.parissis@gmail.com>
+Date: Mon, 16 Oct 2017 13:20:19 +0200
+Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
+	NICs
+In-Reply-To: <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
+References: <1507121766.30720.4.camel@cohaesio.com>
+ <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
+ <1507180753.20182.8.camel@cohaesio.com>
+ <227d17ae-b040-07d0-3c57-e9acd1a3b5b4@itcare.pl>
+ <c49a750f-c47c-9de0-ebf0-148db5e3d3c5@itcare.pl>
+ <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
+Message-ID: <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Ivan Khoronzhuk
-> Sent: 13 October 2017 20:59
-> On Thu, Oct 12, 2017 at 05:40:03PM -0700, Vinicius Costa Gomes wrote:
-> > This queueing discipline implements the shaper algorithm defined by
-> > the 802.1Q-2014 Section 8.6.8.2 and detailed in Annex L.
-> >
-> > It's primary usage is to apply some bandwidth reservation to user
-> > defined traffic classes, which are mapped to different queues via the
-> > mqprio qdisc.
-> >
-> > Only a simple software implementation is added for now.
-> >
-> > Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> > Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-> > ---
-> >  include/uapi/linux/pkt_sched.h |  18 +++
-> >  net/sched/Kconfig              |  11 ++
-> >  net/sched/Makefile             |   1 +
-> >  net/sched/sch_cbs.c            | 314 +++++++++++++++++++++++++++++++++++++++++
-> >  4 files changed, 344 insertions(+)
-> >  create mode 100644 net/sched/sch_cbs.c
-> >
-> > diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
-> > index 099bf5528fed..41e349df4bf4 100644
-> > --- a/include/uapi/linux/pkt_sched.h
-> > +++ b/include/uapi/linux/pkt_sched.h
-> > @@ -871,4 +871,22 @@ struct tc_pie_xstats {
-> >  	__u32 maxq;             /* maximum queue size */
-> >  	__u32 ecn_mark;         /* packets marked with ecn*/
-> >  };
-> > +
-> > +/* CBS */
-> > +struct tc_cbs_qopt {
-> > +	__u8 offload;
+On 15/10/2017 02:58 ??, Alexander Duyck wrote:
+> Hi Pawel,
+> 
+> To clarify is that Dave Miller's tree or Linus's that you are talking
+> about? If it is Dave's tree how long ago was it you pulled it since I
+> think the fix was just pushed by Jeff Kirsher a few days ago.
+> 
+> The issue should be fixed in the following commit:
+> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972
+> 
 
-You probably don't want unnamed padding in a uapi structure.
 
-> > +	__s32 hicredit;
-> > +	__s32 locredit;
-> > +	__s32 idleslope;
-> > +	__s32 sendslope;
-> > +};
-> > +
-> > +enum {
-> > +	TCA_CBS_UNSPEC,
-> > +	TCA_CBS_PARMS,
-> > +	__TCA_CBS_MAX,
-> > +};
-> > +
-> > +#define TCA_CBS_MAX (__TCA_CBS_MAX - 1)
+Do you know when it is going to be available on net-next and linux-stable repos?
 
-Why not:
-	TCA_CBS_PARMS,
-	TCA_CBS_NEXT,
-	TCA_CBS_MAX = TCA_CBS_NEXT - 1,
+Cheers,
+Pavlos
 
-...
-	David
 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171016/4e2f1498/attachment.asc>
