@@ -1,51 +1,31 @@
-From: Henrik Austad <henrik@austad.us>
-Date: Tue, 17 Oct 2017 13:35:50 +0200
-Subject: [Intel-wired-lan] [next-queue PATCH v9 0/6] TSN: Add qdisc
+From: Guedes, Andre <andre.guedes@intel.com>
+Date: Mon, 16 Oct 2017 21:07:07 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v8 0/6] TSN: Add qdisc
  based config interface for CBS
-In-Reply-To: <20171017010128.22141-1-vinicius.gomes@intel.com>
-References: <20171017010128.22141-1-vinicius.gomes@intel.com>
-Message-ID: <20171017113550.GA17834@sisyphus.home.austad.us>
+In-Reply-To: <20171016.205146.1053238236578937188.davem@davemloft.net>
+References: <20171014002534.19896-1-vinicius.gomes@intel.com>
+ <20171016.205146.1053238236578937188.davem@davemloft.net>
+Message-ID: <1508188025.5270.12.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 16, 2017 at 06:01:22PM -0700, Vinicius Costa Gomes wrote:
-> Hi,
++Jeff
 
-Vinicius; this looks really good to me, testing shows no errors and 
-behavior is as expected. I see some differences in received bw for 
-offload=1 and 0 though
+Since this patchset also touches the IGB driver, Jeff suggested we merged it
+into his tree and he'd make a pull-request to your net-next tree.
 
-Just using tsn_talker and tsn_listener:
-tc qdisc add dev eth2 parent 8001:1 cbs idleslope 20000 sendslope -980000 \
-hicredit 30 locredit -1470 offload 1
+@Jeff, are we moving with this approach or should David apply the patchset to
+his net-next tree directly?
 
-with offload=1 (20Mbps BW)
-Receiving data rate: 19420 kbps
-Receiving data rate: 19410 kbps
+Thanks,
 
-Similarly, but with offload=0 (SW, 20Mbps BW)
-Receiving data rate: 19980 kbps
-Receiving data rate: 20170 kbps
+Andre
 
-So slightly higer variance in rate when doing SW, which is as expected.
-
-I plan to run this through some more tests tomorrow and measure variance on the 
-receiver etc, I'll keep you posted on my findings.
-
-Feel free to add a tested-by though
-
-Tested-by: Henrik Austad <henrik@austad.us>
-
-and a Vehemently-supported-by: Henrik .. :)
-
--Henrik
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 181 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171017/5de52d41/attachment.asc>
+On Mon, 2017-10-16 at 20:51 +0100, David Miller wrote:
+> I'm fine with this patch set.??I see it's against Jeff's next-queue, so
+> where exactly do you want this to be merged???My net-next tree?
+> 
+> Thank you.
