@@ -1,41 +1,74 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Mon, 16 Oct 2017 16:23:47 +0000
-Subject: [Intel-wired-lan] 6 port NIC
-In-Reply-To: <B84047ECBD981D4B93EAE5A6245AA361013EDADC@FRAEML521-MBX.china.huawei.com>
-References: <B84047ECBD981D4B93EAE5A6245AA361013EDADC@FRAEML521-MBX.china.huawei.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD697A3DD1E@ORSMSX114.amr.corp.intel.com>
+From: David Laight <David.Laight@ACULAB.COM>
+Date: Mon, 16 Oct 2017 09:14:11 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v7 4/6] net/sched:
+ Introduce Credit Based Shaper (CBS) qdisc
+In-Reply-To: <20171013195924.GA19439@khorivan>
+References: <20171013004005.17416-1-vinicius.gomes@intel.com>
+ <20171013004005.17416-5-vinicius.gomes@intel.com>
+ <20171013195924.GA19439@khorivan>
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD00979BC@AcuExch.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This mailing list is mostly for patches. I'd suggest putting your request in through your factory reps, who will have a lot more options for you than the software engineers usually on this list.
+From: Ivan Khoronzhuk
+> Sent: 13 October 2017 20:59
+> On Thu, Oct 12, 2017 at 05:40:03PM -0700, Vinicius Costa Gomes wrote:
+> > This queueing discipline implements the shaper algorithm defined by
+> > the 802.1Q-2014 Section 8.6.8.2 and detailed in Annex L.
+> >
+> > It's primary usage is to apply some bandwidth reservation to user
+> > defined traffic classes, which are mapped to different queues via the
+> > mqprio qdisc.
+> >
+> > Only a simple software implementation is added for now.
+> >
+> > Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> > Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+> > ---
+> >  include/uapi/linux/pkt_sched.h |  18 +++
+> >  net/sched/Kconfig              |  11 ++
+> >  net/sched/Makefile             |   1 +
+> >  net/sched/sch_cbs.c            | 314 +++++++++++++++++++++++++++++++++++++++++
+> >  4 files changed, 344 insertions(+)
+> >  create mode 100644 net/sched/sch_cbs.c
+> >
+> > diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
+> > index 099bf5528fed..41e349df4bf4 100644
+> > --- a/include/uapi/linux/pkt_sched.h
+> > +++ b/include/uapi/linux/pkt_sched.h
+> > @@ -871,4 +871,22 @@ struct tc_pie_xstats {
+> >  	__u32 maxq;             /* maximum queue size */
+> >  	__u32 ecn_mark;         /* packets marked with ecn*/
+> >  };
+> > +
+> > +/* CBS */
+> > +struct tc_cbs_qopt {
+> > +	__u8 offload;
 
-Todd Fujinaka
-Software Application Engineer
-Datacenter Engineering Group
-Intel Corporation
-todd.fujinaka at intel.com
+You probably don't want unnamed padding in a uapi structure.
 
+> > +	__s32 hicredit;
+> > +	__s32 locredit;
+> > +	__s32 idleslope;
+> > +	__s32 sendslope;
+> > +};
+> > +
+> > +enum {
+> > +	TCA_CBS_UNSPEC,
+> > +	TCA_CBS_PARMS,
+> > +	__TCA_CBS_MAX,
+> > +};
+> > +
+> > +#define TCA_CBS_MAX (__TCA_CBS_MAX - 1)
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Avi Cohen (A)
-Sent: Monday, October 16, 2017 12:24 AM
-To: intel-wired-lan@osuosl.org
-Subject: [Intel-wired-lan] 6 port NIC
+Why not:
+	TCA_CBS_PARMS,
+	TCA_CBS_NEXT,
+	TCA_CBS_MAX = TCA_CBS_NEXT - 1,
 
-Hi,
-I'm looking for a  6-port nic - each port is 10G -    for a total of 60Gbps,   (or 2 * quad NIC) 
- other requirements:
- - a 'L2 switch' on top  all these 6 ports  - for example if  a packet is received on port 1 with a dst MAC that was learnt on port 3 then the packet should be sent to port 3 (other than sent to the host)
- - SR-IOV coexistence
- - Optional - IPsec offload
+...
+	David
 
-Best Regards
-Avi  
- 
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
