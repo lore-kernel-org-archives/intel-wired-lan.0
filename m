@@ -1,242 +1,155 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 16 Oct 2017 18:01:27 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v9 5/6] net/sched: Add support
-	for HW offloading for CBS
-In-Reply-To: <20171017010128.22141-1-vinicius.gomes@intel.com>
-References: <20171017010128.22141-1-vinicius.gomes@intel.com>
-Message-ID: <20171017010128.22141-6-vinicius.gomes@intel.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 17 Oct 2017 12:23:36 +0200
+Subject: [Intel-wired-lan] [PATCH,
+	net-next] i40e: avoid 64-bit division where possible
+Message-ID: <20171017102351.492492-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This adds support for offloading the CBS algorithm to the controller,
-if supported. Drivers wanting to support CBS offload must implement
-the .ndo_setup_tc callback and handle the TC_SETUP_CBS (introduced
-here) type.
+The new bandwidth calculation causes a link error on 32-bit
+architectures, like
 
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
+
+The problem is the max_tx_rate calculation that uses 64-bit integers.
+This is not really necessary since the numbers are in MBit/s so
+they won't be higher than 40000 for the highest support rate, and
+are guaranteed to not exceed 2^32 in future generations either.
+
+This changes the representation to 'u32' when dealing with MBit/s
+and uses div_u64() to convert from u64 numbers in byte/s.
+
+Fixes: 2027d4deacb1 ("i40e: Add support setting TC max bandwidth rates")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- include/linux/netdevice.h |   1 +
- include/net/pkt_sched.h   |   9 ++++
- net/sched/sch_cbs.c       | 104 ++++++++++++++++++++++++++++++++++++++++------
- 3 files changed, 102 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h      |  4 ++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 27 ++++++++++++++-------------
+ 2 files changed, 16 insertions(+), 15 deletions(-)
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 31bb3010c69b..1f6c44ef5b21 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -775,6 +775,7 @@ enum tc_setup_type {
- 	TC_SETUP_CLSFLOWER,
- 	TC_SETUP_CLSMATCHALL,
- 	TC_SETUP_CLSBPF,
-+	TC_SETUP_CBS,
- };
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 266e1dc5e786..45155ef15d24 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -359,7 +359,7 @@ struct i40e_channel {
+ 	u8 enabled_tc;
+ 	struct i40e_aqc_vsi_properties_data info;
  
- /* These structures hold the attributes of xdp state that are being passed
-diff --git a/include/net/pkt_sched.h b/include/net/pkt_sched.h
-index 259bc191ba59..7c597b050b36 100644
---- a/include/net/pkt_sched.h
-+++ b/include/net/pkt_sched.h
-@@ -146,4 +146,13 @@ static inline bool is_classid_clsact_egress(u32 classid)
- 	       TC_H_MIN(classid) == TC_H_MIN(TC_H_MIN_EGRESS);
+-	u64 max_tx_rate;
++	u32 max_tx_rate; /* in Mbits/s */
+ 
+ 	/* track this channel belongs to which VSI */
+ 	struct i40e_vsi *parent_vsi;
+@@ -1045,5 +1045,5 @@ static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
  }
  
-+struct tc_cbs_qopt_offload {
-+	u8 enable;
-+	s32 queue;
-+	s32 hicredit;
-+	s32 locredit;
-+	s32 idleslope;
-+	s32 sendslope;
-+};
-+
- #endif
-diff --git a/net/sched/sch_cbs.c b/net/sched/sch_cbs.c
-index c0102b589494..cae021c642e5 100644
---- a/net/sched/sch_cbs.c
-+++ b/net/sched/sch_cbs.c
-@@ -68,6 +68,8 @@
- #define BYTES_PER_KBIT (1000LL / 8)
- 
- struct cbs_sched_data {
-+	bool offload;
-+	int queue;
- 	s64 port_rate; /* in bytes/s */
- 	s64 last; /* timestamp in ns */
- 	s64 credits; /* in bytes */
-@@ -80,6 +82,11 @@ struct cbs_sched_data {
- 	struct sk_buff *(*dequeue)(struct Qdisc *sch);
- };
- 
-+static int cbs_enqueue_offload(struct sk_buff *skb, struct Qdisc *sch)
-+{
-+	return qdisc_enqueue_tail(skb, sch);
-+}
-+
- static int cbs_enqueue_soft(struct sk_buff *skb, struct Qdisc *sch)
+ int i40e_create_queue_channel(struct i40e_vsi *vsi, struct i40e_channel *ch);
+-int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate);
++int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u32 max_tx_rate);
+ #endif /* _I40E_H_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 624a2bc8a1df..e71fece72506 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -5439,7 +5439,7 @@ int i40e_get_link_speed(struct i40e_vsi *vsi)
+  *
+  * Helper function to set BW limit for a given VSI
+  **/
+-int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
++int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u32 max_tx_rate)
  {
- 	struct cbs_sched_data *q = qdisc_priv(sch);
-@@ -169,6 +176,11 @@ static struct sk_buff *cbs_dequeue_soft(struct Qdisc *sch)
- 	return skb;
- }
- 
-+static struct sk_buff *cbs_dequeue_offload(struct Qdisc *sch)
-+{
-+	return qdisc_dequeue_head(sch);
-+}
-+
- static struct sk_buff *cbs_dequeue(struct Qdisc *sch)
- {
- 	struct cbs_sched_data *q = qdisc_priv(sch);
-@@ -180,14 +192,66 @@ static const struct nla_policy cbs_policy[TCA_CBS_MAX + 1] = {
- 	[TCA_CBS_PARMS]	= { .len = sizeof(struct tc_cbs_qopt) },
- };
- 
-+static void cbs_disable_offload(struct net_device *dev,
-+				struct cbs_sched_data *q)
-+{
-+	struct tc_cbs_qopt_offload cbs = { };
-+	const struct net_device_ops *ops;
-+	int err;
-+
-+	if (!q->offload)
-+		return;
-+
-+	q->enqueue = cbs_enqueue_soft;
-+	q->dequeue = cbs_dequeue_soft;
-+
-+	ops = dev->netdev_ops;
-+	if (!ops->ndo_setup_tc)
-+		return;
-+
-+	cbs.queue = q->queue;
-+	cbs.enable = 0;
-+
-+	err = ops->ndo_setup_tc(dev, TC_SETUP_CBS, &cbs);
-+	if (err < 0)
-+		pr_warn("Couldn't disable CBS offload for queue %d\n",
-+			cbs.queue);
-+}
-+
-+static int cbs_enable_offload(struct net_device *dev, struct cbs_sched_data *q,
-+			      const struct tc_cbs_qopt *opt)
-+{
-+	const struct net_device_ops *ops = dev->netdev_ops;
-+	struct tc_cbs_qopt_offload cbs = { };
-+	int err;
-+
-+	if (!ops->ndo_setup_tc)
-+		return -EOPNOTSUPP;
-+
-+	cbs.queue = q->queue;
-+
-+	cbs.enable = 1;
-+	cbs.hicredit = opt->hicredit;
-+	cbs.locredit = opt->locredit;
-+	cbs.idleslope = opt->idleslope;
-+	cbs.sendslope = opt->sendslope;
-+
-+	err = ops->ndo_setup_tc(dev, TC_SETUP_CBS, &cbs);
-+	if (err < 0)
-+		return err;
-+
-+	q->enqueue = cbs_enqueue_offload;
-+	q->dequeue = cbs_dequeue_offload;
-+
-+	return 0;
-+}
-+
- static int cbs_change(struct Qdisc *sch, struct nlattr *opt)
- {
- 	struct cbs_sched_data *q = qdisc_priv(sch);
- 	struct net_device *dev = qdisc_dev(sch);
- 	struct nlattr *tb[TCA_CBS_MAX + 1];
--	struct ethtool_link_ksettings ecmd;
- 	struct tc_cbs_qopt *qopt;
--	s64 link_speed;
- 	int err;
- 
- 	err = nla_parse_nested(tb, TCA_CBS_MAX, opt, cbs_policy, NULL);
-@@ -199,23 +263,30 @@ static int cbs_change(struct Qdisc *sch, struct nlattr *opt)
- 
- 	qopt = nla_data(tb[TCA_CBS_PARMS]);
- 
--	if (qopt->offload)
--		return -EOPNOTSUPP;
-+	if (!qopt->offload) {
-+		struct ethtool_link_ksettings ecmd;
-+		s64 link_speed;
- 
--	if (!__ethtool_get_link_ksettings(dev, &ecmd))
--		link_speed = ecmd.base.speed;
--	else
--		link_speed = SPEED_1000;
-+		if (!__ethtool_get_link_ksettings(dev, &ecmd))
-+			link_speed = ecmd.base.speed;
-+		else
-+			link_speed = SPEED_1000;
- 
--	q->port_rate = link_speed * 1000 * BYTES_PER_KBIT;
-+		q->port_rate = link_speed * 1000 * BYTES_PER_KBIT;
- 
--	q->enqueue = cbs_enqueue_soft;
--	q->dequeue = cbs_dequeue_soft;
-+		cbs_disable_offload(dev, q);
-+	} else {
-+		err = cbs_enable_offload(dev, q, qopt);
-+		if (err < 0)
-+			return err;
-+	}
- 
-+	/* Everything went OK, save the parameters used. */
- 	q->hicredit = qopt->hicredit;
- 	q->locredit = qopt->locredit;
- 	q->idleslope = qopt->idleslope * BYTES_PER_KBIT;
- 	q->sendslope = qopt->sendslope * BYTES_PER_KBIT;
-+	q->offload = qopt->offload;
- 
- 	return 0;
- }
-@@ -223,10 +294,16 @@ static int cbs_change(struct Qdisc *sch, struct nlattr *opt)
- static int cbs_init(struct Qdisc *sch, struct nlattr *opt)
- {
- 	struct cbs_sched_data *q = qdisc_priv(sch);
-+	struct net_device *dev = qdisc_dev(sch);
- 
- 	if (!opt)
+ 	struct i40e_pf *pf = vsi->back;
+ 	int speed = 0;
+@@ -5448,7 +5448,7 @@ int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
+ 	speed = i40e_get_link_speed(vsi);
+ 	if (max_tx_rate > speed) {
+ 		dev_err(&pf->pdev->dev,
+-			"Invalid max tx rate %llu specified for VSI seid %d.",
++			"Invalid max tx rate %u specified for VSI seid %d.",
+ 			max_tx_rate, seid);
  		return -EINVAL;
+ 	}
+@@ -5464,7 +5464,7 @@ int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
+ 					  I40E_MAX_BW_INACTIVE_ACCUM, NULL);
+ 	if (ret)
+ 		dev_err(&pf->pdev->dev,
+-			"Failed set tx rate (%llu Mbps) for vsi->seid %u, err %s aq_err %s\n",
++			"Failed set tx rate (%u Mbps) for vsi->seid %u, err %s aq_err %s\n",
+ 			max_tx_rate, seid, i40e_stat_str(&pf->hw, ret),
+ 			i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
+ 	return ret;
+@@ -6067,7 +6067,7 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
+ 			return -EINVAL;
  
-+	q->queue = sch->dev_queue - netdev_get_tx_queue(dev, 0);
-+
-+	q->enqueue = cbs_enqueue_soft;
-+	q->dequeue = cbs_dequeue_soft;
-+
- 	qdisc_watchdog_init(&q->watchdog, sch);
+ 		dev_dbg(&pf->pdev->dev,
+-			"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++			"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
+ 			ch->max_tx_rate,
+ 			ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR, ch->seid);
+ 	}
+@@ -6110,8 +6110,8 @@ static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
+ 			/* Bandwidth limit through tc interface is in bytes/s,
+ 			 * change to Mbit/s
+ 			 */
+-			ch->max_tx_rate =
+-				vsi->mqprio_qopt.max_rate[i] / (1000000 / 8);
++			ch->max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[i],
++						  1000000 / 8);
  
- 	return cbs_change(sch, opt);
-@@ -235,8 +312,11 @@ static int cbs_init(struct Qdisc *sch, struct nlattr *opt)
- static void cbs_destroy(struct Qdisc *sch)
- {
- 	struct cbs_sched_data *q = qdisc_priv(sch);
-+	struct net_device *dev = qdisc_dev(sch);
+ 			list_add_tail(&ch->list, &vsi->ch_list);
  
- 	qdisc_watchdog_cancel(&q->watchdog);
-+
-+	cbs_disable_offload(dev, q);
- }
+@@ -6554,7 +6554,7 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
+ 				"Invalid min tx rate (greater than 0) specified\n");
+ 			return -EINVAL;
+ 		}
+-		sum_max_rate += (mqprio_qopt->max_rate[i] / (1000000 / 8));
++		sum_max_rate += div_u64(mqprio_qopt->max_rate[i], 1000000 / 8);
  
- static int cbs_dump(struct Qdisc *sch, struct sk_buff *skb)
-@@ -253,7 +333,7 @@ static int cbs_dump(struct Qdisc *sch, struct sk_buff *skb)
- 	opt.locredit = q->locredit;
- 	opt.sendslope = q->sendslope / BYTES_PER_KBIT;
- 	opt.idleslope = q->idleslope / BYTES_PER_KBIT;
--	opt.offload = 0;
-+	opt.offload = q->offload;
+ 		if (i >= mqprio_qopt->qopt.num_tc - 1)
+ 			break;
+@@ -6698,12 +6698,12 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
  
- 	if (nla_put(skb, TCA_CBS_PARMS, sizeof(opt), &opt))
- 		goto nla_put_failure;
+ 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
+ 		if (vsi->mqprio_qopt.max_rate[0]) {
+-			u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0] /
+-								(1000000 / 8);
++			u32 max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[0],
++						  1000000 / 8);
+ 			ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
+ 			if (!ret) {
+ 				dev_dbg(&vsi->back->pdev->dev,
+-					"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++					"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
+ 					max_tx_rate,
+ 					max_tx_rate / I40E_BW_CREDIT_DIVISOR,
+ 					vsi->seid);
+@@ -8171,7 +8171,7 @@ static int i40e_rebuild_channels(struct i40e_vsi *vsi)
+ 				return -EINVAL;
+ 
+ 			dev_dbg(&vsi->back->pdev->dev,
+-				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++				"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
+ 				ch->max_tx_rate,
+ 				ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR,
+ 				ch->seid);
+@@ -8446,12 +8446,13 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 	}
+ 
+ 	if (vsi->mqprio_qopt.max_rate[0]) {
+-		u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0] / (1000000 / 8);
++		u32 max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[0],
++					  1000000 / 8);
+ 
+ 		ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
+ 		if (!ret)
+ 			dev_dbg(&vsi->back->pdev->dev,
+-				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++				"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
+ 				max_tx_rate,
+ 				max_tx_rate / I40E_BW_CREDIT_DIVISOR,
+ 				vsi->seid);
 -- 
-2.14.2
+2.9.0
 
