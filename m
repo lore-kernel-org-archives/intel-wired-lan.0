@@ -1,155 +1,51 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 17 Oct 2017 12:23:36 +0200
-Subject: [Intel-wired-lan] [PATCH,
-	net-next] i40e: avoid 64-bit division where possible
-Message-ID: <20171017102351.492492-1-arnd@arndb.de>
+From: Henrik Austad <henrik@austad.us>
+Date: Tue, 17 Oct 2017 13:35:50 +0200
+Subject: [Intel-wired-lan] [next-queue PATCH v9 0/6] TSN: Add qdisc
+ based config interface for CBS
+In-Reply-To: <20171017010128.22141-1-vinicius.gomes@intel.com>
+References: <20171017010128.22141-1-vinicius.gomes@intel.com>
+Message-ID: <20171017113550.GA17834@sisyphus.home.austad.us>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The new bandwidth calculation causes a link error on 32-bit
-architectures, like
+On Mon, Oct 16, 2017 at 06:01:22PM -0700, Vinicius Costa Gomes wrote:
+> Hi,
 
-ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
+Vinicius; this looks really good to me, testing shows no errors and 
+behavior is as expected. I see some differences in received bw for 
+offload=1 and 0 though
 
-The problem is the max_tx_rate calculation that uses 64-bit integers.
-This is not really necessary since the numbers are in MBit/s so
-they won't be higher than 40000 for the highest support rate, and
-are guaranteed to not exceed 2^32 in future generations either.
+Just using tsn_talker and tsn_listener:
+tc qdisc add dev eth2 parent 8001:1 cbs idleslope 20000 sendslope -980000 \
+hicredit 30 locredit -1470 offload 1
 
-This changes the representation to 'u32' when dealing with MBit/s
-and uses div_u64() to convert from u64 numbers in byte/s.
+with offload=1 (20Mbps BW)
+Receiving data rate: 19420 kbps
+Receiving data rate: 19410 kbps
 
-Fixes: 2027d4deacb1 ("i40e: Add support setting TC max bandwidth rates")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/net/ethernet/intel/i40e/i40e.h      |  4 ++--
- drivers/net/ethernet/intel/i40e/i40e_main.c | 27 ++++++++++++++-------------
- 2 files changed, 16 insertions(+), 15 deletions(-)
+Similarly, but with offload=0 (SW, 20Mbps BW)
+Receiving data rate: 19980 kbps
+Receiving data rate: 20170 kbps
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 266e1dc5e786..45155ef15d24 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -359,7 +359,7 @@ struct i40e_channel {
- 	u8 enabled_tc;
- 	struct i40e_aqc_vsi_properties_data info;
- 
--	u64 max_tx_rate;
-+	u32 max_tx_rate; /* in Mbits/s */
- 
- 	/* track this channel belongs to which VSI */
- 	struct i40e_vsi *parent_vsi;
-@@ -1045,5 +1045,5 @@ static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
- }
- 
- int i40e_create_queue_channel(struct i40e_vsi *vsi, struct i40e_channel *ch);
--int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate);
-+int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u32 max_tx_rate);
- #endif /* _I40E_H_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 624a2bc8a1df..e71fece72506 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5439,7 +5439,7 @@ int i40e_get_link_speed(struct i40e_vsi *vsi)
-  *
-  * Helper function to set BW limit for a given VSI
-  **/
--int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
-+int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u32 max_tx_rate)
- {
- 	struct i40e_pf *pf = vsi->back;
- 	int speed = 0;
-@@ -5448,7 +5448,7 @@ int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
- 	speed = i40e_get_link_speed(vsi);
- 	if (max_tx_rate > speed) {
- 		dev_err(&pf->pdev->dev,
--			"Invalid max tx rate %llu specified for VSI seid %d.",
-+			"Invalid max tx rate %u specified for VSI seid %d.",
- 			max_tx_rate, seid);
- 		return -EINVAL;
- 	}
-@@ -5464,7 +5464,7 @@ int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
- 					  I40E_MAX_BW_INACTIVE_ACCUM, NULL);
- 	if (ret)
- 		dev_err(&pf->pdev->dev,
--			"Failed set tx rate (%llu Mbps) for vsi->seid %u, err %s aq_err %s\n",
-+			"Failed set tx rate (%u Mbps) for vsi->seid %u, err %s aq_err %s\n",
- 			max_tx_rate, seid, i40e_stat_str(&pf->hw, ret),
- 			i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
- 	return ret;
-@@ -6067,7 +6067,7 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
- 			return -EINVAL;
- 
- 		dev_dbg(&pf->pdev->dev,
--			"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
-+			"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
- 			ch->max_tx_rate,
- 			ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR, ch->seid);
- 	}
-@@ -6110,8 +6110,8 @@ static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
- 			/* Bandwidth limit through tc interface is in bytes/s,
- 			 * change to Mbit/s
- 			 */
--			ch->max_tx_rate =
--				vsi->mqprio_qopt.max_rate[i] / (1000000 / 8);
-+			ch->max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[i],
-+						  1000000 / 8);
- 
- 			list_add_tail(&ch->list, &vsi->ch_list);
- 
-@@ -6554,7 +6554,7 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
- 				"Invalid min tx rate (greater than 0) specified\n");
- 			return -EINVAL;
- 		}
--		sum_max_rate += (mqprio_qopt->max_rate[i] / (1000000 / 8));
-+		sum_max_rate += div_u64(mqprio_qopt->max_rate[i], 1000000 / 8);
- 
- 		if (i >= mqprio_qopt->qopt.num_tc - 1)
- 			break;
-@@ -6698,12 +6698,12 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
- 
- 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
- 		if (vsi->mqprio_qopt.max_rate[0]) {
--			u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0] /
--								(1000000 / 8);
-+			u32 max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[0],
-+						  1000000 / 8);
- 			ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
- 			if (!ret) {
- 				dev_dbg(&vsi->back->pdev->dev,
--					"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
-+					"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
- 					max_tx_rate,
- 					max_tx_rate / I40E_BW_CREDIT_DIVISOR,
- 					vsi->seid);
-@@ -8171,7 +8171,7 @@ static int i40e_rebuild_channels(struct i40e_vsi *vsi)
- 				return -EINVAL;
- 
- 			dev_dbg(&vsi->back->pdev->dev,
--				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
-+				"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
- 				ch->max_tx_rate,
- 				ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR,
- 				ch->seid);
-@@ -8446,12 +8446,13 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 	}
- 
- 	if (vsi->mqprio_qopt.max_rate[0]) {
--		u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0] / (1000000 / 8);
-+		u32 max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[0],
-+					  1000000 / 8);
- 
- 		ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
- 		if (!ret)
- 			dev_dbg(&vsi->back->pdev->dev,
--				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
-+				"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
- 				max_tx_rate,
- 				max_tx_rate / I40E_BW_CREDIT_DIVISOR,
- 				vsi->seid);
--- 
-2.9.0
+So slightly higer variance in rate when doing SW, which is as expected.
 
+I plan to run this through some more tests tomorrow and measure variance on the 
+receiver etc, I'll keep you posted on my findings.
+
+Feel free to add a tested-by though
+
+Tested-by: Henrik Austad <henrik@austad.us>
+
+and a Vehemently-supported-by: Henrik .. :)
+
+-Henrik
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 181 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171017/5de52d41/attachment.asc>
