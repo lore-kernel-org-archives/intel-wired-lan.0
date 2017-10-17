@@ -1,8 +1,8 @@
-From: Vitezslav Samel <vitezslav@samel.cz>
-Date: Tue, 17 Oct 2017 07:51:55 +0200
+From: =?unknown-8bit?q?Pawe=C5=82?= Staszewski <pstaszewski@itcare.pl>
+Date: Tue, 17 Oct 2017 11:48:28 +0200
 Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
 	NICs
-In-Reply-To: <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
+In-Reply-To: <310ce203-0d65-bdf4-d9e4-897a349b3277@itcare.pl>
 References: <1507121766.30720.4.camel@cohaesio.com>
  <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
  <1507180753.20182.8.camel@cohaesio.com>
@@ -12,62 +12,123 @@ References: <1507121766.30720.4.camel@cohaesio.com>
  <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
  <3d783736-a474-d9e3-2de2-e35c765f8249@itcare.pl>
  <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
-Message-ID: <20171017055155.GA19944@pc11.op.pod.cz>
+ <CAKgT0Uf=0yasidUfyadNSxzkhKvtxH2t83fjb-SU7OaAnrMReA@mail.gmail.com>
+ <310ce203-0d65-bdf4-d9e4-897a349b3277@itcare.pl>
+Message-ID: <f6e2208a-4cdf-3303-5999-92186b437b62@itcare.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 17, 2017 at 01:34:29AM +0200, Pawe? Staszewski wrote:
-> W dniu 2017-10-16 o?18:26, Pawe? Staszewski pisze:
-> > W dniu 2017-10-16 o?13:20, Pavlos Parissis pisze:
-> > > On 15/10/2017 02:58 ??, Alexander Duyck wrote:
-> > > > Hi Pawel,
-> > > > 
-> > > > To clarify is that Dave Miller's tree or Linus's that you are talking
-> > > > about? If it is Dave's tree how long ago was it you pulled it since I
-> > > > think the fix was just pushed by Jeff Kirsher a few days ago.
-> > > > 
-> > > > The issue should be fixed in the following commit:
-> > > > https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972
-> > > 
-> > > Do you know when it is going to be available on net-next and
-> > > linux-stable repos?
-> > > 
-> > > Cheers,
-> > > Pavlos
-> > > 
-> > > 
-> > I will make some tests today night with "net" git tree where this patch
-> > is included.
-> > Starting from 0:00 CET
-> > :)
-> > 
-> > 
-> Upgraded and looks like problem is not solved with that patch
-> Currently running system with
-> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/
-> kernel
-> 
-> Still about 0.5GB of memory is leaking somewhere
-> 
-> Also can confirm that the latest kernel where memory is not leaking (with
-> use i40e driver intel 710 cards) is 4.11.12
-> With kernel 4.11.12 - after hour no change in memory usage.
-> 
-> also checked that with ixgbe instead of i40e with same? net.git kernel there
-> is no memleak - after hour same memory usage - so for 100% this is i40e
-> driver problem.
 
-  I have (probably) the same problem here but with X520 cards: booting
-4.12.x gives me oops after circa 20 minutes of our workload. Booting
-4.9.y is OK. This machine is in production so any testing is very
-limited.
 
-  Machine was stable for >2 months (on the desk before got to
-production) with 4.12.8 but with no traffic on X520 cards.
+W dniu 2017-10-17 o?02:44, Pawe? Staszewski pisze:
+>
+>
+> W dniu 2017-10-17 o?01:56, Alexander Duyck pisze:
+>> On Mon, Oct 16, 2017 at 4:34 PM, Pawe? Staszewski 
+>> <pstaszewski@itcare.pl> wrote:
+>>>
+>>> W dniu 2017-10-16 o 18:26, Pawe? Staszewski pisze:
+>>>
+>>>>
+>>>> W dniu 2017-10-16 o 13:20, Pavlos Parissis pisze:
+>>>>> On 15/10/2017 02:58 ??, Alexander Duyck wrote:
+>>>>>> Hi Pawel,
+>>>>>>
+>>>>>> To clarify is that Dave Miller's tree or Linus's that you are 
+>>>>>> talking
+>>>>>> about? If it is Dave's tree how long ago was it you pulled it 
+>>>>>> since I
+>>>>>> think the fix was just pushed by Jeff Kirsher a few days ago.
+>>>>>>
+>>>>>> The issue should be fixed in the following commit:
+>>>>>>
+>>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972 
+>>>>>>
+>>>>>>
+>>>>> Do you know when it is going to be available on net-next and 
+>>>>> linux-stable
+>>>>> repos?
+>>>>>
+>>>>> Cheers,
+>>>>> Pavlos
+>>>>>
+>>>>>
+>>>> I will make some tests today night with "net" git tree where this 
+>>>> patch is
+>>>> included.
+>>>> Starting from 0:00 CET
+>>>> :)
+>>>>
+>>>>
+>>> Upgraded and looks like problem is not solved with that patch
+>>> Currently running system with
+>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/
+>>> kernel
+>>>
+>>> Still about 0.5GB of memory is leaking somewhere
+>>>
+>>> Also can confirm that the latest kernel where memory is not leaking 
+>>> (with
+>>> use i40e driver intel 710 cards) is 4.11.12
+>>> With kernel 4.11.12 - after hour no change in memory usage.
+>>>
+>>> also checked that with ixgbe instead of i40e with same net.git 
+>>> kernel there
+>>> is no memleak - after hour same memory usage - so for 100% this is i40e
+>>> driver problem.
+>> So how long was the run to get the .5GB of memory leaking?
+> 1 hour
+>
+>>
+>> Also is there any chance of you being able to bisect to determine
+>> where the memory leak was introduced since as you pointed out it
+>> didn't exist in 4.11.12 so odds are it was introduced somewhere
+>> between 4.11 and the latest kernel release.
+> Can be hard cause currently need to back to 4.11.12 - this is 
+> production host/router
+> Will try to find some free/test router for tests/bicects with i40e 
+> driver (intel 710 cards)
+>
+>>
+>> Thanks.
+>>
+>> - Alex
+>>
+>
+>
+Also forgoto to add errors for i40e when driver initialize:
+[?? 15.760569] i40e 0000:02:00.1: Error I40E_AQ_RC_ENOSPC adding RX 
+filters on PF, promiscuous mode forced on
+[?? 16.365587] i40e 0000:03:00.3: Error I40E_AQ_RC_ENOSPC adding RX 
+filters on PF, promiscuous mode forced on
+[?? 16.367686] i40e 0000:02:00.2: Error I40E_AQ_RC_ENOSPC adding RX 
+filters on PF, promiscuous mode forced on
+[?? 16.368816] i40e 0000:03:00.0: Error I40E_AQ_RC_ENOSPC adding RX 
+filters on PF, promiscuous mode forced on
+[?? 16.369877] i40e 0000:03:00.2: Error I40E_AQ_RC_ENOSPC adding RX 
+filters on PF, promiscuous mode forced on
+[?? 16.370941] i40e 0000:02:00.3: Error I40E_AQ_RC_ENOSPC adding RX 
+filters on PF, promiscuous mode forced on
+[?? 16.372005] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX 
+filters on PF, promiscuous mode forced on
+[?? 16.373029] i40e 0000:03:00.1: Error I40E_AQ_RC_ENOSPC adding RX 
+filters on PF, promiscuous mode forced on
 
-	Cheers,
+some params that are set for this nic's
+ ??????? ip link set up dev $i
+ ??????? ethtool -A $i autoneg off rx off tx off
+ ??????? ethtool -G $i rx 1024 tx 2048
+ ??????? ip link set $i txqueuelen 1000
+ ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 512 
+tx-usecs 128
+ ??????? ethtool -L $i combined 6
+ ??????? #ethtool -N $i rx-flow-hash udp4 sdfn
+ ??????? ethtool -K $i ntuple on
+ ??????? ethtool -K $i gro off
+ ??????? ethtool -K $i tso off
 
-		Vita
+
+
