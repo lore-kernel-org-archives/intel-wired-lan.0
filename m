@@ -1,209 +1,233 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 17 Oct 2017 23:51:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 59d1bda4857aaccd21ff2c7bad2026fab33fe426
-Message-ID: <59e6271c.JUsNEAUH0XpAU9Ev%fengguang.wu@intel.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 17 Oct 2017 17:49:48 +0200
+Subject: [Intel-wired-lan] [PATCH] [v2] i40e: avoid 64-bit division where
+	possible
+Message-ID: <20171017155001.318184-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 59d1bda4857aaccd21ff2c7bad2026fab33fe426  e1000: fix race condition between e1000_down() and e1000_watchdog
+The new bandwidth calculation caused a link error on 32-bit
+architectures, like
 
-elapsed time: 76m
+ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
 
-configs tested: 185
+The problem is the max_tx_rate calculation that uses 64-bit integers.
+This is not really necessary since the numbers are in MBit/s so
+they won't be higher than 40000 for the highest support rate, and
+are guaranteed to not exceed 2^32 in future generations either.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Another patch from Alan Brady fixed the link error by adding
+many calls to do_div(), which makes the code less efficent and
+less readable than necessary.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-mips                    maltaup_xpa_defconfig
-mips                         tb0226_defconfig
-powerpc                      ppc6xx_defconfig
-x86_64                 randconfig-a0-10172302
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-arm                     am200epdkit_defconfig
-m68k                             allyesconfig
-sh                           se7712_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10172245
-x86_64                randconfig-it0-10172234
-i386                   randconfig-n0-10171314
-arm                        trizeps4_defconfig
-m32r                             allmodconfig
-powerpc                     virtex5_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-10172032
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                      tct_hammer_defconfig
-mips                        maltaup_defconfig
-sh                         microdev_defconfig
-x86_64                 randconfig-x018-201742
-x86_64                 randconfig-x011-201742
-x86_64                 randconfig-x012-201742
-x86_64                 randconfig-x013-201742
-x86_64                 randconfig-x019-201742
-x86_64                 randconfig-x017-201742
-x86_64                 randconfig-x014-201742
-x86_64                 randconfig-x015-201742
-x86_64                 randconfig-x016-201742
-x86_64                 randconfig-x010-201742
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201742
-i386                     randconfig-a1-201742
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                         hackkit_defconfig
-arm                            qcom_defconfig
-arm                           spitz_defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc                     pseries_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201742
-i386                     randconfig-s1-201742
-x86_64                 randconfig-s3-10172246
-x86_64                 randconfig-s4-10172246
-x86_64                 randconfig-s5-10172246
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201742
-i386                   randconfig-b0-10172254
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201742
-i386                     randconfig-i1-201742
-mips                          malta_defconfig
-s390                           gcov_defconfig
-sparc64                          allmodconfig
-x86_64                 randconfig-u0-10172300
-x86_64                randconfig-ne0-10172247
-i386                   randconfig-x015-201742
-i386                   randconfig-x013-201742
-i386                   randconfig-x014-201742
-i386                   randconfig-x019-201742
-i386                   randconfig-x011-201742
-i386                   randconfig-x018-201742
-i386                   randconfig-x010-201742
-i386                   randconfig-x012-201742
-i386                   randconfig-x017-201742
-i386                   randconfig-x016-201742
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                          allyesconfig
-sh                           cayman_defconfig
-arm                           viper_defconfig
-sh                   secureedge5410_defconfig
-x86_64                           allmodconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x001-201742
-x86_64                 randconfig-x000-201742
-x86_64                 randconfig-x004-201742
-x86_64                 randconfig-x008-201742
-x86_64                 randconfig-x007-201742
-x86_64                 randconfig-x006-201742
-x86_64                 randconfig-x005-201742
-x86_64                 randconfig-x009-201742
-x86_64                 randconfig-x003-201742
-x86_64                 randconfig-x002-201742
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m32r                      mappi.smp_defconfig
-powerpc                      bamboo_defconfig
-powerpc                     tqm8548_defconfig
-x86_64                randconfig-ws0-10172151
-i386                   randconfig-x074-201742
-i386                   randconfig-x077-201742
-i386                   randconfig-x071-201742
-i386                   randconfig-x076-201742
-i386                   randconfig-x073-201742
-i386                   randconfig-x079-201742
-i386                   randconfig-x078-201742
-i386                   randconfig-x072-201742
-i386                   randconfig-x070-201742
-i386                   randconfig-x075-201742
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                 randconfig-r0-10172042
-i386                   randconfig-x001-201742
-i386                   randconfig-x008-201742
-i386                   randconfig-x002-201742
-i386                   randconfig-x004-201742
-i386                   randconfig-x003-201742
-i386                   randconfig-x006-201742
-i386                   randconfig-x007-201742
-i386                   randconfig-x009-201742
-i386                   randconfig-x005-201742
-i386                   randconfig-x000-201742
-i386                   randconfig-x0-10172227
+This changes the representation to 'u32' when dealing with MBit/s
+and uses div_u64() to convert from u64 numbers in byte/s, reverting
+parts of Alan's earlier fix that have become obsolete now.
 
-Thanks,
-Fengguang
+Fixes: 2027d4deacb1 ("i40e: Add support setting TC max bandwidth rates")
+Fixes: 73983b5ae011 ("i40e: fix u64 division usage")
+Cc: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/net/ethernet/intel/i40e/i40e.h      |  4 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 70 +++++++++++------------------
+ 2 files changed, 27 insertions(+), 47 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index c3f13120f3ce..c7aa0c982273 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -407,7 +407,7 @@ struct i40e_channel {
+ 	u8 enabled_tc;
+ 	struct i40e_aqc_vsi_properties_data info;
+ 
+-	u64 max_tx_rate;
++	u32 max_tx_rate; /* in Mbits/s */
+ 
+ 	/* track this channel belongs to which VSI */
+ 	struct i40e_vsi *parent_vsi;
+@@ -1101,5 +1101,5 @@ static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
+ }
+ 
+ int i40e_create_queue_channel(struct i40e_vsi *vsi, struct i40e_channel *ch);
+-int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate);
++int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u32 max_tx_rate);
+ #endif /* _I40E_H_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 3ceda140170d..57682cc78508 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -5448,17 +5448,16 @@ int i40e_get_link_speed(struct i40e_vsi *vsi)
+  *
+  * Helper function to set BW limit for a given VSI
+  **/
+-int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
++int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u32 max_tx_rate)
+ {
+ 	struct i40e_pf *pf = vsi->back;
+-	u64 credits = 0;
+ 	int speed = 0;
+ 	int ret = 0;
+ 
+ 	speed = i40e_get_link_speed(vsi);
+ 	if (max_tx_rate > speed) {
+ 		dev_err(&pf->pdev->dev,
+-			"Invalid max tx rate %llu specified for VSI seid %d.",
++			"Invalid max tx rate %u specified for VSI seid %d.",
+ 			max_tx_rate, seid);
+ 		return -EINVAL;
+ 	}
+@@ -5469,13 +5468,12 @@ int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
+ 	}
+ 
+ 	/* Tx rate credits are in values of 50Mbps, 0 is disabled */
+-	credits = max_tx_rate;
+-	do_div(credits, I40E_BW_CREDIT_DIVISOR);
+-	ret = i40e_aq_config_vsi_bw_limit(&pf->hw, seid, credits,
++	ret = i40e_aq_config_vsi_bw_limit(&pf->hw, seid,
++					  max_tx_rate / I40E_BW_CREDIT_DIVISOR,
+ 					  I40E_MAX_BW_INACTIVE_ACCUM, NULL);
+ 	if (ret)
+ 		dev_err(&pf->pdev->dev,
+-			"Failed set tx rate (%llu Mbps) for vsi->seid %u, err %s aq_err %s\n",
++			"Failed set tx rate (%u Mbps) for vsi->seid %u, err %s aq_err %s\n",
+ 			max_tx_rate, seid, i40e_stat_str(&pf->hw, ret),
+ 			i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
+ 	return ret;
+@@ -6158,17 +6156,13 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
+ 
+ 	/* configure VSI for BW limit */
+ 	if (ch->max_tx_rate) {
+-		u64 credits = ch->max_tx_rate;
+-
+ 		if (i40e_set_bw_limit(vsi, ch->seid, ch->max_tx_rate))
+ 			return -EINVAL;
+ 
+-		do_div(credits, I40E_BW_CREDIT_DIVISOR);
+ 		dev_dbg(&pf->pdev->dev,
+-			"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++			"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
+ 			ch->max_tx_rate,
+-			credits,
+-			ch->seid);
++			ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR, ch->seid);
+ 	}
+ 
+ 	/* in case of VF, this will be main SRIOV VSI */
+@@ -6189,7 +6183,6 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
+ static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
+ {
+ 	struct i40e_channel *ch;
+-	u64 max_rate = 0;
+ 	int ret = 0, i;
+ 
+ 	/* Create app vsi with the TCs. Main VSI with TC0 is already set up */
+@@ -6211,9 +6204,8 @@ static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
+ 			/* Bandwidth limit through tc interface is in bytes/s,
+ 			 * change to Mbit/s
+ 			 */
+-			max_rate = vsi->mqprio_qopt.max_rate[i];
+-			do_div(max_rate, I40E_BW_MBPS_DIVISOR);
+-			ch->max_tx_rate = max_rate;
++			ch->max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[i],
++						  I40E_BW_CREDIT_DIVISOR);
+ 
+ 			list_add_tail(&ch->list, &vsi->ch_list);
+ 
+@@ -6643,7 +6635,6 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
+ 				     struct tc_mqprio_qopt_offload *mqprio_qopt)
+ {
+ 	u64 sum_max_rate = 0;
+-	u64 max_rate = 0;
+ 	int i;
+ 
+ 	if (mqprio_qopt->qopt.offset[0] != 0 ||
+@@ -6658,9 +6649,8 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
+ 				"Invalid min tx rate (greater than 0) specified\n");
+ 			return -EINVAL;
+ 		}
+-		max_rate = mqprio_qopt->max_rate[i];
+-		do_div(max_rate, I40E_BW_MBPS_DIVISOR);
+-		sum_max_rate += max_rate;
++		sum_max_rate += div_u64(mqprio_qopt->max_rate[i],
++					I40E_BW_CREDIT_DIVISOR);
+ 
+ 		if (i >= mqprio_qopt->qopt.num_tc - 1)
+ 			break;
+@@ -6804,18 +6794,14 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
+ 
+ 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
+ 		if (vsi->mqprio_qopt.max_rate[0]) {
+-			u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0];
+-
+-			do_div(max_tx_rate, I40E_BW_MBPS_DIVISOR);
++			u32 max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[0],
++						  I40E_BW_CREDIT_DIVISOR);
+ 			ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
+ 			if (!ret) {
+-				u64 credits = max_tx_rate;
+-
+-				do_div(credits, I40E_BW_CREDIT_DIVISOR);
+ 				dev_dbg(&vsi->back->pdev->dev,
+-					"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++					"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
+ 					max_tx_rate,
+-					credits,
++					max_tx_rate / I40E_BW_CREDIT_DIVISOR,
+ 					vsi->seid);
+ 			} else {
+ 				need_reset = true;
+@@ -9024,15 +9010,12 @@ static int i40e_rebuild_channels(struct i40e_vsi *vsi)
+ 			return ret;
+ 		}
+ 		if (ch->max_tx_rate) {
+-			u64 credits = ch->max_tx_rate;
+-
+ 			if (i40e_set_bw_limit(vsi, ch->seid,
+ 					      ch->max_tx_rate))
+ 				return -EINVAL;
+ 
+-			do_div(credits, I40E_BW_CREDIT_DIVISOR);
+ 			dev_dbg(&vsi->back->pdev->dev,
+-				"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
++				"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
+ 				ch->max_tx_rate,
+ 				ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR,
+ 				ch->seid);
+@@ -9314,21 +9297,18 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 	}
+ 
+ 	if (vsi->mqprio_qopt.max_rate[0]) {
+-		u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0];
+-		u64 credits = 0;
++		u32 max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[0],
++					  I40E_BW_CREDIT_DIVISOR);
+ 
+-		do_div(max_tx_rate, I40E_BW_MBPS_DIVISOR);
+ 		ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
+-		if (ret)
++		if (!ret)
++			dev_dbg(&vsi->back->pdev->dev,
++				"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
++				max_tx_rate,
++				max_tx_rate / I40E_BW_CREDIT_DIVISOR,
++				vsi->seid);
++		else
+ 			goto end_unlock;
+-
+-		credits = max_tx_rate;
+-		do_div(credits, I40E_BW_CREDIT_DIVISOR);
+-		dev_dbg(&vsi->back->pdev->dev,
+-			"Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
+-			max_tx_rate,
+-			credits,
+-			vsi->seid);
+ 	}
+ 
+ 	ret = i40e_rebuild_cloud_filters(vsi, vsi->seid);
+-- 
+2.9.0
+
