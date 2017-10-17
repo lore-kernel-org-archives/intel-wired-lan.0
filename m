@@ -1,76 +1,208 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 17 Oct 2017 16:12:22 -0700
-Subject: [Intel-wired-lan] [RFC PATCH next 2/2] i40e: add support for
- macvlan hardware offload
-In-Reply-To: <CAKgT0Uft_kCyct==am7W0TGUo-YzUhSVkJir83uGx_XwMuxsHg@mail.gmail.com>
-References: <1508275089-430113-1-git-send-email-shannon.nelson@oracle.com>
- <1508275089-430113-3-git-send-email-shannon.nelson@oracle.com>
- <CAKgT0Uft_kCyct==am7W0TGUo-YzUhSVkJir83uGx_XwMuxsHg@mail.gmail.com>
-Message-ID: <c74d6f52-dc7f-eeed-e916-ee7ffacc39f8@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 18 Oct 2017 04:37:49 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
+ 6c32e0d9fdd56a7af54512aff700e20d85563499
+Message-ID: <59e66a1d.UulixYqoD5urCDel%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/17/2017 2:32 PM, Alexander Duyck wrote:
-> 
-> So the select_queue function being needed is the deal breaker on all
-> of this as far as I am concerned. We aren't allowed to use it under
-> other cases so why should macvlan be an exception to the rule?
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+branch HEAD: 6c32e0d9fdd56a7af54512aff700e20d85563499  i40e: fix u64 division usage
 
-I realize that the stack is pretty good at chosing the "right" queue, 
-which is my understanding as to why we shouldn't use select_queue(), but 
-it doesn't know how to use the accel_priv context associated with the 
-macvlan offload.
+elapsed time: 136m
 
-I saw DaveM's guidance to the HiNIC folks when they tried to add 
-select_queue(): "do not implement this function unless you absolutely 
-need to do something custom in your driver".  I can see where this might 
-be the exception.
+configs tested: 184
 
-When originally thinking about how to do this, I wanted to use the 
-accel_priv as a pointer to the VSI to be used for the offload, then we 
-could have multiple queues and use all the VSI specific tuning 
-operations that XL710 has available.  It can work when selecting the 
-queue, but by the time you get to start_xmit(), you no longer have that 
-context and only have the queue number.  You can't do any fancy encoding 
-in the queue number because the value has to be within 
-dev->num_tx_queues.  Maybe we can add accel_priv to the start_xmit 
-interface?  (I can hear the groans already...)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-However... for our case, you might be right anyway.  If the stack is 
-doing its job at keeping the conversation on the one queue/irq/cpu 
-combination, any Tx following the offloaded Rx might already be headed 
-for the right Tx queue.  I'll check on that.
-> I think we should probably look at a different approach for this. For
-> example why is it we need to use a different transmit path for a
-> macvlan packet vs any other packet? On the Rx side we get the
-> advantage of avoiding the software hashing and demux. What do we get
-> for reserving queues for transmit?
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                           allyesconfig
+powerpc               mpc86xx_basic_defconfig
+x86_64                 randconfig-a0-10180231
+arm                            hisi_defconfig
+m68k                             allmodconfig
+xtensa                generic_kc705_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10180254
+powerpc                    amigaone_defconfig
+powerpc                     kmeter1_defconfig
+s390                                defconfig
+x86_64                randconfig-it0-10180303
+i386                               tinyconfig
+i386                   randconfig-n0-10171314
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+microblaze                       allyesconfig
+mips                        nlm_xlp_defconfig
+powerpc                     pseries_defconfig
+x86_64                 randconfig-x010-201742
+x86_64                 randconfig-x011-201742
+x86_64                 randconfig-x012-201742
+x86_64                 randconfig-x013-201742
+x86_64                 randconfig-x014-201742
+x86_64                 randconfig-x015-201742
+x86_64                 randconfig-x016-201742
+x86_64                 randconfig-x017-201742
+x86_64                 randconfig-x018-201742
+x86_64                 randconfig-x019-201742
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201742
+i386                     randconfig-a1-201742
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                                defconfig
+ia64                         bigsur_defconfig
+microblaze                          defconfig
+mips                        xilfpga_defconfig
+powerpc                       ep405_defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-s0-201742
+i386                     randconfig-s1-201742
+i386                             allmodconfig
+x86_64                   randconfig-i0-201742
+i386                   randconfig-b0-10180144
+cris                        etraxfs_defconfig
+openrisc                         alldefconfig
+parisc                          712_defconfig
+powerpc                     mpc512x_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201742
+i386                     randconfig-i1-201742
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                          badge4_defconfig
+arm                           omap1_defconfig
+m68k                          multi_defconfig
+x86_64                 randconfig-u0-10180310
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+powerpc                             defconfig
+x86_64                randconfig-ne0-10180238
+i386                   randconfig-x015-201742
+i386                   randconfig-x013-201742
+i386                   randconfig-x014-201742
+i386                   randconfig-x019-201742
+i386                   randconfig-x011-201742
+i386                   randconfig-x018-201742
+i386                   randconfig-x010-201742
+i386                   randconfig-x012-201742
+i386                   randconfig-x017-201742
+i386                   randconfig-x016-201742
+powerpc                       maple_defconfig
+i386                   randconfig-x074-201742
+i386                   randconfig-x077-201742
+i386                   randconfig-x071-201742
+i386                   randconfig-x076-201742
+i386                   randconfig-x073-201742
+i386                   randconfig-x079-201742
+i386                   randconfig-x078-201742
+i386                   randconfig-x072-201742
+i386                   randconfig-x070-201742
+i386                   randconfig-x075-201742
+i386                   randconfig-x001-201742
+i386                   randconfig-x008-201742
+i386                   randconfig-x002-201742
+i386                   randconfig-x004-201742
+i386                   randconfig-x003-201742
+i386                   randconfig-x006-201742
+i386                   randconfig-x007-201742
+i386                   randconfig-x009-201742
+i386                   randconfig-x005-201742
+i386                   randconfig-x000-201742
+m68k                       m5475evb_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                           allmodconfig
+arm                            mmp2_defconfig
+x86_64                randconfig-ws0-10172344
+mips                           ip27_defconfig
+powerpc                 canyonlands_defconfig
+sh                           se7780_defconfig
+x86_64                randconfig-ws0-10180248
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                                  kexec
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                         alldefconfig
+powerpc                     ksi8560_defconfig
+powerpc                 mpc834x_mds_defconfig
+x86_64                 randconfig-x001-201742
+x86_64                 randconfig-x000-201742
+x86_64                 randconfig-x004-201742
+x86_64                 randconfig-x008-201742
+x86_64                 randconfig-x007-201742
+x86_64                 randconfig-x006-201742
+x86_64                 randconfig-x005-201742
+x86_64                 randconfig-x009-201742
+x86_64                 randconfig-x003-201742
+x86_64                 randconfig-x002-201742
+x86_64                 randconfig-r0-10180254
+mips                       markeins_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
 
-There are a couple of reasons I can think of to keep the Tx on the 
-specific queue pair:
-
-- Keep the Tx traffic on the same CPU and irq as the Rx traffic
-
-- Don't let the flow get interrupted, slowed, or otherwise perturbed by 
-other traffic flows.
-
-- Allow for adding hardware assisted bandwidth constraints to the 
-offloaded flow without bothering the rest of the NIC's traffic
-
-Are these enough to want to guarantee the Tx queue?
-
-> My plan for this is to go back and "fix" ixgbe so we can get it away
-> from having to use the select_queue call for the macvlan offload and
-> then maybe look at proving a few select NDO operations for allowing
-> macvlans that are being offloaded to make specific calls into the
-> hardware to perform tasks as needed.
-
-The ixgbe implementation can certainly be improved.  I think its biggest 
-failing is that the rest of the general traffic gets constrained to a 
-single queue - no more RSS for load balancing.
-
-sln
-
+Thanks,
+Fengguang
