@@ -1,88 +1,62 @@
-From: =?unknown-8bit?q?Pawe=C5=82?= Staszewski <pstaszewski@itcare.pl>
-Date: Tue, 17 Oct 2017 02:44:59 +0200
-Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
-	NICs
-In-Reply-To: <CAKgT0Uf=0yasidUfyadNSxzkhKvtxH2t83fjb-SU7OaAnrMReA@mail.gmail.com>
-References: <1507121766.30720.4.camel@cohaesio.com>
- <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
- <1507180753.20182.8.camel@cohaesio.com>
- <227d17ae-b040-07d0-3c57-e9acd1a3b5b4@itcare.pl>
- <c49a750f-c47c-9de0-ebf0-148db5e3d3c5@itcare.pl>
- <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
- <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
- <3d783736-a474-d9e3-2de2-e35c765f8249@itcare.pl>
- <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
- <CAKgT0Uf=0yasidUfyadNSxzkhKvtxH2t83fjb-SU7OaAnrMReA@mail.gmail.com>
-Message-ID: <310ce203-0d65-bdf4-d9e4-897a349b3277@itcare.pl>
+From: Gavin Lambert <gavin.lambert@compacsort.com>
+Date: Tue, 17 Oct 2017 03:05:09 +0000
+Subject: [Intel-wired-lan] Packet loss on 82571EB with kernel 4.9
+Message-ID: <SG2PR03MB187291B811B5438AEADC53AE844C0@SG2PR03MB1872.apcprd03.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+(Please explicitly CC me in any replies.)
+I have a computer with an Intel 82571EB 2-port card using the e1000e driver.  I've noticed that it appears to be dropping some transmitted packets:
 
+# iperf3 -c 10.200.197.17
+Connecting to host 10.200.197.17, port 5201
+[  4] local 10.200.197.82 port 59294 connected to 10.200.197.17 port 5201
+[ ID] Interval           Transfer     Bandwidth       Retr  Cwnd
+[  4]   0.00-1.00   sec   113 MBytes   951 Mbits/sec    0    223 KBytes
+[  4]   1.00-2.00   sec   112 MBytes   941 Mbits/sec    0    223 KBytes
+[  4]   2.00-3.00   sec   112 MBytes   941 Mbits/sec   10    204 KBytes
+[  4]   3.00-4.00   sec   112 MBytes   941 Mbits/sec    0    221 KBytes
+[  4]   4.00-5.00   sec   112 MBytes   941 Mbits/sec   10    154 KBytes
+[  4]   5.00-6.00   sec   112 MBytes   942 Mbits/sec    0    222 KBytes
+[  4]   6.00-7.00   sec   112 MBytes   941 Mbits/sec    0    222 KBytes
+[  4]   7.00-8.00   sec   112 MBytes   941 Mbits/sec    0    222 KBytes
+[  4]   8.00-9.00   sec   112 MBytes   942 Mbits/sec    0    222 KBytes
+[  4]   9.00-10.00  sec   112 MBytes   941 Mbits/sec    0    222 KBytes
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bandwidth       Retr
+[  4]   0.00-10.00  sec  1.10 GBytes   942 Mbits/sec   20             sender
+[  4]   0.00-10.00  sec  1.10 GBytes   941 Mbits/sec                  receiver
 
-W dniu 2017-10-17 o?01:56, Alexander Duyck pisze:
-> On Mon, Oct 16, 2017 at 4:34 PM, Pawe? Staszewski <pstaszewski@itcare.pl> wrote:
->>
->> W dniu 2017-10-16 o 18:26, Pawe? Staszewski pisze:
->>
->>>
->>> W dniu 2017-10-16 o 13:20, Pavlos Parissis pisze:
->>>> On 15/10/2017 02:58 ??, Alexander Duyck wrote:
->>>>> Hi Pawel,
->>>>>
->>>>> To clarify is that Dave Miller's tree or Linus's that you are talking
->>>>> about? If it is Dave's tree how long ago was it you pulled it since I
->>>>> think the fix was just pushed by Jeff Kirsher a few days ago.
->>>>>
->>>>> The issue should be fixed in the following commit:
->>>>>
->>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972
->>>>>
->>>> Do you know when it is going to be available on net-next and linux-stable
->>>> repos?
->>>>
->>>> Cheers,
->>>> Pavlos
->>>>
->>>>
->>> I will make some tests today night with "net" git tree where this patch is
->>> included.
->>> Starting from 0:00 CET
->>> :)
->>>
->>>
->> Upgraded and looks like problem is not solved with that patch
->> Currently running system with
->> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/
->> kernel
->>
->> Still about 0.5GB of memory is leaking somewhere
->>
->> Also can confirm that the latest kernel where memory is not leaking (with
->> use i40e driver intel 710 cards) is 4.11.12
->> With kernel 4.11.12 - after hour no change in memory usage.
->>
->> also checked that with ixgbe instead of i40e with same  net.git kernel there
->> is no memleak - after hour same memory usage - so for 100% this is i40e
->> driver problem.
-> So how long was the run to get the .5GB of memory leaking?
-1 hour
+# iperf3 -c 10.200.197.17 -u -b0
+...
+[ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
+[  4]   0.00-10.00  sec  1.12 GBytes   958 Mbits/sec  0.123 ms  28/146256 (0.019%)
+[  4] Sent 146256 datagrams
 
->
-> Also is there any chance of you being able to bisect to determine
-> where the memory leak was introduced since as you pointed out it
-> didn't exist in 4.11.12 so odds are it was introduced somewhere
-> between 4.11 and the latest kernel release.
-Can be hard cause currently need to back to 4.11.12 - this is production 
-host/router
-Will try to find some free/test router for tests/bicects with i40e 
-driver (intel 710 cards)
+(A reverse run with -R, where this PC is only receiving packets, doesn't report any problems.)
 
->
-> Thanks.
->
-> - Alex
->
+The computer is running Debian Linux Stretch x86_64 with kernel 4.9.30-2+deb9u2.
+       e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
+       e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+       e1000e 0000:01:00.0: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
+       e1000e 0000:01:00.0 eth0: (PCI Express:2.5GT/s:Width x4) 68:05:ca:16:5a:24
+       e1000e 0000:01:00.0 eth0: Intel(R) PRO/1000 Network Connection
+       e1000e 0000:01:00.0 eth0: MAC: 0, PHY: 4, PBA No: D50868-008
+       e1000e 0000:01:00.1: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
+       e1000e 0000:01:00.1 eth1: (PCI Express:2.5GT/s:Width x4) 68:05:ca:16:5a:25
+       e1000e 0000:01:00.1 eth1: Intel(R) PRO/1000 Network Connection
+       e1000e 0000:01:00.1 eth1: MAC: 0, PHY: 4, PBA No: D50868-008
+       e1000e 0000:01:00.0 enp1s0f0: renamed from eth0
+       e1000e 0000:01:00.1 enp1s0f1: renamed from eth1
+       e1000e: enp1s0f0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+       IPv6: ADDRCONF(NETDEV_CHANGE): enp1s0f0: link becomes ready
+
+The tests above were performed with enp1s0f0, but unsurprisingly enp1s0f1 behaves the same way.  The computer also has a non-Intel network card and performing the same tests on that does not produce any errors.
+
+If I downgrade the computer to Debian Jessie with kernel 3.2.54 and e1000e driver 1.5.1-k then there is no packet loss in the same test.  I don't currently have anything in between these versions, although I might be able to build something custom if that will help.
+
+What information is needed to diagnose this further and correct the problem?
 
