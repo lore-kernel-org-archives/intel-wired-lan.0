@@ -1,372 +1,116 @@
-From: =?unknown-8bit?q?Pawe=C5=82?= Staszewski <pstaszewski@itcare.pl>
-Date: Wed, 18 Oct 2017 17:44:33 +0200
-Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
-	NICs
-In-Reply-To: <d79df7f2-5de4-cc37-baf0-5603f025155e@itcare.pl>
-References: <1507121766.30720.4.camel@cohaesio.com>
- <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
- <1507180753.20182.8.camel@cohaesio.com>
- <227d17ae-b040-07d0-3c57-e9acd1a3b5b4@itcare.pl>
- <c49a750f-c47c-9de0-ebf0-148db5e3d3c5@itcare.pl>
- <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
- <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
- <3d783736-a474-d9e3-2de2-e35c765f8249@itcare.pl>
- <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
- <CAKgT0Uf=0yasidUfyadNSxzkhKvtxH2t83fjb-SU7OaAnrMReA@mail.gmail.com>
- <310ce203-0d65-bdf4-d9e4-897a349b3277@itcare.pl>
- <f6e2208a-4cdf-3303-5999-92186b437b62@itcare.pl>
- <1704eb26-c4c5-b196-ca7a-5265e92ae4e6@itcare.pl>
- <bd82f85a-f9b8-a09a-beab-67667b58f36a@itcare.pl>
- <7fd828d7-c586-2c32-3ba6-e0575bf9958c@itcare.pl>
- <99eba19f-327e-e01f-4f4a-87540b176e40@itcare.pl>
- <efcc51b4-f911-11ec-1c56-fcf31081f9d5@itcare.pl>
- <d79df7f2-5de4-cc37-baf0-5603f025155e@itcare.pl>
-Message-ID: <748b6d9d-4a3f-4eaa-ad24-27060c2e2642@itcare.pl>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 18 Oct 2017 09:43:43 -0700
+Subject: [Intel-wired-lan] Packet loss on 82571EB with kernel 4.9
+In-Reply-To: <SG2PR03MB187291B811B5438AEADC53AE844C0@SG2PR03MB1872.apcprd03.prod.outlook.com>
+References: <SG2PR03MB187291B811B5438AEADC53AE844C0@SG2PR03MB1872.apcprd03.prod.outlook.com>
+Message-ID: <1508345023.13406.6.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Tue, 2017-10-17 at 03:05 +0000, Gavin Lambert wrote:
+> (Please explicitly CC me in any replies.)
+> I have a computer with an Intel 82571EB 2-port card using the e1000e
+> driver.  I've noticed that it appears to be dropping some transmitted
+> packets:
+> 
+> # iperf3 -c 10.200.197.17
+> Connecting to host 10.200.197.17, port 5201
+> [  4] local 10.200.197.82 port 59294 connected to 10.200.197.17 port
+> 5201
+> [ ID] Interval           Transfer     Bandwidth       Retr  Cwnd
+> [  4]   0.00-1.00   sec   113 MBytes   951 Mbits/sec    0    223
+> KBytes
+> [  4]   1.00-2.00   sec   112 MBytes   941 Mbits/sec    0    223
+> KBytes
+> [  4]   2.00-3.00   sec   112 MBytes   941 Mbits/sec   10    204
+> KBytes
+> [  4]   3.00-4.00   sec   112 MBytes   941 Mbits/sec    0    221
+> KBytes
+> [  4]   4.00-5.00   sec   112 MBytes   941 Mbits/sec   10    154
+> KBytes
+> [  4]   5.00-6.00   sec   112 MBytes   942 Mbits/sec    0    222
+> KBytes
+> [  4]   6.00-7.00   sec   112 MBytes   941 Mbits/sec    0    222
+> KBytes
+> [  4]   7.00-8.00   sec   112 MBytes   941 Mbits/sec    0    222
+> KBytes
+> [  4]   8.00-9.00   sec   112 MBytes   942 Mbits/sec    0    222
+> KBytes
+> [  4]   9.00-10.00  sec   112 MBytes   941 Mbits/sec    0    222
+> KBytes
+> - - - - - - - - - - - - - - - - - - - - - - - - -
+> [ ID] Interval           Transfer     Bandwidth       Retr
+> [  4]   0.00-10.00  sec  1.10 GBytes   942
+> Mbits/sec   20             sender
+> [  4]   0.00-10.00  sec  1.10 GBytes   941
+> Mbits/sec                  receiver
+> 
+> # iperf3 -c 10.200.197.17 -u -b0
+> ...
+> [ ID]
+> Interval           Transfer     Bandwidth       Jitter    Lost/Total
+> Datagrams
+> [  4]   0.00-10.00  sec  1.12 GBytes   958 Mbits/sec  0.123
+> ms  28/146256 (0.019%)
+> [  4] Sent 146256 datagrams
+> 
+> (A reverse run with -R, where this PC is only receiving packets,
+> doesn't report any problems.)
+> 
+> The computer is running Debian Linux Stretch x86_64 with kernel
+> 4.9.30-2+deb9u2.
+>        e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
+>        e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+>        e1000e 0000:01:00.0: Interrupt Throttling Rate (ints/sec) set
+> to dynamic conservative mode
+>        e1000e 0000:01:00.0 eth0: (PCI Express:2.5GT/s:Width x4)
+> 68:05:ca:16:5a:24
+>        e1000e 0000:01:00.0 eth0: Intel(R) PRO/1000 Network Connection
+>        e1000e 0000:01:00.0 eth0: MAC: 0, PHY: 4, PBA No: D50868-008
+>        e1000e 0000:01:00.1: Interrupt Throttling Rate (ints/sec) set
+> to dynamic conservative mode
+>        e1000e 0000:01:00.1 eth1: (PCI Express:2.5GT/s:Width x4)
+> 68:05:ca:16:5a:25
+>        e1000e 0000:01:00.1 eth1: Intel(R) PRO/1000 Network Connection
+>        e1000e 0000:01:00.1 eth1: MAC: 0, PHY: 4, PBA No: D50868-008
+>        e1000e 0000:01:00.0 enp1s0f0: renamed from eth0
+>        e1000e 0000:01:00.1 enp1s0f1: renamed from eth1
+>        e1000e: enp1s0f0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: None
+>        IPv6: ADDRCONF(NETDEV_CHANGE): enp1s0f0: link becomes ready
+> 
+> The tests above were performed with enp1s0f0, but unsurprisingly
+> enp1s0f1 behaves the same way.  The computer also has a non-Intel
+> network card and performing the same tests on that does not produce
+> any errors.
+> 
+> If I downgrade the computer to Debian Jessie with kernel 3.2.54 and
+> e1000e driver 1.5.1-k then there is no packet loss in the same
+> test.  I don't currently have anything in between these versions,
+> although I might be able to build something custom if that will help.
+> 
+> What information is needed to diagnose this further and correct the
+> problem?
 
+Any chance you can try the latest stable kernel 4.13.8 or even the
+latest kernel from Linus's tree (4.14-rc5)?  This will let us know if
+the issue still persists in the latest upstream kernel or if the issue
+has been fixed already.
 
-W dniu 2017-10-17 o?16:08, Pawe? Staszewski pisze:
->
->
-> W dniu 2017-10-17 o?13:52, Pawe? Staszewski pisze:
->>
->>
->> W dniu 2017-10-17 o?13:05, Pawe? Staszewski pisze:
->>>
->>>
->>> W dniu 2017-10-17 o?12:59, Pawe? Staszewski pisze:
->>>>
->>>>
->>>> W dniu 2017-10-17 o?12:51, Pawe? Staszewski pisze:
->>>>>
->>>>>
->>>>> W dniu 2017-10-17 o?12:20, Pawe? Staszewski pisze:
->>>>>>
->>>>>>
->>>>>> W dniu 2017-10-17 o?11:48, Pawe? Staszewski pisze:
->>>>>>>
->>>>>>>
->>>>>>> W dniu 2017-10-17 o?02:44, Pawe? Staszewski pisze:
->>>>>>>>
->>>>>>>>
->>>>>>>> W dniu 2017-10-17 o?01:56, Alexander Duyck pisze:
->>>>>>>>> On Mon, Oct 16, 2017 at 4:34 PM, Pawe? Staszewski 
->>>>>>>>> <pstaszewski@itcare.pl> wrote:
->>>>>>>>>>
->>>>>>>>>> W dniu 2017-10-16 o 18:26, Pawe? Staszewski pisze:
->>>>>>>>>>
->>>>>>>>>>>
->>>>>>>>>>> W dniu 2017-10-16 o 13:20, Pavlos Parissis pisze:
->>>>>>>>>>>> On 15/10/2017 02:58 ??, Alexander Duyck wrote:
->>>>>>>>>>>>> Hi Pawel,
->>>>>>>>>>>>>
->>>>>>>>>>>>> To clarify is that Dave Miller's tree or Linus's that you 
->>>>>>>>>>>>> are talking
->>>>>>>>>>>>> about? If it is Dave's tree how long ago was it you pulled 
->>>>>>>>>>>>> it since I
->>>>>>>>>>>>> think the fix was just pushed by Jeff Kirsher a few days ago.
->>>>>>>>>>>>>
->>>>>>>>>>>>> The issue should be fixed in the following commit:
->>>>>>>>>>>>>
->>>>>>>>>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972 
->>>>>>>>>>>>>
->>>>>>>>>>>>>
->>>>>>>>>>>> Do you know when it is going to be available on net-next 
->>>>>>>>>>>> and linux-stable
->>>>>>>>>>>> repos?
->>>>>>>>>>>>
->>>>>>>>>>>> Cheers,
->>>>>>>>>>>> Pavlos
->>>>>>>>>>>>
->>>>>>>>>>>>
->>>>>>>>>>> I will make some tests today night with "net" git tree where 
->>>>>>>>>>> this patch is
->>>>>>>>>>> included.
->>>>>>>>>>> Starting from 0:00 CET
->>>>>>>>>>> :)
->>>>>>>>>>>
->>>>>>>>>>>
->>>>>>>>>> Upgraded and looks like problem is not solved with that patch
->>>>>>>>>> Currently running system with
->>>>>>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/
->>>>>>>>>> kernel
->>>>>>>>>>
->>>>>>>>>> Still about 0.5GB of memory is leaking somewhere
->>>>>>>>>>
->>>>>>>>>> Also can confirm that the latest kernel where memory is not 
->>>>>>>>>> leaking (with
->>>>>>>>>> use i40e driver intel 710 cards) is 4.11.12
->>>>>>>>>> With kernel 4.11.12 - after hour no change in memory usage.
->>>>>>>>>>
->>>>>>>>>> also checked that with ixgbe instead of i40e with same 
->>>>>>>>>> net.git kernel there
->>>>>>>>>> is no memleak - after hour same memory usage - so for 100% 
->>>>>>>>>> this is i40e
->>>>>>>>>> driver problem.
->>>>>>>>> So how long was the run to get the .5GB of memory leaking?
->>>>>>>> 1 hour
->>>>>>>>
->>>>>>>>>
->>>>>>>>> Also is there any chance of you being able to bisect to determine
->>>>>>>>> where the memory leak was introduced since as you pointed out it
->>>>>>>>> didn't exist in 4.11.12 so odds are it was introduced somewhere
->>>>>>>>> between 4.11 and the latest kernel release.
->>>>>>>> Can be hard cause currently need to back to 4.11.12 - this is 
->>>>>>>> production host/router
->>>>>>>> Will try to find some free/test router for tests/bicects with 
->>>>>>>> i40e driver (intel 710 cards)
->>>>>>>>
->>>>>>>>>
->>>>>>>>> Thanks.
->>>>>>>>>
->>>>>>>>> - Alex
->>>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>> Also forgoto to add errors for i40e when driver initialize:
->>>>>>> [?? 15.760569] i40e 0000:02:00.1: Error I40E_AQ_RC_ENOSPC adding 
->>>>>>> RX filters on PF, promiscuous mode forced on
->>>>>>> [?? 16.365587] i40e 0000:03:00.3: Error I40E_AQ_RC_ENOSPC adding 
->>>>>>> RX filters on PF, promiscuous mode forced on
->>>>>>> [?? 16.367686] i40e 0000:02:00.2: Error I40E_AQ_RC_ENOSPC adding 
->>>>>>> RX filters on PF, promiscuous mode forced on
->>>>>>> [?? 16.368816] i40e 0000:03:00.0: Error I40E_AQ_RC_ENOSPC adding 
->>>>>>> RX filters on PF, promiscuous mode forced on
->>>>>>> [?? 16.369877] i40e 0000:03:00.2: Error I40E_AQ_RC_ENOSPC adding 
->>>>>>> RX filters on PF, promiscuous mode forced on
->>>>>>> [?? 16.370941] i40e 0000:02:00.3: Error I40E_AQ_RC_ENOSPC adding 
->>>>>>> RX filters on PF, promiscuous mode forced on
->>>>>>> [?? 16.372005] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding 
->>>>>>> RX filters on PF, promiscuous mode forced on
->>>>>>> [?? 16.373029] i40e 0000:03:00.1: Error I40E_AQ_RC_ENOSPC adding 
->>>>>>> RX filters on PF, promiscuous mode forced on
->>>>>>>
->>>>>>> some params that are set for this nic's
->>>>>>> ??????? ip link set up dev $i
->>>>>>> ??????? ethtool -A $i autoneg off rx off tx off
->>>>>>> ??????? ethtool -G $i rx 1024 tx 2048
->>>>>>> ??????? ip link set $i txqueuelen 1000
->>>>>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 
->>>>>>> 512 tx-usecs 128
->>>>>>> ??????? ethtool -L $i combined 6
->>>>>>> ??????? #ethtool -N $i rx-flow-hash udp4 sdfn
->>>>>>> ??????? ethtool -K $i ntuple on
->>>>>>> ??????? ethtool -K $i gro off
->>>>>>> ??????? ethtool -K $i tso off
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>> Also after TSO/GRO on there is memory usage change - and leaking 
->>>>>> faster
->>>>>> Below image from memory usage before change with TSO/GRO OFF and 
->>>>>> after enabling TSO/GRO
->>>>>>
->>>>>> https://ibb.co/dTqBY6
->>>>>>
->>>>>>
->>>>>> Thanks
->>>>>> Pawel
->>>>>>
->>>>>>
->>>>>>
->>>>> With settings like this:
->>>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 
->>>>> enp3s0f2 enp3s0f3'
->>>>> for i in $ifc
->>>>> ??????? do
->>>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 512 
->>>>> tx-usecs 128
->>>>> ??????? ethtool -K $i gro on
->>>>> ??????? ethtool -K $i tso on
->>>>>
->>>>> ??????? done
->>>>>
->>>>> Server is leaking about 4-6MB per each 10 seconds
->>>>> MEMLEAK:
->>>>> 5? MB/10sec
->>>>> 6? MB/10sec
->>>>> 4? MB/10sec
->>>>> 4? MB/10sec
->>>>>
->>>>>
->>>>> Other settings TSO/GRO off
->>>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 
->>>>> enp3s0f2 enp3s0f3'
->>>>> for i in $ifc
->>>>> ??????? do
->>>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 512 
->>>>> tx-usecs 128
->>>>> ??????? ethtool -K $i gro off
->>>>> ??????? ethtool -K $i tso off
->>>>>
->>>>> ??????? done
->>>>>
->>>>> Same leak about 5MB per 10 seconds
->>>>> MEMLEAK:
->>>>> 5? MB/10sec
->>>>> 5? MB/10sec
->>>>> 5? MB/10sec
->>>>>
->>>>>
->>>>> Other settings rx-usecs change from 512 to 1024:
->>>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 
->>>>> enp3s0f2 enp3s0f3'
->>>>> for i in $ifc
->>>>> ??????? do
->>>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 
->>>>> 1024 tx-usecs 128
->>>>> ??????? ethtool -K $i gro off
->>>>> ??????? ethtool -K $i tso off
->>>>>
->>>>> ??????? done
->>>>>
->>>>> MEMLEAK:
->>>>> 4? MB/10sec
->>>>> 3? MB/10sec
->>>>> 4? MB/10sec
->>>>> 4? MB/10sec
->>>>>
->>>>>
->>>>> So memleak have something to do with rx-usecs (less interrupts but 
->>>>> bigger latency for traffic)
->>>>>
->>>>>
->>>>> But also enabling TSO/GRO making leak about 1MB bigger for each 10 
->>>>> seconds
->>>>>
->>>>>
->>>>>
->>>> So far best config is:
->>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2 
->>>> enp3s0f3'
->>>> for i in $ifc
->>>> ??????? do
->>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 64 
->>>> tx-usecs 512
->>>> ??????? ethtool -K $i gro off
->>>> ??????? ethtool -K $i tso on
->>>>
->>>> ??????? done
->>>>
->>>> MEMLEAK - about 2MB/10secs
->>>> 2? MB/10sec
->>>> 2? MB/10sec
->>>> 2? MB/10sec
->>>>
->>>>
->>>> With - rx-usecs set to 256 (about 7-9MB/10secs memleak)
->>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2 
->>>> enp3s0f3'
->>>> for i in $ifc
->>>> ??????? do
->>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 256 
->>>> tx-usecs 512
->>>> ??????? ethtool -K $i gro off
->>>> ??????? ethtool -K $i tso on
->>>>
->>>> ??????? done
->>>>
->>>> MEMLEAK:
->>>> 7? MB/10sec
->>>> 7? MB/10sec
->>>> 8? MB/10sec
->>>> 9? MB/10sec
->>>>
->>>>
->>>
->>> And even less memleak with rx-usecs set to 32
->>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2 
->>> enp3s0f3'
->>> for i in $ifc
->>> ??????? do
->>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 32 
->>> tx-usecs 512
->>> ??????? ethtool -K $i gro off
->>> ??????? ethtool -K $i tso on
->>>
->>> ??????? done
->>>
->>>
->>> MEMLEAK - about 0-2MB for each 10 seconds
->>> 0? MB/10sec
->>> 1? MB/10sec
->>> 0? MB/10sec
->>> 2? MB/10sec
->>> 1? MB/10sec
->>>
->>>
->>>
->>
->>
->> So best settings - to have as less leak as possible for now (rx-usecs 
->> set to 16):
->> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2 
->> enp3s0f3'
->> for i in $ifc
->> ??????? do
->> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 16 
->> tx-usecs 768
->> ??????? ethtool -K $i gro on
->> ??????? ethtool -K $i tso on
->>
->> ??????? done
->>
->>
->> MEMLEAK: (0-1MB/10seconds)
->> 0? MB/10sec
->> 0? MB/10sec
->> 0? MB/10sec
->> 1? MB/10sec
->> 1? MB/10sec
->> -1? MB/10sec
->> 1? MB/10sec
->> 1? MB/10sec
->> 0? MB/10sec
->>
->> (there are some memory recycles - so this is good :) )
->>
->>
->>
->> Compared to(rx-usecs 512):
->>
->> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2 
->> enp3s0f3'
->> for i in $ifc
->> ??????? do
->> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 512 
->> tx-usecs 128
->> ??????? ethtool -K $i gro on
->> ??????? ethtool -K $i tso on
->>
->> ??????? done
->>
->> Server is leaking about 4-6MB per each 10 seconds
->> MEMLEAK:
->> 5? MB/10sec
->> 6? MB/10sec
->> 4? MB/10sec
->> 4? MB/10sec
->>
->>
->
-> And? graph where all changes for rx-usecs was done over some time:
-> https://ibb.co/nrRfbR
->
->
->
->
->
-Cant eliminate the problem with settings - memleak is bigger or less 
-visible with rx-usecs set to low values - but then have 100% cpu load - 
-cant have rx-usecs set to 16
+Of course, if the issue is fixed in either of the two newer kernels,
+then you would just need to work with Debian about getting a driver
+update to thier 4.9 kernel release.
 
-Cant find also other host with same cards or that are using i40e driver 
-for tests with bisecting
-So will just replace to mellanox :)
-
+I have also added Sasha (e1000e maintainer) to this email thread so
+that he is aware of the issue and can provide additional assistance in
+troubleshooting the issue.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171018/f98981ee/attachment.asc>
