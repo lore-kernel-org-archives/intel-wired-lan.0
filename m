@@ -1,276 +1,372 @@
-From: Nambiar, Amritha <amritha.nambiar@intel.com>
-Date: Tue, 17 Oct 2017 22:37:40 -0700
-Subject: [Intel-wired-lan] [PATCH] [v2] i40e: avoid 64-bit division
- where possible
-In-Reply-To: <CAKgT0UfeDJomnen_2PhgnHSi27YROjTAtT=OYEj0JNVD8fzcOw@mail.gmail.com>
-References: <20171017155001.318184-1-arnd@arndb.de>
- <CAKgT0UfeDJomnen_2PhgnHSi27YROjTAtT=OYEj0JNVD8fzcOw@mail.gmail.com>
-Message-ID: <ae467f28-a972-dc2d-1bc8-e8ce4c7d9d68@intel.com>
+From: =?unknown-8bit?q?Pawe=C5=82?= Staszewski <pstaszewski@itcare.pl>
+Date: Wed, 18 Oct 2017 17:44:33 +0200
+Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
+	NICs
+In-Reply-To: <d79df7f2-5de4-cc37-baf0-5603f025155e@itcare.pl>
+References: <1507121766.30720.4.camel@cohaesio.com>
+ <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
+ <1507180753.20182.8.camel@cohaesio.com>
+ <227d17ae-b040-07d0-3c57-e9acd1a3b5b4@itcare.pl>
+ <c49a750f-c47c-9de0-ebf0-148db5e3d3c5@itcare.pl>
+ <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
+ <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
+ <3d783736-a474-d9e3-2de2-e35c765f8249@itcare.pl>
+ <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
+ <CAKgT0Uf=0yasidUfyadNSxzkhKvtxH2t83fjb-SU7OaAnrMReA@mail.gmail.com>
+ <310ce203-0d65-bdf4-d9e4-897a349b3277@itcare.pl>
+ <f6e2208a-4cdf-3303-5999-92186b437b62@itcare.pl>
+ <1704eb26-c4c5-b196-ca7a-5265e92ae4e6@itcare.pl>
+ <bd82f85a-f9b8-a09a-beab-67667b58f36a@itcare.pl>
+ <7fd828d7-c586-2c32-3ba6-e0575bf9958c@itcare.pl>
+ <99eba19f-327e-e01f-4f4a-87540b176e40@itcare.pl>
+ <efcc51b4-f911-11ec-1c56-fcf31081f9d5@itcare.pl>
+ <d79df7f2-5de4-cc37-baf0-5603f025155e@itcare.pl>
+Message-ID: <748b6d9d-4a3f-4eaa-ad24-27060c2e2642@itcare.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/17/2017 10:33 AM, Alexander Duyck wrote:
-> On Tue, Oct 17, 2017 at 8:49 AM, Arnd Bergmann <arnd@arndb.de> wrote:
->> The new bandwidth calculation caused a link error on 32-bit
->> architectures, like
->>
->> ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
->>
->> The problem is the max_tx_rate calculation that uses 64-bit integers.
->> This is not really necessary since the numbers are in MBit/s so
->> they won't be higher than 40000 for the highest support rate, and
->> are guaranteed to not exceed 2^32 in future generations either.
->>
->> Another patch from Alan Brady fixed the link error by adding
->> many calls to do_div(), which makes the code less efficent and
->> less readable than necessary.
->>
->> This changes the representation to 'u32' when dealing with MBit/s
->> and uses div_u64() to convert from u64 numbers in byte/s, reverting
->> parts of Alan's earlier fix that have become obsolete now.
->>
 
-This patch breaks the functionality while converting the rates in
-bytes/s provided by tc-layer into the Mbit/s in the driver.
-I40E_BW_MBPS_DIVISOR defined in Alan's patch should be used for the
-conversion, and not I40E_BW_CREDIT_DIVISOR which does the incorrect
-math. I40E_BW_CREDIT_DIVISOR is in place because the device uses credit
-rates in values of 50Mbps.
 
->> Fixes: 2027d4deacb1 ("i40e: Add support setting TC max bandwidth rates")
->> Fixes: 73983b5ae011 ("i40e: fix u64 division usage")
->> Cc: Alan Brady <alan.brady@intel.com>
->> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> 
-> So this patch looks good to me, we just need to test it to verify it
-> doesn't break existing functionality. In the meantime if Alan's patch
-> has gone through testing we should probably push "i40e: fix u64
-> division usage" to Dave so that we can at least fix the linking issues
-> on ARM and i386.
-> 
-> Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> 
->> ---
->>  drivers/net/ethernet/intel/i40e/i40e.h      |  4 +-
->>  drivers/net/ethernet/intel/i40e/i40e_main.c | 70 +++++++++++------------------
->>  2 files changed, 27 insertions(+), 47 deletions(-)
+W dniu 2017-10-17 o?16:08, Pawe? Staszewski pisze:
+>
+>
+> W dniu 2017-10-17 o?13:52, Pawe? Staszewski pisze:
 >>
->> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
->> index c3f13120f3ce..c7aa0c982273 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e.h
->> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
->> @@ -407,7 +407,7 @@ struct i40e_channel {
->>         u8 enabled_tc;
->>         struct i40e_aqc_vsi_properties_data info;
 >>
->> -       u64 max_tx_rate;
->> +       u32 max_tx_rate; /* in Mbits/s */
+>> W dniu 2017-10-17 o?13:05, Pawe? Staszewski pisze:
+>>>
+>>>
+>>> W dniu 2017-10-17 o?12:59, Pawe? Staszewski pisze:
+>>>>
+>>>>
+>>>> W dniu 2017-10-17 o?12:51, Pawe? Staszewski pisze:
+>>>>>
+>>>>>
+>>>>> W dniu 2017-10-17 o?12:20, Pawe? Staszewski pisze:
+>>>>>>
+>>>>>>
+>>>>>> W dniu 2017-10-17 o?11:48, Pawe? Staszewski pisze:
+>>>>>>>
+>>>>>>>
+>>>>>>> W dniu 2017-10-17 o?02:44, Pawe? Staszewski pisze:
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> W dniu 2017-10-17 o?01:56, Alexander Duyck pisze:
+>>>>>>>>> On Mon, Oct 16, 2017 at 4:34 PM, Pawe? Staszewski 
+>>>>>>>>> <pstaszewski@itcare.pl> wrote:
+>>>>>>>>>>
+>>>>>>>>>> W dniu 2017-10-16 o 18:26, Pawe? Staszewski pisze:
+>>>>>>>>>>
+>>>>>>>>>>>
+>>>>>>>>>>> W dniu 2017-10-16 o 13:20, Pavlos Parissis pisze:
+>>>>>>>>>>>> On 15/10/2017 02:58 ??, Alexander Duyck wrote:
+>>>>>>>>>>>>> Hi Pawel,
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> To clarify is that Dave Miller's tree or Linus's that you 
+>>>>>>>>>>>>> are talking
+>>>>>>>>>>>>> about? If it is Dave's tree how long ago was it you pulled 
+>>>>>>>>>>>>> it since I
+>>>>>>>>>>>>> think the fix was just pushed by Jeff Kirsher a few days ago.
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> The issue should be fixed in the following commit:
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972 
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>
+>>>>>>>>>>>> Do you know when it is going to be available on net-next 
+>>>>>>>>>>>> and linux-stable
+>>>>>>>>>>>> repos?
+>>>>>>>>>>>>
+>>>>>>>>>>>> Cheers,
+>>>>>>>>>>>> Pavlos
+>>>>>>>>>>>>
+>>>>>>>>>>>>
+>>>>>>>>>>> I will make some tests today night with "net" git tree where 
+>>>>>>>>>>> this patch is
+>>>>>>>>>>> included.
+>>>>>>>>>>> Starting from 0:00 CET
+>>>>>>>>>>> :)
+>>>>>>>>>>>
+>>>>>>>>>>>
+>>>>>>>>>> Upgraded and looks like problem is not solved with that patch
+>>>>>>>>>> Currently running system with
+>>>>>>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/
+>>>>>>>>>> kernel
+>>>>>>>>>>
+>>>>>>>>>> Still about 0.5GB of memory is leaking somewhere
+>>>>>>>>>>
+>>>>>>>>>> Also can confirm that the latest kernel where memory is not 
+>>>>>>>>>> leaking (with
+>>>>>>>>>> use i40e driver intel 710 cards) is 4.11.12
+>>>>>>>>>> With kernel 4.11.12 - after hour no change in memory usage.
+>>>>>>>>>>
+>>>>>>>>>> also checked that with ixgbe instead of i40e with same 
+>>>>>>>>>> net.git kernel there
+>>>>>>>>>> is no memleak - after hour same memory usage - so for 100% 
+>>>>>>>>>> this is i40e
+>>>>>>>>>> driver problem.
+>>>>>>>>> So how long was the run to get the .5GB of memory leaking?
+>>>>>>>> 1 hour
+>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> Also is there any chance of you being able to bisect to determine
+>>>>>>>>> where the memory leak was introduced since as you pointed out it
+>>>>>>>>> didn't exist in 4.11.12 so odds are it was introduced somewhere
+>>>>>>>>> between 4.11 and the latest kernel release.
+>>>>>>>> Can be hard cause currently need to back to 4.11.12 - this is 
+>>>>>>>> production host/router
+>>>>>>>> Will try to find some free/test router for tests/bicects with 
+>>>>>>>> i40e driver (intel 710 cards)
+>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> Thanks.
+>>>>>>>>>
+>>>>>>>>> - Alex
+>>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>> Also forgoto to add errors for i40e when driver initialize:
+>>>>>>> [?? 15.760569] i40e 0000:02:00.1: Error I40E_AQ_RC_ENOSPC adding 
+>>>>>>> RX filters on PF, promiscuous mode forced on
+>>>>>>> [?? 16.365587] i40e 0000:03:00.3: Error I40E_AQ_RC_ENOSPC adding 
+>>>>>>> RX filters on PF, promiscuous mode forced on
+>>>>>>> [?? 16.367686] i40e 0000:02:00.2: Error I40E_AQ_RC_ENOSPC adding 
+>>>>>>> RX filters on PF, promiscuous mode forced on
+>>>>>>> [?? 16.368816] i40e 0000:03:00.0: Error I40E_AQ_RC_ENOSPC adding 
+>>>>>>> RX filters on PF, promiscuous mode forced on
+>>>>>>> [?? 16.369877] i40e 0000:03:00.2: Error I40E_AQ_RC_ENOSPC adding 
+>>>>>>> RX filters on PF, promiscuous mode forced on
+>>>>>>> [?? 16.370941] i40e 0000:02:00.3: Error I40E_AQ_RC_ENOSPC adding 
+>>>>>>> RX filters on PF, promiscuous mode forced on
+>>>>>>> [?? 16.372005] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding 
+>>>>>>> RX filters on PF, promiscuous mode forced on
+>>>>>>> [?? 16.373029] i40e 0000:03:00.1: Error I40E_AQ_RC_ENOSPC adding 
+>>>>>>> RX filters on PF, promiscuous mode forced on
+>>>>>>>
+>>>>>>> some params that are set for this nic's
+>>>>>>> ??????? ip link set up dev $i
+>>>>>>> ??????? ethtool -A $i autoneg off rx off tx off
+>>>>>>> ??????? ethtool -G $i rx 1024 tx 2048
+>>>>>>> ??????? ip link set $i txqueuelen 1000
+>>>>>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 
+>>>>>>> 512 tx-usecs 128
+>>>>>>> ??????? ethtool -L $i combined 6
+>>>>>>> ??????? #ethtool -N $i rx-flow-hash udp4 sdfn
+>>>>>>> ??????? ethtool -K $i ntuple on
+>>>>>>> ??????? ethtool -K $i gro off
+>>>>>>> ??????? ethtool -K $i tso off
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>> Also after TSO/GRO on there is memory usage change - and leaking 
+>>>>>> faster
+>>>>>> Below image from memory usage before change with TSO/GRO OFF and 
+>>>>>> after enabling TSO/GRO
+>>>>>>
+>>>>>> https://ibb.co/dTqBY6
+>>>>>>
+>>>>>>
+>>>>>> Thanks
+>>>>>> Pawel
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>> With settings like this:
+>>>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 
+>>>>> enp3s0f2 enp3s0f3'
+>>>>> for i in $ifc
+>>>>> ??????? do
+>>>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 512 
+>>>>> tx-usecs 128
+>>>>> ??????? ethtool -K $i gro on
+>>>>> ??????? ethtool -K $i tso on
+>>>>>
+>>>>> ??????? done
+>>>>>
+>>>>> Server is leaking about 4-6MB per each 10 seconds
+>>>>> MEMLEAK:
+>>>>> 5? MB/10sec
+>>>>> 6? MB/10sec
+>>>>> 4? MB/10sec
+>>>>> 4? MB/10sec
+>>>>>
+>>>>>
+>>>>> Other settings TSO/GRO off
+>>>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 
+>>>>> enp3s0f2 enp3s0f3'
+>>>>> for i in $ifc
+>>>>> ??????? do
+>>>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 512 
+>>>>> tx-usecs 128
+>>>>> ??????? ethtool -K $i gro off
+>>>>> ??????? ethtool -K $i tso off
+>>>>>
+>>>>> ??????? done
+>>>>>
+>>>>> Same leak about 5MB per 10 seconds
+>>>>> MEMLEAK:
+>>>>> 5? MB/10sec
+>>>>> 5? MB/10sec
+>>>>> 5? MB/10sec
+>>>>>
+>>>>>
+>>>>> Other settings rx-usecs change from 512 to 1024:
+>>>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 
+>>>>> enp3s0f2 enp3s0f3'
+>>>>> for i in $ifc
+>>>>> ??????? do
+>>>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 
+>>>>> 1024 tx-usecs 128
+>>>>> ??????? ethtool -K $i gro off
+>>>>> ??????? ethtool -K $i tso off
+>>>>>
+>>>>> ??????? done
+>>>>>
+>>>>> MEMLEAK:
+>>>>> 4? MB/10sec
+>>>>> 3? MB/10sec
+>>>>> 4? MB/10sec
+>>>>> 4? MB/10sec
+>>>>>
+>>>>>
+>>>>> So memleak have something to do with rx-usecs (less interrupts but 
+>>>>> bigger latency for traffic)
+>>>>>
+>>>>>
+>>>>> But also enabling TSO/GRO making leak about 1MB bigger for each 10 
+>>>>> seconds
+>>>>>
+>>>>>
+>>>>>
+>>>> So far best config is:
+>>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2 
+>>>> enp3s0f3'
+>>>> for i in $ifc
+>>>> ??????? do
+>>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 64 
+>>>> tx-usecs 512
+>>>> ??????? ethtool -K $i gro off
+>>>> ??????? ethtool -K $i tso on
+>>>>
+>>>> ??????? done
+>>>>
+>>>> MEMLEAK - about 2MB/10secs
+>>>> 2? MB/10sec
+>>>> 2? MB/10sec
+>>>> 2? MB/10sec
+>>>>
+>>>>
+>>>> With - rx-usecs set to 256 (about 7-9MB/10secs memleak)
+>>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2 
+>>>> enp3s0f3'
+>>>> for i in $ifc
+>>>> ??????? do
+>>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 256 
+>>>> tx-usecs 512
+>>>> ??????? ethtool -K $i gro off
+>>>> ??????? ethtool -K $i tso on
+>>>>
+>>>> ??????? done
+>>>>
+>>>> MEMLEAK:
+>>>> 7? MB/10sec
+>>>> 7? MB/10sec
+>>>> 8? MB/10sec
+>>>> 9? MB/10sec
+>>>>
+>>>>
+>>>
+>>> And even less memleak with rx-usecs set to 32
+>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2 
+>>> enp3s0f3'
+>>> for i in $ifc
+>>> ??????? do
+>>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 32 
+>>> tx-usecs 512
+>>> ??????? ethtool -K $i gro off
+>>> ??????? ethtool -K $i tso on
+>>>
+>>> ??????? done
+>>>
+>>>
+>>> MEMLEAK - about 0-2MB for each 10 seconds
+>>> 0? MB/10sec
+>>> 1? MB/10sec
+>>> 0? MB/10sec
+>>> 2? MB/10sec
+>>> 1? MB/10sec
+>>>
+>>>
+>>>
 >>
->>         /* track this channel belongs to which VSI */
->>         struct i40e_vsi *parent_vsi;
->> @@ -1101,5 +1101,5 @@ static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
->>  }
 >>
->>  int i40e_create_queue_channel(struct i40e_vsi *vsi, struct i40e_channel *ch);
->> -int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate);
->> +int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u32 max_tx_rate);
->>  #endif /* _I40E_H_ */
->> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
->> index 3ceda140170d..57682cc78508 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
->> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
->> @@ -5448,17 +5448,16 @@ int i40e_get_link_speed(struct i40e_vsi *vsi)
->>   *
->>   * Helper function to set BW limit for a given VSI
->>   **/
->> -int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
->> +int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u32 max_tx_rate)
->>  {
->>         struct i40e_pf *pf = vsi->back;
->> -       u64 credits = 0;
->>         int speed = 0;
->>         int ret = 0;
+>> So best settings - to have as less leak as possible for now (rx-usecs 
+>> set to 16):
+>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2 
+>> enp3s0f3'
+>> for i in $ifc
+>> ??????? do
+>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 16 
+>> tx-usecs 768
+>> ??????? ethtool -K $i gro on
+>> ??????? ethtool -K $i tso on
 >>
->>         speed = i40e_get_link_speed(vsi);
->>         if (max_tx_rate > speed) {
->>                 dev_err(&pf->pdev->dev,
->> -                       "Invalid max tx rate %llu specified for VSI seid %d.",
->> +                       "Invalid max tx rate %u specified for VSI seid %d.",
->>                         max_tx_rate, seid);
->>                 return -EINVAL;
->>         }
->> @@ -5469,13 +5468,12 @@ int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
->>         }
+>> ??????? done
 >>
->>         /* Tx rate credits are in values of 50Mbps, 0 is disabled */
->> -       credits = max_tx_rate;
->> -       do_div(credits, I40E_BW_CREDIT_DIVISOR);
->> -       ret = i40e_aq_config_vsi_bw_limit(&pf->hw, seid, credits,
->> +       ret = i40e_aq_config_vsi_bw_limit(&pf->hw, seid,
->> +                                         max_tx_rate / I40E_BW_CREDIT_DIVISOR,
->>                                           I40E_MAX_BW_INACTIVE_ACCUM, NULL);
->>         if (ret)
->>                 dev_err(&pf->pdev->dev,
->> -                       "Failed set tx rate (%llu Mbps) for vsi->seid %u, err %s aq_err %s\n",
->> +                       "Failed set tx rate (%u Mbps) for vsi->seid %u, err %s aq_err %s\n",
->>                         max_tx_rate, seid, i40e_stat_str(&pf->hw, ret),
->>                         i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
->>         return ret;
->> @@ -6158,17 +6156,13 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
 >>
->>         /* configure VSI for BW limit */
->>         if (ch->max_tx_rate) {
->> -               u64 credits = ch->max_tx_rate;
->> -
->>                 if (i40e_set_bw_limit(vsi, ch->seid, ch->max_tx_rate))
->>                         return -EINVAL;
+>> MEMLEAK: (0-1MB/10seconds)
+>> 0? MB/10sec
+>> 0? MB/10sec
+>> 0? MB/10sec
+>> 1? MB/10sec
+>> 1? MB/10sec
+>> -1? MB/10sec
+>> 1? MB/10sec
+>> 1? MB/10sec
+>> 0? MB/10sec
 >>
->> -               do_div(credits, I40E_BW_CREDIT_DIVISOR);
->>                 dev_dbg(&pf->pdev->dev,
->> -                       "Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
->> +                       "Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
->>                         ch->max_tx_rate,
->> -                       credits,
->> -                       ch->seid);
->> +                       ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR, ch->seid);
->>         }
+>> (there are some memory recycles - so this is good :) )
 >>
->>         /* in case of VF, this will be main SRIOV VSI */
->> @@ -6189,7 +6183,6 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
->>  static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
->>  {
->>         struct i40e_channel *ch;
->> -       u64 max_rate = 0;
->>         int ret = 0, i;
 >>
->>         /* Create app vsi with the TCs. Main VSI with TC0 is already set up */
->> @@ -6211,9 +6204,8 @@ static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
->>                         /* Bandwidth limit through tc interface is in bytes/s,
->>                          * change to Mbit/s
->>                          */
->> -                       max_rate = vsi->mqprio_qopt.max_rate[i];
->> -                       do_div(max_rate, I40E_BW_MBPS_DIVISOR);
->> -                       ch->max_tx_rate = max_rate;
->> +                       ch->max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[i],
->> +                                                 I40E_BW_CREDIT_DIVISOR);
 >>
+>> Compared to(rx-usecs 512):
+>>
+>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2 
+>> enp3s0f3'
+>> for i in $ifc
+>> ??????? do
+>> ??????? ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 512 
+>> tx-usecs 128
+>> ??????? ethtool -K $i gro on
+>> ??????? ethtool -K $i tso on
+>>
+>> ??????? done
+>>
+>> Server is leaking about 4-6MB per each 10 seconds
+>> MEMLEAK:
+>> 5? MB/10sec
+>> 6? MB/10sec
+>> 4? MB/10sec
+>> 4? MB/10sec
+>>
+>>
+>
+> And? graph where all changes for rx-usecs was done over some time:
+> https://ibb.co/nrRfbR
+>
+>
+>
+>
+>
+Cant eliminate the problem with settings - memleak is bigger or less 
+visible with rx-usecs set to low values - but then have 100% cpu load - 
+cant have rx-usecs set to 16
 
-Use I40E_BW_MBPS_DIVISOR for the conversion math here.
+Cant find also other host with same cards or that are using i40e driver 
+for tests with bisecting
+So will just replace to mellanox :)
 
->>                         list_add_tail(&ch->list, &vsi->ch_list);
->>
->> @@ -6643,7 +6635,6 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
->>                                      struct tc_mqprio_qopt_offload *mqprio_qopt)
->>  {
->>         u64 sum_max_rate = 0;
->> -       u64 max_rate = 0;
->>         int i;
->>
->>         if (mqprio_qopt->qopt.offset[0] != 0 ||
->> @@ -6658,9 +6649,8 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
->>                                 "Invalid min tx rate (greater than 0) specified\n");
->>                         return -EINVAL;
->>                 }
->> -               max_rate = mqprio_qopt->max_rate[i];
->> -               do_div(max_rate, I40E_BW_MBPS_DIVISOR);
->> -               sum_max_rate += max_rate;
->> +               sum_max_rate += div_u64(mqprio_qopt->max_rate[i],
->> +                                       I40E_BW_CREDIT_DIVISOR);
-
-Use I40E_BW_MBPS_DIVISOR here.
-
->>
->>                 if (i >= mqprio_qopt->qopt.num_tc - 1)
->>                         break;
->> @@ -6804,18 +6794,14 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
->>
->>         if (pf->flags & I40E_FLAG_TC_MQPRIO) {
->>                 if (vsi->mqprio_qopt.max_rate[0]) {
->> -                       u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0];
->> -
->> -                       do_div(max_tx_rate, I40E_BW_MBPS_DIVISOR);
->> +                       u32 max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[0],
->> +                                                 I40E_BW_CREDIT_DIVISOR);
-
-Use I40E_BW_MBPS_DIVISOR here.
-
->>                         ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
->>                         if (!ret) {
->> -                               u64 credits = max_tx_rate;
->> -
->> -                               do_div(credits, I40E_BW_CREDIT_DIVISOR);
->>                                 dev_dbg(&vsi->back->pdev->dev,
->> -                                       "Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
->> +                                       "Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
->>                                         max_tx_rate,
->> -                                       credits,
->> +                                       max_tx_rate / I40E_BW_CREDIT_DIVISOR,
->>                                         vsi->seid);
->>                         } else {
->>                                 need_reset = true;
->> @@ -9024,15 +9010,12 @@ static int i40e_rebuild_channels(struct i40e_vsi *vsi)
->>                         return ret;
->>                 }
->>                 if (ch->max_tx_rate) {
->> -                       u64 credits = ch->max_tx_rate;
->> -
->>                         if (i40e_set_bw_limit(vsi, ch->seid,
->>                                               ch->max_tx_rate))
->>                                 return -EINVAL;
->>
->> -                       do_div(credits, I40E_BW_CREDIT_DIVISOR);
->>                         dev_dbg(&vsi->back->pdev->dev,
->> -                               "Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
->> +                               "Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
->>                                 ch->max_tx_rate,
->>                                 ch->max_tx_rate / I40E_BW_CREDIT_DIVISOR,
->>                                 ch->seid);
->> @@ -9314,21 +9297,18 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
->>         }
->>
->>         if (vsi->mqprio_qopt.max_rate[0]) {
->> -               u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0];
->> -               u64 credits = 0;
->> +               u32 max_tx_rate = div_u64(vsi->mqprio_qopt.max_rate[0],
->> +                                         I40E_BW_CREDIT_DIVISOR);
-
-Use I40E_BW_MBPS_DIVISOR here.
-
->>
->> -               do_div(max_tx_rate, I40E_BW_MBPS_DIVISOR);
->>                 ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
->> -               if (ret)
->> +               if (!ret)
->> +                       dev_dbg(&vsi->back->pdev->dev,
->> +                               "Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
->> +                               max_tx_rate,
->> +                               max_tx_rate / I40E_BW_CREDIT_DIVISOR,
->> +                               vsi->seid);
->> +               else
->>                         goto end_unlock;
->> -
->> -               credits = max_tx_rate;
->> -               do_div(credits, I40E_BW_CREDIT_DIVISOR);
->> -               dev_dbg(&vsi->back->pdev->dev,
->> -                       "Set tx rate of %llu Mbps (count of 50Mbps %llu) for vsi->seid %u\n",
->> -                       max_tx_rate,
->> -                       credits,
->> -                       vsi->seid);
->>         }
->>
->>         ret = i40e_rebuild_cloud_filters(vsi, vsi->seid);
->> --
->> 2.9.0
->>
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
