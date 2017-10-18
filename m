@@ -1,59 +1,42 @@
-From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-Date: Wed, 18 Oct 2017 15:37:35 -0700
-Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
- config interfaces for traffic shapers
-In-Reply-To: <20170920052558.h6c4lkqmzk2h2pdq@localhost>
-References: <20170901012625.14838-1-vinicius.gomes@intel.com>
- <20170918080214.yrejz67wwnp2pjzf@localhost> <87k20vip3f.fsf@intel.com>
- <20170919052244.77umdxuze53t6j22@localhost> <87wp4ufchl.fsf@intel.com>
- <20170920052558.h6c4lkqmzk2h2pdq@localhost>
-Message-ID: <62f3eae4-bf6a-1475-936f-5011c9ff381e@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Wed, 18 Oct 2017 15:47:03 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH] net/sched/sch_cbs: Fix
+	compilation on 32bit architectures
+Message-ID: <20171018224703.15454-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Richard,
+There was still a couple of divisions of 64bit quantities happening,
+which can fail to compile if there aren't instructions to handle that
+kind of division.
 
+It will fail with a message like this:
 
-On 09/19/2017 10:25 PM, Richard Cochran wrote:
-(...)
->  
->> I have a question, what about a controller that doesn't provide a way to
->> set a per-packet transmission time, but it supports Qbv/Qbu. What would
->> be your proposal to configure it?
-> 
-> SO_TXTIME will have a generic SW fallback.
-> 
-> BTW, regarding the i210, there is no sensible way to configure both
-> CBS and time based transmission at the same time.  The card performs a
-> logical AND to make the launch decision.  The effect of this is that
-> each and every packet needs a LaunchTime, and the driver would be
-> forced to guess the time for a packet before entering it into its
-> queue.
-> 
-> So if we end up merging CBS and SO_TXTIME, then we'll have to make
-> them exclusive of each other (in the case of the i210) and manage the
-> i210 queue configurations correctly.
-> 
+ERROR: "__aeabi_ldivmod" [net/sched/sch_cbs.ko] undefined!
 
-I've ran some quick tests here having launch time enabled on i210 + our cbs
-patchset. When valid Launch times are set on each packet you still get the
-expected behavior, so I'm not sure we should just make them exclusive of each other.
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+---
+ net/sched/sch_cbs.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-I also did some tests with when you don't set valid launch times, but here using
-your idea from above, so with the driver calculating a valid launch time (i.e.
-current NIC time + X ns, varying X across tests) for packets that didn't have it
-set by the user, and I wasn't too happy with its reliability. It could
-definitely be improved, but it has left me wondering: instead, what about
-documenting that if you enable TXTIME, then you *must* provide a valid Launch
-time for all packets on traffic classes that are affected?
-
-With the SO_TXTIME qdisc idea in place, that could even be enforced before
-packets were enqueued into the netdevice.
-
-
-Regards,
-Jesus
+diff --git a/net/sched/sch_cbs.c b/net/sched/sch_cbs.c
+index cae021c642e5..bdb533b7fb8c 100644
+--- a/net/sched/sch_cbs.c
++++ b/net/sched/sch_cbs.c
+@@ -331,8 +331,8 @@ static int cbs_dump(struct Qdisc *sch, struct sk_buff *skb)
+ 
+ 	opt.hicredit = q->hicredit;
+ 	opt.locredit = q->locredit;
+-	opt.sendslope = q->sendslope / BYTES_PER_KBIT;
+-	opt.idleslope = q->idleslope / BYTES_PER_KBIT;
++	opt.sendslope = div64_s64(q->sendslope, BYTES_PER_KBIT);
++	opt.idleslope = div64_s64(q->idleslope, BYTES_PER_KBIT);
+ 	opt.offload = q->offload;
+ 
+ 	if (nla_put(skb, TCA_CBS_PARMS, sizeof(opt), &opt))
+-- 
+2.14.2
 
