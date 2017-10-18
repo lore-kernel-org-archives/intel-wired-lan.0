@@ -1,116 +1,186 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 18 Oct 2017 09:43:43 -0700
-Subject: [Intel-wired-lan] Packet loss on 82571EB with kernel 4.9
-In-Reply-To: <SG2PR03MB187291B811B5438AEADC53AE844C0@SG2PR03MB1872.apcprd03.prod.outlook.com>
-References: <SG2PR03MB187291B811B5438AEADC53AE844C0@SG2PR03MB1872.apcprd03.prod.outlook.com>
-Message-ID: <1508345023.13406.6.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 19 Oct 2017 02:08:06 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 88a7d465ca675dbd825299a37c6f9dd52035403c
+Message-ID: <59e79886.eFP+ixuys3YnNwEM%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2017-10-17 at 03:05 +0000, Gavin Lambert wrote:
-> (Please explicitly CC me in any replies.)
-> I have a computer with an Intel 82571EB 2-port card using the e1000e
-> driver.  I've noticed that it appears to be dropping some transmitted
-> packets:
-> 
-> # iperf3 -c 10.200.197.17
-> Connecting to host 10.200.197.17, port 5201
-> [  4] local 10.200.197.82 port 59294 connected to 10.200.197.17 port
-> 5201
-> [ ID] Interval           Transfer     Bandwidth       Retr  Cwnd
-> [  4]   0.00-1.00   sec   113 MBytes   951 Mbits/sec    0    223
-> KBytes
-> [  4]   1.00-2.00   sec   112 MBytes   941 Mbits/sec    0    223
-> KBytes
-> [  4]   2.00-3.00   sec   112 MBytes   941 Mbits/sec   10    204
-> KBytes
-> [  4]   3.00-4.00   sec   112 MBytes   941 Mbits/sec    0    221
-> KBytes
-> [  4]   4.00-5.00   sec   112 MBytes   941 Mbits/sec   10    154
-> KBytes
-> [  4]   5.00-6.00   sec   112 MBytes   942 Mbits/sec    0    222
-> KBytes
-> [  4]   6.00-7.00   sec   112 MBytes   941 Mbits/sec    0    222
-> KBytes
-> [  4]   7.00-8.00   sec   112 MBytes   941 Mbits/sec    0    222
-> KBytes
-> [  4]   8.00-9.00   sec   112 MBytes   942 Mbits/sec    0    222
-> KBytes
-> [  4]   9.00-10.00  sec   112 MBytes   941 Mbits/sec    0    222
-> KBytes
-> - - - - - - - - - - - - - - - - - - - - - - - - -
-> [ ID] Interval           Transfer     Bandwidth       Retr
-> [  4]   0.00-10.00  sec  1.10 GBytes   942
-> Mbits/sec   20             sender
-> [  4]   0.00-10.00  sec  1.10 GBytes   941
-> Mbits/sec                  receiver
-> 
-> # iperf3 -c 10.200.197.17 -u -b0
-> ...
-> [ ID]
-> Interval           Transfer     Bandwidth       Jitter    Lost/Total
-> Datagrams
-> [  4]   0.00-10.00  sec  1.12 GBytes   958 Mbits/sec  0.123
-> ms  28/146256 (0.019%)
-> [  4] Sent 146256 datagrams
-> 
-> (A reverse run with -R, where this PC is only receiving packets,
-> doesn't report any problems.)
-> 
-> The computer is running Debian Linux Stretch x86_64 with kernel
-> 4.9.30-2+deb9u2.
->        e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
->        e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
->        e1000e 0000:01:00.0: Interrupt Throttling Rate (ints/sec) set
-> to dynamic conservative mode
->        e1000e 0000:01:00.0 eth0: (PCI Express:2.5GT/s:Width x4)
-> 68:05:ca:16:5a:24
->        e1000e 0000:01:00.0 eth0: Intel(R) PRO/1000 Network Connection
->        e1000e 0000:01:00.0 eth0: MAC: 0, PHY: 4, PBA No: D50868-008
->        e1000e 0000:01:00.1: Interrupt Throttling Rate (ints/sec) set
-> to dynamic conservative mode
->        e1000e 0000:01:00.1 eth1: (PCI Express:2.5GT/s:Width x4)
-> 68:05:ca:16:5a:25
->        e1000e 0000:01:00.1 eth1: Intel(R) PRO/1000 Network Connection
->        e1000e 0000:01:00.1 eth1: MAC: 0, PHY: 4, PBA No: D50868-008
->        e1000e 0000:01:00.0 enp1s0f0: renamed from eth0
->        e1000e 0000:01:00.1 enp1s0f1: renamed from eth1
->        e1000e: enp1s0f0 NIC Link is Up 1000 Mbps Full Duplex, Flow
-> Control: None
->        IPv6: ADDRCONF(NETDEV_CHANGE): enp1s0f0: link becomes ready
-> 
-> The tests above were performed with enp1s0f0, but unsurprisingly
-> enp1s0f1 behaves the same way.  The computer also has a non-Intel
-> network card and performing the same tests on that does not produce
-> any errors.
-> 
-> If I downgrade the computer to Debian Jessie with kernel 3.2.54 and
-> e1000e driver 1.5.1-k then there is no packet loss in the same
-> test.  I don't currently have anything in between these versions,
-> although I might be able to build something custom if that will help.
-> 
-> What information is needed to diagnose this further and correct the
-> problem?
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 88a7d465ca675dbd825299a37c6f9dd52035403c  igb: Add support for CBS offload
 
-Any chance you can try the latest stable kernel 4.13.8 or even the
-latest kernel from Linus's tree (4.14-rc5)?  This will let us know if
-the issue still persists in the latest upstream kernel or if the issue
-has been fixed already.
+elapsed time: 203m
 
-Of course, if the issue is fixed in either of the two newer kernels,
-then you would just need to work with Debian about getting a driver
-update to thier 4.9 kernel release.
+configs tested: 162
 
-I have also added Sasha (e1000e maintainer) to this email thread so
-that he is aware of the issue and can provide additional assistance in
-troubleshooting the issue.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171018/f98981ee/attachment.asc>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                       omap2plus_defconfig
+powerpc                     sbc8548_defconfig
+sh                   sh7770_generic_defconfig
+i386                   randconfig-c0-10190017
+arm                           h5000_defconfig
+arm                        mini2440_defconfig
+mips                   sb1250_swarm_defconfig
+x86_64                randconfig-it0-10182025
+i386                   randconfig-n0-10171314
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                         s5pv210_defconfig
+parisc                          712_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-g0-10190025
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-a0-201742
+i386                     randconfig-a1-201742
+arm                              alldefconfig
+openrisc                          allnoconfig
+sh                          rsk7264_defconfig
+x86_64                 randconfig-x018-201742
+x86_64                 randconfig-x011-201742
+x86_64                 randconfig-x012-201742
+x86_64                 randconfig-x013-201742
+x86_64                 randconfig-x019-201742
+x86_64                 randconfig-x017-201742
+x86_64                 randconfig-x014-201742
+x86_64                 randconfig-x015-201742
+x86_64                 randconfig-x016-201742
+x86_64                 randconfig-x010-201742
+i386                     randconfig-s0-201742
+i386                     randconfig-s1-201742
+x86_64                           allmodconfig
+i386                             allmodconfig
+x86_64                   randconfig-i0-201742
+i386                   randconfig-b0-10190032
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+alpha                            allmodconfig
+c6x                        evmc6474_defconfig
+powerpc                 linkstation_defconfig
+x86_64                 randconfig-u0-10190027
+i386                               tinyconfig
+i386                                defconfig
+m68k                             allmodconfig
+mips                         rt305x_defconfig
+powerpc                      ppc64e_defconfig
+i386                   randconfig-x010-201742
+i386                   randconfig-x011-201742
+i386                   randconfig-x012-201742
+i386                   randconfig-x013-201742
+i386                   randconfig-x014-201742
+i386                   randconfig-x015-201742
+i386                   randconfig-x016-201742
+i386                   randconfig-x017-201742
+i386                   randconfig-x018-201742
+i386                   randconfig-x019-201742
+x86_64                randconfig-ne0-10182342
+cris                    etrax-100lx_defconfig
+nios2                         10m50_defconfig
+sh                          rsk7201_defconfig
+arm                         orion5x_defconfig
+arm                          pxa168_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                  randconfig-sb0-10182317
+i386                   randconfig-x001-201742
+i386                   randconfig-x008-201742
+i386                   randconfig-x002-201742
+i386                   randconfig-x004-201742
+i386                   randconfig-x003-201742
+i386                   randconfig-x006-201742
+i386                   randconfig-x007-201742
+i386                   randconfig-x009-201742
+i386                   randconfig-x005-201742
+i386                   randconfig-x000-201742
+mips                           ip28_defconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                     rainier_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x074-201742
+i386                   randconfig-x077-201742
+i386                   randconfig-x071-201742
+i386                   randconfig-x076-201742
+i386                   randconfig-x073-201742
+i386                   randconfig-x079-201742
+i386                   randconfig-x078-201742
+i386                   randconfig-x072-201742
+i386                   randconfig-x070-201742
+i386                   randconfig-x075-201742
+i386                              allnoconfig
+i386                             alldefconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-x001-201742
+x86_64                 randconfig-x000-201742
+x86_64                 randconfig-x004-201742
+x86_64                 randconfig-x008-201742
+x86_64                 randconfig-x007-201742
+x86_64                 randconfig-x006-201742
+x86_64                 randconfig-x005-201742
+x86_64                 randconfig-x009-201742
+x86_64                 randconfig-x003-201742
+x86_64                 randconfig-x002-201742
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-10182337
+
+Thanks,
+Fengguang
