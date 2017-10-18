@@ -1,42 +1,37 @@
-From: Gustavo A. R. Silva <garsilva@embeddedor.com>
-Date: Wed, 18 Oct 2017 15:34:25 -0500
-Subject: [Intel-wired-lan] [PATCH] i40e/virtchnl: fix application of sizeof
-	to pointer
-Message-ID: <20171018203425.GA983@embeddedor.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 19 Oct 2017 06:10:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 37/39] ERROR:
+ "__aeabi_ldivmod" [net/sched/sch_cbs.ko] undefined!
+Message-ID: <201710190623.KKRZ92eI%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-sizeof when applied to a pointer typed expression gives the size of
-the pointer.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   88a7d465ca675dbd825299a37c6f9dd52035403c
+commit: a5e3a5e6c2eafeeeb4efe6a8339afb8bfd94b4fe [37/39] net/sched: Introduce Credit Based Shaper (CBS) qdisc
+config: arm-allmodconfig (attached as .config)
+compiler: arm-linux-gnueabi-gcc (Debian 6.1.1-9) 6.1.1 20160705
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout a5e3a5e6c2eafeeeb4efe6a8339afb8bfd94b4fe
+        # save the attached .config to linux build tree
+        make.cross ARCH=arm 
 
-The proper fix in this particular case is to code sizeof(*vfres)
-instead of sizeof(vfres).
+All errors (new ones prefixed by >>):
 
-This issue was detected with the help of Coccinelle.
+>> ERROR: "__aeabi_ldivmod" [net/sched/sch_cbs.ko] undefined!
 
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 ---
-This code was tested by compilation only.
-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index f8a794b..56dd1e8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2086,7 +2086,7 @@ static int i40e_vc_request_queues_msg(struct i40e_vf *vf, u8 *msg, int msglen)
- 	}
- 
- 	return i40e_vc_send_msg_to_vf(vf, VIRTCHNL_OP_REQUEST_QUEUES, 0,
--				      (u8 *)vfres, sizeof(vfres));
-+				      (u8 *)vfres, sizeof(*vfres));
- }
- 
- /**
--- 
-2.7.4
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 64085 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171019/51fdbc49/attachment-0001.bin>
