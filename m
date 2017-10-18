@@ -1,50 +1,84 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 18 Oct 2017 23:23:18 +0000
-Subject: [Intel-wired-lan] [PATCH 51/58] ethernet/intel: Convert timers
- to	use timer_setup()
-In-Reply-To: <1508200182-104605-52-git-send-email-keescook@chromium.org>
-References: <1508200182-104605-1-git-send-email-keescook@chromium.org>
- <1508200182-104605-52-git-send-email-keescook@chromium.org>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EACF7E@ORSMSX104.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 18 Oct 2017 16:29:59 -0700
+Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
+	NICs
+In-Reply-To: <20171017055155.GA19944@pc11.op.pod.cz>
+References: <1507121766.30720.4.camel@cohaesio.com>
+ <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
+ <1507180753.20182.8.camel@cohaesio.com>
+ <227d17ae-b040-07d0-3c57-e9acd1a3b5b4@itcare.pl>
+ <c49a750f-c47c-9de0-ebf0-148db5e3d3c5@itcare.pl>
+ <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
+ <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
+ <3d783736-a474-d9e3-2de2-e35c765f8249@itcare.pl>
+ <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
+ <20171017055155.GA19944@pc11.op.pod.cz>
+Message-ID: <CAKgT0Udb5DVu6CB5U7rGNERZwMCKZUTii=qxn6hFzc=5zEZc1w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Kees Cook
-> Sent: Monday, October 16, 2017 5:30 PM
-> To: David S. Miller <davem@davemloft.net>
-> Cc: Kees Cook <keescook@chromium.org>; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Thomas Gleixner
-> <tglx@linutronix.de>
-> Subject: [Intel-wired-lan] [PATCH 51/58] ethernet/intel: Convert timers to
-> use timer_setup()
-> 
-> In preparation for unconditionally passing the struct timer_list pointer to all
-> timer callbacks, switch to using the new timer_setup() and from_timer() to
-> pass the timer pointer explicitly. Switches test of .data field to .function,
-> since .data will be going away.
-> 
-> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->  drivers/net/ethernet/intel/e100.c                 |  6 +++---
->  drivers/net/ethernet/intel/e1000e/netdev.c        | 14 ++++++--------
->  drivers/net/ethernet/intel/fm10k/fm10k_pci.c      |  8 ++++----
->  drivers/net/ethernet/intel/i40e/i40e_main.c       |  8 ++++----
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c   |  8 ++++----
->  drivers/net/ethernet/intel/igb/igb_main.c         | 18 ++++++++----------
->  drivers/net/ethernet/intel/igbvf/netdev.c         |  7 +++----
->  drivers/net/ethernet/intel/ixgb/ixgb_main.c       |  9 ++++-----
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  7 +++----
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  8 ++++----
->  10 files changed, 43 insertions(+), 50 deletions(-)
+On Mon, Oct 16, 2017 at 10:51 PM, Vitezslav Samel <vitezslav@samel.cz> wrote:
+> On Tue, Oct 17, 2017 at 01:34:29AM +0200, Pawe? Staszewski wrote:
+>> W dniu 2017-10-16 o 18:26, Pawe? Staszewski pisze:
+>> > W dniu 2017-10-16 o 13:20, Pavlos Parissis pisze:
+>> > > On 15/10/2017 02:58 ??, Alexander Duyck wrote:
+>> > > > Hi Pawel,
+>> > > >
+>> > > > To clarify is that Dave Miller's tree or Linus's that you are talking
+>> > > > about? If it is Dave's tree how long ago was it you pulled it since I
+>> > > > think the fix was just pushed by Jeff Kirsher a few days ago.
+>> > > >
+>> > > > The issue should be fixed in the following commit:
+>> > > > https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972
+>> > >
+>> > > Do you know when it is going to be available on net-next and
+>> > > linux-stable repos?
+>> > >
+>> > > Cheers,
+>> > > Pavlos
+>> > >
+>> > >
+>> > I will make some tests today night with "net" git tree where this patch
+>> > is included.
+>> > Starting from 0:00 CET
+>> > :)
+>> >
+>> >
+>> Upgraded and looks like problem is not solved with that patch
+>> Currently running system with
+>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/
+>> kernel
+>>
+>> Still about 0.5GB of memory is leaking somewhere
+>>
+>> Also can confirm that the latest kernel where memory is not leaking (with
+>> use i40e driver intel 710 cards) is 4.11.12
+>> With kernel 4.11.12 - after hour no change in memory usage.
+>>
+>> also checked that with ixgbe instead of i40e with same  net.git kernel there
+>> is no memleak - after hour same memory usage - so for 100% this is i40e
+>> driver problem.
+>
+>   I have (probably) the same problem here but with X520 cards: booting
+> 4.12.x gives me oops after circa 20 minutes of our workload. Booting
+> 4.9.y is OK. This machine is in production so any testing is very
+> limited.
+>
+>   Machine was stable for >2 months (on the desk before got to
+> production) with 4.12.8 but with no traffic on X520 cards.
+>
+>         Cheers,
+>
+>                 Vita
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Sorry but it can't be the same issue since we are discussing a
+different driver (i40e) running different hardware (X710 or XL170).
+You might want to start a new thread for your issue, and/or if
+possible file a bug on e1000.sf.net.
 
+Thanks.
 
+- Alex
