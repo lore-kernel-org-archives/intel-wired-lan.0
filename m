@@ -1,69 +1,110 @@
-From: Anders K. Pedersen | Cohaesio <akp@cohaesio.com>
-Date: Thu, 19 Oct 2017 12:19:42 +0000
-Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
-	NICs
-In-Reply-To: <CAKgT0Ud=GRrsNtoM0gOgzsh1uPJ7nuT9S-xbigmbUMi+iz-ufw@mail.gmail.com>
-References: <1507121766.30720.4.camel@cohaesio.com>
- <c49a750f-c47c-9de0-ebf0-148db5e3d3c5@itcare.pl>
- <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
- <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
- <3d783736-a474-d9e3-2de2-e35c765f8249@itcare.pl>
- <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
- <CAKgT0Uf=0yasidUfyadNSxzkhKvtxH2t83fjb-SU7OaAnrMReA@mail.gmail.com>
- <310ce203-0d65-bdf4-d9e4-897a349b3277@itcare.pl>
- <f6e2208a-4cdf-3303-5999-92186b437b62@itcare.pl>
- <1704eb26-c4c5-b196-ca7a-5265e92ae4e6@itcare.pl>
- <bd82f85a-f9b8-a09a-beab-67667b58f36a@itcare.pl>
- <7fd828d7-c586-2c32-3ba6-e0575bf9958c@itcare.pl>
- <99eba19f-327e-e01f-4f4a-87540b176e40@itcare.pl>
- <efcc51b4-f911-11ec-1c56-fcf31081f9d5@itcare.pl>
- <d79df7f2-5de4-cc37-baf0-5603f025155e@itcare.pl>
- <748b6d9d-4a3f-4eaa-ad24-27060c2e2642@itcare.pl>
- <16c9fa34-252f-e5a3-8b15-e5a8c4d8a46f@itcare.pl>
- <12670bc6-439c-7ef4-109a-fd20384b9ca2@itcare.pl>
- <bd59ccc3-2af4-6842-8d2f-169229a61470@itcare.pl>
- <888ec430-1d70-68e6-2ee8-bab53d21bb0f@itcare.pl>
- <CAKgT0Ud=GRrsNtoM0gOgzsh1uPJ7nuT9S-xbigmbUMi+iz-ufw@mail.gmail.com>
-Message-ID: <1508415582.1186.49.camel@cohaesio.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 19 Oct 2017 23:35:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 18/24]
+ drivers/net/ethernet/intel/i40e/i40e_main.c:9020:5: error: 'credits'
+ undeclared
+Message-ID: <201710192307.IZ5rOmrX%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Alex,
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   53d0c6455764b0a6f33eba85ca2c2e1298c0df3d
+commit: a43ab02fb3cb1f791ae5acfaa789fef9f5c6470e [18/24] Subject: [v2] i40e: avoid 64-bit division where possible X-Patchwork-Submitter: Arnd Bergmann <arnd@arndb.de> Cc: Arnd Bergmann <arnd@arndb.de>, netdev at vger.kernel.org, Mitch Williams  <mitch.a.williams@intel.com>, linux-kernel at vger.kernel.org,  intel-wired-lan at lists.osuosl.org, =?utf-8?b?QmrDtnJuIFTDtnBlbA==?=  <bjorn.topel@intel.com>,  Filip Sadowski <filip.sadowski@intel.com>,  "David S. Miller" <davem@davemloft.net> List-Id: Intel Wired Ethernet Linux Kernel Driver Development  <intel-wired-lan.osuosl.org>
+config: i386-randconfig-x006-201742 (attached as .config)
+compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+reproduce:
+        git checkout a43ab02fb3cb1f791ae5acfaa789fef9f5c6470e
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-On ons, 2017-10-18 at 16:37 -0700, Alexander Duyck wrote:
-> When we last talked I had asked if you could do a git bisect to find
-> the memory leak and you said you would look into it. The most useful
-> way to solve this would be to do a git bisect between your current
-> kernel and the 4.11 kernel to find the point at which this started.
-> If
-> we can do that then fixing this becomes much simpler as we just have
-> to fix the patch that introduced the issue.
+All errors (new ones prefixed by >>):
 
-We're also seeing a smaller memory leak (about 1 GB per day) than the
-original one even with the "Fix memory leak related filter programming
-status" fix applied. So far I've determined that the leak is present on
-4.13.7 and was introduced between 4.11 and 4.12, so I'll do another
-round of bisection to identify the patch that introduced this.
+   In file included from include/linux/dma-mapping.h:6:0,
+                    from include/linux/skbuff.h:35,
+                    from include/linux/if_ether.h:23,
+                    from include/linux/etherdevice.h:25,
+                    from drivers/net/ethernet/intel/i40e/i40e_main.c:27:
+   drivers/net/ethernet/intel/i40e/i40e_main.c: In function 'i40e_rebuild_channels':
+>> drivers/net/ethernet/intel/i40e/i40e_main.c:9020:5: error: 'credits' undeclared (first use in this function)
+        credits,
+        ^
+   include/linux/device.h:1360:41: note: in definition of macro 'dev_dbg'
+      dev_printk(KERN_DEBUG, dev, format, ##arg); \
+                                            ^~~
+   drivers/net/ethernet/intel/i40e/i40e_main.c:9020:5: note: each undeclared identifier is reported only once for each function it appears in
+        credits,
+        ^
+   include/linux/device.h:1360:41: note: in definition of macro 'dev_dbg'
+      dev_printk(KERN_DEBUG, dev, format, ##arg); \
+                                            ^~~
 
-Since the router must run for a couple of hours before I can be sure
-whether a kernel is good or bad, and I can't reboot it during working
-hours, it'll probably be about a week before I have a result.
+vim +/credits +9020 drivers/net/ethernet/intel/i40e/i40e_main.c
 
--- 
-Venlig hilsen / Best Regards
+2590901c Amritha Nambiar 2017-10-18  8986  
+2590901c Amritha Nambiar 2017-10-18  8987  /**
+8f88b303 Amritha Nambiar 2017-09-07  8988   * i40e_rebuild_channels - Rebuilds channel VSIs if they existed before reset
+8f88b303 Amritha Nambiar 2017-09-07  8989   * @vsi: PF main vsi
+8f88b303 Amritha Nambiar 2017-09-07  8990   *
+8f88b303 Amritha Nambiar 2017-09-07  8991   * Rebuilds channel VSIs if they existed before reset
+8f88b303 Amritha Nambiar 2017-09-07  8992   **/
+8f88b303 Amritha Nambiar 2017-09-07  8993  static int i40e_rebuild_channels(struct i40e_vsi *vsi)
+8f88b303 Amritha Nambiar 2017-09-07  8994  {
+8f88b303 Amritha Nambiar 2017-09-07  8995  	struct i40e_channel *ch, *ch_tmp;
+8f88b303 Amritha Nambiar 2017-09-07  8996  	i40e_status ret;
+8f88b303 Amritha Nambiar 2017-09-07  8997  
+8f88b303 Amritha Nambiar 2017-09-07  8998  	if (list_empty(&vsi->ch_list))
+8f88b303 Amritha Nambiar 2017-09-07  8999  		return 0;
+8f88b303 Amritha Nambiar 2017-09-07  9000  
+8f88b303 Amritha Nambiar 2017-09-07  9001  	list_for_each_entry_safe(ch, ch_tmp, &vsi->ch_list, list) {
+8f88b303 Amritha Nambiar 2017-09-07  9002  		if (!ch->initialized)
+8f88b303 Amritha Nambiar 2017-09-07  9003  			break;
+8f88b303 Amritha Nambiar 2017-09-07  9004  		/* Proceed with creation of channel (VMDq2) VSI */
+8f88b303 Amritha Nambiar 2017-09-07  9005  		ret = i40e_add_channel(vsi->back, vsi->uplink_seid, ch);
+8f88b303 Amritha Nambiar 2017-09-07  9006  		if (ret) {
+8f88b303 Amritha Nambiar 2017-09-07  9007  			dev_info(&vsi->back->pdev->dev,
+8f88b303 Amritha Nambiar 2017-09-07  9008  				 "failed to rebuild channels using uplink_seid %u\n",
+8f88b303 Amritha Nambiar 2017-09-07  9009  				 vsi->uplink_seid);
+8f88b303 Amritha Nambiar 2017-09-07  9010  			return ret;
+8f88b303 Amritha Nambiar 2017-09-07  9011  		}
+2027d4de Amritha Nambiar 2017-09-07  9012  		if (ch->max_tx_rate) {
+2027d4de Amritha Nambiar 2017-09-07  9013  			if (i40e_set_bw_limit(vsi, ch->seid,
+2027d4de Amritha Nambiar 2017-09-07  9014  					      ch->max_tx_rate))
+2027d4de Amritha Nambiar 2017-09-07  9015  				return -EINVAL;
+2027d4de Amritha Nambiar 2017-09-07  9016  
+2027d4de Amritha Nambiar 2017-09-07  9017  			dev_dbg(&vsi->back->pdev->dev,
+a43ab02f Arnd Bergmann   2017-10-18  9018  				"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
+2027d4de Amritha Nambiar 2017-09-07  9019  				ch->max_tx_rate,
+6c32e0d9 Alan Brady      2017-10-09 @9020  				credits,
+2027d4de Amritha Nambiar 2017-09-07  9021  				ch->seid);
+2027d4de Amritha Nambiar 2017-09-07  9022  		}
+2590901c Amritha Nambiar 2017-10-18  9023  		ret = i40e_rebuild_cloud_filters(vsi, ch->seid);
+2590901c Amritha Nambiar 2017-10-18  9024  		if (ret) {
+2590901c Amritha Nambiar 2017-10-18  9025  			dev_dbg(&vsi->back->pdev->dev,
+2590901c Amritha Nambiar 2017-10-18  9026  				"Failed to rebuild cloud filters for channel VSI %u\n",
+2590901c Amritha Nambiar 2017-10-18  9027  				ch->seid);
+2590901c Amritha Nambiar 2017-10-18  9028  			return ret;
+2590901c Amritha Nambiar 2017-10-18  9029  		}
+8f88b303 Amritha Nambiar 2017-09-07  9030  	}
+8f88b303 Amritha Nambiar 2017-09-07  9031  	return 0;
+8f88b303 Amritha Nambiar 2017-09-07  9032  }
+8f88b303 Amritha Nambiar 2017-09-07  9033  
 
-Anders K. Pedersen
-Senior Technical Manager
+:::::: The code at line 9020 was first introduced by commit
+:::::: 6c32e0d9fdd56a7af54512aff700e20d85563499 i40e: fix u64 division usage
 
-Cohaesio A/S                          email:  akp at cohaesio.com
-Parken | Per Henrik Lings All? 4, 4   main:   +45 45 88 08 88
-DK-2100 Copenhagen | Denmark          direct: +45 45 20 78 11
+:::::: TO: Alan Brady <alan.brady@intel.com>
+:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Visit us at www.cohaesio.com
-
-Cohaesio is a leading IT solutions provider in Scandinavia, providing
-certified IT outsourcing, service desk and managed hosting solutions to
-professional customers.
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 30498 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171019/563a53fa/attachment-0001.bin>
