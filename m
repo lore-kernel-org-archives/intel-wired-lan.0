@@ -1,127 +1,46 @@
 From: Pavlos Parissis <pavlos.parissis@gmail.com>
-Date: Thu, 19 Oct 2017 13:41:59 +0200
-Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
-	NICs
-In-Reply-To: <57579746-77e1-4603-12ed-7d999fdfeabf@itcare.pl>
-References: <1507121766.30720.4.camel@cohaesio.com>
- <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
- <1507180753.20182.8.camel@cohaesio.com>
- <227d17ae-b040-07d0-3c57-e9acd1a3b5b4@itcare.pl>
- <c49a750f-c47c-9de0-ebf0-148db5e3d3c5@itcare.pl>
- <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
- <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
- <3d783736-a474-d9e3-2de2-e35c765f8249@itcare.pl>
- <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
- <20171017055155.GA19944@pc11.op.pod.cz>
- <CAKgT0Udb5DVu6CB5U7rGNERZwMCKZUTii=qxn6hFzc=5zEZc1w@mail.gmail.com>
- <57579746-77e1-4603-12ed-7d999fdfeabf@itcare.pl>
-Message-ID: <CABOTfnOtw=XdhPL4n1JM16CS02ekoy6EPugOvtSbO6LGp2XOXA@mail.gmail.com>
+Date: Fri, 20 Oct 2017 01:02:59 +0200
+Subject: [Intel-wired-lan] Instability of i40e driver on 4.9 kernel
+Message-ID: <92118fc4-8a20-f129-193b-9c8fdf81aa24@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 19 October 2017 at 01:40, Pawe? Staszewski <pstaszewski@itcare.pl> wrote:
->
->
-> W dniu 2017-10-19 o 01:29, Alexander Duyck pisze:
->
->> On Mon, Oct 16, 2017 at 10:51 PM, Vitezslav Samel <vitezslav@samel.cz>
->> wrote:
->>>
->>> On Tue, Oct 17, 2017 at 01:34:29AM +0200, Pawe? Staszewski wrote:
->>>>
->>>> W dniu 2017-10-16 o 18:26, Pawe? Staszewski pisze:
->>>>>
->>>>> W dniu 2017-10-16 o 13:20, Pavlos Parissis pisze:
->>>>>>
->>>>>> On 15/10/2017 02:58 ??, Alexander Duyck wrote:
->>>>>>>
->>>>>>> Hi Pawel,
->>>>>>>
->>>>>>> To clarify is that Dave Miller's tree or Linus's that you are talking
->>>>>>> about? If it is Dave's tree how long ago was it you pulled it since I
->>>>>>> think the fix was just pushed by Jeff Kirsher a few days ago.
->>>>>>>
->>>>>>> The issue should be fixed in the following commit:
->>>>>>>
->>>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972
->>>>>>
->>>>>> Do you know when it is going to be available on net-next and
->>>>>> linux-stable repos?
->>>>>>
->>>>>> Cheers,
->>>>>> Pavlos
->>>>>>
->>>>>>
->>>>> I will make some tests today night with "net" git tree where this patch
->>>>> is included.
->>>>> Starting from 0:00 CET
->>>>> :)
->>>>>
->>>>>
->>>> Upgraded and looks like problem is not solved with that patch
->>>> Currently running system with
->>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/
->>>> kernel
->>>>
->>>> Still about 0.5GB of memory is leaking somewhere
->>>>
->>>> Also can confirm that the latest kernel where memory is not leaking
->>>> (with
->>>> use i40e driver intel 710 cards) is 4.11.12
->>>> With kernel 4.11.12 - after hour no change in memory usage.
->>>>
->>>> also checked that with ixgbe instead of i40e with same  net.git kernel
->>>> there
->>>> is no memleak - after hour same memory usage - so for 100% this is i40e
->>>> driver problem.
->>>
->>>    I have (probably) the same problem here but with X520 cards: booting
->>> 4.12.x gives me oops after circa 20 minutes of our workload. Booting
->>> 4.9.y is OK. This machine is in production so any testing is very
->>> limited.
->>>
->>>    Machine was stable for >2 months (on the desk before got to
->>> production) with 4.12.8 but with no traffic on X520 cards.
->>>
->>>          Cheers,
->>>
->>>                  Vita
->>
->> Sorry but it can't be the same issue since we are discussing a
->> different driver (i40e) running different hardware (X710 or XL170).
->> You might want to start a new thread for your issue, and/or if
->> possible file a bug on e1000.sf.net.
->>
->> Thanks.
->>
->> - Alex
->>
-> sorry but bugs reported on e1000.sf.net are delayed - some after about 6 or
-> more months - when i reported first bug there iv got reply after a year
-> about no activity :):) haha - and reported there bug is still actrive :)
-> better for me is now to change nics (for sure cheaper from  the perspective
-> of clients :) ) to mellanox or just to replace and use ixgbe - that have no
-> this bug (mellanox and ixgbe have no such bug - have many servers with them
-> with same conf - and only one with i40e where is same conf and memleak)
->
-> If nobody from Intel wants to reproduce this - qool - this is not my problem
-> but intels :) - there is now many good nics to use - like mellanox or just
-> stick with many 10G based on ixgbe that is really good driver - but really ?
-> intel guys have no XL710 cards ? i dont want to buy another buggy cards to
-> do only kernel bisects .... sorry ....
-> To do good bisects with this bug You need to spend maybee 200/300 bisects -
-> and to confirm each - You need maybee 30minutes so count how much time You
-> need - more that 100 cards in price from mellanox maybee :)
->
+Hi all,
 
-I have similar issues with you in regards to the stability of i40e
-driver. I will need to open another thread about them, but I would
-like to mention that you are not the only one who suffers from
-problems related to i40e driver. In my case I can't simply change
-NICs..so it is even worse.
+We have been running 4.9 kernels for several months on CentOS 7.3 and for few weeks on CentOS 7.4,
+and, after we replaced 10GbE cobber cards(X540-AT2 with ixgbe driver) with X710 10GbE SFP cards
+using i40e driver, we noticed sever instabilities on our servers.
+
+On several servers the links were marked down and up again, without any obvious reasons expect a lot
+of errors on kernel.log. We run Bird Internet daemon on our servers in order to establish BGP
+peerings with routers and we have observed flapping on BGP peerings. At the same time we had BGP
+peering stabilities issues we had kernel errors. We decided to go back to 3.10 kernel from CentOS,
+but that process wasn't smooth as latest firmware gave us problems with speed detection. We rolled
+back to two version old and speed detection issue was resolved. We have been running 3.10 several
+weeks without any problems. Even we want certain functionality from kernel 4.9, we decided to switch
+back to 3.10 as stability of our systems has higher priority.
+
+I need to mention that in all occurrences of the issue we didn't see any anomalies, such DDOS
+attacks and etc.
+
+I have opened https://communities.intel.com/message/501682#501682 and there you can find all the
+error messages and other information.
+
+Since we noticed the issues, I have been following netdev ML and I know that there are a lot of
+improvements/patched queued up for 4.14 and I am hoping those patches fix our issue and most
+importantly are sent to linux-stable for inclusion in 4.9 kernel.
 
 Cheers,
 Pavlos
+
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171020/5c41f224/attachment.asc>
