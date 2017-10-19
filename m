@@ -1,150 +1,119 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 19 Oct 2017 08:53:24 -0700
-Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
-	NICs
-In-Reply-To: <CABOTfnOtw=XdhPL4n1JM16CS02ekoy6EPugOvtSbO6LGp2XOXA@mail.gmail.com>
-References: <1507121766.30720.4.camel@cohaesio.com>
- <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
- <1507180753.20182.8.camel@cohaesio.com>
- <227d17ae-b040-07d0-3c57-e9acd1a3b5b4@itcare.pl>
- <c49a750f-c47c-9de0-ebf0-148db5e3d3c5@itcare.pl>
- <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
- <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
- <3d783736-a474-d9e3-2de2-e35c765f8249@itcare.pl>
- <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
- <20171017055155.GA19944@pc11.op.pod.cz>
- <CAKgT0Udb5DVu6CB5U7rGNERZwMCKZUTii=qxn6hFzc=5zEZc1w@mail.gmail.com>
- <57579746-77e1-4603-12ed-7d999fdfeabf@itcare.pl>
- <CABOTfnOtw=XdhPL4n1JM16CS02ekoy6EPugOvtSbO6LGp2XOXA@mail.gmail.com>
-Message-ID: <CAKgT0UeHBXw+d-y=4_Ady-T8Uiv0e7igWzWrMQHj_OrYr=XzgQ@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 20 Oct 2017 00:02:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 18/24]
+ drivers/net//ethernet/intel/i40e/i40e_main.c:9017:4: note: in expansion of
+ macro 'dev_dbg'
+Message-ID: <201710200015.3H6SaUMd%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Oct 19, 2017 at 4:41 AM, Pavlos Parissis
-<pavlos.parissis@gmail.com> wrote:
-> On 19 October 2017 at 01:40, Pawe? Staszewski <pstaszewski@itcare.pl> wrote:
->>
->>
->> W dniu 2017-10-19 o 01:29, Alexander Duyck pisze:
->>
->>> On Mon, Oct 16, 2017 at 10:51 PM, Vitezslav Samel <vitezslav@samel.cz>
->>> wrote:
->>>>
->>>> On Tue, Oct 17, 2017 at 01:34:29AM +0200, Pawe? Staszewski wrote:
->>>>>
->>>>> W dniu 2017-10-16 o 18:26, Pawe? Staszewski pisze:
->>>>>>
->>>>>> W dniu 2017-10-16 o 13:20, Pavlos Parissis pisze:
->>>>>>>
->>>>>>> On 15/10/2017 02:58 ??, Alexander Duyck wrote:
->>>>>>>>
->>>>>>>> Hi Pawel,
->>>>>>>>
->>>>>>>> To clarify is that Dave Miller's tree or Linus's that you are talking
->>>>>>>> about? If it is Dave's tree how long ago was it you pulled it since I
->>>>>>>> think the fix was just pushed by Jeff Kirsher a few days ago.
->>>>>>>>
->>>>>>>> The issue should be fixed in the following commit:
->>>>>>>>
->>>>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972
->>>>>>>
->>>>>>> Do you know when it is going to be available on net-next and
->>>>>>> linux-stable repos?
->>>>>>>
->>>>>>> Cheers,
->>>>>>> Pavlos
->>>>>>>
->>>>>>>
->>>>>> I will make some tests today night with "net" git tree where this patch
->>>>>> is included.
->>>>>> Starting from 0:00 CET
->>>>>> :)
->>>>>>
->>>>>>
->>>>> Upgraded and looks like problem is not solved with that patch
->>>>> Currently running system with
->>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/
->>>>> kernel
->>>>>
->>>>> Still about 0.5GB of memory is leaking somewhere
->>>>>
->>>>> Also can confirm that the latest kernel where memory is not leaking
->>>>> (with
->>>>> use i40e driver intel 710 cards) is 4.11.12
->>>>> With kernel 4.11.12 - after hour no change in memory usage.
->>>>>
->>>>> also checked that with ixgbe instead of i40e with same  net.git kernel
->>>>> there
->>>>> is no memleak - after hour same memory usage - so for 100% this is i40e
->>>>> driver problem.
->>>>
->>>>    I have (probably) the same problem here but with X520 cards: booting
->>>> 4.12.x gives me oops after circa 20 minutes of our workload. Booting
->>>> 4.9.y is OK. This machine is in production so any testing is very
->>>> limited.
->>>>
->>>>    Machine was stable for >2 months (on the desk before got to
->>>> production) with 4.12.8 but with no traffic on X520 cards.
->>>>
->>>>          Cheers,
->>>>
->>>>                  Vita
->>>
->>> Sorry but it can't be the same issue since we are discussing a
->>> different driver (i40e) running different hardware (X710 or XL170).
->>> You might want to start a new thread for your issue, and/or if
->>> possible file a bug on e1000.sf.net.
->>>
->>> Thanks.
->>>
->>> - Alex
->>>
->> sorry but bugs reported on e1000.sf.net are delayed - some after about 6 or
->> more months - when i reported first bug there iv got reply after a year
->> about no activity :):) haha - and reported there bug is still actrive :)
->> better for me is now to change nics (for sure cheaper from  the perspective
->> of clients :) ) to mellanox or just to replace and use ixgbe - that have no
->> this bug (mellanox and ixgbe have no such bug - have many servers with them
->> with same conf - and only one with i40e where is same conf and memleak)
->>
->> If nobody from Intel wants to reproduce this - qool - this is not my problem
->> but intels :) - there is now many good nics to use - like mellanox or just
->> stick with many 10G based on ixgbe that is really good driver - but really ?
->> intel guys have no XL710 cards ? i dont want to buy another buggy cards to
->> do only kernel bisects .... sorry ....
->> To do good bisects with this bug You need to spend maybee 200/300 bisects -
->> and to confirm each - You need maybee 30minutes so count how much time You
->> need - more that 100 cards in price from mellanox maybee :)
->>
->
-> I have similar issues with you in regards to the stability of i40e
-> driver. I will need to open another thread about them, but I would
-> like to mention that you are not the only one who suffers from
-> problems related to i40e driver. In my case I can't simply change
-> NICs..so it is even worse.
->
-> Cheers,
-> Pavlos
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   53d0c6455764b0a6f33eba85ca2c2e1298c0df3d
+commit: a43ab02fb3cb1f791ae5acfaa789fef9f5c6470e [18/24] Subject: [v2] i40e: avoid 64-bit division where possible X-Patchwork-Submitter: Arnd Bergmann <arnd@arndb.de> Cc: Arnd Bergmann <arnd@arndb.de>, netdev at vger.kernel.org, Mitch Williams  <mitch.a.williams@intel.com>, linux-kernel at vger.kernel.org,  intel-wired-lan at lists.osuosl.org, =?utf-8?b?QmrDtnJuIFTDtnBlbA==?=  <bjorn.topel@intel.com>,  Filip Sadowski <filip.sadowski@intel.com>,  "David S. Miller" <davem@davemloft.net> List-Id: Intel Wired Ethernet Linux Kernel Driver Development  <intel-wired-lan.osuosl.org>
+config: xtensa-allyesconfig (attached as .config)
+compiler: xtensa-linux-gcc (GCC) 4.9.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout a43ab02fb3cb1f791ae5acfaa789fef9f5c6470e
+        # save the attached .config to linux build tree
+        make.cross ARCH=xtensa 
 
-Hi Pavlos,
+All warnings (new ones prefixed by >>):
 
-If you want feel free to Cc either my gmail or my intel.com email
-address when you start the new thread, and I can work with you to try
-to resolve the issues you are experiencing.
+   In file included from include/linux/printk.h:329:0,
+                    from include/linux/kernel.h:13,
+                    from include/linux/skbuff.h:17,
+                    from include/linux/if_ether.h:23,
+                    from include/linux/etherdevice.h:25,
+                    from drivers/net//ethernet/intel/i40e/i40e_main.c:27:
+   drivers/net//ethernet/intel/i40e/i40e_main.c: In function 'i40e_rebuild_channels':
+   drivers/net//ethernet/intel/i40e/i40e_main.c:9020:5: error: 'credits' undeclared (first use in this function)
+        credits,
+        ^
+   include/linux/dynamic_debug.h:135:9: note: in definition of macro 'dynamic_dev_dbg'
+          ##__VA_ARGS__);  \
+            ^
+>> drivers/net//ethernet/intel/i40e/i40e_main.c:9017:4: note: in expansion of macro 'dev_dbg'
+       dev_dbg(&vsi->back->pdev->dev,
+       ^
+   drivers/net//ethernet/intel/i40e/i40e_main.c:9020:5: note: each undeclared identifier is reported only once for each function it appears in
+        credits,
+        ^
+   include/linux/dynamic_debug.h:135:9: note: in definition of macro 'dynamic_dev_dbg'
+          ##__VA_ARGS__);  \
+            ^
+>> drivers/net//ethernet/intel/i40e/i40e_main.c:9017:4: note: in expansion of macro 'dev_dbg'
+       dev_dbg(&vsi->back->pdev->dev,
+       ^
 
-I'm just wanting to split up the unrelated issues into separate
-threads as it is easier to track them as single threads. It makes it
-much easier to figure out when an actual issue such as the original
-memory leak was resolved versus trying to work multiple issues on the
-same thread which makes things confusing as you end up losing track of
-what the issue being resolved actually is, and it makes it confusing
-for people who are reviewing the mailing list for issues similar to
-what they are experiencing.
+vim +/dev_dbg +9017 drivers/net//ethernet/intel/i40e/i40e_main.c
 
-Thanks for your input, and I look forward to working with you to
-resolve the issue you are experiencing.
+2590901c Amritha Nambiar 2017-10-18  8986  
+2590901c Amritha Nambiar 2017-10-18  8987  /**
+8f88b303 Amritha Nambiar 2017-09-07  8988   * i40e_rebuild_channels - Rebuilds channel VSIs if they existed before reset
+8f88b303 Amritha Nambiar 2017-09-07  8989   * @vsi: PF main vsi
+8f88b303 Amritha Nambiar 2017-09-07  8990   *
+8f88b303 Amritha Nambiar 2017-09-07  8991   * Rebuilds channel VSIs if they existed before reset
+8f88b303 Amritha Nambiar 2017-09-07  8992   **/
+8f88b303 Amritha Nambiar 2017-09-07  8993  static int i40e_rebuild_channels(struct i40e_vsi *vsi)
+8f88b303 Amritha Nambiar 2017-09-07  8994  {
+8f88b303 Amritha Nambiar 2017-09-07  8995  	struct i40e_channel *ch, *ch_tmp;
+8f88b303 Amritha Nambiar 2017-09-07  8996  	i40e_status ret;
+8f88b303 Amritha Nambiar 2017-09-07  8997  
+8f88b303 Amritha Nambiar 2017-09-07  8998  	if (list_empty(&vsi->ch_list))
+8f88b303 Amritha Nambiar 2017-09-07  8999  		return 0;
+8f88b303 Amritha Nambiar 2017-09-07  9000  
+8f88b303 Amritha Nambiar 2017-09-07  9001  	list_for_each_entry_safe(ch, ch_tmp, &vsi->ch_list, list) {
+8f88b303 Amritha Nambiar 2017-09-07  9002  		if (!ch->initialized)
+8f88b303 Amritha Nambiar 2017-09-07  9003  			break;
+8f88b303 Amritha Nambiar 2017-09-07  9004  		/* Proceed with creation of channel (VMDq2) VSI */
+8f88b303 Amritha Nambiar 2017-09-07  9005  		ret = i40e_add_channel(vsi->back, vsi->uplink_seid, ch);
+8f88b303 Amritha Nambiar 2017-09-07  9006  		if (ret) {
+8f88b303 Amritha Nambiar 2017-09-07  9007  			dev_info(&vsi->back->pdev->dev,
+8f88b303 Amritha Nambiar 2017-09-07  9008  				 "failed to rebuild channels using uplink_seid %u\n",
+8f88b303 Amritha Nambiar 2017-09-07  9009  				 vsi->uplink_seid);
+8f88b303 Amritha Nambiar 2017-09-07  9010  			return ret;
+8f88b303 Amritha Nambiar 2017-09-07  9011  		}
+2027d4de Amritha Nambiar 2017-09-07  9012  		if (ch->max_tx_rate) {
+2027d4de Amritha Nambiar 2017-09-07  9013  			if (i40e_set_bw_limit(vsi, ch->seid,
+2027d4de Amritha Nambiar 2017-09-07  9014  					      ch->max_tx_rate))
+2027d4de Amritha Nambiar 2017-09-07  9015  				return -EINVAL;
+2027d4de Amritha Nambiar 2017-09-07  9016  
+2027d4de Amritha Nambiar 2017-09-07 @9017  			dev_dbg(&vsi->back->pdev->dev,
+a43ab02f Arnd Bergmann   2017-10-18  9018  				"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
+2027d4de Amritha Nambiar 2017-09-07  9019  				ch->max_tx_rate,
+6c32e0d9 Alan Brady      2017-10-09  9020  				credits,
+2027d4de Amritha Nambiar 2017-09-07  9021  				ch->seid);
+2027d4de Amritha Nambiar 2017-09-07  9022  		}
+2590901c Amritha Nambiar 2017-10-18  9023  		ret = i40e_rebuild_cloud_filters(vsi, ch->seid);
+2590901c Amritha Nambiar 2017-10-18  9024  		if (ret) {
+2590901c Amritha Nambiar 2017-10-18  9025  			dev_dbg(&vsi->back->pdev->dev,
+2590901c Amritha Nambiar 2017-10-18  9026  				"Failed to rebuild cloud filters for channel VSI %u\n",
+2590901c Amritha Nambiar 2017-10-18  9027  				ch->seid);
+2590901c Amritha Nambiar 2017-10-18  9028  			return ret;
+2590901c Amritha Nambiar 2017-10-18  9029  		}
+8f88b303 Amritha Nambiar 2017-09-07  9030  	}
+8f88b303 Amritha Nambiar 2017-09-07  9031  	return 0;
+8f88b303 Amritha Nambiar 2017-09-07  9032  }
+8f88b303 Amritha Nambiar 2017-09-07  9033  
 
-- Alex
+:::::: The code at line 9017 was first introduced by commit
+:::::: 2027d4deacb129579f022746830ea05b72fe114a i40e: Add support setting TC max bandwidth rates
+
+:::::: TO: Amritha Nambiar <amritha.nambiar@intel.com>
+:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 51703 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171020/3621ef77/attachment-0001.bin>
