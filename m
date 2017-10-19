@@ -1,119 +1,199 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 20 Oct 2017 00:02:20 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 18/24]
- drivers/net//ethernet/intel/i40e/i40e_main.c:9017:4: note: in expansion of
- macro 'dev_dbg'
-Message-ID: <201710200015.3H6SaUMd%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 19 Oct 2017 10:10:10 -0700
+Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
+	NICs
+In-Reply-To: <d4d1c562-e976-1894-e36c-709fd319dfb2@itcare.pl>
+References: <1507121766.30720.4.camel@cohaesio.com>
+ <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
+ <3d783736-a474-d9e3-2de2-e35c765f8249@itcare.pl>
+ <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
+ <CAKgT0Uf=0yasidUfyadNSxzkhKvtxH2t83fjb-SU7OaAnrMReA@mail.gmail.com>
+ <310ce203-0d65-bdf4-d9e4-897a349b3277@itcare.pl>
+ <f6e2208a-4cdf-3303-5999-92186b437b62@itcare.pl>
+ <1704eb26-c4c5-b196-ca7a-5265e92ae4e6@itcare.pl>
+ <bd82f85a-f9b8-a09a-beab-67667b58f36a@itcare.pl>
+ <7fd828d7-c586-2c32-3ba6-e0575bf9958c@itcare.pl>
+ <99eba19f-327e-e01f-4f4a-87540b176e40@itcare.pl>
+ <efcc51b4-f911-11ec-1c56-fcf31081f9d5@itcare.pl>
+ <d79df7f2-5de4-cc37-baf0-5603f025155e@itcare.pl>
+ <748b6d9d-4a3f-4eaa-ad24-27060c2e2642@itcare.pl>
+ <16c9fa34-252f-e5a3-8b15-e5a8c4d8a46f@itcare.pl>
+ <12670bc6-439c-7ef4-109a-fd20384b9ca2@itcare.pl>
+ <bd59ccc3-2af4-6842-8d2f-169229a61470@itcare.pl>
+ <888ec430-1d70-68e6-2ee8-bab53d21bb0f@itcare.pl>
+ <CAKgT0Ud=GRrsNtoM0gOgzsh1uPJ7nuT9S-xbigmbUMi+iz-ufw@mail.gmail.com>
+ <d4d1c562-e976-1894-e36c-709fd319dfb2@itcare.pl>
+Message-ID: <CAKgT0Uf+LZPaQgSzgFuu1_HYxxHLCRckKpx1=eO+WSc_MmNGtg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   53d0c6455764b0a6f33eba85ca2c2e1298c0df3d
-commit: a43ab02fb3cb1f791ae5acfaa789fef9f5c6470e [18/24] Subject: [v2] i40e: avoid 64-bit division where possible X-Patchwork-Submitter: Arnd Bergmann <arnd@arndb.de> Cc: Arnd Bergmann <arnd@arndb.de>, netdev at vger.kernel.org, Mitch Williams  <mitch.a.williams@intel.com>, linux-kernel at vger.kernel.org,  intel-wired-lan at lists.osuosl.org, =?utf-8?b?QmrDtnJuIFTDtnBlbA==?=  <bjorn.topel@intel.com>,  Filip Sadowski <filip.sadowski@intel.com>,  "David S. Miller" <davem@davemloft.net> List-Id: Intel Wired Ethernet Linux Kernel Driver Development  <intel-wired-lan.osuosl.org>
-config: xtensa-allyesconfig (attached as .config)
-compiler: xtensa-linux-gcc (GCC) 4.9.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout a43ab02fb3cb1f791ae5acfaa789fef9f5c6470e
-        # save the attached .config to linux build tree
-        make.cross ARCH=xtensa 
+On Wed, Oct 18, 2017 at 4:51 PM, Pawe? Staszewski <pstaszewski@itcare.pl> wrote:
+>
+>
+> W dniu 2017-10-19 o 01:37, Alexander Duyck pisze:
+>
+>> On Wed, Oct 18, 2017 at 4:22 PM, Pawe? Staszewski <pstaszewski@itcare.pl>
+>> wrote:
+>>>
+>>>
+>>> W dniu 2017-10-19 o 00:58, Pawe? Staszewski pisze:
 
-All warnings (new ones prefixed by >>):
+<snip>
 
-   In file included from include/linux/printk.h:329:0,
-                    from include/linux/kernel.h:13,
-                    from include/linux/skbuff.h:17,
-                    from include/linux/if_ether.h:23,
-                    from include/linux/etherdevice.h:25,
-                    from drivers/net//ethernet/intel/i40e/i40e_main.c:27:
-   drivers/net//ethernet/intel/i40e/i40e_main.c: In function 'i40e_rebuild_channels':
-   drivers/net//ethernet/intel/i40e/i40e_main.c:9020:5: error: 'credits' undeclared (first use in this function)
-        credits,
-        ^
-   include/linux/dynamic_debug.h:135:9: note: in definition of macro 'dynamic_dev_dbg'
-          ##__VA_ARGS__);  \
-            ^
->> drivers/net//ethernet/intel/i40e/i40e_main.c:9017:4: note: in expansion of macro 'dev_dbg'
-       dev_dbg(&vsi->back->pdev->dev,
-       ^
-   drivers/net//ethernet/intel/i40e/i40e_main.c:9020:5: note: each undeclared identifier is reported only once for each function it appears in
-        credits,
-        ^
-   include/linux/dynamic_debug.h:135:9: note: in definition of macro 'dynamic_dev_dbg'
-          ##__VA_ARGS__);  \
-            ^
->> drivers/net//ethernet/intel/i40e/i40e_main.c:9017:4: note: in expansion of macro 'dev_dbg'
-       dev_dbg(&vsi->back->pdev->dev,
-       ^
+>>> Change rx-usecs 16 tx usecs 16
+>>> ifc='enp2s0f0 enp2s0f1 enp2s0f2 enp2s0f3 enp3s0f0 enp3s0f1 enp3s0f2
+>>> enp3s0f3'
+>>> for i in $ifc
+>>>          do
+>>>          ip link set up dev $i
+>>>          ethtool -A $i autoneg off rx off tx off
+>>>          ethtool -G $i rx 2048 tx 2048
+>>>          ip link set $i txqueuelen 1000
+>>>          ethtool -C $i adaptive-rx off adaptive-tx off rx-usecs 16
+>>> tx-usecs
+>>> 16
+>>>          ethtool -L $i combined 6
+>>>          ethtool -K $i ntuple on
+>>>          ethtool -K $i gro on
+>>>          ethtool -K $i tso on
+>>>          done
+>>>
+>>> MEMLEAK: 0-2MB/s with some recycles
+>>> 0  MB/10sec
+>>> 0  MB/10sec
+>>> 0  MB/10sec
+>>> 0  MB/10sec
+>>> 0  MB/10sec
+>>> 0  MB/10sec
+>>> 1  MB/10sec
+>>> 0  MB/10sec
+>>> 2  MB/10sec
+>>> 0  MB/10sec
+>>> 2  MB/10sec
+>>> -1  MB/10sec
+>>> 0  MB/10sec
+>>> 2  MB/10sec
+>>> 0  MB/10sec
+>>> 2  MB/10sec
+>>> -1  MB/10sec
+>>> 1  MB/10sec
+>>
+>> This data doesn't tell me much of anything and isn't what I asked for.
+>> I don't see how the interrupt throttling rate would be associated with
+>> your memory leak other than possibly rate limiting it by rate limiting
+>> the traffic itself. Is there something that gave you the impression
+>> that interrupt rate was somehow involved?
+>
+> more interrupts more leak
 
-vim +/dev_dbg +9017 drivers/net//ethernet/intel/i40e/i40e_main.c
+Right, but this isn't really any new information. More general
+activity equals more memory leak, we already knew that.
 
-2590901c Amritha Nambiar 2017-10-18  8986  
-2590901c Amritha Nambiar 2017-10-18  8987  /**
-8f88b303 Amritha Nambiar 2017-09-07  8988   * i40e_rebuild_channels - Rebuilds channel VSIs if they existed before reset
-8f88b303 Amritha Nambiar 2017-09-07  8989   * @vsi: PF main vsi
-8f88b303 Amritha Nambiar 2017-09-07  8990   *
-8f88b303 Amritha Nambiar 2017-09-07  8991   * Rebuilds channel VSIs if they existed before reset
-8f88b303 Amritha Nambiar 2017-09-07  8992   **/
-8f88b303 Amritha Nambiar 2017-09-07  8993  static int i40e_rebuild_channels(struct i40e_vsi *vsi)
-8f88b303 Amritha Nambiar 2017-09-07  8994  {
-8f88b303 Amritha Nambiar 2017-09-07  8995  	struct i40e_channel *ch, *ch_tmp;
-8f88b303 Amritha Nambiar 2017-09-07  8996  	i40e_status ret;
-8f88b303 Amritha Nambiar 2017-09-07  8997  
-8f88b303 Amritha Nambiar 2017-09-07  8998  	if (list_empty(&vsi->ch_list))
-8f88b303 Amritha Nambiar 2017-09-07  8999  		return 0;
-8f88b303 Amritha Nambiar 2017-09-07  9000  
-8f88b303 Amritha Nambiar 2017-09-07  9001  	list_for_each_entry_safe(ch, ch_tmp, &vsi->ch_list, list) {
-8f88b303 Amritha Nambiar 2017-09-07  9002  		if (!ch->initialized)
-8f88b303 Amritha Nambiar 2017-09-07  9003  			break;
-8f88b303 Amritha Nambiar 2017-09-07  9004  		/* Proceed with creation of channel (VMDq2) VSI */
-8f88b303 Amritha Nambiar 2017-09-07  9005  		ret = i40e_add_channel(vsi->back, vsi->uplink_seid, ch);
-8f88b303 Amritha Nambiar 2017-09-07  9006  		if (ret) {
-8f88b303 Amritha Nambiar 2017-09-07  9007  			dev_info(&vsi->back->pdev->dev,
-8f88b303 Amritha Nambiar 2017-09-07  9008  				 "failed to rebuild channels using uplink_seid %u\n",
-8f88b303 Amritha Nambiar 2017-09-07  9009  				 vsi->uplink_seid);
-8f88b303 Amritha Nambiar 2017-09-07  9010  			return ret;
-8f88b303 Amritha Nambiar 2017-09-07  9011  		}
-2027d4de Amritha Nambiar 2017-09-07  9012  		if (ch->max_tx_rate) {
-2027d4de Amritha Nambiar 2017-09-07  9013  			if (i40e_set_bw_limit(vsi, ch->seid,
-2027d4de Amritha Nambiar 2017-09-07  9014  					      ch->max_tx_rate))
-2027d4de Amritha Nambiar 2017-09-07  9015  				return -EINVAL;
-2027d4de Amritha Nambiar 2017-09-07  9016  
-2027d4de Amritha Nambiar 2017-09-07 @9017  			dev_dbg(&vsi->back->pdev->dev,
-a43ab02f Arnd Bergmann   2017-10-18  9018  				"Set tx rate of %u Mbps (count of 50Mbps %u) for vsi->seid %u\n",
-2027d4de Amritha Nambiar 2017-09-07  9019  				ch->max_tx_rate,
-6c32e0d9 Alan Brady      2017-10-09  9020  				credits,
-2027d4de Amritha Nambiar 2017-09-07  9021  				ch->seid);
-2027d4de Amritha Nambiar 2017-09-07  9022  		}
-2590901c Amritha Nambiar 2017-10-18  9023  		ret = i40e_rebuild_cloud_filters(vsi, ch->seid);
-2590901c Amritha Nambiar 2017-10-18  9024  		if (ret) {
-2590901c Amritha Nambiar 2017-10-18  9025  			dev_dbg(&vsi->back->pdev->dev,
-2590901c Amritha Nambiar 2017-10-18  9026  				"Failed to rebuild cloud filters for channel VSI %u\n",
-2590901c Amritha Nambiar 2017-10-18  9027  				ch->seid);
-2590901c Amritha Nambiar 2017-10-18  9028  			return ret;
-2590901c Amritha Nambiar 2017-10-18  9029  		}
-8f88b303 Amritha Nambiar 2017-09-07  9030  	}
-8f88b303 Amritha Nambiar 2017-09-07  9031  	return 0;
-8f88b303 Amritha Nambiar 2017-09-07  9032  }
-8f88b303 Amritha Nambiar 2017-09-07  9033  
+When debugging, what is useful is to isolate a problem down to a
+subset of the original problem. So for example, if you are seeing some
+traffic pattern that makes it significantly worse that would be useful
+info. Generally instead of trying to find cases that make the issue
+less likely to happen anything that you can find that make it more
+likely to happen would be useful.
 
-:::::: The code at line 9017 was first introduced by commit
-:::::: 2027d4deacb129579f022746830ea05b72fe114a i40e: Add support setting TC max bandwidth rates
+Anything that makes the reproduction easier to get would be useful as
+it makes the test for the issue being fixed that much easier since
+there should be a start contrast for the driver with the issue versus
+the driver without. A fast failure is always much easier to diagnose
+than a lingering issue.
 
-:::::: TO: Amritha Nambiar <amritha.nambiar@intel.com>
-:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+>>
+>> When we last talked I had asked if you could do a git bisect to find
+>> the memory leak and you said you would look into it. The most useful
+>> way to solve this would be to do a git bisect between your current
+>> kernel and the 4.11 kernel to find the point at which this started. If
+>> we can do that then fixing this becomes much simpler as we just have
+>> to fix the patch that introduced the issue.
+>>
+>> Also, I don't know it is you are using to determine that there is a
+>> memory leak. What tool is it you are using to do the tracking? Is
+>> there any specific form of traffic that is causing the leak? If you
+>> can't perform the bisection, any information you could provide that
+>> would allow me to do it would also be useful.
+>
+> simple script
+>
+> mem1=`free -m | grep Mem: | awk '{print $3}'`
+> sleep 10
+> mem2=`free -m | grep Mem: | awk '{print $3}'`
+>
+> num=$((mem2 - mem1))
+> echo $num " MB/10sec"
+>
+>
+> There is nothing more that gets mem
+> there is only routed traffic from interface A to B
+> nothings takes mem
+> And memleaks only anchge when i change the rx/tx usecs for card
+>
+> What You need more ?
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 51703 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171020/3621ef77/attachment-0001.bin>
+No more needed. This tells me what I need to be able to start a
+reproduction setup.
+
+> imagine this is not my only prblem but many - i just want to help i changed
+> cards to i40e based only cause somebody rises a bug - and i want to use i40e
+> in feature - dont need them now - but maybee it is good to help ppl to solwe
+> some problems now if i can - before i will use this cards ?
+
+Your attempt to help is appreciated, and I want to solve these issues as well.
+
+> I try to use i40e before but there was bug covered by bug - and nobody from
+> e1000.sf can help me they just reply after year and closing tickets with
+> info about no activity but they have info in reported bugs ... soooo what is
+> this ? support center ? for me no .
+
+We don't ask you to be a support center, but we need to have either a
+clear problem definition or a willingness to provide more information.
+As you stated there are multiple issues with the driver, it isn't
+perfect since it is developed by people and people make mistakes. We
+need a very clear problem statement and reproduction steps when an
+issue is reported so that we can first try to reproduce the issue, and
+secondly try to verify that it has been resolved. When the problem
+statement is vague, and you aren't willing to test fixes or providing
+debugging information there isn't much we can do. As such we are much
+more likely to close a bug ticket when we cannot reproduce the issue,
+and you are not willing to work with us to test possible fixes for the
+issue.
+
+> If i want to help -= after a year response will be something like - "dont
+> care now" - cause i'v used other hw or sme hacks to repair problem that
+> should be sloved by intel
+
+You are welcome to help. This thread started out focusing on the i40e
+memory leak issue being reported by Anders, and I would appreciate it
+if we could keep this focused on the i40e memory leak. Trying to
+hijack the thread to address other issues that may have been reported
+on e1000.sf.net, but closed for whatever reason isn't productive. We
+need to focus on one issue per thread at a time, just complaining that
+something is buggy isn't productive and doesn't solve any issues.
+
+We have your definition for the problem you are seeing. We can work on
+trying to reproduce the issue in our environment. Our internal
+validation hasn't seen this issue so we likely have some sort of test
+escape internally that we need to resolve in our validation
+environment.
+
+Anders has said he would be willing to work with us on getting a
+bisection. That will help significantly for us to try to get to a root
+cause for this issue. In addition once we have the root cause we can
+also start sorting out why we didn't catch this in our own validation.
+
+Your help on this issue has been appreciated, but if you aren't
+willing to perform a bisection then there isn't any more we need from
+you at this time. We will work internally and with Anders to get the
+bisection data we need. We have no further need of information on the
+issue at this time as we need to focus on test reproduction, and
+determining the change that introduced this issue.
+
+Thanks.
+
+- Alex
