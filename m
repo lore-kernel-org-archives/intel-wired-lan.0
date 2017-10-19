@@ -1,79 +1,150 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 19 Oct 2017 08:40:54 -0700
+Date: Thu, 19 Oct 2017 08:53:24 -0700
 Subject: [Intel-wired-lan] Linux 4.12+ memory leak on router with i40e
 	NICs
-In-Reply-To: <1508415582.1186.49.camel@cohaesio.com>
+In-Reply-To: <CABOTfnOtw=XdhPL4n1JM16CS02ekoy6EPugOvtSbO6LGp2XOXA@mail.gmail.com>
 References: <1507121766.30720.4.camel@cohaesio.com>
+ <CAKgT0UfAqzuEbFA_hs8f4goL2hTMqeJ5no2sAc8NO_KJO120tA@mail.gmail.com>
+ <1507180753.20182.8.camel@cohaesio.com>
+ <227d17ae-b040-07d0-3c57-e9acd1a3b5b4@itcare.pl>
  <c49a750f-c47c-9de0-ebf0-148db5e3d3c5@itcare.pl>
  <CAKgT0UcOWxnrsGEjTopPP-JKyKGTG3j6KNKUbhQRgaCStyzr_A@mail.gmail.com>
  <b4995fc8-1420-fe96-26f7-ad5d986b7d39@gmail.com>
  <3d783736-a474-d9e3-2de2-e35c765f8249@itcare.pl>
  <39696136-2a4a-9c6c-3a63-4485ed2a1bf3@itcare.pl>
- <CAKgT0Uf=0yasidUfyadNSxzkhKvtxH2t83fjb-SU7OaAnrMReA@mail.gmail.com>
- <310ce203-0d65-bdf4-d9e4-897a349b3277@itcare.pl>
- <f6e2208a-4cdf-3303-5999-92186b437b62@itcare.pl>
- <1704eb26-c4c5-b196-ca7a-5265e92ae4e6@itcare.pl>
- <bd82f85a-f9b8-a09a-beab-67667b58f36a@itcare.pl>
- <7fd828d7-c586-2c32-3ba6-e0575bf9958c@itcare.pl>
- <99eba19f-327e-e01f-4f4a-87540b176e40@itcare.pl>
- <efcc51b4-f911-11ec-1c56-fcf31081f9d5@itcare.pl>
- <d79df7f2-5de4-cc37-baf0-5603f025155e@itcare.pl>
- <748b6d9d-4a3f-4eaa-ad24-27060c2e2642@itcare.pl>
- <16c9fa34-252f-e5a3-8b15-e5a8c4d8a46f@itcare.pl>
- <12670bc6-439c-7ef4-109a-fd20384b9ca2@itcare.pl>
- <bd59ccc3-2af4-6842-8d2f-169229a61470@itcare.pl>
- <888ec430-1d70-68e6-2ee8-bab53d21bb0f@itcare.pl>
- <CAKgT0Ud=GRrsNtoM0gOgzsh1uPJ7nuT9S-xbigmbUMi+iz-ufw@mail.gmail.com>
- <1508415582.1186.49.camel@cohaesio.com>
-Message-ID: <CAKgT0Ud1ftJ187qz_XBVnx+X_1BQTgWWe4sA307_3VmpMSSVaw@mail.gmail.com>
+ <20171017055155.GA19944@pc11.op.pod.cz>
+ <CAKgT0Udb5DVu6CB5U7rGNERZwMCKZUTii=qxn6hFzc=5zEZc1w@mail.gmail.com>
+ <57579746-77e1-4603-12ed-7d999fdfeabf@itcare.pl>
+ <CABOTfnOtw=XdhPL4n1JM16CS02ekoy6EPugOvtSbO6LGp2XOXA@mail.gmail.com>
+Message-ID: <CAKgT0UeHBXw+d-y=4_Ady-T8Uiv0e7igWzWrMQHj_OrYr=XzgQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Oct 19, 2017 at 5:19 AM, Anders K. Pedersen | Cohaesio
-<akp@cohaesio.com> wrote:
-> Hi Alex,
+On Thu, Oct 19, 2017 at 4:41 AM, Pavlos Parissis
+<pavlos.parissis@gmail.com> wrote:
+> On 19 October 2017 at 01:40, Pawe? Staszewski <pstaszewski@itcare.pl> wrote:
+>>
+>>
+>> W dniu 2017-10-19 o 01:29, Alexander Duyck pisze:
+>>
+>>> On Mon, Oct 16, 2017 at 10:51 PM, Vitezslav Samel <vitezslav@samel.cz>
+>>> wrote:
+>>>>
+>>>> On Tue, Oct 17, 2017 at 01:34:29AM +0200, Pawe? Staszewski wrote:
+>>>>>
+>>>>> W dniu 2017-10-16 o 18:26, Pawe? Staszewski pisze:
+>>>>>>
+>>>>>> W dniu 2017-10-16 o 13:20, Pavlos Parissis pisze:
+>>>>>>>
+>>>>>>> On 15/10/2017 02:58 ??, Alexander Duyck wrote:
+>>>>>>>>
+>>>>>>>> Hi Pawel,
+>>>>>>>>
+>>>>>>>> To clarify is that Dave Miller's tree or Linus's that you are talking
+>>>>>>>> about? If it is Dave's tree how long ago was it you pulled it since I
+>>>>>>>> think the fix was just pushed by Jeff Kirsher a few days ago.
+>>>>>>>>
+>>>>>>>> The issue should be fixed in the following commit:
+>>>>>>>>
+>>>>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/commit/drivers/net/ethernet/intel/i40e/i40e_txrx.c?id=2b9478ffc550f17c6cd8c69057234e91150f5972
+>>>>>>>
+>>>>>>> Do you know when it is going to be available on net-next and
+>>>>>>> linux-stable repos?
+>>>>>>>
+>>>>>>> Cheers,
+>>>>>>> Pavlos
+>>>>>>>
+>>>>>>>
+>>>>>> I will make some tests today night with "net" git tree where this patch
+>>>>>> is included.
+>>>>>> Starting from 0:00 CET
+>>>>>> :)
+>>>>>>
+>>>>>>
+>>>>> Upgraded and looks like problem is not solved with that patch
+>>>>> Currently running system with
+>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git/
+>>>>> kernel
+>>>>>
+>>>>> Still about 0.5GB of memory is leaking somewhere
+>>>>>
+>>>>> Also can confirm that the latest kernel where memory is not leaking
+>>>>> (with
+>>>>> use i40e driver intel 710 cards) is 4.11.12
+>>>>> With kernel 4.11.12 - after hour no change in memory usage.
+>>>>>
+>>>>> also checked that with ixgbe instead of i40e with same  net.git kernel
+>>>>> there
+>>>>> is no memleak - after hour same memory usage - so for 100% this is i40e
+>>>>> driver problem.
+>>>>
+>>>>    I have (probably) the same problem here but with X520 cards: booting
+>>>> 4.12.x gives me oops after circa 20 minutes of our workload. Booting
+>>>> 4.9.y is OK. This machine is in production so any testing is very
+>>>> limited.
+>>>>
+>>>>    Machine was stable for >2 months (on the desk before got to
+>>>> production) with 4.12.8 but with no traffic on X520 cards.
+>>>>
+>>>>          Cheers,
+>>>>
+>>>>                  Vita
+>>>
+>>> Sorry but it can't be the same issue since we are discussing a
+>>> different driver (i40e) running different hardware (X710 or XL170).
+>>> You might want to start a new thread for your issue, and/or if
+>>> possible file a bug on e1000.sf.net.
+>>>
+>>> Thanks.
+>>>
+>>> - Alex
+>>>
+>> sorry but bugs reported on e1000.sf.net are delayed - some after about 6 or
+>> more months - when i reported first bug there iv got reply after a year
+>> about no activity :):) haha - and reported there bug is still actrive :)
+>> better for me is now to change nics (for sure cheaper from  the perspective
+>> of clients :) ) to mellanox or just to replace and use ixgbe - that have no
+>> this bug (mellanox and ixgbe have no such bug - have many servers with them
+>> with same conf - and only one with i40e where is same conf and memleak)
+>>
+>> If nobody from Intel wants to reproduce this - qool - this is not my problem
+>> but intels :) - there is now many good nics to use - like mellanox or just
+>> stick with many 10G based on ixgbe that is really good driver - but really ?
+>> intel guys have no XL710 cards ? i dont want to buy another buggy cards to
+>> do only kernel bisects .... sorry ....
+>> To do good bisects with this bug You need to spend maybee 200/300 bisects -
+>> and to confirm each - You need maybee 30minutes so count how much time You
+>> need - more that 100 cards in price from mellanox maybee :)
+>>
 >
-> On ons, 2017-10-18 at 16:37 -0700, Alexander Duyck wrote:
->> When we last talked I had asked if you could do a git bisect to find
->> the memory leak and you said you would look into it. The most useful
->> way to solve this would be to do a git bisect between your current
->> kernel and the 4.11 kernel to find the point at which this started.
->> If
->> we can do that then fixing this becomes much simpler as we just have
->> to fix the patch that introduced the issue.
+> I have similar issues with you in regards to the stability of i40e
+> driver. I will need to open another thread about them, but I would
+> like to mention that you are not the only one who suffers from
+> problems related to i40e driver. In my case I can't simply change
+> NICs..so it is even worse.
 >
-> We're also seeing a smaller memory leak (about 1 GB per day) than the
-> original one even with the "Fix memory leak related filter programming
-> status" fix applied. So far I've determined that the leak is present on
-> 4.13.7 and was introduced between 4.11 and 4.12, so I'll do another
-> round of bisection to identify the patch that introduced this.
->
-> Since the router must run for a couple of hours before I can be sure
-> whether a kernel is good or bad, and I can't reboot it during working
-> hours, it'll probably be about a week before I have a result.
->
-> --
-> Venlig hilsen / Best Regards
->
-> Anders K. Pedersen
-> Senior Technical Manager
+> Cheers,
+> Pavlos
 
-Anders,
+Hi Pavlos,
 
-I'll do some digging on my side to see if I can find any other memory
-leaks that might be floating around in the driver that could have been
-introduced during that time-frame.
+If you want feel free to Cc either my gmail or my intel.com email
+address when you start the new thread, and I can work with you to try
+to resolve the issues you are experiencing.
 
-One thing you might try that would help with your testing would be to
-just disable the ATR functionality in i40e. You can do that with the
-ethtool command "ethtool --set-priv-flags <iface> flow-director-atr
-off". That should allow you to bisect this without needing to deal
-with the "programming status" patches since you won't be programming
-ATR filters which is what caused that leak.
+I'm just wanting to split up the unrelated issues into separate
+threads as it is easier to track them as single threads. It makes it
+much easier to figure out when an actual issue such as the original
+memory leak was resolved versus trying to work multiple issues on the
+same thread which makes things confusing as you end up losing track of
+what the issue being resolved actually is, and it makes it confusing
+for people who are reviewing the mailing list for issues similar to
+what they are experiencing.
 
-Thanks for looking into this.
+Thanks for your input, and I look forward to working with you to
+resolve the issue you are experiencing.
 
 - Alex
