@@ -1,46 +1,61 @@
-From: Pavlos Parissis <pavlos.parissis@gmail.com>
-Date: Fri, 20 Oct 2017 01:02:59 +0200
-Subject: [Intel-wired-lan] Instability of i40e driver on 4.9 kernel
-Message-ID: <92118fc4-8a20-f129-193b-9c8fdf81aa24@gmail.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 20 Oct 2017 01:47:02 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v9 6/6] igb: Add support
+ for	CBS offload
+In-Reply-To: <20171017010128.22141-7-vinicius.gomes@intel.com>
+References: <20171017010128.22141-1-vinicius.gomes@intel.com>
+ <20171017010128.22141-7-vinicius.gomes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C6C507C@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi all,
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
+> Of Vinicius Costa Gomes
+> Sent: Monday, October 16, 2017 6:01 PM
+> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Cc: rodney.cummings at ni.com; Guedes, Andre <andre.guedes@intel.com>;
+> jiri at resnulli.us; Briano, Ivan <ivan.briano@intel.com>;
+> richardcochran at gmail.com; henrik at austad.us; jhs at mojatatu.com;
+> levipearson at gmail.com; Ong, Boon Leong <boon.leong.ong@intel.com>;
+> xiyou.wangcong at gmail.com; Sanchez-Palencia, Jesus <jesus.sanchez-
+> palencia at intel.com>
+> Subject: [Intel-wired-lan] [next-queue PATCH v9 6/6] igb: Add support for
+> CBS offload
+> 
+> From: Andre Guedes <andre.guedes@intel.com>
+> 
+> This patch adds support for Credit-Based Shaper (CBS) qdisc offload
+> from Traffic Control system. This support enable us to leverage the
+> Forwarding and Queuing for Time-Sensitive Streams (FQTSS) features
+> from Intel i210 Ethernet Controller. FQTSS is the former 802.1Qav
+> standard which was merged into 802.1Q in 2014. It enables traffic
+> prioritization and bandwidth reservation via the Credit-Based Shaper
+> which is implemented in hardware by i210 controller.
+> 
+> The patch introduces the igb_setup_tc() function which implements the
+> support for CBS qdisc hardware offload in the IGB driver. CBS offload
+> is the only traffic control offload supported by the driver at the
+> moment.
+> 
+> FQTSS transmission mode from i210 controller is automatically enabled
+> by the IGB driver when the CBS is enabled for the first hardware
+> queue. Likewise, FQTSS mode is automatically disabled when CBS is
+> disabled for the last hardware queue. Changing FQTSS mode requires NIC
+> reset.
+> 
+> FQTSS feature is supported by i210 controller only.
+> 
+> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igb/e1000_defines.h |  23 ++
+>  drivers/net/ethernet/intel/igb/e1000_regs.h    |   8 +
+>  drivers/net/ethernet/intel/igb/igb.h           |   6 +
+>  drivers/net/ethernet/intel/igb/igb_main.c      | 347
+> +++++++++++++++++++++++++
+>  4 files changed, 384 insertions(+)
 
-We have been running 4.9 kernels for several months on CentOS 7.3 and for few weeks on CentOS 7.4,
-and, after we replaced 10GbE cobber cards(X540-AT2 with ixgbe driver) with X710 10GbE SFP cards
-using i40e driver, we noticed sever instabilities on our servers.
-
-On several servers the links were marked down and up again, without any obvious reasons expect a lot
-of errors on kernel.log. We run Bird Internet daemon on our servers in order to establish BGP
-peerings with routers and we have observed flapping on BGP peerings. At the same time we had BGP
-peering stabilities issues we had kernel errors. We decided to go back to 3.10 kernel from CentOS,
-but that process wasn't smooth as latest firmware gave us problems with speed detection. We rolled
-back to two version old and speed detection issue was resolved. We have been running 3.10 several
-weeks without any problems. Even we want certain functionality from kernel 4.9, we decided to switch
-back to 3.10 as stability of our systems has higher priority.
-
-I need to mention that in all occurrences of the issue we didn't see any anomalies, such DDOS
-attacks and etc.
-
-I have opened https://communities.intel.com/message/501682#501682 and there you can find all the
-error messages and other information.
-
-Since we noticed the issues, I have been following netdev ML and I know that there are a lot of
-improvements/patched queued up for 4.14 and I am hoping those patches fix our issue and most
-importantly are sent to linux-stable for inclusion in 4.9 kernel.
-
-Cheers,
-Pavlos
-
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: OpenPGP digital signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171020/5c41f224/attachment.asc>
+From a regression standpoint:
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
