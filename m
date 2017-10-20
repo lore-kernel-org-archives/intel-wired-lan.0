@@ -1,54 +1,34 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 20 Oct 2017 10:10:06 -0700
-Subject: [Intel-wired-lan] [PATCH] [v2] i40e: avoid 64-bit division
-	where possible
-In-Reply-To: <ae467f28-a972-dc2d-1bc8-e8ce4c7d9d68@intel.com>
-References: <20171017155001.318184-1-arnd@arndb.de>
- <CAKgT0UfeDJomnen_2PhgnHSi27YROjTAtT=OYEj0JNVD8fzcOw@mail.gmail.com>
- <ae467f28-a972-dc2d-1bc8-e8ce4c7d9d68@intel.com>
-Message-ID: <CAKgT0UfryNBrMGdjOZjUyxucgkTv_5aYXCF1v3w8zOtjR2AxjA@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 20 Oct 2017 17:58:30 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: enable multicast on shutdown
+ for	WOL
+In-Reply-To: <20171010202000.32625.17259.stgit@localhost6.localdomain6>
+References: <20171010202000.32625.17259.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAD163@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 17, 2017 at 10:37 PM, Nambiar, Amritha
-<amritha.nambiar@intel.com> wrote:
-> On 10/17/2017 10:33 AM, Alexander Duyck wrote:
->> On Tue, Oct 17, 2017 at 8:49 AM, Arnd Bergmann <arnd@arndb.de> wrote:
->>> The new bandwidth calculation caused a link error on 32-bit
->>> architectures, like
->>>
->>> ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
->>>
->>> The problem is the max_tx_rate calculation that uses 64-bit integers.
->>> This is not really necessary since the numbers are in MBit/s so
->>> they won't be higher than 40000 for the highest support rate, and
->>> are guaranteed to not exceed 2^32 in future generations either.
->>>
->>> Another patch from Alan Brady fixed the link error by adding
->>> many calls to do_div(), which makes the code less efficent and
->>> less readable than necessary.
->>>
->>> This changes the representation to 'u32' when dealing with MBit/s
->>> and uses div_u64() to convert from u64 numbers in byte/s, reverting
->>> parts of Alan's earlier fix that have become obsolete now.
->>>
->
-> This patch breaks the functionality while converting the rates in
-> bytes/s provided by tc-layer into the Mbit/s in the driver.
-> I40E_BW_MBPS_DIVISOR defined in Alan's patch should be used for the
-> conversion, and not I40E_BW_CREDIT_DIVISOR which does the incorrect
-> math. I40E_BW_CREDIT_DIVISOR is in place because the device uses credit
-> rates in values of 50Mbps.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Emil Tantilov
+> Sent: Tuesday, October 10, 2017 1:20 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: enable multicast on shutdown for
+> WOL
+> 
+> Previously we only enabled the reception of multicast packets when wake on
+> multicast is set, but we also need this to allow waking with
+> IPv6 magic packets.
+> 
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
 
-Can we get the patch that was applied to the tree pulled? The patch
-itself contained some bugs as Amritha had pointed out, but it looks
-like there was some sort of merge conflict or something and now I
-cannot get the tree to build without having to revert the patch since
-somehow the code around i40e_rebuild_channels changed and is now
-throwing errors because "credits" wasn't replaced and is still
-accessed in the dev_dbg command.
 
-- Alex
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
