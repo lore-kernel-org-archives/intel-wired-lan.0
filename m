@@ -1,61 +1,54 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 20 Oct 2017 01:47:02 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH v9 6/6] igb: Add support
- for	CBS offload
-In-Reply-To: <20171017010128.22141-7-vinicius.gomes@intel.com>
-References: <20171017010128.22141-1-vinicius.gomes@intel.com>
- <20171017010128.22141-7-vinicius.gomes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C6C507C@ORSMSX101.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 20 Oct 2017 10:10:06 -0700
+Subject: [Intel-wired-lan] [PATCH] [v2] i40e: avoid 64-bit division
+	where possible
+In-Reply-To: <ae467f28-a972-dc2d-1bc8-e8ce4c7d9d68@intel.com>
+References: <20171017155001.318184-1-arnd@arndb.de>
+ <CAKgT0UfeDJomnen_2PhgnHSi27YROjTAtT=OYEj0JNVD8fzcOw@mail.gmail.com>
+ <ae467f28-a972-dc2d-1bc8-e8ce4c7d9d68@intel.com>
+Message-ID: <CAKgT0UfryNBrMGdjOZjUyxucgkTv_5aYXCF1v3w8zOtjR2AxjA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
-> Of Vinicius Costa Gomes
-> Sent: Monday, October 16, 2017 6:01 PM
-> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Cc: rodney.cummings at ni.com; Guedes, Andre <andre.guedes@intel.com>;
-> jiri at resnulli.us; Briano, Ivan <ivan.briano@intel.com>;
-> richardcochran at gmail.com; henrik at austad.us; jhs at mojatatu.com;
-> levipearson at gmail.com; Ong, Boon Leong <boon.leong.ong@intel.com>;
-> xiyou.wangcong at gmail.com; Sanchez-Palencia, Jesus <jesus.sanchez-
-> palencia at intel.com>
-> Subject: [Intel-wired-lan] [next-queue PATCH v9 6/6] igb: Add support for
-> CBS offload
-> 
-> From: Andre Guedes <andre.guedes@intel.com>
-> 
-> This patch adds support for Credit-Based Shaper (CBS) qdisc offload
-> from Traffic Control system. This support enable us to leverage the
-> Forwarding and Queuing for Time-Sensitive Streams (FQTSS) features
-> from Intel i210 Ethernet Controller. FQTSS is the former 802.1Qav
-> standard which was merged into 802.1Q in 2014. It enables traffic
-> prioritization and bandwidth reservation via the Credit-Based Shaper
-> which is implemented in hardware by i210 controller.
-> 
-> The patch introduces the igb_setup_tc() function which implements the
-> support for CBS qdisc hardware offload in the IGB driver. CBS offload
-> is the only traffic control offload supported by the driver at the
-> moment.
-> 
-> FQTSS transmission mode from i210 controller is automatically enabled
-> by the IGB driver when the CBS is enabled for the first hardware
-> queue. Likewise, FQTSS mode is automatically disabled when CBS is
-> disabled for the last hardware queue. Changing FQTSS mode requires NIC
-> reset.
-> 
-> FQTSS feature is supported by i210 controller only.
-> 
-> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/e1000_defines.h |  23 ++
->  drivers/net/ethernet/intel/igb/e1000_regs.h    |   8 +
->  drivers/net/ethernet/intel/igb/igb.h           |   6 +
->  drivers/net/ethernet/intel/igb/igb_main.c      | 347
-> +++++++++++++++++++++++++
->  4 files changed, 384 insertions(+)
+On Tue, Oct 17, 2017 at 10:37 PM, Nambiar, Amritha
+<amritha.nambiar@intel.com> wrote:
+> On 10/17/2017 10:33 AM, Alexander Duyck wrote:
+>> On Tue, Oct 17, 2017 at 8:49 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+>>> The new bandwidth calculation caused a link error on 32-bit
+>>> architectures, like
+>>>
+>>> ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/i40e/i40e.ko] undefined!
+>>>
+>>> The problem is the max_tx_rate calculation that uses 64-bit integers.
+>>> This is not really necessary since the numbers are in MBit/s so
+>>> they won't be higher than 40000 for the highest support rate, and
+>>> are guaranteed to not exceed 2^32 in future generations either.
+>>>
+>>> Another patch from Alan Brady fixed the link error by adding
+>>> many calls to do_div(), which makes the code less efficent and
+>>> less readable than necessary.
+>>>
+>>> This changes the representation to 'u32' when dealing with MBit/s
+>>> and uses div_u64() to convert from u64 numbers in byte/s, reverting
+>>> parts of Alan's earlier fix that have become obsolete now.
+>>>
+>
+> This patch breaks the functionality while converting the rates in
+> bytes/s provided by tc-layer into the Mbit/s in the driver.
+> I40E_BW_MBPS_DIVISOR defined in Alan's patch should be used for the
+> conversion, and not I40E_BW_CREDIT_DIVISOR which does the incorrect
+> math. I40E_BW_CREDIT_DIVISOR is in place because the device uses credit
+> rates in values of 50Mbps.
 
-From a regression standpoint:
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Can we get the patch that was applied to the tree pulled? The patch
+itself contained some bugs as Amritha had pointed out, but it looks
+like there was some sort of merge conflict or something and now I
+cannot get the tree to build without having to revert the patch since
+somehow the code around i40e_rebuild_channels changed and is now
+throwing errors because "credits" wasn't replaced and is still
+accessed in the dev_dbg command.
+
+- Alex
