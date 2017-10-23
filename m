@@ -1,56 +1,45 @@
-From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-Date: Mon, 23 Oct 2017 10:18:43 -0700
-Subject: [Intel-wired-lan] [RFC net-next 0/5] TSN: Add qdisc-based
- config interfaces for traffic shapers
-In-Reply-To: <20171019203949.pyv44i5sy6lnuavh@localhost>
-References: <20170901012625.14838-1-vinicius.gomes@intel.com>
- <20170918080214.yrejz67wwnp2pjzf@localhost> <87k20vip3f.fsf@intel.com>
- <20170919052244.77umdxuze53t6j22@localhost> <87wp4ufchl.fsf@intel.com>
- <20170920052558.h6c4lkqmzk2h2pdq@localhost>
- <62f3eae4-bf6a-1475-936f-5011c9ff381e@intel.com>
- <20171019203949.pyv44i5sy6lnuavh@localhost>
-Message-ID: <df0609c3-d7d9-c592-47cf-de53343ddc6a@intel.com>
+From: Paul Greenwalt <paul.greenwalt@intel.com>
+Date: Mon, 23 Oct 2017 11:21:09 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbe: add bounds check for debugfs
+	register access
+Message-ID: <1508772069-4448-1-git-send-email-paul.greenwalt@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+Add bounds check for debugfs read and write register access.
 
-On 10/19/2017 01:39 PM, Richard Cochran wrote:
-> On Wed, Oct 18, 2017 at 03:37:35PM -0700, Jesus Sanchez-Palencia wrote:
->> I also did some tests with when you don't set valid launch times, but here using
->> your idea from above, so with the driver calculating a valid launch time (i.e.
->> current NIC time + X ns, varying X across tests) for packets that didn't have it
->> set by the user, and I wasn't too happy with its reliability. It could
->> definitely be improved, but it has left me wondering: instead, what about
->> documenting that if you enable TXTIME, then you *must* provide a valid Launch
->> time for all packets on traffic classes that are affected?
-> 
-> If txtime is enabled, then CBS is pointless because the txtime already
-> specifies the bandwidth implicitly.
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
+index 5e2c1e3..4fcd980 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
+@@ -103,7 +103,8 @@ static ssize_t ixgbe_dbg_reg_ops_write(struct file *filp,
+ 		u32 reg, value;
+ 		int cnt;
+ 		cnt = sscanf(&ixgbe_dbg_reg_ops_buf[5], "%x %x", &reg, &value);
+-		if (cnt == 2) {
++		/* check format and bounds check register access */
++		if (cnt == 2 && reg <= IXGBE_HFDR) {
+ 			IXGBE_WRITE_REG(&adapter->hw, reg, value);
+ 			value = IXGBE_READ_REG(&adapter->hw, reg);
+ 			e_dev_info("write: 0x%08x = 0x%08x\n", reg, value);
+@@ -114,7 +115,8 @@ static ssize_t ixgbe_dbg_reg_ops_write(struct file *filp,
+ 		u32 reg, value;
+ 		int cnt;
+ 		cnt = sscanf(&ixgbe_dbg_reg_ops_buf[4], "%x", &reg);
+-		if (cnt == 1) {
++		/* check format and bounds check register access */
++		if (cnt == 1 && reg <= IXGBE_HFDR) {
+ 			value = IXGBE_READ_REG(&adapter->hw, reg);
+ 			e_dev_info("read 0x%08x = 0x%08x\n", reg, value);
+ 		} else {
+-- 
+2.7.4
 
-Assuming there is no "interfering" traffic on that traffic class, yes.
-Otherwise, CBS could be configured just to avoid that outbound traffic ever goes
-beyond the reserved bandwidth.
-
-
-> 
-> The problem is when one program uses txtime and another uses CBS, then
-> the CBS user will experience really wrong performance.
-
-
-Good point. We'll need to adjust the launch time for controllers that behave
-like the i210 then, imo.
-
-
-Thanks,
-Jesus
-
-
-> 
-> Thanks,
-> Richard
-> 
