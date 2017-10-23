@@ -1,33 +1,63 @@
 From: Paul Greenwalt <paul.greenwalt@intel.com>
-Date: Mon, 23 Oct 2017 11:21:51 -0400
-Subject: [Intel-wired-lan] [PATCH] ixgbe: add array bounds check
-Message-ID: <1508772111-4527-1-git-send-email-paul.greenwalt@intel.com>
+Date: Mon, 23 Oct 2017 11:22:49 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbe: advertise highest capable link
+	speed
+Message-ID: <1508772169-4606-1-git-send-email-paul.greenwalt@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add bounds check for index fcoe_i of rx_ring array.
+On module insert advertise highest capable link speed. If module is
+capable of 10G, then advertise 10G. If autoneg is enabled, then
+advertise modules capable link speeds. If module is capable of
+single-rate 1G, then advertise 1G.
 
 Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-index a23c2b5..5772fe2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-@@ -698,6 +698,8 @@ void ixgbe_configure_fcoe(struct ixgbe_adapter *adapter)
- 		}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 901ab12..2bd132c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -7648,7 +7648,8 @@ static void ixgbe_sfp_detection_subtask(struct ixgbe_adapter *adapter)
+ static void ixgbe_sfp_link_config_subtask(struct ixgbe_adapter *adapter)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-	u32 speed;
++	u32 cap_speed;
++	u32 speed = 0;
+ 	bool autoneg = false;
  
- 		fcoe_i = fcoe->offset + (i % fcoe->indices);
-+		if (fcoe_i >= MAX_RX_QUEUES)
-+			fcoe_i = MAX_RX_QUEUES - 1;
- 		fcoe_i &= IXGBE_FCRETA_ENTRY_MASK;
- 		fcoe_q = adapter->rx_ring[fcoe_i]->reg_idx;
- 		fcoe_q |= fcoe_q_h;
+ 	if (!(adapter->flags & IXGBE_FLAG_NEED_LINK_CONFIG))
+@@ -7660,15 +7661,16 @@ static void ixgbe_sfp_link_config_subtask(struct ixgbe_adapter *adapter)
+ 
+ 	adapter->flags &= ~IXGBE_FLAG_NEED_LINK_CONFIG;
+ 
+-	speed = hw->phy.autoneg_advertised;
+-	if ((!speed) && (hw->mac.ops.get_link_capabilities)) {
+-		hw->mac.ops.get_link_capabilities(hw, &speed, &autoneg);
++	hw->mac.ops.get_link_capabilities(hw, &cap_speed, &autoneg);
+ 
+-		/* setup the highest link when no autoneg */
+-		if (!autoneg) {
+-			if (speed & IXGBE_LINK_SPEED_10GB_FULL)
+-				speed = IXGBE_LINK_SPEED_10GB_FULL;
+-		}
++	/* advertise highest capable link speed */
++	if (cap_speed & IXGBE_LINK_SPEED_10GB_FULL) {
++		if (!autoneg)
++			speed = IXGBE_LINK_SPEED_10GB_FULL;
++		else
++			speed = cap_speed;
++	} else if (cap_speed == IXGBE_LINK_SPEED_1GB_FULL) {
++		speed = IXGBE_LINK_SPEED_1GB_FULL;
+ 	}
+ 
+ 	if (hw->mac.ops.setup_link)
 -- 
 2.7.4
 
