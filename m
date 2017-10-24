@@ -1,61 +1,92 @@
-From: Paul Greenwalt <paul.greenwalt@intel.com>
-Date: Tue, 24 Oct 2017 08:31:07 -0400
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: advertise highest capable link
-	speed
-Message-ID: <1508848267-35221-1-git-send-email-paul.greenwalt@intel.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Tue, 24 Oct 2017 19:48:17 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: add array bounds check
+In-Reply-To: <CAKgT0UdMAJC7UTDfeyEcCsrhKd3_YotCMfn8XkbOXiTONejTcQ@mail.gmail.com>
+References: <1508772111-4527-1-git-send-email-paul.greenwalt@intel.com>
+ <CAKgT0UczobrvbRFoRDxa+B-PW733uJ=kJfd0YoK83=cC9RAXEA@mail.gmail.com>
+ <87618083B2453E4A8714035B62D67992B40BD9E1@FMSMSX105.amr.corp.intel.com>
+ <CAKgT0UdMAJC7UTDfeyEcCsrhKd3_YotCMfn8XkbOXiTONejTcQ@mail.gmail.com>
+Message-ID: <87618083B2453E4A8714035B62D67992B40BDA94@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On module insert advertise highest capable link speed. If module is
-capable of 10G, then advertise 10G, else advertise modules capable
-link speeds.
+>-----Original Message-----
+>From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+>Behalf Of Alexander Duyck
+>Sent: Tuesday, October 24, 2017 11:49 AM
+>To: Tantilov, Emil S <emil.s.tantilov@intel.com>
+>Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+>Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: add array bounds check
+>
+>On Tue, Oct 24, 2017 at 10:44 AM, Tantilov, Emil S
+><emil.s.tantilov@intel.com> wrote:
+>>>-----Original Message-----
+>>>From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+>>>Behalf Of Alexander Duyck
+>>>Sent: Tuesday, October 24, 2017 9:20 AM
+>>>To: Greenwalt, Paul <paul.greenwalt@intel.com>
+>>>Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+>>>Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: add array bounds check
+>>>
+>>>On Mon, Oct 23, 2017 at 8:21 AM, Paul Greenwalt
+>>><paul.greenwalt@intel.com> wrote:
+>>>> Add bounds check for index fcoe_i of rx_ring array.
+>>>>
+>>>> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+>>>> ---
+>>>>  drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 2 ++
+>>>>  1 file changed, 2 insertions(+)
+>>>>
+>>>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+>>>b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+>>>> index a23c2b5..5772fe2 100644
+>>>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+>>>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+>>>> @@ -698,6 +698,8 @@ void ixgbe_configure_fcoe(struct ixgbe_adapter
+>>>*adapter)
+>>>>                 }
+>>>>
+>>>>                 fcoe_i = fcoe->offset + (i % fcoe->indices);
+>>>> +               if (fcoe_i >= MAX_RX_QUEUES)
+>>>> +                       fcoe_i = MAX_RX_QUEUES - 1;
+>>>
+>>>Instead of using MAX_RX_QUEUES why use fcoe->limit? If I am not
+>>>mistake the upper limit is either 8 or 32 for the FCoE redirection
+>>>table anyway so odds are you can't even use 64 queues if you wanted
+>>>to. From what I can tell the only advantage of the approach you are
+>>>using now is that you don't potentially zero out the value when it
+>>>gets hit with the mask below.
+>>>
+>>>>                 fcoe_i &= IXGBE_FCRETA_ENTRY_MASK;
+>>
+>> Actually the check is added to protect from accessing rx_ring[fcoe_i]
+>beyond
+>> it's boundaries. The above line was supposed to be removed. This is
+>because
+>> IXGBE_FCRETA_ENTRY_MASK = 0x7f, and static checkers report possible
+>out of
+>> bounds issue.
+>>
+>> Thanks,
+>> Emil
+>
+>So is this actually fixing a bug, or just making some static analysis
+>tool happy? If it is about a static analysis tool I would stay just
+>identify it as a false hit since this value should be configured and
+>limited by the code in ixgbe_lib.c that is configuring the offset and
+>indices.
+It's a bit of both in my opinion since the line limiting the value of fcoe_i:
 
-v2 - Simplify logic based on feedback.
+	fcoe_i &= IXGBE_FCRETA_ENTRY_MASK;
 
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+Is clearly wrong since IXGBE_FCRETA_ENTRY_MASK exceeds MAX_RX_QUEUES.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 1e1aee1..a33bb7e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7648,6 +7648,7 @@ static void ixgbe_sfp_detection_subtask(struct ixgbe_adapter *adapter)
- static void ixgbe_sfp_link_config_subtask(struct ixgbe_adapter *adapter)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
-+	u32 cap_speed;
- 	u32 speed;
- 	bool autoneg = false;
- 
-@@ -7660,16 +7661,14 @@ static void ixgbe_sfp_link_config_subtask(struct ixgbe_adapter *adapter)
- 
- 	adapter->flags &= ~IXGBE_FLAG_NEED_LINK_CONFIG;
- 
--	speed = hw->phy.autoneg_advertised;
--	if ((!speed) && (hw->mac.ops.get_link_capabilities)) {
--		hw->mac.ops.get_link_capabilities(hw, &speed, &autoneg);
-+	hw->mac.ops.get_link_capabilities(hw, &cap_speed, &autoneg);
- 
--		/* setup the highest link when no autoneg */
--		if (!autoneg) {
--			if (speed & IXGBE_LINK_SPEED_10GB_FULL)
--				speed = IXGBE_LINK_SPEED_10GB_FULL;
--		}
--	}
-+	/* advertise highest capable link speed */
-+	if (!autoneg && (cap_speed & IXGBE_LINK_SPEED_10GB_FULL))
-+		speed = IXGBE_LINK_SPEED_10GB_FULL;
-+	else
-+		speed = cap_speed & (IXGBE_LINK_SPEED_10GB_FULL |
-+			IXGBE_LINK_SPEED_1GB_FULL);
- 
- 	if (hw->mac.ops.setup_link)
- 		hw->mac.ops.setup_link(hw, speed, true);
--- 
-2.7.4
+Why even do this if we are sure that the limits are enforced in some other part
+of the code?
+
+Thanks,
+Emil
 
