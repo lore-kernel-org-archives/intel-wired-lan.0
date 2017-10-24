@@ -1,75 +1,45 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 24 Oct 2017 09:12:17 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: advertise highest capable link
-	speed
-In-Reply-To: <1508772169-4606-1-git-send-email-paul.greenwalt@intel.com>
-References: <1508772169-4606-1-git-send-email-paul.greenwalt@intel.com>
-Message-ID: <CAKgT0UesaJnFue4J7aiyzk45NCd9KxTuQ+WCZhmCR=Lbqn_65Q@mail.gmail.com>
+Date: Tue, 24 Oct 2017 09:19:58 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: add array bounds check
+In-Reply-To: <1508772111-4527-1-git-send-email-paul.greenwalt@intel.com>
+References: <1508772111-4527-1-git-send-email-paul.greenwalt@intel.com>
+Message-ID: <CAKgT0UczobrvbRFoRDxa+B-PW733uJ=kJfd0YoK83=cC9RAXEA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 23, 2017 at 8:22 AM, Paul Greenwalt
+On Mon, Oct 23, 2017 at 8:21 AM, Paul Greenwalt
 <paul.greenwalt@intel.com> wrote:
-> On module insert advertise highest capable link speed. If module is
-> capable of 10G, then advertise 10G. If autoneg is enabled, then
-> advertise modules capable link speeds. If module is capable of
-> single-rate 1G, then advertise 1G.
+> Add bounds check for index fcoe_i of rx_ring array.
 >
 > Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 +++++++++++---------
->  1 file changed, 11 insertions(+), 9 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 2 ++
+>  1 file changed, 2 insertions(+)
 >
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 901ab12..2bd132c 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -7648,7 +7648,8 @@ static void ixgbe_sfp_detection_subtask(struct ixgbe_adapter *adapter)
->  static void ixgbe_sfp_link_config_subtask(struct ixgbe_adapter *adapter)
->  {
->         struct ixgbe_hw *hw = &adapter->hw;
-> -       u32 speed;
-> +       u32 cap_speed;
-> +       u32 speed = 0;
->         bool autoneg = false;
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+> index a23c2b5..5772fe2 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+> @@ -698,6 +698,8 @@ void ixgbe_configure_fcoe(struct ixgbe_adapter *adapter)
+>                 }
 >
->         if (!(adapter->flags & IXGBE_FLAG_NEED_LINK_CONFIG))
-> @@ -7660,15 +7661,16 @@ static void ixgbe_sfp_link_config_subtask(struct ixgbe_adapter *adapter)
->
->         adapter->flags &= ~IXGBE_FLAG_NEED_LINK_CONFIG;
->
-> -       speed = hw->phy.autoneg_advertised;
-> -       if ((!speed) && (hw->mac.ops.get_link_capabilities)) {
-> -               hw->mac.ops.get_link_capabilities(hw, &speed, &autoneg);
-> +       hw->mac.ops.get_link_capabilities(hw, &cap_speed, &autoneg);
->
-> -               /* setup the highest link when no autoneg */
-> -               if (!autoneg) {
-> -                       if (speed & IXGBE_LINK_SPEED_10GB_FULL)
-> -                               speed = IXGBE_LINK_SPEED_10GB_FULL;
-> -               }
-> +       /* advertise highest capable link speed */
-> +       if (cap_speed & IXGBE_LINK_SPEED_10GB_FULL) {
-> +               if (!autoneg)
-> +                       speed = IXGBE_LINK_SPEED_10GB_FULL;
-> +               else
-> +                       speed = cap_speed;
-> +       } else if (cap_speed == IXGBE_LINK_SPEED_1GB_FULL) {
-> +               speed = IXGBE_LINK_SPEED_1GB_FULL;
->         }
->
+>                 fcoe_i = fcoe->offset + (i % fcoe->indices);
+> +               if (fcoe_i >= MAX_RX_QUEUES)
+> +                       fcoe_i = MAX_RX_QUEUES - 1;
 
-It seems like you could simplify this as follows:
-if (!autoneg && (cap_speed & IXGBE_LINK_SPEED_10GB_FULL))
-         speed = IXGBE_LINK_SPEED_10GB_FULL;
-else
-         speed = cap_speed & (IXGBE_LINK_SPEED_10GB_FULL |
-IXGBE_LINK_SPEED_1GB_FULL);
+Instead of using MAX_RX_QUEUES why use fcoe->limit? If I am not
+mistake the upper limit is either 8 or 32 for the FCoE redirection
+table anyway so odds are you can't even use 64 queues if you wanted
+to. From what I can tell the only advantage of the approach you are
+using now is that you don't potentially zero out the value when it
+gets hit with the mask below.
 
->         if (hw->mac.ops.setup_link)
+>                 fcoe_i &= IXGBE_FCRETA_ENTRY_MASK;
+>                 fcoe_q = adapter->rx_ring[fcoe_i]->reg_idx;
+>                 fcoe_q |= fcoe_q_h;
 > --
 > 2.7.4
 >
