@@ -1,45 +1,60 @@
-From: Philip Prindeville <philipp_subx@redfish-solutions.com>
-Date: Tue, 24 Oct 2017 11:39:10 -0600
-Subject: [Intel-wired-lan] [5/5] e1000e: Avoid receiver overrun
-	interrupt bursts
-In-Reply-To: <20171024172027.onfcusdcicxqnfjp@csclub.uwaterloo.ca>
-References: <20170721183627.13373-5-bpoirier@suse.com>
- <DDD41C67-CDF2-4443-9F49-0DC5489D9243@redfish-solutions.com>
- <20170919194102.h2nu72evbqhpu765@f1.synalogic.ca>
- <20171024172027.onfcusdcicxqnfjp@csclub.uwaterloo.ca>
-Message-ID: <238D36BF-473B-4F9A-BDCF-97544F2FDF3F@redfish-solutions.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Tue, 24 Oct 2017 17:44:06 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: add array bounds check
+In-Reply-To: <CAKgT0UczobrvbRFoRDxa+B-PW733uJ=kJfd0YoK83=cC9RAXEA@mail.gmail.com>
+References: <1508772111-4527-1-git-send-email-paul.greenwalt@intel.com>
+ <CAKgT0UczobrvbRFoRDxa+B-PW733uJ=kJfd0YoK83=cC9RAXEA@mail.gmail.com>
+Message-ID: <87618083B2453E4A8714035B62D67992B40BD9E1@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+>-----Original Message-----
+>From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+>Behalf Of Alexander Duyck
+>Sent: Tuesday, October 24, 2017 9:20 AM
+>To: Greenwalt, Paul <paul.greenwalt@intel.com>
+>Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+>Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: add array bounds check
+>
+>On Mon, Oct 23, 2017 at 8:21 AM, Paul Greenwalt
+><paul.greenwalt@intel.com> wrote:
+>> Add bounds check for index fcoe_i of rx_ring array.
+>>
+>> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+>> ---
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+>b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+>> index a23c2b5..5772fe2 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+>> @@ -698,6 +698,8 @@ void ixgbe_configure_fcoe(struct ixgbe_adapter
+>*adapter)
+>>                 }
+>>
+>>                 fcoe_i = fcoe->offset + (i % fcoe->indices);
+>> +               if (fcoe_i >= MAX_RX_QUEUES)
+>> +                       fcoe_i = MAX_RX_QUEUES - 1;
+>
+>Instead of using MAX_RX_QUEUES why use fcoe->limit? If I am not
+>mistake the upper limit is either 8 or 32 for the FCoE redirection
+>table anyway so odds are you can't even use 64 queues if you wanted
+>to. From what I can tell the only advantage of the approach you are
+>using now is that you don't potentially zero out the value when it
+>gets hit with the mask below.
+>
+>>                 fcoe_i &= IXGBE_FCRETA_ENTRY_MASK;
 
-> On Oct 24, 2017, at 11:20 AM, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
-> 
-> On Tue, Sep 19, 2017 at 09:41:02PM +0200, Benjamin Poirier wrote:
->> On 2017/09/19 12:38, Philip Prindeville wrote:
->>> Hi.
->>> 
->>> We?ve been running this patchset (all 5) for about as long as they?ve been under review? about 2 months.  And in a burn-in lab with heavy traffic.
->>> 
->>> We?ve not seen a single link-flap in hundreds of ours of saturated traffic.
->>> 
->>> Would love to see some resolution soon on this as we don?t want to ship a release with unsanctioned patches.
->>> 
->>> Is there an estimate on when that might be?
->> 
->> The patches have been added to Jeff Kirsher's next-queue tree. I guess
->> they will be submitted for v4.15 which might be released in early
->> 2018...
->> http://phb-crystal-ball.org/
-> 
-> And then they will be submitted to linux-stable so this long standing
-> regression can be fixed, right?
-> 
+Actually the check is added to protect from accessing rx_ring[fcoe_i] beyond 
+it's boundaries. The above line was supposed to be removed. This is because
+IXGBE_FCRETA_ENTRY_MASK = 0x7f, and static checkers report possible out of
+bounds issue.
 
-
-Let?s hope!
-
--Philip
+Thanks,
+Emil
 
