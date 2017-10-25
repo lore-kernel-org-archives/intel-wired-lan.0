@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 25 Oct 2017 19:42:50 +0000
-Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] ixgbe: Fix Tx
-	map	failure path
-In-Reply-To: <20171019210700.14788.7976.stgit@ahduyck-green-test.jf.intel.com>
-References: <20171019210700.14788.7976.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAD60D@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 25 Oct 2017 19:44:00 +0000
+Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] i40e: Fix
+ incorrect use of tx_itr_setting when checking for Rx ITR setup
+In-Reply-To: <20171020205906.24055.27032.stgit@localhost.localdomain>
+References: <20171020205906.24055.27032.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAD622@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,28 +14,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Alexander Duyck
-> Sent: Thursday, October 19, 2017 2:07 PM
-> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] ixgbe: Fix Tx map
-> failure path
+> Sent: Friday, October 20, 2017 1:59 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] i40e: Fix incorrect use
+> of tx_itr_setting when checking for Rx ITR setup
 > 
-> This patch is a partial revert of "ixgbe: Don't bother clearing buffer memory
-> for descriptor rings". Specifically I messed up the exception handling path a
-> bit and this resulted in us incorrectly adding the count back in when we didn't
-> need to.
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> In order to make this simpler I am reverting most of the exception handling
-> path change and instead just replacing the bit that was handled by the
-> unmap_and_free call.
+> It looks like there was either a copy/paste error or just a typo that resulted in
+> the Tx ITR setting being used to determine if we were using adaptive Rx
+> interrupt moderation or not.
 > 
-> Fixes: ffed21bcee7a ("ixgbe: Don't bother clearing buffer memory for
-> descriptor rings")
+> This patch fixes the typo.
+> 
+> Fixes: 65e87c0398f5 ("i40evf: support queue-specific settings for interrupt
+> moderation")
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   18 ++++++------------
->  1 file changed, 6 insertions(+), 12 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
