@@ -1,53 +1,38 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 25 Oct 2017 08:20:19 -0700
-Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: fix buffer overrun
- while the I219 is processing DMA transactions
-In-Reply-To: <20171025122318.5692-1-sasha.neftin@intel.com>
-References: <20171025122318.5692-1-sasha.neftin@intel.com>
-Message-ID: <1508944819.12406.2.camel@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 25 Oct 2017 19:42:09 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: Fix TX map failure path
+In-Reply-To: <20171019190736.2770-1-jean-philippe.brucker@arm.com>
+References: <20171019190736.2770-1-jean-philippe.brucker@arm.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAD5FD@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2017-10-25 at 15:23 +0300, Sasha Neftin wrote:
-> Description: Intel? 100/200 Series Chipset platforms
-> reduced the round-trip latency for the LAN Controller
-> DMA accesses, causing in some high performance cases a buffer
-> overrun while the I219 LAN Connected Device is processing
-> the DMA transactions. I219LM and I219V devices can fall into
-> unrecovered Tx hang under very stressfully UDP traffic and multiple
-> reconnection of Ethernet cable. This Tx hang of the LAN Controller
-> is only recovered if the system is rebooted. Slightly slow down
-> DMA access by reducing the number of outstanding requests.
-> This workaround could have an impact on TCP traffic performance
-> on the platform. Disabling TSO eliminates performance loss for TCP
-> traffic without a noticeable impact on CPU performance.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jean-Philippe Brucker
+> Sent: Thursday, October 19, 2017 12:08 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] igb: Fix TX map failure path
 > 
-> Please, refer to I218/I219 specification update:
-> https://www.intel.com/content/www/us/en/embedded/products/networking/
-> ethernet-connection-i218-family-documentation.html
+> When the driver cannot map a TX buffer, instead of rolling back gracefully
+> and retrying later, we currently get a panic:
 > 
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-> Reviewed-by: Alexander H Duyck <alexander.h.duyck@intel.com>
-> Reviewed-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
-> Reviewed-by: Raanan Avargil <raanan.avargil@intel.com>
+> [  159.885994] igb 0000:00:00.0: TX DMA map failed [  159.886588] Unable to
+> handle kernel paging request at virtual address ffff00000a08c7a8
+>                ...
+> [  159.897031] PC is at igb_xmit_frame_ring+0x9c8/0xcb8
+> 
+> Fix the erroneous test that leads to this situation.
+> 
+> Signed-off-by: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/ich8lan.h |  3 ++-
->  drivers/net/ethernet/intel/e1000e/netdev.c  | 11 ++++++++---
->  2 files changed, 10 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Sasha, you generated this patch against an old tree and many of these
-changes are already upstream in Dave's net-next tree, so this patch
-does not apply cleanly.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Please rebase your patch against my latest next-queue tree, dev-queue
-branch and submit a v2 please.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171025/2b3cdd73/attachment.asc>
+
