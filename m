@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 25 Oct 2017 19:44:00 +0000
-Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] i40e: Fix
- incorrect use of tx_itr_setting when checking for Rx ITR setup
-In-Reply-To: <20171020205906.24055.27032.stgit@localhost.localdomain>
-References: <20171020205906.24055.27032.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAD622@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 25 Oct 2017 20:39:01 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH] i40e/i40evf:
+ Revert "i40e/i40evf: bump tail only in multiples of 8"
+In-Reply-To: <20171022005030.19175.91947.stgit@localhost.localdomain>
+References: <20171022005030.19175.91947.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAD639@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,24 +14,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Alexander Duyck
-> Sent: Friday, October 20, 2017 1:59 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] i40e: Fix incorrect use
-> of tx_itr_setting when checking for Rx ITR setup
+> Sent: Saturday, October 21, 2017 5:52 PM
+> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
+> akp at cohaesio.com; pstaszewski at itcare.pl
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH] i40e/i40evf: Revert
+> "i40e/i40evf: bump tail only in multiples of 8"
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> It looks like there was either a copy/paste error or just a typo that resulted in
-> the Tx ITR setting being used to determine if we were using adaptive Rx
-> interrupt moderation or not.
+> This reverts commit 11f29003d6376fb123b7c3779dba49bb56fb0815.
 > 
-> This patch fixes the typo.
+> I am reverting this as I am fairly certain this can result in a memory leak when
+> combined with the current page recycling scheme. Specifically we end up
+> attempting to allocate fewer buffers than we recycled and this results in us
+> rewinding the next to alloc pointer which leads to leaks when we overwrite
+> the rx_buffer_info when processing the next frame.
 > 
-> Fixes: 65e87c0398f5 ("i40evf: support queue-specific settings for interrupt
-> moderation")
+> Fixes: 11f29003d637 ("i40e/i40evf: bump tail only in multiples of 8")
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   |    9 ---------
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |    9 ---------
+>  2 files changed, 18 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
