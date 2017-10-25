@@ -1,163 +1,83 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 25 Oct 2017 08:39:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- c75ac65d7af7fea53eac38e60a432b92b6a236b4
-Message-ID: <59efdd54.IA3qfQmcyXgzKtf3%fengguang.wu@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed, 25 Oct 2017 15:23:18 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: fix buffer overrun while
+	the I219 is processing DMA transactions
+Message-ID: <20171025122318.5692-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: c75ac65d7af7fea53eac38e60a432b92b6a236b4  ixgbe: advertise highest capable link speed
+Description: Intel? 100/200 Series Chipset platforms
+reduced the round-trip latency for the LAN Controller
+DMA accesses, causing in some high performance cases a buffer
+overrun while the I219 LAN Connected Device is processing
+the DMA transactions. I219LM and I219V devices can fall into
+unrecovered Tx hang under very stressfully UDP traffic and multiple
+reconnection of Ethernet cable. This Tx hang of the LAN Controller
+is only recovered if the system is rebooted. Slightly slow down
+DMA access by reducing the number of outstanding requests.
+This workaround could have an impact on TCP traffic performance
+on the platform. Disabling TSO eliminates performance loss for TCP
+traffic without a noticeable impact on CPU performance.
 
-elapsed time: 55m
+Please, refer to I218/I219 specification update:
+https://www.intel.com/content/www/us/en/embedded/products/networking/
+ethernet-connection-i218-family-documentation.html
 
-configs tested: 139
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Reviewed-by: Alexander H Duyck <alexander.h.duyck@intel.com>
+Reviewed-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Reviewed-by: Raanan Avargil <raanan.avargil@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/ich8lan.h |  3 ++-
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 11 ++++++++---
+ 2 files changed, 10 insertions(+), 4 deletions(-)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+index 67163ca898ba..e23d8da9b15b 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+@@ -113,7 +113,8 @@
+ #define NVM_SIZE_MULTIPLIER 4096	/*multiplier for NVMS field */
+ #define E1000_FLASH_BASE_ADDR 0xE000	/*offset of NVM access regs */
+ #define E1000_CTRL_EXT_NVMVS 0x3	/*NVM valid sector */
+-#define E1000_TARC0_CB_MULTIQ_3_REQ	(1 << 28 | 1 << 29)
++#define E1000_TARC0_CB_MULTIQ_3_REQ     0x30000000
++#define E1000_TARC0_CB_MULTIQ_2_REQ     0x20000000
+ #define PCIE_ICH8_SNOOP_ALL	PCIE_NO_SNOOP_ALL
+ 
+ #define E1000_ICH_RAR_ENTRIES	7
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 327dfe5bedc0..d4179ec1344c 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3004,8 +3004,8 @@ static void e1000_configure_tx(struct e1000_adapter *adapter)
+ 
+ 	hw->mac.ops.config_collision_dist(hw);
+ 
+-	/* SPT and CNP Si errata workaround to avoid data corruption */
+-	if (hw->mac.type >= e1000_pch_spt) {
++	/* SPT and KBL Si errata workaround to avoid data corruption */
++	if (hw->mac.type == e1000_pch_spt) {
+ 		u32 reg_val;
+ 
+ 		reg_val = er32(IOSFPC);
+@@ -3013,7 +3013,12 @@ static void e1000_configure_tx(struct e1000_adapter *adapter)
+ 		ew32(IOSFPC, reg_val);
+ 
+ 		reg_val = er32(TARC(0));
+-		reg_val |= E1000_TARC0_CB_MULTIQ_3_REQ;
++		/* SPT and KBL Si errata workaround to avoid Tx hang.
++		 * Dropping the number of outstanding requests from
++		 * the in favor of 2 in order to avoid a buffer overrun.
++		 */
++		reg_val &= ~E1000_TARC0_CB_MULTIQ_3_REQ;
++		reg_val |= E1000_TARC0_CB_MULTIQ_2_REQ;
+ 		ew32(TARC(0), reg_val);
+ 	}
+ }
+-- 
+2.11.0
 
-x86_64                 randconfig-a0-10250759
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-cris                       artpec_3_defconfig
-mips                       bmips_be_defconfig
-mips                        generic_defconfig
-arm                             ezx_defconfig
-arm                           tegra_defconfig
-powerpc               mpc834x_itxgp_defconfig
-i386                     randconfig-n0-201743
-arm                           sama5_defconfig
-m32r                        oaks32r_defconfig
-parisc                      default_defconfig
-m68k                        m5307c3_defconfig
-powerpc                      ppc44x_defconfig
-sh                           se7705_defconfig
-x86_64                 randconfig-g0-10250806
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x018-201743
-x86_64                 randconfig-x011-201743
-x86_64                 randconfig-x012-201743
-x86_64                 randconfig-x013-201743
-x86_64                 randconfig-x019-201743
-x86_64                 randconfig-x017-201743
-x86_64                 randconfig-x014-201743
-x86_64                 randconfig-x015-201743
-x86_64                 randconfig-x016-201743
-x86_64                 randconfig-x010-201743
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-a0-201743
-i386                     randconfig-a1-201743
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                            allyesconfig
-arm                        clps711x_defconfig
-s390                       zfcpdump_defconfig
-sh                           se7780_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201743
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                      integrator_defconfig
-arm                        shmobile_defconfig
-sh                         ecovec24_defconfig
-x86_64                 randconfig-u0-10250745
-i386                               tinyconfig
-i386                   randconfig-x015-201743
-i386                   randconfig-x014-201743
-i386                   randconfig-x013-201743
-i386                   randconfig-x019-201743
-i386                   randconfig-x011-201743
-i386                   randconfig-x018-201743
-i386                   randconfig-x010-201743
-i386                   randconfig-x012-201743
-i386                   randconfig-x017-201743
-i386                   randconfig-x016-201743
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-arm                           acs5k_defconfig
-powerpc                  mpc866_ads_defconfig
-sh                        sh7785lcr_defconfig
-i386                   randconfig-x074-201743
-i386                   randconfig-x077-201743
-i386                   randconfig-x076-201743
-i386                   randconfig-x071-201743
-i386                   randconfig-x073-201743
-i386                   randconfig-x079-201743
-i386                   randconfig-x078-201743
-i386                   randconfig-x072-201743
-i386                   randconfig-x070-201743
-i386                   randconfig-x075-201743
-arm                           stm32_defconfig
-mips                   sb1250_swarm_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x001-201743
-i386                   randconfig-x008-201743
-i386                   randconfig-x002-201743
-i386                   randconfig-x003-201743
-i386                   randconfig-x004-201743
-i386                   randconfig-x006-201743
-i386                   randconfig-x007-201743
-i386                   randconfig-x009-201743
-i386                   randconfig-x005-201743
-i386                   randconfig-x000-201743
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x001-201743
-x86_64                 randconfig-x000-201743
-x86_64                 randconfig-x004-201743
-x86_64                 randconfig-x008-201743
-x86_64                 randconfig-x007-201743
-x86_64                 randconfig-x006-201743
-x86_64                 randconfig-x005-201743
-x86_64                 randconfig-x009-201743
-x86_64                 randconfig-x003-201743
-x86_64                 randconfig-x002-201743
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-x0-10250802
-
-Thanks,
-Fengguang
