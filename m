@@ -1,166 +1,46 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 26 Oct 2017 05:06:26 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 4942130110c20e0a9cb516846f6a2565ba394b64
-Message-ID: <59f0fcd2.+7w3n/F7Ook0mWWU%fengguang.wu@intel.com>
+From: Pavlos Parissis <pavlos.parissis@gmail.com>
+Date: Wed, 25 Oct 2017 23:49:26 +0200
+Subject: [Intel-wired-lan] Instability of i40e driver on 4.9 kernel
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD697A3FFD1@ORSMSX114.amr.corp.intel.com>
+References: <92118fc4-8a20-f129-193b-9c8fdf81aa24@gmail.com>
+ <9B4A1B1917080E46B64F07F2989DADD697A3FFD1@ORSMSX114.amr.corp.intel.com>
+Message-ID: <f93f4088-ce28-181c-6812-c4bea8479c72@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 4942130110c20e0a9cb516846f6a2565ba394b64  ixgbe: advertise highest capable link speed
+On 21/10/2017 02:07 ??, Fujinaka, Todd wrote:
+> You picked a bunch of places to post this, and you really should've used a
+> different place: e1000-devel at lists.sourceforge.net
+> 
 
-elapsed time: 213m
+Just subscribed to that ML and mailed about it.
 
-configs tested: 142
+> Also, since you flagged the "communities" post as "answered", you're not likely
+> to get any follow-up. The Intel communities are also not monitored as much by
+> the wired networking people at Intel.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I don't see it as "answered" when I visit the page, maybe the fact I have replied
+with extra information is confusing something. Anyway, it isn't that important
+since the "communities" posts aren't monitored by Intel people, which makes sense
+as it is very time consuming to monitor mailing lists and web forums at the same time.
 
-i386                   randconfig-x015-201743
-i386                   randconfig-x014-201743
-i386                   randconfig-x013-201743
-i386                   randconfig-x019-201743
-i386                   randconfig-x011-201743
-i386                   randconfig-x018-201743
-i386                   randconfig-x010-201743
-i386                   randconfig-x012-201743
-i386                   randconfig-x017-201743
-i386                   randconfig-x016-201743
-i386                     randconfig-n0-201743
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x018-201743
-x86_64                 randconfig-x011-201743
-x86_64                 randconfig-x012-201743
-x86_64                 randconfig-x013-201743
-x86_64                 randconfig-x019-201743
-x86_64                 randconfig-x017-201743
-x86_64                 randconfig-x014-201743
-x86_64                 randconfig-x015-201743
-x86_64                 randconfig-x016-201743
-x86_64                 randconfig-x010-201743
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-i386                     randconfig-a0-201743
-i386                     randconfig-a1-201743
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                         cm_x300_defconfig
-arm                           corgi_defconfig
-arm                          nuc910_defconfig
-mips                        nlm_xlr_defconfig
-mips                       rbtx49xx_defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-s0-201743
-i386                     randconfig-s1-201743
-i386                               tinyconfig
-x86_64                   randconfig-i0-201743
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201743
-i386                     randconfig-i0-201743
-x86_64                           allmodconfig
-mips                           ip28_defconfig
-sh                          rsk7264_defconfig
-i386                   randconfig-x074-201743
-i386                   randconfig-x077-201743
-i386                   randconfig-x076-201743
-i386                   randconfig-x071-201743
-i386                   randconfig-x073-201743
-i386                   randconfig-x079-201743
-i386                   randconfig-x078-201743
-i386                   randconfig-x072-201743
-i386                   randconfig-x070-201743
-i386                   randconfig-x075-201743
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-x001-201743
-x86_64                 randconfig-x000-201743
-x86_64                 randconfig-x004-201743
-x86_64                 randconfig-x008-201743
-x86_64                 randconfig-x007-201743
-x86_64                 randconfig-x006-201743
-x86_64                 randconfig-x005-201743
-x86_64                 randconfig-x009-201743
-x86_64                 randconfig-x003-201743
-x86_64                 randconfig-x002-201743
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                                  kexec
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
+> 
+> Please let us know if you have any specific issues, and please provide exact
+> reproduction steps so we can investigate your issues, and please use
+> e1000-devel.
+
+I hope the information I provided in my mail to e1000-devel is enough.
 
 Thanks,
-Fengguang
+Pavlos
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171025/1ae4d80a/attachment-0001.asc>
