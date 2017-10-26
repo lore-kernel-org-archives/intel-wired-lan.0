@@ -1,193 +1,178 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 27 Oct 2017 03:01:38 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- cc340804f706cce6738672ed60f6ef2e3dbaac3e
-Message-ID: <59f23112.fopbcNq+RpqhlZeP%fengguang.wu@intel.com>
+From: Nambiar, Amritha <amritha.nambiar@intel.com>
+Date: Thu, 26 Oct 2017 14:10:41 -0700
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v4 3/6] i40e:
+ Cloud filter mode for set_switch_config command
+In-Reply-To: <13c912bb-065a-f732-18a1-f00918b0fafd@oracle.com>
+References: <150768099999.5320.1633617713417675266.stgit@anamdev.jf.intel.com>
+ <150768146806.5320.1212910477662310789.stgit@anamdev.jf.intel.com>
+ <13c912bb-065a-f732-18a1-f00918b0fafd@oracle.com>
+Message-ID: <3176678f-5e6b-daed-dfca-5e3cfb4b84ac@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: cc340804f706cce6738672ed60f6ef2e3dbaac3e  ixgbe: advertise highest capable link speed
+On 10/11/2017 4:30 PM, Shannon Nelson wrote:
+> On 10/10/2017 5:24 PM, Amritha Nambiar wrote:
+>> Add definitions for L4 filters and switch modes based on cloud filters
+>> modes and extend the set switch config command to include the
+>> additional cloud filter mode.
+>>
+>> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+>> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+>> ---
+>>   drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h |   30 ++++++++++++++++++++-
+>>   drivers/net/ethernet/intel/i40e/i40e_common.c     |    4 ++-
+>>   drivers/net/ethernet/intel/i40e/i40e_ethtool.c    |    2 +
+>>   drivers/net/ethernet/intel/i40e/i40e_main.c       |    2 +
+>>   drivers/net/ethernet/intel/i40e/i40e_prototype.h  |    2 +
+>>   drivers/net/ethernet/intel/i40e/i40e_type.h       |    9 ++++++
+>>   6 files changed, 44 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+>> index 6a5db1b..729976b 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+>> @@ -790,7 +790,35 @@ struct i40e_aqc_set_switch_config {
+>>   	 */
+>>   	__le16	first_tag;
+>>   	__le16	second_tag;
+>> -	u8	reserved[6];
+>> +	/* Next byte is split into following:
+>> +	 * Bit 7 : 0: No action, 1: Switch to mode defined by bits 6:0
+>> +	 * Bit 6: 0 : Destination Port, 1: source port
+>> +	 * Bit 5..4: L4 type
+> 
+> Can you tweak the formatting on these comments to line up the first 
+> couple of ':'s?
+> 
+>> +	 * 0: rsvd
+>> +	 * 1: TCP
+>> +	 * 2: UDP
+>> +	 * 3: Both TCP and UDP
+>> +	 * Bits 3:0 Mode
+>> +	 * 0: default mode
+>> +	 * 1: L4 port only mode
+>> +	 * 2: non-tunneled mode
+>> +	 * 3: tunneled mode
+>> +	 */
+>> +#define I40E_AQ_SET_SWITCH_BIT7_VALID		0x80
+>> +
+>> +#define I40E_AQ_SET_SWITCH_L4_SRC_PORT		0x40
+>> +
+>> +#define I40E_AQ_SET_SWITCH_L4_TYPE_RSVD		0x00
+>> +#define I40E_AQ_SET_SWITCH_L4_TYPE_TCP		0x10
+>> +#define I40E_AQ_SET_SWITCH_L4_TYPE_UDP		0x20
+>> +#define I40E_AQ_SET_SWITCH_L4_TYPE_BOTH		0x30
+>> +
+>> +#define I40E_AQ_SET_SWITCH_MODE_DEFAULT		0x00
+>> +#define I40E_AQ_SET_SWITCH_MODE_L4_PORT		0x01
+>> +#define I40E_AQ_SET_SWITCH_MODE_NON_TUNNEL	0x02
+>> +#define I40E_AQ_SET_SWITCH_MODE_TUNNEL		0x03
+>> +	u8	mode;
+>> +	u8	rsvd5[5];
+>>   };
+>>   
+>>   I40E_CHECK_CMD_LENGTH(i40e_aqc_set_switch_config);
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+>> index 1b85eb3..0b3c5b7 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+>> @@ -2402,13 +2402,14 @@ i40e_status i40e_aq_get_switch_config(struct i40e_hw *hw,
+>>    * @hw: pointer to the hardware structure
+>>    * @flags: bit flag values to set
+>>    * @valid_flags: which bit flags to set
+>> + * @mode: cloud filter mode
+>>    * @cmd_details: pointer to command details structure or NULL
+>>    *
+>>    * Set switch configuration bits
+>>    **/
+>>   enum i40e_status_code i40e_aq_set_switch_config(struct i40e_hw *hw,
+>>   						u16 flags,
+>> -						u16 valid_flags,
+>> +						u16 valid_flags, u8 mode,
+>>   				struct i40e_asq_cmd_details *cmd_details)
+>>   {
+>>   	struct i40e_aq_desc desc;
+>> @@ -2420,6 +2421,7 @@ enum i40e_status_code i40e_aq_set_switch_config(struct i40e_hw *hw,
+>>   					  i40e_aqc_opc_set_switch_config);
+>>   	scfg->flags = cpu_to_le16(flags);
+>>   	scfg->valid_flags = cpu_to_le16(valid_flags);
+>> +	scfg->mode = mode;
+>>   	if (hw->flags & I40E_HW_FLAG_802_1AD_CAPABLE) {
+>>   		scfg->switch_tag = cpu_to_le16(hw->switch_tag);
+>>   		scfg->first_tag = cpu_to_le16(hw->first_tag);
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+>> index a760d75..37ca294 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+>> @@ -4341,7 +4341,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+>>   			sw_flags = I40E_AQ_SET_SWITCH_CFG_PROMISC;
+>>   		valid_flags = I40E_AQ_SET_SWITCH_CFG_PROMISC;
+>>   		ret = i40e_aq_set_switch_config(&pf->hw, sw_flags, valid_flags,
+>> -						NULL);
+>> +						0, NULL);
+>>   		if (ret && pf->hw.aq.asq_last_status != I40E_AQ_RC_ESRCH) {
+>>   			dev_info(&pf->pdev->dev,
+>>   				 "couldn't set switch config bits, err %s aq_err %s\n",
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> index 33a8f429..0539d43 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> @@ -12165,7 +12165,7 @@ static int i40e_setup_pf_switch(struct i40e_pf *pf, bool reinit)
+>>   		u16 valid_flags;
+>>   
+>>   		valid_flags = I40E_AQ_SET_SWITCH_CFG_PROMISC;
+>> -		ret = i40e_aq_set_switch_config(&pf->hw, flags, valid_flags,
+>> +		ret = i40e_aq_set_switch_config(&pf->hw, flags, valid_flags, 0,
+>>   						NULL);
+>>   		if (ret && pf->hw.aq.asq_last_status != I40E_AQ_RC_ESRCH) {
+>>   			dev_info(&pf->pdev->dev,
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+>> index 0150256..92869f5 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+>> @@ -190,7 +190,7 @@ i40e_status i40e_aq_get_switch_config(struct i40e_hw *hw,
+>>   				struct i40e_asq_cmd_details *cmd_details);
+>>   enum i40e_status_code i40e_aq_set_switch_config(struct i40e_hw *hw,
+>>   						u16 flags,
+>> -						u16 valid_flags,
+>> +						u16 valid_flags, u8 mode,
+>>   				struct i40e_asq_cmd_details *cmd_details);
+>>   i40e_status i40e_aq_request_resource(struct i40e_hw *hw,
+>>   				enum i40e_aq_resources_ids resource,
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+>> index 17a99b5..24589a4 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+>> @@ -283,6 +283,15 @@ struct i40e_hw_capabilities {
+>>   #define I40E_NVM_IMAGE_TYPE_CLOUD	0x2
+>>   #define I40E_NVM_IMAGE_TYPE_UDP_CLOUD	0x3
+>>   
+>> +	/* Cloud filter modes:
+>> +	 * Mode1: Filter on L4 port only
+>> +	 * Mode2: Filter for non-tunneled traffic
+>> +	 * Mode3: Filter for tunnel traffic
+>> +	 */
+>> +#define I40E_NVM_IMAGE_TYPE_MODE1	0x6
+>> +#define I40E_NVM_IMAGE_TYPE_MODE2	0x7
+>> +#define I40E_NVM_IMAGE_TYPE_MODE3	0x8
+> 
+> These names aren't very descriptive... out of context these look like 
+> they are describing NVM image types, not message filter types.
 
-elapsed time: 177m
+I will address all your comments in v5. I'm thinking of changing these
+names to I40E_CLOUD_FILTER_MODEX.
 
-configs tested: 169
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                         iop13xx_defconfig
-arm                             mxs_defconfig
-openrisc                    or1ksim_defconfig
-x86_64                 randconfig-a0-10262352
-mips                      bmips_stb_defconfig
-s390                        default_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10270031
-i386                   randconfig-c0-10270155
-x86_64                randconfig-it0-10262345
-x86_64                randconfig-it0-10270146
-i386                     randconfig-n0-201743
-x86_64                 randconfig-x001-201743
-x86_64                 randconfig-x000-201743
-x86_64                 randconfig-x004-201743
-x86_64                 randconfig-x008-201743
-x86_64                 randconfig-x007-201743
-x86_64                 randconfig-x006-201743
-x86_64                 randconfig-x005-201743
-x86_64                 randconfig-x009-201743
-x86_64                 randconfig-x003-201743
-x86_64                 randconfig-x002-201743
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x018-201743
-x86_64                 randconfig-x011-201743
-x86_64                 randconfig-x012-201743
-x86_64                 randconfig-x013-201743
-x86_64                 randconfig-x019-201743
-x86_64                 randconfig-x017-201743
-x86_64                 randconfig-x014-201743
-x86_64                 randconfig-x015-201743
-x86_64                 randconfig-x016-201743
-x86_64                 randconfig-x010-201743
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                      integrator_defconfig
-m32r                             alldefconfig
-openrisc                          allnoconfig
-sh                           se7724_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201743
-i386                   randconfig-b0-10270104
-i386                   randconfig-b0-10270138
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201743
-i386                     randconfig-i0-201743
-mips                           ip32_defconfig
-powerpc64                        alldefconfig
-sh                             espt_defconfig
-x86_64                 randconfig-u0-10270105
-i386                               tinyconfig
-i386                   randconfig-x015-201743
-i386                   randconfig-x014-201743
-i386                   randconfig-x013-201743
-i386                   randconfig-x019-201743
-i386                   randconfig-x011-201743
-i386                   randconfig-x018-201743
-i386                   randconfig-x010-201743
-i386                   randconfig-x012-201743
-i386                   randconfig-x017-201743
-i386                   randconfig-x016-201743
-powerpc                       holly_defconfig
-powerpc                     tqm5200_defconfig
-arm                        magician_defconfig
-tile                              allnoconfig
-i386                   randconfig-x074-201743
-i386                   randconfig-x077-201743
-i386                   randconfig-x076-201743
-i386                   randconfig-x071-201743
-i386                   randconfig-x073-201743
-i386                   randconfig-x079-201743
-i386                   randconfig-x078-201743
-i386                   randconfig-x072-201743
-i386                   randconfig-x070-201743
-i386                   randconfig-x075-201743
-i386                  randconfig-sb0-10270004
-i386                  randconfig-sb0-10270200
-x86_64                           allmodconfig
-i386                   randconfig-x001-201743
-i386                   randconfig-x008-201743
-i386                   randconfig-x002-201743
-i386                   randconfig-x003-201743
-i386                   randconfig-x004-201743
-i386                   randconfig-x006-201743
-i386                   randconfig-x007-201743
-i386                   randconfig-x009-201743
-i386                   randconfig-x005-201743
-i386                   randconfig-x000-201743
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-mips                             allmodconfig
-powerpc                       ep405_defconfig
-powerpc                 mpc837x_mds_defconfig
-x86_64                randconfig-ws0-10262319
-x86_64                randconfig-ws0-10270126
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-mips                     loongson1c_defconfig
-powerpc                     taishan_defconfig
-sparc64                          allmodconfig
-x86_64                randconfig-ws0-10262354
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-cris                             allmodconfig
-mips                         rt305x_defconfig
-powerpc                     redwood_defconfig
-arm                         s5pv210_defconfig
-arm                            xcep_defconfig
-mips                         bigsur_defconfig
-x86_64                 randconfig-r0-10270011
-arm                        mini2440_defconfig
-i386                   randconfig-x0-10270045
-
-Thanks,
-Fengguang
+> 
+>> +
+>>   	u32  management_mode;
+>>   	u32  mng_protocols_over_mctp;
+>>   #define I40E_MNG_PROTOCOL_PLDM		0x2
+>>
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at osuosl.org
+>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>>
