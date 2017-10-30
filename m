@@ -1,36 +1,33 @@
-From: Tobin C. Harding <me@tobin.cc>
-Date: Mon, 2 Oct 2017 09:01:31 +1100
-Subject: [Intel-wired-lan] [PATCH 00/18] use ARRAY_SIZE macro
-In-Reply-To: <20171001193101.8898-1-jeremy.lefaure@lse.epita.fr>
-References: <20171001193101.8898-1-jeremy.lefaure@lse.epita.fr>
-Message-ID: <20171001220131.GA11812@eros>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 30 Oct 2017 10:27:30 -0700
+Subject: [Intel-wired-lan] ixgbe: Remove an obsolete comment about ITR
+Message-ID: <20171030172730.8314-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Oct 01, 2017 at 03:30:38PM -0400, J?r?my Lefaure wrote:
-> Hi everyone,
-> Using ARRAY_SIZE improves the code readability. I used coccinelle (I
-> made a change to the array_size.cocci file [1]) to find several places
-> where ARRAY_SIZE could be used instead of other macros or sizeof
-> division.
-> 
-> I tried to divide the changes into a patch per subsystem (excepted for
-> staging). If one of the patch should be split into several patches, let
-> me know.
-> 
-> In order to reduce the size of the To: and Cc: lines, each patch of the
-> series is sent only to the maintainers and lists concerned by the patch.
-> This cover letter is sent to every list concerned by this series.
+From: Tonghao Zhang <xiangxia.m.yue@gmail.com>
 
-Why don't you just send individual patches for each subsystem? I'm not a maintainer but I don't see
-how any one person is going to be able to apply this whole series, it is making it hard for
-maintainers if they have to pick patches out from among the series (if indeed any will bother
-doing that).
+The InterruptThrottleRate has been removed from ixgbe. Then Update
+the comment.
 
-I get that this will be more work for you but AFAIK we are optimizing for maintainers.
+Signed-off-by: Tonghao Zhang <xiangxia.m.yue@gmail.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-Good luck,
-Tobin.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 7f503d3..2a4ff0c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2534,8 +2534,6 @@ enum latency_range {
+  *      based on theoretical maximum wire speed and thresholds were set based
+  *      on testing data as well as attempting to minimize response time
+  *      while increasing bulk throughput.
+- *      this functionality is controlled by the InterruptThrottleRate module
+- *      parameter (see ixgbe_param.c)
+  **/
+ static void ixgbe_update_itr(struct ixgbe_q_vector *q_vector,
+ 			     struct ixgbe_ring_container *ring_container)
