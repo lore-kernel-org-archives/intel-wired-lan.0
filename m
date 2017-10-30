@@ -1,84 +1,172 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon, 30 Oct 2017 10:58:42 -0700
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v5 0/6] tc-flower
- based cloud filters in i40e
-In-Reply-To: <150909628755.48377.16561267691881106259.stgit@anamdev.jf.intel.com>
-References: <150909628755.48377.16561267691881106259.stgit@anamdev.jf.intel.com>
-Message-ID: <4bef6410-2849-859a-596c-4e90adf10aa8@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 31 Oct 2017 02:40:27 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 53c93c3ffe3a67a8404c41a3ea6730c5d12202c4
+Message-ID: <59f7721b.EpeZuPcqlyQ/01jX%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/27/2017 2:35 AM, Amritha Nambiar wrote:
-> This patch series enables configuring cloud filters in i40e
-> using the tc-flower classifier. The classification function
-> of the filter is to match a packet to a traffic class. cls_flower is
-> extended to offload classid to hardware. Hardware traffic classes
-> are identified using classid values reserved in the range :ffe0 - :ffef.
-> 
-> The cloud filters are added for a VSI and are cleaned up when
-> the VSI is deleted. The filters that match on L4 ports needs
-> enhanced admin queue functions with big buffer support for
-> extended fields in cloud filter commands.
-> 
-> Example:
-> # tc qdisc add dev eth0 ingress
-> # ethtool -K eth0 hw-tc-offload on
-> 
-> Match Dst IPv4,Dst Port and route to TC1:
-> # tc filter add dev eth0 protocol ip parent ffff: prio 1 flower\
->    dst_ip 192.168.1.1/32 ip_proto udp dst_port 12000\
->    skip_sw hw_tc 1
-> 
-> # tc filter show dev eth0 parent ffff:
-> filter pref 1 flower chain 0
-> filter pref 1 flower chain 0 handle 0x1 hw_tc 1
->    eth_type ipv4
->    ip_proto udp
->    dst_ip 192.168.1.1
->    dst_port 12000
->    skip_sw
->    in_hw
-> 
-> v5: Hardware traffic class based on reserved classid values.
-> Changes to align with Jiri's filter-block series. i40e code
-> cleanup based on Shannon's comments.
-> 
-> Authors:
-> Amritha Nambiar <amritha.nambiar@intel.com>
-> Kiran Patil <kiran.patil@intel.com>
-> Anjali Singhai Jain <anjali.singhai@intel.com>
-> Jingjing Wu <jingjing.wu@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 53c93c3ffe3a67a8404c41a3ea6730c5d12202c4  i40e/i40evf: Bump driver versions
 
+elapsed time: 81m
 
-Acked-by: Shannon Nelson <shannon.nelson@oracle.com>
+configs tested: 149
 
-> 
-> ---
-> 
-> Amritha Nambiar (6):
->        net: sched: Identify hardware traffic classes using classid
->        i40e: Map TCs with the VSI seids
->        i40e: Cloud filter mode for set_switch_config command
->        i40e: Admin queue definitions for cloud filters
->        i40e: Clean up of cloud filters
->        i40e: Enable cloud filters via tc-flower
-> 
-> 
->   drivers/net/ethernet/intel/i40e/i40e.h             |   62 +
->   drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  140 +++
->   drivers/net/ethernet/intel/i40e/i40e_common.c      |  193 ++++
->   drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |    2
->   drivers/net/ethernet/intel/i40e/i40e_main.c        |  985 +++++++++++++++++++-
->   drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   18
->   drivers/net/ethernet/intel/i40e/i40e_type.h        |   10
->   .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  110 ++
->   include/net/pkt_cls.h                              |    1
->   include/net/sch_generic.h                          |    7
->   net/sched/cls_flower.c                             |    2
->   11 files changed, 1491 insertions(+), 39 deletions(-)
-> 
-> --
-> 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+cris                                defconfig
+s390                       zfcpdump_defconfig
+sh                             espt_defconfig
+x86_64                 randconfig-a0-10310145
+arm                                 defconfig
+powerpc                     akebono_defconfig
+score                      spct6600_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                         lpc32xx_defconfig
+arm                          prima2_defconfig
+powerpc                     sbc834x_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x018-201744
+x86_64                 randconfig-x011-201744
+x86_64                 randconfig-x019-201744
+x86_64                 randconfig-x013-201744
+x86_64                 randconfig-x012-201744
+x86_64                 randconfig-x017-201744
+x86_64                 randconfig-x016-201744
+x86_64                 randconfig-x015-201744
+x86_64                 randconfig-x014-201744
+x86_64                 randconfig-x010-201744
+i386                     randconfig-a0-201744
+i386                     randconfig-a1-201744
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                     randconfig-s0-201744
+i386         randconfig-s0-201744+CONFIG_DEBUG_INFO_REDUCED
+i386                     randconfig-s1-201744
+x86_64                           allmodconfig
+arm                  colibri_pxa270_defconfig
+powerpc                     mpc83xx_defconfig
+x86_64                 randconfig-u0-10310154
+i386                               tinyconfig
+i386                   randconfig-x019-201744
+i386                   randconfig-x013-201744
+i386                   randconfig-x014-201744
+i386                   randconfig-x015-201744
+i386                   randconfig-x011-201744
+i386                   randconfig-x018-201744
+i386                   randconfig-x010-201744
+i386                   randconfig-x017-201744
+i386                   randconfig-x012-201744
+i386                   randconfig-x016-201744
+arm                           h3600_defconfig
+powerpc                      arches_defconfig
+arm                             ezx_defconfig
+m68k                           sun3_defconfig
+sh                          rsk7269_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+arm64                               defconfig
+mips                      maltasmvp_defconfig
+parisc                generic-64bit_defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+sh                                allnoconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                randconfig-ws0-10310149
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+i386                   randconfig-x074-201744
+i386                   randconfig-x071-201744
+i386                   randconfig-x076-201744
+i386                   randconfig-x077-201744
+i386                   randconfig-x073-201744
+i386                   randconfig-x072-201744
+i386                   randconfig-x078-201744
+i386                   randconfig-x079-201744
+i386                   randconfig-x075-201744
+i386                   randconfig-x070-201744
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+mips                         mpc30x_defconfig
+powerpc                    socrates_defconfig
+x86_64                 randconfig-x000-201744
+x86_64                 randconfig-x001-201744
+x86_64                 randconfig-x008-201744
+x86_64                 randconfig-x004-201744
+x86_64                 randconfig-x005-201744
+x86_64                 randconfig-x006-201744
+x86_64                 randconfig-x007-201744
+x86_64                 randconfig-x003-201744
+x86_64                 randconfig-x009-201744
+x86_64                 randconfig-x002-201744
+i386                             allmodconfig
+i386                   randconfig-x001-201744
+i386                   randconfig-x008-201744
+i386                   randconfig-x004-201744
+i386                   randconfig-x003-201744
+i386                   randconfig-x002-201744
+i386                   randconfig-x006-201744
+i386                   randconfig-x007-201744
+i386                   randconfig-x000-201744
+i386                   randconfig-x005-201744
+i386                   randconfig-x009-201744
+
+Thanks,
+Fengguang
