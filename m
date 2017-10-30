@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 30 Oct 2017 19:01:17 +0000
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v5 5/6] i40e:
- Clean up	of cloud filters
-In-Reply-To: <150909695619.48377.144660296731703103.stgit@anamdev.jf.intel.com>
+Date: Mon, 30 Oct 2017 18:59:37 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v5 2/6] i40e: Map
+ TCs	with the VSI seids
+In-Reply-To: <150909694002.48377.13680917261556432785.stgit@anamdev.jf.intel.com>
 References: <150909628755.48377.16561267691881106259.stgit@anamdev.jf.intel.com>
- <150909695619.48377.144660296731703103.stgit@anamdev.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EADBAC@ORSMSX104.amr.corp.intel.com>
+ <150909694002.48377.13680917261556432785.stgit@anamdev.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EADB84@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,22 +20,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > <jeffrey.t.kirsher@intel.com>
 > Cc: jiri at resnulli.us; netdev at vger.kernel.org; jhs at mojatatu.com;
 > xiyou.wangcong at gmail.com
-> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v5 5/6] i40e: Clean up
-> of cloud filters
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v5 2/6] i40e: Map TCs
+> with the VSI seids
 > 
-> Introduce the cloud filter datastructure and cleanup of cloud filters
-> associated with the device.
-> 
-> v5: Fixed a typo.
-> v2: Moved field comments in struct i40e_cloud_filter to the right.
-> Removed hlist_empty check from i40e_cloud_filter_exit()
+> Add mapping of TCs with the seids of the channel VSIs. TC0 will be mapped to
+> the main VSI seid and all other TCs are mapped to the seid of the
+> corresponding channel VSI.
 > 
 > Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h      |    9 +++++++++
->  drivers/net/ethernet/intel/i40e/i40e_main.c |   24
-> ++++++++++++++++++++++++
->  2 files changed, 33 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e.h      |    1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |    2 ++
+>  2 files changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
