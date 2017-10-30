@@ -1,122 +1,205 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Mon, 30 Oct 2017 22:44:14 +0000
-Subject: [Intel-wired-lan] [next PATCH S81-V3 8/9] i40e: Fix for NUP NVM
- image downgrade failure
-In-Reply-To: <20171027150656.68250-8-alice.michael@intel.com>
-References: <20171027150656.68250-1-alice.michael@intel.com>
- <20171027150656.68250-8-alice.michael@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5882AD6C58@ORSMSX115.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 31 Oct 2017 07:38:45 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ d3c6421f18b6808d496aa78d2ebd61d4b6c19b9a
+Message-ID: <59f7b805.Fc5MnJdkNl2xxPSx%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: d3c6421f18b6808d496aa78d2ebd61d4b6c19b9a  ixgbe: Remove an obsolete comment about ITR
 
-> -----Original Message-----
-> From: Michael, Alice
-> Sent: Friday, October 27, 2017 8:07 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-> Cc: Keller, Jacob E <jacob.e.keller@intel.com>
-> Subject: [next PATCH S81-V3 8/9] i40e: Fix for NUP NVM image downgrade
-> failure
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> Since commit 96a39aed25e6 ("i40e: Acquire NVM lock before
-> reads on all devices") we've used the NVM lock
-> to synchronize NVM reads even on devices which don't strictly
-> need the lock.
-> 
-> Doing so can cause a regression on older firmware prior to 1.5,
-> especially when downgrading the firmware.
-> 
-> Fix this by only grabbing the lock if we're running on an X722
-> device (which requires the lock as it uses the AdminQ to read
-> the NVM), or if we're currently running 1.5 or newer firmware.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c | 6 ++++++
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 3 ++-
->  drivers/net/ethernet/intel/i40e/i40e_nvm.c    | 8 +++++---
->  drivers/net/ethernet/intel/i40e/i40e_type.h   | 1 +
->  4 files changed, 14 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-> b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-> index 9dcb2a9..9af7425 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-> @@ -613,6 +613,12 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
->  		hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
->  	}
-> 
-> +	/* Newer versions of firmware require lock when reading the NVM */
-> +	if (hw->aq.api_maj_ver > 1 ||
-> +	    (hw->aq.api_maj_ver == 1 &&
-> +	     hw->aq.api_min_ver >= 5))
-> +		hw->flags |= I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK;
-> +
->  	/* The ability to RX (not drop) 802.1ad frames was added in API 1.7 */
->  	if (hw->aq.api_maj_ver > 1 ||
->  	    (hw->aq.api_maj_ver == 1 &&
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c
-> b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> index 0203665..13c7946 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> @@ -948,7 +948,8 @@ i40e_status i40e_init_shared_code(struct i40e_hw *hw)
->  		hw->pf_id = (u8)(func_rid & 0x7);
-> 
->  	if (hw->mac.type == I40E_MAC_X722)
-> -		hw->flags |= I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE;
-> +		hw->flags |= I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE |
-> +			     I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK;
-> 
->  	status = i40e_init_nvm(hw);
->  	return status;
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-> b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-> index 0ccab0a..7689c2e 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-> @@ -328,15 +328,17 @@ static i40e_status __i40e_read_nvm_word(struct
-> i40e_hw *hw,
->  i40e_status i40e_read_nvm_word(struct i40e_hw *hw, u16 offset,
->  			       u16 *data)
->  {
-> -	i40e_status ret_code;
-> +	i40e_status ret_code = 0;
-> 
-> -	ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
-> +	if (hw->flags & I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK)
-> +		ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
->  	if (ret_code)
->  		return ret_code;
-> 
->  	ret_code = __i40e_read_nvm_word(hw, offset, data);
-> 
-> -	i40e_release_nvm(hw);
-> +	if (hw->flags & I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK)
-> +		i40e_release_nvm(hw);
-> 
->  	return ret_code;
->  }
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h
-> b/drivers/net/ethernet/intel/i40e/i40e_type.h
-> index 00d4833..0e85687 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-> @@ -629,6 +629,7 @@ struct i40e_hw {
->  #define I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE BIT_ULL(0)
->  #define I40E_HW_FLAG_802_1AD_CAPABLE        BIT_ULL(1)
->  #define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
-> +#define I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK BIT_ULL(3)
->  	u64 flags;
-> 
->  	/* Used in set switch config AQ command */
-> --
-> 2.9.5
+elapsed time: 106m
 
+configs tested: 181
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                         bcm2835_defconfig
+arm                        mvebu_v5_defconfig
+s390                             allyesconfig
+x86_64                 randconfig-a0-10310354
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10310555
+x86_64                randconfig-in0-10310144
+x86_64                randconfig-it0-10310448
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
+x86_64                                nfsroot
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                              allmodconfig
+powerpc                   bluestone_defconfig
+x86_64                 randconfig-g0-10310601
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x018-201744
+x86_64                 randconfig-x011-201744
+x86_64                 randconfig-x019-201744
+x86_64                 randconfig-x013-201744
+x86_64                 randconfig-x012-201744
+x86_64                 randconfig-x017-201744
+x86_64                 randconfig-x016-201744
+x86_64                 randconfig-x015-201744
+x86_64                 randconfig-x014-201744
+x86_64                 randconfig-x010-201744
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201744
+i386                     randconfig-a1-201744
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-s0-201744
+i386                     randconfig-s1-201744
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+arm                            mps2_defconfig
+openrisc                         allyesconfig
+xtensa                              defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-i0-10302309
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201744
+i386                     randconfig-i0-201744
+x86_64                 randconfig-b0-10302334
+powerpc                 mpc834x_mds_defconfig
+powerpc                     ppa8548_defconfig
+sparc                            allmodconfig
+x86_64                 randconfig-u0-10310516
+i386                   randconfig-x019-201744
+i386                   randconfig-x013-201744
+i386                   randconfig-x014-201744
+i386                   randconfig-x015-201744
+i386                   randconfig-x011-201744
+i386                   randconfig-x018-201744
+i386                   randconfig-x010-201744
+i386                   randconfig-x017-201744
+i386                   randconfig-x012-201744
+i386                   randconfig-x016-201744
+m68k                            mac_defconfig
+powerpc                     tqm8541_defconfig
+x86_64                randconfig-ne0-10310531
+ia64                                defconfig
+powerpc                     ksi8560_defconfig
+powerpc                  mpc885_ads_defconfig
+xtensa                           allmodconfig
+mips                malta_kvm_guest_defconfig
+powerpc                      ppc64e_defconfig
+tile                             allyesconfig
+x86_64                 randconfig-n0-10310447
+i386                   randconfig-x001-201744
+i386                   randconfig-x008-201744
+i386                   randconfig-x004-201744
+i386                   randconfig-x003-201744
+i386                   randconfig-x002-201744
+i386                   randconfig-x006-201744
+i386                   randconfig-x007-201744
+i386                   randconfig-x000-201744
+i386                   randconfig-x005-201744
+i386                   randconfig-x009-201744
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                           allmodconfig
+arm                         em_x270_defconfig
+sparc64                          allmodconfig
+um                                  defconfig
+arm                       aspeed_g5_defconfig
+i386                   randconfig-x074-201744
+i386                   randconfig-x071-201744
+i386                   randconfig-x076-201744
+i386                   randconfig-x077-201744
+i386                   randconfig-x073-201744
+i386                   randconfig-x072-201744
+i386                   randconfig-x078-201744
+i386                   randconfig-x079-201744
+i386                   randconfig-x075-201744
+i386                   randconfig-x070-201744
+ia64                             alldefconfig
+ia64                              allnoconfig
+mips                             allmodconfig
+mips                           ip27_defconfig
+xtensa                  nommu_kc705_defconfig
+x86_64                 randconfig-x000-201744
+x86_64                 randconfig-x001-201744
+x86_64                 randconfig-x008-201744
+x86_64                 randconfig-x004-201744
+x86_64                 randconfig-x005-201744
+x86_64                 randconfig-x006-201744
+x86_64                 randconfig-x007-201744
+x86_64                 randconfig-x003-201744
+x86_64                 randconfig-x009-201744
+x86_64                 randconfig-x002-201744
+x86_64                 randconfig-r0-10310551
+sh                          r7785rp_defconfig
+sparc                       sparc64_defconfig
+
+Thanks,
+Fengguang
