@@ -1,102 +1,192 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sun, 12 Nov 2017 11:31:56 -0800
-Subject: [Intel-wired-lan] [vlan_device_event] BUG: unable to handle
- kernel paging request at 6b6b6ccf
-In-Reply-To: <20171108171230.ccf7lwutjysk26fc@wfg-t540p.sh.intel.com>
-References: <20171107102156.3fgxt6y6v5y2kqnf@wfg-t540p.sh.intel.com>
- <CA+55aFwqxZiN_XrZqvbtCsc8W=w895RaB1sjuVP1aTj8JStxzg@mail.gmail.com>
- <20171108094832.qxvkawpw2snpcbvh@wfg-t540p.sh.intel.com>
- <CA+55aFwK7935r325nmR-eQvanVCN3A+v3wEQHsW4NpSeBsybeA@mail.gmail.com>
- <20171108171230.ccf7lwutjysk26fc@wfg-t540p.sh.intel.com>
-Message-ID: <CA+55aFx0O+NTbBjavPm_jPucqHdXFYPmUya4kw=ps7LSqTFd5w@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 01 Nov 2017 02:20:49 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 75e6fe856706ccf202fd264d12e8ea5ef8b1405f
+Message-ID: <59f8bf01.itBQ+J53olEd0ZWe%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Nov 8, 2017 at 9:12 AM, Fengguang Wu <fengguang.wu@intel.com> wrote:
->
-> OK. Here is the original faddr2line output:
->
-> $ ~/linux/scripts/faddr2line vmlinux vlan_device_event+0x7f5/0xa40
-> vlan_device_event+0x7f5/0xa40:
-> vlan_device_event at net/8021q/vlan.h:60
->
-> And below is call trace embedded with full faddr2line output.
->
-> I notice that this trace shows no additional inline files at all.
-> Is it because I did some kconfig option wrong, so that inline info is
-> lost? Eg.
->
-> CONFIG_OPTIMIZE_INLINING=y (it looks better set to N)
-> CONFIG_DEBUG_INFO_REDUCED=y
-> CONFIG_DEBUG_INFO_SPLIT=y
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 75e6fe856706ccf202fd264d12e8ea5ef8b1405f  ixgbe: Remove an obsolete comment about ITR
 
-Ok, this annoyed me, so I went back and looked.
+elapsed time: 57m
 
-It's the "CONFIG_DEBUG_INFO_SPLIT" thing that makes faddr2line unable
-to see the inlining information,
+configs tested: 168
 
-Using OPTIMIZE_INLINING is fine.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-I'm not sure that addr2line could be made to understand the .dwo files
-that DEBUG_INFO_SPLIT causes (particularly since we munge the vmlinux
-file itself, who knows how that could confuse things).
+alpha                               defconfig
+mips                             allmodconfig
+powerpc                      ppc44x_defconfig
+x86_64                 randconfig-a0-10312346
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                randconfig-it0-11010136
+m68k                         apollo_defconfig
+m68k                            q40_defconfig
+sh                   secureedge5410_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+alpha                            allyesconfig
+arm                     eseries_pxa_defconfig
+arm                      pxa255-idp_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-g0-11010118
+x86_64                 randconfig-g0-11010157
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x018-201744
+x86_64                 randconfig-x011-201744
+x86_64                 randconfig-x019-201744
+x86_64                 randconfig-x013-201744
+x86_64                 randconfig-x012-201744
+x86_64                 randconfig-x017-201744
+x86_64                 randconfig-x016-201744
+x86_64                 randconfig-x015-201744
+x86_64                 randconfig-x014-201744
+x86_64                 randconfig-x010-201744
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-a0-201744
+i386                     randconfig-a1-201744
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+blackfin                BF533-STAMP_defconfig
+parisc                           alldefconfig
+powerpc                      arches_defconfig
+arm                          iop33x_defconfig
+arm                            netx_defconfig
+arm                          nuc910_defconfig
+sh                   rts7751r2dplus_defconfig
+sh                        sh7757lcr_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201744
+i386                     randconfig-s1-201744
+x86_64                           allmodconfig
+arm                          iop32x_defconfig
+ia64                            zx1_defconfig
+mn10300                          allmodconfig
+powerpc                      acadia_defconfig
+x86_64                   randconfig-i0-201744
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201744
+i386                     randconfig-i0-201744
+x86_64                 randconfig-u0-11010035
+arm                           acs5k_defconfig
+blackfin                  TCM-BF518_defconfig
+x86_64                randconfig-ne0-11010129
+i386                   randconfig-x019-201744
+i386                   randconfig-x013-201744
+i386                   randconfig-x014-201744
+i386                   randconfig-x015-201744
+i386                   randconfig-x011-201744
+i386                   randconfig-x018-201744
+i386                   randconfig-x010-201744
+i386                   randconfig-x017-201744
+i386                   randconfig-x012-201744
+i386                   randconfig-x016-201744
+mips                      loongson3_defconfig
+parisc                         a500_defconfig
+powerpc                          allmodconfig
+x86_64                 randconfig-n0-11010132
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-x000-201744
+x86_64                 randconfig-x001-201744
+x86_64                 randconfig-x008-201744
+x86_64                 randconfig-x004-201744
+x86_64                 randconfig-x005-201744
+x86_64                 randconfig-x006-201744
+x86_64                 randconfig-x007-201744
+x86_64                 randconfig-x003-201744
+x86_64                 randconfig-x009-201744
+x86_64                 randconfig-x002-201744
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                randconfig-ws0-11010141
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x074-201744
+i386                   randconfig-x071-201744
+i386                   randconfig-x076-201744
+i386                   randconfig-x077-201744
+i386                   randconfig-x073-201744
+i386                   randconfig-x072-201744
+i386                   randconfig-x078-201744
+i386                   randconfig-x079-201744
+i386                   randconfig-x075-201744
+i386                   randconfig-x070-201744
+mips                     decstation_defconfig
+sh                     magicpanelr2_defconfig
+x86_64                 randconfig-r0-11010146
+i386                   randconfig-x001-201744
+i386                   randconfig-x008-201744
+i386                   randconfig-x004-201744
+i386                   randconfig-x003-201744
+i386                   randconfig-x002-201744
+i386                   randconfig-x006-201744
+i386                   randconfig-x007-201744
+i386                   randconfig-x000-201744
+i386                   randconfig-x005-201744
+i386                   randconfig-x009-201744
+i386                   randconfig-x0-11010128
 
-So can I ask that you make the 0day build scripts always use
-
-  CONFIG_DEBUG_INFO=y
-  CONFIG_DEBUG_INFO_REDUCED=y
-  # CONFIG_DEBUG_INFO_SPLIT is not set
-
-because with that "DEBUG_INFO_REDUCED=y", the use of DEBUG_INFO_SPLIT
-shouldn't be _that_ big of a deal.
-
-Yes, splitting the debug info does help reduce disk usage for the
-build, and presumably speed it up a bit too due to less IO and reduced
-copying of the debug info data, but right now it really makes the
-debug info much less useful.
-
-Just to see the difference:
-
- - with DEBUG_INFO_SPLIT=y
-
-    [torvalds at i7 linux]$ ./scripts/faddr2line vmlinux __schedule+0x314
-    __schedule+0x314/0x840:
-    __schedule at kernel/sched/stats.h:12
-
- - with DEBUG_INFO_SPLIT is not set
-
-    [torvalds at i7 linux]$ ./scripts/faddr2line vmlinux __schedule+0x314
-    __schedule+0x314/0x840:
-    rq_sched_info_arrive at kernel/sched/stats.h:12
-     (inlined by) sched_info_arrive at kernel/sched/stats.h:99
-     (inlined by) __sched_info_switch at kernel/sched/stats.h:151
-     (inlined by) sched_info_switch at kernel/sched/stats.h:158
-     (inlined by) prepare_task_switch at kernel/sched/core.c:2582
-     (inlined by) context_switch at kernel/sched/core.c:2755
-     (inlined by) __schedule at kernel/sched/core.c:3366
-
-and while (once again) this is a pretty extreme case, we do use a lot
-of inlines, and gcc will add its own inlining. Getting this whole
-information - particularly for the faulting IP - would really help in
-some situations.
-
-I love what the 0day robot is doing, this would be another big step forward.
-
-Oh - and talking about "big step forward" - does the 0day robot do any
-suspend/resume testing at all?
-
-Even on non-laptop hardware, it should be possible to do something like
-
-    echo platform > /sys/power/pm_test
-    echo freeze > /sys/power/state
-
-or similar (assuming CONFIG_PM_DEBUG is enabled).
-
-Maybe you already do something like this?
-
-Anyway, regardless this was a good release for the 0day robot. Thanks.
-
-                     Linus
+Thanks,
+Fengguang
