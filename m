@@ -1,205 +1,62 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 31 Oct 2017 07:38:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- d3c6421f18b6808d496aa78d2ebd61d4b6c19b9a
-Message-ID: <59f7b805.Fc5MnJdkNl2xxPSx%fengguang.wu@intel.com>
+From: Matheus Almeida <hm.matheus@gmail.com>
+Date: Tue, 31 Oct 2017 13:22:55 +0000
+Subject: [Intel-wired-lan] Cable pull behaviour on Intel I350 card
+Message-ID: <CACmWKmKsyKc13JoszThZREcCbJK46eRrAd8mJ0+4TL-dYg_e5g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: d3c6421f18b6808d496aa78d2ebd61d4b6c19b9a  ixgbe: Remove an obsolete comment about ITR
+Hi,
 
-elapsed time: 106m
+I'm developing an appliance for the broadcast industry for real-time video
+transmission.
+We use Intel I350 network adapters (4 ports) and am seeking more
+information about a behaviour that causes a transmission disruption (~20ms
+to 80ms) when one of the ethernet cables is pulled.
 
-configs tested: 181
+Assuming that data port 0 and data port 1 are both transmitting data.
+Disconnecting the ethernet cable from data port 1 seems to stop the
+transmission of data port 0 for a short period of time. This is a big issue
+for low-latency appliances like ours (I'll get into more in a second).
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+More information about our system:
 
-arm                         bcm2835_defconfig
-arm                        mvebu_v5_defconfig
-s390                             allyesconfig
-x86_64                 randconfig-a0-10310354
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10310555
-x86_64                randconfig-in0-10310144
-x86_64                randconfig-it0-10310448
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
-x86_64                                nfsroot
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                              allmodconfig
-powerpc                   bluestone_defconfig
-x86_64                 randconfig-g0-10310601
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x018-201744
-x86_64                 randconfig-x011-201744
-x86_64                 randconfig-x019-201744
-x86_64                 randconfig-x013-201744
-x86_64                 randconfig-x012-201744
-x86_64                 randconfig-x017-201744
-x86_64                 randconfig-x016-201744
-x86_64                 randconfig-x015-201744
-x86_64                 randconfig-x014-201744
-x86_64                 randconfig-x010-201744
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201744
-i386                     randconfig-a1-201744
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-s0-201744
-i386                     randconfig-s1-201744
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-arm                            mps2_defconfig
-openrisc                         allyesconfig
-xtensa                              defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-i0-10302309
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201744
-i386                     randconfig-i0-201744
-x86_64                 randconfig-b0-10302334
-powerpc                 mpc834x_mds_defconfig
-powerpc                     ppa8548_defconfig
-sparc                            allmodconfig
-x86_64                 randconfig-u0-10310516
-i386                   randconfig-x019-201744
-i386                   randconfig-x013-201744
-i386                   randconfig-x014-201744
-i386                   randconfig-x015-201744
-i386                   randconfig-x011-201744
-i386                   randconfig-x018-201744
-i386                   randconfig-x010-201744
-i386                   randconfig-x017-201744
-i386                   randconfig-x012-201744
-i386                   randconfig-x016-201744
-m68k                            mac_defconfig
-powerpc                     tqm8541_defconfig
-x86_64                randconfig-ne0-10310531
-ia64                                defconfig
-powerpc                     ksi8560_defconfig
-powerpc                  mpc885_ads_defconfig
-xtensa                           allmodconfig
-mips                malta_kvm_guest_defconfig
-powerpc                      ppc64e_defconfig
-tile                             allyesconfig
-x86_64                 randconfig-n0-10310447
-i386                   randconfig-x001-201744
-i386                   randconfig-x008-201744
-i386                   randconfig-x004-201744
-i386                   randconfig-x003-201744
-i386                   randconfig-x002-201744
-i386                   randconfig-x006-201744
-i386                   randconfig-x007-201744
-i386                   randconfig-x000-201744
-i386                   randconfig-x005-201744
-i386                   randconfig-x009-201744
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                           allmodconfig
-arm                         em_x270_defconfig
-sparc64                          allmodconfig
-um                                  defconfig
-arm                       aspeed_g5_defconfig
-i386                   randconfig-x074-201744
-i386                   randconfig-x071-201744
-i386                   randconfig-x076-201744
-i386                   randconfig-x077-201744
-i386                   randconfig-x073-201744
-i386                   randconfig-x072-201744
-i386                   randconfig-x078-201744
-i386                   randconfig-x079-201744
-i386                   randconfig-x075-201744
-i386                   randconfig-x070-201744
-ia64                             alldefconfig
-ia64                              allnoconfig
-mips                             allmodconfig
-mips                           ip27_defconfig
-xtensa                  nommu_kc705_defconfig
-x86_64                 randconfig-x000-201744
-x86_64                 randconfig-x001-201744
-x86_64                 randconfig-x008-201744
-x86_64                 randconfig-x004-201744
-x86_64                 randconfig-x005-201744
-x86_64                 randconfig-x006-201744
-x86_64                 randconfig-x007-201744
-x86_64                 randconfig-x003-201744
-x86_64                 randconfig-x009-201744
-x86_64                 randconfig-x002-201744
-x86_64                 randconfig-r0-10310551
-sh                          r7785rp_defconfig
-sparc                       sparc64_defconfig
+   1. We use buildroot with Linux Kernel 4.9.29
+   2. igb driver version 5.4.0-k
+   3. 8 rx queues, 8 tx queues
 
-Thanks,
-Fengguang
+The level of traffic flowing through the network seems to make the issue
+more reproducible.
+
+Is this behaviour expected ? If positive, is there a way around it ?
+
+I ran ftrace to get a better picture of what happens during that period of
+no transmission[1] and all I see [using the sched_switch option] is a
+continuous execution of a kernel worker thread on that CPU.
+
+I tried to make the following changes to our system with no improvements:
+
+   1. Changed task priority to RT (this should preempt the kernel worker
+   threads and give more ) for our transmitter task
+   2. Changed the cpu_mask for the kernel worker threads so that they would
+   execute on a spare CPU core
+   3. Compiled the kernel with PREEMPT=1
+
+I have also tried to get ftrace to generate call stacks to get an even
+better understand of what's happening behind the scenes. Unfortunately this
+seems to generate too much overhead and I haven't been able to get a clean
+execution trace that highlights everything that happens during a cable pull.
+
+Is there a better way to debug this issue ? I have total control of the
+kernel that we build so I can build the igb driver differently if it allows
+us to get to the bottom of this issue.
+
+[1] Immediately after a cable pull
+
+Thanks in advance,
+Matheus
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171031/7614fea7/attachment.html>
