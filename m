@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 02 Nov 2017 16:33:45 -0700
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 2/5] fm10k: Fix VLAN
- configuration for macvlan offload
+Date: Thu, 02 Nov 2017 16:34:11 -0700
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 3/5] ixgbe: Fix
+ handling of macvlan Tx offload
 In-Reply-To: <20171102232857.15146.21583.stgit@localhost.localdomain>
 References: <20171102232857.15146.21583.stgit@localhost.localdomain>
-Message-ID: <20171102233336.15146.31137.stgit@localhost.localdomain>
+Message-ID: <20171102233351.15146.16006.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,40 +13,50 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-The fm10k driver didn't work correctly when macvlan offload was enabled.
-Specifically what would occur is that we would see no unicast packets being
-received. This was traced down to us not correctly configuring the default
-VLAN ID for the port and defaulting to 0.
-
-To correct this we either use the default ID provided by the switch or
-simply use 1. With that we are able to pass and receive traffic without any
-issues.
+This update makes it so that we report the actual number of Tx queues via
+real_num_tx_queues but are still restricted to RSS on only the first pool
+by setting num_tc equal to 1. Doing this locks us into only having the
+ability to setup XPS on the queues in that pool, and only those queues
+should be used for transmitting anything other than macvlan traffic.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 81e4425f0529..1280127077de 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -1490,7 +1490,7 @@ static void *fm10k_dfwd_add_station(struct net_device *dev,
- 		hw->mac.ops.update_xcast_mode(hw, glort,
- 					      FM10K_XCAST_MODE_MULTI);
- 		fm10k_queue_mac_request(interface, glort, sdev->dev_addr,
--					0, true);
-+					hw->mac.default_vid ? : 1, true);
- 	}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 69ef35d13c36..b22ec4b9d02c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6638,8 +6638,9 @@ int ixgbe_open(struct net_device *netdev)
+ 		goto err_req_irq;
  
- 	fm10k_mbx_unlock(interface);
-@@ -1530,7 +1530,7 @@ static void fm10k_dfwd_del_station(struct net_device *dev, void *priv)
- 		hw->mac.ops.update_xcast_mode(hw, glort,
- 					      FM10K_XCAST_MODE_NONE);
- 		fm10k_queue_mac_request(interface, glort, sdev->dev_addr,
--					0, false);
-+					hw->mac.default_vid ? : 1, false);
- 	}
+ 	/* Notify the stack of the actual queue counts. */
+-	if (adapter->num_rx_pools > 1)
+-		queues = adapter->num_rx_queues_per_pool;
++	if (adapter->num_rx_pools > 1 &&
++	    adapter->num_tx_queues > IXGBE_MAX_L2A_QUEUES)
++		queues = IXGBE_MAX_L2A_QUEUES;
+ 	else
+ 		queues = adapter->num_tx_queues;
  
- 	fm10k_mbx_unlock(interface);
+@@ -8901,6 +8902,18 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
+ 		if (adapter->hw.mac.type == ixgbe_mac_82598EB)
+ 			adapter->hw.fc.requested_mode = adapter->last_lfc_mode;
+ 
++		/* To support macvlan offload we have to use num_tc to
++		 * restrict the queues that can be used by the device.
++		 * By doing this we can avoid reporing a false number of
++		 * queues.
++		 */
++		if (adapter->num_rx_pools > 1) {
++			u16 qpp = adapter->num_rx_queues_per_pool;
++
++			netdev_set_num_tc(dev, 1);
++			netdev_set_tc_queue(dev, 0, qpp, 0);
++		}
++
+ 		adapter->flags &= ~IXGBE_FLAG_DCB_ENABLED;
+ 
+ 		adapter->temp_dcb_cfg.pfc_mode_enable = false;
 
