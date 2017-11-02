@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 02 Nov 2017 16:34:11 -0700
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 3/5] ixgbe: Fix
- handling of macvlan Tx offload
+Date: Thu, 02 Nov 2017 16:34:41 -0700
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 4/5] dev: Clean-up
+ __skb_tx_hash to match up with traffic class based configs
 In-Reply-To: <20171102232857.15146.21583.stgit@localhost.localdomain>
 References: <20171102232857.15146.21583.stgit@localhost.localdomain>
-Message-ID: <20171102233351.15146.16006.stgit@localhost.localdomain>
+Message-ID: <20171102233417.15146.6991.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,50 +13,56 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This update makes it so that we report the actual number of Tx queues via
-real_num_tx_queues but are still restricted to RSS on only the first pool
-by setting num_tc equal to 1. Doing this locks us into only having the
-ability to setup XPS on the queues in that pool, and only those queues
-should be used for transmitting anything other than macvlan traffic.
+This patch is mostly just a minor clean-up so that we avoid letting a
+packet jump from one traffic class to another just based on the Rx queue.
+Instead we now use that queue number as an offset within the traffic class.
+Handling it this way allows us to operate more cleanly in a mixed
+environment that is doing routing over multiple interfaces that may not
+have the same queue configuration.
+
+This patch includes a minor clean-up of variable declaration as well to get
+things into the reverse xmas tree format.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+ net/core/dev.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 69ef35d13c36..b22ec4b9d02c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -6638,8 +6638,9 @@ int ixgbe_open(struct net_device *netdev)
- 		goto err_req_irq;
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 24ac9083bc13..fd51b8703277 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2573,16 +2573,9 @@ void netif_device_attach(struct net_device *dev)
+ u16 __skb_tx_hash(const struct net_device *dev, struct sk_buff *skb,
+ 		  unsigned int num_tx_queues)
+ {
+-	u32 hash;
+-	u16 qoffset = 0;
+ 	u16 qcount = num_tx_queues;
+-
+-	if (skb_rx_queue_recorded(skb)) {
+-		hash = skb_get_rx_queue(skb);
+-		while (unlikely(hash >= num_tx_queues))
+-			hash -= num_tx_queues;
+-		return hash;
+-	}
++	u16 qoffset = 0;
++	u32 hash;
  
- 	/* Notify the stack of the actual queue counts. */
--	if (adapter->num_rx_pools > 1)
--		queues = adapter->num_rx_queues_per_pool;
-+	if (adapter->num_rx_pools > 1 &&
-+	    adapter->num_tx_queues > IXGBE_MAX_L2A_QUEUES)
-+		queues = IXGBE_MAX_L2A_QUEUES;
- 	else
- 		queues = adapter->num_tx_queues;
+ 	if (dev->num_tc) {
+ 		u8 tc = netdev_get_prio_tc_map(dev, skb->priority);
+@@ -2591,6 +2584,13 @@ u16 __skb_tx_hash(const struct net_device *dev, struct sk_buff *skb,
+ 		qcount = dev->tc_to_txq[tc].count;
+ 	}
  
-@@ -8901,6 +8902,18 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
- 		if (adapter->hw.mac.type == ixgbe_mac_82598EB)
- 			adapter->hw.fc.requested_mode = adapter->last_lfc_mode;
- 
-+		/* To support macvlan offload we have to use num_tc to
-+		 * restrict the queues that can be used by the device.
-+		 * By doing this we can avoid reporing a false number of
-+		 * queues.
-+		 */
-+		if (adapter->num_rx_pools > 1) {
-+			u16 qpp = adapter->num_rx_queues_per_pool;
++	if (skb_rx_queue_recorded(skb)) {
++		hash = skb_get_rx_queue(skb);
++		while (unlikely(hash >= qcount))
++			hash -= qcount;
++		return hash + qoffset;
++	}
 +
-+			netdev_set_num_tc(dev, 1);
-+			netdev_set_tc_queue(dev, 0, qpp, 0);
-+		}
-+
- 		adapter->flags &= ~IXGBE_FLAG_DCB_ENABLED;
- 
- 		adapter->temp_dcb_cfg.pfc_mode_enable = false;
+ 	return (u16) reciprocal_scale(skb_get_hash(skb), qcount) + qoffset;
+ }
+ EXPORT_SYMBOL(__skb_tx_hash);
 
