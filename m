@@ -1,11 +1,11 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Fri, 3 Nov 2017 13:10:32 -0700
-Subject: [Intel-wired-lan] [next PATCH S82 6/9] i40e: Fix FLR reset
- timeout issue
-In-Reply-To: <20171103110511.76793-6-alice.michael@intel.com>
+Date: Fri, 3 Nov 2017 13:12:46 -0700
+Subject: [Intel-wired-lan] [next PATCH S82 9/9] i40e: Suppress
+ compilation warning on kernels older than 3.12
+In-Reply-To: <20171103110511.76793-9-alice.michael@intel.com>
 References: <20171103110511.76793-1-alice.michael@intel.com>
- <20171103110511.76793-6-alice.michael@intel.com>
-Message-ID: <6ade3453-b09b-49b8-4460-b4bdef4cdeec@oracle.com>
+ <20171103110511.76793-9-alice.michael@intel.com>
+Message-ID: <de798a1b-1068-8118-1f48-c6bd4cca2dcd@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,46 +13,34 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 11/3/2017 4:05 AM, Alice Michael wrote:
-> From: Filip Sadowski <filip.sadowski@intel.com>
+> From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 > 
-> This patch allows detection of upcoming core reset in case NIC gets
-> stuck while performing FLR reset. The i40e_pf_reset() function returns
-> I40E_ERR_NOT_READY when global reset was detected.
+> In kernels before 3.12 the second parameter in netif_set_xps_queue
+> function has no const qualifier. It is generating warning in older
+> kernels. get_cpu_mask function always returns a pointer with const
+> qualifier. Adding the cast is enough to remove compilation warning.
 > 
-> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+> Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 > ---
->   drivers/net/ethernet/intel/i40e/i40e_common.c | 7 +++++++
->   1 file changed, 7 insertions(+)
+>   drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
+>   1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> index 5abc83c..c5ae565 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> @@ -1269,6 +1269,7 @@ i40e_status i40e_pf_reset(struct i40e_hw *hw)
->   	 * we don't need to do the PF Reset
->   	 */
->   	if (!cnt) {
-> +		u32 reg2 = 0;
->   		if (hw->revision_id == 0)
->   			cnt = I40E_PF_RESET_WAIT_COUNT_A0;
->   		else
-> @@ -1280,6 +1281,12 @@ i40e_status i40e_pf_reset(struct i40e_hw *hw)
->   			reg = rd32(hw, I40E_PFGEN_CTRL);
->   			if (!(reg & I40E_PFGEN_CTRL_PFSWR_MASK))
->   				break;
-> +			reg2 = rd32(hw, I40E_GLGEN_RSTAT);
-> +			if (reg2 & I40E_GLGEN_RSTAT_DEVSTATE_MASK) {
-> +				hw_dbg(hw, "Core reset upcoming.\n");
-> +				hw_dbg(hw, "I40E_GLGEN_RSTAT = 0x%x\n", reg2);
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 8657ef6..1fe8099 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -3062,8 +3062,7 @@ static void i40e_config_xps_tx_ring(struct i40e_ring *ring)
+>   		return;
+>   
+>   	cpu = cpumask_local_spread(ring->q_vector->v_idx, -1);
+> -	netif_set_xps_queue(ring->netdev, get_cpu_mask(cpu),
+> -			    ring->queue_index);
+> +	netif_set_xps_queue(ring->netdev, get_cpu_mask(cpu), ring->queue_index);
 
-And my first thought at seeing this message would be "so what?"  There 
-needs to be something that says this request is getting skipped.
-
+I see no actual code change here, no cast as advertised.
 sln
 
-> +				return I40E_ERR_NOT_READY;
-> +			}
->   			usleep_range(1000, 2000);
->   		}
->   		if (reg & I40E_PFGEN_CTRL_PFSWR_MASK) {
+>   }
+>   
+>   /**
 > 
