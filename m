@@ -1,46 +1,42 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri,  3 Nov 2017 07:05:04 -0400
-Subject: [Intel-wired-lan] [next PATCH S82 2/9] i40evf: Clean-up flags for
- promisc mode to avoid high polling rate
+Date: Fri,  3 Nov 2017 07:05:11 -0400
+Subject: [Intel-wired-lan] [next PATCH S82 9/9] i40e: Suppress compilation
+ warning on kernels older than 3.12
 In-Reply-To: <20171103110511.76793-1-alice.michael@intel.com>
 References: <20171103110511.76793-1-alice.michael@intel.com>
-Message-ID: <20171103110511.76793-2-alice.michael@intel.com>
+Message-ID: <20171103110511.76793-9-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 
-If you enabled and disabled promiscuous mode on a VF you could easily put
-it into a state where it would start firing interrupts on all queues at a
-rate of 50+ interrupts per second even though there was no traffic present.
-The issue seems to have been a stray admin queue feature flag set that was
-leaving us in a high polling rate for the adminq task.
+In kernels before 3.12 the second parameter in netif_set_xps_queue
+function has no const qualifier. It is generating warning in older
+kernels. get_cpu_mask function always returns a pointer with const
+qualifier. Adding the cast is enough to remove compilation warning.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 2719a05..feb95b6 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -739,8 +739,10 @@ void i40evf_set_promiscuous(struct i40evf_adapter *adapter, int flags)
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 8657ef6..1fe8099 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -3062,8 +3062,7 @@ static void i40e_config_xps_tx_ring(struct i40e_ring *ring)
+ 		return;
  
- 	if (!flags) {
--		adapter->flags &= ~I40EVF_FLAG_PROMISC_ON;
--		adapter->aq_required &= ~I40EVF_FLAG_AQ_RELEASE_PROMISC;
-+		adapter->flags &= ~(I40EVF_FLAG_PROMISC_ON |
-+				    I40EVF_FLAG_ALLMULTI_ON);
-+		adapter->aq_required &= ~(I40EVF_FLAG_AQ_RELEASE_PROMISC |
-+					  I40EVF_FLAG_AQ_RELEASE_ALLMULTI);
- 		dev_info(&adapter->pdev->dev, "Leaving promiscuous mode\n");
- 	}
+ 	cpu = cpumask_local_spread(ring->q_vector->v_idx, -1);
+-	netif_set_xps_queue(ring->netdev, get_cpu_mask(cpu),
+-			    ring->queue_index);
++	netif_set_xps_queue(ring->netdev, get_cpu_mask(cpu), ring->queue_index);
+ }
  
+ /**
 -- 
 2.9.5
 
