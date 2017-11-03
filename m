@@ -1,156 +1,72 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 3 Nov 2017 09:23:15 -0700
-Subject: [Intel-wired-lan] Cable pull behaviour on Intel I350 card
-In-Reply-To: <CACmWKmJ0VZTdSquFgrznP7FLGBDeDruevJ5T2UKCYJuTeMNSEA@mail.gmail.com>
-References: <CACmWKmKsyKc13JoszThZREcCbJK46eRrAd8mJ0+4TL-dYg_e5g@mail.gmail.com>
- <CAKgT0UegUOPhD1h_d6YtrxPaPBdbBHF058exQXuS8AE1YSD-qg@mail.gmail.com>
- <CACmWKmJ0VZTdSquFgrznP7FLGBDeDruevJ5T2UKCYJuTeMNSEA@mail.gmail.com>
-Message-ID: <CAKgT0Uf83sTrJOPjv_sqtwaJE1u6qi6OwmP8L82YN=A+z6fO9A@mail.gmail.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Fri, 3 Nov 2017 09:30:58 -0700
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 3/5] ixgbe: Fix
+ handling of macvlan Tx offload
+In-Reply-To: <20171102233351.15146.16006.stgit@localhost.localdomain>
+References: <20171102232857.15146.21583.stgit@localhost.localdomain>
+ <20171102233351.15146.16006.stgit@localhost.localdomain>
+Message-ID: <21f34829-71a6-f74a-b04b-dfbec50d6602@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-One other function that would be useful to monitor would be
-igb_reset_task. It is normally called when either the DMA engine gets
-hung, or there is Tx work left in the queue following a cable being
-unplugged.
+On 11/2/2017 4:34 PM, Alexander Duyck wrote:
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> 
+> This update makes it so that we report the actual number of Tx queues via
+> real_num_tx_queues but are still restricted to RSS on only the first pool
+> by setting num_tc equal to 1. Doing this locks us into only having the
+> ability to setup XPS on the queues in that pool, and only those queues
+> should be used for transmitting anything other than macvlan traffic.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> ---
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   17 +++++++++++++++--
+>   1 file changed, 15 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index 69ef35d13c36..b22ec4b9d02c 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -6638,8 +6638,9 @@ int ixgbe_open(struct net_device *netdev)
+>   		goto err_req_irq;
+>   
+>   	/* Notify the stack of the actual queue counts. */
+> -	if (adapter->num_rx_pools > 1)
+> -		queues = adapter->num_rx_queues_per_pool;
+> +	if (adapter->num_rx_pools > 1 &&
+> +	    adapter->num_tx_queues > IXGBE_MAX_L2A_QUEUES)
+> +		queues = IXGBE_MAX_L2A_QUEUES;
+>   	else
+>   		queues = adapter->num_tx_queues;
+>   
+> @@ -8901,6 +8902,18 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
+>   		if (adapter->hw.mac.type == ixgbe_mac_82598EB)
+>   			adapter->hw.fc.requested_mode = adapter->last_lfc_mode;
+>   
+> +		/* To support macvlan offload we have to use num_tc to
+> +		 * restrict the queues that can be used by the device.
+> +		 * By doing this we can avoid reporing a false number of
 
-- Alex
+s/reporing/reporting/
 
-On Fri, Nov 3, 2017 at 6:46 AM, Matheus Almeida <hm.matheus@gmail.com> wrote:
-> Hi Alexander,
->
-> Thank you very much for the prompt reply.
->
-> I managed to set up a better testing environment that allows me to replicate
-> the problem
-> and gather more meaningful trace information.
->
-> My testing environment is roughly the following:
->
-> Server 1:
-> Two separate processes send a continuous stream of data uniquely identified
-> on two separate data ports
-> of a i350 network card.
->
-> Server 2:
-> Two separate processes receive the data and check if there was a delay
-> between packets that is greater
-> than a arbitrary threshold.
->
-> Here's a link to a "trace.dat" file -> https://goo.gl/6KuBqz
->
-> You should see 3 instances of a "cable" pull causing a delay on the task
-> with PID 14618.
->
-> The task with PID 14617 was the one I was "upsetting" on purpose by removing
-> a network
-> cable.
->
-> I can see instances of igb_watchdog* function calls from the trace.
->
-> I can trace other functions of interest if required and/or other processes.
-> Just let me know which
-> ones would help us narrow down this issue even further.
->
-> Regards,
-> Matheus
->
->
-> On Tue, Oct 31, 2017 at 4:05 PM, Alexander Duyck <alexander.duyck@gmail.com>
-> wrote:
->>
->> On Tue, Oct 31, 2017 at 6:22 AM, Matheus Almeida <hm.matheus@gmail.com>
->> wrote:
->> > Hi,
->> >
->> > I'm developing an appliance for the broadcast industry for real-time
->> > video
->> > transmission.
->> > We use Intel I350 network adapters (4 ports) and am seeking more
->> > information
->> > about a behaviour that causes a transmission disruption (~20ms to 80ms)
->> > when
->> > one of the ethernet cables is pulled.
->> >
->> > Assuming that data port 0 and data port 1 are both transmitting data.
->> > Disconnecting the ethernet cable from data port 1 seems to stop the
->> > transmission of data port 0 for a short period of time. This is a big
->> > issue
->> > for low-latency appliances like ours (I'll get into more in a second).
->> >
->> > More information about our system:
->> >
->> > We use buildroot with Linux Kernel 4.9.29
->> > igb driver version 5.4.0-k
->> > 8 rx queues, 8 tx queues
->> >
->> > The level of traffic flowing through the network seems to make the issue
->> > more reproducible.
->> >
->> > Is this behaviour expected ? If positive, is there a way around it ?
->>
->> I wouldn't say this is expected, but then again, I don't know the
->> exact cause for what you may be seeing. To narrow it down we could use
->> some more information.
->>
->> In your setup are you running anything like a team or bond on top of
->> the igb driver interfaces? Also how many CPUs are you running on the
->> system the device is installed in?
->>
->> > I ran ftrace to get a better picture of what happens during that period
->> > of
->> > no transmission[1] and all I see [using the sched_switch option] is a
->> > continuous execution of a kernel worker thread on that CPU.
->> >
->> > I tried to make the following changes to our system with no
->> > improvements:
->>
->> Would it be possible to provide a trace for that worker thread? I
->> would be interested in seeing if the worker thread happens to have
->> igb_watchdog_task in the path or not. My thought is that we are likely
->> spending time busy waiting in one of the PHY register functions due to
->> the link status changing so we are probably either re-reading the link
->> or resetting the port if there was Tx traffic pending. We would need
->> to sort out which of these events is taking place.
->>
->> > Changed task priority to RT (this should preempt the kernel worker
->> > threads
->> > and give more ) for our transmitter task
->> > Changed the cpu_mask for the kernel worker threads so that they would
->> > execute on a spare CPU core
->> > Compiled the kernel with PREEMPT=1
->>
->> One thing you might try just to eliminate hardware as being a possible
->> issue would be to use a second NIC and just use one port on each
->> device to verify we aren't looking at any sort of issue where we are
->> doing something like resetting one port and somehow introducing a
->> delay through that.
->>
->> > I have also tried to get ftrace to generate call stacks to get an even
->> > better understand of what's happening behind the scenes. Unfortunately
->> > this
->> > seems to generate too much overhead and I haven't been able to get a
->> > clean
->> > execution trace that highlights everything that happens during a cable
->> > pull.
->> >
->> > Is there a better way to debug this issue ? I have total control of the
->> > kernel that we build so I can build the igb driver differently if it
->> > allows
->> > us to get to the bottom of this issue.
->>
->> If nothing else you might look at using trace_printk to just manually
->> add printouts as needed through the driver. That is usually my default
->> when I really need to get in and check various points in the kernel.
->>
->> Other than that I would say the main thing we need to look at is
->> finding the source of our stalls. You might look at testing the start
->> and exit of igb_watchdog_task and see if that is taking the 20-80usecs
->> you are seeing being consumed when you hit this event.
->>
->> - Alex
->
->
+> +		 * queues.
+> +		 */
+> +		if (adapter->num_rx_pools > 1) {
+> +			u16 qpp = adapter->num_rx_queues_per_pool;
+> +
+> +			netdev_set_num_tc(dev, 1);
+> +			netdev_set_tc_queue(dev, 0, qpp, 0);
+> +		}
+> +
+>   		adapter->flags &= ~IXGBE_FLAG_DCB_ENABLED;
+>   
+>   		adapter->temp_dcb_cfg.pfc_mode_enable = false;
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
