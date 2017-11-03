@@ -1,72 +1,29 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Fri, 3 Nov 2017 09:30:58 -0700
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 3/5] ixgbe: Fix
- handling of macvlan Tx offload
-In-Reply-To: <20171102233351.15146.16006.stgit@localhost.localdomain>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Fri, 3 Nov 2017 10:05:17 -0700
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 1/5] ixgbe: Fix
+ interaction between SR-IOV and macvlan offload
+In-Reply-To: <20171102233315.15146.95215.stgit@localhost.localdomain>
 References: <20171102232857.15146.21583.stgit@localhost.localdomain>
- <20171102233351.15146.16006.stgit@localhost.localdomain>
-Message-ID: <21f34829-71a6-f74a-b04b-dfbec50d6602@oracle.com>
+ <20171102233315.15146.95215.stgit@localhost.localdomain>
+Message-ID: <20171103100517.00007564@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 11/2/2017 4:34 PM, Alexander Duyck wrote:
+On Thu, 2 Nov 2017 16:33:30 -0700
+Alexander Duyck <alexander.duyck@gmail.com> wrote:
+
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> This update makes it so that we report the actual number of Tx queues via
-> real_num_tx_queues but are still restricted to RSS on only the first pool
-> by setting num_tc equal to 1. Doing this locks us into only having the
-> ability to setup XPS on the queues in that pool, and only those queues
-> should be used for transmitting anything other than macvlan traffic.
+> When SR-IOV was enabled the macvlan offload was configuring several filters
+> with the wrong pool value. This would result in the macvlan interfaces not
+> being able to receive traffic that had to pass over the physical interface.
+> 
+> To fix it wrap the pool argument in the VMDQ_P macro which will add the
+> necessary offset to get to the actual VMDq pool
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> ---
->   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   17 +++++++++++++++--
->   1 file changed, 15 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 69ef35d13c36..b22ec4b9d02c 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -6638,8 +6638,9 @@ int ixgbe_open(struct net_device *netdev)
->   		goto err_req_irq;
->   
->   	/* Notify the stack of the actual queue counts. */
-> -	if (adapter->num_rx_pools > 1)
-> -		queues = adapter->num_rx_queues_per_pool;
-> +	if (adapter->num_rx_pools > 1 &&
-> +	    adapter->num_tx_queues > IXGBE_MAX_L2A_QUEUES)
-> +		queues = IXGBE_MAX_L2A_QUEUES;
->   	else
->   		queues = adapter->num_tx_queues;
->   
-> @@ -8901,6 +8902,18 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
->   		if (adapter->hw.mac.type == ixgbe_mac_82598EB)
->   			adapter->hw.fc.requested_mode = adapter->last_lfc_mode;
->   
-> +		/* To support macvlan offload we have to use num_tc to
-> +		 * restrict the queues that can be used by the device.
-> +		 * By doing this we can avoid reporing a false number of
 
-s/reporing/reporting/
-
-> +		 * queues.
-> +		 */
-> +		if (adapter->num_rx_pools > 1) {
-> +			u16 qpp = adapter->num_rx_queues_per_pool;
-> +
-> +			netdev_set_num_tc(dev, 1);
-> +			netdev_set_tc_queue(dev, 0, qpp, 0);
-> +		}
-> +
->   		adapter->flags &= ~IXGBE_FLAG_DCB_ENABLED;
->   
->   		adapter->temp_dcb_cfg.pfc_mode_enable = false;
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
+Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
