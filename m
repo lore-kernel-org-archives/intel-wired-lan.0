@@ -1,46 +1,41 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Fri, 3 Nov 2017 13:12:46 -0700
-Subject: [Intel-wired-lan] [next PATCH S82 9/9] i40e: Suppress
- compilation warning on kernels older than 3.12
-In-Reply-To: <20171103110511.76793-9-alice.michael@intel.com>
-References: <20171103110511.76793-1-alice.michael@intel.com>
- <20171103110511.76793-9-alice.michael@intel.com>
-Message-ID: <de798a1b-1068-8118-1f48-c6bd4cca2dcd@oracle.com>
+From: Colin King <colin.king@canonical.com>
+Date: Sun,  5 Nov 2017 13:04:29 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: remove redundant initialization of
+ read_size
+Message-ID: <20171105130429.6399-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 11/3/2017 4:05 AM, Alice Michael wrote:
-> From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
-> 
-> In kernels before 3.12 the second parameter in netif_set_xps_queue
-> function has no const qualifier. It is generating warning in older
-> kernels. get_cpu_mask function always returns a pointer with const
-> qualifier. Adding the cast is enough to remove compilation warning.
-> 
-> Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 8657ef6..1fe8099 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -3062,8 +3062,7 @@ static void i40e_config_xps_tx_ring(struct i40e_ring *ring)
->   		return;
->   
->   	cpu = cpumask_local_spread(ring->q_vector->v_idx, -1);
-> -	netif_set_xps_queue(ring->netdev, get_cpu_mask(cpu),
-> -			    ring->queue_index);
-> +	netif_set_xps_queue(ring->netdev, get_cpu_mask(cpu), ring->queue_index);
+From: Colin Ian King <colin.king@canonical.com>
 
-I see no actual code change here, no cast as advertised.
-sln
+Variable read_size is initialized and this value is never read, it is
+instead set inside the do-loop, hence the intialization is redundant
+and can be removed. Cleans up clang warning:
 
->   }
->   
->   /**
-> 
+drivers/net/ethernet/intel/i40e/i40e_nvm.c:390:6: warning: Value stored
+to 'read_size' during its initialization is never read
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 0ccab0a5d717..8f444a40c3f9 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -387,7 +387,7 @@ static i40e_status i40e_read_nvm_buffer_aq(struct i40e_hw *hw, u16 offset,
+ 					   u16 *words, u16 *data)
+ {
+ 	i40e_status ret_code;
+-	u16 read_size = *words;
++	u16 read_size;
+ 	bool last_cmd = false;
+ 	u16 words_read = 0;
+ 	u16 i = 0;
+-- 
+2.14.1
+
