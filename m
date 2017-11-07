@@ -1,74 +1,77 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon,  6 Nov 2017 08:31:59 +0200
-Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: fix buffer overrun while
- the I219 is processing DMA transactions
-Message-ID: <20171106063159.32289-1-sasha.neftin@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Tue, 7 Nov 2017 06:04:34 -0800
+Subject: [Intel-wired-lan] [next PATCH S82 9/9] i40e: Suppress
+ compilation warning on kernels older than 3.12
+In-Reply-To: <2D74C616BCD7994CBB86279EC09C10B429DBBFDE@IRSMSX104.ger.corp.intel.com>
+References: <20171103110511.76793-1-alice.michael@intel.com>
+ <20171103110511.76793-9-alice.michael@intel.com>
+ <de798a1b-1068-8118-1f48-c6bd4cca2dcd@oracle.com>
+ <2D74C616BCD7994CBB86279EC09C10B429DBBFDE@IRSMSX104.ger.corp.intel.com>
+Message-ID: <c1d22d6f-b758-a8ff-12f3-ca2f3bceb705@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Description: Intel? 100/200 Series Chipset platforms
-reduced the round-trip latency for the LAN Controller
-DMA accesses, causing in some high performance cases a buffer
-overrun while the I219 LAN Connected Device is processing
-the DMA transactions. I219LM and I219V devices can fall into
-unrecovered Tx hang under very stressfully UDP traffic and multiple
-reconnection of Ethernet cable. This Tx hang of the LAN Controller
-is only recovered if the system is rebooted. Slightly slow down
-DMA access by reducing the number of outstanding requests.
-This workaround could have an impact on TCP traffic performance
-on the platform. Disabling TSO eliminates performance loss for TCP
-traffic without a noticeable impact on CPU performance.
 
-Please, refer to I218/I219 specification update:
-https://www.intel.com/content/www/us/en/embedded/products/networking/
-ethernet-connection-i218-family-documentation.html
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-Reviewed-by: Alexander H Duyck <alexander.h.duyck@intel.com>
-Reviewed-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
-Reviewed-by: Raanan Avargil <raanan.avargil@intel.com>
----
- drivers/net/ethernet/intel/e1000e/ich8lan.h | 3 ++-
- drivers/net/ethernet/intel/e1000e/netdev.c  | 9 ++++++---
- 2 files changed, 8 insertions(+), 4 deletions(-)
+On 11/6/2017 1:41 AM, Jablonski, Pawel wrote:
+> This patch is only for older kernels (where the driver is compiling form source on older systems). In newest ones is not needed.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-index 67163ca898ba..e23d8da9b15b 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-@@ -113,7 +113,8 @@
- #define NVM_SIZE_MULTIPLIER 4096	/*multiplier for NVMS field */
- #define E1000_FLASH_BASE_ADDR 0xE000	/*offset of NVM access regs */
- #define E1000_CTRL_EXT_NVMVS 0x3	/*NVM valid sector */
--#define E1000_TARC0_CB_MULTIQ_3_REQ	(1 << 28 | 1 << 29)
-+#define E1000_TARC0_CB_MULTIQ_3_REQ     0x30000000
-+#define E1000_TARC0_CB_MULTIQ_2_REQ     0x20000000
- #define PCIE_ICH8_SNOOP_ALL	PCIE_NO_SNOOP_ALL
- 
- #define E1000_ICH_RAR_ENTRIES	7
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index f2f49239b015..9f18d39bdc8f 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3034,9 +3034,12 @@ static void e1000_configure_tx(struct e1000_adapter *adapter)
- 		ew32(IOSFPC, reg_val);
- 
- 		reg_val = er32(TARC(0));
--		/* SPT and KBL Si errata workaround to avoid Tx hang */
--		reg_val &= ~BIT(28);
--		reg_val |= BIT(29);
-+		/* SPT and KBL Si errata workaround to avoid Tx hang.
-+		 * Dropping the number of outstanding requests from
-+		 * 3 to 2 in order to avoid a buffer overrun.
-+		 */
-+		reg_val &= ~E1000_TARC0_CB_MULTIQ_3_REQ;
-+		reg_val |= E1000_TARC0_CB_MULTIQ_2_REQ;
- 		ew32(TARC(0), reg_val);
- 	}
- }
--- 
-2.11.0
+Then there's no need for it to be pushed upstream.
+sln
 
+
+> 
+> -----Original Message-----
+> From: Shannon Nelson [mailto:shannon.nelson at oracle.com]
+> Sent: Friday, November 3, 2017 9:13 PM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
+> Cc: Jablonski, Pawel <pawel.jablonski@intel.com>
+> Subject: Re: [Intel-wired-lan] [next PATCH S82 9/9] i40e: Suppress compilation warning on kernels older than 3.12
+> 
+> On 11/3/2017 4:05 AM, Alice Michael wrote:
+>> From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
+>>
+>> In kernels before 3.12 the second parameter in netif_set_xps_queue
+>> function has no const qualifier. It is generating warning in older
+>> kernels. get_cpu_mask function always returns a pointer with const
+>> qualifier. Adding the cast is enough to remove compilation warning.
+>>
+>> Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
+>> ---
+>>    drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
+>>    1 file changed, 1 insertion(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> index 8657ef6..1fe8099 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> @@ -3062,8 +3062,7 @@ static void i40e_config_xps_tx_ring(struct i40e_ring *ring)
+>>    		return;
+>>    
+>>    	cpu = cpumask_local_spread(ring->q_vector->v_idx, -1);
+>> -	netif_set_xps_queue(ring->netdev, get_cpu_mask(cpu),
+>> -			    ring->queue_index);
+>> +	netif_set_xps_queue(ring->netdev, get_cpu_mask(cpu),
+>> +ring->queue_index);
+> 
+> I see no actual code change here, no cast as advertised.
+> sln
+> 
+>>    }
+>>    
+>>    /**
+>>
+> --------------------------------------------------------------------
+> 
+> Intel Technology Poland sp. z o.o.
+> ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+> 
+> Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+> przegladanie lub rozpowszechnianie jest zabronione.
+> This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+> others is strictly prohibited.
+> 
