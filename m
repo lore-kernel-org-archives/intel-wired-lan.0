@@ -1,100 +1,154 @@
-From: Matt Turner <mattst88@gmail.com>
-Date: Tue,  7 Nov 2017 14:13:32 -0800
-Subject: [Intel-wired-lan] [PATCH 3/3] e1000e: Disable jumbo receive
- workaround on Lynx Point and newer
-In-Reply-To: <20171107221332.28283-1-mattst88@gmail.com>
-References: <20171107221332.28283-1-mattst88@gmail.com>
-Message-ID: <20171107221332.28283-3-mattst88@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 08 Nov 2017 23:32:54 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ b204e0e32c56cb5bb4064c833fadd7d809f0339b
+Message-ID: <5a0323a6.kk9sVMVTDk4LinKt%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Matt Turner <matt.turner@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: b204e0e32c56cb5bb4064c833fadd7d809f0339b  i40e: fix the calculation of VFs mac addresses
 
-Commit 3e35d9918cbb ("e1000e: adjust PM QoS request") expanded the
-application of what is evidently a hardware workaround to apply to all
-e1000e devices. Prior to the commit, it applied only to e1000_pch2lan
-(Sandy Bridge era) and the commit message notes that other earlier parts
-such as ICH9 and ICH10 suffer from the problem as well.
+elapsed time: 69m
 
-The workaround works by preventing the CPU from entering deep sleep
-states, which increases energy consumption significantly. My Skylake
-CPU reaches the C10 state the PC8 package state with the MTU for its
-I219-LM set to 1500. At an MTU of 9000, it can only reach the C1E state
-and no low power package state at all. With this patch, the CPU again
-reaches the C10 state and (only) the PC2 package state. Not ideal, but an
-improvement nonetheless.
+configs tested: 130
 
-Signed-off-by: Matt Turner <matt.turner@intel.com>
----
-This patch is speculative -- I'm an Intel employee (not in the networking
-division), but I have no idea where to find documentation about the hardware
-bug in question. I'm hoping that someone more in the know can check if the
-hardware was fixed in subsequent generations and this workaround can be
-disabled. I have chosen the pch2 cut off only because nothing further is
-mentioned about the bug in git history.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
- drivers/net/ethernet/intel/e1000e/netdev.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x019-201745
+i386                   randconfig-x014-201745
+i386                   randconfig-x013-201745
+i386                   randconfig-x015-201745
+i386                   randconfig-x011-201745
+i386                   randconfig-x018-201745
+i386                   randconfig-x010-201745
+i386                   randconfig-x017-201745
+i386                   randconfig-x012-201745
+i386                   randconfig-x016-201745
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-11080844
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-a0-201745
+i386                     randconfig-a1-201745
+x86_64                 randconfig-x018-201745
+x86_64                 randconfig-x011-201745
+x86_64                 randconfig-x019-201745
+x86_64                 randconfig-x013-201745
+x86_64                 randconfig-x012-201745
+x86_64                 randconfig-x017-201745
+x86_64                 randconfig-x016-201745
+x86_64                 randconfig-x015-201745
+x86_64                 randconfig-x014-201745
+x86_64                 randconfig-x010-201745
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201745
+i386                     randconfig-s1-201745
+x86_64                           allmodconfig
+i386                               tinyconfig
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201745
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                   randconfig-x001-201745
+i386                   randconfig-x008-201745
+i386                   randconfig-x003-201745
+i386                   randconfig-x004-201745
+i386                   randconfig-x002-201745
+i386                   randconfig-x006-201745
+i386                   randconfig-x007-201745
+i386                   randconfig-x000-201745
+i386                   randconfig-x005-201745
+i386                   randconfig-x009-201745
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x074-201745
+i386                   randconfig-x076-201745
+i386                   randconfig-x071-201745
+i386                   randconfig-x077-201745
+i386                   randconfig-x073-201745
+i386                   randconfig-x072-201745
+i386                   randconfig-x078-201745
+i386                   randconfig-x079-201745
+i386                   randconfig-x075-201745
+i386                   randconfig-x070-201745
+x86_64                 randconfig-x000-201745
+x86_64                 randconfig-x001-201745
+x86_64                 randconfig-x008-201745
+x86_64                 randconfig-x004-201745
+x86_64                 randconfig-x005-201745
+x86_64                 randconfig-x006-201745
+x86_64                 randconfig-x007-201745
+x86_64                 randconfig-x003-201745
+x86_64                 randconfig-x009-201745
+x86_64                 randconfig-x002-201745
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 4dcff481c4b4..553f8bd45eea 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3277,7 +3277,8 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
- 	/* With jumbo frames, excessive C-state transition latencies result
- 	 * in dropped transactions.
- 	 */
--	if (adapter->netdev->mtu > ETH_DATA_LEN) {
-+	if (adapter->hw.mac.type <= e1000_pch2lan &&
-+	    adapter->netdev->mtu > ETH_DATA_LEN) {
- 		u32 lat =
- 		    ((er32(PBA) & E1000_PBA_RXA_MASK) * 1024 -
- 		     adapter->max_frame_size) * 8 / 1000;
-@@ -3292,9 +3293,6 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
- 			 "Some CPU C-states have been disabled in order to "
- 			 "enable jumbo frames\n");
- 		pm_qos_update_request(&adapter->pm_qos_req, lat);
--	} else {
--		pm_qos_update_request(&adapter->pm_qos_req,
--				      PM_QOS_DEFAULT_VALUE);
- 	}
- 
- 	/* Enable Receives */
-@@ -4625,8 +4623,9 @@ int e1000e_open(struct net_device *netdev)
- 		e1000_update_mng_vlan(adapter);
- 
- 	/* DMA latency requirement to workaround jumbo issue */
--	pm_qos_add_request(&adapter->pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
--			   PM_QOS_DEFAULT_VALUE);
-+	if (adapter->hw.mac.type <= e1000_pch2lan)
-+		pm_qos_add_request(&adapter->pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
-+				   PM_QOS_DEFAULT_VALUE);
- 
- 	/* before we allocate an interrupt, we must be ready to handle it.
- 	 * Setting DEBUG_SHIRQ in the kernel makes it fire an interrupt
-@@ -4669,7 +4668,8 @@ int e1000e_open(struct net_device *netdev)
- 	return 0;
- 
- err_req_irq:
--	pm_qos_remove_request(&adapter->pm_qos_req);
-+	if (adapter->hw.mac.type <= e1000_pch2lan)
-+		pm_qos_remove_request(&adapter->pm_qos_req);
- 	e1000e_release_hw_control(adapter);
- 	e1000_power_down_phy(adapter);
- 	e1000e_free_rx_resources(adapter->rx_ring);
-@@ -4733,7 +4733,8 @@ int e1000e_close(struct net_device *netdev)
- 	    !test_bit(__E1000_TESTING, &adapter->state))
- 		e1000e_release_hw_control(adapter);
- 
--	pm_qos_remove_request(&adapter->pm_qos_req);
-+	if (adapter->hw.mac.type <= e1000_pch2lan)
-+		pm_qos_remove_request(&adapter->pm_qos_req);
- 
- 	pm_runtime_put_sync(&pdev->dev);
- 
--- 
-2.13.6
-
+Thanks,
+Fengguang
