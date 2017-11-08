@@ -1,182 +1,105 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 08 Nov 2017 23:51:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 2cfd104a0a533248aa51c9e39a96b318f67187fe
-Message-ID: <5a032810./+VqqmestYnrFnw0%fengguang.wu@intel.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 8 Nov 2017 08:20:38 -0800
+Subject: [Intel-wired-lan] [vlan_device_event] BUG: unable to handle
+ kernel paging request at 6b6b6ccf
+In-Reply-To: <20171108094832.qxvkawpw2snpcbvh@wfg-t540p.sh.intel.com>
+References: <20171107102156.3fgxt6y6v5y2kqnf@wfg-t540p.sh.intel.com>
+ <CA+55aFwqxZiN_XrZqvbtCsc8W=w895RaB1sjuVP1aTj8JStxzg@mail.gmail.com>
+ <20171108094832.qxvkawpw2snpcbvh@wfg-t540p.sh.intel.com>
+Message-ID: <CA+55aFwK7935r325nmR-eQvanVCN3A+v3wEQHsW4NpSeBsybeA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 2cfd104a0a533248aa51c9e39a96b318f67187fe  i40e: fix the calculation of VFs mac addresses
+On Wed, Nov 8, 2017 at 1:48 AM, Fengguang Wu <fengguang.wu@intel.com> wrote:
+>
+> Now I got the faddr2line output. :)
 
-elapsed time: 88m
+Thank you, but this also shows that you then compress the output too
+much for convenience.
 
-configs tested: 159
+> [  745.719623] BUG: unable to handle kernel paging request at 6b6b6f4f
+> [  745.732871] IP: vlan_device_event at net/8021q/vlan.h:60
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+So this looks more legible than "vlan_device_event+0x7f5/0xa40" (or
+whatever), but in fact it's not.
 
-blackfin                BF548-EZKIT_defconfig
-blackfin                   CM-BF548_defconfig
-sh                        sh7763rdp_defconfig
-x86_64                 randconfig-a0-11082302
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11082254
-x86_64                           allmodconfig
-i386                               tinyconfig
-i386                   randconfig-x019-201745
-i386                   randconfig-x014-201745
-i386                   randconfig-x013-201745
-i386                   randconfig-x015-201745
-i386                   randconfig-x011-201745
-i386                   randconfig-x018-201745
-i386                   randconfig-x010-201745
-i386                   randconfig-x017-201745
-i386                   randconfig-x012-201745
-i386                   randconfig-x016-201745
-i386                   randconfig-n0-11080844
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                           h5000_defconfig
-powerpc                 linkstation_defconfig
-sh                         ecovec24_defconfig
-x86_64                 randconfig-x018-201745
-x86_64                 randconfig-x011-201745
-x86_64                 randconfig-x019-201745
-x86_64                 randconfig-x013-201745
-x86_64                 randconfig-x012-201745
-x86_64                 randconfig-x017-201745
-x86_64                 randconfig-x016-201745
-x86_64                 randconfig-x015-201745
-x86_64                 randconfig-x014-201745
-x86_64                 randconfig-x010-201745
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-a0-201745
-i386                     randconfig-a1-201745
-x86_64                 randconfig-s0-11082301
-x86_64                 randconfig-s1-11082301
-x86_64                 randconfig-s2-11082301
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-s0-201745
-i386                     randconfig-s1-201745
-arm                         bcm2835_defconfig
-arm                          iop32x_defconfig
-blackfin          BF527-AD7160-EVAL_defconfig
-mips                  maltasmvp_eva_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201745
-i386                   randconfig-b0-11082251
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                         ebsa110_defconfig
-arm                             ezx_defconfig
-arm                           spitz_defconfig
-sh                            migor_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                 mpc8540_ads_defconfig
-sh                               allmodconfig
-i386                             allmodconfig
-mips                          ath25_defconfig
-powerpc                     taishan_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-x000-201745
-x86_64                 randconfig-x001-201745
-x86_64                 randconfig-x008-201745
-x86_64                 randconfig-x004-201745
-x86_64                 randconfig-x005-201745
-x86_64                 randconfig-x006-201745
-x86_64                 randconfig-x007-201745
-x86_64                 randconfig-x003-201745
-x86_64                 randconfig-x009-201745
-x86_64                 randconfig-x002-201745
-x86_64                randconfig-ws0-11082225
-i386                   randconfig-x074-201745
-i386                   randconfig-x076-201745
-i386                   randconfig-x071-201745
-i386                   randconfig-x077-201745
-i386                   randconfig-x073-201745
-i386                   randconfig-x072-201745
-i386                   randconfig-x078-201745
-i386                   randconfig-x079-201745
-i386                   randconfig-x075-201745
-i386                   randconfig-x070-201745
-x86_64                                  kexec
-powerpc                     ppa8548_defconfig
-sh                          r7780mp_defconfig
-um                                allnoconfig
-i386                   randconfig-x001-201745
-i386                   randconfig-x008-201745
-i386                   randconfig-x003-201745
-i386                   randconfig-x004-201745
-i386                   randconfig-x002-201745
-i386                   randconfig-x006-201745
-i386                   randconfig-x007-201745
-i386                   randconfig-x000-201745
-i386                   randconfig-x005-201745
-i386                   randconfig-x009-201745
+The reason faddr2line is great is because it gives inlining
+information, so that you can see exactly which access it is, even if
+it's inside some helper inline function (macros still obviously are
+going to be problematic).
 
-Thanks,
-Fengguang
+And you've cut the whole information down, to the point where there is
+_less_ information than there used to be.
+
+So the full faddr2line output is actually important, and should look
+something like this:
+
+    __schedule+0x315/0x840:
+    rq_sched_info_arrive at kernel/sched/stats.h:13
+     (inlined by) sched_info_arrive at kernel/sched/stats.h:99
+     (inlined by) __sched_info_switch at kernel/sched/stats.h:151
+     (inlined by) sched_info_switch at kernel/sched/stats.h:158
+     (inlined by) prepare_task_switch at kernel/sched/core.c:2582
+     (inlined by) context_switch at kernel/sched/core.c:2755
+     (inlined by) __schedule at kernel/sched/core.c:3366
+
+which is admittedly a fairly extreme case, but it shows how involved
+things can be.
+
+Note how in my example above the access itself is from a header file
+(that inlined rq_sched_info_arrive() function), and I happened to pick
+the
+
+                rq->rq_sched_info.pcount++;
+
+line. But Many inline functions are inlined from different points,
+often many times in the same top-level function (think of the atomic
+helper inlines, for example).
+
+In your case, that net/8021q/vlan.h:60 information is literally not
+helping, because it only shows what I could already figure out from
+looking at the constants in the disassembly: the code comes from the
+
+        vlan_group_for_each_dev(...) {
+                ..
+
+loop setup (it's the inline __vlan_group_get_device() function, and
+the constants I could recognize are the VLAN_GROUP_ARRAY_PART_LEN
+things.
+
+But exactly like the constants didn't tell me *which* invocation of
+that loop it was, your "net/8021q/vlan.h:60" doesn't tell me which one
+it is.
+
+There's at least _eight_ different "vlan_group_for_each_dev() {" loops
+in vlan_device_event(), and maybe it's not all that meaningful which
+of the eight it is in this case, in other cases it's critical.
+
+And since you've actually replaced the "vlan_device_event+0x7f5/0xa40"
+with that "net/8021q/vlan.h:60" entirely, all the offset information
+that *could* maybe have been used to pick one case over another (but
+likely not) is also gone.
+
+That's why that inlining chain is important - so that we can see how
+it got to that access in __vlan_group_get_device().
+
+So please do keep _all_ of the faddr2line output, at least for the
+"IP:" line (the stack traces might not be worth it).
+
+Anyway, it does all mean that the use-after-free almost certainly is
+that "array[]" access, which was the main suspect to begin with.
+
+I'm adding Jeff Kirsher and the e1000 list to the cc, since apparently
+the e1000 driver is involved. Of course, all the stack traces are in
+generic networking code, so it is possibly a generic networking issue,
+but it would probably be good to have a few people look at it.
+
+But all of this code is ancient. So it's almost certainly not a new
+bug, whatever it is.
+
+But as a test-case for your faddr2line improvements, this is excellent!
+
+                   Linus
