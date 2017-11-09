@@ -1,54 +1,117 @@
-From: Amritha Nambiar <amritha.nambiar@intel.com>
-Date: Wed, 08 Nov 2017 16:38:43 -0800
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH] i40e: Remove limit of
- 64 max queues per channel
-Message-ID: <151018792366.14946.6477127974398632743.stgit@anamdev.jf.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 9 Nov 2017 01:26:35 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 2/5] fm10k: Fix
+ VLAN configuration for macvlan offload
+In-Reply-To: <CAKgT0UecfDw2Ft+rSBcprVy95ymY-e2H1pJzWhMRFvxgFH=nVA@mail.gmail.com>
+References: <20171102232857.15146.21583.stgit@localhost.localdomain>
+ <20171102233336.15146.31137.stgit@localhost.localdomain>
+ <20171103100556.00001ff7@intel.com>
+ <02874ECE860811409154E81DA85FBB5882ADF292@ORSMSX115.amr.corp.intel.com>
+ <CAKgT0UfCaWbHOgwqCpk+uHvVXLM=5n00oqtaHFoTF_BQ4uqh4w@mail.gmail.com>
+ <02874ECE860811409154E81DA85FBB5882ADF424@ORSMSX115.amr.corp.intel.com>
+ <CAKgT0UecfDw2Ft+rSBcprVy95ymY-e2H1pJzWhMRFvxgFH=nVA@mail.gmail.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5882ADF4E2@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-It is safe to remove the upper limit of 64 queues on a channel
-VSI. The upper bound is determined by the VSI's num_queue_pairs
-and gets validated when the queue mapping info through mqprio
-interface is subject to bound checking in the driver.
+> -----Original Message-----
+> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> Sent: Wednesday, November 08, 2017 4:32 PM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> Cc: Brandeburg, Jesse <jesse.brandeburg@intel.com>; netdev at vger.kernel.org;
+> intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [jkirsher/next-queue PATCH 2/5] fm10k: Fix VLAN
+> configuration for macvlan offload
+> 
+> On Wed, Nov 8, 2017 at 4:21 PM, Keller, Jacob E
+> <jacob.e.keller@intel.com> wrote:
+> >
+> >
+> >> -----Original Message-----
+> >> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> >> Sent: Wednesday, November 08, 2017 3:04 PM
+> >> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> >> Cc: Brandeburg, Jesse <jesse.brandeburg@intel.com>;
+> netdev at vger.kernel.org;
+> >> intel-wired-lan at lists.osuosl.org
+> >> Subject: Re: [Intel-wired-lan] [jkirsher/next-queue PATCH 2/5] fm10k: Fix
+> VLAN
+> >> configuration for macvlan offload
+> >>
+> >> On Wed, Nov 8, 2017 at 2:05 PM, Keller, Jacob E
+> >> <jacob.e.keller@intel.com> wrote:
+> >> >> -----Original Message-----
+> >> >> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf
+> >> Of
+> >> >> Jesse Brandeburg
+> >> >> Sent: Friday, November 03, 2017 10:06 AM
+> >> >> To: Alexander Duyck <alexander.duyck@gmail.com>
+> >> >> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> >> >> Subject: Re: [Intel-wired-lan] [jkirsher/next-queue PATCH 2/5] fm10k: Fix
+> >> VLAN
+> >> >> configuration for macvlan offload
+> >> >>
+> >> >> On Thu, 2 Nov 2017 16:33:45 -0700
+> >> >> Alexander Duyck <alexander.duyck@gmail.com> wrote:
+> >> >>
+> >> >> > From: Alexander Duyck <alexander.h.duyck@intel.com>
+> >> >> >
+> >> >> > The fm10k driver didn't work correctly when macvlan offload was
+> enabled.
+> >> >> > Specifically what would occur is that we would see no unicast packets
+> being
+> >> >> > received. This was traced down to us not correctly configuring the default
+> >> >> > VLAN ID for the port and defaulting to 0.
+> >> >> >
+> >> >> > To correct this we either use the default ID provided by the switch or
+> >> >> > simply use 1. With that we are able to pass and receive traffic without any
+> >> >> > issues.
+> >> >>
+> >> >> Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> >> >>
+> >> >
+> >> > Hi,
+> >> >
+> >> > I think this isn't quite right, since we recently made changes to the fm10k
+> code
+> >> to stop assuming VLAN 1 in these cases. I believe it should just pass the
+> >> default_vid
+> >> >
+> >> > Thanks,
+> >> > Jake
+> >> >
+> >>
+> >> I kind of figured that might be the case. We can probably drop this
+> >> patch for now and if you want you can work this from our end as the
+> >> out-of-tree code doesn't make the upstream and I would imagine you
+> >> guys are planning to upstream that patch at some point.
+> >>
+> >> - Alex
+> >
+> > I think the patch should just be changed from using
+> >
+> > hw->mac.default_vid ? : 1
+> >
+> > to just using hw->mac.default_vid directly.
+> >
+> > Otherwise, I think the patch is necessary.
+> >
+> > Thanks,
+> > Jake
+> 
+> Doesn't passing a 0 in the case of the value not being populated cause
+> issues? If I understand the problem I thought passing a 0 in the vlan
+> ID field caused some sort of error.
+> 
+> - Alex
 
-Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h      |    1 -
- drivers/net/ethernet/intel/i40e/i40e_main.c |    8 --------
- 2 files changed, 9 deletions(-)
+No, it just doesn't really do anything useful. But it doesn't harm anything either.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 5829715..e019baa 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -90,7 +90,6 @@
- #define I40E_AQ_LEN			256
- #define I40E_AQ_WORK_LIMIT		66 /* max number of VFs + a little */
- #define I40E_MAX_USER_PRIORITY		8
--#define I40E_MAX_QUEUES_PER_CH		64
- #define I40E_DEFAULT_TRAFFIC_CLASS	BIT(0)
- #define I40E_DEFAULT_MSG_ENABLE		4
- #define I40E_QUEUE_WAIT_RETRY_LIMIT	10
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 02880d8..c3fb545 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5629,14 +5629,6 @@ static int i40e_validate_num_queues(struct i40e_pf *pf, int num_queues,
- 		return -EINVAL;
- 
- 	*reconfig_rss = false;
--
--	if (num_queues > I40E_MAX_QUEUES_PER_CH) {
--		dev_err(&pf->pdev->dev,
--			"Failed to create VMDq VSI. User requested num_queues (%d) > I40E_MAX_QUEUES_PER_VSI (%u)\n",
--			num_queues, I40E_MAX_QUEUES_PER_CH);
--		return -EINVAL;
--	}
--
- 	if (vsi->current_rss_size) {
- 		if (num_queues > vsi->current_rss_size) {
- 			dev_dbg(&pf->pdev->dev,
+Using 0 on the switch side causes problems for the switch manager, but in this case, if we don't have a default_vid, then we aren't talking to the switch anyways.
 
+Thanks,
+Jake
