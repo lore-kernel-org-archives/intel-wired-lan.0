@@ -1,39 +1,46 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 9 Nov 2017 22:39:05 +0000
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 1/5] ixgbe: Fix
- interaction between SR-IOV and macvlan offload
-In-Reply-To: <20171102233315.15146.95215.stgit@localhost.localdomain>
-References: <20171102232857.15146.21583.stgit@localhost.localdomain>
- <20171102233315.15146.95215.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAE695@ORSMSX104.amr.corp.intel.com>
+From: Cong Wang <xiyou.wangcong@gmail.com>
+Date: Thu, 9 Nov 2017 16:16:01 -0800
+Subject: [Intel-wired-lan] [vlan_device_event] BUG: unable to handle
+ kernel paging request at 6b6b6ccf
+In-Reply-To: <008a7e8d-86e2-0709-d2ae-8aa743ef12ac@oracle.com>
+References: <20171107102156.3fgxt6y6v5y2kqnf@wfg-t540p.sh.intel.com>
+ <CA+55aFwqxZiN_XrZqvbtCsc8W=w895RaB1sjuVP1aTj8JStxzg@mail.gmail.com>
+ <20171108094832.qxvkawpw2snpcbvh@wfg-t540p.sh.intel.com>
+ <CA+55aFwK7935r325nmR-eQvanVCN3A+v3wEQHsW4NpSeBsybeA@mail.gmail.com>
+ <20171108171230.ccf7lwutjysk26fc@wfg-t540p.sh.intel.com>
+ <CAKgT0UfSTwTsQFP9ir=aOJDz-BvYONBd3Q6SOJWQherkQ8XpFQ@mail.gmail.com>
+ <20171109031206.x6ta5ysdalf3lk3s@wfg-t540p.sh.intel.com>
+ <CAM_iQpXJ1cqJKkp9X1-56gUi4V_s7Gbx_GPo=rgXzJ_LwY+v7w@mail.gmail.com>
+ <008a7e8d-86e2-0709-d2ae-8aa743ef12ac@oracle.com>
+Message-ID: <CAM_iQpUBDHkrC4kirFdM6ff==9dot5+q+8L_fx2vfRLq+2+Zqw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Thursday, November 2, 2017 4:34 PM
-> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 1/5] ixgbe: Fix
-> interaction between SR-IOV and macvlan offload
-> 
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
-> 
-> When SR-IOV was enabled the macvlan offload was configuring several filters
-> with the wrong pool value. This would result in the macvlan interfaces not
-> being able to receive traffic that had to pass over the physical interface.
-> 
-> To fix it wrap the pool argument in the VMDQ_P macro which will add the
-> necessary offset to get to the actual VMDq pool
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+On Thu, Nov 9, 2017 at 7:51 AM, Girish Moodalbail
+<girish.moodalbail@oracle.com> wrote:
+>
+> Upon receiving NETDEV_DOWN event, we are calling
+>
+>         vlan_vid_del(dev, htons(ETH_P_8021Q), 0);
+>
+> which in turn calls call_rcu() to queue vlan_info_free_rcu() to be called at
+> some point. This free function frees the array[]
+> (vlan_info.vlan_grp.vn_devices_array).  My guess is that
+> vlan_info_free_rcu() is being called first and then the array[] is being
+> accessed in vlan_device_event().
+>
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Well yes and no.
 
+No, RCU itself is not broken and we clearly unpublish the RCU pointer
+before calling call_rcu().
 
+Yes, I see where it is broken: the grp pointer still points to old
+dev->vlan_info, we should re-fetch it after vlan_vid_del().
+
+I will send a fix.
+
+Thanks!
