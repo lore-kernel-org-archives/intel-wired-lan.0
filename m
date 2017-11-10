@@ -1,82 +1,48 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 10 Nov 2017 10:55:53 -0800
-Subject: [Intel-wired-lan] [PATCH 3/3] ethtool: correct VF index values for
- the ring_cookie parameter
-In-Reply-To: <20171110185553.14657-1-jacob.e.keller@intel.com>
-References: <20171110185553.14657-1-jacob.e.keller@intel.com>
-Message-ID: <20171110185553.14657-3-jacob.e.keller@intel.com>
+From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+Date: Fri, 10 Nov 2017 14:21:50 -0800
+Subject: [Intel-wired-lan] [PATCH net-next] igb: Clarify idleslope config
+ constraints
+Message-ID: <20171110222150.17754-1-jesus.sanchez-palencia@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Instead of relying on the input being offset by 1, instead adjust the
-"vf" input value by 1 so that it correctly targets the VF the user
-expects. Additionally, update the displayed output to show the correct
-VF number.
+By design, the idleslope increments are restricted to 16.384kbps steps.
+Add a comment to igb_main.c making that explicit and add one example
+that illustrates the impact of that.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 ---
+ drivers/net/ethernet/intel/igb/igb_main.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-This is the way the VF parameter should have worked from the beginning,
-but unfortunately I did not code it as such. It may be considered a
-functional change (since we already supported the vf parameter with the
-offset not handled properly). I would consider this a bug fix, but it
-might be considered a behavior change....
-
- ethtool.8.in |  3 +--
- rxclass.c    | 14 +++++++++++++-
- 2 files changed, 14 insertions(+), 3 deletions(-)
-
-diff --git a/ethtool.8.in b/ethtool.8.in
-index 6ad30650eb5b..76f86e6b6827 100644
---- a/ethtool.8.in
-+++ b/ethtool.8.in
-@@ -839,8 +839,7 @@ lB	l.
- .TE
- .TP
- .BI vf \ N
--Specifies the Virtual Function the filter applies to. A value of 0 indicates
--the PF, and thus the VF index is offset by 1. Not compatible with action.
-+Specifies the Virtual Function the filter applies to. Not compatible with action.
- .TP
- .BI queue \ N
- Specifies the Rx queue to send packets to. Not compatible with action.
-diff --git a/rxclass.c b/rxclass.c
-index 144c8e5e76be..e05031b6a23f 100644
---- a/rxclass.c
-+++ b/rxclass.c
-@@ -251,9 +251,14 @@ static void rxclass_print_nfc_rule(struct ethtool_rx_flow_spec *fsp)
- 		u64 vf = ethtool_get_flow_spec_ring_vf(fsp->ring_cookie);
- 		u64 queue = ethtool_get_flow_spec_ring(fsp->ring_cookie);
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 43cf39527660..d56c998f3f14 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -1744,6 +1744,20 @@ static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
+ 		 *     value = idleSlope * 61034
+ 		 *             -----------------                          (E6)
+ 		 *                  1000000
++		 *
++		 * NOTE: For i210, given the above, we can see that idleslope
++		 *       is represented in 16.38431 kbps units by the value at
++		 *       the TQAVCC register (1Gbps / 61034), which reduces
++		 *       the granularity for idleslope increments.
++		 *       For instance, if you want to configure a 2576kbps
++		 *       idleslope, the value to be written on the register
++		 *       would have to be 157.23. If rounded down, you end
++		 *       up with less bandwidth available than originally
++		 *       required (~2572 kbps). If rounded up, you end up
++		 *       with a higher bandwidth (~2589 kbps). Below the
++		 *       approach we take is to always round up the
++		 *       calculated value, so the resulting bandwidth might
++		 *       be slightly higher for some configurations.
+ 		 */
+ 		value = DIV_ROUND_UP_ULL(idleslope * 61034ULL, 1000000);
  
-+		/* A value of zero indicates that this rule targeted the main
-+		 * function. A positive value indicates which virtual function
-+		 * was targeted, so we'll subtract 1 in order to show the
-+		 * correct VF index
-+		 */
- 		if (vf)
- 			fprintf(stdout, "\tAction: Direct to VF %llu queue %llu\n",
--				vf, queue);
-+				vf - 1, queue);
- 		else
- 			fprintf(stdout, "\tAction: Direct to queue %llu\n",
- 				queue);
-@@ -1047,6 +1052,13 @@ static int rxclass_get_val(char *str, unsigned char *p, u32 *flags,
- 		err = rxclass_get_ulong(str, &val, 8);
- 		if (err)
- 			return -1;
-+
-+		/* The ring_cookie uses 0 to indicate the rule targets the
-+		 * main function, so add 1 to the value in order to target the
-+		 * correct virtual function.
-+		 */
-+		val++;
-+
- 		*(u64 *)&p[opt->offset] &= ~ETHTOOL_RX_FLOW_SPEC_RING_VF;
- 		*(u64 *)&p[opt->offset] = (u64)val << ETHTOOL_RX_FLOW_SPEC_RING_VF_OFF;
- 		break;
 -- 
-2.15.0
+2.14.1
 
