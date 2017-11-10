@@ -1,45 +1,37 @@
-From: Duyck, Alexander H <alexander.h.duyck@intel.com>
-Date: Fri, 10 Nov 2017 17:37:36 +0000
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 1/5] ixgbe: Fix
- interaction between SR-IOV and macvlan offload
-In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAE695@ORSMSX104.amr.corp.intel.com>
-References: <20171102232857.15146.21583.stgit@localhost.localdomain>
- <20171102233315.15146.95215.stgit@localhost.localdomain>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAE695@ORSMSX104.amr.corp.intel.com>
-Message-ID: <1510335453.28435.8.camel@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Fri, 10 Nov 2017 10:55:52 -0800
+Subject: [Intel-wired-lan] [PATCH 2/3] ethtool: show vf and queue in the
+ help for -N
+In-Reply-To: <20171110185553.14657-1-jacob.e.keller@intel.com>
+References: <20171110185553.14657-1-jacob.e.keller@intel.com>
+Message-ID: <20171110185553.14657-2-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2017-11-09 at 22:39 +0000, Bowers, AndrewX wrote:
-> > -----Original Message-----
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> > Behalf Of Alexander Duyck
-> > Sent: Thursday, November 2, 2017 4:34 PM
-> > To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> > Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 1/5] ixgbe: Fix
-> > interaction between SR-IOV and macvlan offload
-> > 
-> > From: Alexander Duyck <alexander.h.duyck@intel.com>
-> > 
-> > When SR-IOV was enabled the macvlan offload was configuring several filters
-> > with the wrong pool value. This would result in the macvlan interfaces not
-> > being able to receive traffic that had to pass over the physical interface.
-> > 
-> > To fix it wrap the pool argument in the VMDQ_P macro which will add the
-> > necessary offset to get to the actual VMDq pool
-> > 
-> > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Show that you can use vf and queue instead of action in the help output,
+and not only in the manual page.
 
-Actually I think I want to NAK this patch and the fm10k one that came
-after it. I need to redo both of them anyway so I might as well just
-re-submit the whole set.
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-- Alex
+diff --git a/ethtool.c b/ethtool.c
+index 1a2b7ccd2edf..4149bb4eeda2 100644
+--- a/ethtool.c
++++ b/ethtool.c
+@@ -4856,7 +4856,7 @@ static const struct option {
+ 	  "			[ vlan %x [m %x] ]\n"
+ 	  "			[ user-def %x [m %x] ]\n"
+ 	  "			[ dst-mac %x:%x:%x:%x:%x:%x [m %x:%x:%x:%x:%x:%x] ]\n"
+-	  "			[ action %d ]\n"
++	  "			[ action %d ] | [ vf %d queue %d ]\n"
+ 	  "			[ loc %d]] |\n"
+ 	  "		delete %d\n" },
+ 	{ "-T|--show-time-stamping", 1, do_tsinfo,
+-- 
+2.15.0
+
