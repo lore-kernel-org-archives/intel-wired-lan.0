@@ -1,7 +1,7 @@
-From: Andi Kleen <ak@linux.intel.com>
-Date: Mon, 13 Nov 2017 13:41:48 -0800
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 13 Nov 2017 13:57:26 -0800
 Subject: [Intel-wired-lan] CONFIG_DEBUG_INFO_SPLIT impacts on faddr2line
-In-Reply-To: <CA+55aFzFUuCniKCutTVNchuhY-bkB=3JkPv46rYwpx1Q0_5n0w@mail.gmail.com>
+In-Reply-To: <20171113214148.GP8522@tassilo.jf.intel.com>
 References: <CA+55aFwqxZiN_XrZqvbtCsc8W=w895RaB1sjuVP1aTj8JStxzg@mail.gmail.com>
  <20171108094832.qxvkawpw2snpcbvh@wfg-t540p.sh.intel.com>
  <CA+55aFwK7935r325nmR-eQvanVCN3A+v3wEQHsW4NpSeBsybeA@mail.gmail.com>
@@ -12,48 +12,31 @@ References: <CA+55aFwqxZiN_XrZqvbtCsc8W=w895RaB1sjuVP1aTj8JStxzg@mail.gmail.com>
  <CA+55aFzbQBPOwah9gQPHR9WL+zZBOXnHsP6GKmC=QE7qOn+psw@mail.gmail.com>
  <20171113201013.GO8522@tassilo.jf.intel.com>
  <CA+55aFzFUuCniKCutTVNchuhY-bkB=3JkPv46rYwpx1Q0_5n0w@mail.gmail.com>
-Message-ID: <20171113214148.GP8522@tassilo.jf.intel.com>
+ <20171113214148.GP8522@tassilo.jf.intel.com>
+Message-ID: <CA+55aFzEb1qp872nO4Y20cY9WHdek2MC=7XX1xNcN8q1WvTOaw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Nov 13, 2017 at 12:56:31PM -0800, Linus Torvalds wrote:
-> On Mon, Nov 13, 2017 at 12:10 PM, Andi Kleen <ak@linux.intel.com> wrote:
-> >
-> > You're right. It works for line information, but strangely not for
-> > inlines. I assume it can be fixed.
-> 
-> So I'm not 100% sure it's strictly a addr2line bug.
+On Mon, Nov 13, 2017 at 1:41 PM, Andi Kleen <ak@linux.intel.com> wrote:
+>
+> It seems to be broken for normal programs too
 
-It seems to be broken for normal programs too
+Ok.
 
-$ cat tinline.c
+I wonder if there is some way to use the split format for the
+intermediate files, but then for the very final link bring them all in
+and make the end result be a traditional single binary. I'm not
+talking the separate "dwp" package that packs multiple dwo files into
+one, but to actually link them all in at the one.
 
-int i;
+Sure, it would lose some of the advantage, but I think a large portion
+of the -gsplit-dwarf advantage is about the intermediate state. No?
 
-static inline int finline(void)
-{
-	i++;
-}
+I tried to google for it, but couldn't find anything. But apparently
+elfutils doesn't support dwo files either. It seems mainly the linker
+and gdb itself that supports it.
 
-main()
-{
-	finline();
-}
-
-$ gcc -O2 -gsplit-dwarf tinline.c
-$ addr2line -i -e a.out 0x4003b0
-/home/ak/tsrc/tinline.c:6
-$ gcc -O2  -g tinline.c
-$ addr2line -i -e a.out 0x4003b0
-/home/ak/tsrc/tinline.c:6
-/home/ak/tsrc/tinline.c:12
-$
-
-I filed https://sourceware.org/bugzilla/show_bug.cgi?id=22434
-
-
--Andi
-
+                  Linus
