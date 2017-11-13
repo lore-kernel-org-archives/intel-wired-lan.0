@@ -1,105 +1,142 @@
-From: Stephen Hemminger <stephen@networkplumber.org>
-Date: Thu, 30 Nov 2017 11:53:17 -0800
-Subject: [Intel-wired-lan] Fw: [Bug 198047] New: Regression in e1000e with
- kernel 4.14.3
-Message-ID: <20171130115317.041c950e@xeon-e3>
+From: Fengguang Wu <fengguang.wu@intel.com>
+Date: Mon, 13 Nov 2017 09:13:38 +0800
+Subject: [Intel-wired-lan] CONFIG_DEBUG_INFO_SPLIT impacts on faddr2line
+In-Reply-To: <CA+55aFx0O+NTbBjavPm_jPucqHdXFYPmUya4kw=ps7LSqTFd5w@mail.gmail.com>
+References: <20171107102156.3fgxt6y6v5y2kqnf@wfg-t540p.sh.intel.com>
+ <CA+55aFwqxZiN_XrZqvbtCsc8W=w895RaB1sjuVP1aTj8JStxzg@mail.gmail.com>
+ <20171108094832.qxvkawpw2snpcbvh@wfg-t540p.sh.intel.com>
+ <CA+55aFwK7935r325nmR-eQvanVCN3A+v3wEQHsW4NpSeBsybeA@mail.gmail.com>
+ <20171108171230.ccf7lwutjysk26fc@wfg-t540p.sh.intel.com>
+ <CA+55aFx0O+NTbBjavPm_jPucqHdXFYPmUya4kw=ps7LSqTFd5w@mail.gmail.com>
+Message-ID: <20171113011338.3qmnp64pttyscuus@wfg-t540p.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+CC Andi and more DEBUG_INFO_SPLIT people.
 
+On Sun, Nov 12, 2017 at 11:31:56AM -0800, Linus Torvalds wrote:
+>On Wed, Nov 8, 2017 at 9:12 AM, Fengguang Wu <fengguang.wu@intel.com> wrote:
+>>
+>> OK. Here is the original faddr2line output:
+>>
+>> $ ~/linux/scripts/faddr2line vmlinux vlan_device_event+0x7f5/0xa40
+>> vlan_device_event+0x7f5/0xa40:
+>> vlan_device_event at net/8021q/vlan.h:60
+>>
+>> And below is call trace embedded with full faddr2line output.
+>>
+>> I notice that this trace shows no additional inline files at all.
+>> Is it because I did some kconfig option wrong, so that inline info is
+>> lost? Eg.
+>>
+>> CONFIG_OPTIMIZE_INLINING=y (it looks better set to N)
+>> CONFIG_DEBUG_INFO_REDUCED=y
+>> CONFIG_DEBUG_INFO_SPLIT=y
+>
+>Ok, this annoyed me, so I went back and looked.
+>
+>It's the "CONFIG_DEBUG_INFO_SPLIT" thing that makes faddr2line unable
+>to see the inlining information,
+>
+>Using OPTIMIZE_INLINING is fine.
 
-Begin forwarded message:
+Good to know that!
 
-Date: Thu, 30 Nov 2017 19:32:04 +0000
-From: bugzilla-daemon@bugzilla.kernel.org
-To: stephen@networkplumber.org
-Subject: [Bug 198047] New: Regression in e1000e with kernel 4.14.3
+>I'm not sure that addr2line could be made to understand the .dwo files
+>that DEBUG_INFO_SPLIT causes (particularly since we munge the vmlinux
+>file itself, who knows how that could confuse things).
+>
+>So can I ask that you make the 0day build scripts always use
+>
+>  CONFIG_DEBUG_INFO=y
+>  CONFIG_DEBUG_INFO_REDUCED=y
+>  # CONFIG_DEBUG_INFO_SPLIT is not set
+>
+>because with that "DEBUG_INFO_REDUCED=y", the use of DEBUG_INFO_SPLIT
+>shouldn't be _that_ big of a deal.
+>
+>Yes, splitting the debug info does help reduce disk usage for the
+>build, and presumably speed it up a bit too due to less IO and reduced
+>copying of the debug info data, but right now it really makes the
+>debug info much less useful.
 
+Yes DEBUG_INFO_SPLIT helps reduce build cost. Equally importantly,
+it helps cut down the *.ko sizes, which saves boot test cost, too.
+Since in our test scheme, the below modules.cgz will be loaded as part
+of initrd on boot testing. Which will cost memory, and to the lesser
+degree, IO and uncompressing time.
 
-https://bugzilla.kernel.org/show_bug.cgi?id=198047
+Here is the diff of the modules.cgz size:
 
-            Bug ID: 198047
-           Summary: Regression in e1000e with kernel 4.14.3
-           Product: Networking
-           Version: 2.5
-    Kernel Version: 4.14.3
-          Hardware: x86-64
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: Other
-          Assignee: stephen at networkplumber.org
-          Reporter: rwarsow at gmx.de
-        Regression: No
+Big files under /pkg/linux/x86_64-rhel-7.2+CONFIG_DEBUG_INFO_REDUCED/gcc-6/v4.14-rc7/,
+comparing to +CONFIG_DEBUG_INFO_SPLIT:
 
-Created attachment 260963
-  --> https://bugzilla.kernel.org/attachment.cgi?id=260963&action=edit  
-screenshot network manager
+=>    54M  135M  modules.cgz
+     7.3M  7.3M  vmlinuz-4.14.0-rc7
+     1.2M  1.2M  linux-headers.cgz
+     7.6M  7.7M  linux-selftests.cgz
+      31M   31M  linux-perf.cgz
 
-I got a regression with my network interface e1000e.
+Nevertheless, that's machine cost. If DEBUG_INFO_SPLIT hurts our
+ability to analyze bugs, I think the forthright way would be to
+disable it in our tests.
 
-With kernel 4.14.3 and Fedora 27 the network interface e1000e doesn't come up
-if I set MTU to 1492 and boot with that settings.
+>Just to see the difference:
+>
+> - with DEBUG_INFO_SPLIT=y
+>
+>    [torvalds at i7 linux]$ ./scripts/faddr2line vmlinux __schedule+0x314
+>    __schedule+0x314/0x840:
+>    __schedule at kernel/sched/stats.h:12
+>
+> - with DEBUG_INFO_SPLIT is not set
+>
+>    [torvalds at i7 linux]$ ./scripts/faddr2line vmlinux __schedule+0x314
+>    __schedule+0x314/0x840:
+>    rq_sched_info_arrive at kernel/sched/stats.h:12
+>     (inlined by) sched_info_arrive at kernel/sched/stats.h:99
+>     (inlined by) __sched_info_switch at kernel/sched/stats.h:151
+>     (inlined by) sched_info_switch at kernel/sched/stats.h:158
+>     (inlined by) prepare_task_switch at kernel/sched/core.c:2582
+>     (inlined by) context_switch at kernel/sched/core.c:2755
+>     (inlined by) __schedule at kernel/sched/core.c:3366
+>
+>and while (once again) this is a pretty extreme case, we do use a lot
+>of inlines, and gcc will add its own inlining. Getting this whole
+>information - particularly for the faulting IP - would really help in
+>some situations.
+>
+>I love what the 0day robot is doing, this would be another big step forward.
 
-with MTU set to auto sometimes the interface is active and sometimes not.
+Thank you for the helpful information and appreciations!
+I'll make the change to disable DEBUG_INFO_SPLIT.
 
-In network manager (Fedora 27) the button to activate/deactivate the network
-interface is greyed out. Computers backside network LED'S are off.
+>Oh - and talking about "big step forward" - does the 0day robot do any
+>suspend/resume testing at all?
 
-there are no errors in the logs nor selinux issues, ...
+Yes, we do. CC Rui and Aaron on power testing.
 
-up to 4.13.2 all kernels from 4.13 series I got no errors.
+>Even on non-laptop hardware, it should be possible to do something like
+>
+>    echo platform > /sys/power/pm_test
+>    echo freeze > /sys/power/state
+>
+>or similar (assuming CONFIG_PM_DEBUG is enabled).
+>
+>Maybe you already do something like this?
 
+Rui/Aaron have better knowledge on the current status. It does look an
+error-prone area that's worth more testing efforts.
 
-how can I debug this ?
+>Anyway, regardless this was a good release for the 0day robot. Thanks.
 
+My (and our) pleasure. I'd like to thank you and all the people who
+take time to analyze/fix the bugs. It's great to see the long standing
+bugs being fixed in mainline -- they have been a big source of noises
+that hurt our auto bisect&reporting capabilities.
 
-Maybe from interest:
-with the late Fedora 27 Beta (I believe kernel 4.12.x) I remember issues
-switching interface MTU from auto to 1492.
-
-
-lspci:
-=====
-
-00:1f.6 Ethernet controller: Intel Corporation Ethernet Connection (2) I219-V
-     Subsystem: Micro-Star International Co., Ltd. [MSI] Device 7a72
-     Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx+
-     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-<MAbort- >SERR- <PERR- INTx-
-     Interrupt: pin A routed to IRQ 123
-     Region 0: Memory@df100000 (32-bit, non-prefetchable) [disabled]
-[size=128K]
-     Capabilities: <access denied>
-     Kernel driver in use: e1000e 
-
-
-dmesg | grep -iE 'eth|enp0s31f6':
-================================
-
-[    1.255886] e1000e 0000:00:1f.6 eth0: (PCI Express:2.5GT/s:Width x1)
-4c:cc:6a:bc:8c:a2
-[    1.255889] e1000e 0000:00:1f.6 eth0: Intel(R) PRO/1000 Network Connection
-[    1.256032] e1000e 0000:00:1f.6 eth0: MAC: 12, PHY: 12, PBA No: FFFFFF-0FF
-[    1.495646] e1000e 0000:00:1f.6 enp0s31f6: renamed from eth0
-[    4.091853] e1000e 0000:00:1f.6 enp0s31f6: changing MTU from 1500 to 1492
-[    4.250990] IPv6: ADDRCONF(NETDEV_UP): enp0s31f6: link is not ready
-[    4.463180] IPv6: ADDRCONF(NETDEV_UP): enp0s31f6: link is not ready
-
-
-
-nmcli connection show:
-=====================
-
-NAME       UUID                                  TYPE            DEVICE
-Profile 1  0e0cc197-be48-43a7-83d8-423ee89a448e  802-3-ethernet  --
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Regards,
+Fengguang
