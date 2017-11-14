@@ -1,52 +1,219 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 14 Nov 2017 07:00:49 -0500
-Subject: [Intel-wired-lan] [next PATCH S82-V4 6/9] i40e: Fix FLR reset
- timeout issue
+Date: Tue, 14 Nov 2017 07:00:52 -0500
+Subject: [Intel-wired-lan] [next PATCH S82-V4 9/9] i40e: restore promiscuous
+ after reset
 In-Reply-To: <20171114120052.86665-1-alice.michael@intel.com>
 References: <20171114120052.86665-1-alice.michael@intel.com>
-Message-ID: <20171114120052.86665-6-alice.michael@intel.com>
+Message-ID: <20171114120052.86665-9-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Filip Sadowski <filip.sadowski@intel.com>
+From: Alan Brady <alan.brady@intel.com>
 
-This patch allows detection of upcoming core reset in case NIC gets
-stuck while performing FLR reset. The i40e_pf_reset() function returns
-I40E_ERR_NOT_READY when global reset was detected.
+After a reset we rebuild the VSIs which is going to clobber any
+promiscuous settings we had before reset.  This makes it so that we
+restore the promiscuous settings we had before reset.
 
-Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+Testing-hints:
+Set promiscuous mode, force a reset (ethtool -K <iface> ntuple off/on
+should work), check if promiscuous traffic is still received after
+reset.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 5abc83c..40c5f76 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1269,6 +1269,7 @@ i40e_status i40e_pf_reset(struct i40e_hw *hw)
- 	 * we don't need to do the PF Reset
- 	 */
- 	if (!cnt) {
-+		u32 reg2 = 0;
- 		if (hw->revision_id == 0)
- 			cnt = I40E_PF_RESET_WAIT_COUNT_A0;
- 		else
-@@ -1280,6 +1281,12 @@ i40e_status i40e_pf_reset(struct i40e_hw *hw)
- 			reg = rd32(hw, I40E_PFGEN_CTRL);
- 			if (!(reg & I40E_PFGEN_CTRL_PFSWR_MASK))
- 				break;
-+			reg2 = rd32(hw, I40E_GLGEN_RSTAT);
-+			if (reg2 & I40E_GLGEN_RSTAT_DEVSTATE_MASK) {
-+				hw_dbg(hw, "Core reset upcoming. Skipping PF reset request.\n");
-+				hw_dbg(hw, "I40E_GLGEN_RSTAT = 0x%x\n", reg2);
-+				return I40E_ERR_NOT_READY;
-+			}
- 			usleep_range(1000, 2000);
+v2:
+- Fix whitespace on i40e_aq_str lines
+- Add error message if i40e_set_promiscuous fails after reset
+
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 155 +++++++++++++++-------------
+ 1 file changed, 83 insertions(+), 72 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 813f71a..906598c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2167,6 +2167,73 @@ i40e_aqc_broadcast_filter(struct i40e_vsi *vsi, const char *vsi_name,
+ }
+ 
+ /**
++ * i40e_set_promiscuous - set promiscuous mode
++ * @pf: board private structure
++ * @promisc: promisc on or off
++ *
++ * There are different ways of setting promiscuous mode on a PF depending on
++ * what state/environment we're in.  This identifies and sets it appropriately.
++ * Returns 0 on success.
++ **/
++static int i40e_set_promiscuous(struct i40e_pf *pf, bool promisc)
++{
++	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
++	struct i40e_hw *hw = &pf->hw;
++	i40e_status aq_ret;
++
++	if (vsi->type == I40E_VSI_MAIN &&
++	    pf->lan_veb != I40E_NO_VEB &&
++	    !(pf->flags & I40E_FLAG_MFP_ENABLED)) {
++		/* set defport ON for Main VSI instead of true promisc
++		 * this way we will get all unicast/multicast and VLAN
++		 * promisc behavior but will not get VF or VMDq traffic
++		 * replicated on the Main VSI.
++		 */
++		if (promisc)
++			aq_ret = i40e_aq_set_default_vsi(hw,
++							 vsi->seid,
++							 NULL);
++		else
++			aq_ret = i40e_aq_clear_default_vsi(hw,
++							   vsi->seid,
++							   NULL);
++		if (aq_ret) {
++			dev_info(&pf->pdev->dev,
++				 "Set default VSI failed, err %s, aq_err %s\n",
++				 i40e_stat_str(hw, aq_ret),
++				 i40e_aq_str(hw, hw->aq.asq_last_status));
++		}
++	} else {
++		aq_ret = i40e_aq_set_vsi_unicast_promiscuous(
++						  hw,
++						  vsi->seid,
++						  promisc, NULL,
++						  true);
++		if (aq_ret) {
++			dev_info(&pf->pdev->dev,
++				 "set unicast promisc failed, err %s, aq_err %s\n",
++				 i40e_stat_str(hw, aq_ret),
++				 i40e_aq_str(hw, hw->aq.asq_last_status));
++		}
++		aq_ret = i40e_aq_set_vsi_multicast_promiscuous(
++						  hw,
++						  vsi->seid,
++						  promisc, NULL);
++		if (aq_ret) {
++			dev_info(&pf->pdev->dev,
++				 "set multicast promisc failed, err %s, aq_err %s\n",
++				 i40e_stat_str(hw, aq_ret),
++				 i40e_aq_str(hw, hw->aq.asq_last_status));
++		}
++	}
++
++	if (!aq_ret)
++		pf->cur_promisc = promisc;
++
++	return aq_ret;
++}
++
++/**
+  * i40e_sync_vsi_filters - Update the VSI filter list to the HW
+  * @vsi: ptr to the VSI
+  *
+@@ -2467,81 +2534,16 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 		cur_promisc = (!!(vsi->current_netdev_flags & IFF_PROMISC) ||
+ 			       test_bit(__I40E_VSI_OVERFLOW_PROMISC,
+ 					vsi->state));
+-		if ((vsi->type == I40E_VSI_MAIN) &&
+-		    (pf->lan_veb != I40E_NO_VEB) &&
+-		    !(pf->flags & I40E_FLAG_MFP_ENABLED)) {
+-			/* set defport ON for Main VSI instead of true promisc
+-			 * this way we will get all unicast/multicast and VLAN
+-			 * promisc behavior but will not get VF or VMDq traffic
+-			 * replicated on the Main VSI.
+-			 */
+-			if (pf->cur_promisc != cur_promisc) {
+-				pf->cur_promisc = cur_promisc;
+-				if (cur_promisc)
+-					aq_ret =
+-					      i40e_aq_set_default_vsi(hw,
+-								      vsi->seid,
+-								      NULL);
+-				else
+-					aq_ret =
+-					    i40e_aq_clear_default_vsi(hw,
+-								      vsi->seid,
+-								      NULL);
+-				if (aq_ret) {
+-					retval = i40e_aq_rc_to_posix(aq_ret,
+-							hw->aq.asq_last_status);
+-					dev_info(&pf->pdev->dev,
+-						 "Set default VSI failed on %s, err %s, aq_err %s\n",
+-						 vsi_name,
+-						 i40e_stat_str(hw, aq_ret),
+-						 i40e_aq_str(hw,
+-						     hw->aq.asq_last_status));
+-				}
+-			}
+-		} else {
+-			aq_ret = i40e_aq_set_vsi_unicast_promiscuous(
+-							  hw,
+-							  vsi->seid,
+-							  cur_promisc, NULL,
+-							  true);
+-			if (aq_ret) {
+-				retval =
+-				i40e_aq_rc_to_posix(aq_ret,
+-						    hw->aq.asq_last_status);
+-				dev_info(&pf->pdev->dev,
+-					 "set unicast promisc failed on %s, err %s, aq_err %s\n",
+-					 vsi_name,
+-					 i40e_stat_str(hw, aq_ret),
+-					 i40e_aq_str(hw,
+-						     hw->aq.asq_last_status));
+-			}
+-			aq_ret = i40e_aq_set_vsi_multicast_promiscuous(
+-							  hw,
+-							  vsi->seid,
+-							  cur_promisc, NULL);
+-			if (aq_ret) {
+-				retval =
+-				i40e_aq_rc_to_posix(aq_ret,
+-						    hw->aq.asq_last_status);
+-				dev_info(&pf->pdev->dev,
+-					 "set multicast promisc failed on %s, err %s, aq_err %s\n",
+-					 vsi_name,
+-					 i40e_stat_str(hw, aq_ret),
+-					 i40e_aq_str(hw,
+-						     hw->aq.asq_last_status));
+-			}
+-		}
+-		aq_ret = i40e_aq_set_vsi_broadcast(&vsi->back->hw,
+-						   vsi->seid,
+-						   cur_promisc, NULL);
++		aq_ret = i40e_set_promiscuous(pf, cur_promisc);
+ 		if (aq_ret) {
+ 			retval = i40e_aq_rc_to_posix(aq_ret,
+-						     pf->hw.aq.asq_last_status);
++						     hw->aq.asq_last_status);
+ 			dev_info(&pf->pdev->dev,
+-				 "set brdcast promisc failed, err %s, aq_err %s\n",
+-					 i40e_stat_str(hw, aq_ret),
+-					 i40e_aq_str(hw,
+-						     hw->aq.asq_last_status));
++				 "Setting promiscuous %s failed on %s, err %s aq_err %s\n",
++				 cur_promisc ? "on" : "off",
++				 vsi_name,
++				 i40e_stat_str(hw, aq_ret),
++				 i40e_aq_str(hw, hw->aq.asq_last_status));
  		}
- 		if (reg & I40E_PFGEN_CTRL_PFSWR_MASK) {
+ 	}
+ out:
+@@ -9500,6 +9502,15 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 	if (!lock_acquired)
+ 		rtnl_unlock();
+ 
++	/* Restore promiscuous settings */
++	ret = i40e_set_promiscuous(pf, pf->cur_promisc);
++	if (ret)
++		dev_warn(&pf->pdev->dev,
++			 "Failed to restore promiscuous setting: %s, err %s aq_err %s\n",
++			 pf->cur_promisc ? "on" : "off",
++			 i40e_stat_str(&pf->hw, ret),
++			 i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
++
+ 	i40e_reset_all_vfs(pf, true);
+ 
+ 	/* tell the firmware that we're starting */
 -- 
 2.9.5
 
