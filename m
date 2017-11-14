@@ -1,156 +1,98 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 15 Nov 2017 05:05:12 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- f1ca02ab6c7ece158f566702c5309795a9fc4b9b
-Message-ID: <5a0b5a88.7dIW2MwkKqjB5SAF%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Tue, 14 Nov 2017 15:03:47 -0800
+Subject: [Intel-wired-lan] [next PATCH S82-V4 3/9] i40evf: Drop
+ i40evf_fire_sw_int as it is prone to races
+In-Reply-To: <20171114120052.86665-3-alice.michael@intel.com>
+References: <20171114120052.86665-1-alice.michael@intel.com>
+ <20171114120052.86665-3-alice.michael@intel.com>
+Message-ID: <d3d5e417-2c8f-2bec-e8ba-6e98f1f9bec5@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: f1ca02ab6c7ece158f566702c5309795a9fc4b9b  i40e: remove redundant initialization of read_size
 
-elapsed time: 121m
 
-configs tested: 132
+On 11/14/2017 4:00 AM, Alice Michael wrote:
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> 
+> Having the interrupts firing while we are polling causes extra overhead and
+> isn't needed for most systems out there. If an interrupt is lost us
+> experiencing a 2s latency spike before recovering is still not acceptable
+> and masks the issue. We are better off just identifying systems that lose
+> interrupts and instead enable workarounds for those systems.
+> 
+> To that end I am dropping the code that was strobing the interrupts as
+> there is a narrow window where having them enabled can actually cause
+> race issues anyway where a few stray packets might get misses if the
+> interrupt is re-enabled and fires before we call napi_complete.
+> 
+> Also replace one line where we were using bit 31 instead of the define
+> for the bit to represent masking the interrupt enable bit.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I still don't see a line replaced, only lines removed.  I would guess it 
+got stripped out of the upstream code?
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                     randconfig-n0-201746
-x86_64                 randconfig-x000-201746
-x86_64                 randconfig-x001-201746
-x86_64                 randconfig-x008-201746
-x86_64                 randconfig-x004-201746
-x86_64                 randconfig-x005-201746
-x86_64                 randconfig-x007-201746
-x86_64                 randconfig-x006-201746
-x86_64                 randconfig-x003-201746
-x86_64                 randconfig-x009-201746
-x86_64                 randconfig-x002-201746
-i386                     randconfig-i1-201746
-i386                     randconfig-i0-201746
-x86_64                 randconfig-x018-201746
-x86_64                 randconfig-x011-201746
-x86_64                 randconfig-x013-201746
-x86_64                 randconfig-x019-201746
-x86_64                 randconfig-x012-201746
-x86_64                 randconfig-x017-201746
-x86_64                 randconfig-x016-201746
-x86_64                 randconfig-x014-201746
-x86_64                 randconfig-x015-201746
-x86_64                 randconfig-x010-201746
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-a0-201746
-i386                     randconfig-a1-201746
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                     randconfig-s0-201746
-i386                     randconfig-s1-201746
-i386                             allmodconfig
-x86_64                   randconfig-i0-201746
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-i386                               tinyconfig
-i386                   randconfig-x019-201746
-i386                   randconfig-x015-201746
-i386                   randconfig-x013-201746
-i386                   randconfig-x014-201746
-i386                   randconfig-x011-201746
-i386                   randconfig-x018-201746
-i386                   randconfig-x010-201746
-i386                   randconfig-x012-201746
-i386                   randconfig-x017-201746
-i386                   randconfig-x016-201746
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x074-201746
-i386                   randconfig-x077-201746
-i386                   randconfig-x071-201746
-i386                   randconfig-x076-201746
-i386                   randconfig-x073-201746
-i386                   randconfig-x078-201746
-i386                   randconfig-x072-201746
-i386                   randconfig-x079-201746
-i386                   randconfig-x070-201746
-i386                   randconfig-x075-201746
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                   randconfig-x001-201746
-i386                   randconfig-x008-201746
-i386                   randconfig-x002-201746
-i386                   randconfig-x004-201746
-i386                   randconfig-x003-201746
-i386                   randconfig-x006-201746
-i386                   randconfig-x007-201746
-i386                   randconfig-x005-201746
-i386                   randconfig-x000-201746
-i386                   randconfig-x009-201746
+sln
 
-Thanks,
-Fengguang
+
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> ---
+>   drivers/net/ethernet/intel/i40evf/i40evf_main.c | 34 -------------------------
+>   1 file changed, 34 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> index 4dd3149..5e27619 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> @@ -282,33 +282,6 @@ void i40evf_irq_enable_queues(struct i40evf_adapter *adapter, u32 mask)
+>   }
+>   
+>   /**
+> - * i40evf_fire_sw_int - Generate SW interrupt for specified vectors
+> - * @adapter: board private structure
+> - * @mask: bitmap of vectors to trigger
+> - **/
+> -static void i40evf_fire_sw_int(struct i40evf_adapter *adapter, u32 mask)
+> -{
+> -	struct i40e_hw *hw = &adapter->hw;
+> -	int i;
+> -	u32 dyn_ctl;
+> -
+> -	if (mask & 1) {
+> -		dyn_ctl = rd32(hw, I40E_VFINT_DYN_CTL01);
+> -		dyn_ctl |= I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
+> -			   I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK;
+> -		wr32(hw, I40E_VFINT_DYN_CTL01, dyn_ctl);
+> -	}
+> -	for (i = 1; i < adapter->num_msix_vectors; i++) {
+> -		if (mask & BIT(i)) {
+> -			dyn_ctl = rd32(hw, I40E_VFINT_DYN_CTLN1(i - 1));
+> -			dyn_ctl |= I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
+> -				   I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK;
+> -			wr32(hw, I40E_VFINT_DYN_CTLN1(i - 1), dyn_ctl);
+> -		}
+> -	}
+> -}
+> -
+> -/**
+>    * i40evf_irq_enable - Enable default interrupt generation settings
+>    * @adapter: board private structure
+>    * @flush: boolean value whether to run rd32()
+> @@ -1743,13 +1716,6 @@ static void i40evf_watchdog_task(struct work_struct *work)
+>   	if (adapter->state == __I40EVF_RUNNING)
+>   		i40evf_request_stats(adapter);
+>   watchdog_done:
+> -	if (adapter->state == __I40EVF_RUNNING) {
+> -		i40evf_irq_enable_queues(adapter, ~0);
+> -		i40evf_fire_sw_int(adapter, 0xFF);
+> -	} else {
+> -		i40evf_fire_sw_int(adapter, 0x1);
+> -	}
+> -
+>   	clear_bit(__I40EVF_IN_CRITICAL_TASK, &adapter->crit_section);
+>   restart_watchdog:
+>   	if (adapter->state == __I40EVF_REMOVE)
+> 
