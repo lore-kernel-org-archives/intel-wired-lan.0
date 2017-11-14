@@ -1,89 +1,499 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 14 Nov 2017 07:00:46 -0500
-Subject: [Intel-wired-lan] [next PATCH S82-V4 3/9] i40evf: Drop
- i40evf_fire_sw_int as it is prone to races
+Date: Tue, 14 Nov 2017 07:00:47 -0500
+Subject: [Intel-wired-lan] [next PATCH S82-V4 4/9] i40e: change ppp name to
+ ddp
 In-Reply-To: <20171114120052.86665-1-alice.michael@intel.com>
 References: <20171114120052.86665-1-alice.michael@intel.com>
-Message-ID: <20171114120052.86665-3-alice.michael@intel.com>
+Message-ID: <20171114120052.86665-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+From: Jingjing Wu <jingjing.wu@intel.com>
 
-Having the interrupts firing while we are polling causes extra overhead and
-isn't needed for most systems out there. If an interrupt is lost us
-experiencing a 2s latency spike before recovering is still not acceptable
-and masks the issue. We are better off just identifying systems that lose
-interrupts and instead enable workarounds for those systems.
+PPP name was going to be confusing since PPP already means point
+to point protocol. It is decided to change pipeline personalization
+profile(ppp) to dynamic device personalization(ddp).
 
-To that end I am dropping the code that was strobing the interrupts as
-there is a narrow window where having them enabled can actually cause
-race issues anyway where a few stray packets might get misses if the
-interrupt is re-enabled and fires before we call napi_complete.
-
-Also replace one line where we were using bit 31 instead of the define
-for the bit to represent masking the interrupt enable bit.
-
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Jingjing Wu <jingjing.wu@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 34 -------------------------
- 1 file changed, 34 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 10 ++++----
+ drivers/net/ethernet/intel/i40e/i40e_common.c      | 22 ++++++++---------
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   | 10 ++++----
+ drivers/net/ethernet/intel/i40e/i40e_type.h        | 28 +++++++++++-----------
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 10 ++++----
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    | 24 +++++++++----------
+ drivers/net/ethernet/intel/i40evf/i40e_prototype.h | 10 ++++----
+ drivers/net/ethernet/intel/i40evf/i40e_type.h      | 28 +++++++++++-----------
+ 8 files changed, 73 insertions(+), 69 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 4dd3149..5e27619 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -282,33 +282,6 @@ void i40evf_irq_enable_queues(struct i40evf_adapter *adapter, u32 mask)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index b0188b8..c577634 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -198,7 +198,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_add_mirror_rule	= 0x0260,
+ 	i40e_aqc_opc_delete_mirror_rule	= 0x0261,
+ 
+-	/* Pipeline Personalization Profile */
++	/* Dynamic Device Personalization */
+ 	i40e_aqc_opc_write_personalization_profile	= 0x0270,
+ 	i40e_aqc_opc_get_personalization_profile_list	= 0x0271,
+ 
+@@ -1594,7 +1594,7 @@ struct i40e_aqc_add_delete_mirror_rule_completion {
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_add_delete_mirror_rule_completion);
+ 
+-/* Pipeline Personalization Profile */
++/* Dynamic Device Personalization */
+ struct i40e_aqc_write_personalization_profile {
+ 	u8      flags;
+ 	u8      reserved[3];
+@@ -1605,7 +1605,7 @@ struct i40e_aqc_write_personalization_profile {
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_write_personalization_profile);
+ 
+-struct i40e_aqc_write_ppp_resp {
++struct i40e_aqc_write_ddp_resp {
+ 	__le32 error_offset;
+ 	__le32 error_info;
+ 	__le32 addr_high;
+@@ -1614,8 +1614,8 @@ struct i40e_aqc_write_ppp_resp {
+ 
+ struct i40e_aqc_get_applied_profiles {
+ 	u8      flags;
+-#define I40E_AQC_GET_PPP_GET_CONF	0x1
+-#define I40E_AQC_GET_PPP_GET_RDPU_CONF	0x2
++#define I40E_AQC_GET_DDP_GET_CONF	0x1
++#define I40E_AQC_GET_DDP_GET_RDPU_CONF	0x2
+ 	u8      rsv[3];
+ 	__le32  reserved;
+ 	__le32  addr_high;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 13c7946..9ef7a0c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -5229,7 +5229,7 @@ i40e_status i40e_aq_get_phy_register(struct i40e_hw *hw,
  }
  
  /**
-- * i40evf_fire_sw_int - Generate SW interrupt for specified vectors
-- * @adapter: board private structure
-- * @mask: bitmap of vectors to trigger
-- **/
--static void i40evf_fire_sw_int(struct i40evf_adapter *adapter, u32 mask)
--{
--	struct i40e_hw *hw = &adapter->hw;
--	int i;
--	u32 dyn_ctl;
--
--	if (mask & 1) {
--		dyn_ctl = rd32(hw, I40E_VFINT_DYN_CTL01);
--		dyn_ctl |= I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
--			   I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK;
--		wr32(hw, I40E_VFINT_DYN_CTL01, dyn_ctl);
--	}
--	for (i = 1; i < adapter->num_msix_vectors; i++) {
--		if (mask & BIT(i)) {
--			dyn_ctl = rd32(hw, I40E_VFINT_DYN_CTLN1(i - 1));
--			dyn_ctl |= I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
--				   I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK;
--			wr32(hw, I40E_VFINT_DYN_CTLN1(i - 1), dyn_ctl);
--		}
--	}
--}
--
--/**
-  * i40evf_irq_enable - Enable default interrupt generation settings
-  * @adapter: board private structure
-  * @flush: boolean value whether to run rd32()
-@@ -1743,13 +1716,6 @@ static void i40evf_watchdog_task(struct work_struct *work)
- 	if (adapter->state == __I40EVF_RUNNING)
- 		i40evf_request_stats(adapter);
- watchdog_done:
--	if (adapter->state == __I40EVF_RUNNING) {
--		i40evf_irq_enable_queues(adapter, ~0);
--		i40evf_fire_sw_int(adapter, 0xFF);
--	} else {
--		i40evf_fire_sw_int(adapter, 0x1);
--	}
--
- 	clear_bit(__I40EVF_IN_CRITICAL_TASK, &adapter->crit_section);
- restart_watchdog:
- 	if (adapter->state == __I40EVF_REMOVE)
+- * i40e_aq_write_ppp - Write pipeline personalization profile (ppp)
++ * i40e_aq_write_ddp - Write dynamic device personalization (ddp)
+  * @hw: pointer to the hw struct
+  * @buff: command buffer (size in bytes = buff_size)
+  * @buff_size: buffer size in bytes
+@@ -5239,7 +5239,7 @@ i40e_status i40e_aq_get_phy_register(struct i40e_hw *hw,
+  * @cmd_details: pointer to command details structure or NULL
+  **/
+ enum
+-i40e_status_code i40e_aq_write_ppp(struct i40e_hw *hw, void *buff,
++i40e_status_code i40e_aq_write_ddp(struct i40e_hw *hw, void *buff,
+ 				   u16 buff_size, u32 track_id,
+ 				   u32 *error_offset, u32 *error_info,
+ 				   struct i40e_asq_cmd_details *cmd_details)
+@@ -5248,7 +5248,7 @@ i40e_status_code i40e_aq_write_ppp(struct i40e_hw *hw, void *buff,
+ 	struct i40e_aqc_write_personalization_profile *cmd =
+ 		(struct i40e_aqc_write_personalization_profile *)
+ 		&desc.params.raw;
+-	struct i40e_aqc_write_ppp_resp *resp;
++	struct i40e_aqc_write_ddp_resp *resp;
+ 	i40e_status status;
+ 
+ 	i40e_fill_default_direct_cmd_desc(&desc,
+@@ -5264,7 +5264,7 @@ i40e_status_code i40e_aq_write_ppp(struct i40e_hw *hw, void *buff,
+ 
+ 	status = i40e_asq_send_command(hw, &desc, buff, buff_size, cmd_details);
+ 	if (!status) {
+-		resp = (struct i40e_aqc_write_ppp_resp *)&desc.params.raw;
++		resp = (struct i40e_aqc_write_ddp_resp *)&desc.params.raw;
+ 		if (error_offset)
+ 			*error_offset = le32_to_cpu(resp->error_offset);
+ 		if (error_info)
+@@ -5275,14 +5275,14 @@ i40e_status_code i40e_aq_write_ppp(struct i40e_hw *hw, void *buff,
+ }
+ 
+ /**
+- * i40e_aq_get_ppp_list - Read pipeline personalization profile (ppp)
++ * i40e_aq_get_ddp_list - Read dynamic device personalization (ddp)
+  * @hw: pointer to the hw struct
+  * @buff: command buffer (size in bytes = buff_size)
+  * @buff_size: buffer size in bytes
+  * @cmd_details: pointer to command details structure or NULL
+  **/
+ enum
+-i40e_status_code i40e_aq_get_ppp_list(struct i40e_hw *hw, void *buff,
++i40e_status_code i40e_aq_get_ddp_list(struct i40e_hw *hw, void *buff,
+ 				      u16 buff_size, u8 flags,
+ 				      struct i40e_asq_cmd_details *cmd_details)
+ {
+@@ -5371,7 +5371,7 @@ i40e_write_profile(struct i40e_hw *hw, struct i40e_profile_segment *profile,
+ 				break;
+ 	}
+ 	if (i == dev_cnt) {
+-		i40e_debug(hw, I40E_DEBUG_PACKAGE, "Device doesn't support PPP");
++		i40e_debug(hw, I40E_DEBUG_PACKAGE, "Device doesn't support DDP");
+ 		return I40E_ERR_DEVICE_NOT_SUPPORTED;
+ 	}
+ 
+@@ -5390,7 +5390,7 @@ i40e_write_profile(struct i40e_hw *hw, struct i40e_profile_segment *profile,
+ 			sizeof(struct i40e_profile_section_header);
+ 
+ 		/* Write profile */
+-		status = i40e_aq_write_ppp(hw, (void *)sec, (u16)section_size,
++		status = i40e_aq_write_ddp(hw, (void *)sec, (u16)section_size,
+ 					   track_id, &offset, &info, NULL);
+ 		if (status) {
+ 			i40e_debug(hw, I40E_DEBUG_PACKAGE,
+@@ -5432,10 +5432,10 @@ i40e_add_pinfo_to_list(struct i40e_hw *hw,
+ 					     sec->section.offset);
+ 	pinfo->track_id = track_id;
+ 	pinfo->version = profile->version;
+-	pinfo->op = I40E_PPP_ADD_TRACKID;
+-	memcpy(pinfo->name, profile->name, I40E_PPP_NAME_SIZE);
++	pinfo->op = I40E_DDP_ADD_TRACKID;
++	memcpy(pinfo->name, profile->name, I40E_DDP_NAME_SIZE);
+ 
+-	status = i40e_aq_write_ppp(hw, (void *)sec, sec->data_end,
++	status = i40e_aq_write_ddp(hw, (void *)sec, sec->data_end,
+ 				   track_id, &offset, &info, NULL);
+ 
+ 	return status;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index e70bebc..b3cc89c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -431,13 +431,15 @@ i40e_status i40e_write_phy_register(struct i40e_hw *hw, u8 page, u16 reg,
+ u8 i40e_get_phy_address(struct i40e_hw *hw, u8 dev_num);
+ i40e_status i40e_blink_phy_link_led(struct i40e_hw *hw,
+ 				    u32 time, u32 interval);
+-i40e_status i40e_aq_write_ppp(struct i40e_hw *hw, void *buff,
++i40e_status i40e_aq_write_ddp(struct i40e_hw *hw, void *buff,
+ 			      u16 buff_size, u32 track_id,
+ 			      u32 *error_offset, u32 *error_info,
+-			      struct i40e_asq_cmd_details *cmd_details);
+-i40e_status i40e_aq_get_ppp_list(struct i40e_hw *hw, void *buff,
++			      struct i40e_asq_cmd_details *
++			      cmd_details);
++i40e_status i40e_aq_get_ddp_list(struct i40e_hw *hw, void *buff,
+ 				 u16 buff_size, u8 flags,
+-				 struct i40e_asq_cmd_details *cmd_details);
++				 struct i40e_asq_cmd_details *
++				 cmd_details);
+ struct i40e_generic_seg_header *
+ i40e_find_segment_in_package(u32 segment_type,
+ 			     struct i40e_package_header *pkg_header);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 0e85687..5a708c3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -1502,19 +1502,19 @@ struct i40e_lldp_variables {
+ #define I40E_FLEX_57_SHIFT		6
+ #define I40E_FLEX_57_MASK		(0x1ULL << I40E_FLEX_57_SHIFT)
+ 
+-/* Version format for PPP */
+-struct i40e_ppp_version {
++/* Version format for Dynamic Device Personalization(DDP) */
++struct i40e_ddp_version {
+ 	u8 major;
+ 	u8 minor;
+ 	u8 update;
+ 	u8 draft;
+ };
+ 
+-#define I40E_PPP_NAME_SIZE	32
++#define I40E_DDP_NAME_SIZE	32
+ 
+ /* Package header */
+ struct i40e_package_header {
+-	struct i40e_ppp_version version;
++	struct i40e_ddp_version version;
+ 	u32 segment_count;
+ 	u32 segment_offset[1];
+ };
+@@ -1526,16 +1526,16 @@ struct i40e_generic_seg_header {
+ #define SEGMENT_TYPE_I40E	0x00000011
+ #define SEGMENT_TYPE_X722	0x00000012
+ 	u32 type;
+-	struct i40e_ppp_version version;
++	struct i40e_ddp_version version;
+ 	u32 size;
+-	char name[I40E_PPP_NAME_SIZE];
++	char name[I40E_DDP_NAME_SIZE];
+ };
+ 
+ struct i40e_metadata_segment {
+ 	struct i40e_generic_seg_header header;
+-	struct i40e_ppp_version version;
++	struct i40e_ddp_version version;
+ 	u32 track_id;
+-	char name[I40E_PPP_NAME_SIZE];
++	char name[I40E_DDP_NAME_SIZE];
+ };
+ 
+ struct i40e_device_id_entry {
+@@ -1545,8 +1545,8 @@ struct i40e_device_id_entry {
+ 
+ struct i40e_profile_segment {
+ 	struct i40e_generic_seg_header header;
+-	struct i40e_ppp_version version;
+-	char name[I40E_PPP_NAME_SIZE];
++	struct i40e_ddp_version version;
++	char name[I40E_DDP_NAME_SIZE];
+ 	u32 device_table_count;
+ 	struct i40e_device_id_entry device_table[1];
+ };
+@@ -1573,11 +1573,11 @@ struct i40e_profile_section_header {
+ 
+ struct i40e_profile_info {
+ 	u32 track_id;
+-	struct i40e_ppp_version version;
++	struct i40e_ddp_version version;
+ 	u8 op;
+-#define I40E_PPP_ADD_TRACKID		0x01
+-#define I40E_PPP_REMOVE_TRACKID	0x02
++#define I40E_DDP_ADD_TRACKID		0x01
++#define I40E_DDP_REMOVE_TRACKID	0x02
+ 	u8 reserved[7];
+-	u8 name[I40E_PPP_NAME_SIZE];
++	u8 name[I40E_DDP_NAME_SIZE];
+ };
+ #endif /* _I40E_TYPE_H_ */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index 06b0457..435a112 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -198,7 +198,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_add_mirror_rule	= 0x0260,
+ 	i40e_aqc_opc_delete_mirror_rule	= 0x0261,
+ 
+-	/* Pipeline Personalization Profile */
++	/* Dynamic Device Personalization */
+ 	i40e_aqc_opc_write_personalization_profile	= 0x0270,
+ 	i40e_aqc_opc_get_personalization_profile_list	= 0x0271,
+ 
+@@ -1562,7 +1562,7 @@ struct i40e_aqc_add_delete_mirror_rule_completion {
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_add_delete_mirror_rule_completion);
+ 
+-/* Pipeline Personalization Profile */
++/* Dynamic Device Personalization */
+ struct i40e_aqc_write_personalization_profile {
+ 	u8      flags;
+ 	u8      reserved[3];
+@@ -1573,7 +1573,7 @@ struct i40e_aqc_write_personalization_profile {
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_write_personalization_profile);
+ 
+-struct i40e_aqc_write_ppp_resp {
++struct i40e_aqc_write_ddp_resp {
+ 	__le32 error_offset;
+ 	__le32 error_info;
+ 	__le32 addr_high;
+@@ -1582,8 +1582,8 @@ struct i40e_aqc_write_ppp_resp {
+ 
+ struct i40e_aqc_get_applied_profiles {
+ 	u8      flags;
+-#define I40E_AQC_GET_PPP_GET_CONF	0x1
+-#define I40E_AQC_GET_PPP_GET_RDPU_CONF	0x2
++#define I40E_AQC_GET_DDP_GET_CONF	0x1
++#define I40E_AQC_GET_DDP_GET_RDPU_CONF	0x2
+ 	u8      rsv[3];
+ 	__le32  reserved;
+ 	__le32  addr_high;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index 7d70bf6..c1e4732 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -1202,7 +1202,7 @@ i40e_status i40e_vf_reset(struct i40e_hw *hw)
+ }
+ 
+ /**
+- * i40evf_aq_write_ppp - Write pipeline personalization profile (ppp)
++ * i40evf_aq_write_ddp - Write dynamic device personalization (ddp)
+  * @hw: pointer to the hw struct
+  * @buff: command buffer (size in bytes = buff_size)
+  * @buff_size: buffer size in bytes
+@@ -1212,7 +1212,7 @@ i40e_status i40e_vf_reset(struct i40e_hw *hw)
+  * @cmd_details: pointer to command details structure or NULL
+  **/
+ enum
+-i40e_status_code i40evf_aq_write_ppp(struct i40e_hw *hw, void *buff,
++i40e_status_code i40evf_aq_write_ddp(struct i40e_hw *hw, void *buff,
+ 				     u16 buff_size, u32 track_id,
+ 				     u32 *error_offset, u32 *error_info,
+ 				     struct i40e_asq_cmd_details *cmd_details)
+@@ -1221,7 +1221,7 @@ i40e_status_code i40evf_aq_write_ppp(struct i40e_hw *hw, void *buff,
+ 	struct i40e_aqc_write_personalization_profile *cmd =
+ 		(struct i40e_aqc_write_personalization_profile *)
+ 		&desc.params.raw;
+-	struct i40e_aqc_write_ppp_resp *resp;
++	struct i40e_aqc_write_ddp_resp *resp;
+ 	i40e_status status;
+ 
+ 	i40evf_fill_default_direct_cmd_desc(&desc,
+@@ -1237,7 +1237,7 @@ i40e_status_code i40evf_aq_write_ppp(struct i40e_hw *hw, void *buff,
+ 
+ 	status = i40evf_asq_send_command(hw, &desc, buff, buff_size, cmd_details);
+ 	if (!status) {
+-		resp = (struct i40e_aqc_write_ppp_resp *)&desc.params.raw;
++		resp = (struct i40e_aqc_write_ddp_resp *)&desc.params.raw;
+ 		if (error_offset)
+ 			*error_offset = le32_to_cpu(resp->error_offset);
+ 		if (error_info)
+@@ -1248,16 +1248,16 @@ i40e_status_code i40evf_aq_write_ppp(struct i40e_hw *hw, void *buff,
+ }
+ 
+ /**
+- * i40evf_aq_get_ppp_list - Read pipeline personalization profile (ppp)
++ * i40evf_aq_get_ddp_list - Read dynamic device personalization (ddp)
+  * @hw: pointer to the hw struct
+  * @buff: command buffer (size in bytes = buff_size)
+  * @buff_size: buffer size in bytes
+  * @cmd_details: pointer to command details structure or NULL
+  **/
+ enum
+-i40e_status_code i40evf_aq_get_ppp_list(struct i40e_hw *hw, void *buff,
++i40e_status_code i40evf_aq_get_ddp_list(struct i40e_hw *hw, void *buff,
+ 					u16 buff_size, u8 flags,
+-				      struct i40e_asq_cmd_details *cmd_details)
++				       struct i40e_asq_cmd_details *cmd_details)
+ {
+ 	struct i40e_aq_desc desc;
+ 	struct i40e_aqc_get_applied_profiles *cmd =
+@@ -1344,7 +1344,7 @@ i40evf_write_profile(struct i40e_hw *hw, struct i40e_profile_segment *profile,
+ 				break;
+ 	}
+ 	if (i == dev_cnt) {
+-		i40e_debug(hw, I40E_DEBUG_PACKAGE, "Device doesn't support PPP");
++		i40e_debug(hw, I40E_DEBUG_PACKAGE, "Device doesn't support DDP");
+ 		return I40E_ERR_DEVICE_NOT_SUPPORTED;
+ 	}
+ 
+@@ -1363,7 +1363,7 @@ i40evf_write_profile(struct i40e_hw *hw, struct i40e_profile_segment *profile,
+ 			sizeof(struct i40e_profile_section_header);
+ 
+ 		/* Write profile */
+-		status = i40evf_aq_write_ppp(hw, (void *)sec, (u16)section_size,
++		status = i40evf_aq_write_ddp(hw, (void *)sec, (u16)section_size,
+ 					     track_id, &offset, &info, NULL);
+ 		if (status) {
+ 			i40e_debug(hw, I40E_DEBUG_PACKAGE,
+@@ -1405,10 +1405,10 @@ i40evf_add_pinfo_to_list(struct i40e_hw *hw,
+ 					     sec->section.offset);
+ 	pinfo->track_id = track_id;
+ 	pinfo->version = profile->version;
+-	pinfo->op = I40E_PPP_ADD_TRACKID;
+-	memcpy(pinfo->name, profile->name, I40E_PPP_NAME_SIZE);
++	pinfo->op = I40E_DDP_ADD_TRACKID;
++	memcpy(pinfo->name, profile->name, I40E_DDP_NAME_SIZE);
+ 
+-	status = i40evf_aq_write_ppp(hw, (void *)sec, sec->data_end,
++	status = i40evf_aq_write_ddp(hw, (void *)sec, sec->data_end,
+ 				     track_id, &offset, &info, NULL);
+ 	return status;
+ }
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
+index b624b59..47c4299 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
+@@ -131,13 +131,15 @@ i40e_status i40e_write_phy_register(struct i40e_hw *hw, u8 page, u16 reg,
+ u8 i40e_get_phy_address(struct i40e_hw *hw, u8 dev_num);
+ i40e_status i40e_blink_phy_link_led(struct i40e_hw *hw,
+ 				    u32 time, u32 interval);
+-i40e_status i40evf_aq_write_ppp(struct i40e_hw *hw, void *buff,
++i40e_status i40evf_aq_write_ddp(struct i40e_hw *hw, void *buff,
+ 				u16 buff_size, u32 track_id,
+ 				u32 *error_offset, u32 *error_info,
+-				struct i40e_asq_cmd_details *cmd_details);
+-i40e_status i40evf_aq_get_ppp_list(struct i40e_hw *hw, void *buff,
++				struct i40e_asq_cmd_details *
++				cmd_details);
++i40e_status i40evf_aq_get_ddp_list(struct i40e_hw *hw, void *buff,
+ 				   u16 buff_size, u8 flags,
+-				   struct i40e_asq_cmd_details *cmd_details);
++				   struct i40e_asq_cmd_details *
++				   cmd_details);
+ struct i40e_generic_seg_header *
+ i40evf_find_segment_in_package(u32 segment_type,
+ 			       struct i40e_package_header *pkg_header);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index 213b773..6afc316 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -1422,19 +1422,19 @@ enum i40e_reset_type {
+ #define I40E_FD_INSET_FLEX_WORD57_MASK		(0x1ULL << \
+ 					I40E_FD_INSET_FLEX_WORD57_SHIFT)
+ 
+-/* Version format for PPP */
+-struct i40e_ppp_version {
++/* Version format for Dynamic Device Personalization(DDP) */
++struct i40e_ddp_version {
+ 	u8 major;
+ 	u8 minor;
+ 	u8 update;
+ 	u8 draft;
+ };
+ 
+-#define I40E_PPP_NAME_SIZE	32
++#define I40E_DDP_NAME_SIZE	32
+ 
+ /* Package header */
+ struct i40e_package_header {
+-	struct i40e_ppp_version version;
++	struct i40e_ddp_version version;
+ 	u32 segment_count;
+ 	u32 segment_offset[1];
+ };
+@@ -1446,16 +1446,16 @@ struct i40e_generic_seg_header {
+ #define SEGMENT_TYPE_I40E	0x00000011
+ #define SEGMENT_TYPE_X722	0x00000012
+ 	u32 type;
+-	struct i40e_ppp_version version;
++	struct i40e_ddp_version version;
+ 	u32 size;
+-	char name[I40E_PPP_NAME_SIZE];
++	char name[I40E_DDP_NAME_SIZE];
+ };
+ 
+ struct i40e_metadata_segment {
+ 	struct i40e_generic_seg_header header;
+-	struct i40e_ppp_version version;
++	struct i40e_ddp_version version;
+ 	u32 track_id;
+-	char name[I40E_PPP_NAME_SIZE];
++	char name[I40E_DDP_NAME_SIZE];
+ };
+ 
+ struct i40e_device_id_entry {
+@@ -1465,8 +1465,8 @@ struct i40e_device_id_entry {
+ 
+ struct i40e_profile_segment {
+ 	struct i40e_generic_seg_header header;
+-	struct i40e_ppp_version version;
+-	char name[I40E_PPP_NAME_SIZE];
++	struct i40e_ddp_version version;
++	char name[I40E_DDP_NAME_SIZE];
+ 	u32 device_table_count;
+ 	struct i40e_device_id_entry device_table[1];
+ };
+@@ -1493,11 +1493,11 @@ struct i40e_profile_section_header {
+ 
+ struct i40e_profile_info {
+ 	u32 track_id;
+-	struct i40e_ppp_version version;
++	struct i40e_ddp_version version;
+ 	u8 op;
+-#define I40E_PPP_ADD_TRACKID		0x01
+-#define I40E_PPP_REMOVE_TRACKID	0x02
++#define I40E_DDP_ADD_TRACKID		0x01
++#define I40E_DDP_REMOVE_TRACKID	0x02
+ 	u8 reserved[7];
+-	u8 name[I40E_PPP_NAME_SIZE];
++	u8 name[I40E_DDP_NAME_SIZE];
+ };
+ #endif /* _I40E_TYPE_H_ */
 -- 
 2.9.5
 
