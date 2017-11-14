@@ -1,46 +1,142 @@
-From: Fengguang Wu <fengguang.wu@intel.com>
-Date: Tue, 14 Nov 2017 16:13:36 +0800
-Subject: [Intel-wired-lan] CONFIG_DEBUG_INFO_SPLIT impacts on faddr2line
-In-Reply-To: <20171113185227.GM8522@tassilo.jf.intel.com>
-References: <20171107102156.3fgxt6y6v5y2kqnf@wfg-t540p.sh.intel.com>
- <CA+55aFwqxZiN_XrZqvbtCsc8W=w895RaB1sjuVP1aTj8JStxzg@mail.gmail.com>
- <20171108094832.qxvkawpw2snpcbvh@wfg-t540p.sh.intel.com>
- <CA+55aFwK7935r325nmR-eQvanVCN3A+v3wEQHsW4NpSeBsybeA@mail.gmail.com>
- <20171108171230.ccf7lwutjysk26fc@wfg-t540p.sh.intel.com>
- <CA+55aFx0O+NTbBjavPm_jPucqHdXFYPmUya4kw=ps7LSqTFd5w@mail.gmail.com>
- <20171113011338.3qmnp64pttyscuus@wfg-t540p.sh.intel.com>
- <20171113185227.GM8522@tassilo.jf.intel.com>
-Message-ID: <20171114081336.e32bqhcu3eu4yl23@wfg-t540p.sh.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 15 Nov 2017 01:11:04 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 972ca4872a0caf3009ad32efc545a31470c18af8
+Message-ID: <5a0b23a8.26GBYEWx82v6RoJD%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Andi,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 972ca4872a0caf3009ad32efc545a31470c18af8  i40e: fix the calculation of VFs mac addresses
 
-On Mon, Nov 13, 2017 at 10:52:27AM -0800, Andi Kleen wrote:
->> > It's the "CONFIG_DEBUG_INFO_SPLIT" thing that makes faddr2line unable
->> > to see the inlining information,
->> >
->> > Using OPTIMIZE_INLINING is fine.
->>
->> Good to know that!
->
->It works for me. Perhaps your binutils is too old? It was
->added at some point. Can you try upgrading?
->
->% ./linux/scripts/faddr2line obj/vmlinux schedule+10
->schedule+10/0x80:
->schedule at arch/x86/include/asm/current.h:15
->
->% addr2line --version
->GNU addr2line version 2.27-24.fc26
+elapsed time: 71m
 
-I use debian and tried addr2line in 2 systems:
+configs tested: 118
 
-GNU addr2line (GNU Binutils for Debian) 2.28
-GNU addr2line (GNU Binutils for Debian) 2.29.1
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Regards,
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                   randconfig-x019-201746
+i386                   randconfig-x015-201746
+i386                   randconfig-x013-201746
+i386                   randconfig-x014-201746
+i386                   randconfig-x011-201746
+i386                   randconfig-x018-201746
+i386                   randconfig-x010-201746
+i386                   randconfig-x012-201746
+i386                   randconfig-x017-201746
+i386                   randconfig-x016-201746
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201746
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x018-201746
+x86_64                 randconfig-x011-201746
+x86_64                 randconfig-x013-201746
+x86_64                 randconfig-x019-201746
+x86_64                 randconfig-x012-201746
+x86_64                 randconfig-x017-201746
+x86_64                 randconfig-x016-201746
+x86_64                 randconfig-x014-201746
+x86_64                 randconfig-x015-201746
+x86_64                 randconfig-x010-201746
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201746
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x001-201746
+i386                   randconfig-x008-201746
+i386                   randconfig-x002-201746
+i386                   randconfig-x004-201746
+i386                   randconfig-x003-201746
+i386                   randconfig-x006-201746
+i386                   randconfig-x007-201746
+i386                   randconfig-x005-201746
+i386                   randconfig-x000-201746
+i386                   randconfig-x009-201746
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x000-201746
+x86_64                 randconfig-x001-201746
+x86_64                 randconfig-x008-201746
+x86_64                 randconfig-x004-201746
+x86_64                 randconfig-x005-201746
+x86_64                 randconfig-x007-201746
+x86_64                 randconfig-x006-201746
+x86_64                 randconfig-x003-201746
+x86_64                 randconfig-x009-201746
+x86_64                 randconfig-x002-201746
+i386                   randconfig-x074-201746
+i386                   randconfig-x077-201746
+i386                   randconfig-x071-201746
+i386                   randconfig-x076-201746
+i386                   randconfig-x073-201746
+i386                   randconfig-x078-201746
+i386                   randconfig-x072-201746
+i386                   randconfig-x079-201746
+i386                   randconfig-x070-201746
+i386                   randconfig-x075-201746
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+Thanks,
 Fengguang
