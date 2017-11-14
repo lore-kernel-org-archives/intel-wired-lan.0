@@ -1,152 +1,155 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 14 Nov 2017 07:00:51 -0500
-Subject: [Intel-wired-lan] [next PATCH S82-V4 8/9] i40evf: fix client notify
- of l2 params
-In-Reply-To: <20171114120052.86665-1-alice.michael@intel.com>
-References: <20171114120052.86665-1-alice.michael@intel.com>
-Message-ID: <20171114120052.86665-8-alice.michael@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 15 Nov 2017 05:02:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ da48e34f390ebacc10d15381ed06926d9e2170cf
+Message-ID: <5a0b59cd.owpeiZALrWtlVcDn%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: da48e34f390ebacc10d15381ed06926d9e2170cf  i40e: Remove limit of 64 max queues per channel
 
-The current method for notifying clients of l2 parameters is broken
-because we fail to copy the new parameters to the client instance
-struct, we need to do the notification before the client 'open' function
-pointer gets called, and lastly we should set the l2 parameters when
-first adding a client instance.
+elapsed time: 200m
 
-This patch first introduces the i40evf_client_get_params function to
-prevent code duplication in the i40evf_client_add_instance and the
-i40evf_notify_client_l2_params functions.  We then fix the notify l2
-params function to actually copy the parameters to client instance
-struct and do the same in the *_add_instance' function.  Lastly this
-patch reorganizes the priority in which client tasks fire so that if the
-flag for notifying l2 params is set, it will trigger before the open
-because the client needs these new parameters as part of a client open
-task.
+configs tested: 131
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
----
- drivers/net/ethernet/intel/i40evf/i40evf_client.c | 38 ++++++++++++++++-------
- drivers/net/ethernet/intel/i40evf/i40evf_main.c   | 10 +++---
- 2 files changed, 31 insertions(+), 17 deletions(-)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_client.c b/drivers/net/ethernet/intel/i40evf/i40evf_client.c
-index 93cf5fd..3bcd1dc 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_client.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_client.c
-@@ -25,6 +25,26 @@ static struct i40e_ops i40evf_lan_ops = {
- };
- 
- /**
-+ * i40evf_client_get_params - retrieve relevant client parameters
-+ * @vsi: VSI with parameters
-+ * @params: client param struct
-+ **/
-+static
-+void i40evf_client_get_params(struct i40e_vsi *vsi, struct i40e_params *params)
-+{
-+	int i;
-+
-+	memset(params, 0, sizeof(struct i40e_params));
-+	params->mtu = vsi->netdev->mtu;
-+	params->link_up = vsi->back->link_up;
-+
-+	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
-+		params->qos.prio_qos[i].tc = 0;
-+		params->qos.prio_qos[i].qs_handle = vsi->qs_handle;
-+	}
-+}
-+
-+/**
-  * i40evf_notify_client_message - call the client message receive callback
-  * @vsi: the VSI associated with this client
-  * @msg: message buffer
-@@ -65,10 +85,6 @@ void i40evf_notify_client_l2_params(struct i40e_vsi *vsi)
- 		return;
- 
- 	cinst = vsi->back->cinst;
--	memset(&params, 0, sizeof(params));
--	params.mtu = vsi->netdev->mtu;
--	params.link_up = vsi->back->link_up;
--	params.qos.prio_qos[0].qs_handle = vsi->qs_handle;
- 
- 	if (!cinst || !cinst->client || !cinst->client->ops ||
- 	    !cinst->client->ops->l2_param_change) {
-@@ -76,6 +92,8 @@ void i40evf_notify_client_l2_params(struct i40e_vsi *vsi)
- 			"Cannot locate client instance l2_param_change function\n");
- 		return;
- 	}
-+	i40evf_client_get_params(vsi, &params);
-+	cinst->lan_info.params = params;
- 	cinst->client->ops->l2_param_change(&cinst->lan_info, cinst->client,
- 					    &params);
- }
-@@ -165,9 +183,9 @@ static struct i40e_client_instance *
- i40evf_client_add_instance(struct i40evf_adapter *adapter)
- {
- 	struct i40e_client_instance *cinst = NULL;
--	struct netdev_hw_addr *mac = NULL;
- 	struct i40e_vsi *vsi = &adapter->vsi;
--	int i;
-+	struct netdev_hw_addr *mac = NULL;
-+	struct i40e_params params;
- 
- 	if (!vf_registered_client)
- 		goto out;
-@@ -191,18 +209,14 @@ i40evf_client_add_instance(struct i40evf_adapter *adapter)
- 	cinst->lan_info.version.major = I40EVF_CLIENT_VERSION_MAJOR;
- 	cinst->lan_info.version.minor = I40EVF_CLIENT_VERSION_MINOR;
- 	cinst->lan_info.version.build = I40EVF_CLIENT_VERSION_BUILD;
-+	i40evf_client_get_params(vsi, &params);
-+	cinst->lan_info.params = params;
- 	set_bit(__I40E_CLIENT_INSTANCE_NONE, &cinst->state);
- 
- 	cinst->lan_info.msix_count = adapter->num_iwarp_msix;
- 	cinst->lan_info.msix_entries =
- 			&adapter->msix_entries[adapter->iwarp_base_vector];
- 
--	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
--		cinst->lan_info.params.qos.prio_qos[i].tc = 0;
--		cinst->lan_info.params.qos.prio_qos[i].qs_handle =
--								vsi->qs_handle;
--	}
--
- 	mac = list_first_entry(&cinst->lan_info.netdev->dev_addrs.list,
- 			       struct netdev_hw_addr, list);
- 	if (mac)
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 5e27619..f92587a 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2074,6 +2074,11 @@ static void i40evf_client_task(struct work_struct *work)
- 		adapter->flags &= ~I40EVF_FLAG_SERVICE_CLIENT_REQUESTED;
- 		goto out;
- 	}
-+	if (adapter->flags & I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS) {
-+		i40evf_notify_client_l2_params(&adapter->vsi);
-+		adapter->flags &= ~I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS;
-+		goto out;
-+	}
- 	if (adapter->flags & I40EVF_FLAG_CLIENT_NEEDS_CLOSE) {
- 		i40evf_notify_client_close(&adapter->vsi, false);
- 		adapter->flags &= ~I40EVF_FLAG_CLIENT_NEEDS_CLOSE;
-@@ -2082,11 +2087,6 @@ static void i40evf_client_task(struct work_struct *work)
- 	if (adapter->flags & I40EVF_FLAG_CLIENT_NEEDS_OPEN) {
- 		i40evf_notify_client_open(&adapter->vsi);
- 		adapter->flags &= ~I40EVF_FLAG_CLIENT_NEEDS_OPEN;
--		goto out;
--	}
--	if (adapter->flags & I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS) {
--		i40evf_notify_client_l2_params(&adapter->vsi);
--		adapter->flags &= ~I40EVF_FLAG_CLIENT_NEEDS_L2_PARAMS;
- 	}
- out:
- 	clear_bit(__I40EVF_IN_CLIENT_TASK, &adapter->crit_section);
--- 
-2.9.5
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-x019-201746
+i386                   randconfig-x015-201746
+i386                   randconfig-x013-201746
+i386                   randconfig-x014-201746
+i386                   randconfig-x011-201746
+i386                   randconfig-x018-201746
+i386                   randconfig-x010-201746
+i386                   randconfig-x012-201746
+i386                   randconfig-x017-201746
+i386                   randconfig-x016-201746
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201746
+i386                     randconfig-i1-201746
+i386                     randconfig-i0-201746
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-a0-201746
+i386                     randconfig-a1-201746
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x018-201746
+x86_64                 randconfig-x011-201746
+x86_64                 randconfig-x013-201746
+x86_64                 randconfig-x019-201746
+x86_64                 randconfig-x012-201746
+x86_64                 randconfig-x017-201746
+x86_64                 randconfig-x016-201746
+x86_64                 randconfig-x014-201746
+x86_64                 randconfig-x015-201746
+x86_64                 randconfig-x010-201746
+i386                     randconfig-s0-201746
+i386                     randconfig-s1-201746
+x86_64                           allmodconfig
+x86_64                   randconfig-i0-201746
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-x001-201746
+i386                   randconfig-x008-201746
+i386                   randconfig-x002-201746
+i386                   randconfig-x004-201746
+i386                   randconfig-x003-201746
+i386                   randconfig-x006-201746
+i386                   randconfig-x007-201746
+i386                   randconfig-x005-201746
+i386                   randconfig-x000-201746
+i386                   randconfig-x009-201746
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+i386                   randconfig-x074-201746
+i386                   randconfig-x077-201746
+i386                   randconfig-x071-201746
+i386                   randconfig-x076-201746
+i386                   randconfig-x073-201746
+i386                   randconfig-x078-201746
+i386                   randconfig-x072-201746
+i386                   randconfig-x079-201746
+i386                   randconfig-x070-201746
+i386                   randconfig-x075-201746
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                 randconfig-x000-201746
+x86_64                 randconfig-x001-201746
+x86_64                 randconfig-x008-201746
+x86_64                 randconfig-x004-201746
+x86_64                 randconfig-x005-201746
+x86_64                 randconfig-x007-201746
+x86_64                 randconfig-x006-201746
+x86_64                 randconfig-x003-201746
+x86_64                 randconfig-x009-201746
+x86_64                 randconfig-x002-201746
 
+Thanks,
+Fengguang
