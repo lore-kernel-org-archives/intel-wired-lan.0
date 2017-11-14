@@ -1,77 +1,58 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 14 Nov 2017 07:00:44 -0500
-Subject: [Intel-wired-lan] [next PATCH S82-V4 1/9] i40evf: Do not clear
- MSI-X PBA manually
-Message-ID: <20171114120052.86665-1-alice.michael@intel.com>
+Date: Tue, 14 Nov 2017 07:00:48 -0500
+Subject: [Intel-wired-lan] [next PATCH S82-V4 5/9] i40e: track id can be 0
+In-Reply-To: <20171114120052.86665-1-alice.michael@intel.com>
+References: <20171114120052.86665-1-alice.michael@intel.com>
+Message-ID: <20171114120052.86665-5-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+From: Jingjing Wu <jingjing.wu@intel.com>
 
-We should not be clearing the pending bit array for each vector manually.
-The documentation for the hardware states that when in MSI-X mode the
-pending bit array wil be cleared automatically. Us clearing it ourselves
-just results in multiple opportunities for us to drop an interrupt.
+track_id == 0 is valid for ?read only? profiles when
+profile does not have any ?write? commands.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Jingjing Wu <jingjing.wu@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 18 +++++-------------
- 1 file changed, 5 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c   | 5 -----
+ drivers/net/ethernet/intel/i40evf/i40e_common.c | 5 -----
+ 2 files changed, 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 75dc94f..4dd3149 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -276,8 +276,7 @@ void i40evf_irq_enable_queues(struct i40evf_adapter *adapter, u32 mask)
- 		if (mask & BIT(i - 1)) {
- 			wr32(hw, I40E_VFINT_DYN_CTLN1(i - 1),
- 			     I40E_VFINT_DYN_CTLN1_INTENA_MASK |
--			     I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK |
--			     I40E_VFINT_DYN_CTLN1_CLEARPBA_MASK);
-+			     I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK);
- 		}
- 	}
- }
-@@ -296,16 +295,14 @@ static void i40evf_fire_sw_int(struct i40evf_adapter *adapter, u32 mask)
- 	if (mask & 1) {
- 		dyn_ctl = rd32(hw, I40E_VFINT_DYN_CTL01);
- 		dyn_ctl |= I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
--			   I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK |
--			   I40E_VFINT_DYN_CTLN1_CLEARPBA_MASK;
-+			   I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK;
- 		wr32(hw, I40E_VFINT_DYN_CTL01, dyn_ctl);
- 	}
- 	for (i = 1; i < adapter->num_msix_vectors; i++) {
- 		if (mask & BIT(i)) {
- 			dyn_ctl = rd32(hw, I40E_VFINT_DYN_CTLN1(i - 1));
- 			dyn_ctl |= I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
--				   I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK |
--				   I40E_VFINT_DYN_CTLN1_CLEARPBA_MASK;
-+				   I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK;
- 			wr32(hw, I40E_VFINT_DYN_CTLN1(i - 1), dyn_ctl);
- 		}
- 	}
-@@ -337,15 +334,10 @@ static irqreturn_t i40evf_msix_aq(int irq, void *data)
- 	struct net_device *netdev = data;
- 	struct i40evf_adapter *adapter = netdev_priv(netdev);
- 	struct i40e_hw *hw = &adapter->hw;
--	u32 val;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 9ef7a0c..5abc83c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -5357,11 +5357,6 @@ i40e_write_profile(struct i40e_hw *hw, struct i40e_profile_segment *profile,
+ 	u32 offset = 0, info = 0;
+ 	u32 i;
  
- 	/* handle non-queue interrupts, these reads clear the registers */
--	val = rd32(hw, I40E_VFINT_ICR01);
--	val = rd32(hw, I40E_VFINT_ICR0_ENA1);
+-	if (!track_id) {
+-		i40e_debug(hw, I40E_DEBUG_PACKAGE, "Track_id can't be 0.");
+-		return I40E_NOT_SUPPORTED;
+-	}
 -
--	val = rd32(hw, I40E_VFINT_DYN_CTL01) |
--	      I40E_VFINT_DYN_CTL01_CLEARPBA_MASK;
--	wr32(hw, I40E_VFINT_DYN_CTL01, val);
-+	rd32(hw, I40E_VFINT_ICR01);
-+	rd32(hw, I40E_VFINT_ICR0_ENA1);
+ 	dev_cnt = profile->device_table_count;
  
- 	/* schedule work on the private workqueue */
- 	schedule_work(&adapter->adminq_task);
+ 	for (i = 0; i < dev_cnt; i++) {
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index c1e4732..a946484 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -1330,11 +1330,6 @@ i40evf_write_profile(struct i40e_hw *hw, struct i40e_profile_segment *profile,
+ 	u32 offset = 0, info = 0;
+ 	u32 i;
+ 
+-	if (!track_id) {
+-		i40e_debug(hw, I40E_DEBUG_PACKAGE, "Track_id can't be 0.");
+-		return I40E_NOT_SUPPORTED;
+-	}
+-
+ 	dev_cnt = profile->device_table_count;
+ 
+ 	for (i = 0; i < dev_cnt; i++) {
 -- 
 2.9.5
 
