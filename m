@@ -1,44 +1,168 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 15 Nov 2017 08:48:25 -0800
-Subject: [Intel-wired-lan] [PATCH 2/3] e1000e: Alert the user that
- C-states will be disabled by enabling jumbo frames
-In-Reply-To: <20171114235133.14755-1-mattst88@gmail.com>
-References: <20171107221332.28283-2-mattst88@gmail.com>
- <20171114235133.14755-1-mattst88@gmail.com>
-Message-ID: <b8ed0ac5-2dc7-7216-627a-9228eac120bc@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 16 Nov 2017 18:12:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 83b9d39cb3ecf3a77c5baaf62e0bb56d1f3a86c4
+Message-ID: <5a0d6488.r15eDSnro7sUJjVM%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 11/14/2017 3:51 PM, Matt Turner wrote:
-> From: Matt Turner <matt.turner@intel.com>
-> 
-> I personally spent a long time trying to decypher why my CPU would not
-> reach deeper C-states. Let's just tell the next user what's going on.
-> 
-> Signed-off-by: Matt Turner <matt.turner@intel.com>
-> ---
-> v2: Per Shannon, put string on one line for easier grepping
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 83b9d39cb3ecf3a77c5baaf62e0bb56d1f3a86c4  i40e: restore promiscuous after reset
 
-Acked-by: Shannon Nelson <shannon.nelson@oracle.com>
+elapsed time: 182m
 
-> 
->   drivers/net/ethernet/intel/e1000e/netdev.c | 2 ++
->   1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 286d0277284e..31577dad22cb 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -3288,6 +3288,8 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
->   			ew32(RXDCTL(0), rxdctl | 0x3 | BIT(8));
->   		}
->   
-> +		dev_info(&adapter->pdev->dev,
-> +			 "Some CPU C-states have been disabled in order to enable jumbo frames\n");
->   		pm_qos_update_request(&adapter->pm_qos_req, lat);
->   	} else {
->   		pm_qos_update_request(&adapter->pm_qos_req,
-> 
+configs tested: 144
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+i386                   randconfig-x019-201746
+i386                   randconfig-x015-201746
+i386                   randconfig-x013-201746
+i386                   randconfig-x014-201746
+i386                   randconfig-x011-201746
+i386                   randconfig-x018-201746
+i386                   randconfig-x010-201746
+i386                   randconfig-x012-201746
+i386                   randconfig-x017-201746
+i386                   randconfig-x016-201746
+i386                     randconfig-n0-201746
+x86_64                 randconfig-x000-201746
+x86_64                 randconfig-x001-201746
+x86_64                 randconfig-x008-201746
+x86_64                 randconfig-x004-201746
+x86_64                 randconfig-x005-201746
+x86_64                 randconfig-x007-201746
+x86_64                 randconfig-x006-201746
+x86_64                 randconfig-x003-201746
+x86_64                 randconfig-x009-201746
+x86_64                 randconfig-x002-201746
+i386                     randconfig-i1-201746
+i386                     randconfig-i0-201746
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x018-201746
+x86_64                 randconfig-x011-201746
+x86_64                 randconfig-x013-201746
+x86_64                 randconfig-x019-201746
+x86_64                 randconfig-x012-201746
+x86_64                 randconfig-x017-201746
+x86_64                 randconfig-x016-201746
+x86_64                 randconfig-x014-201746
+x86_64                 randconfig-x015-201746
+x86_64                 randconfig-x010-201746
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                                   samsung
+arm                        mvebu_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       imx_v6_v7_defconfig
+arm64                            allmodconfig
+arm                           tegra_defconfig
+arm                                      arm5
+arm64                            alldefconfig
+arm                                        sh
+arm                                     arm67
+i386                     randconfig-a0-201746
+i386                     randconfig-a1-201746
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s0-201746
+i386                     randconfig-s1-201746
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201746
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+i386                   randconfig-x001-201746
+i386                   randconfig-x008-201746
+i386                   randconfig-x002-201746
+i386                   randconfig-x004-201746
+i386                   randconfig-x003-201746
+i386                   randconfig-x006-201746
+i386                   randconfig-x007-201746
+i386                   randconfig-x005-201746
+i386                   randconfig-x000-201746
+i386                   randconfig-x009-201746
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+i386                   randconfig-x074-201746
+i386                   randconfig-x077-201746
+i386                   randconfig-x071-201746
+i386                   randconfig-x076-201746
+i386                   randconfig-x073-201746
+i386                   randconfig-x078-201746
+i386                   randconfig-x072-201746
+i386                   randconfig-x079-201746
+i386                   randconfig-x070-201746
+i386                   randconfig-x075-201746
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+
+Thanks,
+Fengguang
