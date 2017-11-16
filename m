@@ -1,102 +1,93 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Thu, 16 Nov 2017 11:54:38 -0800
-Subject: [Intel-wired-lan] [RFC PATCH jkirsher/next-queue 0/9] ixgbe: Add
- ipsec offload
-Message-ID: <1510862087-1924-1-git-send-email-shannon.nelson@oracle.com>
+Date: Thu, 16 Nov 2017 11:54:40 -0800
+Subject: [Intel-wired-lan] [RFC PATCH jkirsher/next-queue 2/9] ixgbe: clean
+ up ipsec defines
+In-Reply-To: <1510862087-1924-1-git-send-email-shannon.nelson@oracle.com>
+References: <1510862087-1924-1-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1510862087-1924-3-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is a first working draft for adding IPsec offload processing support
-to the ixgbe driver for the Niantic family of Intel NICs.  I'm posting
-this in order to get some review comments from the Intel folks and from
-anyone else interested in the XFRM/IPsec offloads.  These patches apply
-to net-next 4.14-rc4.
+Clean up the ipsec/macsec descriptor bit definitions to match the rest
+of the defines and file organization.
 
-This code is only slightly broken in that
- - it doesn't handle Tx checksums quite correctly, so it really needs to
-   be disabled with "ethtool -K ethN tx off" for now
- - it doesn't even try to handle TSO correctly yet
- - it doesn't handle IPv6 traffic yet
+Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
 
-Please feel free to post or direct email comments.  Meanwhile, I'll work
-on cleaning up the remaining issues.
-
-As is, this code does show improvements in both packet throughput
-and CPU utilization.  For example, here are some quicky numbers with
-single run of "iperf -c <dest>" with the ipsec offload on both ends of
-a point-to-point connection, measured on a Xeon 5520:
-
-	9.4 Gbps - normal case
-	7.4 Gbps - tx csum off
-	6.6 Gbps - ipsec offload on and tx csum off  (0.06 %system)
-	344 Mbps - ipsec no offload and tx csum off  (6.31 %system)
-	343 Mbps - ipsec no offload and tx csum on 
-
-To set up a test case, you first need to be sure you have a recent version
-of iproute2 that supports the ipsec offload tag, probably something from
-ip 4.12 or newer would b e bets, tho' I think 4.9 will work.  I have a
-shell script that builds up the appropriate commands for me, but here are
-the resulting commands for all tcp traffic between 14.0.0.52 and 14.0.0.70:
-
-For the left side (14.0.0.52):
-  ip x p add dir out src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
-     proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport reqid 0x07
-  ip x p add dir in src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
-     proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport reqid 0x07
-  ip x s add proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport \
-     reqid 0x07 replay-window 32 \
-     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
-     sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev eth4 dir out
-  ip x s add proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport \
-     reqid 0x07 replay-window 32 \
-     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
-     sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev eth4 dir in
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 0a77941..befed8b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -2321,11 +2321,6 @@ enum {
+ #define IXGBE_TXD_CMD_VLE    0x40000000 /* Add VLAN tag */
+ #define IXGBE_TXD_STAT_DD    0x00000001 /* Descriptor Done */
  
-For the right side (14.0.0.70):
-  ip x p add dir out src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
-     proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport reqid 0x07
-  ip x p add dir in src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
-     proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport reqid 0x07
-  ip x s add proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport \
-     reqid 0x07 replay-window 32 \
-     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
-     sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev eth4 dir out
-  ip x s add proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport \
-     reqid 0x07 replay-window 32 \
-     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
-     sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev eth4 dir in
-
-In both cases, the command "ip x s flush ; ip x p flush" will clean
-it all out and remove the offloads.
-
-
-
-Shannon Nelson (9):
-  ixgbe: remove undefined and conflicting bits
-  ixgbe: clean up ipsec defines
-  ixgbe: add the ipsec support code files
-  ixgbe: add ipsec data to driver struct
-  ixgbe: add ipsec offload stats
-  ixgbe: add ipsec debug helpers
-  ixgbe: add tx ipsec offload
-  ixgbe: add the Rx ipsec offload processing
-  ixgbe: add init and remove ipsec support
-
- drivers/net/ethernet/intel/ixgbe/Makefile        |    1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   43 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c |   16 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   31 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c   | 1133 ++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h   |   80 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   59 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   27 +-
- 8 files changed, 1349 insertions(+), 41 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
- create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
-
+-#define IXGBE_RXDADV_IPSEC_STATUS_SECP                  0x00020000
+-#define IXGBE_RXDADV_IPSEC_ERROR_INVALID_PROTOCOL       0x08000000
+-#define IXGBE_RXDADV_IPSEC_ERROR_INVALID_LENGTH         0x10000000
+-#define IXGBE_RXDADV_IPSEC_ERROR_AUTH_FAILED            0x18000000
+-#define IXGBE_RXDADV_IPSEC_ERROR_BIT_MASK               0x18000000
+ /* Multiple Transmit Queue Command Register */
+ #define IXGBE_MTQC_RT_ENA       0x1 /* DCB Enable */
+ #define IXGBE_MTQC_VT_ENA       0x2 /* VMDQ2 Enable */
+@@ -2375,6 +2370,14 @@ enum {
+ #define IXGBE_RXDADV_ERR_HBO    0x00800000 /*Header Buffer Overflow */
+ #define IXGBE_RXDADV_ERR_CE     0x01000000 /* CRC Error */
+ #define IXGBE_RXDADV_ERR_LE     0x02000000 /* Length Error */
++
++#define IXGBE_RXDADV_ERR_MACSEC_NO_SA_MATCH  0x08000000
++#define IXGBE_RXDADV_ERR_MACSEC_REPLAY_ERROR 0x10000000
++#define IXGBE_RXDADV_ERR_MACSEC_BAD_SIG      0x18000000
++#define IXGBE_RXDADV_ERR_IPSEC_INV_PROTOCOL  0x08000000
++#define IXGBE_RXDADV_ERR_IPSEC_INV_LENGTH    0x10000000
++#define IXGBE_RXDADV_ERR_IPSEC_AUTH_FAILED   0x18000000
++
+ #define IXGBE_RXDADV_ERR_USE    0x20000000 /* Undersize Error */
+ #define IXGBE_RXDADV_ERR_TCPE   0x40000000 /* TCP/UDP Checksum Error */
+ #define IXGBE_RXDADV_ERR_IPE    0x80000000 /* IP Checksum Error */
+@@ -2396,6 +2399,7 @@ enum {
+ #define IXGBE_RXDADV_STAT_FCSTAT_FCPRSP 0x00000020 /* 10: Recv. FCP_RSP */
+ #define IXGBE_RXDADV_STAT_FCSTAT_DDP    0x00000030 /* 11: Ctxt w/ DDP */
+ #define IXGBE_RXDADV_STAT_TS		0x00010000 /* IEEE 1588 Time Stamp */
++#define IXGBE_RXDADV_STAT_SECP          0x00020000 /* IPsec/MACsec pkt found */
+ 
+ /* PSRTYPE bit definitions */
+ #define IXGBE_PSRTYPE_TCPHDR    0x00000010
+@@ -2462,13 +2466,6 @@ enum {
+ #define IXGBE_RXDADV_PKTTYPE_ETQF_MASK  0x00000070 /* ETQF has 8 indices */
+ #define IXGBE_RXDADV_PKTTYPE_ETQF_SHIFT 4          /* Right-shift 4 bits */
+ 
+-/* Security Processing bit Indication */
+-#define IXGBE_RXDADV_LNKSEC_STATUS_SECP         0x00020000
+-#define IXGBE_RXDADV_LNKSEC_ERROR_NO_SA_MATCH   0x08000000
+-#define IXGBE_RXDADV_LNKSEC_ERROR_REPLAY_ERROR  0x10000000
+-#define IXGBE_RXDADV_LNKSEC_ERROR_BIT_MASK      0x18000000
+-#define IXGBE_RXDADV_LNKSEC_ERROR_BAD_SIG       0x18000000
+-
+ /* Masks to determine if packets should be dropped due to frame errors */
+ #define IXGBE_RXD_ERR_FRAME_ERR_MASK ( \
+ 				      IXGBE_RXD_ERR_CE | \
+@@ -2889,6 +2886,7 @@ struct ixgbe_adv_tx_context_desc {
+ 				 IXGBE_ADVTXD_POPTS_SHIFT)
+ #define IXGBE_ADVTXD_POPTS_TXSM (IXGBE_TXD_POPTS_TXSM << \
+ 				 IXGBE_ADVTXD_POPTS_SHIFT)
++#define IXGBE_ADVTXD_POPTS_IPSEC     0x00000400 /* IPSec offload request */
+ #define IXGBE_ADVTXD_POPTS_ISCO_1ST  0x00000000 /* 1st TSO of iSCSI PDU */
+ #define IXGBE_ADVTXD_POPTS_ISCO_MDL  0x00000800 /* Middle TSO of iSCSI PDU */
+ #define IXGBE_ADVTXD_POPTS_ISCO_LAST 0x00001000 /* Last TSO of iSCSI PDU */
+@@ -2904,7 +2902,6 @@ struct ixgbe_adv_tx_context_desc {
+ #define IXGBE_ADVTXD_TUCMD_L4T_SCTP  0x00001000  /* L4 Packet TYPE of SCTP */
+ #define IXGBE_ADVTXD_TUCMD_L4T_RSV     0x00001800 /* RSV L4 Packet TYPE */
+ #define IXGBE_ADVTXD_TUCMD_MKRREQ    0x00002000 /*Req requires Markers and CRC*/
+-#define IXGBE_ADVTXD_POPTS_IPSEC      0x00000400 /* IPSec offload request */
+ #define IXGBE_ADVTXD_TUCMD_IPSEC_TYPE_ESP 0x00002000 /* IPSec Type ESP */
+ #define IXGBE_ADVTXD_TUCMD_IPSEC_ENCRYPT_EN 0x00004000/* ESP Encrypt Enable */
+ #define IXGBE_ADVTXT_TUCMD_FCOE      0x00008000       /* FCoE Frame Type */
 -- 
 2.7.4
 
