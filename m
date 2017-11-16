@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 16 Nov 2017 18:09:38 +0000
-Subject: [Intel-wired-lan] [PATCH 2/3] ethtool: show vf and queue in the
- help for -N
-In-Reply-To: <20171110185553.14657-2-jacob.e.keller@intel.com>
+Date: Thu, 16 Nov 2017 18:10:02 +0000
+Subject: [Intel-wired-lan] [PATCH 3/3] ethtool: correct VF index values
+ for the ring_cookie parameter
+In-Reply-To: <20171110185553.14657-3-jacob.e.keller@intel.com>
 References: <20171110185553.14657-1-jacob.e.keller@intel.com>
- <20171110185553.14657-2-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAEDD3@ORSMSX104.amr.corp.intel.com>
+ <20171110185553.14657-3-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAEDDF@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,16 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jacob Keller
 > Sent: Friday, November 10, 2017 10:56 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH 2/3] ethtool: show vf and queue in the
-> help for -N
+> Subject: [Intel-wired-lan] [PATCH 3/3] ethtool: correct VF index values for
+> the ring_cookie parameter
 > 
-> Show that you can use vf and queue instead of action in the help output, and
-> not only in the manual page.
+> Instead of relying on the input being offset by 1, instead adjust the "vf" input
+> value by 1 so that it correctly targets the VF the user expects. Additionally,
+> update the displayed output to show the correct VF number.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  ethtool.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> This is the way the VF parameter should have worked from the beginning,
+> but unfortunately I did not code it as such. It may be considered a functional
+> change (since we already supported the vf parameter with the offset not
+> handled properly). I would consider this a bug fix, but it might be considered
+> a behavior change....
+> 
+>  ethtool.8.in |  3 +--
+>  rxclass.c    | 14 +++++++++++++-
+>  2 files changed, 14 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
