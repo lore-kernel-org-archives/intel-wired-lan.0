@@ -1,42 +1,41 @@
 From: Brian King <brking@linux.vnet.ibm.com>
-Date: Thu, 16 Nov 2017 09:37:51 -0600
-Subject: [Intel-wired-lan] [PATCH 3/7] ixgbevf: Use smp_rmb rather than
- read_barrier_depends
-In-Reply-To: <1510846675-15169-1-git-send-email-brking@linux.vnet.ibm.com>
-References: <1510846675-15169-1-git-send-email-brking@linux.vnet.ibm.com>
-Message-ID: <1510846675-15169-4-git-send-email-brking@linux.vnet.ibm.com>
+Date: Thu, 16 Nov 2017 09:37:48 -0600
+Subject: [Intel-wired-lan] [PATCH 0/7] [RESEND] [net] intel: Use smp_rmb
+ rather than read_barrier_depends
+Message-ID: <1510846675-15169-1-git-send-email-brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The original issue being fixed in this patch was seen with the ixgbe
-driver, but the same issue exists with ixgbevf as well, as the code is
-very similar. read_barrier_depends is not sufficient to ensure
-loads following it are not speculatively loaded out of order
-by the CPU, which can result in stale data being loaded, causing
-potential system crashes.
+Resending as the first attempt is not showing up in the list archive.
 
-Cc: stable<stable@vger.kernel.org>
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+This patch converts several network drivers to use smp_rmb
+rather than read_barrier_depends. The initial issue was
+discovered with ixgbe on a Power machine which resulted
+in skb list corruption due to fetching a stale skb pointer.
+More details can be found in the ixgbe patch description.
+
+Brian King (7):
+  ixgbe: Fix skb list corruption on Power systems
+  i40e: Use smp_rmb rather than read_barrier_depends
+  ixgbevf: Use smp_rmb rather than read_barrier_depends
+  igbvf: Use smp_rmb rather than read_barrier_depends
+  igb: Use smp_rmb rather than read_barrier_depends
+  fm10k: Use smp_rmb rather than read_barrier_depends
+  i40evf: Use smp_rmb rather than read_barrier_depends
+
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c       | 2 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c     | 2 +-
+ drivers/net/ethernet/intel/igb/igb_main.c         | 2 +-
+ drivers/net/ethernet/intel/igbvf/netdev.c         | 2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 3 ++-
  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ 8 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 032f8ac..90ecc4b 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -326,7 +326,7 @@ static bool ixgbevf_clean_tx_irq(struct ixgbevf_q_vector *q_vector,
- 			break;
- 
- 		/* prevent any other reads prior to eop_desc */
--		read_barrier_depends();
-+		smp_rmb();
- 
- 		/* if DD is not set pending work has not been completed */
- 		if (!(eop_desc->wb.status & cpu_to_le32(IXGBE_TXD_STAT_DD)))
 -- 
 1.8.3.1
 
