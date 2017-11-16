@@ -1,93 +1,124 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Thu, 16 Nov 2017 11:54:40 -0800
-Subject: [Intel-wired-lan] [RFC PATCH jkirsher/next-queue 2/9] ixgbe: clean
- up ipsec defines
+Date: Thu, 16 Nov 2017 11:54:42 -0800
+Subject: [Intel-wired-lan] [RFC PATCH jkirsher/next-queue 4/9] ixgbe: add
+ ipsec data to driver struct
 In-Reply-To: <1510862087-1924-1-git-send-email-shannon.nelson@oracle.com>
 References: <1510862087-1924-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <1510862087-1924-3-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1510862087-1924-5-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Clean up the ipsec/macsec descriptor bit definitions to match the rest
-of the defines and file organization.
+Add the ipsec table definitions to the driver's adapter struct and
+add the new code into the Makefile.  This sets the stage for
+actually using the new code.
 
 Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 23 ++++++++++-------------
- 1 file changed, 10 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/Makefile |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h  | 43 +++++++++++++++++++++++++++++--
+ 2 files changed, 42 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 0a77941..befed8b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -2321,11 +2321,6 @@ enum {
- #define IXGBE_TXD_CMD_VLE    0x40000000 /* Add VLAN tag */
- #define IXGBE_TXD_STAT_DD    0x00000001 /* Descriptor Done */
+diff --git a/drivers/net/ethernet/intel/ixgbe/Makefile b/drivers/net/ethernet/intel/ixgbe/Makefile
+index 35e6fa6..8319465 100644
+--- a/drivers/net/ethernet/intel/ixgbe/Makefile
++++ b/drivers/net/ethernet/intel/ixgbe/Makefile
+@@ -42,3 +42,4 @@ ixgbe-$(CONFIG_IXGBE_DCB) +=  ixgbe_dcb.o ixgbe_dcb_82598.o \
+ ixgbe-$(CONFIG_IXGBE_HWMON) += ixgbe_sysfs.o
+ ixgbe-$(CONFIG_DEBUG_FS) += ixgbe_debugfs.o
+ ixgbe-$(CONFIG_FCOE:m=y) += ixgbe_fcoe.o
++ixgbe-$(CONFIG_XFRM_OFFLOAD) += ixgbe_ipsec.o
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 468c355..f324271 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -52,6 +52,9 @@
+ #ifdef CONFIG_IXGBE_DCA
+ #include <linux/dca.h>
+ #endif
++#ifdef CONFIG_XFRM_OFFLOAD
++#include "ixgbe_ipsec.h"
++#endif /* CONFIG_XFRM_OFFLOAD */
  
--#define IXGBE_RXDADV_IPSEC_STATUS_SECP                  0x00020000
--#define IXGBE_RXDADV_IPSEC_ERROR_INVALID_PROTOCOL       0x08000000
--#define IXGBE_RXDADV_IPSEC_ERROR_INVALID_LENGTH         0x10000000
--#define IXGBE_RXDADV_IPSEC_ERROR_AUTH_FAILED            0x18000000
--#define IXGBE_RXDADV_IPSEC_ERROR_BIT_MASK               0x18000000
- /* Multiple Transmit Queue Command Register */
- #define IXGBE_MTQC_RT_ENA       0x1 /* DCB Enable */
- #define IXGBE_MTQC_VT_ENA       0x2 /* VMDQ2 Enable */
-@@ -2375,6 +2370,14 @@ enum {
- #define IXGBE_RXDADV_ERR_HBO    0x00800000 /*Header Buffer Overflow */
- #define IXGBE_RXDADV_ERR_CE     0x01000000 /* CRC Error */
- #define IXGBE_RXDADV_ERR_LE     0x02000000 /* Length Error */
+ #include <net/busy_poll.h>
+ 
+@@ -170,10 +173,11 @@ enum ixgbe_tx_flags {
+ 	IXGBE_TX_FLAGS_CC	= 0x08,
+ 	IXGBE_TX_FLAGS_IPV4	= 0x10,
+ 	IXGBE_TX_FLAGS_CSUM	= 0x20,
++	IXGBE_TX_FLAGS_IPSEC    = 0x40,
+ 
+ 	/* software defined flags */
+-	IXGBE_TX_FLAGS_SW_VLAN	= 0x40,
+-	IXGBE_TX_FLAGS_FCOE	= 0x80,
++	IXGBE_TX_FLAGS_SW_VLAN	= 0x80,
++	IXGBE_TX_FLAGS_FCOE	= 0x100,
+ };
+ 
+ /* VLAN info */
+@@ -279,6 +283,10 @@ struct ixgbe_rx_queue_stats {
+ 	u64 alloc_rx_page_failed;
+ 	u64 alloc_rx_buff_failed;
+ 	u64 csum_err;
++#if CONFIG_XFRM_OFFLOAD
++	u64 ipsec_offloads;
++	u64 ipsec_offload_faileds;
++#endif /* CONFIG_XFRM_OFFLOAD */
+ };
+ 
+ #define IXGBE_TS_HDR_LEN 8
+@@ -629,6 +637,8 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_EEE_CAPABLE			BIT(14)
+ #define IXGBE_FLAG2_EEE_ENABLED			BIT(15)
+ #define IXGBE_FLAG2_RX_LEGACY			BIT(16)
++#define IXGBE_FLAG2_IPSEC_CAPABLE		BIT(17)
++#define IXGBE_FLAG2_IPSEC_ENABLED		BIT(18)
+ 
+ 	/* Tx fast path data */
+ 	int num_tx_queues;
+@@ -780,6 +790,14 @@ struct ixgbe_adapter {
+ 
+ #define IXGBE_RSS_KEY_SIZE     40  /* size of RSS Hash Key in bytes */
+ 	u32 *rss_key;
 +
-+#define IXGBE_RXDADV_ERR_MACSEC_NO_SA_MATCH  0x08000000
-+#define IXGBE_RXDADV_ERR_MACSEC_REPLAY_ERROR 0x10000000
-+#define IXGBE_RXDADV_ERR_MACSEC_BAD_SIG      0x18000000
-+#define IXGBE_RXDADV_ERR_IPSEC_INV_PROTOCOL  0x08000000
-+#define IXGBE_RXDADV_ERR_IPSEC_INV_LENGTH    0x10000000
-+#define IXGBE_RXDADV_ERR_IPSEC_AUTH_FAILED   0x18000000
++#ifdef CONFIG_XFRM
++	u16 num_rx_sa;
++	u16 num_tx_sa;
++	struct rx_ip_sa *rx_ip_sa_tbl;
++	struct rx_sa *rx_sa_tbl;
++	struct tx_sa *tx_sa_tbl;
++#endif /* CONFIG_XFRM */
+ };
+ 
+ static inline u8 ixgbe_max_rss_indices(struct ixgbe_adapter *adapter)
+@@ -1010,4 +1028,25 @@ void ixgbe_store_key(struct ixgbe_adapter *adapter);
+ void ixgbe_store_reta(struct ixgbe_adapter *adapter);
+ s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32 adv_reg, u32 lp_reg,
+ 		       u32 adv_sym, u32 adv_asm, u32 lp_sym, u32 lp_asm);
 +
- #define IXGBE_RXDADV_ERR_USE    0x20000000 /* Undersize Error */
- #define IXGBE_RXDADV_ERR_TCPE   0x40000000 /* TCP/UDP Checksum Error */
- #define IXGBE_RXDADV_ERR_IPE    0x80000000 /* IP Checksum Error */
-@@ -2396,6 +2399,7 @@ enum {
- #define IXGBE_RXDADV_STAT_FCSTAT_FCPRSP 0x00000020 /* 10: Recv. FCP_RSP */
- #define IXGBE_RXDADV_STAT_FCSTAT_DDP    0x00000030 /* 11: Ctxt w/ DDP */
- #define IXGBE_RXDADV_STAT_TS		0x00010000 /* IEEE 1588 Time Stamp */
-+#define IXGBE_RXDADV_STAT_SECP          0x00020000 /* IPsec/MACsec pkt found */
- 
- /* PSRTYPE bit definitions */
- #define IXGBE_PSRTYPE_TCPHDR    0x00000010
-@@ -2462,13 +2466,6 @@ enum {
- #define IXGBE_RXDADV_PKTTYPE_ETQF_MASK  0x00000070 /* ETQF has 8 indices */
- #define IXGBE_RXDADV_PKTTYPE_ETQF_SHIFT 4          /* Right-shift 4 bits */
- 
--/* Security Processing bit Indication */
--#define IXGBE_RXDADV_LNKSEC_STATUS_SECP         0x00020000
--#define IXGBE_RXDADV_LNKSEC_ERROR_NO_SA_MATCH   0x08000000
--#define IXGBE_RXDADV_LNKSEC_ERROR_REPLAY_ERROR  0x10000000
--#define IXGBE_RXDADV_LNKSEC_ERROR_BIT_MASK      0x18000000
--#define IXGBE_RXDADV_LNKSEC_ERROR_BAD_SIG       0x18000000
--
- /* Masks to determine if packets should be dropped due to frame errors */
- #define IXGBE_RXD_ERR_FRAME_ERR_MASK ( \
- 				      IXGBE_RXD_ERR_CE | \
-@@ -2889,6 +2886,7 @@ struct ixgbe_adv_tx_context_desc {
- 				 IXGBE_ADVTXD_POPTS_SHIFT)
- #define IXGBE_ADVTXD_POPTS_TXSM (IXGBE_TXD_POPTS_TXSM << \
- 				 IXGBE_ADVTXD_POPTS_SHIFT)
-+#define IXGBE_ADVTXD_POPTS_IPSEC     0x00000400 /* IPSec offload request */
- #define IXGBE_ADVTXD_POPTS_ISCO_1ST  0x00000000 /* 1st TSO of iSCSI PDU */
- #define IXGBE_ADVTXD_POPTS_ISCO_MDL  0x00000800 /* Middle TSO of iSCSI PDU */
- #define IXGBE_ADVTXD_POPTS_ISCO_LAST 0x00001000 /* Last TSO of iSCSI PDU */
-@@ -2904,7 +2902,6 @@ struct ixgbe_adv_tx_context_desc {
- #define IXGBE_ADVTXD_TUCMD_L4T_SCTP  0x00001000  /* L4 Packet TYPE of SCTP */
- #define IXGBE_ADVTXD_TUCMD_L4T_RSV     0x00001800 /* RSV L4 Packet TYPE */
- #define IXGBE_ADVTXD_TUCMD_MKRREQ    0x00002000 /*Req requires Markers and CRC*/
--#define IXGBE_ADVTXD_POPTS_IPSEC      0x00000400 /* IPSec offload request */
- #define IXGBE_ADVTXD_TUCMD_IPSEC_TYPE_ESP 0x00002000 /* IPSec Type ESP */
- #define IXGBE_ADVTXD_TUCMD_IPSEC_ENCRYPT_EN 0x00004000/* ESP Encrypt Enable */
- #define IXGBE_ADVTXT_TUCMD_FCOE      0x00008000       /* FCoE Frame Type */
++#ifdef CONFIG_XFRM_OFFLOAD
++void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter);
++void ixgbe_ipsec_process_rx_offload(struct ixgbe_ring *rx_ring,
++				    union ixgbe_adv_rx_desc *rx_desc,
++				    struct sk_buff *skb);
++int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring, struct sk_buff *skb,
++		   struct ixgbe_ipsec_tx_data *itd);
++void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter);
++void ixgbe_ipsec_dump_info(struct ixgbe_adapter *adapter);
++void ixgbe_ipsec_dump_hw(struct ixgbe_adapter *adapter);
++void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter);
++#else
++inline void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter) { };
++inline void ixgbe_ipsec_process_rx_offload(struct ixgbe_ring *rx_ring,
++				    union ixgbe_adv_rx_desc *rx_desc,
++				    struct sk_buff *skb) { };
++inline int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring, struct sk_buff *skb,
++		   struct ixgbe_ipsec_tx_data *itd) { return 0; };
++inline void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter) { };
++#endif /* CONFIG_XFRM_OFFLOAD */
+ #endif /* _IXGBE_H_ */
 -- 
 2.7.4
 
