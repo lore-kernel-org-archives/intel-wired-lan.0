@@ -1,10 +1,10 @@
 From: Brian King <brking@linux.vnet.ibm.com>
-Date: Fri, 17 Nov 2017 11:05:49 -0600
-Subject: [Intel-wired-lan] [PATCH v2 7/7] i40evf: Use smp_rmb rather than
+Date: Fri, 17 Nov 2017 11:05:47 -0600
+Subject: [Intel-wired-lan] [PATCH v2 5/7] igb: Use smp_rmb rather than
  read_barrier_depends
 In-Reply-To: <1510938349-17608-1-git-send-email-brking@linux.vnet.ibm.com>
 References: <1510938349-17608-1-git-send-email-brking@linux.vnet.ibm.com>
-Message-ID: <1510938349-17608-8-git-send-email-brking@linux.vnet.ibm.com>
+Message-ID: <1510938349-17608-6-git-send-email-brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,7 +12,7 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 The original issue being fixed in this patch was seen with the ixgbe
-driver, but the same issue exists with i40evf as well, as the code is
+driver, but the same issue exists with igb as well, as the code is
 very similar. read_barrier_depends is not sufficient to ensure
 loads following it are not speculatively loaded out of order
 by the CPU, which can result in stale data being loaded, causing
@@ -21,22 +21,22 @@ potential system crashes.
 Cc: stable<stable@vger.kernel.org>
 Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 2 +-
+ drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index c32c624..07a4e6e 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -179,7 +179,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index ea69af2..b0031c5 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -6970,7 +6970,7 @@ static bool igb_clean_tx_irq(struct igb_q_vector *q_vector, int napi_budget)
  			break;
  
  		/* prevent any other reads prior to eop_desc */
 -		read_barrier_depends();
 +		smp_rmb();
  
- 		i40e_trace(clean_tx_irq, tx_ring, tx_desc, tx_buf);
- 		/* if the descriptor isn't done, no work yet to do */
+ 		/* if DD is not set pending work has not been completed */
+ 		if (!(eop_desc->wb.status & cpu_to_le32(E1000_TXD_STAT_DD)))
 -- 
 1.8.3.1
 
