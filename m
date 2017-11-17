@@ -1,42 +1,63 @@
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Fri, 17 Nov 2017 11:05:47 -0600
-Subject: [Intel-wired-lan] [PATCH v2 5/7] igb: Use smp_rmb rather than
- read_barrier_depends
-In-Reply-To: <1510938349-17608-1-git-send-email-brking@linux.vnet.ibm.com>
-References: <1510938349-17608-1-git-send-email-brking@linux.vnet.ibm.com>
-Message-ID: <1510938349-17608-6-git-send-email-brking@linux.vnet.ibm.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 17 Nov 2017 09:09:21 -0800
+Subject: [Intel-wired-lan] [RFC PATCH jkirsher/next-queue 6/9] ixgbe:
+ add ipsec debug helpers
+In-Reply-To: <1510862087-1924-7-git-send-email-shannon.nelson@oracle.com>
+References: <1510862087-1924-1-git-send-email-shannon.nelson@oracle.com>
+ <1510862087-1924-7-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <CAKgT0UeVMqfeMHtGx3NjCnREXe+pxNP8MYdjTa7UP+kWtS=2tg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The original issue being fixed in this patch was seen with the ixgbe
-driver, but the same issue exists with igb as well, as the code is
-very similar. read_barrier_depends is not sufficient to ensure
-loads following it are not speculatively loaded out of order
-by the CPU, which can result in stale data being loaded, causing
-potential system crashes.
+On Thu, Nov 16, 2017 at 11:54 AM, Shannon Nelson
+<shannon.nelson@oracle.com> wrote:
+> These are a couple of debugfs commands to inspect and manage the ipsec
+> tables.  I really don't expect this patch to be in the final patchset.
+>
+> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
+> index 5e2c1e3..0d0a9f0 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
+> @@ -120,11 +120,27 @@ static ssize_t ixgbe_dbg_reg_ops_write(struct file *filp,
+>                 } else {
+>                         e_dev_info("read <reg>\n");
+>                 }
+> +#ifdef CONFIG_XFRM_OFFLOAD
+> +       } else if (strncmp(ixgbe_dbg_reg_ops_buf, "ipsec-sw-dump", 13) == 0) {
+> +               ixgbe_ipsec_dump_info(adapter);
+> +       } else if (strncmp(ixgbe_dbg_reg_ops_buf, "ipsec-hw-dump", 13) == 0) {
+> +               ixgbe_ipsec_dump_hw(adapter);
+> +       } else if (strncmp(ixgbe_dbg_reg_ops_buf, "ipsec-hw-clean", 14) == 0) {
+> +               ixgbe_ipsec_clear_hw_tables(adapter);
+> +       } else if (strncmp(ixgbe_dbg_reg_ops_buf, "ipsec-restore", 13) == 0) {
+> +               ixgbe_ipsec_restore(adapter);
+> +#endif /* CONFIG_XFRM_OFFLOAD */
+>         } else {
+>                 e_dev_info("Unknown command %s\n", ixgbe_dbg_reg_ops_buf);
+>                 e_dev_info("Available commands:\n");
+>                 e_dev_info("   read <reg>\n");
+>                 e_dev_info("   write <reg> <value>\n");
+> +#ifdef CONFIG_XFRM_OFFLOAD
+> +               e_dev_info("   ipsec-sw-dump\n");
+> +               e_dev_info("   ipsec-hw-dump\n");
+> +               e_dev_info("   ipsec-hw-clean\n");
+> +               e_dev_info("   ipsec-restore\n");
+> +#endif /* CONFIG_XFRM_OFFLOAD */
+>         }
+>         return count;
+>  }
 
-Cc: stable<stable@vger.kernel.org>
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+NAK. Please don't use debugfs as any sort of configuration interface.
+The clean and restore are very unlikely to ever be accepted upstream.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index ea69af2..b0031c5 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -6970,7 +6970,7 @@ static bool igb_clean_tx_irq(struct igb_q_vector *q_vector, int napi_budget)
- 			break;
- 
- 		/* prevent any other reads prior to eop_desc */
--		read_barrier_depends();
-+		smp_rmb();
- 
- 		/* if DD is not set pending work has not been completed */
- 		if (!(eop_desc->wb.status & cpu_to_le32(E1000_TXD_STAT_DD)))
--- 
-1.8.3.1
-
+I'm not even sure if the dumping functionality is a good idea since it
+seems like it might be a way to expose critical information for a
+connection that is supposed to be secured via ipsec.
