@@ -1,11 +1,11 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 17 Nov 2017 09:09:21 -0800
-Subject: [Intel-wired-lan] [RFC PATCH jkirsher/next-queue 6/9] ixgbe:
- add ipsec debug helpers
-In-Reply-To: <1510862087-1924-7-git-send-email-shannon.nelson@oracle.com>
+Date: Fri, 17 Nov 2017 09:43:18 -0800
+Subject: [Intel-wired-lan] [RFC PATCH jkirsher/next-queue 7/9] ixgbe:
+ add tx ipsec offload
+In-Reply-To: <1510862087-1924-8-git-send-email-shannon.nelson@oracle.com>
 References: <1510862087-1924-1-git-send-email-shannon.nelson@oracle.com>
- <1510862087-1924-7-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <CAKgT0UeVMqfeMHtGx3NjCnREXe+pxNP8MYdjTa7UP+kWtS=2tg@mail.gmail.com>
+ <1510862087-1924-8-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <CAKgT0UcXGGOP=2wyfW6N3OWXR+Ku-Bce0Mq4SRCMLqG_U=4Oew@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,50 +14,165 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Thu, Nov 16, 2017 at 11:54 AM, Shannon Nelson
 <shannon.nelson@oracle.com> wrote:
-> These are a couple of debugfs commands to inspect and manage the ipsec
-> tables.  I really don't expect this patch to be in the final patchset.
+> Add the Tx offload mechanisms.
+>
+> Currently this is slightly broken and not setting up the Tx checksum
+> offload correctly, so is best used with
+>         ethtool -K ethN tx off
 >
 > Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+
+So the one piece that really seems to be missing here is any update to
+ixgbe_features_check. That seems like it should be an integral part of
+all this. With that you would be able to disable features like
+checksum and TSO until you know how they would be configured and you
+can push the checksum offload and segmentation up into the stack until
+you can sort out how you do both the ipsec offload and those other
+offloads.
+
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 44 ++++++++++++++++++++++-----
+>  1 file changed, 36 insertions(+), 8 deletions(-)
 >
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
-> index 5e2c1e3..0d0a9f0 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
-> @@ -120,11 +120,27 @@ static ssize_t ixgbe_dbg_reg_ops_write(struct file *filp,
->                 } else {
->                         e_dev_info("read <reg>\n");
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index 7f503d3..a434675 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -2423,8 +2423,8 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>                                 continue;
+>                         }
 >                 }
+> -
+>  #endif /* IXGBE_FCOE */
+> +
+>                 ixgbe_rx_skb(q_vector, skb);
+>
+>                 /* update budget accounting */
+
+This is white space noise and can be dropped from the patch.
+
+> @@ -7791,9 +7791,10 @@ static void ixgbe_service_task(struct work_struct *work)
+>
+>  static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+>                      struct ixgbe_tx_buffer *first,
+> -                    u8 *hdr_len)
+> +                    u8 *hdr_len,
+> +                    struct ixgbe_ipsec_tx_data *itd)
+>  {
+> -       u32 vlan_macip_lens, type_tucmd, mss_l4len_idx;
+> +       u32 vlan_macip_lens, type_tucmd, mss_l4len_idx, fcoe_sof_eof = 0;
+
+I realize that fcoe_sof_eof is probably what we were calling that part
+of the context descriptor, but you may want to choose a name that
+better describes how we are using this field.
+
+>         struct sk_buff *skb = first->skb;
+>         union {
+>                 struct iphdr *v4;
+> @@ -7872,7 +7873,14 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+>         vlan_macip_lens |= (ip.hdr - skb->data) << IXGBE_ADVTXD_MACLEN_SHIFT;
+>         vlan_macip_lens |= first->tx_flags & IXGBE_TX_FLAGS_VLAN_MASK;
+>
+> -       ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, 0, type_tucmd,
 > +#ifdef CONFIG_XFRM_OFFLOAD
-> +       } else if (strncmp(ixgbe_dbg_reg_ops_buf, "ipsec-sw-dump", 13) == 0) {
-> +               ixgbe_ipsec_dump_info(adapter);
-> +       } else if (strncmp(ixgbe_dbg_reg_ops_buf, "ipsec-hw-dump", 13) == 0) {
-> +               ixgbe_ipsec_dump_hw(adapter);
-> +       } else if (strncmp(ixgbe_dbg_reg_ops_buf, "ipsec-hw-clean", 14) == 0) {
-> +               ixgbe_ipsec_clear_hw_tables(adapter);
-> +       } else if (strncmp(ixgbe_dbg_reg_ops_buf, "ipsec-restore", 13) == 0) {
-> +               ixgbe_ipsec_restore(adapter);
+> +       if (first->tx_flags & IXGBE_TX_FLAGS_IPSEC) {
+> +               fcoe_sof_eof |= itd->sa_idx;
+> +               type_tucmd |= itd->flags | itd->trailer_len;
+> +       }
+
+Reading the datasheet for the X550, as per section 7.13.4.3 it looks
+like these parts expect no trailer to be added to the packet in the
+case of TSO. Do you know if the trailer is provided with a packet
+being sent for TSO? If so it needs to be stripped, and it will be
+added by hardware.
+
 > +#endif /* CONFIG_XFRM_OFFLOAD */
->         } else {
->                 e_dev_info("Unknown command %s\n", ixgbe_dbg_reg_ops_buf);
->                 e_dev_info("Available commands:\n");
->                 e_dev_info("   read <reg>\n");
->                 e_dev_info("   write <reg> <value>\n");
-> +#ifdef CONFIG_XFRM_OFFLOAD
-> +               e_dev_info("   ipsec-sw-dump\n");
-> +               e_dev_info("   ipsec-hw-dump\n");
-> +               e_dev_info("   ipsec-hw-clean\n");
-> +               e_dev_info("   ipsec-restore\n");
-> +#endif /* CONFIG_XFRM_OFFLOAD */
->         }
->         return count;
+> +
+> +       ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, fcoe_sof_eof, type_tucmd,
+>                           mss_l4len_idx);
+>
+>         return 1;
+
+
+
+> @@ -7888,10 +7896,12 @@ static inline bool ixgbe_ipv6_csum_is_sctp(struct sk_buff *skb)
 >  }
+>
+>  static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
+> -                         struct ixgbe_tx_buffer *first)
+> +                         struct ixgbe_tx_buffer *first,
+> +                         struct ixgbe_ipsec_tx_data *itd)
+>  {
+>         struct sk_buff *skb = first->skb;
+>         u32 vlan_macip_lens = 0;
+> +       u32 fcoe_sof_eof = 0;
+>         u32 type_tucmd = 0;
+>
+>         if (skb->ip_summed != CHECKSUM_PARTIAL) {
+> @@ -7932,7 +7942,15 @@ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
+>         vlan_macip_lens |= skb_network_offset(skb) << IXGBE_ADVTXD_MACLEN_SHIFT;
+>         vlan_macip_lens |= first->tx_flags & IXGBE_TX_FLAGS_VLAN_MASK;
+>
+> -       ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, 0, type_tucmd, 0);
+> +#ifdef CONFIG_XFRM_OFFLOAD
+> +       if (first->tx_flags & IXGBE_TX_FLAGS_IPSEC) {
+> +               fcoe_sof_eof |= itd->sa_idx;
+> +               type_tucmd |= itd->flags | itd->trailer_len;
+> +       }
+> +#endif /* CONFIG_XFRM_OFFLOAD */
+> +
+> +       ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens,
+> +                         fcoe_sof_eof, type_tucmd, 0);
+>  }
+>
 
-NAK. Please don't use debugfs as any sort of configuration interface.
-The clean and restore are very unlikely to ever be accepted upstream.
+So I am not sure what flags you would need to be adding to the
+type_tucmd portion of the context descriptor. From what I can tell it
+should just be the trailer length that gets dropped in there.
 
-I'm not even sure if the dumping functionality is a good idea since it
-seems like it might be a way to expose critical information for a
-connection that is supposed to be secured via ipsec.
+>  #define IXGBE_SET_FLAG(_input, _flag, _result) \
+> @@ -7980,6 +7998,11 @@ static void ixgbe_tx_olinfo_status(union ixgbe_adv_tx_desc *tx_desc,
+>                                         IXGBE_TX_FLAGS_IPV4,
+>                                         IXGBE_ADVTXD_POPTS_IXSM);
+>
+> +       /* enble IPsec */
+> +       olinfo_status |= IXGBE_SET_FLAG(tx_flags,
+> +                                       IXGBE_TX_FLAGS_IPSEC,
+> +                                       IXGBE_ADVTXD_POPTS_IPSEC);
+> +
+>         /*
+>          * Check Context must be set if Tx switch is enabled, which it
+>          * always is for case where virtual functions are running
+> @@ -8444,6 +8467,7 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+>         u32 tx_flags = 0;
+>         unsigned short f;
+>         u16 count = TXD_USE_COUNT(skb_headlen(skb));
+> +       struct ixgbe_ipsec_tx_data ipsec_tx;
+>         __be16 protocol = skb->protocol;
+>         u8 hdr_len = 0;
+>
+> @@ -8532,6 +8556,10 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+>                 }
+>         }
+>
+> +       if ((adapter->flags2 & IXGBE_FLAG2_IPSEC_ENABLED) &&
+> +           ixgbe_ipsec_tx(tx_ring, skb, &ipsec_tx))
+> +               tx_flags |= IXGBE_TX_FLAGS_IPSEC | IXGBE_TX_FLAGS_CC;
+> +
+>         /* record initial flags and protocol */
+>         first->tx_flags = tx_flags;
+>         first->protocol = protocol;
+> @@ -8548,11 +8576,11 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+>         }
+>
+>  #endif /* IXGBE_FCOE */
+> -       tso = ixgbe_tso(tx_ring, first, &hdr_len);
+> +       tso = ixgbe_tso(tx_ring, first, &hdr_len, &ipsec_tx);
+>         if (tso < 0)
+>                 goto out_drop;
+>         else if (!tso)
+> -               ixgbe_tx_csum(tx_ring, first);
+> +               ixgbe_tx_csum(tx_ring, first, &ipsec_tx);
+>
+>         /* add the ATR filter if ATR is on */
+>         if (test_bit(__IXGBE_TX_FDIR_INIT_DONE, &tx_ring->state))
