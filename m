@@ -1,33 +1,136 @@
-From: Ahmad Fatoum <ahmad@a3f.at>
-Date: Sat, 18 Nov 2017 21:53:58 +0100
-Subject: [Intel-wired-lan] [PATCH] e1000: Fix off-by-one in debug message
-Message-ID: <20171118205358.29595-1-ahmad@a3f.at>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Sat, 18 Nov 2017 16:55:17 -0800
+Subject: [Intel-wired-lan] [RFC PATCH jkirsher/next-queue 3/9] ixgbe:
+ add the ipsec support code files
+In-Reply-To: <5386178a-972d-1b50-a353-6a6490b266f3@oracle.com>
+References: <1510862087-1924-1-git-send-email-shannon.nelson@oracle.com>
+ <1510862087-1924-4-git-send-email-shannon.nelson@oracle.com>
+ <CAKgT0UchEafhUNaP9zSi+n1orrFpk4SD_2Z-zc5YC3v+OUq=qA@mail.gmail.com>
+ <5386178a-972d-1b50-a353-6a6490b266f3@oracle.com>
+Message-ID: <CAKgT0UdcG0xzgxxufe1xepbMYY4o0-Giubw9VMedpDfFD0P90A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Signed-off-by: Ahmad Fatoum <ahmad@a3f.at>
----
- drivers/net/ethernet/intel/e1000/e1000_hw.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Sat, Nov 18, 2017 at 12:18 PM, Shannon Nelson
+<shannon.nelson@oracle.com> wrote:
+> Again, thanks for the review on this early code.  I have a few responses
+> below.
+>
+> sln
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
-index 8172cf08cc33..ba04a65d8500 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_hw.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_hw.c
-@@ -4307,8 +4307,8 @@ static void e1000_init_rx_addrs(struct e1000_hw *hw)
- 
- 	rar_num = E1000_RAR_ENTRIES;
- 
--	/* Zero out the other 15 receive addresses. */
--	e_dbg("Clearing RAR[1-15]\n");
-+	/* Zero out the following 14 receive addresses. RAR[15] is for manageability */
-+	e_dbg("Clearing RAR[1-14]\n");
- 	for (i = 1; i < rar_num; i++) {
- 		E1000_WRITE_REG_ARRAY(hw, RA, (i << 1), 0);
- 		E1000_WRITE_FLUSH();
--- 
-2.15.0
+No problem. It is a nice break from working on macvlan code where
+ixgbe seems to have more "undocumented features" than I know what to
+do with.. :-)
 
+I had a couple responses to your responses included them inline below
+and snipped the portions of the patch I think we are in agreement on.
+
+> On 11/17/2017 1:30 PM, Alexander Duyck wrote:
+>>
+>> On Thu, Nov 16, 2017 at 11:54 AM, Shannon Nelson
+>> <shannon.nelson@oracle.com> wrote:
+>>>
+>>> This adds the ipsec support code into the driver, but doesn't yet
+>>> include it into the compile.
+>>>
+>>> It is possible that the .h file contents could simply go into
+>>> the ixgbe_type.h and ixgbe.h files.
+>>>
+>>> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+>>
+>>
+>> Generally I really hate it when code is just thrown in like this as it
+>> is really difficult to review and/or debug. I would really much prefer
+>> to have this code added as it is needed for specific functionality.
+>>
+>>> ---
+>>>   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 1133
+>>> ++++++++++++++++++++++++
+>>>   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h |   80 ++
+>>>   2 files changed, 1213 insertions(+)
+>>>   create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+>>>   create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+>>> b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+>>> new file mode 100644
+>>> index 0000000..177b915
+>>> --- /dev/null
+>>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+>>> @@ -0,0 +1,1133 @@
+>>>
+
+<snip>
+
+>>> +
+>>> +       /* decode error bits, if any */
+>>> +       if ((status_error & IXGBE_RXDADV_ERR_IPSEC_AUTH_FAILED) ==
+>>> IXGBE_RXDADV_ERR_IPSEC_AUTH_FAILED) {
+>>> +               if (pkt_info & IXGBE_RXDADV_PKTTYPE_IPSEC_AH)
+>>> +                       crypto_status = CRYPTO_TRANSPORT_AH_AUTH_FAILED;
+>>> +               else if (pkt_info & IXGBE_RXDADV_PKTTYPE_IPSEC_ESP)
+>>> +                       crypto_status = CRYPTO_TRANSPORT_ESP_AUTH_FAILED;
+>>> +       } else if (status_error & IXGBE_RXDADV_ERR_IPSEC_INV_PROTOCOL) {
+>>> +               crypto_status = CRYPTO_INVALID_PROTOCOL;
+>>> +       } else if (status_error & IXGBE_RXDADV_ERR_IPSEC_INV_LENGTH) {
+>>> +               crypto_status = CRYPTO_INVALID_PACKET_SYNTAX;
+>>> +       } else {
+>>> +               crypto_status = CRYPTO_SUCCESS;
+>>> +       }
+>>> +
+>>
+>>
+>> You might look at converting this into a look-up table since you have
+>> essentially 2 protocols (AH or ESP), and 4 possible return values that
+>> have to be translated int the final result value. A single 2
+>> dimensional 8 byte array should be enough to handle all the possible
+>> crypto_status return values.
+>
+>
+> Actually, if we throw the packet away earlier in the path when looking at
+> the IXGBE_RXDADV_ERR_FRAME_ERR_MASK macro, we won't need to look for these
+> error bits at all.
+
+The question is if it is valid to throw away the frame or if we should
+handle this like we handle a checksum error and just pass it up the
+stack to be processed. I assume if we have an error we don't decode
+the frame. If so we could probably pass the frame up with no offloads
+at all and let the stack deal with it all. That way if there end up
+being any false bugs in the hardware we don't end up dropping valid
+frames.
+
+>>
+>>> +       skb->sp = secpath_dup(skb->sp);
+>>> +       if (unlikely(!skb->sp))
+>>> +               return;
+>>> +
+>>
+>>
+>> It seems like this should be done as soon as you have found your
+>> transform state. Otherwise there isn't much point in decoding the
+>> status_error bits.
+>>
+>>> +       skb->sp->xvec[skb->sp->len++] = xs;
+>>> +       skb->sp->olen++;
+>>> +       xo = xfrm_offload(skb);
+>>> +       xo->flags = CRYPTO_DONE;
+>>> +       xo->status = crypto_status;
+>>> +
+>>> +       if (xo->status == CRYPTO_SUCCESS)
+>>> +               rx_ring->rx_stats.ipsec_offloads++;
+>>> +       else
+>>> +               rx_ring->rx_stats.ipsec_offload_faileds++;
+>>
+>>
+>> You might rename offload_faileds to offload_errors, since the word
+>> "failed" isn't really something to pluralize.
+>
+>
+> I'm trying to decide if I want to keep these stats around at all.
+
+I'd say the stats are useful so they could probably be kept. If
+nothing else they tell you if the offload is on, and if it is working
+or not.
