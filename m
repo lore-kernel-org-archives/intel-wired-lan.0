@@ -1,58 +1,90 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 21 Nov 2017 14:30:30 -0800
-Subject: [Intel-wired-lan] [PATCH net] sched/deadline: fix one-bit signed
- bitfields to be unsigned
-Message-ID: <20171121223030.28051-1-jacob.e.keller@intel.com>
+From: Tushar Dave <tushar.n.dave@oracle.com>
+Date: Wed, 22 Nov 2017 03:40:52 +0530
+Subject: [Intel-wired-lan] [e1000_shutdown] e1000 0000:00:03.0:
+ disabling already-disabled device
+In-Reply-To: <20171121124148.poknfqmuef32tbdn@wfg-t540p.sh.intel.com>
+References: <20171121124148.poknfqmuef32tbdn@wfg-t540p.sh.intel.com>
+Message-ID: <7fe10136-8f99-c0e8-2a3a-93c34915a95a@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit 799ba82de01e ("sched/deadline: Use C bitfields for the state
-flags", 2017-10-10) introduced the use of C bitfields for these
-variables. However, sparse complains about them:
 
-./include/linux/sched.h:476:62: error: dubious one-bit signed bitfield
-./include/linux/sched.h:477:62: error: dubious one-bit signed bitfield
-./include/linux/sched.h:478:62: error: dubious one-bit signed bitfield
-./include/linux/sched.h:479:62: error: dubious one-bit signed bitfield
 
-This is because a one-bit signed bitfield can only hold the values 0 and
--1, which can cause problems if the program expects to be able to
-represent the value positive 1.
+On 11/21/2017 06:11 PM, Fengguang Wu wrote:
+> Hello,
+> 
+> FYI this happens in mainline kernel 4.14.0-01330-g3c07399.
+> It happens since 4.13 .
+> 
+> It occurs in 3 out of 162 boots.
+> 
+> 
+> [   44.637743] advantechwdt: Unexpected close, not stopping watchdog!
+> [   44.997548] input: ImExPS/2 Generic Explorer Mouse as /devices/platform/i8042/serio1/input/input6
+> [   45.013419] e1000 0000:00:03.0: disabling already-disabled device
+> [   45.013447] ------------[ cut here ]------------
+> [   45.014868] WARNING: CPU: 1 PID: 71 at drivers/pci/pci.c:1641 pci_disable_device+0xa1/0x105:
+> 						pci_disable_device at drivers/pci/pci.c:1640
+> [   45.016171] CPU: 1 PID: 71 Comm: rcu_perf_shutdo Not tainted 4.14.0-01330-g3c07399 #1
+> [   45.017197] task: ffff88011bee9e40 task.stack: ffffc90000860000
+> [   45.017987] RIP: 0010:pci_disable_device+0xa1/0x105:
+> 						pci_disable_device at drivers/pci/pci.c:1640
+> [   45.018603] RSP: 0000:ffffc90000863e30 EFLAGS: 00010286
+> [   45.019282] RAX: 0000000000000035 RBX: ffff88013a230008 RCX: 0000000000000000
+> [   45.020182] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000203
+> [   45.021084] RBP: ffff88013a3f31e8 R08: 0000000000000001 R09: 0000000000000000
+> [   45.021986] R10: ffffffff827ec29c R11: 0000000000000002 R12: 0000000000000001
+> [   45.022946] R13: ffff88013a230008 R14: ffff880117802b20 R15: ffffc90000863e8f
+> [   45.023842] FS:  0000000000000000(0000) GS:ffff88013fd00000(0000) knlGS:0000000000000000
+> [   45.024863] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> [   45.025583] CR2: ffffc900006d4000 CR3: 000000000220f000 CR4: 00000000000006a0
+> [   45.026478] Call Trace:
+> [   45.026811]  __e1000_shutdown+0x1d4/0x1e2:
+> 						__e1000_shutdown at drivers/net/ethernet/intel/e1000/e1000_main.c:5162
+> [   45.027344]  ? rcu_perf_cleanup+0x2a1/0x2a1:
+> 						rcu_perf_shutdown at kernel/rcu/rcuperf.c:627
+> [   45.027883]  e1000_shutdown+0x14/0x3a:
+> 						e1000_shutdown at drivers/net/ethernet/intel/e1000/e1000_main.c:5235
+> [   45.028351]  device_shutdown+0x110/0x1aa:
+> 						device_shutdown at drivers/base/core.c:2807
+> [   45.028858]  kernel_power_off+0x31/0x64:
+> 						kernel_power_off at kernel/reboot.c:260
+> [   45.029343]  rcu_perf_shutdown+0x9b/0xa7:
+> 						rcu_perf_shutdown at kernel/rcu/rcuperf.c:637
+> [   45.029852]  ? __wake_up_common_lock+0xa2/0xa2:
+> 						autoremove_wake_function at kernel/sched/wait.c:376
+> [   45.030414]  kthread+0x126/0x12e:
+> 						kthread at kernel/kthread.c:233
+> [   45.030834]  ? __kthread_bind_mask+0x8e/0x8e:
+> 						kthread at kernel/kthread.c:190
+> [   45.031399]  ? ret_from_fork+0x1f/0x30:
+> 						ret_from_fork at arch/x86/entry/entry_64.S:443
+> [   45.031883]  ? kernel_init+0xa/0xf5:
+> 						kernel_init at init/main.c:997
+> [   45.032325]  ret_from_fork+0x1f/0x30:
+> 						ret_from_fork at arch/x86/entry/entry_64.S:443
+> [   45.032777] Code: 00 48 85 ed 75 07 48 8b ab a8 00 00 00 48 8d bb 98 00 00 00 e8 aa d1 11 00 48 89 ea 48 89 c6 48 c7 c7 d8 e4 0b 82 e8 55 7d da ff <0f> ff b9 01 00 00 00 31 d2 be 01 00 00 00 48 c7 c7 f0 b1 61 82
+> [   45.035222] ---[ end trace c257137b1b1976ef ]---
+> [   45.037838] ACPI: Preparing to enter system sleep state S5
+> 
+> Attached the full dmesg, kconfig and reproduce scripts.
+Looks like e1000 pci/pxi-x device is already suspended. And therefore
+call to e1000_suspend() -> __e1000_shutdown() -> pci_disable_device()
+already had disabled the device.
+Disabling device again by e1000_shutdown handler during system shutdown
+causes warning at drivers/pci/pci.c:1641.
 
-In practice, this may not cause a bug since -1 would be considered
-"true" in logical tests, however we should avoid the practice anyways.
+I think function __e1000_shutdown should just return if device is
+already suspended!
 
-Fixes: 799ba82de01e ("sched/deadline: Use C bitfields for the state flags", 2017-10-10)
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: luca abeni <luca.abeni@santannapisa.it>
----
- include/linux/sched.h | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+I don't have e1000 hardware to test right now. So if this seems logical
+to others I will send a patch.
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index a5dc7c98b0a2..21991d668d35 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -473,10 +473,10 @@ struct sched_dl_entity {
- 	 * conditions between the inactive timer handler and the wakeup
- 	 * code.
- 	 */
--	int				dl_throttled      : 1;
--	int				dl_boosted        : 1;
--	int				dl_yielded        : 1;
--	int				dl_non_contending : 1;
-+	unsigned int			dl_throttled      : 1;
-+	unsigned int			dl_boosted        : 1;
-+	unsigned int			dl_yielded        : 1;
-+	unsigned int			dl_non_contending : 1;
- 
- 	/*
- 	 * Bandwidth enforcement timer. Each -deadline task has its
--- 
-2.15.0
-
+-Tushar
+> 
+> Thanks,
+> Fengguang
+> 
