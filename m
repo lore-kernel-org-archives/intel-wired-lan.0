@@ -1,58 +1,67 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 22 Nov 2017 10:56:10 -0800
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 00/16] ixgbe/fm10k:
- macvlan fixes
-Message-ID: <20171122185256.29785.93548.stgit@localhost.localdomain>
+Date: Wed, 22 Nov 2017 10:56:16 -0800
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 01/16] ixgbe: Fix
+ interaction between SR-IOV and macvlan offload
+In-Reply-To: <20171122185256.29785.93548.stgit@localhost.localdomain>
+References: <20171122185256.29785.93548.stgit@localhost.localdomain>
+Message-ID: <20171122185616.29785.79685.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch series is meant to make it so that both fm10k and ixgbe drivers
-will at least function when macvlan offload is enabled. Prior to these
-patches both fm10k and ixgbe had numerous issues that had a negative impact
-on driver stability with the offload enabled, or in the case of fm10k the
-interfaces would never actually receive any traffic as the filters were
-never configured correctly.
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-There are still a few issues outstanding after these patches, but I needed
-to flush out what I had before this patch set became too large.
+When SR-IOV was enabled the macvlan offload was configuring several filters
+with the wrong pool value. This would result in the macvlan interfaces not
+being able to receive traffic that had to pass over the physical interface.
 
-The next set of patches will include changes to the macvlan interface
-itself and so I thought that would make a good division between this patch
-set and the one to follow.
+To fix it wrap the pool argument in the VMDQ_P macro which will add the
+necessary offset to get to the actual VMDq pool
 
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-Alexander Duyck (16):
-      ixgbe: Fix interaction between SR-IOV and macvlan offload
-      ixgbe: Perform reinit any time number of VFs change
-      ixgbe: Add support for macvlan offload RSS on X550 and clean-up pool handling
-      ixgbe: There is no need to update num_rx_pools in L2 fwd offload
-      ixgbe: Fix limitations on macvlan so we can support up to 63 offloaded devices
-      ixgbe: Use ring values to test for Tx pending
-      ixgbe: Drop l2_accel_priv data pointer from ring struct
-      ixgbe: Assume provided MAC filter has been verified by macvlan
-      ixgbe: Default to 1 pool always being allocated
-      ixgbe: Don't assume dev->num_tc is equal to hardware TC config
-      ixgbe/fm10k: Record macvlan stats instead of Rx queue for macvlan offloaded rings
-      ixgbe: Do not manipulate macvlan Tx queues when performing macvlan offload
-      ixgbe: avoid bringing rings up/down as macvlans are added/removed
-      ixgbe: Fix handling of macvlan Tx offload
-      net: Cap number of queues even with accel_priv
-      fm10k: Fix configuration for macvlan offload
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index f52ad0d0782f..9c6d4926a136 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5426,10 +5426,11 @@ static int ixgbe_fwd_ring_up(struct net_device *vdev,
+ 		goto fwd_queue_err;
+ 
+ 	if (is_valid_ether_addr(vdev->dev_addr))
+-		ixgbe_add_mac_filter(adapter, vdev->dev_addr, accel->pool);
++		ixgbe_add_mac_filter(adapter, vdev->dev_addr,
++				     VMDQ_P(accel->pool));
+ 
+ 	ixgbe_fwd_psrtype(accel);
+-	ixgbe_macvlan_set_rx_mode(vdev, accel->pool, adapter);
++	ixgbe_macvlan_set_rx_mode(vdev, VMDQ_P(accel->pool), adapter);
+ 	return err;
+ fwd_queue_err:
+ 	ixgbe_fwd_ring_down(vdev, accel);
+@@ -9034,6 +9035,7 @@ static int get_macvlan_queue(struct net_device *upper, void *_data)
+ static int handle_redirect_action(struct ixgbe_adapter *adapter, int ifindex,
+ 				  u8 *queue, u64 *action)
+ {
++	struct ixgbe_ring_feature *vmdq = &adapter->ring_feature[RING_F_VMDQ];
+ 	unsigned int num_vfs = adapter->num_vfs, vf;
+ 	struct upper_walk_data data;
+ 	struct net_device *upper;
+@@ -9042,11 +9044,7 @@ static int handle_redirect_action(struct ixgbe_adapter *adapter, int ifindex,
+ 	for (vf = 0; vf < num_vfs; ++vf) {
+ 		upper = pci_get_drvdata(adapter->vfinfo[vf].vfdev);
+ 		if (upper->ifindex == ifindex) {
+-			if (adapter->num_rx_pools > 1)
+-				*queue = vf * 2;
+-			else
+-				*queue = vf * adapter->num_rx_queues_per_pool;
+-
++			*queue = vf * __ALIGN_MASK(1, ~vmdq->mask);
+ 			*action = vf + 1;
+ 			*action <<= ETHTOOL_RX_FLOW_SPEC_RING_VF_OFF;
+ 			return 0;
 
-
- drivers/net/ethernet/intel/fm10k/fm10k_main.c    |   14 -
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c  |   25 +
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    8 
- drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c  |    2 
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    6 
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   72 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  407 ++++++++--------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c   |   63 +--
- net/core/dev.c                                   |    3 
- 9 files changed, 256 insertions(+), 344 deletions(-)
-
---
