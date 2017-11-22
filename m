@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 22 Nov 2017 10:57:29 -0800
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 13/16] ixgbe: avoid
- bringing rings up/down as macvlans are added/removed
+Date: Wed, 22 Nov 2017 10:57:35 -0800
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 14/16] ixgbe: Fix
+ handling of macvlan Tx offload
 In-Reply-To: <20171122185256.29785.93548.stgit@localhost.localdomain>
 References: <20171122185256.29785.93548.stgit@localhost.localdomain>
-Message-ID: <20171122185729.29785.42193.stgit@localhost.localdomain>
+Message-ID: <20171122185735.29785.22305.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,275 +13,73 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This change makes it so that instead of bringing rings up/down for various
-we just update the netdev pointer for the Rx ring and set or clear the MAC
-filter for the interface. By doing it this way we can avoid a number of
-races and issues in the code as things were getting messy with the macvlan
-clean-up racing with the interface clean-up to bring the rings down on
-shutdown.
-
-With this change we opt to leave the rings owned by the PF interface for
-both Tx and Rx and just direct the packets once they are received to the
-macvlan netdev.
+This update makes it so that we report the actual number of Tx queues via
+real_num_tx_queues but are still restricted to RSS on only the first pool
+by setting num_tc equal to 1. Doing this locks us into only having the
+ability to setup XPS on the queues in that pool, and only those queues
+should be used for transmitting anything other than macvlan traffic.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |   28 +++++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  102 +++++++++++++------------
- 2 files changed, 72 insertions(+), 58 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |    4 ++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   20 ++++++++++----------
+ 2 files changed, 14 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index dc7f3ef2957b..cfe5a6af04d0 100644
+index cfe5a6af04d0..b3c282d09b18 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -46,7 +46,7 @@ static bool ixgbe_cache_ring_dcb_sriov(struct ixgbe_adapter *adapter)
- #endif /* IXGBE_FCOE */
- 	struct ixgbe_ring_feature *vmdq = &adapter->ring_feature[RING_F_VMDQ];
- 	int i;
--	u16 reg_idx;
-+	u16 reg_idx, pool;
- 	u8 tcs = adapter->hw_tcs;
- 
- 	/* verify we have DCB queueing enabled before proceeding */
-@@ -58,12 +58,16 @@ static bool ixgbe_cache_ring_dcb_sriov(struct ixgbe_adapter *adapter)
- 		return false;
- 
- 	/* start at VMDq register offset for SR-IOV enabled setups */
-+	pool = 0;
- 	reg_idx = vmdq->offset * __ALIGN_MASK(1, ~vmdq->mask);
--	for (i = 0; i < adapter->num_rx_queues; i++, reg_idx++) {
-+	for (i = 0, pool = 0; i < adapter->num_rx_queues; i++, reg_idx++) {
- 		/* If we are greater than indices move to next pool */
--		if ((reg_idx & ~vmdq->mask) >= tcs)
-+		if ((reg_idx & ~vmdq->mask) >= tcs) {
-+			pool++;
- 			reg_idx = __ALIGN_MASK(reg_idx, ~vmdq->mask);
-+		}
- 		adapter->rx_ring[i]->reg_idx = reg_idx;
-+		adapter->rx_ring[i]->netdev = pool ? NULL : adapter->netdev;
+@@ -619,6 +619,10 @@ static bool ixgbe_set_sriov_queues(struct ixgbe_adapter *adapter)
  	}
  
- 	reg_idx = vmdq->offset * __ALIGN_MASK(1, ~vmdq->mask);
-@@ -92,6 +96,7 @@ static bool ixgbe_cache_ring_dcb_sriov(struct ixgbe_adapter *adapter)
- 		for (i = fcoe->offset; i < adapter->num_rx_queues; i++) {
- 			reg_idx = __ALIGN_MASK(reg_idx, ~vmdq->mask) + fcoe_tc;
- 			adapter->rx_ring[i]->reg_idx = reg_idx;
-+			adapter->rx_ring[i]->netdev = adapter->netdev;
- 			reg_idx++;
- 		}
- 
-@@ -182,6 +187,7 @@ static bool ixgbe_cache_ring_dcb(struct ixgbe_adapter *adapter)
- 		for (i = 0; i < rss_i; i++, tx_idx++, rx_idx++) {
- 			adapter->tx_ring[offset + i]->reg_idx = tx_idx;
- 			adapter->rx_ring[offset + i]->reg_idx = rx_idx;
-+			adapter->rx_ring[offset + i]->netdev = adapter->netdev;
- 			adapter->tx_ring[offset + i]->dcb_tc = tc;
- 			adapter->rx_ring[offset + i]->dcb_tc = tc;
- 		}
-@@ -206,14 +212,15 @@ static bool ixgbe_cache_ring_sriov(struct ixgbe_adapter *adapter)
- #endif /* IXGBE_FCOE */
- 	struct ixgbe_ring_feature *vmdq = &adapter->ring_feature[RING_F_VMDQ];
- 	struct ixgbe_ring_feature *rss = &adapter->ring_feature[RING_F_RSS];
-+	u16 reg_idx, pool;
- 	int i;
--	u16 reg_idx;
- 
- 	/* only proceed if VMDq is enabled */
- 	if (!(adapter->flags & IXGBE_FLAG_VMDQ_ENABLED))
- 		return false;
- 
- 	/* start at VMDq register offset for SR-IOV enabled setups */
-+	pool = 0;
- 	reg_idx = vmdq->offset * __ALIGN_MASK(1, ~vmdq->mask);
- 	for (i = 0; i < adapter->num_rx_queues; i++, reg_idx++) {
- #ifdef IXGBE_FCOE
-@@ -222,15 +229,20 @@ static bool ixgbe_cache_ring_sriov(struct ixgbe_adapter *adapter)
- 			break;
  #endif
- 		/* If we are greater than indices move to next pool */
--		if ((reg_idx & ~vmdq->mask) >= rss->indices)
-+		if ((reg_idx & ~vmdq->mask) >= rss->indices) {
-+			pool++;
- 			reg_idx = __ALIGN_MASK(reg_idx, ~vmdq->mask);
-+		}
- 		adapter->rx_ring[i]->reg_idx = reg_idx;
-+		adapter->rx_ring[i]->netdev = pool ? NULL : adapter->netdev;
- 	}
++	/* populate TC0 for use by pool 0 */
++	netdev_set_tc_queue(adapter->netdev, 0,
++			    adapter->num_rx_queues_per_pool, 0);
++
+ 	return true;
+ }
  
- #ifdef IXGBE_FCOE
- 	/* FCoE uses a linear block of queues so just assigning 1:1 */
--	for (; i < adapter->num_rx_queues; i++, reg_idx++)
-+	for (; i < adapter->num_rx_queues; i++, reg_idx++) {
- 		adapter->rx_ring[i]->reg_idx = reg_idx;
-+		adapter->rx_ring[i]->netdev = adapter->netdev;
-+	}
- 
- #endif
- 	reg_idx = vmdq->offset * __ALIGN_MASK(1, ~vmdq->mask);
-@@ -267,8 +279,10 @@ static bool ixgbe_cache_ring_rss(struct ixgbe_adapter *adapter)
- {
- 	int i, reg_idx;
- 
--	for (i = 0; i < adapter->num_rx_queues; i++)
-+	for (i = 0; i < adapter->num_rx_queues; i++) {
- 		adapter->rx_ring[i]->reg_idx = i;
-+		adapter->rx_ring[i]->netdev = adapter->netdev;
-+	}
- 	for (i = 0, reg_idx = 0; i < adapter->num_tx_queues; i++, reg_idx++)
- 		adapter->tx_ring[i]->reg_idx = reg_idx;
- 	for (i = 0; i < adapter->num_xdp_queues; i++, reg_idx++)
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index c21fd98bd45a..bcd05761b8e1 100644
+index bcd05761b8e1..dba69c0bc644 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1922,10 +1922,13 @@ static bool ixgbe_cleanup_headers(struct ixgbe_ring *rx_ring,
- 	if (IS_ERR(skb))
- 		return true;
+@@ -6563,20 +6563,12 @@ int ixgbe_open(struct net_device *netdev)
+ 		goto err_req_irq;
  
--	/* verify that the packet does not have any known errors */
--	if (unlikely(ixgbe_test_staterr(rx_desc,
--					IXGBE_RXDADV_ERR_FRAME_ERR_MASK) &&
--	    !(netdev->features & NETIF_F_RXALL))) {
-+	/* Verify netdev is present, and that packet does not have any
-+	 * errors that would be unacceptable to the netdev.
-+	 */
-+	if (!netdev ||
-+	    (unlikely(ixgbe_test_staterr(rx_desc,
-+					 IXGBE_RXDADV_ERR_FRAME_ERR_MASK) &&
-+	     !(netdev->features & NETIF_F_RXALL)))) {
- 		dev_kfree_skb_any(skb);
- 		return true;
- 	}
-@@ -5335,33 +5338,6 @@ static void ixgbe_clean_rx_ring(struct ixgbe_ring *rx_ring)
- 	rx_ring->next_to_use = 0;
- }
- 
--static void ixgbe_disable_fwd_ring(struct ixgbe_fwd_adapter *vadapter,
--				   struct ixgbe_ring *rx_ring)
--{
--	struct ixgbe_adapter *adapter = vadapter->real_adapter;
+ 	/* Notify the stack of the actual queue counts. */
+-	if (adapter->num_rx_pools > 1)
+-		queues = adapter->num_rx_queues_per_pool;
+-	else
+-		queues = adapter->num_tx_queues;
 -
--	/* shutdown specific queue receive and wait for dma to settle */
--	ixgbe_disable_rx_queue(adapter, rx_ring);
--	usleep_range(10000, 20000);
--	ixgbe_irq_disable_queues(adapter, BIT_ULL(rx_ring->queue_index));
--	ixgbe_clean_rx_ring(rx_ring);
--}
--
--static int ixgbe_fwd_ring_down(struct net_device *vdev,
--			       struct ixgbe_fwd_adapter *accel)
--{
--	struct ixgbe_adapter *adapter = accel->real_adapter;
--	unsigned int rxbase = accel->rx_base_queue;
--	int i;
--
--	for (i = 0; i < adapter->num_rx_queues_per_pool; i++) {
--		ixgbe_disable_fwd_ring(accel, adapter->rx_ring[rxbase + i]);
--		adapter->rx_ring[rxbase + i]->netdev = adapter->netdev;
--	}
--
--	return 0;
--}
--
- static int ixgbe_fwd_ring_up(struct net_device *vdev,
- 			     struct ixgbe_fwd_adapter *accel)
- {
-@@ -5381,25 +5357,26 @@ static int ixgbe_fwd_ring_up(struct net_device *vdev,
- 	accel->tx_base_queue = baseq;
++	queues = adapter->num_tx_queues;
+ 	err = netif_set_real_num_tx_queues(netdev, queues);
+ 	if (err)
+ 		goto err_set_queues;
  
- 	for (i = 0; i < adapter->num_rx_queues_per_pool; i++)
--		ixgbe_disable_fwd_ring(accel, adapter->rx_ring[baseq + i]);
--
--	for (i = 0; i < adapter->num_rx_queues_per_pool; i++) {
- 		adapter->rx_ring[baseq + i]->netdev = vdev;
--		ixgbe_configure_rx_ring(adapter, adapter->rx_ring[baseq + i]);
--	}
-+
-+	/* Guarantee all rings are updated before we update the
-+	 * MAC address filter.
-+	 */
-+	wmb();
+-	if (adapter->num_rx_pools > 1 &&
+-	    adapter->num_rx_queues > IXGBE_MAX_L2A_QUEUES)
+-		queues = IXGBE_MAX_L2A_QUEUES;
+-	else
+-		queues = adapter->num_rx_queues;
++	queues = adapter->num_rx_queues;
+ 	err = netif_set_real_num_rx_queues(netdev, queues);
+ 	if (err)
+ 		goto err_set_queues;
+@@ -8806,6 +8798,14 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
+ 	} else {
+ 		netdev_reset_tc(dev);
  
- 	/* ixgbe_add_mac_filter will return an index if it succeeds, so we
- 	 * need to only treat it as an error value if it is negative.
- 	 */
- 	err = ixgbe_add_mac_filter(adapter, vdev->dev_addr,
- 				   VMDQ_P(accel->pool));
--	if (err < 0)
--		goto fwd_queue_err;
-+	if (err >= 0) {
-+		ixgbe_macvlan_set_rx_mode(vdev, accel->pool, adapter);
-+		return 0;
-+	}
-+
-+	for (i = 0; i < adapter->num_rx_queues_per_pool; i++)
-+		adapter->rx_ring[baseq + i]->netdev = NULL;
- 
--	ixgbe_macvlan_set_rx_mode(vdev, VMDQ_P(accel->pool), adapter);
--	return 0;
--fwd_queue_err:
--	ixgbe_fwd_ring_down(vdev, accel);
- 	return err;
- }
- 
-@@ -9791,15 +9768,38 @@ static void *ixgbe_fwd_add(struct net_device *pdev, struct net_device *vdev)
- 
- static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
- {
--	struct ixgbe_fwd_adapter *fwd_adapter = priv;
--	struct ixgbe_adapter *adapter = fwd_adapter->real_adapter;
--	unsigned int limit;
-+	struct ixgbe_fwd_adapter *accel = priv;
-+	struct ixgbe_adapter *adapter = accel->real_adapter;
-+	unsigned int rxbase = accel->rx_base_queue;
-+	unsigned int limit, i;
- 
--	clear_bit(fwd_adapter->pool, adapter->fwd_bitmask);
-+	/* delete unicast filter associated with offloaded interface */
-+	ixgbe_del_mac_filter(adapter, accel->netdev->dev_addr,
-+			     VMDQ_P(accel->pool));
- 
-+	/* disable ability to receive packets for this pool */
-+	IXGBE_WRITE_REG(&adapter->hw, IXGBE_VMOLR(accel->pool), 0);
-+
-+	/* Allow remaining Rx packets to get flushed out of the
-+	 * Rx FIFO before we drop the netdev for the ring.
-+	 */
-+	usleep_range(10000, 20000);
-+
-+	for (i = 0; i < adapter->num_rx_queues_per_pool; i++) {
-+		struct ixgbe_ring *ring = adapter->rx_ring[rxbase + i];
-+		struct ixgbe_q_vector *qv = ring->q_vector;
-+
-+		/* Make sure we aren't processing any packets and clear
-+		 * netdev to shut down the ring.
++		/* To support macvlan offload we have to use num_tc to
++		 * restrict the queues that can be used by the device.
++		 * By doing this we can avoid reporting a false number of
++		 * queues.
 +		 */
-+		if (netif_running(adapter->netdev))
-+			napi_synchronize(&qv->napi);
-+		ring->netdev = NULL;
-+	}
++		if (!tc && adapter->num_rx_pools > 1)
++			netdev_set_num_tc(dev, 1);
 +
-+	clear_bit(accel->pool, adapter->fwd_bitmask);
- 	limit = find_last_bit(adapter->fwd_bitmask, adapter->num_rx_pools);
- 	adapter->ring_feature[RING_F_VMDQ].limit = limit + 1;
--	ixgbe_fwd_ring_down(fwd_adapter->netdev, fwd_adapter);
+ 		if (adapter->hw.mac.type == ixgbe_mac_82598EB)
+ 			adapter->hw.fc.requested_mode = adapter->last_lfc_mode;
  
- 	/* go back to full RSS if we're done with our VMQs */
- 	if (adapter->ring_feature[RING_F_VMDQ].limit == 1) {
-@@ -9813,11 +9813,11 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
- 
- 	ixgbe_setup_tc(pdev, adapter->hw_tcs);
- 	netdev_dbg(pdev, "pool %i:%i queues %i:%i\n",
--		   fwd_adapter->pool, adapter->num_rx_pools,
--		   fwd_adapter->rx_base_queue,
--		   fwd_adapter->rx_base_queue +
-+		   accel->pool, adapter->num_rx_pools,
-+		   accel->rx_base_queue,
-+		   accel->rx_base_queue +
- 		   adapter->num_rx_queues_per_pool);
--	kfree(fwd_adapter);
-+	kfree(accel);
- }
- 
- #define IXGBE_MAX_MAC_HDR_LEN		127
 
