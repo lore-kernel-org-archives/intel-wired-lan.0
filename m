@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 22 Nov 2017 10:57:47 -0800
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 16/16] fm10k: Fix
- configuration for macvlan offload
+Date: Wed, 22 Nov 2017 10:57:05 -0800
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 09/16] ixgbe: Default
+ to 1 pool always being allocated
 In-Reply-To: <20171122185256.29785.93548.stgit@localhost.localdomain>
 References: <20171122185256.29785.93548.stgit@localhost.localdomain>
-Message-ID: <20171122185747.29785.20248.stgit@localhost.localdomain>
+Message-ID: <20171122185705.29785.4436.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,81 +13,47 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-The fm10k driver didn't work correctly when macvlan offload was enabled.
-Specifically what would occur is that we would see no unicast packets being
-received. This was traced down to us not correctly configuring the default
-VLAN ID for the port and defaulting to 0.
-
-To correct this we either use the default ID provided by the switch or
-simply use 1. With that we are able to pass and receive traffic without any
-issues.
-
-In addition we were not repopulating the filter table following a reset. To
-correct that I have added a bit of code to fm10k_restore_rx_state that will
-repopulate the Rx filter configuration for the macvlan interfaces.
+We might as well configure the limit to default to 1 pool always for the
+interface. This accounts for the fact that the PF counts as 1 pool if
+SR-IOV is enabled, and in general we are always running in 1 pool mode when
+RSS or DCB is enabled as well, though we don't need to actually evaulate
+any of the VMDq features in those cases.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |   25 ++++++++++++++++++++---
- 1 file changed, 22 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |    1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    7 ++-----
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index adc62fb38c49..6d9088956407 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -1182,9 +1182,10 @@ static void fm10k_set_rx_mode(struct net_device *dev)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 6b553f96ead9..611e6980b5ac 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6127,6 +6127,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
+ 	fdir = min_t(int, IXGBE_MAX_FDIR_INDICES, num_online_cpus());
+ 	adapter->ring_feature[RING_F_FDIR].limit = fdir;
+ 	adapter->fdir_pballoc = IXGBE_FDIR_PBALLOC_64K;
++	adapter->ring_feature[RING_F_VMDQ].limit = 1;
+ #ifdef CONFIG_IXGBE_DCA
+ 	adapter->flags |= IXGBE_FLAG_DCA_CAPABLE;
+ #endif
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index 0085f4632966..543f2e60e4b7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -78,12 +78,9 @@ static int __ixgbe_enable_sriov(struct ixgbe_adapter *adapter,
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	int i;
  
- void fm10k_restore_rx_state(struct fm10k_intfc *interface)
- {
-+	struct fm10k_l2_accel *l2_accel = interface->l2_accel;
- 	struct net_device *netdev = interface->netdev;
- 	struct fm10k_hw *hw = &interface->hw;
--	int xcast_mode;
-+	int xcast_mode, i;
- 	u16 vid, glort;
+-	adapter->flags |= IXGBE_FLAG_SRIOV_ENABLED;
+-
+ 	/* Enable VMDq flag so device will be set in VM mode */
+-	adapter->flags |= IXGBE_FLAG_VMDQ_ENABLED;
+-	if (!adapter->ring_feature[RING_F_VMDQ].limit)
+-		adapter->ring_feature[RING_F_VMDQ].limit = 1;
++	adapter->flags |= IXGBE_FLAG_SRIOV_ENABLED |
++			  IXGBE_FLAG_VMDQ_ENABLED;
  
- 	/* record glort for this interface */
-@@ -1234,6 +1235,24 @@ void fm10k_restore_rx_state(struct fm10k_intfc *interface)
- 	__dev_uc_sync(netdev, fm10k_uc_sync, fm10k_uc_unsync);
- 	__dev_mc_sync(netdev, fm10k_mc_sync, fm10k_mc_unsync);
- 
-+	/* synchronize macvlan addresses */
-+	if (l2_accel) {
-+		for (i = 0; i < l2_accel->size; i++) {
-+			struct net_device *sdev = l2_accel->macvlan[i];
-+
-+			if (!sdev)
-+				continue;
-+
-+			glort = l2_accel->dglort + 1 + i;
-+
-+			hw->mac.ops.update_xcast_mode(hw, glort,
-+						      FM10K_XCAST_MODE_MULTI);
-+			fm10k_queue_mac_request(interface, glort,
-+						sdev->dev_addr,
-+						hw->mac.default_vid, true);
-+		}
-+	}
-+
- 	fm10k_mbx_unlock(interface);
- 
- 	/* record updated xcast mode state */
-@@ -1490,7 +1509,7 @@ static void *fm10k_dfwd_add_station(struct net_device *dev,
- 		hw->mac.ops.update_xcast_mode(hw, glort,
- 					      FM10K_XCAST_MODE_MULTI);
- 		fm10k_queue_mac_request(interface, glort, sdev->dev_addr,
--					0, true);
-+					hw->mac.default_vid, true);
- 	}
- 
- 	fm10k_mbx_unlock(interface);
-@@ -1530,7 +1549,7 @@ static void fm10k_dfwd_del_station(struct net_device *dev, void *priv)
- 		hw->mac.ops.update_xcast_mode(hw, glort,
- 					      FM10K_XCAST_MODE_NONE);
- 		fm10k_queue_mac_request(interface, glort, sdev->dev_addr,
--					0, false);
-+					hw->mac.default_vid, false);
- 	}
- 
- 	fm10k_mbx_unlock(interface);
+ 	/* Allocate memory for per VF control structures */
+ 	adapter->vfinfo = kcalloc(num_vfs, sizeof(struct vf_data_storage),
 
