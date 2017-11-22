@@ -1,189 +1,58 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 22 Nov 2017 23:28:31 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:40GbE] BUILD SUCCESS
- f72271e2a0ae4277d53c4053f5eed8bb346ba38a
-Message-ID: <5a15979f.PtKMtXjbXHzRMVt5%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 22 Nov 2017 10:56:10 -0800
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 00/16] ixgbe/fm10k:
+ macvlan fixes
+Message-ID: <20171122185256.29785.93548.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  40GbE
-branch HEAD: f72271e2a0ae4277d53c4053f5eed8bb346ba38a  i40evf: Use smp_rmb rather than read_barrier_depends
+This patch series is meant to make it so that both fm10k and ixgbe drivers
+will at least function when macvlan offload is enabled. Prior to these
+patches both fm10k and ixgbe had numerous issues that had a negative impact
+on driver stability with the offload enabled, or in the case of fm10k the
+interfaces would never actually receive any traffic as the filters were
+never configured correctly.
 
-elapsed time: 42m
+There are still a few issues outstanding after these patches, but I needed
+to flush out what I had before this patch set became too large.
 
-configs tested: 165
+The next set of patches will include changes to the macvlan interface
+itself and so I thought that would make a good division between this patch
+set and the one to follow.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+---
 
-x86_64                 randconfig-a0-11222140
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11222209
-x86_64                randconfig-in0-11222200
-arm                        trizeps4_defconfig
-arm                       versatile_defconfig
-powerpc                 linkstation_defconfig
-x86_64                randconfig-it0-11222156
-i386                               tinyconfig
-i386                   randconfig-x019-201747
-i386                   randconfig-x015-201747
-i386                   randconfig-x014-201747
-i386                   randconfig-x013-201747
-i386                   randconfig-x011-201747
-i386                   randconfig-x018-201747
-i386                   randconfig-x010-201747
-i386                   randconfig-x012-201747
-i386                   randconfig-x017-201747
-i386                   randconfig-x016-201747
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201747
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i0-201747
-i386                     randconfig-i1-201747
-arm                             ezx_defconfig
-arm                      integrator_defconfig
-powerpc                       maple_defconfig
-x86_64                 randconfig-v0-11222133
-arm                           h5000_defconfig
-arm                           u8500_defconfig
-tile                              allnoconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-11222242
-i386                             allmodconfig
-x86_64                 randconfig-x018-201747
-x86_64                 randconfig-x011-201747
-x86_64                 randconfig-x013-201747
-x86_64                 randconfig-x019-201747
-x86_64                 randconfig-x012-201747
-x86_64                 randconfig-x017-201747
-x86_64                 randconfig-x016-201747
-x86_64                 randconfig-x014-201747
-x86_64                 randconfig-x015-201747
-x86_64                 randconfig-x010-201747
-i386                     randconfig-a0-201747
-i386                     randconfig-a1-201747
-x86_64                 randconfig-s0-11222229
-x86_64                 randconfig-s1-11222229
-x86_64                 randconfig-s2-11222229
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                         ebsa110_defconfig
-blackfin                  CM-BF537E_defconfig
-mips                           jazz_defconfig
-powerpc64                        allmodconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201747
-i386                     randconfig-s1-201747
-x86_64                   randconfig-i0-201747
-i386                   randconfig-b0-11222145
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                         hackkit_defconfig
-arm                        raumfeld_defconfig
-blackfin                  TCM-BF518_defconfig
-x86_64                 randconfig-u0-11222259
-x86_64                 randconfig-h0-11222201
-powerpc                     sequoia_defconfig
-powerpc64                        allyesconfig
-i386                   randconfig-x001-201747
-i386                   randconfig-x008-201747
-i386                   randconfig-x002-201747
-i386                   randconfig-x003-201747
-i386                   randconfig-x004-201747
-i386                   randconfig-x006-201747
-i386                   randconfig-x007-201747
-i386                   randconfig-x005-201747
-i386                   randconfig-x000-201747
-i386                   randconfig-x009-201747
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-x000-201747
-x86_64                 randconfig-x001-201747
-x86_64                 randconfig-x008-201747
-x86_64                 randconfig-x004-201747
-x86_64                 randconfig-x005-201747
-x86_64                 randconfig-x007-201747
-x86_64                 randconfig-x006-201747
-x86_64                 randconfig-x003-201747
-x86_64                 randconfig-x009-201747
-x86_64                 randconfig-x002-201747
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x074-201747
-i386                   randconfig-x077-201747
-i386                   randconfig-x076-201747
-i386                   randconfig-x071-201747
-i386                   randconfig-x073-201747
-i386                   randconfig-x078-201747
-i386                   randconfig-x072-201747
-i386                   randconfig-x079-201747
-i386                   randconfig-x070-201747
-i386                   randconfig-x075-201747
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                          pcm027_defconfig
-m32r                    m32700ut.up_defconfig
-powerpc                     pseries_defconfig
-i386                   randconfig-x0-11222241
+Alexander Duyck (16):
+      ixgbe: Fix interaction between SR-IOV and macvlan offload
+      ixgbe: Perform reinit any time number of VFs change
+      ixgbe: Add support for macvlan offload RSS on X550 and clean-up pool handling
+      ixgbe: There is no need to update num_rx_pools in L2 fwd offload
+      ixgbe: Fix limitations on macvlan so we can support up to 63 offloaded devices
+      ixgbe: Use ring values to test for Tx pending
+      ixgbe: Drop l2_accel_priv data pointer from ring struct
+      ixgbe: Assume provided MAC filter has been verified by macvlan
+      ixgbe: Default to 1 pool always being allocated
+      ixgbe: Don't assume dev->num_tc is equal to hardware TC config
+      ixgbe/fm10k: Record macvlan stats instead of Rx queue for macvlan offloaded rings
+      ixgbe: Do not manipulate macvlan Tx queues when performing macvlan offload
+      ixgbe: avoid bringing rings up/down as macvlans are added/removed
+      ixgbe: Fix handling of macvlan Tx offload
+      net: Cap number of queues even with accel_priv
+      fm10k: Fix configuration for macvlan offload
 
-Thanks,
-Fengguang
+
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c    |   14 -
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c  |   25 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    8 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c  |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   72 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  407 ++++++++--------------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c   |   63 +--
+ net/core/dev.c                                   |    3 
+ 9 files changed, 256 insertions(+), 344 deletions(-)
+
+--
