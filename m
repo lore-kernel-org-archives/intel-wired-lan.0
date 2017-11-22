@@ -1,241 +1,262 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 22 Nov 2017 18:17:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 07d58edf9f8f8ef1f70fe2422b2298fdddbbbcf4
-Message-ID: <5a154ea3.iEgqw4jTAuBsLa/I%fengguang.wu@intel.com>
+From: Matheus Almeida <hm.matheus@gmail.com>
+Date: Wed, 22 Nov 2017 14:07:46 +0000
+Subject: [Intel-wired-lan] Cable pull behaviour on Intel I350 card
+In-Reply-To: <CAKgT0Ue3Gx502D+f6r-2X3JEq7hHUNbJ95HeyhYdYEtyw+x_wg@mail.gmail.com>
+References: <CACmWKmKsyKc13JoszThZREcCbJK46eRrAd8mJ0+4TL-dYg_e5g@mail.gmail.com>
+ <CAKgT0UegUOPhD1h_d6YtrxPaPBdbBHF058exQXuS8AE1YSD-qg@mail.gmail.com>
+ <CACmWKmJ0VZTdSquFgrznP7FLGBDeDruevJ5T2UKCYJuTeMNSEA@mail.gmail.com>
+ <CAKgT0Uf83sTrJOPjv_sqtwaJE1u6qi6OwmP8L82YN=A+z6fO9A@mail.gmail.com>
+ <CACmWKmL6X9zBO+QXrxNUSo_HZoksf1_HvUXGY8fvmf_kNCXcjQ@mail.gmail.com>
+ <CAKgT0Ue3Gx502D+f6r-2X3JEq7hHUNbJ95HeyhYdYEtyw+x_wg@mail.gmail.com>
+Message-ID: <CACmWKm+VCyjFSXaHnT3CKEbHimRHNArO+dm7DjLAKKFSGa0fXw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 07d58edf9f8f8ef1f70fe2422b2298fdddbbbcf4  sched/deadline: fix one-bit signed bitfields to be unsigned
+Hi Alexander,
 
-elapsed time: 167m
+I started instrumenting the following functions: igb_down(), igb_up() and
+igb_reset() and unfortunately I stopped being able to replicate the problem.
+It seems that affects the scheduling of kernel workers and the problem
+isn't replicated using the same test case.
 
-configs tested: 217
+I'm going to improve the reproduction steps [yet again] and update you as
+soon as I have more data.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Regards,
+Matheus
 
-mips                           ip27_defconfig
-mips                          rm200_defconfig
-powerpc                     powernv_defconfig
-x86_64                 randconfig-a0-11221618
-i386                               tinyconfig
-arm                        neponset_defconfig
-mips                        nlm_xlr_defconfig
-powerpc                   bluestone_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11221701
-powerpc                     akebono_defconfig
-um                               alldefconfig
-xtensa                              defconfig
-x86_64                randconfig-in0-11221425
-alpha                               defconfig
-arm                        realview_defconfig
-mips                           ip32_defconfig
-x86_64                randconfig-it0-11221433
-i386                   randconfig-x019-201747
-i386                   randconfig-x015-201747
-i386                   randconfig-x014-201747
-i386                   randconfig-x013-201747
-i386                   randconfig-x011-201747
-i386                   randconfig-x018-201747
-i386                   randconfig-x010-201747
-i386                   randconfig-x012-201747
-i386                   randconfig-x017-201747
-i386                   randconfig-x016-201747
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201747
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i1-201747
-i386                     randconfig-i0-201747
-blackfin                BF538-EZKIT_defconfig
-c6x                        evmc6474_defconfig
-sparc                            alldefconfig
-x86_64                 randconfig-v0-11221656
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                          moxart_defconfig
-tile                             allmodconfig
-x86_64                 randconfig-g0-11221629
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-i386                     randconfig-a0-201747
-i386                     randconfig-a1-201747
-x86_64                 randconfig-s0-11221729
-x86_64                 randconfig-s1-11221729
-x86_64                 randconfig-s2-11221729
-arm                          ep93xx_defconfig
-arm                       multi_v4t_defconfig
-m68k                          sun3x_defconfig
-mips                      fuloong2e_defconfig
-powerpc64                           defconfig
-x86_64                 randconfig-x018-201747
-x86_64                 randconfig-x011-201747
-x86_64                 randconfig-x013-201747
-x86_64                 randconfig-x019-201747
-x86_64                 randconfig-x012-201747
-x86_64                 randconfig-x017-201747
-x86_64                 randconfig-x016-201747
-x86_64                 randconfig-x014-201747
-x86_64                 randconfig-x015-201747
-x86_64                 randconfig-x010-201747
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                     randconfig-s0-201747
-i386                     randconfig-s1-201747
-x86_64                 randconfig-s3-11221733
-x86_64                 randconfig-s4-11221733
-x86_64                 randconfig-s5-11221733
-m68k                       m5208evb_defconfig
-mips                             allyesconfig
-x86_64                   randconfig-i0-201747
-i386                   randconfig-b0-11221642
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-alpha                            allmodconfig
-arm                       cns3420vb_defconfig
-powerpc                    ge_imp3a_defconfig
-powerpc                      virtex_defconfig
-x86_64                 randconfig-b0-11221635
-x86_64                           allmodconfig
-arm                          collie_defconfig
-arm                      footbridge_defconfig
-x86_64                 randconfig-u0-11221650
-arm                         nhk8815_defconfig
-mips                      pic32mzda_defconfig
-sh                          r7780mp_defconfig
-powerpc                          allmodconfig
-powerpc                       ebony_defconfig
-x86_64                randconfig-ne0-11221607
-mips                          ath79_defconfig
-mips                           ip28_defconfig
-mn10300                          allmodconfig
-powerpc                      katmai_defconfig
-i386                   randconfig-h0-11221641
-i386                   randconfig-h1-11221641
-arm                         cm_x2xx_defconfig
-arm                         s3c2410_defconfig
-powerpc                     tqm8541_defconfig
-x86_64                 randconfig-h0-11221610
-arm                          tango4_defconfig
-arm                            u300_defconfig
-x86_64                 randconfig-n0-11221635
-c6x                        evmc6472_defconfig
-m68k                        mvme147_defconfig
-i386                   randconfig-x001-201747
-i386                   randconfig-x008-201747
-i386                   randconfig-x002-201747
-i386                   randconfig-x003-201747
-i386                   randconfig-x004-201747
-i386                   randconfig-x006-201747
-i386                   randconfig-x007-201747
-i386                   randconfig-x005-201747
-i386                   randconfig-x000-201747
-i386                   randconfig-x009-201747
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-x000-201747
-x86_64                 randconfig-x001-201747
-x86_64                 randconfig-x008-201747
-x86_64                 randconfig-x004-201747
-x86_64                 randconfig-x005-201747
-x86_64                 randconfig-x007-201747
-x86_64                 randconfig-x006-201747
-x86_64                 randconfig-x003-201747
-x86_64                 randconfig-x009-201747
-x86_64                 randconfig-x002-201747
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                randconfig-ws0-11221601
-sh                              ul2_defconfig
-um                               allmodconfig
-xtensa                  cadence_csp_defconfig
-i386                   randconfig-x074-201747
-i386                   randconfig-x077-201747
-i386                   randconfig-x076-201747
-i386                   randconfig-x071-201747
-i386                   randconfig-x073-201747
-i386                   randconfig-x078-201747
-i386                   randconfig-x072-201747
-i386                   randconfig-x079-201747
-i386                   randconfig-x070-201747
-i386                   randconfig-x075-201747
-arm                        raumfeld_defconfig
-powerpc                     tqm8555_defconfig
-x86_64                 randconfig-r0-11221647
-i386                   randconfig-x0-11221655
+On Mon, Nov 20, 2017 at 4:16 PM, Alexander Duyck <alexander.duyck@gmail.com>
+wrote:
 
-Thanks,
-Fengguang
+> Hi Matheus,
+>
+> The reset is most likely being triggered by the fact that there is Tx
+> work in one of the queues on the port that is unplugged. The reset
+> itself shouldn't be effecting all of the ports though.
+>
+> I am thinking that the reset is somehow preempting the other tasks for
+> some period of time. We might need to start crawling through the
+> various functions to try and sort out where the delay might be coming
+> from. As such you may want to look at breaking things down and
+> watching for igb_down() and igb_up() and doing some further testing to
+> see if we can identify which one of these would be adding a
+> significant amount of time. One of my concerns is that igb_down() has
+> calls to functions such as del_timer_sync which ends up calling things
+> that will disable interrupts for short periods of time. It is possible
+> that something like this might be causing the short stalls you are
+> seeing.
+>
+> Thanks.
+>
+> - Alex
+>
+> On Mon, Nov 20, 2017 at 5:49 AM, Matheus Almeida <hm.matheus@gmail.com>
+> wrote:
+> > Hi Alexander,
+> >
+> > I was on annual leave for the last 2 weeks so I couldn't get back to the
+> > list earlier.
+> >
+> > I reproduced the problem again and it seems that 'igb_reset_task' is
+> called
+> > whenever the problem occurs.
+> >
+> > Here's a link to an ftrace file that shows the problem including traces
+> to
+> > 'igb_reset_task': https://goo.gl/WVkMjz
+> >
+> > Do you think this issue is caused by Tx work being left in the queue ? Is
+> > the problem related to a call to igb_reset_task that preempts the other
+> > processes from sending data for a big chunk of time ? If positive, what
+> can
+> > we do about it ?
+> >
+> > Regards,
+> > Matheus
+> >
+> > On Fri, Nov 3, 2017 at 4:23 PM, Alexander Duyck <
+> alexander.duyck at gmail.com>
+> > wrote:
+> >>
+> >> One other function that would be useful to monitor would be
+> >> igb_reset_task. It is normally called when either the DMA engine gets
+> >> hung, or there is Tx work left in the queue following a cable being
+> >> unplugged.
+> >>
+> >> - Alex
+> >>
+> >> On Fri, Nov 3, 2017 at 6:46 AM, Matheus Almeida <hm.matheus@gmail.com>
+> >> wrote:
+> >> > Hi Alexander,
+> >> >
+> >> > Thank you very much for the prompt reply.
+> >> >
+> >> > I managed to set up a better testing environment that allows me to
+> >> > replicate
+> >> > the problem
+> >> > and gather more meaningful trace information.
+> >> >
+> >> > My testing environment is roughly the following:
+> >> >
+> >> > Server 1:
+> >> > Two separate processes send a continuous stream of data uniquely
+> >> > identified
+> >> > on two separate data ports
+> >> > of a i350 network card.
+> >> >
+> >> > Server 2:
+> >> > Two separate processes receive the data and check if there was a delay
+> >> > between packets that is greater
+> >> > than a arbitrary threshold.
+> >> >
+> >> > Here's a link to a "trace.dat" file -> https://goo.gl/6KuBqz
+> >> >
+> >> > You should see 3 instances of a "cable" pull causing a delay on the
+> task
+> >> > with PID 14618.
+> >> >
+> >> > The task with PID 14617 was the one I was "upsetting" on purpose by
+> >> > removing
+> >> > a network
+> >> > cable.
+> >> >
+> >> > I can see instances of igb_watchdog* function calls from the trace.
+> >> >
+> >> > I can trace other functions of interest if required and/or other
+> >> > processes.
+> >> > Just let me know which
+> >> > ones would help us narrow down this issue even further.
+> >> >
+> >> > Regards,
+> >> > Matheus
+> >> >
+> >> >
+> >> > On Tue, Oct 31, 2017 at 4:05 PM, Alexander Duyck
+> >> > <alexander.duyck@gmail.com>
+> >> > wrote:
+> >> >>
+> >> >> On Tue, Oct 31, 2017 at 6:22 AM, Matheus Almeida <
+> hm.matheus at gmail.com>
+> >> >> wrote:
+> >> >> > Hi,
+> >> >> >
+> >> >> > I'm developing an appliance for the broadcast industry for
+> real-time
+> >> >> > video
+> >> >> > transmission.
+> >> >> > We use Intel I350 network adapters (4 ports) and am seeking more
+> >> >> > information
+> >> >> > about a behaviour that causes a transmission disruption (~20ms to
+> >> >> > 80ms)
+> >> >> > when
+> >> >> > one of the ethernet cables is pulled.
+> >> >> >
+> >> >> > Assuming that data port 0 and data port 1 are both transmitting
+> data.
+> >> >> > Disconnecting the ethernet cable from data port 1 seems to stop the
+> >> >> > transmission of data port 0 for a short period of time. This is a
+> big
+> >> >> > issue
+> >> >> > for low-latency appliances like ours (I'll get into more in a
+> >> >> > second).
+> >> >> >
+> >> >> > More information about our system:
+> >> >> >
+> >> >> > We use buildroot with Linux Kernel 4.9.29
+> >> >> > igb driver version 5.4.0-k
+> >> >> > 8 rx queues, 8 tx queues
+> >> >> >
+> >> >> > The level of traffic flowing through the network seems to make the
+> >> >> > issue
+> >> >> > more reproducible.
+> >> >> >
+> >> >> > Is this behaviour expected ? If positive, is there a way around it
+> ?
+> >> >>
+> >> >> I wouldn't say this is expected, but then again, I don't know the
+> >> >> exact cause for what you may be seeing. To narrow it down we could
+> use
+> >> >> some more information.
+> >> >>
+> >> >> In your setup are you running anything like a team or bond on top of
+> >> >> the igb driver interfaces? Also how many CPUs are you running on the
+> >> >> system the device is installed in?
+> >> >>
+> >> >> > I ran ftrace to get a better picture of what happens during that
+> >> >> > period
+> >> >> > of
+> >> >> > no transmission[1] and all I see [using the sched_switch option]
+> is a
+> >> >> > continuous execution of a kernel worker thread on that CPU.
+> >> >> >
+> >> >> > I tried to make the following changes to our system with no
+> >> >> > improvements:
+> >> >>
+> >> >> Would it be possible to provide a trace for that worker thread? I
+> >> >> would be interested in seeing if the worker thread happens to have
+> >> >> igb_watchdog_task in the path or not. My thought is that we are
+> likely
+> >> >> spending time busy waiting in one of the PHY register functions due
+> to
+> >> >> the link status changing so we are probably either re-reading the
+> link
+> >> >> or resetting the port if there was Tx traffic pending. We would need
+> >> >> to sort out which of these events is taking place.
+> >> >>
+> >> >> > Changed task priority to RT (this should preempt the kernel worker
+> >> >> > threads
+> >> >> > and give more ) for our transmitter task
+> >> >> > Changed the cpu_mask for the kernel worker threads so that they
+> would
+> >> >> > execute on a spare CPU core
+> >> >> > Compiled the kernel with PREEMPT=1
+> >> >>
+> >> >> One thing you might try just to eliminate hardware as being a
+> possible
+> >> >> issue would be to use a second NIC and just use one port on each
+> >> >> device to verify we aren't looking at any sort of issue where we are
+> >> >> doing something like resetting one port and somehow introducing a
+> >> >> delay through that.
+> >> >>
+> >> >> > I have also tried to get ftrace to generate call stacks to get an
+> >> >> > even
+> >> >> > better understand of what's happening behind the scenes.
+> >> >> > Unfortunately
+> >> >> > this
+> >> >> > seems to generate too much overhead and I haven't been able to get
+> a
+> >> >> > clean
+> >> >> > execution trace that highlights everything that happens during a
+> >> >> > cable
+> >> >> > pull.
+> >> >> >
+> >> >> > Is there a better way to debug this issue ? I have total control of
+> >> >> > the
+> >> >> > kernel that we build so I can build the igb driver differently if
+> it
+> >> >> > allows
+> >> >> > us to get to the bottom of this issue.
+> >> >>
+> >> >> If nothing else you might look at using trace_printk to just manually
+> >> >> add printouts as needed through the driver. That is usually my
+> default
+> >> >> when I really need to get in and check various points in the kernel.
+> >> >>
+> >> >> Other than that I would say the main thing we need to look at is
+> >> >> finding the source of our stalls. You might look at testing the start
+> >> >> and exit of igb_watchdog_task and see if that is taking the
+> 20-80usecs
+> >> >> you are seeing being consumed when you hit this event.
+> >> >>
+> >> >> - Alex
+> >> >
+> >> >
+> >
+> >
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171122/011b11df/attachment.html>
