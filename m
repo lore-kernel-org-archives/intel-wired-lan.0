@@ -1,157 +1,36 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 22 Nov 2017 11:04:03 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- de8ad84162110c44696dceff9984fb4f9ac3fab0
-Message-ID: <5a14e923.P+qv0ZjCmqcT5Ajs%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 22 Nov 2017 03:14:23 +0000
+Subject: [Intel-wired-lan] [PATCH v2 5/7] igb: Use smp_rmb rather than
+ read_barrier_depends
+In-Reply-To: <1510938349-17608-6-git-send-email-brking@linux.vnet.ibm.com>
+References: <1510938349-17608-1-git-send-email-brking@linux.vnet.ibm.com>
+ <1510938349-17608-6-git-send-email-brking@linux.vnet.ibm.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C6EF9E2@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: de8ad84162110c44696dceff9984fb4f9ac3fab0  ixgbevf: remove redundant setting of xcast_mode
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
+> Of Brian King
+> Sent: Friday, November 17, 2017 9:06 AM
+> Cc: muvic at linux.vnet.ibm.com; stable at vger.kernel.org; intel-wired-
+> lan at lists.osuosl.org; brking at pobox.com
+> Subject: [Intel-wired-lan] [PATCH v2 5/7] igb: Use smp_rmb rather than
+> read_barrier_depends
+> 
+> The original issue being fixed in this patch was seen with the ixgbe
+> driver, but the same issue exists with igb as well, as the code is
+> very similar. read_barrier_depends is not sufficient to ensure
+> loads following it are not speculatively loaded out of order
+> by the CPU, which can result in stale data being loaded, causing
+> potential system crashes.
+> 
+> Cc: stable<stable@vger.kernel.org>
+> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-elapsed time: 135m
-
-configs tested: 133
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x019-201747
-i386                   randconfig-x015-201747
-i386                   randconfig-x014-201747
-i386                   randconfig-x013-201747
-i386                   randconfig-x011-201747
-i386                   randconfig-x018-201747
-i386                   randconfig-x010-201747
-i386                   randconfig-x012-201747
-i386                   randconfig-x017-201747
-i386                   randconfig-x016-201747
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201747
-i386                     randconfig-i0-201747
-i386                     randconfig-i1-201747
-x86_64                 randconfig-x018-201747
-x86_64                 randconfig-x011-201747
-x86_64                 randconfig-x013-201747
-x86_64                 randconfig-x019-201747
-x86_64                 randconfig-x012-201747
-x86_64                 randconfig-x017-201747
-x86_64                 randconfig-x016-201747
-x86_64                 randconfig-x014-201747
-x86_64                 randconfig-x015-201747
-x86_64                 randconfig-x010-201747
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-a0-201747
-i386                     randconfig-a1-201747
-i386         randconfig-a1-201747+bisect_validate
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                     randconfig-s0-201747
-i386                     randconfig-s1-201747
-i386                               tinyconfig
-i386                             allmodconfig
-x86_64                   randconfig-i0-201747
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-i386                   randconfig-x001-201747
-i386                   randconfig-x008-201747
-i386                   randconfig-x002-201747
-i386                   randconfig-x003-201747
-i386                   randconfig-x004-201747
-i386                   randconfig-x006-201747
-i386                   randconfig-x007-201747
-i386                   randconfig-x005-201747
-i386                   randconfig-x000-201747
-i386                   randconfig-x009-201747
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-x000-201747
-x86_64                 randconfig-x001-201747
-x86_64                 randconfig-x008-201747
-x86_64                 randconfig-x004-201747
-x86_64                 randconfig-x005-201747
-x86_64                 randconfig-x007-201747
-x86_64                 randconfig-x006-201747
-x86_64                 randconfig-x003-201747
-x86_64                 randconfig-x009-201747
-x86_64                 randconfig-x002-201747
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x074-201747
-i386                   randconfig-x077-201747
-i386                   randconfig-x076-201747
-i386                   randconfig-x071-201747
-i386                   randconfig-x073-201747
-i386                   randconfig-x078-201747
-i386                   randconfig-x072-201747
-i386                   randconfig-x079-201747
-i386                   randconfig-x070-201747
-i386                   randconfig-x075-201747
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-
-Thanks,
-Fengguang
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
