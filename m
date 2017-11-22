@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 22 Nov 2017 10:56:59 -0800
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 08/16] ixgbe: Assume
- provided MAC filter has been verified by macvlan
+Date: Wed, 22 Nov 2017 10:57:47 -0800
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 16/16] fm10k: Fix
+ configuration for macvlan offload
 In-Reply-To: <20171122185256.29785.93548.stgit@localhost.localdomain>
 References: <20171122185256.29785.93548.stgit@localhost.localdomain>
-Message-ID: <20171122185658.29785.82075.stgit@localhost.localdomain>
+Message-ID: <20171122185747.29785.20248.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,41 +13,81 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-The macvlan driver itself will validate the MAC address that is configured
-for a given interface. There is no need for us to verify it again.
+The fm10k driver didn't work correctly when macvlan offload was enabled.
+Specifically what would occur is that we would see no unicast packets being
+received. This was traced down to us not correctly configuring the default
+VLAN ID for the port and defaulting to 0.
 
-Instead we should be checking to verify that we actuall allocate the filter
-and have not run out of resources to configure a MAC rule in our filter
-table.
+To correct this we either use the default ID provided by the switch or
+simply use 1. With that we are able to pass and receive traffic without any
+issues.
+
+In addition we were not repopulating the filter table following a reset. To
+correct that I have added a bit of code to fm10k_restore_rx_state that will
+repopulate the Rx filter configuration for the macvlan interfaces.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |   25 ++++++++++++++++++++---
+ 1 file changed, 22 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 09754519a0d9..6b553f96ead9 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5404,12 +5404,16 @@ static int ixgbe_fwd_ring_up(struct net_device *vdev,
- 	if (err)
- 		goto fwd_queue_err;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index adc62fb38c49..6d9088956407 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -1182,9 +1182,10 @@ static void fm10k_set_rx_mode(struct net_device *dev)
  
--	if (is_valid_ether_addr(vdev->dev_addr))
--		ixgbe_add_mac_filter(adapter, vdev->dev_addr,
--				     VMDQ_P(accel->pool));
-+	/* ixgbe_add_mac_filter will return an index if it succeeds, so we
-+	 * need to only treat it as an error value if it is negative.
-+	 */
-+	err = ixgbe_add_mac_filter(adapter, vdev->dev_addr,
-+				   VMDQ_P(accel->pool));
-+	if (err < 0)
-+		goto fwd_queue_err;
+ void fm10k_restore_rx_state(struct fm10k_intfc *interface)
+ {
++	struct fm10k_l2_accel *l2_accel = interface->l2_accel;
+ 	struct net_device *netdev = interface->netdev;
+ 	struct fm10k_hw *hw = &interface->hw;
+-	int xcast_mode;
++	int xcast_mode, i;
+ 	u16 vid, glort;
  
- 	ixgbe_macvlan_set_rx_mode(vdev, VMDQ_P(accel->pool), adapter);
--	return err;
-+	return 0;
- fwd_queue_err:
- 	ixgbe_fwd_ring_down(vdev, accel);
- 	return err;
+ 	/* record glort for this interface */
+@@ -1234,6 +1235,24 @@ void fm10k_restore_rx_state(struct fm10k_intfc *interface)
+ 	__dev_uc_sync(netdev, fm10k_uc_sync, fm10k_uc_unsync);
+ 	__dev_mc_sync(netdev, fm10k_mc_sync, fm10k_mc_unsync);
+ 
++	/* synchronize macvlan addresses */
++	if (l2_accel) {
++		for (i = 0; i < l2_accel->size; i++) {
++			struct net_device *sdev = l2_accel->macvlan[i];
++
++			if (!sdev)
++				continue;
++
++			glort = l2_accel->dglort + 1 + i;
++
++			hw->mac.ops.update_xcast_mode(hw, glort,
++						      FM10K_XCAST_MODE_MULTI);
++			fm10k_queue_mac_request(interface, glort,
++						sdev->dev_addr,
++						hw->mac.default_vid, true);
++		}
++	}
++
+ 	fm10k_mbx_unlock(interface);
+ 
+ 	/* record updated xcast mode state */
+@@ -1490,7 +1509,7 @@ static void *fm10k_dfwd_add_station(struct net_device *dev,
+ 		hw->mac.ops.update_xcast_mode(hw, glort,
+ 					      FM10K_XCAST_MODE_MULTI);
+ 		fm10k_queue_mac_request(interface, glort, sdev->dev_addr,
+-					0, true);
++					hw->mac.default_vid, true);
+ 	}
+ 
+ 	fm10k_mbx_unlock(interface);
+@@ -1530,7 +1549,7 @@ static void fm10k_dfwd_del_station(struct net_device *dev, void *priv)
+ 		hw->mac.ops.update_xcast_mode(hw, glort,
+ 					      FM10K_XCAST_MODE_NONE);
+ 		fm10k_queue_mac_request(interface, glort, sdev->dev_addr,
+-					0, false);
++					hw->mac.default_vid, false);
+ 	}
+ 
+ 	fm10k_mbx_unlock(interface);
 
