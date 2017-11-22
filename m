@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 22 Nov 2017 10:57:35 -0800
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 14/16] ixgbe: Fix
- handling of macvlan Tx offload
+Date: Wed, 22 Nov 2017 10:56:46 -0800
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 06/16] ixgbe: Use ring
+ values to test for Tx pending
 In-Reply-To: <20171122185256.29785.93548.stgit@localhost.localdomain>
 References: <20171122185256.29785.93548.stgit@localhost.localdomain>
-Message-ID: <20171122185735.29785.22305.stgit@localhost.localdomain>
+Message-ID: <20171122185646.29785.9424.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,73 +13,52 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This update makes it so that we report the actual number of Tx queues via
-real_num_tx_queues but are still restricted to RSS on only the first pool
-by setting num_tc equal to 1. Doing this locks us into only having the
-ability to setup XPS on the queues in that pool, and only those queues
-should be used for transmitting anything other than macvlan traffic.
+This patch simplifies the check for Tx pending traffic and makes it more
+holistic as there being any difference between next_to_use and
+next_to_clean is much more informative than if head and tail are equal, as
+it is possible for us to either not update tail, or not be notified of
+completed work in which case next_to_clean would not be equal to head.
+
+In addition the simplification makes it so that we don't have to read
+hardware which allows us to drop a number of variables that were previously
+being used in the call.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |    4 ++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   20 ++++++++++----------
- 2 files changed, 14 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   20 ++++----------------
+ 1 file changed, 4 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index cfe5a6af04d0..b3c282d09b18 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -619,6 +619,10 @@ static bool ixgbe_set_sriov_queues(struct ixgbe_adapter *adapter)
- 	}
- 
- #endif
-+	/* populate TC0 for use by pool 0 */
-+	netdev_set_tc_queue(adapter->netdev, 0,
-+			    adapter->num_rx_queues_per_pool, 0);
-+
- 	return true;
- }
- 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index bcd05761b8e1..dba69c0bc644 100644
+index 101b3521ab0b..69bababc0cf6 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -6563,20 +6563,12 @@ int ixgbe_open(struct net_device *netdev)
- 		goto err_req_irq;
+@@ -1064,24 +1064,12 @@ static u64 ixgbe_get_tx_completed(struct ixgbe_ring *ring)
  
- 	/* Notify the stack of the actual queue counts. */
--	if (adapter->num_rx_pools > 1)
--		queues = adapter->num_rx_queues_per_pool;
+ static u64 ixgbe_get_tx_pending(struct ixgbe_ring *ring)
+ {
+-	struct ixgbe_adapter *adapter;
+-	struct ixgbe_hw *hw;
+-	u32 head, tail;
++	unsigned int head, tail;
+ 
+-	if (ring->l2_accel_priv)
+-		adapter = ring->l2_accel_priv->real_adapter;
 -	else
--		queues = adapter->num_tx_queues;
+-		adapter = netdev_priv(ring->netdev);
++	head = ring->next_to_clean;
++	tail = ring->next_to_use;
+ 
+-	hw = &adapter->hw;
+-	head = IXGBE_READ_REG(hw, IXGBE_TDH(ring->reg_idx));
+-	tail = IXGBE_READ_REG(hw, IXGBE_TDT(ring->reg_idx));
 -
-+	queues = adapter->num_tx_queues;
- 	err = netif_set_real_num_tx_queues(netdev, queues);
- 	if (err)
- 		goto err_set_queues;
+-	if (head != tail)
+-		return (head < tail) ?
+-			tail - head : (tail + ring->count - head);
+-
+-	return 0;
++	return ((head <= tail) ? tail : tail + ring->count) - head;
+ }
  
--	if (adapter->num_rx_pools > 1 &&
--	    adapter->num_rx_queues > IXGBE_MAX_L2A_QUEUES)
--		queues = IXGBE_MAX_L2A_QUEUES;
--	else
--		queues = adapter->num_rx_queues;
-+	queues = adapter->num_rx_queues;
- 	err = netif_set_real_num_rx_queues(netdev, queues);
- 	if (err)
- 		goto err_set_queues;
-@@ -8806,6 +8798,14 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
- 	} else {
- 		netdev_reset_tc(dev);
- 
-+		/* To support macvlan offload we have to use num_tc to
-+		 * restrict the queues that can be used by the device.
-+		 * By doing this we can avoid reporting a false number of
-+		 * queues.
-+		 */
-+		if (!tc && adapter->num_rx_pools > 1)
-+			netdev_set_num_tc(dev, 1);
-+
- 		if (adapter->hw.mac.type == ixgbe_mac_82598EB)
- 			adapter->hw.fc.requested_mode = adapter->last_lfc_mode;
- 
+ static inline bool ixgbe_check_tx_hang(struct ixgbe_ring *tx_ring)
 
