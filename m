@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 22 Nov 2017 10:56:46 -0800
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 06/16] ixgbe: Use ring
- values to test for Tx pending
+Date: Wed, 22 Nov 2017 10:56:59 -0800
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 08/16] ixgbe: Assume
+ provided MAC filter has been verified by macvlan
 In-Reply-To: <20171122185256.29785.93548.stgit@localhost.localdomain>
 References: <20171122185256.29785.93548.stgit@localhost.localdomain>
-Message-ID: <20171122185646.29785.9424.stgit@localhost.localdomain>
+Message-ID: <20171122185658.29785.82075.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,52 +13,41 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This patch simplifies the check for Tx pending traffic and makes it more
-holistic as there being any difference between next_to_use and
-next_to_clean is much more informative than if head and tail are equal, as
-it is possible for us to either not update tail, or not be notified of
-completed work in which case next_to_clean would not be equal to head.
+The macvlan driver itself will validate the MAC address that is configured
+for a given interface. There is no need for us to verify it again.
 
-In addition the simplification makes it so that we don't have to read
-hardware which allows us to drop a number of variables that were previously
-being used in the call.
+Instead we should be checking to verify that we actuall allocate the filter
+and have not run out of resources to configure a MAC rule in our filter
+table.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   20 ++++----------------
- 1 file changed, 4 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 101b3521ab0b..69bababc0cf6 100644
+index 09754519a0d9..6b553f96ead9 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1064,24 +1064,12 @@ static u64 ixgbe_get_tx_completed(struct ixgbe_ring *ring)
+@@ -5404,12 +5404,16 @@ static int ixgbe_fwd_ring_up(struct net_device *vdev,
+ 	if (err)
+ 		goto fwd_queue_err;
  
- static u64 ixgbe_get_tx_pending(struct ixgbe_ring *ring)
- {
--	struct ixgbe_adapter *adapter;
--	struct ixgbe_hw *hw;
--	u32 head, tail;
-+	unsigned int head, tail;
+-	if (is_valid_ether_addr(vdev->dev_addr))
+-		ixgbe_add_mac_filter(adapter, vdev->dev_addr,
+-				     VMDQ_P(accel->pool));
++	/* ixgbe_add_mac_filter will return an index if it succeeds, so we
++	 * need to only treat it as an error value if it is negative.
++	 */
++	err = ixgbe_add_mac_filter(adapter, vdev->dev_addr,
++				   VMDQ_P(accel->pool));
++	if (err < 0)
++		goto fwd_queue_err;
  
--	if (ring->l2_accel_priv)
--		adapter = ring->l2_accel_priv->real_adapter;
--	else
--		adapter = netdev_priv(ring->netdev);
-+	head = ring->next_to_clean;
-+	tail = ring->next_to_use;
- 
--	hw = &adapter->hw;
--	head = IXGBE_READ_REG(hw, IXGBE_TDH(ring->reg_idx));
--	tail = IXGBE_READ_REG(hw, IXGBE_TDT(ring->reg_idx));
--
--	if (head != tail)
--		return (head < tail) ?
--			tail - head : (tail + ring->count - head);
--
--	return 0;
-+	return ((head <= tail) ? tail : tail + ring->count) - head;
- }
- 
- static inline bool ixgbe_check_tx_hang(struct ixgbe_ring *tx_ring)
+ 	ixgbe_macvlan_set_rx_mode(vdev, VMDQ_P(accel->pool), adapter);
+-	return err;
++	return 0;
+ fwd_queue_err:
+ 	ixgbe_fwd_ring_down(vdev, accel);
+ 	return err;
 
