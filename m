@@ -1,95 +1,47 @@
-From: Fengguang Wu <fengguang.wu@intel.com>
-Date: Thu, 23 Nov 2017 07:13:24 +0800
-Subject: [Intel-wired-lan] [e1000_shutdown] e1000 0000:00:03.0:
- disabling already-disabled device
-In-Reply-To: <7fe10136-8f99-c0e8-2a3a-93c34915a95a@oracle.com>
-References: <20171121124148.poknfqmuef32tbdn@wfg-t540p.sh.intel.com>
- <7fe10136-8f99-c0e8-2a3a-93c34915a95a@oracle.com>
-Message-ID: <20171122231324.dofyw6maxkh5frqv@wfg-t540p.sh.intel.com>
+From: Amit Pundir <amit.pundir@linaro.org>
+Date: Mon, 27 Nov 2017 18:39:47 +0530
+Subject: [Intel-wired-lan] [PATCH for-4.14.y 0/5] e1000e: Upstream fixes
+ for linux-4.14.y
+In-Reply-To: <20171127125903.GB13615@kroah.com>
+References: <1511787217-10987-1-git-send-email-amit.pundir@linaro.org>
+ <20171127125903.GB13615@kroah.com>
+Message-ID: <CAMi1Hd1nhFjKS6YKsFjBehk5xCxn14f43-uEUDHt59q5uxCkug@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Nov 22, 2017 at 03:40:52AM +0530, Tushar Dave wrote:
->
->
->On 11/21/2017 06:11 PM, Fengguang Wu wrote:
->> Hello,
->>
->> FYI this happens in mainline kernel 4.14.0-01330-g3c07399.
->> It happens since 4.13 .
->>
->> It occurs in 3 out of 162 boots.
->>
->>
->> [   44.637743] advantechwdt: Unexpected close, not stopping watchdog!
->> [   44.997548] input: ImExPS/2 Generic Explorer Mouse as /devices/platform/i8042/serio1/input/input6
->> [   45.013419] e1000 0000:00:03.0: disabling already-disabled device
->> [   45.013447] ------------[ cut here ]------------
->> [   45.014868] WARNING: CPU: 1 PID: 71 at drivers/pci/pci.c:1641 pci_disable_device+0xa1/0x105:
->> 						pci_disable_device at drivers/pci/pci.c:1640
->> [   45.016171] CPU: 1 PID: 71 Comm: rcu_perf_shutdo Not tainted 4.14.0-01330-g3c07399 #1
->> [   45.017197] task: ffff88011bee9e40 task.stack: ffffc90000860000
->> [   45.017987] RIP: 0010:pci_disable_device+0xa1/0x105:
->> 						pci_disable_device at drivers/pci/pci.c:1640
->> [   45.018603] RSP: 0000:ffffc90000863e30 EFLAGS: 00010286
->> [   45.019282] RAX: 0000000000000035 RBX: ffff88013a230008 RCX: 0000000000000000
->> [   45.020182] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000203
->> [   45.021084] RBP: ffff88013a3f31e8 R08: 0000000000000001 R09: 0000000000000000
->> [   45.021986] R10: ffffffff827ec29c R11: 0000000000000002 R12: 0000000000000001
->> [   45.022946] R13: ffff88013a230008 R14: ffff880117802b20 R15: ffffc90000863e8f
->> [   45.023842] FS:  0000000000000000(0000) GS:ffff88013fd00000(0000) knlGS:0000000000000000
->> [   45.024863] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->> [   45.025583] CR2: ffffc900006d4000 CR3: 000000000220f000 CR4: 00000000000006a0
->> [   45.026478] Call Trace:
->> [   45.026811]  __e1000_shutdown+0x1d4/0x1e2:
->> 						__e1000_shutdown at drivers/net/ethernet/intel/e1000/e1000_main.c:5162
->> [   45.027344]  ? rcu_perf_cleanup+0x2a1/0x2a1:
->> 						rcu_perf_shutdown at kernel/rcu/rcuperf.c:627
->> [   45.027883]  e1000_shutdown+0x14/0x3a:
->> 						e1000_shutdown at drivers/net/ethernet/intel/e1000/e1000_main.c:5235
->> [   45.028351]  device_shutdown+0x110/0x1aa:
->> 						device_shutdown at drivers/base/core.c:2807
->> [   45.028858]  kernel_power_off+0x31/0x64:
->> 						kernel_power_off at kernel/reboot.c:260
->> [   45.029343]  rcu_perf_shutdown+0x9b/0xa7:
->> 						rcu_perf_shutdown at kernel/rcu/rcuperf.c:637
->> [   45.029852]  ? __wake_up_common_lock+0xa2/0xa2:
->> 						autoremove_wake_function at kernel/sched/wait.c:376
->> [   45.030414]  kthread+0x126/0x12e:
->> 						kthread at kernel/kthread.c:233
->> [   45.030834]  ? __kthread_bind_mask+0x8e/0x8e:
->> 						kthread at kernel/kthread.c:190
->> [   45.031399]  ? ret_from_fork+0x1f/0x30:
->> 						ret_from_fork at arch/x86/entry/entry_64.S:443
->> [   45.031883]  ? kernel_init+0xa/0xf5:
->> 						kernel_init at init/main.c:997
->> [   45.032325]  ret_from_fork+0x1f/0x30:
->> 						ret_from_fork at arch/x86/entry/entry_64.S:443
->> [   45.032777] Code: 00 48 85 ed 75 07 48 8b ab a8 00 00 00 48 8d bb 98 00 00 00 e8 aa d1 11 00 48 89 ea 48 89 c6 48 c7 c7 d8 e4 0b 82 e8 55 7d da ff <0f> ff b9 01 00 00 00 31 d2 be 01 00 00 00 48 c7 c7 f0 b1 61 82
->> [   45.035222] ---[ end trace c257137b1b1976ef ]---
->> [   45.037838] ACPI: Preparing to enter system sleep state S5
->>
->> Attached the full dmesg, kconfig and reproduce scripts.
->Looks like e1000 pci/pxi-x device is already suspended. And therefore
->call to e1000_suspend() -> __e1000_shutdown() -> pci_disable_device()
->already had disabled the device.
->Disabling device again by e1000_shutdown handler during system shutdown
->causes warning at drivers/pci/pci.c:1641.
->
->I think function __e1000_shutdown should just return if device is
->already suspended!
->
->I don't have e1000 hardware to test right now. So if this seems logical
->to others I will send a patch.
++ Jeff and intel-wired-lan (moderated) mailing list.
 
-Tushar, it happens on QEMU boot testing, so do not rely on e1000 HW.
-Unless you'd like to prevent regressions on real HW.
+On 27 November 2017 at 18:29, Greg KH <gregkh@linuxfoundation.org> wrote:
+> On Mon, Nov 27, 2017 at 06:23:32PM +0530, Amit Pundir wrote:
+>> Hi Greg,
+>>
+>> Found few e100e upstream fixes from Benjamin Poirier in lede
+>> source tree, https://git.lede-project.org/?p=source.git, and
+>> these fixes seem reasonable enough for 4.14.y too.
+>>
+>> Also submitting an e1000e buffer overrun fix by Sasha Neftin.
+>>
+>> Cherry-picked and build tested for linux v4.14.2 for ARCH=arm/arm64.
+>
+>
+> Any reason you did not cc: the maintainers for this driver and their
+> mailing list?
 
-The original report attached a reproduce script to run the QEMU test.
-Or you may send me the patch for testing.
+No reason at all. Thanks for pointing that out. It didn't occur to me
+to do that. I was marking only patch authors in cover letters so far.
+I'll start adding respective maintainers and mailing list going
+forward.
 
-Thanks,
-Fengguang
+>
+> Also, why is the maintainers of this driver not marking anything for
+> stable?  They never do, is that for a reason?
+>
+> thanks,
+>
+> greg k-h
+
+Regards,
+Amit Pundir
