@@ -1,55 +1,113 @@
-From: Amit Pundir <amit.pundir@linaro.org>
-Date: Mon, 27 Nov 2017 19:06:16 +0530
-Subject: [Intel-wired-lan] [PATCH for-4.14.y 0/5] e1000e: Upstream fixes
- for linux-4.14.y
-In-Reply-To: <1511787217-10987-1-git-send-email-amit.pundir@linaro.org>
-References: <1511787217-10987-1-git-send-email-amit.pundir@linaro.org>
-Message-ID: <CAMi1Hd11D3J5V0-oBhcthO_6T4CQX8v3DcLV8f_EVy9UyvkRAA@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 28 Nov 2017 01:45:27 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 1a87cbfdd54082ee5155925a68064597571f06ce
+Message-ID: <5a1c4f37.HqyIXeoBKnhvwSm8%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 27 November 2017 at 18:23, Amit Pundir <amit.pundir@linaro.org> wrote:
-> Hi Greg,
->
-> Found few e100e upstream fixes from Benjamin Poirier in lede
-> source tree, https://git.lede-project.org/?p=source.git, and
-> these fixes seem reasonable enough for 4.14.y too.
->
-> Also submitting an e1000e buffer overrun fix by Sasha Neftin.
->
-> Cherry-picked and build tested for linux v4.14.2 for ARCH=arm/arm64.
->
-> Regards,
-> Amit Pundir
->
->
-> Benjamin Poirier (4):
->   e1000e: Fix error path in link detection
->   e1000e: Fix return value test
->   e1000e: Separate signaling for link check/link up
->   e1000e: Avoid receiver overrun interrupt bursts
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 1a87cbfdd54082ee5155925a68064597571f06ce  ixgbevf: remove redundant setting of xcast_mode
 
-Also all the above fixes from Benjamin Poirier are to be marked for
-4.9 and first 3 fixes for 4.4, 3.18 as well. Build tested for
-ARCH=arm/arm64.
+elapsed time: 38m
 
-Regards,
-Amit Pundir
+configs tested: 89
 
->
-> Sasha Neftin (1):
->   e1000e: fix buffer overrun while the I219 is processing DMA
->     transactions
->
->  drivers/net/ethernet/intel/e1000e/defines.h |  1 +
->  drivers/net/ethernet/intel/e1000e/mac.c     | 11 +++++--
->  drivers/net/ethernet/intel/e1000e/netdev.c  | 45 ++++++++++++++++++++---------
->  drivers/net/ethernet/intel/e1000e/phy.c     |  7 +++--
->  4 files changed, 45 insertions(+), 19 deletions(-)
->
-> --
-> 2.7.4
->
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                               tinyconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201748
+i386                     randconfig-i0-201748
+i386                     randconfig-i1-201748
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-a0-11270914
+i386                   randconfig-a1-11270914
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                     randconfig-s0-201748
+i386                     randconfig-s1-201748
+x86_64                   randconfig-i0-201748
+arm                          tango4_defconfig
+parisc                          712_defconfig
+i386                   randconfig-x001-201748
+i386                   randconfig-x004-201748
+i386                   randconfig-x003-201748
+i386                   randconfig-x002-201748
+i386                   randconfig-x008-201748
+i386                   randconfig-x006-201748
+i386                   randconfig-x009-201748
+i386                   randconfig-x000-201748
+i386                   randconfig-x005-201748
+i386                   randconfig-x007-201748
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-x004-201748
+x86_64                 randconfig-x008-201748
+x86_64                 randconfig-x001-201748
+x86_64                 randconfig-x000-201748
+x86_64                 randconfig-x009-201748
+x86_64                 randconfig-x003-201748
+x86_64                 randconfig-x006-201748
+x86_64                 randconfig-x007-201748
+x86_64                 randconfig-x005-201748
+x86_64                 randconfig-x002-201748
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+
+Thanks,
+Fengguang
