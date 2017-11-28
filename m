@@ -1,131 +1,155 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 28 Nov 2017 18:51:26 +0000
-Subject: [Intel-wired-lan] [PATCH] fm10k: mark PM functions
-	as	__maybe_unused
-In-Reply-To: <02874ECE860811409154E81DA85FBB5882AC474E@ORSMSX115.amr.corp.intel.com>
-References: <20171011135834.3628155-1-arnd@arndb.de>
- <02874ECE860811409154E81DA85FBB5882AC474E@ORSMSX115.amr.corp.intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64B17517@ORSMSX103.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 29 Nov 2017 03:27:12 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:40GbE] BUILD SUCCESS
+ 8abd20b458cafd4c4e632fe7fb8f1a9861b02ee0
+Message-ID: <5a1db890.bVul5WPOPkqRKHo+%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  40GbE
+branch HEAD: 8abd20b458cafd4c4e632fe7fb8f1a9861b02ee0  e1000: Fix off-by-one in debug message
 
+elapsed time: 186m
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
-> Of Keller, Jacob E
-> Sent: Wednesday, October 11, 2017 3:20 PM
-> To: Arnd Bergmann <arnd@arndb.de>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Cc: Kwan, Ngai-mint <ngai-mint.kwan@intel.com>; netdev at vger.kernel.org;
-> Florian Westphal <fw@strlen.de>; linux-kernel at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org; David S. Miller <davem@davemloft.net>
-> Subject: Re: [Intel-wired-lan] [PATCH] fm10k: mark PM functions as
-> __maybe_unused
-> 
-> 
-> 
-> > -----Original Message-----
-> > From: Arnd Bergmann [mailto:arnd at arndb.de]
-> > Sent: Wednesday, October 11, 2017 6:58 AM
-> > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> > Cc: Arnd Bergmann <arnd@arndb.de>; Keller, Jacob E
-> > <jacob.e.keller@intel.com>; Kwan, Ngai-mint <ngai-mint.kwan@intel.com>;
-> > David S. Miller <davem@davemloft.net>; Florian Westphal <fw@strlen.de>;
-> > intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
-> > kernel at vger.kernel.org
-> > Subject: [PATCH] fm10k: mark PM functions as __maybe_unused
-> >
-> > A cleanup of the PM code left an incorrect #ifdef in place, leading
-> > to a harmless build warning:
-> >
-> > drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2502:12: error:
-> 'fm10k_suspend'
-> > defined but not used [-Werror=unused-function]
-> > drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2475:12: error:
-> 'fm10k_resume'
-> > defined but not used [-Werror=unused-function]
-> >
-> > It's easier to use __maybe_unused attributes here, since you
-> > can't pick the wrong one.
-> >
-> 
-> Acked-by: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> > Fixes: 8249c47c6ba4 ("fm10k: use generic PM hooks instead of legacy PCIe
-> power
-> > hooks")
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 9 ++-------
-> >  1 file changed, 2 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> > b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> > index 1e9ae3197b17..52f8eb3c470e 100644
-> > --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> > @@ -2463,7 +2463,6 @@ static int fm10k_handle_resume(struct fm10k_intfc
-> > *interface)
-> >  	return err;
-> >  }
-> >
-> > -#ifdef CONFIG_PM
-> >  /**
-> >   * fm10k_resume - Generic PM resume hook
-> >   * @dev: generic device structure
-> > @@ -2472,7 +2471,7 @@ static int fm10k_handle_resume(struct fm10k_intfc
-> > *interface)
-> >   * suspend or hibernation. This function does not need to handle lower PCIe
-> >   * device state as the stack takes care of that for us.
-> >   **/
-> > -static int fm10k_resume(struct device *dev)
-> > +static int __maybe_unused fm10k_resume(struct device *dev)
-> >  {
-> >  	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
-> >  	struct net_device *netdev = interface->netdev;
-> > @@ -2499,7 +2498,7 @@ static int fm10k_resume(struct device *dev)
-> >   * system suspend or hibernation. This function does not need to handle
-> lower
-> >   * PCIe device state as the stack takes care of that for us.
-> >   **/
-> > -static int fm10k_suspend(struct device *dev)
-> > +static int __maybe_unused fm10k_suspend(struct device *dev)
-> >  {
-> >  	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
-> >  	struct net_device *netdev = interface->netdev;
-> > @@ -2511,8 +2510,6 @@ static int fm10k_suspend(struct device *dev)
-> >  	return 0;
-> >  }
-> >
-> > -#endif /* CONFIG_PM */
-> > -
-> >  /**
-> >   * fm10k_io_error_detected - called when PCI error is detected
-> >   * @pdev: Pointer to PCI device
-> > @@ -2643,11 +2640,9 @@ static struct pci_driver fm10k_driver = {
-> >  	.id_table		= fm10k_pci_tbl,
-> >  	.probe			= fm10k_probe,
-> >  	.remove			= fm10k_remove,
-> > -#ifdef CONFIG_PM
-> >  	.driver = {
-> >  		.pm		= &fm10k_pm_ops,
-> >  	},
-> > -#endif /* CONFIG_PM */
-> >  	.sriov_configure	= fm10k_iov_configure,
-> >  	.err_handler		= &fm10k_err_handler
-> >  };
-> > --
-> > 2.9.0
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+configs tested: 131
 
-Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-n0-201748
+x86_64                 randconfig-x004-201748
+x86_64                 randconfig-x008-201748
+x86_64                 randconfig-x001-201748
+x86_64                 randconfig-x000-201748
+x86_64                 randconfig-x009-201748
+x86_64                 randconfig-x003-201748
+x86_64                 randconfig-x006-201748
+x86_64                 randconfig-x007-201748
+x86_64                 randconfig-x005-201748
+x86_64                 randconfig-x002-201748
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+i386                     randconfig-i1-201748
+i386                     randconfig-i0-201748
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201748
+i386                     randconfig-a1-201748
+x86_64                 randconfig-x011-201748
+x86_64                 randconfig-x018-201748
+x86_64                 randconfig-x017-201748
+x86_64                 randconfig-x012-201748
+x86_64                 randconfig-x019-201748
+x86_64                 randconfig-x013-201748
+x86_64                 randconfig-x010-201748
+x86_64                 randconfig-x015-201748
+x86_64                 randconfig-x014-201748
+x86_64                 randconfig-x016-201748
+i386                     randconfig-s0-201748
+i386                     randconfig-s1-201748
+x86_64                   randconfig-i0-201748
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                           allmodconfig
+i386                               tinyconfig
+i386                   randconfig-x013-201748
+i386                   randconfig-x014-201748
+i386                   randconfig-x015-201748
+i386                   randconfig-x019-201748
+i386                   randconfig-x018-201748
+i386                   randconfig-x011-201748
+i386                   randconfig-x017-201748
+i386                   randconfig-x012-201748
+i386                   randconfig-x010-201748
+i386                   randconfig-x016-201748
+i386                             allmodconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                   randconfig-x074-201748
+i386                   randconfig-x071-201748
+i386                   randconfig-x076-201748
+i386                   randconfig-x077-201748
+i386                   randconfig-x073-201748
+i386                   randconfig-x075-201748
+i386                   randconfig-x070-201748
+i386                   randconfig-x079-201748
+i386                   randconfig-x072-201748
+i386                   randconfig-x078-201748
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                   randconfig-x001-201748
+i386                   randconfig-x004-201748
+i386                   randconfig-x003-201748
+i386                   randconfig-x002-201748
+i386                   randconfig-x008-201748
+i386                   randconfig-x006-201748
+i386                   randconfig-x009-201748
+i386                   randconfig-x000-201748
+i386                   randconfig-x005-201748
+i386                   randconfig-x007-201748
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
 
+Thanks,
+Fengguang
