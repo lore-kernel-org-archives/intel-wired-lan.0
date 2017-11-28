@@ -1,26 +1,42 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 28 Nov 2017 01:28:40 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000: Fix off-by-one in debug message
-In-Reply-To: <20171118205358.29595-1-ahmad@a3f.at>
-References: <20171118205358.29595-1-ahmad@a3f.at>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C6F0D85@ORSMSX101.amr.corp.intel.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Tue, 28 Nov 2017 10:24:52 +0100
+Subject: [Intel-wired-lan] [PATCH for-4.14.y 0/5] e1000e: Upstream fixes
+ for linux-4.14.y
+In-Reply-To: <CAMi1Hd1nhFjKS6YKsFjBehk5xCxn14f43-uEUDHt59q5uxCkug@mail.gmail.com>
+References: <1511787217-10987-1-git-send-email-amit.pundir@linaro.org>
+ <20171127125903.GB13615@kroah.com>
+ <CAMi1Hd1nhFjKS6YKsFjBehk5xCxn14f43-uEUDHt59q5uxCkug@mail.gmail.com>
+Message-ID: <20171128092452.GE7891@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-
-> owner at vger.kernel.org] On Behalf Of Ahmad Fatoum
-> Sent: Saturday, November 18, 2017 12:54 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; Ahmad
-> Fatoum <ahmad@a3f.at>
-> Subject: [PATCH] e1000: Fix off-by-one in debug message
+On Mon, Nov 27, 2017 at 06:39:47PM +0530, Amit Pundir wrote:
+> + Jeff and intel-wired-lan (moderated) mailing list.
 > 
-> Signed-off-by: Ahmad Fatoum <ahmad@a3f.at>
-> ---
->  drivers/net/ethernet/intel/e1000/e1000_hw.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> On 27 November 2017 at 18:29, Greg KH <gregkh@linuxfoundation.org> wrote:
+> > On Mon, Nov 27, 2017 at 06:23:32PM +0530, Amit Pundir wrote:
+> >> Hi Greg,
+> >>
+> >> Found few e100e upstream fixes from Benjamin Poirier in lede
+> >> source tree, https://git.lede-project.org/?p=source.git, and
+> >> these fixes seem reasonable enough for 4.14.y too.
+> >>
+> >> Also submitting an e1000e buffer overrun fix by Sasha Neftin.
+> >>
+> >> Cherry-picked and build tested for linux v4.14.2 for ARCH=arm/arm64.
+> >
+> >
+> > Any reason you did not cc: the maintainers for this driver and their
+> > mailing list?
+> 
+> No reason at all. Thanks for pointing that out. It didn't occur to me
+> to do that. I was marking only patch authors in cover letters so far.
+> I'll start adding respective maintainers and mailing list going
+> forward.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Thanks, please do that.  All now queued up.
+
+greg k-h
