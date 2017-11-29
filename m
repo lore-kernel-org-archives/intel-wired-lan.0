@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 29 Nov 2017 16:40:56 +0000
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 01/16] ixgbe: Fix
- interaction between SR-IOV and macvlan offload
-In-Reply-To: <20171122185616.29785.79685.stgit@localhost.localdomain>
+Date: Wed, 29 Nov 2017 17:00:46 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 02/16] ixgbe:
+ Perform reinit any time number of VFs change
+In-Reply-To: <20171122185622.29785.67698.stgit@localhost.localdomain>
 References: <20171122185256.29785.93548.stgit@localhost.localdomain>
- <20171122185616.29785.79685.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAFC1A@ORSMSX104.amr.corp.intel.com>
+ <20171122185622.29785.67698.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAFC33@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Alexander Duyck
 > Sent: Wednesday, November 22, 2017 10:56 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 01/16] ixgbe: Fix
-> interaction between SR-IOV and macvlan offload
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 02/16] ixgbe: Perform
+> reinit any time number of VFs change
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> When SR-IOV was enabled the macvlan offload was configuring several filters
-> with the wrong pool value. This would result in the macvlan interfaces not
-> being able to receive traffic that had to pass over the physical interface.
+> If the number of VFs are changed we need to reinitialize the part since the
+> offset for the device and the number of pools will be incorrect. Without this
+> change we can end up seeing Tx hangs and dropped Rx frames for incoming
+> traffic.
 > 
-> To fix it wrap the pool argument in the VMDQ_P macro which will add the
-> necessary offset to get to the actual VMDq pool
+> In addition we should drop the code that is arbitrarily changing the default
+> pool and queue configuration. Instead we should wait until the port is reset
+> and reconfigured via ixgbe_sriov_reinit.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 +++++-------
->  1 file changed, 5 insertions(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |   19 +++----------------
+>  1 file changed, 3 insertions(+), 16 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
