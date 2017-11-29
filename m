@@ -1,32 +1,39 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 29 Nov 2017 04:07:45 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] igb: Clarify idleslope
- config constraints
-In-Reply-To: <20171110222150.17754-1-jesus.sanchez-palencia@intel.com>
-References: <20171110222150.17754-1-jesus.sanchez-palencia@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C6F27B9@ORSMSX101.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 29 Nov 2017 16:40:56 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 01/16] ixgbe: Fix
+ interaction between SR-IOV and macvlan offload
+In-Reply-To: <20171122185616.29785.79685.stgit@localhost.localdomain>
+References: <20171122185256.29785.93548.stgit@localhost.localdomain>
+ <20171122185616.29785.79685.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAFC1A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
-> Of Jesus Sanchez-Palencia
-> Sent: Friday, November 10, 2017 2:22 PM
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Wednesday, November 22, 2017 10:56 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Sanchez-Palencia, Jesus <jesus.sanchez-palencia@intel.com>; Guedes,
-> Andre <andre.guedes@intel.com>; Briano, Ivan <ivan.briano@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net-next] igb: Clarify idleslope config
-> constraints
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 01/16] ixgbe: Fix
+> interaction between SR-IOV and macvlan offload
 > 
-> By design, the idleslope increments are restricted to 16.384kbps steps.
-> Add a comment to igb_main.c making that explicit and add one example
-> that illustrates the impact of that.
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+> When SR-IOV was enabled the macvlan offload was configuring several filters
+> with the wrong pool value. This would result in the macvlan interfaces not
+> being able to receive traffic that had to pass over the physical interface.
+> 
+> To fix it wrap the pool argument in the VMDQ_P macro which will add the
+> necessary offset to get to the actual VMDq pool
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 +++++-------
+>  1 file changed, 5 insertions(+), 7 deletions(-)
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
