@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 29 Nov 2017 17:00:46 +0000
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 02/16] ixgbe:
- Perform reinit any time number of VFs change
-In-Reply-To: <20171122185622.29785.67698.stgit@localhost.localdomain>
+Date: Wed, 29 Nov 2017 17:01:18 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 03/16] ixgbe: Add
+ support for macvlan offload RSS on X550 and clean-up pool handling
+In-Reply-To: <20171122185628.29785.72704.stgit@localhost.localdomain>
 References: <20171122185256.29785.93548.stgit@localhost.localdomain>
- <20171122185622.29785.67698.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAFC33@ORSMSX104.amr.corp.intel.com>
+ <20171122185628.29785.72704.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAFC3F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Alexander Duyck
 > Sent: Wednesday, November 22, 2017 10:56 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 02/16] ixgbe: Perform
-> reinit any time number of VFs change
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 03/16] ixgbe: Add
+> support for macvlan offload RSS on X550 and clean-up pool handling
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> If the number of VFs are changed we need to reinitialize the part since the
-> offset for the device and the number of pools will be incorrect. Without this
-> change we can end up seeing Tx hangs and dropped Rx frames for incoming
-> traffic.
+> In order for RSS to work on the macvlan pools of the X550 we need to
+> populate the MRQC, RETA, and RSS key values for each pool. This patch
+> makes it so that we now take care of that.
 > 
-> In addition we should drop the code that is arbitrarily changing the default
-> pool and queue configuration. Instead we should wait until the port is reset
-> and reconfigured via ixgbe_sriov_reinit.
+> In addition I have dropped the macvlan specific configuration of psrtype since
+> it is redundant with the code that already exists for configuring this value.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |   19 +++----------------
->  1 file changed, 3 insertions(+), 16 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   62 ++++++++++------------
+> ---
+>  1 file changed, 25 insertions(+), 37 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
