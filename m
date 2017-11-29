@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 29 Nov 2017 17:04:27 +0000
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 06/16] ixgbe: Use
- ring values to test for Tx pending
-In-Reply-To: <20171122185646.29785.9424.stgit@localhost.localdomain>
+Date: Wed, 29 Nov 2017 17:06:56 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 08/16] ixgbe:
+ Assume provided MAC filter has been verified by macvlan
+In-Reply-To: <20171122185658.29785.82075.stgit@localhost.localdomain>
 References: <20171122185256.29785.93548.stgit@localhost.localdomain>
- <20171122185646.29785.9424.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAFC6F@ORSMSX104.amr.corp.intel.com>
+ <20171122185658.29785.82075.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EAFC92@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Alexander Duyck
 > Sent: Wednesday, November 22, 2017 10:57 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 06/16] ixgbe: Use ring
-> values to test for Tx pending
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 08/16] ixgbe: Assume
+> provided MAC filter has been verified by macvlan
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> This patch simplifies the check for Tx pending traffic and makes it more
-> holistic as there being any difference between next_to_use and
-> next_to_clean is much more informative than if head and tail are equal, as it
-> is possible for us to either not update tail, or not be notified of completed
-> work in which case next_to_clean would not be equal to head.
+> The macvlan driver itself will validate the MAC address that is configured for a
+> given interface. There is no need for us to verify it again.
 > 
-> In addition the simplification makes it so that we don't have to read hardware
-> which allows us to drop a number of variables that were previously being
-> used in the call.
+> Instead we should be checking to verify that we actuall allocate the filter and
+> have not run out of resources to configure a MAC rule in our filter table.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   20 ++++----------------
->  1 file changed, 4 insertions(+), 16 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
