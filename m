@@ -1,25 +1,35 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 02 Dec 2017 05:28:30 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 001376c3d4ffcda389da516699b85f63bd979118
-Message-ID: <5a21c97e.dfm4qOrDRMyED/hM%fengguang.wu@intel.com>
+Date: Sat, 02 Dec 2017 05:28:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ cfac7f836a715b91f08c851df915d401a4d52783
+Message-ID: <5a21c980.NzarQ2iOwfpCKIe/%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 001376c3d4ffcda389da516699b85f63bd979118  checkpatch.pl: seed camelcase from the provided kernel tree root
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: cfac7f836a715b91f08c851df915d401a4d52783  tcp/dccp: block bh before arming time_wait timer
 
-elapsed time: 75m
+elapsed time: 76m
 
-configs tested: 193
+configs tested: 194
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
 x86_64                 randconfig-a0-12020345
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
 m32r                    m32700ut.up_defconfig
 sparc64                             defconfig
 tile                                defconfig
@@ -33,16 +43,16 @@ mips                      pic32mzda_defconfig
 sh                           se7722_defconfig
 x86_64                randconfig-in0-12020408
 i386                               tinyconfig
+i386                   randconfig-x010-201748
+i386                   randconfig-x011-201748
+i386                   randconfig-x012-201748
 i386                   randconfig-x013-201748
 i386                   randconfig-x014-201748
 i386                   randconfig-x015-201748
-i386                   randconfig-x019-201748
-i386                   randconfig-x018-201748
-i386                   randconfig-x011-201748
-i386                   randconfig-x017-201748
-i386                   randconfig-x012-201748
-i386                   randconfig-x010-201748
 i386                   randconfig-x016-201748
+i386                   randconfig-x017-201748
+i386                   randconfig-x018-201748
+i386                   randconfig-x019-201748
 x86_64                                    lkp
 x86_64                                   rhel
 x86_64                               rhel-7.2
@@ -61,22 +71,17 @@ i386                     randconfig-i0-201748
 arm                           spitz_defconfig
 m68k                         apollo_defconfig
 powerpc                 mpc85xx_cds_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
 i386                             allmodconfig
-x86_64                 randconfig-x011-201748
-x86_64                 randconfig-x018-201748
-x86_64                 randconfig-x017-201748
-x86_64                 randconfig-x012-201748
-x86_64                 randconfig-x019-201748
-x86_64                 randconfig-x013-201748
 x86_64                 randconfig-x010-201748
-x86_64                 randconfig-x015-201748
+x86_64                 randconfig-x011-201748
+x86_64                 randconfig-x012-201748
+x86_64                 randconfig-x013-201748
 x86_64                 randconfig-x014-201748
+x86_64                 randconfig-x015-201748
 x86_64                 randconfig-x016-201748
+x86_64                 randconfig-x017-201748
+x86_64                 randconfig-x018-201748
+x86_64                 randconfig-x019-201748
 arm                              allmodconfig
 arm                                      arm5
 arm                                     arm67
@@ -101,11 +106,6 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
@@ -134,16 +134,16 @@ x86_64                 randconfig-n0-12020433
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
 m68k                           sun3_defconfig
-i386                   randconfig-x001-201748
-i386                   randconfig-x004-201748
-i386                   randconfig-x003-201748
-i386                   randconfig-x002-201748
-i386                   randconfig-x008-201748
-i386                   randconfig-x006-201748
-i386                   randconfig-x009-201748
 i386                   randconfig-x000-201748
+i386                   randconfig-x001-201748
+i386                   randconfig-x002-201748
+i386                   randconfig-x003-201748
+i386                   randconfig-x004-201748
 i386                   randconfig-x005-201748
+i386                   randconfig-x006-201748
 i386                   randconfig-x007-201748
+i386                   randconfig-x008-201748
+i386                   randconfig-x009-201748
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                              allnoconfig
@@ -164,6 +164,17 @@ nios2                         10m50_defconfig
 score                      spct6600_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
+x86_64                 randconfig-x000-201748
+x86_64                 randconfig-x001-201748
+x86_64                 randconfig-x002-201748
+x86_64                 randconfig-x003-201748
+x86_64                 randconfig-x004-201748
+x86_64                 randconfig-x005-201748
+x86_64                 randconfig-x006-201748
+x86_64                 randconfig-x007-201748
+x86_64                 randconfig-x008-201748
+x86_64                 randconfig-x009-201748
+x86_64                                  kexec
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -180,32 +191,22 @@ arm                           stm32_defconfig
 riscv                               defconfig
 arm                           corgi_defconfig
 powerpc               mpc85xx_basic_defconfig
-i386                   randconfig-x074-201748
+i386                   randconfig-x070-201748
 i386                   randconfig-x071-201748
+i386                   randconfig-x072-201748
+i386                   randconfig-x073-201748
+i386                   randconfig-x074-201748
+i386                   randconfig-x075-201748
 i386                   randconfig-x076-201748
 i386                   randconfig-x077-201748
-i386                   randconfig-x073-201748
-i386                   randconfig-x075-201748
-i386                   randconfig-x070-201748
-i386                   randconfig-x079-201748
-i386                   randconfig-x072-201748
 i386                   randconfig-x078-201748
+i386                   randconfig-x079-201748
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
 arm                          collie_defconfig
 powerpc                          allmodconfig
 powerpc                      ppc40x_defconfig
-x86_64                 randconfig-x000-201748
-x86_64                 randconfig-x001-201748
-x86_64                 randconfig-x002-201748
-x86_64                 randconfig-x003-201748
-x86_64                 randconfig-x004-201748
-x86_64                 randconfig-x005-201748
-x86_64                 randconfig-x006-201748
-x86_64                 randconfig-x007-201748
-x86_64                 randconfig-x008-201748
-x86_64                 randconfig-x009-201748
 x86_64                 randconfig-r0-12020437
 mips                            gpr_defconfig
 mips                        nlm_xlr_defconfig
