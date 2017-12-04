@@ -1,117 +1,134 @@
-From: Sagar Arun Kamble <sagar.a.kamble@intel.com>
-Date: Mon, 4 Dec 2017 10:43:05 +0530
-Subject: [Intel-wired-lan] [PATCH 1/1] timecounter: Make cyclecounter
- struct part of timecounter struct
-In-Reply-To: <20171202180458.winwznbstsi355ed@localhost>
-References: <1512189095-28654-1-git-send-email-sagar.a.kamble@intel.com>
- <20171202180458.winwznbstsi355ed@localhost>
-Message-ID: <8cfdbb16-7053-1d8f-adae-4ce2487fe4ea@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Mon,  4 Dec 2017 11:28:31 -0800
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbevf: Fix kernel-doc format
+ warnings
+In-Reply-To: <20171204192831.18344-1-anthony.l.nguyen@intel.com>
+References: <20171204192831.18344-1-anthony.l.nguyen@intel.com>
+Message-ID: <20171204192831.18344-2-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Recent checks added for formatting kernel-doc comments are causing warnings
+if W= is run with a non-zero value.  This patch fixes function comments to
+resolve warnings when W=1 is used.
 
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  6 +++---
+ drivers/net/ethernet/intel/ixgbevf/vf.c           | 17 +++++++++++++++--
+ 2 files changed, 18 insertions(+), 5 deletions(-)
 
-On 12/2/2017 11:34 PM, Richard Cochran wrote:
-> On Sat, Dec 02, 2017 at 10:01:35AM +0530, Sagar Arun Kamble wrote:
->> There is no real need for the users of timecounters to define cyclecounter
->> and timecounter variables separately. Since timecounter will always be
->> based on cyclecounter, have cyclecounter struct as member of timecounter
->> struct.
-> Overall, this is a welcome change.  However, it doesn't go far enough,
-> IMHO, and I'll explain that more below.
->
->> diff --git a/drivers/net/ethernet/mellanox/mlx4/en_clock.c b/drivers/net/ethernet/mellanox/mlx4/en_clock.c
->> index 0247885..35987b5 100644
->> --- a/drivers/net/ethernet/mellanox/mlx4/en_clock.c
->> +++ b/drivers/net/ethernet/mellanox/mlx4/en_clock.c
-> ...
->
-> As it stands now, timecounter_init() is used for two totally different
-> reasons.  Some callers only want to set the time, ...
->
->> @@ -207,7 +207,7 @@ static int mlx4_en_phc_settime(struct ptp_clock_info *ptp,
->>   
->>   	/* reset the timecounter */
->>   	write_seqlock_irqsave(&mdev->clock_lock, flags);
->> -	timecounter_init(&mdev->clock, &mdev->cycles, ns);
->> +	timecounter_init(&mdev->clock, ns);
->>   	write_sequnlock_irqrestore(&mdev->clock_lock, flags);
->>   
->>   	return 0;
-> ... while others initialize the data structure the first time:
->
->> @@ -274,17 +274,17 @@ void mlx4_en_init_timestamp(struct mlx4_en_dev *mdev)
->>   
->>   	seqlock_init(&mdev->clock_lock);
->>   
->> -	memset(&mdev->cycles, 0, sizeof(mdev->cycles));
->> -	mdev->cycles.read = mlx4_en_read_clock;
->> -	mdev->cycles.mask = CLOCKSOURCE_MASK(48);
->> -	mdev->cycles.shift = freq_to_shift(dev->caps.hca_core_clock);
->> -	mdev->cycles.mult =
->> -		clocksource_khz2mult(1000 * dev->caps.hca_core_clock, mdev->cycles.shift);
->> -	mdev->nominal_c_mult = mdev->cycles.mult;
->> +	memset(&mdev->clock.cc, 0, sizeof(mdev->clock.cc));
->> +	mdev->clock.cc.read = mlx4_en_read_clock;
->> +	mdev->clock.cc.mask = CLOCKSOURCE_MASK(48);
->> +	mdev->clock.cc.shift = freq_to_shift(dev->caps.hca_core_clock);
->> +	mdev->clock.cc.mult =
->> +		clocksource_khz2mult(1000 * dev->caps.hca_core_clock,
->> +				     mdev->clock.cc.shift);
->> +	mdev->nominal_c_mult = mdev->clock.cc.mult;
->>   
->>   	write_seqlock_irqsave(&mdev->clock_lock, flags);
->> -	timecounter_init(&mdev->clock, &mdev->cycles,
->> -			 ktime_to_ns(ktime_get_real()));
->> +	timecounter_init(&mdev->clock, ktime_to_ns(ktime_get_real()));
-> I'd like to see two followup patches to this one:
->
-> 1. Convert timecounter_init() callers to a new timecounter_reset()
->     function where the intent is to reset the time.
->
-> 2. Change timecounter_init() to take the cyclecounter fields as
->     arguments.
->
-> 	void timecounter_init(struct timecounter *tc,
-> 			      u64 (*read)(const struct cyclecounter *cc),
-> 			      u64 mask,
-> 			      u32 mult,
-> 			      u32 shift,
-> 			      u64 start_tstamp);
->
-> Then we can clean up all this stuff:
->
-> 	mdev->clock.cc.read = mlx4_en_read_clock;
-> 	mdev->clock.cc.mask = CLOCKSOURCE_MASK(48);
-> 	mdev->clock.cc.shift = freq_to_shift(dev->caps.hca_core_clock);
-> 	mdev->clock.cc.mult = clocksource_khz2mult(...);
->
-> This second step can be phased in by calling the new function
-> timecounter_initialize() and converting the drivers one by one.
-
-Yes. Will make these changes and share new patchset.
-
-Thank you for the review Richard.
-
-Regards,
-Sagar
-
->> diff --git a/include/linux/timecounter.h b/include/linux/timecounter.h
->> index 2496ad4..6daca06 100644
->> --- a/include/linux/timecounter.h
->> +++ b/include/linux/timecounter.h
-> ...
->> @@ -98,7 +98,6 @@ static inline void timecounter_adjtime(struct timecounter *tc, s64 delta)
->>   /**
->>    * timecounter_init - initialize a time counter
->>    * @tc:			Pointer to time counter which is to be initialized/reset
->> - * @cc:			A cycle counter, ready to be used.
-> This "ready to used" requirement should go.  The init() function
-> should make the instance ready to be used all at once.
->
-> Thanks,
-> Richard
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 573f743..ed5c3ae 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -554,7 +554,6 @@ static void ixgbevf_process_skb_fields(struct ixgbevf_ring *rx_ring,
+  * ixgbevf_is_non_eop - process handling of non-EOP buffers
+  * @rx_ring: Rx ring being processed
+  * @rx_desc: Rx descriptor for current buffer
+- * @skb: current socket buffer containing buffer in progress
+  *
+  * This function updates next to clean.  If the buffer is an EOP buffer
+  * this function exits returning false, otherwise it will place the
+@@ -2741,7 +2740,7 @@ void ixgbevf_update_stats(struct ixgbevf_adapter *adapter)
+ 
+ /**
+  * ixgbevf_service_timer - Timer Call-back
+- * @data: pointer to adapter cast into an unsigned long
++ * @t: pointer to timer_list struct
+  **/
+ static void ixgbevf_service_timer(struct timer_list *t)
+ {
+@@ -2884,7 +2883,7 @@ static void ixgbevf_watchdog_link_is_down(struct ixgbevf_adapter *adapter)
+ 
+ /**
+  * ixgbevf_watchdog_subtask - worker thread to bring link up
+- * @work: pointer to work_struct containing our data
++ * @adapter: board private structure
+  **/
+ static void ixgbevf_watchdog_subtask(struct ixgbevf_adapter *adapter)
+ {
+@@ -4364,6 +4363,7 @@ static void __exit ixgbevf_exit_module(void)
+ /**
+  * ixgbevf_get_hw_dev_name - return device name string
+  * used by hardware layer to print debugging information
++ * @hw: pointer to private hardware struct
+  **/
+ char *ixgbevf_get_hw_dev_name(struct ixgbe_hw *hw)
+ {
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+index 0c25006..64c93e8 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.c
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+@@ -146,6 +146,7 @@ static s32 ixgbevf_reset_hw_vf(struct ixgbe_hw *hw)
+ /**
+  * Hyper-V variant; the VF/PF communication is through the PCI
+  * config space.
++ * @hw: pointer to private hardware struct
+  */
+ static s32 ixgbevf_hv_reset_hw_vf(struct ixgbe_hw *hw)
+ {
+@@ -303,7 +304,7 @@ static s32 ixgbevf_hv_set_uc_addr_vf(struct ixgbe_hw *hw, u32 index, u8 *addr)
+ 
+ /**
+  * ixgbevf_get_reta_locked - get the RSS redirection table (RETA) contents.
+- * @adapter: pointer to the port handle
++ * @hw: pointer to hardware structure
+  * @reta: buffer to fill with RETA contents.
+  * @num_rx_queues: Number of Rx queues configured for this port
+  *
+@@ -536,6 +537,8 @@ static s32 ixgbevf_update_mc_addr_list_vf(struct ixgbe_hw *hw,
+ 
+ /**
+  * Hyper-V variant - just a stub.
++ * @hw: unused
++ * @netdev: unused
+  */
+ static s32 ixgbevf_hv_update_mc_addr_list_vf(struct ixgbe_hw *hw,
+ 					     struct net_device *netdev)
+@@ -584,6 +587,8 @@ static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
+ 
+ /**
+  * Hyper-V variant - just a stub.
++ * @hw: unused
++ * @xcast_mode: unused
+  */
+ static s32 ixgbevf_hv_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
+ {
+@@ -626,6 +631,10 @@ static s32 ixgbevf_set_vfta_vf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
+ 
+ /**
+  * Hyper-V variant - just a stub.
++ * @hw: unused
++ * @vlan: unused
++ * @vind: unused
++ * @vlan_on: unused
+  */
+ static s32 ixgbevf_hv_set_vfta_vf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
+ 				  bool vlan_on)
+@@ -655,7 +664,7 @@ static s32 ixgbevf_setup_mac_link_vf(struct ixgbe_hw *hw,
+  *  @hw: pointer to hardware structure
+  *  @speed: pointer to link speed
+  *  @link_up: true is link is up, false otherwise
+- *  @autoneg_wait_to_complete: true when waiting for completion is needed
++ *  @autoneg_wait_to_complete: unused
+  *
+  *  Reads the links register to determine if link is up and the current speed
+  **/
+@@ -740,6 +749,10 @@ static s32 ixgbevf_check_mac_link_vf(struct ixgbe_hw *hw,
+ 
+ /**
+  * Hyper-V variant; there is no mailbox communication.
++ * @hw: pointer to private hardware struct
++ * @speed: pointer to link speed
++ * @link_up: true is link is up, false otherwise
++ * @autoneg_wait_to_complete: unused
+  */
+ static s32 ixgbevf_hv_check_mac_link_vf(struct ixgbe_hw *hw,
+ 					ixgbe_link_speed *speed,
+-- 
+2.9.5
 
