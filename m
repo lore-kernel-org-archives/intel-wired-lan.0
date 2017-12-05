@@ -1,180 +1,96 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon,  4 Dec 2017 21:35:09 -0800
-Subject: [Intel-wired-lan] [next-queue 03/10] ixgbe: add ipsec engine start
- and stop routines
-In-Reply-To: <1512452116-14795-1-git-send-email-shannon.nelson@oracle.com>
-References: <1512452116-14795-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <1512452116-14795-4-git-send-email-shannon.nelson@oracle.com>
+Date: Mon,  4 Dec 2017 21:35:06 -0800
+Subject: [Intel-wired-lan] [next-queue 00/10] ixgbe: Add ipsec offload
+Message-ID: <1512452116-14795-1-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add in the code for running and stopping the hardware ipsec
-encryption/decryption engine.  It is good to keep the engine
-off when not in use in order to save on the power draw.
+This is an implementation of the ipsec hardware offload feature for
+the ixgbe driver and Intel's 10Gbe series NICs: x540, x550, 82599.
+These patches apply to net-next v4.14 as well as Jeff Kirsher's next-queue
+v4.15-rc1-206-ge47375b.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 140 +++++++++++++++++++++++++
- 1 file changed, 140 insertions(+)
+The ixgbe NICs support ipsec offload for 1024 Rx and 1024 Tx Security
+Associations (SAs), using up to 128 inbound IP addresses, and using the
+rfc4106(gcm(aes)) encryption.  This code does not yet support IPv6,
+checksum offload, or TSO in conjunction with the ipsec offload - those
+will be added in the future.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index 14dd011..38a1a16 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -148,10 +148,150 @@ void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
- }
+This code shows improvements in both packet throughput and CPU utilization.
+For example, here are some quicky numbers that show the magnitude of the
+performance gain on a single run of "iperf -c <dest>" with the ipsec
+offload on both ends of a point-to-point connection:
+
+	9.4 Gbps - normal case
+	7.6 Gbps - ipsec with offload
+	343 Mbps - ipsec no offload
+
+To set up a similar test case, you first need to be sure you have a recent
+version of iproute2 that supports the ipsec offload tag, probably something
+from ip 4.12 or newer would be best.  I have a shell script that builds
+up the appropriate commands for me, but here are the resulting commands
+for all tcp traffic between 14.0.0.52 and 14.0.0.70:
+
+For the left side (14.0.0.52):
+  ip x p add dir out src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
+     proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport reqid 0x07
+  ip x p add dir in src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
+     proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport reqid 0x07
+  ip x s add proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport \
+     reqid 0x07 replay-window 32 \
+     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
+     sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev eth4 dir out
+  ip x s add proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport \
+     reqid 0x07 replay-window 32 \
+     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
+     sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev eth4 dir in
  
- /**
-+ * ixgbe_ipsec_stop_data
-+ * @adapter: board private structure
-+ **/
-+static void ixgbe_ipsec_stop_data(struct ixgbe_adapter *adapter)
-+{
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	bool link = adapter->link_up;
-+	u32 t_rdy, r_rdy;
-+	u32 reg;
-+
-+	/* halt data paths */
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
-+	reg |= IXGBE_SECTXCTRL_TX_DIS;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, reg);
-+
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECRXCTRL);
-+	reg |= IXGBE_SECRXCTRL_RX_DIS;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, reg);
-+
-+	IXGBE_WRITE_FLUSH(hw);
-+
-+	/* If the tx fifo doesn't have link, but still has data,
-+	 * we can't clear the tx sec block.  Set the MAC loopback
-+	 * before block clear
-+	 */
-+	if (!link) {
-+		reg = IXGBE_READ_REG(hw, IXGBE_MACC);
-+		reg |= IXGBE_MACC_FLU;
-+		IXGBE_WRITE_REG(hw, IXGBE_MACC, reg);
-+
-+		reg = IXGBE_READ_REG(hw, IXGBE_HLREG0);
-+		reg |= IXGBE_HLREG0_LPBK;
-+		IXGBE_WRITE_REG(hw, IXGBE_HLREG0, reg);
-+
-+		IXGBE_WRITE_FLUSH(hw);
-+		mdelay(3);
-+	}
-+
-+	/* wait for the paths to empty */
-+	do {
-+		mdelay(10);
-+		t_rdy = IXGBE_READ_REG(hw, IXGBE_SECTXSTAT) &
-+			IXGBE_SECTXSTAT_SECTX_RDY;
-+		r_rdy = IXGBE_READ_REG(hw, IXGBE_SECRXSTAT) &
-+			IXGBE_SECRXSTAT_SECRX_RDY;
-+	} while (!t_rdy && !r_rdy);
-+
-+	/* undo loopback if we played with it earlier */
-+	if (!link) {
-+		reg = IXGBE_READ_REG(hw, IXGBE_MACC);
-+		reg &= ~IXGBE_MACC_FLU;
-+		IXGBE_WRITE_REG(hw, IXGBE_MACC, reg);
-+
-+		reg = IXGBE_READ_REG(hw, IXGBE_HLREG0);
-+		reg &= ~IXGBE_HLREG0_LPBK;
-+		IXGBE_WRITE_REG(hw, IXGBE_HLREG0, reg);
-+
-+		IXGBE_WRITE_FLUSH(hw);
-+	}
-+}
-+
-+/**
-+ * ixgbe_ipsec_stop_engine
-+ * @adapter: board private structure
-+ **/
-+static void ixgbe_ipsec_stop_engine(struct ixgbe_adapter *adapter)
-+{
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	u32 reg;
-+
-+	ixgbe_ipsec_stop_data(adapter);
-+
-+	/* disable Rx and Tx SA lookup */
-+	IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, 0);
-+	IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, 0);
-+
-+	/* disable the Rx and Tx engines and full packet store-n-forward */
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
-+	reg |= IXGBE_SECTXCTRL_SECTX_DIS;
-+	reg &= ~IXGBE_SECTXCTRL_STORE_FORWARD;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, reg);
-+
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECRXCTRL);
-+	reg |= IXGBE_SECRXCTRL_SECRX_DIS;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, reg);
-+
-+	/* restore the "tx security buffer almost full threshold" to 0x250 */
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXBUFFAF, 0x250);
-+
-+	/* Set minimum IFG between packets back to the default 0x1 */
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECTXMINIFG);
-+	reg = (reg & 0xfffffff0) | 0x1;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXMINIFG, reg);
-+
-+	/* final set for normal (no ipsec offload) processing */
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, IXGBE_SECTXCTRL_SECTX_DIS);
-+	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, IXGBE_SECRXCTRL_SECRX_DIS);
-+
-+	IXGBE_WRITE_FLUSH(hw);
-+}
-+
-+/**
-+ * ixgbe_ipsec_start_engine
-+ * @adapter: board private structure
-+ *
-+ * NOTE: this increases power consumption whether being used or not
-+ **/
-+static void ixgbe_ipsec_start_engine(struct ixgbe_adapter *adapter)
-+{
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	u32 reg;
-+
-+	ixgbe_ipsec_stop_data(adapter);
-+
-+	/* Set minimum IFG between packets to 3 */
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECTXMINIFG);
-+	reg = (reg & 0xfffffff0) | 0x3;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXMINIFG, reg);
-+
-+	/* Set "tx security buffer almost full threshold" to 0x15 so that the
-+	 * almost full indication is generated only after buffer contains at
-+	 * least an entire jumbo packet.
-+	 */
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECTXBUFFAF);
-+	reg = (reg & 0xfffffc00) | 0x15;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXBUFFAF, reg);
-+
-+	/* restart the data paths by clearing the DISABLE bits */
-+	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, 0);
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, IXGBE_SECTXCTRL_STORE_FORWARD);
-+
-+	/* enable Rx and Tx SA lookup */
-+	IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, IXGBE_RXTXIDX_IPS_EN);
-+	IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, IXGBE_RXTXIDX_IPS_EN);
-+
-+	IXGBE_WRITE_FLUSH(hw);
-+}
-+
-+/**
-  * ixgbe_init_ipsec_offload - initialize security registers for IPSec operation
-  * @adapter: board private structure
-  **/
- void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter)
- {
- 	ixgbe_ipsec_clear_hw_tables(adapter);
-+	ixgbe_ipsec_stop_engine(adapter);
- }
+For the right side (14.0.0.70):
+  ip x p add dir out src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
+     proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport reqid 0x07
+  ip x p add dir in src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
+     proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport reqid 0x07
+  ip x s add proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport \
+     reqid 0x07 replay-window 32 \
+     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
+     sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev eth4 dir out
+  ip x s add proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport \
+     reqid 0x07 replay-window 32 \
+     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
+     sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev eth4 dir in
+
+In both cases, the command "ip x s flush ; ip x p flush" will clean
+it all out and remove the offloads.
+
+Lastly, thanks to Alex Duyck for his early comments.
+
+Shannon Nelson (10):
+  ixgbe: clean up ipsec defines
+  ixgbe: add ipsec register access routines
+  ixgbe: add ipsec engine start and stop routines
+  ixgbe: add ipsec data structures
+  ixgbe: implement ipsec add and remove of offloaded SA
+  ixgbe: restore offloaded SAs after a reset
+  ixgbe: process the Rx ipsec offload
+  ixgbe: process the Tx ipsec offload
+  ixgbe: ipsec offload stats
+  ixgbe: register ipsec offload with the xfrm subsystem
+
+ drivers/net/ethernet/intel/ixgbe/Makefile        |   1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  30 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  28 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c   | 900 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h   |  90 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   4 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  53 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |  22 +-
+ 8 files changed, 1090 insertions(+), 38 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+ create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+
 -- 
 2.7.4
 
