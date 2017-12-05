@@ -1,170 +1,292 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon,  4 Dec 2017 21:35:13 -0800
-Subject: [Intel-wired-lan] [next-queue 07/10] ixgbe: process the Rx ipsec
- offload
+Date: Mon,  4 Dec 2017 21:35:08 -0800
+Subject: [Intel-wired-lan] [next-queue 02/10] ixgbe: add ipsec register
+ access routines
 In-Reply-To: <1512452116-14795-1-git-send-email-shannon.nelson@oracle.com>
 References: <1512452116-14795-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <1512452116-14795-8-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1512452116-14795-3-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If the chip sees and decrypts an ipsec offload, set up the skb
-sp pointer with the ralated SA info.  Since the chip is rude
-enough to keep to itself the table index it used for the
-decryption, we have to do our own table lookup, using the
-hash for speed.
+Add a few routines to make access to the ipsec registers just a little
+easier, and throw in the beginnings of an initialization.
 
 Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  6 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 89 ++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  3 +
- 3 files changed, 98 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/Makefile      |   1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h       |   6 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 157 +++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h |  50 ++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |   1 +
+ 5 files changed, 215 insertions(+)
+ create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+ create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/Makefile b/drivers/net/ethernet/intel/ixgbe/Makefile
+index 35e6fa6..8319465 100644
+--- a/drivers/net/ethernet/intel/ixgbe/Makefile
++++ b/drivers/net/ethernet/intel/ixgbe/Makefile
+@@ -42,3 +42,4 @@ ixgbe-$(CONFIG_IXGBE_DCB) +=  ixgbe_dcb.o ixgbe_dcb_82598.o \
+ ixgbe-$(CONFIG_IXGBE_HWMON) += ixgbe_sysfs.o
+ ixgbe-$(CONFIG_DEBUG_FS) += ixgbe_debugfs.o
+ ixgbe-$(CONFIG_FCOE:m=y) += ixgbe_fcoe.o
++ixgbe-$(CONFIG_XFRM_OFFLOAD) += ixgbe_ipsec.o
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 7e8bca7..77f07dc 100644
+index dd55787..1e11462 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -1009,9 +1009,15 @@ s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32 adv_reg, u32 lp_reg,
+@@ -52,6 +52,7 @@
+ #ifdef CONFIG_IXGBE_DCA
+ #include <linux/dca.h>
+ #endif
++#include "ixgbe_ipsec.h"
+ 
+ #include <net/busy_poll.h>
+ 
+@@ -1001,4 +1002,9 @@ void ixgbe_store_key(struct ixgbe_adapter *adapter);
+ void ixgbe_store_reta(struct ixgbe_adapter *adapter);
+ s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32 adv_reg, u32 lp_reg,
  		       u32 adv_sym, u32 adv_asm, u32 lp_sym, u32 lp_asm);
- #ifdef CONFIG_XFRM_OFFLOAD
- void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter);
-+void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
-+		    union ixgbe_adv_rx_desc *rx_desc,
-+		    struct sk_buff *skb);
- void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter);
- #else
- static inline void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter) { };
-+static inline void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
-+				  union ixgbe_adv_rx_desc *rx_desc,
-+				  struct sk_buff *skb) { };
- static inline void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter) { };
- #endif /* CONFIG_XFRM_OFFLOAD */
++#ifdef CONFIG_XFRM_OFFLOAD
++void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter);
++#else
++static inline void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter) { };
++#endif /* CONFIG_XFRM_OFFLOAD */
  #endif /* _IXGBE_H_ */
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index b93ee7f..fd06d9b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+new file mode 100644
+index 0000000..14dd011
+--- /dev/null
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -379,6 +379,35 @@ static int ixgbe_ipsec_find_empty_idx(struct ixgbe_ipsec *ipsec, bool rxtable)
- }
- 
- /**
-+ * ixgbe_ipsec_find_rx_state - find the state that matches
-+ * @ipsec: pointer to ipsec struct
-+ * @daddr: inbound address to match
-+ * @proto: protocol to match
-+ * @spi: SPI to match
+@@ -0,0 +1,157 @@
++/*******************************************************************************
 + *
-+ * Returns a pointer to the matching SA state information
-+ **/
-+static struct xfrm_state *ixgbe_ipsec_find_rx_state(struct ixgbe_ipsec *ipsec,
-+						    __be32 daddr, u8 proto,
-+						    __be32 spi)
-+{
-+	struct rx_sa *rsa;
-+	struct xfrm_state *ret = NULL;
++ * Intel 10 Gigabit PCI Express Linux driver
++ * Copyright(c) 2017 Oracle and/or its affiliates. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ *
++ * The full GNU General Public License is included in this distribution in
++ * the file called "COPYING".
++ *
++ * Contact Information:
++ * Linux NICS <linux.nics@intel.com>
++ * e1000-devel Mailing List <e1000-devel@lists.sourceforge.net>
++ * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
++ *
++ ******************************************************************************/
 +
-+	rcu_read_lock();
-+	hash_for_each_possible_rcu(ipsec->rx_sa_list, rsa, hlist, spi)
-+		if (spi == rsa->xs->id.spi &&
-+		    daddr == rsa->xs->id.daddr.a4 &&
-+		    proto == rsa->xs->id.proto) {
-+			ret = rsa->xs;
-+			xfrm_state_hold(ret);
-+			break;
-+		}
-+	rcu_read_unlock();
-+	return ret;
++#include "ixgbe.h"
++
++/**
++ * ixgbe_ipsec_set_tx_sa - set the Tx SA registers
++ * @hw: hw specific details
++ * @idx: register index to write
++ * @key: key byte array
++ * @salt: salt bytes
++ **/
++static void ixgbe_ipsec_set_tx_sa(struct ixgbe_hw *hw, u16 idx,
++				  u32 key[], u32 salt)
++{
++	u32 reg;
++	int i;
++
++	for (i = 0; i < 4; i++)
++		IXGBE_WRITE_REG(hw, IXGBE_IPSTXKEY(i), cpu_to_be32(key[3-i]));
++	IXGBE_WRITE_REG(hw, IXGBE_IPSTXSALT, cpu_to_be32(salt));
++	IXGBE_WRITE_FLUSH(hw);
++
++	reg = IXGBE_READ_REG(hw, IXGBE_IPSTXIDX);
++	reg &= IXGBE_RXTXIDX_IPS_EN;
++	reg |= idx << 3 | IXGBE_RXTXIDX_IDX_WRITE;
++	IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, reg);
++	IXGBE_WRITE_FLUSH(hw);
 +}
 +
 +/**
-  * ixgbe_ipsec_parse_proto_keys - find the key and salt based on the protocol
-  * @xs: pointer to xfrm_state struct
-  * @mykey: pointer to key array to populate
-@@ -680,6 +709,66 @@ static const struct xfrmdev_ops ixgbe_xfrmdev_ops = {
- };
- 
- /**
-+ * ixgbe_ipsec_rx - decode ipsec bits from Rx descriptor
-+ * @rx_ring: receiving ring
-+ * @rx_desc: receive data descriptor
-+ * @skb: current data packet
++ * ixgbe_ipsec_set_rx_item - set an Rx table item
++ * @hw: hw specific details
++ * @idx: register index to write
++ * @tbl: table selector
 + *
-+ * Determine if there was an ipsec encapsulation noticed, and if so set up
-+ * the resulting status for later in the receive stack.
++ * Trigger the device to store into a particular Rx table the
++ * data that has already been loaded into the input register
 + **/
-+void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
-+		    union ixgbe_adv_rx_desc *rx_desc,
-+		    struct sk_buff *skb)
++static void ixgbe_ipsec_set_rx_item(struct ixgbe_hw *hw, u16 idx, u32 tbl)
 +{
-+	struct ixgbe_adapter *adapter = netdev_priv(rx_ring->netdev);
-+	u16 pkt_info = le16_to_cpu(rx_desc->wb.lower.lo_dword.hs_rss.pkt_info);
-+	u16 ipsec_pkt_types = IXGBE_RXDADV_PKTTYPE_IPSEC_AH |
-+				IXGBE_RXDADV_PKTTYPE_IPSEC_ESP;
-+	struct ixgbe_ipsec *ipsec = adapter->ipsec;
-+	struct xfrm_offload *xo = NULL;
-+	struct xfrm_state *xs = NULL;
-+	struct iphdr *iph;
-+	u8 *c_hdr;
-+	__be32 spi;
-+	u8 proto;
++	u32 reg;
 +
-+	/* we can assume no vlan header in the way, b/c the
-+	 * hw won't recognize the IPsec packet and anyway the
-+	 * currently vlan device doesn't support xfrm offload.
-+	 */
-+	/* TODO: not supporting IPv6 yet */
-+	iph = (struct iphdr *)(skb->data + ETH_HLEN);
-+	c_hdr = (u8 *)iph + iph->ihl * 4;
-+	switch (pkt_info & ipsec_pkt_types) {
-+	case IXGBE_RXDADV_PKTTYPE_IPSEC_AH:
-+		spi = ((struct ip_auth_hdr *)c_hdr)->spi;
-+		proto = IPPROTO_AH;
-+		break;
-+	case IXGBE_RXDADV_PKTTYPE_IPSEC_ESP:
-+		spi = ((struct ip_esp_hdr *)c_hdr)->spi;
-+		proto = IPPROTO_ESP;
-+		break;
-+	default:
-+		return;
-+	}
-+
-+	xs = ixgbe_ipsec_find_rx_state(ipsec, iph->daddr, proto, spi);
-+	if (unlikely(!xs))
-+		return;
-+
-+	skb->sp = secpath_dup(skb->sp);
-+	if (unlikely(!skb->sp))
-+		return;
-+
-+	skb->sp->xvec[skb->sp->len++] = xs;
-+	skb->sp->olen++;
-+	xo = xfrm_offload(skb);
-+	xo->flags = CRYPTO_DONE;
-+	xo->status = CRYPTO_SUCCESS;
++	reg = IXGBE_READ_REG(hw, IXGBE_IPSRXIDX);
++	reg &= IXGBE_RXTXIDX_IPS_EN;
++	reg |= tbl | idx << 3 | IXGBE_RXTXIDX_IDX_WRITE;
++	IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, reg);
++	IXGBE_WRITE_FLUSH(hw);
 +}
 +
 +/**
-  * ixgbe_init_ipsec_offload - initialize security registers for IPSec operation
-  * @adapter: board private structure
-  **/
++ * ixgbe_ipsec_set_rx_sa - set up the register bits to save SA info
++ * @hw: hw specific details
++ * @idx: register index to write
++ * @spi: security parameter index
++ * @key: key byte array
++ * @salt: salt bytes
++ * @mode: rx decrypt control bits
++ * @ip_idx: index into IP table for related IP address
++ **/
++static void ixgbe_ipsec_set_rx_sa(struct ixgbe_hw *hw, u16 idx, __be32 spi,
++				  u32 key[], u32 salt, u32 mode, u32 ip_idx)
++{
++	int i;
++
++	/* store the SPI (in bigendian) and IPidx */
++	IXGBE_WRITE_REG(hw, IXGBE_IPSRXSPI, spi);
++	IXGBE_WRITE_REG(hw, IXGBE_IPSRXIPIDX, ip_idx);
++	IXGBE_WRITE_FLUSH(hw);
++
++	ixgbe_ipsec_set_rx_item(hw, idx, IXGBE_RXIDX_TBL_SPI);
++
++	/* store the key, salt, and mode */
++	for (i = 0; i < 4; i++)
++		IXGBE_WRITE_REG(hw, IXGBE_IPSRXKEY(i), cpu_to_be32(key[3-i]));
++	IXGBE_WRITE_REG(hw, IXGBE_IPSRXSALT, cpu_to_be32(salt));
++	IXGBE_WRITE_REG(hw, IXGBE_IPSRXMOD, mode);
++	IXGBE_WRITE_FLUSH(hw);
++
++	ixgbe_ipsec_set_rx_item(hw, idx, IXGBE_RXIDX_TBL_KEY);
++}
++
++/**
++ * ixgbe_ipsec_set_rx_ip - set up the register bits to save SA IP addr info
++ * @hw: hw specific details
++ * @idx: register index to write
++ * @addr: IP address byte array
++ **/
++static void ixgbe_ipsec_set_rx_ip(struct ixgbe_hw *hw, u16 idx, u32 addr[])
++{
++	int i;
++
++	/* store the ip address */
++	for (i = 0; i < 4; i++)
++		IXGBE_WRITE_REG(hw, IXGBE_IPSRXIPADDR(i), addr[i]);
++	IXGBE_WRITE_FLUSH(hw);
++
++	ixgbe_ipsec_set_rx_item(hw, idx, IXGBE_RXIDX_TBL_IP);
++}
++
++/**
++ * ixgbe_ipsec_clear_hw_tables - because some tables don't get cleared on reset
++ * @adapter: board private structure
++ **/
++void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++	u32 buf[4] = {0, 0, 0, 0};
++	u16 idx;
++
++	/* disable Rx and Tx SA lookup */
++	IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, 0);
++	IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, 0);
++
++	/* scrub the tables */
++	for (idx = 0; idx < IXGBE_IPSEC_MAX_SA_COUNT; idx++)
++		ixgbe_ipsec_set_tx_sa(hw, idx, buf, 0);
++
++	for (idx = 0; idx < IXGBE_IPSEC_MAX_SA_COUNT; idx++)
++		ixgbe_ipsec_set_rx_sa(hw, idx, 0, buf, 0, 0, 0);
++
++	for (idx = 0; idx < IXGBE_IPSEC_MAX_RX_IP_COUNT; idx++)
++		ixgbe_ipsec_set_rx_ip(hw, idx, buf);
++}
++
++/**
++ * ixgbe_init_ipsec_offload - initialize security registers for IPSec operation
++ * @adapter: board private structure
++ **/
++void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter)
++{
++	ixgbe_ipsec_clear_hw_tables(adapter);
++}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+new file mode 100644
+index 0000000..017b13f
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+@@ -0,0 +1,50 @@
++/*******************************************************************************
++
++  Intel 10 Gigabit PCI Express Linux driver
++  Copyright(c) 2017 Oracle and/or its affiliates. All rights reserved.
++
++  This program is free software; you can redistribute it and/or modify it
++  under the terms and conditions of the GNU General Public License,
++  version 2, as published by the Free Software Foundation.
++
++  This program is distributed in the hope it will be useful, but WITHOUT
++  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++  more details.
++
++  You should have received a copy of the GNU General Public License along with
++  this program.  If not, see <http://www.gnu.org/licenses/>.
++
++  The full GNU General Public License is included in this distribution in
++  the file called "COPYING".
++
++  Contact Information:
++  Linux NICS <linux.nics@intel.com>
++  e1000-devel Mailing List <e1000-devel@lists.sourceforge.net>
++  Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
++
++*******************************************************************************/
++
++#ifndef _IXGBE_IPSEC_H_
++#define _IXGBE_IPSEC_H_
++
++#define IXGBE_IPSEC_MAX_SA_COUNT	1024
++#define IXGBE_IPSEC_MAX_RX_IP_COUNT	128
++#define IXGBE_IPSEC_BASE_RX_INDEX	IXGBE_IPSEC_MAX_SA_COUNT
++#define IXGBE_IPSEC_BASE_TX_INDEX	(IXGBE_IPSEC_MAX_SA_COUNT * 2)
++
++#define IXGBE_RXTXIDX_IPS_EN		0x00000001
++#define IXGBE_RXIDX_TBL_MASK		0x00000006
++#define IXGBE_RXIDX_TBL_IP		0x00000002
++#define IXGBE_RXIDX_TBL_SPI		0x00000004
++#define IXGBE_RXIDX_TBL_KEY		0x00000006
++#define IXGBE_RXTXIDX_IDX_MASK		0x00001ff8
++#define IXGBE_RXTXIDX_IDX_READ		0x40000000
++#define IXGBE_RXTXIDX_IDX_WRITE		0x80000000
++
++#define IXGBE_RXMOD_VALID		0x00000001
++#define IXGBE_RXMOD_PROTO_ESP		0x00000004
++#define IXGBE_RXMOD_DECRYPT		0x00000008
++#define IXGBE_RXMOD_IPV6		0x00000010
++
++#endif /* _IXGBE_IPSEC_H_ */
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 6eabf92..60f9f2d 100644
+index 6d5f31e..51fb3cf 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1755,6 +1755,9 @@ static void ixgbe_process_skb_fields(struct ixgbe_ring *rx_ring,
+@@ -10327,6 +10327,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 					 NETIF_F_FCOE_MTU;
+ 	}
+ #endif /* IXGBE_FCOE */
++	ixgbe_init_ipsec_offload(adapter);
  
- 	skb_record_rx_queue(skb, rx_ring->queue_index);
- 
-+	if (ixgbe_test_staterr(rx_desc, IXGBE_RXDADV_STAT_SECP))
-+		ixgbe_ipsec_rx(rx_ring, rx_desc, skb);
-+
- 	skb->protocol = eth_type_trans(skb, dev);
- }
- 
+ 	if (adapter->flags2 & IXGBE_FLAG2_RSC_CAPABLE)
+ 		netdev->hw_features |= NETIF_F_LRO;
 -- 
 2.7.4
 
