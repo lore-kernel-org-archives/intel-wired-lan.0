@@ -1,40 +1,85 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Wed, 6 Dec 2017 10:47:47 +0100
-Subject: [Intel-wired-lan] [PATCH] e1000e: Taint a HW lockup
-In-Reply-To: <151249715301.700.15883625561601294827@mail.alporthouse.com>
-References: <20171205180000.23637-1-chris@chris-wilson.co.uk>
- <151249715301.700.15883625561601294827@mail.alporthouse.com>
-Message-ID: <CAKMK7uGL4-qM=in3TiHfsJz-sJQRTMx+xRnh7MbXNmUBhskaOA@mail.gmail.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 06 Dec 2017 08:24:56 -0800
+Subject: [Intel-wired-lan] [PATCH 1/1] timecounter: Make cyclecounter
+ struct part of timecounter struct
+In-Reply-To: <1512189095-28654-1-git-send-email-sagar.a.kamble@intel.com>
+References: <1512189095-28654-1-git-send-email-sagar.a.kamble@intel.com>
+Message-ID: <1512577496.8693.0.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Dec 5, 2017 at 7:05 PM, Chris Wilson <chris@chris-wilson.co.uk> wrote:
-> Quoting Chris Wilson (2017-12-05 18:00:00)
->> When we see an e1000e HW lockup in CI, it is typically fatal with the
->> hang repeating until the host is forcibly rebooted. Speed up that
->> process by tainting the kernel, which CI can trivially detect (and is
->> being used to detect similarly fatal CI conditions) and reboot soon
->> after.
->>
->> Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
->> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
->> Cc: Tomi Sarvela <tomi.p.sarvela@intel.com>
->
-> I'm not concerned on selling this to e1000e, but if it helps improving
-> CI robustness, then topic/core-for-CI. Or maybe we should create a new
-> topic, Daniel? topic/taints-for-CI?
+On Sat, 2017-12-02 at 10:01 +0530, Sagar Arun Kamble wrote:
+> There is no real need for the users of timecounters to define
+> cyclecounter
+> and timecounter variables separately. Since timecounter will always
+> be
+> based on cyclecounter, have cyclecounter struct as member of
+> timecounter
+> struct.
+> 
+> Suggested-by: Chris Wilson <chris@chris-wilson.co.uk>
+> Signed-off-by: Sagar Arun Kamble <sagar.a.kamble@intel.com>
+> Cc: Chris Wilson <chris@chris-wilson.co.uk>
+> Cc: Richard Cochran <richardcochran@gmail.com>
+> Cc: John Stultz <john.stultz@linaro.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Stephen Boyd <sboyd@codeaurora.org>
+> Cc: linux-kernel at vger.kernel.org
+> Cc: linux-arm-kernel at lists.infradead.org
+> Cc: netdev at vger.kernel.org
+> Cc: intel-wired-lan at lists.osuosl.org
+> Cc: linux-rdma at vger.kernel.org
+> Cc: alsa-devel at alsa-project.org
+> Cc: kvmarm at lists.cs.columbia.edu
 
-Sounds like a usable idea for CI. Would be especially interesting
-because despite applying the suggested w/a, we still hit lockups.
-Before we do that though I think we should get an ack from the e1000e
-team. Jani S. maybe something you can driver?
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Adding more folks to cc.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+For the changes to the Intel drivers.
+
+> ---
+>  arch/microblaze/kernel/timer.c                     | 20 ++++++------
+>  drivers/clocksource/arm_arch_timer.c               | 19 ++++++------
+>  drivers/net/ethernet/amd/xgbe/xgbe-dev.c           |  3 +-
+>  drivers/net/ethernet/amd/xgbe/xgbe-ptp.c           |  9 +++---
+>  drivers/net/ethernet/amd/xgbe/xgbe.h               |  1 -
+>  drivers/net/ethernet/broadcom/bnx2x/bnx2x.h        |  1 -
+>  drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c   | 20 ++++++------
+>  drivers/net/ethernet/freescale/fec.h               |  1 -
+>  drivers/net/ethernet/freescale/fec_ptp.c           | 30 +++++++++---
+> ------
+>  drivers/net/ethernet/intel/e1000e/e1000.h          |  1 -
+>  drivers/net/ethernet/intel/e1000e/netdev.c         | 27 ++++++++--
+> ------
+>  drivers/net/ethernet/intel/e1000e/ptp.c            |  2 +-
+>  drivers/net/ethernet/intel/igb/igb.h               |  1 -
+>  drivers/net/ethernet/intel/igb/igb_ptp.c           | 25 ++++++++--
+> -----
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h           |  1 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c       | 17 +++++-----
+>  drivers/net/ethernet/mellanox/mlx4/en_clock.c      | 28 ++++++++--
+> -------
+>  drivers/net/ethernet/mellanox/mlx4/mlx4_en.h       |  1 -
+>  .../net/ethernet/mellanox/mlx5/core/lib/clock.c    | 34 ++++++++++
+> ----------
+>  drivers/net/ethernet/qlogic/qede/qede_ptp.c        | 20 ++++++------
+>  drivers/net/ethernet/ti/cpts.c                     | 36
+> ++++++++++++----------
+>  drivers/net/ethernet/ti/cpts.h                     |  1 -
+>  include/linux/mlx5/driver.h                        |  1 -
+>  include/linux/timecounter.h                        |  4 +--
+>  include/sound/hdaudio.h                            |  1 -
+>  kernel/time/timecounter.c                          | 28 ++++++++--
+> -------
+>  sound/hda/hdac_stream.c                            |  7 +++--
+>  virt/kvm/arm/arch_timer.c                          |  6 ++--
+>  28 files changed, 163 insertions(+), 182 deletions(-)
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171206/25c2f7ee/attachment.asc>
