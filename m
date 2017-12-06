@@ -1,45 +1,46 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed,  6 Dec 2017 09:25:10 -0800
-Subject: [Intel-wired-lan] [PATCH 1/6] fm10k: cleanup unnecessary
- parenthesis in fm10k_iov.c
-Message-ID: <20171206172515.37577-1-jeffrey.t.kirsher@intel.com>
+Date: Wed,  6 Dec 2017 09:25:15 -0800
+Subject: [Intel-wired-lan] [PATCH 6/6] fm10k: clarify action when updating
+ the VLAN table
+In-Reply-To: <20171206172515.37577-1-jeffrey.t.kirsher@intel.com>
+References: <20171206172515.37577-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20171206172515.37577-6-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 
-This fixes a few warnings found by checkpatch.pl --strict
+Clarify the comment for when entering promiscuous mode that we update
+the VLAN table. Add a comment distinguishing the case where we're
+exiting promiscuous mode and need to clear the entire VLAN table.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@gmail.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_iov.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-index ea3ab24265ee..760cfa52d02c 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-@@ -353,7 +353,7 @@ int fm10k_iov_resume(struct pci_dev *pdev)
- 		struct fm10k_vf_info *vf_info = &iov_data->vf_info[i];
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index ec91eabbb723..f1cfa1a1586a 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -1165,10 +1165,12 @@ static void fm10k_set_rx_mode(struct net_device *dev)
  
- 		/* allocate all but the last GLORT to the VFs */
--		if (i == ((~hw->mac.dglort_map) >> FM10K_DGLORTMAP_MASK_SHIFT))
-+		if (i == (~hw->mac.dglort_map >> FM10K_DGLORTMAP_MASK_SHIFT))
- 			break;
+ 	/* update xcast mode first, but only if it changed */
+ 	if (interface->xcast_mode != xcast_mode) {
+-		/* update VLAN table */
++		/* update VLAN table when entering promiscuous mode */
+ 		if (xcast_mode == FM10K_XCAST_MODE_PROMISC)
+ 			fm10k_queue_vlan_request(interface, FM10K_VLAN_ALL,
+ 						 0, true);
++
++		/* clear VLAN table when exiting promiscuous mode */
+ 		if (interface->xcast_mode == FM10K_XCAST_MODE_PROMISC)
+ 			fm10k_clear_unused_vlans(interface);
  
- 		/* assign GLORT to VF, and restrict it to multicast */
-@@ -511,7 +511,7 @@ int fm10k_iov_configure(struct pci_dev *pdev, int num_vfs)
- 		return err;
- 
- 	/* allocate VFs if not already allocated */
--	if (num_vfs && (num_vfs != current_vfs)) {
-+	if (num_vfs && num_vfs != current_vfs) {
- 		/* Disable completer abort error reporting as
- 		 * the VFs can trigger this any time they read a queue
- 		 * that they don't own.
 -- 
 2.15.0
 
