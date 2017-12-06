@@ -1,281 +1,40 @@
-From: Tushar Dave <tushar.n.dave@oracle.com>
-Date: Wed, 6 Dec 2017 00:49:06 +0530
-Subject: [Intel-wired-lan] [e1000_shutdown] e1000 0000:00:03.0:
- disabling already-disabled device
-In-Reply-To: <20171204113357.ccc3anyrl3pn7yuj@wfg-t540p.sh.intel.com>
-References: <20171121124148.poknfqmuef32tbdn@wfg-t540p.sh.intel.com>
- <7fe10136-8f99-c0e8-2a3a-93c34915a95a@oracle.com>
- <20171122231324.dofyw6maxkh5frqv@wfg-t540p.sh.intel.com>
- <97fc7c6e-cc19-dfcf-c1cc-353f7ebf1ceb@oracle.com>
- <20171204113357.ccc3anyrl3pn7yuj@wfg-t540p.sh.intel.com>
-Message-ID: <fc82d5ac-5d3d-ff63-0fc6-bb99a847f0d6@oracle.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Wed, 6 Dec 2017 10:47:47 +0100
+Subject: [Intel-wired-lan] [PATCH] e1000e: Taint a HW lockup
+In-Reply-To: <151249715301.700.15883625561601294827@mail.alporthouse.com>
+References: <20171205180000.23637-1-chris@chris-wilson.co.uk>
+ <151249715301.700.15883625561601294827@mail.alporthouse.com>
+Message-ID: <CAKMK7uGL4-qM=in3TiHfsJz-sJQRTMx+xRnh7MbXNmUBhskaOA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Tue, Dec 5, 2017 at 7:05 PM, Chris Wilson <chris@chris-wilson.co.uk> wrote:
+> Quoting Chris Wilson (2017-12-05 18:00:00)
+>> When we see an e1000e HW lockup in CI, it is typically fatal with the
+>> hang repeating until the host is forcibly rebooted. Speed up that
+>> process by tainting the kernel, which CI can trivially detect (and is
+>> being used to detect similarly fatal CI conditions) and reboot soon
+>> after.
+>>
+>> Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+>> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+>> Cc: Tomi Sarvela <tomi.p.sarvela@intel.com>
+>
+> I'm not concerned on selling this to e1000e, but if it helps improving
+> CI robustness, then topic/core-for-CI. Or maybe we should create a new
+> topic, Daniel? topic/taints-for-CI?
 
+Sounds like a usable idea for CI. Would be especially interesting
+because despite applying the suggested w/a, we still hit lockups.
+Before we do that though I think we should get an ack from the e1000e
+team. Jani S. maybe something you can driver?
 
-On 12/04/2017 05:03 PM, Fengguang Wu wrote:
-> Hi Tushar,
-> 
-> On Tue, Nov 28, 2017 at 01:01:23AM +0530, Tushar Dave wrote:
->>
->>
->> On 11/23/2017 04:43 AM, Fengguang Wu wrote:
->>> On Wed, Nov 22, 2017 at 03:40:52AM +0530, Tushar Dave wrote:
->>>>
->>>>
->>>> On 11/21/2017 06:11 PM, Fengguang Wu wrote:
->>>>> Hello,
->>>>>
->>>>> FYI this happens in mainline kernel 4.14.0-01330-g3c07399.
->>>>> It happens since 4.13 .
->>>>>
->>>>> It occurs in 3 out of 162 boots.
->>>>>
->>>>>
->>>>> [?? 44.637743] advantechwdt: Unexpected close, not stopping watchdog!
->>>>> [?? 44.997548] input: ImExPS/2 Generic Explorer Mouse as
->>>>> /devices/platform/i8042/serio1/input/input6
->>>>> [?? 45.013419] e1000 0000:00:03.0: disabling already-disabled device
->>>>> [?? 45.013447] ------------[ cut here ]------------
->>>>> [?? 45.014868] WARNING: CPU: 1 PID: 71 at drivers/pci/pci.c:1641
->>>>> pci_disable_device+0xa1/0x105:
->>>>> ??????????????????????? pci_disable_device at drivers/pci/pci.c:1640
->>>>> [?? 45.016171] CPU: 1 PID: 71 Comm: rcu_perf_shutdo Not tainted
->>>>> 4.14.0-01330-g3c07399 #1
->>>>> [?? 45.017197] task: ffff88011bee9e40 task.stack: ffffc90000860000
->>>>> [?? 45.017987] RIP: 0010:pci_disable_device+0xa1/0x105:
->>>>> ??????????????????????? pci_disable_device at drivers/pci/pci.c:1640
->>>>> [?? 45.018603] RSP: 0000:ffffc90000863e30 EFLAGS: 00010286
->>>>> [?? 45.019282] RAX: 0000000000000035 RBX: ffff88013a230008 RCX:
->>>>> 0000000000000000
->>>>> [?? 45.020182] RDX: 0000000000000000 RSI: 0000000000000000 RDI:
->>>>> 0000000000000203
->>>>> [?? 45.021084] RBP: ffff88013a3f31e8 R08: 0000000000000001 R09:
->>>>> 0000000000000000
->>>>> [?? 45.021986] R10: ffffffff827ec29c R11: 0000000000000002 R12:
->>>>> 0000000000000001
->>>>> [?? 45.022946] R13: ffff88013a230008 R14: ffff880117802b20 R15:
->>>>> ffffc90000863e8f
->>>>> [?? 45.023842] FS:? 0000000000000000(0000) GS:ffff88013fd00000(0000)
->>>>> knlGS:0000000000000000
->>>>> [?? 45.024863] CS:? 0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->>>>> [?? 45.025583] CR2: ffffc900006d4000 CR3: 000000000220f000 CR4:
->>>>> 00000000000006a0
->>>>> [?? 45.026478] Call Trace:
->>>>> [?? 45.026811]? __e1000_shutdown+0x1d4/0x1e2:
->>>>> ??????????????????????? __e1000_shutdown at
->>>>> drivers/net/ethernet/intel/e1000/e1000_main.c:5162
->>>>> [?? 45.027344]? ? rcu_perf_cleanup+0x2a1/0x2a1:
->>>>> ??????????????????????? rcu_perf_shutdown at kernel/rcu/rcuperf.c:627
->>>>> [?? 45.027883]? e1000_shutdown+0x14/0x3a:
->>>>> ??????????????????????? e1000_shutdown at
->>>>> drivers/net/ethernet/intel/e1000/e1000_main.c:5235
->>>>> [?? 45.028351]? device_shutdown+0x110/0x1aa:
->>>>> ??????????????????????? device_shutdown at drivers/base/core.c:2807
->>>>> [?? 45.028858]? kernel_power_off+0x31/0x64:
->>>>> ??????????????????????? kernel_power_off at kernel/reboot.c:260
->>>>> [?? 45.029343]? rcu_perf_shutdown+0x9b/0xa7:
->>>>> ??????????????????????? rcu_perf_shutdown at kernel/rcu/rcuperf.c:637
->>>>> [?? 45.029852]? ? __wake_up_common_lock+0xa2/0xa2:
->>>>> ??????????????????????? autoremove_wake_function at
->>>>> kernel/sched/wait.c:376
->>>>> [?? 45.030414]? kthread+0x126/0x12e:
->>>>> ??????????????????????? kthread at kernel/kthread.c:233
->>>>> [?? 45.030834]? ? __kthread_bind_mask+0x8e/0x8e:
->>>>> ??????????????????????? kthread at kernel/kthread.c:190
->>>>> [?? 45.031399]? ? ret_from_fork+0x1f/0x30:
->>>>> ??????????????????????? ret_from_fork at arch/x86/entry/entry_64.S:443
->>>>> [?? 45.031883]? ? kernel_init+0xa/0xf5:
->>>>> ??????????????????????? kernel_init at init/main.c:997
->>>>> [?? 45.032325]? ret_from_fork+0x1f/0x30:
->>>>> ??????????????????????? ret_from_fork at arch/x86/entry/entry_64.S:443
->>>>> [?? 45.032777] Code: 00 48 85 ed 75 07 48 8b ab a8 00 00 00 48 8d bb
->>>>> 98 00 00 00 e8 aa d1 11 00 48 89 ea 48 89 c6 48 c7 c7 d8 e4 0b 82 e8
->>>>> 55 7d da ff <0f> ff b9 01 00 00 00 31 d2 be 01 00 00 00 48 c7 c7 f0
->>>>> b1 61 82
->>>>> [?? 45.035222] ---[ end trace c257137b1b1976ef ]---
->>>>> [?? 45.037838] ACPI: Preparing to enter system sleep state S5
->>>>>
->>>>> Attached the full dmesg, kconfig and reproduce scripts.
->>>> Looks like e1000 pci/pxi-x device is already suspended. And therefore
->>>> call to e1000_suspend() -> __e1000_shutdown() -> pci_disable_device()
->>>> already had disabled the device.
->>>> Disabling device again by e1000_shutdown handler during system shutdown
->>>> causes warning at drivers/pci/pci.c:1641.
->>>>
->>>> I think function __e1000_shutdown should just return if device is
->>>> already suspended!
->>>>
->>>> I don't have e1000 hardware to test right now. So if this seems logical
->>>> to others I will send a patch.
->>>
->>> Tushar, it happens on QEMU boot testing, so do not rely on e1000 HW.
->>> Unless you'd like to prevent regressions on real HW.
->>>
->>> The original report attached a reproduce script to run the QEMU test.
->>> Or you may send me the patch for testing.
->> Fengguang,
->>
->> Would you please try this patch and test. The patch is compile tested
->> only. The patch is similar to how ixgbe handled the issue.
->> Thanks.
->>
->> e1000: fix disabling already-disabled warning
->>
->> This patch adds check so that driver does not disable already
->> disabled device.
-> 
-> It works! I tried 100 boots and the "e1000 0000:00:03.0: disabling
-> already-disabled device" error no longer show up.
-> 
-> Tested-by: Fengguang Wu <fengguang.wu@intel.com>
-Fengguang,
-
-Thanks for testing. I will send patch soon.
-
--Tushar
-> 
-> Thanks,
-> Fengguang
-> 
->> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
->> ---
->> ?drivers/net/ethernet/intel/e1000/e1000.h????? |? 3 ++-
->> ?drivers/net/ethernet/intel/e1000/e1000_main.c | 23 
->> ++++++++++++++++++-----
->> ?2 files changed, 20 insertions(+), 6 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/e1000/e1000.h
->> b/drivers/net/ethernet/intel/e1000/e1000.h
->> index d7bdea7..8fd2458 100644
->> --- a/drivers/net/ethernet/intel/e1000/e1000.h
->> +++ b/drivers/net/ethernet/intel/e1000/e1000.h
->> @@ -331,7 +331,8 @@ struct e1000_adapter {
->> ?enum e1000_state_t {
->> ???? __E1000_TESTING,
->> ???? __E1000_RESETTING,
->> -??? __E1000_DOWN
->> +??? __E1000_DOWN,
->> +??? __E1000_DISABLED
->> ?};
->>
->> ?#undef pr_fmt
->> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c
->> b/drivers/net/ethernet/intel/e1000/e1000_main.c
->> index 1982f79..a7de31d 100644
->> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
->> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
->> @@ -945,7 +945,7 @@ static int e1000_init_hw_struct(struct e1000_adapter
->> *adapter,
->> ?static int e1000_probe(struct pci_dev *pdev, const struct
->> pci_device_id *ent)
->> ?{
->> ???? struct net_device *netdev;
->> -??? struct e1000_adapter *adapter;
->> +??? struct e1000_adapter *adapter = NULL;
->> ???? struct e1000_hw *hw;
->>
->> ???? static int cards_found;
->> @@ -955,6 +955,7 @@ static int e1000_probe(struct pci_dev *pdev, const
->> struct pci_device_id *ent)
->> ???? u16 tmp = 0;
->> ???? u16 eeprom_apme_mask = E1000_EEPROM_APME;
->> ???? int bars, need_ioport;
->> +??? bool disable_dev = false;
->>
->> ???? /* do not allocate ioport bars when not needed */
->> ???? need_ioport = e1000_is_need_ioport(pdev);
->> @@ -1259,11 +1260,13 @@ static int e1000_probe(struct pci_dev *pdev,
->> const struct pci_device_id *ent)
->> ???? iounmap(hw->ce4100_gbe_mdio_base_virt);
->> ???? iounmap(hw->hw_addr);
->> ?err_ioremap:
->> +??? disable_dev = !test_and_set_bit(__E1000_DISABLED, &adapter->flags);
->> ???? free_netdev(netdev);
->> ?err_alloc_etherdev:
->> ???? pci_release_selected_regions(pdev, bars);
->> ?err_pci_reg:
->> -??? pci_disable_device(pdev);
->> +??? if (!adapter || disable_dev)
->> +??????? pci_disable_device(pdev);
->> ???? return err;
->> ?}
->>
->> @@ -1281,6 +1284,7 @@ static void e1000_remove(struct pci_dev *pdev)
->> ???? struct net_device *netdev = pci_get_drvdata(pdev);
->> ???? struct e1000_adapter *adapter = netdev_priv(netdev);
->> ???? struct e1000_hw *hw = &adapter->hw;
->> +??? bool disable_dev;
->>
->> ???? e1000_down_and_stop(adapter);
->> ???? e1000_release_manageability(adapter);
->> @@ -1299,9 +1303,11 @@ static void e1000_remove(struct pci_dev *pdev)
->> ???????? iounmap(hw->flash_address);
->> ???? pci_release_selected_regions(pdev, adapter->bars);
->>
->> +??? disable_dev = !test_and_set_bit(__E1000_DISABLED, &adapter->flags);
->> ???? free_netdev(netdev);
->>
->> -??? pci_disable_device(pdev);
->> +??? if (disable_dev)
->> +??????? pci_disable_device(pdev);
->> ?}
->>
->> ?/**
->> @@ -5156,7 +5162,8 @@ static int __e1000_shutdown(struct pci_dev *pdev,
->> bool *enable_wake)
->> ???? if (netif_running(netdev))
->> ???????? e1000_free_irq(adapter);
->>
->> -??? pci_disable_device(pdev);
->> +??? if (!test_and_set_bit(__E1000_DISABLED, &adapter->flags))
->> +??????? pci_disable_device(pdev);
->>
->> ???? return 0;
->> ?}
->> @@ -5200,6 +5207,8 @@ static int e1000_resume(struct pci_dev *pdev)
->> ???????? pr_err("Cannot enable PCI device from suspend\n");
->> ???????? return err;
->> ???? }
->> +??? smp_mb__before_atomic();
->> +??? clear_bit(__E1000_DISABLED, &adapter->flags);
->> ???? pci_set_master(pdev);
->>
->> ???? pci_enable_wake(pdev, PCI_D3hot, 0);
->> @@ -5274,7 +5283,9 @@ static pci_ers_result_t
->> e1000_io_error_detected(struct pci_dev *pdev,
->>
->> ???? if (netif_running(netdev))
->> ???????? e1000_down(adapter);
->> -??? pci_disable_device(pdev);
->> +
->> +??? if (!test_and_set_bit(__E1000_DISABLED, &adapter->flags))
->> +??????? pci_disable_device(pdev);
->>
->> ???? /* Request a slot slot reset. */
->> ???? return PCI_ERS_RESULT_NEED_RESET;
->> @@ -5302,6 +5313,8 @@ static pci_ers_result_t e1000_io_slot_reset(struct
->> pci_dev *pdev)
->> ???????? pr_err("Cannot re-enable PCI device after reset.\n");
->> ???????? return PCI_ERS_RESULT_DISCONNECT;
->> ???? }
->> +??? smp_mb__before_atomic();
->> +??? clear_bit(__E1000_DISABLED, &adapter->flags);
->> ???? pci_set_master(pdev);
->>
->> ???? pci_enable_wake(pdev, PCI_D3hot, 0);
->> -- 
->> 1.8.3.1
->>
->>
->> -Tushar
->>>
->>> Thanks,
->>> Fengguang
->>>
->>
-> 
+Adding more folks to cc.
+-Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch
