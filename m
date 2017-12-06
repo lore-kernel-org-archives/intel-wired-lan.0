@@ -1,85 +1,40 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 06 Dec 2017 08:24:56 -0800
-Subject: [Intel-wired-lan] [PATCH 1/1] timecounter: Make cyclecounter
- struct part of timecounter struct
-In-Reply-To: <1512189095-28654-1-git-send-email-sagar.a.kamble@intel.com>
-References: <1512189095-28654-1-git-send-email-sagar.a.kamble@intel.com>
-Message-ID: <1512577496.8693.0.camel@intel.com>
+Date: Wed,  6 Dec 2017 09:25:14 -0800
+Subject: [Intel-wired-lan] [PATCH 5/6] fm10k: correct typo in fm10k_pf.c
+In-Reply-To: <20171206172515.37577-1-jeffrey.t.kirsher@intel.com>
+References: <20171206172515.37577-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20171206172515.37577-5-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, 2017-12-02 at 10:01 +0530, Sagar Arun Kamble wrote:
-> There is no real need for the users of timecounters to define
-> cyclecounter
-> and timecounter variables separately. Since timecounter will always
-> be
-> based on cyclecounter, have cyclecounter struct as member of
-> timecounter
-> struct.
-> 
-> Suggested-by: Chris Wilson <chris@chris-wilson.co.uk>
-> Signed-off-by: Sagar Arun Kamble <sagar.a.kamble@intel.com>
-> Cc: Chris Wilson <chris@chris-wilson.co.uk>
-> Cc: Richard Cochran <richardcochran@gmail.com>
-> Cc: John Stultz <john.stultz@linaro.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Stephen Boyd <sboyd@codeaurora.org>
-> Cc: linux-kernel at vger.kernel.org
-> Cc: linux-arm-kernel at lists.infradead.org
-> Cc: netdev at vger.kernel.org
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: linux-rdma at vger.kernel.org
-> Cc: alsa-devel at alsa-project.org
-> Cc: kvmarm at lists.cs.columbia.edu
+From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-For the changes to the Intel drivers.
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 425d814aed4d..d6406fc31ffb 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -866,7 +866,7 @@ static s32 fm10k_iov_assign_default_mac_vlan_pf(struct fm10k_hw *hw,
+ 	/* Determine correct default VLAN ID. The FM10K_VLAN_OVERRIDE bit is
+ 	 * used here to indicate to the VF that it will not have privilege to
+ 	 * write VLAN_TABLE. All policy is enforced on the PF but this allows
+-	 * the VF to correctly report errors to userspace rqeuests.
++	 * the VF to correctly report errors to userspace requests.
+ 	 */
+ 	if (vf_info->pf_vid)
+ 		vf_vid = vf_info->pf_vid | FM10K_VLAN_OVERRIDE;
+-- 
+2.15.0
 
-> ---
->  arch/microblaze/kernel/timer.c                     | 20 ++++++------
->  drivers/clocksource/arm_arch_timer.c               | 19 ++++++------
->  drivers/net/ethernet/amd/xgbe/xgbe-dev.c           |  3 +-
->  drivers/net/ethernet/amd/xgbe/xgbe-ptp.c           |  9 +++---
->  drivers/net/ethernet/amd/xgbe/xgbe.h               |  1 -
->  drivers/net/ethernet/broadcom/bnx2x/bnx2x.h        |  1 -
->  drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c   | 20 ++++++------
->  drivers/net/ethernet/freescale/fec.h               |  1 -
->  drivers/net/ethernet/freescale/fec_ptp.c           | 30 +++++++++---
-> ------
->  drivers/net/ethernet/intel/e1000e/e1000.h          |  1 -
->  drivers/net/ethernet/intel/e1000e/netdev.c         | 27 ++++++++--
-> ------
->  drivers/net/ethernet/intel/e1000e/ptp.c            |  2 +-
->  drivers/net/ethernet/intel/igb/igb.h               |  1 -
->  drivers/net/ethernet/intel/igb/igb_ptp.c           | 25 ++++++++--
-> -----
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h           |  1 -
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c       | 17 +++++-----
->  drivers/net/ethernet/mellanox/mlx4/en_clock.c      | 28 ++++++++--
-> -------
->  drivers/net/ethernet/mellanox/mlx4/mlx4_en.h       |  1 -
->  .../net/ethernet/mellanox/mlx5/core/lib/clock.c    | 34 ++++++++++
-> ----------
->  drivers/net/ethernet/qlogic/qede/qede_ptp.c        | 20 ++++++------
->  drivers/net/ethernet/ti/cpts.c                     | 36
-> ++++++++++++----------
->  drivers/net/ethernet/ti/cpts.h                     |  1 -
->  include/linux/mlx5/driver.h                        |  1 -
->  include/linux/timecounter.h                        |  4 +--
->  include/sound/hdaudio.h                            |  1 -
->  kernel/time/timecounter.c                          | 28 ++++++++--
-> -------
->  sound/hda/hdac_stream.c                            |  7 +++--
->  virt/kvm/arm/arch_timer.c                          |  6 ++--
->  28 files changed, 163 insertions(+), 182 deletions(-)
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171206/25c2f7ee/attachment.asc>
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
