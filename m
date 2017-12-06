@@ -1,92 +1,116 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed,  6 Dec 2017 09:25:13 -0800
-Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: don't assume VLAN 1 is enabled
-In-Reply-To: <20171206172515.37577-1-jeffrey.t.kirsher@intel.com>
-References: <20171206172515.37577-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20171206172515.37577-4-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 07 Dec 2017 01:38:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ ef6435149ab9271bf4421431481260b1fc39f6b1
+Message-ID: <5a282b1f.oDDbCyHhfh6rUHv4%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: ef6435149ab9271bf4421431481260b1fc39f6b1  fm10k: Fix configuration for macvlan offload
 
-Since commit 856dfd69e84f ("fm10k: Fix multicast mode synch issues",
-2016-03-03) we've incorrectly assumed that VLAN 1 is enabled when the
-default VID is not set.
+elapsed time: 53m
 
-This occurs because we check the default_vid and if it's zero, start
-several loops over the active_vlans bitmask at 1, instead of checking to
-ensure that that bit is active.
+configs tested: 92
 
-This happened because of commit d9ff3ee8efe9 ("fm10k: Add support for
-VLAN 0 w/o default VLAN", 2014-08-07) which mistakenly assumed that we
-should send requests for MAC and VLAN filters with VLAN 0 when the
-default_vid isn't set.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-However, the switch generally considers this an invalid configuration,
-so the only time we'd have a default_vid of 0 is when the switch is
-down.
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                     randconfig-n0-201749
+x86_64                 randconfig-x004-201749
+x86_64                 randconfig-x008-201749
+x86_64                 randconfig-x001-201749
+x86_64                 randconfig-x000-201749
+x86_64                 randconfig-x009-201749
+x86_64                 randconfig-x003-201749
+x86_64                 randconfig-x006-201749
+x86_64                 randconfig-x007-201749
+x86_64                 randconfig-x005-201749
+x86_64                 randconfig-x002-201749
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x011-201749
+x86_64                 randconfig-x018-201749
+x86_64                 randconfig-x017-201749
+x86_64                 randconfig-x012-201749
+x86_64                 randconfig-x019-201749
+x86_64                 randconfig-x013-201749
+x86_64                 randconfig-x010-201749
+x86_64                 randconfig-x015-201749
+x86_64                 randconfig-x014-201749
+x86_64                 randconfig-x016-201749
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                      pxa255-idp_defconfig
+powerpc                       ep405_defconfig
+um                                  defconfig
+i386                   randconfig-x014-201749
+i386                   randconfig-x013-201749
+i386                   randconfig-x015-201749
+i386                   randconfig-x019-201749
+i386                   randconfig-x018-201749
+i386                   randconfig-x011-201749
+i386                   randconfig-x017-201749
+i386                   randconfig-x012-201749
+i386                   randconfig-x010-201749
+i386                   randconfig-x016-201749
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                   randconfig-x001-201749
+i386                   randconfig-x003-201749
+i386                   randconfig-x004-201749
+i386                   randconfig-x002-201749
+i386                   randconfig-x008-201749
+i386                   randconfig-x006-201749
+i386                   randconfig-x009-201749
+i386                   randconfig-x000-201749
+i386                   randconfig-x005-201749
+i386                   randconfig-x007-201749
 
-Instead, lets just not request any filters for the default_vid if it's
-not yet been assigned.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index d79bff7c23f7..ec91eabbb723 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -1050,14 +1050,13 @@ static int __fm10k_uc_sync(struct net_device *dev,
- 			   const unsigned char *addr, bool sync)
- {
- 	struct fm10k_intfc *interface = netdev_priv(dev);
--	struct fm10k_hw *hw = &interface->hw;
- 	u16 vid, glort = interface->glort;
- 	s32 err;
- 
- 	if (!is_valid_ether_addr(addr))
- 		return -EADDRNOTAVAIL;
- 
--	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 1;
-+	for (vid = fm10k_find_next_vlan(interface, 0);
- 	     vid < VLAN_N_VID;
- 	     vid = fm10k_find_next_vlan(interface, vid)) {
- 		err = fm10k_queue_mac_request(interface, glort,
-@@ -1116,14 +1115,13 @@ static int __fm10k_mc_sync(struct net_device *dev,
- 			   const unsigned char *addr, bool sync)
- {
- 	struct fm10k_intfc *interface = netdev_priv(dev);
--	struct fm10k_hw *hw = &interface->hw;
- 	u16 vid, glort = interface->glort;
- 	s32 err;
- 
- 	if (!is_multicast_ether_addr(addr))
- 		return -EADDRNOTAVAIL;
- 
--	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 1;
-+	for (vid = fm10k_find_next_vlan(interface, 0);
- 	     vid < VLAN_N_VID;
- 	     vid = fm10k_find_next_vlan(interface, vid)) {
- 		err = fm10k_queue_mac_request(interface, glort,
-@@ -1222,7 +1220,7 @@ void fm10k_restore_rx_state(struct fm10k_intfc *interface)
- 				 xcast_mode == FM10K_XCAST_MODE_PROMISC);
- 
- 	/* update table with current entries */
--	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 1;
-+	for (vid = fm10k_find_next_vlan(interface, 0);
- 	     vid < VLAN_N_VID;
- 	     vid = fm10k_find_next_vlan(interface, vid)) {
- 		fm10k_queue_vlan_request(interface, vid, 0, true);
--- 
-2.15.0
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
+Thanks,
+Fengguang
