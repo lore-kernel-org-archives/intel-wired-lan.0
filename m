@@ -1,35 +1,159 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 6 Dec 2017 18:24:08 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbevf: Fix kernel-doc format
- warnings
-In-Reply-To: <20171204192831.18344-2-anthony.l.nguyen@intel.com>
-References: <20171204192831.18344-1-anthony.l.nguyen@intel.com>
- <20171204192831.18344-2-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A10EB0978@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 07 Dec 2017 02:56:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ fac65ab45f5426ccaa5c1a95d260efaf567e0506
+Message-ID: <5a283d67.oBewpLmfUIijikDf%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Monday, December 4, 2017 11:29 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 2/2] ixgbevf: Fix kernel-doc format
-> warnings
-> 
-> Recent checks added for formatting kernel-doc comments are causing
-> warnings if W= is run with a non-zero value.  This patch fixes function
-> comments to resolve warnings when W=1 is used.
-> 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  6 +++---
->  drivers/net/ethernet/intel/ixgbevf/vf.c           | 17 +++++++++++++++--
->  2 files changed, 18 insertions(+), 5 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: fac65ab45f5426ccaa5c1a95d260efaf567e0506  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 125m
 
+configs tested: 136
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+m32r                             alldefconfig
+mips                        qi_lb60_defconfig
+powerpc                 linkstation_defconfig
+i386                   randconfig-x014-201749
+i386                   randconfig-x013-201749
+i386                   randconfig-x015-201749
+i386                   randconfig-x019-201749
+i386                   randconfig-x018-201749
+i386                   randconfig-x011-201749
+i386                   randconfig-x017-201749
+i386                   randconfig-x012-201749
+i386                   randconfig-x010-201749
+i386                   randconfig-x016-201749
+i386                     randconfig-n0-201749
+i386                     randconfig-i1-201749
+i386                     randconfig-i0-201749
+mips                             alldefconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                     randconfig-a0-201749
+i386                     randconfig-a1-201749
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x011-201749
+x86_64                 randconfig-x018-201749
+x86_64                 randconfig-x017-201749
+x86_64                 randconfig-x012-201749
+x86_64                 randconfig-x019-201749
+x86_64                 randconfig-x013-201749
+x86_64                 randconfig-x010-201749
+x86_64                 randconfig-x015-201749
+x86_64                 randconfig-x014-201749
+x86_64                 randconfig-x016-201749
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-s0-12061504
+i386                   randconfig-s1-12061504
+i386                             allmodconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+sh                            hp6xx_defconfig
+i386                   randconfig-x074-201749
+i386                   randconfig-x076-201749
+i386                   randconfig-x071-201749
+i386                   randconfig-x077-201749
+i386                   randconfig-x073-201749
+i386                   randconfig-x075-201749
+i386                   randconfig-x070-201749
+i386                   randconfig-x079-201749
+i386                   randconfig-x072-201749
+i386                   randconfig-x078-201749
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-x000-201749
+x86_64                 randconfig-x001-201749
+x86_64                 randconfig-x002-201749
+x86_64                 randconfig-x003-201749
+x86_64                 randconfig-x004-201749
+x86_64                 randconfig-x005-201749
+x86_64                 randconfig-x006-201749
+x86_64                 randconfig-x007-201749
+x86_64                 randconfig-x008-201749
+x86_64                 randconfig-x009-201749
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                   randconfig-x001-201749
+i386                   randconfig-x003-201749
+i386                   randconfig-x004-201749
+i386                   randconfig-x002-201749
+i386                   randconfig-x008-201749
+i386                   randconfig-x006-201749
+i386                   randconfig-x009-201749
+i386                   randconfig-x000-201749
+i386                   randconfig-x005-201749
+i386                   randconfig-x007-201749
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
