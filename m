@@ -1,91 +1,111 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 6 Dec 2017 21:43:59 -0800
-Subject: [Intel-wired-lan] [next-queue 10/10] ixgbe: register ipsec
- offload with the xfrm subsystem
-In-Reply-To: <CAKgT0Ue_PxNbqJL-7PprJ5V9M6gCd1ObJk+EXtJpwAJz-N+eew@mail.gmail.com>
-References: <1512452116-14795-1-git-send-email-shannon.nelson@oracle.com>
- <1512452116-14795-11-git-send-email-shannon.nelson@oracle.com>
- <CAKgT0Ue_PxNbqJL-7PprJ5V9M6gCd1ObJk+EXtJpwAJz-N+eew@mail.gmail.com>
-Message-ID: <a33c8156-444c-e661-7648-f3a3543065a1@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 07 Dec 2017 18:12:03 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 256a3c87d90c44562b13dd74322381f9b10f35fe
+Message-ID: <5a2913f3.LdU90+1Glt+1KZIw%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/5/2017 12:11 PM, Alexander Duyck wrote:
-> On Mon, Dec 4, 2017 at 9:35 PM, Shannon Nelson
-> <shannon.nelson@oracle.com> wrote:
->> With all the support code in place we can now link in the ipsec
->> offload operations and set the ESP feature flag for the XFRM
->> subsystem to see.
->>
->> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
->> ---
->>   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 4 ++++
->>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  | 4 ++++
->>   2 files changed, 8 insertions(+)
->>
->> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
->> index d1220bf..0d5497b 100644
->> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
->> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
->> @@ -884,6 +884,10 @@ void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter)
->>          ixgbe_ipsec_clear_hw_tables(adapter);
->>          ixgbe_ipsec_stop_engine(adapter);
->>
->> +       adapter->netdev->xfrmdev_ops = &ixgbe_xfrmdev_ops;
->> +       adapter->netdev->features |= NETIF_F_HW_ESP;
->> +       adapter->netdev->hw_enc_features |= NETIF_F_HW_ESP;
->> +
->>          return;
->>   err:
->>          if (ipsec) {
->> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> index c857594..9231351 100644
->> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> @@ -9799,6 +9799,10 @@ ixgbe_features_check(struct sk_buff *skb, struct net_device *dev,
->>          if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID))
->>                  features &= ~NETIF_F_TSO;
->>
->> +       /* IPsec offload doesn't get along well with others *yet* */
->> +       if (skb->sp)
->> +               features &= ~(NETIF_F_TSO | NETIF_F_HW_CSUM_BIT);
-> 
-> I'm pretty sure the feature flag stripping here isn't correct. The
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 256a3c87d90c44562b13dd74322381f9b10f35fe  fm10k: cleanup unnecessary parenthesis in fm10k_iov.c
 
-Well, first of all that NETIF_F_HW_CSUM_BIT should be NETIF_F_HW_CSUM.
+elapsed time: 758m
 
-> feature bits you want to strip would probably be consistent with the
-> network_hdr_len check bits included before the MANGLEID check.
-> 
-> We should do some digging into this as it may be a kernel issue. I'm
-> just wondering if ipsec updates any headers such as the transport
-> offset or skb checksum start. If either of those are updated that
-> would explain the issues with getting the offloads to work.
+configs tested: 87
 
-Doing this got the TSO and such out of my way so I didn't have to turn 
-tx csum off with ethtool, but you're right, this can be tweaked a little.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-There will be more digging later when I work on getting TSO and CSUM 
-working with ipsec offload, but I want to get these patches out first 
-now that they're working, and then tweak for more performance.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-x010-201749
+i386                   randconfig-x011-201749
+i386                   randconfig-x012-201749
+i386                   randconfig-x013-201749
+i386                   randconfig-x014-201749
+i386                   randconfig-x015-201749
+i386                   randconfig-x016-201749
+i386                   randconfig-x017-201749
+i386                   randconfig-x018-201749
+i386                   randconfig-x019-201749
+i386                     randconfig-n0-201749
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x010-201749
+x86_64                 randconfig-x011-201749
+x86_64                 randconfig-x012-201749
+x86_64                 randconfig-x013-201749
+x86_64                 randconfig-x014-201749
+x86_64                 randconfig-x015-201749
+x86_64                 randconfig-x016-201749
+x86_64                 randconfig-x017-201749
+x86_64                 randconfig-x018-201749
+x86_64                 randconfig-x019-201749
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201749
+i386                     randconfig-s1-201749
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                   randconfig-x000-201749
+i386                   randconfig-x001-201749
+i386                   randconfig-x002-201749
+i386                   randconfig-x003-201749
+i386                   randconfig-x004-201749
+i386                   randconfig-x005-201749
+i386                   randconfig-x006-201749
+i386                   randconfig-x007-201749
+i386                   randconfig-x008-201749
+i386                   randconfig-x009-201749
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-x000-201749
+x86_64                 randconfig-x001-201749
+x86_64                 randconfig-x002-201749
+x86_64                 randconfig-x003-201749
+x86_64                 randconfig-x004-201749
+x86_64                 randconfig-x005-201749
+x86_64                 randconfig-x006-201749
+x86_64                 randconfig-x007-201749
+x86_64                 randconfig-x008-201749
+x86_64                 randconfig-x009-201749
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
 
-
-Again, thanks for your time and thoughts.
-
-sln
-
-> 
->> +
->>          return features;
->>   }
->>
->> --
->> 2.7.4
->>
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Thanks,
+Fengguang
