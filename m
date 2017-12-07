@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 07 Dec 2017 07:17:53 +0800
+Date: Thu, 07 Dec 2017 08:04:28 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 88fd1f2a2f21ed85759bfde8cec1251f663be8a3
-Message-ID: <5a287aa1.XLBeag9w2u3lJvK0%fengguang.wu@intel.com>
+ cbcff8e97d994a49d98eba55d81c47aca0a9648b
+Message-ID: <5a28858c.A7Pnuh7DvNvKfjW8%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,15 +10,20 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 88fd1f2a2f21ed85759bfde8cec1251f663be8a3  fm10k: fix "failed to kill vid" message for VF
+branch HEAD: cbcff8e97d994a49d98eba55d81c47aca0a9648b  fm10k: stop adding VLAN 0 to the VLAN table
 
-elapsed time: 102m
+elapsed time: 124m
 
-configs tested: 188
+configs tested: 113
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
 blackfin                BF526-EZBRD_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
@@ -28,67 +33,11 @@ sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
-powerpc                          allyesconfig
-x86_64                randconfig-in0-12062028
-x86_64                randconfig-it0-12070144
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
 i386                     randconfig-n0-201749
-x86_64                 randconfig-x004-201749
-x86_64                 randconfig-x008-201749
-x86_64                 randconfig-x001-201749
-x86_64                 randconfig-x000-201749
-x86_64                 randconfig-x009-201749
-x86_64                 randconfig-x003-201749
-x86_64                 randconfig-x006-201749
-x86_64                 randconfig-x007-201749
-x86_64                 randconfig-x005-201749
-x86_64                 randconfig-x002-201749
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i1-201749
+i386         randconfig-n0-201749-CONFIG_DEBUG_INFO_REDUCED
 i386                     randconfig-i0-201749
-arm                            zeus_defconfig
-powerpc64                           defconfig
-x86_64                 randconfig-v0-12070159
-arm                          pxa168_defconfig
-m32r                        oaks32r_defconfig
-um                               alldefconfig
-x86_64                 randconfig-g0-12070359
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201749
-i386                     randconfig-a1-201749
-x86_64                 randconfig-s0-12070547
-x86_64                 randconfig-s1-12070547
-x86_64                 randconfig-s2-12070547
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                         axm55xx_defconfig
-cris                        etraxfs_defconfig
-m68k                       m5275evb_defconfig
-mips                    maltaup_xpa_defconfig
-powerpc                      cm5200_defconfig
+i386                     randconfig-i1-201749
+x86_64                 randconfig-g0-12070613
 x86_64                 randconfig-x011-201749
 x86_64                 randconfig-x018-201749
 x86_64                 randconfig-x017-201749
@@ -99,54 +48,14 @@ x86_64                 randconfig-x010-201749
 x86_64                 randconfig-x015-201749
 x86_64                 randconfig-x014-201749
 x86_64                 randconfig-x016-201749
-i386                   randconfig-s0-12061504
-i386                   randconfig-s1-12061504
-x86_64                 randconfig-s3-12070556
-x86_64                 randconfig-s4-12070556
-x86_64                 randconfig-s5-12070556
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201749
-i386                   randconfig-b0-12070545
-openrisc                    or1ksim_defconfig
-powerpc                  mpc885_ads_defconfig
-x86_64                           allmodconfig
-mips                           mtx1_defconfig
-powerpc                     taishan_defconfig
-arm                         s3c2410_defconfig
-cris                    etrax-100lx_defconfig
-mips                        qi_lb60_defconfig
-sh                           se7751_defconfig
-sh                              ul2_defconfig
-i386                   randconfig-x014-201749
-i386                   randconfig-x013-201749
-i386                   randconfig-x015-201749
-i386                   randconfig-x019-201749
-i386                   randconfig-x018-201749
-i386                   randconfig-x011-201749
-i386                   randconfig-x017-201749
-i386                   randconfig-x012-201749
-i386                   randconfig-x010-201749
-i386                   randconfig-x016-201749
-x86_64                 randconfig-h0-12070230
-arm                          simpad_defconfig
-mips                          malta_defconfig
-powerpc                          g5_defconfig
-i386                   randconfig-x001-201749
-i386                   randconfig-x003-201749
-i386                   randconfig-x004-201749
-i386                   randconfig-x002-201749
-i386                   randconfig-x008-201749
-i386                   randconfig-x006-201749
-i386                   randconfig-x009-201749
-i386                   randconfig-x000-201749
-i386                   randconfig-x005-201749
-i386                   randconfig-x007-201749
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
 m68k                           sun3_defconfig
+i386                   randconfig-s0-12061504
+i386                   randconfig-s1-12061504
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                              allnoconfig
@@ -154,11 +63,13 @@ mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                      malta_kvm_defconfig
 mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
+arm                        clps711x_defconfig
+c6x                        evmc6472_defconfig
+m32r                             alldefconfig
+mips                            ar7_defconfig
 c6x                        evmc6678_defconfig
 h8300                    h8300h-sim_defconfig
 m32r                       m32104ut_defconfig
@@ -169,19 +80,22 @@ nios2                         10m50_defconfig
 score                      spct6600_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
-arm                         ebsa110_defconfig
-cris                       artpec_3_defconfig
-mips                       lemote2f_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
+i386                   randconfig-x014-201749
+i386                   randconfig-x013-201749
+i386                   randconfig-x015-201749
+i386                   randconfig-x019-201749
+i386                   randconfig-x018-201749
+i386                   randconfig-x011-201749
+i386                   randconfig-x017-201749
+i386                   randconfig-x012-201749
+i386                   randconfig-x010-201749
+i386                   randconfig-x016-201749
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                randconfig-ne0-12070538
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
 i386                   randconfig-x074-201749
 i386                   randconfig-x076-201749
 i386                   randconfig-x071-201749
@@ -192,20 +106,32 @@ i386                   randconfig-x070-201749
 i386                   randconfig-x079-201749
 i386                   randconfig-x072-201749
 i386                   randconfig-x078-201749
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                          pxa910_defconfig
-mips                         cobalt_defconfig
-powerpc                     powernv_defconfig
-x86_64                 randconfig-r0-12070424
-arm                          iop32x_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x0-12070515
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-x004-201749
+x86_64                 randconfig-x008-201749
+x86_64                 randconfig-x001-201749
+x86_64                 randconfig-x000-201749
+x86_64                 randconfig-x009-201749
+x86_64                 randconfig-x003-201749
+x86_64                 randconfig-x006-201749
+x86_64                 randconfig-x007-201749
+x86_64                 randconfig-x005-201749
+x86_64                 randconfig-x002-201749
+arm                            dove_defconfig
+mips                     loongson1c_defconfig
+parisc                generic-32bit_defconfig
+i386                   randconfig-x001-201749
+i386                   randconfig-x003-201749
+i386                   randconfig-x004-201749
+i386                   randconfig-x002-201749
+i386                   randconfig-x008-201749
+i386                   randconfig-x006-201749
+i386                   randconfig-x009-201749
+i386                   randconfig-x000-201749
+i386                   randconfig-x005-201749
+i386                   randconfig-x007-201749
 
 Thanks,
 Fengguang
