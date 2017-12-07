@@ -1,125 +1,129 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 07 Dec 2017 08:41:16 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 0818eea91818cbd8e9d0b5f88c310899ccf67312
-Message-ID: <5a288e2c.kyzZ7b165r1DOpgc%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Wed, 6 Dec 2017 21:43:27 -0800
+Subject: [Intel-wired-lan] [next-queue 04/10] ixgbe: add ipsec data
+ structures
+In-Reply-To: <CAKgT0UfR5V9c6VW_b2WzjW0-2XQiw=89pmO0OpXEon71kzPtUw@mail.gmail.com>
+References: <1512452116-14795-1-git-send-email-shannon.nelson@oracle.com>
+ <1512452116-14795-5-git-send-email-shannon.nelson@oracle.com>
+ <CAKgT0UfR5V9c6VW_b2WzjW0-2XQiw=89pmO0OpXEon71kzPtUw@mail.gmail.com>
+Message-ID: <8a4286b3-05c4-8816-dea4-b9703cb63f8f@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 0818eea91818cbd8e9d0b5f88c310899ccf67312  fm10k: clarify action when updating the VLAN table
+On 12/5/2017 9:03 AM, Alexander Duyck wrote:
+> On Mon, Dec 4, 2017 at 9:35 PM, Shannon Nelson
+> <shannon.nelson@oracle.com> wrote:
+>> Set up the data structures to be used by the ipsec offload.
+>>
+>> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+>> ---
+>>   drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  5 ++++
+>>   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h | 40 ++++++++++++++++++++++++++
+>>   2 files changed, 45 insertions(+)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>> index 1e11462..9487750 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>> @@ -622,6 +622,7 @@ struct ixgbe_adapter {
+>>   #define IXGBE_FLAG2_EEE_CAPABLE                        BIT(14)
+>>   #define IXGBE_FLAG2_EEE_ENABLED                        BIT(15)
+>>   #define IXGBE_FLAG2_RX_LEGACY                  BIT(16)
+>> +#define IXGBE_FLAG2_IPSEC_ENABLED              BIT(17)
+>>
+>>          /* Tx fast path data */
+>>          int num_tx_queues;
+>> @@ -772,6 +773,10 @@ struct ixgbe_adapter {
+>>
+>>   #define IXGBE_RSS_KEY_SIZE     40  /* size of RSS Hash Key in bytes */
+>>          u32 *rss_key;
+>> +
+>> +#ifdef CONFIG_XFRM
+>> +       struct ixgbe_ipsec *ipsec;
+>> +#endif /* CONFIG_XFRM */
+>>   };
+>>
+>>   static inline u8 ixgbe_max_rss_indices(struct ixgbe_adapter *adapter)
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+>> index 017b13f..cb9a4be 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+>> @@ -47,4 +47,44 @@
+>>   #define IXGBE_RXMOD_DECRYPT            0x00000008
+>>   #define IXGBE_RXMOD_IPV6               0x00000010
+>>
+>> +struct rx_sa {
+>> +       struct hlist_node hlist;
+>> +       struct xfrm_state *xs;
+>> +       u32 ipaddr[4];
+> 
+> ipaddr should be stored as a __be32, not a u32.
 
-elapsed time: 118m
+Yep
 
-configs tested: 101
+> 
+>> +       u32 key[4];
+>> +       u32 salt;
+>> +       u32 mode;
+>> +       u8  iptbl_ind;
+>> +       bool used;
+>> +       bool decrypt;
+>> +};
+>> +
+>> +struct rx_ip_sa {
+>> +       u32 ipaddr[4];
+> 
+> Same thing here.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Yep
 
-mips                         rt305x_defconfig
-powerpc                     sequoia_defconfig
-s390                       zfcpdump_defconfig
-i386                   randconfig-x014-201749
-i386                   randconfig-x013-201749
-i386                   randconfig-x015-201749
-i386                   randconfig-x019-201749
-i386                   randconfig-x018-201749
-i386                   randconfig-x011-201749
-i386                   randconfig-x017-201749
-i386                   randconfig-x012-201749
-i386                   randconfig-x010-201749
-i386                   randconfig-x016-201749
-x86_64                 randconfig-x004-201749
-x86_64                 randconfig-x008-201749
-x86_64                 randconfig-x001-201749
-x86_64                 randconfig-x000-201749
-x86_64                 randconfig-x009-201749
-x86_64                 randconfig-x003-201749
-x86_64                 randconfig-x006-201749
-x86_64                 randconfig-x007-201749
-x86_64                 randconfig-x005-201749
-x86_64                 randconfig-x002-201749
-i386                     randconfig-i1-201749
-i386                     randconfig-i0-201749
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                           alldefconfig
-blackfin                   CM-BF533_defconfig
-blackfin                          allnoconfig
-x86_64                 randconfig-x011-201749
-x86_64                 randconfig-x018-201749
-x86_64                 randconfig-x017-201749
-x86_64                 randconfig-x012-201749
-x86_64                 randconfig-x019-201749
-x86_64                 randconfig-x013-201749
-x86_64                 randconfig-x010-201749
-x86_64                 randconfig-x015-201749
-x86_64                 randconfig-x014-201749
-x86_64                 randconfig-x016-201749
-i386                     randconfig-a0-201749
-i386                     randconfig-a1-201749
-i386                   randconfig-s0-12061504
-i386                   randconfig-s1-12061504
-x86_64                   randconfig-i0-201749
-alpha                               defconfig
-mips                                defconfig
-mips                           ip28_defconfig
-x86_64                 randconfig-u0-12070731
-i386                               tinyconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-alpha                            alldefconfig
-s390                                defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                   randconfig-x001-201749
-i386                   randconfig-x003-201749
-i386                   randconfig-x004-201749
-i386                   randconfig-x002-201749
-i386                   randconfig-x008-201749
-i386                   randconfig-x006-201749
-i386                   randconfig-x009-201749
-i386                   randconfig-x000-201749
-i386                   randconfig-x005-201749
-i386                   randconfig-x007-201749
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-i386                   randconfig-x074-201749
-i386                   randconfig-x076-201749
-i386                   randconfig-x071-201749
-i386                   randconfig-x077-201749
-i386                   randconfig-x073-201749
-i386                   randconfig-x075-201749
-i386                   randconfig-x070-201749
-i386                   randconfig-x079-201749
-i386                   randconfig-x072-201749
-i386                   randconfig-x078-201749
-x86_64                 randconfig-r0-12070700
-arm                            dove_defconfig
-mips                     loongson1c_defconfig
-parisc                generic-32bit_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
+> 
+>> +       u32 ref_cnt;
+>> +       bool used;
+>> +};
+>> +
+>> +struct tx_sa {
+>> +       struct xfrm_state *xs;
+>> +       u32 key[4];
+>> +       u32 salt;
+>> +       bool encrypt;
+>> +       bool used;
+>> +};
+>> +
+>> +struct ixgbe_ipsec_tx_data {
+>> +       u32 flags;
+>> +       u16 trailer_len;
+>> +       u16 sa_idx;
+>> +};
+>> +
+>> +struct ixgbe_ipsec {
+>> +       u16 num_rx_sa;
+>> +       u16 num_tx_sa;
+>> +       struct rx_ip_sa *ip_tbl;
+>> +       struct rx_sa *rx_tbl;
+>> +       struct tx_sa *tx_tbl;
+>> +       DECLARE_HASHTABLE(rx_sa_list, 8);
+> 
+> The hash table seems a bit on the small side. You might look at
+> increasing this to something like 32 in order to try and cut down on
+> the load in each bucket since the upper limit is 1K or so isn't it?
 
-Thanks,
-Fengguang
+I probably can - didn't want to use too much memory real estate if not 
+really needed.  I did a little perf timing with a mostly full table and 
+didn't see much degradation.  Maybe boost it to 16?
+
+sln
+
+> 
+>> +};
+>>   #endif /* _IXGBE_IPSEC_H_ */
+>> --
+>> 2.7.4
+>>
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at osuosl.org
+>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
