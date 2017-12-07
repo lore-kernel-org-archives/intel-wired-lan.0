@@ -1,154 +1,178 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Thu, 7 Dec 2017 09:03:36 -0800
-Subject: [Intel-wired-lan] [next-queue 02/10] ixgbe: add ipsec register
- access routines
-In-Reply-To: <CAKgT0Uci9TLVcaYzfGr=yVXDhVc+sbQr01cUeWiypN7-7faYmw@mail.gmail.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 7 Dec 2017 09:16:09 -0800
+Subject: [Intel-wired-lan] [next-queue 06/10] ixgbe: restore offloaded
+ SAs after a reset
+In-Reply-To: <90efb41d-2cab-f623-8b3d-318f3ad6e135@oracle.com>
 References: <1512452116-14795-1-git-send-email-shannon.nelson@oracle.com>
- <1512452116-14795-3-git-send-email-shannon.nelson@oracle.com>
- <CAKgT0Ufx7m2eTZ8hQOX9dpEaNKozb85axCvS_e7RPAxTsm33MA@mail.gmail.com>
- <c03223ae-feae-8835-0e74-4f7c11856381@oracle.com>
- <CAKgT0Uci9TLVcaYzfGr=yVXDhVc+sbQr01cUeWiypN7-7faYmw@mail.gmail.com>
-Message-ID: <96dda749-6c0d-3169-eb93-d4510fefcb7d@oracle.com>
+ <1512452116-14795-7-git-send-email-shannon.nelson@oracle.com>
+ <CAKgT0UdOG5H02Tqin4OhEvp=6ZDn365g04JvVOVAiTyCnncPew@mail.gmail.com>
+ <90efb41d-2cab-f623-8b3d-318f3ad6e135@oracle.com>
+Message-ID: <CAKgT0UfDFyH8qjg_-cdGYx5f06iTwydcMTcZ5FvhKJ+=2bNTLQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/7/2017 8:02 AM, Alexander Duyck wrote:
-> On Wed, Dec 6, 2017 at 9:43 PM, Shannon Nelson
-> <shannon.nelson@oracle.com> wrote:
->> Thanks, Alex, for your detailed comments, I do appreciate the time and
->> thought you put into them.
+On Wed, Dec 6, 2017 at 9:43 PM, Shannon Nelson
+<shannon.nelson@oracle.com> wrote:
+> On 12/5/2017 9:30 AM, Alexander Duyck wrote:
 >>
->> Responses below...
->>
->> sln
->>
->> On 12/5/2017 8:56 AM, Alexander Duyck wrote:
-
-<snip>
-
->>>> +       reg = IXGBE_READ_REG(hw, IXGBE_IPSRXIDX);
->>>> +       reg &= IXGBE_RXTXIDX_IPS_EN;
->>>> +       reg |= tbl | idx << 3 | IXGBE_RXTXIDX_IDX_WRITE;
->>>> +       IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, reg);
->>>> +       IXGBE_WRITE_FLUSH(hw);
->>>> +}
->>>> +
+>> On Mon, Dec 4, 2017 at 9:35 PM, Shannon Nelson
+>> <shannon.nelson@oracle.com> wrote:
 >>>
+>>> On a chip reset most of the table contents are lost, so must be
+>>> restored.  This scans the driver's ipsec tables and restores both
+>>> the filled and empty table slots to their pre-reset values.
 >>>
->>> The Rx version of this gets a bit trickier since the datasheet
->>> actually indicates there are a few different types of tables that can
->>> be indexed via this. Also why is the tbl value not being shifted? It
->>> seems like it should be shifted by 1 to avoid overwriting the IPS_EN
->>> bit. Really I would like to see the tbl value converted to an enum and
->>> shifted by 1 in order to generate the table reference.
+>>> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+>>> ---
+>>>   drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  2 +
+>>>   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 53
+>>> ++++++++++++++++++++++++++
+>>>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  1 +
+>>>   3 files changed, 56 insertions(+)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>>> b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>>> index 9487750..7e8bca7 100644
+>>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>>> @@ -1009,7 +1009,9 @@ s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32
+>>> adv_reg, u32 lp_reg,
+>>>                         u32 adv_sym, u32 adv_asm, u32 lp_sym, u32
+>>> lp_asm);
+>>>   #ifdef CONFIG_XFRM_OFFLOAD
+>>>   void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter);
+>>> +void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter);
+>>>   #else
+>>>   static inline void ixgbe_init_ipsec_offload(struct ixgbe_adapter
+>>> *adapter) { };
+>>> +static inline void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter) {
+>>> };
+>>>   #endif /* CONFIG_XFRM_OFFLOAD */
+>>>   #endif /* _IXGBE_H_ */
+>>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+>>> b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+>>> index 7b01d92..b93ee7f 100644
+>>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+>>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+>>> @@ -292,6 +292,59 @@ static void ixgbe_ipsec_start_engine(struct
+>>> ixgbe_adapter *adapter)
+>>>   }
+>>>
+>>>   /**
+>>> + * ixgbe_ipsec_restore - restore the ipsec HW settings after a reset
+>>> + * @adapter: board private structure
+>>> + **/
+>>> +void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter)
+>>> +{
+>>> +       struct ixgbe_ipsec *ipsec = adapter->ipsec;
+>>> +       struct ixgbe_hw *hw = &adapter->hw;
+>>> +       u32 zbuf[4] = {0, 0, 0, 0};
 >>
 >>
->> I would have done this, but we can't use an enum shifted bit because the
->> field values are 01, 10, and 11.  I used the direct 2, 4, and 6 values
->> rather than shifting by one, but I can reset them and shift by 1.
-> 
-> I didn't mean 1 << enum I was referring to enum << 1. Right now you
-> can be given a table value of 3 if somebody incorrectly used the
-> function and the side effect is that it overwrites the enable bit.
-
-Okay, sure, that makes sense.
-
-> 
->>>
-
-<snip>
-
->>>> +       /* store the SPI (in bigendian) and IPidx */
->>>> +       IXGBE_WRITE_REG(hw, IXGBE_IPSRXSPI, spi);
->>>> +       IXGBE_WRITE_REG(hw, IXGBE_IPSRXIPIDX, ip_idx);
->>>> +       IXGBE_WRITE_FLUSH(hw);
->>>> +
->>>> +       ixgbe_ipsec_set_rx_item(hw, idx, IXGBE_RXIDX_TBL_SPI);
->>>> +
->>>> +       /* store the key, salt, and mode */
->>>> +       for (i = 0; i < 4; i++)
->>>> +               IXGBE_WRITE_REG(hw, IXGBE_IPSRXKEY(i),
->>>> cpu_to_be32(key[3-i]));
->>>> +       IXGBE_WRITE_REG(hw, IXGBE_IPSRXSALT, cpu_to_be32(salt));
->>>> +       IXGBE_WRITE_REG(hw, IXGBE_IPSRXMOD, mode);
->>>> +       IXGBE_WRITE_FLUSH(hw);
->>>> +
->>>> +       ixgbe_ipsec_set_rx_item(hw, idx, IXGBE_RXIDX_TBL_KEY);
->>>> +}
->>>
->>>
->>> Is there any reason why you could write the SPI, key, salt, and mode,
->>> then flush, and trigger the writes via the IPSRXIDX? Just wondering
->>> since it would likely save you a few cycles avoiding PCIe bus stalls.
+>> zbuf should be a static const.
+>
+>
+> Yep
+>
+>>
+>>> +       int i;
+>>> +
+>>> +       if (!(adapter->flags2 & IXGBE_FLAG2_IPSEC_ENABLED))
+>>> +               return;
+>>> +
+>>> +       /* clean up the engine settings */
+>>> +       ixgbe_ipsec_stop_engine(adapter);
+>>> +
+>>> +       /* start the engine */
+>>> +       ixgbe_ipsec_start_engine(adapter);
+>>> +
+>>> +       /* reload the IP addrs */
+>>> +       for (i = 0; i < IXGBE_IPSEC_MAX_RX_IP_COUNT; i++) {
+>>> +               struct rx_ip_sa *ipsa = &ipsec->ip_tbl[i];
+>>> +
+>>> +               if (ipsa->used)
+>>> +                       ixgbe_ipsec_set_rx_ip(hw, i, ipsa->ipaddr);
+>>> +               else
+>>> +                       ixgbe_ipsec_set_rx_ip(hw, i, zbuf);
 >>
 >>
->> See note above about religiously flushing everything to make a persnickety
->> chip work.
-> 
-> I get the flushing. What I am saying is that as far as I can tell the
-> SPI, salt, and mode don't overlap so you could update all 3, flush,
-> and then call set_rx_item twice.
+>> If we are doing a restore do we actually need to write the zero
+>> values? If we did a reset I thought you had a function that was going
+>> through and zeroing everything out. If so this now becomes redundant.
+>
+>
+> Currently ixgbe_ipsec_clear_hw_tables() only gets run at at probe.  It
+> should probably get run at remove as well.  Doing this is a bit of safety
+> paranoia, and making sure the CAM memory structures that don't get cleared
+> on reset have exactly what I expect in them.
 
-I'll check that for here and a possibly a couple other places.
+You might just move ixgbe_ipsec_clear_hw_tables into the rest logic
+itself. Then it covers all cases where you would be resetting the
+hardware and expecting a consistent state. It will mean writing some
+registers twice during the reset but it is probably better just to
+make certain everything stays in a known good state after a reset.
 
-> 
->>>
->>>
->>>> +
->>>> +/**
->>>> + * ixgbe_ipsec_set_rx_ip - set up the register bits to save SA IP addr
->>>> info
->>>> + * @hw: hw specific details
->>>> + * @idx: register index to write
->>>> + * @addr: IP address byte array
->>>> + **/
->>>> +static void ixgbe_ipsec_set_rx_ip(struct ixgbe_hw *hw, u16 idx, u32
->>>> addr[])
->>>> +{
->>>> +       int i;
->>>> +
->>>> +       /* store the ip address */
->>>> +       for (i = 0; i < 4; i++)
->>>> +               IXGBE_WRITE_REG(hw, IXGBE_IPSRXIPADDR(i), addr[i]);
->>>> +       IXGBE_WRITE_FLUSH(hw);
->>>> +
->>>> +       ixgbe_ipsec_set_rx_item(hw, idx, IXGBE_RXIDX_TBL_IP);
->>>> +}
->>>> +
->>>
->>>
->>> This piece is kind of confusing. I would suggest storing the address
->>> as a __be32 pointer instead of a u32 array. That way you start with
->>> either an IPv6 or an IPv4 address at offset 0 instead of the way the
->>> hardware is defined which has you writing it at either 0 or 3
->>> depending on if the address is IPv6 or IPv4.
+>>
+>>> +       }
+>>> +
+>>> +       /* reload the Rx keys */
+>>> +       for (i = 0; i < IXGBE_IPSEC_MAX_SA_COUNT; i++) {
+>>> +               struct rx_sa *rsa = &ipsec->rx_tbl[i];
+>>> +
+>>> +               if (rsa->used)
+>>> +                       ixgbe_ipsec_set_rx_sa(hw, i, rsa->xs->id.spi,
+>>> +                                             rsa->key, rsa->salt,
+>>> +                                             rsa->mode, rsa->iptbl_ind);
+>>> +               else
+>>> +                       ixgbe_ipsec_set_rx_sa(hw, i, 0, zbuf, 0, 0, 0);
 >>
 >>
->> Using a __be32 rather than u32 is fine here, it doesn't make much
->> difference.
+>> same here
 >>
->> If I understand your suggestion correctly, we would also need an additional
->> function parameter to tell us if we were pointing to an ipv6 or ipv4
->> address.  Since the driver's SW tables are modeling the HW, I think it is
->> simpler to leave it in the array.
-> 
-> Actually I am not too concerned about needing a flag, but the __be32
-> usage addresses another problem. If I am not mistaken in order to
-> store an IPv6 value you will have to write addr[3] to IPADDR(0) and so
-> forth since the hardware is storing the IPv6 address as little endian.
-> So if you store the IPv4 address in addr[0] as a __be32 value and
-> leave the rest as zero you should get the correct ordering in either
-> setup when you store either IPv6 or IPv4 values.
-
-The datasheet says
-   n=0 contains the MSB for an IPv6 IP Address.
-   n=3 contains an IPv4 IP Address or the LSB for an IPv6 IP Address.
-If the ipv6 address is handed to us in bigendian, then I think we're okay.
-
-Obviously this is something that will get tested when I get around to 
-fixing up support for ipv6 in the future, and perhaps I'll be surprised.
-
-sln
+>>> +       }
+>>> +
+>>> +       /* reload the Tx keys */
+>>> +       for (i = 0; i < IXGBE_IPSEC_MAX_SA_COUNT; i++) {
+>>> +               struct tx_sa *tsa = &ipsec->tx_tbl[i];
+>>> +
+>>> +               if (tsa->used)
+>>> +                       ixgbe_ipsec_set_tx_sa(hw, i, tsa->key,
+>>> tsa->salt);
+>>> +               else
+>>> +                       ixgbe_ipsec_set_tx_sa(hw, i, zbuf, 0);
+>>
+>>
+>> and here
+>>
+>>> +       }
+>>> +}
+>>> +
+>>> +/**
+>>>    * ixgbe_ipsec_find_empty_idx - find the first unused security
+>>> parameter index
+>>>    * @ipsec: pointer to ipsec struct
+>>>    * @rxtable: true if we need to look in the Rx table
+>>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> index 01fd89b..6eabf92 100644
+>>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> @@ -5347,6 +5347,7 @@ static void ixgbe_configure(struct ixgbe_adapter
+>>> *adapter)
+>>>
+>>>          ixgbe_set_rx_mode(adapter->netdev);
+>>>          ixgbe_restore_vlan(adapter);
+>>> +       ixgbe_ipsec_restore(adapter);
+>>>
+>>>          switch (hw->mac.type) {
+>>>          case ixgbe_mac_82599EB:
+>>> --
+>>> 2.7.4
+>>>
+>>> _______________________________________________
+>>> Intel-wired-lan mailing list
+>>> Intel-wired-lan at osuosl.org
+>>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
