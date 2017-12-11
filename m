@@ -1,148 +1,127 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Mon, 11 Dec 2017 10:37:10 -0800
-Subject: [Intel-wired-lan] [PATCH 5/9] ixgbevf: update code to better handle
- incrementing page count
+Date: Mon, 11 Dec 2017 10:37:15 -0800
+Subject: [Intel-wired-lan] [PATCH 6/9] ixgbevf: add counters for Rx page
+ allocations
 In-Reply-To: <20171211183537.21524.10133.stgit@localhost6.localdomain6>
 References: <20171211183537.21524.10133.stgit@localhost6.localdomain6>
-Message-ID: <20171211183709.21524.19432.stgit@localhost6.localdomain6>
+Message-ID: <20171211183715.21524.56950.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Based on commit bd4171a5d4c2
-("igb: update code to better handle incrementing page count")
-
-Update the driver code so that we do bulk updates of the page reference
-count instead of just incrementing it by one reference at a time.  The
-advantage to doing this is that we cut down on atomic operations and
-this in turn should give us a slight improvement in cycles per packet.
-In addition if we eventually move this over to using build_skb the gains
-will be more noticeable.
+We already had placehloders for failed page and buffer allocations.
+Added alloc_rx_page and made sure the stats are properly updated and
+exposed in ethtool.
 
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    7 ++++-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   30 +++++++++++++++------
- 2 files changed, 28 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c      |    3 +++
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    6 ++++-
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   23 ++++++++++++++++-----
+ 3 files changed, 25 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-index b1da9f4..c70a789 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-@@ -62,7 +62,12 @@ struct ixgbevf_tx_buffer {
- struct ixgbevf_rx_buffer {
- 	dma_addr_t dma;
- 	struct page *page;
--	unsigned int page_offset;
-+#if (BITS_PER_LONG > 32) || (PAGE_SIZE >= 65536)
-+	__u32 page_offset;
-+#else
-+	__u16 page_offset;
-+#endif
-+	__u16 pagecnt_bias;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+index ff9d05f..4400e49 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+@@ -75,6 +75,9 @@ struct ixgbe_stats {
+ 	IXGBEVF_STAT("tx_timeout_count", tx_timeout_count),
+ 	IXGBEVF_NETDEV_STAT(multicast),
+ 	IXGBEVF_STAT("rx_csum_offload_errors", hw_csum_rx_error),
++	IXGBEVF_STAT("alloc_rx_page", alloc_rx_page),
++	IXGBEVF_STAT("alloc_rx_page_failed", alloc_rx_page_failed),
++	IXGBEVF_STAT("alloc_rx_buff_failed", alloc_rx_buff_failed),
  };
  
- struct ixgbevf_stats {
+ #define IXGBEVF_QUEUE_STATS_LEN ( \
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index c70a789..f695242 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -84,6 +84,7 @@ struct ixgbevf_tx_queue_stats {
+ struct ixgbevf_rx_queue_stats {
+ 	u64 alloc_rx_page_failed;
+ 	u64 alloc_rx_buff_failed;
++	u64 alloc_rx_page;
+ 	u64 csum_err;
+ };
+ 
+@@ -295,8 +296,9 @@ struct ixgbevf_adapter {
+ 	u64 hw_csum_rx_error;
+ 	u64 hw_rx_no_dma_resources;
+ 	int num_msix_vectors;
+-	u32 alloc_rx_page_failed;
+-	u32 alloc_rx_buff_failed;
++	u64 alloc_rx_page_failed;
++	u64 alloc_rx_buff_failed;
++	u64 alloc_rx_page;
+ 
+ 	struct msix_entry *msix_entries;
+ 
 diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index fbd493e..ae2402d 100644
+index ae2402d..350afec 100644
 --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -611,6 +611,7 @@ static bool ixgbevf_alloc_mapped_page(struct ixgbevf_ring *rx_ring,
- 	bi->dma = dma;
+@@ -604,7 +604,7 @@ static bool ixgbevf_alloc_mapped_page(struct ixgbevf_ring *rx_ring,
+ 	if (dma_mapping_error(rx_ring->dev, dma)) {
+ 		__free_page(page);
+ 
+-		rx_ring->rx_stats.alloc_rx_buff_failed++;
++		rx_ring->rx_stats.alloc_rx_page_failed++;
+ 		return false;
+ 	}
+ 
+@@ -612,6 +612,7 @@ static bool ixgbevf_alloc_mapped_page(struct ixgbevf_ring *rx_ring,
  	bi->page = page;
  	bi->page_offset = 0;
-+	bi->pagecnt_bias = 1;
+ 	bi->pagecnt_bias = 1;
++	rx_ring->rx_stats.alloc_rx_page++;
  
  	return true;
  }
-@@ -747,6 +748,7 @@ static void ixgbevf_reuse_rx_page(struct ixgbevf_ring *rx_ring,
- 	new_buff->page = old_buff->page;
- 	new_buff->dma = old_buff->dma;
- 	new_buff->page_offset = old_buff->page_offset;
-+	new_buff->pagecnt_bias = old_buff->pagecnt_bias;
- }
+@@ -963,8 +964,10 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
+ 		skb = ixgbevf_fetch_rx_buffer(rx_ring, rx_desc, skb);
  
- static inline bool ixgbevf_page_is_reserved(struct page *page)
-@@ -758,13 +760,15 @@ static bool ixgbevf_can_reuse_rx_page(struct ixgbevf_rx_buffer *rx_buffer,
- 				      struct page *page,
- 				      const unsigned int truesize)
+ 		/* exit if we failed to retrieve a buffer */
+-		if (!skb)
++		if (!skb) {
++			rx_ring->rx_stats.alloc_rx_buff_failed++;
+ 			break;
++		}
+ 
+ 		cleaned_count++;
+ 
+@@ -2749,6 +2752,8 @@ static int ixgbevf_sw_init(struct ixgbevf_adapter *adapter)
+ void ixgbevf_update_stats(struct ixgbevf_adapter *adapter)
  {
-+	unsigned int pagecnt_bias = rx_buffer->pagecnt_bias--;
+ 	struct ixgbe_hw *hw = &adapter->hw;
++	u64 alloc_rx_page_failed = 0, alloc_rx_buff_failed = 0;
++	u64 alloc_rx_page = 0, hw_csum_rx_error = 0;
+ 	int i;
+ 
+ 	if (test_bit(__IXGBEVF_DOWN, &adapter->state) ||
+@@ -2769,10 +2774,18 @@ void ixgbevf_update_stats(struct ixgbevf_adapter *adapter)
+ 				adapter->stats.vfmprc);
+ 
+ 	for (i = 0;  i  < adapter->num_rx_queues;  i++) {
+-		adapter->hw_csum_rx_error +=
+-			adapter->rx_ring[i]->hw_csum_rx_error;
+-		adapter->rx_ring[i]->hw_csum_rx_error = 0;
++		struct ixgbevf_ring *rx_ring = adapter->rx_ring[i];
 +
- 	/* avoid re-using remote pages */
- 	if (unlikely(ixgbevf_page_is_reserved(page)))
- 		return false;
- 
- #if (PAGE_SIZE < 8192)
- 	/* if we are only owner of page we can reuse it */
--	if (unlikely(page_count(page) != 1))
-+	if (unlikely(page_ref_count(page) != pagecnt_bias))
- 		return false;
- 
- 	/* flip page offset to other buffer */
-@@ -778,10 +782,15 @@ static bool ixgbevf_can_reuse_rx_page(struct ixgbevf_rx_buffer *rx_buffer,
- 		return false;
- 
- #endif
--	/* Even if we own the page, we are not allowed to use atomic_set()
--	 * This would break get_page_unless_zero() users.
++		hw_csum_rx_error += rx_ring->rx_stats.csum_err;
++		alloc_rx_page_failed += rx_ring->rx_stats.alloc_rx_page_failed;
++		alloc_rx_buff_failed += rx_ring->rx_stats.alloc_rx_buff_failed;
++		alloc_rx_page += rx_ring->rx_stats.alloc_rx_page;
+ 	}
 +
-+	/* If we have drained the page fragment pool we need to update
-+	 * the pagecnt_bias and page count so that we fully restock the
-+	 * number of references the driver holds.
- 	 */
--	page_ref_inc(page);
-+	if (unlikely(pagecnt_bias == 1)) {
-+		page_ref_add(page, USHRT_MAX);
-+		rx_buffer->pagecnt_bias = USHRT_MAX;
-+	}
- 
- 	return true;
++	adapter->hw_csum_rx_error = hw_csum_rx_error;
++	adapter->alloc_rx_page_failed = alloc_rx_page_failed;
++	adapter->alloc_rx_buff_failed = alloc_rx_buff_failed;
++	adapter->alloc_rx_page = alloc_rx_page;
  }
-@@ -827,7 +836,6 @@ static bool ixgbevf_add_rx_frag(struct ixgbevf_ring *rx_ring,
- 			return true;
  
- 		/* this page cannot be reused so discard it */
--		put_page(page);
- 		return false;
- 	}
- 
-@@ -899,10 +907,13 @@ static struct sk_buff *ixgbevf_fetch_rx_buffer(struct ixgbevf_ring *rx_ring,
- 		/* hand second half of page back to the ring */
- 		ixgbevf_reuse_rx_page(rx_ring, rx_buffer);
- 	} else {
--		/* we are not reusing the buffer so unmap it */
-+		/* We are not reusing the buffer so unmap it and free
-+		 * any references we are holding to it
-+		 */
- 		dma_unmap_page_attrs(rx_ring->dev, rx_buffer->dma,
- 				     PAGE_SIZE, DMA_FROM_DEVICE,
- 				     IXGBEVF_RX_DMA_ATTR);
-+		__page_frag_cache_drain(page, rx_buffer->pagecnt_bias);
- 	}
- 
- 	/* clear contents of buffer_info */
-@@ -2135,6 +2146,8 @@ static void ixgbevf_clean_rx_ring(struct ixgbevf_ring *rx_ring)
- 		struct ixgbevf_rx_buffer *rx_buffer;
- 
- 		rx_buffer = &rx_ring->rx_buffer_info[i];
-+		if (!rx_buffer->page)
-+			continue;
- 
- 		/* Invalidate cache lines that may have been written to by
- 		 * device so that we avoid corrupting memory.
-@@ -2152,8 +2165,9 @@ static void ixgbevf_clean_rx_ring(struct ixgbevf_ring *rx_ring)
- 				     DMA_FROM_DEVICE,
- 				     IXGBEVF_RX_DMA_ATTR);
- 
--		if (rx_buffer->page)
--			__free_page(rx_buffer->page);
-+		__page_frag_cache_drain(rx_buffer->page,
-+					rx_buffer->pagecnt_bias);
-+
- 		rx_buffer->page = NULL;
- 	}
- 
+ /**
 
