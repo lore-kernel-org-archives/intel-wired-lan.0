@@ -1,71 +1,37 @@
-From: Benjamin Poirier <bpoirier@suse.com>
-Date: Mon, 11 Dec 2017 16:26:40 +0900
-Subject: [Intel-wired-lan] [PATCH] e1000e: Fix
- e1000_check_for_copper_link_ich8lan return value.
-In-Reply-To: <20171208114552.5f517fd3@leda>
-References: <20171208114552.5f517fd3@leda>
-Message-ID: <20171211072640.7935-1-bpoirier@suse.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Mon, 11 Dec 2017 10:36:44 -0800
+Subject: [Intel-wired-lan] [PATCH 0/9] ixgbevf: update Rx/Tx code path for
+ build_skb
+Message-ID: <20171211183537.21524.10133.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-e1000e_check_for_copper_link() and e1000_check_for_copper_link_ich8lan()
-are the two functions that may be assigned to mac.ops.check_for_link when
-phy.media_type == e1000_media_type_copper. Commit 19110cfbb34d ("e1000e:
-Separate signaling for link check/link up") changed the meaning of the
-return value of check_for_link for copper media but only adjusted the first
-function. This patch adjusts the second function likewise.
+This series includes changes that were previously introduced in igb and
+ixgbe. Mainly the changes from Alexander Duyck prior to the new Rx page
+and build_skb support. The goal is to bring the Tx/Rx code path closer
+to igb/ixgbe and eventually introduce XDP support as well.
 
-Reported-by: Christian Hesse <list@eworm.de>
-Reported-by: Gabriel C <nix.or.die@gmail.com>
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=198047
-Fixes: 19110cfbb34d ("e1000e: Separate signaling for link check/link up")
-Tested-by: Christian Hesse <list@eworm.de>
-Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index d6d4ed7acf03..31277d3bb7dc 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1367,6 +1367,9 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
-  *  Checks to see of the link status of the hardware has changed.  If a
-  *  change in link status has been detected, then we read the PHY registers
-  *  to get the current speed/duplex if link exists.
-+ *
-+ *  Returns a negative error code (-E1000_ERR_*) or 0 (link down) or 1 (link
-+ *  up).
-  **/
- static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- {
-@@ -1382,7 +1385,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 	 * Change or Rx Sequence Error interrupt.
- 	 */
- 	if (!mac->get_link_status)
--		return 0;
-+		return 1;
- 
- 	/* First we want to see if the MII Status Register reports
- 	 * link.  If so, then we want to get the current speed/duplex
-@@ -1613,10 +1616,12 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 	 * different link partner.
- 	 */
- 	ret_val = e1000e_config_fc_after_link_up(hw);
--	if (ret_val)
-+	if (ret_val) {
- 		e_dbg("Error configuring flow control\n");
-+		return ret_val;
-+	}
- 
--	return ret_val;
-+	return 1;
- }
- 
- static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
--- 
-2.15.1
+Emil Tantilov (9):
+      ixgbevf: add function for checking if we can reuse page
+      ixgbevf: only DMA sync frame length
+      ixgbevf: use length to determine if descriptor is done
+      ixgbevf: add support for DMA_ATTR_SKIP_CPU_SYNC/WEAK_ORDERING
+      ixgbevf: update code to better handle incrementing page count
+      ixgbevf: add counters for Rx page allocations
+      ixgbevf: clear rx_buffer_info in configure instead of clean
+      ixgbevf: improve performance and reduce size of ixgbevf_tx_map()
+      ixgbevf: don't bother clearing tx_buffer_info in ixgbevf_clean_tx_ring()
 
+
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c      |    3 
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   16 +
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  362 +++++++++++++--------
+ 3 files changed, 234 insertions(+), 147 deletions(-)
+
+--
+Signature
