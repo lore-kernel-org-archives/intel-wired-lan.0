@@ -1,88 +1,98 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Wed, 13 Dec 2017 12:19:41 +0100
-Subject: [Intel-wired-lan] [bpf-next V1-RFC PATCH 04/14] ixgbe: setup
- xdp_rxq_info
-In-Reply-To: <151316391502.14967.13292358380181773729.stgit@firesoul>
-References: <151316391502.14967.13292358380181773729.stgit@firesoul>
-Message-ID: <151316398126.14967.887673126253612847.stgit@firesoul>
+From: Lyude Paul <lyude@redhat.com>
+Date: Mon, 11 Dec 2017 18:45:02 -0500
+Subject: [Intel-wired-lan] [PATCH] igb: Free IRQs when device is hotplugged
+Message-ID: <20171211234502.27445-1-lyude@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Driver hook points for xdp_rxq_info:
- * init+reg: ixgbe_setup_rx_resources()
- * unreg   : ixgbe_free_rx_resources()
+Recently I got a Caldigit TS3 Thunderbolt 3 dock, and noticed that upon
+hotplugging my kernel would immediately crash due to igb:
 
-Cc: intel-wired-lan at lists.osuosl.org
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: Alexander Duyck <alexander.duyck@gmail.com>
-Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
+[  680.825801] kernel BUG at drivers/pci/msi.c:352!
+[  680.828388] invalid opcode: 0000 [#1] SMP
+[  680.829194] Modules linked in: igb(O) thunderbolt i2c_algo_bit joydev vfat fat btusb btrtl btbcm btintel bluetooth ecdh_generic hp_wmi sparse_keymap rfkill wmi_bmof iTCO_wdt intel_rapl x86_pkg_temp_thermal coretemp crc32_pclmul snd_pcm rtsx_pci_ms mei_me snd_timer memstick snd pcspkr mei soundcore i2c_i801 tpm_tis psmouse shpchp wmi tpm_tis_core tpm video hp_wireless acpi_pad rtsx_pci_sdmmc mmc_core crc32c_intel serio_raw rtsx_pci mfd_core xhci_pci xhci_hcd i2c_hid i2c_core [last unloaded: igb]
+[  680.831085] CPU: 1 PID: 78 Comm: kworker/u16:1 Tainted: G           O     4.15.0-rc3Lyude-Test+ #6
+[  680.831596] Hardware name: HP HP ZBook Studio G4/826B, BIOS P71 Ver. 01.03 06/09/2017
+[  680.832168] Workqueue: kacpi_hotplug acpi_hotplug_work_fn
+[  680.832687] RIP: 0010:free_msi_irqs+0x180/0x1b0
+[  680.833271] RSP: 0018:ffffc9000030fbf0 EFLAGS: 00010286
+[  680.833761] RAX: ffff8803405f9c00 RBX: ffff88033e3d2e40 RCX: 000000000000002c
+[  680.834278] RDX: 0000000000000000 RSI: 00000000000000ac RDI: ffff880340be2178
+[  680.834832] RBP: 0000000000000000 R08: ffff880340be1ff0 R09: ffff8803405f9c00
+[  680.835342] R10: 0000000000000000 R11: 0000000000000040 R12: ffff88033d63a298
+[  680.835822] R13: ffff88033d63a000 R14: 0000000000000060 R15: ffff880341959000
+[  680.836332] FS:  0000000000000000(0000) GS:ffff88034f440000(0000) knlGS:0000000000000000
+[  680.836817] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  680.837360] CR2: 000055e64044afdf CR3: 0000000001c09002 CR4: 00000000003606e0
+[  680.837954] Call Trace:
+[  680.838853]  pci_disable_msix+0xce/0xf0
+[  680.839616]  igb_reset_interrupt_capability+0x5d/0x60 [igb]
+[  680.840278]  igb_remove+0x9d/0x110 [igb]
+[  680.840764]  pci_device_remove+0x36/0xb0
+[  680.841279]  device_release_driver_internal+0x157/0x220
+[  680.841739]  pci_stop_bus_device+0x7d/0xa0
+[  680.842255]  pci_stop_bus_device+0x2b/0xa0
+[  680.842722]  pci_stop_bus_device+0x3d/0xa0
+[  680.843189]  pci_stop_and_remove_bus_device+0xe/0x20
+[  680.843627]  trim_stale_devices+0xf3/0x140
+[  680.844086]  trim_stale_devices+0x94/0x140
+[  680.844532]  trim_stale_devices+0xa6/0x140
+[  680.845031]  ? get_slot_status+0x90/0xc0
+[  680.845536]  acpiphp_check_bridge.part.5+0xfe/0x140
+[  680.846021]  acpiphp_hotplug_notify+0x175/0x200
+[  680.846581]  ? free_bridge+0x100/0x100
+[  680.847113]  acpi_device_hotplug+0x8a/0x490
+[  680.847535]  acpi_hotplug_work_fn+0x1a/0x30
+[  680.848076]  process_one_work+0x182/0x3a0
+[  680.848543]  worker_thread+0x2e/0x380
+[  680.848963]  ? process_one_work+0x3a0/0x3a0
+[  680.849373]  kthread+0x111/0x130
+[  680.849776]  ? kthread_create_worker_on_cpu+0x50/0x50
+[  680.850188]  ret_from_fork+0x1f/0x30
+[  680.850601] Code: 43 14 85 c0 0f 84 d5 fe ff ff 31 ed eb 0f 83 c5 01 39 6b 14 0f 86 c5 fe ff ff 8b 7b 10 01 ef e8 b7 e4 d2 ff 48 83 78 70 00 74 e3 <0f> 0b 49 8d b5 a0 00 00 00 e8 62 6f d3 ff e9 c7 fe ff ff 48 8b
+[  680.851497] RIP: free_msi_irqs+0x180/0x1b0 RSP: ffffc9000030fbf0
+
+As it turns out, normally the freeing of IRQs that would fix this is called
+inside of the scope of __igb_close(). However, since the device is
+already gone by the point we try to unregister the netdevice from the
+driver due to a hotplug we end up seeing that the netif isn't present
+and thus, forget to free any of the device IRQs.
+
+So: after unregistering the netdev in igb_remove() check whether the PCI
+device is stale and if so, free it's IRQs and tx/rx resources.
+
+Signed-off-by: Lyude Paul <lyude@redhat.com>
+Fixes: 9474933caf21 ("igb: close/suspend race in netif_device_detach")
+Cc: Todd Fujinaka <todd.fujinaka@intel.com>
+Cc: stable at vger.kernel.org
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   11 ++++++++++-
- 2 files changed, 12 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 468c3555a629..8611763d6129 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -53,6 +53,7 @@
- #include <linux/dca.h>
- #endif
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index c208753ff5b7..e650348b4bd7 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3325,6 +3325,16 @@ static void igb_remove(struct pci_dev *pdev)
  
-+#include <net/xdp.h>
- #include <net/busy_poll.h>
+ 	unregister_netdev(netdev);
  
- /* common prefix used by pr_<> macros */
-@@ -371,6 +372,7 @@ struct ixgbe_ring {
- 		struct ixgbe_tx_queue_stats tx_stats;
- 		struct ixgbe_rx_queue_stats rx_stats;
- 	};
-+	struct xdp_rxq_info xdp_rxq;
- } ____cacheline_internodealigned_in_smp;
- 
- enum ixgbe_ring_f_enum {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 7737a05c717c..2a8196427776 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2318,12 +2318,14 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- #endif /* IXGBE_FCOE */
- 	u16 cleaned_count = ixgbe_desc_unused(rx_ring);
- 	bool xdp_xmit = false;
-+	struct xdp_buff xdp;
++	/* If the PCI device has already been physically removed (e.g. user
++	 * unplugged a thunderbolt dock containing our hw) then the netif will
++	 * already be down, so unregistering the netdev won't free the IRQs
++	 */
++	if (!pci_device_is_present(pdev)) {
++		igb_free_irq(adapter);
++		igb_free_all_tx_resources(adapter);
++		igb_free_all_rx_resources(adapter);
++	}
 +
-+	xdp.rxq = &rx_ring->xdp_rxq;
+ 	igb_clear_interrupt_scheme(adapter);
  
- 	while (likely(total_rx_packets < budget)) {
- 		union ixgbe_adv_rx_desc *rx_desc;
- 		struct ixgbe_rx_buffer *rx_buffer;
- 		struct sk_buff *skb;
--		struct xdp_buff xdp;
- 		unsigned int size;
- 
- 		/* return some buffers to hardware, one@a time is too slow */
-@@ -6444,6 +6446,12 @@ int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
- 	rx_ring->next_to_clean = 0;
- 	rx_ring->next_to_use = 0;
- 
-+	/* XDP RX-queue info */
-+	xdp_rxq_info_init(&rx_ring->xdp_rxq);
-+	rx_ring->xdp_rxq.dev         = adapter->netdev;
-+	rx_ring->xdp_rxq.queue_index = rx_ring->queue_index;
-+	xdp_rxq_info_reg(&rx_ring->xdp_rxq);
-+
- 	rx_ring->xdp_prog = adapter->xdp_prog;
- 
- 	return 0;
-@@ -6541,6 +6549,7 @@ void ixgbe_free_rx_resources(struct ixgbe_ring *rx_ring)
- 	ixgbe_clean_rx_ring(rx_ring);
- 
- 	rx_ring->xdp_prog = NULL;
-+	xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
- 	vfree(rx_ring->rx_buffer_info);
- 	rx_ring->rx_buffer_info = NULL;
- 
+ 	pci_iounmap(pdev, adapter->io_addr);
+-- 
+2.14.3
 
