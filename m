@@ -1,85 +1,165 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Mon, 11 Dec 2017 10:36:59 -0800
-Subject: [Intel-wired-lan] [PATCH 3/9] ixgbevf: use length to determine if
- descriptor is done
+Date: Mon, 11 Dec 2017 10:37:04 -0800
+Subject: [Intel-wired-lan] [PATCH 4/9] ixgbevf: add support for
+ DMA_ATTR_SKIP_CPU_SYNC/WEAK_ORDERING
 In-Reply-To: <20171211183537.21524.10133.stgit@localhost6.localdomain6>
 References: <20171211183537.21524.10133.stgit@localhost6.localdomain6>
-Message-ID: <20171211183659.21524.88045.stgit@localhost6.localdomain6>
+Message-ID: <20171211183704.21524.88419.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Based on:
-commit 7ec0116c9131 ("igb: Use length to determine if descriptor is done")
+Based on commit 5be5955425c2
+("igb: update driver to make use of DMA_ATTR_SKIP_CPU_SYNC")
 
-This change makes it so that we use the length of the packet instead of the
-DD status bit to determine if a new descriptor is ready to be processed.
-The obvious advantage is that it cuts down on reads as we don't really even
-need the DD bit if going from a 0 to a non-zero value on size is enough to
-inform us that the packet has been completed.
+and
 
-In addition we only reset the Rx descriptor length for descriptor zero when
-resetting a ring instead of having to do a memset with 0 over the entire
-ring. By doing this we can save some time on initialization.
+commit 7bd175928280 ("igb: Add support for DMA_ATTR_WEAK_ORDERING")
+
+Convert the calls to dma_map/unmap_page() to the attributes version
+and add DMA_ATTR_SKIP_CPU_SYNC/WEAK_ORDERING which should help
+improve performance on some platforms.
+
+Move sync_for_cpu call before we perform a prefetch to avoid
+invalidating the first 128 bytes of the packet on architectures where
+that call may invalidate the cache.
 
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    3 +
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   57 +++++++++++++--------
+ 2 files changed, 38 insertions(+), 22 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index 581f44b..b1da9f4 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -260,6 +260,9 @@ static inline void ixgbevf_write_tail(struct ixgbevf_ring *ring, u32 value)
+ #define MIN_MSIX_Q_VECTORS	1
+ #define MIN_MSIX_COUNT		(MIN_MSIX_Q_VECTORS + NON_Q_VECTORS)
+ 
++#define IXGBEVF_RX_DMA_ATTR \
++	(DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_WEAK_ORDERING)
++
+ /* board specific private data structure */
+ struct ixgbevf_adapter {
+ 	/* this field must be first, see ixgbevf_process_skb_fields */
 diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 0cc2688..725fe2d 100644
+index 725fe2d..fbd493e 100644
 --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -653,8 +653,8 @@ static void ixgbevf_alloc_rx_buffers(struct ixgbevf_ring *rx_ring,
- 			i -= rx_ring->count;
- 		}
+@@ -595,8 +595,8 @@ static bool ixgbevf_alloc_mapped_page(struct ixgbevf_ring *rx_ring,
+ 	}
  
--		/* clear the hdr_addr for the next_to_use descriptor */
--		rx_desc->read.hdr_addr = 0;
-+		/* clear the length for the next_to_use descriptor */
-+		rx_desc->wb.upper.length = 0;
+ 	/* map page for use */
+-	dma = dma_map_page(rx_ring->dev, page, 0,
+-			   PAGE_SIZE, DMA_FROM_DEVICE);
++	dma = dma_map_page_attrs(rx_ring->dev, page, 0, PAGE_SIZE,
++				 DMA_FROM_DEVICE, IXGBEVF_RX_DMA_ATTR);
  
- 		cleaned_count--;
- 	} while (cleaned_count);
-@@ -938,7 +938,7 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
- 
- 		rx_desc = IXGBEVF_RX_DESC(rx_ring, rx_ring->next_to_clean);
- 
--		if (!ixgbevf_test_staterr(rx_desc, IXGBE_RXD_STAT_DD))
-+		if (!rx_desc->wb.upper.length)
+ 	/* if mapping failed free memory back to system since
+ 	 * there isn't much point in holding memory we can't use
+@@ -639,6 +639,12 @@ static void ixgbevf_alloc_rx_buffers(struct ixgbevf_ring *rx_ring,
+ 		if (!ixgbevf_alloc_mapped_page(rx_ring, bi))
  			break;
  
- 		/* This memory barrier is needed to keep us from reading
-@@ -1729,6 +1729,7 @@ static void ixgbevf_configure_rx_ring(struct ixgbevf_adapter *adapter,
- 				      struct ixgbevf_ring *ring)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
-+	union ixgbe_adv_rx_desc *rx_desc;
- 	u64 rdba = ring->dma;
- 	u32 rxdctl;
- 	u8 reg_idx = ring->reg_idx;
-@@ -1757,6 +1758,10 @@ static void ixgbevf_configure_rx_ring(struct ixgbevf_adapter *adapter,
- 	IXGBE_WRITE_REG(hw, IXGBE_VFRDT(reg_idx), 0);
- 	ring->tail = adapter->io_addr + IXGBE_VFRDT(reg_idx);
- 
-+	/* initialize Rx descriptor 0 */
-+	rx_desc = IXGBEVF_RX_DESC(ring, 0);
-+	rx_desc->wb.upper.length = 0;
++		/* sync the buffer for use by the device */
++		dma_sync_single_range_for_device(rx_ring->dev, bi->dma,
++						 bi->page_offset,
++						 IXGBEVF_RX_BUFSZ,
++						 DMA_FROM_DEVICE);
 +
- 	/* reset ntu and ntc to place SW in sync with hardwdare */
- 	ring->next_to_clean = 0;
- 	ring->next_to_use = 0;
-@@ -2141,9 +2146,6 @@ static void ixgbevf_clean_rx_ring(struct ixgbevf_ring *rx_ring)
- 
- 	size = sizeof(struct ixgbevf_rx_buffer) * rx_ring->count;
- 	memset(rx_ring->rx_buffer_info, 0, size);
+ 		/* Refresh the desc even if pkt_addr didn't change
+ 		 * because each write-back erases this info.
+ 		 */
+@@ -741,12 +747,6 @@ static void ixgbevf_reuse_rx_page(struct ixgbevf_ring *rx_ring,
+ 	new_buff->page = old_buff->page;
+ 	new_buff->dma = old_buff->dma;
+ 	new_buff->page_offset = old_buff->page_offset;
 -
--	/* Zero out the descriptor ring */
--	memset(rx_ring->desc, 0, rx_ring->size);
+-	/* sync the buffer for use by the device */
+-	dma_sync_single_range_for_device(rx_ring->dev, new_buff->dma,
+-					 new_buff->page_offset,
+-					 IXGBEVF_RX_BUFSZ,
+-					 DMA_FROM_DEVICE);
  }
  
- /**
+ static inline bool ixgbevf_page_is_reserved(struct page *page)
+@@ -862,6 +862,13 @@ static struct sk_buff *ixgbevf_fetch_rx_buffer(struct ixgbevf_ring *rx_ring,
+ 	page = rx_buffer->page;
+ 	prefetchw(page);
+ 
++	/* we are reusing so sync this buffer for CPU use */
++	dma_sync_single_range_for_cpu(rx_ring->dev,
++				      rx_buffer->dma,
++				      rx_buffer->page_offset,
++				      size,
++				      DMA_FROM_DEVICE);
++
+ 	if (likely(!skb)) {
+ 		void *page_addr = page_address(page) +
+ 				  rx_buffer->page_offset;
+@@ -887,21 +894,15 @@ static struct sk_buff *ixgbevf_fetch_rx_buffer(struct ixgbevf_ring *rx_ring,
+ 		prefetchw(skb->data);
+ 	}
+ 
+-	/* we are reusing so sync this buffer for CPU use */
+-	dma_sync_single_range_for_cpu(rx_ring->dev,
+-				      rx_buffer->dma,
+-				      rx_buffer->page_offset,
+-				      size,
+-				      DMA_FROM_DEVICE);
+-
+ 	/* pull page into skb */
+ 	if (ixgbevf_add_rx_frag(rx_ring, rx_buffer, size, rx_desc, skb)) {
+ 		/* hand second half of page back to the ring */
+ 		ixgbevf_reuse_rx_page(rx_ring, rx_buffer);
+ 	} else {
+ 		/* we are not reusing the buffer so unmap it */
+-		dma_unmap_page(rx_ring->dev, rx_buffer->dma,
+-			       PAGE_SIZE, DMA_FROM_DEVICE);
++		dma_unmap_page_attrs(rx_ring->dev, rx_buffer->dma,
++				     PAGE_SIZE, DMA_FROM_DEVICE,
++				     IXGBEVF_RX_DMA_ATTR);
+ 	}
+ 
+ 	/* clear contents of buffer_info */
+@@ -2116,7 +2117,6 @@ void ixgbevf_up(struct ixgbevf_adapter *adapter)
+  **/
+ static void ixgbevf_clean_rx_ring(struct ixgbevf_ring *rx_ring)
+ {
+-	struct device *dev = rx_ring->dev;
+ 	unsigned long size;
+ 	unsigned int i;
+ 
+@@ -2135,10 +2135,23 @@ static void ixgbevf_clean_rx_ring(struct ixgbevf_ring *rx_ring)
+ 		struct ixgbevf_rx_buffer *rx_buffer;
+ 
+ 		rx_buffer = &rx_ring->rx_buffer_info[i];
+-		if (rx_buffer->dma)
+-			dma_unmap_page(dev, rx_buffer->dma,
+-				       PAGE_SIZE, DMA_FROM_DEVICE);
+-		rx_buffer->dma = 0;
++
++		/* Invalidate cache lines that may have been written to by
++		 * device so that we avoid corrupting memory.
++		 */
++		dma_sync_single_range_for_cpu(rx_ring->dev,
++					      rx_buffer->dma,
++					      rx_buffer->page_offset,
++					      IXGBEVF_RX_BUFSZ,
++					      DMA_FROM_DEVICE);
++
++		/* free resources associated with mapping */
++		dma_unmap_page_attrs(rx_ring->dev,
++				     rx_buffer->dma,
++				     PAGE_SIZE,
++				     DMA_FROM_DEVICE,
++				     IXGBEVF_RX_DMA_ATTR);
++
+ 		if (rx_buffer->page)
+ 			__free_page(rx_buffer->page);
+ 		rx_buffer->page = NULL;
 
