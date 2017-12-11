@@ -1,53 +1,71 @@
-From: Gabriel C <nix.or.die@gmail.com>
-Date: Sun, 10 Dec 2017 13:44:12 +0100
-Subject: [Intel-wired-lan] v4.15-rc2 on thinkpad x60: ethernet stopped
- working
-In-Reply-To: <20171210083949.GA3872@amd>
-References: <20171210083949.GA3872@amd>
-Message-ID: <d1ae924b-4d8f-a787-4c07-1f2db91482e5@gmail.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Mon, 11 Dec 2017 16:26:40 +0900
+Subject: [Intel-wired-lan] [PATCH] e1000e: Fix
+ e1000_check_for_copper_link_ich8lan return value.
+In-Reply-To: <20171208114552.5f517fd3@leda>
+References: <20171208114552.5f517fd3@leda>
+Message-ID: <20171211072640.7935-1-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10.12.2017 09:39, Pavel Machek wrote:
-> Hi!
+e1000e_check_for_copper_link() and e1000_check_for_copper_link_ich8lan()
+are the two functions that may be assigned to mac.ops.check_for_link when
+phy.media_type == e1000_media_type_copper. Commit 19110cfbb34d ("e1000e:
+Separate signaling for link check/link up") changed the meaning of the
+return value of check_for_link for copper media but only adjusted the first
+function. This patch adjusts the second function likewise.
 
-Hi,
+Reported-by: Christian Hesse <list@eworm.de>
+Reported-by: Gabriel C <nix.or.die@gmail.com>
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=198047
+Fixes: 19110cfbb34d ("e1000e: Separate signaling for link check/link up")
+Tested-by: Christian Hesse <list@eworm.de>
+Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-> In v4.15-rc2+, network manager can not see my ethernet card, and
-> manual attempts to ifconfig it up did not really help, either.
-> 
-> Card is:
-> 
-> 02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet
-> Controller
-> 
-> Dmesg says:
-> 
->    dmesg | grep eth
-> [    0.648931] e1000e 0000:02:00.0 eth0: (PCI Express:2.5GT/s:Width
-> x1) 00:16:d3:25:19:04
-> [    0.648934] e1000e 0000:02:00.0 eth0: Intel(R) PRO/1000 Network
-> Connection
-> [    0.649012] e1000e 0000:02:00.0 eth0: MAC: 2, PHY: 2, PBA No:
-> 005302-003
-> [    0.706510] usbcore: registered new interface driver cdc_ether
-> [    6.557022] e1000e 0000:02:00.0 eth1: renamed from eth0
-> [    6.577554] systemd-udevd[2363]: renamed network interface eth0 to
-> eth1
-> 
-> Any ideas ?
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index d6d4ed7acf03..31277d3bb7dc 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -1367,6 +1367,9 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
+  *  Checks to see of the link status of the hardware has changed.  If a
+  *  change in link status has been detected, then we read the PHY registers
+  *  to get the current speed/duplex if link exists.
++ *
++ *  Returns a negative error code (-E1000_ERR_*) or 0 (link down) or 1 (link
++ *  up).
+  **/
+ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ {
+@@ -1382,7 +1385,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	 * Change or Rx Sequence Error interrupt.
+ 	 */
+ 	if (!mac->get_link_status)
+-		return 0;
++		return 1;
+ 
+ 	/* First we want to see if the MII Status Register reports
+ 	 * link.  If so, then we want to get the current speed/duplex
+@@ -1613,10 +1616,12 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	 * different link partner.
+ 	 */
+ 	ret_val = e1000e_config_fc_after_link_up(hw);
+-	if (ret_val)
++	if (ret_val) {
+ 		e_dbg("Error configuring flow control\n");
++		return ret_val;
++	}
+ 
+-	return ret_val;
++	return 1;
+ }
+ 
+ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
+-- 
+2.15.1
 
-Yes , 19110cfbb34d4af0cdfe14cd243f3b09dc95b013 broke it.
-
-See:
-https://bugzilla.kernel.org/show_bug.cgi?id=198047
-
-Fix there :
-https://marc.info/?l=linux-kernel&m=151272209903675&w=2
-
-Regards,
-
-Gabriel C
