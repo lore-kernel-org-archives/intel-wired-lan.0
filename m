@@ -1,108 +1,172 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 12 Dec 2017 15:36:59 -0800
-Subject: [Intel-wired-lan] [PATCH v2 next-queue 06/10] ixgbe: restore
- offloaded SAs after a reset
+Date: Tue, 12 Dec 2017 15:37:00 -0800
+Subject: [Intel-wired-lan] [PATCH v2 next-queue 07/10] ixgbe: process the Rx
+ ipsec offload
 In-Reply-To: <1513121823-27944-1-git-send-email-shannon.nelson@oracle.com>
 References: <1513121823-27944-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <1513121823-27944-7-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1513121823-27944-8-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On a chip reset most of the table contents are lost, so must be
-restored.  This scans the driver's ipsec tables and restores both
-the filled and empty table slots to their pre-reset values.
+If the chip sees and decrypts an ipsec offload, set up the skb
+sp pointer with the ralated SA info.  Since the chip is rude
+enough to keep to itself the table index it used for the
+decryption, we have to do our own table lookup, using the
+hash for speed.
 
 Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
-v2: during restore, clean the tables before restarting
+v2: no changes
 
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 41 ++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  1 +
- 3 files changed, 44 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  6 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 89 ++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  3 +
+ 3 files changed, 98 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 8f41508..af690c2 100644
+index af690c2..a094b23 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -1010,8 +1010,10 @@ s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32 adv_reg, u32 lp_reg,
- #ifdef CONFIG_XFRM_OFFLOAD
+@@ -1011,9 +1011,15 @@ s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32 adv_reg, u32 lp_reg,
  void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter);
  void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter);
-+void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter);
+ void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter);
++void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
++		    union ixgbe_adv_rx_desc *rx_desc,
++		    struct sk_buff *skb);
  #else
  static inline void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter) { };
  static inline void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter) { };
-+static inline void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter) { };
+ static inline void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter) { };
++static inline void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
++				  union ixgbe_adv_rx_desc *rx_desc,
++				  struct sk_buff *skb) { };
  #endif /* CONFIG_XFRM_OFFLOAD */
  #endif /* _IXGBE_H_ */
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index 72b1d29..049c195 100644
+index 049c195..7e421b8 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -299,6 +299,47 @@ static void ixgbe_ipsec_start_engine(struct ixgbe_adapter *adapter)
+@@ -374,6 +374,35 @@ static int ixgbe_ipsec_find_empty_idx(struct ixgbe_ipsec *ipsec, bool rxtable)
  }
  
  /**
-+ * ixgbe_ipsec_restore - restore the ipsec HW settings after a reset
-+ * @adapter: board private structure
++ * ixgbe_ipsec_find_rx_state - find the state that matches
++ * @ipsec: pointer to ipsec struct
++ * @daddr: inbound address to match
++ * @proto: protocol to match
++ * @spi: SPI to match
++ *
++ * Returns a pointer to the matching SA state information
 + **/
-+void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter)
++static struct xfrm_state *ixgbe_ipsec_find_rx_state(struct ixgbe_ipsec *ipsec,
++						    __be32 daddr, u8 proto,
++						    __be32 spi)
 +{
-+	struct ixgbe_ipsec *ipsec = adapter->ipsec;
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	int i;
++	struct rx_sa *rsa;
++	struct xfrm_state *ret = NULL;
 +
-+	if (!(adapter->flags2 & IXGBE_FLAG2_IPSEC_ENABLED))
-+		return;
-+
-+	/* clean up and restart the engine */
-+	ixgbe_ipsec_stop_engine(adapter);
-+	ixgbe_ipsec_clear_hw_tables(adapter);
-+	ixgbe_ipsec_start_engine(adapter);
-+
-+	/* reload the IP addrs */
-+	for (i = 0; i < IXGBE_IPSEC_MAX_RX_IP_COUNT; i++) {
-+		struct rx_ip_sa *ipsa = &ipsec->ip_tbl[i];
-+
-+		if (ipsa->used)
-+			ixgbe_ipsec_set_rx_ip(hw, i, ipsa->ipaddr);
-+	}
-+
-+	/* reload the Rx and Tx keys */
-+	for (i = 0; i < IXGBE_IPSEC_MAX_SA_COUNT; i++) {
-+		struct rx_sa *rsa = &ipsec->rx_tbl[i];
-+		struct tx_sa *tsa = &ipsec->tx_tbl[i];
-+
-+		if (rsa->used)
-+			ixgbe_ipsec_set_rx_sa(hw, i, rsa->xs->id.spi,
-+					      rsa->key, rsa->salt,
-+					      rsa->mode, rsa->iptbl_ind);
-+
-+		if (tsa->used)
-+			ixgbe_ipsec_set_tx_sa(hw, i, tsa->key, tsa->salt);
-+	}
++	rcu_read_lock();
++	hash_for_each_possible_rcu(ipsec->rx_sa_list, rsa, hlist, spi)
++		if (spi == rsa->xs->id.spi &&
++		    daddr == rsa->xs->id.daddr.a4 &&
++		    proto == rsa->xs->id.proto) {
++			ret = rsa->xs;
++			xfrm_state_hold(ret);
++			break;
++		}
++	rcu_read_unlock();
++	return ret;
 +}
 +
 +/**
-  * ixgbe_ipsec_find_empty_idx - find the first unused security parameter index
-  * @ipsec: pointer to ipsec struct
-  * @rxtable: true if we need to look in the Rx table
+  * ixgbe_ipsec_parse_proto_keys - find the key and salt based on the protocol
+  * @xs: pointer to xfrm_state struct
+  * @mykey: pointer to key array to populate
+@@ -672,6 +701,66 @@ static const struct xfrmdev_ops ixgbe_xfrmdev_ops = {
+ };
+ 
+ /**
++ * ixgbe_ipsec_rx - decode ipsec bits from Rx descriptor
++ * @rx_ring: receiving ring
++ * @rx_desc: receive data descriptor
++ * @skb: current data packet
++ *
++ * Determine if there was an ipsec encapsulation noticed, and if so set up
++ * the resulting status for later in the receive stack.
++ **/
++void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
++		    union ixgbe_adv_rx_desc *rx_desc,
++		    struct sk_buff *skb)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(rx_ring->netdev);
++	u16 pkt_info = le16_to_cpu(rx_desc->wb.lower.lo_dword.hs_rss.pkt_info);
++	u16 ipsec_pkt_types = IXGBE_RXDADV_PKTTYPE_IPSEC_AH |
++				IXGBE_RXDADV_PKTTYPE_IPSEC_ESP;
++	struct ixgbe_ipsec *ipsec = adapter->ipsec;
++	struct xfrm_offload *xo = NULL;
++	struct xfrm_state *xs = NULL;
++	struct iphdr *iph;
++	u8 *c_hdr;
++	__be32 spi;
++	u8 proto;
++
++	/* we can assume no vlan header in the way, b/c the
++	 * hw won't recognize the IPsec packet and anyway the
++	 * currently vlan device doesn't support xfrm offload.
++	 */
++	/* TODO: not supporting IPv6 yet */
++	iph = (struct iphdr *)(skb->data + ETH_HLEN);
++	c_hdr = (u8 *)iph + iph->ihl * 4;
++	switch (pkt_info & ipsec_pkt_types) {
++	case IXGBE_RXDADV_PKTTYPE_IPSEC_AH:
++		spi = ((struct ip_auth_hdr *)c_hdr)->spi;
++		proto = IPPROTO_AH;
++		break;
++	case IXGBE_RXDADV_PKTTYPE_IPSEC_ESP:
++		spi = ((struct ip_esp_hdr *)c_hdr)->spi;
++		proto = IPPROTO_ESP;
++		break;
++	default:
++		return;
++	}
++
++	xs = ixgbe_ipsec_find_rx_state(ipsec, iph->daddr, proto, spi);
++	if (unlikely(!xs))
++		return;
++
++	skb->sp = secpath_dup(skb->sp);
++	if (unlikely(!skb->sp))
++		return;
++
++	skb->sp->xvec[skb->sp->len++] = xs;
++	skb->sp->olen++;
++	xo = xfrm_offload(skb);
++	xo->flags = CRYPTO_DONE;
++	xo->status = CRYPTO_SUCCESS;
++}
++
++/**
+  * ixgbe_init_ipsec_offload - initialize security registers for IPSec operation
+  * @adapter: board private structure
+  **/
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 2b3da0c..04e8b26 100644
+index 04e8b26..0ee1e5e 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5347,6 +5347,7 @@ static void ixgbe_configure(struct ixgbe_adapter *adapter)
+@@ -1755,6 +1755,9 @@ static void ixgbe_process_skb_fields(struct ixgbe_ring *rx_ring,
  
- 	ixgbe_set_rx_mode(adapter->netdev);
- 	ixgbe_restore_vlan(adapter);
-+	ixgbe_ipsec_restore(adapter);
+ 	skb_record_rx_queue(skb, rx_ring->queue_index);
  
- 	switch (hw->mac.type) {
- 	case ixgbe_mac_82599EB:
++	if (ixgbe_test_staterr(rx_desc, IXGBE_RXDADV_STAT_SECP))
++		ixgbe_ipsec_rx(rx_ring, rx_desc, skb);
++
+ 	skb->protocol = eth_type_trans(skb, dev);
+ }
+ 
 -- 
 2.7.4
 
