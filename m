@@ -1,8 +1,8 @@
 From: Lyude Paul <lyude@redhat.com>
-Date: Mon, 11 Dec 2017 20:34:46 -0500
-Subject: [Intel-wired-lan] [PATCH v2] igb: Free IRQs when device is
+Date: Tue, 12 Dec 2017 14:31:30 -0500
+Subject: [Intel-wired-lan] [PATCH v3] igb: Free IRQs when device is
  hotplugged
-Message-ID: <20171212013446.744-1-lyude@redhat.com>
+Message-ID: <20171212193130.5971-1-lyude@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -73,29 +73,18 @@ Cc: Todd Fujinaka <todd.fujinaka@intel.com>
 Cc: Stephen Hemminger <stephen@networkplumber.org>
 Cc: stable at vger.kernel.org
 ---
-Changes since v1:
-  - Remove code for freeing IRQs from igb_remove(), unbreak
-    __igb_close() instead (re: Stephen Hemminger)
+Changes since v2:
+  - Remove hunk in __igb_close() that was left over by accident, it's
+    not needed
 
- drivers/net/ethernet/intel/igb/igb_main.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index c208753ff5b7..a1083fd074dd 100644
+index c208753ff5b7..c69a5b3ae8c8 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3663,7 +3663,9 @@ static int __igb_close(struct net_device *netdev, bool suspending)
- 	if (!suspending)
- 		pm_runtime_get_sync(&pdev->dev);
- 
--	igb_down(adapter);
-+	if (!test_bit(__IGB_DOWN, &adapter->state))
-+		igb_down(adapter);
-+
- 	igb_free_irq(adapter);
- 
- 	igb_free_all_tx_resources(adapter);
-@@ -3676,7 +3678,7 @@ static int __igb_close(struct net_device *netdev, bool suspending)
+@@ -3676,7 +3676,7 @@ static int __igb_close(struct net_device *netdev, bool suspending)
  
  int igb_close(struct net_device *netdev)
  {
