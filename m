@@ -1,158 +1,109 @@
-From: Lyude Paul <cpaul@redhat.com>
-Date: Mon, 11 Dec 2017 19:37:55 -0500
-Subject: [Intel-wired-lan] [PATCH] igb: Free IRQs when device is
+From: Lyude Paul <lyude@redhat.com>
+Date: Mon, 11 Dec 2017 20:34:46 -0500
+Subject: [Intel-wired-lan] [PATCH v2] igb: Free IRQs when device is
  hotplugged
-In-Reply-To: <20171211163422.07d538fb@xeon-e3>
-References: <20171211234502.27445-1-lyude@redhat.com>
- <20171211163422.07d538fb@xeon-e3>
-Message-ID: <1513039075.29127.2.camel@redhat.com>
+Message-ID: <20171212013446.744-1-lyude@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2017-12-11 at 16:34 -0800, Stephen Hemminger wrote:
-> On Mon, 11 Dec 2017 18:45:02 -0500
-> Lyude Paul <lyude@redhat.com> wrote:
-> 
-> > Recently I got a Caldigit TS3 Thunderbolt 3 dock, and noticed that upon
-> > hotplugging my kernel would immediately crash due to igb:
-> > 
-> > [  680.825801] kernel BUG at drivers/pci/msi.c:352!
-> > [  680.828388] invalid opcode: 0000 [#1] SMP
-> > [  680.829194] Modules linked in: igb(O) thunderbolt i2c_algo_bit joydev
-> > vfat fat btusb btrtl btbcm btintel bluetooth ecdh_generic hp_wmi
-> > sparse_keymap rfkill wmi_bmof iTCO_wdt intel_rapl x86_pkg_temp_thermal
-> > coretemp crc32_pclmul snd_pcm rtsx_pci_ms mei_me snd_timer memstick snd
-> > pcspkr mei soundcore i2c_i801 tpm_tis psmouse shpchp wmi tpm_tis_core tpm
-> > video hp_wireless acpi_pad rtsx_pci_sdmmc mmc_core crc32c_intel serio_raw
-> > rtsx_pci mfd_core xhci_pci xhci_hcd i2c_hid i2c_core [last unloaded: igb]
-> > [  680.831085] CPU: 1 PID: 78 Comm: kworker/u16:1 Tainted:
-> > G           O     4.15.0-rc3Lyude-Test+ #6
-> > [  680.831596] Hardware name: HP HP ZBook Studio G4/826B, BIOS P71 Ver.
-> > 01.03 06/09/2017
-> > [  680.832168] Workqueue: kacpi_hotplug acpi_hotplug_work_fn
-> > [  680.832687] RIP: 0010:free_msi_irqs+0x180/0x1b0
-> > [  680.833271] RSP: 0018:ffffc9000030fbf0 EFLAGS: 00010286
-> > [  680.833761] RAX: ffff8803405f9c00 RBX: ffff88033e3d2e40 RCX:
-> > 000000000000002c
-> > [  680.834278] RDX: 0000000000000000 RSI: 00000000000000ac RDI:
-> > ffff880340be2178
-> > [  680.834832] RBP: 0000000000000000 R08: ffff880340be1ff0 R09:
-> > ffff8803405f9c00
-> > [  680.835342] R10: 0000000000000000 R11: 0000000000000040 R12:
-> > ffff88033d63a298
-> > [  680.835822] R13: ffff88033d63a000 R14: 0000000000000060 R15:
-> > ffff880341959000
-> > [  680.836332] FS:  0000000000000000(0000) GS:ffff88034f440000(0000)
-> > knlGS:0000000000000000
-> > [  680.836817] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> > [  680.837360] CR2: 000055e64044afdf CR3: 0000000001c09002 CR4:
-> > 00000000003606e0
-> > [  680.837954] Call Trace:
-> > [  680.838853]  pci_disable_msix+0xce/0xf0
-> > [  680.839616]  igb_reset_interrupt_capability+0x5d/0x60 [igb]
-> > [  680.840278]  igb_remove+0x9d/0x110 [igb]
-> > [  680.840764]  pci_device_remove+0x36/0xb0
-> > [  680.841279]  device_release_driver_internal+0x157/0x220
-> > [  680.841739]  pci_stop_bus_device+0x7d/0xa0
-> > [  680.842255]  pci_stop_bus_device+0x2b/0xa0
-> > [  680.842722]  pci_stop_bus_device+0x3d/0xa0
-> > [  680.843189]  pci_stop_and_remove_bus_device+0xe/0x20
-> > [  680.843627]  trim_stale_devices+0xf3/0x140
-> > [  680.844086]  trim_stale_devices+0x94/0x140
-> > [  680.844532]  trim_stale_devices+0xa6/0x140
-> > [  680.845031]  ? get_slot_status+0x90/0xc0
-> > [  680.845536]  acpiphp_check_bridge.part.5+0xfe/0x140
-> > [  680.846021]  acpiphp_hotplug_notify+0x175/0x200
-> > [  680.846581]  ? free_bridge+0x100/0x100
-> > [  680.847113]  acpi_device_hotplug+0x8a/0x490
-> > [  680.847535]  acpi_hotplug_work_fn+0x1a/0x30
-> > [  680.848076]  process_one_work+0x182/0x3a0
-> > [  680.848543]  worker_thread+0x2e/0x380
-> > [  680.848963]  ? process_one_work+0x3a0/0x3a0
-> > [  680.849373]  kthread+0x111/0x130
-> > [  680.849776]  ? kthread_create_worker_on_cpu+0x50/0x50
-> > [  680.850188]  ret_from_fork+0x1f/0x30
-> > [  680.850601] Code: 43 14 85 c0 0f 84 d5 fe ff ff 31 ed eb 0f 83 c5 01 39
-> > 6b 14 0f 86 c5 fe ff ff 8b 7b 10 01 ef e8 b7 e4 d2 ff 48 83 78 70 00 74 e3
-> > <0f> 0b 49 8d b5 a0 00 00 00 e8 62 6f d3 ff e9 c7 fe ff ff 48 8b
-> > [  680.851497] RIP: free_msi_irqs+0x180/0x1b0 RSP: ffffc9000030fbf0
-> > 
-> > As it turns out, normally the freeing of IRQs that would fix this is called
-> > inside of the scope of __igb_close(). However, since the device is
-> > already gone by the point we try to unregister the netdevice from the
-> > driver due to a hotplug we end up seeing that the netif isn't present
-> > and thus, forget to free any of the device IRQs.
-> > 
-> > So: after unregistering the netdev in igb_remove() check whether the PCI
-> > device is stale and if so, free it's IRQs and tx/rx resources.
-> > 
-> > Signed-off-by: Lyude Paul <lyude@redhat.com>
-> > Fixes: 9474933caf21 ("igb: close/suspend race in netif_device_detach")
-> > Cc: Todd Fujinaka <todd.fujinaka@intel.com>
-> > Cc: stable at vger.kernel.org
-> > ---
-> >  drivers/net/ethernet/intel/igb/igb_main.c | 10 ++++++++++
-> >  1 file changed, 10 insertions(+)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
-> > b/drivers/net/ethernet/intel/igb/igb_main.c
-> > index c208753ff5b7..e650348b4bd7 100644
-> > --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> > @@ -3325,6 +3325,16 @@ static void igb_remove(struct pci_dev *pdev)
-> >  
-> >  	unregister_netdev(netdev);
-> >  
-> > +	/* If the PCI device has already been physically removed (e.g. user
-> > +	 * unplugged a thunderbolt dock containing our hw) then the netif
-> > will
-> > +	 * already be down, so unregistering the netdev won't free the IRQs
-> > +	 */
-> > +	if (!pci_device_is_present(pdev)) {
-> > +		igb_free_irq(adapter);
-> > +		igb_free_all_tx_resources(adapter);
-> > +		igb_free_all_rx_resources(adapter);
-> > +	}
-> > +
-> >  	igb_clear_interrupt_scheme(adapter);
-> >  
-> >  	pci_iounmap(pdev, adapter->io_addr);
-> 
-> This looks like you are making a special case out of something that should
-> be fixed in igb_close instead.
-> 
-> Most likely something is wrong with earlier commit.
-> 
-> commit 9474933caf21a4cb5147223dca1551f527aaac36
-> Author: Todd Fujinaka <todd.fujinaka@intel.com>
-> Date:   Tue Nov 15 08:54:26 2016 -0800
-> 
->     igb: close/suspend race in netif_device_detach
->     
->     Similar to ixgbe, when an interface is part of a namespace it is
->     possible that igb_close() may be called while __igb_shutdown() is
->     running which ends up in a double free WARN and/or a BUG in
->     free_msi_irqs().
->     
->     Extend the rtnl_lock() to protect the call to netif_device_detach() and
->     igb_clear_interrupt_scheme() in __igb_shutdown() and check for
->     netif_device_present() to avoid calling igb_clear_interrupt_scheme() a
->     second time in igb_close().
->     
->     Also extend the rtnl lock in igb_resume() to netif_device_attach().
->     
->     Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
->     Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
->     Tested-by: Aaron Brown <aaron.f.brown@intel.com>
->     Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> 
-> 
-> Layers on layers of workarounds does not lead to stability.'
+Recently I got a Caldigit TS3 Thunderbolt 3 dock, and noticed that upon
+hotplugging my kernel would immediately crash due to igb:
 
-Agreed, although it should be noted though I mentioned that exact commit in the
-patch I sent :P. Will rework patch and send out a new version.
+[  680.825801] kernel BUG at drivers/pci/msi.c:352!
+[  680.828388] invalid opcode: 0000 [#1] SMP
+[  680.829194] Modules linked in: igb(O) thunderbolt i2c_algo_bit joydev vfat fat btusb btrtl btbcm btintel bluetooth ecdh_generic hp_wmi sparse_keymap rfkill wmi_bmof iTCO_wdt intel_rapl x86_pkg_temp_thermal coretemp crc32_pclmul snd_pcm rtsx_pci_ms mei_me snd_timer memstick snd pcspkr mei soundcore i2c_i801 tpm_tis psmouse shpchp wmi tpm_tis_core tpm video hp_wireless acpi_pad rtsx_pci_sdmmc mmc_core crc32c_intel serio_raw rtsx_pci mfd_core xhci_pci xhci_hcd i2c_hid i2c_core [last unloaded: igb]
+[  680.831085] CPU: 1 PID: 78 Comm: kworker/u16:1 Tainted: G           O     4.15.0-rc3Lyude-Test+ #6
+[  680.831596] Hardware name: HP HP ZBook Studio G4/826B, BIOS P71 Ver. 01.03 06/09/2017
+[  680.832168] Workqueue: kacpi_hotplug acpi_hotplug_work_fn
+[  680.832687] RIP: 0010:free_msi_irqs+0x180/0x1b0
+[  680.833271] RSP: 0018:ffffc9000030fbf0 EFLAGS: 00010286
+[  680.833761] RAX: ffff8803405f9c00 RBX: ffff88033e3d2e40 RCX: 000000000000002c
+[  680.834278] RDX: 0000000000000000 RSI: 00000000000000ac RDI: ffff880340be2178
+[  680.834832] RBP: 0000000000000000 R08: ffff880340be1ff0 R09: ffff8803405f9c00
+[  680.835342] R10: 0000000000000000 R11: 0000000000000040 R12: ffff88033d63a298
+[  680.835822] R13: ffff88033d63a000 R14: 0000000000000060 R15: ffff880341959000
+[  680.836332] FS:  0000000000000000(0000) GS:ffff88034f440000(0000) knlGS:0000000000000000
+[  680.836817] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  680.837360] CR2: 000055e64044afdf CR3: 0000000001c09002 CR4: 00000000003606e0
+[  680.837954] Call Trace:
+[  680.838853]  pci_disable_msix+0xce/0xf0
+[  680.839616]  igb_reset_interrupt_capability+0x5d/0x60 [igb]
+[  680.840278]  igb_remove+0x9d/0x110 [igb]
+[  680.840764]  pci_device_remove+0x36/0xb0
+[  680.841279]  device_release_driver_internal+0x157/0x220
+[  680.841739]  pci_stop_bus_device+0x7d/0xa0
+[  680.842255]  pci_stop_bus_device+0x2b/0xa0
+[  680.842722]  pci_stop_bus_device+0x3d/0xa0
+[  680.843189]  pci_stop_and_remove_bus_device+0xe/0x20
+[  680.843627]  trim_stale_devices+0xf3/0x140
+[  680.844086]  trim_stale_devices+0x94/0x140
+[  680.844532]  trim_stale_devices+0xa6/0x140
+[  680.845031]  ? get_slot_status+0x90/0xc0
+[  680.845536]  acpiphp_check_bridge.part.5+0xfe/0x140
+[  680.846021]  acpiphp_hotplug_notify+0x175/0x200
+[  680.846581]  ? free_bridge+0x100/0x100
+[  680.847113]  acpi_device_hotplug+0x8a/0x490
+[  680.847535]  acpi_hotplug_work_fn+0x1a/0x30
+[  680.848076]  process_one_work+0x182/0x3a0
+[  680.848543]  worker_thread+0x2e/0x380
+[  680.848963]  ? process_one_work+0x3a0/0x3a0
+[  680.849373]  kthread+0x111/0x130
+[  680.849776]  ? kthread_create_worker_on_cpu+0x50/0x50
+[  680.850188]  ret_from_fork+0x1f/0x30
+[  680.850601] Code: 43 14 85 c0 0f 84 d5 fe ff ff 31 ed eb 0f 83 c5 01 39 6b 14 0f 86 c5 fe ff ff 8b 7b 10 01 ef e8 b7 e4 d2 ff 48 83 78 70 00 74 e3 <0f> 0b 49 8d b5 a0 00 00 00 e8 62 6f d3 ff e9 c7 fe ff ff 48 8b
+[  680.851497] RIP: free_msi_irqs+0x180/0x1b0 RSP: ffffc9000030fbf0
 
-> 
+As it turns out, normally the freeing of IRQs that would fix this is called
+inside of the scope of __igb_close(). However, since the device is
+already gone by the point we try to unregister the netdevice from the
+driver due to a hotplug we end up seeing that the netif isn't present
+and thus, forget to free any of the device IRQs.
+
+So: make sure that if we're in the process of dismantling the netdev, we
+always allow __igb_close() to be called so that IRQs may be freed
+normally. Additionally, only allow igb_close() to be called from
+__igb_close() if it hasn't already been called for the given adapter.
+
+Signed-off-by: Lyude Paul <lyude@redhat.com>
+Fixes: 9474933caf21 ("igb: close/suspend race in netif_device_detach")
+Cc: Todd Fujinaka <todd.fujinaka@intel.com>
+Cc: Stephen Hemminger <stephen@networkplumber.org>
+Cc: stable at vger.kernel.org
+---
+Changes since v1:
+  - Remove code for freeing IRQs from igb_remove(), unbreak
+    __igb_close() instead (re: Stephen Hemminger)
+
+ drivers/net/ethernet/intel/igb/igb_main.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index c208753ff5b7..a1083fd074dd 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3663,7 +3663,9 @@ static int __igb_close(struct net_device *netdev, bool suspending)
+ 	if (!suspending)
+ 		pm_runtime_get_sync(&pdev->dev);
+ 
+-	igb_down(adapter);
++	if (!test_bit(__IGB_DOWN, &adapter->state))
++		igb_down(adapter);
++
+ 	igb_free_irq(adapter);
+ 
+ 	igb_free_all_tx_resources(adapter);
+@@ -3676,7 +3678,7 @@ static int __igb_close(struct net_device *netdev, bool suspending)
+ 
+ int igb_close(struct net_device *netdev)
+ {
+-	if (netif_device_present(netdev))
++	if (netif_device_present(netdev) || netdev->dismantle)
+ 		return __igb_close(netdev, false);
+ 	return 0;
+ }
+-- 
+2.14.3
+
