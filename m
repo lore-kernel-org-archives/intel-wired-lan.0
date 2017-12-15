@@ -1,86 +1,34 @@
-From: Peter Bergin <peter@berginkonsult.se>
-Date: Fri, 15 Dec 2017 14:31:14 +0100
-Subject: [Intel-wired-lan] ixgbe driver - Link Modes
-Message-ID: <02f03d55-67f9-c0e3-068a-4863629894ae@berginkonsult.se>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Fri, 15 Dec 2017 12:22:30 -0800
+Subject: [Intel-wired-lan] [PATCH v2 next-queue 08/10] ixgbe: process
+ the Tx ipsec offload
+In-Reply-To: <201712160304.vXamGJOb%fengguang.wu@intel.com>
+References: <1513121823-27944-9-git-send-email-shannon.nelson@oracle.com>
+ <201712160304.vXamGJOb%fengguang.wu@intel.com>
+Message-ID: <5dacf242-7d8d-cb55-7532-63d7ea4e3b51@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+On 12/15/2017 12:10 PM, kbuild test robot wrote:
+[...]
+> 
+>     drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_xmit_frame_ring':
+>>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8563:11: error: 'struct sk_buff' has no member named 'sp'; did you mean 'sk'?
+>       if (skb->sp && !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
+>                ^~
+>                sk
+> 
+> vim +8563 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> 
+>    8562	
+>> 8563		if (skb->sp && !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
+>    8564			goto out_drop;
 
-I'm currently working with a kernel upgrade in a system using Intel 
-82599EB 10Gb NIC. The kernel will be changed from version 3.4 to 4.1. 
-When looking into the details with 'ethtool' I see a difference in the 
-'Supported link modes:' and 'Advertised link modes:' fields between the 
-kernels on same hardware. Can anyone help me understand this difference 
-and if it is critical or not?
+Thanks, Mr. Roboto.  Obviously an #ifdef is in order around this little 
+block.
 
-Thanks,
-/Peter
+sln
 
-With kernel 3.4:
-
-~ # ethtool eth6
-Settings for eth6:
-Supported ports: [ FIBRE ]
-*Supported link modes: 1000baseT/Full**
-**10000baseT/Full*
-Supports auto-negotiation: Yes
-*Advertised link modes: 1000baseT/Full**
-**10000baseT/Full*
-Advertised pause frame use: No
-Advertised auto-negotiation: Yes
-Speed: 10000Mb/s
-Duplex: Full
-Port: Other
-PHYAD: 0
-Transceiver: external
-Auto-negotiation: on
-Supports Wake-on: umbg
-Wake-on: g
-Current message level: 0x00000007 (7)
-drv probe link
-Link detected: yes
-
-~ # ethtool -i eth6
-driver: ixgbe
-version: 3.8.21-k
-firmware-version: 0x800000c9
-bus-info: 0000:05:00.1
-
-
-
-With kernel 4.1:
-
-~ # ethtool eth6
-Settings for eth6:
-Supported ports: [ FIBRE ]
-*Supported link modes: 1000baseT/Full*
-Supports auto-negotiation: Yes
-*Advertised link modes: 1000baseT/Full**
-*Advertised pause frame use: No
-Advertised auto-negotiation: Yes
-Speed: 10000Mb/s
-Duplex: Full
-Port: Other
-PHYAD: 0
-Transceiver: external
-Auto-negotiation: on
-Supports Wake-on: umbg
-Wake-on: g
-Current message level: 0x00000007 (7)
-drv probe link
-Link detected: yes
-
-~ # ethtool -i eth6
-driver: ixgbe
-version: 4.4.0-k
-firmware-version: 0x800000c9
-bus-info: 0000:05:00.1
-
-
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171215/57f90ce3/attachment.html>
