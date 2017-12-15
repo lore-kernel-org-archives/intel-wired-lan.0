@@ -1,95 +1,59 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 15 Dec 2017 13:25:37 -0800
-Subject: [Intel-wired-lan] ixgbe driver - Link Modes
-In-Reply-To: <02f03d55-67f9-c0e3-068a-4863629894ae@berginkonsult.se>
-References: <02f03d55-67f9-c0e3-068a-4863629894ae@berginkonsult.se>
-Message-ID: <CAKgT0Ufpxsb9VW1QXAUwert2Z+-aD10OCfA=wYCQ_qF_12_HHA@mail.gmail.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Fri, 15 Dec 2017 10:25:35 -0500
+Subject: [Intel-wired-lan] [next PATCH S83-V5 5/9] i40e: Fix for blinking
+ activity instead of link LEDs
+In-Reply-To: <20171215152539.49695-1-alice.michael@intel.com>
+References: <20171215152539.49695-1-alice.michael@intel.com>
+Message-ID: <20171215152539.49695-5-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Dec 15, 2017 at 5:31 AM, Peter Bergin <peter@berginkonsult.se> wrote:
-> Hi,
->
-> I'm currently working with a kernel upgrade in a system using Intel 82599EB
-> 10Gb NIC. The kernel will be changed from version 3.4 to 4.1. When looking
-> into the details with 'ethtool' I see a difference in the 'Supported link
-> modes:' and 'Advertised link modes:' fields between the kernels on same
-> hardware. Can anyone help me understand this difference and if it is
-> critical or not?
->
-> Thanks,
-> /Peter
->
-> With kernel 3.4:
->
-> ~ # ethtool eth6
-> Settings for eth6:
-> Supported ports: [ FIBRE ]
-> Supported link modes: 1000baseT/Full
-> 10000baseT/Full
-> Supports auto-negotiation: Yes
-> Advertised link modes: 1000baseT/Full
-> 10000baseT/Full
-> Advertised pause frame use: No
-> Advertised auto-negotiation: Yes
-> Speed: 10000Mb/s
-> Duplex: Full
-> Port: Other
-> PHYAD: 0
-> Transceiver: external
-> Auto-negotiation: on
-> Supports Wake-on: umbg
-> Wake-on: g
-> Current message level: 0x00000007 (7)
-> drv probe link
-> Link detected: yes
->
-> ~ # ethtool -i eth6
-> driver: ixgbe
-> version: 3.8.21-k
-> firmware-version: 0x800000c9
-> bus-info: 0000:05:00.1
->
->
->
-> With kernel 4.1:
->
-> ~ # ethtool eth6
-> Settings for eth6:
-> Supported ports: [ FIBRE ]
-> Supported link modes: 1000baseT/Full
-> Supports auto-negotiation: Yes
-> Advertised link modes: 1000baseT/Full
-> Advertised pause frame use: No
-> Advertised auto-negotiation: Yes
-> Speed: 10000Mb/s
-> Duplex: Full
-> Port: Other
-> PHYAD: 0
-> Transceiver: external
-> Auto-negotiation: on
-> Supports Wake-on: umbg
-> Wake-on: g
-> Current message level: 0x00000007 (7)
-> drv probe link
-> Link detected: yes
->
-> ~ # ethtool -i eth6
-> driver: ixgbe
-> version: 4.4.0-k
-> firmware-version: 0x800000c9
-> bus-info: 0000:05:00.1
+From: Michal Kuchta <michal.kuchta@intel.com>
 
-What is the SFP you are using to get link? The fact that it is saying
-it only supports 1G when it is already connected at 10G is most likely
-a bug of some sort. I'll see what we can do to reproduce and root
-cause the issue. Also is there any chance you could try testing with
-either out out-of-tree driver at e1000.sf.net or try testing with the
-latest kernel to see if the issue has already been resolved there?
+This fix solves an issue occurring while calling i40e_led_set function
+from the driver with "blink" parameter set as TRUE. This call resulted
+in Activity LED blinking instead of Link LED, which may lead to errors
+in physically identyfying the port, since Activity LED may be blinking
+for different reasons aswell.
 
-Thanks.
+Signed-off-by: Michal Kuchta <michal.kuchta@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-- Alex
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index cf929cc..ee6052e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1486,6 +1486,7 @@ u32 i40e_led_get(struct i40e_hw *hw)
+ 		case I40E_COMBINED_ACTIVITY:
+ 		case I40E_FILTER_ACTIVITY:
+ 		case I40E_MAC_ACTIVITY:
++		case I40E_LINK_ACTIVITY:
+ 			continue;
+ 		default:
+ 			break;
+@@ -1534,6 +1535,7 @@ void i40e_led_set(struct i40e_hw *hw, u32 mode, bool blink)
+ 		case I40E_COMBINED_ACTIVITY:
+ 		case I40E_FILTER_ACTIVITY:
+ 		case I40E_MAC_ACTIVITY:
++		case I40E_LINK_ACTIVITY:
+ 			continue;
+ 		default:
+ 			break;
+@@ -1544,9 +1546,6 @@ void i40e_led_set(struct i40e_hw *hw, u32 mode, bool blink)
+ 		gpio_val |= ((mode << I40E_GLGEN_GPIO_CTL_LED_MODE_SHIFT) &
+ 			     I40E_GLGEN_GPIO_CTL_LED_MODE_MASK);
+ 
+-		if (mode == I40E_LINK_ACTIVITY)
+-			blink = false;
+-
+ 		if (blink)
+ 			gpio_val |= BIT(I40E_GLGEN_GPIO_CTL_LED_BLINK_SHIFT);
+ 		else
+-- 
+2.9.5
+
