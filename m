@@ -1,42 +1,47 @@
-From: Sagar Arun Kamble <sagar.a.kamble@intel.com>
-Date: Fri, 15 Dec 2017 13:08:37 +0530
-Subject: [Intel-wired-lan] [PATCH 22/27] ixgbe: Use timecounter_reset
- interface
-In-Reply-To: <1513323522-15021-1-git-send-email-sagar.a.kamble@intel.com>
-References: <1513323522-15021-1-git-send-email-sagar.a.kamble@intel.com>
-Message-ID: <1513323522-15021-23-git-send-email-sagar.a.kamble@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Fri, 15 Dec 2017 10:28:49 +0100
+Subject: [Intel-wired-lan] v4.15-rc2 on thinkpad x60: ethernet stopped
+ working
+In-Reply-To: <d1ae924b-4d8f-a787-4c07-1f2db91482e5@gmail.com>
+References: <20171210083949.GA3872@amd>
+ <d1ae924b-4d8f-a787-4c07-1f2db91482e5@gmail.com>
+Message-ID: <20171215092849.GB15090@amd>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-With new interface timecounter_reset we can update the start time for
-timecounter. Update ixgbe_ptp_settime with this new function.
+Hi!
 
-Signed-off-by: Sagar Arun Kamble <sagar.a.kamble@intel.com>
-Cc: Richard Cochran <richardcochran@gmail.com>
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Cc: netdev at vger.kernel.org
-Cc: linux-kernel at vger.kernel.org
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> >In v4.15-rc2+, network manager can not see my ethernet card, and
+> >manual attempts to ifconfig it up did not really help, either.
+> >
+> >Card is:
+> >
+> >02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet
+> >Controller
+....
+> >Any ideas ?
+> 
+> Yes , 19110cfbb34d4af0cdfe14cd243f3b09dc95b013 broke it.
+> 
+> See:
+> https://bugzilla.kernel.org/show_bug.cgi?id=198047
+> 
+> Fix there :
+> https://marc.info/?l=linux-kernel&m=151272209903675&w=2
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-index 073c1ef..35f85ef 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-@@ -508,7 +508,7 @@ static int ixgbe_ptp_settime(struct ptp_clock_info *ptp,
- 
- 	/* reset the timecounter */
- 	spin_lock_irqsave(&adapter->tmreg_lock, flags);
--	timecounter_init(&adapter->hw_tc, ns);
-+	timecounter_reset(&adapter->hw_tc, ns);
- 	spin_unlock_irqrestore(&adapter->tmreg_lock, flags);
- 
- 	if (adapter->ptp_setup_sdp)
+I don't see the patch in latest mainline. Not having ethernet
+is... somehow annoying. What is going on there?
+									Pavel
 -- 
-1.9.1
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 181 bytes
+Desc: Digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171215/daac13ea/attachment.asc>
