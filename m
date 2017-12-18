@@ -1,160 +1,158 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 19 Dec 2017 04:48:19 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- f6a9cfb25db012fc7840692ae6235ac12a29cb36
-Message-ID: <5a382993.nIexdRGeCB77lhaB%fengguang.wu@intel.com>
+Date: Tue, 19 Dec 2017 04:59:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 67/80]
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c:44:17: sparse: incorrect
+ type in argument 3 (different base types)
+Message-ID: <201712190407.gmgPG1WL%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: f6a9cfb25db012fc7840692ae6235ac12a29cb36  ixgbe: register ipsec offload with the xfrm subsystem
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   6d3426ed7dd90f482ef40f7a6abd2b0e18f37c63
+commit: 7efd4bc2735643536e0b5b31e6d0fd59b0c43eea [67/80] ixgbe: add ipsec register access routines
+reproduce:
+        # apt-get install sparse
+        git checkout 7efd4bc2735643536e0b5b31e6d0fd59b0c43eea
+        make ARCH=x86_64 allmodconfig
+        make C=1 CF=-D__CHECK_ENDIAN__
 
-elapsed time: 92m
 
-configs tested: 136
+sparse warnings: (new ones prefixed by >>)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-x86_64                 randconfig-a0-12190348
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-12190242
-x86_64                randconfig-it0-12172212
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201751
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-i0-12180843
-i386                   randconfig-i1-12180843
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-12190337
-x86_64                 randconfig-x012-201751
-x86_64                 randconfig-x010-201751
-x86_64                 randconfig-x011-201751
-x86_64                 randconfig-x015-201751
-x86_64                 randconfig-x019-201751
-x86_64                 randconfig-x014-201751
-x86_64                 randconfig-x013-201751
-x86_64                 randconfig-x016-201751
-x86_64                 randconfig-x017-201751
-x86_64                 randconfig-x018-201751
-i386                   randconfig-a0-12171902
-i386                   randconfig-a1-12171902
-x86_64                 randconfig-s0-12190334
-x86_64                 randconfig-s1-12190334
-x86_64                 randconfig-s2-12190334
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                           sama5_defconfig
-arm                          simpad_defconfig
-powerpc                 mpc837x_rdb_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201751
-i386                     randconfig-s0-201751
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-12190358
-x86_64                 randconfig-s4-12190358
-x86_64                 randconfig-s5-12190358
-i386                               tinyconfig
-i386                             allmodconfig
-x86_64                   randconfig-i0-201751
-i386                   randconfig-b0-12180703
-x86_64                 randconfig-u0-12190220
-x86_64                randconfig-ne0-12190219
-i386                   randconfig-h0-12190217
-i386                   randconfig-h1-12190217
-blackfin                          allnoconfig
-mips                        generic_defconfig
-s390                             allmodconfig
-x86_64                 randconfig-h0-12181624
-cris                                defconfig
-parisc                generic-64bit_defconfig
-i386                  randconfig-sb0-12180654
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-x003-201751
-x86_64                 randconfig-x002-201751
-x86_64                 randconfig-x006-201751
-x86_64                 randconfig-x007-201751
-x86_64                 randconfig-x000-201751
-x86_64                 randconfig-x005-201751
-x86_64                 randconfig-x004-201751
-x86_64                 randconfig-x009-201751
-x86_64                 randconfig-x008-201751
-x86_64                 randconfig-x001-201751
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x072-201751
-i386                   randconfig-x078-201751
-i386                   randconfig-x071-201751
-i386                   randconfig-x077-201751
-i386                   randconfig-x070-201751
-i386                   randconfig-x074-201751
-i386                   randconfig-x073-201751
-i386                   randconfig-x079-201751
-i386                   randconfig-x076-201751
-i386                   randconfig-x075-201751
-x86_64                                  kexec
-ia64                        generic_defconfig
-m32r                   mappi2.vdec2_defconfig
-powerpc                    gamecube_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-12182342
+Please review and possibly fold the followup patch.
 
-Thanks,
-Fengguang
+vim +44 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+
+    29	
+    30	/**
+    31	 * ixgbe_ipsec_set_tx_sa - set the Tx SA registers
+    32	 * @hw: hw specific details
+    33	 * @idx: register index to write
+    34	 * @key: key byte array
+    35	 * @salt: salt bytes
+    36	 **/
+    37	static void ixgbe_ipsec_set_tx_sa(struct ixgbe_hw *hw, u16 idx,
+    38					  u32 key[], u32 salt)
+    39	{
+    40		u32 reg;
+    41		int i;
+    42	
+    43		for (i = 0; i < 4; i++)
+  > 44			IXGBE_WRITE_REG(hw, IXGBE_IPSTXKEY(i), cpu_to_be32(key[3-i]));
+    45		IXGBE_WRITE_REG(hw, IXGBE_IPSTXSALT, cpu_to_be32(salt));
+    46		IXGBE_WRITE_FLUSH(hw);
+    47	
+    48		reg = IXGBE_READ_REG(hw, IXGBE_IPSTXIDX);
+    49		reg &= IXGBE_RXTXIDX_IPS_EN;
+    50		reg |= idx << IXGBE_RXTXIDX_IDX_SHIFT | IXGBE_RXTXIDX_WRITE;
+    51		IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, reg);
+    52		IXGBE_WRITE_FLUSH(hw);
+    53	}
+    54	
+    55	/**
+    56	 * ixgbe_ipsec_set_rx_item - set an Rx table item
+    57	 * @hw: hw specific details
+    58	 * @idx: register index to write
+    59	 * @tbl: table selector
+    60	 *
+    61	 * Trigger the device to store into a particular Rx table the
+    62	 * data that has already been loaded into the input register
+    63	 **/
+    64	static void ixgbe_ipsec_set_rx_item(struct ixgbe_hw *hw, u16 idx,
+    65					    enum ixgbe_ipsec_tbl_sel tbl)
+    66	{
+    67		u32 reg;
+    68	
+    69		reg = IXGBE_READ_REG(hw, IXGBE_IPSRXIDX);
+    70		reg &= IXGBE_RXTXIDX_IPS_EN;
+    71		reg |= tbl << IXGBE_RXIDX_TBL_SHIFT |
+    72		       idx << IXGBE_RXTXIDX_IDX_SHIFT |
+    73		       IXGBE_RXTXIDX_WRITE;
+    74		IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, reg);
+    75		IXGBE_WRITE_FLUSH(hw);
+    76	}
+    77	
+    78	/**
+    79	 * ixgbe_ipsec_set_rx_sa - set up the register bits to save SA info
+    80	 * @hw: hw specific details
+    81	 * @idx: register index to write
+    82	 * @spi: security parameter index
+    83	 * @key: key byte array
+    84	 * @salt: salt bytes
+    85	 * @mode: rx decrypt control bits
+    86	 * @ip_idx: index into IP table for related IP address
+    87	 **/
+    88	static void ixgbe_ipsec_set_rx_sa(struct ixgbe_hw *hw, u16 idx, __be32 spi,
+    89					  u32 key[], u32 salt, u32 mode, u32 ip_idx)
+    90	{
+    91		int i;
+    92	
+    93		/* store the SPI (in bigendian) and IPidx */
+    94		IXGBE_WRITE_REG(hw, IXGBE_IPSRXSPI, spi);
+    95		IXGBE_WRITE_REG(hw, IXGBE_IPSRXIPIDX, ip_idx);
+    96		IXGBE_WRITE_FLUSH(hw);
+    97	
+    98		ixgbe_ipsec_set_rx_item(hw, idx, ips_rx_spi_tbl);
+    99	
+   100		/* store the key, salt, and mode */
+   101		for (i = 0; i < 4; i++)
+ > 102			IXGBE_WRITE_REG(hw, IXGBE_IPSRXKEY(i), cpu_to_be32(key[3-i]));
+   103		IXGBE_WRITE_REG(hw, IXGBE_IPSRXSALT, cpu_to_be32(salt));
+   104		IXGBE_WRITE_REG(hw, IXGBE_IPSRXMOD, mode);
+   105		IXGBE_WRITE_FLUSH(hw);
+   106	
+   107		ixgbe_ipsec_set_rx_item(hw, idx, ips_rx_key_tbl);
+   108	}
+   109	
+   110	/**
+   111	 * ixgbe_ipsec_set_rx_ip - set up the register bits to save SA IP addr info
+   112	 * @hw: hw specific details
+   113	 * @idx: register index to write
+   114	 * @addr: IP address byte array
+   115	 **/
+   116	static void ixgbe_ipsec_set_rx_ip(struct ixgbe_hw *hw, u16 idx, __be32 addr[])
+   117	{
+   118		int i;
+   119	
+   120		/* store the ip address */
+   121		for (i = 0; i < 4; i++)
+   122			IXGBE_WRITE_REG(hw, IXGBE_IPSRXIPADDR(i), addr[i]);
+   123		IXGBE_WRITE_FLUSH(hw);
+   124	
+   125		ixgbe_ipsec_set_rx_item(hw, idx, ips_rx_ip_tbl);
+   126	}
+   127	
+   128	/**
+   129	 * ixgbe_ipsec_clear_hw_tables - because some tables don't get cleared on reset
+   130	 * @adapter: board private structure
+   131	 **/
+ > 132	void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
+   133	{
+   134		struct ixgbe_hw *hw = &adapter->hw;
+   135		u32 buf[4] = {0, 0, 0, 0};
+   136		u16 idx;
+   137	
+   138		/* disable Rx and Tx SA lookup */
+   139		IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, 0);
+   140		IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, 0);
+   141	
+   142		/* scrub the tables - split the loops for the max of the IP table */
+   143		for (idx = 0; idx < IXGBE_IPSEC_MAX_RX_IP_COUNT; idx++) {
+   144			ixgbe_ipsec_set_tx_sa(hw, idx, buf, 0);
+   145			ixgbe_ipsec_set_rx_sa(hw, idx, 0, buf, 0, 0, 0);
+   146			ixgbe_ipsec_set_rx_ip(hw, idx, (__be32 *)buf);
+   147		}
+   148		for (; idx < IXGBE_IPSEC_MAX_RX_IP_COUNT; idx++) {
+   149			ixgbe_ipsec_set_tx_sa(hw, idx, buf, 0);
+   150			ixgbe_ipsec_set_rx_sa(hw, idx, 0, buf, 0, 0, 0);
+   151		}
+   152	}
+   153	
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
