@@ -1,57 +1,358 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon, 18 Dec 2017 05:17:03 -0500
-Subject: [Intel-wired-lan] [next PATCH S83-V5 5/9] i40e: Fix for blinking
- activity instead of link LEDs
-Message-ID: <20171218101703.75823-1-alice.michael@intel.com>
+Date: Mon, 18 Dec 2017 05:17:25 -0500
+Subject: [Intel-wired-lan] [next PATCH S83-V5 6/9] i40e/i40evf: Detect and
+ recover hung queue scenario
+Message-ID: <20171218101725.75870-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Kuchta <michal.kuchta@intel.com>
+From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 
-This fix solves an issue occurring while calling i40e_led_set function
-from the driver with "blink" parameter set as TRUE. This call resulted
-in Activity LED blinking instead of Link LED, which may lead to errors
-in physically identyfying the port, since Activity LED may be blinking
-for different reasons aswell.
+In VFs, there is a known issue which can cause writebacks
+to not occur when interrupts are disabled and there are
+less than 4 descriptors resulting in TX timeout. Timeout
+can also occur due to lost interrupt.
 
-Signed-off-by: Michal Kuchta <michal.kuchta@intel.com>
+The current implementation for detecting and recovering
+from hung queues in the PF is problematic because it actually
+actively encourages lost interrupts.  By triggering a SW
+interrupt, interrupts are forced on.  If we are already in
+napi_poll and an interrupt fires, napi_poll will not be
+rescheduled and the interrupt is effectively lost; thereby
+potentially *causing* hung queues.
+
+This patch checks whether packets are being processed between
+every watchdog cycle and determine potential hung queue and
+fires triggers SW interrupt only for that particular queue.
+
+Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 100 +-----------------------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c     |  54 +++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h     |   2 +
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |  54 +++++++++++++
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h   |   2 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c |   2 +
+ 6 files changed, 115 insertions(+), 99 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index cf929cc..ee6052e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1486,6 +1486,7 @@ u32 i40e_led_get(struct i40e_hw *hw)
- 		case I40E_COMBINED_ACTIVITY:
- 		case I40E_FILTER_ACTIVITY:
- 		case I40E_MAC_ACTIVITY:
-+		case I40E_LINK_ACTIVITY:
- 			continue;
- 		default:
- 			break;
-@@ -1534,6 +1535,7 @@ void i40e_led_set(struct i40e_hw *hw, u32 mode, bool blink)
- 		case I40E_COMBINED_ACTIVITY:
- 		case I40E_FILTER_ACTIVITY:
- 		case I40E_MAC_ACTIVITY:
-+		case I40E_LINK_ACTIVITY:
- 			continue;
- 		default:
- 			break;
-@@ -1544,9 +1546,6 @@ void i40e_led_set(struct i40e_hw *hw, u32 mode, bool blink)
- 		gpio_val |= ((mode << I40E_GLGEN_GPIO_CTL_LED_MODE_SHIFT) &
- 			     I40E_GLGEN_GPIO_CTL_LED_MODE_MASK);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 7a882d7..a53f76f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -4862,104 +4862,6 @@ static int i40e_pf_wait_queues_disabled(struct i40e_pf *pf)
+ #endif
  
--		if (mode == I40E_LINK_ACTIVITY)
--			blink = false;
+ /**
+- * i40e_detect_recover_hung_queue - Function to detect and recover hung_queue
+- * @q_idx: TX queue number
+- * @vsi: Pointer to VSI struct
+- *
+- * This function checks specified queue for given VSI. Detects hung condition.
+- * We proactively detect hung TX queues by checking if interrupts are disabled
+- * but there are pending descriptors.  If it appears hung, attempt to recover
+- * by triggering a SW interrupt.
+- **/
+-static void i40e_detect_recover_hung_queue(int q_idx, struct i40e_vsi *vsi)
+-{
+-	struct i40e_ring *tx_ring = NULL;
+-	struct i40e_pf	*pf;
+-	u32 val, tx_pending;
+-	int i;
 -
- 		if (blink)
- 			gpio_val |= BIT(I40E_GLGEN_GPIO_CTL_LED_BLINK_SHIFT);
- 		else
+-	pf = vsi->back;
+-
+-	/* now that we have an index, find the tx_ring struct */
+-	for (i = 0; i < vsi->num_queue_pairs; i++) {
+-		if (vsi->tx_rings[i] && vsi->tx_rings[i]->desc) {
+-			if (q_idx == vsi->tx_rings[i]->queue_index) {
+-				tx_ring = vsi->tx_rings[i];
+-				break;
+-			}
+-		}
+-	}
+-
+-	if (!tx_ring)
+-		return;
+-
+-	/* Read interrupt register */
+-	if (pf->flags & I40E_FLAG_MSIX_ENABLED)
+-		val = rd32(&pf->hw,
+-			   I40E_PFINT_DYN_CTLN(tx_ring->q_vector->v_idx +
+-					       tx_ring->vsi->base_vector - 1));
+-	else
+-		val = rd32(&pf->hw, I40E_PFINT_DYN_CTL0);
+-
+-	tx_pending = i40e_get_tx_pending(tx_ring);
+-
+-	/* Interrupts are disabled and TX pending is non-zero,
+-	 * trigger the SW interrupt (don't wait). Worst case
+-	 * there will be one extra interrupt which may result
+-	 * into not cleaning any queues because queues are cleaned.
+-	 */
+-	if (tx_pending && (!(val & I40E_PFINT_DYN_CTLN_INTENA_MASK)))
+-		i40e_force_wb(vsi, tx_ring->q_vector);
+-}
+-
+-/**
+- * i40e_detect_recover_hung - Function to detect and recover hung_queues
+- * @pf:  pointer to PF struct
+- *
+- * LAN VSI has netdev and netdev has TX queues. This function is to check
+- * each of those TX queues if they are hung, trigger recovery by issuing
+- * SW interrupt.
+- **/
+-static void i40e_detect_recover_hung(struct i40e_pf *pf)
+-{
+-	struct net_device *netdev;
+-	struct i40e_vsi *vsi;
+-	unsigned int i;
+-
+-	/* Only for LAN VSI */
+-	vsi = pf->vsi[pf->lan_vsi];
+-
+-	if (!vsi)
+-		return;
+-
+-	/* Make sure, VSI state is not DOWN/RECOVERY_PENDING */
+-	if (test_bit(__I40E_VSI_DOWN, vsi->back->state) ||
+-	    test_bit(__I40E_RESET_RECOVERY_PENDING, vsi->back->state))
+-		return;
+-
+-	/* Make sure type is MAIN VSI */
+-	if (vsi->type != I40E_VSI_MAIN)
+-		return;
+-
+-	netdev = vsi->netdev;
+-	if (!netdev)
+-		return;
+-
+-	/* Bail out if netif_carrier is not OK */
+-	if (!netif_carrier_ok(netdev))
+-		return;
+-
+-	/* Go thru' TX queues for netdev */
+-	for (i = 0; i < netdev->num_tx_queues; i++) {
+-		struct netdev_queue *q;
+-
+-		q = netdev_get_tx_queue(netdev, i);
+-		if (q)
+-			i40e_detect_recover_hung_queue(i, vsi);
+-	}
+-}
+-
+-/**
+  * i40e_get_iscsi_tc_map - Return TC map for iSCSI APP
+  * @pf: pointer to PF
+  *
+@@ -9751,7 +9653,7 @@ static void i40e_service_task(struct work_struct *work)
+ 	if (test_and_set_bit(__I40E_SERVICE_SCHED, pf->state))
+ 		return;
+ 
+-	i40e_detect_recover_hung(pf);
++	i40e_detect_recover_hung(pf->vsi[pf->lan_vsi]);
+ 	i40e_sync_filters_subtask(pf);
+ 	i40e_reset_subtask(pf);
+ 	i40e_handle_mdd_event(pf);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 5bc2748..2a492ec 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -725,6 +725,59 @@ u32 i40e_get_tx_pending(struct i40e_ring *ring)
+ 	return 0;
+ }
+ 
++/**
++ * i40e_detect_recover_hung - Function to detect and recover hung_queues
++ * @vsi:  pointer to vsi struct with tx queues
++ *
++ * VSI has netdev and netdev has TX queues. This function is to check each of
++ * those TX queues if they are hung, trigger recovery by issuing SW interrupt.
++ **/
++void i40e_detect_recover_hung(struct i40e_vsi *vsi)
++{
++	struct i40e_ring *tx_ring = NULL;
++	struct net_device *netdev;
++	unsigned int i;
++	int packets;
++
++	if (!vsi)
++		return;
++
++	if (test_bit(__I40E_VSI_DOWN, vsi->state))
++		return;
++
++	netdev = vsi->netdev;
++	if (!netdev)
++		return;
++
++	if (!netif_carrier_ok(netdev))
++		return;
++
++	for (i = 0; i < vsi->num_queue_pairs; i++) {
++		tx_ring = vsi->tx_rings[i];
++		if (tx_ring && tx_ring->desc) {
++			/* If packet counter has not changed the queue is
++			 * likely stalled, so force an interrupt for this
++			 * queue.
++			 *
++			 * prev_pkt_ctr would be negative if there was no
++			 * pending work.
++			 */
++			packets = tx_ring->stats.packets & INT_MAX;
++			if (tx_ring->tx_stats.prev_pkt_ctr == packets) {
++				i40e_force_wb(vsi, tx_ring->q_vector);
++				continue;
++			}
++
++			/* Memory barrier between read of packet count and call
++			 * to i40e_get_tx_pending()
++			 */
++			smp_rmb();
++			tx_ring->tx_stats.prev_pkt_ctr =
++			    i40e_get_tx_pending(tx_ring) ? packets : -1;
++		}
++	}
++}
++
+ #define WB_STRIDE 4
+ 
+ /**
+@@ -1162,6 +1215,7 @@ int i40e_setup_tx_descriptors(struct i40e_ring *tx_ring)
+ 
+ 	tx_ring->next_to_use = 0;
+ 	tx_ring->next_to_clean = 0;
++	tx_ring->tx_stats.prev_pkt_ctr = -1;
+ 	return 0;
+ 
+ err:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index fbae118..f1c13be 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -331,6 +331,7 @@ struct i40e_tx_queue_stats {
+ 	u64 tx_done_old;
+ 	u64 tx_linearize;
+ 	u64 tx_force_wb;
++	int prev_pkt_ctr;
+ };
+ 
+ struct i40e_rx_queue_stats {
+@@ -498,6 +499,7 @@ void i40e_free_rx_resources(struct i40e_ring *rx_ring);
+ int i40e_napi_poll(struct napi_struct *napi, int budget);
+ void i40e_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector);
+ u32 i40e_get_tx_pending(struct i40e_ring *ring);
++void i40e_detect_recover_hung(struct i40e_vsi *vsi);
+ int __i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size);
+ bool __i40e_chk_linearize(struct sk_buff *skb);
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 1ba29bb..c7831f7 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -148,6 +148,59 @@ u32 i40evf_get_tx_pending(struct i40e_ring *ring, bool in_sw)
+ 	return 0;
+ }
+ 
++/**
++ * i40evf_detect_recover_hung - Function to detect and recover hung_queues
++ * @vsi:  pointer to vsi struct with tx queues
++ *
++ * VSI has netdev and netdev has TX queues. This function is to check each of
++ * those TX queues if they are hung, trigger recovery by issuing SW interrupt.
++ **/
++void i40evf_detect_recover_hung(struct i40e_vsi *vsi)
++{
++	struct i40e_ring *tx_ring = NULL;
++	struct net_device *netdev;
++	unsigned int i;
++	int packets;
++
++	if (!vsi)
++		return;
++
++	if (test_bit(__I40E_VSI_DOWN, vsi->state))
++		return;
++
++	netdev = vsi->netdev;
++	if (!netdev)
++		return;
++
++	if (!netif_carrier_ok(netdev))
++		return;
++
++	for (i = 0; i < vsi->back->num_active_queues; i++) {
++		tx_ring = &vsi->back->tx_rings[i];
++		if (tx_ring && tx_ring->desc) {
++			/* If packet counter has not changed the queue is
++			 * likely stalled, so force an interrupt for this
++			 * queue.
++			 *
++			 * prev_pkt_ctr would be negative if there was no
++			 * pending work.
++			 */
++			packets = tx_ring->stats.packets & INT_MAX;
++			if (tx_ring->tx_stats.prev_pkt_ctr == packets) {
++				i40evf_force_wb(vsi, tx_ring->q_vector);
++				continue;
++			}
++
++			/* Memory barrier between read of packet count and call
++			 * to i40evf_get_tx_pending()
++			 */
++			smp_rmb();
++			tx_ring->tx_stats.prev_pkt_ctr =
++			  i40evf_get_tx_pending(tx_ring, false) ? packets : -1;
++		}
++	}
++}
++
+ #define WB_STRIDE 4
+ 
+ /**
+@@ -469,6 +522,7 @@ int i40evf_setup_tx_descriptors(struct i40e_ring *tx_ring)
+ 
+ 	tx_ring->next_to_use = 0;
+ 	tx_ring->next_to_clean = 0;
++	tx_ring->tx_stats.prev_pkt_ctr = -1;
+ 	return 0;
+ 
+ err:
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index 8d26c85..e72f16b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -313,6 +313,7 @@ struct i40e_tx_queue_stats {
+ 	u64 tx_done_old;
+ 	u64 tx_linearize;
+ 	u64 tx_force_wb;
++	int prev_pkt_ctr;
+ 	u64 tx_lost_interrupt;
+ };
+ 
+@@ -467,6 +468,7 @@ void i40evf_free_rx_resources(struct i40e_ring *rx_ring);
+ int i40evf_napi_poll(struct napi_struct *napi, int budget);
+ void i40evf_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector);
+ u32 i40evf_get_tx_pending(struct i40e_ring *ring, bool in_sw);
++void i40evf_detect_recover_hung(struct i40e_vsi *vsi);
+ int __i40evf_maybe_stop_tx(struct i40e_ring *tx_ring, int size);
+ bool __i40evf_chk_linearize(struct sk_buff *skb);
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 0e5df19..8934f78 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1716,6 +1716,8 @@ static void i40evf_watchdog_task(struct work_struct *work)
+ 	if (adapter->state == __I40EVF_RUNNING)
+ 		i40evf_request_stats(adapter);
+ watchdog_done:
++	if (adapter->state == __I40EVF_RUNNING)
++		i40evf_detect_recover_hung(&adapter->vsi);
+ 	clear_bit(__I40EVF_IN_CRITICAL_TASK, &adapter->crit_section);
+ restart_watchdog:
+ 	if (adapter->state == __I40EVF_REMOVE)
 -- 
 2.9.5
 
