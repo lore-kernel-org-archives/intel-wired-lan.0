@@ -1,125 +1,68 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Mon, 18 Dec 2017 11:52:08 +0100
-Subject: [Intel-wired-lan] [bpf-next V1-RFC PATCH 03/14] i40e: setup
- xdp_rxq_info
-In-Reply-To: <151316397618.14967.13648763339440521538.stgit@firesoul>
-References: <151316391502.14967.13292358380181773729.stgit@firesoul>
- <151316397618.14967.13648763339440521538.stgit@firesoul>
-Message-ID: <CAJ+HfNgYvuHP72g04ZH1DR_svQtnSPi1Z_TqLVDvS-L9ijvh=A@mail.gmail.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Mon, 18 Dec 2017 13:24:40 +0200
+Subject: [Intel-wired-lan] v4.15-rc2 on thinkpad x60: ethernet stopped
+ working
+In-Reply-To: <20171218102657.GB5338@amd>
+References: <20171210083949.GA3872@amd>
+ <d1ae924b-4d8f-a787-4c07-1f2db91482e5@gmail.com> <20171215092849.GB15090@amd>
+ <20171215.105210.103516329605719086.davem@davemloft.net>
+ <20171218102657.GB5338@amd>
+Message-ID: <5c0be4c4-5a56-cc7b-7b5a-345f446e788e@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-2017-12-13 12:19 GMT+01:00 Jesper Dangaard Brouer <brouer@redhat.com>:
-> The i40e driver have a special "FDIR" RX-ring (I40E_VSI_FDIR) which is
-> a sideband channel for configuring/updating the flow director tables.
-> This (i40e_vsi_)type does not invoke XDP-ebpf code. Thus, mark this
-> type as a XDP RX-queue type RXQ_TYPE_SINK.
+On 12/18/2017 12:26, Pavel Machek wrote:
+> Hi!
 >
-> Driver hook points for xdp_rxq_info:
->  * init+reg: i40e_setup_rx_descriptors (via i40e_vsi_setup_rx_resources)
->  * unreg   : i40e_free_rx_resources    (via i40e_vsi_free_rx_resources)
+>>>>> In v4.15-rc2+, network manager can not see my ethernet card, and
+>>>>> manual attempts to ifconfig it up did not really help, either.
+>>>>>
+>>>>> Card is:
+>>>>>
+>>>>> 02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet
+>>>>> Controller
+>>> ....
+>>>>> Any ideas ?
+>>>> Yes , 19110cfbb34d4af0cdfe14cd243f3b09dc95b013 broke it.
+>>>>
+>>>> See:
+>>>> https://bugzilla.kernel.org/show_bug.cgi?id=198047
+>>>>
+>>>> Fix there :
+>>>> https://marc.info/?l=linux-kernel&m=151272209903675&w=2
+>>> I don't see the patch in latest mainline. Not having ethernet
+>>> is... somehow annoying. What is going on there?
+>> Generally speaking, e1000 maintainence has been handled very poorly over
+>> the past few years, I have to say.
+>>
+>> Fixes take forever to propagate even when someone other than the
+>> maintainer provides a working and tested fix, just like this case.
+>>
+>> Jeff, please take e1000 maintainence seriously and get these critical
+>> bug fixes propagated.
+> No response AFAICT. I guess I should test reverting
+> 19110cfbb34d4af0cdfe14cd243f3b09dc95b013, then ask you for revert?
 >
-
-Firstly, thanks for working on this, Jesper. This is very valuable to
-the AF_PACKET V4^W^WAF_XDP work.
-
-> Tested on actual hardware with samples/bpf program.
+> 									Pavel
 >
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: Bj?rn T?pel <bjorn.topel@intel.com>
-> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c |   18 +++++++++++++++++-
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h |    3 +++
->  2 files changed, 20 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> index 4566d66ffc7c..d1bfc4232ca9 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> @@ -27,6 +27,7 @@
->  #include <linux/prefetch.h>
->  #include <net/busy_poll.h>
->  #include <linux/bpf_trace.h>
-> +#include <net/xdp.h>
->  #include "i40e.h"
->  #include "i40e_trace.h"
->  #include "i40e_prototype.h"
-> @@ -1236,6 +1237,7 @@ void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
->  void i40e_free_rx_resources(struct i40e_ring *rx_ring)
->  {
->         i40e_clean_rx_ring(rx_ring);
-> +       xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
->         rx_ring->xdp_prog = NULL;
->         kfree(rx_ring->rx_bi);
->         rx_ring->rx_bi = NULL;
-> @@ -1283,6 +1285,18 @@ int i40e_setup_rx_descriptors(struct i40e_ring *rx_ring)
->         rx_ring->next_to_clean = 0;
->         rx_ring->next_to_use = 0;
->
-> +       /* XDP RX-queue info */
-> +       xdp_rxq_info_init(&rx_ring->xdp_rxq);
-> +
-> +       /* Flow director side channel does not invoke XDP/bpf */
-> +       if (rx_ring->vsi->type == I40E_VSI_FDIR)
-> +               xdp_rxq_info_type(&rx_ring->xdp_rxq, RXQ_TYPE_SINK);
-
-For me, it doesn't make sense to expose the FD Rx ring outside the
-scope of i40e driver. Check against VSI_MAIN in setup/cleanup so the
-FD ring is not exposed outside the driver. Maybe you can get rid of
-the RXQ_TYPE_SINK as well then.
-
-> +       else
-> +               rx_ring->xdp_rxq.dev = rx_ring->netdev;
-> +
-> +       rx_ring->xdp_rxq.queue_index = rx_ring->queue_index;
-> +       xdp_rxq_info_reg(&rx_ring->xdp_rxq);
-> +
->         rx_ring->xdp_prog = rx_ring->vsi->xdp_prog;
->
->         return 0;
-> @@ -2068,11 +2082,13 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
->         struct sk_buff *skb = rx_ring->skb;
->         u16 cleaned_count = I40E_DESC_UNUSED(rx_ring);
->         bool failure = false, xdp_xmit = false;
-> +       struct xdp_buff xdp;
-> +
-> +       xdp.rxq = &rx_ring->xdp_rxq;
->
->         while (likely(total_rx_packets < (unsigned int)budget)) {
->                 struct i40e_rx_buffer *rx_buffer;
->                 union i40e_rx_desc *rx_desc;
-> -               struct xdp_buff xdp;
->                 unsigned int size;
->                 u16 vlan_tag;
->                 u8 rx_ptype;
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-> index fbae1182e2ea..2d08760fc4ce 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-> @@ -27,6 +27,8 @@
->  #ifndef _I40E_TXRX_H_
->  #define _I40E_TXRX_H_
->
-> +#include <net/xdp.h>
-> +
->  /* Interrupt Throttling and Rate Limiting Goodies */
->
->  #define I40E_MAX_ITR               0x0FF0  /* reg uses 2 usec resolution */
-> @@ -428,6 +430,7 @@ struct i40e_ring {
->                                          */
->
->         struct i40e_channel *ch;
-> +       struct xdp_rxq_info xdp_rxq;
->  } ____cacheline_internodealigned_in_smp;
->
->  static inline bool ring_uses_build_skb(struct i40e_ring *ring)
 >
 > _______________________________________________
 > Intel-wired-lan mailing list
 > Intel-wired-lan at osuosl.org
 > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+Hello Pavel,
+
+Before ask for reverting 19110cfbb..., please, check if follow patch of 
+Benjamin work for you http://patchwork.ozlabs.org/patch/846825/
+
+Thanks,
+
+Sasha
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171218/9c3eb9f7/attachment.html>
