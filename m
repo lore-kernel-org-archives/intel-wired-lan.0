@@ -1,44 +1,40 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon, 18 Dec 2017 05:15:25 -0500
-Subject: [Intel-wired-lan] [next PATCH S83-V5 2/9] i40e: avoid divide by zero
-Message-ID: <20171218101525.75683-1-alice.michael@intel.com>
+Date: Mon, 18 Dec 2017 05:16:23 -0500
+Subject: [Intel-wired-lan] [next PATCH S83-V5 3/9] i40evf: remove
+ flush_scheduled_work call in i40evf_remove
+Message-ID: <20171218101623.75729-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 
-In some weird circumstances with DCB enabled, the firmware can fail to
-configure the VSI, leaving us with zero traffic classes. Check for this
-state when we configure RSS to avoid a panic.
+flush_schedule_work blocks until completion of all scheduled
+work items in global work-queue. This can cause deadlock in some
+cases. i40evf_remove() cleans up necessary work items with
+cancel_delayed_work_sync and cancel_work_sync. This fix removes
+flush_schedule_work call inside i40evf_remove().
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4f74156..7a882d7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10839,8 +10839,13 @@ static int i40e_pf_config_rss(struct i40e_pf *pf)
- 	/* Determine the RSS size of the VSI */
- 	if (!vsi->rss_size) {
- 		u16 qcount;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index f92587a..6472116 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -3088,8 +3088,6 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 	if (adapter->watchdog_timer.function)
+ 		del_timer_sync(&adapter->watchdog_timer);
+ 
+-	flush_scheduled_work();
 -
--		qcount = vsi->num_queue_pairs / vsi->tc_config.numtc;
-+		/* If the firmware does something weird during VSI init, we
-+		 * could end up with zero TCs. Check for that to avoid
-+		 * divide-by-zero. It probably won't pass traffic, but it also
-+		 * won't panic.
-+		 */
-+		qcount = vsi->num_queue_pairs /
-+			 (vsi->tc_config.numtc ? vsi->tc_config.numtc : 1);
- 		vsi->rss_size = min_t(int, pf->alloc_rss_size, qcount);
- 	}
- 	if (!vsi->rss_size)
+ 	i40evf_free_rss(adapter);
+ 
+ 	if (hw->aq.asq.count)
 -- 
 2.9.5
 
