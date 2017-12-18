@@ -1,8 +1,8 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon, 18 Dec 2017 05:17:42 -0500
-Subject: [Intel-wired-lan] [next PATCH S83-V5 7/9] i40e: check for invalid
- DCB config
-Message-ID: <20171218101742.75920-1-alice.michael@intel.com>
+Date: Mon, 18 Dec 2017 05:18:02 -0500
+Subject: [Intel-wired-lan] [next PATCH S83-V5 8/9] i40e: simplify pointer
+ dereferences
+Message-ID: <20171218101802.75967-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,78 +11,60 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Mitch Williams <mitch.a.williams@intel.com>
 
-The driver (and the entire netdev layer for that matter) assumes
-that TC0 will always be present in our DCB configuration.
-Unfortunately, this isn't always the case. Rather than fail to
-configure the VSI, let's go ahead and try to make it work, even
-though DCB will end up being disabled by the kernel.
-
-If the driver fails to configure DCB, the driver queries what's
-valid, then writes that back to the hardware, always forcing TC0.
-
-This fixes a bug where the driver could fail to adhere to ETS BW
-allocations if 8 TCs were configured on the switch.
+Now that i40e_vsi_config_tc() has the pf and hw variable defined, use
+them, instead of dereferencing vsi->back. Much easier to read.
 
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 34 ++++++++++++++++++++++++++++-
- 1 file changed, 33 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++----------
+ 1 file changed, 8 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a53f76f..1ce24e2 100644
+index 1ce24e2..5c5296e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5229,6 +5229,8 @@ static void i40e_vsi_update_queue_map(struct i40e_vsi *vsi,
- static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
- {
- 	u8 bw_share[I40E_MAX_TRAFFIC_CLASS] = {0};
-+	struct i40e_pf *pf = vsi->back;
-+	struct i40e_hw *hw = &pf->hw;
- 	struct i40e_vsi_context ctxt;
- 	int ret = 0;
- 	int i;
-@@ -5246,10 +5248,40 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
- 
- 	ret = i40e_vsi_configure_bw_alloc(vsi, enabled_tc, bw_share);
+@@ -5250,7 +5250,7 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
  	if (ret) {
-+		struct i40e_aqc_query_vsi_bw_config_resp bw_config = {0};
-+
- 		dev_info(&vsi->back->pdev->dev,
+ 		struct i40e_aqc_query_vsi_bw_config_resp bw_config = {0};
+ 
+-		dev_info(&vsi->back->pdev->dev,
++		dev_info(&pf->pdev->dev,
  			 "Failed configuring TC map %d for VSI %d\n",
  			 enabled_tc, vsi->seid);
--		goto out;
-+		ret = i40e_aq_query_vsi_bw_config(hw, vsi->seid,
-+						  &bw_config, NULL);
-+		if (ret) {
-+			dev_info(&pf->pdev->dev,
-+				 "Failed querying vsi bw info, err %s aq_err %s\n",
-+				 i40e_stat_str(hw, ret),
-+				 i40e_aq_str(hw, hw->aq.asq_last_status));
-+			goto out;
-+		}
-+		if ((bw_config.tc_valid_bits & enabled_tc) != enabled_tc) {
-+			u8 valid_tc = bw_config.tc_valid_bits & enabled_tc;
-+
-+			if (!valid_tc)
-+				valid_tc = bw_config.tc_valid_bits;
-+			/* Always enable TC0, no matter what */
-+			valid_tc |= 1;
-+			dev_info(&pf->pdev->dev,
-+				 "Requested tc 0x%x, but FW reports 0x%x as valid. Attempting to use 0x%x.\n",
-+				 enabled_tc, bw_config.tc_valid_bits, valid_tc);
-+			enabled_tc = valid_tc;
-+		}
-+
-+		ret = i40e_vsi_configure_bw_alloc(vsi, enabled_tc, bw_share);
-+		if (ret) {
-+			dev_err(&pf->pdev->dev,
-+				"Unable to  configure TC map %d for VSI %d\n",
-+				enabled_tc, vsi->seid);
-+			goto out;
-+		}
+ 		ret = i40e_aq_query_vsi_bw_config(hw, vsi->seid,
+@@ -5321,13 +5321,12 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
+ 	/* Update the VSI after updating the VSI queue-mapping
+ 	 * information
+ 	 */
+-	ret = i40e_aq_update_vsi_params(&vsi->back->hw, &ctxt, NULL);
++	ret = i40e_aq_update_vsi_params(hw, &ctxt, NULL);
+ 	if (ret) {
+-		dev_info(&vsi->back->pdev->dev,
++		dev_info(&pf->pdev->dev,
+ 			 "Update vsi tc config failed, err %s aq_err %s\n",
+-			 i40e_stat_str(&vsi->back->hw, ret),
+-			 i40e_aq_str(&vsi->back->hw,
+-				     vsi->back->hw.aq.asq_last_status));
++			 i40e_stat_str(hw, ret),
++			 i40e_aq_str(hw, hw->aq.asq_last_status));
+ 		goto out;
+ 	}
+ 	/* update the local VSI info with updated queue map */
+@@ -5337,11 +5336,10 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
+ 	/* Update current VSI BW information */
+ 	ret = i40e_vsi_get_bw_info(vsi);
+ 	if (ret) {
+-		dev_info(&vsi->back->pdev->dev,
++		dev_info(&pf->pdev->dev,
+ 			 "Failed updating vsi bw info, err %s aq_err %s\n",
+-			 i40e_stat_str(&vsi->back->hw, ret),
+-			 i40e_aq_str(&vsi->back->hw,
+-				     vsi->back->hw.aq.asq_last_status));
++			 i40e_stat_str(hw, ret),
++			 i40e_aq_str(hw, hw->aq.asq_last_status));
+ 		goto out;
  	}
  
- 	/* Update Queue Pairs Mapping for currently enabled UPs */
 -- 
 2.9.5
 
