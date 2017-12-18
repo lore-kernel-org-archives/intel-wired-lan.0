@@ -1,70 +1,112 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon, 18 Dec 2017 05:18:02 -0500
-Subject: [Intel-wired-lan] [next PATCH S83-V5 8/9] i40e: simplify pointer
- dereferences
-Message-ID: <20171218101802.75967-1-alice.michael@intel.com>
+Date: Mon, 18 Dec 2017 05:18:22 -0500
+Subject: [Intel-wired-lan] [next PATCH S83-V5 9/9] i40e: Disable iWARP VSI
+ PETCP_ENA flag on netdev down events
+Message-ID: <20171218101822.76016-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Shiraz Saleem <shiraz.saleem@intel.com>
 
-Now that i40e_vsi_config_tc() has the pf and hw variable defined, use
-them, instead of dereferencing vsi->back. Much easier to read.
+Client close is overloaded to handle both un-registration and
+netdev down event. On netdev down, i40iw client close is called
+which unregisters the RDMA dev and and this is too destructive
+since the netdev is still registered.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Do not call client close/open on netdev down/up events. Instead
+disable the PE TCP_ENA flag during a netdev down event. This
+blocks all TCP traffic to the RDMA Protocol Engine. On netdev up,
+re-enable the flag.
+
+Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 36 ++++++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_client.h |  2 +-
+ 2 files changed, 20 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1ce24e2..5c5296e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5250,7 +5250,7 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
- 	if (ret) {
- 		struct i40e_aqc_query_vsi_bw_config_resp bw_config = {0};
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+index 1b1e2ac..0de9610 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+@@ -378,11 +378,11 @@ void i40e_client_subtask(struct i40e_pf *pf)
+ 	if (!client || !cdev)
+ 		return;
  
--		dev_info(&vsi->back->pdev->dev,
-+		dev_info(&pf->pdev->dev,
- 			 "Failed configuring TC map %d for VSI %d\n",
- 			 enabled_tc, vsi->seid);
- 		ret = i40e_aq_query_vsi_bw_config(hw, vsi->seid,
-@@ -5321,13 +5321,12 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
- 	/* Update the VSI after updating the VSI queue-mapping
- 	 * information
+-	/* Here we handle client opens. If the client is down, but
+-	 * the netdev is up, then open the client.
++	/* Here we handle client opens. If the client is down, and
++	 * the netdev is registered, then open the client.
  	 */
--	ret = i40e_aq_update_vsi_params(&vsi->back->hw, &ctxt, NULL);
-+	ret = i40e_aq_update_vsi_params(hw, &ctxt, NULL);
- 	if (ret) {
--		dev_info(&vsi->back->pdev->dev,
-+		dev_info(&pf->pdev->dev,
- 			 "Update vsi tc config failed, err %s aq_err %s\n",
--			 i40e_stat_str(&vsi->back->hw, ret),
--			 i40e_aq_str(&vsi->back->hw,
--				     vsi->back->hw.aq.asq_last_status));
-+			 i40e_stat_str(hw, ret),
-+			 i40e_aq_str(hw, hw->aq.asq_last_status));
- 		goto out;
+ 	if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state)) {
+-		if (!test_bit(__I40E_VSI_DOWN, vsi->state) &&
++		if (vsi->netdev_registered &&
+ 		    client->ops && client->ops->open) {
+ 			set_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state);
+ 			ret = client->ops->open(&cdev->lan_info, client);
+@@ -393,17 +393,19 @@ void i40e_client_subtask(struct i40e_pf *pf)
+ 				i40e_client_del_instance(pf);
+ 			}
+ 		}
+-	} else {
+-	/* Likewise for client close. If the client is up, but the netdev
+-	 * is down, then close the client.
+-	 */
+-		if (test_bit(__I40E_VSI_DOWN, vsi->state) &&
+-		    client->ops && client->ops->close) {
+-			clear_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state);
+-			client->ops->close(&cdev->lan_info, client, false);
+-			i40e_client_release_qvlist(&cdev->lan_info);
+-		}
  	}
- 	/* update the local VSI info with updated queue map */
-@@ -5337,11 +5336,10 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
- 	/* Update current VSI BW information */
- 	ret = i40e_vsi_get_bw_info(vsi);
- 	if (ret) {
--		dev_info(&vsi->back->pdev->dev,
-+		dev_info(&pf->pdev->dev,
- 			 "Failed updating vsi bw info, err %s aq_err %s\n",
--			 i40e_stat_str(&vsi->back->hw, ret),
--			 i40e_aq_str(&vsi->back->hw,
--				     vsi->back->hw.aq.asq_last_status));
-+			 i40e_stat_str(hw, ret),
-+			 i40e_aq_str(hw, hw->aq.asq_last_status));
- 		goto out;
++
++	/* enable/disable PE TCP_ENA flag based on netdev down/up
++	 */
++	if (test_bit(__I40E_VSI_DOWN, vsi->state))
++		i40e_client_update_vsi_ctxt(&cdev->lan_info, client,
++					    0, 0, 0,
++					    I40E_CLIENT_VSI_FLAG_TCP_ENABLE);
++	else
++		i40e_client_update_vsi_ctxt(&cdev->lan_info, client,
++					    0, 0,
++					    I40E_CLIENT_VSI_FLAG_TCP_ENABLE,
++					    I40E_CLIENT_VSI_FLAG_TCP_ENABLE);
+ }
+ 
+ /**
+@@ -717,13 +719,13 @@ static int i40e_client_update_vsi_ctxt(struct i40e_info *ldev,
+ 		return -ENOENT;
  	}
  
+-	if ((valid_flag & I40E_CLIENT_VSI_FLAG_TCP_PACKET_ENABLE) &&
+-	    (flag & I40E_CLIENT_VSI_FLAG_TCP_PACKET_ENABLE)) {
++	if ((valid_flag & I40E_CLIENT_VSI_FLAG_TCP_ENABLE) &&
++	    (flag & I40E_CLIENT_VSI_FLAG_TCP_ENABLE)) {
+ 		ctxt.info.valid_sections =
+ 			cpu_to_le16(I40E_AQ_VSI_PROP_QUEUE_OPT_VALID);
+ 		ctxt.info.queueing_opt_flags |= I40E_AQ_VSI_QUE_OPT_TCP_ENA;
+-	} else if ((valid_flag & I40E_CLIENT_VSI_FLAG_TCP_PACKET_ENABLE) &&
+-		  !(flag & I40E_CLIENT_VSI_FLAG_TCP_PACKET_ENABLE)) {
++	} else if ((valid_flag & I40E_CLIENT_VSI_FLAG_TCP_ENABLE) &&
++		  !(flag & I40E_CLIENT_VSI_FLAG_TCP_ENABLE)) {
+ 		ctxt.info.valid_sections =
+ 			cpu_to_le16(I40E_AQ_VSI_PROP_QUEUE_OPT_VALID);
+ 		ctxt.info.queueing_opt_flags &= ~I40E_AQ_VSI_QUE_OPT_TCP_ENA;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.h b/drivers/net/ethernet/intel/i40e/i40e_client.h
+index 15b21a5..ba55c88 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.h
+@@ -132,7 +132,7 @@ struct i40e_info {
+ 
+ #define I40E_CLIENT_RESET_LEVEL_PF   1
+ #define I40E_CLIENT_RESET_LEVEL_CORE 2
+-#define I40E_CLIENT_VSI_FLAG_TCP_PACKET_ENABLE  BIT(1)
++#define I40E_CLIENT_VSI_FLAG_TCP_ENABLE  BIT(1)
+ 
+ struct i40e_ops {
+ 	/* setup_q_vector_list enables queues with a particular vector */
 -- 
 2.9.5
 
