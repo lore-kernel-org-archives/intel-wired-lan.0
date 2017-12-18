@@ -1,109 +1,62 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Sat, 2 Dec 2017 10:04:58 -0800
-Subject: [Intel-wired-lan] [PATCH 1/1] timecounter: Make cyclecounter
- struct part of timecounter struct
-In-Reply-To: <1512189095-28654-1-git-send-email-sagar.a.kamble@intel.com>
-References: <1512189095-28654-1-git-send-email-sagar.a.kamble@intel.com>
-Message-ID: <20171202180458.winwznbstsi355ed@localhost>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Mon, 18 Dec 2017 11:26:57 +0100
+Subject: [Intel-wired-lan] v4.15-rc2 on thinkpad x60: ethernet stopped
+ working
+In-Reply-To: <20171215.105210.103516329605719086.davem@davemloft.net>
+References: <20171210083949.GA3872@amd>
+ <d1ae924b-4d8f-a787-4c07-1f2db91482e5@gmail.com>
+ <20171215092849.GB15090@amd>
+ <20171215.105210.103516329605719086.davem@davemloft.net>
+Message-ID: <20171218102657.GB5338@amd>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, Dec 02, 2017 at 10:01:35AM +0530, Sagar Arun Kamble wrote:
-> There is no real need for the users of timecounters to define cyclecounter
-> and timecounter variables separately. Since timecounter will always be
-> based on cyclecounter, have cyclecounter struct as member of timecounter
-> struct.
+Hi!
 
-Overall, this is a welcome change.  However, it doesn't go far enough,
-IMHO, and I'll explain that more below.
+> >> >In v4.15-rc2+, network manager can not see my ethernet card, and
+> >> >manual attempts to ifconfig it up did not really help, either.
+> >> >
+> >> >Card is:
+> >> >
+> >> >02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet
+> >> >Controller
+> > ....
+> >> >Any ideas ?
+> >> 
+> >> Yes , 19110cfbb34d4af0cdfe14cd243f3b09dc95b013 broke it.
+> >> 
+> >> See:
+> >> https://bugzilla.kernel.org/show_bug.cgi?id=198047
+> >> 
+> >> Fix there :
+> >> https://marc.info/?l=linux-kernel&m=151272209903675&w=2
+> > 
+> > I don't see the patch in latest mainline. Not having ethernet
+> > is... somehow annoying. What is going on there?
+> 
+> Generally speaking, e1000 maintainence has been handled very poorly over
+> the past few years, I have to say.
+> 
+> Fixes take forever to propagate even when someone other than the
+> maintainer provides a working and tested fix, just like this case.
+> 
+> Jeff, please take e1000 maintainence seriously and get these critical
+> bug fixes propagated.
 
-> diff --git a/drivers/net/ethernet/mellanox/mlx4/en_clock.c b/drivers/net/ethernet/mellanox/mlx4/en_clock.c
-> index 0247885..35987b5 100644
-> --- a/drivers/net/ethernet/mellanox/mlx4/en_clock.c
-> +++ b/drivers/net/ethernet/mellanox/mlx4/en_clock.c
-...
+No response AFAICT. I guess I should test reverting
+19110cfbb34d4af0cdfe14cd243f3b09dc95b013, then ask you for revert?
 
-As it stands now, timecounter_init() is used for two totally different
-reasons.  Some callers only want to set the time, ...
-
-> @@ -207,7 +207,7 @@ static int mlx4_en_phc_settime(struct ptp_clock_info *ptp,
->  
->  	/* reset the timecounter */
->  	write_seqlock_irqsave(&mdev->clock_lock, flags);
-> -	timecounter_init(&mdev->clock, &mdev->cycles, ns);
-> +	timecounter_init(&mdev->clock, ns);
->  	write_sequnlock_irqrestore(&mdev->clock_lock, flags);
->  
->  	return 0;
-
-... while others initialize the data structure the first time:
-
-> @@ -274,17 +274,17 @@ void mlx4_en_init_timestamp(struct mlx4_en_dev *mdev)
->  
->  	seqlock_init(&mdev->clock_lock);
->  
-> -	memset(&mdev->cycles, 0, sizeof(mdev->cycles));
-> -	mdev->cycles.read = mlx4_en_read_clock;
-> -	mdev->cycles.mask = CLOCKSOURCE_MASK(48);
-> -	mdev->cycles.shift = freq_to_shift(dev->caps.hca_core_clock);
-> -	mdev->cycles.mult =
-> -		clocksource_khz2mult(1000 * dev->caps.hca_core_clock, mdev->cycles.shift);
-> -	mdev->nominal_c_mult = mdev->cycles.mult;
-> +	memset(&mdev->clock.cc, 0, sizeof(mdev->clock.cc));
-> +	mdev->clock.cc.read = mlx4_en_read_clock;
-> +	mdev->clock.cc.mask = CLOCKSOURCE_MASK(48);
-> +	mdev->clock.cc.shift = freq_to_shift(dev->caps.hca_core_clock);
-> +	mdev->clock.cc.mult =
-> +		clocksource_khz2mult(1000 * dev->caps.hca_core_clock,
-> +				     mdev->clock.cc.shift);
-> +	mdev->nominal_c_mult = mdev->clock.cc.mult;
->  
->  	write_seqlock_irqsave(&mdev->clock_lock, flags);
-> -	timecounter_init(&mdev->clock, &mdev->cycles,
-> -			 ktime_to_ns(ktime_get_real()));
-> +	timecounter_init(&mdev->clock, ktime_to_ns(ktime_get_real()));
-
-I'd like to see two followup patches to this one:
-
-1. Convert timecounter_init() callers to a new timecounter_reset()
-   function where the intent is to reset the time.
-
-2. Change timecounter_init() to take the cyclecounter fields as
-   arguments.
-
-	void timecounter_init(struct timecounter *tc,
-			      u64 (*read)(const struct cyclecounter *cc),
-			      u64 mask,
-			      u32 mult,
-			      u32 shift,
-			      u64 start_tstamp);
-
-Then we can clean up all this stuff:
-
-	mdev->clock.cc.read = mlx4_en_read_clock;
-	mdev->clock.cc.mask = CLOCKSOURCE_MASK(48);
-	mdev->clock.cc.shift = freq_to_shift(dev->caps.hca_core_clock);
-	mdev->clock.cc.mult = clocksource_khz2mult(...);
-
-This second step can be phased in by calling the new function
-timecounter_initialize() and converting the drivers one by one.
-
-> diff --git a/include/linux/timecounter.h b/include/linux/timecounter.h
-> index 2496ad4..6daca06 100644
-> --- a/include/linux/timecounter.h
-> +++ b/include/linux/timecounter.h
-...
-> @@ -98,7 +98,6 @@ static inline void timecounter_adjtime(struct timecounter *tc, s64 delta)
->  /**
->   * timecounter_init - initialize a time counter
->   * @tc:			Pointer to time counter which is to be initialized/reset
-> - * @cc:			A cycle counter, ready to be used.
-
-This "ready to used" requirement should go.  The init() function
-should make the instance ready to be used all at once.
-
-Thanks,
-Richard
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 181 bytes
+Desc: Digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171218/d4ab524e/attachment.asc>
