@@ -1,56 +1,99 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 19 Dec 2017 17:19:15 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 73/86]
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8467:11: error: 'struct
- sk_buff' has no member named 'sp'; did you mean 'sk'?
-Message-ID: <201712191701.4RTL7BhP%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Tue, 19 Dec 2017 15:59:56 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 04/10] ixgbe: add ipsec data
+ structures
+In-Reply-To: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
+References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1513728002-7643-5-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   5c54325b75aa66e6f3fd313c513d543eab3fc7f6
-commit: eab2fe699d9ed618b41d4b47122dc177e835a3a0 [73/86] ixgbe: process the Tx ipsec offload
-config: x86_64-kexec (attached as .config)
-compiler: gcc-7 (Debian 7.2.0-12) 7.2.1 20171025
-reproduce:
-        git checkout eab2fe699d9ed618b41d4b47122dc177e835a3a0
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+Set up the data structures to be used by the ipsec offload.
 
-All errors (new ones prefixed by >>):
+v2: ipaddr[] becomes __be32
+    increase the hash table size
 
-   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_xmit_frame_ring':
->> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8467:11: error: 'struct sk_buff' has no member named 'sp'; did you mean 'sk'?
-     if (skb->sp && !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
-              ^~
-              sk
-
-vim +8467 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-
-  8466	
-> 8467		if (skb->sp && !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
-  8468			goto out_drop;
-  8469		tso = ixgbe_tso(tx_ring, first, &hdr_len);
-  8470		if (tso < 0)
-  8471			goto out_drop;
-  8472		else if (!tso)
-  8473			ixgbe_tx_csum(tx_ring, first, &ipsec_tx);
-  8474	
-  8475		/* add the ATR filter if ATR is on */
-  8476		if (test_bit(__IXGBE_TX_FDIR_INIT_DONE, &tx_ring->state))
-  8477			ixgbe_atr(tx_ring, first);
-  8478	
-
+Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 26299 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171219/ff575559/attachment-0001.bin>
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  5 ++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h | 40 ++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 1e11462..9487750 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -622,6 +622,7 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_EEE_CAPABLE			BIT(14)
+ #define IXGBE_FLAG2_EEE_ENABLED			BIT(15)
+ #define IXGBE_FLAG2_RX_LEGACY			BIT(16)
++#define IXGBE_FLAG2_IPSEC_ENABLED		BIT(17)
+ 
+ 	/* Tx fast path data */
+ 	int num_tx_queues;
+@@ -772,6 +773,10 @@ struct ixgbe_adapter {
+ 
+ #define IXGBE_RSS_KEY_SIZE     40  /* size of RSS Hash Key in bytes */
+ 	u32 *rss_key;
++
++#ifdef CONFIG_XFRM
++	struct ixgbe_ipsec *ipsec;
++#endif /* CONFIG_XFRM */
+ };
+ 
+ static inline u8 ixgbe_max_rss_indices(struct ixgbe_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+index 8fe8289..da3ce78 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+@@ -50,4 +50,44 @@ enum ixgbe_ipsec_tbl_sel {
+ #define IXGBE_RXMOD_DECRYPT		0x00000008
+ #define IXGBE_RXMOD_IPV6		0x00000010
+ 
++struct rx_sa {
++	struct hlist_node hlist;
++	struct xfrm_state *xs;
++	__be32 ipaddr[4];
++	u32 key[4];
++	u32 salt;
++	u32 mode;
++	u8  iptbl_ind;
++	bool used;
++	bool decrypt;
++};
++
++struct rx_ip_sa {
++	__be32 ipaddr[4];
++	u32 ref_cnt;
++	bool used;
++};
++
++struct tx_sa {
++	struct xfrm_state *xs;
++	u32 key[4];
++	u32 salt;
++	bool encrypt;
++	bool used;
++};
++
++struct ixgbe_ipsec_tx_data {
++	u32 flags;
++	u16 trailer_len;
++	u16 sa_idx;
++};
++
++struct ixgbe_ipsec {
++	u16 num_rx_sa;
++	u16 num_tx_sa;
++	struct rx_ip_sa *ip_tbl;
++	struct rx_sa *rx_tbl;
++	struct tx_sa *tx_tbl;
++	DECLARE_HASHTABLE(rx_sa_list, 10);
++};
+ #endif /* _IXGBE_IPSEC_H_ */
+-- 
+2.7.4
+
