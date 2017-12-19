@@ -1,170 +1,56 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 19 Dec 2017 08:15:17 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 5c54325b75aa66e6f3fd313c513d543eab3fc7f6
-Message-ID: <5a385a15.6dRTBFWq2eDLgSy/%fengguang.wu@intel.com>
+Date: Tue, 19 Dec 2017 17:19:15 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 73/86]
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8467:11: error: 'struct
+ sk_buff' has no member named 'sp'; did you mean 'sk'?
+Message-ID: <201712191701.4RTL7BhP%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 5c54325b75aa66e6f3fd313c513d543eab3fc7f6  i40e: Disable iWARP VSI PETCP_ENA flag on netdev down events
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   5c54325b75aa66e6f3fd313c513d543eab3fc7f6
+commit: eab2fe699d9ed618b41d4b47122dc177e835a3a0 [73/86] ixgbe: process the Tx ipsec offload
+config: x86_64-kexec (attached as .config)
+compiler: gcc-7 (Debian 7.2.0-12) 7.2.1 20171025
+reproduce:
+        git checkout eab2fe699d9ed618b41d4b47122dc177e835a3a0
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
-Regressions in current branch:
+All errors (new ones prefixed by >>):
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c:46:17: sparse: incorrect type in argument 3 (different base types)
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_xmit_frame_ring':
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8467:11: error: 'struct sk_buff' has no member named 'sp'; did you mean 'sk'?
+     if (skb->sp && !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
+              ^~
+              sk
 
-Error ids grouped by kconfigs:
+vim +8467 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 
-recent_errors
-??? x86_64-allmodconfig
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:sparse:incorrect-type-in-argument-(different-base-types)-expected-unsigned-int-unsigned-usertype-value-got-ed-int-unsigned-usertype-value
+  8466	
+> 8467		if (skb->sp && !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
+  8468			goto out_drop;
+  8469		tso = ixgbe_tso(tx_ring, first, &hdr_len);
+  8470		if (tso < 0)
+  8471			goto out_drop;
+  8472		else if (!tso)
+  8473			ixgbe_tx_csum(tx_ring, first, &ipsec_tx);
+  8474	
+  8475		/* add the ATR filter if ATR is on */
+  8476		if (test_bit(__IXGBE_TX_FDIR_INIT_DONE, &tx_ring->state))
+  8477			ixgbe_atr(tx_ring, first);
+  8478	
 
-elapsed time: 146m
-
-configs tested: 139
-
-x86_64                 randconfig-a0-12190649
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201751
-x86_64                 randconfig-x000-201751
-x86_64                 randconfig-x001-201751
-x86_64                 randconfig-x002-201751
-x86_64                 randconfig-x003-201751
-x86_64                 randconfig-x004-201751
-x86_64                 randconfig-x005-201751
-x86_64                 randconfig-x006-201751
-x86_64                 randconfig-x007-201751
-x86_64                 randconfig-x008-201751
-x86_64                 randconfig-x009-201751
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-i0-12180843
-i386                   randconfig-i1-12180843
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x012-201751
-x86_64                 randconfig-x010-201751
-x86_64                 randconfig-x011-201751
-x86_64                 randconfig-x015-201751
-x86_64                 randconfig-x019-201751
-x86_64                 randconfig-x014-201751
-x86_64                 randconfig-x013-201751
-x86_64                 randconfig-x016-201751
-x86_64                 randconfig-x017-201751
-x86_64                 randconfig-x018-201751
-i386                   randconfig-a0-12171902
-i386                   randconfig-a1-12171902
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                         lpc32xx_defconfig
-mips                           jazz_defconfig
-mips                       rbtx49xx_defconfig
-parisc                           allmodconfig
-powerpc                 mpc834x_mds_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201751
-i386                     randconfig-s0-201751
-x86_64                   randconfig-i0-201751
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x016-201751
-i386                   randconfig-x011-201751
-i386                   randconfig-x014-201751
-i386                   randconfig-x017-201751
-i386                   randconfig-x019-201751
-i386                   randconfig-x018-201751
-i386                   randconfig-x010-201751
-i386                   randconfig-x013-201751
-i386                   randconfig-x015-201751
-i386                   randconfig-x012-201751
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                                  kexec
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x072-201751
-i386                   randconfig-x078-201751
-i386                   randconfig-x071-201751
-i386                   randconfig-x077-201751
-i386                   randconfig-x070-201751
-i386                   randconfig-x074-201751
-i386                   randconfig-x073-201751
-i386                   randconfig-x079-201751
-i386                   randconfig-x076-201751
-i386                   randconfig-x075-201751
-i386                             allmodconfig
-i386                   randconfig-x007-201751
-i386                   randconfig-x008-201751
-i386                   randconfig-x009-201751
-i386                   randconfig-x004-201751
-i386                   randconfig-x002-201751
-i386                   randconfig-x005-201751
-i386                   randconfig-x001-201751
-i386                   randconfig-x006-201751
-i386                   randconfig-x003-201751
-i386                   randconfig-x000-201751
-
-Thanks,
-Fengguang
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 26299 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171219/ff575559/attachment-0001.bin>
