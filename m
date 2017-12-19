@@ -1,108 +1,184 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 19 Dec 2017 15:59:58 -0800
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 06/10] ixgbe: restore
- offloaded SAs after a reset
+Date: Tue, 19 Dec 2017 15:59:55 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 03/10] ixgbe: add ipsec
+ engine start and stop routines
 In-Reply-To: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
 References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <1513728002-7643-7-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1513728002-7643-4-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On a chip reset most of the table contents are lost, so must be
-restored.  This scans the driver's ipsec tables and restores both
-the filled and empty table slots to their pre-reset values.
+Add in the code for running and stopping the hardware ipsec
+encryption/decryption engine.  It is good to keep the engine
+off when not in use in order to save on the power draw.
 
-v2: during restore, clean the tables before restarting
+v2: add limiter to do-while loop waiting for paths to drain
 
 Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 41 ++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  1 +
- 3 files changed, 44 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 142 +++++++++++++++++++++++++
+ 1 file changed, 142 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 8f41508..af690c2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -1010,8 +1010,10 @@ s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32 adv_reg, u32 lp_reg,
- #ifdef CONFIG_XFRM_OFFLOAD
- void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter);
- void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter);
-+void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter);
- #else
- static inline void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter) { };
- static inline void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter) { };
-+static inline void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter) { };
- #endif /* CONFIG_XFRM_OFFLOAD */
- #endif /* _IXGBE_H_ */
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index 96971ce..9cf120d 100644
+index bd7585f..85eaafc 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -299,6 +299,47 @@ static void ixgbe_ipsec_start_engine(struct ixgbe_adapter *adapter)
+@@ -152,10 +152,152 @@ static void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
  }
  
  /**
-+ * ixgbe_ipsec_restore - restore the ipsec HW settings after a reset
++ * ixgbe_ipsec_stop_data
 + * @adapter: board private structure
 + **/
-+void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter)
++static void ixgbe_ipsec_stop_data(struct ixgbe_adapter *adapter)
 +{
-+	struct ixgbe_ipsec *ipsec = adapter->ipsec;
 +	struct ixgbe_hw *hw = &adapter->hw;
-+	int i;
++	bool link = adapter->link_up;
++	u32 t_rdy, r_rdy;
++	u32 limit;
++	u32 reg;
 +
-+	if (!(adapter->flags2 & IXGBE_FLAG2_IPSEC_ENABLED))
-+		return;
++	/* halt data paths */
++	reg = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
++	reg |= IXGBE_SECTXCTRL_TX_DIS;
++	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, reg);
 +
-+	/* clean up and restart the engine */
-+	ixgbe_ipsec_stop_engine(adapter);
-+	ixgbe_ipsec_clear_hw_tables(adapter);
-+	ixgbe_ipsec_start_engine(adapter);
++	reg = IXGBE_READ_REG(hw, IXGBE_SECRXCTRL);
++	reg |= IXGBE_SECRXCTRL_RX_DIS;
++	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, reg);
 +
-+	/* reload the IP addrs */
-+	for (i = 0; i < IXGBE_IPSEC_MAX_RX_IP_COUNT; i++) {
-+		struct rx_ip_sa *ipsa = &ipsec->ip_tbl[i];
++	IXGBE_WRITE_FLUSH(hw);
 +
-+		if (ipsa->used)
-+			ixgbe_ipsec_set_rx_ip(hw, i, ipsa->ipaddr);
++	/* If the tx fifo doesn't have link, but still has data,
++	 * we can't clear the tx sec block.  Set the MAC loopback
++	 * before block clear
++	 */
++	if (!link) {
++		reg = IXGBE_READ_REG(hw, IXGBE_MACC);
++		reg |= IXGBE_MACC_FLU;
++		IXGBE_WRITE_REG(hw, IXGBE_MACC, reg);
++
++		reg = IXGBE_READ_REG(hw, IXGBE_HLREG0);
++		reg |= IXGBE_HLREG0_LPBK;
++		IXGBE_WRITE_REG(hw, IXGBE_HLREG0, reg);
++
++		IXGBE_WRITE_FLUSH(hw);
++		mdelay(3);
 +	}
 +
-+	/* reload the Rx and Tx keys */
-+	for (i = 0; i < IXGBE_IPSEC_MAX_SA_COUNT; i++) {
-+		struct rx_sa *rsa = &ipsec->rx_tbl[i];
-+		struct tx_sa *tsa = &ipsec->tx_tbl[i];
++	/* wait for the paths to empty */
++	limit = 20;
++	do {
++		mdelay(10);
++		t_rdy = IXGBE_READ_REG(hw, IXGBE_SECTXSTAT) &
++			IXGBE_SECTXSTAT_SECTX_RDY;
++		r_rdy = IXGBE_READ_REG(hw, IXGBE_SECRXSTAT) &
++			IXGBE_SECRXSTAT_SECRX_RDY;
++	} while (!t_rdy && !r_rdy && limit--);
 +
-+		if (rsa->used)
-+			ixgbe_ipsec_set_rx_sa(hw, i, rsa->xs->id.spi,
-+					      rsa->key, rsa->salt,
-+					      rsa->mode, rsa->iptbl_ind);
++	/* undo loopback if we played with it earlier */
++	if (!link) {
++		reg = IXGBE_READ_REG(hw, IXGBE_MACC);
++		reg &= ~IXGBE_MACC_FLU;
++		IXGBE_WRITE_REG(hw, IXGBE_MACC, reg);
 +
-+		if (tsa->used)
-+			ixgbe_ipsec_set_tx_sa(hw, i, tsa->key, tsa->salt);
++		reg = IXGBE_READ_REG(hw, IXGBE_HLREG0);
++		reg &= ~IXGBE_HLREG0_LPBK;
++		IXGBE_WRITE_REG(hw, IXGBE_HLREG0, reg);
++
++		IXGBE_WRITE_FLUSH(hw);
 +	}
 +}
 +
 +/**
-  * ixgbe_ipsec_find_empty_idx - find the first unused security parameter index
-  * @ipsec: pointer to ipsec struct
-  * @rxtable: true if we need to look in the Rx table
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 2b3da0c..04e8b26 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5347,6 +5347,7 @@ static void ixgbe_configure(struct ixgbe_adapter *adapter)
- 
- 	ixgbe_set_rx_mode(adapter->netdev);
- 	ixgbe_restore_vlan(adapter);
-+	ixgbe_ipsec_restore(adapter);
- 
- 	switch (hw->mac.type) {
- 	case ixgbe_mac_82599EB:
++ * ixgbe_ipsec_stop_engine
++ * @adapter: board private structure
++ **/
++static void ixgbe_ipsec_stop_engine(struct ixgbe_adapter *adapter)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++	u32 reg;
++
++	ixgbe_ipsec_stop_data(adapter);
++
++	/* disable Rx and Tx SA lookup */
++	IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, 0);
++	IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, 0);
++
++	/* disable the Rx and Tx engines and full packet store-n-forward */
++	reg = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
++	reg |= IXGBE_SECTXCTRL_SECTX_DIS;
++	reg &= ~IXGBE_SECTXCTRL_STORE_FORWARD;
++	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, reg);
++
++	reg = IXGBE_READ_REG(hw, IXGBE_SECRXCTRL);
++	reg |= IXGBE_SECRXCTRL_SECRX_DIS;
++	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, reg);
++
++	/* restore the "tx security buffer almost full threshold" to 0x250 */
++	IXGBE_WRITE_REG(hw, IXGBE_SECTXBUFFAF, 0x250);
++
++	/* Set minimum IFG between packets back to the default 0x1 */
++	reg = IXGBE_READ_REG(hw, IXGBE_SECTXMINIFG);
++	reg = (reg & 0xfffffff0) | 0x1;
++	IXGBE_WRITE_REG(hw, IXGBE_SECTXMINIFG, reg);
++
++	/* final set for normal (no ipsec offload) processing */
++	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, IXGBE_SECTXCTRL_SECTX_DIS);
++	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, IXGBE_SECRXCTRL_SECRX_DIS);
++
++	IXGBE_WRITE_FLUSH(hw);
++}
++
++/**
++ * ixgbe_ipsec_start_engine
++ * @adapter: board private structure
++ *
++ * NOTE: this increases power consumption whether being used or not
++ **/
++static void ixgbe_ipsec_start_engine(struct ixgbe_adapter *adapter)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++	u32 reg;
++
++	ixgbe_ipsec_stop_data(adapter);
++
++	/* Set minimum IFG between packets to 3 */
++	reg = IXGBE_READ_REG(hw, IXGBE_SECTXMINIFG);
++	reg = (reg & 0xfffffff0) | 0x3;
++	IXGBE_WRITE_REG(hw, IXGBE_SECTXMINIFG, reg);
++
++	/* Set "tx security buffer almost full threshold" to 0x15 so that the
++	 * almost full indication is generated only after buffer contains at
++	 * least an entire jumbo packet.
++	 */
++	reg = IXGBE_READ_REG(hw, IXGBE_SECTXBUFFAF);
++	reg = (reg & 0xfffffc00) | 0x15;
++	IXGBE_WRITE_REG(hw, IXGBE_SECTXBUFFAF, reg);
++
++	/* restart the data paths by clearing the DISABLE bits */
++	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, 0);
++	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, IXGBE_SECTXCTRL_STORE_FORWARD);
++
++	/* enable Rx and Tx SA lookup */
++	IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, IXGBE_RXTXIDX_IPS_EN);
++	IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, IXGBE_RXTXIDX_IPS_EN);
++
++	IXGBE_WRITE_FLUSH(hw);
++}
++
++/**
+  * ixgbe_init_ipsec_offload - initialize security registers for IPSec operation
+  * @adapter: board private structure
+  **/
+ void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter)
+ {
+ 	ixgbe_ipsec_clear_hw_tables(adapter);
++	ixgbe_ipsec_stop_engine(adapter);
+ }
 -- 
 2.7.4
 
