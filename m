@@ -1,99 +1,102 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 19 Dec 2017 15:59:56 -0800
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 04/10] ixgbe: add ipsec data
- structures
-In-Reply-To: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
-References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <1513728002-7643-5-git-send-email-shannon.nelson@oracle.com>
+Date: Tue, 19 Dec 2017 15:59:52 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 00/10] ixgbe: Add ipsec
+ offload
+Message-ID: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Set up the data structures to be used by the ipsec offload.
+This is an implementation of the ipsec hardware offload feature for
+the ixgbe driver and Intel's 10Gbe series NICs: x540, x550, 82599.
+These patches apply to net-next v4.14 as well as Jeff Kirsher's next-queue
+v4.15-rc1-206-ge47375b.
 
-v2: ipaddr[] becomes __be32
-    increase the hash table size
+The ixgbe NICs support ipsec offload for 1024 Rx and 1024 Tx Security
+Associations (SAs), using up to 128 inbound IP addresses, and using the
+rfc4106(gcm(aes)) encryption.  This code does not yet support IPv6,
+checksum offload, or TSO in conjunction with the ipsec offload - those
+will be added in the future.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  5 ++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h | 40 ++++++++++++++++++++++++++
- 2 files changed, 45 insertions(+)
+This code shows improvements in both packet throughput and CPU utilization.
+For example, here are some quicky numbers that show the magnitude of the
+performance gain on a single run of "iperf -c <dest>" with the ipsec
+offload on both ends of a point-to-point connection:
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 1e11462..9487750 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -622,6 +622,7 @@ struct ixgbe_adapter {
- #define IXGBE_FLAG2_EEE_CAPABLE			BIT(14)
- #define IXGBE_FLAG2_EEE_ENABLED			BIT(15)
- #define IXGBE_FLAG2_RX_LEGACY			BIT(16)
-+#define IXGBE_FLAG2_IPSEC_ENABLED		BIT(17)
+	9.4 Gbps - normal case
+	7.6 Gbps - ipsec with offload
+	343 Mbps - ipsec no offload
+
+To set up a similar test case, you first need to be sure you have a recent
+version of iproute2 that supports the ipsec offload tag, probably something
+from ip 4.12 or newer would be best.  I have a shell script that builds
+up the appropriate commands for me, but here are the resulting commands
+for all tcp traffic between 14.0.0.52 and 14.0.0.70:
+
+For the left side (14.0.0.52):
+  ip x p add dir out src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
+     proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport reqid 0x07
+  ip x p add dir in src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
+     proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport reqid 0x07
+  ip x s add proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport \
+     reqid 0x07 replay-window 32 \
+     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
+     sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev eth4 dir out
+  ip x s add proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport \
+     reqid 0x07 replay-window 32 \
+     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
+     sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev eth4 dir in
  
- 	/* Tx fast path data */
- 	int num_tx_queues;
-@@ -772,6 +773,10 @@ struct ixgbe_adapter {
- 
- #define IXGBE_RSS_KEY_SIZE     40  /* size of RSS Hash Key in bytes */
- 	u32 *rss_key;
-+
-+#ifdef CONFIG_XFRM
-+	struct ixgbe_ipsec *ipsec;
-+#endif /* CONFIG_XFRM */
- };
- 
- static inline u8 ixgbe_max_rss_indices(struct ixgbe_adapter *adapter)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
-index 8fe8289..da3ce78 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
-@@ -50,4 +50,44 @@ enum ixgbe_ipsec_tbl_sel {
- #define IXGBE_RXMOD_DECRYPT		0x00000008
- #define IXGBE_RXMOD_IPV6		0x00000010
- 
-+struct rx_sa {
-+	struct hlist_node hlist;
-+	struct xfrm_state *xs;
-+	__be32 ipaddr[4];
-+	u32 key[4];
-+	u32 salt;
-+	u32 mode;
-+	u8  iptbl_ind;
-+	bool used;
-+	bool decrypt;
-+};
-+
-+struct rx_ip_sa {
-+	__be32 ipaddr[4];
-+	u32 ref_cnt;
-+	bool used;
-+};
-+
-+struct tx_sa {
-+	struct xfrm_state *xs;
-+	u32 key[4];
-+	u32 salt;
-+	bool encrypt;
-+	bool used;
-+};
-+
-+struct ixgbe_ipsec_tx_data {
-+	u32 flags;
-+	u16 trailer_len;
-+	u16 sa_idx;
-+};
-+
-+struct ixgbe_ipsec {
-+	u16 num_rx_sa;
-+	u16 num_tx_sa;
-+	struct rx_ip_sa *ip_tbl;
-+	struct rx_sa *rx_tbl;
-+	struct tx_sa *tx_tbl;
-+	DECLARE_HASHTABLE(rx_sa_list, 10);
-+};
- #endif /* _IXGBE_IPSEC_H_ */
+For the right side (14.0.0.70):
+  ip x p add dir out src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
+     proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport reqid 0x07
+  ip x p add dir in src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
+     proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport reqid 0x07
+  ip x s add proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport \
+     reqid 0x07 replay-window 32 \
+     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
+     sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev eth4 dir out
+  ip x s add proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport \
+     reqid 0x07 replay-window 32 \
+     aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
+     sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev eth4 dir in
+
+In both cases, the command "ip x s flush ; ip x p flush" will clean
+it all out and remove the offloads.
+
+Lastly, thanks to Alex Duyck for his early comments.
+
+Please see the individual patches for specific update info.
+
+v3: fixes after comments from those wonderfully pesky kbuild robots
+v2: fixes after comments from Alex
+
+Shannon Nelson (10):
+  ixgbe: clean up ipsec defines
+  ixgbe: add ipsec register access routines
+  ixgbe: add ipsec engine start and stop routines
+  ixgbe: add ipsec data structures
+  ixgbe: add ipsec offload add and remove SA
+  ixgbe: restore offloaded SAs after a reset
+  ixgbe: process the Rx ipsec offload
+  ixgbe: process the Tx ipsec offload
+  ixgbe: ipsec offload stats
+  ixgbe: register ipsec offload with the xfrm subsystem
+
+ drivers/net/ethernet/intel/ixgbe/Makefile        |   1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  33 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   2 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c   | 923 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h   |  92 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   4 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  39 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |  22 +-
+ 8 files changed, 1093 insertions(+), 23 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+ create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+
 -- 
 2.7.4
 
