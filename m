@@ -1,496 +1,281 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 19 Dec 2017 15:59:57 -0800
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 05/10] ixgbe: add ipsec
- offload add and remove SA
+Date: Tue, 19 Dec 2017 16:00:00 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 08/10] ixgbe: process the Tx
+ ipsec offload
 In-Reply-To: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
 References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <1513728002-7643-6-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1513728002-7643-9-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add the functions for setting up and removing offloaded SAs (Security
-Associations) with the x540 hardware.  We set up the callback structure
-but we don't yet set the hardware feature bit to be sure the XFRM service
-won't actually try to use us for an offload yet.
+If the skb has a security association referenced in the skb, then
+set up the Tx descriptor with the ipsec offload bits.  While we're
+here, we fix an oddly named field in the context descriptor struct.
 
-The software tables are made up to mimic the hardware tables to make it
-easier to track what's in the hardware, and the SA table index is used
-for the XFRM offload handle.  However, there is a hashing field in the
-Rx SA tracking that will be used to facilitate faster table searches in
-the Rx fast path.
+v3: added ifdef CONFIG_XFRM_OFFLOAD check around call to ixgbe_ipsec_tx()
 
-v2: fix use of num_rx_sa that should be num_tx_sa
-    change aes_gcm_name to a const array
-    tighten up the key parsing code
-    add another label to the init error handling
-    move table deletion to a separate function
+v2: use ihl != 5
+    move the ixgbe_ipsec_tx() call to near the call to ixgbe_tso()
+    drop the ipsec packet if the tx offload setup fails
+    simplify the ixgbe_ipsec_tx() parameters by using 'first'
+    leave out the ixgbe_tso() changes since we don't support TSO
+       with ipsec yet.
 
 Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |   2 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 394 ++++++++++++++++++++++++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |   1 +
- 3 files changed, 396 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h       | 10 +++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 79 ++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c   |  4 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  | 26 +++++++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |  2 +-
+ 5 files changed, 112 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 9487750..8f41508 100644
+index a094b23..3d2b7bf 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -1009,7 +1009,9 @@ s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32 adv_reg, u32 lp_reg,
- 		       u32 adv_sym, u32 adv_asm, u32 lp_sym, u32 lp_asm);
- #ifdef CONFIG_XFRM_OFFLOAD
- void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter);
-+void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter);
+@@ -171,10 +171,11 @@ enum ixgbe_tx_flags {
+ 	IXGBE_TX_FLAGS_CC	= 0x08,
+ 	IXGBE_TX_FLAGS_IPV4	= 0x10,
+ 	IXGBE_TX_FLAGS_CSUM	= 0x20,
++	IXGBE_TX_FLAGS_IPSEC	= 0x40,
+ 
+ 	/* software defined flags */
+-	IXGBE_TX_FLAGS_SW_VLAN	= 0x40,
+-	IXGBE_TX_FLAGS_FCOE	= 0x80,
++	IXGBE_TX_FLAGS_SW_VLAN	= 0x80,
++	IXGBE_TX_FLAGS_FCOE	= 0x100,
+ };
+ 
+ /* VLAN info */
+@@ -1014,6 +1015,8 @@ void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter);
+ void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
+ 		    union ixgbe_adv_rx_desc *rx_desc,
+ 		    struct sk_buff *skb);
++int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring, struct ixgbe_tx_buffer *first,
++		   struct ixgbe_ipsec_tx_data *itd);
  #else
  static inline void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter) { };
-+static inline void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter) { };
+ static inline void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter) { };
+@@ -1021,5 +1024,8 @@ static inline void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter) { };
+ static inline void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
+ 				  union ixgbe_adv_rx_desc *rx_desc,
+ 				  struct sk_buff *skb) { };
++static inline int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring,
++				 struct ixgbe_tx_buffer *first,
++				 struct ixgbe_ipsec_tx_data *itd) { return 0; };
  #endif /* CONFIG_XFRM_OFFLOAD */
  #endif /* _IXGBE_H_ */
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index 85eaafc..96971ce 100644
+index a9b8f5c..c2fd2ac 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -26,6 +26,8 @@
-  ******************************************************************************/
- 
- #include "ixgbe.h"
-+#include <net/xfrm.h>
-+#include <crypto/aead.h>
- 
- /**
-  * ixgbe_ipsec_set_tx_sa - set the Tx SA registers
-@@ -131,6 +133,7 @@ static void ixgbe_ipsec_set_rx_ip(struct ixgbe_hw *hw, u16 idx, __be32 addr[])
-  **/
- static void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
- {
-+	struct ixgbe_ipsec *ipsec = adapter->ipsec;
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	u32 buf[4] = {0, 0, 0, 0};
- 	u16 idx;
-@@ -149,6 +152,9 @@ static void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
- 		ixgbe_ipsec_set_tx_sa(hw, idx, buf, 0);
- 		ixgbe_ipsec_set_rx_sa(hw, idx, 0, buf, 0, 0, 0);
+@@ -695,12 +695,91 @@ static void ixgbe_ipsec_del_sa(struct xfrm_state *xs)
  	}
-+
-+	ipsec->num_rx_sa = 0;
-+	ipsec->num_tx_sa = 0;
  }
  
- /**
-@@ -293,11 +299,397 @@ static void ixgbe_ipsec_start_engine(struct ixgbe_adapter *adapter)
- }
++/**
++ * ixgbe_ipsec_offload_ok - can this packet use the xfrm hw offload
++ * @skb: current data packet
++ * @xs: pointer to transformer state struct
++ **/
++static bool ixgbe_ipsec_offload_ok(struct sk_buff *skb, struct xfrm_state *xs)
++{
++	if (xs->props.family == AF_INET) {
++		/* Offload with IPv4 options is not supported yet */
++		if (ip_hdr(skb)->ihl != 5)
++			return false;
++	} else {
++		/* Offload with IPv6 extension headers is not support yet */
++		if (ipv6_ext_hdr(ipv6_hdr(skb)->nexthdr))
++			return false;
++	}
++
++	return true;
++}
++
+ static const struct xfrmdev_ops ixgbe_xfrmdev_ops = {
+ 	.xdo_dev_state_add = ixgbe_ipsec_add_sa,
+ 	.xdo_dev_state_delete = ixgbe_ipsec_del_sa,
++	.xdo_dev_offload_ok = ixgbe_ipsec_offload_ok,
+ };
  
  /**
-+ * ixgbe_ipsec_find_empty_idx - find the first unused security parameter index
-+ * @ipsec: pointer to ipsec struct
-+ * @rxtable: true if we need to look in the Rx table
-+ *
-+ * Returns the first unused index in either the Rx or Tx SA table
++ * ixgbe_ipsec_tx - setup Tx flags for ipsec offload
++ * @tx_ring: outgoing context
++ * @first: current data packet
++ * @itd: ipsec Tx data for later use in building context descriptor
 + **/
-+static int ixgbe_ipsec_find_empty_idx(struct ixgbe_ipsec *ipsec, bool rxtable)
++int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring,
++		   struct ixgbe_tx_buffer *first,
++		   struct ixgbe_ipsec_tx_data *itd)
 +{
-+	u32 i;
-+
-+	if (rxtable) {
-+		if (ipsec->num_rx_sa == IXGBE_IPSEC_MAX_SA_COUNT)
-+			return -ENOSPC;
-+
-+		/* search rx sa table */
-+		for (i = 0; i < IXGBE_IPSEC_MAX_SA_COUNT; i++) {
-+			if (!ipsec->rx_tbl[i].used)
-+				return i;
-+		}
-+	} else {
-+		if (ipsec->num_tx_sa == IXGBE_IPSEC_MAX_SA_COUNT)
-+			return -ENOSPC;
-+
-+		/* search tx sa table */
-+		for (i = 0; i < IXGBE_IPSEC_MAX_SA_COUNT; i++) {
-+			if (!ipsec->tx_tbl[i].used)
-+				return i;
-+		}
-+	}
-+
-+	return -ENOSPC;
-+}
-+
-+/**
-+ * ixgbe_ipsec_parse_proto_keys - find the key and salt based on the protocol
-+ * @xs: pointer to xfrm_state struct
-+ * @mykey: pointer to key array to populate
-+ * @mysalt: pointer to salt value to populate
-+ *
-+ * This copies the protocol keys and salt to our own data tables.  The
-+ * 82599 family only supports the one algorithm.
-+ **/
-+static int ixgbe_ipsec_parse_proto_keys(struct xfrm_state *xs,
-+					u32 *mykey, u32 *mysalt)
-+{
-+	struct net_device *dev = xs->xso.dev;
-+	unsigned char *key_data;
-+	char *alg_name = NULL;
-+	const char aes_gcm_name[] = "rfc4106(gcm(aes))";
-+	int key_len;
-+
-+	if (xs->aead) {
-+		key_data = &xs->aead->alg_key[0];
-+		key_len = xs->aead->alg_key_len;
-+		alg_name = xs->aead->alg_name;
-+	} else {
-+		netdev_err(dev, "Unsupported IPsec algorithm\n");
-+		return -EINVAL;
-+	}
-+
-+	if (strcmp(alg_name, aes_gcm_name)) {
-+		netdev_err(dev, "Unsupported IPsec algorithm - please use %s\n",
-+			   aes_gcm_name);
-+		return -EINVAL;
-+	}
-+
-+	/* The key bytes come down in a bigendian array of bytes, so
-+	 * we don't need to do any byteswapping.
-+	 * 160 accounts for 16 byte key and 4 byte salt
-+	 */
-+	if (key_len == 160) {
-+		*mysalt = ((u32 *)key_data)[4];
-+	} else if (key_len != 128) {
-+		netdev_err(dev, "IPsec hw offload only supports keys up to 128 bits with a 32 bit salt\n");
-+		return -EINVAL;
-+	} else {
-+		netdev_info(dev, "IPsec hw offload parameters missing 32 bit salt value\n");
-+		*mysalt = 0;
-+	}
-+	memcpy(mykey, key_data, 16);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_ipsec_add_sa - program device with a security association
-+ * @xs: pointer to transformer state struct
-+ **/
-+static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
-+{
-+	struct net_device *dev = xs->xso.dev;
-+	struct ixgbe_adapter *adapter = netdev_priv(dev);
++	struct ixgbe_adapter *adapter = netdev_priv(tx_ring->netdev);
 +	struct ixgbe_ipsec *ipsec = adapter->ipsec;
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	int checked, match, first;
-+	u16 sa_idx;
-+	int ret;
-+	int i;
++	struct xfrm_state *xs;
++	struct tx_sa *tsa;
 +
-+	if (xs->id.proto != IPPROTO_ESP && xs->id.proto != IPPROTO_AH) {
-+		netdev_err(dev, "Unsupported protocol 0x%04x for ipsec offload\n",
-+			   xs->id.proto);
-+		return -EINVAL;
++	if (!first->skb->sp->len) {
++		netdev_err(tx_ring->netdev, "%s: no xfrm state len = %d\n",
++			   __func__, first->skb->sp->len);
++		return 0;
 +	}
 +
-+	if (xs->xso.flags & XFRM_OFFLOAD_INBOUND) {
-+		struct rx_sa rsa;
-+
-+		if (xs->calg) {
-+			netdev_err(dev, "Compression offload not supported\n");
-+			return -EINVAL;
-+		}
-+
-+		/* find the first unused index */
-+		ret = ixgbe_ipsec_find_empty_idx(ipsec, true);
-+		if (ret < 0) {
-+			netdev_err(dev, "No space for SA in Rx table!\n");
-+			return ret;
-+		}
-+		sa_idx = (u16)ret;
-+
-+		memset(&rsa, 0, sizeof(rsa));
-+		rsa.used = true;
-+		rsa.xs = xs;
-+
-+		if (rsa.xs->id.proto & IPPROTO_ESP)
-+			rsa.decrypt = xs->ealg || xs->aead;
-+
-+		/* get the key and salt */
-+		ret = ixgbe_ipsec_parse_proto_keys(xs, rsa.key, &rsa.salt);
-+		if (ret) {
-+			netdev_err(dev, "Failed to get key data for Rx SA table\n");
-+			return ret;
-+		}
-+
-+		/* get ip for rx sa table */
-+		if (xs->xso.flags & XFRM_OFFLOAD_IPV6)
-+			memcpy(rsa.ipaddr, &xs->id.daddr.a6, 16);
-+		else
-+			memcpy(&rsa.ipaddr[3], &xs->id.daddr.a4, 4);
-+
-+		/* The HW does not have a 1:1 mapping from keys to IP addrs, so
-+		 * check for a matching IP addr entry in the table.  If the addr
-+		 * already exists, use it; else find an unused slot and add the
-+		 * addr.  If one does not exist and there are no unused table
-+		 * entries, fail the request.
-+		 */
-+
-+		/* Find an existing match or first not used, and stop looking
-+		 * after we've checked all we know we have.
-+		 */
-+		checked = 0;
-+		match = -1;
-+		first = -1;
-+		for (i = 0;
-+		     i < IXGBE_IPSEC_MAX_RX_IP_COUNT &&
-+		     (checked < ipsec->num_rx_sa || first < 0);
-+		     i++) {
-+			if (ipsec->ip_tbl[i].used) {
-+				if (!memcmp(ipsec->ip_tbl[i].ipaddr,
-+					    rsa.ipaddr, sizeof(rsa.ipaddr))) {
-+					match = i;
-+					break;
-+				}
-+				checked++;
-+			} else if (first < 0) {
-+				first = i;  /* track the first empty seen */
-+			}
-+		}
-+
-+		if (ipsec->num_rx_sa == 0)
-+			first = 0;
-+
-+		if (match >= 0) {
-+			/* addrs are the same, we should use this one */
-+			rsa.iptbl_ind = match;
-+			ipsec->ip_tbl[match].ref_cnt++;
-+
-+		} else if (first >= 0) {
-+			/* no matches, but here's an empty slot */
-+			rsa.iptbl_ind = first;
-+
-+			memcpy(ipsec->ip_tbl[first].ipaddr,
-+			       rsa.ipaddr, sizeof(rsa.ipaddr));
-+			ipsec->ip_tbl[first].ref_cnt = 1;
-+			ipsec->ip_tbl[first].used = true;
-+
-+			ixgbe_ipsec_set_rx_ip(hw, rsa.iptbl_ind, rsa.ipaddr);
-+
-+		} else {
-+			/* no match and no empty slot */
-+			netdev_err(dev, "No space for SA in Rx IP SA table\n");
-+			memset(&rsa, 0, sizeof(rsa));
-+			return -ENOSPC;
-+		}
-+
-+		rsa.mode = IXGBE_RXMOD_VALID;
-+		if (rsa.xs->id.proto & IPPROTO_ESP)
-+			rsa.mode |= IXGBE_RXMOD_PROTO_ESP;
-+		if (rsa.decrypt)
-+			rsa.mode |= IXGBE_RXMOD_DECRYPT;
-+		if (rsa.xs->xso.flags & XFRM_OFFLOAD_IPV6)
-+			rsa.mode |= IXGBE_RXMOD_IPV6;
-+
-+		/* the preparations worked, so save the info */
-+		memcpy(&ipsec->rx_tbl[sa_idx], &rsa, sizeof(rsa));
-+
-+		ixgbe_ipsec_set_rx_sa(hw, sa_idx, rsa.xs->id.spi, rsa.key,
-+				      rsa.salt, rsa.mode, rsa.iptbl_ind);
-+		xs->xso.offload_handle = sa_idx + IXGBE_IPSEC_BASE_RX_INDEX;
-+
-+		ipsec->num_rx_sa++;
-+
-+		/* hash the new entry for faster search in Rx path */
-+		hash_add_rcu(ipsec->rx_sa_list, &ipsec->rx_tbl[sa_idx].hlist,
-+			     rsa.xs->id.spi);
-+	} else {
-+		struct tx_sa tsa;
-+
-+		/* find the first unused index */
-+		ret = ixgbe_ipsec_find_empty_idx(ipsec, false);
-+		if (ret < 0) {
-+			netdev_err(dev, "No space for SA in Tx table\n");
-+			return ret;
-+		}
-+		sa_idx = (u16)ret;
-+
-+		memset(&tsa, 0, sizeof(tsa));
-+		tsa.used = true;
-+		tsa.xs = xs;
-+
-+		if (xs->id.proto & IPPROTO_ESP)
-+			tsa.encrypt = xs->ealg || xs->aead;
-+
-+		ret = ixgbe_ipsec_parse_proto_keys(xs, tsa.key, &tsa.salt);
-+		if (ret) {
-+			netdev_err(dev, "Failed to get key data for Tx SA table\n");
-+			memset(&tsa, 0, sizeof(tsa));
-+			return ret;
-+		}
-+
-+		/* the preparations worked, so save the info */
-+		memcpy(&ipsec->tx_tbl[sa_idx], &tsa, sizeof(tsa));
-+
-+		ixgbe_ipsec_set_tx_sa(hw, sa_idx, tsa.key, tsa.salt);
-+
-+		xs->xso.offload_handle = sa_idx + IXGBE_IPSEC_BASE_TX_INDEX;
-+
-+		ipsec->num_tx_sa++;
++	xs = xfrm_input_state(first->skb);
++	if (!xs) {
++		netdev_err(tx_ring->netdev, "%s: no xfrm_input_state() xs = %p\n",
++			   __func__, xs);
++		return 0;
 +	}
 +
-+	/* enable the engine if not already warmed up */
-+	if (!(adapter->flags2 & IXGBE_FLAG2_IPSEC_ENABLED)) {
-+		ixgbe_ipsec_start_engine(adapter);
-+		adapter->flags2 |= IXGBE_FLAG2_IPSEC_ENABLED;
++	itd->sa_idx = xs->xso.offload_handle - IXGBE_IPSEC_BASE_TX_INDEX;
++	if (itd->sa_idx > IXGBE_IPSEC_MAX_SA_COUNT) {
++		netdev_err(tx_ring->netdev, "%s: bad sa_idx=%d handle=%lu\n",
++			   __func__, itd->sa_idx, xs->xso.offload_handle);
++		return 0;
 +	}
 +
-+	return 0;
++	tsa = &ipsec->tx_tbl[itd->sa_idx];
++	if (!tsa->used) {
++		netdev_err(tx_ring->netdev, "%s: unused sa_idx=%d\n",
++			   __func__, itd->sa_idx);
++		return 0;
++	}
++
++	first->tx_flags |= IXGBE_TX_FLAGS_IPSEC | IXGBE_TX_FLAGS_CC;
++
++	itd->flags = 0;
++	if (xs->id.proto == IPPROTO_ESP) {
++		itd->flags |= IXGBE_ADVTXD_TUCMD_IPSEC_TYPE_ESP |
++			      IXGBE_ADVTXD_TUCMD_L4T_TCP;
++		if (first->protocol == htons(ETH_P_IP))
++			itd->flags |= IXGBE_ADVTXD_TUCMD_IPV4;
++		itd->trailer_len = xs->props.trailer_len;
++	}
++	if (tsa->encrypt)
++		itd->flags |= IXGBE_ADVTXD_TUCMD_IPSEC_ENCRYPT_EN;
++
++	return 1;
 +}
 +
 +/**
-+ * ixgbe_ipsec_del_sa - clear out this specific SA
-+ * @xs: pointer to transformer state struct
-+ **/
-+static void ixgbe_ipsec_del_sa(struct xfrm_state *xs)
-+{
-+	struct net_device *dev = xs->xso.dev;
-+	struct ixgbe_adapter *adapter = netdev_priv(dev);
-+	struct ixgbe_ipsec *ipsec = adapter->ipsec;
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	u32 zerobuf[4] = {0, 0, 0, 0};
-+	u16 sa_idx;
-+
-+	if (xs->xso.flags & XFRM_OFFLOAD_INBOUND) {
-+		struct rx_sa *rsa;
-+		u8 ipi;
-+
-+		sa_idx = xs->xso.offload_handle - IXGBE_IPSEC_BASE_RX_INDEX;
-+		rsa = &ipsec->rx_tbl[sa_idx];
-+
-+		if (!rsa->used) {
-+			netdev_err(dev, "Invalid Rx SA selected sa_idx=%d offload_handle=%lu\n",
-+				   sa_idx, xs->xso.offload_handle);
-+			return;
-+		}
-+
-+		ixgbe_ipsec_set_rx_sa(hw, sa_idx, 0, zerobuf, 0, 0, 0);
-+		hash_del_rcu(&rsa->hlist);
-+
-+		/* if the IP table entry is referenced by only this SA,
-+		 * i.e. ref_cnt is only 1, clear the IP table entry as well
-+		 */
-+		ipi = rsa->iptbl_ind;
-+		if (ipsec->ip_tbl[ipi].ref_cnt > 0) {
-+			ipsec->ip_tbl[ipi].ref_cnt--;
-+
-+			if (!ipsec->ip_tbl[ipi].ref_cnt) {
-+				memset(&ipsec->ip_tbl[ipi], 0,
-+				       sizeof(struct rx_ip_sa));
-+				ixgbe_ipsec_set_rx_ip(hw, ipi, zerobuf);
-+			}
-+		}
-+
-+		memset(rsa, 0, sizeof(struct rx_sa));
-+		ipsec->num_rx_sa--;
-+	} else {
-+		sa_idx = xs->xso.offload_handle - IXGBE_IPSEC_BASE_TX_INDEX;
-+
-+		if (!ipsec->tx_tbl[sa_idx].used) {
-+			netdev_err(dev, "Invalid Tx SA selected sa_idx=%d offload_handle=%lu\n",
-+				   sa_idx, xs->xso.offload_handle);
-+			return;
-+		}
-+
-+		ixgbe_ipsec_set_tx_sa(hw, sa_idx, zerobuf, 0);
-+		memset(&ipsec->tx_tbl[sa_idx], 0, sizeof(struct tx_sa));
-+		ipsec->num_tx_sa--;
-+	}
-+
-+	/* if there are no SAs left, stop the engine to save energy */
-+	if (ipsec->num_rx_sa == 0 && ipsec->num_tx_sa == 0) {
-+		adapter->flags2 &= ~IXGBE_FLAG2_IPSEC_ENABLED;
-+		ixgbe_ipsec_stop_engine(adapter);
-+	}
-+}
-+
-+static const struct xfrmdev_ops ixgbe_xfrmdev_ops = {
-+	.xdo_dev_state_add = ixgbe_ipsec_add_sa,
-+	.xdo_dev_state_delete = ixgbe_ipsec_del_sa,
-+};
-+
-+/**
-  * ixgbe_init_ipsec_offload - initialize security registers for IPSec operation
-  * @adapter: board private structure
-  **/
- void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter)
+  * ixgbe_ipsec_rx - decode ipsec bits from Rx descriptor
+  * @rx_ring: receiving ring
+  * @rx_desc: receive data descriptor
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+index f1bfae0..d7875b3 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+@@ -1261,7 +1261,7 @@ void ixgbe_clear_interrupt_scheme(struct ixgbe_adapter *adapter)
+ }
+ 
+ void ixgbe_tx_ctxtdesc(struct ixgbe_ring *tx_ring, u32 vlan_macip_lens,
+-		       u32 fcoe_sof_eof, u32 type_tucmd, u32 mss_l4len_idx)
++		       u32 fceof_saidx, u32 type_tucmd, u32 mss_l4len_idx)
  {
--	ixgbe_ipsec_clear_hw_tables(adapter);
-+	struct ixgbe_ipsec *ipsec;
-+	size_t size;
-+
-+	ipsec = kzalloc(sizeof(*ipsec), GFP_KERNEL);
-+	if (!ipsec)
-+		goto err1;
-+	hash_init(ipsec->rx_sa_list);
-+
-+	size = sizeof(struct rx_sa) * IXGBE_IPSEC_MAX_SA_COUNT;
-+	ipsec->rx_tbl = kzalloc(size, GFP_KERNEL);
-+	if (!ipsec->rx_tbl)
-+		goto err2;
-+
-+	size = sizeof(struct tx_sa) * IXGBE_IPSEC_MAX_SA_COUNT;
-+	ipsec->tx_tbl = kzalloc(size, GFP_KERNEL);
-+	if (!ipsec->tx_tbl)
-+		goto err2;
-+
-+	size = sizeof(struct rx_ip_sa) * IXGBE_IPSEC_MAX_RX_IP_COUNT;
-+	ipsec->ip_tbl = kzalloc(size, GFP_KERNEL);
-+	if (!ipsec->ip_tbl)
-+		goto err2;
-+
-+	ipsec->num_rx_sa = 0;
-+	ipsec->num_tx_sa = 0;
-+
-+	adapter->ipsec = ipsec;
- 	ixgbe_ipsec_stop_engine(adapter);
-+	ixgbe_ipsec_clear_hw_tables(adapter);
-+
-+	return;
-+
-+err2:
-+	kfree(ipsec->ip_tbl);
-+	kfree(ipsec->rx_tbl);
-+	kfree(ipsec->tx_tbl);
-+err1:
-+	kfree(adapter->ipsec);
-+	netdev_err(adapter->netdev, "Unable to allocate memory for SA tables");
-+}
-+
-+/**
-+ * ixgbe_stop_ipsec_offload - tear down the ipsec offload
-+ * @adapter: board private structure
-+ **/
-+void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter)
-+{
-+	struct ixgbe_ipsec *ipsec = adapter->ipsec;
-+
-+	adapter->ipsec = NULL;
-+	if (ipsec) {
-+		kfree(ipsec->ip_tbl);
-+		kfree(ipsec->rx_tbl);
-+		kfree(ipsec->tx_tbl);
-+		kfree(ipsec);
-+	}
+ 	struct ixgbe_adv_tx_context_desc *context_desc;
+ 	u16 i = tx_ring->next_to_use;
+@@ -1275,7 +1275,7 @@ void ixgbe_tx_ctxtdesc(struct ixgbe_ring *tx_ring, u32 vlan_macip_lens,
+ 	type_tucmd |= IXGBE_TXD_CMD_DEXT | IXGBE_ADVTXD_DTYP_CTXT;
+ 
+ 	context_desc->vlan_macip_lens	= cpu_to_le32(vlan_macip_lens);
+-	context_desc->seqnum_seed	= cpu_to_le32(fcoe_sof_eof);
++	context_desc->fceof_saidx	= cpu_to_le32(fceof_saidx);
+ 	context_desc->type_tucmd_mlhl	= cpu_to_le32(type_tucmd);
+ 	context_desc->mss_l4len_idx	= cpu_to_le32(mss_l4len_idx);
  }
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 51fb3cf..2b3da0c 100644
+index 0ee1e5e..6b9a9b2 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -10565,6 +10565,7 @@ static void ixgbe_remove(struct pci_dev *pdev)
- 	if (netdev->reg_state == NETREG_REGISTERED)
- 		unregister_netdev(netdev);
+@@ -7756,10 +7756,12 @@ static inline bool ixgbe_ipv6_csum_is_sctp(struct sk_buff *skb)
+ }
  
-+	ixgbe_stop_ipsec_offload(adapter);
- 	ixgbe_clear_interrupt_scheme(adapter);
+ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
+-			  struct ixgbe_tx_buffer *first)
++			  struct ixgbe_tx_buffer *first,
++			  struct ixgbe_ipsec_tx_data *itd)
+ {
+ 	struct sk_buff *skb = first->skb;
+ 	u32 vlan_macip_lens = 0;
++	u32 fceof_saidx = 0;
+ 	u32 type_tucmd = 0;
  
- 	ixgbe_release_hw_control(adapter);
+ 	if (skb->ip_summed != CHECKSUM_PARTIAL) {
+@@ -7800,7 +7802,12 @@ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
+ 	vlan_macip_lens |= skb_network_offset(skb) << IXGBE_ADVTXD_MACLEN_SHIFT;
+ 	vlan_macip_lens |= first->tx_flags & IXGBE_TX_FLAGS_VLAN_MASK;
+ 
+-	ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, 0, type_tucmd, 0);
++	if (first->tx_flags & IXGBE_TX_FLAGS_IPSEC) {
++		fceof_saidx |= itd->sa_idx;
++		type_tucmd |= itd->flags | itd->trailer_len;
++	}
++
++	ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, fceof_saidx, type_tucmd, 0);
+ }
+ 
+ #define IXGBE_SET_FLAG(_input, _flag, _result) \
+@@ -7843,11 +7850,16 @@ static void ixgbe_tx_olinfo_status(union ixgbe_adv_tx_desc *tx_desc,
+ 					IXGBE_TX_FLAGS_CSUM,
+ 					IXGBE_ADVTXD_POPTS_TXSM);
+ 
+-	/* enble IPv4 checksum for TSO */
++	/* enable IPv4 checksum for TSO */
+ 	olinfo_status |= IXGBE_SET_FLAG(tx_flags,
+ 					IXGBE_TX_FLAGS_IPV4,
+ 					IXGBE_ADVTXD_POPTS_IXSM);
+ 
++	/* enable IPsec */
++	olinfo_status |= IXGBE_SET_FLAG(tx_flags,
++					IXGBE_TX_FLAGS_IPSEC,
++					IXGBE_ADVTXD_POPTS_IPSEC);
++
+ 	/*
+ 	 * Check Context must be set if Tx switch is enabled, which it
+ 	 * always is for case where virtual functions are running
+@@ -8306,6 +8318,7 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+ 	u32 tx_flags = 0;
+ 	unsigned short f;
+ 	u16 count = TXD_USE_COUNT(skb_headlen(skb));
++	struct ixgbe_ipsec_tx_data ipsec_tx = { 0 };
+ 	__be16 protocol = skb->protocol;
+ 	u8 hdr_len = 0;
+ 
+@@ -8410,11 +8423,16 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+ 	}
+ 
+ #endif /* IXGBE_FCOE */
++
++#ifdef CONFIG_XFRM_OFFLOAD
++	if (skb->sp && !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
++		goto out_drop;
++#endif
+ 	tso = ixgbe_tso(tx_ring, first, &hdr_len);
+ 	if (tso < 0)
+ 		goto out_drop;
+ 	else if (!tso)
+-		ixgbe_tx_csum(tx_ring, first);
++		ixgbe_tx_csum(tx_ring, first, &ipsec_tx);
+ 
+ 	/* add the ATR filter if ATR is on */
+ 	if (test_bit(__IXGBE_TX_FDIR_INIT_DONE, &tx_ring->state))
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 3df0763..0ac725fa 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -2856,7 +2856,7 @@ union ixgbe_adv_rx_desc {
+ /* Context descriptors */
+ struct ixgbe_adv_tx_context_desc {
+ 	__le32 vlan_macip_lens;
+-	__le32 seqnum_seed;
++	__le32 fceof_saidx;
+ 	__le32 type_tucmd_mlhl;
+ 	__le32 mss_l4len_idx;
+ };
 -- 
 2.7.4
 
