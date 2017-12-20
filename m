@@ -1,240 +1,48 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 20 Dec 2017 16:00:22 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 7e12ab33a09a035e1657e0251b9b4d491b8362bd
-Message-ID: <5a3a1896.1RtMGrANeO3hoQrp%fengguang.wu@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Wed, 20 Dec 2017 16:54:21 +0100
+Subject: [Intel-wired-lan] v4.15-rc2 on thinkpad x60: ethernet stopped
+ working
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69845BBE2@ORSMSX110.amr.corp.intel.com>
+References: <20171210083949.GA3872@amd>
+ <d1ae924b-4d8f-a787-4c07-1f2db91482e5@gmail.com>
+ <20171215092849.GB15090@amd>
+ <20171215.105210.103516329605719086.davem@davemloft.net>
+ <20171218102657.GB5338@amd>
+ <5c0be4c4-5a56-cc7b-7b5a-345f446e788e@intel.com>
+ <20171218115817.GA17054@amd>
+ <077087f2-551a-c045-6b07-b1b661e53dad@intel.com>
+ <9B4A1B1917080E46B64F07F2989DADD69845BBE2@ORSMSX110.amr.corp.intel.com>
+Message-ID: <20171220155421.GA3849@amd>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 7e12ab33a09a035e1657e0251b9b4d491b8362bd  checkpatch.pl: seed camelcase from the provided kernel tree root
+Hi!
 
-elapsed time: 162m
+> >> Before ask for reverting 19110cfbb..., please, check if follow patch 
+> >> of Benjamin work for you http://patchwork.ozlabs.org/patch/846825/
 
-configs tested: 216
+> >
+> Pavel, before ask for revert - let's check Benjamin's patch following to his previous patch. Previous patch was not competed and latest one come to complete changes.
+>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+v4.15-rc4+:
 
-arm                           efm32_defconfig
-ia64                          tiger_defconfig
-powerpc                          allyesconfig
-x86_64                 randconfig-a0-12201324
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-mips                        bcm63xx_defconfig
-powerpc                             defconfig
-sh                               allyesconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-12201320
-i386                   randconfig-c0-12201520
-arm                          exynos_defconfig
-blackfin                          allnoconfig
-blackfin                            defconfig
-arm                        clps711x_defconfig
-m68k                         amcore_defconfig
-powerpc                     kilauea_defconfig
-x86_64                randconfig-in0-12200956
-arm                         bcm2835_defconfig
-powerpc                 mpc836x_mds_defconfig
-sparc                            allyesconfig
-x86_64                randconfig-it0-12200426
-i386                   randconfig-x016-201751
-i386                   randconfig-x011-201751
-i386                   randconfig-x014-201751
-i386                   randconfig-x017-201751
-i386                   randconfig-x019-201751
-i386                   randconfig-x018-201751
-i386                   randconfig-x010-201751
-i386                   randconfig-x013-201751
-i386                   randconfig-x015-201751
-i386                   randconfig-x012-201751
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201751
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-i0-12180843
-i386                   randconfig-i1-12180843
-x86_64                 randconfig-v0-12191828
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                          nuc960_defconfig
-powerpc                         c2k_defconfig
-powerpc                           allnoconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-12201313
-x86_64                 randconfig-g0-12201430
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                                  kexec
-i386                     randconfig-a0-201751
-i386                     randconfig-a1-201751
-x86_64                 randconfig-s0-12201350
-x86_64                 randconfig-s1-12201350
-x86_64                 randconfig-s2-12201350
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x012-201751
-x86_64                 randconfig-x010-201751
-x86_64                 randconfig-x011-201751
-x86_64                 randconfig-x015-201751
-x86_64                 randconfig-x019-201751
-x86_64                 randconfig-x014-201751
-x86_64                 randconfig-x013-201751
-x86_64                 randconfig-x016-201751
-x86_64                 randconfig-x017-201751
-x86_64                 randconfig-x018-201751
-i386                     randconfig-s1-201751
-i386                     randconfig-s0-201751
-x86_64                 randconfig-s3-12201324
-x86_64                 randconfig-s4-12201324
-x86_64                 randconfig-s5-12201324
-x86_64                 randconfig-s3-12201453
-x86_64                 randconfig-s4-12201453
-x86_64                 randconfig-s5-12201453
-i386                               tinyconfig
-arm                      tct_hammer_defconfig
-arm64                            allyesconfig
-parisc                generic-64bit_defconfig
-sh                           se7722_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201751
-i386                   randconfig-b0-12201301
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                     am200epdkit_defconfig
-m68k                              allnoconfig
-powerpc                     tqm8560_defconfig
-powerpc                      walnut_defconfig
-x86_64                 randconfig-b0-12201111
-x86_64                           allmodconfig
-cris                       artpec_3_defconfig
-powerpc                     ksi8560_defconfig
-xtensa                           allmodconfig
-x86_64                 randconfig-u0-12201225
-x86_64                 randconfig-u0-12201512
-i386                   randconfig-h0-12201155
-i386                   randconfig-h1-12201155
-x86_64                randconfig-ne0-12201105
-x86_64                randconfig-ne0-12201440
-arm                            xcep_defconfig
-m32r                           usrv_defconfig
-powerpc               mpc86xx_basic_defconfig
-i386                   randconfig-h0-12201153
-i386                   randconfig-h1-12201153
-i386                             allmodconfig
-x86_64                 randconfig-h0-12201332
-arm                          ep93xx_defconfig
-powerpc                    ge_imp3a_defconfig
-i386                   randconfig-x072-201751
-i386                   randconfig-x078-201751
-i386                   randconfig-x071-201751
-i386                   randconfig-x077-201751
-i386                   randconfig-x070-201751
-i386                   randconfig-x074-201751
-i386                   randconfig-x073-201751
-i386                   randconfig-x079-201751
-i386                   randconfig-x076-201751
-i386                   randconfig-x075-201751
-x86_64                 randconfig-n0-12201135
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-x007-201751
-i386                   randconfig-x008-201751
-i386                   randconfig-x009-201751
-i386                   randconfig-x004-201751
-i386                   randconfig-x002-201751
-i386                   randconfig-x005-201751
-i386                   randconfig-x001-201751
-i386                   randconfig-x006-201751
-i386                   randconfig-x003-201751
-i386                   randconfig-x000-201751
-x86_64                 randconfig-x003-201751
-x86_64                 randconfig-x002-201751
-x86_64                 randconfig-x006-201751
-x86_64                 randconfig-x007-201751
-x86_64                 randconfig-x000-201751
-x86_64                 randconfig-x005-201751
-x86_64                 randconfig-x004-201751
-x86_64                 randconfig-x009-201751
-x86_64                 randconfig-x008-201751
-x86_64                 randconfig-x001-201751
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-sh                        apsh4ad0a_defconfig
-um                               allmodconfig
-xtensa                    smp_lx200_defconfig
-x86_64                randconfig-ws0-12191713
-arm                            netx_defconfig
-m32r                             allmodconfig
-powerpc                      ppc44x_defconfig
-x86_64                 randconfig-r0-12200451
-powerpc                     powernv_defconfig
-sparc                            allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-x0-12201322
+Ethernet works with 19110cfbb reverted.
 
-Thanks,
-Fengguang
+Ethernet works With patchwork.ozlabs.org/patch/846825/ applied.
+
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 181 bytes
+Desc: Digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171220/eccc321a/attachment.asc>
