@@ -1,184 +1,82 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 19 Dec 2017 15:59:55 -0800
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 03/10] ixgbe: add ipsec
- engine start and stop routines
-In-Reply-To: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
-References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <1513728002-7643-4-git-send-email-shannon.nelson@oracle.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Wed, 20 Dec 2017 08:24:04 +0200
+Subject: [Intel-wired-lan] v4.15-rc2 on thinkpad x60: ethernet stopped
+ working
+In-Reply-To: <077087f2-551a-c045-6b07-b1b661e53dad@intel.com>
+References: <20171210083949.GA3872@amd>
+ <d1ae924b-4d8f-a787-4c07-1f2db91482e5@gmail.com> <20171215092849.GB15090@amd>
+ <20171215.105210.103516329605719086.davem@davemloft.net>
+ <20171218102657.GB5338@amd> <5c0be4c4-5a56-cc7b-7b5a-345f446e788e@intel.com>
+ <20171218115817.GA17054@amd> <077087f2-551a-c045-6b07-b1b661e53dad@intel.com>
+Message-ID: <842e2aec-77c6-277c-aeef-b506296f6599@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add in the code for running and stopping the hardware ipsec
-encryption/decryption engine.  It is good to keep the engine
-off when not in use in order to save on the power draw.
+On 12/18/2017 17:50, Neftin, Sasha wrote:
+> On 12/18/2017 13:58, Pavel Machek wrote:
+>> On Mon 2017-12-18 13:24:40, Neftin, Sasha wrote:
+>>> On 12/18/2017 12:26, Pavel Machek wrote:
+>>>> Hi!
+>>>>
+>>>>>>>> In v4.15-rc2+, network manager can not see my ethernet card, and
+>>>>>>>> manual attempts to ifconfig it up did not really help, either.
+>>>>>>>>
+>>>>>>>> Card is:
+>>>>>>>>
+>>>>>>>> 02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit 
+>>>>>>>> Ethernet
+>>>>>>>> Controller
+>>>>>> ....
+>>>>>>>> Any ideas ?
+>>>>>>> Yes , 19110cfbb34d4af0cdfe14cd243f3b09dc95b013 broke it.
+>>>>>>>
+>>>>>>> See:
+>>>>>>> https://bugzilla.kernel.org/show_bug.cgi?id=198047
+>>>>>>>
+>>>>>>> Fix there :
+>>>>>>> https://marc.info/?l=linux-kernel&m=151272209903675&w=2
+>>>>>> I don't see the patch in latest mainline. Not having ethernet
+>>>>>> is... somehow annoying. What is going on there?
+>>>>> Generally speaking, e1000 maintainence has been handled very 
+>>>>> poorly over
+>>>>> the past few years, I have to say.
+>>>>>
+>>>>> Fixes take forever to propagate even when someone other than the
+>>>>> maintainer provides a working and tested fix, just like this case.
+>>>>>
+>>>>> Jeff, please take e1000 maintainence seriously and get these critical
+>>>>> bug fixes propagated.
+>>>> No response AFAICT. I guess I should test reverting
+>>>> 19110cfbb34d4af0cdfe14cd243f3b09dc95b013, then ask you for revert?
+>>> Hello Pavel,
+>>>
+>>> Before ask for reverting 19110cfbb..., please, check if follow patch of
+>>> Benjamin work for you http://patchwork.ozlabs.org/patch/846825/
+>> Jacob said, in another email:
+>>
+>> # Digging into this, the problem is complicated. The original bug
+>> # assumed behavior of the .check_for_link call, which is universally not
+>> # implemented.
+>> #
+>> # I think the correct fix is to revert 19110cfbb34d ("e1000e: Separate
+>> # signaling for link check/link up", 2017-10-10) and find a more 
+>> proper solution.
+>>
+>> ...which makes me think that revert is preffered?
+>>
+>> ??????????????????????????????????? Pavel
+>>
+> Pavel, before ask for revert - let's check Benjamin's patch following 
+> to his previous patch. Previous patch was not competed and latest one 
+> come to complete changes.
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
-v2: add limiter to do-while loop waiting for paths to drain
-
-Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 142 +++++++++++++++++++++++++
- 1 file changed, 142 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index bd7585f..85eaafc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -152,10 +152,152 @@ static void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
- }
- 
- /**
-+ * ixgbe_ipsec_stop_data
-+ * @adapter: board private structure
-+ **/
-+static void ixgbe_ipsec_stop_data(struct ixgbe_adapter *adapter)
-+{
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	bool link = adapter->link_up;
-+	u32 t_rdy, r_rdy;
-+	u32 limit;
-+	u32 reg;
-+
-+	/* halt data paths */
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
-+	reg |= IXGBE_SECTXCTRL_TX_DIS;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, reg);
-+
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECRXCTRL);
-+	reg |= IXGBE_SECRXCTRL_RX_DIS;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, reg);
-+
-+	IXGBE_WRITE_FLUSH(hw);
-+
-+	/* If the tx fifo doesn't have link, but still has data,
-+	 * we can't clear the tx sec block.  Set the MAC loopback
-+	 * before block clear
-+	 */
-+	if (!link) {
-+		reg = IXGBE_READ_REG(hw, IXGBE_MACC);
-+		reg |= IXGBE_MACC_FLU;
-+		IXGBE_WRITE_REG(hw, IXGBE_MACC, reg);
-+
-+		reg = IXGBE_READ_REG(hw, IXGBE_HLREG0);
-+		reg |= IXGBE_HLREG0_LPBK;
-+		IXGBE_WRITE_REG(hw, IXGBE_HLREG0, reg);
-+
-+		IXGBE_WRITE_FLUSH(hw);
-+		mdelay(3);
-+	}
-+
-+	/* wait for the paths to empty */
-+	limit = 20;
-+	do {
-+		mdelay(10);
-+		t_rdy = IXGBE_READ_REG(hw, IXGBE_SECTXSTAT) &
-+			IXGBE_SECTXSTAT_SECTX_RDY;
-+		r_rdy = IXGBE_READ_REG(hw, IXGBE_SECRXSTAT) &
-+			IXGBE_SECRXSTAT_SECRX_RDY;
-+	} while (!t_rdy && !r_rdy && limit--);
-+
-+	/* undo loopback if we played with it earlier */
-+	if (!link) {
-+		reg = IXGBE_READ_REG(hw, IXGBE_MACC);
-+		reg &= ~IXGBE_MACC_FLU;
-+		IXGBE_WRITE_REG(hw, IXGBE_MACC, reg);
-+
-+		reg = IXGBE_READ_REG(hw, IXGBE_HLREG0);
-+		reg &= ~IXGBE_HLREG0_LPBK;
-+		IXGBE_WRITE_REG(hw, IXGBE_HLREG0, reg);
-+
-+		IXGBE_WRITE_FLUSH(hw);
-+	}
-+}
-+
-+/**
-+ * ixgbe_ipsec_stop_engine
-+ * @adapter: board private structure
-+ **/
-+static void ixgbe_ipsec_stop_engine(struct ixgbe_adapter *adapter)
-+{
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	u32 reg;
-+
-+	ixgbe_ipsec_stop_data(adapter);
-+
-+	/* disable Rx and Tx SA lookup */
-+	IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, 0);
-+	IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, 0);
-+
-+	/* disable the Rx and Tx engines and full packet store-n-forward */
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
-+	reg |= IXGBE_SECTXCTRL_SECTX_DIS;
-+	reg &= ~IXGBE_SECTXCTRL_STORE_FORWARD;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, reg);
-+
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECRXCTRL);
-+	reg |= IXGBE_SECRXCTRL_SECRX_DIS;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, reg);
-+
-+	/* restore the "tx security buffer almost full threshold" to 0x250 */
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXBUFFAF, 0x250);
-+
-+	/* Set minimum IFG between packets back to the default 0x1 */
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECTXMINIFG);
-+	reg = (reg & 0xfffffff0) | 0x1;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXMINIFG, reg);
-+
-+	/* final set for normal (no ipsec offload) processing */
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, IXGBE_SECTXCTRL_SECTX_DIS);
-+	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, IXGBE_SECRXCTRL_SECRX_DIS);
-+
-+	IXGBE_WRITE_FLUSH(hw);
-+}
-+
-+/**
-+ * ixgbe_ipsec_start_engine
-+ * @adapter: board private structure
-+ *
-+ * NOTE: this increases power consumption whether being used or not
-+ **/
-+static void ixgbe_ipsec_start_engine(struct ixgbe_adapter *adapter)
-+{
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	u32 reg;
-+
-+	ixgbe_ipsec_stop_data(adapter);
-+
-+	/* Set minimum IFG between packets to 3 */
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECTXMINIFG);
-+	reg = (reg & 0xfffffff0) | 0x3;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXMINIFG, reg);
-+
-+	/* Set "tx security buffer almost full threshold" to 0x15 so that the
-+	 * almost full indication is generated only after buffer contains at
-+	 * least an entire jumbo packet.
-+	 */
-+	reg = IXGBE_READ_REG(hw, IXGBE_SECTXBUFFAF);
-+	reg = (reg & 0xfffffc00) | 0x15;
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXBUFFAF, reg);
-+
-+	/* restart the data paths by clearing the DISABLE bits */
-+	IXGBE_WRITE_REG(hw, IXGBE_SECRXCTRL, 0);
-+	IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, IXGBE_SECTXCTRL_STORE_FORWARD);
-+
-+	/* enable Rx and Tx SA lookup */
-+	IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, IXGBE_RXTXIDX_IPS_EN);
-+	IXGBE_WRITE_REG(hw, IXGBE_IPSRXIDX, IXGBE_RXTXIDX_IPS_EN);
-+
-+	IXGBE_WRITE_FLUSH(hw);
-+}
-+
-+/**
-  * ixgbe_init_ipsec_offload - initialize security registers for IPSec operation
-  * @adapter: board private structure
-  **/
- void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter)
- {
- 	ixgbe_ipsec_clear_hw_tables(adapter);
-+	ixgbe_ipsec_stop_engine(adapter);
- }
--- 
-2.7.4
+Pavel, any update? Is Benjamin's last patch solved your network problem?
 
