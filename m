@@ -1,73 +1,44 @@
 From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 21 Dec 2017 08:57:17 +0200
-Subject: [Intel-wired-lan] [PATCH] e1000e: Fix
- e1000_check_for_copper_link_ich8lan return value.
-In-Reply-To: <20171211072640.7935-1-bpoirier@suse.com>
-References: <20171208114552.5f517fd3@leda>
- <20171211072640.7935-1-bpoirier@suse.com>
-Message-ID: <441de43f-4234-7616-2879-7e2e31a8d522@intel.com>
+Date: Thu, 21 Dec 2017 09:13:57 +0200
+Subject: [Intel-wired-lan] v4.15-rc2 on thinkpad x60: ethernet stopped
+ working
+In-Reply-To: <20171220160135.GA3841@amd>
+References: <20171210083949.GA3872@amd>
+ <d1ae924b-4d8f-a787-4c07-1f2db91482e5@gmail.com> <20171215092849.GB15090@amd>
+ <20171215.105210.103516329605719086.davem@davemloft.net>
+ <20171218102657.GB5338@amd> <5c0be4c4-5a56-cc7b-7b5a-345f446e788e@intel.com>
+ <20171218115817.GA17054@amd> <077087f2-551a-c045-6b07-b1b661e53dad@intel.com>
+ <9B4A1B1917080E46B64F07F2989DADD69845BBE2@ORSMSX110.amr.corp.intel.com>
+ <20171220155421.GA3849@amd> <20171220160135.GA3841@amd>
+Message-ID: <7c8ff5d7-bc36-9dac-84d5-83daad20a003@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 11/12/2017 9:26, Benjamin Poirier wrote:
-> e1000e_check_for_copper_link() and e1000_check_for_copper_link_ich8lan()
-> are the two functions that may be assigned to mac.ops.check_for_link when
-> phy.media_type == e1000_media_type_copper. Commit 19110cfbb34d ("e1000e:
-> Separate signaling for link check/link up") changed the meaning of the
-> return value of check_for_link for copper media but only adjusted the first
-> function. This patch adjusts the second function likewise.
+On 20/12/2017 18:01, Pavel Machek wrote:
+> On Wed 2017-12-20 16:54:21, Pavel Machek wrote:
+>> Hi!
+>>
+>>>>> Before ask for reverting 19110cfbb..., please, check if follow patch
+>>>>> of Benjamin work for you http://patchwork.ozlabs.org/patch/846825/
+>>> Pavel, before ask for revert - let's check Benjamin's patch following to his previous patch. Previous patch was not competed and latest one come to complete changes.
+>>>
+>> v4.15-rc4+:
+>>
+>> Ethernet works with 19110cfbb reverted.
+>>
+>> Ethernet works With patchwork.ozlabs.org/patch/846825/ applied.
+> Hmm. So... ethernet originally did not work with patch/846825/ applied
+> or 19110cfbb reverted, so I re-plugged ethernet cables. Now it works
+> even with plain v4.15-rc4+.
 >
-> Reported-by: Christian Hesse <list@eworm.de>
-> Reported-by: Gabriel C <nix.or.die@gmail.com>
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=198047
-> Fixes: 19110cfbb34d ("e1000e: Separate signaling for link check/link up")
-> Tested-by: Christian Hesse <list@eworm.de>
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/ich8lan.c | 11 ++++++++---
->   1 file changed, 8 insertions(+), 3 deletions(-)
+> So it looks like the bug was fixed in the mainline in the meantime...?
 >
-> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> index d6d4ed7acf03..31277d3bb7dc 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> @@ -1367,6 +1367,9 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
->    *  Checks to see of the link status of the hardware has changed.  If a
->    *  change in link status has been detected, then we read the PHY registers
->    *  to get the current speed/duplex if link exists.
-> + *
-> + *  Returns a negative error code (-E1000_ERR_*) or 0 (link down) or 1 (link
-> + *  up).
->    **/
->   static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->   {
-> @@ -1382,7 +1385,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->   	 * Change or Rx Sequence Error interrupt.
->   	 */
->   	if (!mac->get_link_status)
-> -		return 0;
-> +		return 1;
->   
->   	/* First we want to see if the MII Status Register reports
->   	 * link.  If so, then we want to get the current speed/duplex
-> @@ -1613,10 +1616,12 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->   	 * different link partner.
->   	 */
->   	ret_val = e1000e_config_fc_after_link_up(hw);
-> -	if (ret_val)
-> +	if (ret_val) {
->   		e_dbg("Error configuring flow control\n");
-> +		return ret_val;
-> +	}
->   
-> -	return ret_val;
-> +	return 1;
->   }
->   
->   static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
+> Sorry for the noise,
+> 								Pavel
 
-Acked by sasha.neftin at intel.com
+Good Pavel, thanks for update us, let's keep both patch applied and see 
+ethernet adapter behavior.
 
