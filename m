@@ -1,74 +1,77 @@
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 21 Dec 2017 10:40:54 +0100
-Subject: [Intel-wired-lan] v4.15-rc2 on thinkpad x60: ethernet stopped
- working
-In-Reply-To: <20171210083949.GA3872@amd>
-References: <20171210083949.GA3872@amd>
-Message-ID: <4259bb94-5820-1349-8335-cfebd8fb3ed4@molgen.mpg.de>
+Date: Thu, 21 Dec 2017 12:56:58 +0100
+Subject: [Intel-wired-lan] Problems with 82579LM devices in Dell
+ OptiPlex990/06D7TR
+Message-ID: <f97e6243-be0f-518a-e233-7788c05052b0@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Pavel,
+Dear Intel folks,
 
 
-On 12/10/17 09:39, Pavel Machek wrote:
+Changing our login setup, we noticed sometimes the RPC time-out 
+`do_ypcall: clnt_call: RPC: Timed out` when calling `getspnam()` on 
+exactly one type of machines, Dell OptiPlex 990, with the ethernet 
+device 82579LM.
 
-> In v4.15-rc2+, network manager can not see my ethernet card, and 
-> manual attempts to ifconfig it up did not really help, either.
-> 
-> Card is:
-> 
-> 02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit
-> Ethernet Controller
-> 
-> Dmesg says:
-> 
->    dmesg | grep eth
-> [    0.648931] e1000e 0000:02:00.0 eth0: (PCI Express:2.5GT/s:Width x1) 00:16:d3:25:19:04
-> [    0.648934] e1000e 0000:02:00.0 eth0: Intel(R) PRO/1000 Network Connection
-> [    0.649012] e1000e 0000:02:00.0 eth0: MAC: 2, PHY: 2, PBA No: 005302-003
-> [    0.706510] usbcore: registered new interface driver cdc_ether
-> [    6.557022] e1000e 0000:02:00.0 eth1: renamed from eth0
-> [    6.577554] systemd-udevd[2363]: renamed network interface eth0 to eth1
-> 
-> Any ideas?
+Please find DMI info fetched with `dmicode -s ?`, where the string is in 
+the order below, and the values separated by a hash.
 
-I am sorry for jumping in on this so late.
+bios-vendor bios-version system-manufacturer system-product-name 
+system-version baseboard-product-name baseboard-version
 
-Since using a Lenovo X60t more ofter since a year or so, I experience 
-the issue, that the link doesn?t come up during that period occasionally 
-[1]. I haven?t tried the latest patches yet, but it might be unrelated.
+     Dell Inc.#A11#Dell Inc.#OptiPlex 990#01#06D7TR#A01
+     Dell Inc.#A11#Dell Inc.#OptiPlex 990#01#06D7TR#A01
+     Dell Inc.#A10#Dell Inc.#OptiPlex 990#01#06D7TR#A01
+     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
+     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
+     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
+     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
+     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
+     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
+     Dell Inc.#A05#Dell Inc.#OptiPlex 990#01#06D7TR#A00
+     Dell Inc.#A05#Dell Inc.#OptiPlex 990#01#06D7TR#A00
+     Dell Inc.#A03#Dell Inc.#OptiPlex 990#01#06D7TR#A00
 
-Did you test, that removing and loading the e1000e module fixes the issue?
+The machines are of course out of warranty, and we guess that the 
+problem was there all along (reproducible with Linux 4.4 and 4.9), but 
+wasn?t noticed until now. We suspect it?s a hardware problem, as the PBA 
+number of these devices is all *E041FF-0FF*. Other systems also use the 
+device, but the problem is not reproducible there, for example *1011FF-0FF*.
 
-Additionally, I was asked privately to test the out of tree driver, but 
-haven?t had time yet.
+Anyway, before digging more into this, could you please take a look into 
+your internal error documents if there is a problem with that special 
+82579LM assembly?
 
-> You might give the out-of-tree driver a try, you can download it here
-> https://downloadcenter.intel.com/download/26549/Intel-Network-Adapter-Driver-for-PCIe-Intel-Gigabit-Ethernet-Network-Connections-Under-Linux-?product=19297
->  It's version is 3.3.5, dated 8/2016
+```
+[    1.458794] e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
+[    1.459053] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    1.459414] e1000e 0000:00:19.0: Interrupt Throttling Rate (ints/sec) 
+set to dynamic conservative mode
+[    1.722400] e1000e 0000:00:19.0 eth0: registered PHC clock
+[    1.722653] e1000e 0000:00:19.0 eth0: (PCI Express:2.5GT/s:Width x1) 
+90:b1:1c:79:7b:04
+[    1.723072] e1000e 0000:00:19.0 eth0: Intel(R) PRO/1000 Network 
+Connection
+[    1.723403] e1000e 0000:00:19.0 eth0: MAC: 10, PHY: 11, PBA No: 
+1011FF-0FF
+[   13.693188] e1000e 0000:00:19.0 net00: renamed from eth0
+[   16.878762] e1000e: net00 NIC Link is Up 1000 Mbps Full Duplex, Flow 
+Control: Rx/Tx
+```
+
 
 Kind regards,
 
 Paul
 
-
-[1] 
-https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20170410/008590.html
--------------- next part --------------
-An embedded message was scrubbed...
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Subject: [Intel-wired-lan] e1000e: Link down after startup on Lenovo X60
-Date: Wed, 12 Apr 2017 16:31:45 +0200
-Size: 6867
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171221/0804f19a/attachment-0001.mht>
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: smime.p7s
 Type: application/pkcs7-signature
 Size: 5174 bytes
 Desc: S/MIME Cryptographic Signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171221/0804f19a/attachment-0001.p7s>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171221/939d0fe0/attachment.p7s>
