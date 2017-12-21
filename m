@@ -1,102 +1,41 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 20 Dec 2017 11:04:36 -0500
-Subject: [Intel-wired-lan] [PATCH] i40e: don't remove netdev->dev_addr when
- syncing uc list
-Message-ID: <20171220160436.15288-1-alice.michael@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Wed, 20 Dec 2017 17:39:13 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 05/10] ixgbe: add ipsec
+ offload add and remove SA
+In-Reply-To: <20171221010139.GM6122@localhost.localdomain>
+References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
+ <1513728002-7643-6-git-send-email-shannon.nelson@oracle.com>
+ <20171221010139.GM6122@localhost.localdomain>
+Message-ID: <85fe1cd2-e935-52dc-e36b-0973e4c03653@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+On 12/20/2017 5:17 PM, Marcelo Ricardo Leitner wrote:
+> Hi,
+> 
+> On Tue, Dec 19, 2017 at 03:59:57PM -0800, Shannon Nelson wrote:
+>> +}
+>> +
+>> +static const struct xfrmdev_ops ixgbe_xfrmdev_ops = {
+>> +	.xdo_dev_state_add = ixgbe_ipsec_add_sa,
+>> +	.xdo_dev_state_delete = ixgbe_ipsec_del_sa,
+>> +};
+>> +
+> 
+> This struct is only declared if XFRM_OFFLOAD is selected. What is
+> selecting it for ixgbe driver?
+> mlx5 driver has an extra option for ipsec offload and it then does
+> 'depends on XFRM_OFFLOAD'
+> 
+>    Marcelo
+> 
 
-In some circumstances, such as with bridging, it is possible that the
-stack will add a devices own MAC address to its unicast address list.
+I didn't bother putting a 'depends' item in the ixgbe's Kconfig entry, 
+and I didn't create an extra CONFIG variable to enable ixgbe's support 
+of the offload.  If CONFIG_XFRM_OFFLOAD is set, then ixgbe will support it.
 
-If, later, the stack deletes this address, then the i40e driver will
-receive a request to remove this address.
-
-The driver stores its current MAC address as part of the MAC/VLAN hash
-array, since it is convenient and matches exactly how the hardware
-expects to be told which traffic to receive.
-
-This causes a problem, since for more devices, the MAC address is stored
-separately, and requests to delete a unicast address should not have the
-ability to remove the filter for the MAC address.
-
-Fix this by forcing a check on every address sync to ensure we do not
-remove the device address.
-
-There is a very narrow possibility of a race between .set_mac and
-.set_rx_mode, if we don't change netdev->dev_addr before updating our
-internal MAC list in .set_mac. This might be possible if .set_rx_mode is
-going to remove MAC "XYZ" from the list, at the same time as .set_mac
-changes our dev_addr to MAC "XYZ", we might possibly queue a delete,
-then an add in .set_mac, then queue a delete in .set_rx_mode's
-dev_uc_sync and then update netdev->dev_addr. We can avoid this by
-moving the copy into dev_addr prior to the changes to the MAC filter
-list.
-
-A similar race on the other side does not cause problems, as if we're
-changing our MAC form A to B, and we race with .set_rx_mode, it could
-queue a delete from A, we'd update our address, and allow the delete.
-This seems like a race, but in reality we're about to queue a delete of
-A anyways, so it would not cause any issues.
-
-A race in the initialization code is unlikely because the netdevice has
-not yet been fully initialized and the stack should not be adding or
-removing addresses yet.
-
-Note that we don't (yet) need similar code for the VF driver because it
-does not make use of __dev_uc_sync and __dev_mc_sync, but instead roles
-its own method for handling updates to the MAC/VLAN list, which already
-has code to protect against removal of the hardware address.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5c5296e..c971339d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1573,11 +1573,18 @@ static int i40e_set_mac(struct net_device *netdev, void *p)
- 	else
- 		netdev_info(netdev, "set new mac address %pM\n", addr->sa_data);
- 
-+	/* Copy the address first, so that we avoid a possible race with
-+	 * .set_rx_mode(). If we copy after changing the address in the filter
-+	 * list, we might open ourselves to a narrow race window where
-+	 * .set_rx_mode could delete our dev_addr filter and prevent traffic
-+	 * from passing.
-+	 */
-+	ether_addr_copy(netdev->dev_addr, addr->sa_data);
-+
- 	spin_lock_bh(&vsi->mac_filter_hash_lock);
- 	i40e_del_mac_filter(vsi, netdev->dev_addr);
- 	i40e_add_mac_filter(vsi, addr->sa_data);
- 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
--	ether_addr_copy(netdev->dev_addr, addr->sa_data);
- 	if (vsi->type == I40E_VSI_MAIN) {
- 		i40e_status ret;
- 
-@@ -1923,6 +1930,14 @@ static int i40e_addr_unsync(struct net_device *netdev, const u8 *addr)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 
-+	/* Under some circumstances, we might receive a request to delete
-+	 * our own device address from our uc list. Because we store the
-+	 * device address in the VSI's MAC/VLAN filter list, we need to ignore
-+	 * such requests and not delete our device address from this list.
-+	 */
-+	if (ether_addr_equal(addr, netdev->dev_addr))
-+		return 0;
-+
- 	i40e_del_mac_filter(vsi, addr);
- 
- 	return 0;
--- 
-2.9.5
+sln
 
