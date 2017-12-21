@@ -1,77 +1,152 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 21 Dec 2017 12:56:58 +0100
-Subject: [Intel-wired-lan] Problems with 82579LM devices in Dell
- OptiPlex990/06D7TR
-Message-ID: <f97e6243-be0f-518a-e233-7788c05052b0@molgen.mpg.de>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 21 Dec 2017 09:55:51 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 00/10] ixgbe: Add ipsec
+ offload
+In-Reply-To: <e253e271-eda9-8707-af57-3a5cf33cb097@oracle.com>
+References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
+ <e576cb0e-4b4f-12d9-c817-246d26cb0ada@oracle.com>
+ <e253e271-eda9-8707-af57-3a5cf33cb097@oracle.com>
+Message-ID: <d0a70d42-f0ae-c5b3-2ed8-b16537e72658@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Intel folks,
+On 12/20/2017 11:09 PM, Yanjun Zhu wrote:
+> On 2017/12/21 14:39, Yanjun Zhu wrote:
+>> On 2017/12/20 7:59, Shannon Nelson wrote:
+>>> This is an implementation of the ipsec hardware offload feature for
+>>> the ixgbe driver and Intel's 10Gbe series NICs: x540, x550, 82599.
+>> Hi, Nelson
+>>
+>> I notice that the ipsec feature is based on x540, x550, 82599. But 
+>> this ixgbe driver
+>> will also work with 82598.
+>>
+>> Does this ipsec feature also work with 82598?
+> Sorry. I mean, after these ipsec patches are applied, whether ipsec 
+> offload enabled or not,
+> can this ixgbe driver still work well with 82598?
+
+Hmm... I don't have one to test on, but I suspect the 82598 might not be 
+happy with this.  I'll send a followup patch to catch this case.
+
+Thanks!
+sln
 
 
-Changing our login setup, we noticed sometimes the RPC time-out 
-`do_ypcall: clnt_call: RPC: Timed out` when calling `getspnam()` on 
-exactly one type of machines, Dell OptiPlex 990, with the ethernet 
-device 82579LM.
-
-Please find DMI info fetched with `dmicode -s ?`, where the string is in 
-the order below, and the values separated by a hash.
-
-bios-vendor bios-version system-manufacturer system-product-name 
-system-version baseboard-product-name baseboard-version
-
-     Dell Inc.#A11#Dell Inc.#OptiPlex 990#01#06D7TR#A01
-     Dell Inc.#A11#Dell Inc.#OptiPlex 990#01#06D7TR#A01
-     Dell Inc.#A10#Dell Inc.#OptiPlex 990#01#06D7TR#A01
-     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
-     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
-     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
-     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
-     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
-     Dell Inc.#A07#Dell Inc.#OptiPlex 990#01#06D7TR#A00
-     Dell Inc.#A05#Dell Inc.#OptiPlex 990#01#06D7TR#A00
-     Dell Inc.#A05#Dell Inc.#OptiPlex 990#01#06D7TR#A00
-     Dell Inc.#A03#Dell Inc.#OptiPlex 990#01#06D7TR#A00
-
-The machines are of course out of warranty, and we guess that the 
-problem was there all along (reproducible with Linux 4.4 and 4.9), but 
-wasn?t noticed until now. We suspect it?s a hardware problem, as the PBA 
-number of these devices is all *E041FF-0FF*. Other systems also use the 
-device, but the problem is not reproducible there, for example *1011FF-0FF*.
-
-Anyway, before digging more into this, could you please take a look into 
-your internal error documents if there is a problem with that special 
-82579LM assembly?
-
-```
-[    1.458794] e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
-[    1.459053] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
-[    1.459414] e1000e 0000:00:19.0: Interrupt Throttling Rate (ints/sec) 
-set to dynamic conservative mode
-[    1.722400] e1000e 0000:00:19.0 eth0: registered PHC clock
-[    1.722653] e1000e 0000:00:19.0 eth0: (PCI Express:2.5GT/s:Width x1) 
-90:b1:1c:79:7b:04
-[    1.723072] e1000e 0000:00:19.0 eth0: Intel(R) PRO/1000 Network 
-Connection
-[    1.723403] e1000e 0000:00:19.0 eth0: MAC: 10, PHY: 11, PBA No: 
-1011FF-0FF
-[   13.693188] e1000e 0000:00:19.0 net00: renamed from eth0
-[   16.878762] e1000e: net00 NIC Link is Up 1000 Mbps Full Duplex, Flow 
-Control: Rx/Tx
-```
-
-
-Kind regards,
-
-Paul
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 5174 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171221/939d0fe0/attachment.p7s>
+> 
+> Zhu Yanjun
+>>
+>> Thanks a lot.
+>> Zhu Yanjun
+>>> These patches apply to net-next v4.14 as well as Jeff Kirsher's 
+>>> next-queue
+>>> v4.15-rc1-206-ge47375b.
+>>>
+>>> The ixgbe NICs support ipsec offload for 1024 Rx and 1024 Tx Security
+>>> Associations (SAs), using up to 128 inbound IP addresses, and using the
+>>> rfc4106(gcm(aes)) encryption.? This code does not yet support IPv6,
+>>> checksum offload, or TSO in conjunction with the ipsec offload - those
+>>> will be added in the future.
+>>>
+>>> This code shows improvements in both packet throughput and CPU 
+>>> utilization.
+>>> For example, here are some quicky numbers that show the magnitude of the
+>>> performance gain on a single run of "iperf -c <dest>" with the ipsec
+>>> offload on both ends of a point-to-point connection:
+>>>
+>>> ????9.4 Gbps - normal case
+>>> ????7.6 Gbps - ipsec with offload
+>>> ????343 Mbps - ipsec no offload
+>>>
+>>> To set up a similar test case, you first need to be sure you have a 
+>>> recent
+>>> version of iproute2 that supports the ipsec offload tag, probably 
+>>> something
+>>> from ip 4.12 or newer would be best.? I have a shell script that builds
+>>> up the appropriate commands for me, but here are the resulting commands
+>>> for all tcp traffic between 14.0.0.52 and 14.0.0.70:
+>>>
+>>> For the left side (14.0.0.52):
+>>> ?? ip x p add dir out src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
+>>> ????? proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport 
+>>> reqid 0x07
+>>> ?? ip x p add dir in src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
+>>> ????? proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport 
+>>> reqid 0x07
+>>> ?? ip x s add proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode 
+>>> transport \
+>>> ????? reqid 0x07 replay-window 32 \
+>>> ????? aead 'rfc4106(gcm(aes))' 
+>>> 0x44434241343332312423222114131211f4f3f2f1 128 \
+>>> ????? sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev 
+>>> eth4 dir out
+>>> ?? ip x s add proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode 
+>>> transport \
+>>> ????? reqid 0x07 replay-window 32 \
+>>> ????? aead 'rfc4106(gcm(aes))' 
+>>> 0x44434241343332312423222114131211f4f3f2f1 128 \
+>>> ????? sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev 
+>>> eth4 dir in
+>>> ? For the right side (14.0.0.70):
+>>> ?? ip x p add dir out src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
+>>> ????? proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport 
+>>> reqid 0x07
+>>> ?? ip x p add dir in src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
+>>> ????? proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport 
+>>> reqid 0x07
+>>> ?? ip x s add proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode 
+>>> transport \
+>>> ????? reqid 0x07 replay-window 32 \
+>>> ????? aead 'rfc4106(gcm(aes))' 
+>>> 0x44434241343332312423222114131211f4f3f2f1 128 \
+>>> ????? sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev 
+>>> eth4 dir out
+>>> ?? ip x s add proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode 
+>>> transport \
+>>> ????? reqid 0x07 replay-window 32 \
+>>> ????? aead 'rfc4106(gcm(aes))' 
+>>> 0x44434241343332312423222114131211f4f3f2f1 128 \
+>>> ????? sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev 
+>>> eth4 dir in
+>>>
+>>> In both cases, the command "ip x s flush ; ip x p flush" will clean
+>>> it all out and remove the offloads.
+>>>
+>>> Lastly, thanks to Alex Duyck for his early comments.
+>>>
+>>> Please see the individual patches for specific update info.
+>>>
+>>> v3: fixes after comments from those wonderfully pesky kbuild robots
+>>> v2: fixes after comments from Alex
+>>>
+>>> Shannon Nelson (10):
+>>> ?? ixgbe: clean up ipsec defines
+>>> ?? ixgbe: add ipsec register access routines
+>>> ?? ixgbe: add ipsec engine start and stop routines
+>>> ?? ixgbe: add ipsec data structures
+>>> ?? ixgbe: add ipsec offload add and remove SA
+>>> ?? ixgbe: restore offloaded SAs after a reset
+>>> ?? ixgbe: process the Rx ipsec offload
+>>> ?? ixgbe: process the Tx ipsec offload
+>>> ?? ixgbe: ipsec offload stats
+>>> ?? ixgbe: register ipsec offload with the xfrm subsystem
+>>>
+>>> ? drivers/net/ethernet/intel/ixgbe/Makefile??????? |?? 1 +
+>>> ? drivers/net/ethernet/intel/ixgbe/ixgbe.h???????? |? 33 +-
+>>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |?? 2 +
+>>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c?? | 923 
+>>> +++++++++++++++++++++++
+>>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h?? |? 92 +++
+>>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c???? |?? 4 +-
+>>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_main.c??? |? 39 +-
+>>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_type.h??? |? 22 +-
+>>> ? 8 files changed, 1093 insertions(+), 23 deletions(-)
+>>> ? create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+>>> ? create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+>>>
+>>
+>>
+> 
