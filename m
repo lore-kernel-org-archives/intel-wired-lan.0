@@ -1,146 +1,74 @@
-From: Yanjun Zhu <yanjun.zhu@oracle.com>
-Date: Thu, 21 Dec 2017 15:09:50 +0800
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 00/10] ixgbe: Add ipsec
- offload
-In-Reply-To: <e576cb0e-4b4f-12d9-c817-246d26cb0ada@oracle.com>
-References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
- <e576cb0e-4b4f-12d9-c817-246d26cb0ada@oracle.com>
-Message-ID: <e253e271-eda9-8707-af57-3a5cf33cb097@oracle.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Thu, 21 Dec 2017 10:40:54 +0100
+Subject: [Intel-wired-lan] v4.15-rc2 on thinkpad x60: ethernet stopped
+ working
+In-Reply-To: <20171210083949.GA3872@amd>
+References: <20171210083949.GA3872@amd>
+Message-ID: <4259bb94-5820-1349-8335-cfebd8fb3ed4@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Dear Pavel,
 
 
-On 2017/12/21 14:39, Yanjun Zhu wrote:
->
->
-> On 2017/12/20 7:59, Shannon Nelson wrote:
->> This is an implementation of the ipsec hardware offload feature for
->> the ixgbe driver and Intel's 10Gbe series NICs: x540, x550, 82599.
-> Hi, Nelson
->
-> I notice that the ipsec feature is based on x540, x550, 82599. But 
-> this ixgbe driver
-> will also work with 82598.
->
-> Does this ipsec feature also work with 82598?
-Sorry. I mean, after these ipsec patches are applied, whether ipsec 
-offload enabled or not,
-can this ixgbe driver still work well with 82598?
+On 12/10/17 09:39, Pavel Machek wrote:
 
-Zhu Yanjun
->
-> Thanks a lot.
-> Zhu Yanjun
->> These patches apply to net-next v4.14 as well as Jeff Kirsher's 
->> next-queue
->> v4.15-rc1-206-ge47375b.
->>
->> The ixgbe NICs support ipsec offload for 1024 Rx and 1024 Tx Security
->> Associations (SAs), using up to 128 inbound IP addresses, and using the
->> rfc4106(gcm(aes)) encryption.? This code does not yet support IPv6,
->> checksum offload, or TSO in conjunction with the ipsec offload - those
->> will be added in the future.
->>
->> This code shows improvements in both packet throughput and CPU 
->> utilization.
->> For example, here are some quicky numbers that show the magnitude of the
->> performance gain on a single run of "iperf -c <dest>" with the ipsec
->> offload on both ends of a point-to-point connection:
->>
->> ????9.4 Gbps - normal case
->> ????7.6 Gbps - ipsec with offload
->> ????343 Mbps - ipsec no offload
->>
->> To set up a similar test case, you first need to be sure you have a 
->> recent
->> version of iproute2 that supports the ipsec offload tag, probably 
->> something
->> from ip 4.12 or newer would be best.? I have a shell script that builds
->> up the appropriate commands for me, but here are the resulting commands
->> for all tcp traffic between 14.0.0.52 and 14.0.0.70:
->>
->> For the left side (14.0.0.52):
->> ?? ip x p add dir out src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
->> ????? proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport 
->> reqid 0x07
->> ?? ip x p add dir in src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
->> ????? proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport 
->> reqid 0x07
->> ?? ip x s add proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode 
->> transport \
->> ????? reqid 0x07 replay-window 32 \
->> ????? aead 'rfc4106(gcm(aes))' 
->> 0x44434241343332312423222114131211f4f3f2f1 128 \
->> ????? sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev 
->> eth4 dir out
->> ?? ip x s add proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode 
->> transport \
->> ????? reqid 0x07 replay-window 32 \
->> ????? aead 'rfc4106(gcm(aes))' 
->> 0x44434241343332312423222114131211f4f3f2f1 128 \
->> ????? sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev 
->> eth4 dir in
->> ? For the right side (14.0.0.70):
->> ?? ip x p add dir out src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
->> ????? proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport 
->> reqid 0x07
->> ?? ip x p add dir in src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
->> ????? proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport 
->> reqid 0x07
->> ?? ip x s add proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode 
->> transport \
->> ????? reqid 0x07 replay-window 32 \
->> ????? aead 'rfc4106(gcm(aes))' 
->> 0x44434241343332312423222114131211f4f3f2f1 128 \
->> ????? sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev 
->> eth4 dir out
->> ?? ip x s add proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode 
->> transport \
->> ????? reqid 0x07 replay-window 32 \
->> ????? aead 'rfc4106(gcm(aes))' 
->> 0x44434241343332312423222114131211f4f3f2f1 128 \
->> ????? sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev 
->> eth4 dir in
->>
->> In both cases, the command "ip x s flush ; ip x p flush" will clean
->> it all out and remove the offloads.
->>
->> Lastly, thanks to Alex Duyck for his early comments.
->>
->> Please see the individual patches for specific update info.
->>
->> v3: fixes after comments from those wonderfully pesky kbuild robots
->> v2: fixes after comments from Alex
->>
->> Shannon Nelson (10):
->> ?? ixgbe: clean up ipsec defines
->> ?? ixgbe: add ipsec register access routines
->> ?? ixgbe: add ipsec engine start and stop routines
->> ?? ixgbe: add ipsec data structures
->> ?? ixgbe: add ipsec offload add and remove SA
->> ?? ixgbe: restore offloaded SAs after a reset
->> ?? ixgbe: process the Rx ipsec offload
->> ?? ixgbe: process the Tx ipsec offload
->> ?? ixgbe: ipsec offload stats
->> ?? ixgbe: register ipsec offload with the xfrm subsystem
->>
->> ? drivers/net/ethernet/intel/ixgbe/Makefile??????? |?? 1 +
->> ? drivers/net/ethernet/intel/ixgbe/ixgbe.h???????? |? 33 +-
->> ? drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |?? 2 +
->> ? drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c?? | 923 
->> +++++++++++++++++++++++
->> ? drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h?? |? 92 +++
->> ? drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c???? |?? 4 +-
->> ? drivers/net/ethernet/intel/ixgbe/ixgbe_main.c??? |? 39 +-
->> ? drivers/net/ethernet/intel/ixgbe/ixgbe_type.h??? |? 22 +-
->> ? 8 files changed, 1093 insertions(+), 23 deletions(-)
->> ? create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
->> ? create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
->>
->
->
+> In v4.15-rc2+, network manager can not see my ethernet card, and 
+> manual attempts to ifconfig it up did not really help, either.
+> 
+> Card is:
+> 
+> 02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit
+> Ethernet Controller
+> 
+> Dmesg says:
+> 
+>    dmesg | grep eth
+> [    0.648931] e1000e 0000:02:00.0 eth0: (PCI Express:2.5GT/s:Width x1) 00:16:d3:25:19:04
+> [    0.648934] e1000e 0000:02:00.0 eth0: Intel(R) PRO/1000 Network Connection
+> [    0.649012] e1000e 0000:02:00.0 eth0: MAC: 2, PHY: 2, PBA No: 005302-003
+> [    0.706510] usbcore: registered new interface driver cdc_ether
+> [    6.557022] e1000e 0000:02:00.0 eth1: renamed from eth0
+> [    6.577554] systemd-udevd[2363]: renamed network interface eth0 to eth1
+> 
+> Any ideas?
 
+I am sorry for jumping in on this so late.
+
+Since using a Lenovo X60t more ofter since a year or so, I experience 
+the issue, that the link doesn?t come up during that period occasionally 
+[1]. I haven?t tried the latest patches yet, but it might be unrelated.
+
+Did you test, that removing and loading the e1000e module fixes the issue?
+
+Additionally, I was asked privately to test the out of tree driver, but 
+haven?t had time yet.
+
+> You might give the out-of-tree driver a try, you can download it here
+> https://downloadcenter.intel.com/download/26549/Intel-Network-Adapter-Driver-for-PCIe-Intel-Gigabit-Ethernet-Network-Connections-Under-Linux-?product=19297
+>  It's version is 3.3.5, dated 8/2016
+
+Kind regards,
+
+Paul
+
+
+[1] 
+https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20170410/008590.html
+-------------- next part --------------
+An embedded message was scrubbed...
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Subject: [Intel-wired-lan] e1000e: Link down after startup on Lenovo X60
+Date: Wed, 12 Apr 2017 16:31:45 +0200
+Size: 6867
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171221/0804f19a/attachment-0001.mht>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 5174 bytes
+Desc: S/MIME Cryptographic Signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20171221/0804f19a/attachment-0001.p7s>
