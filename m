@@ -1,224 +1,59 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 21 Dec 2017 10:21:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- a1ee5f1bc330f314df4ccaafc0fdeee283b61f08
-Message-ID: <5a3b1a8c.L8EGhfnRa8HocXJV%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Wed, 20 Dec 2017 19:30:25 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 05/10] ixgbe: add ipsec
+ offload add and remove SA
+In-Reply-To: <20171221022104.GN6122@localhost.localdomain>
+References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
+ <1513728002-7643-6-git-send-email-shannon.nelson@oracle.com>
+ <20171221010139.GM6122@localhost.localdomain>
+ <85fe1cd2-e935-52dc-e36b-0973e4c03653@oracle.com>
+ <20171221022104.GN6122@localhost.localdomain>
+Message-ID: <6056ec27-10c5-41cd-1e46-b21746814c8e@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: a1ee5f1bc330f314df4ccaafc0fdeee283b61f08  checkpatch.pl: seed camelcase from the provided kernel tree root
+On 12/20/2017 6:21 PM, Marcelo Ricardo Leitner wrote:
+> On Wed, Dec 20, 2017 at 05:39:13PM -0800, Shannon Nelson wrote:
+>> On 12/20/2017 5:17 PM, Marcelo Ricardo Leitner wrote:
+>>> Hi,
+>>>
+>>> On Tue, Dec 19, 2017 at 03:59:57PM -0800, Shannon Nelson wrote:
+>>>> +}
+>>>> +
+>>>> +static const struct xfrmdev_ops ixgbe_xfrmdev_ops = {
+>>>> +	.xdo_dev_state_add = ixgbe_ipsec_add_sa,
+>>>> +	.xdo_dev_state_delete = ixgbe_ipsec_del_sa,
+>>>> +};
+>>>> +
+>>>
+>>> This struct is only declared if XFRM_OFFLOAD is selected. What is
+>>> selecting it for ixgbe driver?
+>>> mlx5 driver has an extra option for ipsec offload and it then does
+>>> 'depends on XFRM_OFFLOAD'
+>>>
+>>>     Marcelo
+>>>
+>>
+>> I didn't bother putting a 'depends' item in the ixgbe's Kconfig entry, and I
+>> didn't create an extra CONFIG variable to enable ixgbe's support of the
+>> offload.  If CONFIG_XFRM_OFFLOAD is set, then ixgbe will support it.
+> 
+> You handled it via Makefile, okay. Missed it on patch 2, my bad.
+> 
+> Anyhow, we probably could use some standard here across the vendors
+> here.  With this patchset, we have 2 drivers supporting it, and 2
+> different ways to configure it.
 
-elapsed time: 248m
+I suspect that the mlx5 folks did an extra option as part of being the 
+first to support the feature, and needing an easy way to toggle support 
+while they were developing it without needing to rebuild the whole 
+kernel.  Now that the feature has reached a certain level of "maturity", 
+I think we can treat it like other features (e.g. CONFIG_PCI_IOV, 
+CONFIG_FCOE, CONFIG_PM, CONFIG_DEBUG_FS) and not need driver specific 
+toggles.
 
-configs tested: 200
+sln
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                  mpc866_ads_defconfig
-powerpc                     stx_gp3_defconfig
-x86_64                 randconfig-a0-12210725
-i386                               tinyconfig
-m68k                                defconfig
-powerpc                     redwood_defconfig
-sh                      rts7751r2d1_defconfig
-i386                   randconfig-c0-12210733
-arm                        trizeps4_defconfig
-ia64                            sim_defconfig
-sparc64                          allyesconfig
-i386                   randconfig-x016-201751
-i386                   randconfig-x011-201751
-i386                   randconfig-x014-201751
-i386                   randconfig-x017-201751
-i386                   randconfig-x019-201751
-i386                   randconfig-x018-201751
-i386                   randconfig-x010-201751
-i386                   randconfig-x013-201751
-i386                   randconfig-x015-201751
-i386                   randconfig-x012-201751
-i386                     randconfig-n0-201751
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                   randconfig-i0-12180843
-i386                   randconfig-i1-12180843
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                            u300_defconfig
-blackfin                BF561-EZKIT_defconfig
-powerpc                      mgcoge_defconfig
-x86_64                 randconfig-v0-12210606
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm64                            allmodconfig
-blackfin                   CM-BF548_defconfig
-parisc                        c8000_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-g0-12210639
-i386                             allmodconfig
-i386                     randconfig-a0-201751
-i386                     randconfig-a1-201751
-x86_64                 randconfig-s0-12210646
-x86_64                 randconfig-s1-12210646
-x86_64                 randconfig-s2-12210646
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                         hackkit_defconfig
-arm                          iop33x_defconfig
-cris                             allmodconfig
-x86_64                 randconfig-x012-201751
-x86_64                 randconfig-x010-201751
-x86_64                 randconfig-x011-201751
-x86_64                 randconfig-x015-201751
-x86_64                 randconfig-x019-201751
-x86_64                 randconfig-x014-201751
-x86_64                 randconfig-x013-201751
-x86_64                 randconfig-x016-201751
-x86_64                 randconfig-x017-201751
-x86_64                 randconfig-x018-201751
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s1-201751
-i386                     randconfig-s0-201751
-x86_64                 randconfig-s3-12210550
-x86_64                 randconfig-s4-12210550
-x86_64                 randconfig-s5-12210550
-arm                         s5pv210_defconfig
-m32r                             allmodconfig
-powerpc                    sam440ep_defconfig
-sh                     magicpanelr2_defconfig
-x86_64                   randconfig-i0-201751
-i386                   randconfig-b0-12210713
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                        spear6xx_defconfig
-blackfin             BF527-TLL6527M_defconfig
-s390                             allmodconfig
-sh                        edosk7760_defconfig
-x86_64                 randconfig-b0-12210651
-x86_64                           allmodconfig
-arm                             mxs_defconfig
-h8300                     edosk2674_defconfig
-mips                          ath79_defconfig
-x86_64                 randconfig-u0-12210559
-arm                          tango4_defconfig
-blackfin                          allnoconfig
-cris                                defconfig
-tile                             allmodconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-h0-12201155
-i386                   randconfig-h1-12201155
-ia64                      gensparse_defconfig
-powerpc                     ksi8560_defconfig
-x86_64                randconfig-ne0-12210645
-arm                       mainstone_defconfig
-openrisc                         allmodconfig
-sh                   secureedge5410_defconfig
-i386                   randconfig-h0-12210636
-i386                   randconfig-h1-12210636
-x86_64                 randconfig-n0-12210710
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-x003-201751
-x86_64                 randconfig-x002-201751
-x86_64                 randconfig-x006-201751
-x86_64                 randconfig-x007-201751
-x86_64                 randconfig-x000-201751
-x86_64                 randconfig-x005-201751
-x86_64                 randconfig-x004-201751
-x86_64                 randconfig-x009-201751
-x86_64                 randconfig-x008-201751
-x86_64                 randconfig-x001-201751
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                          ep93xx_defconfig
-m68k                        mvme147_defconfig
-powerpc                        warp_defconfig
-x86_64                randconfig-ws0-12210614
-x86_64                randconfig-ws0-12210633
-i386                   randconfig-x072-201751
-i386                   randconfig-x078-201751
-i386                   randconfig-x071-201751
-i386                   randconfig-x077-201751
-i386                   randconfig-x070-201751
-i386                   randconfig-x074-201751
-i386                   randconfig-x073-201751
-i386                   randconfig-x079-201751
-i386                   randconfig-x076-201751
-i386                   randconfig-x075-201751
-powerpc                 mpc8540_ads_defconfig
-powerpc                 xes_mpc85xx_defconfig
-s390                              allnoconfig
-x86_64                 randconfig-r0-12210659
-alpha                            allyesconfig
-powerpc                      ppc40x_defconfig
-i386                   randconfig-x007-201751
-i386                   randconfig-x008-201751
-i386                   randconfig-x009-201751
-i386                   randconfig-x004-201751
-i386                   randconfig-x002-201751
-i386                   randconfig-x005-201751
-i386                   randconfig-x001-201751
-i386                   randconfig-x006-201751
-i386                   randconfig-x003-201751
-i386                   randconfig-x000-201751
-i386                   randconfig-x0-12210732
-
-Thanks,
-Fengguang
