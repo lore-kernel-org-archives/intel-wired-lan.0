@@ -1,44 +1,146 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 21 Dec 2017 09:13:57 +0200
-Subject: [Intel-wired-lan] v4.15-rc2 on thinkpad x60: ethernet stopped
- working
-In-Reply-To: <20171220160135.GA3841@amd>
-References: <20171210083949.GA3872@amd>
- <d1ae924b-4d8f-a787-4c07-1f2db91482e5@gmail.com> <20171215092849.GB15090@amd>
- <20171215.105210.103516329605719086.davem@davemloft.net>
- <20171218102657.GB5338@amd> <5c0be4c4-5a56-cc7b-7b5a-345f446e788e@intel.com>
- <20171218115817.GA17054@amd> <077087f2-551a-c045-6b07-b1b661e53dad@intel.com>
- <9B4A1B1917080E46B64F07F2989DADD69845BBE2@ORSMSX110.amr.corp.intel.com>
- <20171220155421.GA3849@amd> <20171220160135.GA3841@amd>
-Message-ID: <7c8ff5d7-bc36-9dac-84d5-83daad20a003@intel.com>
+From: Yanjun Zhu <yanjun.zhu@oracle.com>
+Date: Thu, 21 Dec 2017 15:09:50 +0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 00/10] ixgbe: Add ipsec
+ offload
+In-Reply-To: <e576cb0e-4b4f-12d9-c817-246d26cb0ada@oracle.com>
+References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
+ <e576cb0e-4b4f-12d9-c817-246d26cb0ada@oracle.com>
+Message-ID: <e253e271-eda9-8707-af57-3a5cf33cb097@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 20/12/2017 18:01, Pavel Machek wrote:
-> On Wed 2017-12-20 16:54:21, Pavel Machek wrote:
->> Hi!
->>
->>>>> Before ask for reverting 19110cfbb..., please, check if follow patch
->>>>> of Benjamin work for you http://patchwork.ozlabs.org/patch/846825/
->>> Pavel, before ask for revert - let's check Benjamin's patch following to his previous patch. Previous patch was not competed and latest one come to complete changes.
->>>
->> v4.15-rc4+:
->>
->> Ethernet works with 19110cfbb reverted.
->>
->> Ethernet works With patchwork.ozlabs.org/patch/846825/ applied.
-> Hmm. So... ethernet originally did not work with patch/846825/ applied
-> or 19110cfbb reverted, so I re-plugged ethernet cables. Now it works
-> even with plain v4.15-rc4+.
->
-> So it looks like the bug was fixed in the mainline in the meantime...?
->
-> Sorry for the noise,
-> 								Pavel
 
-Good Pavel, thanks for update us, let's keep both patch applied and see 
-ethernet adapter behavior.
+
+On 2017/12/21 14:39, Yanjun Zhu wrote:
+>
+>
+> On 2017/12/20 7:59, Shannon Nelson wrote:
+>> This is an implementation of the ipsec hardware offload feature for
+>> the ixgbe driver and Intel's 10Gbe series NICs: x540, x550, 82599.
+> Hi, Nelson
+>
+> I notice that the ipsec feature is based on x540, x550, 82599. But 
+> this ixgbe driver
+> will also work with 82598.
+>
+> Does this ipsec feature also work with 82598?
+Sorry. I mean, after these ipsec patches are applied, whether ipsec 
+offload enabled or not,
+can this ixgbe driver still work well with 82598?
+
+Zhu Yanjun
+>
+> Thanks a lot.
+> Zhu Yanjun
+>> These patches apply to net-next v4.14 as well as Jeff Kirsher's 
+>> next-queue
+>> v4.15-rc1-206-ge47375b.
+>>
+>> The ixgbe NICs support ipsec offload for 1024 Rx and 1024 Tx Security
+>> Associations (SAs), using up to 128 inbound IP addresses, and using the
+>> rfc4106(gcm(aes)) encryption.? This code does not yet support IPv6,
+>> checksum offload, or TSO in conjunction with the ipsec offload - those
+>> will be added in the future.
+>>
+>> This code shows improvements in both packet throughput and CPU 
+>> utilization.
+>> For example, here are some quicky numbers that show the magnitude of the
+>> performance gain on a single run of "iperf -c <dest>" with the ipsec
+>> offload on both ends of a point-to-point connection:
+>>
+>> ????9.4 Gbps - normal case
+>> ????7.6 Gbps - ipsec with offload
+>> ????343 Mbps - ipsec no offload
+>>
+>> To set up a similar test case, you first need to be sure you have a 
+>> recent
+>> version of iproute2 that supports the ipsec offload tag, probably 
+>> something
+>> from ip 4.12 or newer would be best.? I have a shell script that builds
+>> up the appropriate commands for me, but here are the resulting commands
+>> for all tcp traffic between 14.0.0.52 and 14.0.0.70:
+>>
+>> For the left side (14.0.0.52):
+>> ?? ip x p add dir out src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
+>> ????? proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport 
+>> reqid 0x07
+>> ?? ip x p add dir in src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
+>> ????? proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport 
+>> reqid 0x07
+>> ?? ip x s add proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode 
+>> transport \
+>> ????? reqid 0x07 replay-window 32 \
+>> ????? aead 'rfc4106(gcm(aes))' 
+>> 0x44434241343332312423222114131211f4f3f2f1 128 \
+>> ????? sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev 
+>> eth4 dir out
+>> ?? ip x s add proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode 
+>> transport \
+>> ????? reqid 0x07 replay-window 32 \
+>> ????? aead 'rfc4106(gcm(aes))' 
+>> 0x44434241343332312423222114131211f4f3f2f1 128 \
+>> ????? sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev 
+>> eth4 dir in
+>> ? For the right side (14.0.0.70):
+>> ?? ip x p add dir out src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
+>> ????? proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport 
+>> reqid 0x07
+>> ?? ip x p add dir in src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
+>> ????? proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport 
+>> reqid 0x07
+>> ?? ip x s add proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode 
+>> transport \
+>> ????? reqid 0x07 replay-window 32 \
+>> ????? aead 'rfc4106(gcm(aes))' 
+>> 0x44434241343332312423222114131211f4f3f2f1 128 \
+>> ????? sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev 
+>> eth4 dir out
+>> ?? ip x s add proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode 
+>> transport \
+>> ????? reqid 0x07 replay-window 32 \
+>> ????? aead 'rfc4106(gcm(aes))' 
+>> 0x44434241343332312423222114131211f4f3f2f1 128 \
+>> ????? sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev 
+>> eth4 dir in
+>>
+>> In both cases, the command "ip x s flush ; ip x p flush" will clean
+>> it all out and remove the offloads.
+>>
+>> Lastly, thanks to Alex Duyck for his early comments.
+>>
+>> Please see the individual patches for specific update info.
+>>
+>> v3: fixes after comments from those wonderfully pesky kbuild robots
+>> v2: fixes after comments from Alex
+>>
+>> Shannon Nelson (10):
+>> ?? ixgbe: clean up ipsec defines
+>> ?? ixgbe: add ipsec register access routines
+>> ?? ixgbe: add ipsec engine start and stop routines
+>> ?? ixgbe: add ipsec data structures
+>> ?? ixgbe: add ipsec offload add and remove SA
+>> ?? ixgbe: restore offloaded SAs after a reset
+>> ?? ixgbe: process the Rx ipsec offload
+>> ?? ixgbe: process the Tx ipsec offload
+>> ?? ixgbe: ipsec offload stats
+>> ?? ixgbe: register ipsec offload with the xfrm subsystem
+>>
+>> ? drivers/net/ethernet/intel/ixgbe/Makefile??????? |?? 1 +
+>> ? drivers/net/ethernet/intel/ixgbe/ixgbe.h???????? |? 33 +-
+>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |?? 2 +
+>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c?? | 923 
+>> +++++++++++++++++++++++
+>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h?? |? 92 +++
+>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c???? |?? 4 +-
+>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_main.c??? |? 39 +-
+>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_type.h??? |? 22 +-
+>> ? 8 files changed, 1093 insertions(+), 23 deletions(-)
+>> ? create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+>> ? create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+>>
+>
+>
 
