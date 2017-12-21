@@ -1,115 +1,73 @@
-From: Yanjun Zhu <yanjun.zhu@oracle.com>
-Date: Thu, 21 Dec 2017 14:39:47 +0800
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 00/10] ixgbe: Add ipsec
- offload
-In-Reply-To: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
-References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <e576cb0e-4b4f-12d9-c817-246d26cb0ada@oracle.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Thu, 21 Dec 2017 08:57:17 +0200
+Subject: [Intel-wired-lan] [PATCH] e1000e: Fix
+ e1000_check_for_copper_link_ich8lan return value.
+In-Reply-To: <20171211072640.7935-1-bpoirier@suse.com>
+References: <20171208114552.5f517fd3@leda>
+ <20171211072640.7935-1-bpoirier@suse.com>
+Message-ID: <441de43f-4234-7616-2879-7e2e31a8d522@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On 2017/12/20 7:59, Shannon Nelson wrote:
-> This is an implementation of the ipsec hardware offload feature for
-> the ixgbe driver and Intel's 10Gbe series NICs: x540, x550, 82599.
-Hi, Nelson
-
-I notice that the ipsec feature is based on x540, x550, 82599.? But this 
-ixgbe driver
-will also work with 82598.
-
-Does this ipsec feature also work with 82598?
-
-Thanks a lot.
-Zhu Yanjun
-> These patches apply to net-next v4.14 as well as Jeff Kirsher's next-queue
-> v4.15-rc1-206-ge47375b.
+On 11/12/2017 9:26, Benjamin Poirier wrote:
+> e1000e_check_for_copper_link() and e1000_check_for_copper_link_ich8lan()
+> are the two functions that may be assigned to mac.ops.check_for_link when
+> phy.media_type == e1000_media_type_copper. Commit 19110cfbb34d ("e1000e:
+> Separate signaling for link check/link up") changed the meaning of the
+> return value of check_for_link for copper media but only adjusted the first
+> function. This patch adjusts the second function likewise.
 >
-> The ixgbe NICs support ipsec offload for 1024 Rx and 1024 Tx Security
-> Associations (SAs), using up to 128 inbound IP addresses, and using the
-> rfc4106(gcm(aes)) encryption.  This code does not yet support IPv6,
-> checksum offload, or TSO in conjunction with the ipsec offload - those
-> will be added in the future.
+> Reported-by: Christian Hesse <list@eworm.de>
+> Reported-by: Gabriel C <nix.or.die@gmail.com>
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=198047
+> Fixes: 19110cfbb34d ("e1000e: Separate signaling for link check/link up")
+> Tested-by: Christian Hesse <list@eworm.de>
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/ich8lan.c | 11 ++++++++---
+>   1 file changed, 8 insertions(+), 3 deletions(-)
 >
-> This code shows improvements in both packet throughput and CPU utilization.
-> For example, here are some quicky numbers that show the magnitude of the
-> performance gain on a single run of "iperf -c <dest>" with the ipsec
-> offload on both ends of a point-to-point connection:
->
-> 	9.4 Gbps - normal case
-> 	7.6 Gbps - ipsec with offload
-> 	343 Mbps - ipsec no offload
->
-> To set up a similar test case, you first need to be sure you have a recent
-> version of iproute2 that supports the ipsec offload tag, probably something
-> from ip 4.12 or newer would be best.  I have a shell script that builds
-> up the appropriate commands for me, but here are the resulting commands
-> for all tcp traffic between 14.0.0.52 and 14.0.0.70:
->
-> For the left side (14.0.0.52):
->    ip x p add dir out src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
->       proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport reqid 0x07
->    ip x p add dir in src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
->       proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport reqid 0x07
->    ip x s add proto esp src 14.0.0.52 dst 14.0.0.70 spi 0x07 mode transport \
->       reqid 0x07 replay-window 32 \
->       aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
->       sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev eth4 dir out
->    ip x s add proto esp dst 14.0.0.52 src 14.0.0.70 spi 0x07 mode transport \
->       reqid 0x07 replay-window 32 \
->       aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
->       sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev eth4 dir in
+> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> index d6d4ed7acf03..31277d3bb7dc 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> @@ -1367,6 +1367,9 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
+>    *  Checks to see of the link status of the hardware has changed.  If a
+>    *  change in link status has been detected, then we read the PHY registers
+>    *  to get the current speed/duplex if link exists.
+> + *
+> + *  Returns a negative error code (-E1000_ERR_*) or 0 (link down) or 1 (link
+> + *  up).
+>    **/
+>   static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>   {
+> @@ -1382,7 +1385,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>   	 * Change or Rx Sequence Error interrupt.
+>   	 */
+>   	if (!mac->get_link_status)
+> -		return 0;
+> +		return 1;
 >   
-> For the right side (14.0.0.70):
->    ip x p add dir out src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp tmpl \
->       proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport reqid 0x07
->    ip x p add dir in src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp tmpl \
->       proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport reqid 0x07
->    ip x s add proto esp src 14.0.0.70 dst 14.0.0.52 spi 0x07 mode transport \
->       reqid 0x07 replay-window 32 \
->       aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
->       sel src 14.0.0.70/24 dst 14.0.0.52/24 proto tcp offload dev eth4 dir out
->    ip x s add proto esp dst 14.0.0.70 src 14.0.0.52 spi 0x07 mode transport \
->       reqid 0x07 replay-window 32 \
->       aead 'rfc4106(gcm(aes))' 0x44434241343332312423222114131211f4f3f2f1 128 \
->       sel src 14.0.0.52/24 dst 14.0.0.70/24 proto tcp offload dev eth4 dir in
->
-> In both cases, the command "ip x s flush ; ip x p flush" will clean
-> it all out and remove the offloads.
->
-> Lastly, thanks to Alex Duyck for his early comments.
->
-> Please see the individual patches for specific update info.
->
-> v3: fixes after comments from those wonderfully pesky kbuild robots
-> v2: fixes after comments from Alex
->
-> Shannon Nelson (10):
->    ixgbe: clean up ipsec defines
->    ixgbe: add ipsec register access routines
->    ixgbe: add ipsec engine start and stop routines
->    ixgbe: add ipsec data structures
->    ixgbe: add ipsec offload add and remove SA
->    ixgbe: restore offloaded SAs after a reset
->    ixgbe: process the Rx ipsec offload
->    ixgbe: process the Tx ipsec offload
->    ixgbe: ipsec offload stats
->    ixgbe: register ipsec offload with the xfrm subsystem
->
->   drivers/net/ethernet/intel/ixgbe/Makefile        |   1 +
->   drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  33 +-
->   drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   2 +
->   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c   | 923 +++++++++++++++++++++++
->   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h   |  92 +++
->   drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |   4 +-
->   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  39 +-
->   drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |  22 +-
->   8 files changed, 1093 insertions(+), 23 deletions(-)
->   create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
->   create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
->
+>   	/* First we want to see if the MII Status Register reports
+>   	 * link.  If so, then we want to get the current speed/duplex
+> @@ -1613,10 +1616,12 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>   	 * different link partner.
+>   	 */
+>   	ret_val = e1000e_config_fc_after_link_up(hw);
+> -	if (ret_val)
+> +	if (ret_val) {
+>   		e_dbg("Error configuring flow control\n");
+> +		return ret_val;
+> +	}
+>   
+> -	return ret_val;
+> +	return 1;
+>   }
+>   
+>   static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
+
+Acked by sasha.neftin at intel.com
 
