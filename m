@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 22 Dec 2017 16:46:11 +0000
-Subject: [Intel-wired-lan] [next PATCH S83-V5 6/9] i40e/i40evf: Detect
- and recover hung queue scenario
-In-Reply-To: <20171218101725.75870-1-alice.michael@intel.com>
-References: <20171218101725.75870-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8CAB41@ORSMSX106.amr.corp.intel.com>
+Date: Fri, 22 Dec 2017 16:46:54 +0000
+Subject: [Intel-wired-lan] [next PATCH S83-V5 7/9] i40e: check for
+ invalid DCB config
+In-Reply-To: <20171218101742.75920-1-alice.michael@intel.com>
+References: <20171218101742.75920-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8CAB51@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,38 +14,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Alice Michael
-> Sent: Monday, December 18, 2017 2:17 AM
+> Sent: Monday, December 18, 2017 2:18 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S83-V5 6/9] i40e/i40evf: Detect and
-> recover hung queue scenario
+> Subject: [Intel-wired-lan] [next PATCH S83-V5 7/9] i40e: check for invalid DCB
+> config
 > 
-> From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> In VFs, there is a known issue which can cause writebacks to not occur when
-> interrupts are disabled and there are less than 4 descriptors resulting in TX
-> timeout. Timeout can also occur due to lost interrupt.
+> The driver (and the entire netdev layer for that matter) assumes that TC0 will
+> always be present in our DCB configuration.
+> Unfortunately, this isn't always the case. Rather than fail to configure the VSI,
+> let's go ahead and try to make it work, even though DCB will end up being
+> disabled by the kernel.
 > 
-> The current implementation for detecting and recovering from hung queues
-> in the PF is problematic because it actually actively encourages lost
-> interrupts.  By triggering a SW interrupt, interrupts are forced on.  If we are
-> already in napi_poll and an interrupt fires, napi_poll will not be rescheduled
-> and the interrupt is effectively lost; thereby potentially *causing* hung
-> queues.
+> If the driver fails to configure DCB, the driver queries what's valid, then
+> writes that back to the hardware, always forcing TC0.
 > 
-> This patch checks whether packets are being processed between every
-> watchdog cycle and determine potential hung queue and fires triggers SW
-> interrupt only for that particular queue.
+> This fixes a bug where the driver could fail to adhere to ETS BW allocations if 8
+> TCs were configured on the switch.
 > 
-> Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 100 +-----------------------
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c     |  54 +++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h     |   2 +
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |  54 +++++++++++++
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.h   |   2 +
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c |   2 +
->  6 files changed, 115 insertions(+), 99 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 34
+> ++++++++++++++++++++++++++++-
+>  1 file changed, 33 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
