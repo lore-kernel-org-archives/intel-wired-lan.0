@@ -1,107 +1,41 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Fri, 22 Dec 2017 18:11:55 +0100
-Subject: [Intel-wired-lan] [bpf-next V2 PATCH 04/14] ixgbe: setup
- xdp_rxq_info
-In-Reply-To: <151396262289.20006.1429172971820409456.stgit@firesoul>
-References: <151396262289.20006.1429172971820409456.stgit@firesoul>
-Message-ID: <151396271499.20006.10660048347313216737.stgit@firesoul>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 22 Dec 2017 20:36:56 +0000
+Subject: [Intel-wired-lan] [PATCH 22/27] ixgbe: Use timecounter_reset
+ interface
+In-Reply-To: <1513323522-15021-23-git-send-email-sagar.a.kamble@intel.com>
+References: <1513323522-15021-1-git-send-email-sagar.a.kamble@intel.com>
+ <1513323522-15021-23-git-send-email-sagar.a.kamble@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8CBC00@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Driver hook points for xdp_rxq_info:
- * reg  : ixgbe_setup_rx_resources()
- * unreg: ixgbe_free_rx_resources()
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Sagar Arun Kamble
+> Sent: Thursday, December 14, 2017 11:39 PM
+> To: linux-kernel at vger.kernel.org
+> Cc: intel-wired-lan at lists.osuosl.org; Richard Cochran
+> <richardcochran@gmail.com>; Kamble, Sagar A
+> <sagar.a.kamble@intel.com>; netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH 22/27] ixgbe: Use timecounter_reset
+> interface
+> 
+> With new interface timecounter_reset we can update the start time for
+> timecounter. Update ixgbe_ptp_settime with this new function.
+> 
+> Signed-off-by: Sagar Arun Kamble <sagar.a.kamble@intel.com>
+> Cc: Richard Cochran <richardcochran@gmail.com>
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org
+> Cc: linux-kernel at vger.kernel.org
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Tested on actual hardware.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-V2: Fix ixgbe_set_ringparam, clear xdp_rxq_info in temp_ring
-
-Cc: intel-wired-lan at lists.osuosl.org
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: Alexander Duyck <alexander.duyck@gmail.com>
-Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    4 ++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   10 +++++++++-
- 3 files changed, 15 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 468c3555a629..8611763d6129 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -53,6 +53,7 @@
- #include <linux/dca.h>
- #endif
- 
-+#include <net/xdp.h>
- #include <net/busy_poll.h>
- 
- /* common prefix used by pr_<> macros */
-@@ -371,6 +372,7 @@ struct ixgbe_ring {
- 		struct ixgbe_tx_queue_stats tx_stats;
- 		struct ixgbe_rx_queue_stats rx_stats;
- 	};
-+	struct xdp_rxq_info xdp_rxq;
- } ____cacheline_internodealigned_in_smp;
- 
- enum ixgbe_ring_f_enum {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 0aad1c2a3667..0aaf70b3cfcd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -1156,6 +1156,10 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
- 			memcpy(&temp_ring[i], adapter->rx_ring[i],
- 			       sizeof(struct ixgbe_ring));
- 
-+			/* Clear copied XDP RX-queue info */
-+			memset(&temp_ring[i].xdp_rxq, 0,
-+			       sizeof(temp_ring[i].xdp_rxq));
-+
- 			temp_ring[i].count = new_rx_count;
- 			err = ixgbe_setup_rx_resources(adapter, &temp_ring[i]);
- 			if (err) {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 7737a05c717c..95aba975b391 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2318,12 +2318,14 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- #endif /* IXGBE_FCOE */
- 	u16 cleaned_count = ixgbe_desc_unused(rx_ring);
- 	bool xdp_xmit = false;
-+	struct xdp_buff xdp;
-+
-+	xdp.rxq = &rx_ring->xdp_rxq;
- 
- 	while (likely(total_rx_packets < budget)) {
- 		union ixgbe_adv_rx_desc *rx_desc;
- 		struct ixgbe_rx_buffer *rx_buffer;
- 		struct sk_buff *skb;
--		struct xdp_buff xdp;
- 		unsigned int size;
- 
- 		/* return some buffers to hardware, one@a time is too slow */
-@@ -6444,6 +6446,11 @@ int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
- 	rx_ring->next_to_clean = 0;
- 	rx_ring->next_to_use = 0;
- 
-+	/* XDP RX-queue info */
-+	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
-+			     rx_ring->queue_index) < 0)
-+		goto err;
-+
- 	rx_ring->xdp_prog = adapter->xdp_prog;
- 
- 	return 0;
-@@ -6541,6 +6548,7 @@ void ixgbe_free_rx_resources(struct ixgbe_ring *rx_ring)
- 	ixgbe_clean_rx_ring(rx_ring);
- 
- 	rx_ring->xdp_prog = NULL;
-+	xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
- 	vfree(rx_ring->rx_buffer_info);
- 	rx_ring->rx_buffer_info = NULL;
- 
 
