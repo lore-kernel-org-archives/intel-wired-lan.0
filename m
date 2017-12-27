@@ -1,48 +1,69 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 27 Dec 2017 08:22:11 -0500
-Subject: [Intel-wired-lan] [next PATCH S84-V2 10/13] i40e: Fix kdump failure
-Message-ID: <20171227132211.24019-1-alice.michael@intel.com>
+Date: Wed, 27 Dec 2017 08:24:12 -0500
+Subject: [Intel-wired-lan] [next PATCH S84-V2 11/13] i40e: program
+ fragmented IPv4 filter input set
+Message-ID: <20171227132412.24115-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-kdump fails in the system when used in conjunction with Ethernet driver
-X722/X710. This is mainly because when we are resource constrained i.e.
-when we have just one online_cpus, we are enabling VMDq and iWARP. It
-doesn't make sense to enable them with just one cpu and starve kdump
-for lack of IRQs.
+When implementing support for IP_USER_FLOW filters, we correctly
+programmed a filter for both the non fragmented IPv4/Other filter, as
+well as the fragmented IPv4 filters. However, we did not properly
+program the input set for fragmented IPv4 PCTYPE. This meant that the
+filters would almost certainly not match, unless the user specified all
+of the flow types.
 
-So don't enable VMDq or iWARP when we just have a single cpu.
+Add support to program the fragmented IPv4 filter input set. Since we
+always program these filters together, we'll assume that the two input
+sets must match, and will thus always program the input sets to the same
+value.
 
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 10 ++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c    |  3 +++
+ 2 files changed, 13 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 96155f1..9f6e4f0 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -3809,6 +3809,16 @@ static int i40e_check_fdir_input_set(struct i40e_vsi *vsi,
+ 
+ 	i40e_write_fd_input_set(pf, index, new_mask);
+ 
++	/* IP_USER_FLOW filters match both IPv4/Other and IPv4/Fragmented
++	 * frames. If we're programming the input set for IPv4/Other, we also
++	 * need to program the IPv4/Fragmented input set. Since we don't have
++	 * separate support, we'll always assume and enforce that the two flow
++	 * types must have matching input sets.
++	 */
++	if (index == I40E_FILTER_PCTYPE_NONF_IPV4_OTHER)
++		i40e_write_fd_input_set(pf, I40E_FILTER_PCTYPE_FRAG_IPV4,
++					new_mask);
++
+ 	/* Add the new offset and update table, if necessary */
+ 	if (new_flex_offset) {
+ 		err = i40e_add_flex_offset(&pf->l4_flex_pit_list, src_offset,
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 3c3cdcd..4493652 100644
+index 4493652..4a3b13d 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11115,13 +11115,13 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 	    pf->hw.aq.fw_maj_ver >= 6)
- 		pf->hw_features |= I40E_HW_PTP_L4_CAPABLE;
+@@ -7736,6 +7736,9 @@ static void i40e_fdir_filter_exit(struct i40e_pf *pf)
+ 	/* Reprogram the default input set for Other/IPv4 */
+ 	i40e_write_fd_input_set(pf, I40E_FILTER_PCTYPE_NONF_IPV4_OTHER,
+ 				I40E_L3_SRC_MASK | I40E_L3_DST_MASK);
++
++	i40e_write_fd_input_set(pf, I40E_FILTER_PCTYPE_FRAG_IPV4,
++				I40E_L3_SRC_MASK | I40E_L3_DST_MASK);
+ }
  
--	if (pf->hw.func_caps.vmdq) {
-+	if (pf->hw.func_caps.vmdq && num_online_cpus() != 1) {
- 		pf->num_vmdq_vsis = I40E_DEFAULT_NUM_VMDQ_VSI;
- 		pf->flags |= I40E_FLAG_VMDQ_ENABLED;
- 		pf->num_vmdq_qps = i40e_default_queues_per_vmdq(pf);
- 	}
- 
--	if (pf->hw.func_caps.iwarp) {
-+	if (pf->hw.func_caps.iwarp && num_online_cpus() != 1) {
- 		pf->flags |= I40E_FLAG_IWARP_ENABLED;
- 		/* IWARP needs one extra vector for CQP just like MISC.*/
- 		pf->num_iwarp_msix = (int)num_online_cpus() + 1;
+ /**
 -- 
 2.9.5
 
