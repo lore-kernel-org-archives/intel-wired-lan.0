@@ -1,141 +1,127 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 27 Dec 2017 08:17:07 -0500
-Subject: [Intel-wired-lan] [next PATCH S84-V2 05/13] i40e: Display LLDP
- information on vSphere Web Client
-Message-ID: <20171227131707.23749-1-alice.michael@intel.com>
+Date: Wed, 27 Dec 2017 08:17:50 -0500
+Subject: [Intel-wired-lan] [next PATCH S84-V2 06/13] i40e: change flags to
+ use 64 bits
+Message-ID: <20171227131750.23824-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Menon, Upasana <upasana.menon@intel.com>
+As we have added more flags, we need to now use more
+bits and have overflooded the 32 bit size.  So
+make it 64.
 
-This patch enables driver to display LLDP information on the vSphere Web
-Client with Intel adapters (X710, XL710) and Distributed Virtual Switch.
+also change all the existing bits to unsigned long long
+bits.
 
-Signed-off-by: Menon, Upasana <upasana.menon@intel.com>
+Signed-off-by: Alice Michael <alice.michael@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 12 ++++++++++
- drivers/net/ethernet/intel/i40e/i40e_common.c      | 27 ++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  4 ++++
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 12 ++++++++++
- 4 files changed, 55 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e.h         | 67 +++++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  4 +-
+ 2 files changed, 36 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 0d471b0..a852775 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -205,6 +205,7 @@ enum i40e_admin_queue_opc {
- 	/* DCB commands */
- 	i40e_aqc_opc_dcb_ignore_pfc	= 0x0301,
- 	i40e_aqc_opc_dcb_updated	= 0x0302,
-+	i40e_aqc_opc_set_dcb_parameters = 0x0303,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index e019baa..46e9f4e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -508,39 +508,40 @@ struct i40e_pf {
+ #define I40E_HW_PORT_ID_VALID			BIT(17)
+ #define I40E_HW_RESTART_AUTONEG			BIT(18)
  
- 	/* TX scheduler */
- 	i40e_aqc_opc_configure_vsi_bw_limit		= 0x0400,
-@@ -2496,6 +2497,17 @@ struct i40e_aqc_lldp_start {
+-	u32 flags;
+-#define I40E_FLAG_RX_CSUM_ENABLED		BIT(0)
+-#define I40E_FLAG_MSI_ENABLED			BIT(1)
+-#define I40E_FLAG_MSIX_ENABLED			BIT(2)
+-#define I40E_FLAG_RSS_ENABLED			BIT(3)
+-#define I40E_FLAG_VMDQ_ENABLED			BIT(4)
+-#define I40E_FLAG_FILTER_SYNC			BIT(5)
+-#define I40E_FLAG_SRIOV_ENABLED			BIT(6)
+-#define I40E_FLAG_DCB_CAPABLE			BIT(7)
+-#define I40E_FLAG_DCB_ENABLED			BIT(8)
+-#define I40E_FLAG_FD_SB_ENABLED			BIT(9)
+-#define I40E_FLAG_FD_ATR_ENABLED		BIT(10)
+-#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT(11)
+-#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT(12)
+-#define I40E_FLAG_MFP_ENABLED			BIT(13)
+-#define I40E_FLAG_UDP_FILTER_SYNC		BIT(14)
+-#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT(15)
+-#define I40E_FLAG_VEB_MODE_ENABLED		BIT(16)
+-#define I40E_FLAG_VEB_STATS_ENABLED		BIT(17)
+-#define I40E_FLAG_LINK_POLLING_ENABLED		BIT(18)
+-#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT(19)
+-#define I40E_FLAG_TEMP_LINK_POLLING		BIT(20)
+-#define I40E_FLAG_LEGACY_RX			BIT(21)
+-#define I40E_FLAG_PTP				BIT(22)
+-#define I40E_FLAG_IWARP_ENABLED			BIT(23)
+-#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT(24)
+-#define I40E_FLAG_CLIENT_L2_CHANGE		BIT(25)
+-#define I40E_FLAG_CLIENT_RESET			BIT(26)
+-#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT(27)
+-#define I40E_FLAG_SOURCE_PRUNING_DISABLED	BIT(28)
+-#define I40E_FLAG_TC_MQPRIO			BIT(29)
+-#define I40E_FLAG_FD_SB_INACTIVE		BIT(30)
+-#define I40E_FLAG_FD_SB_TO_CLOUD_FILTER		BIT(31)
++	u64 flags;
++#define I40E_FLAG_RX_CSUM_ENABLED		BIT_ULL(0)
++#define I40E_FLAG_MSI_ENABLED			BIT_ULL(1)
++#define I40E_FLAG_MSIX_ENABLED			BIT_ULL(2)
++#define I40E_FLAG_RSS_ENABLED			BIT_ULL(3)
++#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(4)
++#define I40E_FLAG_FILTER_SYNC			BIT_ULL(5)
++#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(6)
++#define I40E_FLAG_DCB_CAPABLE			BIT_ULL(7)
++#define I40E_FLAG_DCB_ENABLED			BIT_ULL(8)
++#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(9)
++#define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(10)
++#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(11)
++#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(12)
++#define I40E_FLAG_MFP_ENABLED			BIT_ULL(13)
++#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(14)
++#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(15)
++#define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(16)
++#define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(17)
++#define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(18)
++#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(19)
++#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(20)
++#define I40E_FLAG_LEGACY_RX			BIT_ULL(21)
++#define I40E_FLAG_PTP				BIT_ULL(22)
++#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(23)
++#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(24)
++#define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(25)
++#define I40E_FLAG_CLIENT_RESET			BIT_ULL(26)
++#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT_ULL(27)
++#define I40E_FLAG_SOURCE_PRUNING_DISABLED	BIT_ULL(28)
++#define I40E_FLAG_TC_MQPRIO			BIT_ULL(29)
++#define I40E_FLAG_FD_SB_INACTIVE		BIT_ULL(30)
++#define I40E_FLAG_FD_SB_TO_CLOUD_FILTER		BIT_ULL(31)
++#define I40E_FLAG_DISABLE_FW_LLDP		BIT_ULL(32)
  
- I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_start);
+ 	struct i40e_client_instance *cinst;
+ 	bool stat_offsets_loaded;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 79c752a..e42b1c2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -4266,7 +4266,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	struct i40e_netdev_priv *np = netdev_priv(dev);
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+-	u32 orig_flags, new_flags, changed_flags;
++	u64 orig_flags, new_flags, changed_flags;
+ 	u32 i, j;
  
-+/* Set DCB (direct 0x0303) */
-+struct i40e_aqc_set_dcb_parameters {
-+	u8 command;
-+#define I40E_AQ_DCB_SET_AGENT	0x1
-+#define I40E_DCB_VALID		0x1
-+	u8 valid_flags;
-+	u8 reserved[14];
-+};
-+
-+I40E_CHECK_CMD_LENGTH(i40e_aqc_set_dcb_parameters);
-+
- /* Get CEE DCBX Oper Config (0x0A07)
-  * uses the generic descriptor struct
-  * returns below as indirect response
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index c690e9c..ef5a868 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -3641,7 +3641,34 @@ i40e_status i40e_aq_start_lldp(struct i40e_hw *hw,
- 	i40e_fill_default_direct_cmd_desc(&desc, i40e_aqc_opc_lldp_start);
- 
- 	cmd->command = I40E_AQ_LLDP_AGENT_START;
-+	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
- 
-+	return status;
-+}
-+
-+/**
-+ * i40e_aq_set_dcb_parameters
-+ * @hw: pointer to the hw struct
-+ * @cmd_details: pointer to command details structure or NULL
-+ * @dcb_enable: True if DCB configuration needs to be applied
-+ *
-+ **/
-+enum i40e_status_code
-+i40e_aq_set_dcb_parameters(struct i40e_hw *hw, bool dcb_enable,
-+			   struct i40e_asq_cmd_details *cmd_details)
-+{
-+	struct i40e_aq_desc desc;
-+	struct i40e_aqc_set_dcb_parameters *cmd =
-+		(struct i40e_aqc_set_dcb_parameters *)&desc.params.raw;
-+	i40e_status status;
-+
-+	i40e_fill_default_direct_cmd_desc(&desc,
-+					  i40e_aqc_opc_set_dcb_parameters);
-+
-+	if (dcb_enable) {
-+		cmd->valid_flags = I40E_DCB_VALID;
-+		cmd->command = I40E_AQ_DCB_SET_AGENT;
-+	}
- 	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
- 
- 	return status;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index 187dd53..83798b7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -225,6 +225,10 @@ i40e_status i40e_aq_cfg_lldp_mib_change_event(struct i40e_hw *hw,
- 				struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_stop_lldp(struct i40e_hw *hw, bool shutdown_agent,
- 				struct i40e_asq_cmd_details *cmd_details);
-+i40e_status i40e_aq_set_dcb_parameters(struct i40e_hw *hw,
-+				       bool dcb_enable,
-+				       struct i40e_asq_cmd_details
-+				       *cmd_details);
- i40e_status i40e_aq_start_lldp(struct i40e_hw *hw,
- 				struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_get_cee_dcb_config(struct i40e_hw *hw,
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index b0e6454..815de8d 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -205,6 +205,7 @@ enum i40e_admin_queue_opc {
- 	/* DCB commands */
- 	i40e_aqc_opc_dcb_ignore_pfc	= 0x0301,
- 	i40e_aqc_opc_dcb_updated	= 0x0302,
-+	i40e_aqc_opc_set_dcb_parameters = 0x0303,
- 
- 	/* TX scheduler */
- 	i40e_aqc_opc_configure_vsi_bw_limit		= 0x0400,
-@@ -2461,6 +2462,17 @@ struct i40e_aqc_lldp_start {
- 
- I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_start);
- 
-+/* Set DCB (direct 0x0303) */
-+struct i40e_aqc_set_dcb_parameters {
-+	u8 command;
-+#define I40E_AQ_DCB_SET_AGENT	0x1
-+#define I40E_DCB_VALID		0x1
-+	u8 valid_flags;
-+	u8 reserved[14];
-+};
-+
-+I40E_CHECK_CMD_LENGTH(i40e_aqc_set_dcb_parameters);
-+
- /* Apply MIB changes (0x0A07)
-  * uses the generic struc as it contains no data
-  */
+ 	orig_flags = READ_ONCE(pf->flags);
+@@ -4323,7 +4323,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	 * originally. We'll just punt with an error and log something in the
+ 	 * message buffer.
+ 	 */
+-	if (cmpxchg(&pf->flags, orig_flags, new_flags) != orig_flags) {
++	if (cmpxchg64(&pf->flags, orig_flags, new_flags) != orig_flags) {
+ 		dev_warn(&pf->pdev->dev,
+ 			 "Unable to update pf->flags as it was modified by another thread...\n");
+ 		return -EAGAIN;
 -- 
 2.9.5
 
