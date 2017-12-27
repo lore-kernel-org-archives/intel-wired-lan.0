@@ -1,143 +1,157 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 27 Dec 2017 07:32:34 -0500
-Subject: [Intel-wired-lan] [next PATCH S84-V2 05/13] i40e: Display LLDP
- information on vSphere Web Client
+Date: Wed, 27 Dec 2017 07:32:41 -0500
+Subject: [Intel-wired-lan] [next PATCH S84-V2 12/13] i40e: disallow
+ programming multiple filters with same criteria
 In-Reply-To: <20171227123242.22356-1-alice.michael@intel.com>
 References: <20171227123242.22356-1-alice.michael@intel.com>
-Message-ID: <20171227123242.22356-5-alice.michael@intel.com>
+Message-ID: <20171227123242.22356-12-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Menon, Upasana <upasana.menon@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-This patch enables driver to display LLDP information on the vSphere Web
-Client with Intel adapters (X710, XL710) and Distributed Virtual Switch.
+Our hardware does not allow situations where two filters might conflict
+when matching. Essentially hardware only programs one filter for each
+set of matching criteria. We don't support filters with overlapping
+input sets, because each flow type can only use a single input set.
 
-Signed-off-by: Menon, Upasana <upasana.menon@intel.com>
+Additionally, different flow types will never have overlapping matches,
+because of how the hardware parses the flow type before checking
+matching criteria.
+
+For this reason, we do not need or use the location number when
+programming filters to hardware.
+
+In order to avoid confusing scenarios with filters that match the same
+criteria but program the flow to different queues, do not allow multiple
+filters that match identical criteria to be programmed.
+
+This ensures that we avoid odd scenarios when deleting filters, and when
+programming new filters that match the same criteria.
+
+Instead, users that wish to update the criteria for a filter must use
+the same location id, or must delete all the matching filters first.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 12 ++++++++++
- drivers/net/ethernet/intel/i40e/i40e_common.c      | 27 ++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  4 ++++
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 12 ++++++++++
- 4 files changed, 55 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 87 ++++++++++++++++++++++++++
+ 1 file changed, 87 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 0d471b0..a852775 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -205,6 +205,7 @@ enum i40e_admin_queue_opc {
- 	/* DCB commands */
- 	i40e_aqc_opc_dcb_ignore_pfc	= 0x0301,
- 	i40e_aqc_opc_dcb_updated	= 0x0302,
-+	i40e_aqc_opc_set_dcb_parameters = 0x0303,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 9f6e4f0..83021c7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -3841,6 +3841,87 @@ static int i40e_check_fdir_input_set(struct i40e_vsi *vsi,
+ }
  
- 	/* TX scheduler */
- 	i40e_aqc_opc_configure_vsi_bw_limit		= 0x0400,
-@@ -2496,6 +2497,17 @@ struct i40e_aqc_lldp_start {
- 
- I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_start);
- 
-+/* Set DCB (direct 0x0303) */
-+struct i40e_aqc_set_dcb_parameters {
-+	u8 command;
-+#define I40E_AQ_DCB_SET_AGENT	0x1
-+#define I40E_DCB_VALID		0x1
-+	u8 valid_flags;
-+	u8 reserved[14];
-+};
+ /**
++ * i40e_match_fdir_filter - Return true of two filters match
++ * @a: pointer to filter struct
++ * @b: pointer to filter struct
++ *
++ * Returns true if the two filters match exactly the same criteria. I.e. they
++ * match the same flow type and have the same parameters. We don't need to
++ * check any input-set since all filters of the same flow type must use the
++ * same input set.
++ **/
++static bool i40e_match_fdir_filter(struct i40e_fdir_filter *a,
++				   struct i40e_fdir_filter *b)
++{
++	/* The filters do not much if any of these criteria differ. */
++	if (a->dst_ip != b->dst_ip ||
++	    a->src_ip != b->src_ip ||
++	    a->dst_port != b->dst_port ||
++	    a->src_port != b->src_port ||
++	    a->flow_type != b->flow_type ||
++	    a->ip4_proto != b->ip4_proto)
++		return false;
 +
-+I40E_CHECK_CMD_LENGTH(i40e_aqc_set_dcb_parameters);
-+
- /* Get CEE DCBX Oper Config (0x0A07)
-  * uses the generic descriptor struct
-  * returns below as indirect response
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index c690e9c..ef5a868 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -3641,7 +3641,34 @@ i40e_status i40e_aq_start_lldp(struct i40e_hw *hw,
- 	i40e_fill_default_direct_cmd_desc(&desc, i40e_aqc_opc_lldp_start);
- 
- 	cmd->command = I40E_AQ_LLDP_AGENT_START;
-+	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
- 
-+	return status;
++	return true;
 +}
 +
 +/**
-+ * i40e_aq_set_dcb_parameters
-+ * @hw: pointer to the hw struct
-+ * @cmd_details: pointer to command details structure or NULL
-+ * @dcb_enable: True if DCB configuration needs to be applied
++ * i40e_disallow_matching_filters - Check that new filters differ
++ * @vsi: pointer to the targeted VSI
++ * @input: new filter to check
 + *
++ * Due to hardware limitations, it is not possible for two filters that match
++ * similar criteria to be programmed at the same time. This is true for a few
++ * reasons:
++ *
++ * (a) all filters matching a particular flow type must use the same input
++ * set, that is they must match the same criteria.
++ * (b) different flow types will never match the same packet, as the flow type
++ * is decided by hardware before checking which rules apply.
++ * (c) hardware has no way to distinguish which order filters apply in.
++ *
++ * Due to this, we can't really support using the location data to order
++ * filters in the hardware parsing. It is technically possible for the user to
++ * request two filters matching the same criteria but which select different
++ * queues. In this case, rather than keep both filters in the list, we reject
++ * the 2nd filter when the user requests adding it.
++ *
++ * This avoids needing to track location for programming the filter to
++ * hardware, and ensures that we avoid some strange scenarios involving
++ * deleting filters which match the same criteria.
 + **/
-+enum i40e_status_code
-+i40e_aq_set_dcb_parameters(struct i40e_hw *hw, bool dcb_enable,
-+			   struct i40e_asq_cmd_details *cmd_details)
++static int i40e_disallow_matching_filters(struct i40e_vsi *vsi,
++					  struct i40e_fdir_filter *input)
 +{
-+	struct i40e_aq_desc desc;
-+	struct i40e_aqc_set_dcb_parameters *cmd =
-+		(struct i40e_aqc_set_dcb_parameters *)&desc.params.raw;
-+	i40e_status status;
++	struct i40e_pf *pf = vsi->back;
++	struct i40e_fdir_filter *rule;
++	struct hlist_node *node2;
 +
-+	i40e_fill_default_direct_cmd_desc(&desc,
-+					  i40e_aqc_opc_set_dcb_parameters);
++	/* Loop through every filter, and check that it doesn't match */
++	hlist_for_each_entry_safe(rule, node2,
++				  &pf->fdir_filter_list, fdir_node) {
++		/* Don't check the filters match if they share the same fd_id,
++		 * since the new filter is actually just updating the target
++		 * of the old filter.
++		 */
++		if (rule->fd_id == input->fd_id)
++			continue;
 +
-+	if (dcb_enable) {
-+		cmd->valid_flags = I40E_DCB_VALID;
-+		cmd->command = I40E_AQ_DCB_SET_AGENT;
++		/* If any filters match, then print a warning message to the
++		 * kernel message buffer and bail out.
++		 */
++		if (i40e_match_fdir_filter(rule, input)) {
++			dev_warn(&pf->pdev->dev,
++				 "Existing user defined filter %d already matches this flow.\n",
++				 rule->fd_id);
++			return -EINVAL;
++		}
 +	}
- 	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
- 
- 	return status;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index 187dd53..83798b7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -225,6 +225,10 @@ i40e_status i40e_aq_cfg_lldp_mib_change_event(struct i40e_hw *hw,
- 				struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_stop_lldp(struct i40e_hw *hw, bool shutdown_agent,
- 				struct i40e_asq_cmd_details *cmd_details);
-+i40e_status i40e_aq_set_dcb_parameters(struct i40e_hw *hw,
-+				       bool dcb_enable,
-+				       struct i40e_asq_cmd_details
-+				       *cmd_details);
- i40e_status i40e_aq_start_lldp(struct i40e_hw *hw,
- 				struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_get_cee_dcb_config(struct i40e_hw *hw,
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index b0e6454..815de8d 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -205,6 +205,7 @@ enum i40e_admin_queue_opc {
- 	/* DCB commands */
- 	i40e_aqc_opc_dcb_ignore_pfc	= 0x0301,
- 	i40e_aqc_opc_dcb_updated	= 0x0302,
-+	i40e_aqc_opc_set_dcb_parameters = 0x0303,
- 
- 	/* TX scheduler */
- 	i40e_aqc_opc_configure_vsi_bw_limit		= 0x0400,
-@@ -2461,6 +2462,17 @@ struct i40e_aqc_lldp_start {
- 
- I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_start);
- 
-+/* Set DCB (direct 0x0303) */
-+struct i40e_aqc_set_dcb_parameters {
-+	u8 command;
-+#define I40E_AQ_DCB_SET_AGENT	0x1
-+#define I40E_DCB_VALID		0x1
-+	u8 valid_flags;
-+	u8 reserved[14];
-+};
 +
-+I40E_CHECK_CMD_LENGTH(i40e_aqc_set_dcb_parameters);
++	return 0;
++}
 +
- /* Apply MIB changes (0x0A07)
-  * uses the generic struc as it contains no data
-  */
++/**
+  * i40e_add_fdir_ethtool - Add/Remove Flow Director filters
+  * @vsi: pointer to the targeted VSI
+  * @cmd: command to get or set RX flow classification rules
+@@ -3952,6 +4033,11 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
+ 		input->flex_offset = userdef.flex_offset;
+ 	}
+ 
++	/* Avoid programming two filters with identical match criteria. */
++	ret = i40e_disallow_matching_filters(vsi, input);
++	if (ret)
++		goto free_filter_memory;
++
+ 	/* Add the input filter to the fdir_input_list, possibly replacing
+ 	 * a previous filter. Do not free the input structure after adding it
+ 	 * to the list as this would cause a use-after-free bug.
+@@ -3965,6 +4051,7 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
+ remove_sw_rule:
+ 	hlist_del(&input->fdir_node);
+ 	pf->fdir_pf_active_filters--;
++free_filter_memory:
+ 	kfree(input);
+ 	return ret;
+ }
 -- 
 2.9.5
 
