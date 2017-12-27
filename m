@@ -1,128 +1,128 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 27 Dec 2017 07:32:30 -0500
-Subject: [Intel-wired-lan] [next PATCH S84-V2 01/13] i40e: Add returning AQ
- critical error to SW
-Message-ID: <20171227123242.22356-1-alice.michael@intel.com>
+Date: Wed, 27 Dec 2017 07:32:33 -0500
+Subject: [Intel-wired-lan] [next PATCH S84-V2 04/13] i40e/i40evf: Use ring
+ pointers to clean up _set_itr_per_queue
+In-Reply-To: <20171227123242.22356-1-alice.michael@intel.com>
+References: <20171227123242.22356-1-alice.michael@intel.com>
+Message-ID: <20171227123242.22356-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Kosiarz <michal.kosiarz@intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-The FW has the ability to return a critical error on every AQ command.
-When this critical error occurs then we need to send the correct response
-to the caller.
+This change cleans up the i40e/i40evf_set_itr_per_queue function by
+dropping all the unneeded pointer chases. Instead we can just pull out the
+pointers for the Tx and Rx rings and use them throughout the function.
 
-Signed-off-by: Michal Kosiarz <michal.kosiarz@intel.com>
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c   | 13 +++++++++----
- drivers/net/ethernet/intel/i40e/i40e_common.c   |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_status.h   |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_adminq.c | 13 +++++++++----
- drivers/net/ethernet/intel/i40evf/i40e_common.c |  2 ++
- drivers/net/ethernet/intel/i40evf/i40e_status.h |  1 +
- 6 files changed, 24 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 22 +++++++++--------
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 28 +++++++++++-----------
+ 2 files changed, 26 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index d9670cd..c4fa06d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -907,10 +907,15 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
- 	/* update the error if time out occurred */
- 	if ((!cmd_completed) &&
- 	    (!details->async && !details->postpone)) {
--		i40e_debug(hw,
--			   I40E_DEBUG_AQ_MESSAGE,
--			   "AQTX: Writeback timeout.\n");
--		status = I40E_ERR_ADMIN_QUEUE_TIMEOUT;
-+		if (rd32(hw, hw->aq.asq.len) & I40E_GL_ATQLEN_ATQCRIT_MASK) {
-+			i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
-+				   "AQTX: AQ Critical error.\n");
-+			status = I40E_ERR_ADMIN_QUEUE_CRITICAL_ERROR;
-+		} else {
-+			i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
-+				   "AQTX: Writeback timeout.\n");
-+			status = I40E_ERR_ADMIN_QUEUE_TIMEOUT;
-+		}
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 099b170..79c752a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2305,6 +2305,8 @@ static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
+ 				   struct ethtool_coalesce *ec,
+ 				   int queue)
+ {
++	struct i40e_ring *rx_ring = vsi->rx_rings[queue];
++	struct i40e_ring *tx_ring = vsi->tx_rings[queue];
+ 	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	struct i40e_q_vector *q_vector;
+@@ -2312,26 +2314,26 @@ static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
  
- asq_send_command_error:
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index ee6052e..c690e9c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -278,6 +278,8 @@ const char *i40e_stat_str(struct i40e_hw *hw, i40e_status stat_err)
- 		return "I40E_NOT_SUPPORTED";
- 	case I40E_ERR_FIRMWARE_API_VERSION:
- 		return "I40E_ERR_FIRMWARE_API_VERSION";
-+	case I40E_ERR_ADMIN_QUEUE_CRITICAL_ERROR:
-+		return "I40E_ERR_ADMIN_QUEUE_CRITICAL_ERROR";
- 	}
+ 	intrl = i40e_intrl_usec_to_reg(vsi->int_rate_limit);
  
- 	snprintf(hw->err_str, sizeof(hw->err_str), "%d", stat_err);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_status.h b/drivers/net/ethernet/intel/i40e/i40e_status.h
-index 5f9cac5..afb72e7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_status.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_status.h
-@@ -95,6 +95,7 @@ enum i40e_status_code {
- 	I40E_ERR_NOT_READY			= -63,
- 	I40E_NOT_SUPPORTED			= -64,
- 	I40E_ERR_FIRMWARE_API_VERSION		= -65,
-+	I40E_ERR_ADMIN_QUEUE_CRITICAL_ERROR	= -66,
- };
+-	vsi->rx_rings[queue]->rx_itr_setting = ec->rx_coalesce_usecs;
+-	vsi->tx_rings[queue]->tx_itr_setting = ec->tx_coalesce_usecs;
++	rx_ring->rx_itr_setting = ec->rx_coalesce_usecs;
++	tx_ring->tx_itr_setting = ec->tx_coalesce_usecs;
  
- #endif /* _I40E_STATUS_H_ */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-index 8b0d4b2..ae3a740 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-@@ -837,10 +837,15 @@ i40e_status i40evf_asq_send_command(struct i40e_hw *hw,
- 	/* update the error if time out occurred */
- 	if ((!cmd_completed) &&
- 	    (!details->async && !details->postpone)) {
--		i40e_debug(hw,
--			   I40E_DEBUG_AQ_MESSAGE,
--			   "AQTX: Writeback timeout.\n");
--		status = I40E_ERR_ADMIN_QUEUE_TIMEOUT;
-+		if (rd32(hw, hw->aq.asq.len) & I40E_VF_ATQLEN1_ATQCRIT_MASK) {
-+			i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
-+				   "AQTX: AQ Critical error.\n");
-+			status = I40E_ERR_ADMIN_QUEUE_CRITICAL_ERROR;
-+		} else {
-+			i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
-+				   "AQTX: Writeback timeout.\n");
-+			status = I40E_ERR_ADMIN_QUEUE_TIMEOUT;
-+		}
- 	}
+ 	if (ec->use_adaptive_rx_coalesce)
+-		vsi->rx_rings[queue]->rx_itr_setting |= I40E_ITR_DYNAMIC;
++		rx_ring->rx_itr_setting |= I40E_ITR_DYNAMIC;
+ 	else
+-		vsi->rx_rings[queue]->rx_itr_setting &= ~I40E_ITR_DYNAMIC;
++		rx_ring->rx_itr_setting &= ~I40E_ITR_DYNAMIC;
  
- asq_send_command_error:
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-index a946484..67bf5ce 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-@@ -284,6 +284,8 @@ const char *i40evf_stat_str(struct i40e_hw *hw, i40e_status stat_err)
- 		return "I40E_NOT_SUPPORTED";
- 	case I40E_ERR_FIRMWARE_API_VERSION:
- 		return "I40E_ERR_FIRMWARE_API_VERSION";
-+	case I40E_ERR_ADMIN_QUEUE_CRITICAL_ERROR:
-+		return "I40E_ERR_ADMIN_QUEUE_CRITICAL_ERROR";
- 	}
+ 	if (ec->use_adaptive_tx_coalesce)
+-		vsi->tx_rings[queue]->tx_itr_setting |= I40E_ITR_DYNAMIC;
++		tx_ring->tx_itr_setting |= I40E_ITR_DYNAMIC;
+ 	else
+-		vsi->tx_rings[queue]->tx_itr_setting &= ~I40E_ITR_DYNAMIC;
++		tx_ring->tx_itr_setting &= ~I40E_ITR_DYNAMIC;
  
- 	snprintf(hw->err_str, sizeof(hw->err_str), "%d", stat_err);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_status.h b/drivers/net/ethernet/intel/i40evf/i40e_status.h
-index 7fa7a41..5b22224 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_status.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_status.h
-@@ -95,6 +95,7 @@ enum i40e_status_code {
- 	I40E_ERR_NOT_READY			= -63,
- 	I40E_NOT_SUPPORTED			= -64,
- 	I40E_ERR_FIRMWARE_API_VERSION		= -65,
-+	I40E_ERR_ADMIN_QUEUE_CRITICAL_ERROR	= -66,
- };
+-	q_vector = vsi->rx_rings[queue]->q_vector;
+-	q_vector->rx.itr = ITR_TO_REG(vsi->rx_rings[queue]->rx_itr_setting);
++	q_vector = rx_ring->q_vector;
++	q_vector->rx.itr = ITR_TO_REG(rx_ring->rx_itr_setting);
+ 	vector = vsi->base_vector + q_vector->v_idx;
+ 	wr32(hw, I40E_PFINT_ITRN(I40E_RX_ITR, vector - 1), q_vector->rx.itr);
  
- #endif /* _I40E_STATUS_H_ */
+-	q_vector = vsi->tx_rings[queue]->q_vector;
+-	q_vector->tx.itr = ITR_TO_REG(vsi->tx_rings[queue]->tx_itr_setting);
++	q_vector = tx_ring->q_vector;
++	q_vector->tx.itr = ITR_TO_REG(tx_ring->tx_itr_setting);
+ 	vector = vsi->base_vector + q_vector->v_idx;
+ 	wr32(hw, I40E_PFINT_ITRN(I40E_TX_ITR, vector - 1), q_vector->tx.itr);
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+index da006fa..e2d8aa1 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+@@ -512,31 +512,31 @@ static void i40evf_set_itr_per_queue(struct i40evf_adapter *adapter,
+ 				     struct ethtool_coalesce *ec,
+ 				     int queue)
+ {
++	struct i40e_ring *rx_ring = &adapter->rx_rings[queue];
++	struct i40e_ring *tx_ring = &adapter->tx_rings[queue];
+ 	struct i40e_vsi *vsi = &adapter->vsi;
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	struct i40e_q_vector *q_vector;
+ 	u16 vector;
+ 
+-	adapter->rx_rings[queue].rx_itr_setting = ec->rx_coalesce_usecs;
+-	adapter->tx_rings[queue].tx_itr_setting = ec->tx_coalesce_usecs;
++	rx_ring->rx_itr_setting = ec->rx_coalesce_usecs;
++	tx_ring->tx_itr_setting = ec->tx_coalesce_usecs;
+ 
+-	if (ec->use_adaptive_rx_coalesce)
+-		adapter->rx_rings[queue].rx_itr_setting |= I40E_ITR_DYNAMIC;
+-	else
+-		adapter->rx_rings[queue].rx_itr_setting &= ~I40E_ITR_DYNAMIC;
++	rx_ring->rx_itr_setting |= I40E_ITR_DYNAMIC;
++	if (!ec->use_adaptive_rx_coalesce)
++		rx_ring->rx_itr_setting ^= I40E_ITR_DYNAMIC;
+ 
+-	if (ec->use_adaptive_tx_coalesce)
+-		adapter->tx_rings[queue].tx_itr_setting |= I40E_ITR_DYNAMIC;
+-	else
+-		adapter->tx_rings[queue].tx_itr_setting &= ~I40E_ITR_DYNAMIC;
++	tx_ring->tx_itr_setting |= I40E_ITR_DYNAMIC;
++	if (!ec->use_adaptive_tx_coalesce)
++		tx_ring->tx_itr_setting ^= I40E_ITR_DYNAMIC;
+ 
+-	q_vector = adapter->rx_rings[queue].q_vector;
+-	q_vector->rx.itr = ITR_TO_REG(adapter->rx_rings[queue].rx_itr_setting);
++	q_vector = rx_ring->q_vector;
++	q_vector->rx.itr = ITR_TO_REG(rx_ring->rx_itr_setting);
+ 	vector = vsi->base_vector + q_vector->v_idx;
+ 	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, vector - 1), q_vector->rx.itr);
+ 
+-	q_vector = adapter->tx_rings[queue].q_vector;
+-	q_vector->tx.itr = ITR_TO_REG(adapter->tx_rings[queue].tx_itr_setting);
++	q_vector = tx_ring->q_vector;
++	q_vector->tx.itr = ITR_TO_REG(tx_ring->tx_itr_setting);
+ 	vector = vsi->base_vector + q_vector->v_idx;
+ 	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, vector - 1), q_vector->tx.itr);
+ 
 -- 
 2.9.5
 
