@@ -1,52 +1,61 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 27 Dec 2017 08:58:15 -0800
-Subject: [Intel-wired-lan] [PATCH] Cover letter for igb: bug fix Tx
- interrupt is not
-In-Reply-To: <1514341064-8105-1-git-send-email-daniel.hua@ni.com>
-References: <1514341064-8105-1-git-send-email-daniel.hua@ni.com>
-Message-ID: <CAKgT0UdHmP=bJuJPaUT15GdEBdzWr1unu==hj1CfoVvnG+uscg@mail.gmail.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Wed, 27 Dec 2017 07:32:31 -0500
+Subject: [Intel-wired-lan] [next PATCH S84-V2 02/13] i40e: Fix for adding
+ multiple ethtool filters on the same location
+In-Reply-To: <20171227123242.22356-1-alice.michael@intel.com>
+References: <20171227123242.22356-1-alice.michael@intel.com>
+Message-ID: <20171227123242.22356-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Dec 26, 2017 at 6:17 PM, Daniel Hua <daniel.hua@ni.com> wrote:
-> Problem description:
-> After ethernet cable connect and disconnect for several iterations on a
-> device with i210, tx timestamp will stop being put into the socket.
->
-> Steps to reproduce:
-> 1. Setup a device with i210 and wire it to a 802.1AS capable switch (
-> Extreme Networks Summit x440 is used in our case)
-> 2. Have the gptp daemon running on the device and make sure it is synced
-> with the switch
-> 3. Have the switch disable and enable the port, wait for the device gets
-> resynced with the switch
-> 4. Iterates step 3 until the device is not albe to get resynced
-> 5. Review the log in dmesg and you will see warning message "igb : clearing
-> Tx timestamp hang"
->
-> Root cause:
-> If ptp_tx_work() gets scheduled just before the port gets disabled, a LINK
-> DOWN event will be processed before ptp_tx_work(), which may cause timeout
-> in ptp_tx_work(). In the timeout logic, the TSYNCTXCTL's TXTT bit (Transmit
-> timestamp valid bit) is not cleared, causing no new timestamp loaded to
-> TXSTMP register. Consequently therefore, no new interrupt is triggerred by
-> TSICR.TXTS bit and no more Tx timestamp send to the socket.
->
-> Daniel Hua (1):
->   igb: bug fix Tx interrupt is not triggered
->
->  drivers/net/ethernet/intel/igb/igb_ptp.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
->
-> --
+From: Patryk Ma?ek <patryk.malek@intel.com>
 
-Could you please combine this description of the issue with the patch
-itself? It isn't really very useful to have the patch documented in a
-cover letter that will never make it into the driver itself.
+This patch reorders i40e_add_del_fdir and i40e_update_ethtool_fdir_entry
+calls so that we first remove an already existing filter (inside
+i40e_update_ethtool_fdir_entry using i40e_add_del_fdir) and then
+we add a new one with i40e_add_del_fdir.
+After applying this patch, creating multiple identical filters (with
+the same location) one after another doesn't revert their behavior
+but behaves correctly.
 
-Thanks.
+Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-- Alex
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 86329a3..099b170 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -3939,19 +3939,19 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
+ 		input->flex_offset = userdef.flex_offset;
+ 	}
+ 
+-	ret = i40e_add_del_fdir(vsi, input, true);
+-	if (ret)
+-		goto free_input;
+-
+ 	/* Add the input filter to the fdir_input_list, possibly replacing
+ 	 * a previous filter. Do not free the input structure after adding it
+ 	 * to the list as this would cause a use-after-free bug.
+ 	 */
+ 	i40e_update_ethtool_fdir_entry(vsi, input, fsp->location, NULL);
+-
++	ret = i40e_add_del_fdir(vsi, input, true);
++	if (ret)
++		goto remove_sw_rule;
+ 	return 0;
+ 
+-free_input:
++remove_sw_rule:
++	hlist_del(&input->fdir_node);
++	pf->fdir_pf_active_filters--;
+ 	kfree(input);
+ 	return ret;
+ }
+-- 
+2.9.5
+
