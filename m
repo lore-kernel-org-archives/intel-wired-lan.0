@@ -1,51 +1,54 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Sun, 19 Nov 2017 12:08:02 -0800
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH] i40e: Fix
- reporting incorrect error codes
-In-Reply-To: <151096175699.30716.6788678147370883532.stgit@anamdev.jf.intel.com>
-References: <151096175699.30716.6788678147370883532.stgit@anamdev.jf.intel.com>
-Message-ID: <9fc43213-a45e-2bb1-4f99-c29499fd3444@oracle.com>
+From: Daniel Hua <daniel.hua@ni.com>
+Date: Wed, 27 Dec 2017 10:17:44 +0800
+Subject: [Intel-wired-lan] [PATCH] igb: bug fix Tx interrupt is not triggered
+In-Reply-To: <1514341064-8105-1-git-send-email-daniel.hua@ni.com>
+References: <1514341064-8105-1-git-send-email-daniel.hua@ni.com>
+Message-ID: <1514341064-8105-2-git-send-email-daniel.hua@ni.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Signed-off-by: Daniel Hua <daniel.hua@ni.com>
+---
+ drivers/net/ethernet/intel/igb/igb_ptp.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
+index 841c2a0..0746b19 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ptp.c
++++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+@@ -643,6 +643,10 @@ static void igb_ptp_tx_work(struct work_struct *work)
+ 		adapter->ptp_tx_skb = NULL;
+ 		clear_bit_unlock(__IGB_PTP_TX_IN_PROGRESS, &adapter->state);
+ 		adapter->tx_hwtstamp_timeouts++;
++		/* Clear the tx valid bit in TSYNCTXCTL register to enable
++		 * interrupt
++		 */
++		rd32(E1000_TXSTMPH);
+ 		dev_warn(&adapter->pdev->dev, "clearing Tx timestamp hang\n");
+ 		return;
+ 	}
+@@ -717,6 +721,7 @@ void igb_ptp_rx_hang(struct igb_adapter *adapter)
+  */
+ void igb_ptp_tx_hang(struct igb_adapter *adapter)
+ {
++	struct e1000_hw *hw = &adapter->hw;
+ 	bool timeout = time_is_before_jiffies(adapter->ptp_tx_start +
+ 					      IGB_PTP_TX_TIMEOUT);
+ 
+@@ -736,6 +741,10 @@ void igb_ptp_tx_hang(struct igb_adapter *adapter)
+ 		adapter->ptp_tx_skb = NULL;
+ 		clear_bit_unlock(__IGB_PTP_TX_IN_PROGRESS, &adapter->state);
+ 		adapter->tx_hwtstamp_timeouts++;
++		/* Clear the tx valid bit in TSYNCTXCTL register to enable
++		 * interrupt
++		 */
++		rd32(E1000_TXSTMPH);
+ 		dev_warn(&adapter->pdev->dev, "clearing Tx timestamp hang\n");
+ 	}
+ }
+-- 
+1.9.1
 
-On 11/17/2017 3:35 PM, Amritha Nambiar wrote:
-> Adding cloud filters could fail for a number of reasons,
-> unsupported filter fields for example, which fails during
-> validation of fields itself. This will not result in admin
-> command errors and converting the admin queue status to posix
-> error code using i40e_aq_rc_to_posix would result in incorrect
-> error values. If the failure was due to AQ error itself,
-> reporting that correclty is handled in the inner function.
-
-Let's spell correctly correctly, shall we? :-)
-sln
-
-> 
-> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_main.c |    1 -
->   1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 4d0f81d..565ce12 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -7470,7 +7470,6 @@ static int i40e_configure_clsflower(struct i40e_vsi *vsi,
->   		dev_err(&pf->pdev->dev,
->   			"Failed to add cloud filter, err %s\n",
->   			i40e_stat_str(&pf->hw, err));
-> -		err = i40e_aq_rc_to_posix(err, pf->hw.aq.asq_last_status);
->   		goto err;
->   	}
->   
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
