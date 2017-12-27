@@ -1,150 +1,44 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 27 Dec 2017 08:18:21 -0500
-Subject: [Intel-wired-lan] [next PATCH S84-V2 07/13] i40e: Implement an
- ethtool private flag to stop LLDP in FW
-Message-ID: <20171227131821.23877-1-alice.michael@intel.com>
+Date: Wed, 27 Dec 2017 08:19:19 -0500
+Subject: [Intel-wired-lan] [next PATCH S84-V2 08/13] i40e: fix FW_LLDP flag
+ on init
+Message-ID: <20171227131919.23924-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Alan Brady <alan.brady@intel.com>
 
-Implement the private flag disable-fw-lldp for ethtool
-to disable the processing of LLDP packets by the FW.
-This will stop the FW from consuming LLDPDU and cause
-them to be sent up the stack.
+Using ethtool --set-priv-flags disable-fw-lldp <on/off> is persistent
+across reboots/reloads so we need some mechanism in the driver to detect
+if it's on or off on init so we can set the ethtool private flag
+appropriately.  Without this, every time the driver is reloaded the flag
+will default to off regardless of whether it's on or off in FW.
 
-The FW is also being configured to apply a default DCB
-configuration on link up.
+We detect this by first attempting to program DCB and if AQ fails
+returning I40E_AQ_RC_EPERM, we know that LLDP is disabled in FW.
 
-Toggling the value of this flag will also cause a PF reset.
-
-Disabling FW DCB will also disable DCBX.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 47 +++++++++++++++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 14 ++++++--
- 2 files changed, 58 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index e42b1c2..96155f1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -235,6 +235,7 @@ static const struct i40e_priv_flags i40e_gstrings_priv_flags[] = {
- 	I40E_PRIV_FLAG("legacy-rx", I40E_FLAG_LEGACY_RX, 0),
- 	I40E_PRIV_FLAG("disable-source-pruning",
- 		       I40E_FLAG_SOURCE_PRUNING_DISABLED, 0),
-+	I40E_PRIV_FLAG("disable-fw-lldp", I40E_FLAG_DISABLE_FW_LLDP, 0),
- };
- 
- #define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gstrings_priv_flags)
-@@ -4317,6 +4318,25 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	    !(pf->hw_features & I40E_HW_ATR_EVICT_CAPABLE))
- 		return -EOPNOTSUPP;
- 
-+	/* Disable FW LLDP not supported if NPAR active or if FW
-+	 * API version < 1.7
-+	 */
-+	if (new_flags & I40E_FLAG_DISABLE_FW_LLDP) {
-+		if (pf->hw.func_caps.npar_enable) {
-+			dev_warn(&pf->pdev->dev,
-+				 "Unable to stop FW LLDP if NPAR active\n");
-+			return -EOPNOTSUPP;
-+		}
-+
-+		if (pf->hw.aq.api_maj_ver < 1 ||
-+		    (pf->hw.aq.api_maj_ver == 1 &&
-+		     pf->hw.aq.api_min_ver < 7)) {
-+			dev_warn(&pf->pdev->dev,
-+				 "FW ver does not support stopping FW LLDP\n");
-+			return -EOPNOTSUPP;
-+		}
-+	}
-+
- 	/* Compare and exchange the new flags into place. If we failed, that
- 	 * is if cmpxchg returns anything but the old value, this means that
- 	 * something else has modified the flags variable since we copied it
-@@ -4362,12 +4382,37 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 		}
- 	}
- 
-+	if (changed_flags & I40E_FLAG_DISABLE_FW_LLDP) {
-+		if (pf->flags & I40E_FLAG_DISABLE_FW_LLDP) {
-+			struct i40e_dcbx_config *dcbcfg;
-+			int i;
-+
-+			i40e_aq_stop_lldp(&pf->hw, true, NULL);
-+			i40e_aq_set_dcb_parameters(&pf->hw, true, NULL);
-+			/* reset local_dcbx_config to default */
-+			dcbcfg = &pf->hw.local_dcbx_config;
-+			dcbcfg->etscfg.willing = 1;
-+			dcbcfg->etscfg.maxtcs = 0;
-+			dcbcfg->etscfg.tcbwtable[0] = 100;
-+			for (i = 1; i < I40E_MAX_TRAFFIC_CLASS; i++)
-+				dcbcfg->etscfg.tcbwtable[i] = 0;
-+			for (i = 0; i < I40E_MAX_USER_PRIORITY; i++)
-+				dcbcfg->etscfg.prioritytable[i] = 0;
-+			dcbcfg->etscfg.tsatable[0] = I40E_IEEE_TSA_ETS;
-+			dcbcfg->pfc.willing = 1;
-+			dcbcfg->pfc.pfccap = I40E_MAX_TRAFFIC_CLASS;
-+		} else {
-+			i40e_aq_start_lldp(&pf->hw, NULL);
-+		}
-+	}
-+
- 	/* Issue reset to cause things to take effect, as additional bits
- 	 * are added we will need to create a mask of bits requiring reset
- 	 */
- 	if (changed_flags & (I40E_FLAG_VEB_STATS_ENABLED |
- 			     I40E_FLAG_LEGACY_RX |
--			     I40E_FLAG_SOURCE_PRUNING_DISABLED))
-+			     I40E_FLAG_SOURCE_PRUNING_DISABLED |
-+			     I40E_FLAG_DISABLE_FW_LLDP))
- 		i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED), true);
- 
- 	return 0;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5c5296e..be24d9e 100644
+index be24d9e..3c3cdcd 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6305,8 +6305,11 @@ static int i40e_init_pf_dcb(struct i40e_pf *pf)
- 	struct i40e_hw *hw = &pf->hw;
- 	int err = 0;
- 
--	/* Do not enable DCB for SW1 and SW2 images even if the FW is capable */
--	if (pf->hw_features & I40E_HW_NO_DCB_SUPPORT)
-+	/* Do not enable DCB for SW1 and SW2 images even if the FW is capable
-+	 * Also do not enable DCBx if FW LLDP agent is disabled
-+	 */
-+	if ((pf->hw_features & I40E_HW_NO_DCB_SUPPORT) ||
-+	    (pf->flags & I40E_FLAG_DISABLE_FW_LLDP))
- 		goto out;
- 
- 	/* Get the initial DCB configuration */
-@@ -9266,6 +9269,9 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 		goto end_core_reset;
- 	}
- 
-+	/* Enable FW to write a default DCB config on link-up */
-+	i40e_aq_set_dcb_parameters(hw, true, NULL);
-+
- #ifdef CONFIG_I40E_DCB
- 	ret = i40e_init_pf_dcb(pf);
- 	if (ret) {
-@@ -13589,6 +13595,10 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	pci_set_drvdata(pdev, pf);
- 	pci_save_state(pdev);
-+
-+	/* Enable FW to write default DCB config on link-up */
-+	i40e_aq_set_dcb_parameters(hw, true, NULL);
-+
- #ifdef CONFIG_I40E_DCB
- 	err = i40e_init_pf_dcb(pf);
- 	if (err) {
+@@ -6336,6 +6336,9 @@ static int i40e_init_pf_dcb(struct i40e_pf *pf)
+ 			dev_dbg(&pf->pdev->dev,
+ 				"DCBX offload is supported for this PF.\n");
+ 		}
++	} else if (pf->hw.aq.asq_last_status == I40E_AQ_RC_EPERM) {
++		dev_info(&pf->pdev->dev, "FW LLDP disabled for this PF.\n");
++		pf->flags |= I40E_FLAG_DISABLE_FW_LLDP;
+ 	} else {
+ 		dev_info(&pf->pdev->dev,
+ 			 "Query for DCB configuration failed, err %s aq_err %s\n",
 -- 
 2.9.5
 
