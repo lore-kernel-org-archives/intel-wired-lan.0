@@ -1,129 +1,56 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 27 Dec 2017 07:32:35 -0500
-Subject: [Intel-wired-lan] [next PATCH S84-V2 06/13] i40e: change flags to
- use 64 bits
+Date: Wed, 27 Dec 2017 07:32:38 -0500
+Subject: [Intel-wired-lan] [next PATCH S84-V2 09/13] i40e: Fix compilation
+ issue with DPDK
 In-Reply-To: <20171227123242.22356-1-alice.michael@intel.com>
 References: <20171227123242.22356-1-alice.michael@intel.com>
-Message-ID: <20171227123242.22356-6-alice.michael@intel.com>
+Message-ID: <20171227123242.22356-9-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-As we have added more flags, we need to now use more
-bits and have overflooded the 32 bit size.  So
-make it 64.
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-also change all the existing bits to unsigned long long
-bits.
+When using GCC 6.3.0 and EXTRA_CFLAGS=-Og, the compiler is not smart
+enough to see that when you have an integrated VF that just one of the
+if statemets has to be true so that ntu is always set.  Fix the
+way that the code is for integrated VFs so that the compiler won't
+complain.
 
-Signed-off-by: Alice Michael <alice.michael@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h         | 67 +++++++++++++-------------
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  4 +-
- 2 files changed, 36 insertions(+), 35 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c   | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_adminq.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index e019baa..46e9f4e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -508,39 +508,40 @@ struct i40e_pf {
- #define I40E_HW_PORT_ID_VALID			BIT(17)
- #define I40E_HW_RESTART_AUTONEG			BIT(18)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index c4fa06d..e789716 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -976,7 +976,7 @@ i40e_status i40e_clean_arq_element(struct i40e_hw *hw,
+ 	}
  
--	u32 flags;
--#define I40E_FLAG_RX_CSUM_ENABLED		BIT(0)
--#define I40E_FLAG_MSI_ENABLED			BIT(1)
--#define I40E_FLAG_MSIX_ENABLED			BIT(2)
--#define I40E_FLAG_RSS_ENABLED			BIT(3)
--#define I40E_FLAG_VMDQ_ENABLED			BIT(4)
--#define I40E_FLAG_FILTER_SYNC			BIT(5)
--#define I40E_FLAG_SRIOV_ENABLED			BIT(6)
--#define I40E_FLAG_DCB_CAPABLE			BIT(7)
--#define I40E_FLAG_DCB_ENABLED			BIT(8)
--#define I40E_FLAG_FD_SB_ENABLED			BIT(9)
--#define I40E_FLAG_FD_ATR_ENABLED		BIT(10)
--#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT(11)
--#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT(12)
--#define I40E_FLAG_MFP_ENABLED			BIT(13)
--#define I40E_FLAG_UDP_FILTER_SYNC		BIT(14)
--#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT(15)
--#define I40E_FLAG_VEB_MODE_ENABLED		BIT(16)
--#define I40E_FLAG_VEB_STATS_ENABLED		BIT(17)
--#define I40E_FLAG_LINK_POLLING_ENABLED		BIT(18)
--#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT(19)
--#define I40E_FLAG_TEMP_LINK_POLLING		BIT(20)
--#define I40E_FLAG_LEGACY_RX			BIT(21)
--#define I40E_FLAG_PTP				BIT(22)
--#define I40E_FLAG_IWARP_ENABLED			BIT(23)
--#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT(24)
--#define I40E_FLAG_CLIENT_L2_CHANGE		BIT(25)
--#define I40E_FLAG_CLIENT_RESET			BIT(26)
--#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT(27)
--#define I40E_FLAG_SOURCE_PRUNING_DISABLED	BIT(28)
--#define I40E_FLAG_TC_MQPRIO			BIT(29)
--#define I40E_FLAG_FD_SB_INACTIVE		BIT(30)
--#define I40E_FLAG_FD_SB_TO_CLOUD_FILTER		BIT(31)
-+	u64 flags;
-+#define I40E_FLAG_RX_CSUM_ENABLED		BIT_ULL(0)
-+#define I40E_FLAG_MSI_ENABLED			BIT_ULL(1)
-+#define I40E_FLAG_MSIX_ENABLED			BIT_ULL(2)
-+#define I40E_FLAG_RSS_ENABLED			BIT_ULL(3)
-+#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(4)
-+#define I40E_FLAG_FILTER_SYNC			BIT_ULL(5)
-+#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(6)
-+#define I40E_FLAG_DCB_CAPABLE			BIT_ULL(7)
-+#define I40E_FLAG_DCB_ENABLED			BIT_ULL(8)
-+#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(9)
-+#define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(10)
-+#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(11)
-+#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(12)
-+#define I40E_FLAG_MFP_ENABLED			BIT_ULL(13)
-+#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(14)
-+#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(15)
-+#define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(16)
-+#define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(17)
-+#define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(18)
-+#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(19)
-+#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(20)
-+#define I40E_FLAG_LEGACY_RX			BIT_ULL(21)
-+#define I40E_FLAG_PTP				BIT_ULL(22)
-+#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(23)
-+#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(24)
-+#define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(25)
-+#define I40E_FLAG_CLIENT_RESET			BIT_ULL(26)
-+#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT_ULL(27)
-+#define I40E_FLAG_SOURCE_PRUNING_DISABLED	BIT_ULL(28)
-+#define I40E_FLAG_TC_MQPRIO			BIT_ULL(29)
-+#define I40E_FLAG_FD_SB_INACTIVE		BIT_ULL(30)
-+#define I40E_FLAG_FD_SB_TO_CLOUD_FILTER		BIT_ULL(31)
-+#define I40E_FLAG_DISABLE_FW_LLDP		BIT_ULL(32)
+ 	/* set next_to_use to head */
+-	ntu = (rd32(hw, hw->aq.arq.head) & I40E_PF_ARQH_ARQH_MASK);
++	ntu = rd32(hw, hw->aq.arq.head) & I40E_PF_ARQH_ARQH_MASK;
+ 	if (ntu == ntc) {
+ 		/* nothing to do - shouldn't need to update ring's values */
+ 		ret_code = I40E_ERR_ADMIN_QUEUE_NO_WORK;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
+index ae3a740..d1aab6b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
+@@ -906,7 +906,7 @@ i40e_status i40evf_clean_arq_element(struct i40e_hw *hw,
+ 	}
  
- 	struct i40e_client_instance *cinst;
- 	bool stat_offsets_loaded;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 79c752a..e42b1c2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -4266,7 +4266,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
--	u32 orig_flags, new_flags, changed_flags;
-+	u64 orig_flags, new_flags, changed_flags;
- 	u32 i, j;
- 
- 	orig_flags = READ_ONCE(pf->flags);
-@@ -4323,7 +4323,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	 * originally. We'll just punt with an error and log something in the
- 	 * message buffer.
- 	 */
--	if (cmpxchg(&pf->flags, orig_flags, new_flags) != orig_flags) {
-+	if (cmpxchg64(&pf->flags, orig_flags, new_flags) != orig_flags) {
- 		dev_warn(&pf->pdev->dev,
- 			 "Unable to update pf->flags as it was modified by another thread...\n");
- 		return -EAGAIN;
+ 	/* set next_to_use to head */
+-	ntu = (rd32(hw, hw->aq.arq.head) & I40E_VF_ARQH1_ARQH_MASK);
++	ntu = rd32(hw, hw->aq.arq.head) & I40E_VF_ARQH1_ARQH_MASK;
+ 	if (ntu == ntc) {
+ 		/* nothing to do - shouldn't need to update ring's values */
+ 		ret_code = I40E_ERR_ADMIN_QUEUE_NO_WORK;
 -- 
 2.9.5
 
