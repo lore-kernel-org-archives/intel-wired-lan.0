@@ -1,152 +1,129 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 27 Dec 2017 07:32:36 -0500
-Subject: [Intel-wired-lan] [next PATCH S84-V2 07/13] i40e: Implement an
- ethtool private flag to stop LLDP in FW
+Date: Wed, 27 Dec 2017 07:32:35 -0500
+Subject: [Intel-wired-lan] [next PATCH S84-V2 06/13] i40e: change flags to
+ use 64 bits
 In-Reply-To: <20171227123242.22356-1-alice.michael@intel.com>
 References: <20171227123242.22356-1-alice.michael@intel.com>
-Message-ID: <20171227123242.22356-7-alice.michael@intel.com>
+Message-ID: <20171227123242.22356-6-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+As we have added more flags, we need to now use more
+bits and have overflooded the 32 bit size.  So
+make it 64.
 
-Implement the private flag disable-fw-lldp for ethtool
-to disable the processing of LLDP packets by the FW.
-This will stop the FW from consuming LLDPDU and cause
-them to be sent up the stack.
+also change all the existing bits to unsigned long long
+bits.
 
-The FW is also being configured to apply a default DCB
-configuration on link up.
-
-Toggling the value of this flag will also cause a PF reset.
-
-Disabling FW DCB will also disable DCBX.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Alice Michael <alice.michael@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 47 +++++++++++++++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 14 ++++++--
- 2 files changed, 58 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h         | 67 +++++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  4 +-
+ 2 files changed, 36 insertions(+), 35 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index e019baa..46e9f4e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -508,39 +508,40 @@ struct i40e_pf {
+ #define I40E_HW_PORT_ID_VALID			BIT(17)
+ #define I40E_HW_RESTART_AUTONEG			BIT(18)
+ 
+-	u32 flags;
+-#define I40E_FLAG_RX_CSUM_ENABLED		BIT(0)
+-#define I40E_FLAG_MSI_ENABLED			BIT(1)
+-#define I40E_FLAG_MSIX_ENABLED			BIT(2)
+-#define I40E_FLAG_RSS_ENABLED			BIT(3)
+-#define I40E_FLAG_VMDQ_ENABLED			BIT(4)
+-#define I40E_FLAG_FILTER_SYNC			BIT(5)
+-#define I40E_FLAG_SRIOV_ENABLED			BIT(6)
+-#define I40E_FLAG_DCB_CAPABLE			BIT(7)
+-#define I40E_FLAG_DCB_ENABLED			BIT(8)
+-#define I40E_FLAG_FD_SB_ENABLED			BIT(9)
+-#define I40E_FLAG_FD_ATR_ENABLED		BIT(10)
+-#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT(11)
+-#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT(12)
+-#define I40E_FLAG_MFP_ENABLED			BIT(13)
+-#define I40E_FLAG_UDP_FILTER_SYNC		BIT(14)
+-#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT(15)
+-#define I40E_FLAG_VEB_MODE_ENABLED		BIT(16)
+-#define I40E_FLAG_VEB_STATS_ENABLED		BIT(17)
+-#define I40E_FLAG_LINK_POLLING_ENABLED		BIT(18)
+-#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT(19)
+-#define I40E_FLAG_TEMP_LINK_POLLING		BIT(20)
+-#define I40E_FLAG_LEGACY_RX			BIT(21)
+-#define I40E_FLAG_PTP				BIT(22)
+-#define I40E_FLAG_IWARP_ENABLED			BIT(23)
+-#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT(24)
+-#define I40E_FLAG_CLIENT_L2_CHANGE		BIT(25)
+-#define I40E_FLAG_CLIENT_RESET			BIT(26)
+-#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT(27)
+-#define I40E_FLAG_SOURCE_PRUNING_DISABLED	BIT(28)
+-#define I40E_FLAG_TC_MQPRIO			BIT(29)
+-#define I40E_FLAG_FD_SB_INACTIVE		BIT(30)
+-#define I40E_FLAG_FD_SB_TO_CLOUD_FILTER		BIT(31)
++	u64 flags;
++#define I40E_FLAG_RX_CSUM_ENABLED		BIT_ULL(0)
++#define I40E_FLAG_MSI_ENABLED			BIT_ULL(1)
++#define I40E_FLAG_MSIX_ENABLED			BIT_ULL(2)
++#define I40E_FLAG_RSS_ENABLED			BIT_ULL(3)
++#define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(4)
++#define I40E_FLAG_FILTER_SYNC			BIT_ULL(5)
++#define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(6)
++#define I40E_FLAG_DCB_CAPABLE			BIT_ULL(7)
++#define I40E_FLAG_DCB_ENABLED			BIT_ULL(8)
++#define I40E_FLAG_FD_SB_ENABLED			BIT_ULL(9)
++#define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(10)
++#define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(11)
++#define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(12)
++#define I40E_FLAG_MFP_ENABLED			BIT_ULL(13)
++#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(14)
++#define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(15)
++#define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(16)
++#define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(17)
++#define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(18)
++#define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(19)
++#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(20)
++#define I40E_FLAG_LEGACY_RX			BIT_ULL(21)
++#define I40E_FLAG_PTP				BIT_ULL(22)
++#define I40E_FLAG_IWARP_ENABLED			BIT_ULL(23)
++#define I40E_FLAG_SERVICE_CLIENT_REQUESTED	BIT_ULL(24)
++#define I40E_FLAG_CLIENT_L2_CHANGE		BIT_ULL(25)
++#define I40E_FLAG_CLIENT_RESET			BIT_ULL(26)
++#define I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED	BIT_ULL(27)
++#define I40E_FLAG_SOURCE_PRUNING_DISABLED	BIT_ULL(28)
++#define I40E_FLAG_TC_MQPRIO			BIT_ULL(29)
++#define I40E_FLAG_FD_SB_INACTIVE		BIT_ULL(30)
++#define I40E_FLAG_FD_SB_TO_CLOUD_FILTER		BIT_ULL(31)
++#define I40E_FLAG_DISABLE_FW_LLDP		BIT_ULL(32)
+ 
+ 	struct i40e_client_instance *cinst;
+ 	bool stat_offsets_loaded;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index e42b1c2..96155f1 100644
+index 79c752a..e42b1c2 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -235,6 +235,7 @@ static const struct i40e_priv_flags i40e_gstrings_priv_flags[] = {
- 	I40E_PRIV_FLAG("legacy-rx", I40E_FLAG_LEGACY_RX, 0),
- 	I40E_PRIV_FLAG("disable-source-pruning",
- 		       I40E_FLAG_SOURCE_PRUNING_DISABLED, 0),
-+	I40E_PRIV_FLAG("disable-fw-lldp", I40E_FLAG_DISABLE_FW_LLDP, 0),
- };
+@@ -4266,7 +4266,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	struct i40e_netdev_priv *np = netdev_priv(dev);
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+-	u32 orig_flags, new_flags, changed_flags;
++	u64 orig_flags, new_flags, changed_flags;
+ 	u32 i, j;
  
- #define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gstrings_priv_flags)
-@@ -4317,6 +4318,25 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	    !(pf->hw_features & I40E_HW_ATR_EVICT_CAPABLE))
- 		return -EOPNOTSUPP;
- 
-+	/* Disable FW LLDP not supported if NPAR active or if FW
-+	 * API version < 1.7
-+	 */
-+	if (new_flags & I40E_FLAG_DISABLE_FW_LLDP) {
-+		if (pf->hw.func_caps.npar_enable) {
-+			dev_warn(&pf->pdev->dev,
-+				 "Unable to stop FW LLDP if NPAR active\n");
-+			return -EOPNOTSUPP;
-+		}
-+
-+		if (pf->hw.aq.api_maj_ver < 1 ||
-+		    (pf->hw.aq.api_maj_ver == 1 &&
-+		     pf->hw.aq.api_min_ver < 7)) {
-+			dev_warn(&pf->pdev->dev,
-+				 "FW ver does not support stopping FW LLDP\n");
-+			return -EOPNOTSUPP;
-+		}
-+	}
-+
- 	/* Compare and exchange the new flags into place. If we failed, that
- 	 * is if cmpxchg returns anything but the old value, this means that
- 	 * something else has modified the flags variable since we copied it
-@@ -4362,12 +4382,37 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 		}
- 	}
- 
-+	if (changed_flags & I40E_FLAG_DISABLE_FW_LLDP) {
-+		if (pf->flags & I40E_FLAG_DISABLE_FW_LLDP) {
-+			struct i40e_dcbx_config *dcbcfg;
-+			int i;
-+
-+			i40e_aq_stop_lldp(&pf->hw, true, NULL);
-+			i40e_aq_set_dcb_parameters(&pf->hw, true, NULL);
-+			/* reset local_dcbx_config to default */
-+			dcbcfg = &pf->hw.local_dcbx_config;
-+			dcbcfg->etscfg.willing = 1;
-+			dcbcfg->etscfg.maxtcs = 0;
-+			dcbcfg->etscfg.tcbwtable[0] = 100;
-+			for (i = 1; i < I40E_MAX_TRAFFIC_CLASS; i++)
-+				dcbcfg->etscfg.tcbwtable[i] = 0;
-+			for (i = 0; i < I40E_MAX_USER_PRIORITY; i++)
-+				dcbcfg->etscfg.prioritytable[i] = 0;
-+			dcbcfg->etscfg.tsatable[0] = I40E_IEEE_TSA_ETS;
-+			dcbcfg->pfc.willing = 1;
-+			dcbcfg->pfc.pfccap = I40E_MAX_TRAFFIC_CLASS;
-+		} else {
-+			i40e_aq_start_lldp(&pf->hw, NULL);
-+		}
-+	}
-+
- 	/* Issue reset to cause things to take effect, as additional bits
- 	 * are added we will need to create a mask of bits requiring reset
+ 	orig_flags = READ_ONCE(pf->flags);
+@@ -4323,7 +4323,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	 * originally. We'll just punt with an error and log something in the
+ 	 * message buffer.
  	 */
- 	if (changed_flags & (I40E_FLAG_VEB_STATS_ENABLED |
- 			     I40E_FLAG_LEGACY_RX |
--			     I40E_FLAG_SOURCE_PRUNING_DISABLED))
-+			     I40E_FLAG_SOURCE_PRUNING_DISABLED |
-+			     I40E_FLAG_DISABLE_FW_LLDP))
- 		i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED), true);
- 
- 	return 0;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5c5296e..be24d9e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6305,8 +6305,11 @@ static int i40e_init_pf_dcb(struct i40e_pf *pf)
- 	struct i40e_hw *hw = &pf->hw;
- 	int err = 0;
- 
--	/* Do not enable DCB for SW1 and SW2 images even if the FW is capable */
--	if (pf->hw_features & I40E_HW_NO_DCB_SUPPORT)
-+	/* Do not enable DCB for SW1 and SW2 images even if the FW is capable
-+	 * Also do not enable DCBx if FW LLDP agent is disabled
-+	 */
-+	if ((pf->hw_features & I40E_HW_NO_DCB_SUPPORT) ||
-+	    (pf->flags & I40E_FLAG_DISABLE_FW_LLDP))
- 		goto out;
- 
- 	/* Get the initial DCB configuration */
-@@ -9266,6 +9269,9 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 		goto end_core_reset;
- 	}
- 
-+	/* Enable FW to write a default DCB config on link-up */
-+	i40e_aq_set_dcb_parameters(hw, true, NULL);
-+
- #ifdef CONFIG_I40E_DCB
- 	ret = i40e_init_pf_dcb(pf);
- 	if (ret) {
-@@ -13589,6 +13595,10 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	pci_set_drvdata(pdev, pf);
- 	pci_save_state(pdev);
-+
-+	/* Enable FW to write default DCB config on link-up */
-+	i40e_aq_set_dcb_parameters(hw, true, NULL);
-+
- #ifdef CONFIG_I40E_DCB
- 	err = i40e_init_pf_dcb(pf);
- 	if (err) {
+-	if (cmpxchg(&pf->flags, orig_flags, new_flags) != orig_flags) {
++	if (cmpxchg64(&pf->flags, orig_flags, new_flags) != orig_flags) {
+ 		dev_warn(&pf->pdev->dev,
+ 			 "Unable to update pf->flags as it was modified by another thread...\n");
+ 		return -EAGAIN;
 -- 
 2.9.5
 
