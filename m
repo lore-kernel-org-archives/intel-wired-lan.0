@@ -1,7 +1,9 @@
 From: Daniel Hua <daniel.hua@ni.com>
-Date: Thu, 28 Dec 2017 09:17:05 +0800
+Date: Thu, 28 Dec 2017 09:39:37 +0800
 Subject: [Intel-wired-lan] [PATCH] igb: bug fix Tx interrupt is not triggered
-Message-ID: <1514423825-9141-1-git-send-email-daniel.hua@ni.com>
+In-Reply-To: <CAKgT0UdHmP=bJuJPaUT15GdEBdzWr1unu==hj1CfoVvnG+uscg@mail.gmail.com>
+References: <CAKgT0UdHmP=bJuJPaUT15GdEBdzWr1unu==hj1CfoVvnG+uscg@mail.gmail.com>
+Message-ID: <1514425177-9248-1-git-send-email-daniel.hua@ni.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
