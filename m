@@ -1,8 +1,8 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 29 Dec 2017 08:50:44 -0500
-Subject: [Intel-wired-lan] [next PATCH S85-V1 09/14] i40e/i40evf: Clean-up
- of bits related to using q_vector->reg_idx
-Message-ID: <20171229135044.14551-1-alice.michael@intel.com>
+Date: Fri, 29 Dec 2017 08:50:55 -0500
+Subject: [Intel-wired-lan] [next PATCH S85-V1 10/14] i40e/i40evf: Don't
+ bother setting the CLEARPBA bit
+Message-ID: <20171229135055.14598-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,123 +11,66 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This patch is a further clean-up related to the change over to using
-q_vector->reg_idx when accessing the ITR registers. Specifically the code
-appears to have several other spots where we were computing the register
-offset manually and this resulted in errors in a few spots.
-
-Specifically in the i40evf functions for mapping queues to vectors it
-appears we may have had an off by 1 error since (v_idx - 1) for the first
-q_vector with an index of 0 would result in us returning -1 if I am not
-mistaken.
+The CLEARPBA bit in the dynamic interrupt control register actually has
+no effect either way on the hardware. As per errata 28 in the XL710
+specification update the interrupt is actually cleared any time the
+register is written with the INTENA_MSK bit set to 0. As such the act of
+toggling the enable bit actually will trigger the interrupt being
+cleared and could lead to potential lost events if auto-masking is
+not enabled.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 12 ++++++------
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 12 +++++-------
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  6 ++++--
- 3 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 11 ++++++++++-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 11 ++++++++++-
+ 2 files changed, 20 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 5b18e20..1607e5a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2311,7 +2311,7 @@ static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
- 	struct i40e_pf *pf = vsi->back;
- 	struct i40e_hw *hw = &pf->hw;
- 	struct i40e_q_vector *q_vector;
--	u16 vector, intrl;
-+	u16 intrl;
- 
- 	intrl = i40e_intrl_usec_to_reg(vsi->int_rate_limit);
- 
-@@ -2330,15 +2330,15 @@ static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
- 
- 	q_vector = rx_ring->q_vector;
- 	q_vector->rx.itr = ITR_TO_REG(rx_ring->itr_setting);
--	vector = vsi->base_vector + q_vector->v_idx;
--	wr32(hw, I40E_PFINT_ITRN(I40E_RX_ITR, vector - 1), q_vector->rx.itr);
-+	wr32(hw, I40E_PFINT_ITRN(I40E_RX_ITR, q_vector->reg_idx),
-+	     q_vector->rx.itr);
- 
- 	q_vector = tx_ring->q_vector;
- 	q_vector->tx.itr = ITR_TO_REG(tx_ring->itr_setting);
--	vector = vsi->base_vector + q_vector->v_idx;
--	wr32(hw, I40E_PFINT_ITRN(I40E_TX_ITR, vector - 1), q_vector->tx.itr);
-+	wr32(hw, I40E_PFINT_ITRN(I40E_TX_ITR, q_vector->reg_idx),
-+	     q_vector->tx.itr);
- 
--	wr32(hw, I40E_PFINT_RATEN(vector - 1), intrl);
-+	wr32(hw, I40E_PFINT_RATEN(q_vector->reg_idx), intrl);
- 	i40e_flush(hw);
- }
- 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index 11dfdc8..ed5b8ec 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -502,7 +502,7 @@ static int i40evf_get_per_queue_coalesce(struct net_device *netdev,
- 
- /**
-  * i40evf_set_itr_per_queue - set ITR values for specific queue
-- * @vsi: the VSI to set values for
-+ * @adapter: the VF adapter struct to set values for
-  * @ec: coalesce settings from ethtool
-  * @queue: the queue to modify
-  *
-@@ -514,10 +514,8 @@ static void i40evf_set_itr_per_queue(struct i40evf_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 4e661ef..628ec59 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2267,8 +2267,17 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
  {
- 	struct i40e_ring *rx_ring = &adapter->rx_rings[queue];
- 	struct i40e_ring *tx_ring = &adapter->tx_rings[queue];
--	struct i40e_vsi *vsi = &adapter->vsi;
- 	struct i40e_hw *hw = &adapter->hw;
- 	struct i40e_q_vector *q_vector;
--	u16 vector;
+ 	u32 val;
  
- 	rx_ring->itr_setting = ec->rx_coalesce_usecs;
- 	tx_ring->itr_setting = ec->tx_coalesce_usecs;
-@@ -532,13 +530,13 @@ static void i40evf_set_itr_per_queue(struct i40evf_adapter *adapter,
++	/* We don't bother with setting the CLEARPBA bit as the data sheet
++	 * points out doing so is "meaningless since it was already
++	 * auto-cleared". The auto-clearing happens when the interrupt is
++	 * asserted.
++	 *
++	 * Hardware errata 28 for also indicates that writing to a
++	 * xxINT_DYN_CTLx CSR with INTENA_MSK (bit 31) set to 0 will clear
++	 * an event in the PBA anyway so we need to rely on the automask
++	 * to hold pending events for us until the interrupt is re-enabled
++	 */
+ 	val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
+-	      I40E_PFINT_DYN_CTLN_CLEARPBA_MASK |
+ 	      (type << I40E_PFINT_DYN_CTLN_ITR_INDX_SHIFT) |
+ 	      (itr << I40E_PFINT_DYN_CTLN_INTERVAL_SHIFT);
  
- 	q_vector = rx_ring->q_vector;
- 	q_vector->rx.itr = ITR_TO_REG(rx_ring->itr_setting);
--	vector = vsi->base_vector + q_vector->v_idx;
--	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, vector - 1), q_vector->rx.itr);
-+	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, q_vector->reg_idx),
-+	     q_vector->rx.itr);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 3fd7e97..34d898f 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1464,8 +1464,17 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
+ {
+ 	u32 val;
  
- 	q_vector = tx_ring->q_vector;
- 	q_vector->tx.itr = ITR_TO_REG(tx_ring->itr_setting);
--	vector = vsi->base_vector + q_vector->v_idx;
--	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, vector - 1), q_vector->tx.itr);
-+	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, q_vector->reg_idx),
-+	     q_vector->tx.itr);
++	/* We don't bother with setting the CLEARPBA bit as the data sheet
++	 * points out doing so is "meaningless since it was already
++	 * auto-cleared". The auto-clearing happens when the interrupt is
++	 * asserted.
++	 *
++	 * Hardware errata 28 for also indicates that writing to a
++	 * xxINT_DYN_CTLx CSR with INTENA_MSK (bit 31) set to 0 will clear
++	 * an event in the PBA anyway so we need to rely on the automask
++	 * to hold pending events for us until the interrupt is re-enabled
++	 */
+ 	val = I40E_VFINT_DYN_CTLN1_INTENA_MASK |
+-	      I40E_VFINT_DYN_CTLN1_CLEARPBA_MASK |
+ 	      (type << I40E_VFINT_DYN_CTLN1_ITR_INDX_SHIFT) |
+ 	      (itr << I40E_VFINT_DYN_CTLN1_INTERVAL_SHIFT);
  
- 	i40e_flush(hw);
- }
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index a5fb540..f648e5e 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -357,7 +357,8 @@ i40evf_map_vector_to_rxq(struct i40evf_adapter *adapter, int v_idx, int r_idx)
- 	q_vector->rx.itr = ITR_TO_REG(rx_ring->itr_setting);
- 	q_vector->ring_mask |= BIT(r_idx);
- 	q_vector->itr_countdown = ITR_COUNTDOWN_START;
--	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, v_idx - 1), q_vector->rx.itr);
-+	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, q_vector->reg_idx),
-+	     q_vector->rx.itr);
- }
- 
- /**
-@@ -382,7 +383,8 @@ i40evf_map_vector_to_txq(struct i40evf_adapter *adapter, int v_idx, int t_idx)
- 	q_vector->tx.itr = ITR_TO_REG(tx_ring->itr_setting);
- 	q_vector->itr_countdown = ITR_COUNTDOWN_START;
- 	q_vector->num_ringpairs++;
--	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, v_idx - 1), q_vector->tx.itr);
-+	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, q_vector->reg_idx),
-+	     q_vector->tx.itr);
- }
- 
- /**
 -- 
 2.9.5
 
