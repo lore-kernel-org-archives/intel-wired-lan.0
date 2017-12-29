@@ -1,8 +1,8 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 29 Dec 2017 08:50:55 -0500
-Subject: [Intel-wired-lan] [next PATCH S85-V1 10/14] i40e/i40evf: Don't
- bother setting the CLEARPBA bit
-Message-ID: <20171229135055.14598-1-alice.michael@intel.com>
+Date: Fri, 29 Dec 2017 08:51:08 -0500
+Subject: [Intel-wired-lan] [next PATCH S85-V1 11/14] i40e/i40evf: Use usec
+ value instead of reg value for ITR defines
+Message-ID: <20171229135108.14645-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,66 +11,290 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-The CLEARPBA bit in the dynamic interrupt control register actually has
-no effect either way on the hardware. As per errata 28 in the XL710
-specification update the interrupt is actually cleared any time the
-register is written with the INTENA_MSK bit set to 0. As such the act of
-toggling the enable bit actually will trigger the interrupt being
-cleared and could lead to potential lost events if auto-masking is
-not enabled.
+Instead of using the register value for the defines when setting up the
+ring ITR we can just use the actual values and avoid the use of shifts and
+macros to translate between the values we have and the values we want.
+
+This helps to make the code more readable as we can quickly translate from
+one value to the other.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 11 ++++++++++-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 11 ++++++++++-
- 2 files changed, 20 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 12 +++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 11 +++++-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        | 45 ++++++++++++----------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 11 +++++-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      | 44 +++++++++++----------
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 12 +++---
+ 6 files changed, 79 insertions(+), 56 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 1607e5a..0212f6c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2315,8 +2315,8 @@ static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
+ 
+ 	intrl = i40e_intrl_usec_to_reg(vsi->int_rate_limit);
+ 
+-	rx_ring->itr_setting = ec->rx_coalesce_usecs;
+-	tx_ring->itr_setting = ec->tx_coalesce_usecs;
++	rx_ring->itr_setting = ITR_REG_ALIGN(ec->rx_coalesce_usecs);
++	tx_ring->itr_setting = ITR_REG_ALIGN(ec->tx_coalesce_usecs);
+ 
+ 	if (ec->use_adaptive_rx_coalesce)
+ 		rx_ring->itr_setting |= I40E_ITR_DYNAMIC;
+@@ -2396,7 +2396,7 @@ static int __i40e_set_coalesce(struct net_device *netdev,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (ec->rx_coalesce_usecs > (I40E_MAX_ITR << 1)) {
++	if (ec->rx_coalesce_usecs > I40E_MAX_ITR) {
+ 		netif_info(pf, drv, netdev, "Invalid value, rx-usecs range is 0-8160\n");
+ 		return -EINVAL;
+ 	}
+@@ -2407,16 +2407,16 @@ static int __i40e_set_coalesce(struct net_device *netdev,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (ec->tx_coalesce_usecs > (I40E_MAX_ITR << 1)) {
++	if (ec->tx_coalesce_usecs > I40E_MAX_ITR) {
+ 		netif_info(pf, drv, netdev, "Invalid value, tx-usecs range is 0-8160\n");
+ 		return -EINVAL;
+ 	}
+ 
+ 	if (ec->use_adaptive_rx_coalesce && !cur_rx_itr)
+-		ec->rx_coalesce_usecs = I40E_MIN_ITR << 1;
++		ec->rx_coalesce_usecs = I40E_MIN_ITR;
+ 
+ 	if (ec->use_adaptive_tx_coalesce && !cur_tx_itr)
+-		ec->tx_coalesce_usecs = I40E_MIN_ITR << 1;
++		ec->tx_coalesce_usecs = I40E_MIN_ITR;
+ 
+ 	intrl_reg = i40e_intrl_usec_to_reg(ec->rx_coalesce_usecs_high);
+ 	vsi->int_rate_limit = INTRL_REG_TO_USEC(intrl_reg);
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 4e661ef..628ec59 100644
+index 628ec59..170256e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2267,8 +2267,17 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
+@@ -2263,7 +2263,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 	return failure ? budget : (int)total_rx_packets;
+ }
+ 
+-static u32 i40e_buildreg_itr(const int type, const u16 itr)
++static inline u32 i40e_buildreg_itr(const int type, u16 itr)
  {
  	u32 val;
  
-+	/* We don't bother with setting the CLEARPBA bit as the data sheet
-+	 * points out doing so is "meaningless since it was already
-+	 * auto-cleared". The auto-clearing happens when the interrupt is
-+	 * asserted.
+@@ -2276,10 +2276,17 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
+ 	 * xxINT_DYN_CTLx CSR with INTENA_MSK (bit 31) set to 0 will clear
+ 	 * an event in the PBA anyway so we need to rely on the automask
+ 	 * to hold pending events for us until the interrupt is re-enabled
 +	 *
-+	 * Hardware errata 28 for also indicates that writing to a
-+	 * xxINT_DYN_CTLx CSR with INTENA_MSK (bit 31) set to 0 will clear
-+	 * an event in the PBA anyway so we need to rely on the automask
-+	 * to hold pending events for us until the interrupt is re-enabled
-+	 */
++	 * The itr value is reported in microseconds, and the register
++	 * value is recorded in 2 microsecond units. For this reason we
++	 * only need to shift by the interval shift - 1 instead of the
++	 * full value.
+ 	 */
++	itr &= I40E_ITR_MASK;
++
  	val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
--	      I40E_PFINT_DYN_CTLN_CLEARPBA_MASK |
  	      (type << I40E_PFINT_DYN_CTLN_ITR_INDX_SHIFT) |
- 	      (itr << I40E_PFINT_DYN_CTLN_INTERVAL_SHIFT);
+-	      (itr << I40E_PFINT_DYN_CTLN_INTERVAL_SHIFT);
++	      (itr << (I40E_PFINT_DYN_CTLN_INTERVAL_SHIFT - 1));
  
+ 	return val;
+ }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index 61eee3d..d226c7c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -28,32 +28,37 @@
+ #define _I40E_TXRX_H_
+ 
+ /* Interrupt Throttling and Rate Limiting Goodies */
+-
+-#define I40E_MAX_ITR               0x0FF0  /* reg uses 2 usec resolution */
+-#define I40E_MIN_ITR               0x0001  /* reg uses 2 usec resolution */
+-#define I40E_ITR_100K              0x0005
+-#define I40E_ITR_50K               0x000A
+-#define I40E_ITR_20K               0x0019
+-#define I40E_ITR_18K               0x001B
+-#define I40E_ITR_8K                0x003E
+-#define I40E_ITR_4K                0x007A
+-#define I40E_MAX_INTRL             0x3B    /* reg uses 4 usec resolution */
+-#define I40E_ITR_RX_DEF            (ITR_REG_TO_USEC(I40E_ITR_20K) | \
+-				    I40E_ITR_DYNAMIC)
+-#define I40E_ITR_TX_DEF            (ITR_REG_TO_USEC(I40E_ITR_20K) | \
+-				    I40E_ITR_DYNAMIC)
+-#define I40E_ITR_DYNAMIC           0x8000  /* use top bit as a flag */
+-#define I40E_MIN_INT_RATE          250     /* ~= 1000000 / (I40E_MAX_ITR * 2) */
+-#define I40E_MAX_INT_RATE          500000  /* == 1000000 / (I40E_MIN_ITR * 2) */
+ #define I40E_DEFAULT_IRQ_WORK      256
+-#define ITR_TO_REG(setting) ((setting & ~I40E_ITR_DYNAMIC) >> 1)
+-#define ITR_IS_DYNAMIC(setting) (!!(setting & I40E_ITR_DYNAMIC))
+-#define ITR_REG_TO_USEC(itr_reg) (itr_reg << 1)
++
++/* The datasheet for the X710 and XL710 indicate that the maximum value for
++ * the ITR is 8160usec which is then called out as 0xFF0 with a 2usec
++ * resoltion. 8160 is 0x1FE0 when written out in hex. So instead of storing
++ * the register value which is divided by 2 lets use the actual values and
++ * avoid an excessive amount of translation.
++ */
++#define I40E_ITR_DYNAMIC	0x8000	/* use top bit as a flag */
++#define I40E_ITR_MASK		0x1FFE	/* mask for ITR register value */
++#define I40E_MIN_ITR		     2	/* reg uses 2 usec resolution */
++#define I40E_ITR_100K		    10  /* all values below must be even */
++#define I40E_ITR_50K		    20
++#define I40E_ITR_20K		    50
++#define I40E_ITR_18K		    60
++#define I40E_ITR_8K		   122
++#define I40E_MAX_ITR		  8160	/* maximum value as per datasheet */
++#define ITR_TO_REG(setting) ((setting) & ~I40E_ITR_DYNAMIC)
++#define ITR_REG_ALIGN(setting) __ALIGN_MASK(setting, ~I40E_ITR_MASK)
++#define ITR_IS_DYNAMIC(setting) (!!((setting) & I40E_ITR_DYNAMIC))
++
++#define I40E_ITR_RX_DEF            (I40E_ITR_20K | I40E_ITR_DYNAMIC)
++#define I40E_ITR_TX_DEF            (I40E_ITR_20K | I40E_ITR_DYNAMIC)
++
+ /* 0x40 is the enable bit for interrupt rate limiting, and must be set if
+  * the value of the rate limit is non-zero
+  */
+ #define INTRL_ENA                  BIT(6)
++#define I40E_MAX_INTRL             0x3B    /* reg uses 4 usec resolution */
+ #define INTRL_REG_TO_USEC(intrl) ((intrl & ~INTRL_ENA) << 2)
++
+ /**
+  * i40e_intrl_usec_to_reg - convert interrupt rate limit to register
+  * @intrl: interrupt rate limit to convert
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 3fd7e97..34d898f 100644
+index 34d898f..c5f8e94 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1464,8 +1464,17 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
+@@ -1460,7 +1460,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 	return failure ? budget : (int)total_rx_packets;
+ }
+ 
+-static u32 i40e_buildreg_itr(const int type, const u16 itr)
++static inline u32 i40e_buildreg_itr(const int type, u16 itr)
  {
  	u32 val;
  
-+	/* We don't bother with setting the CLEARPBA bit as the data sheet
-+	 * points out doing so is "meaningless since it was already
-+	 * auto-cleared". The auto-clearing happens when the interrupt is
-+	 * asserted.
+@@ -1473,10 +1473,17 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
+ 	 * xxINT_DYN_CTLx CSR with INTENA_MSK (bit 31) set to 0 will clear
+ 	 * an event in the PBA anyway so we need to rely on the automask
+ 	 * to hold pending events for us until the interrupt is re-enabled
 +	 *
-+	 * Hardware errata 28 for also indicates that writing to a
-+	 * xxINT_DYN_CTLx CSR with INTENA_MSK (bit 31) set to 0 will clear
-+	 * an event in the PBA anyway so we need to rely on the automask
-+	 * to hold pending events for us until the interrupt is re-enabled
-+	 */
++	 * The itr value is reported in microseconds, and the register
++	 * value is recorded in 2 microsecond units. For this reason we
++	 * only need to shift by the interval shift - 1 instead of the
++	 * full value.
+ 	 */
++	itr &= I40E_ITR_MASK;
++
  	val = I40E_VFINT_DYN_CTLN1_INTENA_MASK |
--	      I40E_VFINT_DYN_CTLN1_CLEARPBA_MASK |
  	      (type << I40E_VFINT_DYN_CTLN1_ITR_INDX_SHIFT) |
- 	      (itr << I40E_VFINT_DYN_CTLN1_INTERVAL_SHIFT);
+-	      (itr << I40E_VFINT_DYN_CTLN1_INTERVAL_SHIFT);
++	      (itr << (I40E_VFINT_DYN_CTLN1_INTERVAL_SHIFT - 1));
  
+ 	return val;
+ }
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index 81210c3..f1c5ef7 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -28,31 +28,35 @@
+ #define _I40E_TXRX_H_
+ 
+ /* Interrupt Throttling and Rate Limiting Goodies */
+-
+-#define I40E_MAX_ITR               0x0FF0  /* reg uses 2 usec resolution */
+-#define I40E_MIN_ITR               0x0001  /* reg uses 2 usec resolution */
+-#define I40E_ITR_100K              0x0005
+-#define I40E_ITR_50K               0x000A
+-#define I40E_ITR_20K               0x0019
+-#define I40E_ITR_18K               0x001B
+-#define I40E_ITR_8K                0x003E
+-#define I40E_ITR_4K                0x007A
+-#define I40E_MAX_INTRL             0x3B    /* reg uses 4 usec resolution */
+-#define I40E_ITR_RX_DEF            (ITR_REG_TO_USEC(I40E_ITR_20K) | \
+-				    I40E_ITR_DYNAMIC)
+-#define I40E_ITR_TX_DEF            (ITR_REG_TO_USEC(I40E_ITR_20K) | \
+-				    I40E_ITR_DYNAMIC)
+-#define I40E_ITR_DYNAMIC           0x8000  /* use top bit as a flag */
+-#define I40E_MIN_INT_RATE          250     /* ~= 1000000 / (I40E_MAX_ITR * 2) */
+-#define I40E_MAX_INT_RATE          500000  /* == 1000000 / (I40E_MIN_ITR * 2) */
+ #define I40E_DEFAULT_IRQ_WORK      256
+-#define ITR_TO_REG(setting) ((setting & ~I40E_ITR_DYNAMIC) >> 1)
+-#define ITR_IS_DYNAMIC(setting) (!!(setting & I40E_ITR_DYNAMIC))
+-#define ITR_REG_TO_USEC(itr_reg) (itr_reg << 1)
++
++/* The datasheet for the X710 and XL710 indicate that the maximum value for
++ * the ITR is 8160usec which is then called out as 0xFF0 with a 2usec
++ * resoltion. 8160 is 0x1FE0 when written out in hex. So instead of storing
++ * the register value which is divided by 2 lets use the actual values and
++ * avoid an excessive amount of translation.
++ */
++#define I40E_ITR_DYNAMIC	0x8000	/* use top bit as a flag */
++#define I40E_ITR_MASK		0x1FFE	/* mask for ITR register value */
++#define I40E_MIN_ITR		     2	/* reg uses 2 usec resolution */
++#define I40E_ITR_100K		    10  /* all values below must be even */
++#define I40E_ITR_50K		    20
++#define I40E_ITR_20K		    50
++#define I40E_ITR_18K		    60
++#define I40E_ITR_8K		   122
++#define I40E_MAX_ITR		  8160	/* maximum value as per datasheet */
++#define ITR_TO_REG(setting) ((setting) & ~I40E_ITR_DYNAMIC)
++#define ITR_REG_ALIGN(setting) __ALIGN_MASK(setting, ~I40E_ITR_MASK)
++#define ITR_IS_DYNAMIC(setting) (!!((setting) & I40E_ITR_DYNAMIC))
++
++#define I40E_ITR_RX_DEF            (I40E_ITR_20K | I40E_ITR_DYNAMIC)
++#define I40E_ITR_TX_DEF            (I40E_ITR_20K | I40E_ITR_DYNAMIC)
++
+ /* 0x40 is the enable bit for interrupt rate limiting, and must be set if
+  * the value of the rate limit is non-zero
+  */
+ #define INTRL_ENA                  BIT(6)
++#define I40E_MAX_INTRL             0x3B    /* reg uses 4 usec resolution */
+ #define INTRL_REG_TO_USEC(intrl) ((intrl & ~INTRL_ENA) << 2)
+ #define INTRL_USEC_TO_REG(set) ((set) ? ((set) >> 2) | INTRL_ENA : 0)
+ #define I40E_INTRL_8K              125     /* 8000 ints/sec */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+index ed5b8ec..f5d3725 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+@@ -517,8 +517,8 @@ static void i40evf_set_itr_per_queue(struct i40evf_adapter *adapter,
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	struct i40e_q_vector *q_vector;
+ 
+-	rx_ring->itr_setting = ec->rx_coalesce_usecs;
+-	tx_ring->itr_setting = ec->tx_coalesce_usecs;
++	rx_ring->itr_setting = ITR_REG_ALIGN(ec->rx_coalesce_usecs);
++	tx_ring->itr_setting = ITR_REG_ALIGN(ec->tx_coalesce_usecs);
+ 
+ 	rx_ring->itr_setting |= I40E_ITR_DYNAMIC;
+ 	if (!ec->use_adaptive_rx_coalesce)
+@@ -563,8 +563,8 @@ static int __i40evf_set_coalesce(struct net_device *netdev,
+ 	if (ec->rx_coalesce_usecs == 0) {
+ 		if (ec->use_adaptive_rx_coalesce)
+ 			netif_info(adapter, drv, netdev, "rx-usecs=0, need to disable adaptive-rx for a complete disable\n");
+-	} else if ((ec->rx_coalesce_usecs < (I40E_MIN_ITR << 1)) ||
+-		   (ec->rx_coalesce_usecs > (I40E_MAX_ITR << 1))) {
++	} else if ((ec->rx_coalesce_usecs < I40E_MIN_ITR) ||
++		   (ec->rx_coalesce_usecs > I40E_MAX_ITR)) {
+ 		netif_info(adapter, drv, netdev, "Invalid value, rx-usecs range is 0-8160\n");
+ 		return -EINVAL;
+ 	}
+@@ -573,8 +573,8 @@ static int __i40evf_set_coalesce(struct net_device *netdev,
+ 	if (ec->tx_coalesce_usecs == 0) {
+ 		if (ec->use_adaptive_tx_coalesce)
+ 			netif_info(adapter, drv, netdev, "tx-usecs=0, need to disable adaptive-tx for a complete disable\n");
+-	} else if ((ec->tx_coalesce_usecs < (I40E_MIN_ITR << 1)) ||
+-		   (ec->tx_coalesce_usecs > (I40E_MAX_ITR << 1))) {
++	} else if ((ec->tx_coalesce_usecs < I40E_MIN_ITR) ||
++		   (ec->tx_coalesce_usecs > I40E_MAX_ITR)) {
+ 		netif_info(adapter, drv, netdev, "Invalid value, tx-usecs range is 0-8160\n");
+ 		return -EINVAL;
+ 	}
 -- 
 2.9.5
 
