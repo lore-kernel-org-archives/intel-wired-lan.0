@@ -1,108 +1,133 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 29 Dec 2017 08:50:34 -0500
-Subject: [Intel-wired-lan] [next PATCH S85-V1 08/14] i40e: use changed_flags
- to check I40E_FLAG_DISABLE_FW_LLDP
-Message-ID: <20171229135034.14504-1-alice.michael@intel.com>
+Date: Fri, 29 Dec 2017 08:50:44 -0500
+Subject: [Intel-wired-lan] [next PATCH S85-V1 09/14] i40e/i40evf: Clean-up
+ of bits related to using q_vector->reg_idx
+Message-ID: <20171229135044.14551-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Currently in i40e_set_priv_flags we use new_flags to check for the
-I40E_FLAG_DISABLE_FW_LLDP flag.  This is an issue for a few a reasons.
-DISABLE_FW_LLDP is persistent across reboots/driver reloads.  This means
-we need some way to detect if FW LLDP is enabled on init.  We do this by
-trying to init_dcb and if it fails with EPERM we know LLDP is disabled
-in FW.
+This patch is a further clean-up related to the change over to using
+q_vector->reg_idx when accessing the ITR registers. Specifically the code
+appears to have several other spots where we were computing the register
+offset manually and this resulted in errors in a few spots.
 
-This could be a problem on older FW versions or NPAR enabled PFs because
-there are situations where the FW could disable LLDP, but they do _not_
-support using this flag to change it.  If we do end up in this
-situation, the flag will be set, then when the user tries to change any
-priv flags, the driver thinks the user is trying to disable FW LLDP on a
-FW that doesn't support it and essentially forbids any priv flag
-changes.
+Specifically in the i40evf functions for mapping queues to vectors it
+appears we may have had an off by 1 error since (v_idx - 1) for the first
+q_vector with an index of 0 would result in us returning -1 if I am not
+mistaken.
 
-The fix is simple, instead of checking if this flag is set, we should be
-checking if the user is trying to _change_ the flag on unsupported FW
-versions.
-
-This patch also adds a comment explaining that the cmpxchg is the point
-of no return.  Once we put the new flags into pf->flags we can't back
-out.
-
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 12 ++++++------
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 12 +++++-------
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  6 ++++--
+ 3 files changed, 15 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 7267a93..5b18e20 100644
+index 5b18e20..1607e5a 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -4406,6 +4406,8 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	}
+@@ -2311,7 +2311,7 @@ static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
+ 	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	struct i40e_q_vector *q_vector;
+-	u16 vector, intrl;
++	u16 intrl;
  
- flags_complete:
-+	changed_flags = orig_flags ^ new_flags;
-+
- 	/* Before we finalize any flag changes, we need to perform some
- 	 * checks to ensure that the changes are supported and safe.
- 	 */
-@@ -4415,13 +4417,17 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	    !(pf->hw_features & I40E_HW_ATR_EVICT_CAPABLE))
- 		return -EOPNOTSUPP;
+ 	intrl = i40e_intrl_usec_to_reg(vsi->int_rate_limit);
  
--	/* Disable FW LLDP not supported if NPAR active or if FW
--	 * API version < 1.7
-+	/* If the driver detected FW LLDP was disabled on init, this flag could
-+	 * be set, however we do not support _changing_ the flag if NPAR is
-+	 * enabled or FW API version < 1.7.  There are situations where older
-+	 * FW versions/NPAR enabled PFs could disable LLDP, however we _must_
-+	 * not allow the user to enable/disable LLDP with this flag on
-+	 * unsupported FW verions.
- 	 */
--	if (new_flags & I40E_FLAG_DISABLE_FW_LLDP) {
-+	if (changed_flags & I40E_FLAG_DISABLE_FW_LLDP) {
- 		if (pf->hw.func_caps.npar_enable) {
- 			dev_warn(&pf->pdev->dev,
--				 "Unable to stop FW LLDP if NPAR active\n");
-+				 "Unable to change FW LLDP if NPAR active\n");
- 			return -EOPNOTSUPP;
- 		}
+@@ -2330,15 +2330,15 @@ static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
  
-@@ -4429,7 +4435,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 		    (pf->hw.aq.api_maj_ver == 1 &&
- 		     pf->hw.aq.api_min_ver < 7)) {
- 			dev_warn(&pf->pdev->dev,
--				 "FW ver does not support stopping FW LLDP\n");
-+				 "FW ver does not support changing FW LLDP\n");
- 			return -EOPNOTSUPP;
- 		}
- 	}
-@@ -4439,6 +4445,10 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 	 * something else has modified the flags variable since we copied it
- 	 * originally. We'll just punt with an error and log something in the
- 	 * message buffer.
-+	 *
-+	 * This is the point of no return for this function.  We need to have
-+	 * checked any discrepencies or misconfigurations and returned
-+	 * EOPNOTSUPP before updating pf->flags here.
- 	 */
- 	if (cmpxchg64(&pf->flags, orig_flags, new_flags) != orig_flags) {
- 		dev_warn(&pf->pdev->dev,
-@@ -4446,8 +4456,6 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 		return -EAGAIN;
- 	}
+ 	q_vector = rx_ring->q_vector;
+ 	q_vector->rx.itr = ITR_TO_REG(rx_ring->itr_setting);
+-	vector = vsi->base_vector + q_vector->v_idx;
+-	wr32(hw, I40E_PFINT_ITRN(I40E_RX_ITR, vector - 1), q_vector->rx.itr);
++	wr32(hw, I40E_PFINT_ITRN(I40E_RX_ITR, q_vector->reg_idx),
++	     q_vector->rx.itr);
  
--	changed_flags = orig_flags ^ new_flags;
--
- 	/* Process any additional changes needed as a result of flag changes.
- 	 * The changed_flags value reflects the list of bits that were
- 	 * changed in the code above.
+ 	q_vector = tx_ring->q_vector;
+ 	q_vector->tx.itr = ITR_TO_REG(tx_ring->itr_setting);
+-	vector = vsi->base_vector + q_vector->v_idx;
+-	wr32(hw, I40E_PFINT_ITRN(I40E_TX_ITR, vector - 1), q_vector->tx.itr);
++	wr32(hw, I40E_PFINT_ITRN(I40E_TX_ITR, q_vector->reg_idx),
++	     q_vector->tx.itr);
+ 
+-	wr32(hw, I40E_PFINT_RATEN(vector - 1), intrl);
++	wr32(hw, I40E_PFINT_RATEN(q_vector->reg_idx), intrl);
+ 	i40e_flush(hw);
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+index 11dfdc8..ed5b8ec 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+@@ -502,7 +502,7 @@ static int i40evf_get_per_queue_coalesce(struct net_device *netdev,
+ 
+ /**
+  * i40evf_set_itr_per_queue - set ITR values for specific queue
+- * @vsi: the VSI to set values for
++ * @adapter: the VF adapter struct to set values for
+  * @ec: coalesce settings from ethtool
+  * @queue: the queue to modify
+  *
+@@ -514,10 +514,8 @@ static void i40evf_set_itr_per_queue(struct i40evf_adapter *adapter,
+ {
+ 	struct i40e_ring *rx_ring = &adapter->rx_rings[queue];
+ 	struct i40e_ring *tx_ring = &adapter->tx_rings[queue];
+-	struct i40e_vsi *vsi = &adapter->vsi;
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	struct i40e_q_vector *q_vector;
+-	u16 vector;
+ 
+ 	rx_ring->itr_setting = ec->rx_coalesce_usecs;
+ 	tx_ring->itr_setting = ec->tx_coalesce_usecs;
+@@ -532,13 +530,13 @@ static void i40evf_set_itr_per_queue(struct i40evf_adapter *adapter,
+ 
+ 	q_vector = rx_ring->q_vector;
+ 	q_vector->rx.itr = ITR_TO_REG(rx_ring->itr_setting);
+-	vector = vsi->base_vector + q_vector->v_idx;
+-	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, vector - 1), q_vector->rx.itr);
++	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, q_vector->reg_idx),
++	     q_vector->rx.itr);
+ 
+ 	q_vector = tx_ring->q_vector;
+ 	q_vector->tx.itr = ITR_TO_REG(tx_ring->itr_setting);
+-	vector = vsi->base_vector + q_vector->v_idx;
+-	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, vector - 1), q_vector->tx.itr);
++	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, q_vector->reg_idx),
++	     q_vector->tx.itr);
+ 
+ 	i40e_flush(hw);
+ }
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index a5fb540..f648e5e 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -357,7 +357,8 @@ i40evf_map_vector_to_rxq(struct i40evf_adapter *adapter, int v_idx, int r_idx)
+ 	q_vector->rx.itr = ITR_TO_REG(rx_ring->itr_setting);
+ 	q_vector->ring_mask |= BIT(r_idx);
+ 	q_vector->itr_countdown = ITR_COUNTDOWN_START;
+-	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, v_idx - 1), q_vector->rx.itr);
++	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, q_vector->reg_idx),
++	     q_vector->rx.itr);
+ }
+ 
+ /**
+@@ -382,7 +383,8 @@ i40evf_map_vector_to_txq(struct i40evf_adapter *adapter, int v_idx, int t_idx)
+ 	q_vector->tx.itr = ITR_TO_REG(tx_ring->itr_setting);
+ 	q_vector->itr_countdown = ITR_COUNTDOWN_START;
+ 	q_vector->num_ringpairs++;
+-	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, v_idx - 1), q_vector->tx.itr);
++	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, q_vector->reg_idx),
++	     q_vector->tx.itr);
+ }
+ 
+ /**
 -- 
 2.9.5
 
