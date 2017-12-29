@@ -1,48 +1,41 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 29 Dec 2017 08:50:05 -0500
-Subject: [Intel-wired-lan] [next PATCH S85-V1 06/14] i40e: Add delay after
- EMP reset for firmware to recover
-Message-ID: <20171229135005.14410-1-alice.michael@intel.com>
+Date: Fri, 29 Dec 2017 08:50:20 -0500
+Subject: [Intel-wired-lan] [next PATCH S85-V1 07/14] i40e: Warn when setting
+ link-down-on-close while in MFP
+Message-ID: <20171229135020.14457-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Filip Sadowski <filip.sadowski@intel.com>
+From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 
-This patch adds necessary delay for 4.33 firmware to recover after
-EMP reset. Without this patch driver occasionally reinitializes
-structures too quickly to communicate with firmware after EMP reset
-causing AdminQ to timeout.
+This patch adds a warning message when the link-down-on-close flag is
+setting on. The warning is printed only on MFP devices
 
-Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index fdf0bfb..c810e9d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9259,6 +9259,17 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index f829a7a..7267a93 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -4479,6 +4479,12 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 		}
  	}
- 	i40e_get_oem_version(&pf->hw);
  
-+	if (test_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state) &&
-+	    ((hw->aq.fw_maj_ver == 4 && hw->aq.fw_min_ver <= 33) ||
-+	     hw->aq.fw_maj_ver < 4) && hw->mac.type == I40E_MAC_XL710) {
-+		/* The following delay is necessary for 4.33 firmware and older
-+		 * to recover after EMP reset. 200 ms should suffice but we
-+		 * put here 300 ms to be sure that FW is ready to operate
-+		 * after reset.
-+		 */
-+		mdelay(300);
-+	}
++	if ((changed_flags & pf->flags &
++	     I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED) &&
++	    (pf->flags & I40E_FLAG_MFP_ENABLED))
++		dev_warn(&pf->pdev->dev,
++			 "Turning on link-down-on-close flag may affect other partitions\n");
 +
- 	/* re-verify the eeprom if we just had an EMP reset */
- 	if (test_and_clear_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state))
- 		i40e_verify_eeprom(pf);
+ 	if (changed_flags & I40E_FLAG_DISABLE_FW_LLDP) {
+ 		if (pf->flags & I40E_FLAG_DISABLE_FW_LLDP) {
+ 			struct i40e_dcbx_config *dcbcfg;
 -- 
 2.9.5
 
