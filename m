@@ -1,255 +1,48 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 29 Dec 2017 08:49:53 -0500
-Subject: [Intel-wired-lan] [next PATCH S85-V1 05/14] i40e/i40evf: Clean up
- logic for adaptive ITR
-Message-ID: <20171229134953.14355-1-alice.michael@intel.com>
+Date: Fri, 29 Dec 2017 08:50:05 -0500
+Subject: [Intel-wired-lan] [next PATCH S85-V1 06/14] i40e: Add delay after
+ EMP reset for firmware to recover
+Message-ID: <20171229135005.14410-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+From: Filip Sadowski <filip.sadowski@intel.com>
 
-The logic for dynamic ITR update is confusing at best as there were odd
-paths chosen for how to find the rings associated with a given queue based
-on the vector index and other inconsistencies throughout the code.
+This patch adds necessary delay for 4.33 firmware to recover after
+EMP reset. Without this patch driver occasionally reinitializes
+structures too quickly to communicate with firmware after EMP reset
+causing AdminQ to timeout.
 
-This patch is an attempt to clean up the logic so that we can more easily
-understand what is going on. Specifically if there is a Rx or Tx ring that
-is enabled in dynamic mode on the q_vector it is allowed to override the
-other side of the interrupt moderation. While it isn't correct all this
-patch is doing is cleaning up the logic for now so that when we come
-through and fix it we can more easily identify that this is wrong.
-
-The other big change made here is that we replace references to:
-	vsi->rx_rings[q_vector->v_idx]->itr_setting
-with:
-	q_vector->rx.ring->itr_setting
-
-The general idea is we can avoid the long pointer chase since just
-accessing q_vector->rx.ring is a single pointer access versus having to
-chase down vsi->rx_rings, and then finding the pointer in the array, and
-finally chasing down the itr_setting from there.
-
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 55 +++++++------------------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 59 +++++++--------------------
- 2 files changed, 28 insertions(+), 86 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 44d360e..4e661ef 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1015,6 +1015,9 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	int bytes_per_usec;
- 	unsigned int usecs, estimated_usecs;
- 
-+	if (!rc->ring || !ITR_IS_DYNAMIC(rc->ring->itr_setting))
-+		return false;
-+
- 	if (rc->total_packets == 0 || !rc->itr)
- 		return false;
- 
-@@ -2274,15 +2277,6 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
- 
- /* a small macro to shorten up some long lines */
- #define INTREG I40E_PFINT_DYN_CTLN
--static inline int get_rx_itr(struct i40e_vsi *vsi, int idx)
--{
--	return vsi->rx_rings[idx]->itr_setting;
--}
--
--static inline int get_tx_itr(struct i40e_vsi *vsi, int idx)
--{
--	return vsi->tx_rings[idx]->itr_setting;
--}
- 
- /**
-  * i40e_update_enable_itr - Update itr and re-enable MSIX interrupt
-@@ -2295,9 +2289,7 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
- {
- 	struct i40e_hw *hw = &vsi->back->hw;
- 	bool rx = false, tx = false;
--	u32 rxval, txval;
--	int idx = q_vector->v_idx;
--	int rx_itr_setting, tx_itr_setting;
-+	u32 txval;
- 
- 	/* If we don't have MSIX, then we only need to re-enable icr0 */
- 	if (!(vsi->back->flags & I40E_FLAG_MSIX_ENABLED)) {
-@@ -2305,29 +2297,15 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
- 		return;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index fdf0bfb..c810e9d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -9259,6 +9259,17 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
  	}
+ 	i40e_get_oem_version(&pf->hw);
  
--	/* avoid dynamic calculation if in countdown mode OR if
--	 * all dynamic is disabled
--	 */
- 	txval = i40e_buildreg_itr(I40E_ITR_NONE, 0);
- 
--	rx_itr_setting = get_rx_itr(vsi, idx);
--	tx_itr_setting = get_tx_itr(vsi, idx);
--
--	if (q_vector->itr_countdown > 0 ||
--	    (!ITR_IS_DYNAMIC(rx_itr_setting) &&
--	     !ITR_IS_DYNAMIC(tx_itr_setting))) {
-+	/* avoid dynamic calculation if in countdown mode */
-+	if (q_vector->itr_countdown > 0)
- 		goto enable_int;
--	}
- 
--	if (ITR_IS_DYNAMIC(rx_itr_setting)) {
--		rx = i40e_set_new_dynamic_itr(&q_vector->rx);
--		rxval = i40e_buildreg_itr(I40E_RX_ITR, q_vector->rx.itr);
--	}
--
--	if (ITR_IS_DYNAMIC(tx_itr_setting)) {
--		tx = i40e_set_new_dynamic_itr(&q_vector->tx);
--		txval = i40e_buildreg_itr(I40E_TX_ITR, q_vector->tx.itr);
--	}
-+	/* these will return false if dynamic mode is disabled */
-+	rx = i40e_set_new_dynamic_itr(&q_vector->rx);
-+	tx = i40e_set_new_dynamic_itr(&q_vector->tx);
- 
- 	if (rx || tx) {
- 		/* get the higher of the two ITR adjustments and
-@@ -2335,25 +2313,20 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
- 		 * when in adaptive mode (Rx and/or Tx)
- 		 */
- 		u16 itr = max(q_vector->tx.itr, q_vector->rx.itr);
-+		u32 rxval;
- 
- 		q_vector->tx.itr = q_vector->rx.itr = itr;
--		txval = i40e_buildreg_itr(I40E_TX_ITR, itr);
--		tx = true;
--		rxval = i40e_buildreg_itr(I40E_RX_ITR, itr);
--		rx = true;
--	}
- 
--	/* only need to enable the interrupt once, but need
--	 * to possibly update both ITR values
--	 */
--	if (rx) {
- 		/* set the INTENA_MSK_MASK so that this first write
- 		 * won't actually enable the interrupt, instead just
- 		 * updating the ITR (it's bit 31 PF and VF)
- 		 */
--		rxval |= BIT(31);
-+		rxval = i40e_buildreg_itr(I40E_RX_ITR, itr) | BIT(31);
++	if (test_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state) &&
++	    ((hw->aq.fw_maj_ver == 4 && hw->aq.fw_min_ver <= 33) ||
++	     hw->aq.fw_maj_ver < 4) && hw->mac.type == I40E_MAC_XL710) {
++		/* The following delay is necessary for 4.33 firmware and older
++		 * to recover after EMP reset. 200 ms should suffice but we
++		 * put here 300 ms to be sure that FW is ready to operate
++		 * after reset.
++		 */
++		mdelay(300);
++	}
 +
- 		/* don't check _DOWN because interrupt isn't being enabled */
- 		wr32(hw, INTREG(q_vector->reg_idx), rxval);
-+
-+		txval = i40e_buildreg_itr(I40E_TX_ITR, itr);
- 	}
- 
- enable_int:
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 291130a..3fd7e97 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -413,6 +413,9 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	int bytes_per_usec;
- 	unsigned int usecs, estimated_usecs;
- 
-+	if (!rc->ring || !ITR_IS_DYNAMIC(rc->ring->itr_setting))
-+		return false;
-+
- 	if (rc->total_packets == 0 || !rc->itr)
- 		return false;
- 
-@@ -1471,19 +1474,6 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
- 
- /* a small macro to shorten up some long lines */
- #define INTREG I40E_VFINT_DYN_CTLN1
--static inline int get_rx_itr(struct i40e_vsi *vsi, int idx)
--{
--	struct i40evf_adapter *adapter = vsi->back;
--
--	return adapter->rx_rings[idx].itr_setting;
--}
--
--static inline int get_tx_itr(struct i40e_vsi *vsi, int idx)
--{
--	struct i40evf_adapter *adapter = vsi->back;
--
--	return adapter->tx_rings[idx].itr_setting;
--}
- 
- /**
-  * i40e_update_enable_itr - Update itr and re-enable MSIX interrupt
-@@ -1496,33 +1486,17 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
- {
- 	struct i40e_hw *hw = &vsi->back->hw;
- 	bool rx = false, tx = false;
--	u32 rxval, txval;
--	int idx = q_vector->v_idx;
--	int rx_itr_setting, tx_itr_setting;
-+	u32 txval;
- 
--	/* avoid dynamic calculation if in countdown mode OR if
--	 * all dynamic is disabled
--	 */
- 	txval = i40e_buildreg_itr(I40E_ITR_NONE, 0);
- 
--	rx_itr_setting = get_rx_itr(vsi, idx);
--	tx_itr_setting = get_tx_itr(vsi, idx);
--
--	if (q_vector->itr_countdown > 0 ||
--	    (!ITR_IS_DYNAMIC(rx_itr_setting) &&
--	     !ITR_IS_DYNAMIC(tx_itr_setting))) {
-+	/* avoid dynamic calculation if in countdown mode */
-+	if (q_vector->itr_countdown > 0)
- 		goto enable_int;
--	}
- 
--	if (ITR_IS_DYNAMIC(rx_itr_setting)) {
--		rx = i40e_set_new_dynamic_itr(&q_vector->rx);
--		rxval = i40e_buildreg_itr(I40E_RX_ITR, q_vector->rx.itr);
--	}
--
--	if (ITR_IS_DYNAMIC(tx_itr_setting)) {
--		tx = i40e_set_new_dynamic_itr(&q_vector->tx);
--		txval = i40e_buildreg_itr(I40E_TX_ITR, q_vector->tx.itr);
--	}
-+	/* these will return false if dynamic mode is disabled */
-+	rx = i40e_set_new_dynamic_itr(&q_vector->rx);
-+	tx = i40e_set_new_dynamic_itr(&q_vector->tx);
- 
- 	if (rx || tx) {
- 		/* get the higher of the two ITR adjustments and
-@@ -1530,25 +1504,20 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
- 		 * when in adaptive mode (Rx and/or Tx)
- 		 */
- 		u16 itr = max(q_vector->tx.itr, q_vector->rx.itr);
-+		u32 rxval;
- 
- 		q_vector->tx.itr = q_vector->rx.itr = itr;
--		txval = i40e_buildreg_itr(I40E_TX_ITR, itr);
--		tx = true;
--		rxval = i40e_buildreg_itr(I40E_RX_ITR, itr);
--		rx = true;
--	}
- 
--	/* only need to enable the interrupt once, but need
--	 * to possibly update both ITR values
--	 */
--	if (rx) {
- 		/* set the INTENA_MSK_MASK so that this first write
- 		 * won't actually enable the interrupt, instead just
- 		 * updating the ITR (it's bit 31 PF and VF)
- 		 */
--		rxval |= BIT(31);
-+		rxval = i40e_buildreg_itr(I40E_RX_ITR, itr) | BIT(31);
-+
- 		/* don't check _DOWN because interrupt isn't being enabled */
- 		wr32(hw, INTREG(q_vector->reg_idx), rxval);
-+
-+		txval = i40e_buildreg_itr(I40E_TX_ITR, itr);
- 	}
- 
- enable_int:
+ 	/* re-verify the eeprom if we just had an EMP reset */
+ 	if (test_and_clear_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state))
+ 		i40e_verify_eeprom(pf);
 -- 
 2.9.5
 
