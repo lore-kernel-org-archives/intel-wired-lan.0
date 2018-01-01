@@ -1,52 +1,43 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Fri, 22 Dec 2017 14:33:30 -0800
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 08/10] ixgbe: process
- the Tx ipsec offload
-In-Reply-To: <6dc35153-0615-2132-a8d7-ab6ab05f0ab5@oracle.com>
-References: <1513728002-7643-1-git-send-email-shannon.nelson@oracle.com>
- <1513728002-7643-9-git-send-email-shannon.nelson@oracle.com>
- <6dc35153-0615-2132-a8d7-ab6ab05f0ab5@oracle.com>
-Message-ID: <5d74c5f8-0bd3-6a4e-3318-ac9616119978@oracle.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 1 Jan 2018 20:43:35 +0100
+Subject: [Intel-wired-lan] [PATCH] i40e: Delete an error message for a
+ failed memory allocation in i40e_init_interrupt_scheme()
+Message-ID: <c9c151e5-bd26-5b72-d26b-c153249811ab@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/22/2017 12:24 AM, Yanjun Zhu wrote:
-> On 2017/12/20 8:00, Shannon Nelson wrote:
->> If the skb has a security association referenced in the skb, then
->> set up the Tx descriptor with the ipsec offload bits.? While we're
->> here, we fix an oddly named field in the context descriptor struct.
->>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 1 Jan 2018 20:38:14 +0100
 
-[...]
+Omit an extra message for a memory allocation failure in this function.
 
->> +int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring,
->> +?????????? struct ixgbe_tx_buffer *first,
->> +?????????? struct ixgbe_ipsec_tx_data *itd)
->> +{
->> +??? struct ixgbe_adapter *adapter = netdev_priv(tx_ring->netdev);
->> +??? struct ixgbe_ipsec *ipsec = adapter->ipsec;
->> +??? struct xfrm_state *xs;
->> +??? struct tx_sa *tsa;
->> +
->> +??? if (!first->skb->sp->len) {
-> Hi, Nelson
-> 
-> The function ixgbe_ipsec_tx is called in tx fastpath. Can we add 
-> unlikely as below:
-> if (unlikely(!first->skb->sp->len)) ?
-> 
-> If I am wrong, please correct me.
-> 
-> Thanks a lot.
-> Zhu Yanjun
+This issue was detected by using the Coccinelle software.
 
-Yes, we can probably throw those in.  I'll be working on this code in 
-the new year to get the checksum and TSO bits working and can add these 
-at that time.
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-sln
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 4a964d6e4a9e..fd9ac22ee65a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10445,10 +10445,9 @@ static int i40e_init_interrupt_scheme(struct i40e_pf *pf)
+ 	/* set up vector assignment tracking */
+ 	size = sizeof(struct i40e_lump_tracking) + (sizeof(u16) * vectors);
+ 	pf->irq_pile = kzalloc(size, GFP_KERNEL);
+-	if (!pf->irq_pile) {
+-		dev_err(&pf->pdev->dev, "error allocating irq_pile memory\n");
++	if (!pf->irq_pile)
+ 		return -ENOMEM;
+-	}
++
+ 	pf->irq_pile->num_entries = vectors;
+ 	pf->irq_pile->search_hint = 0;
+ 
+-- 
+2.15.1
 
