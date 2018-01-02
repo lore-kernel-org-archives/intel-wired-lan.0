@@ -1,103 +1,179 @@
-From: Daniel Hua <daniel.hua@ni.com>
-Date: Tue, 2 Jan 2018 00:35:55 +0000
-Subject: [Intel-wired-lan] [PATCH] Cover letter for igb: bug fix Tx
- interrupt is not
-In-Reply-To: <CAKgT0Ud8-6bf07niVk+bBk1SCPm1Bvd28NFhWoHAbA2Dh_Bfrw@mail.gmail.com>
-References: <1514341064-8105-1-git-send-email-daniel.hua@ni.com>
- <CAKgT0UdHmP=bJuJPaUT15GdEBdzWr1unu==hj1CfoVvnG+uscg@mail.gmail.com>
- <CY4PR04MB077709CECCB9E7671EAE9F42EB040@CY4PR04MB0777.namprd04.prod.outlook.com>
- <CY4PR04MB0777234A7BC6EF84447D4685EB050@CY4PR04MB0777.namprd04.prod.outlook.com>
- <CAKgT0Ud8-6bf07niVk+bBk1SCPm1Bvd28NFhWoHAbA2Dh_Bfrw@mail.gmail.com>
-Message-ID: <CY4PR04MB0777862BC9F125F4C50B3F57EB190@CY4PR04MB0777.namprd04.prod.outlook.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 03 Jan 2018 00:31:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ d9a8d6f32653f848145e31f7b24e0f50c08c3e82
+Message-ID: <5a4bb3f3.aeM7OP6wVGYgxqg2%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks for the comments, Alex. I have updated the patch accordingly and sent it out.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: d9a8d6f32653f848145e31f7b24e0f50c08c3e82  i40e: flower: Fix return value for unsupported offload
+
+elapsed time: 63m
+
+configs tested: 155
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+powerpc                     mpc512x_defconfig
+powerpc                      ppc64e_defconfig
+xtensa                           allyesconfig
+x86_64                 randconfig-a0-01022346
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                randconfig-in0-01022223
+i386                   randconfig-x010-201800
+i386                   randconfig-x011-201800
+i386                   randconfig-x012-201800
+i386                   randconfig-x013-201800
+i386                   randconfig-x014-201800
+i386                   randconfig-x015-201800
+i386                   randconfig-x016-201800
+i386                   randconfig-x017-201800
+i386                   randconfig-x018-201800
+i386                   randconfig-x019-201800
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-n0-201800
+x86_64                 randconfig-x008-201800
+x86_64                 randconfig-x000-201800
+x86_64                 randconfig-x005-201800
+x86_64                 randconfig-x007-201800
+x86_64                 randconfig-x009-201800
+x86_64                 randconfig-x002-201800
+x86_64                 randconfig-x006-201800
+x86_64                 randconfig-x001-201800
+x86_64                 randconfig-x003-201800
+x86_64                 randconfig-x004-201800
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201800
+i386                     randconfig-i1-201800
+x86_64                 randconfig-v0-01022248
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x017-201800
+x86_64                 randconfig-x018-201800
+x86_64                 randconfig-x013-201800
+x86_64                 randconfig-x016-201800
+x86_64                 randconfig-x014-201800
+x86_64                 randconfig-x011-201800
+x86_64                 randconfig-x015-201800
+x86_64                 randconfig-x012-201800
+x86_64                 randconfig-x010-201800
+x86_64                 randconfig-x019-201800
+i386                   randconfig-a1-01022352
+i386                   randconfig-a0-01022352
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                              alldefconfig
+arm                         bcm2835_defconfig
+arm                           viper_defconfig
+mips                        omega2p_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201800
+i386                     randconfig-s1-201800
+x86_64                 randconfig-s3-01022310
+x86_64                 randconfig-s4-01022310
+x86_64                 randconfig-s5-01022310
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201800
+x86_64       randconfig-i0-201800+bisect_validate
+i386                   randconfig-b0-01022316
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-u0-01022327
+cris                                defconfig
+powerpc               mpc86xx_basic_defconfig
+powerpc                     virtex5_defconfig
+i386                   randconfig-x070-201800
+i386                   randconfig-x071-201800
+i386                   randconfig-x072-201800
+i386                   randconfig-x073-201800
+i386                   randconfig-x074-201800
+i386                   randconfig-x075-201800
+i386                   randconfig-x076-201800
+i386                   randconfig-x077-201800
+i386                   randconfig-x078-201800
+i386                   randconfig-x079-201800
+x86_64                                  kexec
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+parisc                generic-64bit_defconfig
+sh                             espt_defconfig
+i386                   randconfig-x004-201800
+i386                   randconfig-x002-201800
+i386                   randconfig-x007-201800
+i386                   randconfig-x009-201800
+i386                   randconfig-x003-201800
+i386                   randconfig-x005-201800
+i386                   randconfig-x006-201800
+i386                   randconfig-x000-201800
+i386                   randconfig-x001-201800
+i386                   randconfig-x008-201800
+i386                   randconfig-x0-01022321
 
 Thanks,
--Daniel
-
------Original Message-----
-From: Alexander Duyck [mailto:alexander.duyck at gmail.com] 
-Sent: Friday, December 29, 2017 10:49 PM
-To: Daniel Hua <daniel.hua@ni.com>
-Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-Subject: Re: [Intel-wired-lan] [PATCH] Cover letter for igb: bug fix Tx interrupt is not
-
-I don't see multiple sends, I only see the one.
-
-Also the formatting for the new one you sent out still isn't quite correct.
-
-It should have your patch description before the "Signed-off-by:" line and you don't want to have any "---" between the two. That way the actual comments end up in the final patch.
-
-- Alex
-
-On Fri, Dec 29, 2017 at 1:20 AM, Daniel Hua <daniel.hua@ni.com> wrote:
-> Hi Alex,
->
-> It seems I can't just update to the original patch, ends up sending many duplicated ones. Is there any way I can recall those duplicated patches? Sorry for the inconvenience.
->
-> Thanks,
-> -Daniel
->
-> -----Original Message-----
-> From: Daniel Hua
-> Sent: Thursday, December 28, 2017 10:23 AM
-> To: 'Alexander Duyck' <alexander.duyck@gmail.com>
-> Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-> Subject: RE: [Intel-wired-lan] [PATCH] Cover letter for igb: bug fix 
-> Tx interrupt is not
->
-> Hi Alex,
->
-> Thanks for the comments. I have put the description in the patch and resent it.
->
-> Regards,
-> -Daniel
->
-> -----Original Message-----
-> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
-> Sent: Thursday, December 28, 2017 12:58 AM
-> To: Daniel Hua <daniel.hua@ni.com>
-> Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-> Subject: Re: [Intel-wired-lan] [PATCH] Cover letter for igb: bug fix 
-> Tx interrupt is not
->
-> On Tue, Dec 26, 2017 at 6:17 PM, Daniel Hua <daniel.hua@ni.com> wrote:
->> Problem description:
->> After ethernet cable connect and disconnect for several iterations on 
->> a device with i210, tx timestamp will stop being put into the socket.
->>
->> Steps to reproduce:
->> 1. Setup a device with i210 and wire it to a 802.1AS capable switch ( 
->> Extreme Networks Summit x440 is used in our case) 2. Have the gptp 
->> daemon running on the device and make sure it is synced with the 
->> switch 3. Have the switch disable and enable the port, wait for the 
->> device gets resynced with the switch 4. Iterates step 3 until the 
->> device is not albe to get resynced 5. Review the log in dmesg and you 
->> will see warning message "igb : clearing Tx timestamp hang"
->>
->> Root cause:
->> If ptp_tx_work() gets scheduled just before the port gets disabled, a 
->> LINK DOWN event will be processed before ptp_tx_work(), which may 
->> cause timeout in ptp_tx_work(). In the timeout logic, the 
->> TSYNCTXCTL's TXTT bit (Transmit timestamp valid bit) is not cleared, 
->> causing no new timestamp loaded to TXSTMP register. Consequently 
->> therefore, no new interrupt is triggerred by TSICR.TXTS bit and no more Tx timestamp send to the socket.
->>
->> Daniel Hua (1):
->>   igb: bug fix Tx interrupt is not triggered
->>
->>  drivers/net/ethernet/intel/igb/igb_ptp.c | 9 +++++++++
->>  1 file changed, 9 insertions(+)
->>
->> --
->
-> Could you please combine this description of the issue with the patch itself? It isn't really very useful to have the patch documented in a cover letter that will never make it into the driver itself.
->
-> Thanks.
->
-> - Alex
+Fengguang
