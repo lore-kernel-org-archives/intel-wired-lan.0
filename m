@@ -1,73 +1,159 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 2 Jan 2018 23:51:35 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: don't remove netdev->dev_addr
- when syncing uc list
-In-Reply-To: <20171220160436.15288-1-alice.michael@intel.com>
-References: <20171220160436.15288-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8D5CA5@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 03 Jan 2018 07:55:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 087d7f34f86ada1c47ad69a9cc7bc476005c535f
+Message-ID: <5a4c1c09.q97nq0ulygR8UCBt%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Wednesday, December 20, 2017 8:05 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: don't remove netdev->dev_addr
-> when syncing uc list
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> In some circumstances, such as with bridging, it is possible that the stack will
-> add a devices own MAC address to its unicast address list.
-> 
-> If, later, the stack deletes this address, then the i40e driver will receive a
-> request to remove this address.
-> 
-> The driver stores its current MAC address as part of the MAC/VLAN hash
-> array, since it is convenient and matches exactly how the hardware expects
-> to be told which traffic to receive.
-> 
-> This causes a problem, since for more devices, the MAC address is stored
-> separately, and requests to delete a unicast address should not have the
-> ability to remove the filter for the MAC address.
-> 
-> Fix this by forcing a check on every address sync to ensure we do not remove
-> the device address.
-> 
-> There is a very narrow possibility of a race between .set_mac and
-> .set_rx_mode, if we don't change netdev->dev_addr before updating our
-> internal MAC list in .set_mac. This might be possible if .set_rx_mode is going
-> to remove MAC "XYZ" from the list, at the same time as .set_mac changes
-> our dev_addr to MAC "XYZ", we might possibly queue a delete, then an add
-> in .set_mac, then queue a delete in .set_rx_mode's dev_uc_sync and then
-> update netdev->dev_addr. We can avoid this by moving the copy into
-> dev_addr prior to the changes to the MAC filter list.
-> 
-> A similar race on the other side does not cause problems, as if we're changing
-> our MAC form A to B, and we race with .set_rx_mode, it could queue a
-> delete from A, we'd update our address, and allow the delete.
-> This seems like a race, but in reality we're about to queue a delete of A
-> anyways, so it would not cause any issues.
-> 
-> A race in the initialization code is unlikely because the netdevice has not yet
-> been fully initialized and the stack should not be adding or removing
-> addresses yet.
-> 
-> Note that we don't (yet) need similar code for the VF driver because it does
-> not make use of __dev_uc_sync and __dev_mc_sync, but instead roles its
-> own method for handling updates to the MAC/VLAN list, which already has
-> code to protect against removal of the hardware address.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 17 ++++++++++++++++-
->  1 file changed, 16 insertions(+), 1 deletion(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 087d7f34f86ada1c47ad69a9cc7bc476005c535f  i40e/i40evf: Use ring pointers to clean up _set_itr_per_queue
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 487m
 
+configs tested: 135
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                         palmz72_defconfig
+m32r                                defconfig
+powerpc64                         allnoconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                randconfig-it0-01030646
+i386                   randconfig-x010-201800
+i386                   randconfig-x011-201800
+i386                   randconfig-x012-201800
+i386                   randconfig-x013-201800
+i386                   randconfig-x014-201800
+i386                   randconfig-x015-201800
+i386                   randconfig-x016-201800
+i386                   randconfig-x017-201800
+i386                   randconfig-x018-201800
+i386                   randconfig-x019-201800
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-v0-01030701
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-01022352
+i386                   randconfig-a1-01022352
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x017-201800
+x86_64                 randconfig-x018-201800
+x86_64                 randconfig-x013-201800
+x86_64                 randconfig-x016-201800
+x86_64                 randconfig-x014-201800
+x86_64                 randconfig-x011-201800
+x86_64                 randconfig-x015-201800
+x86_64                 randconfig-x012-201800
+x86_64                 randconfig-x010-201800
+x86_64                 randconfig-x019-201800
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201800
+i386                     randconfig-s1-201800
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+powerpc                 canyonlands_defconfig
+powerpc                      pcm030_defconfig
+xtensa                              defconfig
+i386                             allmodconfig
+blackfin                  TCM-BF518_defconfig
+powerpc                      arches_defconfig
+x86_64                 randconfig-u0-01030617
+x86_64                 randconfig-u0-01030643
+x86_64                 randconfig-u0-01030710
+mips                      pic32mzda_defconfig
+x86_64                 randconfig-n0-01030704
+i386                   randconfig-x000-201800
+i386                   randconfig-x001-201800
+i386                   randconfig-x002-201800
+i386                   randconfig-x003-201800
+i386                   randconfig-x004-201800
+i386                   randconfig-x005-201800
+i386                   randconfig-x006-201800
+i386                   randconfig-x007-201800
+i386                   randconfig-x008-201800
+i386                   randconfig-x009-201800
+x86_64                 randconfig-x000-201800
+x86_64                 randconfig-x001-201800
+x86_64                 randconfig-x002-201800
+x86_64                 randconfig-x003-201800
+x86_64                 randconfig-x004-201800
+x86_64                 randconfig-x005-201800
+x86_64                 randconfig-x006-201800
+x86_64                 randconfig-x007-201800
+x86_64                 randconfig-x008-201800
+x86_64                 randconfig-x009-201800
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x070-201800
+i386                   randconfig-x071-201800
+i386                   randconfig-x072-201800
+i386                   randconfig-x073-201800
+i386                   randconfig-x074-201800
+i386                   randconfig-x075-201800
+i386                   randconfig-x076-201800
+i386                   randconfig-x077-201800
+i386                   randconfig-x078-201800
+i386                   randconfig-x079-201800
+x86_64                 randconfig-r0-01030619
+x86_64                 randconfig-r0-01030655
+i386                   randconfig-x0-01030635
+i386                   randconfig-x0-01030716
+
+Thanks,
+Fengguang
