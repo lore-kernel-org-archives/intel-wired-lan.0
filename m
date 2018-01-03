@@ -1,75 +1,134 @@
-From: Malek, Patryk <patryk.malek@intel.com>
-Date: Wed, 3 Jan 2018 11:04:50 +0000
-Subject: [Intel-wired-lan] [next PATCH S84-V2 02/13] i40e: Fix for
- adding multiple ethtool filters on the same location
-In-Reply-To: <20171227123242.22356-2-alice.michael@intel.com>
-References: <20171227123242.22356-1-alice.michael@intel.com>
- <20171227123242.22356-2-alice.michael@intel.com>
-Message-ID: <FA03331EB45A2544B0CBCB1A14B6429E29682A0A@IRSMSX104.ger.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 03 Jan 2018 22:31:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 709ab29d11e0aa83416fc04243228914b102ddac
+Message-ID: <5a4ce929.ZVb3QCpsF3fquMQh%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 709ab29d11e0aa83416fc04243228914b102ddac  i40e/i40evf: Don't bother setting the CLEARPBA bit
 
------Original Message-----
-From: Michael, Alice 
-Sent: Wednesday, December 27, 2017 13:33
-To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: Malek, Patryk <patryk.malek@intel.com>
-Subject: [next PATCH S84-V2 02/13] i40e: Fix for adding multiple ethtool filters on the same location
+elapsed time: 1300m
 
-From: Patryk Ma?ek <patryk.malek@intel.com>
+configs tested: 110
 
-This patch reorders i40e_add_del_fdir and i40e_update_ethtool_fdir_entry calls so that we first remove an already existing filter (inside i40e_update_ethtool_fdir_entry using i40e_add_del_fdir) and then we add a new one with i40e_add_del_fdir.
-After applying this patch, creating multiple identical filters (with the same location) one after another doesn't revert their behavior but behaves correctly.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x010-201800
+i386                   randconfig-x011-201800
+i386                   randconfig-x012-201800
+i386                   randconfig-x013-201800
+i386                   randconfig-x014-201800
+i386                   randconfig-x015-201800
+i386                   randconfig-x016-201800
+i386                   randconfig-x017-201800
+i386                   randconfig-x018-201800
+i386                   randconfig-x019-201800
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-x000-201800
+x86_64                 randconfig-x001-201800
+x86_64                 randconfig-x002-201800
+x86_64                 randconfig-x003-201800
+x86_64                 randconfig-x004-201800
+x86_64                 randconfig-x005-201800
+x86_64                 randconfig-x006-201800
+x86_64                 randconfig-x007-201800
+x86_64                 randconfig-x008-201800
+x86_64                 randconfig-x009-201800
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201800
+i386                     randconfig-i1-201800
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                      jornada720_defconfig
+cris                              allnoconfig
+m32r                         opsput_defconfig
+blackfin                BF538-EZKIT_defconfig
+mips                             alldefconfig
+mips                         tb0219_defconfig
+arm                         at91_dt_defconfig
+frv                              allmodconfig
+powerpc                     mpc83xx_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x010-201800
+x86_64                 randconfig-x011-201800
+x86_64                 randconfig-x012-201800
+x86_64                 randconfig-x013-201800
+x86_64                 randconfig-x014-201800
+x86_64                 randconfig-x015-201800
+x86_64                 randconfig-x016-201800
+x86_64                 randconfig-x017-201800
+x86_64                 randconfig-x018-201800
+x86_64                 randconfig-x019-201800
+i386                     randconfig-a0-201800
+i386                     randconfig-a1-201800
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-s0-201800
+i386         randconfig-s0-201800-CONFIG_DEBUG_INFO_REDUCED
+i386                     randconfig-s1-201800
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201800
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x070-201800
+i386                   randconfig-x071-201800
+i386                   randconfig-x072-201800
+i386                   randconfig-x073-201800
+i386                   randconfig-x074-201800
+i386                   randconfig-x075-201800
+i386                   randconfig-x076-201800
+i386                   randconfig-x077-201800
+i386                   randconfig-x078-201800
+i386                   randconfig-x079-201800
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 86329a3..099b170 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -3939,19 +3939,19 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
- 		input->flex_offset = userdef.flex_offset;
- 	}
- 
--	ret = i40e_add_del_fdir(vsi, input, true);
--	if (ret)
--		goto free_input;
--
- 	/* Add the input filter to the fdir_input_list, possibly replacing
- 	 * a previous filter. Do not free the input structure after adding it
- 	 * to the list as this would cause a use-after-free bug.
- 	 */
- 	i40e_update_ethtool_fdir_entry(vsi, input, fsp->location, NULL);
--
-+	ret = i40e_add_del_fdir(vsi, input, true);
-+	if (ret)
-+		goto remove_sw_rule;
- 	return 0;
- 
--free_input:
-+remove_sw_rule:
-+	hlist_del(&input->fdir_node);
-+	pf->fdir_pf_active_filters--;
- 	kfree(input);
- 	return ret;
- }
---
-2.9.5
-
---------------------------------------------------------------------
-
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
+Thanks,
+Fengguang
