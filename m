@@ -1,159 +1,143 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 03 Jan 2018 07:55:53 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 087d7f34f86ada1c47ad69a9cc7bc476005c535f
-Message-ID: <5a4c1c09.q97nq0ulygR8UCBt%fengguang.wu@intel.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Wed, 03 Jan 2018 11:25:23 +0100
+Subject: [Intel-wired-lan] [bpf-next V4 PATCH 03/14] i40e: setup xdp_rxq_info
+In-Reply-To: <151497504273.18176.10177133999720101758.stgit@firesoul>
+References: <151497504273.18176.10177133999720101758.stgit@firesoul>
+Message-ID: <151497512387.18176.16261505821783867005.stgit@firesoul>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 087d7f34f86ada1c47ad69a9cc7bc476005c535f  i40e/i40evf: Use ring pointers to clean up _set_itr_per_queue
+The i40e driver has a special "FDIR" RX-ring (I40E_VSI_FDIR) which is
+a sideband channel for configuring/updating the flow director tables.
+This (i40e_vsi_)type does not invoke XDP-ebpf code.
 
-elapsed time: 487m
+As suggested by Bj?rn (V2): Instead of marking this I40E_VSI_FDIR RX-ring
+a special case, reverse the logic and only select RX-rings of type
+I40E_VSI_MAIN to register xdp_rxq_info's for.
 
-configs tested: 135
+Driver hook points for xdp_rxq_info:
+ * reg  : i40e_setup_rx_descriptors (via i40e_vsi_setup_rx_resources)
+ * unreg: i40e_free_rx_resources    (via i40e_vsi_free_rx_resources)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Tested on actual hardware with samples/bpf program.
 
-arm                         palmz72_defconfig
-m32r                                defconfig
-powerpc64                         allnoconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                randconfig-it0-01030646
-i386                   randconfig-x010-201800
-i386                   randconfig-x011-201800
-i386                   randconfig-x012-201800
-i386                   randconfig-x013-201800
-i386                   randconfig-x014-201800
-i386                   randconfig-x015-201800
-i386                   randconfig-x016-201800
-i386                   randconfig-x017-201800
-i386                   randconfig-x018-201800
-i386                   randconfig-x019-201800
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-01030701
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-01022352
-i386                   randconfig-a1-01022352
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x017-201800
-x86_64                 randconfig-x018-201800
-x86_64                 randconfig-x013-201800
-x86_64                 randconfig-x016-201800
-x86_64                 randconfig-x014-201800
-x86_64                 randconfig-x011-201800
-x86_64                 randconfig-x015-201800
-x86_64                 randconfig-x012-201800
-x86_64                 randconfig-x010-201800
-x86_64                 randconfig-x019-201800
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201800
-i386                     randconfig-s1-201800
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-powerpc                 canyonlands_defconfig
-powerpc                      pcm030_defconfig
-xtensa                              defconfig
-i386                             allmodconfig
-blackfin                  TCM-BF518_defconfig
-powerpc                      arches_defconfig
-x86_64                 randconfig-u0-01030617
-x86_64                 randconfig-u0-01030643
-x86_64                 randconfig-u0-01030710
-mips                      pic32mzda_defconfig
-x86_64                 randconfig-n0-01030704
-i386                   randconfig-x000-201800
-i386                   randconfig-x001-201800
-i386                   randconfig-x002-201800
-i386                   randconfig-x003-201800
-i386                   randconfig-x004-201800
-i386                   randconfig-x005-201800
-i386                   randconfig-x006-201800
-i386                   randconfig-x007-201800
-i386                   randconfig-x008-201800
-i386                   randconfig-x009-201800
-x86_64                 randconfig-x000-201800
-x86_64                 randconfig-x001-201800
-x86_64                 randconfig-x002-201800
-x86_64                 randconfig-x003-201800
-x86_64                 randconfig-x004-201800
-x86_64                 randconfig-x005-201800
-x86_64                 randconfig-x006-201800
-x86_64                 randconfig-x007-201800
-x86_64                 randconfig-x008-201800
-x86_64                 randconfig-x009-201800
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x070-201800
-i386                   randconfig-x071-201800
-i386                   randconfig-x072-201800
-i386                   randconfig-x073-201800
-i386                   randconfig-x074-201800
-i386                   randconfig-x075-201800
-i386                   randconfig-x076-201800
-i386                   randconfig-x077-201800
-i386                   randconfig-x078-201800
-i386                   randconfig-x079-201800
-x86_64                 randconfig-r0-01030619
-x86_64                 randconfig-r0-01030655
-i386                   randconfig-x0-01030635
-i386                   randconfig-x0-01030716
+V2: Fixed bug in i40e_set_ringparam (memset zero) + match on I40E_VSI_MAIN.
+V4: Update patch desc that got out-of-sync with code.
 
-Thanks,
-Fengguang
+Cc: intel-wired-lan at lists.osuosl.org
+Cc: Bj?rn T?pel <bjorn.topel@intel.com>
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: Paul Menzel <pmenzel@molgen.mpg.de>
+Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |    2 ++
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    |   18 ++++++++++++++++--
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h    |    3 +++
+ 3 files changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 5f6cf7212d4f..cfd788b4fd7a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1585,6 +1585,8 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 			 */
+ 			rx_rings[i].desc = NULL;
+ 			rx_rings[i].rx_bi = NULL;
++			/* Clear cloned XDP RX-queue info before setup call */
++			memset(&rx_rings[i].xdp_rxq, 0, sizeof(rx_rings[i].xdp_rxq));
+ 			/* this is to allow wr32 to have something to write to
+ 			 * during early allocation of Rx buffers
+ 			 */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 4566d66ffc7c..2a8a85e3ae8f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -27,6 +27,7 @@
+ #include <linux/prefetch.h>
+ #include <net/busy_poll.h>
+ #include <linux/bpf_trace.h>
++#include <net/xdp.h>
+ #include "i40e.h"
+ #include "i40e_trace.h"
+ #include "i40e_prototype.h"
+@@ -1236,6 +1237,8 @@ void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
+ void i40e_free_rx_resources(struct i40e_ring *rx_ring)
+ {
+ 	i40e_clean_rx_ring(rx_ring);
++	if (rx_ring->vsi->type == I40E_VSI_MAIN)
++		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
+ 	rx_ring->xdp_prog = NULL;
+ 	kfree(rx_ring->rx_bi);
+ 	rx_ring->rx_bi = NULL;
+@@ -1256,6 +1259,7 @@ void i40e_free_rx_resources(struct i40e_ring *rx_ring)
+ int i40e_setup_rx_descriptors(struct i40e_ring *rx_ring)
+ {
+ 	struct device *dev = rx_ring->dev;
++	int err = -ENOMEM;
+ 	int bi_size;
+ 
+ 	/* warn if we are about to overwrite the pointer */
+@@ -1283,13 +1287,21 @@ int i40e_setup_rx_descriptors(struct i40e_ring *rx_ring)
+ 	rx_ring->next_to_clean = 0;
+ 	rx_ring->next_to_use = 0;
+ 
++	/* XDP RX-queue info only needed for RX rings exposed to XDP */
++	if (rx_ring->vsi->type == I40E_VSI_MAIN) {
++		err = xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
++				       rx_ring->queue_index);
++		if (err < 0)
++			goto err;
++	}
++
+ 	rx_ring->xdp_prog = rx_ring->vsi->xdp_prog;
+ 
+ 	return 0;
+ err:
+ 	kfree(rx_ring->rx_bi);
+ 	rx_ring->rx_bi = NULL;
+-	return -ENOMEM;
++	return err;
+ }
+ 
+ /**
+@@ -2068,11 +2080,13 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 	struct sk_buff *skb = rx_ring->skb;
+ 	u16 cleaned_count = I40E_DESC_UNUSED(rx_ring);
+ 	bool failure = false, xdp_xmit = false;
++	struct xdp_buff xdp;
++
++	xdp.rxq = &rx_ring->xdp_rxq;
+ 
+ 	while (likely(total_rx_packets < (unsigned int)budget)) {
+ 		struct i40e_rx_buffer *rx_buffer;
+ 		union i40e_rx_desc *rx_desc;
+-		struct xdp_buff xdp;
+ 		unsigned int size;
+ 		u16 vlan_tag;
+ 		u8 rx_ptype;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index fbae1182e2ea..2d08760fc4ce 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -27,6 +27,8 @@
+ #ifndef _I40E_TXRX_H_
+ #define _I40E_TXRX_H_
+ 
++#include <net/xdp.h>
++
+ /* Interrupt Throttling and Rate Limiting Goodies */
+ 
+ #define I40E_MAX_ITR               0x0FF0  /* reg uses 2 usec resolution */
+@@ -428,6 +430,7 @@ struct i40e_ring {
+ 					 */
+ 
+ 	struct i40e_channel *ch;
++	struct xdp_rxq_info xdp_rxq;
+ } ____cacheline_internodealigned_in_smp;
+ 
+ static inline bool ring_uses_build_skb(struct i40e_ring *ring)
+
