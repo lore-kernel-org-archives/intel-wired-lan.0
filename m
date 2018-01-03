@@ -1,107 +1,75 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Wed, 03 Jan 2018 11:25:29 +0100
-Subject: [Intel-wired-lan] [bpf-next V4 PATCH 04/14] ixgbe: setup
- xdp_rxq_info
-In-Reply-To: <151497504273.18176.10177133999720101758.stgit@firesoul>
-References: <151497504273.18176.10177133999720101758.stgit@firesoul>
-Message-ID: <151497512896.18176.14287471693450621693.stgit@firesoul>
+From: Malek, Patryk <patryk.malek@intel.com>
+Date: Wed, 3 Jan 2018 11:04:50 +0000
+Subject: [Intel-wired-lan] [next PATCH S84-V2 02/13] i40e: Fix for
+ adding multiple ethtool filters on the same location
+In-Reply-To: <20171227123242.22356-2-alice.michael@intel.com>
+References: <20171227123242.22356-1-alice.michael@intel.com>
+ <20171227123242.22356-2-alice.michael@intel.com>
+Message-ID: <FA03331EB45A2544B0CBCB1A14B6429E29682A0A@IRSMSX104.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Driver hook points for xdp_rxq_info:
- * reg  : ixgbe_setup_rx_resources()
- * unreg: ixgbe_free_rx_resources()
+ACK
 
-Tested on actual hardware.
+-----Original Message-----
+From: Michael, Alice 
+Sent: Wednesday, December 27, 2017 13:33
+To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
+Cc: Malek, Patryk <patryk.malek@intel.com>
+Subject: [next PATCH S84-V2 02/13] i40e: Fix for adding multiple ethtool filters on the same location
 
-V2: Fix ixgbe_set_ringparam, clear xdp_rxq_info in temp_ring
+From: Patryk Ma?ek <patryk.malek@intel.com>
 
-Cc: intel-wired-lan at lists.osuosl.org
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: Alexander Duyck <alexander.duyck@gmail.com>
-Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
+This patch reorders i40e_add_del_fdir and i40e_update_ethtool_fdir_entry calls so that we first remove an already existing filter (inside i40e_update_ethtool_fdir_entry using i40e_add_del_fdir) and then we add a new one with i40e_add_del_fdir.
+After applying this patch, creating multiple identical filters (with the same location) one after another doesn't revert their behavior but behaves correctly.
+
+Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    4 ++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   10 +++++++++-
- 3 files changed, 15 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 468c3555a629..8611763d6129 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -53,6 +53,7 @@
- #include <linux/dca.h>
- #endif
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 86329a3..099b170 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -3939,19 +3939,19 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
+ 		input->flex_offset = userdef.flex_offset;
+ 	}
  
-+#include <net/xdp.h>
- #include <net/busy_poll.h>
- 
- /* common prefix used by pr_<> macros */
-@@ -371,6 +372,7 @@ struct ixgbe_ring {
- 		struct ixgbe_tx_queue_stats tx_stats;
- 		struct ixgbe_rx_queue_stats rx_stats;
- 	};
-+	struct xdp_rxq_info xdp_rxq;
- } ____cacheline_internodealigned_in_smp;
- 
- enum ixgbe_ring_f_enum {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 0aad1c2a3667..0aaf70b3cfcd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -1156,6 +1156,10 @@ static int ixgbe_set_ringparam(struct net_device *netdev,
- 			memcpy(&temp_ring[i], adapter->rx_ring[i],
- 			       sizeof(struct ixgbe_ring));
- 
-+			/* Clear copied XDP RX-queue info */
-+			memset(&temp_ring[i].xdp_rxq, 0,
-+			       sizeof(temp_ring[i].xdp_rxq));
-+
- 			temp_ring[i].count = new_rx_count;
- 			err = ixgbe_setup_rx_resources(adapter, &temp_ring[i]);
- 			if (err) {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 7737a05c717c..95aba975b391 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2318,12 +2318,14 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- #endif /* IXGBE_FCOE */
- 	u16 cleaned_count = ixgbe_desc_unused(rx_ring);
- 	bool xdp_xmit = false;
-+	struct xdp_buff xdp;
-+
-+	xdp.rxq = &rx_ring->xdp_rxq;
- 
- 	while (likely(total_rx_packets < budget)) {
- 		union ixgbe_adv_rx_desc *rx_desc;
- 		struct ixgbe_rx_buffer *rx_buffer;
- 		struct sk_buff *skb;
--		struct xdp_buff xdp;
- 		unsigned int size;
- 
- 		/* return some buffers to hardware, one@a time is too slow */
-@@ -6444,6 +6446,11 @@ int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
- 	rx_ring->next_to_clean = 0;
- 	rx_ring->next_to_use = 0;
- 
-+	/* XDP RX-queue info */
-+	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
-+			     rx_ring->queue_index) < 0)
-+		goto err;
-+
- 	rx_ring->xdp_prog = adapter->xdp_prog;
- 
+-	ret = i40e_add_del_fdir(vsi, input, true);
+-	if (ret)
+-		goto free_input;
+-
+ 	/* Add the input filter to the fdir_input_list, possibly replacing
+ 	 * a previous filter. Do not free the input structure after adding it
+ 	 * to the list as this would cause a use-after-free bug.
+ 	 */
+ 	i40e_update_ethtool_fdir_entry(vsi, input, fsp->location, NULL);
+-
++	ret = i40e_add_del_fdir(vsi, input, true);
++	if (ret)
++		goto remove_sw_rule;
  	return 0;
-@@ -6541,6 +6548,7 @@ void ixgbe_free_rx_resources(struct ixgbe_ring *rx_ring)
- 	ixgbe_clean_rx_ring(rx_ring);
  
- 	rx_ring->xdp_prog = NULL;
-+	xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
- 	vfree(rx_ring->rx_buffer_info);
- 	rx_ring->rx_buffer_info = NULL;
- 
+-free_input:
++remove_sw_rule:
++	hlist_del(&input->fdir_node);
++	pf->fdir_pf_active_filters--;
+ 	kfree(input);
+ 	return ret;
+ }
+--
+2.9.5
 
+--------------------------------------------------------------------
+
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
