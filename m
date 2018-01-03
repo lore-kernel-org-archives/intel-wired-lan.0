@@ -1,20 +1,20 @@
 From: kbuild test robot <fengguang.wu@intel.com>
 Date: Thu, 04 Jan 2018 03:41:34 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
- ee4aa8df70fa6d76bd776c025dc0d8d746c18317
-Message-ID: <5a4d31ee.PbRl6c9BrBhVYmWx%fengguang.wu@intel.com>
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ c073fe218451d58a721a04f6dbd5889780a12dd8
+Message-ID: <5a4d31ee.APmYGzzmUQ7PvXYN%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: ee4aa8df70fa6d76bd776c025dc0d8d746c18317  3c59x: fix missing dma_mapping_error check and bad ring refill logic
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: c073fe218451d58a721a04f6dbd5889780a12dd8  igb: Clear TXSTMP when ptp_tx_work() is timeout
 
-elapsed time: 55m
+elapsed time: 39m
 
-configs tested: 129
+configs tested: 127
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -32,21 +32,8 @@ i386                   randconfig-x017-201800
 i386                   randconfig-x016-201800
 i386                   randconfig-x013-201800
 i386                   randconfig-x018-201800
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
-x86_64                 randconfig-x008-201800
-x86_64                 randconfig-x000-201800
-x86_64                 randconfig-x005-201800
-x86_64                 randconfig-x007-201800
-x86_64                 randconfig-x009-201800
-x86_64                 randconfig-x002-201800
-x86_64                 randconfig-x006-201800
-x86_64                 randconfig-x001-201800
-x86_64                 randconfig-x003-201800
-x86_64                 randconfig-x004-201800
 i386                     randconfig-i0-201800
 i386                     randconfig-i1-201800
 sh                               alldefconfig
@@ -83,15 +70,11 @@ parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
 i386                     randconfig-s0-201800
 i386                     randconfig-s1-201800
 x86_64                 randconfig-s3-01040300
 x86_64                 randconfig-s4-01040300
 x86_64                 randconfig-s5-01040300
-i386                               tinyconfig
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                              allnoconfig
@@ -127,6 +110,16 @@ nios2                         10m50_defconfig
 score                      spct6600_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
+x86_64                 randconfig-x008-201800
+x86_64                 randconfig-x000-201800
+x86_64                 randconfig-x005-201800
+x86_64                 randconfig-x007-201800
+x86_64                 randconfig-x009-201800
+x86_64                 randconfig-x002-201800
+x86_64                 randconfig-x006-201800
+x86_64                 randconfig-x001-201800
+x86_64                 randconfig-x003-201800
+x86_64                 randconfig-x004-201800
 i386                   randconfig-x071-201800
 i386                   randconfig-x079-201800
 i386                   randconfig-x077-201800
@@ -137,7 +130,12 @@ i386                   randconfig-x073-201800
 i386                   randconfig-x075-201800
 i386                   randconfig-x074-201800
 i386                   randconfig-x078-201800
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
 x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
 frv                                 defconfig
 mn10300                     asb2364_defconfig
 openrisc                    or1ksim_defconfig
