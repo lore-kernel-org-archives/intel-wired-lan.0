@@ -1,11 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Thu, 4 Jan 2018 15:49:34 +0000
-Subject: [Intel-wired-lan] [PATCH 8/9] ixgbevf: improve performance and
- reduce size of ixgbevf_tx_map()
-In-Reply-To: <20171211183725.21524.40905.stgit@localhost6.localdomain6>
+Date: Thu, 4 Jan 2018 15:50:15 +0000
+Subject: [Intel-wired-lan] [PATCH 9/9] ixgbevf: don't bother clearing
+ tx_buffer_info in ixgbevf_clean_tx_ring()
+In-Reply-To: <20171211183730.21524.65151.stgit@localhost6.localdomain6>
 References: <20171211183537.21524.10133.stgit@localhost6.localdomain6>
- <20171211183725.21524.40905.stgit@localhost6.localdomain6>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64B3EF50@ORSMSX103.amr.corp.intel.com>
+ <20171211183730.21524.65151.stgit@localhost6.localdomain6>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64B3EF66@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,131 +13,200 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
+
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
 > Of Emil Tantilov
-> Sent: Monday, December 11, 2017 10:37 AM
+> Sent: Monday, December 11, 2017 10:38 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 8/9] ixgbevf: improve performance and
-> reduce size of ixgbevf_tx_map()
-> 
-> Based on commit ec718254cbfe
-> ("ixgbe: Improve performance and reduce size of ixgbe_tx_map")
-> 
-> This change is meant to both improve the performance and reduce the size of
-> ixgbevf_tx_map().
-> 
-> Expand the work done in the main loop by pushing first into tx_buffer.
-> This allows us to pull in the dma_mapping_error check, the tx_buffer value
-> assignment, and the initial DMA value assignment to the Tx descriptor.
+> Subject: [Intel-wired-lan] [PATCH 9/9] ixgbevf: don't bother clearing
+> tx_buffer_info in ixgbevf_clean_tx_ring()
 > 
 > Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   45 +++++++++------------
->  1 file changed, 20 insertions(+), 25 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  115 +++++++++++++-------
+> -
+>  1 file changed, 72 insertions(+), 43 deletions(-)
 > 
 > diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 > b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index a793f9e..d3415ee 100644
+> index d3415ee..9b3d43d 100644
 > --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 > +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -3532,34 +3532,37 @@ static void ixgbevf_tx_map(struct ixgbevf_ring
-> *tx_ring,
->  			   struct ixgbevf_tx_buffer *first,
->  			   const u8 hdr_len)
+> @@ -206,28 +206,6 @@ static void ixgbevf_set_ivar(struct ixgbevf_adapter
+> *adapter, s8 direction,
+>  	}
+>  }
+> 
+> -static void ixgbevf_unmap_and_free_tx_resource(struct ixgbevf_ring *tx_ring,
+> -					struct ixgbevf_tx_buffer *tx_buffer)
+> -{
+> -	if (tx_buffer->skb) {
+> -		dev_kfree_skb_any(tx_buffer->skb);
+> -		if (dma_unmap_len(tx_buffer, len))
+> -			dma_unmap_single(tx_ring->dev,
+> -					 dma_unmap_addr(tx_buffer, dma),
+> -					 dma_unmap_len(tx_buffer, len),
+> -					 DMA_TO_DEVICE);
+> -	} else if (dma_unmap_len(tx_buffer, len)) {
+> -		dma_unmap_page(tx_ring->dev,
+> -			       dma_unmap_addr(tx_buffer, dma),
+> -			       dma_unmap_len(tx_buffer, len),
+> -			       DMA_TO_DEVICE);
+> -	}
+> -	tx_buffer->next_to_watch = NULL;
+> -	tx_buffer->skb = NULL;
+> -	dma_unmap_len_set(tx_buffer, len, 0);
+> -	/* tx_buffer must be completely set up in the transmit path */
+> -}
+> -
+>  static u64 ixgbevf_get_tx_completed(struct ixgbevf_ring *ring)
 >  {
-> -	dma_addr_t dma;
->  	struct sk_buff *skb = first->skb;
->  	struct ixgbevf_tx_buffer *tx_buffer;
->  	union ixgbe_adv_tx_desc *tx_desc;
-> -	struct skb_frag_struct *frag = &skb_shinfo(skb)->frags[0];
-> -	unsigned int data_len = skb->data_len;
-> -	unsigned int size = skb_headlen(skb);
-> -	unsigned int paylen = skb->len - hdr_len;
-> +	struct skb_frag_struct *frag;
-> +	dma_addr_t dma;
-> +	unsigned int data_len, size;
->  	u32 tx_flags = first->tx_flags;
-> -	__le32 cmd_type;
-> +	__le32 cmd_type = ixgbevf_tx_cmd_type(tx_flags);
->  	u16 i = tx_ring->next_to_use;
+>  	return ring->stats.packets;
+> @@ -349,7 +327,6 @@ static bool ixgbevf_clean_tx_irq(struct
+> ixgbevf_q_vector *q_vector,
+>  				 DMA_TO_DEVICE);
 > 
->  	tx_desc = IXGBEVF_TX_DESC(tx_ring, i);
+>  		/* clear tx_buffer data */
+> -		tx_buffer->skb = NULL;
+>  		dma_unmap_len_set(tx_buffer, len, 0);
 > 
-> -	ixgbevf_tx_olinfo_status(tx_desc, tx_flags, paylen);
-> -	cmd_type = ixgbevf_tx_cmd_type(tx_flags);
-> +	ixgbevf_tx_olinfo_status(tx_desc, tx_flags, skb->len - hdr_len);
+>  		/* unmap remaining buffers */
+> @@ -1576,6 +1553,10 @@ static void ixgbevf_configure_tx_ring(struct
+> ixgbevf_adapter *adapter,
+>  	txdctl |= (1u << 8) |    /* HTHRESH = 1 */
+>  		   32;           /* PTHRESH = 32 */
+> 
+> +	/* reinitialize tx_buffer_info */
+> +	memset(ring->tx_buffer_info, 0,
+> +	       sizeof(struct ixgbevf_tx_buffer) * ring->count);
 > +
-> +	size = skb_headlen(skb);
-> +	data_len = skb->data_len;
+>  	clear_bit(__IXGBEVF_HANG_CHECK_ARMED, &ring->state);
 > 
->  	dma = dma_map_single(tx_ring->dev, skb->data, size,
-> DMA_TO_DEVICE);
-> -	if (dma_mapping_error(tx_ring->dev, dma))
-> -		goto dma_error;
+>  	IXGBE_WRITE_REG(hw, IXGBE_VFTXDCTL(reg_idx), txdctl);
+> @@ -2184,23 +2165,57 @@ static void ixgbevf_clean_rx_ring(struct
+> ixgbevf_ring *rx_ring)
+>   **/
+>  static void ixgbevf_clean_tx_ring(struct ixgbevf_ring *tx_ring)
+>  {
+> -	struct ixgbevf_tx_buffer *tx_buffer_info;
+> -	unsigned long size;
+> -	unsigned int i;
+> +	u16 i = tx_ring->next_to_clean;
+> +	struct ixgbevf_tx_buffer *tx_buffer = &tx_ring->tx_buffer_info[i];
 > 
-> -	/* record length, and DMA address */
-> -	dma_unmap_len_set(first, len, size);
-> -	dma_unmap_addr_set(first, dma, dma);
-> +	tx_buffer = first;
-> 
-> -	tx_desc->read.buffer_addr = cpu_to_le64(dma);
-> +	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
-> +		if (dma_mapping_error(tx_ring->dev, dma))
-> +			goto dma_error;
+> -	if (!tx_ring->tx_buffer_info)
+> -		return;
+> +	while (i != tx_ring->next_to_use) {
+> +		union ixgbe_adv_tx_desc *eop_desc, *tx_desc;
 > +
-> +		/* record length, and DMA address */
-> +		dma_unmap_len_set(tx_buffer, len, size);
-> +		dma_unmap_addr_set(tx_buffer, dma, dma);
+> +		/* Free all the Tx ring sk_buffs */
+> +		dev_kfree_skb_any(tx_buffer->skb);
 > +
-> +		tx_desc->read.buffer_addr = cpu_to_le64(dma);
+> +		/* unmap skb header data */
+> +		dma_unmap_single(tx_ring->dev,
+> +				 dma_unmap_addr(tx_buffer, dma),
+> +				 dma_unmap_len(tx_buffer, len),
+> +				 DMA_TO_DEVICE);
+> +
+> +		/* check for eop_desc to determine the end of the packet */
+> +		eop_desc = tx_buffer->next_to_watch;
+> +		tx_desc = IXGBEVF_TX_DESC(tx_ring, i);
+> +
+> +		/* unmap remaining buffers */
+> +		while (tx_desc != eop_desc) {
+> +			tx_buffer++;
+> +			tx_desc++;
+> +			i++;
+> +			if (unlikely(i == tx_ring->count)) {
+> +				i = 0;
+> +				tx_buffer = tx_ring->tx_buffer_info;
+> +				tx_desc = IXGBEVF_TX_DESC(tx_ring, 0);
+> +			}
+> +
+> +			/* unmap any remaining paged data */
+> +			if (dma_unmap_len(tx_buffer, len))
+> +				dma_unmap_page(tx_ring->dev,
+> +					       dma_unmap_addr(tx_buffer,
+> dma),
+> +					       dma_unmap_len(tx_buffer, len),
+> +					       DMA_TO_DEVICE);
+> +		}
 > 
-> -	for (;;) {
->  		while (unlikely(size > IXGBE_MAX_DATA_PER_TXD)) {
->  			tx_desc->read.cmd_type_len =
->  				cmd_type |
-> cpu_to_le32(IXGBE_MAX_DATA_PER_TXD);
-> @@ -3570,12 +3573,12 @@ static void ixgbevf_tx_map(struct ixgbevf_ring
-> *tx_ring,
->  				tx_desc = IXGBEVF_TX_DESC(tx_ring, 0);
->  				i = 0;
->  			}
-> +			tx_desc->read.olinfo_status = 0;
-> 
->  			dma += IXGBE_MAX_DATA_PER_TXD;
->  			size -= IXGBE_MAX_DATA_PER_TXD;
-> 
->  			tx_desc->read.buffer_addr = cpu_to_le64(dma);
-> -			tx_desc->read.olinfo_status = 0;
->  		}
-> 
->  		if (likely(!data_len))
-> @@ -3589,23 +3592,15 @@ static void ixgbevf_tx_map(struct ixgbevf_ring
-> *tx_ring,
->  			tx_desc = IXGBEVF_TX_DESC(tx_ring, 0);
->  			i = 0;
->  		}
-> +		tx_desc->read.olinfo_status = 0;
-> 
->  		size = skb_frag_size(frag);
->  		data_len -= size;
-> 
->  		dma = skb_frag_dma_map(tx_ring->dev, frag, 0, size,
->  				       DMA_TO_DEVICE);
-> -		if (dma_mapping_error(tx_ring->dev, dma))
-> -			goto dma_error;
-> 
->  		tx_buffer = &tx_ring->tx_buffer_info[i];
-> -		dma_unmap_len_set(tx_buffer, len, size);
-> -		dma_unmap_addr_set(tx_buffer, dma, dma);
-> -
-> -		tx_desc->read.buffer_addr = cpu_to_le64(dma);
-> -		tx_desc->read.olinfo_status = 0;
-> -
-> -		frag++;
+> -	/* Free all the Tx ring sk_buffs */
+> -	for (i = 0; i < tx_ring->count; i++) {
+> -		tx_buffer_info = &tx_ring->tx_buffer_info[i];
+> -		ixgbevf_unmap_and_free_tx_resource(tx_ring, tx_buffer_info);
+> +		/* move us one more past the eop_desc for start of next pkt */
+> +		tx_buffer++;
+> +		i++;
+> +		if (unlikely(i == tx_ring->count)) {
+> +			i = 0;
+> +			tx_buffer = tx_ring->tx_buffer_info;
+> +		}
 >  	}
 > 
->  	/* write last descriptor with RS and EOP bits */
+> -	size = sizeof(struct ixgbevf_tx_buffer) * tx_ring->count;
+> -	memset(tx_ring->tx_buffer_info, 0, size);
+> +	/* reset next_to_use and next_to_clean */
+> +	tx_ring->next_to_use = 0;
+> +	tx_ring->next_to_clean = 0;
+> 
+> -	memset(tx_ring->desc, 0, tx_ring->size);
+>  }
+> 
+>  /**
+> @@ -3030,7 +3045,7 @@ int ixgbevf_setup_tx_resources(struct ixgbevf_ring
+> *tx_ring)
+>  	int size;
+> 
+>  	size = sizeof(struct ixgbevf_tx_buffer) * tx_ring->count;
+> -	tx_ring->tx_buffer_info = vzalloc(size);
+> +	tx_ring->tx_buffer_info = vmalloc(size);
+>  	if (!tx_ring->tx_buffer_info)
+>  		goto err;
+> 
+> @@ -3634,18 +3649,32 @@ static void ixgbevf_tx_map(struct ixgbevf_ring
+> *tx_ring,
+>  	return;
+>  dma_error:
+>  	dev_err(tx_ring->dev, "TX DMA map failed\n");
+> +	tx_buffer = &tx_ring->tx_buffer_info[i];
+> 
+>  	/* clear dma mappings for failed tx_buffer_info map */
+> -	for (;;) {
+> +	while (tx_buffer != first) {
+> +		if (dma_unmap_len(tx_buffer, len))
+> +			dma_unmap_page(tx_ring->dev,
+> +				       dma_unmap_addr(tx_buffer, dma),
+> +				       dma_unmap_len(tx_buffer, len),
+> +				       DMA_TO_DEVICE);
+> +		dma_unmap_len_set(tx_buffer, len, 0);
+> +
+> +		if (i-- == 0)
+> +			i += tx_ring->count;
+>  		tx_buffer = &tx_ring->tx_buffer_info[i];
+> -		ixgbevf_unmap_and_free_tx_resource(tx_ring, tx_buffer);
+> -		if (tx_buffer == first)
+> -			break;
+> -		if (i == 0)
+> -			i = tx_ring->count;
+> -		i--;
+>  	}
+> 
+> +	if (dma_unmap_len(tx_buffer, len))
+> +		dma_unmap_single(tx_ring->dev,
+> +				 dma_unmap_addr(tx_buffer, dma),
+> +				 dma_unmap_len(tx_buffer, len),
+> +				 DMA_TO_DEVICE);
+> +	dma_unmap_len_set(tx_buffer, len, 0);
+> +
+> +	dev_kfree_skb_any(tx_buffer->skb);
+> +	tx_buffer->skb = NULL;
+> +
+>  	tx_ring->next_to_use = i;
+>  }
+> 
 > 
 > _______________________________________________
 > Intel-wired-lan mailing list
