@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 4 Jan 2018 19:29:10 +0000
-Subject: [Intel-wired-lan] [PATCH next-queue] ixgbe: no ipsec offload
- for 82598
-In-Reply-To: <1513880483-18733-1-git-send-email-shannon.nelson@oracle.com>
-References: <1513880483-18733-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8D6F8A@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 4 Jan 2018 20:30:53 +0000
+Subject: [Intel-wired-lan] [next PATCH S84-V2 01/13] i40e: Add returning
+ AQ critical error to SW
+In-Reply-To: <20171227131440.23579-1-alice.michael@intel.com>
+References: <20171227131440.23579-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8D6FC9@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,21 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Shannon Nelson
-> Sent: Thursday, December 21, 2017 10:21 AM
-> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Cc: steffen.klassert at secunet.com; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH next-queue] ixgbe: no ipsec offload for
-> 82598
+> Behalf Of Alice Michael
+> Sent: Wednesday, December 27, 2017 5:15 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: Kosiarz, Michal <michal.kosiarz@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S84-V2 01/13] i40e: Add returning AQ
+> critical error to SW
 > 
-> Don't try to set up ipsec offload on the oldest part of the ixgbe family.
+> From: Michal Kosiarz <michal.kosiarz@intel.com>
 > 
-> Suggested-by: Yanjun Zhu <yanjun.zhu@oracle.com>
-> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+> The FW has the ability to return a critical error on every AQ command.
+> When this critical error occurs then we need to send the correct response to
+> the caller.
+> 
+> Signed-off-by: Michal Kosiarz <michal.kosiarz@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c   | 13 +++++++++----
+>  drivers/net/ethernet/intel/i40e/i40e_common.c   |  2 ++
+>  drivers/net/ethernet/intel/i40e/i40e_status.h   |  1 +
+>  drivers/net/ethernet/intel/i40evf/i40e_adminq.c | 13 +++++++++----
+> drivers/net/ethernet/intel/i40evf/i40e_common.c |  2 ++
+> drivers/net/ethernet/intel/i40evf/i40e_status.h |  1 +
+>  6 files changed, 24 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
