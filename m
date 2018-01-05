@@ -1,7 +1,7 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri,  5 Jan 2018 04:54:43 -0500
+Date: Fri,  5 Jan 2018 04:55:21 -0500
 Subject: [Intel-wired-lan] [patch] i40evf: ignore link up if not running
-Message-ID: <20180105095443.3491-1-alice.michael@intel.com>
+Message-ID: <20180105095521.3621-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
