@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 5 Jan 2018 19:16:14 +0000
-Subject: [Intel-wired-lan] [next PATCH S85-V1 04/14] i40e/i40evf: Only
- track one itr setting per ring instead of Tx/Rx
-In-Reply-To: <20171229134928.14308-1-alice.michael@intel.com>
-References: <20171229134928.14308-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8D71F5@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 5 Jan 2018 19:16:44 +0000
+Subject: [Intel-wired-lan] [next PATCH S85-V1 05/14] i40e/i40evf: Clean
+ up logic for adaptive ITR
+In-Reply-To: <20171229134953.14355-1-alice.michael@intel.com>
+References: <20171229134953.14355-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8D7206@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,31 +14,40 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Alice Michael
-> Sent: Friday, December 29, 2017 5:49 AM
+> Sent: Friday, December 29, 2017 5:50 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S85-V1 04/14] i40e/i40evf: Only track
-> one itr setting per ring instead of Tx/Rx
+> Subject: [Intel-wired-lan] [next PATCH S85-V1 05/14] i40e/i40evf: Clean up
+> logic for adaptive ITR
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> The rings are already split out into Tx and Rx rings so it does't make sense to
-> have any single ring store both a Tx and Rx itr_setting value.
-> Since that is the case drop the pair in favor of storing just a single ITR value.
+> The logic for dynamic ITR update is confusing at best as there were odd paths
+> chosen for how to find the rings associated with a given queue based on the
+> vector index and other inconsistencies throughout the code.
+> 
+> This patch is an attempt to clean up the logic so that we can more easily
+> understand what is going on. Specifically if there is a Rx or Tx ring that is
+> enabled in dynamic mode on the q_vector it is allowed to override the other
+> side of the interrupt moderation. While it isn't correct all this patch is doing is
+> cleaning up the logic for now so that when we come through and fix it we can
+> more easily identify that this is wrong.
+> 
+> The other big change made here is that we replace references to:
+> 	vsi->rx_rings[q_vector->v_idx]->itr_setting
+> with:
+> 	q_vector->rx.ring->itr_setting
+> 
+> The general idea is we can avoid the long pointer chase since just accessing
+> q_vector->rx.ring is a single pointer access versus having to chase down vsi-
+> >rx_rings, and then finding the pointer in the array, and finally chasing down
+> the itr_setting from there.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c     | 12 ++++----
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 32 +++++++++++---------
-> --
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 14 +++++-----
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  6 ++--
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h        |  3 +-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  6 ++--
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |  3 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 24 ++++++++--------
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  8 +++---
->  9 files changed, 53 insertions(+), 55 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 55 +++++++------------------
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 59 +++++++--------------------
+>  2 files changed, 28 insertions(+), 86 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
