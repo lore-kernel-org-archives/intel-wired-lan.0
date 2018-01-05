@@ -1,45 +1,76 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Thu, 4 Jan 2018 20:17:05 -0800
-Subject: [Intel-wired-lan] [bpf-next V4 PATCH 03/14] i40e: setup
- xdp_rxq_info
-In-Reply-To: <151497512387.18176.16261505821783867005.stgit@firesoul>
-References: <151497504273.18176.10177133999720101758.stgit@firesoul>
- <151497512387.18176.16261505821783867005.stgit@firesoul>
-Message-ID: <aeac85ab-4b22-4cda-1f1c-5c3493454448@gmail.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Fri,  5 Jan 2018 04:54:43 -0500
+Subject: [Intel-wired-lan] [patch] i40evf: ignore link up if not running
+Message-ID: <20180105095443.3491-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 01/03/2018 02:25 AM, Jesper Dangaard Brouer wrote:
-> The i40e driver has a special "FDIR" RX-ring (I40E_VSI_FDIR) which is
-> a sideband channel for configuring/updating the flow director tables.
-> This (i40e_vsi_)type does not invoke XDP-ebpf code.
-> 
-> As suggested by Bj?rn (V2): Instead of marking this I40E_VSI_FDIR RX-ring
-> a special case, reverse the logic and only select RX-rings of type
-> I40E_VSI_MAIN to register xdp_rxq_info's for.
-> 
-> Driver hook points for xdp_rxq_info:
->  * reg  : i40e_setup_rx_descriptors (via i40e_vsi_setup_rx_resources)
->  * unreg: i40e_free_rx_resources    (via i40e_vsi_free_rx_resources)
-> 
-> Tested on actual hardware with samples/bpf program.
-> 
-> V2: Fixed bug in i40e_set_ringparam (memset zero) + match on I40E_VSI_MAIN.
-> V4: Update patch desc that got out-of-sync with code.
-> 
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: Bj?rn T?pel <bjorn.topel@intel.com>
-> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Cc: Paul Menzel <pmenzel@molgen.mpg.de>
-> Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
-> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-> ---
+From: Alan Brady <alan.brady@intel.com>
 
+If we receive the link status message from PF with link up before queues
+are actually enabled, it will trigger a TX hang.  This fixes the issue
+by ignoring a link up message if the VF state is not yet in RUNNING
+state.
 
-Same here. LGTM.
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+---
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 35 ++++++++++++++--------
+ 1 file changed, 23 insertions(+), 12 deletions(-)
 
-Acked-by: John Fastabend <john.fastabend@gmail.com>
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index 09b198e..d57a672 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -1007,23 +1007,34 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 	if (v_opcode == VIRTCHNL_OP_EVENT) {
+ 		struct virtchnl_pf_event *vpe =
+ 			(struct virtchnl_pf_event *)msg;
++		bool link_up = vpe->event_data.link_event.link_status;
+ 		switch (vpe->event) {
+ 		case VIRTCHNL_EVENT_LINK_CHANGE:
+ 			adapter->link_speed =
+ 				vpe->event_data.link_event.link_speed;
+-			if (adapter->link_up !=
+-			    vpe->event_data.link_event.link_status) {
+-				adapter->link_up =
+-					vpe->event_data.link_event.link_status;
+-				if (adapter->link_up) {
+-					netif_tx_start_all_queues(netdev);
+-					netif_carrier_on(netdev);
+-				} else {
+-					netif_tx_stop_all_queues(netdev);
+-					netif_carrier_off(netdev);
+-				}
+-				i40evf_print_link_message(adapter);
++
++			/* we've already got the right link status, bail */
++			if (adapter->link_up == link_up)
++				break;
++
++			/* If we get link up message and start queues before
++			 * our queues are configured it will trigger a TX hang.
++			 * In that case, just ignore the link status message,
++			 * we'll get another one after we enable queues and
++			 * actually prepared to send traffic.
++			 */
++			if (link_up && adapter->state != __I40EVF_RUNNING)
++				break;
++
++			adapter->link_up = link_up;
++			if (link_up) {
++				netif_tx_start_all_queues(netdev);
++				netif_carrier_on(netdev);
++			} else {
++				netif_tx_stop_all_queues(netdev);
++				netif_carrier_off(netdev);
+ 			}
++			i40evf_print_link_message(adapter);
+ 			break;
+ 		case VIRTCHNL_EVENT_RESET_IMPENDING:
+ 			dev_info(&adapter->pdev->dev, "PF reset warning received\n");
+-- 
+2.9.5
 
