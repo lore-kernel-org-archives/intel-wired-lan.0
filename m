@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 5 Jan 2018 19:12:10 +0000
-Subject: [Intel-wired-lan] [next PATCH S85-V1 02/14] i40e/i40evf: Record
- ITR register location in the q_vector
-In-Reply-To: <20171229134853.14186-1-alice.michael@intel.com>
-References: <20171229134853.14186-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8D71D5@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 5 Jan 2018 19:15:27 +0000
+Subject: [Intel-wired-lan] [next PATCH S85-V1 03/14] i40e: Do not allow
+ use more TC queue pairs than MSI-X vectors exist
+In-Reply-To: <20171229134910.14233-1-alice.michael@intel.com>
+References: <20171229134910.14233-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8D71E5@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Friday, December 29, 2017 5:49 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S85-V1 02/14] i40e/i40evf: Record ITR
-> register location in the q_vector
+> Cc: Jablonski, Pawel <pawel.jablonski@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S85-V1 03/14] i40e: Do not allow use
+> more TC queue pairs than MSI-X vectors exist
 > 
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 > 
-> The drivers for i40e and i40evf had a reg_idx value stored in the q_vector
-> that was going completely unused. I can only assume this was copied over
-> from ixgbe and nobody knew how to use it.
+> This patch suppresses the message about invalid TC mapping and wrong
+> selected TX queue. The root cause of this bug was setting too many TC
+> queue pairs on huge multiprocessor machines. When quantity of the TC
+> queue pairs is exceeding MSI-X vectors count then TX queue number can be
+> selected beyond actual TX queues amount.
 > 
-> I'm going to make use of the value to avoid having to compute the vector and
-> thus the register index for multiple paths throughout the drivers.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c     |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c     | 12 ++++--------
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c   | 12 ++++--------
->  drivers/net/ethernet/intel/i40evf/i40evf.h      |  4 ++--
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c |  1 +
->  5 files changed, 12 insertions(+), 18 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
