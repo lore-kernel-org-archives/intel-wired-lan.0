@@ -1,219 +1,67 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 10 Jan 2018 03:45:20 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 6b3c2060179738d0c2d2d2231e98bb5092a03d9b
-Message-ID: <5a551bd0.sqiYYZX2VpcWUofO%fengguang.wu@intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Tue, 9 Jan 2018 19:46:27 +0000
+Subject: [Intel-wired-lan] [PATCH 1/6] fm10k: cleanup unnecessary
+ parenthesis in fm10k_iov.c
+In-Reply-To: <20171201190024.5547-2-jacob.e.keller@intel.com>
+References: <20171201190024.5547-1-jacob.e.keller@intel.com>
+ <20171201190024.5547-2-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64B42188@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 6b3c2060179738d0c2d2d2231e98bb5092a03d9b  i40e: link_down_on_close private flag support
 
-elapsed time: 204m
 
-configs tested: 195
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
+> Of Jacob Keller
+> Sent: Friday, December 1, 2017 11:00 AM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [PATCH 1/6] fm10k: cleanup unnecessary parenthesis
+> in fm10k_iov.c
+> 
+> This fixes a few warnings found by checkpatch.pl --strict
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_iov.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+> b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+> index ea3ab24265ee..760cfa52d02c 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+> @@ -353,7 +353,7 @@ int fm10k_iov_resume(struct pci_dev *pdev)
+>  		struct fm10k_vf_info *vf_info = &iov_data->vf_info[i];
+> 
+>  		/* allocate all but the last GLORT to the VFs */
+> -		if (i == ((~hw->mac.dglort_map) >>
+> FM10K_DGLORTMAP_MASK_SHIFT))
+> +		if (i == (~hw->mac.dglort_map >>
+> FM10K_DGLORTMAP_MASK_SHIFT))
+>  			break;
+> 
+>  		/* assign GLORT to VF, and restrict it to multicast */
+> @@ -511,7 +511,7 @@ int fm10k_iov_configure(struct pci_dev *pdev, int
+> num_vfs)
+>  		return err;
+> 
+>  	/* allocate VFs if not already allocated */
+> -	if (num_vfs && (num_vfs != current_vfs)) {
+> +	if (num_vfs && num_vfs != current_vfs) {
+>  		/* Disable completer abort error reporting as
+>  		 * the VFs can trigger this any time they read a queue
+>  		 * that they don't own.
+> --
+> 2.15.0
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
 
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-arm                        keystone_defconfig
-m32r                                defconfig
-powerpc                   bluestone_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-01100243
-i386                   randconfig-x010-201801
-i386                   randconfig-x011-201801
-i386                   randconfig-x012-201801
-i386                   randconfig-x013-201801
-i386                   randconfig-x014-201801
-i386                   randconfig-x015-201801
-i386                   randconfig-x016-201801
-i386                   randconfig-x017-201801
-i386                   randconfig-x018-201801
-i386                   randconfig-x019-201801
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201801
-i386         randconfig-n0-201801+bisect_validate
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i0-201801
-i386                     randconfig-i1-201801
-x86_64                                  kexec
-x86_64                           rhel-7.2-prt
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-01100126
-x86_64                 randconfig-x010-201801
-x86_64                 randconfig-x011-201801
-x86_64                 randconfig-x012-201801
-x86_64                 randconfig-x013-201801
-x86_64                 randconfig-x014-201801
-x86_64                 randconfig-x015-201801
-x86_64                 randconfig-x016-201801
-x86_64                 randconfig-x017-201801
-x86_64                 randconfig-x018-201801
-x86_64                 randconfig-x019-201801
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a1-201801
-i386                     randconfig-a0-201801
-x86_64                 randconfig-s0-01100209
-x86_64                 randconfig-s1-01100209
-x86_64                 randconfig-s2-01100209
-x86_64                 randconfig-s0-01100304
-x86_64                 randconfig-s1-01100304
-x86_64                 randconfig-s2-01100304
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                       netwinder_defconfig
-blackfin                         allyesconfig
-h8300                       h8s-sim_defconfig
-mips                        generic_defconfig
-sh                           se7712_defconfig
-arm                               allnoconfig
-cris                             allmodconfig
-powerpc                     stx_gp3_defconfig
-sh                 kfr2r09-romimage_defconfig
-c6x                        evmc6678_defconfig
-powerpc                    gamecube_defconfig
-powerpc                      ppc44x_defconfig
-sh                     sh7710voipgw_defconfig
-arm                     am200epdkit_defconfig
-cris                        etraxfs_defconfig
-m32r                         opsput_defconfig
-powerpc                     tqm8540_defconfig
-sh                          urquell_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201801
-i386                     randconfig-s1-201801
-x86_64                 randconfig-s3-01100216
-x86_64                 randconfig-s4-01100216
-x86_64                 randconfig-s5-01100216
-x86_64                 randconfig-s3-01100318
-x86_64                 randconfig-s4-01100318
-x86_64                 randconfig-s5-01100318
-c6x                        evmc6457_defconfig
-microblaze                        allnoconfig
-sh                          sdk7786_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201801
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-blackfin                BF537-STAMP_defconfig
-frv                               allnoconfig
-powerpc                     mpc5200_defconfig
-mips                      bmips_stb_defconfig
-powerpc                     taishan_defconfig
-sh                           se7750_defconfig
-arm                             pxa_defconfig
-mips                            gpr_defconfig
-powerpc                     asp8347_defconfig
-arm                  colibri_pxa300_defconfig
-mips                      maltasmvp_defconfig
-x86_64                 randconfig-u0-01100211
-x86_64                 randconfig-u0-01100256
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x008-201801
-x86_64                 randconfig-x000-201801
-x86_64                 randconfig-x005-201801
-x86_64                 randconfig-x007-201801
-x86_64                 randconfig-x009-201801
-x86_64                 randconfig-x002-201801
-x86_64                 randconfig-x001-201801
-x86_64                 randconfig-x006-201801
-x86_64                 randconfig-x003-201801
-x86_64                 randconfig-x004-201801
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x071-201801
-i386                   randconfig-x079-201801
-i386                   randconfig-x077-201801
-i386                   randconfig-x072-201801
-i386                   randconfig-x076-201801
-i386                   randconfig-x073-201801
-i386                   randconfig-x070-201801
-i386                   randconfig-x075-201801
-i386                   randconfig-x074-201801
-i386                   randconfig-x078-201801
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                             allmodconfig
-i386                   randconfig-x004-201801
-i386                   randconfig-x002-201801
-i386                   randconfig-x007-201801
-i386                   randconfig-x009-201801
-i386                   randconfig-x003-201801
-i386                   randconfig-x006-201801
-i386                   randconfig-x005-201801
-i386                   randconfig-x000-201801
-i386                   randconfig-x001-201801
-i386                   randconfig-x008-201801
-
-Thanks,
-Fengguang
