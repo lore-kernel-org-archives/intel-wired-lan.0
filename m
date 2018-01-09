@@ -1,11 +1,10 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 9 Jan 2018 19:49:11 +0000
-Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: don't assume VLAN 1 is
- enabled
-In-Reply-To: <20171201190024.5547-5-jacob.e.keller@intel.com>
+Date: Tue, 9 Jan 2018 19:49:58 +0000
+Subject: [Intel-wired-lan] [PATCH 5/6] fm10k: correct typo in fm10k_pf.c
+In-Reply-To: <20171201190024.5547-6-jacob.e.keller@intel.com>
 References: <20171201190024.5547-1-jacob.e.keller@intel.com>
- <20171201190024.5547-5-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64B421C6@ORSMSX103.amr.corp.intel.com>
+ <20171201190024.5547-6-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64B421DA@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,86 +17,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Of Jacob Keller
 > Sent: Friday, December 1, 2017 11:00 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: don't assume VLAN 1 is enabled
+> Cc: Kwan, Ngai-mint <ngai-mint.kwan@intel.com>
+> Subject: [Intel-wired-lan] [PATCH 5/6] fm10k: correct typo in fm10k_pf.c
 > 
-> Since commit 856dfd69e84f ("fm10k: Fix multicast mode synch issues",
-> 2016-03-03) we've incorrectly assumed that VLAN 1 is enabled when the
-> default VID is not set.
+> From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 > 
-> This occurs because we check the default_vid and if it's zero, start
-> several loops over the active_vlans bitmask at 1, instead of checking to
-> ensure that that bit is active.
-> 
-> This happened because of commit d9ff3ee8efe9 ("fm10k: Add support for
-> VLAN 0 w/o default VLAN", 2014-08-07) which mistakenly assumed that we
-> should send requests for MAC and VLAN filters with VLAN 0 when the
-> default_vid isn't set.
-> 
-> However, the switch generally considers this an invalid configuration,
-> so the only time we'd have a default_vid of 0 is when the switch is
-> down.
-> 
-> Instead, lets just not request any filters for the default_vid if it's
-> not yet been assigned.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 > ---
->  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 8 +++-----
->  1 file changed, 3 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> index d79bff7c23f7..ec91eabbb723 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> @@ -1050,14 +1050,13 @@ static int __fm10k_uc_sync(struct net_device
-> *dev,
->  			   const unsigned char *addr, bool sync)
->  {
->  	struct fm10k_intfc *interface = netdev_priv(dev);
-> -	struct fm10k_hw *hw = &interface->hw;
->  	u16 vid, glort = interface->glort;
->  	s32 err;
-> 
->  	if (!is_valid_ether_addr(addr))
->  		return -EADDRNOTAVAIL;
-> 
-> -	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) :
-> 1;
-> +	for (vid = fm10k_find_next_vlan(interface, 0);
->  	     vid < VLAN_N_VID;
->  	     vid = fm10k_find_next_vlan(interface, vid)) {
->  		err = fm10k_queue_mac_request(interface, glort,
-> @@ -1116,14 +1115,13 @@ static int __fm10k_mc_sync(struct net_device
-> *dev,
->  			   const unsigned char *addr, bool sync)
->  {
->  	struct fm10k_intfc *interface = netdev_priv(dev);
-> -	struct fm10k_hw *hw = &interface->hw;
->  	u16 vid, glort = interface->glort;
->  	s32 err;
-> 
->  	if (!is_multicast_ether_addr(addr))
->  		return -EADDRNOTAVAIL;
-> 
-> -	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) :
-> 1;
-> +	for (vid = fm10k_find_next_vlan(interface, 0);
->  	     vid < VLAN_N_VID;
->  	     vid = fm10k_find_next_vlan(interface, vid)) {
->  		err = fm10k_queue_mac_request(interface, glort,
-> @@ -1222,7 +1220,7 @@ void fm10k_restore_rx_state(struct fm10k_intfc
-> *interface)
->  				 xcast_mode ==
-> FM10K_XCAST_MODE_PROMISC);
-> 
->  	/* update table with current entries */
-> -	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) :
-> 1;
-> +	for (vid = fm10k_find_next_vlan(interface, 0);
->  	     vid < VLAN_N_VID;
->  	     vid = fm10k_find_next_vlan(interface, vid)) {
->  		fm10k_queue_vlan_request(interface, vid, 0, true);
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+> b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+> index 425d814aed4d..d6406fc31ffb 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+> @@ -866,7 +866,7 @@ static s32
+> fm10k_iov_assign_default_mac_vlan_pf(struct fm10k_hw *hw,
+>  	/* Determine correct default VLAN ID. The FM10K_VLAN_OVERRIDE
+> bit is
+>  	 * used here to indicate to the VF that it will not have privilege to
+>  	 * write VLAN_TABLE. All policy is enforced on the PF but this allows
+> -	 * the VF to correctly report errors to userspace rqeuests.
+> +	 * the VF to correctly report errors to userspace requests.
+>  	 */
+>  	if (vf_info->pf_vid)
+>  		vf_vid = vf_info->pf_vid | FM10K_VLAN_OVERRIDE;
 > --
 > 2.15.0
 > 
@@ -107,4 +52,3 @@ List-ID: <intel-wired-lan.osuosl.org>
 > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
 Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
-
