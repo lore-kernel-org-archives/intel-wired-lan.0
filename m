@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 9 Jan 2018 22:36:05 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: use ARRAY_SIZE for various
- array sizing calculations
-In-Reply-To: <20180107145146.2934-1-colin.king@canonical.com>
-References: <20180107145146.2934-1-colin.king@canonical.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8D7FDC@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 9 Jan 2018 22:38:13 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH] i40e: Fix channel
+ addition in reset flow
+In-Reply-To: <151546124009.14015.16331913167013558885.stgit@anamdev.jf.intel.com>
+References: <151546124009.14015.16331913167013558885.stgit@anamdev.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8D7FEC@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,23 +13,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Colin King
-> Sent: Sunday, January 7, 2018 6:52 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org
-> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbevf: use ARRAY_SIZE for various array
-> sizing calculations
+> Behalf Of Amritha Nambiar
+> Sent: Monday, January 8, 2018 5:27 PM
+> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH] i40e: Fix channel
+> addition in reset flow
 > 
-> From: Colin Ian King <colin.king@canonical.com>
+> Fix recreating the channel VSIs during the reset flow to reconfigure the Tx
+> rings and the queue context associated with the channel VSI.
+> Also update the next_base_queue for the VSI while rebuilding the channel
+> VSIs after a reset.
 > 
-> Use the ARRAY_SIZE macro on various arrays to determine size of the arrays.
-> Improvement suggested by coccinelle.
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/vf.c | 17 +++++++----------
->  1 file changed, 7 insertions(+), 10 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |   11 +++++++++++
+>  1 file changed, 11 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
