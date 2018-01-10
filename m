@@ -1,52 +1,237 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 10 Jan 2018 08:14:00 -0800
-Subject: [Intel-wired-lan] PROBLEM: Uneven load distribution between
- bonded interfaces during peak load
-In-Reply-To: <D7B04AEA27377C4D8A3483B9A43292A014FFB9CC@ex01.rutube.corp>
-References: <D7B04AEA27377C4D8A3483B9A43292A014FFB9CC@ex01.rutube.corp>
-Message-ID: <CAKgT0UefQG1d8CZzZim4yNrgj6ixmbzwd-FhCGw2JftGLv_Kmg@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 11 Jan 2018 01:46:12 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 3dab0367f08b4d4cca9a040b60a23d4744359433
+Message-ID: <5a565164.fu/aiP1rTuOdzm8P%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 10, 2018 at 12:20 AM, ????????? ???????
-<nsvechkarev@gazprom-media.tech> wrote:
-> PROBLEM: Uneven load distribution between bonded interfaces during peak load
->
-> We have encountered strange behaviour on part of the network subsystem on
-> our servers. We have a number of machines serving primarily as nginx cache
-> servers with 5 two-port 10G NICs (100G in total). All interfaces are
-> aggregated into a single bond. The IXGBE driver is configured so that
-> interrupts from every interface are distributed to several dedicated CPU
-> cores. If the bond interface is configured with mode=802.3ad and
-> xmit_hash_policy=layer3+4, which is convenient due to the specifics of our
-> network administration, at peak load (around 70Gbit per server on average)
-> the distribution of traffic between bonded interfaces, as well as of
-> interrupts between CPU cores, rapidly becomes uneven (as demonstrated by
-> fig. 1) and stays that way until the load drops to more manageable levels.
-> If the bond is configured to use round-robin (mode=balance-rr) instead, this
-> problem does not occur, as demonstrated by the same machine on fig. 2.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 3dab0367f08b4d4cca9a040b60a23d4744359433  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-Have you checked your network for any other bottle-necks? The behavior
-you are seeing wouldn't be inconsistent with load balancing
-differences due to the TCP congestion control algorthim encountering
-some sort of choke point. Normally what will happen is that some TCP
-flows will become starved while others will get to use more of the
-link. The fact that this doesn't manifest until you have over 80Gb/s
-in total throughput points toward something like that. If nothing else
-you might try eliminating two more ports to see if that causes the
-remaining 8 ports to be fully utilized.
+elapsed time: 164m
 
-The load balancing itself for the bonding will never truly be perfect
-when the flows themselves can control how much traffic goes over a
-given interface. Round robin will come pretty close in terms of
-loading the NICs, however you will still see certain TCP flows being
-starved versus others. With the 802.3ad mode you will see that
-behavior manifest at the NIC level due to the hashing, whereas with
-balance-rr that will only occur with the TCP flows themselves.
+configs tested: 213
 
-Thanks.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-- Alex
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+mips                          ath25_defconfig
+powerpc                  mpc885_ads_defconfig
+powerpc                      ppc44x_defconfig
+x86_64                 randconfig-a0-01102327
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                           allmodconfig
+powerpc                       ppc64_defconfig
+sh                          rsk7269_defconfig
+sh                                allnoconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-01102214
+arm                         cm_x2xx_defconfig
+powerpc               corenet_basic_defconfig
+sh                        edosk7705_defconfig
+mips                              allnoconfig
+mips                malta_qemu_32r6_defconfig
+powerpc                     sbc8548_defconfig
+x86_64                randconfig-it0-01102233
+x86_64                randconfig-it0-01110039
+i386                               tinyconfig
+i386                   randconfig-x015-201801
+i386                   randconfig-x019-201801
+i386                   randconfig-x010-201801
+i386                   randconfig-x014-201801
+i386                   randconfig-x011-201801
+i386                   randconfig-x012-201801
+i386                   randconfig-x017-201801
+i386                   randconfig-x016-201801
+i386                   randconfig-x013-201801
+i386                   randconfig-x018-201801
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201801
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-i0-201801
+i386                     randconfig-i1-201801
+frv                              allyesconfig
+m68k                            q40_defconfig
+powerpc                     tqm8560_defconfig
+mips                       capcella_defconfig
+powerpc                 mpc837x_rdb_defconfig
+sh                   secureedge5410_defconfig
+x86_64                 randconfig-v0-01102321
+x86_64                 randconfig-v0-01110002
+arm                         em_x270_defconfig
+m32r                       m32104ut_defconfig
+powerpc                 mpc832x_rdb_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+s390                        default_defconfig
+x86_64                 randconfig-g0-01102324
+i386                   randconfig-a1-01101713
+i386                   randconfig-a0-01101713
+x86_64                 randconfig-s0-01102337
+x86_64                 randconfig-s1-01102337
+x86_64                 randconfig-s2-01102337
+x86_64                 randconfig-s0-01110059
+x86_64                 randconfig-s1-01110059
+x86_64                 randconfig-s2-01110059
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                             allnoconfig
+m68k                                defconfig
+microblaze                       allyesconfig
+sh                         ap325rxa_defconfig
+x86_64                 randconfig-x017-201801
+x86_64                 randconfig-x018-201801
+x86_64                 randconfig-x013-201801
+x86_64                 randconfig-x016-201801
+x86_64                 randconfig-x014-201801
+x86_64                 randconfig-x011-201801
+x86_64                 randconfig-x012-201801
+x86_64                 randconfig-x015-201801
+x86_64                 randconfig-x010-201801
+x86_64                 randconfig-x019-201801
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201801
+i386                     randconfig-s1-201801
+x86_64                 randconfig-s3-01102314
+x86_64                 randconfig-s4-01102314
+x86_64                 randconfig-s5-01102314
+x86_64                 randconfig-s3-01110109
+x86_64                 randconfig-s4-01110109
+x86_64                 randconfig-s5-01110109
+arm                        mini2440_defconfig
+m68k                        mvme16x_defconfig
+powerpc                        cell_defconfig
+sh                ecovec24-romimage_defconfig
+x86_64                   randconfig-i0-201801
+i386                   randconfig-b0-01102254
+arm                         iop13xx_defconfig
+blackfin                      H8606_defconfig
+openrisc                            defconfig
+sh                           se7721_defconfig
+powerpc                     akebono_defconfig
+blackfin                   CM-BF527_defconfig
+powerpc                        icon_defconfig
+powerpc                 mpc832x_mds_defconfig
+x86_64                 randconfig-u0-01102324
+x86_64                 randconfig-u0-01110116
+blackfin                  TCM-BF518_defconfig
+mips                          rm200_defconfig
+mips                         rt305x_defconfig
+i386                   randconfig-h0-01102248
+i386                   randconfig-h1-01102248
+x86_64                randconfig-ne0-01102324
+x86_64                              defconfig
+c6x                        evmc6457_defconfig
+mips                        nlm_xlp_defconfig
+x86_64                 randconfig-h0-01110000
+x86_64                 randconfig-h0-01110103
+arm                           sunxi_defconfig
+m68k                        mvme147_defconfig
+x86_64                 randconfig-n0-01102321
+arm                         nhk8815_defconfig
+arm                       versatile_defconfig
+i386                  randconfig-sb0-01102247
+i386                   randconfig-x004-201801
+i386                   randconfig-x002-201801
+i386                   randconfig-x007-201801
+i386                   randconfig-x009-201801
+i386                   randconfig-x003-201801
+i386                   randconfig-x006-201801
+i386                   randconfig-x005-201801
+i386                   randconfig-x000-201801
+i386                   randconfig-x001-201801
+i386                   randconfig-x008-201801
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-x008-201801
+x86_64                 randconfig-x000-201801
+x86_64                 randconfig-x005-201801
+x86_64                 randconfig-x007-201801
+x86_64                 randconfig-x009-201801
+x86_64                 randconfig-x002-201801
+x86_64                 randconfig-x001-201801
+x86_64                 randconfig-x006-201801
+x86_64                 randconfig-x003-201801
+x86_64                 randconfig-x004-201801
+frv                               allnoconfig
+ia64                            sim_defconfig
+powerpc                     stx_gp3_defconfig
+x86_64                randconfig-ws0-01102329
+blackfin                 BlackStamp_defconfig
+mips                                defconfig
+powerpc                          allyesconfig
+x86_64                randconfig-ws0-01102207
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x071-201801
+i386                   randconfig-x079-201801
+i386                   randconfig-x077-201801
+i386                   randconfig-x072-201801
+i386                   randconfig-x076-201801
+i386                   randconfig-x073-201801
+i386                   randconfig-x070-201801
+i386                   randconfig-x075-201801
+i386                   randconfig-x074-201801
+i386                   randconfig-x078-201801
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+sh                             espt_defconfig
+x86_64                 randconfig-r0-01102300
+i386                             allmodconfig
+arm                              allyesconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-01102308
+
+Thanks,
+Fengguang
