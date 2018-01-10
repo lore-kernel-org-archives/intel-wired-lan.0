@@ -1,32 +1,34 @@
-From: Benjamin Poirier <bpoirier@suse.com>
-Date: Wed, 10 Jan 2018 10:34:43 +0900
-Subject: [Intel-wired-lan] [PATCH] e1000e: Fix
- e1000_check_for_copper_link_ich8lan return value.
-In-Reply-To: <af44aaff-53e6-fb00-2dd6-d47396e56beb@gmx.de>
-References: <af44aaff-53e6-fb00-2dd6-d47396e56beb@gmx.de>
-Message-ID: <20180110013443.xrmta4kcq7yy2olz@f1.synalogic.ca>
+From: Wei Yongjun <weiyongjun1@huawei.com>
+Date: Wed, 10 Jan 2018 07:13:51 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] i40e: Make local function
+ i40e_get_link_speed static
+Message-ID: <1515568431-190497-1-git-send-email-weiyongjun1@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2018/01/10 01:29, rwarsow at gmx.de wrote:
-> hallo
-> 
-> any chance to get this patch into stable and 4.15 ?
-> 
-> https://marc.info/?l=linux-kernel&m=151297726823919&w=2
-> 
+Fixes the following sparse warning:
 
-It was part of the last network pull request and should be included in
-the next mainline release as
-4110e02eb45e e1000e: Fix e1000_check_for_copper_link_ich8lan return value.
+drivers/net/ethernet/intel/i40e/i40e_main.c:5440:5: warning:
+ symbol 'i40e_get_link_speed' was not declared. Should it be static?
 
-It's needed in stable branches that include commit 19110cfbb34d
-("e1000e: Separate signaling for link check/link up"):
-	linux-4.14.y
-	linux-4.9.y
-	linux-4.4.y
-	linux-4.1.y
-	linux-3.18.y
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 42dcaef..0d4a7c69 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -5437,7 +5437,7 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
+  * @vsi: VSI to be configured
+  *
+  **/
+-int i40e_get_link_speed(struct i40e_vsi *vsi)
++static int i40e_get_link_speed(struct i40e_vsi *vsi)
+ {
+ 	struct i40e_pf *pf = vsi->back;
+
