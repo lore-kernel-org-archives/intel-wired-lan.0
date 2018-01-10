@@ -1,34 +1,32 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 10 Jan 2018 00:35:13 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Don't report unsupported
- timestamping filters for X550
-In-Reply-To: <20180109113705.8464-1-mlichvar@redhat.com>
-References: <20180109113705.8464-1-mlichvar@redhat.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A8D8046@ORSMSX104.amr.corp.intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Wed, 10 Jan 2018 10:34:43 +0900
+Subject: [Intel-wired-lan] [PATCH] e1000e: Fix
+ e1000_check_for_copper_link_ich8lan return value.
+In-Reply-To: <af44aaff-53e6-fb00-2dd6-d47396e56beb@gmx.de>
+References: <af44aaff-53e6-fb00-2dd6-d47396e56beb@gmx.de>
+Message-ID: <20180110013443.xrmta4kcq7yy2olz@f1.synalogic.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Miroslav Lichvar
-> Sent: Tuesday, January 9, 2018 3:37 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Richard Cochran <richardcochran@gmail.com>
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Don't report unsupported
-> timestamping filters for X550
+On 2018/01/10 01:29, rwarsow at gmx.de wrote:
+> hallo
 > 
-> The current code enables on X550 timestamping of all packets for any filter,
-> which means ethtool should not report any PTP-specific filters as supported.
+> any chance to get this patch into stable and 4.15 ?
 > 
-> Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 37 ++++++++++++-------
-> -----
->  1 file changed, 19 insertions(+), 18 deletions(-)
+> https://marc.info/?l=linux-kernel&m=151297726823919&w=2
+> 
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+It was part of the last network pull request and should be included in
+the next mainline release as
+4110e02eb45e e1000e: Fix e1000_check_for_copper_link_ich8lan return value.
 
-
+It's needed in stable branches that include commit 19110cfbb34d
+("e1000e: Separate signaling for link check/link up"):
+	linux-4.14.y
+	linux-4.9.y
+	linux-4.4.y
+	linux-4.1.y
+	linux-3.18.y
