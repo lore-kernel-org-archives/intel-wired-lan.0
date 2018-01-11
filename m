@@ -1,60 +1,54 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 11 Jan 2018 13:55:34 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: use only 3k Rx buffers for
- 82599 with build_skb
-In-Reply-To: <20180111210602.28743.57326.stgit@localhost6.localdomain6>
-References: <20180111210602.28743.57326.stgit@localhost6.localdomain6>
-Message-ID: <CAKgT0UctWKCzmcV3HBG-qeGKq=jUFrpXxMMhbVV9JkxAgskTSQ@mail.gmail.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 11 Jan 2018 22:54:12 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: Clear TXSTMP when ptp_tx_work()
+ is timeout
+In-Reply-To: <1514853198-14008-1-git-send-email-daniel.hua@ni.com>
+References: <CAKgT0Ud8-6bf07niVk+bBk1SCPm1Bvd28NFhWoHAbA2Dh_Bfrw@mail.gmail.com>
+ <1514853198-14008-1-git-send-email-daniel.hua@ni.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7377E4@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Jan 11, 2018 at 1:06 PM, Emil Tantilov
-<emil.s.tantilov@intel.com> wrote:
-> commit 2de6aa3a666e ("ixgbe: Add support for padding packet")
->
-> Uses RXDCTL.RLPML to limit the maximum frame size on Rx when using build_skb.
-> Unfortunately that register does not work on 82599, so we are forcing 3k
-> buffers for that MAC.
->
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Daniel Hua
+> Sent: Monday, January 1, 2018 4:33 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Daniel Hua <daniel.hua@ni.com>
+> Subject: [Intel-wired-lan] [PATCH] igb: Clear TXSTMP when ptp_tx_work() is
+> timeout
+> 
+> Problem description:
+> After ethernet cable connect and disconnect for several iterations on a
+> device with i210, tx timestamp will stop being put into the socket.
+> 
+> Steps to reproduce:
+> 1. Setup a device with i210 and wire it to a 802.1AS capable switch (
+> Extreme Networks Summit x440 is used in our case)
+> 2. Have the gptp daemon running on the device and make sure it is synced
+> with the switch
+> 3. Have the switch disable and enable the port, wait for the device gets
+> resynced with the switch
+> 4. Iterates step 3 until the device is not albe to get resynced
+> 5. Review the log in dmesg and you will see warning message "igb : clearing
+> Tx timestamp hang"
+> 
+> Root cause:
+> If ptp_tx_work() gets scheduled just before the port gets disabled, a LINK
+> DOWN event will be processed before ptp_tx_work(), which may cause
+> timeout
+> in ptp_tx_work(). In the timeout logic, the TSYNCTXCTL's TXTT bit (Transmit
+> timestamp valid bit) is not cleared, causing no new timestamp loaded to
+> TXSTMP register. Consequently therefore, no new interrupt is triggerred by
+> TSICR.TXTS bit and no more Tx timestamp send to the socket.
+> 
+> Signed-off-by: Daniel Hua <daniel.hua@ni.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 722cc31..be2dd56 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -4133,7 +4133,8 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
->                 rxdctl &= ~0x3FFFFF;
->                 rxdctl |=  0x080420;
->  #if (PAGE_SIZE < 8192)
-> -       } else {
-> +       /* RXDCTL.RLPML does not work on 82599 */
-> +       } else if (hw->mac.type != ixgbe_mac_82599EB){
->                 rxdctl &= ~(IXGBE_RXDCTL_RLPMLMASK |
->                             IXGBE_RXDCTL_RLPML_EN);
->
+>  drivers/net/ethernet/intel/igb/igb_ptp.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 
-This change doesn't make sense. We aren't enablling RLPML here we are
-disabling it. Disabling it should work the same for 82599 just like it
-would for any of the other parts in this family.
+I do not have an 802.1AS switch at the moment but have been able to check this with Linux ptp on systems both back to back and in a switched environment.  I have several Extreme X460s in the test setup and have an Extreme AVB Feature Pack license on order to activate the gptp on the switch.  I will revisit this when the license arrives, but it is working fine for me from a regression perspective and I don't want to hold the patch up any longer due to lack of the license.  So...
 
-> @@ -4305,6 +4306,8 @@ static void ixgbe_set_rx_buffer_len(struct ixgbe_adapter *adapter)
->                         continue;
->
->                 set_bit(__IXGBE_RX_BUILD_SKB_ENABLED, &rx_ring->state);
-> +               if (hw->mac.type == ixgbe_mac_82599EB)
-> +                       set_bit(__IXGBE_RX_3K_BUFFER, &rx_ring->state);
->
->  #if (PAGE_SIZE < 8192)
->                 if (adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED)
-
-I think this bit is redundant. We aren't using the ring RLPML for
-this. My understanding as I recall is that we are using the maximum
-frame size allowed on the MAC to limit the frame size on 82599. That
-is why if we switch to jumbo frames at the end of this call we are
-switching to 3K mode already.
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
