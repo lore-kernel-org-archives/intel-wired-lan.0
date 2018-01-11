@@ -1,129 +1,637 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Thu, 11 Jan 2018 14:35:58 -0800
-Subject: [Intel-wired-lan] [PATCH next-queue 08/12] i40e: Service request to
- configure bandwidth for ADq on a VF
+Date: Thu, 11 Jan 2018 14:36:02 -0800
+Subject: [Intel-wired-lan] [PATCH next-queue 12/12] i40e: Add and delete
+ cloud filter
 In-Reply-To: <20180111223602.9082-1-avinash.dayanand@intel.com>
 References: <20180111223602.9082-1-avinash.dayanand@intel.com>
-Message-ID: <20180111223602.9082-9-avinash.dayanand@intel.com>
+Message-ID: <20180111223602.9082-13-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch handles the request from ADq enabled VF to allocate
-bandwidth to each traffic class which means for each VSI.
+This patch provides support to add or delete cloud filter for queue
+channels created for ADq on VF.
+We are using the HW's cloud filter feature and programming it to act
+as a TC filter applied to a group of queues.
+
+There are two possible modes for a VF when applying a cloud filter
+1. Basic Mode:	Intended to apply filters that don't need a VF to be
+		Trusted. This would include the following
+		  Dest MAC + L4 port
+		  Dest MAC + VLAN + L4 port
+2. Advanced Mode: This mode is only for filters with combination that
+		  requires VF to be Trusted.
+		  Dest IP + L4 port
+
+When cloud filters are applied on a Trusted VF and for some reason
+the same VF is later made as unTrusted then all cloud filters
+will be deleted. All cloud filters has to be re-applied in
+such a case.
+Cloud filters are also deleted when queue channel is deleted.
+
+Testing-Hints:
+=============
+1. Adding Basic Mode filter should be possible on a VF in
+	Non-Trusted mode.
+2. In Advanced mode all filters should be able to be created.
+
+Steps:
+======
+1. Enable ADq and create TCs using TC mqprio command
+2. Apply cloud filter.
+3. Turn-off the spoof check.
+4. Pass traffic.
+
+Example:
+========
+1. tc qdisc add dev enp4s2 root mqprio num_tc 4 map 0 0 0 0 1 2 2 3\
+	queues 2 at 0 2 at 2 1 at 4 1 at 5 hw 1 mode channel
+2. tc qdisc add dev enp4s2 ingress
+3. ethtool -K enp4s2 hw-tc-offload on
+4. ip link set ens261f0 vf 0 spoofchk off
+5. tc filter add dev enp4s2 protocol ip parent ffff: prio 1 flower\
+	dst_ip 192.168.3.5/32 ip_proto udp dst_port 25 skip_sw hw_tc 2
 
 Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 56 ++++++++++++++++++++--
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  1 +
- 2 files changed, 54 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h             |   6 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |  16 +-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 458 ++++++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   2 +
+ 4 files changed, 470 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index ebe795a..4b81a18 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -1108,4 +1108,10 @@ static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
+ 
+ int i40e_create_queue_channel(struct i40e_vsi *vsi, struct i40e_channel *ch);
+ int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate);
++int i40e_add_del_cloud_filter(struct i40e_vsi *vsi,
++			      struct i40e_cloud_filter *filter,
++			      bool add);
++int i40e_add_del_cloud_filter_big_buf(struct i40e_vsi *vsi,
++				      struct i40e_cloud_filter *filter,
++				      bool add);
+ #endif /* _I40E_H_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 16ea461..fdea5cf 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -69,12 +69,6 @@ static int i40e_reset(struct i40e_pf *pf);
+ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired);
+ static void i40e_fdir_sb_setup(struct i40e_pf *pf);
+ static int i40e_veb_get_bw_info(struct i40e_veb *veb);
+-static int i40e_add_del_cloud_filter(struct i40e_vsi *vsi,
+-				     struct i40e_cloud_filter *filter,
+-				     bool add);
+-static int i40e_add_del_cloud_filter_big_buf(struct i40e_vsi *vsi,
+-					     struct i40e_cloud_filter *filter,
+-					     bool add);
+ static int i40e_get_capabilities(struct i40e_pf *pf,
+ 				 enum i40e_admin_queue_opc list_type);
+ 
+@@ -6922,8 +6916,8 @@ i40e_set_cld_element(struct i40e_cloud_filter *filter,
+  * Add or delete a cloud filter for a specific flow spec.
+  * Returns 0 if the filter were successfully added.
+  **/
+-static int i40e_add_del_cloud_filter(struct i40e_vsi *vsi,
+-				     struct i40e_cloud_filter *filter, bool add)
++int i40e_add_del_cloud_filter(struct i40e_vsi *vsi,
++			      struct i40e_cloud_filter *filter, bool add)
+ {
+ 	struct i40e_aqc_cloud_filters_element_data cld_filter;
+ 	struct i40e_pf *pf = vsi->back;
+@@ -6989,9 +6983,9 @@ static int i40e_add_del_cloud_filter(struct i40e_vsi *vsi,
+  * Add or delete a cloud filter for a specific flow spec using big buffer.
+  * Returns 0 if the filter were successfully added.
+  **/
+-static int i40e_add_del_cloud_filter_big_buf(struct i40e_vsi *vsi,
+-					     struct i40e_cloud_filter *filter,
+-					     bool add)
++int i40e_add_del_cloud_filter_big_buf(struct i40e_vsi *vsi,
++				      struct i40e_cloud_filter *filter,
++				      bool add)
+ {
+ 	struct i40e_aqc_cloud_filters_element_bb cld_filter;
+ 	struct i40e_pf *pf = vsi->back;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 0c1c699..989664a 100644
+index 989664a..d0c8183 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -711,6 +711,7 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, u8 idx)
- 	struct i40e_mac_filter *f = NULL;
- 	struct i40e_pf *pf = vf->pf;
- 	struct i40e_vsi *vsi;
-+	u64 max_tx_rate = 0;
- 	int ret = 0;
+@@ -2917,6 +2917,440 @@ static int i40e_vc_disable_vlan_stripping(struct i40e_vf *vf, u8 *msg,
+ }
  
- 	vsi = i40e_vsi_setup(pf, I40E_VSI_SRIOV, pf->vsi[pf->lan_vsi]->seid,
-@@ -770,8 +771,15 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, u8 idx)
- 
- 	/* Set VF bandwidth if specified */
- 	if (vf->tx_rate) {
-+		max_tx_rate = vf->tx_rate;
-+	} else if (vf->ch[idx].max_tx_rate) {
-+		max_tx_rate = vf->ch[idx].max_tx_rate;
+ /**
++ * i40e_validate_cloud_filter
++ * @mask: mask for TC filter
++ * @data: data for TC filter
++ *
++ * This function validates cloud filter programmed as TC filter for ADq
++ **/
++static int i40e_validate_cloud_filter(struct i40e_vf *vf,
++				      struct virtchnl_filter *tc_filter)
++{
++	struct virtchnl_l4_spec mask = tc_filter->mask.tcp_spec;
++	struct virtchnl_l4_spec data = tc_filter->data.tcp_spec;
++	struct i40e_pf *pf = vf->pf;
++	struct i40e_vsi *vsi = NULL;
++	struct i40e_mac_filter *f;
++	struct hlist_node *h;
++	bool found = false;
++	int bkt;
++
++	if (!tc_filter->action) {
++		dev_info(&pf->pdev->dev,
++			 "VF %d: Currently ADq doesn't support Drop Action\n",
++			 vf->vf_id);
++		goto err;
 +	}
 +
-+	if (max_tx_rate) {
-+		max_tx_rate = div_u64(max_tx_rate, I40E_BW_CREDIT_DIVISOR);
- 		ret = i40e_aq_config_vsi_bw_limit(&pf->hw, vsi->seid,
--						  vf->tx_rate / 50, 0, NULL);
-+						  max_tx_rate, 0, NULL);
- 		if (ret)
- 			dev_err(&pf->pdev->dev, "Unable to set tx rate, VF %d, error code %d.\n",
- 				vf->vf_id, ret);
-@@ -2918,7 +2926,8 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
- 	struct virtchnl_tc_info *tci =
- 		(struct virtchnl_tc_info *)msg;
- 	struct i40e_pf *pf = vf->pf;
--	int i, adq_request_qps = 0;
-+	struct i40e_link_status *ls = &pf->hw.phy.link_info;
-+	int i, adq_request_qps = 0, speed = 0;
- 	i40e_status aq_ret = 0;
- 
- 	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-@@ -2979,10 +2988,51 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
- 		vf->num_queue_pairs = I40E_MAX_VF_QUEUES;
- 	}
- 
-+	/* get link speed in MB to validate rate limit */
-+	switch (ls->link_speed) {
-+	case VIRTCHNL_LINK_SPEED_100MB:
-+		speed = SPEED_100;
-+		break;
-+	case VIRTCHNL_LINK_SPEED_1GB:
-+		speed = SPEED_1000;
-+		break;
-+	case VIRTCHNL_LINK_SPEED_10GB:
-+		speed = SPEED_10000;
-+		break;
-+	case VIRTCHNL_LINK_SPEED_20GB:
-+		speed = SPEED_20000;
-+		break;
-+	case VIRTCHNL_LINK_SPEED_25GB:
-+		speed = SPEED_25000;
-+		break;
-+	case VIRTCHNL_LINK_SPEED_40GB:
-+		speed = SPEED_40000;
-+		break;
-+	default:
-+		dev_err(&pf->pdev->dev,
-+			"Cannot detect link speed\n");
++	/* action_meta is TC number here to which the filter is applied */
++	if (!tc_filter->action_meta ||
++	    tc_filter->action_meta > I40E_MAX_VF_VSI) {
++		dev_info(&pf->pdev->dev, "VF %d: Invalid TC number %u\n",
++			 vf->vf_id, tc_filter->action_meta);
++		goto err;
++	}
++
++	/* Check filter if it's programmed for advanced mode or basic mode.
++	 * There are two ADq modes (for VF only),
++	 * 1. Basic mode: intended to allow as many filter options as posssible
++	 *		  to be added to a VF in Non-trusted mode. Main goal is
++	 *		  to add filters to its own MAC and VLAN id.
++	 * 2. Advanced mode: is for allowing filters to be applied other than
++	 *		  its own MAC or VLAN. This mode requires the VF to be
++	 *		  Trusted.
++	 */
++	if (mask.dst_mac[0] && !mask.dst_ip[0]) {
++		vsi = pf->vsi[vf->lan_vsi_idx];
++		f = i40e_find_mac(vsi, data.dst_mac);
++
++		if (!f) {
++			dev_info(&pf->pdev->dev,
++				 "Destination MAC %pM doesn't belong to VF %d\n",
++				 data.dst_mac, vf->vf_id);
++			goto err;
++		}
++
++		if (mask.vlan_id) {
++			hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f,
++					   hlist) {
++				if (f->vlan == ntohs(data.vlan_id)) {
++					found = true;
++					break;
++				}
++			}
++			if (!found) {
++				dev_info(&pf->pdev->dev,
++					 "VF %d doesn't have any VLAN id %u\n",
++					 vf->vf_id, ntohs(data.vlan_id));
++				goto err;
++			}
++		}
++	} else {
++		/* Check if VF is trusted */
++		if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
++			dev_err(&pf->pdev->dev,
++				"VF %d not trusted, make VF trusted to add advanced mode ADq cloud filters\n",
++				vf->vf_id);
++			return I40E_ERR_CONFIG;
++		}
++	}
++
++	if (mask.dst_mac[0] & data.dst_mac[0]) {
++		if (is_broadcast_ether_addr(data.dst_mac) ||
++		    is_zero_ether_addr(data.dst_mac)) {
++			dev_info(&pf->pdev->dev, "VF %d: Invalid Dest MAC addr %pM\n",
++				 vf->vf_id, data.dst_mac);
++			goto err;
++		}
++	}
++
++	if (mask.src_mac[0] & data.src_mac[0]) {
++		if (is_broadcast_ether_addr(data.src_mac) ||
++		    is_zero_ether_addr(data.src_mac)) {
++			dev_info(&pf->pdev->dev, "VF %d: Invalid Source MAC addr %pM\n",
++				 vf->vf_id, data.src_mac);
++			goto err;
++		}
++	}
++
++	if (mask.dst_port & data.dst_port) {
++		if (!data.dst_port || data.dst_port > 0xFFFF) {
++			dev_info(&pf->pdev->dev, "VF %d: Invalid Dest port\n",
++				 vf->vf_id);
++			goto err;
++		}
++	}
++
++	if (mask.src_port & data.src_port) {
++		if (!data.src_port || data.src_port > 0xFFFF) {
++			dev_info(&pf->pdev->dev, "VF %d: Invalid Source port\n",
++				 vf->vf_id);
++			goto err;
++		}
++	}
++
++	if (tc_filter->flow_type != VIRTCHNL_TCP_V6_FLOW &&
++	    tc_filter->flow_type != VIRTCHNL_TCP_V4_FLOW) {
++		dev_info(&pf->pdev->dev, "VF %d: Invalid Flow type\n",
++			 vf->vf_id);
++		goto err;
++	}
++
++	if (mask.vlan_id & data.vlan_id) {
++		if (ntohs(data.vlan_id) > I40E_MAX_VLANID) {
++			dev_info(&pf->pdev->dev, "VF %d: invalid VLAN ID\n",
++				 vf->vf_id);
++			goto err;
++		}
++	}
++
++	return I40E_SUCCESS;
++err:
++	return I40E_ERR_CONFIG;
++}
++
++/**
++ * i40e_find_vsi_from_seid - searches for the vsi with the given seid
++ * @vf: pointer to the VF info
++ * @seid - seid of the vsi it is searching for
++ **/
++struct i40e_vsi *i40e_find_vsi_from_seid(struct i40e_vf *vf, u16 seid)
++{
++	struct i40e_pf *pf = vf->pf;
++	struct i40e_vsi *vsi = NULL;
++	int i;
++
++	for (i = 0; i < vf->num_tc ; i++) {
++		vsi = i40e_find_vsi_from_id(pf, vf->ch[i].vsi_id);
++		if (vsi->seid == seid)
++			return vsi;
++	}
++	return NULL;
++}
++
++/**
++ * i40e_del_all_cloud_filters
++ * @vf: pointer to the VF info
++ *
++ * This function deletes all cloud filters
++ **/
++void i40e_del_all_cloud_filters(struct i40e_vf *vf)
++{
++	struct i40e_cloud_filter *cfilter = NULL;
++	struct i40e_pf *pf = vf->pf;
++	struct i40e_vsi *vsi = NULL;
++	struct hlist_node *node;
++	int ret;
++
++	hlist_for_each_entry_safe(cfilter, node,
++				  &vf->cloud_filter_list, cloud_node) {
++		vsi = i40e_find_vsi_from_seid(vf, cfilter->seid);
++
++		if (!vsi) {
++			dev_err(&pf->pdev->dev, "VF %d: no VSI found for matching %u seid, can't delete cloud filter\n",
++				vf->vf_id, cfilter->seid);
++			continue;
++		}
++
++		if (cfilter->dst_port)
++			ret = i40e_add_del_cloud_filter_big_buf(vsi, cfilter,
++								false);
++		else
++			ret = i40e_add_del_cloud_filter(vsi, cfilter, false);
++		if (ret)
++			dev_err(&pf->pdev->dev,
++				"VF %d: Failed to delete cloud filter, err %s aq_err %s\n",
++				vf->vf_id, i40e_stat_str(&pf->hw, ret),
++				i40e_aq_str(&pf->hw,
++					    pf->hw.aq.asq_last_status));
++
++		hlist_del(&cfilter->cloud_node);
++		kfree(cfilter);
++		vf->num_cloud_filters--;
++	}
++}
++
++/**
++ * i40e_vc_del_cloud_filter
++ * @vf: pointer to the VF info
++ * @msg: pointer to the msg buffer
++ *
++ * This function deletes a cloud filter programmed as TC filter for ADq
++ **/
++static int i40e_vc_del_cloud_filter(struct i40e_vf *vf, u8 *msg)
++{
++	struct virtchnl_filter *vcf = (struct virtchnl_filter *)msg;
++	struct virtchnl_l4_spec mask = vcf->mask.tcp_spec;
++	struct virtchnl_l4_spec tcf = vcf->data.tcp_spec;
++	struct i40e_cloud_filter cfilter, *cf = NULL;
++	struct i40e_pf *pf = vf->pf;
++	struct i40e_vsi *vsi = NULL;
++	struct hlist_node *node;
++	i40e_status aq_ret = 0;
++	int i, ret;
++
++	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
 +		aq_ret = I40E_ERR_PARAM;
 +		goto err;
 +	}
 +
- 	/* parse data from the queue channel info */
- 	vf->num_tc = tci->num_tc;
--	for (i = 0; i < vf->num_tc; i++)
-+	for (i = 0; i < vf->num_tc; i++) {
-+		if (tci->list[i].max_tx_rate) {
-+			if (tci->list[i].max_tx_rate > speed) {
-+				dev_err(&pf->pdev->dev,
-+					"Invalid max tx rate %llu specified for VF %d.",
-+					tci->list[i].max_tx_rate,
-+					vf->vf_id);
-+				aq_ret = I40E_ERR_PARAM;
-+				goto err;
-+			} else {
-+				vf->ch[i].max_tx_rate =
-+					tci->list[i].max_tx_rate;
-+			}
-+		}
- 		vf->ch[i].num_qps = tci->list[i].count;
++	if (!vf->adq_enabled) {
++		dev_info(&pf->pdev->dev,
++			 "VF %d: ADq not enabled, can't apply cloud filter\n",
++			 vf->vf_id);
++		aq_ret = I40E_ERR_PARAM;
++		goto err;
 +	}
++
++	if (i40e_validate_cloud_filter(vf, vcf)) {
++		dev_info(&pf->pdev->dev,
++			 "VF %d: Invalid input, can't apply cloud filter\n",
++			 vf->vf_id);
++			aq_ret = I40E_ERR_PARAM;
++			goto err;
++	}
++
++	memset(&cfilter, 0, sizeof(cfilter));
++	/* parse destination mac address */
++	for (i = 0; i < ETH_ALEN; i++)
++		cfilter.dst_mac[i] = mask.dst_mac[i] & tcf.dst_mac[i];
++
++	/* parse source mac address */
++	for (i = 0; i < ETH_ALEN; i++)
++		cfilter.src_mac[i] = mask.src_mac[i] & tcf.src_mac[i];
++
++	cfilter.vlan_id = mask.vlan_id & tcf.vlan_id;
++	cfilter.dst_port = mask.dst_port & tcf.dst_port;
++	cfilter.src_port = mask.src_port & tcf.src_port;
++
++	switch (vcf->flow_type) {
++	case VIRTCHNL_TCP_V4_FLOW:
++		cfilter.n_proto = ETH_P_IP;
++		if (mask.dst_ip[0] & tcf.dst_ip[0])
++			memcpy(&cfilter.ip.v4.dst_ip, tcf.dst_ip,
++			       ARRAY_SIZE(tcf.dst_ip));
++		else if (mask.src_ip[0] & tcf.dst_ip[0])
++			memcpy(&cfilter.ip.v4.src_ip, tcf.src_ip,
++			       ARRAY_SIZE(tcf.dst_ip));
++		break;
++	case VIRTCHNL_TCP_V6_FLOW:
++		cfilter.n_proto = ETH_P_IPV6;
++		if (mask.dst_ip[3] & tcf.dst_ip[3])
++			memcpy(&cfilter.ip.v6.dst_ip6, tcf.dst_ip,
++			       sizeof(cfilter.ip.v6.dst_ip6));
++		if (mask.src_ip[3] & tcf.src_ip[3])
++			memcpy(&cfilter.ip.v6.src_ip6, tcf.src_ip,
++			       sizeof(cfilter.ip.v6.src_ip6));
++		break;
++	default:
++		/* TC filter can be configured based on different combinations
++		 * and in this case IP is not a part of filter config
++		 */
++		dev_info(&pf->pdev->dev, "VF %d: Flow type not configured\n",
++			 vf->vf_id);
++	}
++
++	/* get the vsi to which the tc belongs to */
++	vsi = pf->vsi[vf->ch[vcf->action_meta].vsi_idx];
++	cfilter.seid = vsi->seid;
++	cfilter.flags = vcf->field_flags;
++
++	/* Deleting TC filter */
++	if (tcf.dst_port)
++		ret = i40e_add_del_cloud_filter_big_buf(vsi, &cfilter, false);
++	else
++		ret = i40e_add_del_cloud_filter(vsi, &cfilter, false);
++	if (ret) {
++		dev_err(&pf->pdev->dev,
++			"VF %d: Failed to delete cloud filter, err %s aq_err %s\n",
++			vf->vf_id, i40e_stat_str(&pf->hw, ret),
++			i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
++		goto err;
++	}
++
++	hlist_for_each_entry_safe(cf, node,
++				  &vf->cloud_filter_list, cloud_node) {
++		if (cf->seid != cfilter.seid)
++			continue;
++		if (mask.dst_port)
++			if (cfilter.dst_port != cf->dst_port)
++				continue;
++		if (mask.dst_mac[0])
++			if (!ether_addr_equal(cf->src_mac, cfilter.src_mac))
++				continue;
++		/* for ipv4 data to be valid, only first byte of mask is set */
++		if (cfilter.n_proto == ETH_P_IP && mask.dst_ip[0])
++			if (memcmp(&cfilter.ip.v4.dst_ip, &cf->ip.v4.dst_ip,
++				   ARRAY_SIZE(tcf.dst_ip)))
++				continue;
++		/* for ipv6, mask is set for all sixteen bytes (4 words) */
++		if (cfilter.n_proto == ETH_P_IPV6 && mask.dst_ip[3])
++			if (memcmp(&cfilter.ip.v6.dst_ip6, &cf->ip.v6.dst_ip6,
++				   sizeof(cfilter.ip.v6.src_ip6)))
++				continue;
++		if (mask.vlan_id)
++			if (cfilter.vlan_id != cf->vlan_id)
++				continue;
++
++		hlist_del(&cf->cloud_node);
++		kfree(cf);
++		vf->num_cloud_filters--;
++	}
++
++err:
++	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_DEL_CLOUD_FILTER,
++				       aq_ret);
++}
++
++/**
++ * i40e_vc_add_cloud_filter
++ * @vf: pointer to the VF info
++ * @msg: pointer to the msg buffer
++ *
++ * This function adds a cloud filter programmed as TC filter for ADq
++ **/
++static int i40e_vc_add_cloud_filter(struct i40e_vf *vf, u8 *msg)
++{
++	struct virtchnl_filter *vcf = (struct virtchnl_filter *)msg;
++	struct virtchnl_l4_spec mask = vcf->mask.tcp_spec;
++	struct virtchnl_l4_spec tcf = vcf->data.tcp_spec;
++	struct i40e_cloud_filter *cfilter = NULL;
++	struct i40e_pf *pf = vf->pf;
++	struct i40e_vsi *vsi = NULL;
++	i40e_status aq_ret = 0;
++	int i, ret;
++
++	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
++		aq_ret = I40E_ERR_PARAM;
++		goto err;
++	}
++
++	if (!vf->adq_enabled) {
++		dev_info(&pf->pdev->dev,
++			 "VF %d: ADq is not enabled, can't apply cloud filter\n",
++			 vf->vf_id);
++		aq_ret = I40E_ERR_PARAM;
++		goto err;
++	}
++
++	if (i40e_validate_cloud_filter(vf, vcf)) {
++		dev_info(&pf->pdev->dev,
++			 "VF %d: Invalid input/s, can't apply cloud filter\n",
++			 vf->vf_id);
++			aq_ret = I40E_ERR_PARAM;
++			goto err;
++	}
++
++	cfilter = kzalloc(sizeof(*cfilter), GFP_KERNEL);
++	if (!cfilter)
++		return -ENOMEM;
++
++	/* parse destination mac address */
++	for (i = 0; i < ETH_ALEN; i++)
++		cfilter->dst_mac[i] = mask.dst_mac[i] & tcf.dst_mac[i];
++
++	/* parse source mac address */
++	for (i = 0; i < ETH_ALEN; i++)
++		cfilter->src_mac[i] = mask.src_mac[i] & tcf.src_mac[i];
++
++	cfilter->vlan_id = mask.vlan_id & tcf.vlan_id;
++	cfilter->dst_port = mask.dst_port & tcf.dst_port;
++	cfilter->src_port = mask.src_port & tcf.src_port;
++
++	switch (vcf->flow_type) {
++	case VIRTCHNL_TCP_V4_FLOW:
++		cfilter->n_proto = ETH_P_IP;
++		if (mask.dst_ip[0] & tcf.dst_ip[0])
++			memcpy(&cfilter->ip.v4.dst_ip, tcf.dst_ip,
++			       ARRAY_SIZE(tcf.dst_ip));
++		else if (mask.src_ip[0] & tcf.dst_ip[0])
++			memcpy(&cfilter->ip.v4.src_ip, tcf.src_ip,
++			       ARRAY_SIZE(tcf.dst_ip));
++		break;
++	case VIRTCHNL_TCP_V6_FLOW:
++		cfilter->n_proto = ETH_P_IPV6;
++		if (mask.dst_ip[3] & tcf.dst_ip[3])
++			memcpy(&cfilter->ip.v6.dst_ip6, tcf.dst_ip,
++			       sizeof(cfilter->ip.v6.dst_ip6));
++		if (mask.src_ip[3] & tcf.src_ip[3])
++			memcpy(&cfilter->ip.v6.src_ip6, tcf.src_ip,
++			       sizeof(cfilter->ip.v6.src_ip6));
++		break;
++	default:
++		/* TC filter can be configured based on different combinations
++		 * and in this case IP is not a part of filter config
++		 */
++		dev_info(&pf->pdev->dev, "VF %d: Flow type not configured\n",
++			 vf->vf_id);
++	}
++
++	/* get the vsi to which the tc belongs to */
++	vsi = pf->vsi[vf->ch[vcf->action_meta].vsi_idx];
++	cfilter->seid = vsi->seid;
++	cfilter->flags = vcf->field_flags;
++
++	/* Adding cloud filter programmed as TC filter */
++	if (tcf.dst_port)
++		ret = i40e_add_del_cloud_filter_big_buf(vsi, cfilter, true);
++	else
++		ret = i40e_add_del_cloud_filter(vsi, cfilter, true);
++	if (ret) {
++		dev_err(&pf->pdev->dev,
++			"VF %d: Failed to add cloud filter, err %s aq_err %s\n",
++			vf->vf_id, i40e_stat_str(&pf->hw, ret),
++			i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
++		goto err;
++	}
++
++	INIT_HLIST_NODE(&cfilter->cloud_node);
++	hlist_add_head(&cfilter->cloud_node, &vf->cloud_filter_list);
++	vf->num_cloud_filters++;
++err:
++	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_ADD_CLOUD_FILTER,
++				       aq_ret);
++}
++
++/**
+  * i40e_vc_add_qch_msg: Add queue channel and enable ADq
+  * @vf: pointer to the VF info
+  * @msg: pointer to the msg buffer
+@@ -3036,6 +3470,11 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
  
  	/* set this flag only after making sure all inputs are sane */
  	vf->adq_enabled = true;
++	/* num_req_queues is set when user changes number of queues via ethtool
++	 * and this causes issue for default VSI(which depends on this variable)
++	 * when ADq is enabled, hence reset it.
++	 */
++	vf->num_req_queues = 0;
+ 
+ 	/* reset the VF in order to allocate resources */
+ 	i40e_vc_notify_vf_reset(vf);
+@@ -3065,11 +3504,12 @@ static int i40e_vc_del_qch_msg(struct i40e_vf *vf, u8 *msg)
+ 	}
+ 
+ 	if (vf->adq_enabled) {
++		i40e_del_all_cloud_filters(vf);
+ 		i40e_del_qch(vf);
+ 		vf->adq_enabled = false;
+ 		vf->num_tc = 0;
+ 		dev_info(&pf->pdev->dev,
+-			 "Deleting Queue Channels for ADq on VF %d\n",
++			 "Deleting Queue Channels and cloud filters for ADq on VF %d\n",
+ 			 vf->vf_id);
+ 	} else {
+ 		dev_info(&pf->pdev->dev, "VF %d trying to delete queue channels but ADq isn't enabled\n",
+@@ -3223,6 +3663,12 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
+ 	case VIRTCHNL_OP_DISABLE_CHANNELS:
+ 		ret = i40e_vc_del_qch_msg(vf, msg);
+ 		break;
++	case VIRTCHNL_OP_ADD_CLOUD_FILTER:
++		ret = i40e_vc_add_cloud_filter(vf, msg);
++		break;
++	case VIRTCHNL_OP_DEL_CLOUD_FILTER:
++		ret = i40e_vc_del_cloud_filter(vf, msg);
++		break;
+ 	case VIRTCHNL_OP_UNKNOWN:
+ 	default:
+ 		dev_err(&pf->pdev->dev, "Unsupported opcode %d from VF %d\n",
+@@ -3788,6 +4234,16 @@ int i40e_ndo_set_vf_trust(struct net_device *netdev, int vf_id, bool setting)
+ 	i40e_vc_disable_vf(vf);
+ 	dev_info(&pf->pdev->dev, "VF %u is now %strusted\n",
+ 		 vf_id, setting ? "" : "un");
++
++	if (vf->adq_enabled) {
++		if (!vf->trusted) {
++			dev_info(&pf->pdev->dev,
++				 "VF %u no longer Trusted, deleting all cloud filters\n",
++				 vf_id);
++			i40e_del_all_cloud_filters(vf);
++		}
++	}
++
+ out:
+ 	return ret;
+ }
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 67543db..6e794c8 100644
+index 6e794c8..6852599 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -79,6 +79,7 @@ struct i40evf_channel {
- 	u16 vsi_idx; /* index in PF struct for all channel VSIs */
- 	u16 vsi_id; /* VSI ID used by firmware */
- 	u16 num_qps; /* number of queue pairs requested by user */
-+	u64 max_tx_rate; /* bandwidth rate allocation for VSIs */
- };
+@@ -128,6 +128,8 @@ struct i40e_vf {
+ 	bool adq_enabled; /* flag to enable adq */
+ 	u8 num_tc;
+ 	struct i40evf_channel ch[I40E_MAX_VF_VSI];
++	struct hlist_head cloud_filter_list;
++	u16 num_cloud_filters;
  
- /* VF information structure */
+ 	/* RDMA Client */
+ 	struct virtchnl_iwarp_qvlist_info *qvlist_info;
 -- 
 2.9.4
 
