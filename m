@@ -1,222 +1,164 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 11 Jan 2018 09:58:16 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 0794fedcefd43ece5967f91991824c661b1622aa
-Message-ID: <5a56c4b8.HB6Rl23Ymi/pIugW%fengguang.wu@intel.com>
+Date: Thu, 11 Jan 2018 10:28:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 75/107]
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c:4328:6: error: implicit
+ declaration of function 'cmpxchg64'; did you mean 'cmpxchg'?
+Message-ID: <201801111030.zy241uPe%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 0794fedcefd43ece5967f91991824c661b1622aa  i40e: track id can be 0
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   6438fb08f9d8f7971d394174d59e52b676299d69
+commit: 7b51a837e2fa60cda07ed3be90f197aede605d47 [75/107] i40e: change flags to use 64 bits
+config: mips-allyesconfig (attached as .config)
+compiler: mips-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 7b51a837e2fa60cda07ed3be90f197aede605d47
+        # save the attached .config to linux build tree
+        make.cross ARCH=mips 
 
-elapsed time: 311m
+All errors (new ones prefixed by >>):
 
-configs tested: 198
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function 'i40e_set_priv_flags':
+>> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:4328:6: error: implicit declaration of function 'cmpxchg64'; did you mean 'cmpxchg'? [-Werror=implicit-function-declaration]
+     if (cmpxchg64(&pf->flags, orig_flags, new_flags) != orig_flags) {
+         ^~~~~~~~~
+         cmpxchg
+   cc1: some warnings being treated as errors
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+vim +4328 drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-blackfin                         allmodconfig
-sh                          kfr2r09_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-a0-01110631
-mips                        nlm_xlp_defconfig
-powerpc                 mpc836x_mds_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-i386                   randconfig-c0-01110622
-arm                      pxa255-idp_defconfig
-m32r                       mappi.up_defconfig
-m68k                             alldefconfig
-ia64                              allnoconfig
-microblaze                       allyesconfig
-powerpc                    socrates_defconfig
-x86_64                randconfig-it0-01110550
-i386                   randconfig-x015-201801
-i386                   randconfig-x019-201801
-i386                   randconfig-x010-201801
-i386                   randconfig-x014-201801
-i386                   randconfig-x011-201801
-i386                   randconfig-x012-201801
-i386                   randconfig-x017-201801
-i386                   randconfig-x016-201801
-i386                   randconfig-x013-201801
-i386                   randconfig-x018-201801
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201801
-x86_64                 randconfig-x008-201801
-x86_64                 randconfig-x000-201801
-x86_64                 randconfig-x005-201801
-x86_64                 randconfig-x007-201801
-x86_64                 randconfig-x009-201801
-x86_64                 randconfig-x002-201801
-x86_64                 randconfig-x001-201801
-x86_64                 randconfig-x006-201801
-x86_64                 randconfig-x003-201801
-x86_64                 randconfig-x004-201801
-ia64                                defconfig
-ia64                             alldefconfig
-i386                     randconfig-i0-201801
-i386                     randconfig-i1-201801
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-x86_64                 randconfig-v0-01110652
-arm                              zx_defconfig
-powerpc                          allyesconfig
-sh                          sdk7780_defconfig
-x86_64                 randconfig-g0-01110646
-i386                             allmodconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                   randconfig-a1-01101713
-i386                   randconfig-a0-01101713
-x86_64                 randconfig-s0-01110530
-x86_64                 randconfig-s1-01110530
-x86_64                 randconfig-s2-01110530
-x86_64                 randconfig-s0-01110636
-x86_64                 randconfig-s1-01110636
-x86_64                 randconfig-s2-01110636
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x017-201801
-x86_64                 randconfig-x018-201801
-x86_64                 randconfig-x013-201801
-x86_64                 randconfig-x016-201801
-x86_64                 randconfig-x014-201801
-x86_64                 randconfig-x011-201801
-x86_64                 randconfig-x012-201801
-x86_64                 randconfig-x015-201801
-x86_64                 randconfig-x010-201801
-x86_64                 randconfig-x019-201801
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                     randconfig-s0-201801
-i386                     randconfig-s1-201801
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-01110611
-x86_64                 randconfig-s4-01110611
-x86_64                 randconfig-s5-01110611
-x86_64                 randconfig-s3-01110634
-x86_64                 randconfig-s4-01110634
-x86_64                 randconfig-s5-01110634
-m68k                            q40_defconfig
-mips                         tb0226_defconfig
-powerpc                     mpc83xx_defconfig
-x86_64                   randconfig-i0-201801
-i386                   randconfig-b0-01110635
-i386                             allyesconfig
-arm                         lpc32xx_defconfig
-x86_64                 randconfig-u0-01110620
-i386                               tinyconfig
-openrisc                    or1ksim_defconfig
-powerpc                  iss476-smp_defconfig
-sh                           se7721_defconfig
-x86_64                randconfig-ne0-01110529
-powerpc                 mpc8272_ads_defconfig
-powerpc                 mpc8540_ads_defconfig
-arm                              alldefconfig
-cris                          dev88_defconfig
-powerpc                      pcm030_defconfig
-i386                  randconfig-sb0-01110646
-i386                   randconfig-x004-201801
-i386                   randconfig-x002-201801
-i386                   randconfig-x007-201801
-i386                   randconfig-x009-201801
-i386                   randconfig-x003-201801
-i386                   randconfig-x006-201801
-i386                   randconfig-x005-201801
-i386                   randconfig-x000-201801
-i386                   randconfig-x001-201801
-i386                   randconfig-x008-201801
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-x86_64                randconfig-ws0-01110631
-blackfin                BF537-STAMP_defconfig
-blackfin                BF561-EZKIT_defconfig
-i386                   randconfig-x071-201801
-i386                   randconfig-x079-201801
-i386                   randconfig-x077-201801
-i386                   randconfig-x072-201801
-i386                   randconfig-x076-201801
-i386                   randconfig-x073-201801
-i386                   randconfig-x070-201801
-i386                   randconfig-x075-201801
-i386                   randconfig-x074-201801
-i386                   randconfig-x078-201801
-mn10300                     asb2364_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-mips                  mips_paravirt_defconfig
-sh                   rts7751r2dplus_defconfig
-x86_64                 randconfig-r0-01110628
-arm                              allyesconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-i386                   randconfig-x0-01110613
+  4260	
+  4261	/**
+  4262	 * i40e_set_priv_flags - set private flags
+  4263	 * @dev: network interface device structure
+  4264	 * @flags: bit flags to be set
+  4265	 **/
+  4266	static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+  4267	{
+  4268		struct i40e_netdev_priv *np = netdev_priv(dev);
+  4269		struct i40e_vsi *vsi = np->vsi;
+  4270		struct i40e_pf *pf = vsi->back;
+  4271		u64 orig_flags, new_flags, changed_flags;
+  4272		u32 i, j;
+  4273	
+  4274		orig_flags = READ_ONCE(pf->flags);
+  4275		new_flags = orig_flags;
+  4276	
+  4277		for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
+  4278			const struct i40e_priv_flags *priv_flags;
+  4279	
+  4280			priv_flags = &i40e_gstrings_priv_flags[i];
+  4281	
+  4282			if (flags & BIT(i))
+  4283				new_flags |= priv_flags->flag;
+  4284			else
+  4285				new_flags &= ~(priv_flags->flag);
+  4286	
+  4287			/* If this is a read-only flag, it can't be changed */
+  4288			if (priv_flags->read_only &&
+  4289			    ((orig_flags ^ new_flags) & ~BIT(i)))
+  4290				return -EOPNOTSUPP;
+  4291		}
+  4292	
+  4293		if (pf->hw.pf_id != 0)
+  4294			goto flags_complete;
+  4295	
+  4296		for (j = 0; j < I40E_GL_PRIV_FLAGS_STR_LEN; j++) {
+  4297			const struct i40e_priv_flags *priv_flags;
+  4298	
+  4299			priv_flags = &i40e_gl_gstrings_priv_flags[j];
+  4300	
+  4301			if (flags & BIT(i + j))
+  4302				new_flags |= priv_flags->flag;
+  4303			else
+  4304				new_flags &= ~(priv_flags->flag);
+  4305	
+  4306			/* If this is a read-only flag, it can't be changed */
+  4307			if (priv_flags->read_only &&
+  4308			    ((orig_flags ^ new_flags) & ~BIT(i)))
+  4309				return -EOPNOTSUPP;
+  4310		}
+  4311	
+  4312	flags_complete:
+  4313		/* Before we finalize any flag changes, we need to perform some
+  4314		 * checks to ensure that the changes are supported and safe.
+  4315		 */
+  4316	
+  4317		/* ATR eviction is not supported on all devices */
+  4318		if ((new_flags & I40E_FLAG_HW_ATR_EVICT_ENABLED) &&
+  4319		    !(pf->hw_features & I40E_HW_ATR_EVICT_CAPABLE))
+  4320			return -EOPNOTSUPP;
+  4321	
+  4322		/* Compare and exchange the new flags into place. If we failed, that
+  4323		 * is if cmpxchg returns anything but the old value, this means that
+  4324		 * something else has modified the flags variable since we copied it
+  4325		 * originally. We'll just punt with an error and log something in the
+  4326		 * message buffer.
+  4327		 */
+> 4328		if (cmpxchg64(&pf->flags, orig_flags, new_flags) != orig_flags) {
+  4329			dev_warn(&pf->pdev->dev,
+  4330				 "Unable to update pf->flags as it was modified by another thread...\n");
+  4331			return -EAGAIN;
+  4332		}
+  4333	
+  4334		changed_flags = orig_flags ^ new_flags;
+  4335	
+  4336		/* Process any additional changes needed as a result of flag changes.
+  4337		 * The changed_flags value reflects the list of bits that were
+  4338		 * changed in the code above.
+  4339		 */
+  4340	
+  4341		/* Flush current ATR settings if ATR was disabled */
+  4342		if ((changed_flags & I40E_FLAG_FD_ATR_ENABLED) &&
+  4343		    !(pf->flags & I40E_FLAG_FD_ATR_ENABLED)) {
+  4344			pf->flags |= I40E_FLAG_FD_ATR_AUTO_DISABLED;
+  4345			set_bit(__I40E_FD_FLUSH_REQUESTED, pf->state);
+  4346		}
+  4347	
+  4348		if (changed_flags & I40E_FLAG_TRUE_PROMISC_SUPPORT) {
+  4349			u16 sw_flags = 0, valid_flags = 0;
+  4350			int ret;
+  4351	
+  4352			if (!(pf->flags & I40E_FLAG_TRUE_PROMISC_SUPPORT))
+  4353				sw_flags = I40E_AQ_SET_SWITCH_CFG_PROMISC;
+  4354			valid_flags = I40E_AQ_SET_SWITCH_CFG_PROMISC;
+  4355			ret = i40e_aq_set_switch_config(&pf->hw, sw_flags, valid_flags,
+  4356							0, NULL);
+  4357			if (ret && pf->hw.aq.asq_last_status != I40E_AQ_RC_ESRCH) {
+  4358				dev_info(&pf->pdev->dev,
+  4359					 "couldn't set switch config bits, err %s aq_err %s\n",
+  4360					 i40e_stat_str(&pf->hw, ret),
+  4361					 i40e_aq_str(&pf->hw,
+  4362						     pf->hw.aq.asq_last_status));
+  4363				/* not a fatal problem, just keep going */
+  4364			}
+  4365		}
+  4366	
+  4367		/* Issue reset to cause things to take effect, as additional bits
+  4368		 * are added we will need to create a mask of bits requiring reset
+  4369		 */
+  4370		if (changed_flags & (I40E_FLAG_VEB_STATS_ENABLED |
+  4371				     I40E_FLAG_LEGACY_RX |
+  4372				     I40E_FLAG_SOURCE_PRUNING_DISABLED))
+  4373			i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED), true);
+  4374	
+  4375		return 0;
+  4376	}
+  4377	
 
-Thanks,
-Fengguang
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 55390 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180111/e16f7e88/attachment-0001.bin>
