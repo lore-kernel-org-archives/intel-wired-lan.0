@@ -1,111 +1,56 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 12 Jan 2018 11:32:49 -0800
-Subject: [Intel-wired-lan] [PATCH 10/12] virtchnl: Add filter data structures
-In-Reply-To: <20180112193251.11739-1-jeffrey.t.kirsher@intel.com>
-References: <20180112193251.11739-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180112193251.11739-10-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 13 Jan 2018 04:13:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 99/109]
+ include/linux/avf/virtchnl.h:523:31: error: enumerator value for
+ 'virtchnl_static_assert_virtchnl_tc_info' is not an integer constant
+Message-ID: <201801130406.DQT92ouv%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   5a2f5288e8033ca6995630146eb61790471d9542
+commit: bb6ac9bef16595d9d403450d53e549bf8a7c26fc [99/109] virtchnl: Add virtchl structures to support queue channels
+config: i386-randconfig-x076-201801 (attached as .config)
+compiler: gcc-7 (Debian 7.2.0-12) 7.2.1 20171025
+reproduce:
+        git checkout bb6ac9bef16595d9d403450d53e549bf8a7c26fc
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-This patch adds infrastructure to send virtchnl messages to the
-PF to configure filters on the VF. The patch adds a struct
-called virtchnl_filter which contains information about the fields
-in the user-specified tc filter.
+All error/warnings (new ones prefixed by >>):
 
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+   In file included from drivers/net//ethernet/intel/i40e/i40e_prototype.h:32:0,
+                    from drivers/net//ethernet/intel/i40e/i40e.h:61,
+                    from drivers/net//ethernet/intel/i40e/i40e_main.c:33:
+>> include/linux/avf/virtchnl.h:149:36: warning: division by zero [-Wdiv-by-zero]
+     { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+                                       ^
+>> include/linux/avf/virtchnl.h:523:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+    VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
+    ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:523:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_tc_info' is not an integer constant
+    VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
+                                  ^
+   include/linux/avf/virtchnl.h:149:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+     { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+                                                        ^
+
+vim +/virtchnl_static_assert_virtchnl_tc_info +523 include/linux/avf/virtchnl.h
+
+   522	
+ > 523	VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
+   524	
+
 ---
- include/linux/avf/virtchnl.h | 59 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
-
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 3bbe6e080e76..e6acc9fc6162 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -138,6 +138,8 @@ enum virtchnl_ops {
- 	VIRTCHNL_OP_REQUEST_QUEUES = 29,
- 	VIRTCHNL_OP_ENABLE_CHANNELS = 30,
- 	VIRTCHNL_OP_DISABLE_CHANNELS = 31,
-+	VIRTCHNL_OP_ADD_CLOUD_FILTER = 32,
-+	VIRTCHNL_OP_DEL_CLOUD_FILTER = 33,
- };
- 
- /* These macros are used to generate compilation errors if a structure/union
-@@ -524,6 +526,57 @@ struct virtchnl_tc_info {
- 
- VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
- 
-+/* VIRTCHNL_ADD_CLOUD_FILTER
-+ * VIRTCHNL_DEL_CLOUD_FILTER
-+ * VF sends these messages to add or delete a cloud filter based on the
-+ * user specified match and action filters. These structures encompass
-+ * all the information that the PF needs from the VF to add/delete a
-+ * cloud filter.
-+ */
-+
-+struct virtchnl_l4_spec {
-+	u8	src_mac[ETH_ALEN];
-+	u8	dst_mac[ETH_ALEN];
-+	__be16	vlan_id;
-+	__be16	pad; /* reserved for future use */
-+	__be32	src_ip[4];
-+	__be32	dst_ip[4];
-+	__be16	src_port;
-+	__be16	dst_port;
-+};
-+
-+VIRTCHNL_CHECK_STRUCT_LEN(52, virtchnl_l4_spec);
-+
-+union virtchnl_flow_spec {
-+	struct	virtchnl_l4_spec tcp_spec;
-+	u8	buffer[128]; /* reserved for future use */
-+};
-+
-+VIRTCHNL_CHECK_UNION_LEN(128, virtchnl_flow_spec);
-+
-+enum virtchnl_action {
-+	/* action types */
-+	VIRTCHNL_ACTION_DROP = 0,
-+	VIRTCHNL_ACTION_TC_REDIRECT,
-+};
-+
-+enum virtchnl_flow_type {
-+	/* flow types */
-+	VIRTCHNL_TCP_V4_FLOW = 0,
-+	VIRTCHNL_TCP_V6_FLOW,
-+};
-+
-+struct virtchnl_filter {
-+	union	virtchnl_flow_spec data;
-+	union	virtchnl_flow_spec mask;
-+	enum	virtchnl_flow_type flow_type;
-+	enum	virtchnl_action	action;
-+	u32	action_meta;
-+	__u8	field_flags;
-+};
-+
-+VIRTCHNL_CHECK_STRUCT_LEN(272, virtchnl_filter);
-+
- /* VIRTCHNL_OP_EVENT
-  * PF sends this message to inform the VF driver of events that may affect it.
-  * No direct response is expected from the VF, though it may generate other
-@@ -752,6 +805,12 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 		break;
- 	case VIRTCHNL_OP_DISABLE_CHANNELS:
- 		break;
-+	case VIRTCHNL_OP_ADD_CLOUD_FILTER:
-+		valid_len = sizeof(struct virtchnl_filter);
-+		break;
-+	case VIRTCHNL_OP_DEL_CLOUD_FILTER:
-+		valid_len = sizeof(struct virtchnl_filter);
-+		break;
- 	/* These are always errors coming from the VF. */
- 	case VIRTCHNL_OP_EVENT:
- 	case VIRTCHNL_OP_UNKNOWN:
--- 
-2.14.3
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 29845 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180113/8362f014/attachment-0001.bin>
