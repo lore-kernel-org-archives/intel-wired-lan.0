@@ -1,50 +1,155 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 12 Jan 2018 09:52:34 -0800
-Subject: [Intel-wired-lan] [PATCH][next] ixgbe: fix comparison of offset
- with zero or NVM_INVALID_PTR
-In-Reply-To: <20180112171310.27973-1-colin.king@canonical.com>
-References: <20180112171310.27973-1-colin.king@canonical.com>
-Message-ID: <1515779554.6613.2.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 13 Jan 2018 01:52:36 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 31a31f2608344b0a9eb055cf54f2fa5e69a91f74
+Message-ID: <5a58f5e4.ObNT1vr96AhkHQZd%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2018-01-12 at 17:13 +0000, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> The incorrect operator && is being used and will always return false
-> as offset can never be two different values at the same time. Fix
-> this
-> by using the || operator instead.
-> 
-> Detected by CoverityScan, CID#1463806 ("Logically dead code")
-> 
-> Fixes: 73834aec7199 ("ixgbe: extend firmware version support")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 31a31f2608344b0a9eb055cf54f2fa5e69a91f74  ixgbe: Don't report unsupported timestamping filters for X550
 
-Dan Carpenter beat you too it, see his patch in my tree:
+elapsed time: 112m
 
-commit 7352baadcc2ad2ed214e52bd8b50ac6eb01968cd
-Author: Dan Carpenter <dan.carpenter@oracle.com>
-Date:   Fri Jan 12 09:45:00 2018 -0800
+configs tested: 131
 
-    ixgbe: Fix && vs || typo
-    
-    "offset" can't be both 0x0 and 0xFFFF so presumably || was intended
-    instead of &&.  That matches with how this check is done in other
-    functions.
-    
-    Fixes: 73834aec7199 ("ixgbe: extend firmware version support")
-    Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180112/812c86ca/attachment.asc>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201801
+i386         randconfig-n0-201801+bisect_validate
+i386                     randconfig-i0-201801
+i386                     randconfig-i1-201801
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x017-201801
+x86_64                 randconfig-x018-201801
+x86_64                 randconfig-x013-201801
+x86_64                 randconfig-x016-201801
+x86_64                 randconfig-x014-201801
+x86_64                 randconfig-x011-201801
+x86_64                 randconfig-x012-201801
+x86_64                 randconfig-x015-201801
+x86_64                 randconfig-x010-201801
+x86_64                 randconfig-x019-201801
+i386                     randconfig-a0-201801
+i386                     randconfig-a1-201801
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-s0-201801
+i386                     randconfig-s1-201801
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201801
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x015-201801
+i386                   randconfig-x019-201801
+i386                   randconfig-x010-201801
+i386                   randconfig-x014-201801
+i386                   randconfig-x011-201801
+i386                   randconfig-x012-201801
+i386                   randconfig-x017-201801
+i386                   randconfig-x016-201801
+i386                   randconfig-x013-201801
+i386                   randconfig-x018-201801
+i386                   randconfig-x071-201801
+i386                   randconfig-x079-201801
+i386                   randconfig-x077-201801
+i386                   randconfig-x072-201801
+i386                   randconfig-x076-201801
+i386                   randconfig-x073-201801
+i386                   randconfig-x070-201801
+i386                   randconfig-x075-201801
+i386                   randconfig-x074-201801
+i386                   randconfig-x078-201801
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x004-201801
+i386                   randconfig-x002-201801
+i386                   randconfig-x007-201801
+i386                   randconfig-x009-201801
+i386                   randconfig-x003-201801
+i386                   randconfig-x006-201801
+i386                   randconfig-x005-201801
+i386                   randconfig-x000-201801
+i386                   randconfig-x001-201801
+i386                   randconfig-x008-201801
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x008-201801
+x86_64                 randconfig-x000-201801
+x86_64                 randconfig-x005-201801
+x86_64                 randconfig-x007-201801
+x86_64                 randconfig-x009-201801
+x86_64                 randconfig-x002-201801
+x86_64                 randconfig-x001-201801
+x86_64                 randconfig-x006-201801
+x86_64                 randconfig-x003-201801
+x86_64                 randconfig-x004-201801
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
