@@ -1,118 +1,98 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 12 Jan 2018 11:32:45 -0800
-Subject: [Intel-wired-lan] [PATCH 06/12] i40e: Delete queue channel for ADq
- on VF
+Date: Fri, 12 Jan 2018 11:32:41 -0800
+Subject: [Intel-wired-lan] [PATCH 02/12] virtchnl: Add virtchl structures to
+ support queue channels
 In-Reply-To: <20180112193251.11739-1-jeffrey.t.kirsher@intel.com>
 References: <20180112193251.11739-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180112193251.11739-6-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180112193251.11739-2-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-This patch takes care of freeing up all the VSIs, queues and
-other ADq related software and hardware resources, when a user
-requests for deletion of ADq on VF.
+This patch defines new structs in support of the virtchannel message
+that the VF sends to the PF to create a queue channel specified by the
+user via tc tool.
 
-Example command:
-tc qdisc del dev eth0 root
-
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 63 ++++++++++++++++++++++
- 1 file changed, 63 insertions(+)
+ include/linux/avf/virtchnl.h | 39 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 7d939a5dc6a9..0c1c699c0dc0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1672,6 +1672,27 @@ static int i40e_vc_get_version_msg(struct i40e_vf *vf, u8 *msg)
- 				      sizeof(struct virtchnl_version_info));
- }
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index 3ce61342fa31..b6aaecd82c70 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -136,6 +136,8 @@ enum virtchnl_ops {
+ 	VIRTCHNL_OP_ENABLE_VLAN_STRIPPING = 27,
+ 	VIRTCHNL_OP_DISABLE_VLAN_STRIPPING = 28,
+ 	VIRTCHNL_OP_REQUEST_QUEUES = 29,
++	VIRTCHNL_OP_ENABLE_CHANNELS = 30,
++	VIRTCHNL_OP_DISABLE_CHANNELS = 31,
+ };
  
-+/**
-+ * i40e_del_qch - delete all the additional VSI's created as a part of ADq
-+ * @vf: pointer to VF structure
-+ **/
-+static void i40e_del_qch(struct i40e_vf *vf)
-+{
-+	struct i40e_pf *pf = vf->pf;
-+	int i;
-+
-+	/* first element in the array belongs to primary VF VSI and we shouldn't
-+	 * delete it. we should however delete the rest of the VSIs created
-+	 */
-+	for (i = 1; i < vf->num_tc; i++) {
-+		if (vf->ch[i].vsi_idx) {
-+			i40e_vsi_release(pf->vsi[vf->ch[i].vsi_idx]);
-+			vf->ch[i].vsi_idx = 0;
-+			vf->ch[i].vsi_id = 0;
-+		}
-+	}
-+}
-+
- /**
-  * i40e_vc_get_vf_resources_msg
-  * @vf: pointer to the VF info
-@@ -2978,6 +2999,45 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
- 				       aq_ret);
- }
+ /* This macro is used to generate a compilation error if a structure
+@@ -244,6 +246,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
+ #define VIRTCHNL_VF_OFFLOAD_ENCAP		0X00100000
+ #define VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM		0X00200000
+ #define VIRTCHNL_VF_OFFLOAD_RX_ENCAP_CSUM	0X00400000
++#define VIRTCHNL_VF_OFFLOAD_ADQ			0X00800000
  
-+/**
-+ * i40e_vc_del_qch_msg
-+ * @vf: pointer to the VF info
-+ * @msg: pointer to the msg buffer
-+ **/
-+static int i40e_vc_del_qch_msg(struct i40e_vf *vf, u8 *msg)
-+{
-+	struct i40e_pf *pf = vf->pf;
-+	i40e_status aq_ret = 0;
+ #define VF_BASE_MODE_OFFLOADS (VIRTCHNL_VF_OFFLOAD_L2 | \
+ 			       VIRTCHNL_VF_OFFLOAD_VLAN | \
+@@ -496,6 +499,29 @@ struct virtchnl_rss_hena {
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_rss_hena);
+ 
++/* VIRTCHNL_OP_ENABLE_CHANNELS
++ * VIRTCHNL_OP_DISABLE_CHANNELS
++ * VF sends these messages to enable or disable channels based on
++ * the user specified queue count and queue offset for each traffic class.
++ * This struct encompasses all the information that the PF needs from
++ * VF to create a channel.
++ */
++struct virtchnl_channel_info {
++	u16 count; /* number of queues in a channel */
++	u16 offset; /* queues in a channel start from 'offset' */
++	u32 pad;
++	u64 max_tx_rate;
++};
 +
-+	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-+		aq_ret = I40E_ERR_PARAM;
-+		goto err;
-+	}
++VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_channel_info);
 +
-+	if (vf->adq_enabled) {
-+		i40e_del_qch(vf);
-+		vf->adq_enabled = false;
-+		vf->num_tc = 0;
-+		dev_info(&pf->pdev->dev,
-+			 "Deleting Queue Channels for ADq on VF %d\n",
-+			 vf->vf_id);
-+	} else {
-+		dev_info(&pf->pdev->dev, "VF %d trying to delete queue channels but ADq isn't enabled\n",
-+			 vf->vf_id);
-+		aq_ret = I40E_ERR_PARAM;
-+	}
++struct virtchnl_tc_info {
++	u32	num_tc;
++	struct	virtchnl_channel_info list[1];
++};
 +
-+	/* reset the VF in order to allocate resources */
-+	i40e_vc_notify_vf_reset(vf);
-+	i40e_reset_vf(vf, false);
++VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
 +
-+	return I40E_SUCCESS;
-+
-+err:
-+	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_DISABLE_CHANNELS,
-+				       aq_ret);
-+}
-+
- /**
-  * i40e_vc_process_vf_msg
-  * @pf: pointer to the PF structure
-@@ -3110,6 +3170,9 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
- 	case VIRTCHNL_OP_ENABLE_CHANNELS:
- 		ret = i40e_vc_add_qch_msg(vf, msg);
+ /* VIRTCHNL_OP_EVENT
+  * PF sends this message to inform the VF driver of events that may affect it.
+  * No direct response is expected from the VF, though it may generate other
+@@ -711,6 +737,19 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
+ 	case VIRTCHNL_OP_REQUEST_QUEUES:
+ 		valid_len = sizeof(struct virtchnl_vf_res_request);
  		break;
-+	case VIRTCHNL_OP_DISABLE_CHANNELS:
-+		ret = i40e_vc_del_qch_msg(vf, msg);
++	case VIRTCHNL_OP_ENABLE_CHANNELS:
++		valid_len = sizeof(struct virtchnl_tc_info);
++		if (msglen >= valid_len) {
++			struct virtchnl_tc_info *vti =
++				(struct virtchnl_tc_info *)msg;
++			valid_len += vti->num_tc *
++				sizeof(struct virtchnl_channel_info);
++			if (vti->num_tc == 0)
++				err_msg_format = true;
++		}
 +		break;
++	case VIRTCHNL_OP_DISABLE_CHANNELS:
++		break;
+ 	/* These are always errors coming from the VF. */
+ 	case VIRTCHNL_OP_EVENT:
  	case VIRTCHNL_OP_UNKNOWN:
- 	default:
- 		dev_err(&pf->pdev->dev, "Unsupported opcode %d from VF %d\n",
 -- 
 2.14.3
 
