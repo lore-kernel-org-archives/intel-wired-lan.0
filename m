@@ -1,56 +1,180 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 13 Jan 2018 04:13:10 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 99/109]
- include/linux/avf/virtchnl.h:523:31: error: enumerator value for
- 'virtchnl_static_assert_virtchnl_tc_info' is not an integer constant
-Message-ID: <201801130406.DQT92ouv%fengguang.wu@intel.com>
+Date: Sat, 13 Jan 2018 05:13:38 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 5a2f5288e8033ca6995630146eb61790471d9542
+Message-ID: <5a592502.QyHRqU5TqWPoCamC%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   5a2f5288e8033ca6995630146eb61790471d9542
-commit: bb6ac9bef16595d9d403450d53e549bf8a7c26fc [99/109] virtchnl: Add virtchl structures to support queue channels
-config: i386-randconfig-x076-201801 (attached as .config)
-compiler: gcc-7 (Debian 7.2.0-12) 7.2.1 20171025
-reproduce:
-        git checkout bb6ac9bef16595d9d403450d53e549bf8a7c26fc
-        # save the attached .config to linux build tree
-        make ARCH=i386 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 5a2f5288e8033ca6995630146eb61790471d9542  i40e: Add and delete cloud filter
 
-All error/warnings (new ones prefixed by >>):
+Regressions in current branch:
 
-   In file included from drivers/net//ethernet/intel/i40e/i40e_prototype.h:32:0,
-                    from drivers/net//ethernet/intel/i40e/i40e.h:61,
-                    from drivers/net//ethernet/intel/i40e/i40e_main.c:33:
->> include/linux/avf/virtchnl.h:149:36: warning: division by zero [-Wdiv-by-zero]
-     { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-                                       ^
->> include/linux/avf/virtchnl.h:523:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-    VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
-    ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:523:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_tc_info' is not an integer constant
-    VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
-                                  ^
-   include/linux/avf/virtchnl.h:149:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-     { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-                                                        ^
+include/linux/avf/virtchnl.h:149:36: warning: division by zero [-Wdiv-by-zero]
+include/linux/avf/virtchnl.h:523:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+include/linux/avf/virtchnl.h:523:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_tc_info' is not an integer constant
 
-vim +/virtchnl_static_assert_virtchnl_tc_info +523 include/linux/avf/virtchnl.h
+Error ids grouped by kconfigs:
 
-   522	
- > 523	VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
-   524	
+recent_errors
+??? i386-randconfig-x076-201801
+    ??? include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_tc_info-is-not-an-integer-constant
+    ??? include-linux-avf-virtchnl.h:note:in-expansion-of-macro-VIRTCHNL_CHECK_STRUCT_LEN
+    ??? include-linux-avf-virtchnl.h:warning:division-by-zero
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 29845 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180113/8362f014/attachment-0001.bin>
+elapsed time: 84m
+
+configs tested: 145
+
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                randconfig-it0-01121513
+i386                               tinyconfig
+i386                   randconfig-x015-201801
+i386                   randconfig-x019-201801
+i386                   randconfig-x010-201801
+i386                   randconfig-x014-201801
+i386                   randconfig-x011-201801
+i386                   randconfig-x012-201801
+i386                   randconfig-x017-201801
+i386                   randconfig-x016-201801
+i386                   randconfig-x013-201801
+i386                   randconfig-x018-201801
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201801
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201801
+i386                     randconfig-i1-201801
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-a1-201801
+i386                     randconfig-a0-201801
+x86_64                 randconfig-s0-01130159
+x86_64                 randconfig-s1-01130159
+x86_64                 randconfig-s2-01130159
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                           corgi_defconfig
+arm                         em_x270_defconfig
+cris                             allmodconfig
+ia64                          tiger_defconfig
+sh                   sh7770_generic_defconfig
+arm                          pcm027_defconfig
+mips                     loongson1b_defconfig
+mips                         tb0219_defconfig
+powerpc                       holly_defconfig
+x86_64                 randconfig-x017-201801
+x86_64                 randconfig-x018-201801
+x86_64                 randconfig-x013-201801
+x86_64                 randconfig-x016-201801
+x86_64                 randconfig-x014-201801
+x86_64                 randconfig-x011-201801
+x86_64                 randconfig-x012-201801
+x86_64                 randconfig-x015-201801
+x86_64                 randconfig-x010-201801
+x86_64                 randconfig-x019-201801
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201801
+i386                     randconfig-s1-201801
+x86_64                 randconfig-s3-01130335
+x86_64                 randconfig-s4-01130335
+x86_64                 randconfig-s5-01130335
+x86_64                 randconfig-s3-01130430
+x86_64                 randconfig-s4-01130430
+x86_64                 randconfig-s5-01130430
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                         palmz72_defconfig
+mips                      pic32mzda_defconfig
+powerpc                 mpc8315_rdb_defconfig
+sparc64                             defconfig
+x86_64                   randconfig-i0-201801
+i386                   randconfig-b0-01130142
+x86_64                 randconfig-b0-01130120
+sparc                               defconfig
+sparc64                           allnoconfig
+x86_64                 randconfig-u0-01130400
+x86_64                randconfig-ne0-01130346
+x86_64                 randconfig-h0-01130220
+tile                             allyesconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                  randconfig-sb0-01130207
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+arm                          collie_defconfig
+c6x                        evmc6472_defconfig
+sh                         ecovec24_defconfig
+i386                   randconfig-x071-201801
+i386                   randconfig-x079-201801
+i386                   randconfig-x077-201801
+i386                   randconfig-x072-201801
+i386                   randconfig-x076-201801
+i386                   randconfig-x073-201801
+i386                   randconfig-x070-201801
+i386                   randconfig-x075-201801
+i386                   randconfig-x074-201801
+i386                   randconfig-x078-201801
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-r0-01130355
+i386                   randconfig-x0-01130131
+
+Thanks,
+Fengguang
