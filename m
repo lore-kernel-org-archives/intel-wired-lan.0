@@ -1,131 +1,168 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 12 Jan 2018 11:32:47 -0800
-Subject: [Intel-wired-lan] [PATCH 08/12] i40e: Service request to configure
- bandwidth for ADq on a VF
+Date: Fri, 12 Jan 2018 11:32:46 -0800
+Subject: [Intel-wired-lan] [PATCH 07/12] i40evf: Add support to configure bw
+ via tc tool
 In-Reply-To: <20180112193251.11739-1-jeffrey.t.kirsher@intel.com>
 References: <20180112193251.11739-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180112193251.11739-8-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180112193251.11739-7-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-This patch handles the request from ADq enabled VF to allocate
-bandwidth to each traffic class which means for each VSI.
+This patch adds support to configure bandwidth for the traffic
+classes via tc tool. The required information is passed to the PF
+which is used in the process of setting up the traffic classes.
 
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 56 ++++++++++++++++++++--
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  1 +
- 2 files changed, 54 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 66 +++++++++++++++++++++-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  3 +
+ 3 files changed, 67 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 0c1c699c0dc0..989664a431ed 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -711,6 +711,7 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, u8 idx)
- 	struct i40e_mac_filter *f = NULL;
- 	struct i40e_pf *pf = vf->pf;
- 	struct i40e_vsi *vsi;
-+	u64 max_tx_rate = 0;
- 	int ret = 0;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index c8d68c8d2c33..150d676ab87c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -107,6 +107,7 @@ struct i40e_vsi {
  
- 	vsi = i40e_vsi_setup(pf, I40E_VSI_SRIOV, pf->vsi[pf->lan_vsi]->seid,
-@@ -770,8 +771,15 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, u8 idx)
+ #define I40EVF_HKEY_ARRAY_SIZE ((I40E_VFQF_HKEY_MAX_INDEX + 1) * 4)
+ #define I40EVF_HLUT_ARRAY_SIZE ((I40E_VFQF_HLUT_MAX_INDEX + 1) * 4)
++#define I40EVF_MBPS_DIVISOR	125000 /* divisor to convert to Mbps */
  
- 	/* Set VF bandwidth if specified */
- 	if (vf->tx_rate) {
-+		max_tx_rate = vf->tx_rate;
-+	} else if (vf->ch[idx].max_tx_rate) {
-+		max_tx_rate = vf->ch[idx].max_tx_rate;
-+	}
+ /* MAX_MSIX_Q_VECTORS of these are allocated,
+  * but we only use one per queue-specific vector.
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 9d365537372c..91fff5f285e7 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2217,6 +2217,48 @@ void i40evf_free_all_rx_resources(struct i40evf_adapter *adapter)
+ 			i40evf_free_rx_resources(&adapter->rx_rings[i]);
+ }
+ 
++/**
++ * i40evf_validate_tx_bandwidth - validate the max tx bandwidth
++ * @adapter: board private structure
++ * @max_tx_rate: max tx bw for a tc
++ **/
++static int i40evf_validate_tx_bandwidth(struct i40evf_adapter *adapter,
++					u64 max_tx_rate)
++{
++	int speed = 0, ret = 0;
 +
-+	if (max_tx_rate) {
-+		max_tx_rate = div_u64(max_tx_rate, I40E_BW_CREDIT_DIVISOR);
- 		ret = i40e_aq_config_vsi_bw_limit(&pf->hw, vsi->seid,
--						  vf->tx_rate / 50, 0, NULL);
-+						  max_tx_rate, 0, NULL);
- 		if (ret)
- 			dev_err(&pf->pdev->dev, "Unable to set tx rate, VF %d, error code %d.\n",
- 				vf->vf_id, ret);
-@@ -2918,7 +2926,8 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
- 	struct virtchnl_tc_info *tci =
- 		(struct virtchnl_tc_info *)msg;
- 	struct i40e_pf *pf = vf->pf;
--	int i, adq_request_qps = 0;
-+	struct i40e_link_status *ls = &pf->hw.phy.link_info;
-+	int i, adq_request_qps = 0, speed = 0;
- 	i40e_status aq_ret = 0;
- 
- 	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-@@ -2979,10 +2988,51 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
- 		vf->num_queue_pairs = I40E_MAX_VF_QUEUES;
- 	}
- 
-+	/* get link speed in MB to validate rate limit */
-+	switch (ls->link_speed) {
-+	case VIRTCHNL_LINK_SPEED_100MB:
-+		speed = SPEED_100;
++	switch (adapter->link_speed) {
++	case I40E_LINK_SPEED_40GB:
++		speed = 40000;
 +		break;
-+	case VIRTCHNL_LINK_SPEED_1GB:
-+		speed = SPEED_1000;
++	case I40E_LINK_SPEED_25GB:
++		speed = 25000;
 +		break;
-+	case VIRTCHNL_LINK_SPEED_10GB:
-+		speed = SPEED_10000;
++	case I40E_LINK_SPEED_20GB:
++		speed = 20000;
 +		break;
-+	case VIRTCHNL_LINK_SPEED_20GB:
-+		speed = SPEED_20000;
++	case I40E_LINK_SPEED_10GB:
++		speed = 10000;
 +		break;
-+	case VIRTCHNL_LINK_SPEED_25GB:
-+		speed = SPEED_25000;
++	case I40E_LINK_SPEED_1GB:
++		speed = 1000;
 +		break;
-+	case VIRTCHNL_LINK_SPEED_40GB:
-+		speed = SPEED_40000;
++	case I40E_LINK_SPEED_100MB:
++		speed = 100;
 +		break;
 +	default:
-+		dev_err(&pf->pdev->dev,
-+			"Cannot detect link speed\n");
-+		aq_ret = I40E_ERR_PARAM;
-+		goto err;
++		break;
 +	}
 +
- 	/* parse data from the queue channel info */
- 	vf->num_tc = tci->num_tc;
--	for (i = 0; i < vf->num_tc; i++)
-+	for (i = 0; i < vf->num_tc; i++) {
-+		if (tci->list[i].max_tx_rate) {
-+			if (tci->list[i].max_tx_rate > speed) {
-+				dev_err(&pf->pdev->dev,
-+					"Invalid max tx rate %llu specified for VF %d.",
-+					tci->list[i].max_tx_rate,
-+					vf->vf_id);
-+				aq_ret = I40E_ERR_PARAM;
-+				goto err;
-+			} else {
-+				vf->ch[i].max_tx_rate =
-+					tci->list[i].max_tx_rate;
-+			}
-+		}
- 		vf->ch[i].num_qps = tci->list[i].count;
++	if (max_tx_rate > speed) {
++		dev_err(&adapter->pdev->dev,
++			"Invalid tx rate specified\n");
++		ret = -EINVAL;
 +	}
++
++	return ret;
++}
++
+ /**
+  * i40evf_validate_channel_config - validate queue mapping info
+  * @adapter: board private structure
+@@ -2229,7 +2271,10 @@ void i40evf_free_all_rx_resources(struct i40evf_adapter *adapter)
+ static int i40evf_validate_ch_config(struct i40evf_adapter *adapter,
+ 				     struct tc_mqprio_qopt_offload *mqprio_qopt)
+ {
++	u64 total_max_rate = 0;
+ 	int i, num_qps = 0;
++	u64 tx_rate = 0;
++	int ret = 0;
  
- 	/* set this flag only after making sure all inputs are sane */
- 	vf->adq_enabled = true;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 67543dbefcd8..6e794c8a1ef3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -79,6 +79,7 @@ struct i40evf_channel {
- 	u16 vsi_idx; /* index in PF struct for all channel VSIs */
- 	u16 vsi_id; /* VSI ID used by firmware */
- 	u16 num_qps; /* number of queue pairs requested by user */
-+	u64 max_tx_rate; /* bandwidth rate allocation for VSIs */
- };
+ 	if (mqprio_qopt->qopt.num_tc > I40EVF_MAX_TRAFFIC_CLASS ||
+ 	    mqprio_qopt->qopt.num_tc < 1)
+@@ -2237,16 +2282,24 @@ static int i40evf_validate_ch_config(struct i40evf_adapter *adapter,
  
- /* VF information structure */
+ 	for (i = 0; i <= mqprio_qopt->qopt.num_tc - 1; i++) {
+ 		if (!mqprio_qopt->qopt.count[i] ||
+-		    mqprio_qopt->min_rate[i] ||
+-		    mqprio_qopt->max_rate[i] ||
+ 		    mqprio_qopt->qopt.offset[i] != num_qps)
+ 			return -EINVAL;
++		if (mqprio_qopt->min_rate[i]) {
++			dev_err(&adapter->pdev->dev,
++				"Invalid min tx rate (greater than 0) specified\n");
++			return -EINVAL;
++		}
++		/*convert to Mbps */
++		tx_rate = div_u64(mqprio_qopt->max_rate[i],
++				  I40EVF_MBPS_DIVISOR);
++		total_max_rate += tx_rate;
+ 		num_qps += mqprio_qopt->qopt.count[i];
+ 	}
+ 	if (num_qps > MAX_QUEUES)
+ 		return -EINVAL;
+ 
+-	return 0;
++	ret = i40evf_validate_tx_bandwidth(adapter, total_max_rate);
++	return ret;
+ }
+ 
+ /**
+@@ -2267,6 +2320,7 @@ static int __i40evf_setup_tc(struct net_device *netdev, void *type_data)
+ 	struct virtchnl_vf_resource *vfres = adapter->vf_res;
+ 	u8 num_tc = 0, total_qps = 0;
+ 	int ret = 0, netdev_tc = 0;
++	u64 max_tx_rate;
+ 	u16 mode;
+ 	int i;
+ 
+@@ -2314,6 +2368,12 @@ static int __i40evf_setup_tc(struct net_device *netdev, void *type_data)
+ 				adapter->ch_config.ch_info[i].offset =
+ 					mqprio_qopt->qopt.offset[i];
+ 				total_qps += mqprio_qopt->qopt.count[i];
++				max_tx_rate = mqprio_qopt->max_rate[i];
++				/* convert to Mbps */
++				max_tx_rate = div_u64(max_tx_rate,
++						      I40EVF_MBPS_DIVISOR);
++				adapter->ch_config.ch_info[i].max_tx_rate =
++					max_tx_rate;
+ 			} else {
+ 				adapter->ch_config.ch_info[i].count = 1;
+ 				adapter->ch_config.ch_info[i].offset = 0;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index 8329f37f431e..76bce1a5c20d 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -1003,6 +1003,9 @@ void i40evf_enable_channels(struct i40evf_adapter *adapter)
+ 	for (i = 0; i < vti->num_tc; i++) {
+ 		vti->list[i].count = adapter->ch_config.ch_info[i].count;
+ 		vti->list[i].offset = adapter->ch_config.ch_info[i].offset;
++		vti->list[i].pad = 0;
++		vti->list[i].max_tx_rate =
++				adapter->ch_config.ch_info[i].max_tx_rate;
+ 	}
+ 
+ 	adapter->ch_config.state = __I40EVF_TC_RUNNING;
 -- 
 2.14.3
 
