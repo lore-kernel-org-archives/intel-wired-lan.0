@@ -1,10 +1,10 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 12 Jan 2018 11:32:42 -0800
-Subject: [Intel-wired-lan] [PATCH 03/12] i40evf : add ndo_setup_tc callback
- to i40evf
+Date: Fri, 12 Jan 2018 11:32:48 -0800
+Subject: [Intel-wired-lan] [PATCH 09/12] virtchnl: Add a macro to check the
+ size of a union
 In-Reply-To: <20180112193251.11739-1-jeffrey.t.kirsher@intel.com>
 References: <20180112193251.11739-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180112193251.11739-3-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180112193251.11739-9-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,373 +13,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-This patch introduces the callback to the ndo_setup_tc function
-in the VF driver. We add a wrapper function to make room for the
-upcoming cloud filter patches which add calls to different functions
-from setup_tc.
-
-First, we add support for capability exchange for ADQ between the
-PF and VF. Next, we add support to take in the mqprio configuration
-and configure queues as per the traffic classes, rate limit and the
-priorities specified by the user. This is done by passing the channel
-config to the PF driver through a virtchannel message.
-
-The flags and bits added, track if ADq is enabled, set max number of
-traffic classes to 4 and provide ability to negotiate capability with
-the PF.
+This patch adds a macro to check if the size of a union is correct.
+It throws a divide by zero error if the union is not of the correct
+size.
 
 Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  22 +++
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 154 +++++++++++++++++++++
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  82 ++++++++++-
- 3 files changed, 257 insertions(+), 1 deletion(-)
+ include/linux/avf/virtchnl.h | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index 89ce2f9a0fbe..c8d68c8d2c33 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -52,6 +52,7 @@
- #include <linux/socket.h>
- #include <linux/jiffies.h>
- #include <net/ip6_checksum.h>
-+#include <net/pkt_cls.h>
- #include <net/udp.h>
- 
- #include "i40e_type.h"
-@@ -168,6 +169,20 @@ struct i40evf_vlan_filter {
- 	bool add;		/* filter needs to be added */
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index b6aaecd82c70..3bbe6e080e76 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -140,13 +140,15 @@ enum virtchnl_ops {
+ 	VIRTCHNL_OP_DISABLE_CHANNELS = 31,
  };
  
-+#define I40EVF_MAX_TRAFFIC_CLASS	4
-+/* State of traffic class creation */
-+enum i40evf_tc_state_t {
-+	__I40EVF_TC_INVALID, /* no traffic class, default state */
-+	__I40EVF_TC_RUNNING, /* traffic classes have been created */
-+};
-+
-+/* channel info */
-+struct i40evf_channel_config {
-+	struct virtchnl_channel_info ch_info[I40EVF_MAX_TRAFFIC_CLASS];
-+	enum i40evf_tc_state_t state;
-+	u8 total_qps;
-+};
-+
- /* Driver state. The order of these is important! */
- enum i40evf_state_t {
- 	__I40EVF_STARTUP,		/* driver loaded, probe complete */
-@@ -269,6 +284,8 @@ struct i40evf_adapter {
- #define I40EVF_FLAG_AQ_RELEASE_ALLMULTI		BIT(18)
- #define I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING	BIT(19)
- #define I40EVF_FLAG_AQ_DISABLE_VLAN_STRIPPING	BIT(20)
-+#define I40EVF_FLAG_AQ_ENABLE_CHANNELS		BIT(21)
-+#define I40EVF_FLAG_AQ_DISABLE_CHANNELS		BIT(22)
+-/* This macro is used to generate a compilation error if a structure
++/* These macros are used to generate compilation errors if a structure/union
+  * is not exactly the correct length. It gives a divide by zero error if the
+- * structure is not of the correct size, otherwise it creates an enum that is
+- * never used.
++ * structure/union is not of the correct size, otherwise it creates an enum
++ * that is never used.
+  */
+ #define VIRTCHNL_CHECK_STRUCT_LEN(n, X) enum virtchnl_static_assert_enum_##X \
+ 	{ virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
++#define VIRTCHNL_CHECK_UNION_LEN(n, X) enum virtchnl_static_asset_enum_##X \
++	{ virtchnl_static_assert_##X = (n)/((sizeof(union X) == (n)) ? 1 : 0) }
  
- 	/* OS defined structs */
- 	struct net_device *netdev;
-@@ -314,6 +331,9 @@ struct i40evf_adapter {
- 	u16 rss_lut_size;
- 	u8 *rss_key;
- 	u8 *rss_lut;
-+	/* ADQ related members */
-+	struct i40evf_channel_config ch_config;
-+	u8 num_tc;
- };
- 
- 
-@@ -380,4 +400,6 @@ void i40evf_notify_client_message(struct i40e_vsi *vsi, u8 *msg, u16 len);
- void i40evf_notify_client_l2_params(struct i40e_vsi *vsi);
- void i40evf_notify_client_open(struct i40e_vsi *vsi);
- void i40evf_notify_client_close(struct i40e_vsi *vsi, bool reset);
-+void i40evf_enable_channels(struct i40evf_adapter *adapter);
-+void i40evf_disable_channels(struct i40evf_adapter *adapter);
- #endif /* _I40EVF_H_ */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 3014a5e3fbcc..ec0275f8b7ef 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1714,6 +1714,17 @@ static void i40evf_watchdog_task(struct work_struct *work)
- 		i40evf_set_promiscuous(adapter, 0);
- 		goto watchdog_done;
- 	}
-+
-+	if (adapter->aq_required & I40EVF_FLAG_AQ_ENABLE_CHANNELS) {
-+		i40evf_enable_channels(adapter);
-+		goto watchdog_done;
-+	}
-+
-+	if (adapter->aq_required & I40EVF_FLAG_AQ_DISABLE_CHANNELS) {
-+		i40evf_disable_channels(adapter);
-+		goto watchdog_done;
-+	}
-+
- 	schedule_delayed_work(&adapter->client_task, msecs_to_jiffies(5));
- 
- 	if (adapter->state == __I40EVF_RUNNING)
-@@ -2193,6 +2204,148 @@ void i40evf_free_all_rx_resources(struct i40evf_adapter *adapter)
- 			i40evf_free_rx_resources(&adapter->rx_rings[i]);
- }
- 
-+/**
-+ * i40evf_validate_channel_config - validate queue mapping info
-+ * @adapter: board private structure
-+ * @mqprio_qopt: queue parameters
-+ *
-+ * This function validates if the config provided by the user to
-+ * configure queue channels is valid or not. Returns 0 on a valid
-+ * config.
-+ **/
-+static int i40evf_validate_ch_config(struct i40evf_adapter *adapter,
-+				     struct tc_mqprio_qopt_offload *mqprio_qopt)
-+{
-+	int i, num_qps = 0;
-+
-+	if (mqprio_qopt->qopt.num_tc > I40EVF_MAX_TRAFFIC_CLASS ||
-+	    mqprio_qopt->qopt.num_tc < 1)
-+		return -EINVAL;
-+
-+	for (i = 0; i <= mqprio_qopt->qopt.num_tc - 1; i++) {
-+		if (!mqprio_qopt->qopt.count[i] ||
-+		    mqprio_qopt->min_rate[i] ||
-+		    mqprio_qopt->max_rate[i] ||
-+		    mqprio_qopt->qopt.offset[i] != num_qps)
-+			return -EINVAL;
-+		num_qps += mqprio_qopt->qopt.count[i];
-+	}
-+	if (num_qps > MAX_QUEUES)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+/**
-+ * __i40evf_setup_tc - configure multiple traffic classes
-+ * @netdev: network interface device structure
-+ * @type_date: tc offload data
-+ *
-+ * This function processes the config information provided by the
-+ * user to configure traffic classes/queue channels and packages the
-+ * information to request the PF to setup traffic classes.
-+ *
-+ * Returns 0 on success.
-+ **/
-+static int __i40evf_setup_tc(struct net_device *netdev, void *type_data)
-+{
-+	struct tc_mqprio_qopt_offload *mqprio_qopt = type_data;
-+	struct i40evf_adapter *adapter = netdev_priv(netdev);
-+	struct virtchnl_vf_resource *vfres = adapter->vf_res;
-+	u8 num_tc = 0, total_qps = 0;
-+	int ret = 0, netdev_tc = 0;
-+	u16 mode;
-+	int i;
-+
-+	num_tc = mqprio_qopt->qopt.num_tc;
-+	mode = mqprio_qopt->mode;
-+
-+	/* delete queue_channel */
-+	if (!mqprio_qopt->qopt.hw) {
-+		if (adapter->ch_config.state == __I40EVF_TC_RUNNING) {
-+			/* reset the tc configuration */
-+			netdev_reset_tc(netdev);
-+			adapter->num_tc = 0;
-+			netif_tx_stop_all_queues(netdev);
-+			netif_tx_disable(netdev);
-+			adapter->aq_required = I40EVF_FLAG_AQ_DISABLE_CHANNELS;
-+			goto exit;
-+		} else {
-+			return -EINVAL;
-+		}
-+	}
-+
-+	/* add queue channel */
-+	if (mode == TC_MQPRIO_MODE_CHANNEL) {
-+		if (!(vfres->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_ADQ)) {
-+			dev_err(&adapter->pdev->dev, "ADq not supported\n");
-+			return -EOPNOTSUPP;
-+		}
-+		if (adapter->ch_config.state != __I40EVF_TC_INVALID) {
-+			dev_err(&adapter->pdev->dev, "TC configuration already exists\n");
-+			return -EINVAL;
-+		}
-+
-+		ret = i40evf_validate_ch_config(adapter, mqprio_qopt);
-+		if (ret)
-+			return ret;
-+		/* Return if same TC config is requested */
-+		if (adapter->num_tc == num_tc)
-+			return 0;
-+		adapter->num_tc = num_tc;
-+
-+		for (i = 0; i < I40EVF_MAX_TRAFFIC_CLASS; i++) {
-+			if (i < num_tc) {
-+				adapter->ch_config.ch_info[i].count =
-+					mqprio_qopt->qopt.count[i];
-+				adapter->ch_config.ch_info[i].offset =
-+					mqprio_qopt->qopt.offset[i];
-+				total_qps += mqprio_qopt->qopt.count[i];
-+			} else {
-+				adapter->ch_config.ch_info[i].count = 1;
-+				adapter->ch_config.ch_info[i].offset = 0;
-+			}
-+		}
-+		adapter->ch_config.total_qps = total_qps;
-+		netif_tx_stop_all_queues(netdev);
-+		netif_tx_disable(netdev);
-+		adapter->aq_required |= I40EVF_FLAG_AQ_ENABLE_CHANNELS;
-+		netdev_reset_tc(netdev);
-+		/* Report the tc mapping up the stack */
-+		netdev_set_num_tc(adapter->netdev, num_tc);
-+		for (i = 0; i < I40EVF_MAX_TRAFFIC_CLASS; i++) {
-+			u16 qcount = mqprio_qopt->qopt.count[i];
-+			u16 qoffset = mqprio_qopt->qopt.offset[i];
-+
-+			if (i < num_tc)
-+				netdev_set_tc_queue(netdev, netdev_tc++, qcount,
-+						    qoffset);
-+		}
-+	}
-+exit:
-+	return ret;
-+}
-+
-+/**
-+ * i40evf_setup_tc - configure multiple traffic classes
-+ * @netdev: network interface device structure
-+ * @type: type of offload
-+ * @type_date: tc offload data
-+ *
-+ * This function is the callback to ndo_setup_tc in the
-+ * netdev_ops.
-+ *
-+ * Returns 0 on success
-+ **/
-+static int i40evf_setup_tc(struct net_device *netdev, enum tc_setup_type type,
-+			   void *type_data)
-+{
-+	if (type != TC_SETUP_QDISC_MQPRIO)
-+		return -EOPNOTSUPP;
-+
-+	return __i40evf_setup_tc(netdev, type_data);
-+}
-+
- /**
-  * i40evf_open - Called when a network interface is made active
-  * @netdev: network interface device structure
-@@ -2460,6 +2613,7 @@ static const struct net_device_ops i40evf_netdev_ops = {
- #ifdef CONFIG_NET_POLL_CONTROLLER
- 	.ndo_poll_controller	= i40evf_netpoll,
- #endif
-+	.ndo_setup_tc		= i40evf_setup_tc,
- };
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 9f8c007c1a99..8329f37f431e 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -161,7 +161,8 @@ int i40evf_send_vf_config_msg(struct i40evf_adapter *adapter)
- 	       VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2 |
- 	       VIRTCHNL_VF_OFFLOAD_ENCAP |
- 	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM |
--	       VIRTCHNL_VF_OFFLOAD_REQ_QUEUES;
-+	       VIRTCHNL_VF_OFFLOAD_REQ_QUEUES |
-+	       VIRTCHNL_VF_OFFLOAD_ADQ;
- 
- 	adapter->current_op = VIRTCHNL_OP_GET_VF_RESOURCES;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_GET_CONFIG;
-@@ -972,6 +973,70 @@ static void i40evf_print_link_message(struct i40evf_adapter *adapter)
- 	netdev_info(netdev, "NIC Link is Up %sbps Full Duplex\n", speed);
- }
- 
-+/**
-+ * i40evf_enable_channel
-+ * @adapter: adapter structure
-+ *
-+ * Request that the PF enable channels as specified by
-+ * the user via tc tool.
-+ **/
-+void i40evf_enable_channels(struct i40evf_adapter *adapter)
-+{
-+	struct virtchnl_tc_info *vti = NULL;
-+	u16 len;
-+	int i;
-+
-+	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
-+		/* bail because we already have a command pending */
-+		dev_err(&adapter->pdev->dev, "Cannot configure mqprio, command %d pending\n",
-+			adapter->current_op);
-+		return;
-+	}
-+
-+	len = (adapter->num_tc * sizeof(struct virtchnl_channel_info)) +
-+	       sizeof(struct virtchnl_tc_info);
-+
-+	vti = kzalloc(len, GFP_KERNEL);
-+	if (!vti)
-+		return;
-+	vti->num_tc = adapter->num_tc;
-+	for (i = 0; i < vti->num_tc; i++) {
-+		vti->list[i].count = adapter->ch_config.ch_info[i].count;
-+		vti->list[i].offset = adapter->ch_config.ch_info[i].offset;
-+	}
-+
-+	adapter->ch_config.state = __I40EVF_TC_RUNNING;
-+	adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
-+	adapter->current_op = VIRTCHNL_OP_ENABLE_CHANNELS;
-+	adapter->aq_required &= ~I40EVF_FLAG_AQ_ENABLE_CHANNELS;
-+	i40evf_send_pf_msg(adapter, VIRTCHNL_OP_ENABLE_CHANNELS,
-+			   (u8 *)vti, len);
-+	kfree(vti);
-+}
-+
-+/**
-+ * i40evf_disable_channel
-+ * @adapter: adapter structure
-+ *
-+ * Request that the PF disable channels that are configured
-+ **/
-+void i40evf_disable_channels(struct i40evf_adapter *adapter)
-+{
-+	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
-+		/* bail because we already have a command pending */
-+		dev_err(&adapter->pdev->dev, "Cannot configure mqprio, command %d pending\n",
-+			adapter->current_op);
-+		return;
-+	}
-+
-+	adapter->ch_config.state = __I40EVF_TC_INVALID;
-+	adapter->flags |= I40EVF_FLAG_REINIT_ITR_NEEDED;
-+	adapter->current_op = VIRTCHNL_OP_DISABLE_CHANNELS;
-+	adapter->aq_required &= ~I40EVF_FLAG_AQ_DISABLE_CHANNELS;
-+	i40evf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_CHANNELS,
-+			   NULL, 0);
-+}
-+
- /**
-  * i40evf_request_reset
-  * @adapter: adapter structure
-@@ -1080,6 +1145,21 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 			dev_err(&adapter->pdev->dev, "Failed to delete MAC filter, error %s\n",
- 				i40evf_stat_str(&adapter->hw, v_retval));
- 			break;
-+		case VIRTCHNL_OP_ENABLE_CHANNELS:
-+			dev_err(&adapter->pdev->dev, "Failed to configure queue channels, error %s\n",
-+				i40evf_stat_str(&adapter->hw, v_retval));
-+			adapter->flags &= ~I40EVF_FLAG_REINIT_ITR_NEEDED;
-+			adapter->ch_config.state = __I40EVF_TC_INVALID;
-+			netdev_reset_tc(netdev);
-+			netif_tx_start_all_queues(netdev);
-+			break;
-+		case VIRTCHNL_OP_DISABLE_CHANNELS:
-+			dev_err(&adapter->pdev->dev, "Failed to disable queue channels, error %s\n",
-+				i40evf_stat_str(&adapter->hw, v_retval));
-+			adapter->flags &= ~I40EVF_FLAG_REINIT_ITR_NEEDED;
-+			adapter->ch_config.state = __I40EVF_TC_RUNNING;
-+			netif_tx_start_all_queues(netdev);
-+			break;
- 		default:
- 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
- 				v_retval,
+ /* Virtual channel message descriptor. This overlays the admin queue
+  * descriptor. All other data is passed in external buffers.
 -- 
 2.14.3
 
