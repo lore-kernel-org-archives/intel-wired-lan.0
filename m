@@ -1,50 +1,131 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 12 Jan 2018 11:32:48 -0800
-Subject: [Intel-wired-lan] [PATCH 09/12] virtchnl: Add a macro to check the
- size of a union
+Date: Fri, 12 Jan 2018 11:32:47 -0800
+Subject: [Intel-wired-lan] [PATCH 08/12] i40e: Service request to configure
+ bandwidth for ADq on a VF
 In-Reply-To: <20180112193251.11739-1-jeffrey.t.kirsher@intel.com>
 References: <20180112193251.11739-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180112193251.11739-9-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180112193251.11739-8-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+From: Avinash Dayanand <avinash.dayanand@intel.com>
 
-This patch adds a macro to check if the size of a union is correct.
-It throws a divide by zero error if the union is not of the correct
-size.
+This patch handles the request from ADq enabled VF to allocate
+bandwidth to each traffic class which means for each VSI.
 
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
 ---
- include/linux/avf/virtchnl.h | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 56 ++++++++++++++++++++--
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  1 +
+ 2 files changed, 54 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index b6aaecd82c70..3bbe6e080e76 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -140,13 +140,15 @@ enum virtchnl_ops {
- 	VIRTCHNL_OP_DISABLE_CHANNELS = 31,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 0c1c699c0dc0..989664a431ed 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -711,6 +711,7 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, u8 idx)
+ 	struct i40e_mac_filter *f = NULL;
+ 	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_vsi *vsi;
++	u64 max_tx_rate = 0;
+ 	int ret = 0;
+ 
+ 	vsi = i40e_vsi_setup(pf, I40E_VSI_SRIOV, pf->vsi[pf->lan_vsi]->seid,
+@@ -770,8 +771,15 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, u8 idx)
+ 
+ 	/* Set VF bandwidth if specified */
+ 	if (vf->tx_rate) {
++		max_tx_rate = vf->tx_rate;
++	} else if (vf->ch[idx].max_tx_rate) {
++		max_tx_rate = vf->ch[idx].max_tx_rate;
++	}
++
++	if (max_tx_rate) {
++		max_tx_rate = div_u64(max_tx_rate, I40E_BW_CREDIT_DIVISOR);
+ 		ret = i40e_aq_config_vsi_bw_limit(&pf->hw, vsi->seid,
+-						  vf->tx_rate / 50, 0, NULL);
++						  max_tx_rate, 0, NULL);
+ 		if (ret)
+ 			dev_err(&pf->pdev->dev, "Unable to set tx rate, VF %d, error code %d.\n",
+ 				vf->vf_id, ret);
+@@ -2918,7 +2926,8 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
+ 	struct virtchnl_tc_info *tci =
+ 		(struct virtchnl_tc_info *)msg;
+ 	struct i40e_pf *pf = vf->pf;
+-	int i, adq_request_qps = 0;
++	struct i40e_link_status *ls = &pf->hw.phy.link_info;
++	int i, adq_request_qps = 0, speed = 0;
+ 	i40e_status aq_ret = 0;
+ 
+ 	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
+@@ -2979,10 +2988,51 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
+ 		vf->num_queue_pairs = I40E_MAX_VF_QUEUES;
+ 	}
+ 
++	/* get link speed in MB to validate rate limit */
++	switch (ls->link_speed) {
++	case VIRTCHNL_LINK_SPEED_100MB:
++		speed = SPEED_100;
++		break;
++	case VIRTCHNL_LINK_SPEED_1GB:
++		speed = SPEED_1000;
++		break;
++	case VIRTCHNL_LINK_SPEED_10GB:
++		speed = SPEED_10000;
++		break;
++	case VIRTCHNL_LINK_SPEED_20GB:
++		speed = SPEED_20000;
++		break;
++	case VIRTCHNL_LINK_SPEED_25GB:
++		speed = SPEED_25000;
++		break;
++	case VIRTCHNL_LINK_SPEED_40GB:
++		speed = SPEED_40000;
++		break;
++	default:
++		dev_err(&pf->pdev->dev,
++			"Cannot detect link speed\n");
++		aq_ret = I40E_ERR_PARAM;
++		goto err;
++	}
++
+ 	/* parse data from the queue channel info */
+ 	vf->num_tc = tci->num_tc;
+-	for (i = 0; i < vf->num_tc; i++)
++	for (i = 0; i < vf->num_tc; i++) {
++		if (tci->list[i].max_tx_rate) {
++			if (tci->list[i].max_tx_rate > speed) {
++				dev_err(&pf->pdev->dev,
++					"Invalid max tx rate %llu specified for VF %d.",
++					tci->list[i].max_tx_rate,
++					vf->vf_id);
++				aq_ret = I40E_ERR_PARAM;
++				goto err;
++			} else {
++				vf->ch[i].max_tx_rate =
++					tci->list[i].max_tx_rate;
++			}
++		}
+ 		vf->ch[i].num_qps = tci->list[i].count;
++	}
+ 
+ 	/* set this flag only after making sure all inputs are sane */
+ 	vf->adq_enabled = true;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+index 67543dbefcd8..6e794c8a1ef3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+@@ -79,6 +79,7 @@ struct i40evf_channel {
+ 	u16 vsi_idx; /* index in PF struct for all channel VSIs */
+ 	u16 vsi_id; /* VSI ID used by firmware */
+ 	u16 num_qps; /* number of queue pairs requested by user */
++	u64 max_tx_rate; /* bandwidth rate allocation for VSIs */
  };
  
--/* This macro is used to generate a compilation error if a structure
-+/* These macros are used to generate compilation errors if a structure/union
-  * is not exactly the correct length. It gives a divide by zero error if the
-- * structure is not of the correct size, otherwise it creates an enum that is
-- * never used.
-+ * structure/union is not of the correct size, otherwise it creates an enum
-+ * that is never used.
-  */
- #define VIRTCHNL_CHECK_STRUCT_LEN(n, X) enum virtchnl_static_assert_enum_##X \
- 	{ virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-+#define VIRTCHNL_CHECK_UNION_LEN(n, X) enum virtchnl_static_asset_enum_##X \
-+	{ virtchnl_static_assert_##X = (n)/((sizeof(union X) == (n)) ? 1 : 0) }
- 
- /* Virtual channel message descriptor. This overlays the admin queue
-  * descriptor. All other data is passed in external buffers.
+ /* VF information structure */
 -- 
 2.14.3
 
