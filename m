@@ -1,180 +1,48 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 13 Jan 2018 05:13:38 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 5a2f5288e8033ca6995630146eb61790471d9542
-Message-ID: <5a592502.QyHRqU5TqWPoCamC%fengguang.wu@intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Fri, 12 Jan 2018 14:02:56 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: don't set RXDCTL.RLPML for 82599
+Message-ID: <20180112220256.11028.5719.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 5a2f5288e8033ca6995630146eb61790471d9542  i40e: Add and delete cloud filter
+commit 2de6aa3a666e ("ixgbe: Add support for padding packet")
 
-Regressions in current branch:
+Uses RXDCTL.RLPML to limit the maximum frame size on Rx when using
+build_skb. Unfortunately that register does not work on 82599.
 
-include/linux/avf/virtchnl.h:149:36: warning: division by zero [-Wdiv-by-zero]
-include/linux/avf/virtchnl.h:523:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-include/linux/avf/virtchnl.h:523:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_tc_info' is not an integer constant
+Added an explicit check to avoid setting this register on 82599 MAC.
 
-Error ids grouped by kconfigs:
+Extended the comment related to the setting of RXDCTL.RLPML to better
+explain its purpose.
 
-recent_errors
-??? i386-randconfig-x076-201801
-    ??? include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_tc_info-is-not-an-integer-constant
-    ??? include-linux-avf-virtchnl.h:note:in-expansion-of-macro-VIRTCHNL_CHECK_STRUCT_LEN
-    ??? include-linux-avf-virtchnl.h:warning:division-by-zero
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-elapsed time: 84m
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index addb625..1b3a246 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -4133,11 +4133,15 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
+ 		rxdctl &= ~0x3FFFFF;
+ 		rxdctl |=  0x080420;
+ #if (PAGE_SIZE < 8192)
+-	} else {
++	/* RXDCTL.RLPML does not work on 82599 */
++	} else if (hw->mac.type != ixgbe_mac_82599EB) {
+ 		rxdctl &= ~(IXGBE_RXDCTL_RLPMLMASK |
+ 			    IXGBE_RXDCTL_RLPML_EN);
+ 
+-		/* Limit the maximum frame size so we don't overrun the skb */
++		/* Limit the maximum frame size so we don't overrun the skb.
++		 * This can happen in SRIOV mode when the MTU of the VF is
++		 * higher than the MTU of the PF.
++		 */
+ 		if (ring_uses_build_skb(ring) &&
+ 		    !test_bit(__IXGBE_RX_3K_BUFFER, &ring->state))
+ 			rxdctl |= IXGBE_MAX_2K_FRAME_BUILD_SKB |
 
-configs tested: 145
-
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                randconfig-it0-01121513
-i386                               tinyconfig
-i386                   randconfig-x015-201801
-i386                   randconfig-x019-201801
-i386                   randconfig-x010-201801
-i386                   randconfig-x014-201801
-i386                   randconfig-x011-201801
-i386                   randconfig-x012-201801
-i386                   randconfig-x017-201801
-i386                   randconfig-x016-201801
-i386                   randconfig-x013-201801
-i386                   randconfig-x018-201801
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201801
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201801
-i386                     randconfig-i1-201801
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-a1-201801
-i386                     randconfig-a0-201801
-x86_64                 randconfig-s0-01130159
-x86_64                 randconfig-s1-01130159
-x86_64                 randconfig-s2-01130159
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                           corgi_defconfig
-arm                         em_x270_defconfig
-cris                             allmodconfig
-ia64                          tiger_defconfig
-sh                   sh7770_generic_defconfig
-arm                          pcm027_defconfig
-mips                     loongson1b_defconfig
-mips                         tb0219_defconfig
-powerpc                       holly_defconfig
-x86_64                 randconfig-x017-201801
-x86_64                 randconfig-x018-201801
-x86_64                 randconfig-x013-201801
-x86_64                 randconfig-x016-201801
-x86_64                 randconfig-x014-201801
-x86_64                 randconfig-x011-201801
-x86_64                 randconfig-x012-201801
-x86_64                 randconfig-x015-201801
-x86_64                 randconfig-x010-201801
-x86_64                 randconfig-x019-201801
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201801
-i386                     randconfig-s1-201801
-x86_64                 randconfig-s3-01130335
-x86_64                 randconfig-s4-01130335
-x86_64                 randconfig-s5-01130335
-x86_64                 randconfig-s3-01130430
-x86_64                 randconfig-s4-01130430
-x86_64                 randconfig-s5-01130430
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                         palmz72_defconfig
-mips                      pic32mzda_defconfig
-powerpc                 mpc8315_rdb_defconfig
-sparc64                             defconfig
-x86_64                   randconfig-i0-201801
-i386                   randconfig-b0-01130142
-x86_64                 randconfig-b0-01130120
-sparc                               defconfig
-sparc64                           allnoconfig
-x86_64                 randconfig-u0-01130400
-x86_64                randconfig-ne0-01130346
-x86_64                 randconfig-h0-01130220
-tile                             allyesconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                  randconfig-sb0-01130207
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-arm                          collie_defconfig
-c6x                        evmc6472_defconfig
-sh                         ecovec24_defconfig
-i386                   randconfig-x071-201801
-i386                   randconfig-x079-201801
-i386                   randconfig-x077-201801
-i386                   randconfig-x072-201801
-i386                   randconfig-x076-201801
-i386                   randconfig-x073-201801
-i386                   randconfig-x070-201801
-i386                   randconfig-x075-201801
-i386                   randconfig-x074-201801
-i386                   randconfig-x078-201801
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-r0-01130355
-i386                   randconfig-x0-01130131
-
-Thanks,
-Fengguang
