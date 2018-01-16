@@ -1,56 +1,46 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 16 Jan 2018 17:20:12 +0100
-Subject: [Intel-wired-lan] [PATCH] [RESEND net] fm10k: mark PM functions
- as __maybe_unused
-In-Reply-To: <02874ECE860811409154E81DA85FBB5882BD2802@fmsmsx158.amr.corp.intel.com>
-References: <20180116091433.2535569-1-arnd@arndb.de>
- <02874ECE860811409154E81DA85FBB5882BD2802@fmsmsx158.amr.corp.intel.com>
-Message-ID: <CAK8P3a27iQWGzwfDOMLj-sVquiHNPccAp0_8-2zoaqQVB0K44g@mail.gmail.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Tue, 16 Jan 2018 11:20:52 -0800
+Subject: [Intel-wired-lan] [PATCH 2/2] fm10k: fix incorrect warning for
+ function prototype
+In-Reply-To: <20180116192052.7451-1-jacob.e.keller@intel.com>
+References: <20180116192052.7451-1-jacob.e.keller@intel.com>
+Message-ID: <20180116192052.7451-2-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jan 16, 2018 at 5:12 PM, Keller, Jacob E
-<jacob.e.keller@intel.com> wrote:
->> -----Original Message-----
->> From: Arnd Bergmann [mailto:arnd at arndb.de]
->> Sent: Tuesday, January 16, 2018 1:14 AM
->> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
->> Cc: Arnd Bergmann <arnd@arndb.de>; Keller, Jacob E
->> <jacob.e.keller@intel.com>; David S. Miller <davem@davemloft.net>; Kwan,
->> Ngai-mint <ngai-mint.kwan@intel.com>; intel-wired-lan at lists.osuosl.org;
->> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
->> Subject: [PATCH] [RESEND net] fm10k: mark PM functions as __maybe_unused
->>
->> A cleanup of the PM code left an incorrect #ifdef in place, leading
->> to a harmless build warning:
->>
->> drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2502:12: error: 'fm10k_suspend'
->> defined but not used [-Werror=unused-function]
->> drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2475:12: error: 'fm10k_resume'
->> defined but not used [-Werror=unused-function]
->>
->> It's easier to use __maybe_unused attributes here, since you
->> can't pick the wrong one.
->>
->> Fixes: 8249c47c6ba4 ("fm10k: use generic PM hooks instead of legacy PCIe power
->> hooks")
->> Acked-by: Jacob Keller <jacob.e.keller@intel.com>
->> Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
->> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->> ---
->> Apparently nobody picked this up the first time around (Oct 2017),
->> here is the same patch again.
->
-> Odd. I remember seeing this and thought I ack'd it..? Guess it got missed.
->
-> Acked-by: Jacob Keller <jacob.e.keller@intel.com>
+Recent kernels now complain about incorrect function prototype comments,
+in order to ensure comments are accurate to the function. However, it
+incorrectly associates the comment above the fm10k_pci_tbl[] as
+a function header comment. Fix this by removing the extra "*" in the
+comment. This normally indicates that the function is a doxygen style
+function header comment.
 
-Yes, you did give an Ack (see above), it's just that it didn't make it
-into the tree for some reason. Maybe Jeff assumed you would
-forward it to him and you thought that he would pick it up from the
-list?
+Once removed, the logic no longer kicks in and the following warning is
+fixed:
 
-      Arnd
+  warning: cannot understand function prototype: 'const struct pci_device_id fm10k_pci_tbl[] = '
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index d7aad4cb73a7..50f53e403ef5 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -29,7 +29,7 @@ static const struct fm10k_info *fm10k_info_tbl[] = {
+ 	[fm10k_device_vf] = &fm10k_vf_info,
+ };
+ 
+-/**
++/*
+  * fm10k_pci_tbl - PCI Device ID Table
+  *
+  * Wildcard entries (PCI_ANY_ID) should come last
+-- 
+2.15.1.478.ga1e07cd25f8b
+
