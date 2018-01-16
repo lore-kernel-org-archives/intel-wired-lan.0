@@ -1,85 +1,40 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 16 Jan 2018 10:14:17 +0100
-Subject: [Intel-wired-lan] [PATCH] [RESEND net] fm10k: mark PM functions as
- __maybe_unused
-Message-ID: <20180116091433.2535569-1-arnd@arndb.de>
+From: Colin King <colin.king@canonical.com>
+Date: Tue, 16 Jan 2018 12:48:09 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: remove redundant initialization of
+ 'pool'
+Message-ID: <20180116124809.25790-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-A cleanup of the PM code left an incorrect #ifdef in place, leading
-to a harmless build warning:
+From: Colin Ian King <colin.king@canonical.com>
 
-drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2502:12: error: 'fm10k_suspend' defined but not used [-Werror=unused-function]
-drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2475:12: error: 'fm10k_resume' defined but not used [-Werror=unused-function]
+Variable pool is being assigned zero and then in the following for-loop
+is it being set to zero again. Remove the redundant first assignment.
 
-It's easier to use __maybe_unused attributes here, since you
-can't pick the wrong one.
+Cleans up clang warning:
+drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c:61:2: warning: Value stored
+to 'pool' is never read
 
-Fixes: 8249c47c6ba4 ("fm10k: use generic PM hooks instead of legacy PCIe power hooks")
-Acked-by: Jacob Keller <jacob.e.keller@intel.com>
-Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
-Apparently nobody picked this up the first time around (Oct 2017),
-here is the same patch again.
----
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 7f605221a686..a434fecfdfeb 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -2463,7 +2463,6 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
- 	return err;
- }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+index b3c282d09b18..d57c77f2811f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+@@ -58,7 +58,6 @@ static bool ixgbe_cache_ring_dcb_sriov(struct ixgbe_adapter *adapter)
+ 		return false;
  
--#ifdef CONFIG_PM
- /**
-  * fm10k_resume - Generic PM resume hook
-  * @dev: generic device structure
-@@ -2472,7 +2471,7 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
-  * suspend or hibernation. This function does not need to handle lower PCIe
-  * device state as the stack takes care of that for us.
-  **/
--static int fm10k_resume(struct device *dev)
-+static int __maybe_unused fm10k_resume(struct device *dev)
- {
- 	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
- 	struct net_device *netdev = interface->netdev;
-@@ -2499,7 +2498,7 @@ static int fm10k_resume(struct device *dev)
-  * system suspend or hibernation. This function does not need to handle lower
-  * PCIe device state as the stack takes care of that for us.
-  **/
--static int fm10k_suspend(struct device *dev)
-+static int __maybe_unused fm10k_suspend(struct device *dev)
- {
- 	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
- 	struct net_device *netdev = interface->netdev;
-@@ -2511,8 +2510,6 @@ static int fm10k_suspend(struct device *dev)
- 	return 0;
- }
- 
--#endif /* CONFIG_PM */
--
- /**
-  * fm10k_io_error_detected - called when PCI error is detected
-  * @pdev: Pointer to PCI device
-@@ -2643,11 +2640,9 @@ static struct pci_driver fm10k_driver = {
- 	.id_table		= fm10k_pci_tbl,
- 	.probe			= fm10k_probe,
- 	.remove			= fm10k_remove,
--#ifdef CONFIG_PM
- 	.driver = {
- 		.pm		= &fm10k_pm_ops,
- 	},
--#endif /* CONFIG_PM */
- 	.sriov_configure	= fm10k_iov_configure,
- 	.err_handler		= &fm10k_err_handler
- };
+ 	/* start at VMDq register offset for SR-IOV enabled setups */
+-	pool = 0;
+ 	reg_idx = vmdq->offset * __ALIGN_MASK(1, ~vmdq->mask);
+ 	for (i = 0, pool = 0; i < adapter->num_rx_queues; i++, reg_idx++) {
+ 		/* If we are greater than indices move to next pool */
 -- 
-2.9.0
+2.15.1
 
