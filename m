@@ -1,38 +1,85 @@
-From: Greg KH <greg@kroah.com>
-Date: Sun, 14 Jan 2018 09:23:16 +0100
-Subject: [Intel-wired-lan] [PATCH] e1000e: Fix
- e1000_check_for_copper_link_ich8lan return value.
-In-Reply-To: <20180110013443.xrmta4kcq7yy2olz@f1.synalogic.ca>
-References: <af44aaff-53e6-fb00-2dd6-d47396e56beb@gmx.de>
- <20180110013443.xrmta4kcq7yy2olz@f1.synalogic.ca>
-Message-ID: <20180114082316.GA15969@kroah.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 16 Jan 2018 10:14:17 +0100
+Subject: [Intel-wired-lan] [PATCH] [RESEND net] fm10k: mark PM functions as
+ __maybe_unused
+Message-ID: <20180116091433.2535569-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 10, 2018 at 10:34:43AM +0900, Benjamin Poirier wrote:
-> On 2018/01/10 01:29, rwarsow at gmx.de wrote:
-> > hallo
-> > 
-> > any chance to get this patch into stable and 4.15 ?
-> > 
-> > https://marc.info/?l=linux-kernel&m=151297726823919&w=2
-> > 
-> 
-> It was part of the last network pull request and should be included in
-> the next mainline release as
-> 4110e02eb45e e1000e: Fix e1000_check_for_copper_link_ich8lan return value.
-> 
-> It's needed in stable branches that include commit 19110cfbb34d
-> ("e1000e: Separate signaling for link check/link up"):
-> 	linux-4.14.y
-> 	linux-4.9.y
-> 	linux-4.4.y
-> 	linux-4.1.y
-> 	linux-3.18.y
+A cleanup of the PM code left an incorrect #ifdef in place, leading
+to a harmless build warning:
 
-Now queued up, thanks!
+drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2502:12: error: 'fm10k_suspend' defined but not used [-Werror=unused-function]
+drivers/net/ethernet/intel/fm10k/fm10k_pci.c:2475:12: error: 'fm10k_resume' defined but not used [-Werror=unused-function]
 
-greg k-h
+It's easier to use __maybe_unused attributes here, since you
+can't pick the wrong one.
+
+Fixes: 8249c47c6ba4 ("fm10k: use generic PM hooks instead of legacy PCIe power hooks")
+Acked-by: Jacob Keller <jacob.e.keller@intel.com>
+Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+Apparently nobody picked this up the first time around (Oct 2017),
+here is the same patch again.
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 7f605221a686..a434fecfdfeb 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -2463,7 +2463,6 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
+ 	return err;
+ }
+ 
+-#ifdef CONFIG_PM
+ /**
+  * fm10k_resume - Generic PM resume hook
+  * @dev: generic device structure
+@@ -2472,7 +2471,7 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
+  * suspend or hibernation. This function does not need to handle lower PCIe
+  * device state as the stack takes care of that for us.
+  **/
+-static int fm10k_resume(struct device *dev)
++static int __maybe_unused fm10k_resume(struct device *dev)
+ {
+ 	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
+ 	struct net_device *netdev = interface->netdev;
+@@ -2499,7 +2498,7 @@ static int fm10k_resume(struct device *dev)
+  * system suspend or hibernation. This function does not need to handle lower
+  * PCIe device state as the stack takes care of that for us.
+  **/
+-static int fm10k_suspend(struct device *dev)
++static int __maybe_unused fm10k_suspend(struct device *dev)
+ {
+ 	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
+ 	struct net_device *netdev = interface->netdev;
+@@ -2511,8 +2510,6 @@ static int fm10k_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-#endif /* CONFIG_PM */
+-
+ /**
+  * fm10k_io_error_detected - called when PCI error is detected
+  * @pdev: Pointer to PCI device
+@@ -2643,11 +2640,9 @@ static struct pci_driver fm10k_driver = {
+ 	.id_table		= fm10k_pci_tbl,
+ 	.probe			= fm10k_probe,
+ 	.remove			= fm10k_remove,
+-#ifdef CONFIG_PM
+ 	.driver = {
+ 		.pm		= &fm10k_pm_ops,
+ 	},
+-#endif /* CONFIG_PM */
+ 	.sriov_configure	= fm10k_iov_configure,
+ 	.err_handler		= &fm10k_err_handler
+ };
+-- 
+2.9.0
+
