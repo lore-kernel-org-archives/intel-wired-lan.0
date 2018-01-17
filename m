@@ -1,101 +1,93 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Wed, 17 Jan 2018 08:15:57 -0800
-Subject: [Intel-wired-lan] [PATCH v2 next-queue 02/12] virtchnl: Add virtchl
- structures to support queue channels
+Date: Wed, 17 Jan 2018 08:16:00 -0800
+Subject: [Intel-wired-lan] [PATCH v2 next-queue 05/12] i40evf: Alloc queues
+ for ADq on VF
 In-Reply-To: <20180117161607.49344-1-avinash.dayanand@intel.com>
 References: <20180117161607.49344-1-avinash.dayanand@intel.com>
-Message-ID: <20180117161607.49344-3-avinash.dayanand@intel.com>
+Message-ID: <20180117161607.49344-6-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+This patch allocates number of queues requested by the user as a part
+of TC command when ADq is enabled on a VF.
 
-This patch defines new structs in support of the virtchannel message
-that the VF sends to the PF to create a queue channel specified by the
-user via tc tool.
+In order to be consistent in design with PF implementation of ADq,
+don't allow to set channels via ethtool from VF when ADq is already
+enabled. This means the users will not be able to change the number of
+queues/channels via ethtool for a VF when ADq is ON. In order to be
+able to use set channels, users will be required to disable ADq first
+and then try setting the channels again.
 
-v2: Fixed structure hole on 32 bit systems.
+When ADq is enabled on VF, it goes through a reset during which VSIs
+and queues are re-configured. Meanwhile if we receive link status
+message from PF even before the queues are re-configured, just ignore
+this link up message.
 
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
 ---
- include/linux/avf/virtchnl.h | 40 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  6 ++++++
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 14 ++++++++++++++
+ 2 files changed, 20 insertions(+)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 3ce6134..1f652ce 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -136,6 +136,8 @@ enum virtchnl_ops {
- 	VIRTCHNL_OP_ENABLE_VLAN_STRIPPING = 27,
- 	VIRTCHNL_OP_DISABLE_VLAN_STRIPPING = 28,
- 	VIRTCHNL_OP_REQUEST_QUEUES = 29,
-+	VIRTCHNL_OP_ENABLE_CHANNELS = 30,
-+	VIRTCHNL_OP_DISABLE_CHANNELS = 31,
- };
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+index aded3ad..e679325 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+@@ -695,6 +695,12 @@ static int i40evf_set_channels(struct net_device *netdev,
+ 		return -EINVAL;
+ 	}
  
- /* This macro is used to generate a compilation error if a structure
-@@ -244,6 +246,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
- #define VIRTCHNL_VF_OFFLOAD_ENCAP		0X00100000
- #define VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM		0X00200000
- #define VIRTCHNL_VF_OFFLOAD_RX_ENCAP_CSUM	0X00400000
-+#define VIRTCHNL_VF_OFFLOAD_ADQ			0X00800000
++	if ((adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_ADQ) &&
++	    adapter->num_tc) {
++		dev_info(&adapter->pdev->dev, "Cannot set channels since ADq is enabled.\n");
++		return -EINVAL;
++	}
++
+ 	/* All of these should have already been checked by ethtool before this
+ 	 * even gets to us, but just to be sure.
+ 	 */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index ec0275f..9d36553 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1146,6 +1146,9 @@ static int i40evf_alloc_queues(struct i40evf_adapter *adapter)
+ 	 */
+ 	if (adapter->num_req_queues)
+ 		num_active_queues = adapter->num_req_queues;
++	else if ((adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_ADQ) &&
++		 adapter->num_tc)
++		num_active_queues = adapter->ch_config.total_qps;
+ 	else
+ 		num_active_queues = min_t(int,
+ 					  adapter->vsi_res->num_queue_pairs,
+@@ -1473,6 +1476,16 @@ int i40evf_init_interrupt_scheme(struct i40evf_adapter *adapter)
+ 		goto err_alloc_q_vectors;
+ 	}
  
- #define VF_BASE_MODE_OFFLOADS (VIRTCHNL_VF_OFFLOAD_L2 | \
- 			       VIRTCHNL_VF_OFFLOAD_VLAN | \
-@@ -496,6 +499,30 @@ struct virtchnl_rss_hena {
- 
- VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_rss_hena);
- 
-+/* VIRTCHNL_OP_ENABLE_CHANNELS
-+ * VIRTCHNL_OP_DISABLE_CHANNELS
-+ * VF sends these messages to enable or disable channels based on
-+ * the user specified queue count and queue offset for each traffic class.
-+ * This struct encompasses all the information that the PF needs from
-+ * VF to create a channel.
-+ */
-+struct virtchnl_channel_info {
-+	u16 count; /* number of queues in a channel */
-+	u16 offset; /* queues in a channel start from 'offset' */
-+	u32 pad;
-+	u64 max_tx_rate;
-+};
++	/* If we've made it so far while ADq flag being ON, then we haven't
++	 * bailed out anywhere in middle. And ADq isn't just enabled but actual
++	 * resources have been allocated in the reset path.
++	 * Now we can truly claim that ADq is enabled.
++	 */
++	if ((adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_ADQ) &&
++	    adapter->num_tc)
++		dev_info(&adapter->pdev->dev, "ADq Enabled, %u TCs created",
++			 adapter->num_tc);
 +
-+VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_channel_info);
-+
-+struct virtchnl_tc_info {
-+	u32	num_tc;
-+	u32	pad;
-+	struct	virtchnl_channel_info list[1];
-+};
-+
-+VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
-+
- /* VIRTCHNL_OP_EVENT
-  * PF sends this message to inform the VF driver of events that may affect it.
-  * No direct response is expected from the VF, though it may generate other
-@@ -711,6 +738,19 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 	case VIRTCHNL_OP_REQUEST_QUEUES:
- 		valid_len = sizeof(struct virtchnl_vf_res_request);
- 		break;
-+	case VIRTCHNL_OP_ENABLE_CHANNELS:
-+		valid_len = sizeof(struct virtchnl_tc_info);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_tc_info *vti =
-+				(struct virtchnl_tc_info *)msg;
-+			valid_len += vti->num_tc *
-+				sizeof(struct virtchnl_channel_info);
-+			if (vti->num_tc == 0)
-+				err_msg_format = true;
-+		}
-+		break;
-+	case VIRTCHNL_OP_DISABLE_CHANNELS:
-+		break;
- 	/* These are always errors coming from the VF. */
- 	case VIRTCHNL_OP_EVENT:
- 	case VIRTCHNL_OP_UNKNOWN:
+ 	dev_info(&adapter->pdev->dev, "Multiqueue %s: Queue pair count = %u",
+ 		 (adapter->num_active_queues > 1) ? "Enabled" : "Disabled",
+ 		 adapter->num_active_queues);
+@@ -3244,6 +3257,7 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 	/* Shut down all the garbage mashers on the detention level */
+ 	adapter->state = __I40EVF_REMOVE;
+ 	adapter->aq_required = 0;
++	adapter->flags &= ~I40EVF_FLAG_REINIT_ITR_NEEDED;
+ 	i40evf_request_reset(adapter);
+ 	msleep(50);
+ 	/* If the FW isn't responding, kick it once, but only once. */
 -- 
 2.9.4
 
