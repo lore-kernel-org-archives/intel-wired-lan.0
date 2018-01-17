@@ -1,79 +1,159 @@
 From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-Date: Wed, 17 Jan 2018 15:06:15 -0800
-Subject: [Intel-wired-lan] [RFC v2 net-next 04/10] net: packet: Hook into
- time based transmission.
+Date: Wed, 17 Jan 2018 15:06:18 -0800
+Subject: [Intel-wired-lan] [RFC v2 net-next 07/10] igb: Refactor
+ igb_configure_cbs()
 In-Reply-To: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
 References: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
-Message-ID: <20180117230621.26074-5-jesus.sanchez-palencia@intel.com>
+Message-ID: <20180117230621.26074-8-jesus.sanchez-palencia@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Richard Cochran <rcochran@linutronix.de>
+Make this function retrieve what it needs from the Tx ring being
+addressed since it already relies on what had been saved on it before.
+Also, since this function will be used by the upcoming Launchtime
+patches rename it to better reflect its intention. Note that
+Launchtime is not part of what 802.1Qav specifies, but the i210
+datasheet refers to this set of functionality as "Qav Transmission
+Mode".
 
-For raw layer-2 packets, copy the desired future transmit time from
-the CMSG cookie into the skb.
+Here we also perform a tiny refactor at is_any_cbs_enabled(), and add
+further documentation to igb_setup_tx_mode().
 
-Signed-off-by: Richard Cochran <rcochran@linutronix.de>
 Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 ---
- net/packet/af_packet.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/net/ethernet/intel/igb/igb_main.c | 54 ++++++++++++++-----------------
+ 1 file changed, 25 insertions(+), 29 deletions(-)
 
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index 05d31864a34e..6af129a65e85 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -1976,6 +1976,7 @@ static int packet_sendmsg_spkt(struct socket *sock, struct msghdr *msg,
- 		goto out_unlock;
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index c208753ff5b7..dd19c325a85c 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -1673,23 +1673,17 @@ static void set_queue_mode(struct e1000_hw *hw, int queue, enum queue_mode mode)
+ }
+ 
+ /**
+- *  igb_configure_cbs - Configure Credit-Based Shaper (CBS)
++ *  igb_config_tx_modes - Configure "Qav Tx mode" features on igb
+  *  @adapter: pointer to adapter struct
+  *  @queue: queue number
+- *  @enable: true = enable CBS, false = disable CBS
+- *  @idleslope: idleSlope in kbps
+- *  @sendslope: sendSlope in kbps
+- *  @hicredit: hiCredit in bytes
+- *  @locredit: loCredit in bytes
+  *
+- *  Configure CBS for a given hardware queue. When disabling, idleslope,
+- *  sendslope, hicredit, locredit arguments are ignored. Returns 0 if
+- *  success. Negative otherwise.
++ *  Configure CBS for a given hardware queue. Parameters are retrieved
++ *  from the correct Tx ring, so igb_save_cbs_params() should be used
++ *  for setting those correctly prior to this function being called.
+  **/
+-static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
+-			      bool enable, int idleslope, int sendslope,
+-			      int hicredit, int locredit)
++static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
+ {
++	struct igb_ring *ring = adapter->tx_ring[queue];
+ 	struct net_device *netdev = adapter->netdev;
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 tqavcc;
+@@ -1698,7 +1692,7 @@ static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
+ 	WARN_ON(hw->mac.type != e1000_i210);
+ 	WARN_ON(queue < 0 || queue > 1);
+ 
+-	if (enable) {
++	if (ring->cbs_enable) {
+ 		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_HIGH);
+ 		set_queue_mode(hw, queue, QUEUE_MODE_STREAM_RESERVATION);
+ 
+@@ -1745,14 +1739,15 @@ static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
+ 		 *             -----------------                          (E6)
+ 		 *                  1000000
+ 		 */
+-		value = DIV_ROUND_UP_ULL(idleslope * 61034ULL, 1000000);
++		value = DIV_ROUND_UP_ULL(ring->idleslope * 61034ULL, 1000000);
+ 
+ 		tqavcc = rd32(E1000_I210_TQAVCC(queue));
+ 		tqavcc &= ~E1000_TQAVCC_IDLESLOPE_MASK;
+ 		tqavcc |= value;
+ 		wr32(E1000_I210_TQAVCC(queue), tqavcc);
+ 
+-		wr32(E1000_I210_TQAVHC(queue), 0x80000000 + hicredit * 0x7735);
++		wr32(E1000_I210_TQAVHC(queue),
++		     0x80000000 + ring->hicredit * 0x7735);
+ 	} else {
+ 		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_LOW);
+ 		set_queue_mode(hw, queue, QUEUE_MODE_STRICT_PRIORITY);
+@@ -1772,8 +1767,9 @@ static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
+ 	 */
+ 
+ 	netdev_dbg(netdev, "CBS %s: queue %d idleslope %d sendslope %d hiCredit %d locredit %d\n",
+-		   (enable) ? "enabled" : "disabled", queue,
+-		   idleslope, sendslope, hicredit, locredit);
++		   (ring->cbs_enable) ? "enabled" : "disabled", queue,
++		   ring->idleslope, ring->sendslope, ring->hicredit,
++		   ring->locredit);
+ }
+ 
+ static int igb_save_cbs_params(struct igb_adapter *adapter, int queue,
+@@ -1798,19 +1794,25 @@ static int igb_save_cbs_params(struct igb_adapter *adapter, int queue,
+ 
+ static bool is_any_cbs_enabled(struct igb_adapter *adapter)
+ {
+-	struct igb_ring *ring;
+ 	int i;
+ 
+ 	for (i = 0; i < adapter->num_tx_queues; i++) {
+-		ring = adapter->tx_ring[i];
+-
+-		if (ring->cbs_enable)
++		if (adapter->tx_ring[i]->cbs_enable)
+ 			return true;
  	}
  
-+	sockc.transmit_time = 0;
- 	sockc.tsflags = sk->sk_tsflags;
- 	if (msg->msg_controllen) {
- 		err = sock_cmsg_send(sk, msg, &sockc);
-@@ -1987,6 +1988,7 @@ static int packet_sendmsg_spkt(struct socket *sock, struct msghdr *msg,
- 	skb->dev = dev;
- 	skb->priority = sk->sk_priority;
- 	skb->mark = sk->sk_mark;
-+	skb->tstamp = sockc.transmit_time;
+ 	return false;
+ }
  
- 	sock_tx_timestamp(sk, sockc.tsflags, &skb_shinfo(skb)->tx_flags);
++/**
++ *  igb_setup_tx_mode - Switch to/from Qav Tx mode when applicable
++ *  @adapter: pointer to adapter struct
++ *
++ *  Configure TQAVCTRL register switching the controller's Tx mode
++ *  if FQTSS mode is enabled or disabled. Additionally, will issue
++ *  a call to igb_config_tx_modes() per queue so any previously saved
++ *  Tx parameters are applied.
++ **/
+ static void igb_setup_tx_mode(struct igb_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
+@@ -1870,11 +1872,7 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
+ 			    adapter->num_tx_queues : I210_SR_QUEUES_NUM;
  
-@@ -2484,6 +2486,7 @@ static int tpacket_fill_skb(struct packet_sock *po, struct sk_buff *skb,
- 	skb->dev = dev;
- 	skb->priority = po->sk.sk_priority;
- 	skb->mark = po->sk.sk_mark;
-+	skb->tstamp = sockc->transmit_time;
- 	sock_tx_timestamp(&po->sk, sockc->tsflags, &skb_shinfo(skb)->tx_flags);
- 	skb_shinfo(skb)->destructor_arg = ph.raw;
+ 		for (i = 0; i < max_queue; i++) {
+-			struct igb_ring *ring = adapter->tx_ring[i];
+-
+-			igb_configure_cbs(adapter, i, ring->cbs_enable,
+-					  ring->idleslope, ring->sendslope,
+-					  ring->hicredit, ring->locredit);
++			igb_config_tx_modes(adapter, i);
+ 		}
+ 	} else {
+ 		wr32(E1000_RXPBS, I210_RXPBSIZE_DEFAULT);
+@@ -2468,9 +2466,7 @@ static int igb_offload_cbs(struct igb_adapter *adapter,
+ 		return err;
  
-@@ -2660,6 +2663,7 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
- 	if (unlikely(!(dev->flags & IFF_UP)))
- 		goto out_put;
+ 	if (is_fqtss_enabled(adapter)) {
+-		igb_configure_cbs(adapter, qopt->queue, qopt->enable,
+-				  qopt->idleslope, qopt->sendslope,
+-				  qopt->hicredit, qopt->locredit);
++		igb_config_tx_modes(adapter, qopt->queue);
  
-+	sockc.transmit_time = 0;
- 	sockc.tsflags = po->sk.sk_tsflags;
- 	if (msg->msg_controllen) {
- 		err = sock_cmsg_send(&po->sk, msg, &sockc);
-@@ -2856,6 +2860,7 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
- 	if (unlikely(!(dev->flags & IFF_UP)))
- 		goto out_unlock;
- 
-+	sockc.transmit_time = 0;
- 	sockc.tsflags = sk->sk_tsflags;
- 	sockc.mark = sk->sk_mark;
- 	if (msg->msg_controllen) {
-@@ -2928,6 +2933,7 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
- 	skb->dev = dev;
- 	skb->priority = sk->sk_priority;
- 	skb->mark = sockc.mark;
-+	skb->tstamp = sockc.transmit_time;
- 
- 	if (has_vnet_hdr) {
- 		err = virtio_net_hdr_to_skb(skb, &vnet_hdr, vio_le());
+ 		if (!is_any_cbs_enabled(adapter))
+ 			enable_fqtss(adapter, false);
 -- 
 2.15.1
 
