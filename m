@@ -1,39 +1,156 @@
-From: Piatkowski, Robert <robert.piatkowski@intel.com>
-Date: Wed, 17 Jan 2018 12:45:58 +0000
-Subject: [Intel-wired-lan] Patch for iproute2
-Message-ID: <34C81C09865FAD44ABA68FB83DDA0E4D9CC5B73B@irsmsx105.ger.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 18 Jan 2018 01:19:28 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 747b86cd2da59296d8d0395437798c6353a6964a
+Message-ID: <5a5f85a0.7I5CIW5kC/tjDwCO%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
-I want to submit a patch for iproute2 - taken from https://github.com/eworm-de/iproute2 - we use this version as it contains pretty recent XFRM offload configuration capability.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 747b86cd2da59296d8d0395437798c6353a6964a  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-During development, we found a stack buffer overflow bug that causes mass deletion of states command to fail under some circumstances. So we developed a fix for that (see attachment).
+elapsed time: 115m
 
-The fix was reviewed by Don Skidmore, and he suggested to forward it to you. I tried to make the description sound similar to other commits' description in the repository.
+configs tested: 132
 
-Is the fix OK in the current state? What are the next steps for me?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Robert
---------------------------------------------------------------------
+i386                   randconfig-x015-201802
+i386                   randconfig-x010-201802
+i386                   randconfig-x019-201802
+i386                   randconfig-x014-201802
+i386                   randconfig-x017-201802
+i386                   randconfig-x012-201802
+i386                   randconfig-x011-201802
+i386                   randconfig-x016-201802
+i386                   randconfig-x013-201802
+i386                   randconfig-x018-201802
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201802
+x86_64                 randconfig-x008-201802
+x86_64                 randconfig-x005-201802
+x86_64                 randconfig-x000-201802
+x86_64                 randconfig-x009-201802
+x86_64                 randconfig-x007-201802
+x86_64                 randconfig-x002-201802
+x86_64                 randconfig-x006-201802
+x86_64                 randconfig-x001-201802
+x86_64                 randconfig-x003-201802
+x86_64                 randconfig-x004-201802
+i386                     randconfig-i0-201802
+i386                     randconfig-i1-201802
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a1-201802
+i386                     randconfig-a0-201802
+x86_64                 randconfig-x017-201802
+x86_64                 randconfig-x018-201802
+x86_64                 randconfig-x016-201802
+x86_64                 randconfig-x013-201802
+x86_64                 randconfig-x014-201802
+x86_64                 randconfig-x011-201802
+x86_64                 randconfig-x015-201802
+x86_64                 randconfig-x012-201802
+x86_64                 randconfig-x019-201802
+x86_64                 randconfig-x010-201802
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                     randconfig-s0-201802
+i386                     randconfig-s1-201802
+x86_64                           allmodconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201802
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x004-201802
+i386                   randconfig-x002-201802
+i386                   randconfig-x007-201802
+i386                   randconfig-x003-201802
+i386                   randconfig-x009-201802
+i386                   randconfig-x000-201802
+i386                   randconfig-x005-201802
+i386                   randconfig-x006-201802
+i386                   randconfig-x001-201802
+i386                   randconfig-x008-201802
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-x071-201802
+i386                   randconfig-x079-201802
+i386                   randconfig-x077-201802
+i386                   randconfig-x072-201802
+i386                   randconfig-x076-201802
+i386                   randconfig-x075-201802
+i386                   randconfig-x070-201802
+i386                   randconfig-x073-201802
+i386                   randconfig-x074-201802
+i386                   randconfig-x078-201802
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
 
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180117/d4e185a2/attachment.html>
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: 0001-fix-stack-buffer-overflow-when-removing-many-states.patch
-Type: application/octet-stream
-Size: 1404 bytes
-Desc: 0001-fix-stack-buffer-overflow-when-removing-many-states.patch
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180117/d4e185a2/attachment.obj>
+Thanks,
+Fengguang
