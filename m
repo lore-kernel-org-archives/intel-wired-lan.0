@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 17 Jan 2018 20:06:16 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: remove redundant
- initialization of 'pool'
-In-Reply-To: <20180116124809.25790-1-colin.king@canonical.com>
-References: <20180116124809.25790-1-colin.king@canonical.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A92C7A3@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 17 Jan 2018 20:04:39 +0000
+Subject: [Intel-wired-lan] [net-queue PATCH] i40e/i40evf: Update
+ DESC_NEEDED value to reflect larger value
+In-Reply-To: <20180116192719.11191.21193.stgit@ahduyck-green-test.jf.intel.com>
+References: <20180116192719.11191.21193.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A92C6A9@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,27 +13,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Colin King
-> Sent: Tuesday, January 16, 2018 4:48 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org
-> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: remove redundant initialization of
-> 'pool'
+> Behalf Of Alexander Duyck
+> Sent: Tuesday, January 16, 2018 11:27 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [net-queue PATCH] i40e/i40evf: Update
+> DESC_NEEDED value to reflect larger value
 > 
-> From: Colin Ian King <colin.king@canonical.com>
+> When compared to ixgbe and other previous Intel drivers the i40e and i40evf
+> drivers actually reserve 2 additional descriptors in maybe_stop_tx for cache
+> line alignment. We need to update DESC_NEEDED to reflect this as otherwise
+> we are more likely to return TX_BUSY which will cause issues with things like
+> xmit_more.
 > 
-> Variable pool is being assigned zero and then in the following for-loop is it
-> being set to zero again. Remove the redundant first assignment.
-> 
-> Cleans up clang warning:
-> drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c:61:2: warning: Value stored to
-> 'pool' is never read
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c | 1 -
->  1 file changed, 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |    2 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.h |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
