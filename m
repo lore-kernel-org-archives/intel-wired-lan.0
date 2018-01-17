@@ -1,130 +1,232 @@
 From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-Date: Wed, 17 Jan 2018 15:06:19 -0800
-Subject: [Intel-wired-lan] [RFC v2 net-next 08/10] igb: Only change Tx
- arbitration when CBS is on
+Date: Wed, 17 Jan 2018 15:06:12 -0800
+Subject: [Intel-wired-lan] [RFC v2 net-next 01/10] net: Add a new socket
+ option for a future transmit time.
 In-Reply-To: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
 References: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
-Message-ID: <20180117230621.26074-9-jesus.sanchez-palencia@intel.com>
+Message-ID: <20180117230621.26074-2-jesus.sanchez-palencia@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently the data transmission arbitration algorithm - DataTranARB
-field on TQAVCTRL reg - is always set to CBS when the Tx mode is
-changed from legacy to 'Qav' mode.
+From: Richard Cochran <rcochran@linutronix.de>
 
-Make that configuration a bit more granular in preparation for the
-upcoming Launchtime enabling patches, since CBS and Launchtime can be
-enabled separately. That is achieved by moving the DataTranARB setup
-to igb_config_tx_modes() instead.
+This patch introduces SO_TXTIME.  User space enables this option in
+order to pass a desired future transmit time in a CMSG when calling
+sendmsg(2).
 
-Similarly, when disabling CBS we must check if it has been disabled
-for all queues, and clear the DataTranARB accordingly.
+A new field is added to struct sockcm_cookie, and the tstamp from
+skbuffs will be used later on.
 
+Signed-off-by: Richard Cochran <rcochran@linutronix.de>
 Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 49 +++++++++++++++++++++----------
- 1 file changed, 33 insertions(+), 16 deletions(-)
+ arch/alpha/include/uapi/asm/socket.h   |  3 +++
+ arch/frv/include/uapi/asm/socket.h     |  3 +++
+ arch/ia64/include/uapi/asm/socket.h    |  3 +++
+ arch/m32r/include/uapi/asm/socket.h    |  3 +++
+ arch/mips/include/uapi/asm/socket.h    |  3 +++
+ arch/mn10300/include/uapi/asm/socket.h |  3 +++
+ arch/parisc/include/uapi/asm/socket.h  |  3 +++
+ arch/s390/include/uapi/asm/socket.h    |  3 +++
+ arch/sparc/include/uapi/asm/socket.h   |  3 +++
+ arch/xtensa/include/uapi/asm/socket.h  |  3 +++
+ include/net/sock.h                     |  2 ++
+ include/uapi/asm-generic/socket.h      |  3 +++
+ net/core/sock.c                        | 16 ++++++++++++++++
+ 13 files changed, 51 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index dd19c325a85c..a955e1723ed5 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1672,6 +1672,18 @@ static void set_queue_mode(struct e1000_hw *hw, int queue, enum queue_mode mode)
- 	wr32(E1000_I210_TQAVCC(queue), val);
- }
+diff --git a/arch/alpha/include/uapi/asm/socket.h b/arch/alpha/include/uapi/asm/socket.h
+index be14f16149d5..065fb372e355 100644
+--- a/arch/alpha/include/uapi/asm/socket.h
++++ b/arch/alpha/include/uapi/asm/socket.h
+@@ -112,4 +112,7 @@
  
-+static bool is_any_cbs_enabled(struct igb_adapter *adapter)
-+{
-+	int i;
+ #define SO_ZEROCOPY		60
+ 
++#define SO_TXTIME		61
++#define SCM_TXTIME		SO_TXTIME
 +
-+	for (i = 0; i < adapter->num_tx_queues; i++) {
-+		if (adapter->tx_ring[i]->cbs_enable)
-+			return true;
-+	}
+ #endif /* _UAPI_ASM_SOCKET_H */
+diff --git a/arch/frv/include/uapi/asm/socket.h b/arch/frv/include/uapi/asm/socket.h
+index 9168e78fa32a..0e95f45cd058 100644
+--- a/arch/frv/include/uapi/asm/socket.h
++++ b/arch/frv/include/uapi/asm/socket.h
+@@ -105,5 +105,8 @@
+ 
+ #define SO_ZEROCOPY		60
+ 
++#define SO_TXTIME		61
++#define SCM_TXTIME		SO_TXTIME
 +
-+	return false;
-+}
+ #endif /* _ASM_SOCKET_H */
+ 
+diff --git a/arch/ia64/include/uapi/asm/socket.h b/arch/ia64/include/uapi/asm/socket.h
+index 3efba40adc54..c872c4e6bafb 100644
+--- a/arch/ia64/include/uapi/asm/socket.h
++++ b/arch/ia64/include/uapi/asm/socket.h
+@@ -114,4 +114,7 @@
+ 
+ #define SO_ZEROCOPY		60
+ 
++#define SO_TXTIME		61
++#define SCM_TXTIME		SO_TXTIME
 +
- /**
-  *  igb_config_tx_modes - Configure "Qav Tx mode" features on igb
-  *  @adapter: pointer to adapter struct
-@@ -1686,7 +1698,7 @@ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
- 	struct igb_ring *ring = adapter->tx_ring[queue];
- 	struct net_device *netdev = adapter->netdev;
- 	struct e1000_hw *hw = &adapter->hw;
--	u32 tqavcc;
-+	u32 tqavcc, tqavctrl;
- 	u16 value;
+ #endif /* _ASM_IA64_SOCKET_H */
+diff --git a/arch/m32r/include/uapi/asm/socket.h b/arch/m32r/include/uapi/asm/socket.h
+index cf5018e82c3d..65276c95b8df 100644
+--- a/arch/m32r/include/uapi/asm/socket.h
++++ b/arch/m32r/include/uapi/asm/socket.h
+@@ -105,4 +105,7 @@
  
- 	WARN_ON(hw->mac.type != e1000_i210);
-@@ -1696,6 +1708,14 @@ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
- 		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_HIGH);
- 		set_queue_mode(hw, queue, QUEUE_MODE_STREAM_RESERVATION);
+ #define SO_ZEROCOPY		60
  
-+		/* Always set data transfer arbitration to credit-based
-+		 * shaper algorithm on TQAVCTRL if CBS is enabled for any of
-+		 * the queues.
-+		 */
-+		tqavctrl = rd32(E1000_I210_TQAVCTRL);
-+		tqavctrl |= E1000_TQAVCTRL_DATATRANARB;
-+		wr32(E1000_I210_TQAVCTRL, tqavctrl);
++#define SO_TXTIME		61
++#define SCM_TXTIME		SO_TXTIME
 +
- 		/* According to i210 datasheet section 7.2.7.7, we should set
- 		 * the 'idleSlope' field from TQAVCC register following the
- 		 * equation:
-@@ -1759,6 +1779,16 @@ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
+ #endif /* _ASM_M32R_SOCKET_H */
+diff --git a/arch/mips/include/uapi/asm/socket.h b/arch/mips/include/uapi/asm/socket.h
+index 49c3d4795963..71370fb3ceef 100644
+--- a/arch/mips/include/uapi/asm/socket.h
++++ b/arch/mips/include/uapi/asm/socket.h
+@@ -123,4 +123,7 @@
  
- 		/* Set hiCredit to zero. */
- 		wr32(E1000_I210_TQAVHC(queue), 0);
+ #define SO_ZEROCOPY		60
+ 
++#define SO_TXTIME		61
++#define SCM_TXTIME		SO_TXTIME
 +
-+		/* If CBS is not enabled for any queues anymore, then return to
-+		 * the default state of Data Transmission Arbitration on
-+		 * TQAVCTRL.
-+		 */
-+		if (!is_any_cbs_enabled(adapter)) {
-+			tqavctrl = rd32(E1000_I210_TQAVCTRL);
-+			tqavctrl &= ~E1000_TQAVCTRL_DATATRANARB;
-+			wr32(E1000_I210_TQAVCTRL, tqavctrl);
-+		}
- 	}
+ #endif /* _UAPI_ASM_SOCKET_H */
+diff --git a/arch/mn10300/include/uapi/asm/socket.h b/arch/mn10300/include/uapi/asm/socket.h
+index b35eee132142..d029a40b1b55 100644
+--- a/arch/mn10300/include/uapi/asm/socket.h
++++ b/arch/mn10300/include/uapi/asm/socket.h
+@@ -105,4 +105,7 @@
  
- 	/* XXX: In i210 controller the sendSlope and loCredit parameters from
-@@ -1792,18 +1822,6 @@ static int igb_save_cbs_params(struct igb_adapter *adapter, int queue,
- 	return 0;
- }
+ #define SO_ZEROCOPY		60
  
--static bool is_any_cbs_enabled(struct igb_adapter *adapter)
--{
--	int i;
--
--	for (i = 0; i < adapter->num_tx_queues; i++) {
--		if (adapter->tx_ring[i]->cbs_enable)
--			return true;
--	}
--
--	return false;
--}
--
- /**
-  *  igb_setup_tx_mode - Switch to/from Qav Tx mode when applicable
-  *  @adapter: pointer to adapter struct
-@@ -1827,11 +1845,10 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
- 		int i, max_queue;
++#define SO_TXTIME		61
++#define SCM_TXTIME		SO_TXTIME
++
+ #endif /* _ASM_SOCKET_H */
+diff --git a/arch/parisc/include/uapi/asm/socket.h b/arch/parisc/include/uapi/asm/socket.h
+index 1d0fdc3b5d22..061b9cf2a779 100644
+--- a/arch/parisc/include/uapi/asm/socket.h
++++ b/arch/parisc/include/uapi/asm/socket.h
+@@ -104,4 +104,7 @@
  
- 		/* Configure TQAVCTRL register: set transmit mode to 'Qav',
--		 * set data fetch arbitration to 'round robin' and set data
--		 * transfer arbitration to 'credit shaper algorithm.
-+		 * set data fetch arbitration to 'round robin'.
- 		 */
- 		val = rd32(E1000_I210_TQAVCTRL);
--		val |= E1000_TQAVCTRL_XMIT_MODE | E1000_TQAVCTRL_DATATRANARB;
-+		val |= E1000_TQAVCTRL_XMIT_MODE;
- 		val &= ~E1000_TQAVCTRL_DATAFETCHARB;
- 		wr32(E1000_I210_TQAVCTRL, val);
+ #define SO_ZEROCOPY		0x4035
  
++#define SO_TXTIME		0x4036
++#define SCM_TXTIME		SO_TXTIME
++
+ #endif /* _UAPI_ASM_SOCKET_H */
+diff --git a/arch/s390/include/uapi/asm/socket.h b/arch/s390/include/uapi/asm/socket.h
+index 3510c0fd06f4..39d901476ee5 100644
+--- a/arch/s390/include/uapi/asm/socket.h
++++ b/arch/s390/include/uapi/asm/socket.h
+@@ -111,4 +111,7 @@
+ 
+ #define SO_ZEROCOPY		60
+ 
++#define SO_TXTIME		61
++#define SCM_TXTIME		SO_TXTIME
++
+ #endif /* _ASM_SOCKET_H */
+diff --git a/arch/sparc/include/uapi/asm/socket.h b/arch/sparc/include/uapi/asm/socket.h
+index d58520c2e6ff..7ea35e5601b6 100644
+--- a/arch/sparc/include/uapi/asm/socket.h
++++ b/arch/sparc/include/uapi/asm/socket.h
+@@ -101,6 +101,9 @@
+ 
+ #define SO_ZEROCOPY		0x003e
+ 
++#define SO_TXTIME		0x003f
++#define SCM_TXTIME		SO_TXTIME
++
+ /* Security levels - as per NRL IPv6 - don't actually do anything */
+ #define SO_SECURITY_AUTHENTICATION		0x5001
+ #define SO_SECURITY_ENCRYPTION_TRANSPORT	0x5002
+diff --git a/arch/xtensa/include/uapi/asm/socket.h b/arch/xtensa/include/uapi/asm/socket.h
+index 75a07b8119a9..1de07a7f7680 100644
+--- a/arch/xtensa/include/uapi/asm/socket.h
++++ b/arch/xtensa/include/uapi/asm/socket.h
+@@ -116,4 +116,7 @@
+ 
+ #define SO_ZEROCOPY		60
+ 
++#define SO_TXTIME		61
++#define SCM_TXTIME		SO_TXTIME
++
+ #endif	/* _XTENSA_SOCKET_H */
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 73b7830b0bb8..927af34f3e2c 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -777,6 +777,7 @@ enum sock_flags {
+ 	SOCK_FILTER_LOCKED, /* Filter cannot be changed anymore */
+ 	SOCK_SELECT_ERR_QUEUE, /* Wake select on error queue */
+ 	SOCK_RCU_FREE, /* wait rcu grace period in sk_destruct() */
++	SOCK_TXTIME,
+ };
+ 
+ #define SK_FLAGS_TIMESTAMP ((1UL << SOCK_TIMESTAMP) | (1UL << SOCK_TIMESTAMPING_RX_SOFTWARE))
+@@ -1567,6 +1568,7 @@ void sock_kzfree_s(struct sock *sk, void *mem, int size);
+ void sk_send_sigurg(struct sock *sk);
+ 
+ struct sockcm_cookie {
++	ktime_t transmit_time;
+ 	u32 mark;
+ 	u16 tsflags;
+ };
+diff --git a/include/uapi/asm-generic/socket.h b/include/uapi/asm-generic/socket.h
+index 0ae758c90e54..a12692e5f7a8 100644
+--- a/include/uapi/asm-generic/socket.h
++++ b/include/uapi/asm-generic/socket.h
+@@ -107,4 +107,7 @@
+ 
+ #define SO_ZEROCOPY		60
+ 
++#define SO_TXTIME		61
++#define SCM_TXTIME		SO_TXTIME
++
+ #endif /* __ASM_GENERIC_SOCKET_H */
+diff --git a/net/core/sock.c b/net/core/sock.c
+index abf4cbff99b2..37ef4b33fd92 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -1061,6 +1061,13 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
+ 			sock_valbool_flag(sk, SOCK_ZEROCOPY, valbool);
+ 		break;
+ 
++	case SO_TXTIME:
++		if (ns_capable(sock_net(sk)->user_ns, CAP_NET_ADMIN))
++			sock_valbool_flag(sk, SOCK_TXTIME, valbool);
++		else
++			ret = -EPERM;
++		break;
++
+ 	default:
+ 		ret = -ENOPROTOOPT;
+ 		break;
+@@ -2130,6 +2137,15 @@ int __sock_cmsg_send(struct sock *sk, struct msghdr *msg, struct cmsghdr *cmsg,
+ 		sockc->tsflags &= ~SOF_TIMESTAMPING_TX_RECORD_MASK;
+ 		sockc->tsflags |= tsflags;
+ 		break;
++	case SO_TXTIME:
++		if (!ns_capable(sock_net(sk)->user_ns, CAP_NET_ADMIN))
++			return -EPERM;
++		if (!sock_flag(sk, SOCK_TXTIME))
++			return -EINVAL;
++		if (cmsg->cmsg_len != CMSG_LEN(sizeof(ktime_t)))
++			return -EINVAL;
++		sockc->transmit_time = *(ktime_t *)CMSG_DATA(cmsg);
++		break;
+ 	/* SCM_RIGHTS and SCM_CREDENTIALS are semantically in SOL_UNIX. */
+ 	case SCM_RIGHTS:
+ 	case SCM_CREDENTIALS:
 -- 
 2.15.1
 
