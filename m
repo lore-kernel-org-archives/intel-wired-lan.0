@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 17 Jan 2018 20:03:11 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: use compiler constants in
- Rx path
-In-Reply-To: <1515805815-2692-3-git-send-email-shannon.nelson@oracle.com>
-References: <1515805815-2692-1-git-send-email-shannon.nelson@oracle.com>
- <1515805815-2692-3-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A92C699@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 17 Jan 2018 20:06:16 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: remove redundant
+ initialization of 'pool'
+In-Reply-To: <20180116124809.25790-1-colin.king@canonical.com>
+References: <20180116124809.25790-1-colin.king@canonical.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A92C7A3@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,22 +13,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Shannon Nelson
-> Sent: Friday, January 12, 2018 5:10 PM
-> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Cc: steffen.klassert at secunet.com; sowmini.varadhan at oracle.com;
-> netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: use compiler constants in Rx
-> path
+> Behalf Of Colin King
+> Sent: Tuesday, January 16, 2018 4:48 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
+> lan at lists.osuosl.org; netdev at vger.kernel.org
+> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: remove redundant initialization of
+> 'pool'
 > 
-> Rather than swapping runtime bytes to compare to constants, let the
-> compiler swap the constants and save a couple of runtuime cycles.
+> From: Colin Ian King <colin.king@canonical.com>
 > 
-> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+> Variable pool is being assigned zero and then in the following for-loop is it
+> being set to zero again. Remove the redundant first assignment.
+> 
+> Cleans up clang warning:
+> drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c:61:2: warning: Value stored to
+> 'pool' is never read
+> 
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c | 1 -
+>  1 file changed, 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
