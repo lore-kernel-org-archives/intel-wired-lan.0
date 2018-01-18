@@ -1,293 +1,124 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 18 Jan 2018 12:20:01 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 22d7c76059d7162dfbcb96962641a345c884c694
-Message-ID: <5a602071.kIVOb5aLZL5QtaZe%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Wed, 17 Jan 2018 21:33:06 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: fix ipv6 support for ipsec offload
+Message-ID: <1516253586-7261-1-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 22d7c76059d7162dfbcb96962641a345c884c694  i40e: Add and delete cloud filter
+Fix up the Rx path to watch for and decode ipv6 headers that might be
+carrying ipsec headers.  To do so, we first change the search function
+to be able to take both ipv4 and ipv6 addresses from a pointer, and add
+an argument that tells which we are using.  Then in the Rx handler we
+add a check for ipv4 vs ipv6 and then parse the headers accordingly.
+We can assume simple headers because this device won't decode packets
+with vlan or with ipv4/ipv6 extensions.
 
-Regressions in current branch:
+We also change a flag used in the ...add_sa() function as it seems the
+XFRM stack doesn't actually ever set the XFRM_OFFLOAD_IPV6 flag bit.
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c:96:9: sparse: cast from restricted __be32
+Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 39 ++++++++++++++++++--------
+ 1 file changed, 27 insertions(+), 12 deletions(-)
 
-Error ids grouped by kconfigs:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index 587fd8f..93eacdd 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -379,12 +379,13 @@ static int ixgbe_ipsec_find_empty_idx(struct ixgbe_ipsec *ipsec, bool rxtable)
+  * @daddr: inbound address to match
+  * @proto: protocol to match
+  * @spi: SPI to match
++ * @ip4: true if using an ipv4 address
+  *
+  * Returns a pointer to the matching SA state information
+  **/
+ static struct xfrm_state *ixgbe_ipsec_find_rx_state(struct ixgbe_ipsec *ipsec,
+-						    __be32 daddr, u8 proto,
+-						    __be32 spi)
++						    __be32 *daddr, u8 proto,
++						    __be32 spi, bool ip4)
+ {
+ 	struct rx_sa *rsa;
+ 	struct xfrm_state *ret = NULL;
+@@ -392,7 +393,9 @@ static struct xfrm_state *ixgbe_ipsec_find_rx_state(struct ixgbe_ipsec *ipsec,
+ 	rcu_read_lock();
+ 	hash_for_each_possible_rcu(ipsec->rx_sa_list, rsa, hlist, spi)
+ 		if (spi == rsa->xs->id.spi &&
+-		    daddr == rsa->xs->id.daddr.a4 &&
++		    ((ip4 && *daddr == rsa->xs->id.daddr.a4) ||
++		      (!ip4 && !memcmp(daddr, &rsa->xs->id.daddr.a6,
++				       sizeof(rsa->xs->id.daddr.a6)))) &&
+ 		    proto == rsa->xs->id.proto) {
+ 			ret = rsa->xs;
+ 			xfrm_state_hold(ret);
+@@ -505,7 +508,7 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
+ 		}
+ 
+ 		/* get ip for rx sa table */
+-		if (xs->xso.flags & XFRM_OFFLOAD_IPV6)
++		if (xs->props.family == AF_INET6)
+ 			memcpy(rsa.ipaddr, &xs->id.daddr.a6, 16);
+ 		else
+ 			memcpy(&rsa.ipaddr[3], &xs->id.daddr.a4, 4);
+@@ -570,7 +573,7 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
+ 			rsa.mode |= IXGBE_RXMOD_PROTO_ESP;
+ 		if (rsa.decrypt)
+ 			rsa.mode |= IXGBE_RXMOD_DECRYPT;
+-		if (rsa.xs->xso.flags & XFRM_OFFLOAD_IPV6)
++		if (rsa.xs->props.family == AF_INET6)
+ 			rsa.mode |= IXGBE_RXMOD_IPV6;
+ 
+ 		/* the preparations worked, so save the info */
+@@ -812,18 +815,30 @@ void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
+ 	struct ixgbe_ipsec *ipsec = adapter->ipsec;
+ 	struct xfrm_offload *xo = NULL;
+ 	struct xfrm_state *xs = NULL;
+-	struct iphdr *iph;
+-	u8 *c_hdr;
++	struct ipv6hdr *ip6 = NULL;
++	struct iphdr *ip4 = NULL;
++	void *daddr;
+ 	__be32 spi;
++	u8 *c_hdr;
+ 	u8 proto;
+ 
+-	/* we can assume no vlan header in the way, b/c the
++	/* Find the ip and crypto headers in the data.
++	 * We can assume no vlan header in the way, b/c the
+ 	 * hw won't recognize the IPsec packet and anyway the
+ 	 * currently vlan device doesn't support xfrm offload.
+ 	 */
+-	/* TODO: not supporting IPv6 yet */
+-	iph = (struct iphdr *)(skb->data + ETH_HLEN);
+-	c_hdr = (u8 *)iph + iph->ihl * 4;
++	if (pkt_info & cpu_to_le16(IXGBE_RXDADV_PKTTYPE_IPV4)) {
++		ip4 = (struct iphdr *)(skb->data + ETH_HLEN);
++		daddr = &ip4->daddr;
++		c_hdr = (u8 *)ip4 + ip4->ihl * 4;
++	} else if (pkt_info & cpu_to_le16(IXGBE_RXDADV_PKTTYPE_IPV6)) {
++		ip6 = (struct ipv6hdr *)(skb->data + ETH_HLEN);
++		daddr = &ip6->daddr;
++		c_hdr = (u8 *)ip6 + sizeof(struct ipv6hdr);
++	} else {
++		return;
++	}
++
+ 	switch (pkt_info & ipsec_pkt_types) {
+ 	case cpu_to_le16(IXGBE_RXDADV_PKTTYPE_IPSEC_AH):
+ 		spi = ((struct ip_auth_hdr *)c_hdr)->spi;
+@@ -837,7 +852,7 @@ void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
+ 		return;
+ 	}
+ 
+-	xs = ixgbe_ipsec_find_rx_state(ipsec, iph->daddr, proto, spi);
++	xs = ixgbe_ipsec_find_rx_state(ipsec, daddr, proto, spi, !!ip4);
+ 	if (unlikely(!xs))
+ 		return;
+ 
+-- 
+2.7.4
 
-recent_errors
-??? x86_64-allmodconfig
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:sparse:cast-from-restricted-__be32
-
-elapsed time: 404m
-
-configs tested: 263
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-sh                            hp6xx_defconfig
-sh                           se7619_defconfig
-sh                           se7722_defconfig
-arm                           efm32_defconfig
-powerpc                     ep8248e_defconfig
-powerpc                     pseries_defconfig
-x86_64                 randconfig-a0-01180653
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-mips                      maltaaprp_defconfig
-powerpc                     skiroot_defconfig
-um                               allyesconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-01180441
-alpha                             allnoconfig
-arm                         s3c6400_defconfig
-um                                  defconfig
-arm                         hackkit_defconfig
-frv                               allnoconfig
-sparc                             allnoconfig
-frv                              allyesconfig
-mips                           ip28_defconfig
-parisc                        c8000_defconfig
-blackfin                   CM-BF561_defconfig
-powerpc                 mpc8540_ads_defconfig
-powerpc                 mpc85xx_cds_defconfig
-blackfin          BF527-AD7160-EVAL_defconfig
-ia64                            zx1_defconfig
-powerpc                    gamecube_defconfig
-x86_64                randconfig-it0-01180325
-i386                   randconfig-x014-201802
-i386                   randconfig-x017-201802
-i386                   randconfig-x012-201802
-i386                   randconfig-x011-201802
-i386                   randconfig-x016-201802
-i386                   randconfig-x013-201802
-i386                   randconfig-x018-201802
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201802
-i386                     randconfig-i1-201802
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                         axm55xx_defconfig
-arm                     davinci_all_defconfig
-m32r                                defconfig
-c6x                        evmc6678_defconfig
-mips                 pnx8335_stb225_defconfig
-powerpc                    sam440ep_defconfig
-arm                    vt8500_v6_v7_defconfig
-powerpc                      ppc64e_defconfig
-x86_64                 randconfig-v0-01180650
-blackfin                   CM-BF527_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                      katmai_defconfig
-sh                           se7343_defconfig
-sh                            shmin_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                    rhel-7.2-prt-off-on
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-a1-201802
-i386                     randconfig-a0-201802
-x86_64                 randconfig-s0-01180655
-x86_64                 randconfig-s1-01180655
-x86_64                 randconfig-s2-01180655
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-arm                         bcm2835_defconfig
-m68k                       m5475evb_defconfig
-mips                        bcm47xx_defconfig
-openrisc                         allyesconfig
-blackfin                   CM-BF548_defconfig
-powerpc                         ps3_defconfig
-sparc                               defconfig
-arm                      tct_hammer_defconfig
-m68k                       m5208evb_defconfig
-powerpc                          g5_defconfig
-powerpc64                        allyesconfig
-x86_64                 randconfig-x016-201802
-x86_64                 randconfig-x013-201802
-x86_64                 randconfig-x014-201802
-x86_64                 randconfig-x011-201802
-x86_64                 randconfig-x015-201802
-x86_64                 randconfig-x012-201802
-x86_64                 randconfig-x019-201802
-x86_64                 randconfig-x010-201802
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                 randconfig-s3-01180522
-x86_64                 randconfig-s4-01180522
-x86_64                 randconfig-s5-01180522
-i386                               tinyconfig
-arm                          badge4_defconfig
-arm                            dove_defconfig
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-arm                            mmp2_defconfig
-arm                        spear3xx_defconfig
-arm                       versatile_defconfig
-m68k                       m5275evb_defconfig
-arm                          iop33x_defconfig
-blackfin                       SRV1_defconfig
-powerpc                      ppc6xx_defconfig
-powerpc                     tqm8548_defconfig
-x86_64                   randconfig-i0-201802
-i386                   randconfig-b0-01180543
-i386                   randconfig-b0-01181149
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                              allyesconfig
-arm                         em_x270_defconfig
-arm                           viper_defconfig
-x86_64                 randconfig-b0-01180721
-x86_64                           allmodconfig
-mips                        vocore2_defconfig
-powerpc               mpc834x_itxgp_defconfig
-sh                           cayman_defconfig
-sh                           sh2007_defconfig
-tile                              allnoconfig
-x86_64                 randconfig-u0-01180651
-x86_64                 randconfig-u0-01180826
-arm                       imx_v6_v7_defconfig
-arm                       netwinder_defconfig
-arm                           sama5_defconfig
-sparc                            allmodconfig
-i386                   randconfig-h0-01180702
-i386                   randconfig-h1-01180702
-mips                    maltaup_xpa_defconfig
-mn10300                          allmodconfig
-powerpc                       holly_defconfig
-arm                      acs5k_tiny_defconfig
-arm                       omap2plus_defconfig
-x86_64                randconfig-ne0-01180655
-c6x                        evmc6457_defconfig
-m68k                          atari_defconfig
-sh                           se7206_defconfig
-h8300                     edosk2674_defconfig
-m32r                   m32700ut.smp_defconfig
-sh                        edosk7705_defconfig
-arm                        mvebu_v5_defconfig
-sparc                       sparc64_defconfig
-powerpc                     redwood_defconfig
-alpha                            alldefconfig
-arm                         mv78xx0_defconfig
-mips                  cavium_octeon_defconfig
-x86_64                 randconfig-h0-01180656
-sh                 kfr2r09-romimage_defconfig
-sparc                            allyesconfig
-arm                         palmz72_defconfig
-parisc                           alldefconfig
-x86_64                 randconfig-n0-01180342
-arm                        trizeps4_defconfig
-blackfin                  CM-BF537E_defconfig
-blackfin                BF533-STAMP_defconfig
-powerpc                      ep88xc_defconfig
-powerpc                  mpc866_ads_defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-i386                  randconfig-sb0-01180704
-i386                  randconfig-sb0-01180944
-i386                  randconfig-sb0-01181222
-mips                                   jz4740
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                 randconfig-x008-201802
-x86_64                 randconfig-x005-201802
-x86_64                 randconfig-x000-201802
-x86_64                 randconfig-x009-201802
-x86_64                 randconfig-x007-201802
-x86_64                 randconfig-x002-201802
-x86_64                 randconfig-x006-201802
-x86_64                 randconfig-x001-201802
-x86_64                 randconfig-x003-201802
-x86_64                 randconfig-x004-201802
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-arm                        cerfcube_defconfig
-arm                      integrator_defconfig
-powerpc                 mpc8315_rdb_defconfig
-x86_64                randconfig-ws0-01180653
-blackfin                BF609-EZKIT_defconfig
-frv                              allmodconfig
-mips                      loongson3_defconfig
-i386                   randconfig-x071-201802
-i386                   randconfig-x079-201802
-i386                   randconfig-x077-201802
-i386                   randconfig-x072-201802
-i386                   randconfig-x076-201802
-i386                   randconfig-x075-201802
-i386                   randconfig-x070-201802
-i386                   randconfig-x073-201802
-i386                   randconfig-x074-201802
-i386                   randconfig-x078-201802
-mips                       capcella_defconfig
-powerpc                 mpc8272_ads_defconfig
-powerpc                     virtex5_defconfig
-x86_64                 randconfig-r0-01180657
-x86_64                 randconfig-r0-01180851
-x86_64                 randconfig-r0-01180928
-ia64                          tiger_defconfig
-xtensa                              defconfig
-arm                        clps711x_defconfig
-powerpc                   lite5200b_defconfig
-arm                        raumfeld_defconfig
-powerpc                      tqm8xx_defconfig
-sparc64                          allmodconfig
-i386                   randconfig-x004-201802
-i386                   randconfig-x002-201802
-i386                   randconfig-x007-201802
-i386                   randconfig-x003-201802
-i386                   randconfig-x009-201802
-i386                   randconfig-x000-201802
-i386                   randconfig-x005-201802
-i386                   randconfig-x006-201802
-i386                   randconfig-x001-201802
-i386                   randconfig-x008-201802
-i386                   randconfig-x0-01180704
-i386                   randconfig-x0-01181153
-
-Thanks,
-Fengguang
