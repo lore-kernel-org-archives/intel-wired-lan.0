@@ -1,40 +1,71 @@
-From: Miroslav Lichvar <mlichvar@redhat.com>
-Date: Thu, 18 Jan 2018 09:42:27 +0100
-Subject: [Intel-wired-lan] [RFC v2 net-next 01/10] net: Add a new socket
- option for a future transmit time.
-In-Reply-To: <20180117230621.26074-2-jesus.sanchez-palencia@intel.com>
-References: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
- <20180117230621.26074-2-jesus.sanchez-palencia@intel.com>
-Message-ID: <20180118084227.GL1175@localhost>
+From: Yanjun Zhu <yanjun.zhu@oracle.com>
+Date: Thu, 18 Jan 2018 17:06:53 +0800
+Subject: [Intel-wired-lan] [PATCH next-queue 2/2] ixgbe: add unlikely
+ notes to tx fastpath expressions
+In-Reply-To: <1515451669-927-2-git-send-email-shannon.nelson@oracle.com>
+References: <1515451669-927-1-git-send-email-shannon.nelson@oracle.com>
+ <1515451669-927-2-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <6322a15f-693f-4056-164b-82012714d1e0@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 17, 2018 at 03:06:12PM -0800, Jesus Sanchez-Palencia wrote:
-> From: Richard Cochran <rcochran@linutronix.de>
-> 
-> This patch introduces SO_TXTIME.  User space enables this option in
-> order to pass a desired future transmit time in a CMSG when calling
-> sendmsg(2).
-> 
-> A new field is added to struct sockcm_cookie, and the tstamp from
-> skbuffs will be used later on.
 
-In the discussion about the v1 patchset, there was a question if the
-cmsg should include a clockid_t. Without that, how can an application
-prevent the packet from being sent using an incorrect clock, e.g.
-the system clock when it expects it to be a PHC, or a different PHC
-when the socket is not bound to a specific interface?
 
-At least in some applications it would be preferred to not sent a
-packet at all instead of sending it at a wrong time.
+On 2018/1/9 6:47, Shannon Nelson wrote:
+> Add unlikely() to a few error checking expressions in the Tx
+> offload handling.
+>
+> Suggested-by: Yanjun Zhu <yanjun.zhu@oracle.com>
+Hi,
 
-Please keep in mind that the PHCs and the system clock don't have to
-be synchronized to each other. If I understand the rest of the series
-correctly, there is an assumption that the PHCs are keeping time in
-TAI and CLOCK_TAI can be used as a fallback.
+I am fine with this patch. I have a question. The ipsec feature is 
+supported in ixgbevf?
 
--- 
-Miroslav Lichvar
+Thanks a lot.
+Zhu Yanjun
+> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+> ---
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 8 ++++----
+>   1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> index 57c10e6..3d069a2 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> @@ -749,28 +749,28 @@ int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring,
+>   	struct xfrm_state *xs;
+>   	struct tx_sa *tsa;
+>   
+> -	if (!first->skb->sp->len) {
+> +	if (unlikely(!first->skb->sp->len)) {
+>   		netdev_err(tx_ring->netdev, "%s: no xfrm state len = %d\n",
+>   			   __func__, first->skb->sp->len);
+>   		return 0;
+>   	}
+>   
+>   	xs = xfrm_input_state(first->skb);
+> -	if (!xs) {
+> +	if (unlikely(!xs)) {
+>   		netdev_err(tx_ring->netdev, "%s: no xfrm_input_state() xs = %p\n",
+>   			   __func__, xs);
+>   		return 0;
+>   	}
+>   
+>   	itd->sa_idx = xs->xso.offload_handle - IXGBE_IPSEC_BASE_TX_INDEX;
+> -	if (itd->sa_idx > IXGBE_IPSEC_MAX_SA_COUNT) {
+> +	if (unlikely(itd->sa_idx > IXGBE_IPSEC_MAX_SA_COUNT)) {
+>   		netdev_err(tx_ring->netdev, "%s: bad sa_idx=%d handle=%lu\n",
+>   			   __func__, itd->sa_idx, xs->xso.offload_handle);
+>   		return 0;
+>   	}
+>   
+>   	tsa = &ipsec->tx_tbl[itd->sa_idx];
+> -	if (!tsa->used) {
+> +	if (unlikely(!tsa->used)) {
+>   		netdev_err(tx_ring->netdev, "%s: unused sa_idx=%d\n",
+>   			   __func__, itd->sa_idx);
+>   		return 0;
+
