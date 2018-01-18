@@ -1,41 +1,38 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 18 Jan 2018 09:18:57 -0800
-Subject: [Intel-wired-lan] [PATCH] fm10k: bump version number
-Message-ID: <20180118171857.28279-1-jacob.e.keller@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 18 Jan 2018 18:46:51 +0000
+Subject: [Intel-wired-lan] [PATCH v2 next-queue 01/12] i40evf: Fix link
+ up issue when queues are disabled
+In-Reply-To: <20180117161607.49344-2-avinash.dayanand@intel.com>
+References: <20180117161607.49344-1-avinash.dayanand@intel.com>
+ <20180117161607.49344-2-avinash.dayanand@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A935B38@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We're aligned with latest version released on SourceForge, so update the
-version number to match.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Avinash Dayanand
+> Sent: Wednesday, January 17, 2018 8:16 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v2 next-queue 01/12] i40evf: Fix link up
+> issue when queues are disabled
+> 
+> One of the previous patch fixes the link up issue by ignoring it if i40evf is not
+> in __I40EVF_RUNNING state. However this doesn't fix the race condition
+> when queues are disabled esp for ADq on VF. Hence check if all queues are
+> enabled before starting all queues.
+> 
+> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 +
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  1 +
+>  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 28 +++++++++++++++-----
+> --
+>  3 files changed, 22 insertions(+), 8 deletions(-)
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 8e12aae065d8..2c93d719438f 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -28,13 +28,13 @@
- 
- #include "fm10k.h"
- 
--#define DRV_VERSION	"0.22.1-k"
-+#define DRV_VERSION	"0.23.4-k"
- #define DRV_SUMMARY	"Intel(R) Ethernet Switch Host Interface Driver"
- const char fm10k_driver_version[] = DRV_VERSION;
- char fm10k_driver_name[] = "fm10k";
- static const char fm10k_driver_string[] = DRV_SUMMARY;
- static const char fm10k_copyright[] =
--	"Copyright(c) 2013 - 2017 Intel Corporation.";
-+	"Copyright(c) 2013 - 2018 Intel Corporation.";
- 
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
- MODULE_DESCRIPTION(DRV_SUMMARY);
--- 
-2.15.1.478.ga1e07cd25f8b
 
