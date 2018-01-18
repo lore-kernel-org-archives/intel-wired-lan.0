@@ -1,48 +1,42 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 18 Jan 2018 07:51:18 -0800
-Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Remove Other from EIAC.
-In-Reply-To: <20180118065054.29844-1-bpoirier@suse.com>
-References: <20180118065054.29844-1-bpoirier@suse.com>
-Message-ID: <CAKgT0UemPMN-30ubbKDR8za4w6f6T2R4GZt5atFzOkCpoSFhsA@mail.gmail.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 18 Jan 2018 09:10:59 -0800
+Subject: [Intel-wired-lan] [PATCH next-queue 2/2] ixgbe: add unlikely
+ notes to tx fastpath expressions
+In-Reply-To: <6322a15f-693f-4056-164b-82012714d1e0@oracle.com>
+References: <1515451669-927-1-git-send-email-shannon.nelson@oracle.com>
+ <1515451669-927-2-git-send-email-shannon.nelson@oracle.com>
+ <6322a15f-693f-4056-164b-82012714d1e0@oracle.com>
+Message-ID: <acce7bd3-ce04-0279-6ca3-99404363bd4d@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 17, 2018 at 10:50 PM, Benjamin Poirier <bpoirier@suse.com> wrote:
-> It was reported that emulated e1000e devices in vmware esxi 6.5 Build
-> 7526125 do not link up after commit 4aea7a5c5e94 ("e1000e: Avoid receiver
-> overrun interrupt bursts", v4.15-rc1). Some tracing shows that after
-> e1000e_trigger_lsc() is called, ICR reads out as 0x0 in e1000_msix_other()
-> on emulated e1000e devices. In comparison, on real e1000e 82574 hardware,
-> icr=0x80000004 (_INT_ASSERTED | _OTHER) in the same situation.
+On 1/18/2018 1:06 AM, Yanjun Zhu wrote:
+> On 2018/1/9 6:47, Shannon Nelson wrote:
+>> Add unlikely() to a few error checking expressions in the Tx
+>> offload handling.
+>>
+>> Suggested-by: Yanjun Zhu <yanjun.zhu@oracle.com>
+> Hi,
+> 
+> I am fine with this patch. I have a question. The ipsec feature is 
+> supported in ixgbevf?
 
-Isn't 0x80000004 (_INT_ASSERTED | _LSC)? The assumption I based my
-patch on was that the VMware code was sending _OTHER instead of _LSC
-to trigger LSC events. As such in my version of the workaround I just
-went through and did the testing if the _RXO bit was set, otherwise I
-assumed that whatever event was received must have been meant to
-trigger an _LSC type event since that worked in the past.
+The x540 datasheet doesn't show any IPsec registers in the VF space, so 
+I'm pretty sure the answer is 'no'.
 
-> Some experimentation showed that this flaw in vmware e1000e emulation can
-> be worked around by not setting Other in EIAC. This is how it was before
-> 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt", v4.5-rc1).
+One of the difficulties in providing this is how to manage the register 
+space needed in the chip.  Either there's one big table that the PF and 
+all the VFs need to somehow coordinate to share, or there are separate 
+tables for each PF and VF, taking up a lot of chip space.  I suspect the 
+original 82599 designers just weren't ready to take on this issue, nor 
+was there enough customer pull in the VF space yet for such a thing.
 
-Did this actually set the _LSC bit or was it just giving you the
-_OTHER bit? The ICR for that combination would come out 0x81000000.
+sln
 
-> Fixes: 4aea7a5c5e94 ("e1000e: Avoid receiver overrun interrupt bursts")
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
-> ---
->
-> Jeff, I'm sending as RFC since it looks like a problem that should be fixed
-> in vmware. If you'd like to have the workaround in e1000e, I'll submit.
+> 
+> Thanks a lot.
+> Zhu Yanjun
 
-I would appreciate it if you could review/test the patch I submitted
-for the same issue. Specifically I would want to make certain that it
-still addresses the original RXO interrupt burst issue your reported.
-
-Thanks.
-
-- Alex
