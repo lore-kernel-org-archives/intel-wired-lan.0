@@ -1,77 +1,71 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 18 Jan 2018 13:59:19 +0200
-Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Remove Other from EIAC.
-In-Reply-To: <20180118065054.29844-1-bpoirier@suse.com>
-References: <20180118065054.29844-1-bpoirier@suse.com>
-Message-ID: <cef5fe27-5948-0960-4948-1af3a212892e@intel.com>
+From: Jamal Hadi Salim <jhs@mojatatu.com>
+Date: Thu, 18 Jan 2018 08:35:18 -0500
+Subject: [Intel-wired-lan] [RFC v2 net-next 06/10] net/sched: Introduce
+ the TBS Qdisc
+In-Reply-To: <20180117230621.26074-7-jesus.sanchez-palencia@intel.com>
+References: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
+ <20180117230621.26074-7-jesus.sanchez-palencia@intel.com>
+Message-ID: <30e104db-3c88-b2f7-4494-98b2bece8ca9@mojatatu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/18/2018 08:50, Benjamin Poirier wrote:
-> It was reported that emulated e1000e devices in vmware esxi 6.5 Build
-> 7526125 do not link up after commit 4aea7a5c5e94 ("e1000e: Avoid receiver
-> overrun interrupt bursts", v4.15-rc1). Some tracing shows that after
-> e1000e_trigger_lsc() is called, ICR reads out as 0x0 in e1000_msix_other()
-> on emulated e1000e devices. In comparison, on real e1000e 82574 hardware,
-> icr=0x80000004 (_INT_ASSERTED | _OTHER) in the same situation.
->
-> Some experimentation showed that this flaw in vmware e1000e emulation can
-> be worked around by not setting Other in EIAC. This is how it was before
-> 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt", v4.5-rc1).
->
-> Fixes: 4aea7a5c5e94 ("e1000e: Avoid receiver overrun interrupt bursts")
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
-> ---
->
-> Jeff, I'm sending as RFC since it looks like a problem that should be fixed
-> in vmware. If you'd like to have the workaround in e1000e, I'll submit.
->
-> ---
->   drivers/net/ethernet/intel/e1000e/netdev.c | 5 +++--
->   1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 9f18d39bdc8f..625a4c9a86a4 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -1918,6 +1918,8 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
->   	bool enable = true;
->   
->   	icr = er32(ICR);
-> +	ew32(ICR, E1000_ICR_OTHER);
-> +
->   	if (icr & E1000_ICR_RXO) {
->   		ew32(ICR, E1000_ICR_RXO);
->   		enable = false;
-> @@ -2040,7 +2042,6 @@ static void e1000_configure_msix(struct e1000_adapter *adapter)
->   		       hw->hw_addr + E1000_EITR_82574(vector));
->   	else
->   		writel(1, hw->hw_addr + E1000_EITR_82574(vector));
-> -	adapter->eiac_mask |= E1000_IMS_OTHER;
->   
->   	/* Cause Tx interrupts on every write back */
->   	ivar |= BIT(31);
-> @@ -2265,7 +2266,7 @@ static void e1000_irq_enable(struct e1000_adapter *adapter)
->   
->   	if (adapter->msix_entries) {
->   		ew32(EIAC_82574, adapter->eiac_mask & E1000_EIAC_MASK_82574);
-> -		ew32(IMS, adapter->eiac_mask | E1000_IMS_LSC);
-> +		ew32(IMS, adapter->eiac_mask | E1000_IMS_OTHER | E1000_IMS_LSC);
->   	} else if (hw->mac.type >= e1000_pch_lpt) {
->   		ew32(IMS, IMS_ENABLE_MASK | E1000_IMS_ECCER);
->   	} else {
+On 18-01-17 06:06 PM, Jesus Sanchez-Palencia wrote:
+> From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> 
+> TBS (Time Based Scheduler) uses the information added earlier in this
+> series (the socket option SO_TXTIME and the new role of
+> sk_buff->tstamp) to schedule traffic transmission based on absolute
+> time.
+> 
+> For some workloads, just bandwidth enforcement is not enough, and
+> precise control of the transmission of packets is necessary.
+> 
+> Example:
+> 
+> $ tc qdisc replace dev enp2s0 parent root handle 100 mqprio num_tc 3 \
 
-Hello Benjamin,
+handle 100:0 ?
 
-Alexander Duyck has submitted follow patch 
-https://patchwork.ozlabs.org/patch/862613/ addressed to 
-"[ESXi][RHEL7.5]e1000 and e1000e NIC link can not up on VMWare 
-ESXi"problem. Looks Red Hat happy with this solution. Let's them finish 
-their tests and then decide about next step.
+>             map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 queues 1 at 0 1 at 1 2 at 2 hw 0
+> 
+> $ tc qdisc add dev enp2s0 parent 100:1 tbs delta 60000 clockid 11 offload 1
+>
+>
+> In this example, the Qdisc will try to enable offloading (offload 1)
+> the control of the transmission time to the network adapter, the
+> time stamp in socket are in reference to the clockid '11' (CLOCK_TAI)
+> and packets leave the Qdisc "delta" (60000) nanoseconds before its
+> transmission time.
+>
 
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180118/4bd6ae00/attachment.html>
+
+> When offloading is disabled, the network adapter will ignore the
+> sk_buff time stamp, and so, the transmission time will be only "best
+> effort" from the Qdisc.
+>
+
+General comments:
+1) iproute2: Avoid magic numbers like 1 or 11 please; "offload"
+(without 1) and "TAI" will be more human friendly.
+
+2) Experience shows that adding padding fields in the control structs
+implies they will _never ever_ be used. That was not design intent
+for netlink but over years shit like that has happened.
+Maybe look at using a 32 bitmap? It is more "future proof".
+You seem to only have 2-3 flags but it gives you opportunity
+to add more changes later. If you are 100% sure youll never need
+it - then maybe just move the tc_tbs_qopt::offload to the end of
+of the struct.
+
+3)It would be helpful for debugging to increment some stats other
+than drop counters on enqueu/dequeue obsolete packet drop. Maybe use
+overlimits for the dequeu drops (in addition)?
+
+4) I may be misreading things - but did you need to reset the
+watchdog on dequeue? It is already being kicked for every incoming packet.
+
+cheers,
+jamal
