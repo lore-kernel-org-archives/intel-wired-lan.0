@@ -1,71 +1,77 @@
-From: Yanjun Zhu <yanjun.zhu@oracle.com>
-Date: Thu, 18 Jan 2018 17:06:53 +0800
-Subject: [Intel-wired-lan] [PATCH next-queue 2/2] ixgbe: add unlikely
- notes to tx fastpath expressions
-In-Reply-To: <1515451669-927-2-git-send-email-shannon.nelson@oracle.com>
-References: <1515451669-927-1-git-send-email-shannon.nelson@oracle.com>
- <1515451669-927-2-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <6322a15f-693f-4056-164b-82012714d1e0@oracle.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Thu, 18 Jan 2018 13:59:19 +0200
+Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Remove Other from EIAC.
+In-Reply-To: <20180118065054.29844-1-bpoirier@suse.com>
+References: <20180118065054.29844-1-bpoirier@suse.com>
+Message-ID: <cef5fe27-5948-0960-4948-1af3a212892e@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On 2018/1/9 6:47, Shannon Nelson wrote:
-> Add unlikely() to a few error checking expressions in the Tx
-> offload handling.
+On 1/18/2018 08:50, Benjamin Poirier wrote:
+> It was reported that emulated e1000e devices in vmware esxi 6.5 Build
+> 7526125 do not link up after commit 4aea7a5c5e94 ("e1000e: Avoid receiver
+> overrun interrupt bursts", v4.15-rc1). Some tracing shows that after
+> e1000e_trigger_lsc() is called, ICR reads out as 0x0 in e1000_msix_other()
+> on emulated e1000e devices. In comparison, on real e1000e 82574 hardware,
+> icr=0x80000004 (_INT_ASSERTED | _OTHER) in the same situation.
 >
-> Suggested-by: Yanjun Zhu <yanjun.zhu@oracle.com>
-Hi,
-
-I am fine with this patch. I have a question. The ipsec feature is 
-supported in ixgbevf?
-
-Thanks a lot.
-Zhu Yanjun
-> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+> Some experimentation showed that this flaw in vmware e1000e emulation can
+> be worked around by not setting Other in EIAC. This is how it was before
+> 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt", v4.5-rc1).
+>
+> Fixes: 4aea7a5c5e94 ("e1000e: Avoid receiver overrun interrupt bursts")
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 > ---
->   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
 >
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> index 57c10e6..3d069a2 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> @@ -749,28 +749,28 @@ int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring,
->   	struct xfrm_state *xs;
->   	struct tx_sa *tsa;
+> Jeff, I'm sending as RFC since it looks like a problem that should be fixed
+> in vmware. If you'd like to have the workaround in e1000e, I'll submit.
+>
+> ---
+>   drivers/net/ethernet/intel/e1000e/netdev.c | 5 +++--
+>   1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 9f18d39bdc8f..625a4c9a86a4 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -1918,6 +1918,8 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+>   	bool enable = true;
 >   
-> -	if (!first->skb->sp->len) {
-> +	if (unlikely(!first->skb->sp->len)) {
->   		netdev_err(tx_ring->netdev, "%s: no xfrm state len = %d\n",
->   			   __func__, first->skb->sp->len);
->   		return 0;
->   	}
+>   	icr = er32(ICR);
+> +	ew32(ICR, E1000_ICR_OTHER);
+> +
+>   	if (icr & E1000_ICR_RXO) {
+>   		ew32(ICR, E1000_ICR_RXO);
+>   		enable = false;
+> @@ -2040,7 +2042,6 @@ static void e1000_configure_msix(struct e1000_adapter *adapter)
+>   		       hw->hw_addr + E1000_EITR_82574(vector));
+>   	else
+>   		writel(1, hw->hw_addr + E1000_EITR_82574(vector));
+> -	adapter->eiac_mask |= E1000_IMS_OTHER;
 >   
->   	xs = xfrm_input_state(first->skb);
-> -	if (!xs) {
-> +	if (unlikely(!xs)) {
->   		netdev_err(tx_ring->netdev, "%s: no xfrm_input_state() xs = %p\n",
->   			   __func__, xs);
->   		return 0;
->   	}
+>   	/* Cause Tx interrupts on every write back */
+>   	ivar |= BIT(31);
+> @@ -2265,7 +2266,7 @@ static void e1000_irq_enable(struct e1000_adapter *adapter)
 >   
->   	itd->sa_idx = xs->xso.offload_handle - IXGBE_IPSEC_BASE_TX_INDEX;
-> -	if (itd->sa_idx > IXGBE_IPSEC_MAX_SA_COUNT) {
-> +	if (unlikely(itd->sa_idx > IXGBE_IPSEC_MAX_SA_COUNT)) {
->   		netdev_err(tx_ring->netdev, "%s: bad sa_idx=%d handle=%lu\n",
->   			   __func__, itd->sa_idx, xs->xso.offload_handle);
->   		return 0;
->   	}
->   
->   	tsa = &ipsec->tx_tbl[itd->sa_idx];
-> -	if (!tsa->used) {
-> +	if (unlikely(!tsa->used)) {
->   		netdev_err(tx_ring->netdev, "%s: unused sa_idx=%d\n",
->   			   __func__, itd->sa_idx);
->   		return 0;
+>   	if (adapter->msix_entries) {
+>   		ew32(EIAC_82574, adapter->eiac_mask & E1000_EIAC_MASK_82574);
+> -		ew32(IMS, adapter->eiac_mask | E1000_IMS_LSC);
+> +		ew32(IMS, adapter->eiac_mask | E1000_IMS_OTHER | E1000_IMS_LSC);
+>   	} else if (hw->mac.type >= e1000_pch_lpt) {
+>   		ew32(IMS, IMS_ENABLE_MASK | E1000_IMS_ECCER);
+>   	} else {
 
+Hello Benjamin,
+
+Alexander Duyck has submitted follow patch 
+https://patchwork.ozlabs.org/patch/862613/ addressed to 
+"[ESXi][RHEL7.5]e1000 and e1000e NIC link can not up on VMWare 
+ESXi"problem. Looks Red Hat happy with this solution. Let's them finish 
+their tests and then decide about next step.
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180118/4bd6ae00/attachment.html>
