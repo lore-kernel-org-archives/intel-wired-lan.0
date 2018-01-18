@@ -1,124 +1,65 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 17 Jan 2018 21:33:06 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix ipv6 support for ipsec offload
-Message-ID: <1516253586-7261-1-git-send-email-shannon.nelson@oracle.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Thu, 18 Jan 2018 15:50:54 +0900
+Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Remove Other from EIAC.
+Message-ID: <20180118065054.29844-1-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix up the Rx path to watch for and decode ipv6 headers that might be
-carrying ipsec headers.  To do so, we first change the search function
-to be able to take both ipv4 and ipv6 addresses from a pointer, and add
-an argument that tells which we are using.  Then in the Rx handler we
-add a check for ipv4 vs ipv6 and then parse the headers accordingly.
-We can assume simple headers because this device won't decode packets
-with vlan or with ipv4/ipv6 extensions.
+It was reported that emulated e1000e devices in vmware esxi 6.5 Build
+7526125 do not link up after commit 4aea7a5c5e94 ("e1000e: Avoid receiver
+overrun interrupt bursts", v4.15-rc1). Some tracing shows that after
+e1000e_trigger_lsc() is called, ICR reads out as 0x0 in e1000_msix_other()
+on emulated e1000e devices. In comparison, on real e1000e 82574 hardware,
+icr=0x80000004 (_INT_ASSERTED | _OTHER) in the same situation.
 
-We also change a flag used in the ...add_sa() function as it seems the
-XFRM stack doesn't actually ever set the XFRM_OFFLOAD_IPV6 flag bit.
+Some experimentation showed that this flaw in vmware e1000e emulation can
+be worked around by not setting Other in EIAC. This is how it was before
+16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt", v4.5-rc1).
 
-Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+Fixes: 4aea7a5c5e94 ("e1000e: Avoid receiver overrun interrupt bursts")
+Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 39 ++++++++++++++++++--------
- 1 file changed, 27 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index 587fd8f..93eacdd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -379,12 +379,13 @@ static int ixgbe_ipsec_find_empty_idx(struct ixgbe_ipsec *ipsec, bool rxtable)
-  * @daddr: inbound address to match
-  * @proto: protocol to match
-  * @spi: SPI to match
-+ * @ip4: true if using an ipv4 address
-  *
-  * Returns a pointer to the matching SA state information
-  **/
- static struct xfrm_state *ixgbe_ipsec_find_rx_state(struct ixgbe_ipsec *ipsec,
--						    __be32 daddr, u8 proto,
--						    __be32 spi)
-+						    __be32 *daddr, u8 proto,
-+						    __be32 spi, bool ip4)
- {
- 	struct rx_sa *rsa;
- 	struct xfrm_state *ret = NULL;
-@@ -392,7 +393,9 @@ static struct xfrm_state *ixgbe_ipsec_find_rx_state(struct ixgbe_ipsec *ipsec,
- 	rcu_read_lock();
- 	hash_for_each_possible_rcu(ipsec->rx_sa_list, rsa, hlist, spi)
- 		if (spi == rsa->xs->id.spi &&
--		    daddr == rsa->xs->id.daddr.a4 &&
-+		    ((ip4 && *daddr == rsa->xs->id.daddr.a4) ||
-+		      (!ip4 && !memcmp(daddr, &rsa->xs->id.daddr.a6,
-+				       sizeof(rsa->xs->id.daddr.a6)))) &&
- 		    proto == rsa->xs->id.proto) {
- 			ret = rsa->xs;
- 			xfrm_state_hold(ret);
-@@ -505,7 +508,7 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
- 		}
+Jeff, I'm sending as RFC since it looks like a problem that should be fixed
+in vmware. If you'd like to have the workaround in e1000e, I'll submit.
+
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 9f18d39bdc8f..625a4c9a86a4 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -1918,6 +1918,8 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+ 	bool enable = true;
  
- 		/* get ip for rx sa table */
--		if (xs->xso.flags & XFRM_OFFLOAD_IPV6)
-+		if (xs->props.family == AF_INET6)
- 			memcpy(rsa.ipaddr, &xs->id.daddr.a6, 16);
- 		else
- 			memcpy(&rsa.ipaddr[3], &xs->id.daddr.a4, 4);
-@@ -570,7 +573,7 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
- 			rsa.mode |= IXGBE_RXMOD_PROTO_ESP;
- 		if (rsa.decrypt)
- 			rsa.mode |= IXGBE_RXMOD_DECRYPT;
--		if (rsa.xs->xso.flags & XFRM_OFFLOAD_IPV6)
-+		if (rsa.xs->props.family == AF_INET6)
- 			rsa.mode |= IXGBE_RXMOD_IPV6;
- 
- 		/* the preparations worked, so save the info */
-@@ -812,18 +815,30 @@ void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
- 	struct ixgbe_ipsec *ipsec = adapter->ipsec;
- 	struct xfrm_offload *xo = NULL;
- 	struct xfrm_state *xs = NULL;
--	struct iphdr *iph;
--	u8 *c_hdr;
-+	struct ipv6hdr *ip6 = NULL;
-+	struct iphdr *ip4 = NULL;
-+	void *daddr;
- 	__be32 spi;
-+	u8 *c_hdr;
- 	u8 proto;
- 
--	/* we can assume no vlan header in the way, b/c the
-+	/* Find the ip and crypto headers in the data.
-+	 * We can assume no vlan header in the way, b/c the
- 	 * hw won't recognize the IPsec packet and anyway the
- 	 * currently vlan device doesn't support xfrm offload.
- 	 */
--	/* TODO: not supporting IPv6 yet */
--	iph = (struct iphdr *)(skb->data + ETH_HLEN);
--	c_hdr = (u8 *)iph + iph->ihl * 4;
-+	if (pkt_info & cpu_to_le16(IXGBE_RXDADV_PKTTYPE_IPV4)) {
-+		ip4 = (struct iphdr *)(skb->data + ETH_HLEN);
-+		daddr = &ip4->daddr;
-+		c_hdr = (u8 *)ip4 + ip4->ihl * 4;
-+	} else if (pkt_info & cpu_to_le16(IXGBE_RXDADV_PKTTYPE_IPV6)) {
-+		ip6 = (struct ipv6hdr *)(skb->data + ETH_HLEN);
-+		daddr = &ip6->daddr;
-+		c_hdr = (u8 *)ip6 + sizeof(struct ipv6hdr);
-+	} else {
-+		return;
-+	}
+ 	icr = er32(ICR);
++	ew32(ICR, E1000_ICR_OTHER);
 +
- 	switch (pkt_info & ipsec_pkt_types) {
- 	case cpu_to_le16(IXGBE_RXDADV_PKTTYPE_IPSEC_AH):
- 		spi = ((struct ip_auth_hdr *)c_hdr)->spi;
-@@ -837,7 +852,7 @@ void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
- 		return;
- 	}
+ 	if (icr & E1000_ICR_RXO) {
+ 		ew32(ICR, E1000_ICR_RXO);
+ 		enable = false;
+@@ -2040,7 +2042,6 @@ static void e1000_configure_msix(struct e1000_adapter *adapter)
+ 		       hw->hw_addr + E1000_EITR_82574(vector));
+ 	else
+ 		writel(1, hw->hw_addr + E1000_EITR_82574(vector));
+-	adapter->eiac_mask |= E1000_IMS_OTHER;
  
--	xs = ixgbe_ipsec_find_rx_state(ipsec, iph->daddr, proto, spi);
-+	xs = ixgbe_ipsec_find_rx_state(ipsec, daddr, proto, spi, !!ip4);
- 	if (unlikely(!xs))
- 		return;
+ 	/* Cause Tx interrupts on every write back */
+ 	ivar |= BIT(31);
+@@ -2265,7 +2266,7 @@ static void e1000_irq_enable(struct e1000_adapter *adapter)
  
+ 	if (adapter->msix_entries) {
+ 		ew32(EIAC_82574, adapter->eiac_mask & E1000_EIAC_MASK_82574);
+-		ew32(IMS, adapter->eiac_mask | E1000_IMS_LSC);
++		ew32(IMS, adapter->eiac_mask | E1000_IMS_OTHER | E1000_IMS_LSC);
+ 	} else if (hw->mac.type >= e1000_pch_lpt) {
+ 		ew32(IMS, IMS_ENABLE_MASK | E1000_IMS_ECCER);
+ 	} else {
 -- 
-2.7.4
+2.15.1
 
