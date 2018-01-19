@@ -1,39 +1,103 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 18 Jan 2018 14:17:52 -0800
-Subject: [Intel-wired-lan] Missing device ids in e100.c?
-In-Reply-To: <d1ee433614608c72175747c2767bf20a.squirrel@mx.sdf.org>
-References: <d1ee433614608c72175747c2767bf20a.squirrel@mx.sdf.org>
-Message-ID: <20180118141752.00007188@intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Fri, 19 Jan 2018 17:59:52 +0900
+Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Remove Other from EIAC.
+In-Reply-To: <CAKgT0UemPMN-30ubbKDR8za4w6f6T2R4GZt5atFzOkCpoSFhsA@mail.gmail.com>
+References: <20180118065054.29844-1-bpoirier@suse.com>
+ <CAKgT0UemPMN-30ubbKDR8za4w6f6T2R4GZt5atFzOkCpoSFhsA@mail.gmail.com>
+Message-ID: <20180119085952.u63kius4ud34lleq@f1.synalogic.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 17 Jan 2018 23:45:47 +0000 <sethsimon@sdf.org> wrote:
+On 2018/01/18 07:51, Alexander Duyck wrote:
+> On Wed, Jan 17, 2018 at 10:50 PM, Benjamin Poirier <bpoirier@suse.com> wrote:
+> > It was reported that emulated e1000e devices in vmware esxi 6.5 Build
+> > 7526125 do not link up after commit 4aea7a5c5e94 ("e1000e: Avoid receiver
+> > overrun interrupt bursts", v4.15-rc1). Some tracing shows that after
+> > e1000e_trigger_lsc() is called, ICR reads out as 0x0 in e1000_msix_other()
+> > on emulated e1000e devices. In comparison, on real e1000e 82574 hardware,
+> > icr=0x80000004 (_INT_ASSERTED | _OTHER) in the same situation.
+> 
+> Isn't 0x80000004 (_INT_ASSERTED | _LSC)? The assumption I based my
 
-> Hi,
-> I think I found an oversight in e100.c: The DOS packet driver
-> based on the same chipset includes 3 additional PCI device ids
-> (1035, 1036, and 1037 (all ICH 3)) that aren't in e100.c. See
-> il.asm:207 in http://www.crynwr.com/drivers/e100b11b.zip.
+Yes. The numeric value is correct. I made a mistake when writing down
+the flag names.
 
-Hi, thanks for your feedback. I investigated a bit for you.
+> patch on was that the VMware code was sending _OTHER instead of _LSC
+> to trigger LSC events. As such in my version of the workaround I just
 
-I don't think the e100.c driver will support these without being
-changed in the actual code.  They are all for the Home PNA (Phoneline
-Network Adapter) products which are all end of life (not maintained or
-sold).
+It's not so deterministic, sadly. In my tests, upon entry into
+e1000_msix_other() after e1000e_trigger_lsc(), with no workaround patch
+I've seen:
+icr=0x0
+icr=0x3d
+	Reserved RXDMT0 Reserved LSC TXDW
+icr=0x46
+	RXO LSC TXQE
+and someone else reported:
+icr=0x3c
+	Reserved RXDMT0 Reserved LSC
 
-1035 is the 82562EH based Phoneline Network Connection
-1036 is the 82562EH based Phoneline Network Connection
-1037 is also from the 82562 family
+> went through and did the testing if the _RXO bit was set, otherwise I
+> assumed that whatever event was received must have been meant to
+> trigger an _LSC type event since that worked in the past.
+> 
+> > Some experimentation showed that this flaw in vmware e1000e emulation can
+> > be worked around by not setting Other in EIAC. This is how it was before
+> > 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt", v4.5-rc1).
+> 
+> Did this actually set the _LSC bit or was it just giving you the
+> _OTHER bit? The ICR for that combination would come out 0x81000000.
 
-I recommend you don't worry about the missing IDs, unless you actually
-have one of these devices and can get it to work (yourself) with the
-e100.c driver, then we would review your patch.
+With my patch, after e1000e_trigger_lsc(), it results in icr=0x81000004
+on real and emulated hardware.
 
-Sorry to not be more help, but we generally don't do any development on
-end of lifed products.
+IMO, the resulting icr read is cleaner than with your patch but it
+depends on an undocumented quirk of the emulated vmware e1000e, so I
+don't know which of the two workarounds is more desirable.
 
-Jesse
+If you'd like to stick with your patch though, I think that you should
+definitely rewrite it as:
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 9f18d39bdc8f..68c0bcb8287f 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -1928,7 +1928,12 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+ 			__napi_schedule(&adapter->napi);
+ 		}
+ 	}
+-	if (icr & E1000_ICR_LSC) {
++	if (icr & E1000_ICR_LSC || !(icr & E1000_ICR_RXO)) {
++		/* We assume if the RXO bit is not set that this is a
++		 * link status change event. This is needed due to emulated
++		 * versions of the device that may not correctly populate
++		 * the LSC bit.
++		 */
+ 		ew32(ICR, E1000_ICR_LSC);
+ 		hw->mac.get_link_status = true;
+ 		/* guard against interrupt when we're going down */
+
+> 
+> > Fixes: 4aea7a5c5e94 ("e1000e: Avoid receiver overrun interrupt bursts")
+> > Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> > ---
+> >
+> > Jeff, I'm sending as RFC since it looks like a problem that should be fixed
+> > in vmware. If you'd like to have the workaround in e1000e, I'll submit.
+> 
+> I would appreciate it if you could review/test the patch I submitted
+> for the same issue. Specifically I would want to make certain that it
+> still addresses the original RXO interrupt burst issue your reported.
+
+I've tested both my patch and yours; they both allow link up on vmware;
+link up on real 82574 and rxo mitigation on real 82574. I couldn't
+conveniently test rxo on vmware.
+
+> 
+> Thanks.
+> 
+> - Alex
+> 
