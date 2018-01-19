@@ -1,43 +1,72 @@
-From: Shrikrishna Khare <skhare@shri-linux.eng.vmware.com>
-Date: Thu, 18 Jan 2018 18:42:05 -0800
-Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Remove Other from EIAC.
-In-Reply-To: <20180118072741.hlkepaeibppz7uih@f1.synalogic.ca>
-References: <20180118065054.29844-1-bpoirier@suse.com>
- <20180118072741.hlkepaeibppz7uih@f1.synalogic.ca>
-Message-ID: <alpine.DEB.2.10.1801181835490.23969@shri-linux.eng.vmware.com>
+From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
+Date: Fri, 19 Jan 2018 16:15:46 -0500
+Subject: [Intel-wired-lan] [RFC v2 net-next 01/10] net: Add a new socket
+ option for a future transmit time.
+In-Reply-To: <20180117230621.26074-2-jesus.sanchez-palencia@intel.com>
+References: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
+ <20180117230621.26074-2-jesus.sanchez-palencia@intel.com>
+Message-ID: <CAF=yD-JCN483_e9U7tb_4+2jGyWKfhS0TzooOui+kS4Gh7RSqw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Wed, Jan 17, 2018 at 6:06 PM, Jesus Sanchez-Palencia
+<jesus.sanchez-palencia@intel.com> wrote:
+> From: Richard Cochran <rcochran@linutronix.de>
+>
+> This patch introduces SO_TXTIME.  User space enables this option in
+> order to pass a desired future transmit time in a CMSG when calling
+> sendmsg(2).
+>
+> A new field is added to struct sockcm_cookie, and the tstamp from
+> skbuffs will be used later on.
+>
+> Signed-off-by: Richard Cochran <rcochran@linutronix.de>
+> Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+> ---
 
+> diff --git a/net/core/sock.c b/net/core/sock.c
+> index abf4cbff99b2..37ef4b33fd92 100644
+> --- a/net/core/sock.c
+> +++ b/net/core/sock.c
+> @@ -1061,6 +1061,13 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
+>                         sock_valbool_flag(sk, SOCK_ZEROCOPY, valbool);
+>                 break;
+>
+> +       case SO_TXTIME:
+> +               if (ns_capable(sock_net(sk)->user_ns, CAP_NET_ADMIN))
+> +                       sock_valbool_flag(sk, SOCK_TXTIME, valbool);
+> +               else
+> +                       ret = -EPERM;
+> +               break;
+> +
+>         default:
+>                 ret = -ENOPROTOOPT;
+>                 break;
 
-On Thu, 18 Jan 2018, Benjamin Poirier wrote:
+Please add getsockopt alongside setsockopt.
 
-> On 2018/01/18 15:50, Benjamin Poirier wrote:
-> > It was reported that emulated e1000e devices in vmware esxi 6.5 Build
-> > 7526125 do not link up after commit 4aea7a5c5e94 ("e1000e: Avoid receiver
-> > overrun interrupt bursts", v4.15-rc1). Some tracing shows that after
-> > e1000e_trigger_lsc() is called, ICR reads out as 0x0 in e1000_msix_other()
-> > on emulated e1000e devices. In comparison, on real e1000e 82574 hardware,
-> > icr=0x80000004 (_INT_ASSERTED | _OTHER) in the same situation.
-> > 
-> > Some experimentation showed that this flaw in vmware e1000e emulation can
-> > be worked around by not setting Other in EIAC. This is how it was before
-> > 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt", v4.5-rc1).
-> 
-> vmware folks, please comment.
+I would also restrict input to [0, 1] exactly to allow for future extensions.
 
-Thank you for bringing this to our attention.
+If using ns_capable, skb->tstamp must continue to be scrubbed when traversing
+network namespaces.
 
-Using the reported build (ESX 6.5, 7526125) and 4.15.0-rc8+ kernel (which 
-has the said patch), I could bring up e1000e interface (version: 3.2.6-k),
-get dhcp address and even do large file downloads without difficulty.
+> @@ -2130,6 +2137,15 @@ int __sock_cmsg_send(struct sock *sk, struct msghdr *msg, struct cmsghdr *cmsg,
+>                 sockc->tsflags &= ~SOF_TIMESTAMPING_TX_RECORD_MASK;
+>                 sockc->tsflags |= tsflags;
+>                 break;
+> +       case SO_TXTIME:
+> +               if (!ns_capable(sock_net(sk)->user_ns, CAP_NET_ADMIN))
+> +                       return -EPERM;
+> +               if (!sock_flag(sk, SOCK_TXTIME))
+> +                       return -EINVAL;
 
-Could you give us more pointers on how we may be able to reproduce this 
-locally? Was there anything different with the configuration when the 
-issue was observed? Is the issue consistently reproducible?
+No need for ns_capable check on each packet when already required to
+toggle socket option.
 
-Thanks,
-Shri
+> +               if (cmsg->cmsg_len != CMSG_LEN(sizeof(ktime_t)))
+> +                       return -EINVAL;
+
+I don't see any existing reference to ktime_t in include/uapi. Just use a s64?
