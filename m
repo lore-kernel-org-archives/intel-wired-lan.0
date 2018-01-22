@@ -1,162 +1,155 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 23 Jan 2018 03:35:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 1a19222f2195c6b02a9a00e1c32f337ed6b70f63
-Message-ID: <5a663d0b.baDHHUCBwi+9vFF3%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 22 Jan 2018 14:57:51 -0800
+Subject: [Intel-wired-lan] [PATCH] igb: add VF trust infrastructure
+In-Reply-To: <20180122085441.GR18814@calimero.vinschen.de>
+References: <20180117105339.9336-1-vinschen@redhat.com>
+ <20180122085441.GR18814@calimero.vinschen.de>
+Message-ID: <CAKgT0Uemj7-ZQDzmMoUppp22iuSEcPj7JECFmhbx-WV9qg_4Jw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 1a19222f2195c6b02a9a00e1c32f337ed6b70f63  fm10k: bump version number
+Hi Corinna,
 
-Regressions in current branch:
+I've looked over the patch and didn't see any issues. My understanding
+is that Jeff has pulled it into his tree and it should be going
+through testing shortly.
 
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:3017:43: sparse: restricted __be16 degrades to integer
-drivers/net/ethernet/intel/i40evf/i40evf_main.c:2607:49: sparse: invalid assignment: |=
-drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c:96:9: sparse: cast from restricted __be32
+Thanks.
 
-Error ids grouped by kconfigs:
+- Alex
 
-recent_errors
-??? x86_64-allmodconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_virtchnl_pf.c:sparse:restricted-__be16-degrades-to-integer
-    ??? drivers-net-ethernet-intel-i40evf-i40evf_main.c:sparse:invalid-assignment:
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:sparse:cast-from-restricted-__be32
-
-elapsed time: 131m
-
-configs tested: 127
-
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                           allmodconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                             allmodconfig
-x86_64                 randconfig-x017-201803
-x86_64                 randconfig-x018-201803
-x86_64                 randconfig-x016-201803
-x86_64                 randconfig-x013-201803
-x86_64                 randconfig-x014-201803
-x86_64                 randconfig-x011-201803
-x86_64                 randconfig-x012-201803
-x86_64                 randconfig-x015-201803
-x86_64                 randconfig-x019-201803
-x86_64                 randconfig-x010-201803
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                   randconfig-a0-01221834
-i386                   randconfig-a1-01221834
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-i0-01221022
-i386                               tinyconfig
-i386                   randconfig-x015-201803
-i386                   randconfig-x010-201803
-i386                   randconfig-x019-201803
-i386                   randconfig-x014-201803
-i386                   randconfig-x017-201803
-i386                   randconfig-x011-201803
-i386                   randconfig-x012-201803
-i386                   randconfig-x016-201803
-i386                   randconfig-x013-201803
-i386                   randconfig-x018-201803
-i386                   randconfig-x071-201803
-i386                   randconfig-x079-201803
-i386                   randconfig-x077-201803
-i386                   randconfig-x072-201803
-i386                   randconfig-x076-201803
-i386                   randconfig-x075-201803
-i386                   randconfig-x073-201803
-i386                   randconfig-x070-201803
-i386                   randconfig-x074-201803
-i386                   randconfig-x078-201803
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x008-201803
-x86_64                 randconfig-x005-201803
-x86_64                 randconfig-x000-201803
-x86_64                 randconfig-x009-201803
-x86_64                 randconfig-x007-201803
-x86_64                 randconfig-x002-201803
-x86_64                 randconfig-x001-201803
-x86_64                 randconfig-x006-201803
-x86_64                 randconfig-x003-201803
-x86_64                 randconfig-x004-201803
-i386                   randconfig-x004-201803
-i386                   randconfig-x002-201803
-i386                   randconfig-x007-201803
-i386                   randconfig-x003-201803
-i386                   randconfig-x009-201803
-i386                   randconfig-x000-201803
-i386                   randconfig-x006-201803
-i386                   randconfig-x005-201803
-i386                   randconfig-x001-201803
-i386                   randconfig-x008-201803
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-
-Thanks,
-Fengguang
+On Mon, Jan 22, 2018 at 12:54 AM, Corinna Vinschen <vinschen@redhat.com> wrote:
+> Hi,
+>
+> Could somebody please review this patch?
+>
+>
+> Thanks,
+> Corinna
+>
+>
+> On Jan 17 11:53, Corinna Vinschen wrote:
+>> * Add a per-VF value to know if a VF is trusted, by default don't
+>>   trust VFs.
+>>
+>> * Implement netdev op to trust VFs (igb_ndo_set_vf_trust) and add
+>>   trust status to ndo_get_vf_config output.
+>>
+>> * Allow a trusted VF to change MAC and MAC filters even if MAC
+>>   has been administratively set.
+>>
+>> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+>> ---
+>>  drivers/net/ethernet/intel/igb/igb.h      |  1 +
+>>  drivers/net/ethernet/intel/igb/igb_main.c | 30 +++++++++++++++++++++++++++---
+>>  2 files changed, 28 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+>> index 1c6b8d9176a8..55d6f17d5799 100644
+>> --- a/drivers/net/ethernet/intel/igb/igb.h
+>> +++ b/drivers/net/ethernet/intel/igb/igb.h
+>> @@ -109,6 +109,7 @@ struct vf_data_storage {
+>>       u16 pf_qos;
+>>       u16 tx_rate;
+>>       bool spoofchk_enabled;
+>> +     bool trusted;
+>>  };
+>>
+>>  /* Number of unicast MAC filters reserved for the PF in the RAR registers */
+>> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+>> index 749fb1f720b4..5cbec6cf2b2a 100644
+>> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+>> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+>> @@ -190,6 +190,8 @@ static int igb_ndo_set_vf_vlan(struct net_device *netdev,
+>>  static int igb_ndo_set_vf_bw(struct net_device *, int, int, int);
+>>  static int igb_ndo_set_vf_spoofchk(struct net_device *netdev, int vf,
+>>                                  bool setting);
+>> +static int igb_ndo_set_vf_trust(struct net_device *netdev, int vf,
+>> +                             bool setting);
+>>  static int igb_ndo_get_vf_config(struct net_device *netdev, int vf,
+>>                                struct ifla_vf_info *ivi);
+>>  static void igb_check_vf_rate_limit(struct igb_adapter *);
+>> @@ -2527,6 +2529,7 @@ static const struct net_device_ops igb_netdev_ops = {
+>>       .ndo_set_vf_vlan        = igb_ndo_set_vf_vlan,
+>>       .ndo_set_vf_rate        = igb_ndo_set_vf_bw,
+>>       .ndo_set_vf_spoofchk    = igb_ndo_set_vf_spoofchk,
+>> +     .ndo_set_vf_trust       = igb_ndo_set_vf_trust,
+>>       .ndo_get_vf_config      = igb_ndo_get_vf_config,
+>>  #ifdef CONFIG_NET_POLL_CONTROLLER
+>>       .ndo_poll_controller    = igb_netpoll,
+>> @@ -6383,6 +6386,9 @@ static int igb_vf_configure(struct igb_adapter *adapter, int vf)
+>>       /* By default spoof check is enabled for all VFs */
+>>       adapter->vf_data[vf].spoofchk_enabled = true;
+>>
+>> +     /* By default VFs are not trusted */
+>> +     adapter->vf_data[vf].trusted = false;
+>> +
+>>       return 0;
+>>  }
+>>
+>> @@ -6940,13 +6946,13 @@ static int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
+>>               }
+>>               break;
+>>       case E1000_VF_MAC_FILTER_ADD:
+>> -             if (vf_data->flags & IGB_VF_FLAG_PF_SET_MAC) {
+>> +             if ((vf_data->flags & IGB_VF_FLAG_PF_SET_MAC) &&
+>> +                 !vf_data->trusted) {
+>>                       dev_warn(&pdev->dev,
+>>                                "VF %d requested MAC filter but is administratively denied\n",
+>>                                vf);
+>>                       return -EINVAL;
+>>               }
+>> -
+>>               if (!is_valid_ether_addr(addr)) {
+>>                       dev_warn(&pdev->dev,
+>>                                "VF %d attempted to set invalid MAC filter\n",
+>> @@ -6998,7 +7004,8 @@ static int igb_set_vf_mac_addr(struct igb_adapter *adapter, u32 *msg, int vf)
+>>       int ret = 0;
+>>
+>>       if (!info) {
+>> -             if (vf_data->flags & IGB_VF_FLAG_PF_SET_MAC) {
+>> +             if ((vf_data->flags & IGB_VF_FLAG_PF_SET_MAC) &&
+>> +                 !vf_data->trusted) {
+>>                       dev_warn(&pdev->dev,
+>>                                "VF %d attempted to override administratively set MAC address\nReload the VF driver to resume operations\n",
+>>                                vf);
+>> @@ -8934,6 +8941,22 @@ static int igb_ndo_set_vf_spoofchk(struct net_device *netdev, int vf,
+>>       return 0;
+>>  }
+>>
+>> +static int igb_ndo_set_vf_trust(struct net_device *netdev, int vf, bool setting)
+>> +{
+>> +     struct igb_adapter *adapter = netdev_priv(netdev);
+>> +
+>> +     if (vf >= adapter->vfs_allocated_count)
+>> +             return -EINVAL;
+>> +     if (adapter->vf_data[vf].trusted == setting)
+>> +             return 0;
+>> +
+>> +     adapter->vf_data[vf].trusted = setting;
+>> +
+>> +     dev_info(&adapter->pdev->dev, "VF %u is %strusted\n",
+>> +              vf, setting ? "" : "not ");
+>> +     return 0;
+>> +}
+>> +
+>>  static int igb_ndo_get_vf_config(struct net_device *netdev,
+>>                                int vf, struct ifla_vf_info *ivi)
+>>  {
+>> @@ -8947,6 +8970,7 @@ static int igb_ndo_get_vf_config(struct net_device *netdev,
+>>       ivi->vlan = adapter->vf_data[vf].pf_vlan;
+>>       ivi->qos = adapter->vf_data[vf].pf_qos;
+>>       ivi->spoofchk = adapter->vf_data[vf].spoofchk_enabled;
+>> +     ivi->trusted = adapter->vf_data[vf].trusted;
+>>       return 0;
+>>  }
+>>
+>> --
+>> 2.14.3
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
