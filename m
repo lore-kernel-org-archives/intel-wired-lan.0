@@ -1,59 +1,101 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Tue, 23 Jan 2018 08:50:54 -0800
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 00/12] Enable queue channel
- and cloud filter support on i40evf
-Message-ID: <20180123165106.28900-1-avinash.dayanand@intel.com>
+Date: Tue, 23 Jan 2018 08:50:56 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 02/12] virtchnl: Add virtchl
+ structures to support queue channels
+In-Reply-To: <20180123165106.28900-1-avinash.dayanand@intel.com>
+References: <20180123165106.28900-1-avinash.dayanand@intel.com>
+Message-ID: <20180123165106.28900-3-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch series enables the new mqprio hardware offload mechanism
-creating traffic classes on VFs for XL710 devices. The parameters
-needed to configure these traffic classes/queue channels are provides
-by the user via the tc tool. A maximum of four traffic classes can be
-created on each VF. This patch series also enables application of cloud
-filters to each of these traffic classes. The cloud filters are applied
-using the tc-flower classifier.
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-Example:
-    1. tc qdisc add dev vf0 root mqprio num_tc 4 map 0 0 0 0 1 2 2 3\
-        queues 2 at 0 2 at 2 1 at 4 1 at 5 hw 1 mode channel
-    2. tc qdisc add dev vf0 ingress
-    3. ethtool -K vf0 hw-tc-offload on
-    4. ip link set eth0 vf 0 spoofchk off
-    5. tc filter add dev vf0 protocol ip parent ffff: prio 1 flower dst_ip\
-        192.168.3.5/32 ip_proto udp dst_port 25 skip_sw hw_tc 2
+This patch defines new structs in support of the virtchannel message
+that the VF sends to the PF to create a queue channel specified by the
+user via tc tool.
 
-Avinash Dayanand (6):
-  i40evf: Fix link up issue when queues are disabled
-  i40e: Enable ADq and create queue channel/s on VF
-  i40evf: Alloc queues for ADq on VF
-  i40e: Delete queue channel for ADq on VF
-  i40e: Service request to configure bandwidth for ADq on a VF
-  i40e: Add and delete cloud filter
+v2: Fixed structure hole on 32 bit systems.
 
-Harshitha Ramamurthy (6):
-  virtchnl: Add virtchl structures to support queue channels
-  i40evf : add ndo_setup_tc callback to i40evf
-  i40evf: Add support to configure bw via tc tool
-  virtchnl: Add a macro to check the size of a union
-  virtchnl: Add filter data structures
-  i40evf: Add support to apply cloud filters
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+---
+ include/linux/avf/virtchnl.h | 40 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
- drivers/net/ethernet/intel/i40e/i40e.h             |    6 +
- drivers/net/ethernet/intel/i40e/i40e_main.c        |   16 +-
- drivers/net/ethernet/intel/i40e/i40e_type.h        |    2 +-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1000 ++++++++++++++++++--
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   20 +
- drivers/net/ethernet/intel/i40evf/i40evf.h         |   72 ++
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |    6 +
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  797 +++++++++++++++-
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  300 +++++-
- include/linux/avf/virtchnl.h                       |  107 ++-
- 10 files changed, 2232 insertions(+), 94 deletions(-)
-
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index 3ce6134..1f652ce 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -136,6 +136,8 @@ enum virtchnl_ops {
+ 	VIRTCHNL_OP_ENABLE_VLAN_STRIPPING = 27,
+ 	VIRTCHNL_OP_DISABLE_VLAN_STRIPPING = 28,
+ 	VIRTCHNL_OP_REQUEST_QUEUES = 29,
++	VIRTCHNL_OP_ENABLE_CHANNELS = 30,
++	VIRTCHNL_OP_DISABLE_CHANNELS = 31,
+ };
+ 
+ /* This macro is used to generate a compilation error if a structure
+@@ -244,6 +246,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
+ #define VIRTCHNL_VF_OFFLOAD_ENCAP		0X00100000
+ #define VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM		0X00200000
+ #define VIRTCHNL_VF_OFFLOAD_RX_ENCAP_CSUM	0X00400000
++#define VIRTCHNL_VF_OFFLOAD_ADQ			0X00800000
+ 
+ #define VF_BASE_MODE_OFFLOADS (VIRTCHNL_VF_OFFLOAD_L2 | \
+ 			       VIRTCHNL_VF_OFFLOAD_VLAN | \
+@@ -496,6 +499,30 @@ struct virtchnl_rss_hena {
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_rss_hena);
+ 
++/* VIRTCHNL_OP_ENABLE_CHANNELS
++ * VIRTCHNL_OP_DISABLE_CHANNELS
++ * VF sends these messages to enable or disable channels based on
++ * the user specified queue count and queue offset for each traffic class.
++ * This struct encompasses all the information that the PF needs from
++ * VF to create a channel.
++ */
++struct virtchnl_channel_info {
++	u16 count; /* number of queues in a channel */
++	u16 offset; /* queues in a channel start from 'offset' */
++	u32 pad;
++	u64 max_tx_rate;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_channel_info);
++
++struct virtchnl_tc_info {
++	u32	num_tc;
++	u32	pad;
++	struct	virtchnl_channel_info list[1];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
++
+ /* VIRTCHNL_OP_EVENT
+  * PF sends this message to inform the VF driver of events that may affect it.
+  * No direct response is expected from the VF, though it may generate other
+@@ -711,6 +738,19 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
+ 	case VIRTCHNL_OP_REQUEST_QUEUES:
+ 		valid_len = sizeof(struct virtchnl_vf_res_request);
+ 		break;
++	case VIRTCHNL_OP_ENABLE_CHANNELS:
++		valid_len = sizeof(struct virtchnl_tc_info);
++		if (msglen >= valid_len) {
++			struct virtchnl_tc_info *vti =
++				(struct virtchnl_tc_info *)msg;
++			valid_len += vti->num_tc *
++				sizeof(struct virtchnl_channel_info);
++			if (vti->num_tc == 0)
++				err_msg_format = true;
++		}
++		break;
++	case VIRTCHNL_OP_DISABLE_CHANNELS:
++		break;
+ 	/* These are always errors coming from the VF. */
+ 	case VIRTCHNL_OP_EVENT:
+ 	case VIRTCHNL_OP_UNKNOWN:
 -- 
 2.9.4
 
