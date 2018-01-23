@@ -1,101 +1,98 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Tue, 23 Jan 2018 08:50:56 -0800
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 02/12] virtchnl: Add virtchl
- structures to support queue channels
+Date: Tue, 23 Jan 2018 08:50:55 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 01/12] i40evf: Fix link up
+ issue when queues are disabled
 In-Reply-To: <20180123165106.28900-1-avinash.dayanand@intel.com>
 References: <20180123165106.28900-1-avinash.dayanand@intel.com>
-Message-ID: <20180123165106.28900-3-avinash.dayanand@intel.com>
+Message-ID: <20180123165106.28900-2-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+One of the previous patch fixes the link up issue by ignoring it if
+i40evf is not in __I40EVF_RUNNING state. However this doesn't fix the
+race condition when queues are disabled esp for ADq on VF. Hence check
+if all queues are enabled before starting all queues.
 
-This patch defines new structs in support of the virtchannel message
-that the VF sends to the PF to create a queue channel specified by the
-user via tc tool.
-
-v2: Fixed structure hole on 32 bit systems.
-
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
 ---
- include/linux/avf/virtchnl.h | 40 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  1 +
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 28 +++++++++++++++-------
+ 3 files changed, 22 insertions(+), 8 deletions(-)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 3ce6134..1f652ce 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -136,6 +136,8 @@ enum virtchnl_ops {
- 	VIRTCHNL_OP_ENABLE_VLAN_STRIPPING = 27,
- 	VIRTCHNL_OP_DISABLE_VLAN_STRIPPING = 28,
- 	VIRTCHNL_OP_REQUEST_QUEUES = 29,
-+	VIRTCHNL_OP_ENABLE_CHANNELS = 30,
-+	VIRTCHNL_OP_DISABLE_CHANNELS = 31,
- };
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index b6991e8..89ce2f9 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -240,6 +240,7 @@ struct i40evf_adapter {
+ #define I40EVF_FLAG_ALLMULTI_ON			BIT(14)
+ #define I40EVF_FLAG_LEGACY_RX			BIT(15)
+ #define I40EVF_FLAG_REINIT_ITR_NEEDED		BIT(16)
++#define I40EVF_FLAG_QUEUES_DISABLED		BIT(17)
+ /* duplicates for common code */
+ #define I40E_FLAG_DCB_ENABLED			0
+ #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 6fd0992..3014a5e 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1895,6 +1895,7 @@ static void i40evf_reset_task(struct work_struct *work)
+ 	i40evf_free_all_rx_resources(adapter);
+ 	i40evf_free_all_tx_resources(adapter);
  
- /* This macro is used to generate a compilation error if a structure
-@@ -244,6 +246,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
- #define VIRTCHNL_VF_OFFLOAD_ENCAP		0X00100000
- #define VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM		0X00200000
- #define VIRTCHNL_VF_OFFLOAD_RX_ENCAP_CSUM	0X00400000
-+#define VIRTCHNL_VF_OFFLOAD_ADQ			0X00800000
++	adapter->flags |= I40EVF_FLAG_QUEUES_DISABLED;
+ 	/* kill and reinit the admin queue */
+ 	i40evf_shutdown_adminq(hw);
+ 	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index 82e6b11..9f8c007 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -1017,14 +1017,25 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 			if (adapter->link_up == link_up)
+ 				break;
  
- #define VF_BASE_MODE_OFFLOADS (VIRTCHNL_VF_OFFLOAD_L2 | \
- 			       VIRTCHNL_VF_OFFLOAD_VLAN | \
-@@ -496,6 +499,30 @@ struct virtchnl_rss_hena {
+-			/* If we get link up message and start queues before
+-			 * our queues are configured it will trigger a TX hang.
+-			 * In that case, just ignore the link status message,
+-			 * we'll get another one after we enable queues and
+-			 * actually prepared to send traffic.
+-			 */
+-			if (link_up && adapter->state != __I40EVF_RUNNING)
+-				break;
++			if (link_up) {
++				/* If we get link up message and start queues
++				 * before our queues are configured it will
++				 * trigger a TX hang. In that case, just ignore
++				 * the link status message,we'll get another one
++				 * after we enable queues and actually prepared
++				 * to send traffic.
++				 */
++				if (adapter->state != __I40EVF_RUNNING)
++					break;
++
++				/* For ADq enabled VF, we reconfigure VSIs and
++				 * re-allocate queues. Hence wait till all
++				 * queues are enabled.
++				 */
++				if (adapter->flags &
++				    I40EVF_FLAG_QUEUES_DISABLED)
++					break;
++			}
  
- VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_rss_hena);
- 
-+/* VIRTCHNL_OP_ENABLE_CHANNELS
-+ * VIRTCHNL_OP_DISABLE_CHANNELS
-+ * VF sends these messages to enable or disable channels based on
-+ * the user specified queue count and queue offset for each traffic class.
-+ * This struct encompasses all the information that the PF needs from
-+ * VF to create a channel.
-+ */
-+struct virtchnl_channel_info {
-+	u16 count; /* number of queues in a channel */
-+	u16 offset; /* queues in a channel start from 'offset' */
-+	u32 pad;
-+	u64 max_tx_rate;
-+};
-+
-+VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_channel_info);
-+
-+struct virtchnl_tc_info {
-+	u32	num_tc;
-+	u32	pad;
-+	struct	virtchnl_channel_info list[1];
-+};
-+
-+VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_tc_info);
-+
- /* VIRTCHNL_OP_EVENT
-  * PF sends this message to inform the VF driver of events that may affect it.
-  * No direct response is expected from the VF, though it may generate other
-@@ -711,6 +738,19 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 	case VIRTCHNL_OP_REQUEST_QUEUES:
- 		valid_len = sizeof(struct virtchnl_vf_res_request);
+ 			adapter->link_up = link_up;
+ 			if (link_up) {
+@@ -1108,6 +1119,7 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 	case VIRTCHNL_OP_ENABLE_QUEUES:
+ 		/* enable transmits */
+ 		i40evf_irq_enable(adapter, true);
++		adapter->flags &= ~I40EVF_FLAG_QUEUES_DISABLED;
  		break;
-+	case VIRTCHNL_OP_ENABLE_CHANNELS:
-+		valid_len = sizeof(struct virtchnl_tc_info);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_tc_info *vti =
-+				(struct virtchnl_tc_info *)msg;
-+			valid_len += vti->num_tc *
-+				sizeof(struct virtchnl_channel_info);
-+			if (vti->num_tc == 0)
-+				err_msg_format = true;
-+		}
-+		break;
-+	case VIRTCHNL_OP_DISABLE_CHANNELS:
-+		break;
- 	/* These are always errors coming from the VF. */
- 	case VIRTCHNL_OP_EVENT:
- 	case VIRTCHNL_OP_UNKNOWN:
+ 	case VIRTCHNL_OP_DISABLE_QUEUES:
+ 		i40evf_free_all_tx_resources(adapter);
 -- 
 2.9.4
 
