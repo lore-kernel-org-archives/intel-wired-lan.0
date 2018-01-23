@@ -1,12 +1,13 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 23 Jan 2018 13:22:37 -0800
-Subject: [Intel-wired-lan] [RFC v2 net-next 01/10] net: Add a new socket
- option for a future transmit time.
-In-Reply-To: <20180118084227.GL1175@localhost>
+From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+Date: Tue, 23 Jan 2018 13:45:16 -0800
+Subject: [Intel-wired-lan] [RFC v2 net-next 06/10] net/sched: Introduce
+ the TBS Qdisc
+In-Reply-To: <8ca1bbaa-80fb-ef09-649d-0c143a48d9dc@mojatatu.com>
 References: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
- <20180117230621.26074-2-jesus.sanchez-palencia@intel.com>
- <20180118084227.GL1175@localhost>
-Message-ID: <877es81d9e.fsf@intel.com>
+ <20180117230621.26074-7-jesus.sanchez-palencia@intel.com>
+ <30e104db-3c88-b2f7-4494-98b2bece8ca9@mojatatu.com>
+ <8ca1bbaa-80fb-ef09-649d-0c143a48d9dc@mojatatu.com>
+Message-ID: <dd0c274a-2a78-8e84-bfb6-d669b26fa5ba@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,60 +16,81 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Hi,
 
-Miroslav Lichvar <mlichvar@redhat.com> writes:
 
-> On Wed, Jan 17, 2018 at 03:06:12PM -0800, Jesus Sanchez-Palencia wrote:
->> From: Richard Cochran <rcochran@linutronix.de>
->> 
->> This patch introduces SO_TXTIME.  User space enables this option in
->> order to pass a desired future transmit time in a CMSG when calling
->> sendmsg(2).
->> 
->> A new field is added to struct sockcm_cookie, and the tstamp from
->> skbuffs will be used later on.
->
-> In the discussion about the v1 patchset, there was a question if the
-> cmsg should include a clockid_t. Without that, how can an application
-> prevent the packet from being sent using an incorrect clock, e.g.
-> the system clock when it expects it to be a PHC, or a different PHC
-> when the socket is not bound to a specific interface?
->
-> At least in some applications it would be preferred to not sent a
-> packet at all instead of sending it at a wrong time.
-
-Including the clockid in a CMSG field does make sense. Will add it in
-the next version of this series.
-
-What I think would be the ideal scenario would be if the clockid
-parameter to the TBS Qdisc would not be necessary (if offload was
-enabled), but that's not quite possible right now, because there's no
-support for using the hrtimer infrastructure with dynamic clocks
-(/dev/ptp*).
-
-What I am thinking is to keep the clockid parameter for the Qdisc (and
-add support for expressing the clockid in friendlier ways, as requested
-later in this thread), but I can't think of a way to add support for
-using /dev/ptp* clocks without first having hrtimer support them.
-
-And the behavior would be to drop any packets with a clockid not
-matching the Qdisc clockid.
-
-How does this sound?
+On 01/18/2018 05:44 AM, Jamal Hadi Salim wrote:
+> One more comment:
+> Probably try to run a test with a very small delta with
+> no offload (probably using something like prio as the root qdisc)
+> and dump the stats.
+> My gut feeling is your accounting of the backlog in particular is off.
 
 
->
-> Please keep in mind that the PHCs and the system clock don't have to
-> be synchronized to each other. If I understand the rest of the series
-> correctly, there is an assumption that the PHCs are keeping time in
-> TAI and CLOCK_TAI can be used as a fallback.
+You were right, thanks. It'll be fixed on our next version.
 
-You understand correctly, that's because of whole hrtimer issue.
-
->
-> -- 
-> Miroslav Lichvar
+Regards,
+Jesus
 
 
-Cheers,
---
-Vinicius
+> 
+> cheers,
+> jamal
+> 
+> On 18-01-18 08:35 AM, Jamal Hadi Salim wrote:
+>> On 18-01-17 06:06 PM, Jesus Sanchez-Palencia wrote:
+>>> From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>>>
+>>> TBS (Time Based Scheduler) uses the information added earlier in this
+>>> series (the socket option SO_TXTIME and the new role of
+>>> sk_buff->tstamp) to schedule traffic transmission based on absolute
+>>> time.
+>>>
+>>> For some workloads, just bandwidth enforcement is not enough, and
+>>> precise control of the transmission of packets is necessary.
+>>>
+>>> Example:
+>>>
+>>> $ tc qdisc replace dev enp2s0 parent root handle 100 mqprio num_tc 3 \
+>>
+>> handle 100:0 ?
+>>
+>>> ??????????? map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 queues 1 at 0 1 at 1 2 at 2 hw 0
+>>>
+>>> $ tc qdisc add dev enp2s0 parent 100:1 tbs delta 60000 clockid 11 offload 1
+>>>
+>>>
+>>> In this example, the Qdisc will try to enable offloading (offload 1)
+>>> the control of the transmission time to the network adapter, the
+>>> time stamp in socket are in reference to the clockid '11' (CLOCK_TAI)
+>>> and packets leave the Qdisc "delta" (60000) nanoseconds before its
+>>> transmission time.
+>>>
+>>
+>>
+>>> When offloading is disabled, the network adapter will ignore the
+>>> sk_buff time stamp, and so, the transmission time will be only "best
+>>> effort" from the Qdisc.
+>>>
+>>
+>> General comments:
+>> 1) iproute2: Avoid magic numbers like 1 or 11 please; "offload"
+>> (without 1) and "TAI" will be more human friendly.
+>>
+>> 2) Experience shows that adding padding fields in the control structs
+>> implies they will _never ever_ be used. That was not design intent
+>> for netlink but over years shit like that has happened.
+>> Maybe look at using a 32 bitmap? It is more "future proof".
+>> You seem to only have 2-3 flags but it gives you opportunity
+>> to add more changes later. If you are 100% sure youll never need
+>> it - then maybe just move the tc_tbs_qopt::offload to the end of
+>> of the struct.
+>>
+>> 3)It would be helpful for debugging to increment some stats other
+>> than drop counters on enqueu/dequeue obsolete packet drop. Maybe use
+>> overlimits for the dequeu drops (in addition)?
+>>
+>> 4) I may be misreading things - but did you need to reset the
+>> watchdog on dequeue? It is already being kicked for every incoming packet.
+>>
+>> cheers,
+>> jamal
+> 
