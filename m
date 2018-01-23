@@ -1,189 +1,59 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 24 Jan 2018 03:47:01 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE] BUILD SUCCESS
- 85bc2663a5df852ade80fa328c21716a8fe132f6
-Message-ID: <5a679135.IySVlZhi08v5GfAy%fengguang.wu@intel.com>
+From: Avinash Dayanand <avinash.dayanand@intel.com>
+Date: Tue, 23 Jan 2018 08:50:54 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 00/12] Enable queue channel
+ and cloud filter support on i40evf
+Message-ID: <20180123165106.28900-1-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
-branch HEAD: 85bc2663a5df852ade80fa328c21716a8fe132f6  ixgbe: register ipsec offload with the xfrm subsystem
+This patch series enables the new mqprio hardware offload mechanism
+creating traffic classes on VFs for XL710 devices. The parameters
+needed to configure these traffic classes/queue channels are provides
+by the user via the tc tool. A maximum of four traffic classes can be
+created on each VF. This patch series also enables application of cloud
+filters to each of these traffic classes. The cloud filters are applied
+using the tc-flower classifier.
 
-elapsed time: 86m
+Example:
+    1. tc qdisc add dev vf0 root mqprio num_tc 4 map 0 0 0 0 1 2 2 3\
+        queues 2 at 0 2 at 2 1 at 4 1 at 5 hw 1 mode channel
+    2. tc qdisc add dev vf0 ingress
+    3. ethtool -K vf0 hw-tc-offload on
+    4. ip link set eth0 vf 0 spoofchk off
+    5. tc filter add dev vf0 protocol ip parent ffff: prio 1 flower dst_ip\
+        192.168.3.5/32 ip_proto udp dst_port 25 skip_sw hw_tc 2
 
-configs tested: 165
+Avinash Dayanand (6):
+  i40evf: Fix link up issue when queues are disabled
+  i40e: Enable ADq and create queue channel/s on VF
+  i40evf: Alloc queues for ADq on VF
+  i40e: Delete queue channel for ADq on VF
+  i40e: Service request to configure bandwidth for ADq on a VF
+  i40e: Add and delete cloud filter
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Harshitha Ramamurthy (6):
+  virtchnl: Add virtchl structures to support queue channels
+  i40evf : add ndo_setup_tc callback to i40evf
+  i40evf: Add support to configure bw via tc tool
+  virtchnl: Add a macro to check the size of a union
+  virtchnl: Add filter data structures
+  i40evf: Add support to apply cloud filters
 
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                   randconfig-c0-01240227
-arm                             mxs_defconfig
-powerpc                      bamboo_defconfig
-powerpc                    gamecube_defconfig
-i386                               tinyconfig
-i386                   randconfig-x015-201803
-i386                   randconfig-x010-201803
-i386                   randconfig-x019-201803
-i386                   randconfig-x014-201803
-i386                   randconfig-x017-201803
-i386                   randconfig-x011-201803
-i386                   randconfig-x012-201803
-i386                   randconfig-x016-201803
-i386                   randconfig-x013-201803
-i386                   randconfig-x018-201803
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201803
-x86_64                 randconfig-x008-201803
-x86_64                 randconfig-x005-201803
-x86_64                 randconfig-x000-201803
-x86_64                 randconfig-x009-201803
-x86_64                 randconfig-x007-201803
-x86_64                 randconfig-x002-201803
-x86_64                 randconfig-x001-201803
-x86_64                 randconfig-x006-201803
-x86_64                 randconfig-x003-201803
-x86_64                 randconfig-x004-201803
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i0-201803
-i386                     randconfig-i1-201803
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-g0-01240231
-x86_64                 randconfig-x017-201803
-x86_64                 randconfig-x018-201803
-x86_64                 randconfig-x016-201803
-x86_64                 randconfig-x013-201803
-x86_64                 randconfig-x014-201803
-x86_64                 randconfig-x011-201803
-x86_64                 randconfig-x012-201803
-x86_64                 randconfig-x015-201803
-x86_64                 randconfig-x019-201803
-x86_64                 randconfig-x010-201803
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a1-201803
-i386                     randconfig-a0-201803
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201803
-i386                     randconfig-s1-201803
-x86_64                 randconfig-s3-01240242
-x86_64                 randconfig-s4-01240242
-x86_64                 randconfig-s5-01240242
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allmodconfig
-m68k                              allnoconfig
-x86_64                   randconfig-i0-201803
-i386                   randconfig-b0-01240246
-arm                         assabet_defconfig
-blackfin                BF561-EZKIT_defconfig
-cris                       artpec_3_defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-u0-01240241
-x86_64                randconfig-ne0-01240249
-i386                             allmodconfig
-i386                   randconfig-x071-201803
-i386                   randconfig-x079-201803
-i386                   randconfig-x077-201803
-i386                   randconfig-x072-201803
-i386                   randconfig-x076-201803
-i386                   randconfig-x075-201803
-i386                   randconfig-x073-201803
-i386                   randconfig-x070-201803
-i386                   randconfig-x074-201803
-i386                   randconfig-x078-201803
-x86_64                 randconfig-n0-01231745
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-01232303
-i386                   randconfig-x004-201803
-i386                   randconfig-x002-201803
-i386                   randconfig-x007-201803
-i386                   randconfig-x003-201803
-i386                   randconfig-x009-201803
-i386                   randconfig-x000-201803
-i386                   randconfig-x006-201803
-i386                   randconfig-x005-201803
-i386                   randconfig-x001-201803
-i386                   randconfig-x008-201803
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-r0-01240234
-i386                   randconfig-x0-01240245
+ drivers/net/ethernet/intel/i40e/i40e.h             |    6 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |   16 +-
+ drivers/net/ethernet/intel/i40e/i40e_type.h        |    2 +-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1000 ++++++++++++++++++--
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   20 +
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |   72 ++
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |    6 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  797 +++++++++++++++-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  300 +++++-
+ include/linux/avf/virtchnl.h                       |  107 ++-
+ 10 files changed, 2232 insertions(+), 94 deletions(-)
 
-Thanks,
-Fengguang
+-- 
+2.9.4
+
