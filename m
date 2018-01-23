@@ -1,98 +1,116 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Tue, 23 Jan 2018 08:50:55 -0800
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 01/12] i40evf: Fix link up
- issue when queues are disabled
+Date: Tue, 23 Jan 2018 08:51:00 -0800
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 06/12] i40e: Delete queue
+ channel for ADq on VF
 In-Reply-To: <20180123165106.28900-1-avinash.dayanand@intel.com>
 References: <20180123165106.28900-1-avinash.dayanand@intel.com>
-Message-ID: <20180123165106.28900-2-avinash.dayanand@intel.com>
+Message-ID: <20180123165106.28900-7-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-One of the previous patch fixes the link up issue by ignoring it if
-i40evf is not in __I40EVF_RUNNING state. However this doesn't fix the
-race condition when queues are disabled esp for ADq on VF. Hence check
-if all queues are enabled before starting all queues.
+This patch takes care of freeing up all the VSIs, queues and
+other ADq related software and hardware resources, when a user
+requests for deletion of ADq on VF.
+
+Example command:
+tc qdisc del dev eth0 root
 
 Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 +
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  1 +
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 28 +++++++++++++++-------
- 3 files changed, 22 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 63 ++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index b6991e8..89ce2f9 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -240,6 +240,7 @@ struct i40evf_adapter {
- #define I40EVF_FLAG_ALLMULTI_ON			BIT(14)
- #define I40EVF_FLAG_LEGACY_RX			BIT(15)
- #define I40EVF_FLAG_REINIT_ITR_NEEDED		BIT(16)
-+#define I40EVF_FLAG_QUEUES_DISABLED		BIT(17)
- /* duplicates for common code */
- #define I40E_FLAG_DCB_ENABLED			0
- #define I40E_FLAG_RX_CSUM_ENABLED		I40EVF_FLAG_RX_CSUM_ENABLED
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 6fd0992..3014a5e 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1895,6 +1895,7 @@ static void i40evf_reset_task(struct work_struct *work)
- 	i40evf_free_all_rx_resources(adapter);
- 	i40evf_free_all_tx_resources(adapter);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 7d939a5..0c1c699 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1673,6 +1673,27 @@ static int i40e_vc_get_version_msg(struct i40e_vf *vf, u8 *msg)
+ }
  
-+	adapter->flags |= I40EVF_FLAG_QUEUES_DISABLED;
- 	/* kill and reinit the admin queue */
- 	i40evf_shutdown_adminq(hw);
- 	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 82e6b11..9f8c007 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -1017,14 +1017,25 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 			if (adapter->link_up == link_up)
- 				break;
- 
--			/* If we get link up message and start queues before
--			 * our queues are configured it will trigger a TX hang.
--			 * In that case, just ignore the link status message,
--			 * we'll get another one after we enable queues and
--			 * actually prepared to send traffic.
--			 */
--			if (link_up && adapter->state != __I40EVF_RUNNING)
--				break;
-+			if (link_up) {
-+				/* If we get link up message and start queues
-+				 * before our queues are configured it will
-+				 * trigger a TX hang. In that case, just ignore
-+				 * the link status message,we'll get another one
-+				 * after we enable queues and actually prepared
-+				 * to send traffic.
-+				 */
-+				if (adapter->state != __I40EVF_RUNNING)
-+					break;
+ /**
++ * i40e_del_qch - delete all the additional VSI's created as a part of ADq
++ * @vf: pointer to VF structure
++ **/
++static void i40e_del_qch(struct i40e_vf *vf)
++{
++	struct i40e_pf *pf = vf->pf;
++	int i;
 +
-+				/* For ADq enabled VF, we reconfigure VSIs and
-+				 * re-allocate queues. Hence wait till all
-+				 * queues are enabled.
-+				 */
-+				if (adapter->flags &
-+				    I40EVF_FLAG_QUEUES_DISABLED)
-+					break;
-+			}
++	/* first element in the array belongs to primary VF VSI and we shouldn't
++	 * delete it. we should however delete the rest of the VSIs created
++	 */
++	for (i = 1; i < vf->num_tc; i++) {
++		if (vf->ch[i].vsi_idx) {
++			i40e_vsi_release(pf->vsi[vf->ch[i].vsi_idx]);
++			vf->ch[i].vsi_idx = 0;
++			vf->ch[i].vsi_id = 0;
++		}
++	}
++}
++
++/**
+  * i40e_vc_get_vf_resources_msg
+  * @vf: pointer to the VF info
+  * @msg: pointer to the msg buffer
+@@ -2979,6 +3000,45 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
+ }
  
- 			adapter->link_up = link_up;
- 			if (link_up) {
-@@ -1108,6 +1119,7 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 	case VIRTCHNL_OP_ENABLE_QUEUES:
- 		/* enable transmits */
- 		i40evf_irq_enable(adapter, true);
-+		adapter->flags &= ~I40EVF_FLAG_QUEUES_DISABLED;
+ /**
++ * i40e_vc_del_qch_msg
++ * @vf: pointer to the VF info
++ * @msg: pointer to the msg buffer
++ **/
++static int i40e_vc_del_qch_msg(struct i40e_vf *vf, u8 *msg)
++{
++	struct i40e_pf *pf = vf->pf;
++	i40e_status aq_ret = 0;
++
++	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
++		aq_ret = I40E_ERR_PARAM;
++		goto err;
++	}
++
++	if (vf->adq_enabled) {
++		i40e_del_qch(vf);
++		vf->adq_enabled = false;
++		vf->num_tc = 0;
++		dev_info(&pf->pdev->dev,
++			 "Deleting Queue Channels for ADq on VF %d\n",
++			 vf->vf_id);
++	} else {
++		dev_info(&pf->pdev->dev, "VF %d trying to delete queue channels but ADq isn't enabled\n",
++			 vf->vf_id);
++		aq_ret = I40E_ERR_PARAM;
++	}
++
++	/* reset the VF in order to allocate resources */
++	i40e_vc_notify_vf_reset(vf);
++	i40e_reset_vf(vf, false);
++
++	return I40E_SUCCESS;
++
++err:
++	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_DISABLE_CHANNELS,
++				       aq_ret);
++}
++
++/**
+  * i40e_vc_process_vf_msg
+  * @pf: pointer to the PF structure
+  * @vf_id: source VF id
+@@ -3110,6 +3170,9 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
+ 	case VIRTCHNL_OP_ENABLE_CHANNELS:
+ 		ret = i40e_vc_add_qch_msg(vf, msg);
  		break;
- 	case VIRTCHNL_OP_DISABLE_QUEUES:
- 		i40evf_free_all_tx_resources(adapter);
++	case VIRTCHNL_OP_DISABLE_CHANNELS:
++		ret = i40e_vc_del_qch_msg(vf, msg);
++		break;
+ 	case VIRTCHNL_OP_UNKNOWN:
+ 	default:
+ 		dev_err(&pf->pdev->dev, "Unsupported opcode %d from VF %d\n",
 -- 
 2.9.4
 
