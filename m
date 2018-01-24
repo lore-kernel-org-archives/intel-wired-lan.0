@@ -1,76 +1,129 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Wed, 24 Jan 2018 13:09:08 +0100
-Subject: [Intel-wired-lan] [PATCH] igb: add VF trust infrastructure
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B8C7B808B@ORSMSX101.amr.corp.intel.com>
-References: <20180117105339.9336-1-vinschen@redhat.com>
- <20180122085441.GR18814@calimero.vinschen.de>
- <CAKgT0Uemj7-ZQDzmMoUppp22iuSEcPj7JECFmhbx-WV9qg_4Jw@mail.gmail.com>
- <309B89C4C689E141A5FF6A0C5FB2118B8C7B808B@ORSMSX101.amr.corp.intel.com>
-Message-ID: <20180124120908.GD1571@calimero.vinschen.de>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 24 Jan 2018 08:01:41 -0800
+Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Remove Other from EIAC.
+In-Reply-To: <20180124083539.nwwmmt7g2pxrcsej@f1.synalogic.ca>
+References: <20180118065054.29844-1-bpoirier@suse.com>
+ <CAKgT0UemPMN-30ubbKDR8za4w6f6T2R4GZt5atFzOkCpoSFhsA@mail.gmail.com>
+ <20180119085952.u63kius4ud34lleq@f1.synalogic.ca>
+ <20180119133648.s5nbm4gvby6c33av@f1.synalogic.ca>
+ <CAKgT0Ue6HRZYq+jkmZjGgvZZD4-C1yb_y+xDhcxbYVBANDjMBg@mail.gmail.com>
+ <20180119224517.klugizz5n5zznryx@f1.synalogic.ca>
+ <20180119225500.lq2vpnjh5isxiovf@f1.synalogic.ca>
+ <CAKgT0Ueu1T6UKf-yi13RN9+9=V5PPsFzhYrMSz+3sneXyxV9Lw@mail.gmail.com>
+ <20180122071214.cv773dufu6n4lvnw@f1.synalogic.ca>
+ <CAKgT0UdTU-vSCGrjpMN+rQoPZXihyTqPOa79pHGdbVN6W7zxOw@mail.gmail.com>
+ <20180124083539.nwwmmt7g2pxrcsej@f1.synalogic.ca>
+Message-ID: <CAKgT0Ud6rUp5c1+fsCpnN9YW=b5g2Fd5pejGTj3kZOgvfskfMw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Jan 24 03:41, Brown, Aaron F wrote:
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> > Behalf Of Alexander Duyck
-> > Sent: Monday, January 22, 2018 2:58 PM
-> > To: intel-wired-lan <intel-wired-lan@lists.osuosl.org>; Netdev
-> > <netdev@vger.kernel.org>
-> > Cc: Corinna Vinschen <vinschen@redhat.com>
-> > Subject: Re: [Intel-wired-lan] [PATCH] igb: add VF trust infrastructure
-> > 
-> > Hi Corinna,
-> > 
-> > I've looked over the patch and didn't see any issues. My understanding
-> > is that Jeff has pulled it into his tree and it should be going
-> > through testing shortly.
-> 
-> Indeed it is / was ;)
+On Wed, Jan 24, 2018 at 12:35 AM, Benjamin Poirier
+<benjamin.poirier@gmail.com> wrote:
+> On 2018/01/22 10:01, Alexander Duyck wrote:
+> [...]
+>> >
+>> > If the patch that I submitted for the current vmware issue is merged,
+>> > the significant commits that are left are:
+>> >
+>> > 0a8047ac68e5 e1000e: Fix msi-x interrupt automask (v4.5-rc1)
+>> >         Fixes a problem in the irq disabling of the napi implementation.
+>>
+>> This one I fully agree is still needed.
+>>
+>> > 19110cfbb34d e1000e: Separate signaling for link check/link up
+>> >              (v4.15-rc1)
+>> >         Fixes link flapping caused by a race condition in link
+>> >         detection. It was found because the Other interrupt was being
+>> >         triggered sort of spuriously by rxo.
+>>
+>> This one is somewhat iffy. I am not sure if the patch description
+>> really matches what it is doing. It doesn't appear to do what it says
+>> it is trying to do since clearing get_link_status will still trigger a
+>> link up, it just takes an extra 2 seconds. I think there may be issues
+>> if you aren't using autoneg, as I don't see how you are getting the
+>> link to report up other than the fact that mac->get_link_status has
+>> been cleared but we are reporting a pseduo-error. In addition it is
+>> only really needed after the RXO problem was introduced which really
+>> didn't exist until after we stopped checking for LSC. One interesting
+>> test we may want to look at is to see if there is an additional delay
+>> in a link coming up for a non-autoneg setup. If we find an additional
+>> 2 second delay then I would be even more confident that this patch has
+>> a bug.
+>
+> It seems like you're right but I didn't look into this part of the problem in
+> detail yet. I'll get back to it.
+>
+>>
+>> > 4aea7a5c5e94 e1000e: Avoid receiver overrun interrupt bursts (v4.15-rc1)
+>> >         Fixes Other interrupt bursts during sustained rxo conditions.
+>>
+>> So the RXO problem probably didn't exist until we stopped checking for
+>> the OTHER and LSC bits in the "other" interrupt handler. Yes there
+>> would be more "other" cause interrupts, but they shouldn't have been
+>> causing much in the way of issues since the get_link_status value
+>> never changed. Personally I would lean more toward the option of
+>
+> I agree. I tested rxo behavior on commit 4d432f67ff00 ("e1000e: Remove
+> unreachable code", v4.5-rc1) which is before any significant change in that
+> area. (I force rxo by adding mdelay(10) to e1000_clean_rx_irq and sending a
+> netperf UDP_STREAM from another host). In case of sustained rxo condition, we
+> get repeated Other interrupts. Handling these irqs is useless work that could
+> be avoided when the system is already overloaded but it doesn't lead to
+> misbehavior like the race condition described in the log of commit
+> 19110cfbb34d ("e1000e: Separate signaling for link check/link up", v4.15-rc1).
+>
+> However, I noticed something unexpected. It seems like reading ICR doesn't
+> clear every bit that's set in IAM, most notably not rxo. In a different test,
+> I was doing a single write of RXO | OTHER to ICS, then two subsequent reads of
+> icr gave 0x01000041. OTOH, writing a bit to ICS reliably clears it. So if you
+> want to remove RXO interrupt mitigation, you should at least add a write of
+> RXO to ICR, to clear it. On my system it reduced Other interrupts from
+> ~17000/s to ~1700/s when using the mdelay testing approach.
 
-Thanks guys!
+That makes sense. I would say we should probably just put together a
+mask of all possible causes for "other" interrupts that we don't
+actually care about and just clear them explicitly when we clear the
+"other" bit.
 
+>> reverting this patch and instead just focus on testing OTHER and LSC
+>> as we originally were so that we don't risk messing up NAPI by messing
+>> with ring state from a non-ring interrupt.
+>>
+>> I will try to get to these later this week if you would like.
+>> Unfortunately I don't have any of these devices in any of my
+>> development systems so I have to go chase one down. Otherwise you are
+>> free to take these on and tell me if I have made another flawed
+>> assumption somewhere, but I am thinking the RXO issue goes away if we
+>> get the original "other" interrupt routine back to where it was.
+>>
+>> So the last bit in all this ends up being that because of 0a8047ac68e5
+>> e1000e: Fix msi-x interrupt automask (v4.5-rc1) we don't seem to
+>> auto-clear interrupt causes anymore on ICR read. I am not certain what
+>> the impact of this is. I would be interested in finding out if a cause
+>> left set will trigger an interrupt storm or if it just goes quiet when
+>> we just leave the value high. If it goes quiet then that in itself
+>> might solve the RXO interrupt burst problem if we don't clear it.
+>> Otherwise we need to make certain to clear all of the causes that can
+>> trigger the "other" interrupt to fire regardless of if we service the
+>> events or not.
+>
+> In MSI-X mode, as long as Other is not set in ICR, nothing will happen even if
+> the bits related to Other (LSC, RXO, MDAC, SRPD, ACK, MNG) are set. However,
+> that doesn't solve the rxo interrupt burst because an rxo condition in
+> hardware sets both RXO and Other, so it triggers an interrupt.
 
-Corinna
+Right. I expect we will still have more interrupts. But by just
+clearing it and moving on we at least resolve the issue without
+introducing possible new ones.
 
-> 
-> > 
-> > Thanks.
-> > 
-> > - Alex
-> > 
-> > On Mon, Jan 22, 2018 at 12:54 AM, Corinna Vinschen
-> > <vinschen@redhat.com> wrote:
-> > > Hi,
-> > >
-> > > Could somebody please review this patch?
-> > >
-> > >
-> > > Thanks,
-> > > Corinna
-> > >
-> > >
-> > > On Jan 17 11:53, Corinna Vinschen wrote:
-> > >> * Add a per-VF value to know if a VF is trusted, by default don't
-> > >>   trust VFs.
-> > >>
-> > >> * Implement netdev op to trust VFs (igb_ndo_set_vf_trust) and add
-> > >>   trust status to ndo_get_vf_config output.
-> > >>
-> > >> * Allow a trusted VF to change MAC and MAC filters even if MAC
-> > >>   has been administratively set.
-> > >>
-> > >> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
-> > >> ---
-> > >>  drivers/net/ethernet/intel/igb/igb.h      |  1 +
-> > >>  drivers/net/ethernet/intel/igb/igb_main.c | 30
-> > +++++++++++++++++++++++++++---
-> > >>  2 files changed, 28 insertions(+), 3 deletions(-)
-> 
-> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+I would say we could probably clear everything that is on that list
+that is not LSC explicitly since we really don't care about those
+events. If that changes then in the future we could avoid clearing
+them until we capture an actual event.
+
+Thanks.
+
+- Alex
