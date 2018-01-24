@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 24 Jan 2018 23:31:05 +0000
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 07/12] i40evf: Add
- support to configure bw via tc tool
-In-Reply-To: <20180123165106.28900-8-avinash.dayanand@intel.com>
+Date: Wed, 24 Jan 2018 23:31:37 +0000
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 08/12] i40e: Service
+ request to configure bandwidth for ADq on a VF
+In-Reply-To: <20180123165106.28900-9-avinash.dayanand@intel.com>
 References: <20180123165106.28900-1-avinash.dayanand@intel.com>
- <20180123165106.28900-8-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A93A2A3@ORSMSX104.amr.corp.intel.com>
+ <20180123165106.28900-9-avinash.dayanand@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A93A2B3@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Avinash Dayanand
 > Sent: Tuesday, January 23, 2018 8:51 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 next-queue 07/12] i40evf: Add support
-> to configure bw via tc tool
+> Subject: [Intel-wired-lan] [PATCH v3 next-queue 08/12] i40e: Service request
+> to configure bandwidth for ADq on a VF
 > 
-> From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> This patch handles the request from ADq enabled VF to allocate bandwidth
+> to each traffic class which means for each VSI.
 > 
-> This patch adds support to configure bandwidth for the traffic classes via tc
-> tool. The required information is passed to the PF which is used in the
-> process of setting up the traffic classes.
-> 
-> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 +
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 66
-> +++++++++++++++++++++-
->  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  3 +
->  3 files changed, 67 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 56
+> ++++++++++++++++++++--
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  1 +
+>  2 files changed, 54 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
