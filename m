@@ -1,14 +1,27 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Date: Wed, 24 Jan 2018 21:17:00 +0100 (CET)
+From: Ramamurthy, Harshitha <harshitha.ramamurthy@intel.com>
+Date: Wed, 24 Jan 2018 20:22:25 +0000
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 71/89]
  drivers/net/ethernet/intel/i40evf/i40evf_main.c:1050:2-3: ERROR: invalid
  reference to the index variable of the iterator on line 1045 (fwd)
-Message-ID: <alpine.DEB.2.20.1801242116010.3143@hadrien>
+In-Reply-To: <alpine.DEB.2.20.1801242116010.3143@hadrien>
+References: <alpine.DEB.2.20.1801242116010.3143@hadrien>
+Message-ID: <056F69014252804A8B8B74A3BC329E82EC6468@ORSMSX109.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+Yes, thanks for pointing that out. Will send a patch to fix it.
+
+-Harshitha
+
+-----Original Message-----
+From: Julia Lawall [mailto:julia.lawall at lip6.fr] 
+Sent: Wednesday, January 24, 2018 12:17 PM
+To: Ramamurthy, Harshitha <harshitha.ramamurthy@intel.com>
+Cc: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-lan at lists.osuosl.org; kbuild-all at 01.org
+Subject: [jkirsher-next-queue:dev-queue 71/89] drivers/net/ethernet/intel/i40evf/i40evf_main.c:1050:2-3: ERROR: invalid reference to the index variable of the iterator on line 1045 (fwd)
 
 Line 1050 should be referring to vlf, not f.
 
