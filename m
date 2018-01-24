@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 24 Jan 2018 23:31:37 +0000
-Subject: [Intel-wired-lan] [PATCH v3 next-queue 08/12] i40e: Service
- request to configure bandwidth for ADq on a VF
-In-Reply-To: <20180123165106.28900-9-avinash.dayanand@intel.com>
+Date: Wed, 24 Jan 2018 23:32:09 +0000
+Subject: [Intel-wired-lan] [PATCH v3 next-queue 09/12] virtchnl: Add a
+ macro to check the size of a union
+In-Reply-To: <20180123165106.28900-10-avinash.dayanand@intel.com>
 References: <20180123165106.28900-1-avinash.dayanand@intel.com>
- <20180123165106.28900-9-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A93A2B3@ORSMSX104.amr.corp.intel.com>
+ <20180123165106.28900-10-avinash.dayanand@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A93A2BF@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,18 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Avinash Dayanand
 > Sent: Tuesday, January 23, 2018 8:51 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 next-queue 08/12] i40e: Service request
-> to configure bandwidth for ADq on a VF
+> Subject: [Intel-wired-lan] [PATCH v3 next-queue 09/12] virtchnl: Add a macro
+> to check the size of a union
 > 
-> This patch handles the request from ADq enabled VF to allocate bandwidth
-> to each traffic class which means for each VSI.
+> From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 > 
-> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+> This patch adds a macro to check if the size of a union is correct.
+> It throws a divide by zero error if the union is not of the correct size.
+> 
+> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 56
-> ++++++++++++++++++++--
-> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  1 +
->  2 files changed, 54 insertions(+), 3 deletions(-)
+>  include/linux/avf/virtchnl.h | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
