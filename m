@@ -1,66 +1,232 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed, 24 Jan 2018 14:46:24 -0800
-Subject: [Intel-wired-lan] [RFC v2 net-next 01/10] net: Add a new socket
- option for a future transmit time.
-In-Reply-To: <20180124030436.sukodrg2t3ckazu6@localhost>
-References: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
- <20180117230621.26074-2-jesus.sanchez-palencia@intel.com>
- <20180118084227.GL1175@localhost> <877es81d9e.fsf@intel.com>
- <20180124030436.sukodrg2t3ckazu6@localhost>
-Message-ID: <87607qzxhb.fsf@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 25 Jan 2018 09:22:03 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ e0752a68d8de2a6fcb2909d86cab6b23896896de
+Message-ID: <5a69313b.Zanf+0A+pRvsmPqU%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Richard,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: e0752a68d8de2a6fcb2909d86cab6b23896896de  fm10k: clarify action when updating the VLAN table
 
-Richard Cochran <richardcochran@gmail.com> writes:
+elapsed time: 156m
 
-> On Tue, Jan 23, 2018 at 01:22:37PM -0800, Vinicius Costa Gomes wrote:
->> What I think would be the ideal scenario would be if the clockid
->> parameter to the TBS Qdisc would not be necessary (if offload was
->> enabled), but that's not quite possible right now, because there's no
->> support for using the hrtimer infrastructure with dynamic clocks
->> (/dev/ptp*).
->
-> We don't need hrtimer for HW offloading.  Just enqueue the packets.  I
-> thought we agreed that user space get the ordering correct.  In fact,
-> davem insisted on it, IIRC.
+configs tested: 208
 
-About the ordering of packets, From here [1], there are 3 clear points
-(in my understanding):
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-1. Re-ordering of TX descriptors on the device queue should/must not
-   happen;
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-a0-01250825
+arm                            u300_defconfig
+parisc                        c8000_defconfig
+sh                         microdev_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-01250709
+arm                        mini2440_defconfig
+m68k                         amcore_defconfig
+powerpc                     taishan_defconfig
+arm                         mv78xx0_defconfig
+arm                         shannon_defconfig
+powerpc                     pq2fads_defconfig
+x86_64                randconfig-it0-01250749
+x86_64                randconfig-it0-01250854
+i386                               tinyconfig
+i386                   randconfig-x015-201803
+i386                   randconfig-x010-201803
+i386                   randconfig-x019-201803
+i386                   randconfig-x014-201803
+i386                   randconfig-x017-201803
+i386                   randconfig-x011-201803
+i386                   randconfig-x012-201803
+i386                   randconfig-x016-201803
+i386                   randconfig-x013-201803
+i386                   randconfig-x018-201803
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201803
+x86_64                 randconfig-x008-201803
+x86_64                 randconfig-x005-201803
+x86_64                 randconfig-x000-201803
+x86_64                 randconfig-x009-201803
+x86_64                 randconfig-x007-201803
+x86_64                 randconfig-x002-201803
+x86_64                 randconfig-x001-201803
+x86_64                 randconfig-x006-201803
+x86_64                 randconfig-x003-201803
+x86_64                 randconfig-x004-201803
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201803
+i386                     randconfig-i1-201803
+i386                             allmodconfig
+x86_64                 randconfig-x017-201803
+x86_64                 randconfig-x018-201803
+x86_64                 randconfig-x016-201803
+x86_64                 randconfig-x013-201803
+x86_64                 randconfig-x014-201803
+x86_64                 randconfig-x011-201803
+x86_64                 randconfig-x012-201803
+x86_64                 randconfig-x015-201803
+x86_64                 randconfig-x019-201803
+x86_64                 randconfig-x010-201803
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                   randconfig-a1-01241352
+i386                   randconfig-a0-01241352
+x86_64                 randconfig-s0-01250814
+x86_64                 randconfig-s1-01250814
+x86_64                 randconfig-s2-01250814
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+frv                                 defconfig
+powerpc                     redwood_defconfig
+sh                               allmodconfig
+sh                          r7785rp_defconfig
+arm                         cm_x2xx_defconfig
+parisc                      default_defconfig
+powerpc                      acadia_defconfig
+sparc                             allnoconfig
+um                                allnoconfig
+arm                           acs5k_defconfig
+arm                         lpc18xx_defconfig
+arm                         lpc32xx_defconfig
+powerpc                      ppc64e_defconfig
+powerpc                     stx_gp3_defconfig
+arm                             ezx_defconfig
+arm                      pxa255-idp_defconfig
+mips                        omega2p_defconfig
+mips                          rb532_defconfig
+powerpc                   motionpro_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201803
+i386                     randconfig-s1-201803
+x86_64                 randconfig-s3-01250757
+x86_64                 randconfig-s4-01250757
+x86_64                 randconfig-s5-01250757
+m68k                                defconfig
+mips                         bigsur_defconfig
+mips                          lasat_defconfig
+s390                    performance_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201803
+i386                   randconfig-b0-01250600
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+arm                          nuc910_defconfig
+arm                    vt8500_v6_v7_defconfig
+blackfin                BF548-EZKIT_defconfig
+microblaze                          defconfig
+mips                       rbtx49xx_defconfig
+arm                           sunxi_defconfig
+m32r                    mappi2.opsp_defconfig
+x86_64                 randconfig-u0-01250802
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                randconfig-ne0-01250752
+x86_64                 randconfig-h0-01250751
+powerpc                     sbc8548_defconfig
+sh                           se7619_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+mips                                defconfig
+mips                        maltaup_defconfig
+i386                  randconfig-sb0-01250734
+i386                   randconfig-x004-201803
+i386                   randconfig-x002-201803
+i386                   randconfig-x007-201803
+i386                   randconfig-x003-201803
+i386                   randconfig-x009-201803
+i386                   randconfig-x000-201803
+i386                   randconfig-x006-201803
+i386                   randconfig-x005-201803
+i386                   randconfig-x001-201803
+i386                   randconfig-x008-201803
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+mips                       bmips_be_defconfig
+powerpc                 mpc836x_mds_defconfig
+s390                             alldefconfig
+i386                   randconfig-x071-201803
+i386                   randconfig-x079-201803
+i386                   randconfig-x077-201803
+i386                   randconfig-x072-201803
+i386                   randconfig-x076-201803
+i386                   randconfig-x075-201803
+i386                   randconfig-x073-201803
+i386                   randconfig-x070-201803
+i386                   randconfig-x074-201803
+i386                   randconfig-x078-201803
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+m68k                            mac_defconfig
+openrisc                         allmodconfig
+x86_64                 randconfig-r0-01250824
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                   randconfig-x0-01250813
 
-2. Out of order requests are an error;
-
-3. Timestamps in the past are an error;
-
-The only robust way that we could think of about keeping the the packets
-in order for the device queue is re-ordering packets in the Qdisc.
-
-We tried to reach out for confirmation [2] of this understanding but
-didn't receive any word.
-
-Even if we reach a decision that the Qdisc should not re-order packets
-(we wouldn't have any dependency on hrtimers in the offload case, as you
-pointed out), we still need hrtimers for the software implementation.
-
-So, I guess, the problem remains, if it's possible for the user to
-express a /dev/ptp* clock, what should we do? 
-
->
-> Thanks,
-> Richard
-
-Cheers,
---
-Vinicius
-
-
-[1] https://patchwork.ozlabs.org/comment/1770302/
-
-[2] https://patchwork.ozlabs.org/comment/1816492/q
+Thanks,
+Fengguang
