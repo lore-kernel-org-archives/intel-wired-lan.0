@@ -1,60 +1,33 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Thu, 25 Jan 2018 16:33:06 +0000
-Subject: [Intel-wired-lan] [PATCH] fm10k: bump version number
-In-Reply-To: <20180118171857.28279-1-jacob.e.keller@intel.com>
-References: <20180118171857.28279-1-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BC4C34@ORSMSX103.amr.corp.intel.com>
+From: Miroslav Lichvar <mlichvar@redhat.com>
+Date: Thu, 25 Jan 2018 10:12:25 +0100
+Subject: [Intel-wired-lan] [RFC v2 net-next 01/10] net: Add a new socket
+ option for a future transmit time.
+In-Reply-To: <20180120020915.erlylrbsaejf7ufo@localhost>
+References: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
+ <20180117230621.26074-2-jesus.sanchez-palencia@intel.com>
+ <CAF=yD-JCN483_e9U7tb_4+2jGyWKfhS0TzooOui+kS4Gh7RSqw@mail.gmail.com>
+ <20180120020915.erlylrbsaejf7ufo@localhost>
+Message-ID: <20180125091225.GG1169@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Fri, Jan 19, 2018 at 06:09:15PM -0800, Richard Cochran wrote:
+> On Fri, Jan 19, 2018 at 04:15:46PM -0500, Willem de Bruijn wrote:
+> > > +               if (cmsg->cmsg_len != CMSG_LEN(sizeof(ktime_t)))
+> > > +                       return -EINVAL;
+> > 
+> > I don't see any existing reference to ktime_t in include/uapi. Just use a s64?
+> 
+> Agreed.  I didn't see the point of switching to ktime, either.
 
+Do I understand it correctly that no other interface is using
+nanoseconds since 1970? We probably don't have to worry about year
+2262 yet, but wouldn't it be better to make it consistent with the
+timestamping API using timespec? Or is it just better to avoid the
+64/32-bit mess of time_t?
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
-> Of Jacob Keller
-> Sent: Thursday, January 18, 2018 9:19 AM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH] fm10k: bump version number
-> 
-> We're aligned with latest version released on SourceForge, so update the
-> version number to match.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> index 8e12aae065d8..2c93d719438f 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> @@ -28,13 +28,13 @@
-> 
->  #include "fm10k.h"
-> 
-> -#define DRV_VERSION	"0.22.1-k"
-> +#define DRV_VERSION	"0.23.4-k"
->  #define DRV_SUMMARY	"Intel(R) Ethernet Switch Host Interface Driver"
->  const char fm10k_driver_version[] = DRV_VERSION;
->  char fm10k_driver_name[] = "fm10k";
->  static const char fm10k_driver_string[] = DRV_SUMMARY;
->  static const char fm10k_copyright[] =
-> -	"Copyright(c) 2013 - 2017 Intel Corporation.";
-> +	"Copyright(c) 2013 - 2018 Intel Corporation.";
-> 
->  MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
->  MODULE_DESCRIPTION(DRV_SUMMARY);
-> --
-> 2.15.1.478.ga1e07cd25f8b
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
-Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
-
+-- 
+Miroslav Lichvar
