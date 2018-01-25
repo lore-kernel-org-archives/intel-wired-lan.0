@@ -1,11 +1,9 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Thu, 25 Jan 2018 16:32:15 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] fm10k: fix incorrect warning for
- function prototype
-In-Reply-To: <20180116192052.7451-2-jacob.e.keller@intel.com>
-References: <20180116192052.7451-1-jacob.e.keller@intel.com>
- <20180116192052.7451-2-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BC3C09@ORSMSX103.amr.corp.intel.com>
+Date: Thu, 25 Jan 2018 16:33:06 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: bump version number
+In-Reply-To: <20180118171857.28279-1-jacob.e.keller@intel.com>
+References: <20180118171857.28279-1-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BC4C34@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,46 +11,43 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
+
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
 > Of Jacob Keller
-> Sent: Tuesday, January 16, 2018 11:21 AM
+> Sent: Thursday, January 18, 2018 9:19 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH 2/2] fm10k: fix incorrect warning for function
-> prototype
+> Subject: [Intel-wired-lan] [PATCH] fm10k: bump version number
 > 
-> Recent kernels now complain about incorrect function prototype comments,
-> in order to ensure comments are accurate to the function. However, it
-> incorrectly associates the comment above the fm10k_pci_tbl[] as
-> a function header comment. Fix this by removing the extra "*" in the
-> comment. This normally indicates that the function is a doxygen style
-> function header comment.
-> 
-> Once removed, the logic no longer kicks in and the following warning is
-> fixed:
-> 
->   warning: cannot understand function prototype: 'const struct pci_device_id
-> fm10k_pci_tbl[] = '
+> We're aligned with latest version released on SourceForge, so update the
+> version number to match.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> index d7aad4cb73a7..50f53e403ef5 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> @@ -29,7 +29,7 @@ static const struct fm10k_info *fm10k_info_tbl[] = {
->  	[fm10k_device_vf] = &fm10k_vf_info,
->  };
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> index 8e12aae065d8..2c93d719438f 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> @@ -28,13 +28,13 @@
 > 
-> -/**
-> +/*
->   * fm10k_pci_tbl - PCI Device ID Table
->   *
->   * Wildcard entries (PCI_ANY_ID) should come last
+>  #include "fm10k.h"
+> 
+> -#define DRV_VERSION	"0.22.1-k"
+> +#define DRV_VERSION	"0.23.4-k"
+>  #define DRV_SUMMARY	"Intel(R) Ethernet Switch Host Interface Driver"
+>  const char fm10k_driver_version[] = DRV_VERSION;
+>  char fm10k_driver_name[] = "fm10k";
+>  static const char fm10k_driver_string[] = DRV_SUMMARY;
+>  static const char fm10k_copyright[] =
+> -	"Copyright(c) 2013 - 2017 Intel Corporation.";
+> +	"Copyright(c) 2013 - 2018 Intel Corporation.";
+> 
+>  MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+>  MODULE_DESCRIPTION(DRV_SUMMARY);
 > --
 > 2.15.1.478.ga1e07cd25f8b
 > 
