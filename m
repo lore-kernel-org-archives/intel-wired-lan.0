@@ -1,174 +1,130 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 27 Jan 2018 00:26:23 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 78275adba6baa1e071337acaf85d4942112a4971
-Message-ID: <5a6b56af.MWmBsPkChcTkIlFa%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 26 Jan 2018 08:50:42 -0800
+Subject: [Intel-wired-lan] [PATCH 1/3] Partial revert "e1000e: Avoid
+ receiver overrun interrupt bursts"
+In-Reply-To: <20180126091236.13044-2-bpoirier@suse.com>
+References: <20180126091236.13044-1-bpoirier@suse.com>
+ <20180126091236.13044-2-bpoirier@suse.com>
+Message-ID: <CAKgT0Uf0w65SgPJoEJ8KchBTF8z7gyVbLWRo34gpib-ayDaGtQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 78275adba6baa1e071337acaf85d4942112a4971  i40evf: Use the correct iterator to access the vlan filter
+On Fri, Jan 26, 2018 at 1:12 AM, Benjamin Poirier <bpoirier@suse.com> wrote:
+> This reverts commit 4aea7a5c5e940c1723add439f4088844cd26196d.
+>
+> We keep the fix for the first part of the problem (1) described in the log
+> of that commit however we use the implementation of e1000_msix_other() from
+> before commit 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt").
+> We remove the fix for the second part of the problem (2).
+>
+> Bursts of "Other" interrupts may once again occur during rxo (receive
+> overflow) traffic conditions. This is deemed acceptable in the interest of
+> reverting driver code back to its previous state. The e1000e driver should
+> be in "maintenance" mode and we want to avoid unforeseen fallout from
+> changes that are not strictly necessary.
+>
+> Link: https://www.spinics.net/lists/netdev/msg480675.html
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 
-Regressions in current branch:
+Thanks for doing this.
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c:96:9: sparse: cast from restricted __be32
+Only a few minor tweaks I would recommend. Otherwise it looks good.
 
-Error ids grouped by kconfigs:
+> ---
+>  drivers/net/ethernet/intel/e1000e/defines.h |  1 -
+>  drivers/net/ethernet/intel/e1000e/netdev.c  | 32 +++++++++++------------------
+>  2 files changed, 12 insertions(+), 21 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
+> index afb7ebe20b24..0641c0098738 100644
+> --- a/drivers/net/ethernet/intel/e1000e/defines.h
+> +++ b/drivers/net/ethernet/intel/e1000e/defines.h
+> @@ -398,7 +398,6 @@
+>  #define E1000_ICR_LSC           0x00000004 /* Link Status Change */
+>  #define E1000_ICR_RXSEQ         0x00000008 /* Rx sequence error */
+>  #define E1000_ICR_RXDMT0        0x00000010 /* Rx desc min. threshold (0) */
+> -#define E1000_ICR_RXO           0x00000040 /* Receiver Overrun */
+>  #define E1000_ICR_RXT0          0x00000080 /* Rx timer intr (ring 0) */
+>  #define E1000_ICR_ECCER         0x00400000 /* Uncorrectable ECC Error */
+>  /* If this bit asserted, the driver should claim the interrupt */
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 9f18d39bdc8f..398e940436f8 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -1914,30 +1914,23 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+>         struct net_device *netdev = data;
+>         struct e1000_adapter *adapter = netdev_priv(netdev);
+>         struct e1000_hw *hw = &adapter->hw;
+> -       u32 icr;
+> -       bool enable = true;
+> -
+> -       icr = er32(ICR);
+> -       if (icr & E1000_ICR_RXO) {
+> -               ew32(ICR, E1000_ICR_RXO);
+> -               enable = false;
+> -               /* napi poll will re-enable Other, make sure it runs */
+> -               if (napi_schedule_prep(&adapter->napi)) {
+> -                       adapter->total_rx_bytes = 0;
+> -                       adapter->total_rx_packets = 0;
+> -                       __napi_schedule(&adapter->napi);
+> -               }
+> -       }
+> -       if (icr & E1000_ICR_LSC) {
+> -               ew32(ICR, E1000_ICR_LSC);
+> +       u32 icr = er32(ICR);
+> +
+> +       if (icr & adapter->eiac_mask)
+> +               ew32(ICS, (icr & adapter->eiac_mask));
 
-recent_errors
-??? x86_64-allmodconfig
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:sparse:cast-from-restricted-__be32
+I'm not sure about this bit as it includes queue interrupts if I am
+not mistaken. What we should be focusing on are the bits that are not
+auto-cleared so this should probably be icr & ~adapter->eiac_mask.
+Actually what you might do is something like:
+    icr &= ~adapter->eiac_mask;
+    if (icr)
+        ew32(ICS, icr);
 
-elapsed time: 69m
+Also a comment explaining that we have to clear the bits that are not
+automatically cleared by other interrupt causes might be useful.
 
-configs tested: 144
+> +       if (icr & E1000_ICR_OTHER) {
+> +               if (!(icr & E1000_ICR_LSC))
+> +                       goto no_link_interrupt;
 
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-i386                   randconfig-x015-201803
-i386                   randconfig-x010-201803
-i386                   randconfig-x019-201803
-i386                   randconfig-x014-201803
-i386                   randconfig-x017-201803
-i386                   randconfig-x011-201803
-i386                   randconfig-x012-201803
-i386                   randconfig-x016-201803
-i386                   randconfig-x013-201803
-i386                   randconfig-x018-201803
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201803
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-i386                     randconfig-a1-201803
-i386                     randconfig-a0-201803
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x017-201803
-x86_64                 randconfig-x018-201803
-x86_64                 randconfig-x016-201803
-x86_64                 randconfig-x013-201803
-x86_64                 randconfig-x014-201803
-x86_64                 randconfig-x011-201803
-x86_64                 randconfig-x012-201803
-x86_64                 randconfig-x015-201803
-x86_64                 randconfig-x019-201803
-x86_64                 randconfig-x010-201803
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201803
-i386                     randconfig-s1-201803
-x86_64                   randconfig-i0-201803
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                          simpad_defconfig
-h8300                     edosk2674_defconfig
-powerpc                    adder875_defconfig
-powerpc                      katmai_defconfig
-x86_64                 randconfig-b0-01262311
-arm64                            allmodconfig
-m32r                    mappi.nommu_defconfig
-powerpc                    socrates_defconfig
-x86_64                 randconfig-u0-01262333
-i386                   randconfig-x071-201803
-i386                   randconfig-x079-201803
-i386                   randconfig-x077-201803
-i386                   randconfig-x072-201803
-i386                   randconfig-x076-201803
-i386                   randconfig-x075-201803
-i386                   randconfig-x073-201803
-i386                   randconfig-x070-201803
-i386                   randconfig-x074-201803
-i386                   randconfig-x078-201803
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x004-201803
-i386                   randconfig-x002-201803
-i386                   randconfig-x007-201803
-i386                   randconfig-x003-201803
-i386                   randconfig-x009-201803
-i386                   randconfig-x000-201803
-i386                   randconfig-x006-201803
-i386                   randconfig-x005-201803
-i386                   randconfig-x001-201803
-i386                   randconfig-x008-201803
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-x008-201803
-x86_64                 randconfig-x005-201803
-x86_64                 randconfig-x000-201803
-x86_64                 randconfig-x009-201803
-x86_64                 randconfig-x007-201803
-x86_64                 randconfig-x002-201803
-x86_64                 randconfig-x001-201803
-x86_64                 randconfig-x006-201803
-x86_64                 randconfig-x003-201803
-x86_64                 randconfig-x004-201803
-x86_64                                  kexec
-m68k                       bvme6000_defconfig
-powerpc                        fsp2_defconfig
-xtensa                            allnoconfig
-x86_64                randconfig-ws0-01262334
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
+I wouldn't bother with the jump tag. Let's just make this one if
+statement checking both OTHER && LSC.
 
-Thanks,
-Fengguang
+>                 hw->mac.get_link_status = true;
+>                 /* guard against interrupt when we're going down */
+>                 if (!test_bit(__E1000_DOWN, &adapter->state))
+>                         mod_timer(&adapter->watchdog_timer, jiffies + 1);
+>         }
+>
+> -       if (enable && !test_bit(__E1000_DOWN, &adapter->state))
+> -               ew32(IMS, E1000_IMS_OTHER);
+> +no_link_interrupt:
+
+If you just combine the if statement logic the code naturally flows to
+this point anyway without the jump label being needed.
+
+> +       if (!test_bit(__E1000_DOWN, &adapter->state))
+> +               ew32(IMS, E1000_IMS_LSC | E1000_IMS_OTHER);
+>
+>         return IRQ_HANDLED;
+>  }
+> @@ -2707,8 +2700,7 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
+>                 napi_complete_done(napi, work_done);
+>                 if (!test_bit(__E1000_DOWN, &adapter->state)) {
+>                         if (adapter->msix_entries)
+> -                               ew32(IMS, adapter->rx_ring->ims_val |
+> -                                    E1000_IMS_OTHER);
+> +                               ew32(IMS, adapter->rx_ring->ims_val);
+>                         else
+>                                 e1000_irq_enable(adapter);
+>                 }
+> --
+> 2.15.1
+>
