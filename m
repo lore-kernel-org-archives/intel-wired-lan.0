@@ -1,85 +1,174 @@
-From: Pierre-Yves Kerbrat <pkerbrat@kalray.eu>
-Date: Fri, 26 Jan 2018 11:24:12 +0100
-Subject: [Intel-wired-lan] [PATCH] e1000e: allocate ring descriptors with
- dma_zalloc_coherent
-Message-ID: <20180126102404.GA26578@poseidon.lin.mbt.kalray.eu>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 27 Jan 2018 00:26:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 78275adba6baa1e071337acaf85d4942112a4971
+Message-ID: <5a6b56af.MWmBsPkChcTkIlFa%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Descriptor rings were not initialized at zero when allocated
-When area contained garbage data, it caused skb_over_panic in
-e1000_clean_rx_irq (if data had E1000_RXD_STAT_DD bit set)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 78275adba6baa1e071337acaf85d4942112a4971  i40evf: Use the correct iterator to access the vlan filter
 
-This patch makes use of dma_zalloc_coherent to make sure the
-ring is memset at 0 to prevent the area from containing garbage.
+Regressions in current branch:
 
-Following is the signature of the panic:
-IODDR0 at 0.0: skbuff: skb_over_panic: text:80407b20 len:64010 put:64010 head:ab46d800 data:ab46d842 tail:0xab47d24c end:0xab46df40 dev:eth0
-IODDR0 at 0.0: BUG: failure at net/core/skbuff.c:105/skb_panic()!
-IODDR0 at 0.0: Kernel panic - not syncing: BUG!
-IODDR0 at 0.0:
-IODDR0 at 0.0: Process swapper/0 (pid: 0, threadinfo=81728000, task=8173cc00 ,cpu: 0)
-IODDR0 at 0.0: SP = <815a1c0c>
-IODDR0 at 0.0: Stack:      00000001
-IODDR0 at 0.0: b2d89800 815e33ac
-IODDR0 at 0.0: ea73c040 00000001
-IODDR0 at 0.0: 60040003 0000fa0a
-IODDR0 at 0.0: 00000002
-IODDR0 at 0.0:
-IODDR0 at 0.0: 804540c0 815a1c70
-IODDR0 at 0.0: b2744000 602ac070
-IODDR0 at 0.0: 815a1c44 b2d89800
-IODDR0 at 0.0: 8173cc00 815a1c08
-IODDR0 at 0.0:
-IODDR0 at 0.0:     00000006
-IODDR0 at 0.0: 815a1b50 00000000
-IODDR0 at 0.0: 80079434 00000001
-IODDR0 at 0.0: ab46df40 b2744000
-IODDR0 at 0.0: b2d89800
-IODDR0 at 0.0:
-IODDR0 at 0.0: 0000fa0a 8045745c
-IODDR0 at 0.0: 815a1c88 0000fa0a
-IODDR0 at 0.0: 80407b20 b2789f80
-IODDR0 at 0.0: 00000005 80407b20
-IODDR0 at 0.0:
-IODDR0 at 0.0:
-IODDR0 at 0.0: Call Trace:
-IODDR0 at 0.0: [<804540bc>] skb_panic+0xa4/0xa8
-IODDR0 at 0.0: [<80079430>] console_unlock+0x2f8/0x6d0
-IODDR0 at 0.0: [<80457458>] skb_put+0xa0/0xc0
-IODDR0 at 0.0: [<80407b1c>] e1000_clean_rx_irq+0x2dc/0x3e8
-IODDR0 at 0.0: [<80407b1c>] e1000_clean_rx_irq+0x2dc/0x3e8
-IODDR0 at 0.0: [<804079c8>] e1000_clean_rx_irq+0x188/0x3e8
-IODDR0 at 0.0: [<80407b1c>] e1000_clean_rx_irq+0x2dc/0x3e8
-IODDR0 at 0.0: [<80468b48>] __dev_kfree_skb_any+0x88/0xa8
-IODDR0 at 0.0: [<804101ac>] e1000e_poll+0x94/0x288
-IODDR0 at 0.0: [<8046e9d4>] net_rx_action+0x19c/0x4e8
-IODDR0 at 0.0:   ...
-IODDR0 at 0.0: Maximum depth to print reached. Use kstack=<maximum_depth_to_print> To specify a custom value (where 0 means to display the full backtrace)
-IODDR0 at 0.0: ---[ end Kernel panic - not syncing: BUG!
+drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c:96:9: sparse: cast from restricted __be32
 
-Signed-off-by: Pierre-Yves Kerbrat <pkerbrat@kalray.eu>
-Signed-off-by: Marius Gligor <mgligor@kalray.eu>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Error ids grouped by kconfigs:
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 1298b69..26121ed 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -2333,7 +2333,7 @@ static int e1000_alloc_ring_dma(struct e1000_adapter *adapter,
- {
- 	struct pci_dev *pdev = adapter->pdev;
- 
--	ring->desc = dma_alloc_coherent(&pdev->dev, ring->size, &ring->dma,
-+	ring->desc = dma_zalloc_coherent(&pdev->dev, ring->size, &ring->dma,
- 					GFP_KERNEL);
- 	if (!ring->desc)
- 		return -ENOMEM;
--- 
-1.8.3.1
+recent_errors
+??? x86_64-allmodconfig
+    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:sparse:cast-from-restricted-__be32
 
+elapsed time: 69m
+
+configs tested: 144
+
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+i386                   randconfig-x015-201803
+i386                   randconfig-x010-201803
+i386                   randconfig-x019-201803
+i386                   randconfig-x014-201803
+i386                   randconfig-x017-201803
+i386                   randconfig-x011-201803
+i386                   randconfig-x012-201803
+i386                   randconfig-x016-201803
+i386                   randconfig-x013-201803
+i386                   randconfig-x018-201803
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201803
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+i386                     randconfig-a1-201803
+i386                     randconfig-a0-201803
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x017-201803
+x86_64                 randconfig-x018-201803
+x86_64                 randconfig-x016-201803
+x86_64                 randconfig-x013-201803
+x86_64                 randconfig-x014-201803
+x86_64                 randconfig-x011-201803
+x86_64                 randconfig-x012-201803
+x86_64                 randconfig-x015-201803
+x86_64                 randconfig-x019-201803
+x86_64                 randconfig-x010-201803
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201803
+i386                     randconfig-s1-201803
+x86_64                   randconfig-i0-201803
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                          simpad_defconfig
+h8300                     edosk2674_defconfig
+powerpc                    adder875_defconfig
+powerpc                      katmai_defconfig
+x86_64                 randconfig-b0-01262311
+arm64                            allmodconfig
+m32r                    mappi.nommu_defconfig
+powerpc                    socrates_defconfig
+x86_64                 randconfig-u0-01262333
+i386                   randconfig-x071-201803
+i386                   randconfig-x079-201803
+i386                   randconfig-x077-201803
+i386                   randconfig-x072-201803
+i386                   randconfig-x076-201803
+i386                   randconfig-x075-201803
+i386                   randconfig-x073-201803
+i386                   randconfig-x070-201803
+i386                   randconfig-x074-201803
+i386                   randconfig-x078-201803
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x004-201803
+i386                   randconfig-x002-201803
+i386                   randconfig-x007-201803
+i386                   randconfig-x003-201803
+i386                   randconfig-x009-201803
+i386                   randconfig-x000-201803
+i386                   randconfig-x006-201803
+i386                   randconfig-x005-201803
+i386                   randconfig-x001-201803
+i386                   randconfig-x008-201803
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-x008-201803
+x86_64                 randconfig-x005-201803
+x86_64                 randconfig-x000-201803
+x86_64                 randconfig-x009-201803
+x86_64                 randconfig-x007-201803
+x86_64                 randconfig-x002-201803
+x86_64                 randconfig-x001-201803
+x86_64                 randconfig-x006-201803
+x86_64                 randconfig-x003-201803
+x86_64                 randconfig-x004-201803
+x86_64                                  kexec
+m68k                       bvme6000_defconfig
+powerpc                        fsp2_defconfig
+xtensa                            allnoconfig
+x86_64                randconfig-ws0-01262334
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+
+Thanks,
+Fengguang
