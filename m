@@ -1,42 +1,85 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Thu, 25 Jan 2018 18:12:24 -0800
-Subject: [Intel-wired-lan] [RFC v2 net-next 01/10] net: Add a new socket
- option for a future transmit time.
-In-Reply-To: <87607qzxhb.fsf@intel.com>
-References: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
- <20180117230621.26074-2-jesus.sanchez-palencia@intel.com>
- <20180118084227.GL1175@localhost> <877es81d9e.fsf@intel.com>
- <20180124030436.sukodrg2t3ckazu6@localhost>
- <87607qzxhb.fsf@intel.com>
-Message-ID: <20180126021224.cfu632wbghf6blik@localhost>
+From: Pierre-Yves Kerbrat <pkerbrat@kalray.eu>
+Date: Fri, 26 Jan 2018 11:24:12 +0100
+Subject: [Intel-wired-lan] [PATCH] e1000e: allocate ring descriptors with
+ dma_zalloc_coherent
+Message-ID: <20180126102404.GA26578@poseidon.lin.mbt.kalray.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 24, 2018 at 02:46:24PM -0800, Vinicius Costa Gomes wrote:
-> The only robust way that we could think of about keeping the the packets
-> in order for the device queue is re-ordering packets in the Qdisc.
+Descriptor rings were not initialized at zero when allocated
+When area contained garbage data, it caused skb_over_panic in
+e1000_clean_rx_irq (if data had E1000_RXD_STAT_DD bit set)
 
-Right, but you cannot afford the overhead of the timerqueue when using
-HW offload, when the HW device sits on a PCIe bus.  Many serious TSN
-applications (like industrial controls) will want to have just one
-packet queued, readying the next one just in time for the next
-deadline.  The control loops are sensitive to the feedback interval.
+This patch makes use of dma_zalloc_coherent to make sure the
+ring is memset at 0 to prevent the area from containing garbage.
+
+Following is the signature of the panic:
+IODDR0 at 0.0: skbuff: skb_over_panic: text:80407b20 len:64010 put:64010 head:ab46d800 data:ab46d842 tail:0xab47d24c end:0xab46df40 dev:eth0
+IODDR0 at 0.0: BUG: failure at net/core/skbuff.c:105/skb_panic()!
+IODDR0 at 0.0: Kernel panic - not syncing: BUG!
+IODDR0 at 0.0:
+IODDR0 at 0.0: Process swapper/0 (pid: 0, threadinfo=81728000, task=8173cc00 ,cpu: 0)
+IODDR0 at 0.0: SP = <815a1c0c>
+IODDR0 at 0.0: Stack:      00000001
+IODDR0 at 0.0: b2d89800 815e33ac
+IODDR0 at 0.0: ea73c040 00000001
+IODDR0 at 0.0: 60040003 0000fa0a
+IODDR0 at 0.0: 00000002
+IODDR0 at 0.0:
+IODDR0 at 0.0: 804540c0 815a1c70
+IODDR0 at 0.0: b2744000 602ac070
+IODDR0 at 0.0: 815a1c44 b2d89800
+IODDR0 at 0.0: 8173cc00 815a1c08
+IODDR0 at 0.0:
+IODDR0 at 0.0:     00000006
+IODDR0 at 0.0: 815a1b50 00000000
+IODDR0 at 0.0: 80079434 00000001
+IODDR0 at 0.0: ab46df40 b2744000
+IODDR0 at 0.0: b2d89800
+IODDR0 at 0.0:
+IODDR0 at 0.0: 0000fa0a 8045745c
+IODDR0 at 0.0: 815a1c88 0000fa0a
+IODDR0 at 0.0: 80407b20 b2789f80
+IODDR0 at 0.0: 00000005 80407b20
+IODDR0 at 0.0:
+IODDR0 at 0.0:
+IODDR0 at 0.0: Call Trace:
+IODDR0 at 0.0: [<804540bc>] skb_panic+0xa4/0xa8
+IODDR0 at 0.0: [<80079430>] console_unlock+0x2f8/0x6d0
+IODDR0 at 0.0: [<80457458>] skb_put+0xa0/0xc0
+IODDR0 at 0.0: [<80407b1c>] e1000_clean_rx_irq+0x2dc/0x3e8
+IODDR0 at 0.0: [<80407b1c>] e1000_clean_rx_irq+0x2dc/0x3e8
+IODDR0 at 0.0: [<804079c8>] e1000_clean_rx_irq+0x188/0x3e8
+IODDR0 at 0.0: [<80407b1c>] e1000_clean_rx_irq+0x2dc/0x3e8
+IODDR0 at 0.0: [<80468b48>] __dev_kfree_skb_any+0x88/0xa8
+IODDR0 at 0.0: [<804101ac>] e1000e_poll+0x94/0x288
+IODDR0 at 0.0: [<8046e9d4>] net_rx_action+0x19c/0x4e8
+IODDR0 at 0.0:   ...
+IODDR0 at 0.0: Maximum depth to print reached. Use kstack=<maximum_depth_to_print> To specify a custom value (where 0 means to display the full backtrace)
+IODDR0 at 0.0: ---[ end Kernel panic - not syncing: BUG!
+
+Signed-off-by: Pierre-Yves Kerbrat <pkerbrat@kalray.eu>
+Signed-off-by: Marius Gligor <mgligor@kalray.eu>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 1298b69..26121ed 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -2333,7 +2333,7 @@ static int e1000_alloc_ring_dma(struct e1000_adapter *adapter,
+ {
+ 	struct pci_dev *pdev = adapter->pdev;
  
-> Even if we reach a decision that the Qdisc should not re-order packets
-> (we wouldn't have any dependency on hrtimers in the offload case, as you
-> pointed out), we still need hrtimers for the software implementation.
+-	ring->desc = dma_alloc_coherent(&pdev->dev, ring->size, &ring->dma,
++	ring->desc = dma_zalloc_coherent(&pdev->dev, ring->size, &ring->dma,
+ 					GFP_KERNEL);
+ 	if (!ring->desc)
+ 		return -ENOMEM;
+-- 
+1.8.3.1
 
-Fine.
- 
-> So, I guess, the problem remains, if it's possible for the user to
-> express a /dev/ptp* clock, what should we do? 
-
-Thinking a bit more, it doesn't make sense to have a user choice for
-the HW offloading case.  The clock should implicitly be the device
-clock, always.  Using any other clock would make no sense.
-
-Thanks,
-Richard
