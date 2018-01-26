@@ -1,165 +1,193 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 26 Jan 2018 09:03:00 -0800
-Subject: [Intel-wired-lan] [PATCH 2/3] Revert "e1000e: Separate
- signaling for link check/link up"
-In-Reply-To: <20180126091236.13044-3-bpoirier@suse.com>
-References: <20180126091236.13044-1-bpoirier@suse.com>
- <20180126091236.13044-3-bpoirier@suse.com>
-Message-ID: <CAKgT0UegBcVf5vzc7Vq4E1RpeeR7gqCAD=1+wn1Yq_tL48+LaA@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 27 Jan 2018 01:37:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 1608a406751f5f7db8af43d513c9a0442ca7e845
+Message-ID: <5a6b6763.SuI7+FdBNK6Fk553%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jan 26, 2018 at 1:12 AM, Benjamin Poirier <bpoirier@suse.com> wrote:
-> This reverts commit 19110cfbb34d4af0cdfe14cd243f3b09dc95b013.
-> This reverts commit 4110e02eb45ea447ec6f5459c9934de0a273fb91.
->
-> ... because they cause an extra 2s delay for the link to come up when
-> autoneg is off.
->
-> After reverting, the race condition described in the log of commit
-> 19110cfbb34d ("e1000e: Separate signaling for link check/link up") is
-> reintroduced. It may still be triggered by LSC events but this should not
-> result in link flap. It may no longer be triggered by RXO events because
-> commit 4aea7a5c5e94 ("e1000e: Avoid receiver overrun interrupt bursts")
-> restored reading icr in the Other handler.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 1608a406751f5f7db8af43d513c9a0442ca7e845  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-With the RXO events removed the only cause for us to transition the
-bit should be LSC. I'm not sure if the race condition in that state is
-a valid concern or not as the LSC should only get triggered if the
-link state toggled, even briefly.
+elapsed time: 84m
 
-The bigger concern I would have would be the opposite of the original
-race that was pointed out:
-    \ e1000_watchdog_task
-        \ e1000e_has_link
-            \ hw->mac.ops.check_for_link() === e1000e_check_for_copper_link
-                /* link is up */
-                mac->get_link_status = false;
+configs tested: 170
 
-                                /* interrupt */
-                                \ e1000_msix_other
-                                    hw->mac.get_link_status = true;
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-            link_active = !hw->mac.get_link_status
-            /* link_active is false, wrongly */
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                randconfig-it0-01262359
+i386                               tinyconfig
+i386                   randconfig-x015-201803
+i386                   randconfig-x010-201803
+i386                   randconfig-x019-201803
+i386                   randconfig-x014-201803
+i386                   randconfig-x017-201803
+i386                   randconfig-x011-201803
+i386                   randconfig-x012-201803
+i386                   randconfig-x016-201803
+i386                   randconfig-x013-201803
+i386                   randconfig-x018-201803
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-n0-201803
+i386                     randconfig-i1-201803
+arm                          iop33x_defconfig
+blackfin                  CM-BF537E_defconfig
+m68k                             allmodconfig
+x86_64                 randconfig-v0-01261729
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+m32r                             allmodconfig
+powerpc                 mpc832x_mds_defconfig
+s390                           gcov_defconfig
+arm                              alldefconfig
+arm                             ezx_defconfig
+sh                               j2_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x017-201803
+x86_64                 randconfig-x018-201803
+x86_64                 randconfig-x016-201803
+x86_64                 randconfig-x013-201803
+x86_64                 randconfig-x014-201803
+x86_64                 randconfig-x011-201803
+x86_64                 randconfig-x012-201803
+x86_64                 randconfig-x015-201803
+x86_64                 randconfig-x019-201803
+x86_64                 randconfig-x010-201803
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-a0-201803
+i386                     randconfig-a1-201803
+x86_64                 randconfig-s0-01262249
+x86_64                 randconfig-s1-01262249
+x86_64                 randconfig-s2-01262249
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                                 defconfig
+arm                       omap2plus_defconfig
+nios2                         10m50_defconfig
+powerpc                       maple_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201803
+i386                     randconfig-s1-201803
+x86_64                 randconfig-s3-01262258
+x86_64                 randconfig-s4-01262258
+x86_64                 randconfig-s5-01262258
+x86_64                   randconfig-i0-201803
+i386                   randconfig-b0-01262045
+arm                             pxa_defconfig
+c6x                        evmc6474_defconfig
+mips                     decstation_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm64                            allmodconfig
+m32r                    mappi.nommu_defconfig
+powerpc                    socrates_defconfig
+x86_64                 randconfig-u0-01270032
+x86_64                 randconfig-u0-01270113
+alpha                             allnoconfig
+x86_64                randconfig-ne0-01262311
+x86_64                 randconfig-n0-01262228
+i386                  randconfig-sb0-01262305
+i386                   randconfig-x004-201803
+i386                   randconfig-x002-201803
+i386                   randconfig-x007-201803
+i386                   randconfig-x003-201803
+i386                   randconfig-x009-201803
+i386                   randconfig-x000-201803
+i386                   randconfig-x006-201803
+i386                   randconfig-x005-201803
+i386                   randconfig-x001-201803
+i386                   randconfig-x008-201803
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                          moxart_defconfig
+m68k                         apollo_defconfig
+sh                          sdk7780_defconfig
+powerpc                      obs600_defconfig
+x86_64                randconfig-ws0-01262334
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x071-201803
+i386                   randconfig-x079-201803
+i386                   randconfig-x077-201803
+i386                   randconfig-x072-201803
+i386                   randconfig-x076-201803
+i386                   randconfig-x075-201803
+i386                   randconfig-x073-201803
+i386                   randconfig-x070-201803
+i386                   randconfig-x074-201803
+i386                   randconfig-x078-201803
+x86_64                 randconfig-x008-201803
+x86_64                 randconfig-x005-201803
+x86_64                 randconfig-x000-201803
+x86_64                 randconfig-x009-201803
+x86_64                 randconfig-x007-201803
+x86_64                 randconfig-x002-201803
+x86_64                 randconfig-x001-201803
+x86_64                 randconfig-x006-201803
+x86_64                 randconfig-x003-201803
+x86_64                 randconfig-x004-201803
+i386                   randconfig-x0-01262255
 
-So the question I would have is what if we see the LSC for a link down
-just after the check_for_copper_link call completes? It may not be
-anything seen in the real world since I don't know if we have any link
-flapping issues on e1000e or not without this patch. It is something
-to keep in mind for the future though.
-
-
-> As discussed, the driver should be in "maintenance mode". In the interest
-> of stability, revert to the original code as much as possible instead of a
-> half-baked solution.
-
-If nothing else we may want to do a follow-up on this patch as we
-probably shouldn't be returning the error values to trigger link up.
-There are definitely issues to be found here. If nothing else we may
-want to explore just returning 1 if auto-neg is disabled instead of
-returning an error code.
-
-> Link: https://www.spinics.net/lists/netdev/msg479923.html
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
-> ---
->  drivers/net/ethernet/intel/e1000e/ich8lan.c | 11 +++--------
->  drivers/net/ethernet/intel/e1000e/mac.c     | 11 +++--------
->  drivers/net/ethernet/intel/e1000e/netdev.c  |  2 +-
->  3 files changed, 7 insertions(+), 17 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> index 31277d3bb7dc..d6d4ed7acf03 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> @@ -1367,9 +1367,6 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
->   *  Checks to see of the link status of the hardware has changed.  If a
->   *  change in link status has been detected, then we read the PHY registers
->   *  to get the current speed/duplex if link exists.
-> - *
-> - *  Returns a negative error code (-E1000_ERR_*) or 0 (link down) or 1 (link
-> - *  up).
->   **/
->  static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->  {
-> @@ -1385,7 +1382,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->          * Change or Rx Sequence Error interrupt.
->          */
->         if (!mac->get_link_status)
-> -               return 1;
-> +               return 0;
->
->         /* First we want to see if the MII Status Register reports
->          * link.  If so, then we want to get the current speed/duplex
-> @@ -1616,12 +1613,10 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->          * different link partner.
->          */
->         ret_val = e1000e_config_fc_after_link_up(hw);
-> -       if (ret_val) {
-> +       if (ret_val)
->                 e_dbg("Error configuring flow control\n");
-> -               return ret_val;
-> -       }
->
-> -       return 1;
-> +       return ret_val;
->  }
->
->  static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
-> diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
-> index f457c5703d0c..b322011ec282 100644
-> --- a/drivers/net/ethernet/intel/e1000e/mac.c
-> +++ b/drivers/net/ethernet/intel/e1000e/mac.c
-> @@ -410,9 +410,6 @@ void e1000e_clear_hw_cntrs_base(struct e1000_hw *hw)
->   *  Checks to see of the link status of the hardware has changed.  If a
->   *  change in link status has been detected, then we read the PHY registers
->   *  to get the current speed/duplex if link exists.
-> - *
-> - *  Returns a negative error code (-E1000_ERR_*) or 0 (link down) or 1 (link
-> - *  up).
->   **/
->  s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
->  {
-> @@ -426,7 +423,7 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
->          * Change or Rx Sequence Error interrupt.
->          */
->         if (!mac->get_link_status)
-> -               return 1;
-> +               return 0;
->
->         /* First we want to see if the MII Status Register reports
->          * link.  If so, then we want to get the current speed/duplex
-> @@ -464,12 +461,10 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
->          * different link partner.
->          */
->         ret_val = e1000e_config_fc_after_link_up(hw);
-> -       if (ret_val) {
-> +       if (ret_val)
->                 e_dbg("Error configuring flow control\n");
-> -               return ret_val;
-> -       }
->
-> -       return 1;
-> +       return ret_val;
->  }
->
->  /**
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 398e940436f8..ed103b9a8d3a 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -5091,7 +5091,7 @@ static bool e1000e_has_link(struct e1000_adapter *adapter)
->         case e1000_media_type_copper:
->                 if (hw->mac.get_link_status) {
->                         ret_val = hw->mac.ops.check_for_link(hw);
-> -                       link_active = ret_val > 0;
-> +                       link_active = !hw->mac.get_link_status;
->                 } else {
->                         link_active = true;
->                 }
-> --
-> 2.15.1
->
+Thanks,
+Fengguang
