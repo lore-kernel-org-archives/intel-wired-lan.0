@@ -1,166 +1,88 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 27 Jan 2018 03:36:09 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE] BUILD SUCCESS
- 2bafa8fac19a31ca72ae1a3e48df35f73661dbed
-Message-ID: <5a6b8329.j7nOaoBfNIqFUd8h%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 26 Jan 2018 13:01:11 -0800
+Subject: [Intel-wired-lan] [PATCH 3/3] Revert "e1000e: Do not read ICR
+ in Other interrupt"
+In-Reply-To: <20180126091236.13044-4-bpoirier@suse.com>
+References: <20180126091236.13044-1-bpoirier@suse.com>
+ <20180126091236.13044-4-bpoirier@suse.com>
+Message-ID: <CAKgT0Ue+JNL91jr08Ks3+Oj21fNApwuQH=bDEs2o3BKPigpyEA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
-branch HEAD: 2bafa8fac19a31ca72ae1a3e48df35f73661dbed  ixgbe: don't set RXDCTL.RLPML for 82599
+On Fri, Jan 26, 2018 at 1:12 AM, Benjamin Poirier <bpoirier@suse.com> wrote:
+> This reverts commit 16ecba59bc333d6282ee057fb02339f77a880beb.
+>
+> It was reported that emulated e1000e devices in vmware esxi 6.5 Build
+> 7526125 do not link up after commit 4aea7a5c5e94 ("e1000e: Avoid receiver
+> overrun interrupt bursts"). Some tracing shows that after
+> e1000e_trigger_lsc() is called, ICR reads out as 0x0 in e1000_msix_other()
+> on emulated e1000e devices. In comparison, on real e1000e 82574 hardware,
+> icr=0x80000004 (_INT_ASSERTED | _LSC) in the same situation.
+>
+> Some experimentation showed that this flaw in vmware e1000e emulation can
+> be worked around by not setting Other in EIAC. This is how it was before
+> commit 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt").
+>
+> Since the ICR read in the Other interrupt handler has already been
+> restored, this patch effectively reverts the remainder of commit
+> 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt").
+>
+> Fixes: 4aea7a5c5e94 ("e1000e: Avoid receiver overrun interrupt bursts")
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index ed103b9a8d3a..fffc1f0e3895 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -1916,6 +1916,13 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+>         struct e1000_hw *hw = &adapter->hw;
+>         u32 icr = er32(ICR);
+>
+> +       /* Certain events (such as RXO) which trigger Other do not set
+> +        * INT_ASSERTED. In that case, read to clear of icr does not take
+> +        * place.
+> +        */
+> +       if (!(icr & E1000_ICR_INT_ASSERTED))
+> +               ew32(ICR, E1000_ICR_OTHER);
+> +
 
-elapsed time: 67m
+This piece doesn't make sense to me. Why are we clearing OTHER if
+ICR_INT_ASSERTED is not set? The original code that was removed was in
+commit 4d432f67ff00 "e1000e: Remove unreachable code" was setting IMS
+and returning, not clearing the ICR register. I would argue that the
+code is probably unreachable and if we just have the checks for OTHER
+and LSC then we should be taking care of all of this in the task
+anyway. All this code the code in the original was doing was
+re-enabling the interrupt via IMS so we probably don't need this bit
+as long as we are clearing OTHER and LSC when they are set so that we
+can get future interrupts.
 
-configs tested: 142
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                randconfig-it0-01270237
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201803
-x86_64                 randconfig-x008-201803
-x86_64                 randconfig-x005-201803
-x86_64                 randconfig-x000-201803
-x86_64                 randconfig-x009-201803
-x86_64                 randconfig-x007-201803
-x86_64                 randconfig-x002-201803
-x86_64                 randconfig-x001-201803
-x86_64                 randconfig-x006-201803
-x86_64                 randconfig-x003-201803
-x86_64                 randconfig-x004-201803
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201803
-i386                     randconfig-i1-201803
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                     randconfig-a1-201803
-i386                     randconfig-a0-201803
-x86_64                 randconfig-s0-01270237
-x86_64                 randconfig-s1-01270237
-x86_64                 randconfig-s2-01270237
-x86_64                 randconfig-x017-201803
-x86_64                 randconfig-x018-201803
-x86_64                 randconfig-x016-201803
-x86_64                 randconfig-x013-201803
-x86_64                 randconfig-x014-201803
-x86_64                 randconfig-x011-201803
-x86_64                 randconfig-x012-201803
-x86_64                 randconfig-x015-201803
-x86_64                 randconfig-x019-201803
-x86_64                 randconfig-x010-201803
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201803
-i386                     randconfig-s1-201803
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-01270157
-x86_64                 randconfig-s4-01270157
-x86_64                 randconfig-s5-01270157
-i386                               tinyconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-b0-01270301
-ia64                            sim_defconfig
-sh                               allmodconfig
-x86_64                 randconfig-u0-01270310
-i386                   randconfig-x015-201803
-i386                   randconfig-x010-201803
-i386                   randconfig-x019-201803
-i386                   randconfig-x014-201803
-i386                   randconfig-x017-201803
-i386                   randconfig-x011-201803
-i386                   randconfig-x012-201803
-i386                   randconfig-x016-201803
-i386                   randconfig-x013-201803
-i386                   randconfig-x018-201803
-i386                             allmodconfig
-i386                   randconfig-x071-201803
-i386                   randconfig-x079-201803
-i386                   randconfig-x077-201803
-i386                   randconfig-x072-201803
-i386                   randconfig-x076-201803
-i386                   randconfig-x075-201803
-i386                   randconfig-x073-201803
-i386                   randconfig-x070-201803
-i386                   randconfig-x074-201803
-i386                   randconfig-x078-201803
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-x004-201803
-i386                   randconfig-x002-201803
-i386                   randconfig-x007-201803
-i386                   randconfig-x003-201803
-i386                   randconfig-x009-201803
-i386                   randconfig-x000-201803
-i386                   randconfig-x006-201803
-i386                   randconfig-x005-201803
-i386                   randconfig-x001-201803
-i386                   randconfig-x008-201803
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-
-Thanks,
-Fengguang
+>         if (icr & adapter->eiac_mask)
+>                 ew32(ICS, (icr & adapter->eiac_mask));
+>
+> @@ -2033,7 +2040,6 @@ static void e1000_configure_msix(struct e1000_adapter *adapter)
+>                        hw->hw_addr + E1000_EITR_82574(vector));
+>         else
+>                 writel(1, hw->hw_addr + E1000_EITR_82574(vector));
+> -       adapter->eiac_mask |= E1000_IMS_OTHER;
+>
+>         /* Cause Tx interrupts on every write back */
+>         ivar |= BIT(31);
+> @@ -2258,7 +2264,7 @@ static void e1000_irq_enable(struct e1000_adapter *adapter)
+>
+>         if (adapter->msix_entries) {
+>                 ew32(EIAC_82574, adapter->eiac_mask & E1000_EIAC_MASK_82574);
+> -               ew32(IMS, adapter->eiac_mask | E1000_IMS_LSC);
+> +               ew32(IMS, adapter->eiac_mask | E1000_IMS_OTHER | E1000_IMS_LSC);
+>         } else if (hw->mac.type >= e1000_pch_lpt) {
+>                 ew32(IMS, IMS_ENABLE_MASK | E1000_IMS_ECCER);
+>         } else {
+> --
+> 2.15.1
+>
