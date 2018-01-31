@@ -1,65 +1,137 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Tue, 30 Jan 2018 16:51:12 -0800
-Subject: [Intel-wired-lan] [PATCH 1/9] ixgbevf: use page_address offset from
- page
+Date: Tue, 30 Jan 2018 16:51:17 -0800
+Subject: [Intel-wired-lan] [PATCH 2/9] ixgbevf: add ethtool private flag for
+ legacy Rx
 In-Reply-To: <20180131005015.19264.44085.stgit@localhost6.localdomain6>
 References: <20180131005015.19264.44085.stgit@localhost6.localdomain6>
-Message-ID: <20180131005112.19264.46341.stgit@localhost6.localdomain6>
+Message-ID: <20180131005117.19264.16322.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Based on commit 3456fd53421e
-("igb: Use page_address offset from page instead of masking virtual address")
+Introduce legacy-rx private flag that will allow switching between the
+old and new (build_skb based) Rx code paths. The implementation is the
+same as in commit e08912985b29
+("igb: Add support for ethtool private flag to allow use of legacy Rx")
 
-Update the handling of page addresses so that we always refer to them using
-a void pointer, and try to use the consistent name of va indicating we are
-working with a virtual address.
+This provides a means of validating the legacy Rx path in the event that
+we are forced to fall back.  At some point in the future when we are
+convinced we don't need it anymore we might be able to drop the legacy-rx
+flag.
 
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c |   48 ++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h |    2 +
+ 2 files changed, 50 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 9b3d43d..604b026 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -795,7 +795,7 @@ static bool ixgbevf_add_rx_frag(struct ixgbevf_ring *rx_ring,
- 				struct sk_buff *skb)
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+index 4400e49..e7623fe 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+@@ -94,6 +94,13 @@ struct ixgbe_stats {
+ 
+ #define IXGBEVF_TEST_LEN (sizeof(ixgbe_gstrings_test) / ETH_GSTRING_LEN)
+ 
++static const char ixgbevf_priv_flags_strings[][ETH_GSTRING_LEN] = {
++#define IXGBEVF_PRIV_FLAGS_LEGACY_RX	BIT(0)
++	"legacy-rx",
++};
++
++#define IXGBEVF_PRIV_FLAGS_STR_LEN ARRAY_SIZE(ixgbevf_priv_flags_strings)
++
+ static int ixgbevf_get_link_ksettings(struct net_device *netdev,
+ 				      struct ethtool_link_ksettings *cmd)
  {
- 	struct page *page = rx_buffer->page;
--	unsigned char *va = page_address(page) + rx_buffer->page_offset;
-+	void *va = page_address(page) + rx_buffer->page_offset;
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = IXGBEVF_RX_BUFSZ;
- #else
-@@ -831,7 +831,7 @@ static bool ixgbevf_add_rx_frag(struct ixgbevf_ring *rx_ring,
- 
- add_tail_frag:
- 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, page,
--			(unsigned long)va & ~PAGE_MASK, size, truesize);
-+			va - page_address(page), size, truesize);
- 
- 	return ixgbevf_can_reuse_rx_page(rx_buffer, page, truesize);
+@@ -241,6 +248,8 @@ static void ixgbevf_get_drvinfo(struct net_device *netdev,
+ 		sizeof(drvinfo->version));
+ 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev),
+ 		sizeof(drvinfo->bus_info));
++
++	drvinfo->n_priv_flags = IXGBEVF_PRIV_FLAGS_STR_LEN;
  }
-@@ -856,13 +856,12 @@ static struct sk_buff *ixgbevf_fetch_rx_buffer(struct ixgbevf_ring *rx_ring,
- 				      DMA_FROM_DEVICE);
  
- 	if (likely(!skb)) {
--		void *page_addr = page_address(page) +
--				  rx_buffer->page_offset;
-+		void *va = page_address(page) + rx_buffer->page_offset;
+ static void ixgbevf_get_ringparam(struct net_device *netdev,
+@@ -392,6 +401,8 @@ static int ixgbevf_get_sset_count(struct net_device *netdev, int stringset)
+ 		return IXGBEVF_TEST_LEN;
+ 	case ETH_SS_STATS:
+ 		return IXGBEVF_STATS_LEN;
++	case ETH_SS_PRIV_FLAGS:
++		return IXGBEVF_PRIV_FLAGS_STR_LEN;
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -496,6 +507,10 @@ static void ixgbevf_get_strings(struct net_device *netdev, u32 stringset,
+ 			p += ETH_GSTRING_LEN;
+ 		}
+ 		break;
++	case ETH_SS_PRIV_FLAGS:
++		memcpy(data, ixgbevf_priv_flags_strings,
++		       IXGBEVF_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
++		break;
+ 	}
+ }
  
- 		/* prefetch first cache line of first page */
--		prefetch(page_addr);
-+		prefetch(va);
- #if L1_CACHE_BYTES < 128
--		prefetch(page_addr + L1_CACHE_BYTES);
-+		prefetch(va + L1_CACHE_BYTES);
- #endif
+@@ -888,6 +903,37 @@ static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+ 	return err;
+ }
  
- 		/* allocate a skb to store the frags */
++static u32 ixgbevf_get_priv_flags(struct net_device *netdev)
++{
++	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
++	u32 priv_flags = 0;
++
++	if (adapter->flags & IXGBEVF_FLAGS_LEGACY_RX)
++		priv_flags |= IXGBEVF_PRIV_FLAGS_LEGACY_RX;
++
++	return priv_flags;
++}
++
++static int ixgbevf_set_priv_flags(struct net_device *netdev, u32 priv_flags)
++{
++	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
++	unsigned int flags = adapter->flags;
++
++	flags &= ~IXGBEVF_FLAGS_LEGACY_RX;
++	if (priv_flags & IXGBEVF_PRIV_FLAGS_LEGACY_RX)
++		flags |= IXGBEVF_FLAGS_LEGACY_RX;
++
++	if (flags != adapter->flags) {
++		adapter->flags = flags;
++
++		/* reset interface to repopulate queues */
++		if (netif_running(netdev))
++			ixgbevf_reinit_locked(adapter);
++	}
++
++	return 0;
++}
++
+ static const struct ethtool_ops ixgbevf_ethtool_ops = {
+ 	.get_drvinfo		= ixgbevf_get_drvinfo,
+ 	.get_regs_len		= ixgbevf_get_regs_len,
+@@ -909,6 +955,8 @@ static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+ 	.get_rxfh_key_size	= ixgbevf_get_rxfh_key_size,
+ 	.get_rxfh		= ixgbevf_get_rxfh,
+ 	.get_link_ksettings	= ixgbevf_get_link_ksettings,
++	.get_priv_flags		= ixgbevf_get_priv_flags,
++	.set_priv_flags		= ixgbevf_set_priv_flags,
+ };
+ 
+ void ixgbevf_set_ethtool_ops(struct net_device *netdev)
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index f695242..62a3669 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -331,6 +331,8 @@ struct ixgbevf_adapter {
+ 
+ 	u32 *rss_key;
+ 	u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
++	u32 flags;
++#define IXGBEVF_FLAGS_LEGACY_RX		BIT(1)
+ };
+ 
+ enum ixbgevf_state_t {
 
