@@ -1,80 +1,60 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Tue, 30 Jan 2018 16:51:54 -0800
-Subject: [Intel-wired-lan] [PATCH 9/9] ixgbevf: add build_skb support
-In-Reply-To: <20180131005015.19264.44085.stgit@localhost6.localdomain6>
-References: <20180131005015.19264.44085.stgit@localhost6.localdomain6>
-Message-ID: <20180131005154.19264.9737.stgit@localhost6.localdomain6>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Wed, 31 Jan 2018 16:26:27 +0900
+Subject: [Intel-wired-lan] [PATCH net] e1000e: Remove Other from EIAC.
+Message-ID: <20180131072627.18305-1-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add support for build_skb() similar to:
-commit 6f429223b31c ("ixgbe: Add support for build_skb")
+It was reported that emulated e1000e devices in vmware esxi 6.5 Build
+7526125 do not link up after commit 4aea7a5c5e94 ("e1000e: Avoid receiver
+overrun interrupt bursts", v4.15-rc1). Some tracing shows that after
+e1000e_trigger_lsc() is called, ICR reads out as 0x0 in e1000_msix_other()
+on emulated e1000e devices. In comparison, on real e1000e 82574 hardware,
+icr=0x80000004 (_INT_ASSERTED | _LSC) in the same situation.
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Some experimentation showed that this flaw in vmware e1000e emulation can
+be worked around by not setting Other in EIAC. This is how it was before
+16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt", v4.5-rc1).
+
+Fixes: 4aea7a5c5e94 ("e1000e: Avoid receiver overrun interrupt bursts")
+Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   41 +++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+ drivers/net/ethernet/intel/e1000e/netdev.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index cd8c0a0..74fcb4c 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -910,6 +910,44 @@ static inline void ixgbevf_irq_enable_queues(struct ixgbevf_adapter *adapter,
- 	IXGBE_WRITE_REG(hw, IXGBE_VTEIMS, qmask);
- }
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 9f18d39bdc8f..625a4c9a86a4 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -1918,6 +1918,8 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+ 	bool enable = true;
  
-+static struct sk_buff *ixgbevf_build_skb(struct ixgbevf_ring *rx_ring,
-+					 struct ixgbevf_rx_buffer *rx_buffer,
-+					 union ixgbe_adv_rx_desc *rx_desc,
-+					 unsigned int size)
-+{
-+	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+#if (PAGE_SIZE < 8192)
-+	unsigned int truesize = ixgbevf_rx_pg_size(rx_ring) / 2;
-+#else
-+	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
-+				SKB_DATA_ALIGN(IXGBEVF_SKB_PAD + size);
-+#endif
-+	struct sk_buff *skb;
+ 	icr = er32(ICR);
++	ew32(ICR, E1000_ICR_OTHER);
 +
-+	/* prefetch first cache line of first page */
-+	prefetch(va);
-+#if L1_CACHE_BYTES < 128
-+	prefetch(va + L1_CACHE_BYTES);
-+#endif
-+
-+	/* build an skb to around the page buffer */
-+	skb = build_skb(va - IXGBEVF_SKB_PAD, truesize);
-+	if (unlikely(!skb))
-+		return NULL;
-+
-+	/* update pointers within the skb to store the data */
-+	skb_reserve(skb, IXGBEVF_SKB_PAD);
-+	__skb_put(skb, size);
-+
-+	/* update buffer offset */
-+#if (PAGE_SIZE < 8192)
-+	rx_buffer->page_offset ^= truesize;
-+#else
-+	rx_buffer->page_offset += truesize;
-+#endif
-+
-+	return skb;
-+}
- static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
- 				struct ixgbevf_ring *rx_ring,
- 				int budget)
-@@ -945,6 +983,9 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
- 		/* retrieve a buffer from the ring */
- 		if (skb)
- 			ixgbevf_add_rx_frag(rx_ring, rx_buffer, skb, size);
-+		else if (ring_uses_build_skb(rx_ring))
-+			skb = ixgbevf_build_skb(rx_ring, rx_buffer,
-+						rx_desc, size);
- 		else
- 			skb = ixgbevf_construct_skb(rx_ring, rx_buffer,
- 						    rx_desc, size);
+ 	if (icr & E1000_ICR_RXO) {
+ 		ew32(ICR, E1000_ICR_RXO);
+ 		enable = false;
+@@ -2040,7 +2042,6 @@ static void e1000_configure_msix(struct e1000_adapter *adapter)
+ 		       hw->hw_addr + E1000_EITR_82574(vector));
+ 	else
+ 		writel(1, hw->hw_addr + E1000_EITR_82574(vector));
+-	adapter->eiac_mask |= E1000_IMS_OTHER;
+ 
+ 	/* Cause Tx interrupts on every write back */
+ 	ivar |= BIT(31);
+@@ -2265,7 +2266,7 @@ static void e1000_irq_enable(struct e1000_adapter *adapter)
+ 
+ 	if (adapter->msix_entries) {
+ 		ew32(EIAC_82574, adapter->eiac_mask & E1000_EIAC_MASK_82574);
+-		ew32(IMS, adapter->eiac_mask | E1000_IMS_LSC);
++		ew32(IMS, adapter->eiac_mask | E1000_IMS_OTHER | E1000_IMS_LSC);
+ 	} else if (hw->mac.type >= e1000_pch_lpt) {
+ 		ew32(IMS, IMS_ENABLE_MASK | E1000_IMS_ECCER);
+ 	} else {
+-- 
+2.15.1
 
