@@ -1,43 +1,52 @@
-From: Michal Kubecek <mkubecek@suse.cz>
-Date: Thu, 1 Feb 2018 13:47:32 +0100
-Subject: [Intel-wired-lan] regression in igb driver from commit 182785335447
-Message-ID: <20180201124732.udjgedoktitzqqdm@unicorn.suse.cz>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 1 Feb 2018 12:29:24 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: remove redundant
+ initialization of variable 'dma'.
+In-Reply-To: <20180201183539.24776-1-colin.king@canonical.com>
+References: <20180201183539.24776-1-colin.king@canonical.com>
+Message-ID: <CAKgT0UdjYMWV4x7-yy4pkA_8cNY+Bvc4WvJ0yKYRKO5dWf9mTA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-one of my colleagues observed a regression in recent 4.4.x kernels on
-one of test machines with 82575EB NIC (rev 02, 8086:10a7, firmware
-version 1.6.5). On boot, first port fails to initialize and only the net
-device for second is created. Kernel log looks like
+On Thu, Feb 1, 2018 at 10:35 AM, Colin King <colin.king@canonical.com> wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+>
+> Variable dma is initialized with a value that is never read, later
+> on it is re-assigned a new value, hence the initialization is redundant
+> and can be removed.
+>
+> Cleans up clang warning:
+> drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:584:13: warning: Value
+> stored to 'dma' during its initialization is never read
+>
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-[   13.710535] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
-[   13.710538] igb: Copyright (c) 2007-2014 Intel Corporation.
-[   13.710584] igb 0000:08:00.0: PCI->APIC IRQ transform: INT A -> IRQ 56
-[   13.712126] igb: probe of 0000:08:00.0 failed with error -2
-[   13.712152] igb 0000:08:00.1: PCI->APIC IRQ transform: INT B -> IRQ 70
-[   13.904537] igb 0000:08:00.1: Intel(R) Gigabit Ethernet Network Connection
-[   13.904545] igb 0000:08:00.1: eth0: (PCIe:2.5Gb/s:Width x4) 00:30:48:7b:5d:37
-[   13.904547] igb 0000:08:00.1: eth0: PBA No: Unknown
-[   13.904556] igb 0000:08:00.1: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
-[   13.927029] igb 0000:08:00.1 eth1: renamed from eth0
+Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Checking the changelog led us to a stable-4.4.y backport of mainline
-commit 182785335447 ("igb: reset the PHY before reading the PHY ID") as
-the most promising suspect and reverting it fixed the issue.
-
-I also reproduced the issue with 4.15 kernel, except this time both
-ports of the card failed to probe:
-
-[   16.826649] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
-[   16.840784] igb: Copyright (c) 2007-2014 Intel Corporation.
-[   16.852176] igb 0000:08:00.0: PCI->APIC IRQ transform: INT A -> IRQ 56
-[   16.867919] igb: probe of 0000:08:00.0 failed with error -2
-[   16.879254] igb 0000:08:00.1: PCI->APIC IRQ transform: INT B -> IRQ 70
-[   16.898178] igb: probe of 0000:08:00.1 failed with error -2
-
-Reverting commit 182785335447 fixed the issue here as well.
-
-Michal Kubecek
+> ---
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> index 9b3d43d28106..be50facec93f 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> @@ -558,7 +558,7 @@ static bool ixgbevf_alloc_mapped_page(struct ixgbevf_ring *rx_ring,
+>                                       struct ixgbevf_rx_buffer *bi)
+>  {
+>         struct page *page = bi->page;
+> -       dma_addr_t dma = bi->dma;
+> +       dma_addr_t dma;
+>
+>         /* since we are recycling buffers we should seldom need to alloc */
+>         if (likely(page))
+> --
+> 2.15.1
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
