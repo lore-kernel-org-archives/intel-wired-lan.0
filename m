@@ -1,63 +1,52 @@
-From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-Date: Thu, 1 Feb 2018 12:55:59 -0800
-Subject: [Intel-wired-lan] [RFC v2 net-next 01/10] net: Add a new socket
- option for a future transmit time.
-In-Reply-To: <20180201092726.GH10203@localhost>
-References: <20180117230621.26074-1-jesus.sanchez-palencia@intel.com>
- <20180117230621.26074-2-jesus.sanchez-palencia@intel.com>
- <20180118084227.GL1175@localhost> <20180118171335.bhyl76wobdffedho@localhost>
- <8e77a23e-d8f8-78ee-f681-0aa689ba3d22@intel.com>
- <20180201092726.GH10203@localhost>
-Message-ID: <4a962e5a-37b7-291d-d1de-7d32fd4961bf@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 1 Feb 2018 15:46:15 -0800
+Subject: [Intel-wired-lan] Possible read-modify-write bug in ixgbe x550 phy
+ setup
+Message-ID: <59b6e262-8027-675c-f75e-3a95d3a97e4f@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+Hi Emil,
+
+I was looking through a set of ixgbe patches and came across this commit
+
+     commit 410a494902777c11f95031d9ed757d7f8f09c5c6
+     ixgbe: add write flush when configuring CS4223/7
+
+and am wondering about the setting of reg_phy_ext in the middle of 
+ixgbe_setup_mac_link_sfp_x550a().  It looks like it is read from the 
+PHY, modified to remove the CX1 and SR mode bits, but then those bits 
+are overwritten in the "if (setup_linear)" block immediately following, 
+and that is what gets written back out.
+
+	ret_val = hw->phy.ops.read_reg(hw, reg_slice,
+				       IXGBE_MDIO_ZERO_DEV_TYPE, &reg_phy_ext);
+	if (ret_val)
+		return ret_val;
+
+	reg_phy_ext &= ~((IXGBE_CS4227_EDC_MODE_CX1 << 1) |
+			 (IXGBE_CS4227_EDC_MODE_SR << 1));
+
+	if (setup_linear)
+		reg_phy_ext = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
+	else
+		reg_phy_ext = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
+
+	ret_val = hw->phy.ops.write_reg(hw, reg_slice,
+					IXGBE_MDIO_ZERO_DEV_TYPE, reg_phy_ext);
+	if (ret_val)
+		return ret_val;
 
 
-On 02/01/2018 01:27 AM, Miroslav Lichvar wrote:
-> On Wed, Jan 31, 2018 at 04:49:36PM -0800, Jesus Sanchez-Palencia wrote:
->> On 01/18/2018 09:13 AM, Richard Cochran wrote:
->>> Right, the clockid_t should be passed in through the CMSG along with
->>> the time.
->>
->> While implementing this today it crossed my mind that why don't we have the
->> clockid_t set per socket (e.g. as an argument to SO_TXTIME) instead of per packet?
-> 
-> I suspect that might have an impact on the performance. Even if the
-> application doesn't use sendmmsg(), it would possibly have to call
-> setsockopt() before each sendmsg() to change the clockid_t, right?
+The assignments to reg_phy_ext look wrong to me - perhaps those should 
+be '|=' rather than '='?
 
+sln
 
-Yes. On the other hand, for applications that will be using only 1 clockid_t,
-keeping it per packet will also have an impact as we'll be copying the same
-value from the cmsg cookie into sk_buffs over and over.
-
-
-> 
-> If clockid_t could be set per packet, a special value could be used
-> to allow sending on interfaces that don't support it.
-> 
->> The only use-case that we could think of that would be 'blocked' was using
->> sendmmsg() to send a packet to different interfaces with a single syscall, but
->> I'm not sure how common that is.
-> 
-> The SO_TXTIME option will make sendmmsg() useful in applications where
-> it wasn't before. For instance, an NTP server will be able to batch
-> multiple responses as their transmit timestamps can be set accurately
-> in advance and it's no longer necessary to send the responses as soon
-> as they are assembled.
-> 
-> I think it would be nice the sendmmsg() calls didn't have to be split
-> by clockid_t.
-
-
-OK, fair enough. I will keep it per-packet for now as initially agreed and we
-can revisit this later if needed.
-
-
-Thanks,
-Jesus
+-- 
+==================================================
+Shannon Nelson           shannon.nelson at oracle.com
+Parents can't afford to be squeamish
