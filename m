@@ -1,73 +1,143 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 2 Feb 2018 23:25:37 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: Do not call
- netif_device_detach() when PCIe link goes missing
-In-Reply-To: <20180123102841.9350-1-mika.westerberg@linux.intel.com>
-References: <20180123102841.9350-1-mika.westerberg@linux.intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7D1013@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 03 Feb 2018 08:43:13 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 1222c915845e9a8fb755dd566e83d2cb8a7b16c4
+Message-ID: <5a7505a1.TbjcD/0UEzdufR4g%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-
-> owner at vger.kernel.org] On Behalf Of Mika Westerberg
-> Sent: Tuesday, January 23, 2018 2:29 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: Ferenc Boldog <ferenc.boldog@gmail.com>; Nikolay Bogoychev
-> <nheart@gmail.com>; Mika Westerberg
-> <mika.westerberg@linux.intel.com>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org
-> Subject: [PATCH] igb: Do not call netif_device_detach() when PCIe link goes
-> missing
-> 
-> When the driver notices that PCIe link is gone by reading 0xffffffff
-> from a register it clears hw->hw_addr and then calls netif_device_detach().
-> This happens when the PCIe device is physically unplugged for example
-> the user disconnected the Thunderbolt cable.
-> 
-> However, netif_device_detach() prevents netif_unregister() from bringing
-> the device down properly including tearing down MSI-X vectors. This
-> triggers following crash during the driver removal:
-> 
->   igb 0000:0b:00.0 enp11s0f0: PCIe link lost, device now detached
->   ------------[ cut here ]------------
->   kernel BUG at drivers/pci/msi.c:352!
->   invalid opcode: 0000 [#1] PREEMPT SMP PTI
->   ...
->   Call Trace:
->    pci_disable_msix+0xc9/0xf0
->    igb_reset_interrupt_capability+0x58/0x60 [igb]
->    igb_remove+0x90/0x100 [igb]
->    pci_device_remove+0x31/0xa0
->    device_release_driver_internal+0x152/0x210
->    pci_stop_bus_device+0x78/0xa0
->    pci_stop_bus_device+0x38/0xa0
->    pci_stop_bus_device+0x38/0xa0
->    pci_stop_bus_device+0x26/0xa0
->    pci_stop_bus_device+0x38/0xa0
->    pci_stop_and_remove_bus_device+0x9/0x20
->    trim_stale_devices+0xee/0x130
->    ? _raw_spin_unlock_irqrestore+0xf/0x30
->    trim_stale_devices+0x8f/0x130
->    ? _raw_spin_unlock_irqrestore+0xf/0x30
->    trim_stale_devices+0xa1/0x130
->    ? get_slot_status+0x8b/0xc0
->    acpiphp_check_bridge.part.7+0xf9/0x140
->    acpiphp_hotplug_notify+0x170/0x1f0
->    ...
-> 
-> To prevent the crash do not call netif_device_detach() in igb_rd32().
-> This should be fine because hw->hw_addr is set to NULL preventing future
-> hardware access of the now missing device.
-> 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=198181
-> Reported-by: Ferenc Boldog <ferenc.boldog@gmail.com>
-> Reported-by: Nikolay Bogoychev <nheart@gmail.com>
-> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 1222c915845e9a8fb755dd566e83d2cb8a7b16c4  i40e: i40e_open() should fail if forcing link state returned error
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+elapsed time: 101m
+
+configs tested: 119
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+m32r                           usrv_defconfig
+mips                      pistachio_defconfig
+openrisc                            defconfig
+x86_64                 randconfig-a0-02030656
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x019-201804
+i386                   randconfig-x010-201804
+i386                   randconfig-x015-201804
+i386                   randconfig-x014-201804
+i386                   randconfig-x012-201804
+i386                   randconfig-x011-201804
+i386                   randconfig-x017-201804
+i386                   randconfig-x016-201804
+i386                   randconfig-x018-201804
+i386                   randconfig-x013-201804
+i386                     randconfig-n0-201804
+x86_64                 randconfig-x008-201804
+x86_64                 randconfig-x000-201804
+x86_64                 randconfig-x005-201804
+x86_64                 randconfig-x002-201804
+x86_64                 randconfig-x007-201804
+x86_64                 randconfig-x009-201804
+x86_64                 randconfig-x006-201804
+x86_64                 randconfig-x001-201804
+x86_64                 randconfig-x003-201804
+x86_64                 randconfig-x004-201804
+i386                     randconfig-i0-201804
+i386                     randconfig-i1-201804
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+ia64                         bigsur_defconfig
+powerpc                      pcm030_defconfig
+powerpc                     tqm8560_defconfig
+sh                            migor_defconfig
+sh                           se7722_defconfig
+x86_64                 randconfig-x017-201804
+x86_64                 randconfig-x018-201804
+x86_64                 randconfig-x013-201804
+x86_64                 randconfig-x016-201804
+x86_64                 randconfig-x011-201804
+x86_64                 randconfig-x014-201804
+x86_64                 randconfig-x015-201804
+x86_64                 randconfig-x012-201804
+x86_64                 randconfig-x010-201804
+x86_64                 randconfig-x019-201804
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201804
+i386                     randconfig-s1-201804
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                        generic_defconfig
+parisc                           alldefconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+powerpc                     virtex5_defconfig
+sh                        sh7763rdp_defconfig
+x86_64                 randconfig-u0-02030814
+mips                           ip28_defconfig
+sh                        apsh4ad0a_defconfig
+x86_64                randconfig-ne0-02030740
+x86_64                                  kexec
+x86_64                               rhel-7.2
+x86_64                 randconfig-n0-02030809
+i386                   randconfig-x004-201804
+i386                   randconfig-x007-201804
+i386                   randconfig-x002-201804
+i386                   randconfig-x009-201804
+i386                   randconfig-x003-201804
+i386                   randconfig-x005-201804
+i386                   randconfig-x006-201804
+i386                   randconfig-x000-201804
+i386                   randconfig-x008-201804
+i386                   randconfig-x001-201804
+x86_64                              federa-25
+x86_64                                   rhel
+i386                   randconfig-x071-201804
+i386                   randconfig-x079-201804
+i386                   randconfig-x072-201804
+i386                   randconfig-x077-201804
+i386                   randconfig-x076-201804
+i386                   randconfig-x070-201804
+i386                   randconfig-x073-201804
+i386                   randconfig-x075-201804
+i386                   randconfig-x078-201804
+i386                   randconfig-x074-201804
+x86_64                 randconfig-r0-02030810
+
+Thanks,
+Fengguang
