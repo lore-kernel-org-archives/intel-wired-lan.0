@@ -1,143 +1,86 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 03 Feb 2018 08:43:13 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 1222c915845e9a8fb755dd566e83d2cb8a7b16c4
-Message-ID: <5a7505a1.TbjcD/0UEzdufR4g%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Sat, 3 Feb 2018 01:59:21 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: allocate ring descriptors
+ with dma_zalloc_coherent
+In-Reply-To: <20180126102404.GA26578@poseidon.lin.mbt.kalray.eu>
+References: <20180126102404.GA26578@poseidon.lin.mbt.kalray.eu>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7D1072@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 1222c915845e9a8fb755dd566e83d2cb8a7b16c4  i40e: i40e_open() should fail if forcing link state returned error
+> From: netdev-owner at vger.kernel.org [mailto:netdev-
+> owner at vger.kernel.org] On Behalf Of Pierre-Yves Kerbrat
+> Sent: Friday, January 26, 2018 2:24 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; Marius Gligor <mgligor@kalray.eu>
+> Subject: [PATCH] e1000e: allocate ring descriptors with dma_zalloc_coherent
+> 
+> Descriptor rings were not initialized at zero when allocated
+> When area contained garbage data, it caused skb_over_panic in
+> e1000_clean_rx_irq (if data had E1000_RXD_STAT_DD bit set)
+> 
+> This patch makes use of dma_zalloc_coherent to make sure the
+> ring is memset at 0 to prevent the area from containing garbage.
+> 
+> Following is the signature of the panic:
+> IODDR0 at 0.0: skbuff: skb_over_panic: text:80407b20 len:64010 put:64010
+> head:ab46d800 data:ab46d842 tail:0xab47d24c end:0xab46df40 dev:eth0
+> IODDR0 at 0.0: BUG: failure at net/core/skbuff.c:105/skb_panic()!
+> IODDR0 at 0.0: Kernel panic - not syncing: BUG!
+> IODDR0 at 0.0:
+> IODDR0 at 0.0: Process swapper/0 (pid: 0, threadinfo=81728000,
+> task=8173cc00 ,cpu: 0)
+> IODDR0 at 0.0: SP = <815a1c0c>
+> IODDR0 at 0.0: Stack:      00000001
+> IODDR0 at 0.0: b2d89800 815e33ac
+> IODDR0 at 0.0: ea73c040 00000001
+> IODDR0 at 0.0: 60040003 0000fa0a
+> IODDR0 at 0.0: 00000002
+> IODDR0 at 0.0:
+> IODDR0 at 0.0: 804540c0 815a1c70
+> IODDR0 at 0.0: b2744000 602ac070
+> IODDR0 at 0.0: 815a1c44 b2d89800
+> IODDR0 at 0.0: 8173cc00 815a1c08
+> IODDR0 at 0.0:
+> IODDR0 at 0.0:     00000006
+> IODDR0 at 0.0: 815a1b50 00000000
+> IODDR0 at 0.0: 80079434 00000001
+> IODDR0 at 0.0: ab46df40 b2744000
+> IODDR0 at 0.0: b2d89800
+> IODDR0 at 0.0:
+> IODDR0 at 0.0: 0000fa0a 8045745c
+> IODDR0 at 0.0: 815a1c88 0000fa0a
+> IODDR0 at 0.0: 80407b20 b2789f80
+> IODDR0 at 0.0: 00000005 80407b20
+> IODDR0 at 0.0:
+> IODDR0 at 0.0:
+> IODDR0 at 0.0: Call Trace:
+> IODDR0 at 0.0: [<804540bc>] skb_panic+0xa4/0xa8
+> IODDR0 at 0.0: [<80079430>] console_unlock+0x2f8/0x6d0
+> IODDR0 at 0.0: [<80457458>] skb_put+0xa0/0xc0
+> IODDR0 at 0.0: [<80407b1c>] e1000_clean_rx_irq+0x2dc/0x3e8
+> IODDR0 at 0.0: [<80407b1c>] e1000_clean_rx_irq+0x2dc/0x3e8
+> IODDR0 at 0.0: [<804079c8>] e1000_clean_rx_irq+0x188/0x3e8
+> IODDR0 at 0.0: [<80407b1c>] e1000_clean_rx_irq+0x2dc/0x3e8
+> IODDR0 at 0.0: [<80468b48>] __dev_kfree_skb_any+0x88/0xa8
+> IODDR0 at 0.0: [<804101ac>] e1000e_poll+0x94/0x288
+> IODDR0 at 0.0: [<8046e9d4>] net_rx_action+0x19c/0x4e8
+> IODDR0 at 0.0:   ...
+> IODDR0 at 0.0: Maximum depth to print reached. Use
+> kstack=<maximum_depth_to_print> To specify a custom value (where 0
+> means to display the full backtrace)
+> IODDR0 at 0.0: ---[ end Kernel panic - not syncing: BUG!
+> 
+> Signed-off-by: Pierre-Yves Kerbrat <pkerbrat@kalray.eu>
+> Signed-off-by: Marius Gligor <mgligor@kalray.eu>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
-elapsed time: 101m
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-configs tested: 119
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-m32r                           usrv_defconfig
-mips                      pistachio_defconfig
-openrisc                            defconfig
-x86_64                 randconfig-a0-02030656
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x019-201804
-i386                   randconfig-x010-201804
-i386                   randconfig-x015-201804
-i386                   randconfig-x014-201804
-i386                   randconfig-x012-201804
-i386                   randconfig-x011-201804
-i386                   randconfig-x017-201804
-i386                   randconfig-x016-201804
-i386                   randconfig-x018-201804
-i386                   randconfig-x013-201804
-i386                     randconfig-n0-201804
-x86_64                 randconfig-x008-201804
-x86_64                 randconfig-x000-201804
-x86_64                 randconfig-x005-201804
-x86_64                 randconfig-x002-201804
-x86_64                 randconfig-x007-201804
-x86_64                 randconfig-x009-201804
-x86_64                 randconfig-x006-201804
-x86_64                 randconfig-x001-201804
-x86_64                 randconfig-x003-201804
-x86_64                 randconfig-x004-201804
-i386                     randconfig-i0-201804
-i386                     randconfig-i1-201804
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-ia64                         bigsur_defconfig
-powerpc                      pcm030_defconfig
-powerpc                     tqm8560_defconfig
-sh                            migor_defconfig
-sh                           se7722_defconfig
-x86_64                 randconfig-x017-201804
-x86_64                 randconfig-x018-201804
-x86_64                 randconfig-x013-201804
-x86_64                 randconfig-x016-201804
-x86_64                 randconfig-x011-201804
-x86_64                 randconfig-x014-201804
-x86_64                 randconfig-x015-201804
-x86_64                 randconfig-x012-201804
-x86_64                 randconfig-x010-201804
-x86_64                 randconfig-x019-201804
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201804
-i386                     randconfig-s1-201804
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                        generic_defconfig
-parisc                           alldefconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-powerpc                     virtex5_defconfig
-sh                        sh7763rdp_defconfig
-x86_64                 randconfig-u0-02030814
-mips                           ip28_defconfig
-sh                        apsh4ad0a_defconfig
-x86_64                randconfig-ne0-02030740
-x86_64                                  kexec
-x86_64                               rhel-7.2
-x86_64                 randconfig-n0-02030809
-i386                   randconfig-x004-201804
-i386                   randconfig-x007-201804
-i386                   randconfig-x002-201804
-i386                   randconfig-x009-201804
-i386                   randconfig-x003-201804
-i386                   randconfig-x005-201804
-i386                   randconfig-x006-201804
-i386                   randconfig-x000-201804
-i386                   randconfig-x008-201804
-i386                   randconfig-x001-201804
-x86_64                              federa-25
-x86_64                                   rhel
-i386                   randconfig-x071-201804
-i386                   randconfig-x079-201804
-i386                   randconfig-x072-201804
-i386                   randconfig-x077-201804
-i386                   randconfig-x076-201804
-i386                   randconfig-x070-201804
-i386                   randconfig-x073-201804
-i386                   randconfig-x075-201804
-i386                   randconfig-x078-201804
-i386                   randconfig-x074-201804
-x86_64                 randconfig-r0-02030810
-
-Thanks,
-Fengguang
