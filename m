@@ -1,24 +1,17 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 3 Feb 2018 01:59:21 +0000
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Sun, 4 Feb 2018 10:09:07 +0200
 Subject: [Intel-wired-lan] [PATCH] e1000e: allocate ring descriptors
  with dma_zalloc_coherent
 In-Reply-To: <20180126102404.GA26578@poseidon.lin.mbt.kalray.eu>
 References: <20180126102404.GA26578@poseidon.lin.mbt.kalray.eu>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7D1072@ORSMSX101.amr.corp.intel.com>
+Message-ID: <3a4dceae-de33-4270-bbed-5aaf8c82a7bd@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-
-> owner at vger.kernel.org] On Behalf Of Pierre-Yves Kerbrat
-> Sent: Friday, January 26, 2018 2:24 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; Marius Gligor <mgligor@kalray.eu>
-> Subject: [PATCH] e1000e: allocate ring descriptors with dma_zalloc_coherent
-> 
+On 1/26/2018 12:24, Pierre-Yves Kerbrat wrote:
 > Descriptor rings were not initialized at zero when allocated
 > When area contained garbage data, it caused skb_over_panic in
 > e1000_clean_rx_irq (if data had E1000_RXD_STAT_DD bit set)
@@ -27,13 +20,11 @@ List-ID: <intel-wired-lan.osuosl.org>
 > ring is memset at 0 to prevent the area from containing garbage.
 > 
 > Following is the signature of the panic:
-> IODDR0 at 0.0: skbuff: skb_over_panic: text:80407b20 len:64010 put:64010
-> head:ab46d800 data:ab46d842 tail:0xab47d24c end:0xab46df40 dev:eth0
+> IODDR0 at 0.0: skbuff: skb_over_panic: text:80407b20 len:64010 put:64010 head:ab46d800 data:ab46d842 tail:0xab47d24c end:0xab46df40 dev:eth0
 > IODDR0 at 0.0: BUG: failure at net/core/skbuff.c:105/skb_panic()!
 > IODDR0 at 0.0: Kernel panic - not syncing: BUG!
 > IODDR0 at 0.0:
-> IODDR0 at 0.0: Process swapper/0 (pid: 0, threadinfo=81728000,
-> task=8173cc00 ,cpu: 0)
+> IODDR0 at 0.0: Process swapper/0 (pid: 0, threadinfo=81728000, task=8173cc00 ,cpu: 0)
 > IODDR0 at 0.0: SP = <815a1c0c>
 > IODDR0 at 0.0: Stack:      00000001
 > IODDR0 at 0.0: b2d89800 815e33ac
@@ -70,17 +61,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > IODDR0 at 0.0: [<804101ac>] e1000e_poll+0x94/0x288
 > IODDR0 at 0.0: [<8046e9d4>] net_rx_action+0x19c/0x4e8
 > IODDR0 at 0.0:   ...
-> IODDR0 at 0.0: Maximum depth to print reached. Use
-> kstack=<maximum_depth_to_print> To specify a custom value (where 0
-> means to display the full backtrace)
+> IODDR0 at 0.0: Maximum depth to print reached. Use kstack=<maximum_depth_to_print> To specify a custom value (where 0 means to display the full backtrace)
 > IODDR0 at 0.0: ---[ end Kernel panic - not syncing: BUG!
 > 
 > Signed-off-by: Pierre-Yves Kerbrat <pkerbrat@kalray.eu>
 > Signed-off-by: Marius Gligor <mgligor@kalray.eu>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>   drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 1298b69..26121ed 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -2333,7 +2333,7 @@ static int e1000_alloc_ring_dma(struct e1000_adapter *adapter,
+>   {
+>   	struct pci_dev *pdev = adapter->pdev;
+>   
+> -	ring->desc = dma_alloc_coherent(&pdev->dev, ring->size, &ring->dma,
+> +	ring->desc = dma_zalloc_coherent(&pdev->dev, ring->size, &ring->dma,
+>   					GFP_KERNEL);
+>   	if (!ring->desc)
+>   		return -ENOMEM;
+> 
+Looks good. Prefer get another opinion from somebody else.
