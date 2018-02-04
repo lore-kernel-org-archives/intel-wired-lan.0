@@ -1,17 +1,19 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Sun, 4 Feb 2018 10:09:07 +0200
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Sun, 4 Feb 2018 12:01:08 -0800
 Subject: [Intel-wired-lan] [PATCH] e1000e: allocate ring descriptors
  with dma_zalloc_coherent
 In-Reply-To: <20180126102404.GA26578@poseidon.lin.mbt.kalray.eu>
 References: <20180126102404.GA26578@poseidon.lin.mbt.kalray.eu>
-Message-ID: <3a4dceae-de33-4270-bbed-5aaf8c82a7bd@intel.com>
+Message-ID: <866abc64-8ab1-c8fb-1167-90b8063f32d7@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/26/2018 12:24, Pierre-Yves Kerbrat wrote:
+
+
+On 01/26/2018 02:24 AM, Pierre-Yves Kerbrat wrote:
 > Descriptor rings were not initialized at zero when allocated
 > When area contained garbage data, it caused skb_over_panic in
 > e1000_clean_rx_irq (if data had E1000_RXD_STAT_DD bit set)
@@ -63,25 +65,12 @@ On 1/26/2018 12:24, Pierre-Yves Kerbrat wrote:
 > IODDR0 at 0.0:   ...
 > IODDR0 at 0.0: Maximum depth to print reached. Use kstack=<maximum_depth_to_print> To specify a custom value (where 0 means to display the full backtrace)
 > IODDR0 at 0.0: ---[ end Kernel panic - not syncing: BUG!
-> 
-> Signed-off-by: Pierre-Yves Kerbrat <pkerbrat@kalray.eu>
-> Signed-off-by: Marius Gligor <mgligor@kalray.eu>
-> ---
->   drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 1298b69..26121ed 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -2333,7 +2333,7 @@ static int e1000_alloc_ring_dma(struct e1000_adapter *adapter,
->   {
->   	struct pci_dev *pdev = adapter->pdev;
->   
-> -	ring->desc = dma_alloc_coherent(&pdev->dev, ring->size, &ring->dma,
-> +	ring->desc = dma_zalloc_coherent(&pdev->dev, ring->size, &ring->dma,
->   					GFP_KERNEL);
->   	if (!ring->desc)
->   		return -ENOMEM;
-> 
-Looks good. Prefer get another opinion from somebody else.
+
+Interesting, this dates back from the driver's initial commit, I am
+surprised that not more people did not have that problem, maybe the RX
+ring usually goes through at least one filing cycle?
+
+Fixes: bc7f75fa9788 ("[E1000E]: New pci-express e1000 driver (currently
+for ICH9 devices only)")
+-- 
+Florian
