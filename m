@@ -1,160 +1,69 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon,  5 Feb 2018 06:11:17 -0500
-Subject: [Intel-wired-lan] [next PATCH S86 V3 4/8] i40e: refactor
- promisc_changed in i40e_sync_vsi_filters
+Date: Mon,  5 Feb 2018 06:11:16 -0500
+Subject: [Intel-wired-lan] [next PATCH S86 V3 3/8] i40evf: Use an iterator
+ of the same type as the list
 In-Reply-To: <20180205111121.59468-1-alice.michael@intel.com>
 References: <20180205111121.59468-1-alice.michael@intel.com>
-Message-ID: <20180205111121.59468-4-alice.michael@intel.com>
+Message-ID: <20180205111121.59468-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-This code here is quite complex and easy to screw up.  Let's see if we
-can't improve the readability and maintainability a bit.  This refactors
-out promisc_changed into two variables 'old_overflow' and 'new_overflow'
-which makes it a bit clearer when we're concerned about when and how
-overflow promiscuous is changed.  This also makes so that we no longer
-need to pass a boolean pointer to i40e_aqc_add_filters.  Instead we can
-simply check if we changed the overflow promiscuous flag since the
-function start.
+When iterating through the linked list of vlan filters, make the
+iterator the same type as that of the linked list.
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 42 ++++++++++++++---------------
- 1 file changed, 20 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5820c0f..265cdf9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2115,17 +2115,16 @@ void i40e_aqc_del_filters(struct i40e_vsi *vsi, const char *vsi_name,
-  * @list: the list of filters to send to firmware
-  * @add_head: Position in the add hlist
-  * @num_add: the number of filters to add
-- * @promisc_change: set to true on exit if promiscuous mode was forced on
-  *
-  * Send a request to firmware via AdminQ to add a chunk of filters. Will set
-- * promisc_changed to true if the firmware has run out of space for more
-- * filters.
-+ * __I40E_VSI_OVERFLOW_PROMISC bit in vsi->state if the firmware has run out of
-+ * space for more filters.
-  */
- static
- void i40e_aqc_add_filters(struct i40e_vsi *vsi, const char *vsi_name,
- 			  struct i40e_aqc_add_macvlan_element_data *list,
- 			  struct i40e_new_mac_filter *add_head,
--			  int num_add, bool *promisc_changed)
-+			  int num_add)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 6fd0992..4f07469 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1027,6 +1027,7 @@ static void i40evf_up_complete(struct i40evf_adapter *adapter)
+ void i40evf_down(struct i40evf_adapter *adapter)
  {
- 	struct i40e_hw *hw = &vsi->back->hw;
- 	int aq_err, fcnt;
-@@ -2135,7 +2134,6 @@ void i40e_aqc_add_filters(struct i40e_vsi *vsi, const char *vsi_name,
- 	fcnt = i40e_update_filter_state(num_add, list, add_head);
+ 	struct net_device *netdev = adapter->netdev;
++	struct i40evf_vlan_filter *vlf;
+ 	struct i40evf_mac_filter *f;
  
- 	if (fcnt != num_add) {
--		*promisc_changed = true;
- 		set_bit(__I40E_VSI_OVERFLOW_PROMISC, vsi->state);
- 		dev_warn(&vsi->back->pdev->dev,
- 			 "Error %s adding RX filters on %s, promiscuous mode forced on\n",
-@@ -2268,9 +2266,9 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 	struct i40e_mac_filter *f;
- 	struct i40e_new_mac_filter *new, *add_head = NULL;
- 	struct i40e_hw *hw = &vsi->back->hw;
-+	bool old_overflow, new_overflow;
- 	unsigned int failed_filters = 0;
- 	unsigned int vlan_filters = 0;
--	bool promisc_changed = false;
- 	char vsi_name[16] = "PF";
- 	int filter_list_len = 0;
- 	i40e_status aq_ret = 0;
-@@ -2292,6 +2290,8 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		usleep_range(1000, 2000);
- 	pf = vsi->back;
- 
-+	old_overflow = test_bit(__I40E_VSI_OVERFLOW_PROMISC, vsi->state);
-+
- 	if (vsi->netdev) {
- 		changed_flags = vsi->current_netdev_flags ^ vsi->netdev->flags;
- 		vsi->current_netdev_flags = vsi->netdev->flags;
-@@ -2465,15 +2465,14 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 			/* flush a full buffer */
- 			if (num_add == filter_list_len) {
- 				i40e_aqc_add_filters(vsi, vsi_name, add_list,
--						     add_head, num_add,
--						     &promisc_changed);
-+						     add_head, num_add);
- 				memset(add_list, 0, list_size);
- 				num_add = 0;
- 			}
- 		}
- 		if (num_add) {
- 			i40e_aqc_add_filters(vsi, vsi_name, add_list, add_head,
--					     num_add, &promisc_changed);
-+					     num_add);
- 		}
- 		/* Now move all of the filters from the temp add list back to
- 		 * the VSI's list.
-@@ -2502,24 +2501,16 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 	if (adapter->state <= __I40EVF_DOWN_PENDING)
+@@ -1045,7 +1046,7 @@ void i40evf_down(struct i40evf_adapter *adapter)
+ 		f->remove = true;
  	}
- 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
- 
--	/* If promiscuous mode has changed, we need to calculate a new
--	 * threshold for when we are safe to exit
--	 */
--	if (promisc_changed)
--		vsi->promisc_threshold = (vsi->active_filters * 3) / 4;
--
- 	/* Check if we are able to exit overflow promiscuous mode. We can
- 	 * safely exit if we didn't just enter, we no longer have any failed
- 	 * filters, and we have reduced filters below the threshold value.
- 	 */
--	if (test_bit(__I40E_VSI_OVERFLOW_PROMISC, vsi->state) &&
--	    !promisc_changed && !failed_filters &&
--	    (vsi->active_filters < vsi->promisc_threshold)) {
-+	if (old_overflow && !failed_filters &&
-+	    vsi->active_filters < vsi->promisc_threshold) {
- 		dev_info(&pf->pdev->dev,
- 			 "filter logjam cleared on %s, leaving overflow promiscuous mode\n",
- 			 vsi_name);
- 		clear_bit(__I40E_VSI_OVERFLOW_PROMISC, vsi->state);
--		promisc_changed = true;
- 		vsi->promisc_threshold = 0;
+ 	/* remove all VLAN filters */
+-	list_for_each_entry(f, &adapter->vlan_filter_list, list) {
++	list_for_each_entry(vlf, &adapter->vlan_filter_list, list) {
+ 		f->remove = true;
  	}
  
-@@ -2529,6 +2520,14 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		goto out;
+@@ -3067,6 +3068,7 @@ static void i40evf_remove(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct i40evf_adapter *adapter = netdev_priv(netdev);
++	struct i40evf_vlan_filter *vlf, *vlftmp;
+ 	struct i40evf_mac_filter *f, *ftmp;
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	int err;
+@@ -3129,9 +3131,10 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 		list_del(&f->list);
+ 		kfree(f);
+ 	}
+-	list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list, list) {
+-		list_del(&f->list);
+-		kfree(f);
++	list_for_each_entry_safe(vlf, vlftmp, &adapter->vlan_filter_list,
++				 list) {
++		list_del(&vlf->list);
++		kfree(vlf);
  	}
  
-+	new_overflow = test_bit(__I40E_VSI_OVERFLOW_PROMISC, vsi->state);
-+
-+	/* If we are entering overflow promiscuous, we need to calculate a new
-+	 * threshold for when we are safe to exit
-+	 */
-+	if (!old_overflow && new_overflow)
-+		vsi->promisc_threshold = (vsi->active_filters * 3) / 4;
-+
- 	/* check for changes in promiscuous modes */
- 	if (changed_flags & IFF_ALLMULTI) {
- 		bool cur_multipromisc;
-@@ -2549,12 +2548,11 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		}
- 	}
- 
--	if ((changed_flags & IFF_PROMISC) || promisc_changed) {
-+	if ((changed_flags & IFF_PROMISC) || old_overflow != new_overflow) {
- 		bool cur_promisc;
- 
- 		cur_promisc = (!!(vsi->current_netdev_flags & IFF_PROMISC) ||
--			       test_bit(__I40E_VSI_OVERFLOW_PROMISC,
--					vsi->state));
-+			       new_overflow);
- 		aq_ret = i40e_set_promiscuous(pf, cur_promisc);
- 		if (aq_ret) {
- 			retval = i40e_aq_rc_to_posix(aq_ret,
+ 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
 -- 
 2.9.5
 
