@@ -1,63 +1,81 @@
-From: Michal Kubecek <mkubecek@suse.cz>
-Date: Mon, 5 Feb 2018 17:02:40 +0100
-Subject: [Intel-wired-lan] regression in igb driver from commit
- 182785335447
-In-Reply-To: <385186179.438363.1517597667391.JavaMail.zimbra@xes-inc.com>
-References: <20180201124732.udjgedoktitzqqdm@unicorn.suse.cz>
- <385186179.438363.1517597667391.JavaMail.zimbra@xes-inc.com>
-Message-ID: <20180205160240.ammcr6a6iqrqglsd@unicorn.suse.cz>
+From: Alice Michael <alice.michael@intel.com>
+Date: Mon,  5 Feb 2018 06:11:18 -0500
+Subject: [Intel-wired-lan] [next PATCH S86 V3 5/8] i40e: do not force filter
+ failure in overflow promiscuous
+In-Reply-To: <20180205111121.59468-1-alice.michael@intel.com>
+References: <20180205111121.59468-1-alice.michael@intel.com>
+Message-ID: <20180205111121.59468-5-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Feb 02, 2018 at 12:54:27PM -0600, Aaron Sierra wrote:
-> > From: "Michal Kubecek" <mkubecek@suse.cz>
-> > Sent: Thursday, February 1, 2018 6:47:32 AM
-> > [   13.710535] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
-> > [   13.710538] igb: Copyright (c) 2007-2014 Intel Corporation.
-> > [   13.710584] igb 0000:08:00.0: PCI->APIC IRQ transform: INT A -> IRQ 56
-> > [   13.712126] igb: probe of 0000:08:00.0 failed with error -2
-> > [   13.712152] igb 0000:08:00.1: PCI->APIC IRQ transform: INT B -> IRQ 70
-> > [   13.904537] igb 0000:08:00.1: Intel(R) Gigabit Ethernet Network Connection
-> > [   13.904545] igb 0000:08:00.1: eth0: (PCIe:2.5Gb/s:Width x4) 00:30:48:7b:5d:37
-> > [   13.904547] igb 0000:08:00.1: eth0: PBA No: Unknown
-> > [   13.904556] igb 0000:08:00.1: Using MSI-X interrupts. 4 rx queue(s), 4 tx
-> > queue(s)
-> > [   13.927029] igb 0000:08:00.1 eth1: renamed from eth0
-> 
-> Can you share whether (and which versions of) Intel Boot Agent was enabled
-> for these ports.
+From: Alan Brady <alan.brady@intel.com>
 
-It certainly was, first port is used for PXE boot.
+Broadcast filters can now cause overflow promiscuous to trigger when
+adding "too many" VLANs to all the ports of a device and the driver
+needs a way to exit overflow promiscuous once triggered.
 
-This is what I caught on serial console on boot:
+Currently the driver looks to see if there are "too many" filters and/or
+we have any failed filters to determine when it is safe to exit overflow
+promiscuous.  If we trigger overflow promiscuous with broadcast filters,
+any new filters added will be "auto-failed" until we exit overflow
+promiscuous.  Since the user can't manually remove the failed broadcast
+filters for VLANs (nor should we expect the user to do such), there is
+no way to exit overflow promiscuous without reloading the driver.
 
-------------------------------------------------------------------------
-Initializing Intel(R) Boot Agent GE v0.0.13
-*** DEVELOPMENT BUILD - NOT FOR PRODUCTION USE!!! ***
-*** DEVELOPMENT BUILD - NOT FOR PRODUCTION USE!!! ***
-*** DEVELOPMENT BUILD - NOT FOR PRODUCTION USE!!! ***
-PXE 2.1 Build 086 (WfM 2.0)                      
-                                                           
-                                          
-Initializing Intel(R) Boot Agent GE v0.0.13
-*** DEVELOPMENT BUILD - NOT FOR PRODUCTION USE!!! ***
-*** DEVELOPMENT BUILD - NOT FOR PRODUCTION USE!!! ***
-*** DEVELOPMENT BUILD - NOT FOR PRODUCTION USE!!! ***
-PXE 2.1 Build 086 (WfM 2.0)
-Press Ctrl+S to enter the Setup Menu..               
-------------------------------------------------------------------------
+The easiest way to do this is to remove the shortcut to "auto-fail"
+filters in overflow promscuous.  If the user removes the VLANs, the
+failed filters will be removed and since we're no longer "auto-failing"
+new filters, we'll eventually get a good set of filters and exit
+overflow promiscuous.
 
-Doesn't look wery trustworthy. :-( I'll check if I can find another
-machine with the same card but more reasonable Intel Boot Agent.
+This has the side benefit of making filter state more explicit in that
+if a filter says it's failed we know for a fact it failed and not just
+assuming it will if we're in overflow promiscuous.  This is nice because
+if the user removes some filters and then adds some, even if we're in
+overflow promiscuous, the filter might succeed; we were just assuming it
+won't because the user hasn't rectified other existing failed filters.
 
->                  Does the behavior change if Intel Boot Agent is in the
-> opposite state? Was the failing device used for network booting?
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 15 +--------------
+ 1 file changed, 1 insertion(+), 14 deletions(-)
 
-This may be a bit tricky, the machine is in a test lab and I have only
-remote access to it. I'll check if I can disable the Intel Boot Agent
-using the serial console.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 265cdf9..90ea65b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1380,14 +1380,7 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
+ 
+ 		ether_addr_copy(f->macaddr, macaddr);
+ 		f->vlan = vlan;
+-		/* If we're in overflow promisc mode, set the state directly
+-		 * to failed, so we don't bother to try sending the filter
+-		 * to the hardware.
+-		 */
+-		if (test_bit(__I40E_VSI_OVERFLOW_PROMISC, vsi->state))
+-			f->state = I40E_FILTER_FAILED;
+-		else
+-			f->state = I40E_FILTER_NEW;
++		f->state = I40E_FILTER_NEW;
+ 		INIT_HLIST_NODE(&f->hlist);
+ 
+ 		key = i40e_addr_to_hkey(macaddr);
+@@ -2424,12 +2417,6 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 
+ 		num_add = 0;
+ 		hlist_for_each_entry_safe(new, h, &tmp_add_list, hlist) {
+-			if (test_bit(__I40E_VSI_OVERFLOW_PROMISC,
+-				     vsi->state)) {
+-				new->state = I40E_FILTER_FAILED;
+-				continue;
+-			}
+-
+ 			/* handle broadcast filters by updating the broadcast
+ 			 * promiscuous flag instead of adding a MAC filter.
+ 			 */
+-- 
+2.9.5
 
-Michal Kubecek
