@@ -1,81 +1,41 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon,  5 Feb 2018 06:11:18 -0500
-Subject: [Intel-wired-lan] [next PATCH S86 V3 5/8] i40e: do not force filter
- failure in overflow promiscuous
+Date: Mon,  5 Feb 2018 06:11:21 -0500
+Subject: [Intel-wired-lan] [next PATCH S86 V3 8/8] i40evf: Make VF reset
+ warning message more clear
 In-Reply-To: <20180205111121.59468-1-alice.michael@intel.com>
 References: <20180205111121.59468-1-alice.michael@intel.com>
-Message-ID: <20180205111121.59468-5-alice.michael@intel.com>
+Message-ID: <20180205111121.59468-8-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-Broadcast filters can now cause overflow promiscuous to trigger when
-adding "too many" VLANs to all the ports of a device and the driver
-needs a way to exit overflow promiscuous once triggered.
+When the PF resets the VF, the VF puts out a warning message
+indicating that the VF received a reset message from the PF.
+Make this message more clear so that we do not mistakenly
+think that the PF is undergoing a reset.
 
-Currently the driver looks to see if there are "too many" filters and/or
-we have any failed filters to determine when it is safe to exit overflow
-promiscuous.  If we trigger overflow promiscuous with broadcast filters,
-any new filters added will be "auto-failed" until we exit overflow
-promiscuous.  Since the user can't manually remove the failed broadcast
-filters for VLANs (nor should we expect the user to do such), there is
-no way to exit overflow promiscuous without reloading the driver.
-
-The easiest way to do this is to remove the shortcut to "auto-fail"
-filters in overflow promscuous.  If the user removes the VLANs, the
-failed filters will be removed and since we're no longer "auto-failing"
-new filters, we'll eventually get a good set of filters and exit
-overflow promiscuous.
-
-This has the side benefit of making filter state more explicit in that
-if a filter says it's failed we know for a fact it failed and not just
-assuming it will if we're in overflow promiscuous.  This is nice because
-if the user removes some filters and then adds some, even if we're in
-overflow promiscuous, the filter might succeed; we were just assuming it
-won't because the user hasn't rectified other existing failed filters.
-
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 15 +--------------
- 1 file changed, 1 insertion(+), 14 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 265cdf9..90ea65b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1380,14 +1380,7 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
- 
- 		ether_addr_copy(f->macaddr, macaddr);
- 		f->vlan = vlan;
--		/* If we're in overflow promisc mode, set the state directly
--		 * to failed, so we don't bother to try sending the filter
--		 * to the hardware.
--		 */
--		if (test_bit(__I40E_VSI_OVERFLOW_PROMISC, vsi->state))
--			f->state = I40E_FILTER_FAILED;
--		else
--			f->state = I40E_FILTER_NEW;
-+		f->state = I40E_FILTER_NEW;
- 		INIT_HLIST_NODE(&f->hlist);
- 
- 		key = i40e_addr_to_hkey(macaddr);
-@@ -2424,12 +2417,6 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 
- 		num_add = 0;
- 		hlist_for_each_entry_safe(new, h, &tmp_add_list, hlist) {
--			if (test_bit(__I40E_VSI_OVERFLOW_PROMISC,
--				     vsi->state)) {
--				new->state = I40E_FILTER_FAILED;
--				continue;
--			}
--
- 			/* handle broadcast filters by updating the broadcast
- 			 * promiscuous flag instead of adding a MAC filter.
- 			 */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index 82e6b11..0700f0a 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -1037,7 +1037,7 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 			i40evf_print_link_message(adapter);
+ 			break;
+ 		case VIRTCHNL_EVENT_RESET_IMPENDING:
+-			dev_info(&adapter->pdev->dev, "PF reset warning received\n");
++			dev_info(&adapter->pdev->dev, "Reset warning received from the PF\n");
+ 			if (!(adapter->flags & I40EVF_FLAG_RESET_PENDING)) {
+ 				adapter->flags |= I40EVF_FLAG_RESET_PENDING;
+ 				dev_info(&adapter->pdev->dev, "Scheduling reset task\n");
 -- 
 2.9.5
 
