@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 6 Feb 2018 22:36:23 +0000
-Subject: [Intel-wired-lan] [next PATCH S86 V3 6/8] i40e: i40e: Change
- ethtool check from MAC to HW flag
-In-Reply-To: <20180205111121.59468-6-alice.michael@intel.com>
+Date: Tue, 6 Feb 2018 22:36:51 +0000
+Subject: [Intel-wired-lan] [next PATCH S86 V3 7/8] i40evf: use
+ __dev_[um]c_sync routines in .set_rx_mode
+In-Reply-To: <20180205111121.59468-7-alice.michael@intel.com>
 References: <20180205111121.59468-1-alice.michael@intel.com>
- <20180205111121.59468-6-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A949961@ORSMSX104.amr.corp.intel.com>
+ <20180205111121.59468-7-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A949971@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,24 +18,34 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, February 5, 2018 3:11 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S86 V3 6/8] i40e: i40e: Change ethtool
-> check from MAC to HW flag
+> Subject: [Intel-wired-lan] [next PATCH S86 V3 7/8] i40evf: use
+> __dev_[um]c_sync routines in .set_rx_mode
 > 
-> From: Dave Ertman <david.m.ertman@intel.com>
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> The MAC, FW Version and NPAR check used to determine if shutting off the
-> FW LLDP engine is supported is not using the usual feature check mechanism.
+> Similar to changes done to the PF driver in commit 6622f5cdbaf3 ("i40e:
+> make use of __dev_uc_sync and __dev_mc_sync"), replace our home-rolled
+> method for updating the internal status of MAC filters with __dev_uc_sync
+> and __dev_mc_sync.
 > 
-> This patch fixes the problem by moving the feature check to i40e_sw_init in
-> order to set a flag in pf->hw_features that ethtool will use for priv_flags
-> disable operation.
+> These new functions use internal state within the netdev struct in order to
+> efficiently break the question of "which filters in this list need to be added or
+> removed" into singular "add this filter" and "delete this filter" requests.
 > 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> This vastly improves our handling of .set_rx_mode especially with large
+> number of MAC filters being added to the device, and even results in a
+> simpler .set_rx_mode handler.
+> 
+> Under some circumstances, such as when attached to a bridge, we may
+> receive a request to delete our own permanent address. Prevent deletion of
+> this address during i40evf_addr_unsync so that we don't accidentally stop
+> receiving traffic.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h         |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 ++----------
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 10 ++++++++++
->  3 files changed, 13 insertions(+), 10 deletions(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 109 ++++++++++++++----
+> ------
+>  1 file changed, 64 insertions(+), 45 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
