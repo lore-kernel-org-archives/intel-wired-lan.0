@@ -1,195 +1,40 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 6 Feb 2018 21:55:29 +0000
-Subject: [Intel-wired-lan] intel: add SPDX identifiers to all the Intel
- drivers
-In-Reply-To: <20180202231131.9990-1-jeffrey.t.kirsher@intel.com>
-References: <20180202231131.9990-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7DF315@ORSMSX103.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 6 Feb 2018 22:34:03 +0000
+Subject: [Intel-wired-lan] [next PATCH S86 V3 1/8] i40e: don't leak
+ memory addresses
+In-Reply-To: <20180205111121.59468-1-alice.michael@intel.com>
+References: <20180205111121.59468-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A949911@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Friday, February 2, 2018 3:12 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] intel: add SPDX identifiers to all the Intel drivers
+> Behalf Of Alice Michael
+> Sent: Monday, February 5, 2018 3:11 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S86 V3 1/8] i40e: don't leak memory
+> addresses
 > 
-> Add the SPDX identifiers to all the Intel wired LAN driver files, as
-> outlined in Documentation/process/license-rules.rst.
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Could a Bad Person do Bad Things to a server if they found these addresses
+> printed in the log? Who knows? But let's not take that risk.
+> 
+> Remove pointers from a bunch of printks. In some cases, I was able to adjust
+> the mesasge to indicate whether or not the value was null. In others, I just
+> removed the entire message as there was really no hope of saving it.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > ---
->  drivers/net/ethernet/intel/e100.c                  |    1 +
->  drivers/net/ethernet/intel/e1000/Makefile          |    1 +
->  drivers/net/ethernet/intel/e1000/e1000.h           |    1 +
->  drivers/net/ethernet/intel/e1000/e1000_ethtool.c   |    1 +
->  drivers/net/ethernet/intel/e1000/e1000_hw.c        |    1 +
->  drivers/net/ethernet/intel/e1000/e1000_hw.h        |    1 +
->  drivers/net/ethernet/intel/e1000/e1000_main.c      |    1 +
->  drivers/net/ethernet/intel/e1000/e1000_osdep.h     |    1 +
->  drivers/net/ethernet/intel/e1000/e1000_param.c     |    1 +
->  drivers/net/ethernet/intel/e1000e/80003es2lan.c    |    1 +
->  drivers/net/ethernet/intel/e1000e/80003es2lan.h    |    1 +
->  drivers/net/ethernet/intel/e1000e/82571.c          |    1 +
->  drivers/net/ethernet/intel/e1000e/82571.h          |    1 +
->  drivers/net/ethernet/intel/e1000e/Makefile         |    1 +
->  drivers/net/ethernet/intel/e1000e/defines.h        |    1 +
->  drivers/net/ethernet/intel/e1000e/e1000.h          |    1 +
->  drivers/net/ethernet/intel/e1000e/ethtool.c        |    1 +
->  drivers/net/ethernet/intel/e1000e/hw.h             |    1 +
->  drivers/net/ethernet/intel/e1000e/ich8lan.c        |    1 +
->  drivers/net/ethernet/intel/e1000e/ich8lan.h        |    1 +
->  drivers/net/ethernet/intel/e1000e/mac.c            |    1 +
->  drivers/net/ethernet/intel/e1000e/mac.h            |    1 +
->  drivers/net/ethernet/intel/e1000e/manage.c         |    1 +
->  drivers/net/ethernet/intel/e1000e/manage.h         |    1 +
->  drivers/net/ethernet/intel/e1000e/netdev.c         |    1 +
->  drivers/net/ethernet/intel/e1000e/nvm.c            |    1 +
->  drivers/net/ethernet/intel/e1000e/nvm.h            |    1 +
->  drivers/net/ethernet/intel/e1000e/param.c          |    1 +
->  drivers/net/ethernet/intel/e1000e/phy.c            |    1 +
->  drivers/net/ethernet/intel/e1000e/phy.h            |    1 +
->  drivers/net/ethernet/intel/e1000e/ptp.c            |    1 +
->  drivers/net/ethernet/intel/e1000e/regs.h           |    1 +
->  drivers/net/ethernet/intel/fm10k/Makefile          |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k.h           |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_common.c    |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_common.h    |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c     |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c   |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c   |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_iov.c       |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_main.c      |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_mbx.c       |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_mbx.h       |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c    |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_pci.c       |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_pf.c        |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_pf.h        |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_tlv.c       |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_tlv.h       |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_type.h      |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_vf.c        |    1 +
->  drivers/net/ethernet/intel/fm10k/fm10k_vf.h        |    1 +
->  drivers/net/ethernet/intel/i40e/Makefile           |    1 +
->  drivers/net/ethernet/intel/i40e/i40e.h             |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c      |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_adminq.h      |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_alloc.h       |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_client.c      |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_client.h      |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_common.c      |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_dcb.c         |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_dcb.h         |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c      |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_devids.h      |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_diag.c        |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_diag.h        |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_hmc.c         |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_hmc.h         |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c     |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_lan_hmc.h     |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c        |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_nvm.c         |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_osdep.h       |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h   |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_ptp.c         |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_register.h    |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_status.h      |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_trace.h       |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c        |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h        |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_type.h        |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |    1 +
->  drivers/net/ethernet/intel/i40evf/Makefile         |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_adminq.c    |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_adminq.h    |    1 +
->  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_alloc.h     |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_common.c    |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_devids.h    |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_hmc.h       |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_lan_hmc.h   |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_osdep.h     |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_prototype.h |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_register.h  |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_status.h    |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_trace.h     |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |    1 +
->  drivers/net/ethernet/intel/i40evf/i40e_type.h      |    1 +
->  drivers/net/ethernet/intel/i40evf/i40evf.h         |    1 +
->  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |    1 +
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |    1 +
->  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |    1 +
->  drivers/net/ethernet/intel/igb/Makefile            |    1 +
->  drivers/net/ethernet/intel/igb/e1000_82575.c       |    1 +
->  drivers/net/ethernet/intel/igb/e1000_82575.h       |    1 +
->  drivers/net/ethernet/intel/igb/e1000_defines.h     |    1 +
->  drivers/net/ethernet/intel/igb/e1000_hw.h          |    1 +
->  drivers/net/ethernet/intel/igb/e1000_i210.c        |    1 +
->  drivers/net/ethernet/intel/igb/e1000_i210.h        |    1 +
->  drivers/net/ethernet/intel/igb/e1000_mac.c         |    1 +
->  drivers/net/ethernet/intel/igb/e1000_mac.h         |    1 +
->  drivers/net/ethernet/intel/igb/e1000_mbx.c         |    1 +
->  drivers/net/ethernet/intel/igb/e1000_mbx.h         |    1 +
->  drivers/net/ethernet/intel/igb/e1000_nvm.c         |    1 +
->  drivers/net/ethernet/intel/igb/e1000_nvm.h         |    1 +
->  drivers/net/ethernet/intel/igb/e1000_phy.c         |    1 +
->  drivers/net/ethernet/intel/igb/e1000_phy.h         |    1 +
->  drivers/net/ethernet/intel/igb/e1000_regs.h        |    1 +
->  drivers/net/ethernet/intel/igb/igb.h               |    1 +
->  drivers/net/ethernet/intel/igb/igb_ethtool.c       |    1 +
->  drivers/net/ethernet/intel/igb/igb_hwmon.c         |    1 +
->  drivers/net/ethernet/intel/igb/igb_main.c          |    1 +
->  drivers/net/ethernet/intel/igb/igb_ptp.c           |    1 +
->  drivers/net/ethernet/intel/igbvf/Makefile          |    1 +
->  drivers/net/ethernet/intel/igbvf/defines.h         |    1 +
->  drivers/net/ethernet/intel/igbvf/ethtool.c         |    1 +
->  drivers/net/ethernet/intel/igbvf/igbvf.h           |    1 +
->  drivers/net/ethernet/intel/igbvf/mbx.c             |    1 +
->  drivers/net/ethernet/intel/igbvf/mbx.h             |    1 +
->  drivers/net/ethernet/intel/igbvf/netdev.c          |    1 +
->  drivers/net/ethernet/intel/igbvf/regs.h            |    1 +
->  drivers/net/ethernet/intel/igbvf/vf.c              |    1 +
->  drivers/net/ethernet/intel/igbvf/vf.h              |    1 +
->  drivers/net/ethernet/intel/ixgb/Makefile           |    1 +
->  drivers/net/ethernet/intel/ixgb/ixgb.h             |    1 +
->  drivers/net/ethernet/intel/ixgb/ixgb_ee.h          |    1 +
->  drivers/net/ethernet/intel/ixgb/ixgb_hw.h          |    1 +
->  drivers/net/ethernet/intel/ixgb/ixgb_ids.h         |    1 +
->  drivers/net/ethernet/intel/ixgb/ixgb_osdep.h       |    1 +
->  drivers/net/ethernet/intel/ixgbe/Makefile          |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h           |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c     |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c     |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c    |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.h    |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.h       |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82598.c |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82598.h |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82599.h |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.h      |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h     |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h       |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_model.h     |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h       |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h     |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h      |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h      |    1 +
->  drivers/net/ethernet/intel/ixgbevf/Makefile        |    1 +
->  drivers/net/ethernet/intel/ixgbevf/defines.h       |    1 +
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h       |    1 +
->  drivers/net/ethernet/intel/ixgbevf/mbx.h           |    1 +
->  drivers/net/ethernet/intel/ixgbevf/regs.h          |    1 +
->  drivers/net/ethernet/intel/ixgbevf/vf.h            |    1 +
->  168 files changed, 168 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 40 ++++----------------------
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 13 ++++-----
+>  2 files changed, 12 insertions(+), 41 deletions(-)
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
