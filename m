@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 6 Feb 2018 22:35:02 +0000
-Subject: [Intel-wired-lan] [next PATCH S86 V3 3/8] i40evf: Use an
- iterator of the same type as the list
-In-Reply-To: <20180205111121.59468-3-alice.michael@intel.com>
+Date: Tue, 6 Feb 2018 22:35:27 +0000
+Subject: [Intel-wired-lan] [next PATCH S86 V3 4/8] i40e: refactor
+ promisc_changed in i40e_sync_vsi_filters
+In-Reply-To: <20180205111121.59468-4-alice.michael@intel.com>
 References: <20180205111121.59468-1-alice.michael@intel.com>
- <20180205111121.59468-3-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A949931@ORSMSX104.amr.corp.intel.com>
+ <20180205111121.59468-4-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A949941@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,18 +18,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, February 5, 2018 3:11 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S86 V3 3/8] i40evf: Use an iterator of
-> the same type as the list
+> Subject: [Intel-wired-lan] [next PATCH S86 V3 4/8] i40e: refactor
+> promisc_changed in i40e_sync_vsi_filters
 > 
-> From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> From: Alan Brady <alan.brady@intel.com>
 > 
-> When iterating through the linked list of vlan filters, make the iterator the
-> same type as that of the linked list.
+> This code here is quite complex and easy to screw up.  Let's see if we can't
+> improve the readability and maintainability a bit.  This refactors out
+> promisc_changed into two variables 'old_overflow' and 'new_overflow'
+> which makes it a bit clearer when we're concerned about when and how
+> overflow promiscuous is changed.  This also makes so that we no longer need
+> to pass a boolean pointer to i40e_aqc_add_filters.  Instead we can simply
+> check if we changed the overflow promiscuous flag since the function start.
 > 
-> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 42 ++++++++++++++----------
+> -----
+>  1 file changed, 20 insertions(+), 22 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
