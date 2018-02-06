@@ -1,41 +1,164 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 6 Feb 2018 22:38:16 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: remove redundant
- initialization of variable 'dma'.
-In-Reply-To: <20180201183539.24776-1-colin.king@canonical.com>
-References: <20180201183539.24776-1-colin.king@canonical.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A949991@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 07 Feb 2018 07:04:16 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 2926164f6e02e9b142feff387db5e9e254682637
+Message-ID: <5a7a3470.zIhgH+8n/m/rekV9%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Colin King
-> Sent: Thursday, February 1, 2018 10:36 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org
-> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbevf: remove redundant initialization of
-> variable 'dma'.
-> 
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Variable dma is initialized with a value that is never read, later on it is re-
-> assigned a new value, hence the initialization is redundant and can be
-> removed.
-> 
-> Cleans up clang warning:
-> drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:584:13: warning: Value
-> stored to 'dma' during its initialization is never read
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 2926164f6e02e9b142feff387db5e9e254682637  Documentation: Update Intel wired LAN docs
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 110m
 
+configs tested: 140
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                               tinyconfig
+i386                   randconfig-x019-201805
+i386                   randconfig-x010-201805
+i386                   randconfig-x015-201805
+i386                   randconfig-x014-201805
+i386                   randconfig-x011-201805
+i386                   randconfig-x012-201805
+i386                   randconfig-x017-201805
+i386                   randconfig-x016-201805
+i386                   randconfig-x018-201805
+i386                   randconfig-x013-201805
+i386                     randconfig-n0-201805
+x86_64                 randconfig-x008-201805
+x86_64                 randconfig-x000-201805
+x86_64                 randconfig-x005-201805
+x86_64                 randconfig-x002-201805
+x86_64                 randconfig-x007-201805
+x86_64                 randconfig-x009-201805
+x86_64                 randconfig-x001-201805
+x86_64                 randconfig-x006-201805
+x86_64                 randconfig-x003-201805
+x86_64                 randconfig-x004-201805
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201805
+i386                     randconfig-i1-201805
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-02070503
+i386                   randconfig-a1-02070503
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x017-201805
+x86_64                 randconfig-x018-201805
+x86_64                 randconfig-x013-201805
+x86_64                 randconfig-x016-201805
+x86_64                 randconfig-x011-201805
+x86_64                 randconfig-x014-201805
+x86_64                 randconfig-x012-201805
+x86_64                 randconfig-x015-201805
+x86_64                 randconfig-x010-201805
+x86_64                 randconfig-x019-201805
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201805
+i386                     randconfig-s1-201805
+x86_64                 randconfig-s3-02070603
+x86_64                 randconfig-s4-02070603
+x86_64                 randconfig-s5-02070603
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-i0-02051046
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-u0-02070540
+x86_64                randconfig-ne0-02070609
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-n0-02070609
+i386                   randconfig-x004-201805
+i386                   randconfig-x007-201805
+i386                   randconfig-x002-201805
+i386                   randconfig-x009-201805
+i386                   randconfig-x003-201805
+i386                   randconfig-x006-201805
+i386                   randconfig-x005-201805
+i386                   randconfig-x000-201805
+i386                   randconfig-x008-201805
+i386                   randconfig-x001-201805
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x071-201805
+i386                   randconfig-x079-201805
+i386                   randconfig-x072-201805
+i386                   randconfig-x077-201805
+i386                   randconfig-x076-201805
+i386                   randconfig-x073-201805
+i386                   randconfig-x070-201805
+i386                   randconfig-x075-201805
+i386                   randconfig-x078-201805
+i386                   randconfig-x074-201805
+x86_64                                  kexec
+x86_64                 randconfig-r0-02070616
+i386                   randconfig-x0-02070613
+
+Thanks,
+Fengguang
