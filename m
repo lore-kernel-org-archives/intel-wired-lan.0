@@ -1,186 +1,47 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 07 Feb 2018 01:40:12 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- b2247bf33d0fd0a47eac55f08593e1ce6d154231
-Message-ID: <5a79e87c.5YlfGSvuQscOCRSF%fengguang.wu@intel.com>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Tue,  6 Feb 2018 20:47:59 +0100
+Subject: [Intel-wired-lan] [PATCH] igb: Fix a test with HWTSTAMP_TX_ON
+Message-ID: <20180206194759.26991-1-christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: b2247bf33d0fd0a47eac55f08593e1ce6d154231  e1000e: Remove Other from EIAC
+'HWTSTAMP_TX_ON' should be handled as a value, not as a bit mask.
+The modified code should behave the same, because HWTSTAMP_TX_ON is 1
+and no other possible values of 'tx_type' would match the test.
+However, this is more future-proof, should other values be allowed one day.
 
-elapsed time: 107m
+See 'struct hwtstamp_config' in 'include/uapi/linux/net_tstamp.h'
 
-configs tested: 162
+This fixes a warning reported by smatch:
+   igb_xmit_frame_ring() warn: bit shifter 'HWTSTAMP_TX_ON' used for logical '&'
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Fixes: 26bd4e2db06be ("igb: protect TX timestamping from API misuse")
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-x86_64                 randconfig-a0-02062203
-arm                          prima2_defconfig
-cris                             allmodconfig
-sh                        apsh4ad0a_defconfig
-i386                               tinyconfig
-i386                   randconfig-x019-201805
-i386                   randconfig-x010-201805
-i386                   randconfig-x015-201805
-i386                   randconfig-x014-201805
-i386                   randconfig-x011-201805
-i386                   randconfig-x012-201805
-i386                   randconfig-x017-201805
-i386                   randconfig-x016-201805
-i386                   randconfig-x018-201805
-i386                   randconfig-x013-201805
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201805
-x86_64                 randconfig-x008-201805
-x86_64                 randconfig-x000-201805
-x86_64                 randconfig-x005-201805
-x86_64                 randconfig-x002-201805
-x86_64                 randconfig-x007-201805
-x86_64                 randconfig-x009-201805
-x86_64                 randconfig-x001-201805
-x86_64                 randconfig-x006-201805
-x86_64                 randconfig-x003-201805
-x86_64                 randconfig-x004-201805
-i386                     randconfig-i0-201805
-i386                     randconfig-i1-201805
-x86_64                 randconfig-v0-02062246
-x86_64                           allmodconfig
-powerpc                         c2k_defconfig
-sh                          lboxre2_defconfig
-x86_64                 randconfig-g0-02070020
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                             allmodconfig
-i386                     randconfig-a1-201805
-i386                     randconfig-a0-201805
-x86_64                 randconfig-s0-02070047
-x86_64                 randconfig-s1-02070047
-x86_64                 randconfig-s2-02070047
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x017-201805
-x86_64                 randconfig-x018-201805
-x86_64                 randconfig-x013-201805
-x86_64                 randconfig-x016-201805
-x86_64                 randconfig-x011-201805
-x86_64                 randconfig-x014-201805
-x86_64                 randconfig-x012-201805
-x86_64                 randconfig-x015-201805
-x86_64                 randconfig-x010-201805
-x86_64                 randconfig-x019-201805
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201805
-i386                     randconfig-s1-201805
-x86_64                 randconfig-s3-02070054
-x86_64                 randconfig-s4-02070054
-x86_64                 randconfig-s5-02070054
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-i0-02051046
-blackfin                   CM-BF527_defconfig
-m68k                        mvme147_defconfig
-powerpc                     ppa8548_defconfig
-powerpc                      ppc64e_defconfig
-x86_64                 randconfig-b0-02062328
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                           efm32_defconfig
-arm                          nuc910_defconfig
-powerpc                       holly_defconfig
-x86_64                 randconfig-u0-02070032
-tile                             allyesconfig
-x86_64                 randconfig-h0-02062020
-x86_64                                  kexec
-x86_64                               rhel-7.2
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x004-201805
-i386                   randconfig-x007-201805
-i386                   randconfig-x002-201805
-i386                   randconfig-x009-201805
-i386                   randconfig-x003-201805
-i386                   randconfig-x006-201805
-i386                   randconfig-x005-201805
-i386                   randconfig-x000-201805
-i386                   randconfig-x008-201805
-i386                   randconfig-x001-201805
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-arm                        clps711x_defconfig
-powerpc                     sbc834x_defconfig
-arm                          imote2_defconfig
-arm                        magician_defconfig
-m68k                       m5249evb_defconfig
-x86_64                randconfig-ws0-02062201
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x071-201805
-i386                   randconfig-x079-201805
-i386                   randconfig-x072-201805
-i386                   randconfig-x077-201805
-i386                   randconfig-x076-201805
-i386                   randconfig-x073-201805
-i386                   randconfig-x070-201805
-i386                   randconfig-x075-201805
-i386                   randconfig-x078-201805
-i386                   randconfig-x074-201805
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-r0-02062320
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index c208753ff5b7..e945d1f7c7fe 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -5727,7 +5727,7 @@ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
+ 	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP)) {
+ 		struct igb_adapter *adapter = netdev_priv(tx_ring->netdev);
+ 
+-		if (adapter->tstamp_config.tx_type & HWTSTAMP_TX_ON &&
++		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
+ 		    !test_and_set_bit_lock(__IGB_PTP_TX_IN_PROGRESS,
+ 					   &adapter->state)) {
+ 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+-- 
+2.14.1
 
-Thanks,
-Fengguang
+
+---
+L'absence de virus dans ce courrier ?lectronique a ?t? v?rifi?e par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
+
