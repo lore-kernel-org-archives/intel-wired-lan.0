@@ -1,47 +1,55 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Tue,  6 Feb 2018 20:47:59 +0100
-Subject: [Intel-wired-lan] [PATCH] igb: Fix a test with HWTSTAMP_TX_ON
-Message-ID: <20180206194759.26991-1-christophe.jaillet@wanadoo.fr>
+From: Corentin Labbe <clabbe@baylibre.com>
+Date: Tue,  6 Feb 2018 20:42:14 +0000
+Subject: [Intel-wired-lan] [PATCH] Documentation: networking: Update ixgb
+ kconfig select documentation
+Message-ID: <1517949734-27314-1-git-send-email-clabbe@baylibre.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-'HWTSTAMP_TX_ON' should be handled as a value, not as a bit mask.
-The modified code should behave the same, because HWTSTAMP_TX_ON is 1
-and no other possible values of 'tx_type' would match the test.
-However, this is more future-proof, should other values be allowed one day.
+Update documentation on how to enable ixgb and ixgb DCB.
+Simply remove NETDEV_10000 and replace it with the new used kconfig names.
 
-See 'struct hwtstamp_config' in 'include/uapi/linux/net_tstamp.h'
-
-This fixes a warning reported by smatch:
-   igb_xmit_frame_ring() warn: bit shifter 'HWTSTAMP_TX_ON' used for logical '&'
-
-Fixes: 26bd4e2db06be ("igb: protect TX timestamping from API misuse")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/networking/ixgb.txt  | 3 ++-
+ Documentation/networking/ixgbe.txt | 7 ++++---
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index c208753ff5b7..e945d1f7c7fe 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -5727,7 +5727,7 @@ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
- 	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP)) {
- 		struct igb_adapter *adapter = netdev_priv(tx_ring->netdev);
+diff --git a/Documentation/networking/ixgb.txt b/Documentation/networking/ixgb.txt
+index 09f71d71920a..b10f360c57d4 100644
+--- a/Documentation/networking/ixgb.txt
++++ b/Documentation/networking/ixgb.txt
+@@ -70,7 +70,8 @@ select m for "Intel(R) PRO/10GbE support" located at:
+       Location:
+         -> Device Drivers
+           -> Network device support (NETDEVICES [=y])
+-            -> Ethernet (10000 Mbit) (NETDEV_10000 [=y])
++            -> Ethernet driver support (ETHERNET [=y])
++              -> Intel devices (NET_VENDOR_INTEL [=y])
+ 1. make modules && make modules_install
  
--		if (adapter->tstamp_config.tx_type & HWTSTAMP_TX_ON &&
-+		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
- 		    !test_and_set_bit_lock(__IGB_PTP_TX_IN_PROGRESS,
- 					   &adapter->state)) {
- 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+ 2. Load the module:
+diff --git a/Documentation/networking/ixgbe.txt b/Documentation/networking/ixgbe.txt
+index 687835415707..90a3860cca3d 100644
+--- a/Documentation/networking/ixgbe.txt
++++ b/Documentation/networking/ixgbe.txt
+@@ -253,9 +253,10 @@ Additional Configurations
+ 
+         -> Device Drivers
+           -> Network device support (NETDEVICES [=y])
+-            -> Ethernet (10000 Mbit) (NETDEV_10000 [=y])
+-              -> Intel(R) 10GbE PCI Express adapters support
+-                -> Data Center Bridging (DCB) Support
++            -> Ethernet driver (ETHERNET [=y])
++              -> Intel devices (NET_VENDOR_INTEL [=y])
++                -> Intel(R) 10GbE PCI Express adapters support (IXGBE [=y])
++                  -> Data Center Bridging (DCB) Support (IXGBE_DCB [=y])
+ 
+   After these options are selected, you must rebuild your kernel and your
+   modules.
 -- 
-2.14.1
-
-
----
-L'absence de virus dans ce courrier ?lectronique a ?t? v?rifi?e par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+2.13.6
 
