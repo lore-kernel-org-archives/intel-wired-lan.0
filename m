@@ -1,35 +1,43 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 7 Feb 2018 09:22:25 -0800
-Subject: [Intel-wired-lan] intel: add SPDX identifiers to all the Intel
- drivers
-In-Reply-To: <affca359-c7e0-79f9-4c55-d1f76245887f@oracle.com>
-References: <20180202231131.9990-1-jeffrey.t.kirsher@intel.com>
- <affca359-c7e0-79f9-4c55-d1f76245887f@oracle.com>
-Message-ID: <f7d70453-a39f-61b8-766c-a5ec34bbf900@oracle.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Wed, 07 Feb 2018 14:23:06 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: fix crash in build_skb Rx code path
+Message-ID: <20180207222306.30003.49713.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/7/2018 9:13 AM, Shannon Nelson wrote:
-> On 2/2/2018 3:11 PM, Jeff Kirsher wrote:
->> Add the SPDX identifiers to all the Intel wired LAN driver files, as
->> outlined in Documentation/process/license-rules.rst.
-> 
-> It was just pointed out to me on netdev that the SPDX tag "GPL-2.0" has 
-> been deprecated.? See the bottom of https://spdx.org/licenses/ for details.
-> 
-> Of course GregKH and friends have put this tag all over the kernel 
-> already, so I don't know what they're going to do.? However, using 
-> "GPL-2.0-only" might make more sense for your files.
-> 
-> In several of the Sun files I was attempting to patch we have the text
->  ?* published by the Free Software Foundation; either version 2 of the
->  ?* License, or (at your option) any later version.
-> so I'll likely need to use "GPL-2.0+".
+Add check for build_skb enabled ring in ixgbe_dma_sync_frag().
+In that case &skb_shinfo(skb)->frags[0] may not always be set which
+can lead to a crash. Instead we derive the page offset from skb->data.
 
-s/GPL-2.0+/GPL-2.0-or-later/
+Fixes: 42073d91a214
+("ixgbe: Have the CPU take ownership of the buffers sooner")
+Reported-by: Ambarish Soman <asoman@redhat.com>
+Suggested-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-> 
-> sln
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index b032091..8536942 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -1888,6 +1888,14 @@ static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
+ 				     ixgbe_rx_pg_size(rx_ring),
+ 				     DMA_FROM_DEVICE,
+ 				     IXGBE_RX_DMA_ATTR);
++	} else if (ring_uses_build_skb(rx_ring)) {
++		unsigned long offset = (unsigned long)(skb->data) & ~PAGE_MASK;
++
++		dma_sync_single_range_for_cpu(rx_ring->dev,
++					      IXGBE_CB(skb)->dma,
++					      offset,
++					      skb_headlen(skb),
++					      DMA_FROM_DEVICE);
+ 	} else {
+ 		struct skb_frag_struct *frag = &skb_shinfo(skb)->frags[0];
+ 
+
