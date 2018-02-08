@@ -1,63 +1,77 @@
 From: Benjamin Poirier <bpoirier@suse.com>
-Date: Thu, 8 Feb 2018 15:40:26 +0900
-Subject: [Intel-wired-lan] [PATCH 3/3] Revert "e1000e: Do not read ICR
- in Other interrupt"
-In-Reply-To: <CAKgT0Ucozb6kyFavZUo=enjhpJkkiHDz-bZYG=KcCLoD=ByqoQ@mail.gmail.com>
-References: <20180126091236.13044-1-bpoirier@suse.com>
- <20180126091236.13044-4-bpoirier@suse.com>
- <CAKgT0Ue+JNL91jr08Ks3+Oj21fNApwuQH=bDEs2o3BKPigpyEA@mail.gmail.com>
- <20180129072805.7ifsjr3r6eziwp7a@f1.synalogic.ca>
- <CAKgT0Ucozb6kyFavZUo=enjhpJkkiHDz-bZYG=KcCLoD=ByqoQ@mail.gmail.com>
-Message-ID: <20180208064026.ht4y5orcw4m5qyyl@f1.synalogic.ca>
+Date: Thu,  8 Feb 2018 15:47:12 +0900
+Subject: [Intel-wired-lan] [PATCH net-queue 1/3] Partial revert "e1000e:
+ Avoid receiver overrun interrupt bursts"
+Message-ID: <20180208064714.6042-1-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2018/01/29 09:22, Alexander Duyck wrote:
-[...]
-> 
-> > Consequently, we must clear OTHER manually from ICR, otherwise the
-> > interrupt is immediately re-raised after exiting the handler.
-> >
-> > These observations are the same whether the interrupt is triggered via a
-> > write to ICS or in hardware.
-> >
-> > Furthermore, I tested that this behavior is the same for other Other
-> > events (MDAC, SRPD, ACK, MNG). Those were tested via a write to ICS
-> > only, not in hardware.
-> >
-> > This is a version of the test patch that I used to trigger lsc and rxo in
-> > software and hardware. It applies over this patch series.
-> 
-> I plan to look into this some more over the next few days. Ideally if
-> we could mask these "OTHER" interrupts besides the LSC we could comply
-> with all the needed bits for MSI-X. My concern is that we are still
-> stuck reading the ICR at this point because of this and it is going to
-> make dealing with MSI-X challenging on 82574 since it seems like the
-> intention was that you weren't supposed to be reading the ICR when
-> MSI-X is enabled based on the list of current issues and HW errata.
+This partially reverts commit 4aea7a5c5e940c1723add439f4088844cd26196d.
 
-I totally agree with you that it looks like the msi-x interface was
-designed so you don't need to read icr. That's also why I was happy to
-go that direction with the (now infamous) commit 16ecba59bc33 ("e1000e:
-Do not read ICR in Other interrupt", v4.5-rc1).
+We keep the fix for the first part of the problem (1) described in the log
+of that commit, that is to read ICR in the other interrupt handler. We
+remove the fix for the second part of the problem (2), Other interrupt
+throttling.
 
-However, we looked at it before and there seems to be no way to mask
-individual Other interrupt causes (masking rxo but getting lsc). Because
-of that, I think we have to keep reading icr in the Other interrupt
-handler.
+Bursts of "Other" interrupts may once again occur during rxo (receive
+overflow) traffic conditions. This is deemed acceptable in the interest of
+avoiding unforeseen fallout from changes that are not strictly necessary.
+As discussed, the e1000e driver should be in "maintenance mode".
 
-> 
-> At this point it seems like the interrupts is firing and the
-> INT_ASSERTED is all we really need to be checking for if I understand
-> this all correctly. Basically if LSC is set it will trigger OTHER and
-> INT_ASSERTED, if any of the other causes are set they are only setting
-> OTHER.
+Link: https://www.spinics.net/lists/netdev/msg480675.html
+Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 16 ++--------------
+ 1 file changed, 2 insertions(+), 14 deletions(-)
 
-I think that's right and it's related to the fact that currently LSC is
-set in IMS but not the other causes. Since we have to read icr (as I
-wrote above) but we want to avoid reading it without INT_ASSERTED set
-(as per errata 12) the solution will be to set all of the causes related
-to Other in IMS. Patches incoming...
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 153ad406c65e..3b36efa6228d 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -1915,21 +1915,10 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 icr;
+-	bool enable = true;
+ 
+ 	icr = er32(ICR);
+ 	ew32(ICR, E1000_ICR_OTHER);
+ 
+-	if (icr & E1000_ICR_RXO) {
+-		ew32(ICR, E1000_ICR_RXO);
+-		enable = false;
+-		/* napi poll will re-enable Other, make sure it runs */
+-		if (napi_schedule_prep(&adapter->napi)) {
+-			adapter->total_rx_bytes = 0;
+-			adapter->total_rx_packets = 0;
+-			__napi_schedule(&adapter->napi);
+-		}
+-	}
+ 	if (icr & E1000_ICR_LSC) {
+ 		ew32(ICR, E1000_ICR_LSC);
+ 		hw->mac.get_link_status = true;
+@@ -1938,7 +1927,7 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+ 			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+ 	}
+ 
+-	if (enable && !test_bit(__E1000_DOWN, &adapter->state))
++	if (!test_bit(__E1000_DOWN, &adapter->state))
+ 		ew32(IMS, E1000_IMS_OTHER);
+ 
+ 	return IRQ_HANDLED;
+@@ -2708,8 +2697,7 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
+ 		napi_complete_done(napi, work_done);
+ 		if (!test_bit(__E1000_DOWN, &adapter->state)) {
+ 			if (adapter->msix_entries)
+-				ew32(IMS, adapter->rx_ring->ims_val |
+-				     E1000_IMS_OTHER);
++				ew32(IMS, adapter->rx_ring->ims_val);
+ 			else
+ 				e1000_irq_enable(adapter);
+ 		}
+-- 
+2.16.1
+
