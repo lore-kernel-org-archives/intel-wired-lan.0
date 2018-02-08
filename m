@@ -1,174 +1,79 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 09 Feb 2018 02:29:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 70b0252259dcbdbae5c815a32d7fa1a7725a78ac
-Message-ID: <5a7c9726.QOPUozd2fS9553gM%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 8 Feb 2018 10:42:02 -0800
+Subject: [Intel-wired-lan] [net-next] Documentation: Update Intel wired
+ LAN docs
+In-Reply-To: <1518112663.26676.5.camel@intel.com>
+References: <20180206210029.27875-1-jeffrey.t.kirsher@intel.com>
+ <c1c68750-fc0d-8e75-4535-78fb4c8048b9@oracle.com>
+ <1518112663.26676.5.camel@intel.com>
+Message-ID: <fae843ac-19e4-53a0-bd18-39e67ba9b2c5@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 70b0252259dcbdbae5c815a32d7fa1a7725a78ac  e1000e: Avoid missed interrupts following ICR read
+On 2/8/2018 9:57 AM, Jeff Kirsher wrote:
+> On Wed, 2018-02-07 at 16:37 -0800, Shannon Nelson wrote:
+>> On 2/6/2018 1:00 PM, Jeff Kirsher wrote:
+>>> Updated the kernel documentation on e1000e, fm10k, i40e/vf, igb/vf
+>>> and
+>>> ixgbe/vf.
+>>>
+>>> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+>>
+>> I didn't really read this for details, but I saw a few things that
+>> jumped out at me and noted them below.  In general, it would be nice
+>> to
+>> have someone go through them and do proper updates to make these
+>> files
+>> look consistent so they look like they came from the same company.
+>> I
+>> know there are differences in the individual drivers, but there are
+>> a
+>> lot of similarities and these files should not all look so
+>> different.
+>> There's also still a lot of out-dated information here that doesn't
+>> do
+>> your customer any good.
+>>
+>> Also, with so many things changed in each file, it would be much
+>> easier
+>> to review if each was a separate patch rather than having to page
+>> through a few thousand lines in a single email.  You'd be much more
+>> likely to have someone who knows about a particular driver review at
+>> least that one file.
+> 
+> True, we do need to go through the copyright headers for all the
+> drivers and make sure they are consistent.  Not sure if I want to "add"
+> those kind of changes to this patch, but I will take it under
+> consideration.
+> 
+> As far as the "one" patch versus many patches, as it stand with just
+> the SPDX change, I am sure David Miller would rather have one patch to
+> make this change versus 8 patches.  This is based on my experiences in
+> the past when dealing with changes like this.
+> 
 
-elapsed time: 72m
+I would argue that this is a very different kind of patch than the SPDX 
+change patches.  A single patch with many simple one-line changes is 
+often a fairly repetitive and mechanical change, and it is easy enough 
+to look at the change pattern and the list of files and agree that it is 
+an acceptable patch.
 
-configs tested: 150
+This patch is changing significant chunks of text in each file in 
+several different ways, it is not a simple one line change to each file. 
+  I can't imaging that making these kinds of changes to so many code 
+files all in one shot would be accepted.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+As the submitting-patches.rst says "The point to remember is that each 
+patch should make an easily understood change that can be verified by 
+reviewers."  This patch should be split up by the individual driver 
+related files in order for reviewers to give good comments on the driver 
+they know.  I sure couldn't give any kind of signoff for this patch as I 
+know very little about several of the drivers represented.
 
-x86_64                 randconfig-a0-02090138
-mips                        nlm_xlp_defconfig
-parisc                        c3000_defconfig
-powerpc                      walnut_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-02082238
-i386                               tinyconfig
-i386                   randconfig-x019-201805
-i386                   randconfig-x010-201805
-i386                   randconfig-x015-201805
-i386                   randconfig-x014-201805
-i386                   randconfig-x011-201805
-i386                   randconfig-x012-201805
-i386                   randconfig-x017-201805
-i386                   randconfig-x016-201805
-i386                   randconfig-x018-201805
-i386                   randconfig-x013-201805
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201805
-x86_64                 randconfig-x008-201805
-x86_64                 randconfig-x000-201805
-x86_64                 randconfig-x005-201805
-x86_64                 randconfig-x002-201805
-x86_64                 randconfig-x007-201805
-x86_64                 randconfig-x009-201805
-x86_64                 randconfig-x001-201805
-x86_64                 randconfig-x006-201805
-x86_64                 randconfig-x003-201805
-x86_64                 randconfig-x004-201805
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201805
-i386                     randconfig-i1-201805
-x86_64                 randconfig-g0-02081719
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-i386                     randconfig-a1-201805
-i386                     randconfig-a0-201805
-x86_64                 randconfig-s0-02090033
-x86_64                 randconfig-s1-02090033
-x86_64                 randconfig-s2-02090033
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                           sama5_defconfig
-m68k                        mvme16x_defconfig
-powerpc                      ep88xc_defconfig
-powerpc                        fsp2_defconfig
-xtensa                           allyesconfig
-x86_64                 randconfig-x017-201805
-x86_64                 randconfig-x018-201805
-x86_64                 randconfig-x013-201805
-x86_64                 randconfig-x016-201805
-x86_64                 randconfig-x011-201805
-x86_64                 randconfig-x014-201805
-x86_64                 randconfig-x012-201805
-x86_64                 randconfig-x015-201805
-x86_64                 randconfig-x010-201805
-x86_64                 randconfig-x019-201805
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201805
-i386                     randconfig-s1-201805
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-02090051
-x86_64                 randconfig-s4-02090051
-x86_64                 randconfig-s5-02090051
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-i0-02051046
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-u0-02081535
-x86_64                                   rhel
-x86_64                               rhel-7.2
-powerpc                 mpc8313_rdb_defconfig
-powerpc                 mpc837x_mds_defconfig
-i386                   randconfig-x004-201805
-i386                   randconfig-x007-201805
-i386                   randconfig-x002-201805
-i386                   randconfig-x009-201805
-i386                   randconfig-x003-201805
-i386                   randconfig-x006-201805
-i386                   randconfig-x005-201805
-i386                   randconfig-x000-201805
-i386                   randconfig-x008-201805
-i386                   randconfig-x001-201805
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x071-201805
-i386                   randconfig-x079-201805
-i386                   randconfig-x072-201805
-i386                   randconfig-x077-201805
-i386                   randconfig-x076-201805
-i386                   randconfig-x073-201805
-i386                   randconfig-x070-201805
-i386                   randconfig-x075-201805
-i386                   randconfig-x078-201805
-i386                   randconfig-x074-201805
+... and if the file is so big that I can't get my comments through the 
+mail listserver, what good is asking for a review?
 
-Thanks,
-Fengguang
+sln
