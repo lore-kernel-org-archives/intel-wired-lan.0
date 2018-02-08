@@ -1,129 +1,105 @@
-From: Benjamin Poirier <bpoirier@suse.com>
-Date: Thu,  8 Feb 2018 15:47:14 +0900
-Subject: [Intel-wired-lan] [PATCH net-queue 3/3] e1000e: Avoid missed
- interrupts following ICR read.
+From: Benjamin Poirier <benjamin.poirier@gmail.com>
+Date: Thu, 8 Feb 2018 17:05:57 +0900
+Subject: [Intel-wired-lan] [PATCH net-queue 1/3] Partial revert "e1000e:
+ Avoid receiver overrun interrupt bursts"
 In-Reply-To: <20180208064714.6042-1-bpoirier@suse.com>
 References: <20180208064714.6042-1-bpoirier@suse.com>
-Message-ID: <20180208064714.6042-3-bpoirier@suse.com>
+Message-ID: <20180208080557.yqxdgvr4xef3zszq@f1.synalogic.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The 82574 specification update errata 12 states that interrupts may be
-missed if ICR is read while INT_ASSERTED is not set. Avoid that problem by
-setting all bits related to events that can trigger the Other interrupt in
-IMS.
+I forgot to mark it as such but this is v2 of the series originally
+submitted in this thread:
+https://lkml.org/lkml/2018/1/26/93
 
-The Other interrupt is raised for such events regardless of whether or not
-they are set in IMS. However, only when they are set is the INT_ASSERTED
-bit also set in ICR.
+Changes since v1:
+* series rebased to apply over "e1000e: Remove Other from EIAC."
+  http://patchwork.ozlabs.org/patch/867833/
+  This essentially removes patch 3/3 from the original series.
+* dropped [PATCH 2/3] Revert "e1000e: Separate signaling for link
+  check/link up". After Alex's feedback, I think that problem needs to
+  be addressed differently and I will submit a separate patch for it.
+* patch 1 was split into three parts. Instead of manually clearing OTHER
+  via a write to icr as in v1, in v2 we make sure that INT_ASSERTED is
+  always set via bits for all events related to the Other interrupt in
+  IMS.
 
-By doing this, we ensure that INT_ASSERTED is always set when we read ICR
-in e1000_msix_other() and steer clear of the errata. This also ensures that
-ICR will automatically be cleared on read, therefore we no longer need to
-clear bits explicitly.
+Benjamin Poirier (3):
+  Partial revert "e1000e: Avoid receiver overrun interrupt bursts"
+  e1000e: Fix queue interrupt re-raising in Other interrupt.
+  e1000e: Avoid missed interrupts following ICR read.
 
-Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
----
- drivers/net/ethernet/intel/e1000e/defines.h | 21 ++++++++++++++++++++-
- drivers/net/ethernet/intel/e1000e/netdev.c  | 11 ++++-------
- 2 files changed, 24 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/e1000e/defines.h | 21 ++++++++++++++++++-
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 32 +++++++++--------------------
+ 2 files changed, 30 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
-index afb7ebe20b24..824fd44e25f0 100644
---- a/drivers/net/ethernet/intel/e1000e/defines.h
-+++ b/drivers/net/ethernet/intel/e1000e/defines.h
-@@ -400,6 +400,10 @@
- #define E1000_ICR_RXDMT0        0x00000010 /* Rx desc min. threshold (0) */
- #define E1000_ICR_RXO           0x00000040 /* Receiver Overrun */
- #define E1000_ICR_RXT0          0x00000080 /* Rx timer intr (ring 0) */
-+#define E1000_ICR_MDAC          0x00000200 /* MDIO Access Complete */
-+#define E1000_ICR_SRPD          0x00010000 /* Small Receive Packet Detected */
-+#define E1000_ICR_ACK           0x00020000 /* Receive ACK Frame Detected */
-+#define E1000_ICR_MNG           0x00040000 /* Manageability Event Detected */
- #define E1000_ICR_ECCER         0x00400000 /* Uncorrectable ECC Error */
- /* If this bit asserted, the driver should claim the interrupt */
- #define E1000_ICR_INT_ASSERTED	0x80000000
-@@ -407,7 +411,7 @@
- #define E1000_ICR_RXQ1          0x00200000 /* Rx Queue 1 Interrupt */
- #define E1000_ICR_TXQ0          0x00400000 /* Tx Queue 0 Interrupt */
- #define E1000_ICR_TXQ1          0x00800000 /* Tx Queue 1 Interrupt */
--#define E1000_ICR_OTHER         0x01000000 /* Other Interrupts */
-+#define E1000_ICR_OTHER         0x01000000 /* Other Interrupt */
- 
- /* PBA ECC Register */
- #define E1000_PBA_ECC_COUNTER_MASK  0xFFF00000 /* ECC counter mask */
-@@ -431,12 +435,27 @@
- 	E1000_IMS_RXSEQ  |    \
- 	E1000_IMS_LSC)
- 
-+/* These are all of the events related to the OTHER interrupt.
-+ */
-+#define IMS_OTHER_MASK ( \
-+	E1000_IMS_LSC  | \
-+	E1000_IMS_RXO  | \
-+	E1000_IMS_MDAC | \
-+	E1000_IMS_SRPD | \
-+	E1000_IMS_ACK  | \
-+	E1000_IMS_MNG)
-+
- /* Interrupt Mask Set */
- #define E1000_IMS_TXDW      E1000_ICR_TXDW      /* Transmit desc written back */
- #define E1000_IMS_LSC       E1000_ICR_LSC       /* Link Status Change */
- #define E1000_IMS_RXSEQ     E1000_ICR_RXSEQ     /* Rx sequence error */
- #define E1000_IMS_RXDMT0    E1000_ICR_RXDMT0    /* Rx desc min. threshold */
-+#define E1000_IMS_RXO       E1000_ICR_RXO       /* Receiver Overrun */
- #define E1000_IMS_RXT0      E1000_ICR_RXT0      /* Rx timer intr */
-+#define E1000_IMS_MDAC      E1000_ICR_MDAC      /* MDIO Access Complete */
-+#define E1000_IMS_SRPD      E1000_ICR_SRPD      /* Small Receive Packet */
-+#define E1000_IMS_ACK       E1000_ICR_ACK       /* Receive ACK Frame Detected */
-+#define E1000_IMS_MNG       E1000_ICR_MNG       /* Manageability Event */
- #define E1000_IMS_ECCER     E1000_ICR_ECCER     /* Uncorrectable ECC Error */
- #define E1000_IMS_RXQ0      E1000_ICR_RXQ0      /* Rx Queue 0 Interrupt */
- #define E1000_IMS_RXQ1      E1000_ICR_RXQ1      /* Rx Queue 1 Interrupt */
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 2c9609bee2ae..9fd4050a91ca 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1914,16 +1914,12 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
- 	struct net_device *netdev = data;
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
--	u32 icr;
--
--	icr = er32(ICR);
--	ew32(ICR, E1000_ICR_OTHER);
-+	u32 icr = er32(ICR);
- 
- 	if (icr & adapter->eiac_mask)
- 		ew32(ICS, (icr & adapter->eiac_mask));
- 
- 	if (icr & E1000_ICR_LSC) {
--		ew32(ICR, E1000_ICR_LSC);
- 		hw->mac.get_link_status = true;
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->state))
-@@ -1931,7 +1927,7 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
- 	}
- 
- 	if (!test_bit(__E1000_DOWN, &adapter->state))
--		ew32(IMS, E1000_IMS_OTHER);
-+		ew32(IMS, E1000_IMS_OTHER | IMS_OTHER_MASK);
- 
- 	return IRQ_HANDLED;
- }
-@@ -2258,7 +2254,8 @@ static void e1000_irq_enable(struct e1000_adapter *adapter)
- 
- 	if (adapter->msix_entries) {
- 		ew32(EIAC_82574, adapter->eiac_mask & E1000_EIAC_MASK_82574);
--		ew32(IMS, adapter->eiac_mask | E1000_IMS_OTHER | E1000_IMS_LSC);
-+		ew32(IMS, adapter->eiac_mask | E1000_IMS_OTHER |
-+		     IMS_OTHER_MASK);
- 	} else if (hw->mac.type >= e1000_pch_lpt) {
- 		ew32(IMS, IMS_ENABLE_MASK | E1000_IMS_ECCER);
- 	} else {
--- 
-2.16.1
-
+On 2018/02/08 15:47, Benjamin Poirier wrote:
+> This partially reverts commit 4aea7a5c5e940c1723add439f4088844cd26196d.
+> 
+> We keep the fix for the first part of the problem (1) described in the log
+> of that commit, that is to read ICR in the other interrupt handler. We
+> remove the fix for the second part of the problem (2), Other interrupt
+> throttling.
+> 
+> Bursts of "Other" interrupts may once again occur during rxo (receive
+> overflow) traffic conditions. This is deemed acceptable in the interest of
+> avoiding unforeseen fallout from changes that are not strictly necessary.
+> As discussed, the e1000e driver should be in "maintenance mode".
+> 
+> Link: https://www.spinics.net/lists/netdev/msg480675.html
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 16 ++--------------
+>  1 file changed, 2 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 153ad406c65e..3b36efa6228d 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -1915,21 +1915,10 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+>  	struct e1000_adapter *adapter = netdev_priv(netdev);
+>  	struct e1000_hw *hw = &adapter->hw;
+>  	u32 icr;
+> -	bool enable = true;
+>  
+>  	icr = er32(ICR);
+>  	ew32(ICR, E1000_ICR_OTHER);
+>  
+> -	if (icr & E1000_ICR_RXO) {
+> -		ew32(ICR, E1000_ICR_RXO);
+> -		enable = false;
+> -		/* napi poll will re-enable Other, make sure it runs */
+> -		if (napi_schedule_prep(&adapter->napi)) {
+> -			adapter->total_rx_bytes = 0;
+> -			adapter->total_rx_packets = 0;
+> -			__napi_schedule(&adapter->napi);
+> -		}
+> -	}
+>  	if (icr & E1000_ICR_LSC) {
+>  		ew32(ICR, E1000_ICR_LSC);
+>  		hw->mac.get_link_status = true;
+> @@ -1938,7 +1927,7 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+>  			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+>  	}
+>  
+> -	if (enable && !test_bit(__E1000_DOWN, &adapter->state))
+> +	if (!test_bit(__E1000_DOWN, &adapter->state))
+>  		ew32(IMS, E1000_IMS_OTHER);
+>  
+>  	return IRQ_HANDLED;
+> @@ -2708,8 +2697,7 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
+>  		napi_complete_done(napi, work_done);
+>  		if (!test_bit(__E1000_DOWN, &adapter->state)) {
+>  			if (adapter->msix_entries)
+> -				ew32(IMS, adapter->rx_ring->ims_val |
+> -				     E1000_IMS_OTHER);
+> +				ew32(IMS, adapter->rx_ring->ims_val);
+>  			else
+>  				e1000_irq_enable(adapter);
+>  		}
+> -- 
+> 2.16.1
+> 
