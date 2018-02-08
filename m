@@ -1,58 +1,63 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 7 Feb 2018 16:41:33 -0800
-Subject: [Intel-wired-lan] [net-next] Documentation: Update Intel wired
- LAN docs
-In-Reply-To: <c1c68750-fc0d-8e75-4535-78fb4c8048b9@oracle.com>
-References: <20180206210029.27875-1-jeffrey.t.kirsher@intel.com>
- <c1c68750-fc0d-8e75-4535-78fb4c8048b9@oracle.com>
-Message-ID: <804f3ab2-cf59-0027-1d0d-de9d42894ec0@oracle.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Thu, 8 Feb 2018 15:40:26 +0900
+Subject: [Intel-wired-lan] [PATCH 3/3] Revert "e1000e: Do not read ICR
+ in Other interrupt"
+In-Reply-To: <CAKgT0Ucozb6kyFavZUo=enjhpJkkiHDz-bZYG=KcCLoD=ByqoQ@mail.gmail.com>
+References: <20180126091236.13044-1-bpoirier@suse.com>
+ <20180126091236.13044-4-bpoirier@suse.com>
+ <CAKgT0Ue+JNL91jr08Ks3+Oj21fNApwuQH=bDEs2o3BKPigpyEA@mail.gmail.com>
+ <20180129072805.7ifsjr3r6eziwp7a@f1.synalogic.ca>
+ <CAKgT0Ucozb6kyFavZUo=enjhpJkkiHDz-bZYG=KcCLoD=ByqoQ@mail.gmail.com>
+Message-ID: <20180208064026.ht4y5orcw4m5qyyl@f1.synalogic.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/7/2018 4:37 PM, Shannon Nelson wrote:
-> On 2/6/2018 1:00 PM, Jeff Kirsher wrote:
->> Updated the kernel documentation on e1000e, fm10k, i40e/vf, igb/vf and
->> ixgbe/vf.
->>
->> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+On 2018/01/29 09:22, Alexander Duyck wrote:
+[...]
 > 
-> I didn't really read this for details, but I saw a few things that 
-> jumped out at me and noted them below.? In general, it would be nice to 
-> have someone go through them and do proper updates to make these files 
-> look consistent so they look like they came from the same company.? I 
-> know there are differences in the individual drivers, but there are a 
-> lot of similarities and these files should not all look so different. 
-> There's also still a lot of out-dated information here that doesn't do 
-> your customer any good.
+> > Consequently, we must clear OTHER manually from ICR, otherwise the
+> > interrupt is immediately re-raised after exiting the handler.
+> >
+> > These observations are the same whether the interrupt is triggered via a
+> > write to ICS or in hardware.
+> >
+> > Furthermore, I tested that this behavior is the same for other Other
+> > events (MDAC, SRPD, ACK, MNG). Those were tested via a write to ICS
+> > only, not in hardware.
+> >
+> > This is a version of the test patch that I used to trigger lsc and rxo in
+> > software and hardware. It applies over this patch series.
 > 
-> Also, with so many things changed in each file, it would be much easier 
-> to review if each was a separate patch rather than having to page 
-> through a few thousand lines in a single email.? You'd be much more 
-> likely to have someone who knows about a particular driver review at 
-> least that one file.
+> I plan to look into this some more over the next few days. Ideally if
+> we could mask these "OTHER" interrupts besides the LSC we could comply
+> with all the needed bits for MSI-X. My concern is that we are still
+> stuck reading the ICR at this point because of this and it is going to
+> make dealing with MSI-X challenging on 82574 since it seems like the
+> intention was that you weren't supposed to be reading the ICR when
+> MSI-X is enabled based on the list of current issues and HW errata.
+
+I totally agree with you that it looks like the msi-x interface was
+designed so you don't need to read icr. That's also why I was happy to
+go that direction with the (now infamous) commit 16ecba59bc33 ("e1000e:
+Do not read ICR in Other interrupt", v4.5-rc1).
+
+However, we looked at it before and there seems to be no way to mask
+individual Other interrupt causes (masking rxo but getting lsc). Because
+of that, I think we have to keep reading icr in the Other interrupt
+handler.
+
 > 
-> sln
+> At this point it seems like the interrupts is firing and the
+> INT_ASSERTED is all we really need to be checking for if I understand
+> this all correctly. Basically if LSC is set it will trigger OTHER and
+> INT_ASSERTED, if any of the other causes are set they are only setting
+> OTHER.
 
-This note I just received from the mail-bot illustrates my last point 
-nicely:
-
-Your mail to 'Intel-wired-lan' with the subject
-
-     Re: [Intel-wired-lan] [net-next] Documentation: Update Intel wired
-LAN docs
-
-Is being held until the list moderator can review it for approval.
-
-The reason it is being held:
-
-     Message body is too big: 162829 bytes with a limit of 90 KB
-
-Either the message will get posted to the list, or you will receive
-notification of the moderator's decision.  If you would like to cancel
-this posting, please visit the following URL:
-
- 
-https://lists.osuosl.org/mailman/confirm/intel-wired-lan/430895e5172646554162b6d400f30cf8da5220e3
+I think that's right and it's related to the fact that currently LSC is
+set in IMS but not the other causes. Since we have to read icr (as I
+wrote above) but we want to avoid reading it without INT_ASSERTED set
+(as per errata 12) the solution will be to set all of the causes related
+to Other in IMS. Patches incoming...
