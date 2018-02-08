@@ -1,60 +1,215 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 08 Feb 2018 09:57:43 -0800
-Subject: [Intel-wired-lan] [net-next] Documentation: Update Intel wired
- LAN docs
-In-Reply-To: <c1c68750-fc0d-8e75-4535-78fb4c8048b9@oracle.com>
-References: <20180206210029.27875-1-jeffrey.t.kirsher@intel.com>
- <c1c68750-fc0d-8e75-4535-78fb4c8048b9@oracle.com>
-Message-ID: <1518112663.26676.5.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 09 Feb 2018 02:17:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ ddba7571d07bfca7540ccd2249de2d81051e132a
+Message-ID: <5a7c944b.PwYQ/MY4FbP4OAkd%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2018-02-07 at 16:37 -0800, Shannon Nelson wrote:
-> On 2/6/2018 1:00 PM, Jeff Kirsher wrote:
-> > Updated the kernel documentation on e1000e, fm10k, i40e/vf, igb/vf
-> > and
-> > ixgbe/vf.
-> > 
-> > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> 
-> I didn't really read this for details, but I saw a few things that 
-> jumped out at me and noted them below.  In general, it would be nice
-> to 
-> have someone go through them and do proper updates to make these
-> files 
-> look consistent so they look like they came from the same company. 
-> I 
-> know there are differences in the individual drivers, but there are
-> a 
-> lot of similarities and these files should not all look so
-> different. 
-> There's also still a lot of out-dated information here that doesn't
-> do 
-> your customer any good.
-> 
-> Also, with so many things changed in each file, it would be much
-> easier 
-> to review if each was a separate patch rather than having to page 
-> through a few thousand lines in a single email.  You'd be much more 
-> likely to have someone who knows about a particular driver review at 
-> least that one file.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: ddba7571d07bfca7540ccd2249de2d81051e132a  e1000e: Remove Other from EIAC
 
-True, we do need to go through the copyright headers for all the
-drivers and make sure they are consistent.  Not sure if I want to "add"
-those kind of changes to this patch, but I will take it under
-consideration.
+elapsed time: 140m
 
-As far as the "one" patch versus many patches, as it stand with just
-the SPDX change, I am sure David Miller would rather have one patch to
-make this change versus 8 patches.  This is based on my experiences in
-the past when dealing with changes like this.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180208/55f9f1f3/attachment.asc>
+configs tested: 191
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+m68k                          sun3x_defconfig
+powerpc                      ppc64e_defconfig
+sh                     sh7710voipgw_defconfig
+x86_64                 randconfig-a0-02082226
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                            hisi_defconfig
+openrisc                    or1ksim_defconfig
+xtensa                    smp_lx200_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-02082238
+arm                              zx_defconfig
+microblaze                          defconfig
+mn10300                     asb2303_defconfig
+x86_64                randconfig-it0-02081426
+i386                               tinyconfig
+i386                   randconfig-x019-201805
+i386                   randconfig-x010-201805
+i386                   randconfig-x015-201805
+i386                   randconfig-x014-201805
+i386                   randconfig-x011-201805
+i386                   randconfig-x012-201805
+i386                   randconfig-x017-201805
+i386                   randconfig-x016-201805
+i386                   randconfig-x018-201805
+i386                   randconfig-x013-201805
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201805
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201805
+i386                     randconfig-i1-201805
+x86_64                 randconfig-v0-02081838
+x86_64                 randconfig-g0-02081719
+i386                             allmodconfig
+x86_64                 randconfig-x017-201805
+x86_64                 randconfig-x018-201805
+x86_64                 randconfig-x013-201805
+x86_64                 randconfig-x016-201805
+x86_64                 randconfig-x011-201805
+x86_64                 randconfig-x014-201805
+x86_64                 randconfig-x012-201805
+x86_64                 randconfig-x015-201805
+x86_64                 randconfig-x010-201805
+x86_64                 randconfig-x019-201805
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201805
+i386                     randconfig-a1-201805
+x86_64                 randconfig-s0-02082225
+x86_64                 randconfig-s1-02082225
+x86_64                 randconfig-s2-02082225
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                           sama5_defconfig
+m68k                        mvme16x_defconfig
+powerpc                      ep88xc_defconfig
+powerpc                        fsp2_defconfig
+xtensa                           allyesconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201805
+i386                     randconfig-s1-201805
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-02082325
+x86_64                 randconfig-s4-02082325
+x86_64                 randconfig-s5-02082325
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+cris                          dev88_defconfig
+s390                             allmodconfig
+sh                          landisk_defconfig
+x86_64                 randconfig-i0-02051046
+i386                   randconfig-b0-02081911
+x86_64                 randconfig-b0-02081451
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                          lpd270_defconfig
+sh                   sh7724_generic_defconfig
+tile                             allyesconfig
+x86_64                 randconfig-u0-02081535
+arm                  colibri_pxa270_defconfig
+arm                          simpad_defconfig
+powerpc                     sequoia_defconfig
+powerpc64                         allnoconfig
+x86_64                randconfig-ne0-02082232
+x86_64                 randconfig-h0-02082101
+arm                           acs5k_defconfig
+sh                            hp6xx_defconfig
+x86_64                 randconfig-n0-02082208
+i386                   randconfig-x004-201805
+i386                   randconfig-x007-201805
+i386                   randconfig-x002-201805
+i386                   randconfig-x009-201805
+i386                   randconfig-x003-201805
+i386                   randconfig-x006-201805
+i386                   randconfig-x005-201805
+i386                   randconfig-x000-201805
+i386                   randconfig-x008-201805
+i386                   randconfig-x001-201805
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x071-201805
+i386                   randconfig-x079-201805
+i386                   randconfig-x072-201805
+i386                   randconfig-x077-201805
+i386                   randconfig-x076-201805
+i386                   randconfig-x073-201805
+i386                   randconfig-x070-201805
+i386                   randconfig-x075-201805
+i386                   randconfig-x078-201805
+i386                   randconfig-x074-201805
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                                 defconfig
+arm                      footbridge_defconfig
+m68k                         amcore_defconfig
+x86_64                 randconfig-x008-201805
+x86_64                 randconfig-x000-201805
+x86_64                 randconfig-x005-201805
+x86_64                 randconfig-x002-201805
+x86_64                 randconfig-x007-201805
+x86_64                 randconfig-x009-201805
+x86_64                 randconfig-x001-201805
+x86_64                 randconfig-x006-201805
+x86_64                 randconfig-x003-201805
+x86_64                 randconfig-x004-201805
+x86_64                 randconfig-r0-02081613
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
