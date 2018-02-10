@@ -1,112 +1,118 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 08 Feb 2018 10:52:46 -0800
-Subject: [Intel-wired-lan] [net-next] Documentation: Update Intel wired
- LAN docs
-In-Reply-To: <fae843ac-19e4-53a0-bd18-39e67ba9b2c5@oracle.com>
-References: <20180206210029.27875-1-jeffrey.t.kirsher@intel.com>
- <c1c68750-fc0d-8e75-4535-78fb4c8048b9@oracle.com>
- <1518112663.26676.5.camel@intel.com>
- <fae843ac-19e4-53a0-bd18-39e67ba9b2c5@oracle.com>
-Message-ID: <1518115966.26676.13.camel@intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Fri, 09 Feb 2018 16:10:02 -0800
+Subject: [Intel-wired-lan] [PATCH] virtio_pci: Add SR-IOV support
+Message-ID: <20180210001001.24685.8117.stgit@mdrustad-mac04.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2018-02-08 at 10:42 -0800, Shannon Nelson wrote:
-> On 2/8/2018 9:57 AM, Jeff Kirsher wrote:
-> > On Wed, 2018-02-07 at 16:37 -0800, Shannon Nelson wrote:
-> > > On 2/6/2018 1:00 PM, Jeff Kirsher wrote:
-> > > > Updated the kernel documentation on e1000e, fm10k, i40e/vf,
-> > > > igb/vf
-> > > > and
-> > > > ixgbe/vf.
-> > > > 
-> > > > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> > > 
-> > > I didn't really read this for details, but I saw a few things
-> > > that
-> > > jumped out at me and noted them below.  In general, it would be
-> > > nice
-> > > to
-> > > have someone go through them and do proper updates to make these
-> > > files
-> > > look consistent so they look like they came from the same
-> > > company.
-> > > I
-> > > know there are differences in the individual drivers, but there
-> > > are
-> > > a
-> > > lot of similarities and these files should not all look so
-> > > different.
-> > > There's also still a lot of out-dated information here that
-> > > doesn't
-> > > do
-> > > your customer any good.
-> > > 
-> > > Also, with so many things changed in each file, it would be much
-> > > easier
-> > > to review if each was a separate patch rather than having to page
-> > > through a few thousand lines in a single email.  You'd be much
-> > > more
-> > > likely to have someone who knows about a particular driver review
-> > > at
-> > > least that one file.
-> > 
-> > True, we do need to go through the copyright headers for all the
-> > drivers and make sure they are consistent.  Not sure if I want to
-> > "add"
-> > those kind of changes to this patch, but I will take it under
-> > consideration.
-> > 
-> > As far as the "one" patch versus many patches, as it stand with
-> > just
-> > the SPDX change, I am sure David Miller would rather have one patch
-> > to
-> > make this change versus 8 patches.  This is based on my experiences
-> > in
-> > the past when dealing with changes like this.
-> > 
-> 
-> I would argue that this is a very different kind of patch than the
-> SPDX 
-> change patches.  A single patch with many simple one-line changes is 
-> often a fairly repetitive and mechanical change, and it is easy
-> enough 
-> to look at the change pattern and the list of files and agree that it
-> is 
-> an acceptable patch.
-> 
-> This patch is changing significant chunks of text in each file in 
-> several different ways, it is not a simple one line change to each
-> file. 
->   I can't imaging that making these kinds of changes to so many code 
-> files all in one shot would be accepted.
-> 
-> As the submitting-patches.rst says "The point to remember is that
-> each 
-> patch should make an easily understood change that can be verified
-> by 
-> reviewers."  This patch should be split up by the individual driver 
-> related files in order for reviewers to give good comments on the
-> driver 
-> they know.  I sure couldn't give any kind of signoff for this patch
-> as I 
-> know very little about several of the drivers represented.
-> 
-> ... and if the file is so big that I can't get my comments through
-> the 
-> mail listserver, what good is asking for a review?
+From: Mark Rustad <mark.d.rustad@intel.com>
 
-So sorry, I had the SPDX patch in mind when I was reading your response
-and so I responded thinking the SPDX patch was what you were commenting
-on.  You are correct, I should break this patch up into each driver
-documentational change.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180208/2ebcbbb6/attachment.asc>
+Hardware-realized virtio devices can implement SR-IOV, so enable
+its use.
+
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+---
+ drivers/virtio/virtio_pci_common.c |   64 ++++++++++++++++++++++++++++++++++++
+ drivers/virtio/virtio_pci_common.h |    3 ++
+ 2 files changed, 67 insertions(+)
+
+diff --git a/drivers/virtio/virtio_pci_common.c b/drivers/virtio/virtio_pci_common.c
+index 1c4797e53f68..c46bbad57e67 100644
+--- a/drivers/virtio/virtio_pci_common.c
++++ b/drivers/virtio/virtio_pci_common.c
+@@ -584,6 +584,67 @@ static void virtio_pci_remove(struct pci_dev *pci_dev)
+ 	put_device(dev);
+ }
+ 
++#ifdef CONFIG_PCI_IOV
++static int _virtio_pci_sriov_disable(struct virtio_pci_device *vp_dev,
++				     struct pci_dev *pci_dev)
++{
++	vp_dev->num_vfs = 0;
++	/* If vfs are assigned we cannot shut down SR-IOV without causing
++	 * issues, so just leave the hardware available.
++	 */
++	if (pci_vfs_assigned(pci_dev)) {
++		dev_warn(&pci_dev->dev,
++			 "Unloading driver while VFs are assigned - VFs will not be deallocated\n");
++		return -EPERM;
++	}
++	pci_disable_sriov(pci_dev);
++	return 0;
++}
++
++static int virtio_pci_sriov_disable(struct pci_dev *pci_dev)
++{
++	struct virtio_pci_device *vp_dev = pci_get_drvdata(pci_dev);
++
++	if (!vp_dev->num_vfs && !pci_num_vf(pci_dev))
++		return -EINVAL;
++
++	return _virtio_pci_sriov_disable(vp_dev, pci_dev);
++}
++
++static int virtio_pci_sriov_enable(struct pci_dev *pci_dev, int num_vfs)
++{
++	struct virtio_pci_device *vp_dev = pci_get_drvdata(pci_dev);
++	int pre_existing_vfs = pci_num_vf(pci_dev);
++	int rc = 0;
++
++	if (vp_dev->num_vfs == num_vfs)
++		return -EINVAL;
++
++	if (pre_existing_vfs && pre_existing_vfs != num_vfs)
++		rc = _virtio_pci_sriov_disable(vp_dev, pci_dev);
++	else if (pre_existing_vfs && pre_existing_vfs == num_vfs)
++		return num_vfs;
++	if (rc)
++		return rc;
++
++	rc = pci_enable_sriov(pci_dev, num_vfs);
++	if (rc) {
++		dev_warn(&pci_dev->dev, "Failed to enable PCI sriov: %d\n", rc);
++		return rc;
++	}
++	vp_dev->num_vfs = num_vfs;
++	dev_info(&pci_dev->dev, "SR-IOV enabled with %d VFs\n", num_vfs);
++	return num_vfs;
++}
++
++static int virtio_pci_sriov_configure(struct pci_dev *dev, int num_vfs)
++{
++	if (!num_vfs)
++		return virtio_pci_sriov_disable(dev);
++	return virtio_pci_sriov_enable(dev, num_vfs);
++}
++#endif /* CONFIG_PCI_IOV */
++
+ static struct pci_driver virtio_pci_driver = {
+ 	.name		= "virtio-pci",
+ 	.id_table	= virtio_pci_id_table,
+@@ -592,6 +653,9 @@ static void virtio_pci_remove(struct pci_dev *pci_dev)
+ #ifdef CONFIG_PM_SLEEP
+ 	.driver.pm	= &virtio_pci_pm_ops,
+ #endif
++#ifdef CONFIG_PCI_IOV
++	.sriov_configure = virtio_pci_sriov_configure,
++#endif
+ };
+ 
+ module_pci_driver(virtio_pci_driver);
+diff --git a/drivers/virtio/virtio_pci_common.h b/drivers/virtio/virtio_pci_common.h
+index 135ee3cf7175..7d3910c15e99 100644
+--- a/drivers/virtio/virtio_pci_common.h
++++ b/drivers/virtio/virtio_pci_common.h
+@@ -94,6 +94,9 @@ struct virtio_pci_device {
+ 	/* Vectors allocated, excluding per-vq vectors if any */
+ 	unsigned msix_used_vectors;
+ 
++	/* Number of VFs allocated */
++	int num_vfs;
++
+ 	/* Whether we have vector per vq */
+ 	bool per_vq_vectors;
+ 
+
