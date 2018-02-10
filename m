@@ -1,150 +1,112 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 9 Feb 2018 17:29:28 -0800
-Subject: [Intel-wired-lan] [PATCH] virtio_pci: Add SR-IOV support
-In-Reply-To: <20180210001001.24685.8117.stgit@mdrustad-mac04.local>
-References: <20180210001001.24685.8117.stgit@mdrustad-mac04.local>
-Message-ID: <CAKgT0UcGon==13V6ArZ4Wud4F2BxE81c9J-c3QO9L3SZ2Cwucg@mail.gmail.com>
+From: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+Date: Sat, 10 Feb 2018 02:00:39 -0200
+Subject: [Intel-wired-lan] [PATCH] i40e: Fix bad state due to failed dcbx
+ autonegotiation
+Message-ID: <1518235239-16757-1-git-send-email-maurosr@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Feb 9, 2018 at 4:10 PM, Mark D Rustad <mark.d.rustad@intel.com> wrote:
-> From: Mark Rustad <mark.d.rustad@intel.com>
->
-> Hardware-realized virtio devices can implement SR-IOV, so enable
-> its use.
->
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+When connected to a dcbx capable switch, during the earlier link
+negotiations, a device can be left in a bad state which compromises the
+probe process of all interfaces:
 
-I'm not sure intel-wired-lan is the proper place to be reviewing this
-patch since I don't believe any of us have much background on what is
-being worked on here. That In addition to the lack of description
-about this virtio device that can implement SR-IOV is problematic. We
-may want to discuss this off list in order to figure out who the
-proper reviewers would be and where we might want to send this as an
-RFC.
+[   11.404108] i40e 0002:01:00.0: capability discovery failed, err OK
+aq_err I40E_AQ_RC_EMODE
 
-A virtio device is normally defined by a Specification. The latest
-released one I am aware of is 1.0. I can't find any reference there of
-supporting SR-IOV. I'm just wondering if this is a part of the newer
-1.1 specification that is being worked on or is outside of the spec?
-If it is outside spec I don't know if it could really be accepted
-since the device wouldn't really be virtio at that point.
+The message above tell us that something failed during the capability
+discovery process, the error I40E_AQ_RC_EMODE (21) means the device is
+in a mode that such operation is not allowed, according to the
+datasheet. Digging some more in the source code it's possible to check
+that it fails during the I40E_PRTGEN_CNF read using
+i40e_aq_debug_read_register within i40e_parse_discover_capabilities,
+which, again according to the datasheet, was not supposed to return
+that.
 
-> ---
->  drivers/virtio/virtio_pci_common.c |   64 ++++++++++++++++++++++++++++++++++++
->  drivers/virtio/virtio_pci_common.h |    3 ++
->  2 files changed, 67 insertions(+)
->
-> diff --git a/drivers/virtio/virtio_pci_common.c b/drivers/virtio/virtio_pci_common.c
-> index 1c4797e53f68..c46bbad57e67 100644
-> --- a/drivers/virtio/virtio_pci_common.c
-> +++ b/drivers/virtio/virtio_pci_common.c
-> @@ -584,6 +584,67 @@ static void virtio_pci_remove(struct pci_dev *pci_dev)
->         put_device(dev);
->  }
->
-> +#ifdef CONFIG_PCI_IOV
-> +static int _virtio_pci_sriov_disable(struct virtio_pci_device *vp_dev,
-> +                                    struct pci_dev *pci_dev)
-> +{
-> +       vp_dev->num_vfs = 0;
-> +       /* If vfs are assigned we cannot shut down SR-IOV without causing
-> +        * issues, so just leave the hardware available.
-> +        */
-> +       if (pci_vfs_assigned(pci_dev)) {
-> +               dev_warn(&pci_dev->dev,
-> +                        "Unloading driver while VFs are assigned - VFs will not be deallocated\n");
-> +               return -EPERM;
-> +       }
-> +       pci_disable_sriov(pci_dev);
-> +       return 0;
-> +}
-> +
-> +static int virtio_pci_sriov_disable(struct pci_dev *pci_dev)
-> +{
-> +       struct virtio_pci_device *vp_dev = pci_get_drvdata(pci_dev);
-> +
-> +       if (!vp_dev->num_vfs && !pci_num_vf(pci_dev))
-> +               return -EINVAL;
-> +
-> +       return _virtio_pci_sriov_disable(vp_dev, pci_dev);
-> +}
-> +
-> +static int virtio_pci_sriov_enable(struct pci_dev *pci_dev, int num_vfs)
-> +{
-> +       struct virtio_pci_device *vp_dev = pci_get_drvdata(pci_dev);
-> +       int pre_existing_vfs = pci_num_vf(pci_dev);
-> +       int rc = 0;
-> +
-> +       if (vp_dev->num_vfs == num_vfs)
-> +               return -EINVAL;
-> +
-> +       if (pre_existing_vfs && pre_existing_vfs != num_vfs)
-> +               rc = _virtio_pci_sriov_disable(vp_dev, pci_dev);
-> +       else if (pre_existing_vfs && pre_existing_vfs == num_vfs)
-> +               return num_vfs;
-> +       if (rc)
-> +               return rc;
-> +
-> +       rc = pci_enable_sriov(pci_dev, num_vfs);
-> +       if (rc) {
-> +               dev_warn(&pci_dev->dev, "Failed to enable PCI sriov: %d\n", rc);
-> +               return rc;
-> +       }
-> +       vp_dev->num_vfs = num_vfs;
-> +       dev_info(&pci_dev->dev, "SR-IOV enabled with %d VFs\n", num_vfs);
-> +       return num_vfs;
-> +}
-> +
+I also verified that any attempt to read a register, I40E_GL_FWSTS for
+instance, fails as well.
 
-So this looks a lot like the old ixgbe code for SR-IOV, however I
-don't see any spots where you might try to clean up the devices on
-unloading the driver. Leaving the VFs floating around would be an
-issue.
+Disabling the dcbx capability or setting it to dcbx-1.01, OUI=  ,
+instead of autonegotiation or ieee-dcbx, OUI= , mitgates the issue.
 
-Also I don't see any management interface defined here for how you
-would set things like the VF MAC address. How is that being handled?
+Another evidence of the device getting into a bad state is tcpdump
+capture during the autonegotiation. It's possible to see the switch
+sharing its dcbx settings with willing bit=0. The device then answers
+with willing=1 to learn the dcbx configuration:
+"        1... .... = Willing: Yes"
 
-> +static int virtio_pci_sriov_configure(struct pci_dev *dev, int num_vfs)
-> +{
-> +       if (!num_vfs)
-> +               return virtio_pci_sriov_disable(dev);
-> +       return virtio_pci_sriov_enable(dev, num_vfs);
-> +}
-> +#endif /* CONFIG_PCI_IOV */
-> +
->  static struct pci_driver virtio_pci_driver = {
->         .name           = "virtio-pci",
->         .id_table       = virtio_pci_id_table,
-> @@ -592,6 +653,9 @@ static void virtio_pci_remove(struct pci_dev *pci_dev)
->  #ifdef CONFIG_PM_SLEEP
->         .driver.pm      = &virtio_pci_pm_ops,
->  #endif
-> +#ifdef CONFIG_PCI_IOV
-> +       .sriov_configure = virtio_pci_sriov_configure,
-> +#endif
->  };
->
->  module_pci_driver(virtio_pci_driver);
-> diff --git a/drivers/virtio/virtio_pci_common.h b/drivers/virtio/virtio_pci_common.h
-> index 135ee3cf7175..7d3910c15e99 100644
-> --- a/drivers/virtio/virtio_pci_common.h
-> +++ b/drivers/virtio/virtio_pci_common.h
-> @@ -94,6 +94,9 @@ struct virtio_pci_device {
->         /* Vectors allocated, excluding per-vq vectors if any */
->         unsigned msix_used_vectors;
->
-> +       /* Number of VFs allocated */
-> +       int num_vfs;
-> +
->         /* Whether we have vector per vq */
->         bool per_vq_vectors;
->
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+After that there is no other communication coming from the NIC, that
+make me to believe the device entered the bad state when trying to
+replicate switch dcbx's settings.
+
+From a device driver standpoint it's possible to recover from the bad
+state by issuing a Global Reset and ask PCI subsystem to probe the
+device again after it, by return -EPROBE_DEFER, we will see the
+following messages with this patch:
+
+[  400.178850] i40e 0002:01:00.0: Using 64-bit DMA iommu bypass
+[  404.179406] i40e 0002:01:00.0: fw 5.1.40981 api 1.5 nvm 5.03
+0x80002469 1.1313.0
+[  404.420382] i40e 0002:01:00.0: capability discovery failed, err OK
+aq_err I40E_AQ_RC_EMODE
+[  404.420473] i40e 0002:01:00.0: Probe failed due to unexpected
+device state, trying to fix it by resetting the device.
+
+Since the reset was done the other ports will probe just fine,
+
+[  404.420610] i40e 0002:01:00.1: Using 64-bit DMA iommu bypass
+[  407.659108] i40e 0002:01:00.1: fw 5.1.40981 api 1.5 nvm 5.03
+0x80002469 1.1313.0
+[  407.900214] i40e 0002:01:00.1: MAC address: 0c:c4:7a:b7:ff:d9
+[  407.908532] i40e 0002:01:00.1 enP2p1s0f1: renamed from eth0
+[  407.909071] i40e 0002:01:00.1: PCI-Express: Speed 8.0GT/s Width x8
+[  407.909630] i40e 0002:01:00.1: Features: PF-id[1] VFs: 32 VSIs: 34
+QP: 20 RSS FD_ATR FD_SB NTUPLE DCB VxLAN Geneve PTP VEPA
+
+then the first port will be re-probed later.
+
+[  408.203217] i40e 0002:01:00.0: fw 5.1.40981 api 1.5 nvm 5.03
+0x80002469 1.1313.0
+[  408.447187] i40e 0002:01:00.0: MAC address: 0c:c4:7a:b7:ff:d8
+[  408.699988] i40e 0002:01:00.0 enP2p1s0f0: renamed from eth0
+[  408.702453] i40e 0002:01:00.0: PCI-Express: Speed 8.0GT/s Width x8
+[  408.703011] i40e 0002:01:00.0: Features: PF-id[0] VFs: 32 VSIs: 34
+QP: 20 RSS FD_ATR FD_SB NTUPLE DCB VxLAN Geneve PTP VEPA
+
+Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+
+Conflicts:
+	drivers/net/ethernet/intel/i40e/i40e_main.c
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index e31adbc..c41bb0e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -13513,8 +13513,18 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	i40e_clear_pxe_mode(hw);
+ 	err = i40e_get_capabilities(pf, i40e_aqc_opc_list_func_capabilities);
+-	if (err)
++	if (err) {
++		if (hw->aq.asq_last_status == I40E_AQ_RC_EMODE) {
++			dev_warn(&pdev->dev, "Probe failed due to unexpected device state, trying to fix it by resetting the device.\n");
++			i40e_do_reset(pf, BIT(__I40E_GLOBAL_RESET_REQUESTED),
++				      false);
++			/* In this situation we reset and ask for re-probe
++			 * later.
++			 */
++			err = -EPROBE_DEFER;
++		}
+ 		goto err_adminq_setup;
++	}
+ 
+ 	err = i40e_sw_init(pf);
+ 	if (err) {
+-- 
+1.8.3.1
+
