@@ -1,221 +1,143 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 13 Feb 2018 07:06:16 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD REGRESSION
- a0073a4b8b5906b2a7eab5e9d4a91759b56bc96f
-Message-ID: <5a821de8.gY0yEqdAdp2T+xUy%fengguang.wu@intel.com>
+From: Ramamurthy, Harshitha <harshitha.ramamurthy@intel.com>
+Date: Mon, 12 Feb 2018 23:42:14 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Fix bad state due to failed
+ dcbx autonegotiation
+In-Reply-To: <1518235239-16757-1-git-send-email-maurosr@linux.vnet.ibm.com>
+References: <1518235239-16757-1-git-send-email-maurosr@linux.vnet.ibm.com>
+Message-ID: <1518453609.30715.12.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: a0073a4b8b5906b2a7eab5e9d4a91759b56bc96f  i40e/i40evf: Add support for new mechanism of updating adaptive ITR
+On Sat, 2018-02-10 at 02:00 -0200, Mauro S. M. Rodrigues wrote:
+> When connected to a dcbx capable switch, during the earlier link
+> negotiations, a device can be left in a bad state which compromises
+> the
+> probe process of all interfaces:
+> 
+> [???11.404108] i40e 0002:01:00.0: capability discovery failed, err OK
+> aq_err I40E_AQ_RC_EMODE
+> 
+> The message above tell us that something failed during the capability
+> discovery process, the error I40E_AQ_RC_EMODE (21) means the device
+> is
+> in a mode that such operation is not allowed, according to the
+> datasheet. Digging some more in the source code it's possible to
+> check
+> that it fails during the I40E_PRTGEN_CNF read using
+> i40e_aq_debug_read_register within i40e_parse_discover_capabilities,
+> which, again according to the datasheet, was not supposed to return
+> that.
+> 
+> I also verified that any attempt to read a register, I40E_GL_FWSTS
+> for
+> instance, fails as well.
+> 
+> Disabling the dcbx capability or setting it to dcbx-1.01, OUI=??,
+> instead of autonegotiation or ieee-dcbx, OUI= , mitgates the issue.
+> 
+> Another evidence of the device getting into a bad state is tcpdump
+> capture during the autonegotiation. It's possible to see the switch
+> sharing its dcbx settings with willing bit=0. The device then answers
+> with willing=1 to learn the dcbx configuration:
+> "????????1... .... = Willing: Yes"
+> 
+> After that there is no other communication coming from the NIC, that
+> make me to believe the device entered the bad state when trying to
+> replicate switch dcbx's settings.
+> 
+> From a device driver standpoint it's possible to recover from the bad
+> state by issuing a Global Reset and ask PCI subsystem to probe the
+> device again after it, by return -EPROBE_DEFER, we will see the
+> following messages with this patch:
+> 
+> [??400.178850] i40e 0002:01:00.0: Using 64-bit DMA iommu bypass
+> [??404.179406] i40e 0002:01:00.0: fw 5.1.40981 api 1.5 nvm 5.03
+> 0x80002469 1.1313.0
+> [??404.420382] i40e 0002:01:00.0: capability discovery failed, err OK
+> aq_err I40E_AQ_RC_EMODE
+> [??404.420473] i40e 0002:01:00.0: Probe failed due to unexpected
+> device state, trying to fix it by resetting the device.
+> 
+> Since the reset was done the other ports will probe just fine,
+> 
+> [??404.420610] i40e 0002:01:00.1: Using 64-bit DMA iommu bypass
+> [??407.659108] i40e 0002:01:00.1: fw 5.1.40981 api 1.5 nvm 5.03
+> 0x80002469 1.1313.0
+> [??407.900214] i40e 0002:01:00.1: MAC address: 0c:c4:7a:b7:ff:d9
+> [??407.908532] i40e 0002:01:00.1 enP2p1s0f1: renamed from eth0
+> [??407.909071] i40e 0002:01:00.1: PCI-Express: Speed 8.0GT/s Width x8
+> [??407.909630] i40e 0002:01:00.1: Features: PF-id[1] VFs: 32 VSIs: 34
+> QP: 20 RSS FD_ATR FD_SB NTUPLE DCB VxLAN Geneve PTP VEPA
+> 
+> then the first port will be re-probed later.
+> 
+> [??408.203217] i40e 0002:01:00.0: fw 5.1.40981 api 1.5 nvm 5.03
+> 0x80002469 1.1313.0
+> [??408.447187] i40e 0002:01:00.0: MAC address: 0c:c4:7a:b7:ff:d8
+> [??408.699988] i40e 0002:01:00.0 enP2p1s0f0: renamed from eth0
+> [??408.702453] i40e 0002:01:00.0: PCI-Express: Speed 8.0GT/s Width x8
+> [??408.703011] i40e 0002:01:00.0: Features: PF-id[0] VFs: 32 VSIs: 34
+> QP: 20 RSS FD_ATR FD_SB NTUPLE DCB VxLAN Geneve PTP VEPA
+> 
+> Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+> 
+> Conflicts:
+> 	drivers/net/ethernet/intel/i40e/i40e_main.c
+> ---
+Hello Mauro,
 
-Regressions in current branch:
+Thanks for debugging this issue. I am working on a Bugzilla very
+similar to this and I am still working on the reproduction of the
+problem.
 
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c:4454:6: error: implicit declaration of function 'cmpxchg64'; did you mean 'cmpxchg'? [-Werror=implicit-function-declaration]
+Doing a global reset like what you are trying to do in your patch would
+potentially cause other problems. The 'Global Reset' resets the whole
+device and we generally use it when things have gone really bad. We
+have seen in the past that it could also potentially cause other
+problems especially when we reset in the middle of a bring-up flow.
 
-Error ids grouped by kconfigs:
-
-recent_errors
-??? mips-allyesconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_ethtool.c:error:implicit-declaration-of-function-cmpxchg64-did-you-mean-cmpxchg
-
-elapsed time: 138m
-
-configs tested: 190
-
-alpha                             allnoconfig
-mips                        workpad_defconfig
-sh                               allyesconfig
-x86_64                 randconfig-a0-02130447
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-02130515
-i386                   randconfig-x010-201806
-i386                   randconfig-x019-201806
-i386                   randconfig-x015-201806
-i386                   randconfig-x014-201806
-i386                   randconfig-x017-201806
-i386                   randconfig-x012-201806
-i386                   randconfig-x011-201806
-i386                   randconfig-x016-201806
-i386                   randconfig-x018-201806
-i386                   randconfig-x013-201806
-i386                   randconfig-n0-02120117
-x86_64                 randconfig-x008-201806
-x86_64                 randconfig-x005-201806
-x86_64                 randconfig-x000-201806
-x86_64                 randconfig-x002-201806
-x86_64                 randconfig-x009-201806
-x86_64                 randconfig-x007-201806
-x86_64                 randconfig-x006-201806
-x86_64                 randconfig-x001-201806
-x86_64                 randconfig-x003-201806
-x86_64                 randconfig-x004-201806
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201806
-i386                     randconfig-i1-201806
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                     am200epdkit_defconfig
-arm                      pxa255-idp_defconfig
-blackfin                      H8606_defconfig
-x86_64                 randconfig-g0-02130326
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a1-201806
-i386                     randconfig-a0-201806
-x86_64                 randconfig-s0-02130447
-x86_64                 randconfig-s1-02130447
-x86_64                 randconfig-s2-02130447
-x86_64                 randconfig-s0-02130540
-x86_64                 randconfig-s1-02130540
-x86_64                 randconfig-s2-02130540
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                          iop33x_defconfig
-arm                            u300_defconfig
-mips                       lemote2f_defconfig
-powerpc                 mpc836x_rdk_defconfig
-sh                          urquell_defconfig
-x86_64                 randconfig-x017-201806
-x86_64                 randconfig-x018-201806
-x86_64                 randconfig-x016-201806
-x86_64                 randconfig-x013-201806
-x86_64                 randconfig-x011-201806
-x86_64                 randconfig-x014-201806
-x86_64                 randconfig-x015-201806
-x86_64                 randconfig-x012-201806
-x86_64                 randconfig-x019-201806
-x86_64                 randconfig-x010-201806
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-02121625
-i386                   randconfig-s1-02121625
-x86_64                 randconfig-s3-02130517
-x86_64                 randconfig-s4-02130517
-x86_64                 randconfig-s5-02130517
-x86_64                 randconfig-i0-02121058
-i386                   randconfig-b0-02130326
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-b0-02130438
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-parisc                           allmodconfig
-powerpc                     rainier_defconfig
-x86_64                 randconfig-u0-02130230
-i386                   randconfig-h0-02130405
-i386                   randconfig-h1-02130405
-arm                      acs5k_tiny_defconfig
-mips                           ci20_defconfig
-x86_64                randconfig-ne0-02130443
-arm                         lpc32xx_defconfig
-frv                               allnoconfig
-x86_64                 randconfig-h0-02130414
-openrisc                         allmodconfig
-x86_64                 randconfig-n0-02130415
-i386                  randconfig-sb0-02130435
-x86_64                randconfig-ws0-02130000
-c6x                        evmc6474_defconfig
-s390                             alldefconfig
-i386                   randconfig-x071-201806
-i386                   randconfig-x079-201806
-i386                   randconfig-x072-201806
-i386                   randconfig-x077-201806
-i386                   randconfig-x076-201806
-i386                   randconfig-x075-201806
-i386                   randconfig-x070-201806
-i386                   randconfig-x073-201806
-i386                   randconfig-x078-201806
-i386                   randconfig-x074-201806
-x86_64                                  kexec
-x86_64                              federa-25
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-r0-02130512
-i386                   randconfig-x004-201806
-i386                   randconfig-x007-201806
-i386                   randconfig-x002-201806
-i386                   randconfig-x003-201806
-i386                   randconfig-x009-201806
-i386                   randconfig-x000-201806
-i386                   randconfig-x005-201806
-i386                   randconfig-x006-201806
-i386                   randconfig-x008-201806
-i386                   randconfig-x001-201806
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-02130231
+We have a patch in-house that might solve the issue withouth resorting
+to a Global Reset. We haven't been able to test it so far because we
+haven't gotten to a working reproduction yet. Since you have a
+reproduction running, do you mind testing a patch we provide?
 
 Thanks,
-Fengguang
+Harshitha?
+
+> ?drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++++++++-
+> ?1 file changed, 11 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index e31adbc..c41bb0e 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -13513,8 +13513,18 @@ static int i40e_probe(struct pci_dev *pdev,
+> const struct pci_device_id *ent)
+> ?
+> ?	i40e_clear_pxe_mode(hw);
+> ?	err = i40e_get_capabilities(pf,
+> i40e_aqc_opc_list_func_capabilities);
+> -	if (err)
+> +	if (err) {
+> +		if (hw->aq.asq_last_status == I40E_AQ_RC_EMODE) {
+> +			dev_warn(&pdev->dev, "Probe failed due to
+> unexpected device state, trying to fix it by resetting the
+> device.\n");
+> +			i40e_do_reset(pf,
+> BIT(__I40E_GLOBAL_RESET_REQUESTED),
+> +				??????false);
+> +			/* In this situation we reset and ask for
+> re-probe
+> +			?* later.
+> +			?*/
+> +			err = -EPROBE_DEFER;
+> +		}
+> ?		goto err_adminq_setup;
+> +	}
+> ?
+> ?	err = i40e_sw_init(pf);
+> ?	if (err) {
