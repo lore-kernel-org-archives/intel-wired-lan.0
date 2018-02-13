@@ -1,47 +1,41 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 13 Feb 2018 18:20:41 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e/i40evf: use SW variables for
- hang detection
-In-Reply-To: <20180212141659.38064-1-alice.michael@intel.com>
-References: <20180212141659.38064-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A949EF6@ORSMSX104.amr.corp.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Tue, 13 Feb 2018 20:54:10 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: Fix a test with HWTSTAMP_TX_ON
+In-Reply-To: <20180206194759.26991-1-christophe.jaillet@wanadoo.fr>
+References: <20180206194759.26991-1-christophe.jaillet@wanadoo.fr>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7E574C@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Monday, February 12, 2018 6:17 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] i40e/i40evf: use SW variables for hang
-> detection
+> From: netdev-owner at vger.kernel.org [mailto:netdev-
+> owner at vger.kernel.org] On Behalf Of Christophe JAILLET
+> Sent: Tuesday, February 6, 2018 11:48 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
+> kernel at vger.kernel.org; kernel-janitors at vger.kernel.org; Christophe
+> JAILLET <christophe.jaillet@wanadoo.fr>
+> Subject: [PATCH] igb: Fix a test with HWTSTAMP_TX_ON
 > 
-> From: Alan Brady <alan.brady@intel.com>
+> 'HWTSTAMP_TX_ON' should be handled as a value, not as a bit mask.
+> The modified code should behave the same, because HWTSTAMP_TX_ON is
+> 1
+> and no other possible values of 'tx_type' would match the test.
+> However, this is more future-proof, should other values be allowed one day.
 > 
-> The i40e_detect_recover_hung function uses the i40e_get_tx_pending
-> function to determine if there are packets stalled on the ring.
-> i40e_get_tx_pending calculates the pending packets using the head
-> writeback value and HW tail.  If the queue is stopped and we lose the
-> interrupt to update our next_to_clean then we a) won't get another
-> interrupt to clean because queue is stopped b) we won't catch the problem
-> with i40e_detect_recover_hung because the HW values look like there's no
-> packets waiting to be transmitted.  Using the SW values we can catch the
-> issue because next_to_clean will be out of sync with head writeback.
+> See 'struct hwtstamp_config' in 'include/uapi/linux/net_tstamp.h'
 > 
-> This has the added benefit being less CPU intensive because we don't need
-> to reach into the hardware to get the values.
+> This fixes a warning reported by smatch:
+>    igb_xmit_frame_ring() warn: bit shifter 'HWTSTAMP_TX_ON' used for
+> logical '&'
 > 
-> Signed-off-by: Alan Brady <alan.brady@intel.com>
+> Fixes: 26bd4e2db06be ("igb: protect TX timestamping from API misuse")
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 16 +++++++++++-----
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  2 +-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  2 +-
->  3 files changed, 13 insertions(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
