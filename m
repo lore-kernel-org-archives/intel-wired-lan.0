@@ -1,165 +1,47 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 14 Feb 2018 01:50:49 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 096e7ed48cb0747f73d6f5dd062b5a6b56e46cf9
-Message-ID: <5a832579.oV7UuEntwdjzdfqy%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 13 Feb 2018 18:20:41 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e/i40evf: use SW variables for
+ hang detection
+In-Reply-To: <20180212141659.38064-1-alice.michael@intel.com>
+References: <20180212141659.38064-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A949EF6@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 096e7ed48cb0747f73d6f5dd062b5a6b56e46cf9  i40e/i40evf: use SW variables for hang detection
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Monday, February 12, 2018 6:17 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] i40e/i40evf: use SW variables for hang
+> detection
+> 
+> From: Alan Brady <alan.brady@intel.com>
+> 
+> The i40e_detect_recover_hung function uses the i40e_get_tx_pending
+> function to determine if there are packets stalled on the ring.
+> i40e_get_tx_pending calculates the pending packets using the head
+> writeback value and HW tail.  If the queue is stopped and we lose the
+> interrupt to update our next_to_clean then we a) won't get another
+> interrupt to clean because queue is stopped b) we won't catch the problem
+> with i40e_detect_recover_hung because the HW values look like there's no
+> packets waiting to be transmitted.  Using the SW values we can catch the
+> issue because next_to_clean will be out of sync with head writeback.
+> 
+> This has the added benefit being less CPU intensive because we don't need
+> to reach into the hardware to get the values.
+> 
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 16 +++++++++++-----
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  2 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  2 +-
+>  3 files changed, 13 insertions(+), 7 deletions(-)
 
-elapsed time: 117m
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-configs tested: 141
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                               tinyconfig
-i386                   randconfig-n0-02120117
-x86_64                 randconfig-x008-201806
-x86_64                 randconfig-x005-201806
-x86_64                 randconfig-x000-201806
-x86_64                 randconfig-x002-201806
-x86_64                 randconfig-x009-201806
-x86_64                 randconfig-x007-201806
-x86_64                 randconfig-x006-201806
-x86_64                 randconfig-x001-201806
-x86_64                 randconfig-x003-201806
-x86_64                 randconfig-x004-201806
-i386                     randconfig-i0-201806
-i386                     randconfig-i1-201806
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-g0-02140029
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-a1-201806
-i386                     randconfig-a0-201806
-x86_64                 randconfig-s0-02140043
-x86_64                 randconfig-s1-02140043
-x86_64                 randconfig-s2-02140043
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x017-201806
-x86_64                 randconfig-x018-201806
-x86_64                 randconfig-x016-201806
-x86_64                 randconfig-x013-201806
-x86_64                 randconfig-x011-201806
-x86_64                 randconfig-x014-201806
-x86_64                 randconfig-x015-201806
-x86_64                 randconfig-x012-201806
-x86_64                 randconfig-x019-201806
-x86_64                 randconfig-x010-201806
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                     randconfig-s0-201806
-i386                     randconfig-s1-201806
-x86_64                 randconfig-s3-02140020
-x86_64                 randconfig-s4-02140020
-x86_64                 randconfig-s5-02140020
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201806
-i386                   randconfig-b0-02131933
-x86_64                 randconfig-u0-02140005
-i386                   randconfig-x010-201806
-i386                   randconfig-x019-201806
-i386                   randconfig-x015-201806
-i386                   randconfig-x014-201806
-i386                   randconfig-x017-201806
-i386                   randconfig-x012-201806
-i386                   randconfig-x011-201806
-i386                   randconfig-x016-201806
-i386                   randconfig-x018-201806
-i386                   randconfig-x013-201806
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-i386                   randconfig-x071-201806
-i386                   randconfig-x079-201806
-i386                   randconfig-x072-201806
-i386                   randconfig-x077-201806
-i386                   randconfig-x076-201806
-i386                   randconfig-x075-201806
-i386                   randconfig-x070-201806
-i386                   randconfig-x073-201806
-i386                   randconfig-x078-201806
-i386                   randconfig-x074-201806
-i386                   randconfig-x004-201806
-i386                   randconfig-x007-201806
-i386                   randconfig-x002-201806
-i386                   randconfig-x003-201806
-i386                   randconfig-x009-201806
-i386                   randconfig-x000-201806
-i386                   randconfig-x005-201806
-i386                   randconfig-x006-201806
-i386                   randconfig-x008-201806
-i386                   randconfig-x001-201806
-
-Thanks,
-Fengguang
