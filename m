@@ -1,42 +1,145 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 15 Feb 2018 13:57:13 +0200
-Subject: [Intel-wired-lan] How to install e1000e.ko to Debian 9
-In-Reply-To: <45eb0080-4ad6-c88a-a2dd-a435c89bbd8c@actiu.net>
-References: <45eb0080-4ad6-c88a-a2dd-a435c89bbd8c@actiu.net>
-Message-ID: <e2268d60-8fc5-35b1-cea5-4500ffe0e5e0@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 16 Feb 2018 00:23:55 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 677870e2c88872f3e1061217bcbe400c86e8529a
+Message-ID: <5a85b41b.wydlMYIbs3en9QWC%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/15/2018 10:39, Narcis Garcia wrote:
-> My steps:
-> 
-> $ uname -srvm
-> Linux 4.9.0-5-amd64 #1 SMP Debian 4.9.65-3+deb9u2 (2018-01-04) x86_64
-> 
-> 0. Install build/compiler tools:
-> sudo apt-get install build-essential linux-headers-amd64
-> 
-> 1. Download latest stable version (3.4.0.2) from:
-> https://sourceforge.net/projects/e1000/files/e1000e%20stable/
-> 
-> 2. Unpack:
-> tar zxf e1000e-*.tar.gz
-> 
-> 3. Compile and install:
-> cd e1000e-*/src/
-> sudo make install
-> 
-> cc1: error: code model kernel does not support PIC mode
-> /bin/sh: 1: [: -ge: unexpected operator
-> Makefile:199: *** *** Aborting the build. *** This driver is not
-> supported on kernel versions older than 2.4.0.  Alto.
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
-Please, follow discussion on SourceForge: 
-https://sourceforge.net/p/e1000/bugs/542/
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 677870e2c88872f3e1061217bcbe400c86e8529a  e1000e: Avoid missed interrupts following ICR read
+
+elapsed time: 49m
+
+configs tested: 121
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x010-201806
+i386                   randconfig-x019-201806
+i386                   randconfig-x015-201806
+i386                   randconfig-x014-201806
+i386                   randconfig-x017-201806
+i386                   randconfig-x012-201806
+i386                   randconfig-x011-201806
+i386                   randconfig-x016-201806
+i386                   randconfig-x018-201806
+i386                   randconfig-x013-201806
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201806
+i386                     randconfig-i0-201806
+i386                     randconfig-i1-201806
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-a0-201806
+i386                     randconfig-a1-201806
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x017-201806
+x86_64                 randconfig-x018-201806
+x86_64                 randconfig-x016-201806
+x86_64                 randconfig-x013-201806
+x86_64                 randconfig-x011-201806
+x86_64                 randconfig-x014-201806
+x86_64                 randconfig-x015-201806
+x86_64                 randconfig-x012-201806
+x86_64                 randconfig-x019-201806
+x86_64                 randconfig-x010-201806
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201806
+i386                     randconfig-s1-201806
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201806
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x004-201806
+i386                   randconfig-x007-201806
+i386                   randconfig-x002-201806
+i386                   randconfig-x003-201806
+i386                   randconfig-x009-201806
+i386                   randconfig-x000-201806
+i386                   randconfig-x005-201806
+i386                   randconfig-x006-201806
+i386                   randconfig-x008-201806
+i386                   randconfig-x001-201806
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x071-201806
+i386                   randconfig-x079-201806
+i386                   randconfig-x072-201806
+i386                   randconfig-x077-201806
+i386                   randconfig-x076-201806
+i386                   randconfig-x075-201806
+i386                   randconfig-x070-201806
+i386                   randconfig-x073-201806
+i386                   randconfig-x078-201806
+i386                   randconfig-x074-201806
+x86_64                 randconfig-x008-201806
+x86_64                 randconfig-x005-201806
+x86_64                 randconfig-x000-201806
+x86_64                 randconfig-x002-201806
+x86_64                 randconfig-x009-201806
+x86_64                 randconfig-x007-201806
+x86_64                 randconfig-x006-201806
+x86_64                 randconfig-x001-201806
+x86_64                 randconfig-x003-201806
+x86_64                 randconfig-x004-201806
+i386                   randconfig-x0-02152317
+
+Thanks,
+Fengguang
