@@ -1,145 +1,45 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 16 Feb 2018 00:23:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 677870e2c88872f3e1061217bcbe400c86e8529a
-Message-ID: <5a85b41b.wydlMYIbs3en9QWC%fengguang.wu@intel.com>
+From: Ramamurthy, Harshitha <harshitha.ramamurthy@intel.com>
+Date: Thu, 15 Feb 2018 17:56:40 +0000
+Subject: [Intel-wired-lan] [PATCH] i40evf/i40evf_main: Fix variable
+ assignment in i40evf_parse_cls_flower
+In-Reply-To: <20180215174435.GA19969@embeddedor.com>
+References: <20180215174435.GA19969@embeddedor.com>
+Message-ID: <1518717442.29950.1.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 677870e2c88872f3e1061217bcbe400c86e8529a  e1000e: Avoid missed interrupts following ICR read
+On Thu, 2018-02-15 at 11:44 -0600, Gustavo A. R. Silva wrote:
+> It seems this is a copy-paste error and that the proper variable to
+> use
+> in this particular case is _src_ instead of _dst_.
+> 
+> Addresses-Coverity-ID: 1465282 ("Copy-paste error")
+> Fixes: 0075fa0fadd0 ("i40evf: Add support to apply cloud filters")
+> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 
-elapsed time: 49m
+Thanks for the patch!
 
-configs tested: 121
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x010-201806
-i386                   randconfig-x019-201806
-i386                   randconfig-x015-201806
-i386                   randconfig-x014-201806
-i386                   randconfig-x017-201806
-i386                   randconfig-x012-201806
-i386                   randconfig-x011-201806
-i386                   randconfig-x016-201806
-i386                   randconfig-x018-201806
-i386                   randconfig-x013-201806
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201806
-i386                     randconfig-i0-201806
-i386                     randconfig-i1-201806
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-a0-201806
-i386                     randconfig-a1-201806
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x017-201806
-x86_64                 randconfig-x018-201806
-x86_64                 randconfig-x016-201806
-x86_64                 randconfig-x013-201806
-x86_64                 randconfig-x011-201806
-x86_64                 randconfig-x014-201806
-x86_64                 randconfig-x015-201806
-x86_64                 randconfig-x012-201806
-x86_64                 randconfig-x019-201806
-x86_64                 randconfig-x010-201806
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201806
-i386                     randconfig-s1-201806
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201806
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x004-201806
-i386                   randconfig-x007-201806
-i386                   randconfig-x002-201806
-i386                   randconfig-x003-201806
-i386                   randconfig-x009-201806
-i386                   randconfig-x000-201806
-i386                   randconfig-x005-201806
-i386                   randconfig-x006-201806
-i386                   randconfig-x008-201806
-i386                   randconfig-x001-201806
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x071-201806
-i386                   randconfig-x079-201806
-i386                   randconfig-x072-201806
-i386                   randconfig-x077-201806
-i386                   randconfig-x076-201806
-i386                   randconfig-x075-201806
-i386                   randconfig-x070-201806
-i386                   randconfig-x073-201806
-i386                   randconfig-x078-201806
-i386                   randconfig-x074-201806
-x86_64                 randconfig-x008-201806
-x86_64                 randconfig-x005-201806
-x86_64                 randconfig-x000-201806
-x86_64                 randconfig-x002-201806
-x86_64                 randconfig-x009-201806
-x86_64                 randconfig-x007-201806
-x86_64                 randconfig-x006-201806
-x86_64                 randconfig-x001-201806
-x86_64                 randconfig-x003-201806
-x86_64                 randconfig-x004-201806
-i386                   randconfig-x0-02152317
-
-Thanks,
-Fengguang
+Acked-by:Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> ---
+> ?drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+> ?1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> index 4955ce3..58be99e 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> @@ -2763,7 +2763,7 @@ static int i40evf_parse_cls_flower(struct
+> i40evf_adapter *adapter,
+> ?
+> ?		if (key->src) {
+> ?			filter->f.mask.tcp_spec.src_port |=
+> cpu_to_be16(0xffff);
+> -			filter->f.data.tcp_spec.src_port = key->dst;
+> +			filter->f.data.tcp_spec.src_port = key->src;
+> ?		}
+> ?	}
+> ?	filter->f.field_flags = field_flags;
