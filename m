@@ -1,46 +1,90 @@
-From: Gustavo A. R. Silva <garsilva@embeddedor.com>
-Date: Thu, 15 Feb 2018 12:38:54 -0600
-Subject: [Intel-wired-lan] [PATCH] i40evf/i40evf_main: Fix variable
- assignment in i40evf_parse_cls_flower
-In-Reply-To: <1518718272.6698.2.camel@intel.com>
-References: <20180215174435.GA19969@embeddedor.com>
- <1518717442.29950.1.camel@intel.com> <1518718272.6698.2.camel@intel.com>
-Message-ID: <102e09cf-a090-d6c2-8b10-5190644203cc@embeddedor.com>
+From: Colin King <colin.king@canonical.com>
+Date: Thu, 15 Feb 2018 19:26:05 +0000
+Subject: [Intel-wired-lan] [PATCH] i40evf: pass struct virtchnl_filter by
+ reference rather than by value
+Message-ID: <20180215192605.28350-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+From: Colin Ian King <colin.king@canonical.com>
 
+Passing struct virtchnl_filter f by value requires a 272 byte copy
+on x86_64, so instead pass it by reference is much more efficient. Also
+adjust some lines that are over 80 chars.
 
-On 02/15/2018 12:11 PM, Jeff Kirsher wrote:
-> On Thu, 2018-02-15 at 09:56 -0800, Ramamurthy, Harshitha wrote:
->> On Thu, 2018-02-15 at 11:44 -0600, Gustavo A. R. Silva wrote:
->>> It seems this is a copy-paste error and that the proper variable to
->>> use
->>> in this particular case is _src_ instead of _dst_.
->>>
->>> Addresses-Coverity-ID: 1465282 ("Copy-paste error")
->>> Fixes: 0075fa0fadd0 ("i40evf: Add support to apply cloud filters")
->>> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
->>
->> Thanks for the patch!
->>
+Detected by CoverityScan, CID#1465285 ("Big parameter passed by value")
 
-Glad to help. :)
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 32 ++++++++++++----------
+ 1 file changed, 18 insertions(+), 14 deletions(-)
 
->> Acked-by:Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-> 
-> Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> 
-> Dave, no need for me to pick this patch up and then push to you.  You
-> can circumvent me and pick this up.
-> 
->>> ---
->>>   drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
->>>   1 file changed, 1 insertion(+), 1 deletion(-)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index 6134b61e0938..3c76c817ca1a 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -1048,24 +1048,28 @@ void i40evf_disable_channels(struct i40evf_adapter *adapter)
+  * Print the cloud filter
+  **/
+ static void i40evf_print_cloud_filter(struct i40evf_adapter *adapter,
+-				      struct virtchnl_filter f)
++				      struct virtchnl_filter *f)
+ {
+-	switch (f.flow_type) {
++	switch (f->flow_type) {
+ 	case VIRTCHNL_TCP_V4_FLOW:
+ 		dev_info(&adapter->pdev->dev, "dst_mac: %pM src_mac: %pM vlan_id: %hu dst_ip: %pI4 src_ip %pI4 dst_port %hu src_port %hu\n",
+-			 &f.data.tcp_spec.dst_mac, &f.data.tcp_spec.src_mac,
+-			 ntohs(f.data.tcp_spec.vlan_id),
+-			 &f.data.tcp_spec.dst_ip[0], &f.data.tcp_spec.src_ip[0],
+-			 ntohs(f.data.tcp_spec.dst_port),
+-			 ntohs(f.data.tcp_spec.src_port));
++			 &f->data.tcp_spec.dst_mac,
++			 &f->data.tcp_spec.src_mac,
++			 ntohs(f->data.tcp_spec.vlan_id),
++			 &f->data.tcp_spec.dst_ip[0],
++			 &f->data.tcp_spec.src_ip[0],
++			 ntohs(f->data.tcp_spec.dst_port),
++			 ntohs(f->data.tcp_spec.src_port));
+ 		break;
+ 	case VIRTCHNL_TCP_V6_FLOW:
+ 		dev_info(&adapter->pdev->dev, "dst_mac: %pM src_mac: %pM vlan_id: %hu dst_ip: %pI6 src_ip %pI6 dst_port %hu src_port %hu\n",
+-			 &f.data.tcp_spec.dst_mac, &f.data.tcp_spec.src_mac,
+-			 ntohs(f.data.tcp_spec.vlan_id),
+-			 &f.data.tcp_spec.dst_ip, &f.data.tcp_spec.src_ip,
+-			 ntohs(f.data.tcp_spec.dst_port),
+-			 ntohs(f.data.tcp_spec.src_port));
++			 &f->data.tcp_spec.dst_mac,
++			 &f->data.tcp_spec.src_mac,
++			 ntohs(f->data.tcp_spec.vlan_id),
++			 &f->data.tcp_spec.dst_ip,
++			 &f->data.tcp_spec.src_ip,
++			 ntohs(f->data.tcp_spec.dst_port),
++			 ntohs(f->data.tcp_spec.src_port));
+ 		break;
+ 	}
+ }
+@@ -1303,7 +1307,7 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 						 i40evf_stat_str(&adapter->hw,
+ 								 v_retval));
+ 					i40evf_print_cloud_filter(adapter,
+-								  cf->f);
++								  &cf->f);
+ 					list_del(&cf->list);
+ 					kfree(cf);
+ 					adapter->num_cloud_filters--;
+@@ -1322,7 +1326,7 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 						 i40evf_stat_str(&adapter->hw,
+ 								 v_retval));
+ 					i40evf_print_cloud_filter(adapter,
+-								  cf->f);
++								  &cf->f);
+ 				}
+ 			}
+ 			}
+-- 
+2.15.1
 
-Thanks guys.
---
-Gustavo
