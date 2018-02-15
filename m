@@ -1,10 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 15 Feb 2018 03:23:12 +0000
-Subject: [Intel-wired-lan] [PATCH net-queue 1/3] Partial revert "e1000e:
- Avoid receiver overrun interrupt bursts"
-In-Reply-To: <20180208064714.6042-1-bpoirier@suse.com>
+Date: Thu, 15 Feb 2018 03:23:36 +0000
+Subject: [Intel-wired-lan] [PATCH net-queue 2/3] e1000e: Fix queue
+ interrupt re-raising in Other interrupt.
+In-Reply-To: <20180208064714.6042-2-bpoirier@suse.com>
 References: <20180208064714.6042-1-bpoirier@suse.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7E62AD@ORSMSX103.amr.corp.intel.com>
+ <20180208064714.6042-2-bpoirier@suse.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7E62BB@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +18,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
 > Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
 > kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH net-queue 1/3] Partial revert "e1000e:
-> Avoid receiver overrun interrupt bursts"
+> Subject: [Intel-wired-lan] [PATCH net-queue 2/3] e1000e: Fix queue
+> interrupt re-raising in Other interrupt.
 > 
-> This partially reverts commit 4aea7a5c5e940c1723add439f4088844cd26196d.
+> restores the ICS write for rx/tx queue interrupts which was present before
+> commit 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt",
+> v4.5-rc1) but was not restored in commit 4aea7a5c5e94 ("e1000e: Avoid
+> receiver overrun interrupt bursts", v4.15-rc1).
 > 
-> We keep the fix for the first part of the problem (1) described in the log
-> of that commit, that is to read ICR in the other interrupt handler. We
-> remove the fix for the second part of the problem (2), Other interrupt
-> throttling.
+> This re-raises the queue interrupts in case the txq or rxq bits were set in
+> ICR and the Other interrupt handler read and cleared ICR before the queue
+> interrupt was raised.
 > 
-> Bursts of "Other" interrupts may once again occur during rxo (receive
-> overflow) traffic conditions. This is deemed acceptable in the interest of
-> avoiding unforeseen fallout from changes that are not strictly necessary.
-> As discussed, the e1000e driver should be in "maintenance mode".
-> 
-> Link: https://www.spinics.net/lists/netdev/msg480675.html
+> Fixes: 4aea7a5c5e94 ("e1000e: Avoid receiver overrun interrupt bursts")
 > Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 16 ++--------------
->  1 file changed, 2 insertions(+), 14 deletions(-)
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
