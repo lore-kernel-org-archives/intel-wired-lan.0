@@ -1,112 +1,157 @@
-From: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
-Date: Sat, 10 Feb 2018 02:00:39 -0200
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix bad state due to failed dcbx
- autonegotiation
-Message-ID: <1518235239-16757-1-git-send-email-maurosr@linux.vnet.ibm.com>
+From: Colin King <colin.king@canonical.com>
+Date: Mon, 19 Feb 2018 10:23:30 +0000
+Subject: [Intel-wired-lan] [PATCH][V2] i40evf: remove redundant array
+ comparisons to 0 checks
+Message-ID: <20180219102330.22045-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When connected to a dcbx capable switch, during the earlier link
-negotiations, a device can be left in a bad state which compromises the
-probe process of all interfaces:
+From: Colin Ian King <colin.king@canonical.com>
 
-[   11.404108] i40e 0002:01:00.0: capability discovery failed, err OK
-aq_err I40E_AQ_RC_EMODE
+The checks to see if key->dst.s6_addr and key->src.s6_addr are null
+pointers are redundant because these are constant size arrays and
+so the checks always return true.  Fix this by removing the redundant
+checks.   Also replace filter->f with vf, allowing wide lines to be
+condensed and to rejoin some split wide lines.
 
-The message above tell us that something failed during the capability
-discovery process, the error I40E_AQ_RC_EMODE (21) means the device is
-in a mode that such operation is not allowed, according to the
-datasheet. Digging some more in the source code it's possible to check
-that it fails during the I40E_PRTGEN_CNF read using
-i40e_aq_debug_read_register within i40e_parse_discover_capabilities,
-which, again according to the datasheet, was not supposed to return
-that.
+Detected by CoverityScan, CID#1465279 ("Array compared to 0")
 
-I also verified that any attempt to read a register, I40E_GL_FWSTS for
-instance, fails as well.
-
-Disabling the dcbx capability or setting it to dcbx-1.01, OUI=  ,
-instead of autonegotiation or ieee-dcbx, OUI= , mitgates the issue.
-
-Another evidence of the device getting into a bad state is tcpdump
-capture during the autonegotiation. It's possible to see the switch
-sharing its dcbx settings with willing bit=0. The device then answers
-with willing=1 to learn the dcbx configuration:
-"        1... .... = Willing: Yes"
-
-After that there is no other communication coming from the NIC, that
-make me to believe the device entered the bad state when trying to
-replicate switch dcbx's settings.
-
-From a device driver standpoint it's possible to recover from the bad
-state by issuing a Global Reset and ask PCI subsystem to probe the
-device again after it, by return -EPROBE_DEFER, we will see the
-following messages with this patch:
-
-[  400.178850] i40e 0002:01:00.0: Using 64-bit DMA iommu bypass
-[  404.179406] i40e 0002:01:00.0: fw 5.1.40981 api 1.5 nvm 5.03
-0x80002469 1.1313.0
-[  404.420382] i40e 0002:01:00.0: capability discovery failed, err OK
-aq_err I40E_AQ_RC_EMODE
-[  404.420473] i40e 0002:01:00.0: Probe failed due to unexpected
-device state, trying to fix it by resetting the device.
-
-Since the reset was done the other ports will probe just fine,
-
-[  404.420610] i40e 0002:01:00.1: Using 64-bit DMA iommu bypass
-[  407.659108] i40e 0002:01:00.1: fw 5.1.40981 api 1.5 nvm 5.03
-0x80002469 1.1313.0
-[  407.900214] i40e 0002:01:00.1: MAC address: 0c:c4:7a:b7:ff:d9
-[  407.908532] i40e 0002:01:00.1 enP2p1s0f1: renamed from eth0
-[  407.909071] i40e 0002:01:00.1: PCI-Express: Speed 8.0GT/s Width x8
-[  407.909630] i40e 0002:01:00.1: Features: PF-id[1] VFs: 32 VSIs: 34
-QP: 20 RSS FD_ATR FD_SB NTUPLE DCB VxLAN Geneve PTP VEPA
-
-then the first port will be re-probed later.
-
-[  408.203217] i40e 0002:01:00.0: fw 5.1.40981 api 1.5 nvm 5.03
-0x80002469 1.1313.0
-[  408.447187] i40e 0002:01:00.0: MAC address: 0c:c4:7a:b7:ff:d8
-[  408.699988] i40e 0002:01:00.0 enP2p1s0f0: renamed from eth0
-[  408.702453] i40e 0002:01:00.0: PCI-Express: Speed 8.0GT/s Width x8
-[  408.703011] i40e 0002:01:00.0: Features: PF-id[0] VFs: 32 VSIs: 34
-QP: 20 RSS FD_ATR FD_SB NTUPLE DCB VxLAN Geneve PTP VEPA
-
-Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
-
-Conflicts:
-	drivers/net/ethernet/intel/i40e/i40e_main.c
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 61 ++++++++++---------------
+ 1 file changed, 25 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index e31adbc..c41bb0e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -13513,8 +13513,18 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 4955ce3ab6a2..a13df27089c3 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2493,6 +2493,7 @@ static int i40evf_parse_cls_flower(struct i40evf_adapter *adapter,
+ 	u16 addr_type = 0;
+ 	u16 n_proto = 0;
+ 	int i = 0;
++	struct virtchnl_filter *vf = &filter->f;
  
- 	i40e_clear_pxe_mode(hw);
- 	err = i40e_get_capabilities(pf, i40e_aqc_opc_list_func_capabilities);
--	if (err)
-+	if (err) {
-+		if (hw->aq.asq_last_status == I40E_AQ_RC_EMODE) {
-+			dev_warn(&pdev->dev, "Probe failed due to unexpected device state, trying to fix it by resetting the device.\n");
-+			i40e_do_reset(pf, BIT(__I40E_GLOBAL_RESET_REQUESTED),
-+				      false);
-+			/* In this situation we reset and ask for re-probe
-+			 * later.
-+			 */
-+			err = -EPROBE_DEFER;
-+		}
- 		goto err_adminq_setup;
-+	}
+ 	if (f->dissector->used_keys &
+ 	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
+@@ -2540,7 +2541,7 @@ static int i40evf_parse_cls_flower(struct i40evf_adapter *adapter,
+ 			return -EINVAL;
+ 		if (n_proto == ETH_P_IPV6) {
+ 			/* specify flow type as TCP IPv6 */
+-			filter->f.flow_type = VIRTCHNL_TCP_V6_FLOW;
++			vf->flow_type = VIRTCHNL_TCP_V6_FLOW;
+ 		}
  
- 	err = i40e_sw_init(pf);
- 	if (err) {
+ 		if (key->ip_proto != IPPROTO_TCP) {
+@@ -2585,9 +2586,8 @@ static int i40evf_parse_cls_flower(struct i40evf_adapter *adapter,
+ 			    is_multicast_ether_addr(key->dst)) {
+ 				/* set the mask if a valid dst_mac address */
+ 				for (i = 0; i < ETH_ALEN; i++)
+-					filter->f.mask.tcp_spec.dst_mac[i] |=
+-									0xff;
+-				ether_addr_copy(filter->f.data.tcp_spec.dst_mac,
++					vf->mask.tcp_spec.dst_mac[i] |= 0xff;
++				ether_addr_copy(vf->data.tcp_spec.dst_mac,
+ 						key->dst);
+ 			}
+ 
+@@ -2596,9 +2596,8 @@ static int i40evf_parse_cls_flower(struct i40evf_adapter *adapter,
+ 			    is_multicast_ether_addr(key->src)) {
+ 				/* set the mask if a valid dst_mac address */
+ 				for (i = 0; i < ETH_ALEN; i++)
+-					filter->f.mask.tcp_spec.src_mac[i] |=
+-									0xff;
+-				ether_addr_copy(filter->f.data.tcp_spec.src_mac,
++					vf->mask.tcp_spec.src_mac[i] |= 0xff;
++				ether_addr_copy(vf->data.tcp_spec.src_mac,
+ 						key->src);
+ 		}
+ 	}
+@@ -2622,8 +2621,8 @@ static int i40evf_parse_cls_flower(struct i40evf_adapter *adapter,
+ 				return I40E_ERR_CONFIG;
+ 			}
+ 		}
+-		filter->f.mask.tcp_spec.vlan_id |= cpu_to_be16(0xffff);
+-		filter->f.data.tcp_spec.vlan_id = cpu_to_be16(key->vlan_id);
++		vf->mask.tcp_spec.vlan_id |= cpu_to_be16(0xffff);
++		vf->data.tcp_spec.vlan_id = cpu_to_be16(key->vlan_id);
+ 	}
+ 
+ 	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_CONTROL)) {
+@@ -2670,14 +2669,12 @@ static int i40evf_parse_cls_flower(struct i40evf_adapter *adapter,
+ 			return I40E_ERR_CONFIG;
+ 		}
+ 		if (key->dst) {
+-			filter->f.mask.tcp_spec.dst_ip[0] |=
+-							cpu_to_be32(0xffffffff);
+-			filter->f.data.tcp_spec.dst_ip[0] = key->dst;
++			vf->mask.tcp_spec.dst_ip[0] |= cpu_to_be32(0xffffffff);
++			vf->data.tcp_spec.dst_ip[0] = key->dst;
+ 		}
+ 		if (key->src) {
+-			filter->f.mask.tcp_spec.src_ip[0] |=
+-							cpu_to_be32(0xffffffff);
+-			filter->f.data.tcp_spec.src_ip[0] = key->src;
++			vf->mask.tcp_spec.src_ip[0] |= cpu_to_be32(0xffffffff);
++			vf->data.tcp_spec.src_ip[0] = key->src;
+ 		}
+ 	}
+ 
+@@ -2710,22 +2707,14 @@ static int i40evf_parse_cls_flower(struct i40evf_adapter *adapter,
+ 		if (!ipv6_addr_any(&mask->dst) || !ipv6_addr_any(&mask->src))
+ 			field_flags |= I40EVF_CLOUD_FIELD_IIP;
+ 
+-		if (key->dst.s6_addr) {
+-			for (i = 0; i < 4; i++)
+-				filter->f.mask.tcp_spec.dst_ip[i] |=
+-							cpu_to_be32(0xffffffff);
+-			memcpy(&filter->f.data.tcp_spec.dst_ip,
+-			       &key->dst.s6_addr32,
+-			       sizeof(filter->f.data.tcp_spec.dst_ip));
+-		}
+-		if (key->src.s6_addr) {
+-			for (i = 0; i < 4; i++)
+-				filter->f.mask.tcp_spec.src_ip[i] |=
+-							cpu_to_be32(0xffffffff);
+-			memcpy(&filter->f.data.tcp_spec.src_ip,
+-			       &key->src.s6_addr32,
+-			       sizeof(filter->f.data.tcp_spec.src_ip));
+-		}
++		for (i = 0; i < 4; i++)
++			vf->mask.tcp_spec.dst_ip[i] |= cpu_to_be32(0xffffffff);
++		memcpy(&vf->data.tcp_spec.dst_ip, &key->dst.s6_addr32,
++		       sizeof(vf->data.tcp_spec.dst_ip));
++		for (i = 0; i < 4; i++)
++			vf->mask.tcp_spec.src_ip[i] |= cpu_to_be32(0xffffffff);
++		memcpy(&vf->data.tcp_spec.src_ip, &key->src.s6_addr32,
++		       sizeof(vf->data.tcp_spec.src_ip));
+ 	}
+ 	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_PORTS)) {
+ 		struct flow_dissector_key_ports *key =
+@@ -2757,16 +2746,16 @@ static int i40evf_parse_cls_flower(struct i40evf_adapter *adapter,
+ 			}
+ 		}
+ 		if (key->dst) {
+-			filter->f.mask.tcp_spec.dst_port |= cpu_to_be16(0xffff);
+-			filter->f.data.tcp_spec.dst_port = key->dst;
++			vf->mask.tcp_spec.dst_port |= cpu_to_be16(0xffff);
++			vf->data.tcp_spec.dst_port = key->dst;
+ 		}
+ 
+ 		if (key->src) {
+-			filter->f.mask.tcp_spec.src_port |= cpu_to_be16(0xffff);
+-			filter->f.data.tcp_spec.src_port = key->dst;
++			vf->mask.tcp_spec.src_port |= cpu_to_be16(0xffff);
++			vf->data.tcp_spec.src_port = key->dst;
+ 		}
+ 	}
+-	filter->f.field_flags = field_flags;
++	vf->field_flags = field_flags;
+ 
+ 	return 0;
+ }
 -- 
-1.8.3.1
+2.15.1
 
