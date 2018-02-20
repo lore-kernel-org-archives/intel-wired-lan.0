@@ -1,49 +1,52 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Mon, 19 Feb 2018 17:54:35 -0800
-Subject: [Intel-wired-lan] e1000e driver won't set speed?
-In-Reply-To: <CAKgT0UcSzHhMwt7SHt491c4OcsibBJitqUwDnsQ-CTtPFQ04Vw@mail.gmail.com>
-References: <3f0e0d14-feb5-2b98-400b-42a5947bcb60@ubuntu.com>
- <CAKgT0UcSzHhMwt7SHt491c4OcsibBJitqUwDnsQ-CTtPFQ04Vw@mail.gmail.com>
-Message-ID: <c11dfd4d-b008-2b85-12c4-a271748bfa11@intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Tue, 20 Feb 2018 15:12:00 +0900
+Subject: [Intel-wired-lan] [PATCH net-queue] e1000e: Fix check_for_link
+ return value with autoneg off.
+Message-ID: <20180220061200.17708-1-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/19/2018 17:14, Alexander Duyck wrote:
-> On Mon, Feb 19, 2018 at 2:27 PM, Phillip Susi <psusi@ubuntu.com> wrote:
->> I have a cable drop in a room in my house that apparently has some bad
->> pairs.  I made sure to wire it such that the two good pairs it has are
->> the ones that 10BaseT needs.  I know that higher speeds need all pairs,
->> but 10BaseT should work fine with just the two.  It keeps trying and
->> failing to link, I think because it is trying to go to gigabit and that
->> won't work with only the two good pairs.
->>
->> I tried to force it to stay at 10 Mbps, but it doesn't work.  Why?  I
->> get the same results trying this on both a laptop and a desktop system
->> using the e1000e driver:
->>
->> ethtool -s enp0s31f6 speed 10
->> Cannot advertise speed 10
->>
->> Am I doing something wrong or is this a bug?
-> 
-> You will need to either turn off  "autoneg" or also provide a "duplex"
-> option. So you should be able to get it to work with something like:
->      ethtool -s enp0s31f6 speed 10 duplex full
-> 
-> Thanks.
-> 
-> - Alex
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
-in case you want work in half duplex mode probably you want use follow 
-command: ethtool -s enp0s31f6 speed 10 duplex half autoneg off
-Also, more appropriate place to submit your questions is 
-e1000-devel at lists.sourceforge.net mailing list.
-Thanks,
-Sasha
+When autoneg is off, the .check_for_link callback functions clear the
+get_link_status flag and systematically return a "pseudo-error". This means
+that the link is not detected as up until the next execution of the
+e1000_watchdog_task() 2 seconds later.
+
+Fixes: 19110cfbb34d ("e1000e: Separate signaling for link check/link up")
+Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 2 +-
+ drivers/net/ethernet/intel/e1000e/mac.c     | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 31277d3bb7dc..ff308b05d68c 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -1602,7 +1602,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	 * we have already determined whether we have link or not.
+ 	 */
+ 	if (!mac->autoneg)
+-		return -E1000_ERR_CONFIG;
++		return 1;
+ 
+ 	/* Auto-Neg is enabled.  Auto Speed Detection takes care
+ 	 * of MAC speed/duplex configuration.  So we only need to
+diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
+index f457c5703d0c..db735644b312 100644
+--- a/drivers/net/ethernet/intel/e1000e/mac.c
++++ b/drivers/net/ethernet/intel/e1000e/mac.c
+@@ -450,7 +450,7 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+ 	 * we have already determined whether we have link or not.
+ 	 */
+ 	if (!mac->autoneg)
+-		return -E1000_ERR_CONFIG;
++		return 1;
+ 
+ 	/* Auto-Neg is enabled.  Auto Speed Detection takes care
+ 	 * of MAC speed/duplex configuration.  So we only need to
+-- 
+2.16.1
+
