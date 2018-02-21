@@ -1,38 +1,54 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 20 Feb 2018 23:03:00 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: check that pointer vsi is not
- null before dereferencing it
-In-Reply-To: <20180215195052.29037-1-colin.king@canonical.com>
-References: <20180215195052.29037-1-colin.king@canonical.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94A604@ORSMSX104.amr.corp.intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Tue, 20 Feb 2018 17:55:06 -0800
+Subject: [Intel-wired-lan] [PATCH net-queue] e1000e: Fix check_for_link
+ return value with autoneg off.
+In-Reply-To: <20180220061200.17708-1-bpoirier@suse.com>
+References: <20180220061200.17708-1-bpoirier@suse.com>
+Message-ID: <1908e13b-3706-08d7-9ebb-5774b7d7cfb4@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Colin King
-> Sent: Thursday, February 15, 2018 11:51 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org
-> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: check that pointer vsi is not null
-> before dereferencing it
+On 2/19/2018 22:12, Benjamin Poirier wrote:
+> When autoneg is off, the .check_for_link callback functions clear the
+> get_link_status flag and systematically return a "pseudo-error". This means
+> that the link is not detected as up until the next execution of the
+> e1000_watchdog_task() 2 seconds later.
 > 
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Function i40e_find_vsi_from_id can potentially return null, hence vsi may be
-> null, so defensively check it is non-null before dereferencing it to check the
-> seid.
-> 
-> Fixes: e284fc280473 ("i40e: Add and delete cloud filter")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Fixes: 19110cfbb34d ("e1000e: Separate signaling for link check/link up")
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+>   drivers/net/ethernet/intel/e1000e/ich8lan.c | 2 +-
+>   drivers/net/ethernet/intel/e1000e/mac.c     | 2 +-
+>   2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> index 31277d3bb7dc..ff308b05d68c 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> @@ -1602,7 +1602,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>   	 * we have already determined whether we have link or not.
+>   	 */
+>   	if (!mac->autoneg)
+> -		return -E1000_ERR_CONFIG;
+> +		return 1;
+>   
+>   	/* Auto-Neg is enabled.  Auto Speed Detection takes care
+>   	 * of MAC speed/duplex configuration.  So we only need to
+> diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
+> index f457c5703d0c..db735644b312 100644
+> --- a/drivers/net/ethernet/intel/e1000e/mac.c
+> +++ b/drivers/net/ethernet/intel/e1000e/mac.c
+> @@ -450,7 +450,7 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+>   	 * we have already determined whether we have link or not.
+>   	 */
+>   	if (!mac->autoneg)
+> -		return -E1000_ERR_CONFIG;
+> +		return 1;
+>   
+>   	/* Auto-Neg is enabled.  Auto Speed Detection takes care
+>   	 * of MAC speed/duplex configuration.  So we only need to
+> 
+Acked-by: Sasha Neftin <sasha.neftin@intel.com>
