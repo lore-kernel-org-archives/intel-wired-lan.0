@@ -1,69 +1,53 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Thu, 22 Feb 2018 11:09:56 -0800
-Subject: [Intel-wired-lan] [PATCH next-queue 2/3] ixgbe: fix ipsec trailer
- length
+Date: Thu, 22 Feb 2018 11:09:57 -0800
+Subject: [Intel-wired-lan] [PATCH next-queue 3/3] ixgbe: remove unneeded
+ ipsec state free callback
 In-Reply-To: <1519326597-7679-1-git-send-email-shannon.nelson@oracle.com>
 References: <1519326597-7679-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <1519326597-7679-3-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1519326597-7679-4-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix up the Tx trailer length calculation.  We can't believe the
-trailer len from the xstate information because it was calculated
-before the packet was put together and padding added.  This bit
-of code finds the padding value in the trailer, adds it to the
-authentication length, and saves it so later we can put it into
-the Tx descriptor to tell the device where to stop the checksum
-calculation.
+With commit 7f05b467a735 ("xfrm: check for xdo_dev_state_free")
+we no longer need to add an empty callback function
+to the driver, so now let's remove the useless code.
 
-Fixes: 592594704761 ("ixgbe: process the Tx ipsec offload")
 Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 13 -------------
+ 1 file changed, 13 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index 8b7dbc8..8623013 100644
+index 8623013..f225452 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -789,11 +789,33 @@ int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring,
+@@ -724,23 +724,10 @@ static bool ixgbe_ipsec_offload_ok(struct sk_buff *skb, struct xfrm_state *xs)
+ 	return true;
+ }
  
- 	itd->flags = 0;
- 	if (xs->id.proto == IPPROTO_ESP) {
-+		struct sk_buff *skb = first->skb;
-+		int ret, authlen, trailerlen;
-+		u8 padlen;
-+
- 		itd->flags |= IXGBE_ADVTXD_TUCMD_IPSEC_TYPE_ESP |
- 			      IXGBE_ADVTXD_TUCMD_L4T_TCP;
- 		if (first->protocol == htons(ETH_P_IP))
- 			itd->flags |= IXGBE_ADVTXD_TUCMD_IPV4;
--		itd->trailer_len = xs->props.trailer_len;
-+
-+		/* The actual trailer length is authlen (16 bytes) plus
-+		 * 2 bytes for the proto and the padlen values, plus
-+		 * padlen bytes of padding.  This ends up not the same
-+		 * as the static value found in xs->props.trailer_len (21).
-+		 *
-+		 * The "correct" way to get the auth length would be to use
-+		 *    authlen = crypto_aead_authsize(xs->data);
-+		 * but since we know we only have one size to worry about
-+		 * we can let the compiler use the constant and save us a
-+		 * few CPU cycles.
-+		 */
-+		authlen = IXGBE_IPSEC_AUTH_BITS / 8;
-+
-+		ret = skb_copy_bits(skb, skb->len - (authlen + 2), &padlen, 1);
-+		if (unlikely(ret))
-+			return 0;
-+		trailerlen = authlen + 2 + padlen;
-+		itd->trailer_len = trailerlen;
- 	}
- 	if (tsa->encrypt)
- 		itd->flags |= IXGBE_ADVTXD_TUCMD_IPSEC_ENCRYPT_EN;
+-/**
+- * ixgbe_ipsec_free - called by xfrm garbage collections
+- * @xs: pointer to transformer state struct
+- *
+- * We don't have any garbage to collect, so we shouldn't bother
+- * implementing this function, but the XFRM code doesn't check for
+- * existence before calling the API callback.
+- **/
+-static void ixgbe_ipsec_free(struct xfrm_state *xs)
+-{
+-}
+-
+ static const struct xfrmdev_ops ixgbe_xfrmdev_ops = {
+ 	.xdo_dev_state_add = ixgbe_ipsec_add_sa,
+ 	.xdo_dev_state_delete = ixgbe_ipsec_del_sa,
+ 	.xdo_dev_offload_ok = ixgbe_ipsec_offload_ok,
+-	.xdo_dev_state_free = ixgbe_ipsec_free,
+ };
+ 
+ /**
 -- 
 2.7.4
 
