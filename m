@@ -1,215 +1,59 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 24 Feb 2018 07:32:04 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- c58873dae01791e150d904891b9c265f65a54d6a
-Message-ID: <5a90a474.rTcwE0HVNy7fm38S%fengguang.wu@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri, 23 Feb 2018 17:20:28 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH 0/8] igb: offloading of receive
+ filters
+Message-ID: <20180224012036.5834-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: c58873dae01791e150d904891b9c265f65a54d6a  e1000e: Fix check_for_link return value with autoneg off
+Hi,
 
-elapsed time: 190m
+This series enables some ethtool and tc-flower filters to be offloaded
+to igb-based network controllers. This is useful when the system
+configurator want to steer kinds of traffic to a specific hardware
+queue.
 
-configs tested: 191
+The first two commits are bug fixes.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The basis of this series is to export the internal API used to
+configure address filters, so they can be used by ethtool, and
+extending the functionality so an source address can be handled.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-m68k                        mvme16x_defconfig
-mips                      fuloong2e_defconfig
-sparc64                          alldefconfig
-x86_64                 randconfig-a0-02240426
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                        cerfcube_defconfig
-c6x                        evmc6472_defconfig
-powerpc                    ge_imp3a_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-02240511
-arm64                       renesas_defconfig
-h8300                     edosk2674_defconfig
-sparc                               defconfig
-x86_64                randconfig-in0-02240535
-arm                         cm_x2xx_defconfig
-arm                         em_x270_defconfig
-powerpc                      makalu_defconfig
-x86_64                randconfig-it0-02240005
-x86_64                randconfig-it0-02240508
-i386                               tinyconfig
-i386                   randconfig-x010-201807
-i386                   randconfig-x019-201807
-i386                   randconfig-x015-201807
-i386                   randconfig-x014-201807
-i386                   randconfig-x017-201807
-i386                   randconfig-x011-201807
-i386                   randconfig-x012-201807
-i386                   randconfig-x016-201807
-i386                   randconfig-x018-201807
-i386                   randconfig-x013-201807
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201807
-x86_64                 randconfig-x008-201807
-x86_64                 randconfig-x005-201807
-x86_64                 randconfig-x000-201807
-x86_64                 randconfig-x002-201807
-x86_64                 randconfig-x009-201807
-x86_64                 randconfig-x007-201807
-x86_64                 randconfig-x001-201807
-x86_64                 randconfig-x006-201807
-x86_64                 randconfig-x003-201807
-x86_64                 randconfig-x004-201807
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i0-201807
-i386                     randconfig-i1-201807
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                             allmodconfig
-x86_64                 randconfig-x017-201807
-x86_64                 randconfig-x018-201807
-x86_64                 randconfig-x016-201807
-x86_64                 randconfig-x013-201807
-x86_64                 randconfig-x011-201807
-x86_64                 randconfig-x014-201807
-x86_64                 randconfig-x012-201807
-x86_64                 randconfig-x015-201807
-x86_64                 randconfig-x019-201807
-x86_64                 randconfig-x010-201807
-x86_64                                  kexec
-i386                     randconfig-a0-201807
-i386                     randconfig-a1-201807
-x86_64                 randconfig-s0-02240256
-x86_64                 randconfig-s1-02240256
-x86_64                 randconfig-s2-02240256
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                         cm_x300_defconfig
-blackfin               BF518F-EZBRD_defconfig
-powerpc64                         allnoconfig
-sparc                            alldefconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201807
-i386                     randconfig-s1-201807
-x86_64                 randconfig-s3-02240447
-x86_64                 randconfig-s4-02240447
-x86_64                 randconfig-s5-02240447
-x86_64                 randconfig-s3-02240558
-x86_64                 randconfig-s4-02240558
-x86_64                 randconfig-s5-02240558
-x86_64                 randconfig-s3-02240634
-x86_64                 randconfig-s4-02240634
-x86_64                 randconfig-s5-02240634
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201807
-i386                   randconfig-b0-02240535
-arm                        multi_v5_defconfig
-arm                         nhk8815_defconfig
-m68k                        m5407c3_defconfig
-x86_64                 randconfig-b0-02240451
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-mips                           gcw0_defconfig
-parisc                           alldefconfig
-arm                           u8500_defconfig
-frv                               allnoconfig
-mips                        workpad_defconfig
-x86_64                 randconfig-u0-02240414
-x86_64                 randconfig-u0-02240652
-openrisc                          allnoconfig
-powerpc                     tqm8555_defconfig
-blackfin              BF561-ACVILON_defconfig
-powerpc                      acadia_defconfig
-sh                           se7780_defconfig
-blackfin                   CM-BF561_defconfig
-powerpc                     pq2fads_defconfig
-x86_64                 randconfig-h0-02240617
-i386                   randconfig-x071-201807
-i386                   randconfig-x079-201807
-i386                   randconfig-x072-201807
-i386                   randconfig-x077-201807
-i386                   randconfig-x076-201807
-i386                   randconfig-x075-201807
-i386                   randconfig-x073-201807
-i386                   randconfig-x070-201807
-i386                   randconfig-x078-201807
-i386                   randconfig-x074-201807
-x86_64                 randconfig-n0-02240540
-i386                   randconfig-x000-201807
-i386                   randconfig-x001-201807
-i386                   randconfig-x002-201807
-i386                   randconfig-x003-201807
-i386                   randconfig-x004-201807
-i386                   randconfig-x005-201807
-i386                   randconfig-x006-201807
-i386                   randconfig-x007-201807
-i386                   randconfig-x008-201807
-i386                   randconfig-x009-201807
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                randconfig-ws0-02240538
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                                 defconfig
-mips                        nlm_xlr_defconfig
-x86_64                 randconfig-r0-02240423
-powerpc                      cm5200_defconfig
-powerpc                     kmeter1_defconfig
-powerpc                     pseries_defconfig
+Then, we enable the tc-flower offloading implementation to re-use the
+same infrastructure as ethtool, and storing them in the per-adapter
+"nfc" (Network Filter Config?) list. But for consistency, for
+destructive access they are separated, i.e. an filter added by
+tc-flower can only be removed by tc-flower, but ethtool can read them
+all.
 
-Thanks,
-Fengguang
+Only support for VLAN Prio, Source and Destination MAC Address, and
+Ethertype are supported for now.
+
+Open question:
+  - igb is initialized with the number of traffic classes as 1, if we
+  want to use multiple traffic classes we need to increase this value,
+  the only way I could find is to use mqprio (for example). Should igb
+  be initialized with, say, the number of queues as its "num_tc"?
+
+
+Vinicius Costa Gomes (8):
+  igb: Fix not adding filter elements to the list
+  igb: Fix queue selection on MAC filters on i210 and i211
+  igb: Enable the hardware traffic class feature bit for igb models
+  igb: Add support for MAC address filters specifying source addresses
+  igb: Add support for ethtool MAC address filters
+  igb: Add the skeletons for tc-flower offloading
+  igb: Add support for adding offloaded clsflower filters
+  igb: Add support for removing offloaded tc-flower filters
+
+ drivers/net/ethernet/intel/igb/e1000_defines.h |   2 +
+ drivers/net/ethernet/intel/igb/igb.h           |  15 ++
+ drivers/net/ethernet/intel/igb/igb_ethtool.c   | 125 ++++++++++-
+ drivers/net/ethernet/intel/igb/igb_main.c      | 294 +++++++++++++++++++++++--
+ 4 files changed, 409 insertions(+), 27 deletions(-)
+
+--
+2.16.2
