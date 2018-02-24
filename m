@@ -1,51 +1,29 @@
 From: Florian Fainelli <f.fainelli@gmail.com>
-Date: Fri, 23 Feb 2018 20:38:44 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH 5/8] igb: Add support for
- ethtool MAC address filters
-In-Reply-To: <20180224012036.5834-6-vinicius.gomes@intel.com>
+Date: Fri, 23 Feb 2018 20:45:44 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH 7/8] igb: Add support for
+ adding offloaded clsflower filters
+In-Reply-To: <20180224012036.5834-8-vinicius.gomes@intel.com>
 References: <20180224012036.5834-1-vinicius.gomes@intel.com>
- <20180224012036.5834-6-vinicius.gomes@intel.com>
-Message-ID: <A3A9616A-04ED-4E50-B82B-58BDED43F975@gmail.com>
+ <20180224012036.5834-8-vinicius.gomes@intel.com>
+Message-ID: <9F146DDF-A3CC-404D-AA36-F4A4E444DD2D@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On February 23, 2018 5:20:33 PM PST, Vinicius Costa Gomes <vinicius.gomes@intel.com> wrote:
->This adds the capability of configuring the queue steering of arriving
->packets based on their source and destination MAC addresses.
+On February 23, 2018 5:20:35 PM PST, Vinicius Costa Gomes <vinicius.gomes@intel.com> wrote:
+>This allows filters added by tc-flower and specifying MAC addresses,
+>Ethernet types, and the VLAN priority field, to be offloaded to the
+>controller.
 >
->In practical terms this adds support for the following use cases,
->characterized by these examples:
->
->$ ethtool -N eth0 flow-type ether dst aa:aa:aa:aa:aa:aa action 0
->(this will direct packets with destination address "aa:aa:aa:aa:aa:aa"
->to the RX queue 0)
->
->$ ethtool -N eth0 flow-type ether src 44:44:44:44:44:44 action 3
->(this will direct packets with destination address "44:44:44:44:44:44"
->to the RX queue 3)
->
->Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
->---
+>This reuses most of the infrastructure used by ethtool, ethtool can be
+>used to read these filters, but modification and deletion can only be
+>done via tc-flower.
 
-[snip]
+You would want to check what other drivers supporting both ethtool::rxnfc and cls_flower do, but this can be seriously confusing to an user. As an user I would be more comfortable with seeing only rules added through ethtool via ethtool and those added by cls_flower via cls_flower. They will both access a shared set of resources but it seems easier for me to dump rules with both tools to figure out why -ENOSPC was returned rather than seeing something I did not add. Others might see it entirely differently.
 
->diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c
->b/drivers/net/ethernet/intel/igb/igb_ethtool.c
->index 143f0bb34e4d..d8686a0f5b5d 100644
->--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
->+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
->@@ -152,6 +152,9 @@ static const char
->igb_priv_flags_strings[][ETH_GSTRING_LEN] = {
-> 
-> #define IGB_PRIV_FLAGS_STR_LEN ARRAY_SIZE(igb_priv_flags_strings)
-> 
->+static const u8 broadcast_addr[ETH_ALEN] = {
->+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-
-This is already defined in an existing header, don't have it handy but likely etherdevice.h.
+If you added the ability for cls_flower to indicate a queue number and either a fixed rule index or auto-placement (RX_CLS_LOC_ANY), could that eliminate entirely the need for adding MAC address steering in earlier patches?
 
 -- 
 Florian
