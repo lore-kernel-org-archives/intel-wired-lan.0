@@ -1,69 +1,39 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri, 23 Feb 2018 17:20:36 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH 8/8] igb: Add support for
- removing offloaded tc-flower filters
+Date: Fri, 23 Feb 2018 17:20:29 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH 1/8] igb: Fix not adding filter
+ elements to the list
 In-Reply-To: <20180224012036.5834-1-vinicius.gomes@intel.com>
 References: <20180224012036.5834-1-vinicius.gomes@intel.com>
-Message-ID: <20180224012036.5834-9-vinicius.gomes@intel.com>
+Message-ID: <20180224012036.5834-2-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This allows tc-flower filters that were offloaded to be removed.
+Because the order of the parameters passes to 'hlist_add_behind()' was
+inverted, the 'parent' node was added "behind" the 'input', as input
+is not in the list, this causes the 'input' node to be lost.
 
+Fixes: 0e71def25281 ("igb: add support of RX network flow classification")
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 32 ++++++++++++++++++++++++++++++-
- 1 file changed, 31 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index b1d401e77d62..5e0e1df0e941 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2641,10 +2641,40 @@ static int igb_configure_clsflower(struct igb_adapter *adapter,
- 	return err;
- }
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 606e6761758f..143f0bb34e4d 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -2864,7 +2864,7 @@ static int igb_update_ethtool_nfc_entry(struct igb_adapter *adapter,
  
-+static int igb_delete_filter_by_cookie(struct igb_adapter *adapter,
-+				       unsigned long cookie)
-+{
-+	struct igb_nfc_filter *filter;
-+	int err;
-+
-+	spin_lock(&adapter->nfc_lock);
-+
-+	hlist_for_each_entry(filter, &adapter->nfc_filter_list, nfc_node) {
-+		if (filter->cookie == cookie)
-+			break;
-+	}
-+
-+	if (!filter) {
-+		err = -ENOENT;
-+		goto out;
-+	}
-+
-+	err = igb_erase_filter(adapter, filter);
-+
-+	hlist_del(&filter->nfc_node);
-+	kfree(filter);
-+	adapter->nfc_filter_count--;
-+
-+out:
-+	spin_unlock(&adapter->nfc_lock);
-+
-+	return err;
-+}
-+
- static int igb_delete_clsflower(struct igb_adapter *adapter,
- 				struct tc_cls_flower_offload *cls_flower)
- {
--	return -EOPNOTSUPP;
-+	return igb_delete_filter_by_cookie(adapter, cls_flower->cookie);
- }
+ 	/* add filter to the list */
+ 	if (parent)
+-		hlist_add_behind(&parent->nfc_node, &input->nfc_node);
++		hlist_add_behind(&input->nfc_node, &parent->nfc_node);
+ 	else
+ 		hlist_add_head(&input->nfc_node, &adapter->nfc_filter_list);
  
- static int igb_setup_tc_cls_flower(struct igb_adapter *adapter,
 -- 
 2.16.2
 
