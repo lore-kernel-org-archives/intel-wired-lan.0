@@ -1,36 +1,56 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 24 Feb 2018 06:43:36 +0000
-Subject: [Intel-wired-lan] [PATCH net-queue] e1000e: Fix check_for_link
- return value with autoneg off.
-In-Reply-To: <20180220061200.17708-1-bpoirier@suse.com>
-References: <20180220061200.17708-1-bpoirier@suse.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7FA12E@ORSMSX101.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Sun, 25 Feb 2018 14:37:28 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH 3/8] igb: Enable the
+ hardware traffic class feature bit for igb models
+In-Reply-To: <20180224012036.5834-4-vinicius.gomes@intel.com>
+References: <20180224012036.5834-1-vinicius.gomes@intel.com>
+ <20180224012036.5834-4-vinicius.gomes@intel.com>
+Message-ID: <CAKgT0Ufuyf1_9RZe2yqSC404p-i3VpRAqP-2w0mUysCJGq5NKA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Benjamin Poirier
-> Sent: Monday, February 19, 2018 10:12 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH net-queue] e1000e: Fix check_for_link
-> return value with autoneg off.
-> 
-> When autoneg is off, the .check_for_link callback functions clear the
-> get_link_status flag and systematically return a "pseudo-error". This means
-> that the link is not detected as up until the next execution of the
-> e1000_watchdog_task() 2 seconds later.
-> 
-> Fixes: 19110cfbb34d ("e1000e: Separate signaling for link check/link up")
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+On Fri, Feb 23, 2018 at 5:20 PM, Vinicius Costa Gomes
+<vinicius.gomes@intel.com> wrote:
+> This will allow functionality depending on the hardware being traffic
+> class aware to work. In particular the tc-flower offloading checks
+> verifies that this bit is set.
+>
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/ich8lan.c | 2 +-
->  drivers/net/ethernet/intel/e1000e/mac.c     | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
+>  drivers/net/ethernet/intel/igb/igb_main.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 0ea32be07d71..543aa99892eb 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -2820,8 +2820,10 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>                                NETIF_F_HW_VLAN_CTAG_TX |
+>                                NETIF_F_RXALL;
+>
+> -       if (hw->mac.type >= e1000_i350)
+> -               netdev->hw_features |= NETIF_F_NTUPLE;
+> +       if (hw->mac.type >= e1000_i350) {
+> +               netdev->hw_features |= (NETIF_F_NTUPLE | NETIF_F_HW_TC);
+> +               netdev->features |= NETIF_F_HW_TC;
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+The parens aren't needed.
+
+Also you might consider moving this block up to where we have a
+similar one for 82576. Then you wouldn't need to set both features and
+hw_features in the case of the HW_TC flag.
+
+> +       }
+>
+>         if (pci_using_dac)
+>                 netdev->features |= NETIF_F_HIGHDMA;
+> --
+> 2.16.2
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
