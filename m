@@ -1,120 +1,167 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Mon, 26 Feb 2018 18:15:09 +0000
-Subject: [Intel-wired-lan] [next PATCH S87 V2 2/7] i40e: rename
- i40e_vlan_rx_register to i40e_setup_vlan_stripping
-In-Reply-To: <6c3ac127-22fd-5de7-c36f-e1857f3f4812@oracle.com>
-References: <20180226083311.52442-1-alice.michael@intel.com>
- <20180226083311.52442-2-alice.michael@intel.com>
- <6c3ac127-22fd-5de7-c36f-e1857f3f4812@oracle.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5882CE7B3C@ORSMSX115.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 27 Feb 2018 02:29:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ e12ca15abc0aa2a90b82732bd4e0a0158a0f4da8
+Message-ID: <5a94521b.jJTDO52UkxwzBgEg%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
-> Shannon Nelson
-> Sent: Monday, February 26, 2018 9:52 AM
-> To: intel-wired-lan at osuosl.org
-> Subject: Re: [Intel-wired-lan] [next PATCH S87 V2 2/7] i40e: rename
-> i40e_vlan_rx_register to i40e_setup_vlan_stripping
-> 
-> On 2/26/2018 12:33 AM, Alice Michael wrote:
-> > From: Jacob Keller <jacob.e.keller@intel.com>
-> >
-> > We used to use the function i40e_vlan_rx_register as a way to hook
-> > into the now defunct .ndo_vlan_rx_register netdev hook. This was
-> > removed but we kept the function around because we still used it
-> > internally to control enabling or disabling of VLAN stripping.
-> >
-> > Simplify this function and make its intent clear. Pass the *vsi
-> > pointer directly instead of the netdev pointer. Additionally, move
-> > it closer to the point where it is called in the file.
-> >
-> > This helps clarify the functions use and purpose, and makes the
-> > code a bit easier to understand.
-> >
-> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > ---
-> >   drivers/net/ethernet/intel/i40e/i40e_main.c | 31 +++++++++++++--------------
-> --
-> >   1 file changed, 14 insertions(+), 17 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > index d188ff1..9ad80d2 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > @@ -2720,22 +2720,6 @@ void i40e_vlan_stripping_disable(struct i40e_vsi *vsi)
-> >   }
-> >
-> >   /**
-> > - * i40e_vlan_rx_register - Setup or shutdown vlan offload
-> > - * @netdev: network interface to be adjusted
-> > - * @features: netdev features to test if VLAN offload is enabled or not
-> > - **/
-> > -static void i40e_vlan_rx_register(struct net_device *netdev, u32 features)
-> > -{
-> > -	struct i40e_netdev_priv *np = netdev_priv(netdev);
-> > -	struct i40e_vsi *vsi = np->vsi;
-> > -
-> > -	if (features & NETIF_F_HW_VLAN_CTAG_RX)
-> > -		i40e_vlan_stripping_enable(vsi);
-> > -	else
-> > -		i40e_vlan_stripping_disable(vsi);
-> > -}
-> > -
-> > -/**
-> >    * i40e_add_vlan_all_mac - Add a MAC/VLAN filter for each existing MAC
-> address
-> >    * @vsi: the vsi being configured
-> >    * @vid: vlan id to be added (0 = untagged only , -1 = any)
-> > @@ -2900,6 +2884,19 @@ static int i40e_vlan_rx_kill_vid(struct net_device
-> *netdev,
-> >   }
-> >
-> >   /**
-> > + * i40e_setup_vlan_stripping - Enable or disable VLAN stripping
-> > + * @vsi: the vsi being configured
-> > + * @features: netdevice feature flags
-> > + **/
-> > +static void i40e_setup_vlan_stripping(struct i40e_vsi *vsi, u32 features)
-> > +{
-> > +	if (features & NETIF_F_HW_VLAN_CTAG_RX)
-> > +		i40e_vlan_stripping_enable(vsi);
-> > +	else
-> > +		i40e_vlan_stripping_disable(vsi);
-> > +}
-> > +
-> > +/**
-> >    * i40e_restore_vlan - Reinstate vlans when vsi/netdev comes back up
-> >    * @vsi: the vsi being brought back up
-> >    **/
-> > @@ -2910,7 +2907,7 @@ static void i40e_restore_vlan(struct i40e_vsi *vsi)
-> >   	if (!vsi->netdev)
-> >   		return;
-> >
-> > -	i40e_vlan_rx_register(vsi->netdev, vsi->netdev->features);
-> > +	i40e_setup_vlan_stripping(vsi, vsi->netdev->features);
-> 
-> If this is the only place from which it is called, why even bother with
-> a function?
-> 
-> sln
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: e12ca15abc0aa2a90b82732bd4e0a0158a0f4da8  e1000e: Fix check_for_link return value with autoneg off
 
-Good point. I will inline the function directly, it's small enough that a separate function doesn't aid readability.
+elapsed time: 153m
+
+configs tested: 143
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                               tinyconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-i0-201808
+i386                     randconfig-i1-201808
+i386                             allmodconfig
+x86_64                                  kexec
+i386                     randconfig-a1-201808
+i386                     randconfig-a0-201808
+x86_64                 randconfig-s0-02270100
+x86_64                 randconfig-s1-02270100
+x86_64                 randconfig-s2-02270100
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                            mps2_defconfig
+mips                         mpc30x_defconfig
+powerpc                           allnoconfig
+powerpc                    socrates_defconfig
+sh                   sh7770_generic_defconfig
+x86_64                 randconfig-x017-201808
+x86_64                 randconfig-x013-201808
+x86_64                 randconfig-x016-201808
+x86_64                 randconfig-x018-201808
+x86_64                 randconfig-x015-201808
+x86_64                 randconfig-x012-201808
+x86_64                 randconfig-x014-201808
+x86_64                 randconfig-x011-201808
+x86_64                 randconfig-x010-201808
+x86_64                 randconfig-x019-201808
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201808
+i386                     randconfig-s1-201808
+x86_64                 randconfig-s3-02270045
+x86_64                 randconfig-s4-02270045
+x86_64                 randconfig-s5-02270045
+x86_64                 randconfig-s3-02270132
+x86_64                 randconfig-s4-02270132
+x86_64                 randconfig-s5-02270132
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201808
+i386                   randconfig-b0-02262134
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+m68k                             allmodconfig
+mips                malta_qemu_32r6_defconfig
+i386                   randconfig-x015-201808
+i386                   randconfig-x019-201808
+i386                   randconfig-x010-201808
+i386                   randconfig-x014-201808
+i386                   randconfig-x016-201808
+i386                   randconfig-x012-201808
+i386                   randconfig-x011-201808
+i386                   randconfig-x017-201808
+i386                   randconfig-x013-201808
+i386                   randconfig-x018-201808
+mn10300                          alldefconfig
+powerpc                      obs600_defconfig
+microblaze                          defconfig
+s390                              allnoconfig
+x86_64                randconfig-ne0-02270005
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x000-201808
+x86_64                 randconfig-x005-201808
+x86_64                 randconfig-x008-201808
+x86_64                 randconfig-x006-201808
+x86_64                 randconfig-x001-201808
+x86_64                 randconfig-x007-201808
+x86_64                 randconfig-x009-201808
+x86_64                 randconfig-x002-201808
+x86_64                 randconfig-x003-201808
+x86_64                 randconfig-x004-201808
+i386                   randconfig-x004-201808
+i386                   randconfig-x002-201808
+i386                   randconfig-x007-201808
+i386                   randconfig-x009-201808
+i386                   randconfig-x003-201808
+i386                   randconfig-x001-201808
+i386                   randconfig-x008-201808
+i386                   randconfig-x005-201808
+i386                   randconfig-x006-201808
+i386                   randconfig-x000-201808
 
 Thanks,
-Jake
-
-> 
-> >
-> >   	for_each_set_bit(vid, vsi->active_vlans, VLAN_N_VID)
-> >   		i40e_vlan_rx_add_vid(vsi->netdev, htons(ETH_P_8021Q),
-> >
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Fengguang
