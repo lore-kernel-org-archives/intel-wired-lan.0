@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 26 Feb 2018 23:13:47 +0000
-Subject: [Intel-wired-lan] [PATCH next-queue 2/3] ixgbe: fix ipsec
- trailer length
-In-Reply-To: <1519326597-7679-3-git-send-email-shannon.nelson@oracle.com>
+Date: Mon, 26 Feb 2018 23:14:14 +0000
+Subject: [Intel-wired-lan] [PATCH next-queue 3/3] ixgbe: remove unneeded
+ ipsec state free callback
+In-Reply-To: <1519326597-7679-4-git-send-email-shannon.nelson@oracle.com>
 References: <1519326597-7679-1-git-send-email-shannon.nelson@oracle.com>
- <1519326597-7679-3-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94AC3C@ORSMSX104.amr.corp.intel.com>
+ <1519326597-7679-4-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94AC4C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,22 +18,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Thursday, February 22, 2018 11:10 AM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: steffen.klassert at secunet.com; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH next-queue 2/3] ixgbe: fix ipsec trailer
-> length
+> Subject: [Intel-wired-lan] [PATCH next-queue 3/3] ixgbe: remove unneeded
+> ipsec state free callback
 > 
-> Fix up the Tx trailer length calculation.  We can't believe the trailer len from
-> the xstate information because it was calculated before the packet was put
-> together and padding added.  This bit of code finds the padding value in the
-> trailer, adds it to the authentication length, and saves it so later we can put it
-> into the Tx descriptor to tell the device where to stop the checksum
-> calculation.
+> With commit 7f05b467a735 ("xfrm: check for xdo_dev_state_free") we no
+> longer need to add an empty callback function to the driver, so now let's
+> remove the useless code.
 > 
-> Fixes: 592594704761 ("ixgbe: process the Tx ipsec offload")
 > Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 24
-> +++++++++++++++++++++++-
->  1 file changed, 23 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 13 -------------
+>  1 file changed, 13 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
