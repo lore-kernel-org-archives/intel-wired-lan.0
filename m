@@ -1,203 +1,167 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 26 Feb 2018 11:24:32 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH 4/8] igb: Add support for
- MAC address filters specifying source addresses
-In-Reply-To: <CAKgT0UdmntNCYY=kJGEY48_n7gYbJmiJnLLHVFqQGQZ9PUGjhg@mail.gmail.com>
-References: <20180224012036.5834-1-vinicius.gomes@intel.com>
- <20180224012036.5834-5-vinicius.gomes@intel.com>
- <CAKgT0UdmntNCYY=kJGEY48_n7gYbJmiJnLLHVFqQGQZ9PUGjhg@mail.gmail.com>
-Message-ID: <87bmgbbllb.fsf@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 27 Feb 2018 03:42:57 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE] BUILD SUCCESS
+ 93a6a37c6982ac39206da2fa05dcf5868049a378
+Message-ID: <5a946341.gqhdKgm6z5lrTTRK%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
+branch HEAD: 93a6a37c6982ac39206da2fa05dcf5868049a378  ixgbevf: remove redundant initialization of variable 'dma'
 
-Alexander Duyck <alexander.duyck@gmail.com> writes:
+elapsed time: 95m
 
-> On Fri, Feb 23, 2018 at 5:20 PM, Vinicius Costa Gomes
-> <vinicius.gomes@intel.com> wrote:
->> Makes it possible to direct packets to queues based on their source
->> address. Documents the expected usage of the 'flags' parameter.
->>
->> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
->> ---
->>  drivers/net/ethernet/intel/igb/e1000_defines.h |  1 +
->>  drivers/net/ethernet/intel/igb/igb.h           |  1 +
->>  drivers/net/ethernet/intel/igb/igb_main.c      | 35 +++++++++++++++++++-------
->>  3 files changed, 28 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
->> index 573bf177fd08..c6f552de30dd 100644
->> --- a/drivers/net/ethernet/intel/igb/e1000_defines.h
->> +++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
->> @@ -490,6 +490,7 @@
->>   * manageability enabled, allowing us room for 15 multicast addresses.
->>   */
->>  #define E1000_RAH_AV  0x80000000        /* Receive descriptor valid */
->> +#define E1000_RAH_ASEL_SRC_ADDR 0x00010000
->>  #define E1000_RAH_QSEL_ENABLE 0x10000000
->>  #define E1000_RAL_MAC_ADDR_LEN 4
->>  #define E1000_RAH_MAC_ADDR_LEN 2
->> diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
->> index 1c6b8d9176a8..d5cd5f6708d9 100644
->> --- a/drivers/net/ethernet/intel/igb/igb.h
->> +++ b/drivers/net/ethernet/intel/igb/igb.h
->> @@ -472,6 +472,7 @@ struct igb_mac_addr {
->>
->>  #define IGB_MAC_STATE_DEFAULT  0x1
->>  #define IGB_MAC_STATE_IN_USE   0x2
->> +#define IGB_MAC_STATE_SRC_ADDR  0x4
->>
->>  /* board specific private data structure */
->>  struct igb_adapter {
->> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
->> index 543aa99892eb..db66b697fe3b 100644
->> --- a/drivers/net/ethernet/intel/igb/igb_main.c
->> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
->> @@ -6837,8 +6837,13 @@ static void igb_set_default_mac_filter(struct igb_adapter *adapter)
->>         igb_rar_set_index(adapter, 0);
->>  }
->>
->> +/* Add a MAC filter for 'addr' directing matching traffic to 'queue',
->> + * 'flags' is used to indicate what kind of match is made, match is by
->> + * default for the destination address, if matching by source address
->> + * is desired the flag IGB_MAC_STATE_SRC_ADDR can be used.
->> + */
->>  static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
->> -                             const u8 queue)
->> +                             const u8 queue, const u8 flags)
->>  {
->>         struct e1000_hw *hw = &adapter->hw;
->>         int rar_entries = hw->mac.rar_entry_count -
->> @@ -6858,7 +6863,7 @@ static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
->>
->>                 ether_addr_copy(adapter->mac_table[i].addr, addr);
->>                 adapter->mac_table[i].queue = queue;
->> -               adapter->mac_table[i].state |= IGB_MAC_STATE_IN_USE;
->> +               adapter->mac_table[i].state |= (IGB_MAC_STATE_IN_USE | flags);
->
-> More unneeded parenthesis.
+configs tested: 143
 
-Will fix.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
->
->>
->>                 igb_rar_set_index(adapter, i);
->>                 return i;
->> @@ -6867,8 +6872,14 @@ static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
->>         return -ENOSPC;
->>  }
->>
->> +/* Remove a MAC filter for 'addr' directing matching traffic to
->> + * 'queue', 'flags' is used to indicate what kind of match need to be
->> + * removed, match is by default for the destination address, if
->> + * matching by source address is to be removed the flag
->> + * IGB_MAC_STATE_SRC_ADDR can be used.
->> + */
->>  static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
->> -                             const u8 queue)
->> +                             const u8 queue, const u8 flags)
->>  {
->>         struct e1000_hw *hw = &adapter->hw;
->>         int rar_entries = hw->mac.rar_entry_count -
->> @@ -6883,14 +6894,15 @@ static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
->>          * for the VF MAC addresses.
->>          */
->>         for (i = 0; i < rar_entries; i++) {
->> -               if (!(adapter->mac_table[i].state & IGB_MAC_STATE_IN_USE))
->> +               if (!(adapter->mac_table[i].state &
->> +                     (IGB_MAC_STATE_IN_USE | flags)))
->
-> Shouldn't these be two separate checks? If the address isn't in use
-> why would I care what the flags state is? It probably isn't valid.
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+arm                          ks8695_defconfig
+mips                      fuloong2e_defconfig
+mips                        vocore2_defconfig
+i386                   randconfig-c0-02270053
+arm                         axm55xx_defconfig
+mips                       capcella_defconfig
+sh                  sh7785lcr_32bit_defconfig
+i386                     randconfig-i0-201808
+i386                     randconfig-i1-201808
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-g0-02262337
+i386                     randconfig-a0-201808
+i386                     randconfig-a1-201808
+x86_64                 randconfig-s0-02270100
+x86_64                 randconfig-s1-02270100
+x86_64                 randconfig-s2-02270100
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                            mps2_defconfig
+mips                         mpc30x_defconfig
+powerpc                    socrates_defconfig
+sh                   sh7770_generic_defconfig
+x86_64                 randconfig-x017-201808
+x86_64                 randconfig-x013-201808
+x86_64                 randconfig-x016-201808
+x86_64                 randconfig-x018-201808
+x86_64                 randconfig-x015-201808
+x86_64                 randconfig-x012-201808
+x86_64                 randconfig-x014-201808
+x86_64                 randconfig-x011-201808
+x86_64                 randconfig-x010-201808
+x86_64                 randconfig-x019-201808
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201808
+i386                     randconfig-s1-201808
+x86_64                 randconfig-s3-02270132
+x86_64                 randconfig-s4-02270132
+x86_64                 randconfig-s5-02270132
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201808
+i386                   randconfig-b0-02262134
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-x015-201808
+i386                   randconfig-x019-201808
+i386                   randconfig-x010-201808
+i386                   randconfig-x014-201808
+i386                   randconfig-x016-201808
+i386                   randconfig-x012-201808
+i386                   randconfig-x011-201808
+i386                   randconfig-x017-201808
+i386                   randconfig-x013-201808
+i386                   randconfig-x018-201808
+microblaze                          defconfig
+s390                              allnoconfig
+x86_64                randconfig-ne0-02270005
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-x000-201808
+x86_64                 randconfig-x005-201808
+x86_64                 randconfig-x008-201808
+x86_64                 randconfig-x006-201808
+x86_64                 randconfig-x001-201808
+x86_64                 randconfig-x007-201808
+x86_64                 randconfig-x009-201808
+x86_64                 randconfig-x002-201808
+x86_64                 randconfig-x003-201808
+x86_64                 randconfig-x004-201808
+x86_64                 randconfig-r0-02262328
+i386                   randconfig-x004-201808
+i386                   randconfig-x002-201808
+i386                   randconfig-x007-201808
+i386                   randconfig-x009-201808
+i386                   randconfig-x003-201808
+i386                   randconfig-x001-201808
+i386                   randconfig-x008-201808
+i386                   randconfig-x005-201808
+i386                   randconfig-x006-201808
+i386                   randconfig-x000-201808
+i386                   randconfig-x0-02262301
 
-Will change.
-
->
->>                         continue;
->>                 if (adapter->mac_table[i].queue != queue)
->>                         continue;
->>                 if (!ether_addr_equal(adapter->mac_table[i].addr, addr))
->>                         continue;
->>
->> -               adapter->mac_table[i].state &= ~IGB_MAC_STATE_IN_USE;
->> +               adapter->mac_table[i].state &= ~(IGB_MAC_STATE_IN_USE | flags);
->
-> Maybe instead of just clearing the specific flags we should just clear
-> the state and reset it back to 0.
-
-Will take another look at the "default" entries, which are the other
-users of specific flags, as you put it, and see if I wouldn't break
-them.
-
->
->>                 memset(adapter->mac_table[i].addr, 0, ETH_ALEN);
->>                 adapter->mac_table[i].queue = 0;
->>
->> @@ -6906,7 +6918,8 @@ static int igb_uc_sync(struct net_device *netdev, const unsigned char *addr)
->>         struct igb_adapter *adapter = netdev_priv(netdev);
->>         int ret;
->>
->> -       ret = igb_add_mac_filter(adapter, addr, adapter->vfs_allocated_count);
->> +       ret = igb_add_mac_filter(adapter, addr,
->> +                                adapter->vfs_allocated_count, 0);
->
-> Instead of having to add a 0 to all these functions it might be better
-> to rename the original igb_add_mac_filter, and then add a new function
-> named the same as the original that just automatically passes the 0.
-> It will take a lot of noise out of this code.
-
-Cool. Will do.
-
->
->>
->>         return min_t(int, ret, 0);
->>  }
->> @@ -6915,7 +6928,7 @@ static int igb_uc_unsync(struct net_device *netdev, const unsigned char *addr)
->>  {
->>         struct igb_adapter *adapter = netdev_priv(netdev);
->>
->> -       igb_del_mac_filter(adapter, addr, adapter->vfs_allocated_count);
->> +       igb_del_mac_filter(adapter, addr, adapter->vfs_allocated_count, 0);
->>
->>         return 0;
->>  }
->> @@ -6937,7 +6950,8 @@ static int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
->>                         if (entry->vf == vf) {
->>                                 entry->vf = -1;
->>                                 entry->free = true;
->> -                               igb_del_mac_filter(adapter, entry->vf_mac, vf);
->> +                               igb_del_mac_filter(adapter,
->> +                                                  entry->vf_mac, vf, 0);
->>                         }
->>                 }
->>                 break;
->> @@ -6968,7 +6982,7 @@ static int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
->>                         entry->vf = vf;
->>                         ether_addr_copy(entry->vf_mac, addr);
->>
->> -                       ret = igb_add_mac_filter(adapter, addr, vf);
->> +                       ret = igb_add_mac_filter(adapter, addr, vf, 0);
->>                         ret = min_t(int, ret, 0);
->>                 } else {
->>                         ret = -ENOSPC;
->> @@ -8743,6 +8757,9 @@ static void igb_rar_set_index(struct igb_adapter *adapter, u32 index)
->>                 if (is_valid_ether_addr(addr))
->>                         rar_high |= E1000_RAH_AV;
->>
->> +               if (adapter->mac_table[index].state & IGB_MAC_STATE_SRC_ADDR)
->> +                       rar_high |= E1000_RAH_ASEL_SRC_ADDR;
->> +
->>                 switch (hw->mac.type) {
->>                 case e1000_82575:
->>                 case e1000_i210:
->> --
->> 2.16.2
->>
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Thanks,
+Fengguang
