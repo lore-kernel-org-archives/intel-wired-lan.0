@@ -1,57 +1,105 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon, 26 Feb 2018 03:33:05 -0500
-Subject: [Intel-wired-lan] [next PATCH S87 V2 1/7] i40e: Fix attach VF to VM
- issue
-Message-ID: <20180226083311.52442-1-alice.michael@intel.com>
+Date: Mon, 26 Feb 2018 03:33:08 -0500
+Subject: [Intel-wired-lan] [next PATCH S87 V2 4/7] i40e: track filter type
+ statistics when deleting invalid filters
+In-Reply-To: <20180226083311.52442-1-alice.michael@intel.com>
+References: <20180226083311.52442-1-alice.michael@intel.com>
+Message-ID: <20180226083311.52442-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Fix for "Resource temporarily unavailable" problem when virsh is
-trying to attach a device to VM. When the VF driver is loaded on
-host and virsh is trying to attach it to the VM and set a MAC
-address, it ends with a race condition between i40e_reset_vf and
-i40e_ndo_set_vf_mac functions. The bug is fixed by adding polling
-in i40e_ndo_set_vf_mac function For when the VF is in Reset mode.
+When hardware has trouble with a particular filter, we delete it from
+the list. Unfortunately, we did not properly update the per-filter
+statistic when doing so.
 
-Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
+Create a helper function to handle this, and properly reduce the
+necessary counter so that it tracks the number of active filters
+properly.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 56 ++++++++++++++++++++++++-----
+ 1 file changed, 48 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 63ddcb9..2de7a8c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -3742,6 +3742,7 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 	int ret = 0;
- 	struct hlist_node *h;
- 	int bkt;
-+	u8 i;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 9ad80d2..1c694f9 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8147,6 +8147,51 @@ u32 i40e_get_global_fd_count(struct i40e_pf *pf)
+ }
  
- 	/* validate the request */
- 	if (vf_id >= pf->num_alloc_vfs) {
-@@ -3753,6 +3754,16 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 
- 	vf = &(pf->vf[vf_id]);
- 	vsi = pf->vsi[vf->lan_vsi_idx];
+ /**
++ * i40e_delete_invalid_filter - Delete an invalid FDIR filter
++ * @pf: board private structure
++ * @filter: FDir filter to remove
++ */
++static void i40e_delete_invalid_filter(struct i40e_pf *pf,
++				       struct i40e_fdir_filter *filter)
++{
++	/* Update counters */
++	pf->fdir_pf_active_filters--;
++	pf->fd_inv = 0;
 +
-+	/* When the VF is resetting wait until it is done.
-+	 * It can take up to 200 milliseconds,
-+	 * but wait for up to 300 milliseconds to be safe.
-+	 */
-+	for (i = 0; i < 15; i++) {
-+		if (test_bit(I40E_VF_STATE_INIT, &vf->vf_states))
++	switch (filter->flow_type) {
++	case TCP_V4_FLOW:
++		pf->fd_tcp4_filter_cnt--;
++		break;
++	case UDP_V4_FLOW:
++		pf->fd_udp4_filter_cnt--;
++		break;
++	case SCTP_V4_FLOW:
++		pf->fd_sctp4_filter_cnt--;
++		break;
++	case IP_USER_FLOW:
++		switch (filter->ip4_proto) {
++		case IPPROTO_TCP:
++			pf->fd_tcp4_filter_cnt--;
 +			break;
-+		msleep(20);
++		case IPPROTO_UDP:
++			pf->fd_udp4_filter_cnt--;
++			break;
++		case IPPROTO_SCTP:
++			pf->fd_sctp4_filter_cnt--;
++			break;
++		case IPPROTO_IP:
++			pf->fd_ip4_filter_cnt--;
++			break;
++		}
++		break;
 +	}
- 	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
- 		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
- 			vf_id);
++
++	/* Remove the filter from the list and free memory */
++	hlist_del(&filter->fdir_node);
++	kfree(filter);
++}
++
++/**
+  * i40e_fdir_check_and_reenable - Function to reenabe FD ATR or SB if disabled
+  * @pf: board private structure
+  **/
+@@ -8190,14 +8235,9 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+ 	/* if hw had a problem adding a filter, delete it */
+ 	if (pf->fd_inv > 0) {
+ 		hlist_for_each_entry_safe(filter, node,
+-					  &pf->fdir_filter_list, fdir_node) {
+-			if (filter->fd_id == pf->fd_inv) {
+-				hlist_del(&filter->fdir_node);
+-				kfree(filter);
+-				pf->fdir_pf_active_filters--;
+-				pf->fd_inv = 0;
+-			}
+-		}
++					  &pf->fdir_filter_list, fdir_node)
++			if (filter->fd_id == pf->fd_inv)
++				i40e_delete_invalid_filter(pf, filter);
+ 	}
+ }
+ 
 -- 
 2.9.5
 
