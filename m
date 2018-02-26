@@ -1,143 +1,148 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 26 Feb 2018 15:54:38 +0000
-Subject: [Intel-wired-lan] [PATCH 8/9] ixgbevf: improve performance and
- reduce size of ixgbevf_tx_map()
-In-Reply-To: <20171211183725.21524.40905.stgit@localhost6.localdomain6>
+Date: Mon, 26 Feb 2018 15:54:59 +0000
+Subject: [Intel-wired-lan] [PATCH 6/9] ixgbevf: add counters for Rx page
+ allocations
+In-Reply-To: <20171211183715.21524.56950.stgit@localhost6.localdomain6>
 References: <20171211183537.21524.10133.stgit@localhost6.localdomain6>
- <20171211183725.21524.40905.stgit@localhost6.localdomain6>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD81FC@ORSMSX103.amr.corp.intel.com>
+ <20171211183715.21524.56950.stgit@localhost6.localdomain6>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD820F@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
 > Emil Tantilov
 > Sent: Monday, December 11, 2017 10:37 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 8/9] ixgbevf: improve performance and
-> reduce size of ixgbevf_tx_map()
+> Subject: [Intel-wired-lan] [PATCH 6/9] ixgbevf: add counters for Rx page
+> allocations
 > 
-> Based on commit ec718254cbfe
-> ("ixgbe: Improve performance and reduce size of ixgbe_tx_map")
-> 
-> This change is meant to both improve the performance and reduce the size of
-> ixgbevf_tx_map().
-> 
-> Expand the work done in the main loop by pushing first into tx_buffer.
-> This allows us to pull in the dma_mapping_error check, the tx_buffer value
-> assignment, and the initial DMA value assignment to the Tx descriptor.
+> We already had placehloders for failed page and buffer allocations.
+> Added alloc_rx_page and made sure the stats are properly updated and
+> exposed in ethtool.
 > 
 > Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   45 +++++++++------------
->  1 file changed, 20 insertions(+), 25 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/ethtool.c      |    3 +++
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    6 ++++-
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   23 ++++++++++++++++--
+> ---
+>  3 files changed, 25 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> index ff9d05f..4400e49 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> @@ -75,6 +75,9 @@ struct ixgbe_stats {
+>  	IXGBEVF_STAT("tx_timeout_count", tx_timeout_count),
+>  	IXGBEVF_NETDEV_STAT(multicast),
+>  	IXGBEVF_STAT("rx_csum_offload_errors", hw_csum_rx_error),
+> +	IXGBEVF_STAT("alloc_rx_page", alloc_rx_page),
+> +	IXGBEVF_STAT("alloc_rx_page_failed", alloc_rx_page_failed),
+> +	IXGBEVF_STAT("alloc_rx_buff_failed", alloc_rx_buff_failed),
+>  };
+> 
+>  #define IXGBEVF_QUEUE_STATS_LEN ( \
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> index c70a789..f695242 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> @@ -84,6 +84,7 @@ struct ixgbevf_tx_queue_stats {
+>  struct ixgbevf_rx_queue_stats {
+>  	u64 alloc_rx_page_failed;
+>  	u64 alloc_rx_buff_failed;
+> +	u64 alloc_rx_page;
+>  	u64 csum_err;
+>  };
+> 
+> @@ -295,8 +296,9 @@ struct ixgbevf_adapter {
+>  	u64 hw_csum_rx_error;
+>  	u64 hw_rx_no_dma_resources;
+>  	int num_msix_vectors;
+> -	u32 alloc_rx_page_failed;
+> -	u32 alloc_rx_buff_failed;
+> +	u64 alloc_rx_page_failed;
+> +	u64 alloc_rx_buff_failed;
+> +	u64 alloc_rx_page;
+> 
+>  	struct msix_entry *msix_entries;
 > 
 > diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 > b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index a793f9e..d3415ee 100644
+> index ae2402d..350afec 100644
 > --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 > +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -3532,34 +3532,37 @@ static void ixgbevf_tx_map(struct ixgbevf_ring
-> *tx_ring,
->  			   struct ixgbevf_tx_buffer *first,
->  			   const u8 hdr_len)
->  {
-> -	dma_addr_t dma;
->  	struct sk_buff *skb = first->skb;
->  	struct ixgbevf_tx_buffer *tx_buffer;
->  	union ixgbe_adv_tx_desc *tx_desc;
-> -	struct skb_frag_struct *frag = &skb_shinfo(skb)->frags[0];
-> -	unsigned int data_len = skb->data_len;
-> -	unsigned int size = skb_headlen(skb);
-> -	unsigned int paylen = skb->len - hdr_len;
-> +	struct skb_frag_struct *frag;
-> +	dma_addr_t dma;
-> +	unsigned int data_len, size;
->  	u32 tx_flags = first->tx_flags;
-> -	__le32 cmd_type;
-> +	__le32 cmd_type = ixgbevf_tx_cmd_type(tx_flags);
->  	u16 i = tx_ring->next_to_use;
+> @@ -604,7 +604,7 @@ static bool ixgbevf_alloc_mapped_page(struct
+> ixgbevf_ring *rx_ring,
+>  	if (dma_mapping_error(rx_ring->dev, dma)) {
+>  		__free_page(page);
 > 
->  	tx_desc = IXGBEVF_TX_DESC(tx_ring, i);
-> 
-> -	ixgbevf_tx_olinfo_status(tx_desc, tx_flags, paylen);
-> -	cmd_type = ixgbevf_tx_cmd_type(tx_flags);
-> +	ixgbevf_tx_olinfo_status(tx_desc, tx_flags, skb->len - hdr_len);
-> +
-> +	size = skb_headlen(skb);
-> +	data_len = skb->data_len;
-> 
->  	dma = dma_map_single(tx_ring->dev, skb->data, size,
-> DMA_TO_DEVICE);
-> -	if (dma_mapping_error(tx_ring->dev, dma))
-> -		goto dma_error;
-> 
-> -	/* record length, and DMA address */
-> -	dma_unmap_len_set(first, len, size);
-> -	dma_unmap_addr_set(first, dma, dma);
-> +	tx_buffer = first;
-> 
-> -	tx_desc->read.buffer_addr = cpu_to_le64(dma);
-> +	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
-> +		if (dma_mapping_error(tx_ring->dev, dma))
-> +			goto dma_error;
-> +
-> +		/* record length, and DMA address */
-> +		dma_unmap_len_set(tx_buffer, len, size);
-> +		dma_unmap_addr_set(tx_buffer, dma, dma);
-> +
-> +		tx_desc->read.buffer_addr = cpu_to_le64(dma);
-> 
-> -	for (;;) {
->  		while (unlikely(size > IXGBE_MAX_DATA_PER_TXD)) {
->  			tx_desc->read.cmd_type_len =
->  				cmd_type |
-> cpu_to_le32(IXGBE_MAX_DATA_PER_TXD);
-> @@ -3570,12 +3573,12 @@ static void ixgbevf_tx_map(struct ixgbevf_ring
-> *tx_ring,
->  				tx_desc = IXGBEVF_TX_DESC(tx_ring, 0);
->  				i = 0;
->  			}
-> +			tx_desc->read.olinfo_status = 0;
-> 
->  			dma += IXGBE_MAX_DATA_PER_TXD;
->  			size -= IXGBE_MAX_DATA_PER_TXD;
-> 
->  			tx_desc->read.buffer_addr = cpu_to_le64(dma);
-> -			tx_desc->read.olinfo_status = 0;
->  		}
-> 
->  		if (likely(!data_len))
-> @@ -3589,23 +3592,15 @@ static void ixgbevf_tx_map(struct ixgbevf_ring
-> *tx_ring,
->  			tx_desc = IXGBEVF_TX_DESC(tx_ring, 0);
->  			i = 0;
->  		}
-> +		tx_desc->read.olinfo_status = 0;
-> 
->  		size = skb_frag_size(frag);
->  		data_len -= size;
-> 
->  		dma = skb_frag_dma_map(tx_ring->dev, frag, 0, size,
->  				       DMA_TO_DEVICE);
-> -		if (dma_mapping_error(tx_ring->dev, dma))
-> -			goto dma_error;
-> 
->  		tx_buffer = &tx_ring->tx_buffer_info[i];
-> -		dma_unmap_len_set(tx_buffer, len, size);
-> -		dma_unmap_addr_set(tx_buffer, dma, dma);
-> -
-> -		tx_desc->read.buffer_addr = cpu_to_le64(dma);
-> -		tx_desc->read.olinfo_status = 0;
-> -
-> -		frag++;
+> -		rx_ring->rx_stats.alloc_rx_buff_failed++;
+> +		rx_ring->rx_stats.alloc_rx_page_failed++;
+>  		return false;
 >  	}
 > 
->  	/* write last descriptor with RS and EOP bits */
+> @@ -612,6 +612,7 @@ static bool ixgbevf_alloc_mapped_page(struct
+> ixgbevf_ring *rx_ring,
+>  	bi->page = page;
+>  	bi->page_offset = 0;
+>  	bi->pagecnt_bias = 1;
+> +	rx_ring->rx_stats.alloc_rx_page++;
+> 
+>  	return true;
+>  }
+> @@ -963,8 +964,10 @@ static int ixgbevf_clean_rx_irq(struct
+> ixgbevf_q_vector *q_vector,
+>  		skb = ixgbevf_fetch_rx_buffer(rx_ring, rx_desc, skb);
+> 
+>  		/* exit if we failed to retrieve a buffer */
+> -		if (!skb)
+> +		if (!skb) {
+> +			rx_ring->rx_stats.alloc_rx_buff_failed++;
+>  			break;
+> +		}
+> 
+>  		cleaned_count++;
+> 
+> @@ -2749,6 +2752,8 @@ static int ixgbevf_sw_init(struct ixgbevf_adapter
+> *adapter)
+>  void ixgbevf_update_stats(struct ixgbevf_adapter *adapter)
+>  {
+>  	struct ixgbe_hw *hw = &adapter->hw;
+> +	u64 alloc_rx_page_failed = 0, alloc_rx_buff_failed = 0;
+> +	u64 alloc_rx_page = 0, hw_csum_rx_error = 0;
+>  	int i;
+> 
+>  	if (test_bit(__IXGBEVF_DOWN, &adapter->state) ||
+> @@ -2769,10 +2774,18 @@ void ixgbevf_update_stats(struct ixgbevf_adapter
+> *adapter)
+>  				adapter->stats.vfmprc);
+> 
+>  	for (i = 0;  i  < adapter->num_rx_queues;  i++) {
+> -		adapter->hw_csum_rx_error +=
+> -			adapter->rx_ring[i]->hw_csum_rx_error;
+> -		adapter->rx_ring[i]->hw_csum_rx_error = 0;
+> +		struct ixgbevf_ring *rx_ring = adapter->rx_ring[i];
+> +
+> +		hw_csum_rx_error += rx_ring->rx_stats.csum_err;
+> +		alloc_rx_page_failed += rx_ring-
+> >rx_stats.alloc_rx_page_failed;
+> +		alloc_rx_buff_failed += rx_ring->rx_stats.alloc_rx_buff_failed;
+> +		alloc_rx_page += rx_ring->rx_stats.alloc_rx_page;
+>  	}
+> +
+> +	adapter->hw_csum_rx_error = hw_csum_rx_error;
+> +	adapter->alloc_rx_page_failed = alloc_rx_page_failed;
+> +	adapter->alloc_rx_buff_failed = alloc_rx_buff_failed;
+> +	adapter->alloc_rx_page = alloc_rx_page;
+>  }
+> 
+>  /**
 > 
 > _______________________________________________
 > Intel-wired-lan mailing list
