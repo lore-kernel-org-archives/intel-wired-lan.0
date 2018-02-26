@@ -1,101 +1,268 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 26 Feb 2018 16:05:46 +0000
-Subject: [Intel-wired-lan] [PATCH 9/9] ixgbevf: add build_skb support
-In-Reply-To: <20180131005154.19264.9737.stgit@localhost6.localdomain6>
-References: <20180131005015.19264.44085.stgit@localhost6.localdomain6>
- <20180131005154.19264.9737.stgit@localhost6.localdomain6>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD832C@ORSMSX103.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 26 Feb 2018 08:14:38 -0800
+Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Fix link check race
+ condition.
+In-Reply-To: <20180226023118.17439-1-bpoirier@suse.com>
+References: <CAKgT0UffXiggXxC5x1vrtbnKPHzcy8+VTRvBGBH-7tCYmUi6LQ@mail.gmail.com>
+ <20180226023118.17439-1-bpoirier@suse.com>
+Message-ID: <CAKgT0Ueyz9LPz4UwYVpgZJ+nW2YV2A-mYqUQbBP2RaDfgH91rA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
-> Emil Tantilov
-> Sent: Tuesday, January 30, 2018 4:52 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 9/9] ixgbevf: add build_skb support
-> 
-> Add support for build_skb() similar to:
-> commit 6f429223b31c ("ixgbe: Add support for build_skb")
-> 
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+On Sun, Feb 25, 2018 at 6:31 PM, Benjamin Poirier <bpoirier@suse.com> wrote:
+> Alex reported the following race condition:
+>
+> /* link goes up... interrupt... schedule watchdog */
+> \ e1000_watchdog_task
+>         \ e1000e_has_link
+>                 \ hw->mac.ops.check_for_link() === e1000e_check_for_copper_link
+>                         \ e1000e_phy_has_link_generic(..., &link)
+>                                 link = true
+>
+>                                          /* link goes down... interrupt */
+>                                          \ e1000_msix_other
+>                                                  hw->mac.get_link_status = true
+>
+>                         /* link is up */
+>                         mac->get_link_status = false
+>
+>                 link_active = true
+>                 /* link_active is true, wrongly, and stays so because
+>                  * get_link_status is false */
+>
+> Avoid this problem by making sure that we don't set get_link_status = false
+> after having checked the link.
+>
+> It seems this problem has been present since the introduction of e1000e.
+>
+> Link: https://lkml.org/lkml/2018/1/29/338
+> Reported-by: Alexander Duyck <alexander.duyck@gmail.com>
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   41
-> +++++++++++++++++++++
->  1 file changed, 41 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index cd8c0a0..74fcb4c 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -910,6 +910,44 @@ static inline void ixgbevf_irq_enable_queues(struct
-> ixgbevf_adapter *adapter,
->  	IXGBE_WRITE_REG(hw, IXGBE_VTEIMS, qmask);
+>  drivers/net/ethernet/intel/e1000e/ich8lan.c | 41 ++++++++++++++++-------------
+>  drivers/net/ethernet/intel/e1000e/mac.c     | 14 +++++++---
+>  2 files changed, 33 insertions(+), 22 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> index ff308b05d68c..3c2c4f87e075 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> @@ -1386,6 +1386,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>          */
+>         if (!mac->get_link_status)
+>                 return 1;
+> +       mac->get_link_status = false;
+>
+>         /* First we want to see if the MII Status Register reports
+>          * link.  If so, then we want to get the current speed/duplex
+> @@ -1393,12 +1394,12 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>          */
+>         ret_val = e1000e_phy_has_link_generic(hw, 1, 0, &link);
+>         if (ret_val)
+> -               return ret_val;
+> +               goto out;
+>
+>         if (hw->mac.type == e1000_pchlan) {
+>                 ret_val = e1000_k1_gig_workaround_hv(hw, link);
+>                 if (ret_val)
+> -                       return ret_val;
+> +                       goto out;
+>         }
+>
+>         /* When connected at 10Mbps half-duplex, some parts are excessively
+> @@ -1431,7 +1432,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>
+>                 ret_val = hw->phy.ops.acquire(hw);
+>                 if (ret_val)
+> -                       return ret_val;
+> +                       goto out;
+>
+>                 if (hw->mac.type == e1000_pch2lan)
+>                         emi_addr = I82579_RX_CONFIG;
+> @@ -1453,7 +1454,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>                 hw->phy.ops.release(hw);
+>
+>                 if (ret_val)
+> -                       return ret_val;
+> +                       goto out;
+>
+>                 if (hw->mac.type >= e1000_pch_spt) {
+>                         u16 data;
+> @@ -1462,14 +1463,14 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>                         if (speed == SPEED_1000) {
+>                                 ret_val = hw->phy.ops.acquire(hw);
+>                                 if (ret_val)
+> -                                       return ret_val;
+> +                                       goto out;
+>
+>                                 ret_val = e1e_rphy_locked(hw,
+>                                                           PHY_REG(776, 20),
+>                                                           &data);
+>                                 if (ret_val) {
+>                                         hw->phy.ops.release(hw);
+> -                                       return ret_val;
+> +                                       goto out;
+>                                 }
+>
+>                                 ptr_gap = (data & (0x3FF << 2)) >> 2;
+> @@ -1483,18 +1484,18 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>                                 }
+>                                 hw->phy.ops.release(hw);
+>                                 if (ret_val)
+> -                                       return ret_val;
+> +                                       goto out;
+>                         } else {
+>                                 ret_val = hw->phy.ops.acquire(hw);
+>                                 if (ret_val)
+> -                                       return ret_val;
+> +                                       goto out;
+>
+>                                 ret_val = e1e_wphy_locked(hw,
+>                                                           PHY_REG(776, 20),
+>                                                           0xC023);
+>                                 hw->phy.ops.release(hw);
+>                                 if (ret_val)
+> -                                       return ret_val;
+> +                                       goto out;
+>
+>                         }
+>                 }
+> @@ -1521,7 +1522,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>             (hw->adapter->pdev->device == E1000_DEV_ID_PCH_I218_V3)) {
+>                 ret_val = e1000_k1_workaround_lpt_lp(hw, link);
+>                 if (ret_val)
+> -                       return ret_val;
+> +                       goto out;
+>         }
+>         if (hw->mac.type >= e1000_pch_lpt) {
+>                 /* Set platform power management values for
+> @@ -1529,7 +1530,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>                  */
+>                 ret_val = e1000_platform_pm_pch_lpt(hw, link);
+>                 if (ret_val)
+> -                       return ret_val;
+> +                       goto out;
+>         }
+>
+>         /* Clear link partner's EEE ability */
+> @@ -1551,22 +1552,22 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>                 ew32(FEXTNVM6, fextnvm6);
+>         }
+>
+> -       if (!link)
+> +       if (!link) {
+> +               mac->get_link_status = true;
+>                 return 0;       /* No link detected */
+> -
+> -       mac->get_link_status = false;
+> +       }
+
+If I am not mistaken this could be just another jump to the "out"
+label. We should have initialized "ret_val" to 0 near the start of
+this function when we made the call to phy_has_link_generic.
+
+>
+>         switch (hw->mac.type) {
+>         case e1000_pch2lan:
+>                 ret_val = e1000_k1_workaround_lv(hw);
+>                 if (ret_val)
+> -                       return ret_val;
+> +                       goto out;
+>                 /* fall-thru */
+>         case e1000_pchlan:
+>                 if (hw->phy.type == e1000_phy_82578) {
+>                         ret_val = e1000_link_stall_workaround_hv(hw);
+>                         if (ret_val)
+> -                               return ret_val;
+> +                               goto out;
+>                 }
+>
+>                 /* Workaround for PCHx parts in half-duplex:
+> @@ -1595,7 +1596,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>         if (hw->phy.type > e1000_phy_82579) {
+>                 ret_val = e1000_set_eee_pchlan(hw);
+>                 if (ret_val)
+> -                       return ret_val;
+> +                       goto out;
+>         }
+>
+>         /* If we are forcing speed/duplex, then we simply return since
+> @@ -1618,10 +1619,14 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>         ret_val = e1000e_config_fc_after_link_up(hw);
+>         if (ret_val) {
+>                 e_dbg("Error configuring flow control\n");
+> -               return ret_val;
+> +               goto out;
+>         }
+
+Technically these changes would be a change in behavior. For these we
+may just want to leave them as-is since I am not certain they would
+have any actual impact on the link state other than delaying the
+link-up. For example do we really care if we fail to negotiate flow
+control? We may not so we might report link up and just a debug
+message indicating we didn't negotiate that part of the link.
+
+>         return 1;
+> +
+> +out:
+> +       mac->get_link_status = true;
+> +       return ret_val;
 >  }
-> 
-> +static struct sk_buff *ixgbevf_build_skb(struct ixgbevf_ring *rx_ring,
-> +					 struct ixgbevf_rx_buffer *rx_buffer,
-> +					 union ixgbe_adv_rx_desc *rx_desc,
-> +					 unsigned int size)
-> +{
-> +	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-> +#if (PAGE_SIZE < 8192)
-> +	unsigned int truesize = ixgbevf_rx_pg_size(rx_ring) / 2;
-> +#else
-> +	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct
-> skb_shared_info)) +
-> +				SKB_DATA_ALIGN(IXGBEVF_SKB_PAD + size);
-> +#endif
-> +	struct sk_buff *skb;
-> +
-> +	/* prefetch first cache line of first page */
-> +	prefetch(va);
-> +#if L1_CACHE_BYTES < 128
-> +	prefetch(va + L1_CACHE_BYTES);
-> +#endif
-> +
-> +	/* build an skb to around the page buffer */
-> +	skb = build_skb(va - IXGBEVF_SKB_PAD, truesize);
-> +	if (unlikely(!skb))
-> +		return NULL;
-> +
-> +	/* update pointers within the skb to store the data */
-> +	skb_reserve(skb, IXGBEVF_SKB_PAD);
-> +	__skb_put(skb, size);
-> +
-> +	/* update buffer offset */
-> +#if (PAGE_SIZE < 8192)
-> +	rx_buffer->page_offset ^= truesize;
-> +#else
-> +	rx_buffer->page_offset += truesize;
-> +#endif
-> +
-> +	return skb;
-> +}
->  static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
->  				struct ixgbevf_ring *rx_ring,
->  				int budget)
-> @@ -945,6 +983,9 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector
-> *q_vector,
->  		/* retrieve a buffer from the ring */
->  		if (skb)
->  			ixgbevf_add_rx_frag(rx_ring, rx_buffer, skb, size);
-> +		else if (ring_uses_build_skb(rx_ring))
-> +			skb = ixgbevf_build_skb(rx_ring, rx_buffer,
-> +						rx_desc, size);
->  		else
->  			skb = ixgbevf_construct_skb(rx_ring, rx_buffer,
->  						    rx_desc, size);
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>
+>  static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
+> diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
+> index db735644b312..60c8beaf5cb3 100644
+> --- a/drivers/net/ethernet/intel/e1000e/mac.c
+> +++ b/drivers/net/ethernet/intel/e1000e/mac.c
+> @@ -427,6 +427,7 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+>          */
+>         if (!mac->get_link_status)
+>                 return 1;
+> +       mac->get_link_status = false;
+>
+>         /* First we want to see if the MII Status Register reports
+>          * link.  If so, then we want to get the current speed/duplex
+> @@ -434,12 +435,13 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+>          */
+>         ret_val = e1000e_phy_has_link_generic(hw, 1, 0, &link);
+>         if (ret_val)
+> -               return ret_val;
+> +               goto out;
+>
+> -       if (!link)
+> +       if (!link) {
+> +               mac->get_link_status = true;
+>                 return 0;       /* No link detected */
+> +       }
 
-Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
+Same here. We just initialized it to 0 via the call to
+e1000e_phy_has_link_generic so we could just jump to "out" if the link
+is not set. You could probably even combine the two conditions into
+one even with a check for "ret_val || !link".
 
+> -       mac->get_link_status = false;
+>
+>         /* Check if there was DownShift, must be checked
+>          * immediately after link-up
+> @@ -466,10 +468,14 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+>         ret_val = e1000e_config_fc_after_link_up(hw);
+>         if (ret_val) {
+>                 e_dbg("Error configuring flow control\n");
+> -               return ret_val;
+> +               goto out;
+>         }
+>
+>         return 1;
+> +
+> +out:
+> +       mac->get_link_status = true;
+> +       return ret_val;
+>  }
+>
+>  /**
+> --
+> 2.16.1
+>
