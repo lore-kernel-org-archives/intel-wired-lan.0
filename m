@@ -1,11 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 26 Feb 2018 16:02:38 +0000
-Subject: [Intel-wired-lan] [PATCH 2/9] ixgbevf: add ethtool private flag
- for legacy Rx
-In-Reply-To: <20180131005117.19264.16322.stgit@localhost6.localdomain6>
+Date: Mon, 26 Feb 2018 16:03:04 +0000
+Subject: [Intel-wired-lan] [PATCH 3/9] ixgbevf: add support for using
+ order 1 pages to receive large frames
+In-Reply-To: <20180131005122.19264.70254.stgit@localhost6.localdomain6>
 References: <20180131005015.19264.44085.stgit@localhost6.localdomain6>
- <20180131005117.19264.16322.stgit@localhost6.localdomain6>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD82AD@ORSMSX103.amr.corp.intel.com>
+ <20180131005122.19264.70254.stgit@localhost6.localdomain6>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD82C0@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,141 +18,297 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Emil Tantilov
 > Sent: Tuesday, January 30, 2018 4:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 2/9] ixgbevf: add ethtool private flag for
-> legacy Rx
+> Subject: [Intel-wired-lan] [PATCH 3/9] ixgbevf: add support for using order 1
+> pages to receive large frames
 > 
-> Introduce legacy-rx private flag that will allow switching between the
-> old and new (build_skb based) Rx code paths. The implementation is the
-> same as in commit e08912985b29
-> ("igb: Add support for ethtool private flag to allow use of legacy Rx")
+> Based on commit 8649aaef4044
+> ("igb: Add support for using order 1 pages to receive large frames")
 > 
-> This provides a means of validating the legacy Rx path in the event that
-> we are forced to fall back.  At some point in the future when we are
-> convinced we don't need it anymore we might be able to drop the legacy-rx
-> flag.
+> Add support for using 3K buffers in order 1 page. We are reserving 1K for
+> now to have space available for future tailroom and headroom when we enable
+> build_skb support.
 > 
 > Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ethtool.c |   48
-> ++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h |    2 +
->  2 files changed, 50 insertions(+)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   52 ++++++++++++++---
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   64 ++++++++++++++++--
+> ---
+>  2 files changed, 92 insertions(+), 24 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-> b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-> index 4400e49..e7623fe 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-> @@ -94,6 +94,13 @@ struct ixgbe_stats {
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> index 62a3669..d691d64 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> @@ -89,17 +89,11 @@ struct ixgbevf_rx_queue_stats {
+>  };
 > 
->  #define IXGBEVF_TEST_LEN (sizeof(ixgbe_gstrings_test) / ETH_GSTRING_LEN)
+>  enum ixgbevf_ring_state_t {
+> +	__IXGBEVF_RX_3K_BUFFER,
+>  	__IXGBEVF_TX_DETECT_HANG,
+>  	__IXGBEVF_HANG_CHECK_ARMED,
+>  };
 > 
-> +static const char ixgbevf_priv_flags_strings[][ETH_GSTRING_LEN] = {
-> +#define IXGBEVF_PRIV_FLAGS_LEGACY_RX	BIT(0)
-> +	"legacy-rx",
-> +};
+> -#define check_for_tx_hang(ring) \
+> -	test_bit(__IXGBEVF_TX_DETECT_HANG, &(ring)->state)
+> -#define set_check_for_tx_hang(ring) \
+> -	set_bit(__IXGBEVF_TX_DETECT_HANG, &(ring)->state)
+> -#define clear_check_for_tx_hang(ring) \
+> -	clear_bit(__IXGBEVF_TX_DETECT_HANG, &(ring)->state)
+> -
+>  struct ixgbevf_ring {
+>  	struct ixgbevf_ring *next;
+>  	struct net_device *netdev;
+> @@ -156,12 +150,20 @@ struct ixgbevf_ring {
+>  /* Supported Rx Buffer Sizes */
+>  #define IXGBEVF_RXBUFFER_256	256    /* Used for packet split */
+>  #define IXGBEVF_RXBUFFER_2048	2048
+> +#define IXGBEVF_RXBUFFER_3072	3072
+> 
+>  #define IXGBEVF_RX_HDR_SIZE	IXGBEVF_RXBUFFER_256
+> -#define IXGBEVF_RX_BUFSZ	IXGBEVF_RXBUFFER_2048
+> 
+>  #define MAXIMUM_ETHERNET_VLAN_SIZE (VLAN_ETH_FRAME_LEN +
+> ETH_FCS_LEN)
+> 
+> +#define IXGBEVF_SKB_PAD        (NET_SKB_PAD + NET_IP_ALIGN)
+> +#if (PAGE_SIZE < 8192)
+> +#define IXGBEVF_MAX_FRAME_BUILD_SKB \
+> +	(SKB_WITH_OVERHEAD(IXGBEVF_RXBUFFER_2048) -
+> IXGBEVF_SKB_PAD)
+> +#else
+> +#define IXGBEVF_MAX_FRAME_BUILD_SKB IXGBEVF_RXBUFFER_2048
+> +#endif
 > +
-> +#define IXGBEVF_PRIV_FLAGS_STR_LEN
-> ARRAY_SIZE(ixgbevf_priv_flags_strings)
+>  #define IXGBE_TX_FLAGS_CSUM		BIT(0)
+>  #define IXGBE_TX_FLAGS_VLAN		BIT(1)
+>  #define IXGBE_TX_FLAGS_TSO		BIT(2)
+> @@ -170,6 +172,40 @@ struct ixgbevf_ring {
+>  #define IXGBE_TX_FLAGS_VLAN_PRIO_MASK	0x0000e000
+>  #define IXGBE_TX_FLAGS_VLAN_SHIFT	16
+> 
+> +#define ring_uses_large_buffer(ring) \
+> +	test_bit(__IXGBEVF_RX_3K_BUFFER, &(ring)->state)
+> +#define set_ring_uses_large_buffer(ring) \
+> +	set_bit(__IXGBEVF_RX_3K_BUFFER, &(ring)->state)
+> +#define clear_ring_uses_large_buffer(ring) \
+> +	clear_bit(__IXGBEVF_RX_3K_BUFFER, &(ring)->state)
 > +
->  static int ixgbevf_get_link_ksettings(struct net_device *netdev,
->  				      struct ethtool_link_ksettings *cmd)
->  {
-> @@ -241,6 +248,8 @@ static void ixgbevf_get_drvinfo(struct net_device
-> *netdev,
->  		sizeof(drvinfo->version));
->  	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev),
->  		sizeof(drvinfo->bus_info));
-> +
-> +	drvinfo->n_priv_flags = IXGBEVF_PRIV_FLAGS_STR_LEN;
->  }
-> 
->  static void ixgbevf_get_ringparam(struct net_device *netdev,
-> @@ -392,6 +401,8 @@ static int ixgbevf_get_sset_count(struct net_device
-> *netdev, int stringset)
->  		return IXGBEVF_TEST_LEN;
->  	case ETH_SS_STATS:
->  		return IXGBEVF_STATS_LEN;
-> +	case ETH_SS_PRIV_FLAGS:
-> +		return IXGBEVF_PRIV_FLAGS_STR_LEN;
->  	default:
->  		return -EINVAL;
->  	}
-> @@ -496,6 +507,10 @@ static void ixgbevf_get_strings(struct net_device
-> *netdev, u32 stringset,
->  			p += ETH_GSTRING_LEN;
->  		}
->  		break;
-> +	case ETH_SS_PRIV_FLAGS:
-> +		memcpy(data, ixgbevf_priv_flags_strings,
-> +		       IXGBEVF_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
-> +		break;
->  	}
->  }
-> 
-> @@ -888,6 +903,37 @@ static int ixgbevf_get_rxfh(struct net_device *netdev,
-> u32 *indir, u8 *key,
->  	return err;
->  }
-> 
-> +static u32 ixgbevf_get_priv_flags(struct net_device *netdev)
+> +static inline unsigned int ixgbevf_rx_bufsz(struct ixgbevf_ring *ring)
 > +{
-> +	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
-> +	u32 priv_flags = 0;
-> +
-> +	if (adapter->flags & IXGBEVF_FLAGS_LEGACY_RX)
-> +		priv_flags |= IXGBEVF_PRIV_FLAGS_LEGACY_RX;
-> +
-> +	return priv_flags;
+> +#if (PAGE_SIZE < 8192)
+> +	if (ring_uses_large_buffer(ring))
+> +		return IXGBEVF_RXBUFFER_3072;
+> +#endif
+> +	return IXGBEVF_RXBUFFER_2048;
 > +}
 > +
-> +static int ixgbevf_set_priv_flags(struct net_device *netdev, u32 priv_flags)
+> +static inline unsigned int ixgbevf_rx_pg_order(struct ixgbevf_ring *ring)
 > +{
-> +	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
-> +	unsigned int flags = adapter->flags;
-> +
-> +	flags &= ~IXGBEVF_FLAGS_LEGACY_RX;
-> +	if (priv_flags & IXGBEVF_PRIV_FLAGS_LEGACY_RX)
-> +		flags |= IXGBEVF_FLAGS_LEGACY_RX;
-> +
-> +	if (flags != adapter->flags) {
-> +		adapter->flags = flags;
-> +
-> +		/* reset interface to repopulate queues */
-> +		if (netif_running(netdev))
-> +			ixgbevf_reinit_locked(adapter);
-> +	}
-> +
+> +#if (PAGE_SIZE < 8192)
+> +	if (ring_uses_large_buffer(ring))
+> +		return 1;
+> +#endif
 > +	return 0;
 > +}
 > +
->  static const struct ethtool_ops ixgbevf_ethtool_ops = {
->  	.get_drvinfo		= ixgbevf_get_drvinfo,
->  	.get_regs_len		= ixgbevf_get_regs_len,
-> @@ -909,6 +955,8 @@ static int ixgbevf_get_rxfh(struct net_device *netdev,
-> u32 *indir, u8 *key,
->  	.get_rxfh_key_size	= ixgbevf_get_rxfh_key_size,
->  	.get_rxfh		= ixgbevf_get_rxfh,
->  	.get_link_ksettings	= ixgbevf_get_link_ksettings,
-> +	.get_priv_flags		= ixgbevf_get_priv_flags,
-> +	.set_priv_flags		= ixgbevf_set_priv_flags,
->  };
+> +#define ixgbevf_rx_pg_size(_ring) (PAGE_SIZE <<
+> ixgbevf_rx_pg_order(_ring))
+> +
+> +#define check_for_tx_hang(ring) \
+> +	test_bit(__IXGBEVF_TX_DETECT_HANG, &(ring)->state)
+> +#define set_check_for_tx_hang(ring) \
+> +	set_bit(__IXGBEVF_TX_DETECT_HANG, &(ring)->state)
+> +#define clear_check_for_tx_hang(ring) \
+> +	clear_bit(__IXGBEVF_TX_DETECT_HANG, &(ring)->state)
+> +
+>  struct ixgbevf_ring_container {
+>  	struct ixgbevf_ring *ring;	/* pointer to linked list of rings */
+>  	unsigned int total_bytes;	/* total bytes processed this int */
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> index 604b026..f8e1b1c 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> @@ -565,21 +565,22 @@ static bool ixgbevf_alloc_mapped_page(struct
+> ixgbevf_ring *rx_ring,
+>  		return true;
 > 
->  void ixgbevf_set_ethtool_ops(struct net_device *netdev)
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> index f695242..62a3669 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> @@ -331,6 +331,8 @@ struct ixgbevf_adapter {
+>  	/* alloc new page for storage */
+> -	page = dev_alloc_page();
+> +	page = dev_alloc_pages(ixgbevf_rx_pg_order(rx_ring));
+>  	if (unlikely(!page)) {
+>  		rx_ring->rx_stats.alloc_rx_page_failed++;
+>  		return false;
+>  	}
 > 
->  	u32 *rss_key;
->  	u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
-> +	u32 flags;
-> +#define IXGBEVF_FLAGS_LEGACY_RX		BIT(1)
->  };
+>  	/* map page for use */
+> -	dma = dma_map_page_attrs(rx_ring->dev, page, 0, PAGE_SIZE,
+> +	dma = dma_map_page_attrs(rx_ring->dev, page, 0,
+> +				 ixgbevf_rx_pg_size(rx_ring),
+>  				 DMA_FROM_DEVICE,
+> IXGBEVF_RX_DMA_ATTR);
 > 
->  enum ixbgevf_state_t {
+>  	/* if mapping failed free memory back to system since
+>  	 * there isn't much point in holding memory we can't use
+>  	 */
+>  	if (dma_mapping_error(rx_ring->dev, dma)) {
+> -		__free_page(page);
+> +		__free_pages(page, ixgbevf_rx_pg_order(rx_ring));
+> 
+>  		rx_ring->rx_stats.alloc_rx_page_failed++;
+>  		return false;
+> @@ -621,7 +622,7 @@ static void ixgbevf_alloc_rx_buffers(struct ixgbevf_ring
+> *rx_ring,
+>  		/* sync the buffer for use by the device */
+>  		dma_sync_single_range_for_device(rx_ring->dev, bi->dma,
+>  						 bi->page_offset,
+> -						 IXGBEVF_RX_BUFSZ,
+> +						 ixgbevf_rx_bufsz(rx_ring),
+>  						 DMA_FROM_DEVICE);
+> 
+>  		/* Refresh the desc even if pkt_addr didn't change
+> @@ -750,13 +751,16 @@ static bool ixgbevf_can_reuse_rx_page(struct
+> ixgbevf_rx_buffer *rx_buffer,
+>  		return false;
+> 
+>  	/* flip page offset to other buffer */
+> -	rx_buffer->page_offset ^= IXGBEVF_RX_BUFSZ;
+> +	rx_buffer->page_offset ^= truesize;
+> 
+>  #else
+>  	/* move offset up to the next cache line */
+>  	rx_buffer->page_offset += truesize;
+> 
+> -	if (rx_buffer->page_offset > (PAGE_SIZE - IXGBEVF_RX_BUFSZ))
+> +#define IXGBEVF_LAST_OFFSET \
+> +	(SKB_WITH_OVERHEAD(PAGE_SIZE) - IXGBEVF_RXBUFFER_2048)
+> +
+> +	if (rx_buffer->page_offset > IXGBEVF_LAST_OFFSET)
+>  		return false;
+> 
+>  #endif
+> @@ -797,7 +801,7 @@ static bool ixgbevf_add_rx_frag(struct ixgbevf_ring
+> *rx_ring,
+>  	struct page *page = rx_buffer->page;
+>  	void *va = page_address(page) + rx_buffer->page_offset;
+>  #if (PAGE_SIZE < 8192)
+> -	unsigned int truesize = IXGBEVF_RX_BUFSZ;
+> +	unsigned int truesize = ixgbevf_rx_pg_size(rx_ring) / 2;
+>  #else
+>  	unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
+>  #endif
+> @@ -888,8 +892,8 @@ static struct sk_buff *ixgbevf_fetch_rx_buffer(struct
+> ixgbevf_ring *rx_ring,
+>  		 * any references we are holding to it
+>  		 */
+>  		dma_unmap_page_attrs(rx_ring->dev, rx_buffer->dma,
+> -				     PAGE_SIZE, DMA_FROM_DEVICE,
+> -				     IXGBEVF_RX_DMA_ATTR);
+> +				     ixgbevf_rx_pg_size(rx_ring),
+> +				     DMA_FROM_DEVICE,
+> IXGBEVF_RX_DMA_ATTR);
+>  		__page_frag_cache_drain(page, rx_buffer->pagecnt_bias);
+>  	}
+> 
+> @@ -1586,7 +1590,8 @@ static void ixgbevf_configure_tx(struct
+> ixgbevf_adapter *adapter)
+> 
+>  #define IXGBE_SRRCTL_BSIZEHDRSIZE_SHIFT	2
+> 
+> -static void ixgbevf_configure_srrctl(struct ixgbevf_adapter *adapter, int index)
+> +static void ixgbevf_configure_srrctl(struct ixgbevf_adapter *adapter,
+> +				     struct ixgbevf_ring *ring, int index)
+>  {
+>  	struct ixgbe_hw *hw = &adapter->hw;
+>  	u32 srrctl;
+> @@ -1594,7 +1599,10 @@ static void ixgbevf_configure_srrctl(struct
+> ixgbevf_adapter *adapter, int index)
+>  	srrctl = IXGBE_SRRCTL_DROP_EN;
+> 
+>  	srrctl |= IXGBEVF_RX_HDR_SIZE <<
+> IXGBE_SRRCTL_BSIZEHDRSIZE_SHIFT;
+> -	srrctl |= IXGBEVF_RX_BUFSZ >> IXGBE_SRRCTL_BSIZEPKT_SHIFT;
+> +	if (ring_uses_large_buffer(ring))
+> +		srrctl |= IXGBEVF_RXBUFFER_3072 >>
+> IXGBE_SRRCTL_BSIZEPKT_SHIFT;
+> +	else
+> +		srrctl |= IXGBEVF_RXBUFFER_2048 >>
+> IXGBE_SRRCTL_BSIZEPKT_SHIFT;
+>  	srrctl |= IXGBE_SRRCTL_DESCTYPE_ADV_ONEBUF;
+> 
+>  	IXGBE_WRITE_REG(hw, IXGBE_VFSRRCTL(index), srrctl);
+> @@ -1766,7 +1774,7 @@ static void ixgbevf_configure_rx_ring(struct
+> ixgbevf_adapter *adapter,
+>  	ring->next_to_use = 0;
+>  	ring->next_to_alloc = 0;
+> 
+> -	ixgbevf_configure_srrctl(adapter, reg_idx);
+> +	ixgbevf_configure_srrctl(adapter, ring, reg_idx);
+> 
+>  	/* allow any size packet since we can handle overflow */
+>  	rxdctl &= ~IXGBE_RXDCTL_RLPML_EN;
+> @@ -1778,6 +1786,26 @@ static void ixgbevf_configure_rx_ring(struct
+> ixgbevf_adapter *adapter,
+>  	ixgbevf_alloc_rx_buffers(ring, ixgbevf_desc_unused(ring));
+>  }
+> 
+> +static void ixgbevf_set_rx_buffer_len(struct ixgbevf_adapter *adapter,
+> +				      struct ixgbevf_ring *rx_ring)
+> +{
+> +	struct net_device *netdev = adapter->netdev;
+> +	unsigned int max_frame = netdev->mtu + ETH_HLEN + ETH_FCS_LEN;
+> +
+> +	/* set build_skb and buffer size flags */
+> +	clear_ring_uses_large_buffer(rx_ring);
+> +
+> +	if (adapter->flags & IXGBEVF_FLAGS_LEGACY_RX)
+> +		return;
+> +
+> +#if (PAGE_SIZE < 8192)
+> +	if (max_frame <= IXGBEVF_MAX_FRAME_BUILD_SKB)
+> +		return;
+> +
+> +	set_ring_uses_large_buffer(rx_ring);
+> +#endif
+> +}
+> +
+>  /**
+>   * ixgbevf_configure_rx - Configure 82599 VF Receive Unit after Reset
+>   * @adapter: board private structure
+> @@ -1805,8 +1833,12 @@ static void ixgbevf_configure_rx(struct
+> ixgbevf_adapter *adapter)
+>  	/* Setup the HW Rx Head and Tail Descriptor Pointers and
+>  	 * the Base and Length of the Rx Descriptor Ring
+>  	 */
+> -	for (i = 0; i < adapter->num_rx_queues; i++)
+> -		ixgbevf_configure_rx_ring(adapter, adapter->rx_ring[i]);
+> +	for (i = 0; i < adapter->num_rx_queues; i++) {
+> +		struct ixgbevf_ring *rx_ring = adapter->rx_ring[i];
+> +
+> +		ixgbevf_set_rx_buffer_len(adapter, rx_ring);
+> +		ixgbevf_configure_rx_ring(adapter, rx_ring);
+> +	}
+>  }
+> 
+>  static int ixgbevf_vlan_rx_add_vid(struct net_device *netdev,
+> @@ -2135,13 +2167,13 @@ static void ixgbevf_clean_rx_ring(struct
+> ixgbevf_ring *rx_ring)
+>  		dma_sync_single_range_for_cpu(rx_ring->dev,
+>  					      rx_buffer->dma,
+>  					      rx_buffer->page_offset,
+> -					      IXGBEVF_RX_BUFSZ,
+> +					      ixgbevf_rx_bufsz(rx_ring),
+>  					      DMA_FROM_DEVICE);
+> 
+>  		/* free resources associated with mapping */
+>  		dma_unmap_page_attrs(rx_ring->dev,
+>  				     rx_buffer->dma,
+> -				     PAGE_SIZE,
+> +				     ixgbevf_rx_pg_size(rx_ring),
+>  				     DMA_FROM_DEVICE,
+>  				     IXGBEVF_RX_DMA_ATTR);
+> 
 > 
 > _______________________________________________
 > Intel-wired-lan mailing list
