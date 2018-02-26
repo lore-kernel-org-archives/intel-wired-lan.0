@@ -1,161 +1,69 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 27 Feb 2018 02:04:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 7e2aa5d8992f98cc412fbcfa9ab46790332993b4
-Message-ID: <5a944c3f.VAUrPwYIwsWqNT4Z%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 26 Feb 2018 10:15:43 -0800
+Subject: [Intel-wired-lan] [PATCH 1/3] ixgbe: check for 128-bit
+ authentication
+Message-ID: <20180226181545.11151-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 7e2aa5d8992f98cc412fbcfa9ab46790332993b4  ixgbe: remove unneeded ipsec state free callback
+From: Shannon Nelson <shannon.nelson@oracle.com>
 
-elapsed time: 127m
+Make sure the Security Association is using
+a 128-bit authentication, since that's the only
+size that the hardware offload supports.
 
-configs tested: 137
+Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 16 +++++++++++-----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h |  1 +
+ 2 files changed, 12 insertions(+), 5 deletions(-)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index 93eacddb6704..8b7dbc8057eb 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -423,15 +423,21 @@ static int ixgbe_ipsec_parse_proto_keys(struct xfrm_state *xs,
+ 	const char aes_gcm_name[] = "rfc4106(gcm(aes))";
+ 	int key_len;
+ 
+-	if (xs->aead) {
+-		key_data = &xs->aead->alg_key[0];
+-		key_len = xs->aead->alg_key_len;
+-		alg_name = xs->aead->alg_name;
+-	} else {
++	if (!xs->aead) {
+ 		netdev_err(dev, "Unsupported IPsec algorithm\n");
+ 		return -EINVAL;
+ 	}
+ 
++	if (xs->aead->alg_icv_len != IXGBE_IPSEC_AUTH_BITS) {
++		netdev_err(dev, "IPsec offload requires %d bit authentication\n",
++			   IXGBE_IPSEC_AUTH_BITS);
++		return -EINVAL;
++	}
++
++	key_data = &xs->aead->alg_key[0];
++	key_len = xs->aead->alg_key_len;
++	alg_name = xs->aead->alg_name;
++
+ 	if (strcmp(alg_name, aes_gcm_name)) {
+ 		netdev_err(dev, "Unsupported IPsec algorithm - please use %s\n",
+ 			   aes_gcm_name);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+index 9c00e413c8e9..4f099f516645 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+@@ -33,6 +33,7 @@
+ #define IXGBE_IPSEC_MAX_RX_IP_COUNT	128
+ #define IXGBE_IPSEC_BASE_RX_INDEX	0
+ #define IXGBE_IPSEC_BASE_TX_INDEX	IXGBE_IPSEC_MAX_SA_COUNT
++#define IXGBE_IPSEC_AUTH_BITS		128
+ 
+ #define IXGBE_RXTXIDX_IPS_EN		0x00000001
+ #define IXGBE_RXIDX_TBL_SHIFT		1
+-- 
+2.14.3
 
-i386                               tinyconfig
-arm                          ks8695_defconfig
-mips                      fuloong2e_defconfig
-mips                        vocore2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-02270053
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201808
-i386                     randconfig-i1-201808
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x017-201808
-x86_64                 randconfig-x013-201808
-x86_64                 randconfig-x016-201808
-x86_64                 randconfig-x018-201808
-x86_64                 randconfig-x015-201808
-x86_64                 randconfig-x012-201808
-x86_64                 randconfig-x014-201808
-x86_64                 randconfig-x011-201808
-x86_64                 randconfig-x010-201808
-x86_64                 randconfig-x019-201808
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-i386                     randconfig-a1-201808
-i386                     randconfig-a0-201808
-x86_64                 randconfig-s0-02270100
-x86_64                 randconfig-s1-02270100
-x86_64                 randconfig-s2-02270100
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                            mps2_defconfig
-mips                         mpc30x_defconfig
-powerpc                    socrates_defconfig
-sh                   sh7770_generic_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201808
-i386                     randconfig-s1-201808
-x86_64                 randconfig-s3-02270045
-x86_64                 randconfig-s4-02270045
-x86_64                 randconfig-s5-02270045
-x86_64                   randconfig-i0-201808
-i386                   randconfig-b0-02262134
-i386                   randconfig-x015-201808
-i386                   randconfig-x019-201808
-i386                   randconfig-x010-201808
-i386                   randconfig-x014-201808
-i386                   randconfig-x016-201808
-i386                   randconfig-x012-201808
-i386                   randconfig-x011-201808
-i386                   randconfig-x017-201808
-i386                   randconfig-x013-201808
-i386                   randconfig-x018-201808
-mn10300                          alldefconfig
-powerpc                      obs600_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x000-201808
-x86_64                 randconfig-x005-201808
-x86_64                 randconfig-x008-201808
-x86_64                 randconfig-x006-201808
-x86_64                 randconfig-x001-201808
-x86_64                 randconfig-x007-201808
-x86_64                 randconfig-x009-201808
-x86_64                 randconfig-x002-201808
-x86_64                 randconfig-x003-201808
-x86_64                 randconfig-x004-201808
-i386                   randconfig-x004-201808
-i386                   randconfig-x002-201808
-i386                   randconfig-x007-201808
-i386                   randconfig-x009-201808
-i386                   randconfig-x003-201808
-i386                   randconfig-x001-201808
-i386                   randconfig-x008-201808
-i386                   randconfig-x005-201808
-i386                   randconfig-x006-201808
-i386                   randconfig-x000-201808
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-
-Thanks,
-Fengguang
