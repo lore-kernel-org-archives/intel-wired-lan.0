@@ -1,167 +1,69 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 27 Feb 2018 02:29:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- e12ca15abc0aa2a90b82732bd4e0a0158a0f4da8
-Message-ID: <5a94521b.jJTDO52UkxwzBgEg%fengguang.wu@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 26 Feb 2018 10:49:23 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH 3/8] igb: Enable the
+ hardware traffic class feature bit for igb models
+In-Reply-To: <CAKgT0Ufuyf1_9RZe2yqSC404p-i3VpRAqP-2w0mUysCJGq5NKA@mail.gmail.com>
+References: <20180224012036.5834-1-vinicius.gomes@intel.com>
+ <20180224012036.5834-4-vinicius.gomes@intel.com>
+ <CAKgT0Ufuyf1_9RZe2yqSC404p-i3VpRAqP-2w0mUysCJGq5NKA@mail.gmail.com>
+Message-ID: <87inajbn7w.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: e12ca15abc0aa2a90b82732bd4e0a0158a0f4da8  e1000e: Fix check_for_link return value with autoneg off
+Hi,
 
-elapsed time: 153m
+Alexander Duyck <alexander.duyck@gmail.com> writes:
 
-configs tested: 143
+> On Fri, Feb 23, 2018 at 5:20 PM, Vinicius Costa Gomes
+> <vinicius.gomes@intel.com> wrote:
+>> This will allow functionality depending on the hardware being traffic
+>> class aware to work. In particular the tc-flower offloading checks
+>> verifies that this bit is set.
+>>
+>> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>> ---
+>>  drivers/net/ethernet/intel/igb/igb_main.c | 6 ++++--
+>>  1 file changed, 4 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+>> index 0ea32be07d71..543aa99892eb 100644
+>> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+>> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+>> @@ -2820,8 +2820,10 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>>                                NETIF_F_HW_VLAN_CTAG_TX |
+>>                                NETIF_F_RXALL;
+>>
+>> -       if (hw->mac.type >= e1000_i350)
+>> -               netdev->hw_features |= NETIF_F_NTUPLE;
+>> +       if (hw->mac.type >= e1000_i350) {
+>> +               netdev->hw_features |= (NETIF_F_NTUPLE | NETIF_F_HW_TC);
+>> +               netdev->features |= NETIF_F_HW_TC;
+>
+> The parens aren't needed.
+>
+> Also you might consider moving this block up to where we have a
+> similar one for 82576. Then you wouldn't need to set both features and
+> hw_features in the case of the HW_TC flag.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Cool. Will fix.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                               tinyconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i0-201808
-i386                     randconfig-i1-201808
-i386                             allmodconfig
-x86_64                                  kexec
-i386                     randconfig-a1-201808
-i386                     randconfig-a0-201808
-x86_64                 randconfig-s0-02270100
-x86_64                 randconfig-s1-02270100
-x86_64                 randconfig-s2-02270100
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                            mps2_defconfig
-mips                         mpc30x_defconfig
-powerpc                           allnoconfig
-powerpc                    socrates_defconfig
-sh                   sh7770_generic_defconfig
-x86_64                 randconfig-x017-201808
-x86_64                 randconfig-x013-201808
-x86_64                 randconfig-x016-201808
-x86_64                 randconfig-x018-201808
-x86_64                 randconfig-x015-201808
-x86_64                 randconfig-x012-201808
-x86_64                 randconfig-x014-201808
-x86_64                 randconfig-x011-201808
-x86_64                 randconfig-x010-201808
-x86_64                 randconfig-x019-201808
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201808
-i386                     randconfig-s1-201808
-x86_64                 randconfig-s3-02270045
-x86_64                 randconfig-s4-02270045
-x86_64                 randconfig-s5-02270045
-x86_64                 randconfig-s3-02270132
-x86_64                 randconfig-s4-02270132
-x86_64                 randconfig-s5-02270132
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201808
-i386                   randconfig-b0-02262134
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-m68k                             allmodconfig
-mips                malta_qemu_32r6_defconfig
-i386                   randconfig-x015-201808
-i386                   randconfig-x019-201808
-i386                   randconfig-x010-201808
-i386                   randconfig-x014-201808
-i386                   randconfig-x016-201808
-i386                   randconfig-x012-201808
-i386                   randconfig-x011-201808
-i386                   randconfig-x017-201808
-i386                   randconfig-x013-201808
-i386                   randconfig-x018-201808
-mn10300                          alldefconfig
-powerpc                      obs600_defconfig
-microblaze                          defconfig
-s390                              allnoconfig
-x86_64                randconfig-ne0-02270005
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x000-201808
-x86_64                 randconfig-x005-201808
-x86_64                 randconfig-x008-201808
-x86_64                 randconfig-x006-201808
-x86_64                 randconfig-x001-201808
-x86_64                 randconfig-x007-201808
-x86_64                 randconfig-x009-201808
-x86_64                 randconfig-x002-201808
-x86_64                 randconfig-x003-201808
-x86_64                 randconfig-x004-201808
-i386                   randconfig-x004-201808
-i386                   randconfig-x002-201808
-i386                   randconfig-x007-201808
-i386                   randconfig-x009-201808
-i386                   randconfig-x003-201808
-i386                   randconfig-x001-201808
-i386                   randconfig-x008-201808
-i386                   randconfig-x005-201808
-i386                   randconfig-x006-201808
-i386                   randconfig-x000-201808
+>
+>> +       }
+>>
+>>         if (pci_using_dac)
+>>                 netdev->features |= NETIF_F_HIGHDMA;
+>> --
+>> 2.16.2
+>>
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at osuosl.org
+>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
-Thanks,
-Fengguang
+
+Cheers,
+--
+Vinicius
