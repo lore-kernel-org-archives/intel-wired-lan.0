@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon, 26 Feb 2018 03:33:08 -0500
-Subject: [Intel-wired-lan] [next PATCH S87 V2 4/7] i40e: track filter type
- statistics when deleting invalid filters
+Date: Mon, 26 Feb 2018 03:33:09 -0500
+Subject: [Intel-wired-lan] [next PATCH S87 V2 5/7] i40e: factor out
+ re-enable functions for ATR and SB
 In-Reply-To: <20180226083311.52442-1-alice.michael@intel.com>
 References: <20180226083311.52442-1-alice.michael@intel.com>
-Message-ID: <20180226083311.52442-4-alice.michael@intel.com>
+Message-ID: <20180226083311.52442-5-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,93 +13,89 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-When hardware has trouble with a particular filter, we delete it from
-the list. Unfortunately, we did not properly update the per-filter
-statistic when doing so.
+A future patch needs to expand on the logic for re-enabling ATR. Doing
+so would cause some code to break the 80-character line limit.
 
-Create a helper function to handle this, and properly reduce the
-necessary counter so that it tracks the number of active filters
-properly.
+To reduce the level of indentation, factor out helper functions for
+re-enabling ATR and SB rules.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 56 ++++++++++++++++++++++++-----
- 1 file changed, 48 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 48 +++++++++++++++++++----------
+ 1 file changed, 32 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 9ad80d2..1c694f9 100644
+index 1c694f9..08a01e7 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8147,6 +8147,51 @@ u32 i40e_get_global_fd_count(struct i40e_pf *pf)
+@@ -8147,6 +8147,34 @@ u32 i40e_get_global_fd_count(struct i40e_pf *pf)
  }
  
  /**
-+ * i40e_delete_invalid_filter - Delete an invalid FDIR filter
++ * i40e_reenable_fdir_sb - Restore FDir SB capability
 + * @pf: board private structure
-+ * @filter: FDir filter to remove
-+ */
-+static void i40e_delete_invalid_filter(struct i40e_pf *pf,
-+				       struct i40e_fdir_filter *filter)
++ **/
++static void i40e_reenable_fdir_sb(struct i40e_pf *pf)
 +{
-+	/* Update counters */
-+	pf->fdir_pf_active_filters--;
-+	pf->fd_inv = 0;
-+
-+	switch (filter->flow_type) {
-+	case TCP_V4_FLOW:
-+		pf->fd_tcp4_filter_cnt--;
-+		break;
-+	case UDP_V4_FLOW:
-+		pf->fd_udp4_filter_cnt--;
-+		break;
-+	case SCTP_V4_FLOW:
-+		pf->fd_sctp4_filter_cnt--;
-+		break;
-+	case IP_USER_FLOW:
-+		switch (filter->ip4_proto) {
-+		case IPPROTO_TCP:
-+			pf->fd_tcp4_filter_cnt--;
-+			break;
-+		case IPPROTO_UDP:
-+			pf->fd_udp4_filter_cnt--;
-+			break;
-+		case IPPROTO_SCTP:
-+			pf->fd_sctp4_filter_cnt--;
-+			break;
-+		case IPPROTO_IP:
-+			pf->fd_ip4_filter_cnt--;
-+			break;
-+		}
-+		break;
++	if (pf->flags & I40E_FLAG_FD_SB_AUTO_DISABLED) {
++		pf->flags &= ~I40E_FLAG_FD_SB_AUTO_DISABLED;
++		if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
++		    (I40E_DEBUG_FD & pf->hw.debug_mask))
++			dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
 +	}
-+
-+	/* Remove the filter from the list and free memory */
-+	hlist_del(&filter->fdir_node);
-+	kfree(filter);
 +}
 +
 +/**
-  * i40e_fdir_check_and_reenable - Function to reenabe FD ATR or SB if disabled
++ * i40e_reenable_fdir_atr - Restore FDir ATR capability
++ * @pf: board private structure
++ **/
++static void i40e_reenable_fdir_atr(struct i40e_pf *pf)
++{
++	if (pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED) {
++		pf->flags &= ~I40E_FLAG_FD_ATR_AUTO_DISABLED;
++		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
++		    (I40E_DEBUG_FD & pf->hw.debug_mask))
++			dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table and there are no conflicting ntuple rules\n");
++	}
++}
++
++/**
+  * i40e_delete_invalid_filter - Delete an invalid FDIR filter
   * @pf: board private structure
-  **/
-@@ -8190,14 +8235,9 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+  * @filter: FDir filter to remove
+@@ -8209,28 +8237,16 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+ 	fcnt_avail = pf->fdir_pf_filter_count;
+ 	if ((fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM)) ||
+ 	    (pf->fd_add_err == 0) ||
+-	    (i40e_get_current_atr_cnt(pf) < pf->fd_atr_cnt)) {
+-		if (pf->flags & I40E_FLAG_FD_SB_AUTO_DISABLED) {
+-			pf->flags &= ~I40E_FLAG_FD_SB_AUTO_DISABLED;
+-			if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
+-			    (I40E_DEBUG_FD & pf->hw.debug_mask))
+-				dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
+-		}
+-	}
++	    (i40e_get_current_atr_cnt(pf) < pf->fd_atr_cnt))
++		i40e_reenable_fdir_sb(pf);
+ 
+ 	/* We should wait for even more space before re-enabling ATR.
+ 	 * Additionally, we cannot enable ATR as long as we still have TCP SB
+ 	 * rules active.
+ 	 */
+ 	if ((fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM_FOR_ATR)) &&
+-	    (pf->fd_tcp4_filter_cnt == 0)) {
+-		if (pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED) {
+-			pf->flags &= ~I40E_FLAG_FD_ATR_AUTO_DISABLED;
+-			if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+-			    (I40E_DEBUG_FD & pf->hw.debug_mask))
+-				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table and there are no conflicting ntuple rules\n");
+-		}
+-	}
++	    (pf->fd_tcp4_filter_cnt == 0))
++		i40e_reenable_fdir_atr(pf);
+ 
  	/* if hw had a problem adding a filter, delete it */
  	if (pf->fd_inv > 0) {
- 		hlist_for_each_entry_safe(filter, node,
--					  &pf->fdir_filter_list, fdir_node) {
--			if (filter->fd_id == pf->fd_inv) {
--				hlist_del(&filter->fdir_node);
--				kfree(filter);
--				pf->fdir_pf_active_filters--;
--				pf->fd_inv = 0;
--			}
--		}
-+					  &pf->fdir_filter_list, fdir_node)
-+			if (filter->fd_id == pf->fd_inv)
-+				i40e_delete_invalid_filter(pf, filter);
- 	}
- }
- 
 -- 
 2.9.5
 
