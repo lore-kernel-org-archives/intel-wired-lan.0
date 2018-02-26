@@ -1,268 +1,57 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 26 Feb 2018 08:14:38 -0800
-Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Fix link check race
- condition.
-In-Reply-To: <20180226023118.17439-1-bpoirier@suse.com>
-References: <CAKgT0UffXiggXxC5x1vrtbnKPHzcy8+VTRvBGBH-7tCYmUi6LQ@mail.gmail.com>
- <20180226023118.17439-1-bpoirier@suse.com>
-Message-ID: <CAKgT0Ueyz9LPz4UwYVpgZJ+nW2YV2A-mYqUQbBP2RaDfgH91rA@mail.gmail.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Mon, 26 Feb 2018 03:33:05 -0500
+Subject: [Intel-wired-lan] [next PATCH S87 V2 1/7] i40e: Fix attach VF to VM
+ issue
+Message-ID: <20180226083311.52442-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Feb 25, 2018 at 6:31 PM, Benjamin Poirier <bpoirier@suse.com> wrote:
-> Alex reported the following race condition:
->
-> /* link goes up... interrupt... schedule watchdog */
-> \ e1000_watchdog_task
->         \ e1000e_has_link
->                 \ hw->mac.ops.check_for_link() === e1000e_check_for_copper_link
->                         \ e1000e_phy_has_link_generic(..., &link)
->                                 link = true
->
->                                          /* link goes down... interrupt */
->                                          \ e1000_msix_other
->                                                  hw->mac.get_link_status = true
->
->                         /* link is up */
->                         mac->get_link_status = false
->
->                 link_active = true
->                 /* link_active is true, wrongly, and stays so because
->                  * get_link_status is false */
->
-> Avoid this problem by making sure that we don't set get_link_status = false
-> after having checked the link.
->
-> It seems this problem has been present since the introduction of e1000e.
->
-> Link: https://lkml.org/lkml/2018/1/29/338
-> Reported-by: Alexander Duyck <alexander.duyck@gmail.com>
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
-> ---
->  drivers/net/ethernet/intel/e1000e/ich8lan.c | 41 ++++++++++++++++-------------
->  drivers/net/ethernet/intel/e1000e/mac.c     | 14 +++++++---
->  2 files changed, 33 insertions(+), 22 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> index ff308b05d68c..3c2c4f87e075 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> @@ -1386,6 +1386,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->          */
->         if (!mac->get_link_status)
->                 return 1;
-> +       mac->get_link_status = false;
->
->         /* First we want to see if the MII Status Register reports
->          * link.  If so, then we want to get the current speed/duplex
-> @@ -1393,12 +1394,12 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->          */
->         ret_val = e1000e_phy_has_link_generic(hw, 1, 0, &link);
->         if (ret_val)
-> -               return ret_val;
-> +               goto out;
->
->         if (hw->mac.type == e1000_pchlan) {
->                 ret_val = e1000_k1_gig_workaround_hv(hw, link);
->                 if (ret_val)
-> -                       return ret_val;
-> +                       goto out;
->         }
->
->         /* When connected at 10Mbps half-duplex, some parts are excessively
-> @@ -1431,7 +1432,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->
->                 ret_val = hw->phy.ops.acquire(hw);
->                 if (ret_val)
-> -                       return ret_val;
-> +                       goto out;
->
->                 if (hw->mac.type == e1000_pch2lan)
->                         emi_addr = I82579_RX_CONFIG;
-> @@ -1453,7 +1454,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->                 hw->phy.ops.release(hw);
->
->                 if (ret_val)
-> -                       return ret_val;
-> +                       goto out;
->
->                 if (hw->mac.type >= e1000_pch_spt) {
->                         u16 data;
-> @@ -1462,14 +1463,14 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->                         if (speed == SPEED_1000) {
->                                 ret_val = hw->phy.ops.acquire(hw);
->                                 if (ret_val)
-> -                                       return ret_val;
-> +                                       goto out;
->
->                                 ret_val = e1e_rphy_locked(hw,
->                                                           PHY_REG(776, 20),
->                                                           &data);
->                                 if (ret_val) {
->                                         hw->phy.ops.release(hw);
-> -                                       return ret_val;
-> +                                       goto out;
->                                 }
->
->                                 ptr_gap = (data & (0x3FF << 2)) >> 2;
-> @@ -1483,18 +1484,18 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->                                 }
->                                 hw->phy.ops.release(hw);
->                                 if (ret_val)
-> -                                       return ret_val;
-> +                                       goto out;
->                         } else {
->                                 ret_val = hw->phy.ops.acquire(hw);
->                                 if (ret_val)
-> -                                       return ret_val;
-> +                                       goto out;
->
->                                 ret_val = e1e_wphy_locked(hw,
->                                                           PHY_REG(776, 20),
->                                                           0xC023);
->                                 hw->phy.ops.release(hw);
->                                 if (ret_val)
-> -                                       return ret_val;
-> +                                       goto out;
->
->                         }
->                 }
-> @@ -1521,7 +1522,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->             (hw->adapter->pdev->device == E1000_DEV_ID_PCH_I218_V3)) {
->                 ret_val = e1000_k1_workaround_lpt_lp(hw, link);
->                 if (ret_val)
-> -                       return ret_val;
-> +                       goto out;
->         }
->         if (hw->mac.type >= e1000_pch_lpt) {
->                 /* Set platform power management values for
-> @@ -1529,7 +1530,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->                  */
->                 ret_val = e1000_platform_pm_pch_lpt(hw, link);
->                 if (ret_val)
-> -                       return ret_val;
-> +                       goto out;
->         }
->
->         /* Clear link partner's EEE ability */
-> @@ -1551,22 +1552,22 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->                 ew32(FEXTNVM6, fextnvm6);
->         }
->
-> -       if (!link)
-> +       if (!link) {
-> +               mac->get_link_status = true;
->                 return 0;       /* No link detected */
-> -
-> -       mac->get_link_status = false;
-> +       }
+From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 
-If I am not mistaken this could be just another jump to the "out"
-label. We should have initialized "ret_val" to 0 near the start of
-this function when we made the call to phy_has_link_generic.
+Fix for "Resource temporarily unavailable" problem when virsh is
+trying to attach a device to VM. When the VF driver is loaded on
+host and virsh is trying to attach it to the VM and set a MAC
+address, it ends with a race condition between i40e_reset_vf and
+i40e_ndo_set_vf_mac functions. The bug is fixed by adding polling
+in i40e_ndo_set_vf_mac function For when the VF is in Reset mode.
 
->
->         switch (hw->mac.type) {
->         case e1000_pch2lan:
->                 ret_val = e1000_k1_workaround_lv(hw);
->                 if (ret_val)
-> -                       return ret_val;
-> +                       goto out;
->                 /* fall-thru */
->         case e1000_pchlan:
->                 if (hw->phy.type == e1000_phy_82578) {
->                         ret_val = e1000_link_stall_workaround_hv(hw);
->                         if (ret_val)
-> -                               return ret_val;
-> +                               goto out;
->                 }
->
->                 /* Workaround for PCHx parts in half-duplex:
-> @@ -1595,7 +1596,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->         if (hw->phy.type > e1000_phy_82579) {
->                 ret_val = e1000_set_eee_pchlan(hw);
->                 if (ret_val)
-> -                       return ret_val;
-> +                       goto out;
->         }
->
->         /* If we are forcing speed/duplex, then we simply return since
-> @@ -1618,10 +1619,14 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
->         ret_val = e1000e_config_fc_after_link_up(hw);
->         if (ret_val) {
->                 e_dbg("Error configuring flow control\n");
-> -               return ret_val;
-> +               goto out;
->         }
+Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Technically these changes would be a change in behavior. For these we
-may just want to leave them as-is since I am not certain they would
-have any actual impact on the link state other than delaying the
-link-up. For example do we really care if we fail to negotiate flow
-control? We may not so we might report link up and just a debug
-message indicating we didn't negotiate that part of the link.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 63ddcb9..2de7a8c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -3742,6 +3742,7 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 	int ret = 0;
+ 	struct hlist_node *h;
+ 	int bkt;
++	u8 i;
+ 
+ 	/* validate the request */
+ 	if (vf_id >= pf->num_alloc_vfs) {
+@@ -3753,6 +3754,16 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 
+ 	vf = &(pf->vf[vf_id]);
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
++
++	/* When the VF is resetting wait until it is done.
++	 * It can take up to 200 milliseconds,
++	 * but wait for up to 300 milliseconds to be safe.
++	 */
++	for (i = 0; i < 15; i++) {
++		if (test_bit(I40E_VF_STATE_INIT, &vf->vf_states))
++			break;
++		msleep(20);
++	}
+ 	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
+ 		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
+ 			vf_id);
+-- 
+2.9.5
 
->         return 1;
-> +
-> +out:
-> +       mac->get_link_status = true;
-> +       return ret_val;
->  }
->
->  static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
-> diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
-> index db735644b312..60c8beaf5cb3 100644
-> --- a/drivers/net/ethernet/intel/e1000e/mac.c
-> +++ b/drivers/net/ethernet/intel/e1000e/mac.c
-> @@ -427,6 +427,7 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
->          */
->         if (!mac->get_link_status)
->                 return 1;
-> +       mac->get_link_status = false;
->
->         /* First we want to see if the MII Status Register reports
->          * link.  If so, then we want to get the current speed/duplex
-> @@ -434,12 +435,13 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
->          */
->         ret_val = e1000e_phy_has_link_generic(hw, 1, 0, &link);
->         if (ret_val)
-> -               return ret_val;
-> +               goto out;
->
-> -       if (!link)
-> +       if (!link) {
-> +               mac->get_link_status = true;
->                 return 0;       /* No link detected */
-> +       }
-
-Same here. We just initialized it to 0 via the call to
-e1000e_phy_has_link_generic so we could just jump to "out" if the link
-is not set. You could probably even combine the two conditions into
-one even with a check for "ret_val || !link".
-
-> -       mac->get_link_status = false;
->
->         /* Check if there was DownShift, must be checked
->          * immediately after link-up
-> @@ -466,10 +468,14 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
->         ret_val = e1000e_config_fc_after_link_up(hw);
->         if (ret_val) {
->                 e_dbg("Error configuring flow control\n");
-> -               return ret_val;
-> +               goto out;
->         }
->
->         return 1;
-> +
-> +out:
-> +       mac->get_link_status = true;
-> +       return ret_val;
->  }
->
->  /**
-> --
-> 2.16.1
->
