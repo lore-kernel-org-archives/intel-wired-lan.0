@@ -1,11 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 26 Feb 2018 15:55:32 +0000
-Subject: [Intel-wired-lan] [PATCH 7/9] ixgbevf: clear rx_buffer_info in
- configure instead of clean
-In-Reply-To: <20171211183720.21524.93082.stgit@localhost6.localdomain6>
+Date: Mon, 26 Feb 2018 15:55:52 +0000
+Subject: [Intel-wired-lan] [PATCH 2/9] ixgbevf: only DMA sync frame
+ length
+In-Reply-To: <20171211183654.21524.84943.stgit@localhost6.localdomain6>
 References: <20171211183537.21524.10133.stgit@localhost6.localdomain6>
- <20171211183720.21524.93082.stgit@localhost6.localdomain6>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD8238@ORSMSX103.amr.corp.intel.com>
+ <20171211183654.21524.84943.stgit@localhost6.localdomain6>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD824A@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,100 +18,63 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Emil Tantilov
 > Sent: Monday, December 11, 2017 10:37 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 7/9] ixgbevf: clear rx_buffer_info in configure
-> instead of clean
+> Subject: [Intel-wired-lan] [PATCH 2/9] ixgbevf: only DMA sync frame length
 > 
-> Based on commit d2bead576e67
-> ("igb: Clear Rx buffer_info in configure instead of clean")
+> Based on commit 64f2525ca4e7 ("igb: Only DMA sync frame length")
 > 
-> This change makes it so that instead of going through the entire ring on Rx
-> cleanup we only go through the region that was designated to be cleaned up
-> and stop when we reach the region where new allocations should start.
-> 
-> In addition we can avoid having to perform a memset on the Rx buffer_info
-> structures until we are about to start using the ring again.
+> On some architectures synching a buffer for DMA may be expensive.
+> Instead of the entire 2K receive buffer only synchronize the length of
+> the frame, which will typically be the MTU or smaller.
 > 
 > Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   26 +++++++++++----------
->  1 file changed, 13 insertions(+), 13 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 > 
 > diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 > b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index 350afec..a793f9e 100644
+> index 7ffd429..0cc2688 100644
 > --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 > +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -1773,6 +1773,10 @@ static void ixgbevf_configure_rx_ring(struct
-> ixgbevf_adapter *adapter,
->  	IXGBE_WRITE_REG(hw, IXGBE_VFRDT(reg_idx), 0);
->  	ring->tail = adapter->io_addr + IXGBE_VFRDT(reg_idx);
-> 
-> +	/* initialize rx_buffer_info */
-> +	memset(ring->rx_buffer_info, 0,
-> +	       sizeof(struct ixgbevf_rx_buffer) * ring->count);
-> +
->  	/* initialize Rx descriptor 0 */
->  	rx_desc = IXGBEVF_RX_DESC(ring, 0);
->  	rx_desc->wb.upper.length = 0;
-> @@ -2131,8 +2135,7 @@ void ixgbevf_up(struct ixgbevf_adapter *adapter)
+> @@ -803,12 +803,12 @@ static bool ixgbevf_can_reuse_rx_page(struct
+> ixgbevf_rx_buffer *rx_buffer,
 >   **/
->  static void ixgbevf_clean_rx_ring(struct ixgbevf_ring *rx_ring)
+>  static bool ixgbevf_add_rx_frag(struct ixgbevf_ring *rx_ring,
+>  				struct ixgbevf_rx_buffer *rx_buffer,
+> +				u16 size,
+>  				union ixgbe_adv_rx_desc *rx_desc,
+>  				struct sk_buff *skb)
 >  {
-> -	unsigned long size;
-> -	unsigned int i;
-> +	u16 i = rx_ring->next_to_clean;
+>  	struct page *page = rx_buffer->page;
+>  	unsigned char *va = page_address(page) + rx_buffer->page_offset;
+> -	unsigned int size = le16_to_cpu(rx_desc->wb.upper.length);
+>  #if (PAGE_SIZE < 8192)
+>  	unsigned int truesize = IXGBEVF_RX_BUFSZ;
+>  #else
+> @@ -856,6 +856,7 @@ static struct sk_buff *ixgbevf_fetch_rx_buffer(struct
+> ixgbevf_ring *rx_ring,
+>  {
+>  	struct ixgbevf_rx_buffer *rx_buffer;
+>  	struct page *page;
+> +	u16 size = le16_to_cpu(rx_desc->wb.upper.length);
 > 
->  	/* Free Rx ring sk_buff */
->  	if (rx_ring->skb) {
-> @@ -2140,17 +2143,11 @@ static void ixgbevf_clean_rx_ring(struct
-> ixgbevf_ring *rx_ring)
->  		rx_ring->skb = NULL;
->  	}
+>  	rx_buffer = &rx_ring->rx_buffer_info[rx_ring->next_to_clean];
+>  	page = rx_buffer->page;
+> @@ -890,11 +891,11 @@ static struct sk_buff *ixgbevf_fetch_rx_buffer(struct
+> ixgbevf_ring *rx_ring,
+>  	dma_sync_single_range_for_cpu(rx_ring->dev,
+>  				      rx_buffer->dma,
+>  				      rx_buffer->page_offset,
+> -				      IXGBEVF_RX_BUFSZ,
+> +				      size,
+>  				      DMA_FROM_DEVICE);
 > 
-> -	/* ring already cleared, nothing to do */
-> -	if (!rx_ring->rx_buffer_info)
-> -		return;
-> -
->  	/* Free all the Rx ring pages */
-> -	for (i = 0; i < rx_ring->count; i++) {
-> +	while (i != rx_ring->next_to_alloc) {
->  		struct ixgbevf_rx_buffer *rx_buffer;
-> 
->  		rx_buffer = &rx_ring->rx_buffer_info[i];
-> -		if (!rx_buffer->page)
-> -			continue;
-> 
->  		/* Invalidate cache lines that may have been written to by
->  		 * device so that we avoid corrupting memory.
-> @@ -2171,11 +2168,14 @@ static void ixgbevf_clean_rx_ring(struct
-> ixgbevf_ring *rx_ring)
->  		__page_frag_cache_drain(rx_buffer->page,
->  					rx_buffer->pagecnt_bias);
-> 
-> -		rx_buffer->page = NULL;
-> +		i++;
-> +		if (i == rx_ring->count)
-> +			i = 0;
->  	}
-> 
-> -	size = sizeof(struct ixgbevf_rx_buffer) * rx_ring->count;
-> -	memset(rx_ring->rx_buffer_info, 0, size);
-> +	rx_ring->next_to_alloc = 0;
-> +	rx_ring->next_to_clean = 0;
-> +	rx_ring->next_to_use = 0;
->  }
-> 
->  /**
-> @@ -3090,7 +3090,7 @@ int ixgbevf_setup_rx_resources(struct ixgbevf_ring
-> *rx_ring)
->  	int size;
-> 
->  	size = sizeof(struct ixgbevf_rx_buffer) * rx_ring->count;
-> -	rx_ring->rx_buffer_info = vzalloc(size);
-> +	rx_ring->rx_buffer_info = vmalloc(size);
->  	if (!rx_ring->rx_buffer_info)
->  		goto err;
-> 
+>  	/* pull page into skb */
+> -	if (ixgbevf_add_rx_frag(rx_ring, rx_buffer, rx_desc, skb)) {
+> +	if (ixgbevf_add_rx_frag(rx_ring, rx_buffer, size, rx_desc, skb)) {
+>  		/* hand second half of page back to the ring */
+>  		ixgbevf_reuse_rx_page(rx_ring, rx_buffer);
+>  	} else {
 > 
 > _______________________________________________
 > Intel-wired-lan mailing list
