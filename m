@@ -1,138 +1,248 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Mon, 26 Feb 2018 08:12:32 +0800
-Subject: [Intel-wired-lan] [next-queue PATCH 7/8] igb: Add support for
- adding offloaded clsflower filters
-In-Reply-To: <20180224012036.5834-8-vinicius.gomes@intel.com>
-References: <20180224012036.5834-8-vinicius.gomes@intel.com>
-Message-ID: <201802260852.sZGOaY4C%fengguang.wu@intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Mon, 26 Feb 2018 11:31:18 +0900
+Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Fix link check race condition.
+In-Reply-To: <CAKgT0UffXiggXxC5x1vrtbnKPHzcy8+VTRvBGBH-7tCYmUi6LQ@mail.gmail.com>
+References: <CAKgT0UffXiggXxC5x1vrtbnKPHzcy8+VTRvBGBH-7tCYmUi6LQ@mail.gmail.com>
+Message-ID: <20180226023118.17439-1-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Vinicius,
+Alex reported the following race condition:
 
-Thank you for the patch! Perhaps something to improve:
+/* link goes up... interrupt... schedule watchdog */
+\ e1000_watchdog_task
+	\ e1000e_has_link
+		\ hw->mac.ops.check_for_link() === e1000e_check_for_copper_link
+			\ e1000e_phy_has_link_generic(..., &link)
+				link = true
 
-[auto build test WARNING on jkirsher-next-queue/dev-queue]
-[also build test WARNING on v4.16-rc2 next-20180223]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+					 /* link goes down... interrupt */
+					 \ e1000_msix_other
+						 hw->mac.get_link_status = true
 
-url:    https://github.com/0day-ci/linux/commits/Vinicius-Costa-Gomes/igb-Fix-not-adding-filter-elements-to-the-list/20180226-053124
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-reproduce:
-        # apt-get install sparse
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF=-D__CHECK_ENDIAN__
+			/* link is up */
+			mac->get_link_status = false
 
+		link_active = true
+		/* link_active is true, wrongly, and stays so because
+		 * get_link_status is false */
 
-sparse warnings: (new ones prefixed by >>)
+Avoid this problem by making sure that we don't set get_link_status = false
+after having checked the link.
 
-   drivers/net/ethernet/intel/igb/igb_main.c:474:25: sparse: cast to restricted __le64
-   drivers/net/ethernet/intel/igb/igb_main.c:474:25: sparse: cast to restricted __le64
-   drivers/net/ethernet/intel/igb/igb_main.c:554:33: sparse: cast to restricted __le64
-   drivers/net/ethernet/intel/igb/igb_main.c:554:33: sparse: cast to restricted __le64
-   drivers/net/ethernet/intel/igb/igb_main.c:560:33: sparse: cast to restricted __le64
-   drivers/net/ethernet/intel/igb/igb_main.c:560:33: sparse: cast to restricted __le64
->> drivers/net/ethernet/intel/igb/igb_main.c:2573:48: sparse: incorrect type in assignment (different base types) @@ expected restricted __be16 vlan_tci @@ got unsignedrestricted __be16 vlan_tci @@
-   drivers/net/ethernet/intel/igb/igb_main.c:2573:48: expected restricted __be16 vlan_tci
-   drivers/net/ethernet/intel/igb/igb_main.c:2573:48: got unsigned short vlan_priority:3
-   drivers/net/ethernet/intel/igb/igb_main.c:5616:46: sparse: incorrect type in argument 2 (different base types) @@ expected restricted __wsum diff @@ got restricted __wsum diff @@
-   drivers/net/ethernet/intel/igb/igb_main.c:5616:46: expected restricted __wsum diff
-   drivers/net/ethernet/intel/igb/igb_main.c:5616:46: got restricted __be32 <noident>
-   drivers/net/ethernet/intel/igb/igb_main.c:8047:31: sparse: cast to restricted __be16
-   drivers/net/ethernet/intel/igb/igb_main.c:8047:31: sparse: cast from restricted __le16
-   drivers/net/ethernet/intel/igb/igb_main.c:8047:31: sparse: cast to restricted __be16
-   drivers/net/ethernet/intel/igb/igb_main.c:8047:31: sparse: cast from restricted __le16
-   drivers/net/ethernet/intel/igb/igb_main.c:8047:31: sparse: cast to restricted __be16
-   drivers/net/ethernet/intel/igb/igb_main.c:8047:31: sparse: cast from restricted __le16
-   drivers/net/ethernet/intel/igb/igb_main.c:8047:31: sparse: cast to restricted __be16
-   drivers/net/ethernet/intel/igb/igb_main.c:8047:31: sparse: cast from restricted __le16
+It seems this problem has been present since the introduction of e1000e.
 
-vim +2573 drivers/net/ethernet/intel/igb/igb_main.c
-
-  2503	
-  2504	static int igb_parse_cls_flower(struct igb_adapter *adapter,
-  2505					struct tc_cls_flower_offload *f,
-  2506					int traffic_class,
-  2507					struct igb_nfc_filter *input)
-  2508	{
-  2509		if (f->dissector->used_keys &
-  2510		    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
-  2511		      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
-  2512		      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-  2513		      BIT(FLOW_DISSECTOR_KEY_VLAN))) {
-  2514			dev_err(&adapter->pdev->dev, "Unsupported key used: 0x%x\n",
-  2515				f->dissector->used_keys);
-  2516			return -EOPNOTSUPP;
-  2517		}
-  2518	
-  2519		if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_ETH_ADDRS)) {
-  2520			struct flow_dissector_key_eth_addrs *key =
-  2521				skb_flow_dissector_target(f->dissector,
-  2522							  FLOW_DISSECTOR_KEY_ETH_ADDRS,
-  2523							  f->key);
-  2524	
-  2525			struct flow_dissector_key_eth_addrs *mask =
-  2526				skb_flow_dissector_target(f->dissector,
-  2527							  FLOW_DISSECTOR_KEY_ETH_ADDRS,
-  2528							  f->mask);
-  2529	
-  2530			if (is_broadcast_ether_addr(mask->dst)) {
-  2531				input->filter.match_flags |=
-  2532					IGB_FILTER_FLAG_DST_MAC_ADDR;
-  2533				ether_addr_copy(input->filter.dst_addr, key->dst);
-  2534			}
-  2535	
-  2536			if (is_broadcast_ether_addr(mask->src)) {
-  2537				input->filter.match_flags |=
-  2538					IGB_FILTER_FLAG_SRC_MAC_ADDR;
-  2539				ether_addr_copy(input->filter.src_addr, key->src);
-  2540			}
-  2541		}
-  2542	
-  2543		if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_BASIC)) {
-  2544			struct flow_dissector_key_basic *key =
-  2545				skb_flow_dissector_target(f->dissector,
-  2546							  FLOW_DISSECTOR_KEY_BASIC,
-  2547							  f->key);
-  2548	
-  2549			struct flow_dissector_key_basic *mask =
-  2550				skb_flow_dissector_target(f->dissector,
-  2551							  FLOW_DISSECTOR_KEY_BASIC,
-  2552							  f->mask);
-  2553	
-  2554			if (mask->n_proto == ETHER_TYPE_FULL_MASK) {
-  2555				input->filter.match_flags |=
-  2556					IGB_FILTER_FLAG_ETHER_TYPE;
-  2557				input->filter.etype = key->n_proto;
-  2558			}
-  2559		}
-  2560	
-  2561		if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_VLAN)) {
-  2562			struct flow_dissector_key_vlan *key =
-  2563				skb_flow_dissector_target(f->dissector,
-  2564							  FLOW_DISSECTOR_KEY_VLAN,
-  2565							  f->key);
-  2566			struct flow_dissector_key_vlan *mask =
-  2567				skb_flow_dissector_target(f->dissector,
-  2568							  FLOW_DISSECTOR_KEY_VLAN,
-  2569							  f->mask);
-  2570	
-  2571			if (mask->vlan_priority) {
-  2572				input->filter.match_flags |= IGB_FILTER_FLAG_VLAN_TCI;
-> 2573				input->filter.vlan_tci = key->vlan_priority;
-  2574			}
-  2575		}
-  2576	
-  2577		input->action = traffic_class;
-  2578		input->cookie = f->cookie;
-  2579	
-  2580		return 0;
-  2581	}
-  2582	
-
+Link: https://lkml.org/lkml/2018/1/29/338
+Reported-by: Alexander Duyck <alexander.duyck@gmail.com>
+Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 41 ++++++++++++++++-------------
+ drivers/net/ethernet/intel/e1000e/mac.c     | 14 +++++++---
+ 2 files changed, 33 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index ff308b05d68c..3c2c4f87e075 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -1386,6 +1386,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	 */
+ 	if (!mac->get_link_status)
+ 		return 1;
++	mac->get_link_status = false;
+ 
+ 	/* First we want to see if the MII Status Register reports
+ 	 * link.  If so, then we want to get the current speed/duplex
+@@ -1393,12 +1394,12 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	 */
+ 	ret_val = e1000e_phy_has_link_generic(hw, 1, 0, &link);
+ 	if (ret_val)
+-		return ret_val;
++		goto out;
+ 
+ 	if (hw->mac.type == e1000_pchlan) {
+ 		ret_val = e1000_k1_gig_workaround_hv(hw, link);
+ 		if (ret_val)
+-			return ret_val;
++			goto out;
+ 	}
+ 
+ 	/* When connected at 10Mbps half-duplex, some parts are excessively
+@@ -1431,7 +1432,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 
+ 		ret_val = hw->phy.ops.acquire(hw);
+ 		if (ret_val)
+-			return ret_val;
++			goto out;
+ 
+ 		if (hw->mac.type == e1000_pch2lan)
+ 			emi_addr = I82579_RX_CONFIG;
+@@ -1453,7 +1454,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 		hw->phy.ops.release(hw);
+ 
+ 		if (ret_val)
+-			return ret_val;
++			goto out;
+ 
+ 		if (hw->mac.type >= e1000_pch_spt) {
+ 			u16 data;
+@@ -1462,14 +1463,14 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 			if (speed == SPEED_1000) {
+ 				ret_val = hw->phy.ops.acquire(hw);
+ 				if (ret_val)
+-					return ret_val;
++					goto out;
+ 
+ 				ret_val = e1e_rphy_locked(hw,
+ 							  PHY_REG(776, 20),
+ 							  &data);
+ 				if (ret_val) {
+ 					hw->phy.ops.release(hw);
+-					return ret_val;
++					goto out;
+ 				}
+ 
+ 				ptr_gap = (data & (0x3FF << 2)) >> 2;
+@@ -1483,18 +1484,18 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 				}
+ 				hw->phy.ops.release(hw);
+ 				if (ret_val)
+-					return ret_val;
++					goto out;
+ 			} else {
+ 				ret_val = hw->phy.ops.acquire(hw);
+ 				if (ret_val)
+-					return ret_val;
++					goto out;
+ 
+ 				ret_val = e1e_wphy_locked(hw,
+ 							  PHY_REG(776, 20),
+ 							  0xC023);
+ 				hw->phy.ops.release(hw);
+ 				if (ret_val)
+-					return ret_val;
++					goto out;
+ 
+ 			}
+ 		}
+@@ -1521,7 +1522,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	    (hw->adapter->pdev->device == E1000_DEV_ID_PCH_I218_V3)) {
+ 		ret_val = e1000_k1_workaround_lpt_lp(hw, link);
+ 		if (ret_val)
+-			return ret_val;
++			goto out;
+ 	}
+ 	if (hw->mac.type >= e1000_pch_lpt) {
+ 		/* Set platform power management values for
+@@ -1529,7 +1530,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 		 */
+ 		ret_val = e1000_platform_pm_pch_lpt(hw, link);
+ 		if (ret_val)
+-			return ret_val;
++			goto out;
+ 	}
+ 
+ 	/* Clear link partner's EEE ability */
+@@ -1551,22 +1552,22 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 		ew32(FEXTNVM6, fextnvm6);
+ 	}
+ 
+-	if (!link)
++	if (!link) {
++		mac->get_link_status = true;
+ 		return 0;	/* No link detected */
+-
+-	mac->get_link_status = false;
++	}
+ 
+ 	switch (hw->mac.type) {
+ 	case e1000_pch2lan:
+ 		ret_val = e1000_k1_workaround_lv(hw);
+ 		if (ret_val)
+-			return ret_val;
++			goto out;
+ 		/* fall-thru */
+ 	case e1000_pchlan:
+ 		if (hw->phy.type == e1000_phy_82578) {
+ 			ret_val = e1000_link_stall_workaround_hv(hw);
+ 			if (ret_val)
+-				return ret_val;
++				goto out;
+ 		}
+ 
+ 		/* Workaround for PCHx parts in half-duplex:
+@@ -1595,7 +1596,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	if (hw->phy.type > e1000_phy_82579) {
+ 		ret_val = e1000_set_eee_pchlan(hw);
+ 		if (ret_val)
+-			return ret_val;
++			goto out;
+ 	}
+ 
+ 	/* If we are forcing speed/duplex, then we simply return since
+@@ -1618,10 +1619,14 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	ret_val = e1000e_config_fc_after_link_up(hw);
+ 	if (ret_val) {
+ 		e_dbg("Error configuring flow control\n");
+-		return ret_val;
++		goto out;
+ 	}
+ 
+ 	return 1;
++
++out:
++	mac->get_link_status = true;
++	return ret_val;
+ }
+ 
+ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
+index db735644b312..60c8beaf5cb3 100644
+--- a/drivers/net/ethernet/intel/e1000e/mac.c
++++ b/drivers/net/ethernet/intel/e1000e/mac.c
+@@ -427,6 +427,7 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+ 	 */
+ 	if (!mac->get_link_status)
+ 		return 1;
++	mac->get_link_status = false;
+ 
+ 	/* First we want to see if the MII Status Register reports
+ 	 * link.  If so, then we want to get the current speed/duplex
+@@ -434,12 +435,13 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+ 	 */
+ 	ret_val = e1000e_phy_has_link_generic(hw, 1, 0, &link);
+ 	if (ret_val)
+-		return ret_val;
++		goto out;
+ 
+-	if (!link)
++	if (!link) {
++		mac->get_link_status = true;
+ 		return 0;	/* No link detected */
++	}
+ 
+-	mac->get_link_status = false;
+ 
+ 	/* Check if there was DownShift, must be checked
+ 	 * immediately after link-up
+@@ -466,10 +468,14 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+ 	ret_val = e1000e_config_fc_after_link_up(hw);
+ 	if (ret_val) {
+ 		e_dbg("Error configuring flow control\n");
+-		return ret_val;
++		goto out;
+ 	}
+ 
+ 	return 1;
++
++out:
++	mac->get_link_status = true;
++	return ret_val;
+ }
+ 
+ /**
+-- 
+2.16.1
+
