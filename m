@@ -1,55 +1,120 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 26 Feb 2018 10:15:45 -0800
-Subject: [Intel-wired-lan] [PATCH 3/3] ixgbe: remove unneeded ipsec state
- free callback
-In-Reply-To: <20180226181545.11151-1-jeffrey.t.kirsher@intel.com>
-References: <20180226181545.11151-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180226181545.11151-3-jeffrey.t.kirsher@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Mon, 26 Feb 2018 18:15:09 +0000
+Subject: [Intel-wired-lan] [next PATCH S87 V2 2/7] i40e: rename
+ i40e_vlan_rx_register to i40e_setup_vlan_stripping
+In-Reply-To: <6c3ac127-22fd-5de7-c36f-e1857f3f4812@oracle.com>
+References: <20180226083311.52442-1-alice.michael@intel.com>
+ <20180226083311.52442-2-alice.michael@intel.com>
+ <6c3ac127-22fd-5de7-c36f-e1857f3f4812@oracle.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5882CE7B3C@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@oracle.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
+> Shannon Nelson
+> Sent: Monday, February 26, 2018 9:52 AM
+> To: intel-wired-lan at osuosl.org
+> Subject: Re: [Intel-wired-lan] [next PATCH S87 V2 2/7] i40e: rename
+> i40e_vlan_rx_register to i40e_setup_vlan_stripping
+> 
+> On 2/26/2018 12:33 AM, Alice Michael wrote:
+> > From: Jacob Keller <jacob.e.keller@intel.com>
+> >
+> > We used to use the function i40e_vlan_rx_register as a way to hook
+> > into the now defunct .ndo_vlan_rx_register netdev hook. This was
+> > removed but we kept the function around because we still used it
+> > internally to control enabling or disabling of VLAN stripping.
+> >
+> > Simplify this function and make its intent clear. Pass the *vsi
+> > pointer directly instead of the netdev pointer. Additionally, move
+> > it closer to the point where it is called in the file.
+> >
+> > This helps clarify the functions use and purpose, and makes the
+> > code a bit easier to understand.
+> >
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > ---
+> >   drivers/net/ethernet/intel/i40e/i40e_main.c | 31 +++++++++++++--------------
+> --
+> >   1 file changed, 14 insertions(+), 17 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > index d188ff1..9ad80d2 100644
+> > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > @@ -2720,22 +2720,6 @@ void i40e_vlan_stripping_disable(struct i40e_vsi *vsi)
+> >   }
+> >
+> >   /**
+> > - * i40e_vlan_rx_register - Setup or shutdown vlan offload
+> > - * @netdev: network interface to be adjusted
+> > - * @features: netdev features to test if VLAN offload is enabled or not
+> > - **/
+> > -static void i40e_vlan_rx_register(struct net_device *netdev, u32 features)
+> > -{
+> > -	struct i40e_netdev_priv *np = netdev_priv(netdev);
+> > -	struct i40e_vsi *vsi = np->vsi;
+> > -
+> > -	if (features & NETIF_F_HW_VLAN_CTAG_RX)
+> > -		i40e_vlan_stripping_enable(vsi);
+> > -	else
+> > -		i40e_vlan_stripping_disable(vsi);
+> > -}
+> > -
+> > -/**
+> >    * i40e_add_vlan_all_mac - Add a MAC/VLAN filter for each existing MAC
+> address
+> >    * @vsi: the vsi being configured
+> >    * @vid: vlan id to be added (0 = untagged only , -1 = any)
+> > @@ -2900,6 +2884,19 @@ static int i40e_vlan_rx_kill_vid(struct net_device
+> *netdev,
+> >   }
+> >
+> >   /**
+> > + * i40e_setup_vlan_stripping - Enable or disable VLAN stripping
+> > + * @vsi: the vsi being configured
+> > + * @features: netdevice feature flags
+> > + **/
+> > +static void i40e_setup_vlan_stripping(struct i40e_vsi *vsi, u32 features)
+> > +{
+> > +	if (features & NETIF_F_HW_VLAN_CTAG_RX)
+> > +		i40e_vlan_stripping_enable(vsi);
+> > +	else
+> > +		i40e_vlan_stripping_disable(vsi);
+> > +}
+> > +
+> > +/**
+> >    * i40e_restore_vlan - Reinstate vlans when vsi/netdev comes back up
+> >    * @vsi: the vsi being brought back up
+> >    **/
+> > @@ -2910,7 +2907,7 @@ static void i40e_restore_vlan(struct i40e_vsi *vsi)
+> >   	if (!vsi->netdev)
+> >   		return;
+> >
+> > -	i40e_vlan_rx_register(vsi->netdev, vsi->netdev->features);
+> > +	i40e_setup_vlan_stripping(vsi, vsi->netdev->features);
+> 
+> If this is the only place from which it is called, why even bother with
+> a function?
+> 
+> sln
 
-With commit 7f05b467a735 ("xfrm: check for xdo_dev_state_free")
-we no longer need to add an empty callback function
-to the driver, so now let's remove the useless code.
+Good point. I will inline the function directly, it's small enough that a separate function doesn't aid readability.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 13 -------------
- 1 file changed, 13 deletions(-)
+Thanks,
+Jake
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index 8623013e517e..f2254528dcfc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -724,23 +724,10 @@ static bool ixgbe_ipsec_offload_ok(struct sk_buff *skb, struct xfrm_state *xs)
- 	return true;
- }
- 
--/**
-- * ixgbe_ipsec_free - called by xfrm garbage collections
-- * @xs: pointer to transformer state struct
-- *
-- * We don't have any garbage to collect, so we shouldn't bother
-- * implementing this function, but the XFRM code doesn't check for
-- * existence before calling the API callback.
-- **/
--static void ixgbe_ipsec_free(struct xfrm_state *xs)
--{
--}
--
- static const struct xfrmdev_ops ixgbe_xfrmdev_ops = {
- 	.xdo_dev_state_add = ixgbe_ipsec_add_sa,
- 	.xdo_dev_state_delete = ixgbe_ipsec_del_sa,
- 	.xdo_dev_offload_ok = ixgbe_ipsec_offload_ok,
--	.xdo_dev_state_free = ixgbe_ipsec_free,
- };
- 
- /**
--- 
-2.14.3
-
+> 
+> >
+> >   	for_each_set_bit(vid, vsi->active_vlans, VLAN_N_VID)
+> >   		i40e_vlan_rx_add_vid(vsi->netdev, htons(ETH_P_8021Q),
+> >
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
