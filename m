@@ -1,35 +1,29 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 26 Feb 2018 12:59:56 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH 8/8] igb: Add support for
- removing offloaded tc-flower filters
-In-Reply-To: <1BB984D1-4B66-4CAA-B6D8-1DE094021CF3@gmail.com>
-References: <20180224012036.5834-1-vinicius.gomes@intel.com>
- <20180224012036.5834-9-vinicius.gomes@intel.com>
- <1BB984D1-4B66-4CAA-B6D8-1DE094021CF3@gmail.com>
-Message-ID: <87zi3va2lv.fsf@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Mon, 26 Feb 2018 13:37:40 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 0/5] Enable XDP for ixgbevf
+Message-ID: <20180226213745.14508-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+This patch series implements support for XDP on ixgbevf;
+it is mainly based on the ixgbe implementation and supports
+the following actions: XDP_PASS, XDP_DROP, and XDP_TX.
 
-Florian Fainelli <f.fainelli@gmail.com> writes:
+Tony Nguyen (5):
+  ixgbevf: Add XDP support for pass and drop actions
+  ixgbevf: Add support for XDP_TX action
+  ixgbevf: Delay tail write for XDP packets
+  ixgbevf: Add support for meta data
+  ixgbevf: Add XDP queue stats reporting
 
-> On February 23, 2018 5:20:36 PM PST, Vinicius Costa Gomes <vinicius.gomes@intel.com> wrote:
->>This allows tc-flower filters that were offloaded to be removed.
->
-> This should be squashed into your previous patch, either the
-> functionality is there and you can add/remove or it is not.
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c      |  68 ++-
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  30 +-
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 490 +++++++++++++++++++---
+ 3 files changed, 519 insertions(+), 69 deletions(-)
 
-Will do. Thanks.
+-- 
+2.13.6
 
->
-> -- 
-> Florian
-
-
-Cheers,
---
-Vinicius
