@@ -1,102 +1,158 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 26 Feb 2018 15:57:36 +0000
-Subject: [Intel-wired-lan] [PATCH 3/9] ixgbevf: use length to determine
- if descriptor is done
-In-Reply-To: <20171211183659.21524.88045.stgit@localhost6.localdomain6>
-References: <20171211183537.21524.10133.stgit@localhost6.localdomain6>
- <20171211183659.21524.88045.stgit@localhost6.localdomain6>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD8287@ORSMSX103.amr.corp.intel.com>
+Date: Mon, 26 Feb 2018 16:02:38 +0000
+Subject: [Intel-wired-lan] [PATCH 2/9] ixgbevf: add ethtool private flag
+ for legacy Rx
+In-Reply-To: <20180131005117.19264.16322.stgit@localhost6.localdomain6>
+References: <20180131005015.19264.44085.stgit@localhost6.localdomain6>
+ <20180131005117.19264.16322.stgit@localhost6.localdomain6>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD82AD@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
 > Emil Tantilov
-> Sent: Monday, December 11, 2017 10:37 AM
+> Sent: Tuesday, January 30, 2018 4:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 3/9] ixgbevf: use length to determine if
-> descriptor is done
+> Subject: [Intel-wired-lan] [PATCH 2/9] ixgbevf: add ethtool private flag for
+> legacy Rx
 > 
-> Based on:
-> commit 7ec0116c9131 ("igb: Use length to determine if descriptor is done")
+> Introduce legacy-rx private flag that will allow switching between the
+> old and new (build_skb based) Rx code paths. The implementation is the
+> same as in commit e08912985b29
+> ("igb: Add support for ethtool private flag to allow use of legacy Rx")
 > 
-> This change makes it so that we use the length of the packet instead of the
-> DD status bit to determine if a new descriptor is ready to be processed.
-> The obvious advantage is that it cuts down on reads as we don't really even
-> need the DD bit if going from a 0 to a non-zero value on size is enough to
-> inform us that the packet has been completed.
-> 
-> In addition we only reset the Rx descriptor length for descriptor zero when
-> resetting a ring instead of having to do a memset with 0 over the entire
-> ring. By doing this we can save some time on initialization.
+> This provides a means of validating the legacy Rx path in the event that
+> we are forced to fall back.  At some point in the future when we are
+> convinced we don't need it anymore we might be able to drop the legacy-rx
+> flag.
 > 
 > Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   14 ++++++++------
->  1 file changed, 8 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/ethtool.c |   48
+> ++++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h |    2 +
+>  2 files changed, 50 insertions(+)
 > 
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index 0cc2688..725fe2d 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -653,8 +653,8 @@ static void ixgbevf_alloc_rx_buffers(struct ixgbevf_ring
-> *rx_ring,
->  			i -= rx_ring->count;
->  		}
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> index 4400e49..e7623fe 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> @@ -94,6 +94,13 @@ struct ixgbe_stats {
 > 
-> -		/* clear the hdr_addr for the next_to_use descriptor */
-> -		rx_desc->read.hdr_addr = 0;
-> +		/* clear the length for the next_to_use descriptor */
-> +		rx_desc->wb.upper.length = 0;
+>  #define IXGBEVF_TEST_LEN (sizeof(ixgbe_gstrings_test) / ETH_GSTRING_LEN)
 > 
->  		cleaned_count--;
->  	} while (cleaned_count);
-> @@ -938,7 +938,7 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector
-> *q_vector,
-> 
->  		rx_desc = IXGBEVF_RX_DESC(rx_ring, rx_ring->next_to_clean);
-> 
-> -		if (!ixgbevf_test_staterr(rx_desc, IXGBE_RXD_STAT_DD))
-> +		if (!rx_desc->wb.upper.length)
->  			break;
-> 
->  		/* This memory barrier is needed to keep us from reading
-> @@ -1729,6 +1729,7 @@ static void ixgbevf_configure_rx_ring(struct
-> ixgbevf_adapter *adapter,
->  				      struct ixgbevf_ring *ring)
->  {
->  	struct ixgbe_hw *hw = &adapter->hw;
-> +	union ixgbe_adv_rx_desc *rx_desc;
->  	u64 rdba = ring->dma;
->  	u32 rxdctl;
->  	u8 reg_idx = ring->reg_idx;
-> @@ -1757,6 +1758,10 @@ static void ixgbevf_configure_rx_ring(struct
-> ixgbevf_adapter *adapter,
->  	IXGBE_WRITE_REG(hw, IXGBE_VFRDT(reg_idx), 0);
->  	ring->tail = adapter->io_addr + IXGBE_VFRDT(reg_idx);
-> 
-> +	/* initialize Rx descriptor 0 */
-> +	rx_desc = IXGBEVF_RX_DESC(ring, 0);
-> +	rx_desc->wb.upper.length = 0;
+> +static const char ixgbevf_priv_flags_strings[][ETH_GSTRING_LEN] = {
+> +#define IXGBEVF_PRIV_FLAGS_LEGACY_RX	BIT(0)
+> +	"legacy-rx",
+> +};
 > +
->  	/* reset ntu and ntc to place SW in sync with hardwdare */
->  	ring->next_to_clean = 0;
->  	ring->next_to_use = 0;
-> @@ -2141,9 +2146,6 @@ static void ixgbevf_clean_rx_ring(struct ixgbevf_ring
-> *rx_ring)
-> 
->  	size = sizeof(struct ixgbevf_rx_buffer) * rx_ring->count;
->  	memset(rx_ring->rx_buffer_info, 0, size);
-> -
-> -	/* Zero out the descriptor ring */
-> -	memset(rx_ring->desc, 0, rx_ring->size);
+> +#define IXGBEVF_PRIV_FLAGS_STR_LEN
+> ARRAY_SIZE(ixgbevf_priv_flags_strings)
+> +
+>  static int ixgbevf_get_link_ksettings(struct net_device *netdev,
+>  				      struct ethtool_link_ksettings *cmd)
+>  {
+> @@ -241,6 +248,8 @@ static void ixgbevf_get_drvinfo(struct net_device
+> *netdev,
+>  		sizeof(drvinfo->version));
+>  	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev),
+>  		sizeof(drvinfo->bus_info));
+> +
+> +	drvinfo->n_priv_flags = IXGBEVF_PRIV_FLAGS_STR_LEN;
 >  }
 > 
->  /**
+>  static void ixgbevf_get_ringparam(struct net_device *netdev,
+> @@ -392,6 +401,8 @@ static int ixgbevf_get_sset_count(struct net_device
+> *netdev, int stringset)
+>  		return IXGBEVF_TEST_LEN;
+>  	case ETH_SS_STATS:
+>  		return IXGBEVF_STATS_LEN;
+> +	case ETH_SS_PRIV_FLAGS:
+> +		return IXGBEVF_PRIV_FLAGS_STR_LEN;
+>  	default:
+>  		return -EINVAL;
+>  	}
+> @@ -496,6 +507,10 @@ static void ixgbevf_get_strings(struct net_device
+> *netdev, u32 stringset,
+>  			p += ETH_GSTRING_LEN;
+>  		}
+>  		break;
+> +	case ETH_SS_PRIV_FLAGS:
+> +		memcpy(data, ixgbevf_priv_flags_strings,
+> +		       IXGBEVF_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
+> +		break;
+>  	}
+>  }
+> 
+> @@ -888,6 +903,37 @@ static int ixgbevf_get_rxfh(struct net_device *netdev,
+> u32 *indir, u8 *key,
+>  	return err;
+>  }
+> 
+> +static u32 ixgbevf_get_priv_flags(struct net_device *netdev)
+> +{
+> +	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+> +	u32 priv_flags = 0;
+> +
+> +	if (adapter->flags & IXGBEVF_FLAGS_LEGACY_RX)
+> +		priv_flags |= IXGBEVF_PRIV_FLAGS_LEGACY_RX;
+> +
+> +	return priv_flags;
+> +}
+> +
+> +static int ixgbevf_set_priv_flags(struct net_device *netdev, u32 priv_flags)
+> +{
+> +	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+> +	unsigned int flags = adapter->flags;
+> +
+> +	flags &= ~IXGBEVF_FLAGS_LEGACY_RX;
+> +	if (priv_flags & IXGBEVF_PRIV_FLAGS_LEGACY_RX)
+> +		flags |= IXGBEVF_FLAGS_LEGACY_RX;
+> +
+> +	if (flags != adapter->flags) {
+> +		adapter->flags = flags;
+> +
+> +		/* reset interface to repopulate queues */
+> +		if (netif_running(netdev))
+> +			ixgbevf_reinit_locked(adapter);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static const struct ethtool_ops ixgbevf_ethtool_ops = {
+>  	.get_drvinfo		= ixgbevf_get_drvinfo,
+>  	.get_regs_len		= ixgbevf_get_regs_len,
+> @@ -909,6 +955,8 @@ static int ixgbevf_get_rxfh(struct net_device *netdev,
+> u32 *indir, u8 *key,
+>  	.get_rxfh_key_size	= ixgbevf_get_rxfh_key_size,
+>  	.get_rxfh		= ixgbevf_get_rxfh,
+>  	.get_link_ksettings	= ixgbevf_get_link_ksettings,
+> +	.get_priv_flags		= ixgbevf_get_priv_flags,
+> +	.set_priv_flags		= ixgbevf_set_priv_flags,
+>  };
+> 
+>  void ixgbevf_set_ethtool_ops(struct net_device *netdev)
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> index f695242..62a3669 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> @@ -331,6 +331,8 @@ struct ixgbevf_adapter {
+> 
+>  	u32 *rss_key;
+>  	u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
+> +	u32 flags;
+> +#define IXGBEVF_FLAGS_LEGACY_RX		BIT(1)
+>  };
+> 
+>  enum ixbgevf_state_t {
 > 
 > _______________________________________________
 > Intel-wired-lan mailing list
