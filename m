@@ -1,10 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 26 Feb 2018 16:03:40 +0000
-Subject: [Intel-wired-lan] [PATCH 4/9] ixgbevf: setup queue counts
-In-Reply-To: <20180131005127.19264.83738.stgit@localhost6.localdomain6>
+Date: Mon, 26 Feb 2018 16:04:21 +0000
+Subject: [Intel-wired-lan] [PATCH 5/9] ixgbevf: add support for padding
+ packet
+In-Reply-To: <20180131005133.19264.85496.stgit@localhost6.localdomain6>
 References: <20180131005015.19264.44085.stgit@localhost6.localdomain6>
- <20180131005127.19264.83738.stgit@localhost6.localdomain6>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD82D5@ORSMSX103.amr.corp.intel.com>
+ <20180131005133.19264.85496.stgit@localhost6.localdomain6>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E64BD82E9@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,118 +13,154 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
+
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
 > Emil Tantilov
-> Sent: Tuesday, January 30, 2018 4:51 PM
+> Sent: Tuesday, January 30, 2018 4:52 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 4/9] ixgbevf: setup queue counts
+> Subject: [Intel-wired-lan] [PATCH 5/9] ixgbevf: add support for padding packet
 > 
-> Add calls for netif_set_real_num_t/rx_queues() in ixgbevf_open().
-> Make sure that calls to ixgbevf_open() are rtnl protected and improve
-> the error handling when setting up multiple queues.
+> Following the logic from commit 2de6aa3a666e
+> ("ixgbe: Add support for padding packet")
+> 
+> Add support for providing a buffer with headroom and tailroom
+> to allow for shared info, NET_SKB_PAD, and NET_IP_ALIGN.  With this
+> combined with the DMA changes we can start using build_skb to build frames
+> around an incoming Rx buffer instead of having to memcpy the headers.
 > 
 > Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   44 ++++++++++++++------
-> -
->  1 file changed, 29 insertions(+), 15 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   11 +++++++
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   32
+> ++++++++++++++++++---
+>  2 files changed, 39 insertions(+), 4 deletions(-)
 > 
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> index d691d64..fe7111c 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> @@ -90,6 +90,7 @@ struct ixgbevf_rx_queue_stats {
+> 
+>  enum ixgbevf_ring_state_t {
+>  	__IXGBEVF_RX_3K_BUFFER,
+> +	__IXGBEVF_RX_BUILD_SKB_ENABLED,
+>  	__IXGBEVF_TX_DETECT_HANG,
+>  	__IXGBEVF_HANG_CHECK_ARMED,
+>  };
+> @@ -179,11 +180,21 @@ struct ixgbevf_ring {
+>  #define clear_ring_uses_large_buffer(ring) \
+>  	clear_bit(__IXGBEVF_RX_3K_BUFFER, &(ring)->state)
+> 
+> +#define ring_uses_build_skb(ring) \
+> +	test_bit(__IXGBEVF_RX_BUILD_SKB_ENABLED, &(ring)->state)
+> +#define set_ring_build_skb_enabled(ring) \
+> +	set_bit(__IXGBEVF_RX_BUILD_SKB_ENABLED, &(ring)->state)
+> +#define clear_ring_build_skb_enabled(ring) \
+> +	clear_bit(__IXGBEVF_RX_BUILD_SKB_ENABLED, &(ring)->state)
+> +
+>  static inline unsigned int ixgbevf_rx_bufsz(struct ixgbevf_ring *ring)
+>  {
+>  #if (PAGE_SIZE < 8192)
+>  	if (ring_uses_large_buffer(ring))
+>  		return IXGBEVF_RXBUFFER_3072;
+> +
+> +	if (ring_uses_build_skb(ring))
+> +		return IXGBEVF_MAX_FRAME_BUILD_SKB;
+>  #endif
+>  	return IXGBEVF_RXBUFFER_2048;
+>  }
 > diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 > b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index f8e1b1c..cb9d00a 100644
+> index cb9d00a..d797265 100644
 > --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 > +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -3119,9 +3119,14 @@ static int ixgbevf_setup_all_tx_resources(struct
-> ixgbevf_adapter *adapter)
->  		if (!err)
->  			continue;
->  		hw_dbg(&adapter->hw, "Allocation for Tx Queue %u failed\n",
-> i);
-> -		break;
-> +		goto err_setup_tx;
->  	}
-> 
-> +	return 0;
-> +err_setup_tx:
-> +	/* rewind the index freeing the rings as we go */
-> +	while (i--)
-> +		ixgbevf_free_tx_resources(adapter->tx_ring[i]);
->  	return err;
+> @@ -554,6 +554,11 @@ static bool ixgbevf_is_non_eop(struct ixgbevf_ring
+> *rx_ring,
+>  	return true;
 >  }
 > 
-> @@ -3179,8 +3184,14 @@ static int ixgbevf_setup_all_rx_resources(struct
-> ixgbevf_adapter *adapter)
->  		if (!err)
->  			continue;
->  		hw_dbg(&adapter->hw, "Allocation for Rx Queue %u failed\n",
-> i);
-> -		break;
-> +		goto err_setup_rx;
->  	}
+> +static inline unsigned int ixgbevf_rx_offset(struct ixgbevf_ring *rx_ring)
+> +{
+> +	return ring_uses_build_skb(rx_ring) ? IXGBEVF_SKB_PAD : 0;
+> +}
 > +
-> +	return 0;
-> +err_setup_rx:
-> +	/* rewind the index freeing the rings as we go */
-> +	while (i--)
-> +		ixgbevf_free_rx_resources(adapter->rx_ring[i]);
->  	return err;
->  }
+>  static bool ixgbevf_alloc_mapped_page(struct ixgbevf_ring *rx_ring,
+>  				      struct ixgbevf_rx_buffer *bi)
+>  {
+> @@ -588,7 +593,7 @@ static bool ixgbevf_alloc_mapped_page(struct
+> ixgbevf_ring *rx_ring,
 > 
-> @@ -3285,18 +3296,27 @@ int ixgbevf_open(struct net_device *netdev)
->  	if (err)
->  		goto err_req_irq;
+>  	bi->dma = dma;
+>  	bi->page = page;
+> -	bi->page_offset = 0;
+> +	bi->page_offset = ixgbevf_rx_offset(rx_ring);
+>  	bi->pagecnt_bias = 1;
+>  	rx_ring->rx_stats.alloc_rx_page++;
 > 
-> +	/* Notify the stack of the actual queue counts. */
-> +	err = netif_set_real_num_tx_queues(netdev, adapter-
-> >num_tx_queues);
-> +	if (err)
-> +		goto err_set_queues;
+> @@ -803,7 +808,9 @@ static bool ixgbevf_add_rx_frag(struct ixgbevf_ring
+> *rx_ring,
+>  #if (PAGE_SIZE < 8192)
+>  	unsigned int truesize = ixgbevf_rx_pg_size(rx_ring) / 2;
+>  #else
+> -	unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
+> +	unsigned int truesize = ring_uses_build_skb(rx_ring) ?
+> +				SKB_DATA_ALIGN(IXGBEVF_SKB_PAD + size) :
+> +				SKB_DATA_ALIGN(size);
+>  #endif
+>  	unsigned int pull_len;
+> 
+> @@ -1776,8 +1783,19 @@ static void ixgbevf_configure_rx_ring(struct
+> ixgbevf_adapter *adapter,
+> 
+>  	ixgbevf_configure_srrctl(adapter, ring, reg_idx);
+> 
+> -	/* allow any size packet since we can handle overflow */
+> -	rxdctl &= ~IXGBE_RXDCTL_RLPML_EN;
+> +	/* RXDCTL.RLPML does not work on 82599 */
+> +	if (adapter->hw.mac.type != ixgbe_mac_82599_vf) {
+> +		rxdctl &= ~(IXGBE_RXDCTL_RLPMLMASK |
+> +			    IXGBE_RXDCTL_RLPML_EN);
 > +
-> +	err = netif_set_real_num_rx_queues(netdev, adapter-
-> >num_rx_queues);
-> +	if (err)
-> +		goto err_set_queues;
-> +
->  	ixgbevf_up_complete(adapter);
+> +#if (PAGE_SIZE < 8192)
+> +		/* Limit the maximum frame size so we don't overrun the skb
+> */
+> +		if (ring_uses_build_skb(ring) &&
+> +		   !ring_uses_large_buffer(ring))
+> +			rxdctl |= IXGBEVF_MAX_FRAME_BUILD_SKB |
+> +				  IXGBE_RXDCTL_RLPML_EN;
+> +#endif
+> +	}
 > 
+>  	rxdctl |= IXGBE_RXDCTL_ENABLE | IXGBE_RXDCTL_VME;
+>  	IXGBE_WRITE_REG(hw, IXGBE_VFRXDCTL(reg_idx), rxdctl);
+> @@ -1793,11 +1811,14 @@ static void ixgbevf_set_rx_buffer_len(struct
+> ixgbevf_adapter *adapter,
+>  	unsigned int max_frame = netdev->mtu + ETH_HLEN + ETH_FCS_LEN;
+> 
+>  	/* set build_skb and buffer size flags */
+> +	clear_ring_build_skb_enabled(rx_ring);
+>  	clear_ring_uses_large_buffer(rx_ring);
+> 
+>  	if (adapter->flags & IXGBEVF_FLAGS_LEGACY_RX)
+>  		return;
+> 
+> +	set_ring_build_skb_enabled(rx_ring);
+> +
+>  #if (PAGE_SIZE < 8192)
+>  	if (max_frame <= IXGBEVF_MAX_FRAME_BUILD_SKB)
+>  		return;
+> @@ -3890,6 +3911,9 @@ static int ixgbevf_change_mtu(struct net_device
+> *netdev, int new_mtu)
+>  	/* must set new MTU before calling down or up */
+>  	netdev->mtu = new_mtu;
+> 
+> +	if (netif_running(netdev))
+> +		ixgbevf_reinit_locked(adapter);
+> +
 >  	return 0;
-> 
-> +err_set_queues:
-> +	ixgbevf_free_irq(adapter);
->  err_req_irq:
-> -	ixgbevf_down(adapter);
-> -err_setup_rx:
->  	ixgbevf_free_all_rx_resources(adapter);
-> -err_setup_tx:
-> +err_setup_rx:
->  	ixgbevf_free_all_tx_resources(adapter);
-> +err_setup_tx:
->  	ixgbevf_reset(adapter);
-> -
->  err_setup_reset:
-> 
->  	return err;
-> @@ -3948,17 +3968,11 @@ static int ixgbevf_resume(struct pci_dev *pdev)
-> 
->  	rtnl_lock();
->  	err = ixgbevf_init_interrupt_scheme(adapter);
-> +	if (!err && netif_running(netdev))
-> +		err = ixgbevf_open(netdev);
->  	rtnl_unlock();
-> -	if (err) {
-> -		dev_err(&pdev->dev, "Cannot initialize interrupts\n");
-> +	if (err)
->  		return err;
-> -	}
-> -
-> -	if (netif_running(netdev)) {
-> -		err = ixgbevf_open(netdev);
-> -		if (err)
-> -			return err;
-> -	}
-> 
->  	netif_device_attach(netdev);
+>  }
 > 
 > 
 > _______________________________________________
