@@ -1,162 +1,71 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 27 Feb 2018 07:40:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 5dd3691c9828abd2e479cc9339d964d76e318c3b
-Message-ID: <5a949af7.as7IbgBpgYVqDkDE%fengguang.wu@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 26 Feb 2018 16:40:06 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH 7/8] igb: Add support for
+ adding offloaded clsflower filters
+In-Reply-To: <9F146DDF-A3CC-404D-AA36-F4A4E444DD2D@gmail.com>
+References: <20180224012036.5834-1-vinicius.gomes@intel.com>
+ <20180224012036.5834-8-vinicius.gomes@intel.com>
+ <9F146DDF-A3CC-404D-AA36-F4A4E444DD2D@gmail.com>
+Message-ID: <87lgff9sex.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 5dd3691c9828abd2e479cc9339d964d76e318c3b  i40e: remove some stray indenting
+Hi,
 
-elapsed time: 121m
+Florian Fainelli <f.fainelli@gmail.com> writes:
 
-configs tested: 138
+> On February 23, 2018 5:20:35 PM PST, Vinicius Costa Gomes <vinicius.gomes@intel.com> wrote:
+>>This allows filters added by tc-flower and specifying MAC addresses,
+>>Ethernet types, and the VLAN priority field, to be offloaded to the
+>>controller.
+>>
+>>This reuses most of the infrastructure used by ethtool, ethtool can be
+>>used to read these filters, but modification and deletion can only be
+>>done via tc-flower.
+>
+> You would want to check what other drivers supporting both
+> ethtool::rxnfc and cls_flower do, but this can be seriously confusing
+> to an user. As an user I would be more comfortable with seeing only
+> rules added through ethtool via ethtool and those added by cls_flower
+> via cls_flower. They will both access a shared set of resources but it
+> seems easier for me to dump rules with both tools to figure out why
+> -ENOSPC was returned rather than seeing something I did not add.
+> Others might see it entirely differently.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I took a closer look at mlx5 and i40e, and they seem to use different
+hardware capabilities (even incompatible in the case of i40e, which
+returns an error when tring to add cls_flower filter when an ethtool
+based filter exists) for ethtool and cls_flower. So I don't think the
+model applies exactly here.
 
-powerpc                      cm5200_defconfig
-sh                          sdk7786_defconfig
-sh                           se7705_defconfig
-i386                   randconfig-c0-02270517
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                       rhel-7.2-prt-off
-i386                     randconfig-i0-201808
-i386                     randconfig-i1-201808
-x86_64                              federa-25
-x86_64                                  kexec
-x86_64                 randconfig-g0-02270322
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-i386                     randconfig-a1-201808
-i386                     randconfig-a0-201808
-x86_64                 randconfig-s0-02270451
-x86_64                 randconfig-s1-02270451
-x86_64                 randconfig-s2-02270451
-x86_64                 randconfig-s0-02270658
-x86_64                 randconfig-s1-02270658
-x86_64                 randconfig-s2-02270658
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x017-201808
-x86_64                 randconfig-x013-201808
-x86_64                 randconfig-x016-201808
-x86_64                 randconfig-x018-201808
-x86_64                 randconfig-x015-201808
-x86_64                 randconfig-x012-201808
-x86_64                 randconfig-x014-201808
-x86_64                 randconfig-x011-201808
-x86_64                 randconfig-x010-201808
-x86_64                 randconfig-x019-201808
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201808
-i386                     randconfig-s1-201808
-x86_64                 randconfig-s3-02270458
-x86_64                 randconfig-s4-02270458
-x86_64                 randconfig-s5-02270458
-x86_64                 randconfig-s3-02270705
-x86_64                 randconfig-s4-02270705
-x86_64                 randconfig-s5-02270705
-i386                               tinyconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201808
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                          badge4_defconfig
-arm                          moxart_defconfig
-openrisc                            defconfig
-sh                             espt_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-b0-02270528
-x86_64                 randconfig-b0-02270706
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                          pcm027_defconfig
-arm                            zeus_defconfig
-powerpc                     rainier_defconfig
-x86_64                 randconfig-u0-02270540
-i386                   randconfig-x015-201808
-i386                   randconfig-x019-201808
-i386                   randconfig-x010-201808
-i386                   randconfig-x014-201808
-i386                   randconfig-x016-201808
-i386                   randconfig-x012-201808
-i386                   randconfig-x011-201808
-i386                   randconfig-x017-201808
-i386                   randconfig-x013-201808
-i386                   randconfig-x018-201808
-x86_64                randconfig-ne0-02270539
-x86_64                randconfig-ne0-02270709
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x000-201808
-x86_64                 randconfig-x005-201808
-x86_64                 randconfig-x008-201808
-x86_64                 randconfig-x006-201808
-x86_64                 randconfig-x001-201808
-x86_64                 randconfig-x007-201808
-x86_64                 randconfig-x009-201808
-x86_64                 randconfig-x002-201808
-x86_64                 randconfig-x003-201808
-x86_64                 randconfig-x004-201808
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-x004-201808
-i386                   randconfig-x002-201808
-i386                   randconfig-x007-201808
-i386                   randconfig-x009-201808
-i386                   randconfig-x003-201808
-i386                   randconfig-x001-201808
-i386                   randconfig-x008-201808
-i386                   randconfig-x005-201808
-i386                   randconfig-x006-201808
-i386                   randconfig-x000-201808
+As they keep the filters separated for the user perspective, I could do
+the same, in the name of convention, it's just that the separation is
+more "artificial". But I have no strong opinions either way.
 
-Thanks,
-Fengguang
+>
+> If you added the ability for cls_flower to indicate a queue number and
+> either a fixed rule index or auto-placement (RX_CLS_LOC_ANY), could
+> that eliminate entirely the need for adding MAC address steering in
+> earlier patches?
+
+I am not sure that I understand. 'cls_flower' already has support for
+indicating a queue number (expressed via the 'hw_tc' parameter to tc)
+(commit 384c181e3780 ("net: sched: Identify hardware traffic classes
+using classid").
+
+And adding more control for the allocation of indexes for the rules seem
+not to help much in reducing the size/complexity of this series. I.e.
+this series has 4 parts: bug fixes, adding support for source addresses
+for MAC filters, adding ethtool support MAC address filters (as it was
+only missing some glue code), and adding offloading for some types of
+cls_flower filters. More control for the allocation of rule indexes would
+only affect the cls_flower part.
+
+But perhaps I could be missing something here.
+
+>
+> -- 
+> Florian
