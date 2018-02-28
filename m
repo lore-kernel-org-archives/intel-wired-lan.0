@@ -1,159 +1,71 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 28 Feb 2018 11:04:26 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 47126b5c09316ae0fd27fafc007ec7212fcef6e0
-Message-ID: <5a961c3a.5jwQMtWVx/6C7k2e%fengguang.wu@intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Wed, 28 Feb 2018 14:19:12 +0900
+Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Fix link check race
+ condition.
+In-Reply-To: <CAKgT0Ueyz9LPz4UwYVpgZJ+nW2YV2A-mYqUQbBP2RaDfgH91rA@mail.gmail.com>
+References: <CAKgT0UffXiggXxC5x1vrtbnKPHzcy8+VTRvBGBH-7tCYmUi6LQ@mail.gmail.com>
+ <20180226023118.17439-1-bpoirier@suse.com>
+ <CAKgT0Ueyz9LPz4UwYVpgZJ+nW2YV2A-mYqUQbBP2RaDfgH91rA@mail.gmail.com>
+Message-ID: <20180228051912.cueusc3wn44ksdc3@f1.synalogic.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 47126b5c09316ae0fd27fafc007ec7212fcef6e0  ixgbe: remove unneeded ipsec state free callback
+On 2018/02/26 08:14, Alexander Duyck wrote:
+[...]
+> 
+> >
+> >         switch (hw->mac.type) {
+> >         case e1000_pch2lan:
+> >                 ret_val = e1000_k1_workaround_lv(hw);
+> >                 if (ret_val)
+> > -                       return ret_val;
+> > +                       goto out;
+> >                 /* fall-thru */
+> >         case e1000_pchlan:
+> >                 if (hw->phy.type == e1000_phy_82578) {
+> >                         ret_val = e1000_link_stall_workaround_hv(hw);
+> >                         if (ret_val)
+> > -                               return ret_val;
+> > +                               goto out;
+> >                 }
+> >
+> >                 /* Workaround for PCHx parts in half-duplex:
+> > @@ -1595,7 +1596,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+> >         if (hw->phy.type > e1000_phy_82579) {
+> >                 ret_val = e1000_set_eee_pchlan(hw);
+> >                 if (ret_val)
+> > -                       return ret_val;
+> > +                       goto out;
+> >         }
+> >
+> >         /* If we are forcing speed/duplex, then we simply return since
+> > @@ -1618,10 +1619,14 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+> >         ret_val = e1000e_config_fc_after_link_up(hw);
+> >         if (ret_val) {
+> >                 e_dbg("Error configuring flow control\n");
+> > -               return ret_val;
+> > +               goto out;
+> >         }
+> 
+> Technically these changes would be a change in behavior. For these we
+> may just want to leave them as-is since I am not certain they would
+> have any actual impact on the link state other than delaying the
+> link-up. For example do we really care if we fail to negotiate flow
+> control? We may not so we might report link up and just a debug
+> message indicating we didn't negotiate that part of the link.
 
-elapsed time: 127m
+You're right and actually that raises yet another problem with commit
+19110cfbb34d ("e1000e: Separate signaling for link check/link up").
 
-configs tested: 135
+Previously these errors which come after the "get_link_status = false"
+would be ignored and the link considered up. After that commit, any
+error implies that the link is down:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+-			link_active = !hw->mac.get_link_status;
++			link_active = ret_val > 0;
 
-x86_64                 randconfig-a0-02281029
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-i0-02270651
-i386                   randconfig-i1-02270651
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201808
-i386                     randconfig-a1-201808
-x86_64                 randconfig-s0-02281005
-x86_64                 randconfig-s1-02281005
-x86_64                 randconfig-s2-02281005
-x86_64                 randconfig-s0-02281038
-x86_64                 randconfig-s1-02281038
-x86_64                 randconfig-s2-02281038
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x017-201808
-x86_64                 randconfig-x013-201808
-x86_64                 randconfig-x016-201808
-x86_64                 randconfig-x018-201808
-x86_64                 randconfig-x015-201808
-x86_64                 randconfig-x012-201808
-x86_64                 randconfig-x014-201808
-x86_64                 randconfig-x011-201808
-x86_64                 randconfig-x010-201808
-x86_64                 randconfig-x019-201808
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201808
-i386                     randconfig-s1-201808
-x86_64                 randconfig-s3-02281016
-x86_64                 randconfig-s4-02281016
-x86_64                 randconfig-s5-02281016
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-x86_64                   randconfig-i0-201808
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-x015-201808
-i386                   randconfig-x019-201808
-i386                   randconfig-x010-201808
-i386                   randconfig-x014-201808
-i386                   randconfig-x016-201808
-i386                   randconfig-x012-201808
-i386                   randconfig-x011-201808
-i386                   randconfig-x017-201808
-i386                   randconfig-x013-201808
-i386                   randconfig-x018-201808
-x86_64                randconfig-ne0-02281037
-x86_64                 randconfig-h0-02280731
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                           allmodconfig
-x86_64                randconfig-ws0-02280609
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x000-201808
-x86_64                 randconfig-x005-201808
-x86_64                 randconfig-x008-201808
-x86_64                 randconfig-x006-201808
-x86_64                 randconfig-x001-201808
-x86_64                 randconfig-x007-201808
-x86_64                 randconfig-x009-201808
-x86_64                 randconfig-x002-201808
-x86_64                 randconfig-x003-201808
-x86_64                 randconfig-x004-201808
-i386                   randconfig-x004-201808
-i386                   randconfig-x002-201808
-i386                   randconfig-x007-201808
-i386                   randconfig-x009-201808
-i386                   randconfig-x003-201808
-i386                   randconfig-x001-201808
-i386                   randconfig-x008-201808
-i386                   randconfig-x005-201808
-i386                   randconfig-x006-201808
-i386                   randconfig-x000-201808
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-02280554
-
-Thanks,
-Fengguang
+I'll send a patch to fix that problem first and then get back to this
+race.
