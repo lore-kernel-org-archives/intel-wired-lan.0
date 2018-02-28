@@ -1,112 +1,221 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 26 Feb 2018 17:51:10 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH 7/8] igb: Add support for
- adding offloaded clsflower filters
-In-Reply-To: <185a038c-2891-912f-8076-51889780007a@gmail.com>
-References: <20180224012036.5834-1-vinicius.gomes@intel.com>
- <20180224012036.5834-8-vinicius.gomes@intel.com>
- <9F146DDF-A3CC-404D-AA36-F4A4E444DD2D@gmail.com> <87lgff9sex.fsf@intel.com>
- <185a038c-2891-912f-8076-51889780007a@gmail.com>
-Message-ID: <87371n9p4h.fsf@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 28 Feb 2018 09:26:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 8ca88b5486cd87ac4fbda94f0a8ac5f36eb71c4b
+Message-ID: <5a960548.UqoXk0fTHc7FXfrL%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: 8ca88b5486cd87ac4fbda94f0a8ac5f36eb71c4b  cdc_ether: flag the Cinterion PLS8 modem by gemalto as WWAN
 
-Florian Fainelli <f.fainelli@gmail.com> writes:
+elapsed time: 341m
 
-> On 02/26/2018 04:40 PM, Vinicius Costa Gomes wrote:
->> Hi,
->> 
->> Florian Fainelli <f.fainelli@gmail.com> writes:
->> 
->>> On February 23, 2018 5:20:35 PM PST, Vinicius Costa Gomes <vinicius.gomes@intel.com> wrote:
->>>> This allows filters added by tc-flower and specifying MAC addresses,
->>>> Ethernet types, and the VLAN priority field, to be offloaded to the
->>>> controller.
->>>>
->>>> This reuses most of the infrastructure used by ethtool, ethtool can be
->>>> used to read these filters, but modification and deletion can only be
->>>> done via tc-flower.
->>>
->>> You would want to check what other drivers supporting both
->>> ethtool::rxnfc and cls_flower do, but this can be seriously confusing
->>> to an user. As an user I would be more comfortable with seeing only
->>> rules added through ethtool via ethtool and those added by cls_flower
->>> via cls_flower. They will both access a shared set of resources but it
->>> seems easier for me to dump rules with both tools to figure out why
->>> -ENOSPC was returned rather than seeing something I did not add.
->>> Others might see it entirely differently.
->> 
->> I took a closer look at mlx5 and i40e, and they seem to use different
->> hardware capabilities (even incompatible in the case of i40e, which
->> returns an error when tring to add cls_flower filter when an ethtool
->> based filter exists) for ethtool and cls_flower. So I don't think the
->> model applies exactly here.
->> 
->> As they keep the filters separated for the user perspective, I could do
->> the same, in the name of convention, it's just that the separation is
->> more "artificial". But I have no strong opinions either way.
->
-> True, I would still conform to what these two drivers do since they have
-> a large user base (so does igb, but not yet for cls_flower yet since you
-> are obviously working on it).
+configs tested: 198
 
-Awesome. Will present them as separate to the user, then.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
->
->> 
->>>
->>> If you added the ability for cls_flower to indicate a queue number and
->>> either a fixed rule index or auto-placement (RX_CLS_LOC_ANY), could
->>> that eliminate entirely the need for adding MAC address steering in
->>> earlier patches?
->> 
->> I am not sure that I understand. 'cls_flower' already has support for
->> indicating a queue number (expressed via the 'hw_tc' parameter to tc)
->> (commit 384c181e3780 ("net: sched: Identify hardware traffic classes
->> using classid").
->
-> I had missed that cls_flower gained the capability to specify a queue
-> number, that's good. What it still does not support AFAICT that ethtool
-> does though is either automatically allocating a rule location (Rule ID
-> shown by ethtool) or allowing placement at a specific location. This can
-> be important when the rule location can be carried by the hardware on
-> e.g: a per-packet basis, the hardware that I work with (bcm_sf2_cfp.c)
-> makes use of that for instance, maybe this is such an isolated case that
-> I should take care of it at some point if I was remotely serious into
-> providing tc/cls_flower support for that driver...
+blackfin                BF548-EZKIT_defconfig
+microblaze                       allmodconfig
+x86_64                 randconfig-a0-02280332
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+mn10300                           allnoconfig
+sh                          sdk7780_defconfig
+microblaze                        allnoconfig
+mips                       markeins_defconfig
+powerpc                         c2k_defconfig
+arm                            mps2_defconfig
+xtensa                       common_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-02280452
+i386                   randconfig-c0-02280722
+x86_64                           allmodconfig
+blackfin                  CM-BF537U_defconfig
+m68k                            q40_defconfig
+openrisc                         allmodconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-i0-02270651
+i386                   randconfig-i1-02270651
+arm                          pcm027_defconfig
+blackfin                BF533-STAMP_defconfig
+mips                         db1xxx_defconfig
+mips                 pnx8335_stb225_defconfig
+powerpc                 mpc8560_ads_defconfig
+s390                           gcov_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-g0-02280156
+x86_64                 randconfig-g0-02280556
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+i386                     randconfig-a0-201808
+i386                     randconfig-a1-201808
+x86_64                 randconfig-s0-02280218
+x86_64                 randconfig-s1-02280218
+x86_64                 randconfig-s2-02280218
+x86_64                 randconfig-s0-02280514
+x86_64                 randconfig-s1-02280514
+x86_64                 randconfig-s2-02280514
+x86_64                 randconfig-s0-02280656
+x86_64                 randconfig-s1-02280656
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                         mv78xx0_defconfig
+microblaze                       allyesconfig
+powerpc                     ksi8560_defconfig
+sh                           se7721_defconfig
+x86_64                 randconfig-x017-201808
+x86_64                 randconfig-x013-201808
+x86_64                 randconfig-x016-201808
+x86_64                 randconfig-x018-201808
+x86_64                 randconfig-x015-201808
+x86_64                 randconfig-x012-201808
+x86_64                 randconfig-x014-201808
+x86_64                 randconfig-x011-201808
+x86_64                 randconfig-x010-201808
+x86_64                 randconfig-x019-201808
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201808
+i386                     randconfig-s1-201808
+x86_64                 randconfig-s3-02280424
+x86_64                 randconfig-s4-02280424
+x86_64                 randconfig-s5-02280424
+x86_64                 randconfig-s3-02280514
+x86_64                 randconfig-s4-02280514
+x86_64                 randconfig-s5-02280514
+x86_64                 randconfig-s3-02280815
+x86_64                 randconfig-s4-02280815
+x86_64                 randconfig-s5-02280815
+arm                       imx_v4_v5_defconfig
+powerpc                mpc7448_hpc2_defconfig
+powerpc                         ps3_defconfig
+sh                           se7722_defconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+x86_64                   randconfig-i0-201808
+i386                   randconfig-b0-02280221
+i386                   randconfig-b0-02280552
+m32r                    mappi2.opsp_defconfig
+m32r                   mappi2.vdec2_defconfig
+mips                        omega2p_defconfig
+mips                         tb0219_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-b0-02280206
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+powerpc                          allyesconfig
+powerpc                       maple_defconfig
+sh                   secureedge5410_defconfig
+x86_64                 randconfig-u0-02280524
+i386                   randconfig-x010-201808
+i386                   randconfig-x011-201808
+i386                   randconfig-x012-201808
+i386                   randconfig-x013-201808
+i386                   randconfig-x014-201808
+i386                   randconfig-x015-201808
+i386                   randconfig-x016-201808
+i386                   randconfig-x017-201808
+i386                   randconfig-x018-201808
+i386                   randconfig-x019-201808
+tile                             allyesconfig
+arm                          imote2_defconfig
+sh                          rsk7264_defconfig
+x86_64                randconfig-ne0-02280149
+x86_64                randconfig-ne0-02280553
+openrisc                         allyesconfig
+sh                                  defconfig
+x86_64                 randconfig-h0-02280531
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                  randconfig-sb0-02280234
+arm                          prima2_defconfig
+m32r                             allyesconfig
+x86_64                randconfig-ws0-02280159
+x86_64                randconfig-ws0-02280609
+i386                              allnoconfig
+i386                             alldefconfig
+i386                                defconfig
+x86_64                                  kexec
+arm                            dove_defconfig
+x86_64                 randconfig-x000-201808
+x86_64                 randconfig-x005-201808
+x86_64                 randconfig-x008-201808
+x86_64                 randconfig-x006-201808
+x86_64                 randconfig-x001-201808
+x86_64                 randconfig-x007-201808
+x86_64                 randconfig-x009-201808
+x86_64                 randconfig-x002-201808
+x86_64                 randconfig-x003-201808
+x86_64                 randconfig-x004-201808
+x86_64                 randconfig-r0-02280210
+x86_64                 randconfig-r0-02280559
+mips                     loongson1b_defconfig
+i386                   randconfig-x000-201808
+i386                   randconfig-x001-201808
+i386                   randconfig-x002-201808
+i386                   randconfig-x003-201808
+i386                   randconfig-x004-201808
+i386                   randconfig-x005-201808
+i386                   randconfig-x006-201808
+i386                   randconfig-x007-201808
+i386                   randconfig-x008-201808
+i386                   randconfig-x009-201808
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                                   jz4740
+mips                                     txx9
+i386                   randconfig-x0-02280121
 
-Now I am starting to see what you meant about the rules location. In the
-igb case of the igb-based controller, only the rule 0 is special (it's
-reserved for the local address) which the user wouldn't have no control
-over. From what I can see, for the igb driver, the location of rules only
-controls the order they are displayed to the user.
-
->
->> 
->> And adding more control for the allocation of indexes for the rules seem
->> not to help much in reducing the size/complexity of this series. I.e.
->> this series has 4 parts: bug fixes, adding support for source addresses
->> for MAC filters, adding ethtool support MAC address filters (as it was
->> only missing some glue code), and adding offloading for some types of
->> cls_flower filters. More control for the allocation of rule indexes would
->> only affect the cls_flower part.
->> 
->> But perhaps I could be missing something here.
->
-> You are absolutely right, it was not so much about trying to reduce the
-> complexity rather than avoiding having two user interface facilities:
-> ethtool and tc/cls_flower to do essentailly the same thing, yet, having
-> some small differences in the offered capabilities, in the case of
-> tc/cls_flower, lack of specification of rule location.
-> -- 
-> Florian
-
-
-Cheers,
---
-Vinicius
+Thanks,
+Fengguang
