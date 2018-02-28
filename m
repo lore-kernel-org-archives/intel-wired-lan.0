@@ -1,20 +1,20 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 01 Mar 2018 00:21:09 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 75a200aa96deef70319cce7f86d3f856fbe27bab
-Message-ID: <5a96d6f5.v0ttDzTUXMoUeXKj%fengguang.wu@intel.com>
+Date: Thu, 01 Mar 2018 00:20:59 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ e9d328d3b753d6f9c75653107fc0689a8e681b16
+Message-ID: <5a96d6eb.WiPRgaPcIWNuFKZl%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 75a200aa96deef70319cce7f86d3f856fbe27bab  ixgbe: remove unneeded ipsec state free callback
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: e9d328d3b753d6f9c75653107fc0689a8e681b16  fm10k: bump version number
 
-elapsed time: 58m
+elapsed time: 52m
 
-configs tested: 127
+configs tested: 129
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -36,6 +36,11 @@ parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
 powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
@@ -64,11 +69,6 @@ nios2                         10m50_defconfig
 score                      spct6600_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
 x86_64                 randconfig-x017-201808
 x86_64                 randconfig-x013-201808
 x86_64                 randconfig-x016-201808
@@ -79,6 +79,8 @@ x86_64                 randconfig-x014-201808
 x86_64                 randconfig-x011-201808
 x86_64                 randconfig-x010-201808
 x86_64                 randconfig-x019-201808
+x86_64                                   rhel
+x86_64                               rhel-7.2
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
 m68k                           sun3_defconfig
@@ -92,12 +94,14 @@ mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                      malta_kvm_defconfig
 mips                                     txx9
-x86_64                   randconfig-i0-201808
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
+arm                          nuc960_defconfig
+arm                         shannon_defconfig
+powerpc                    amigaone_defconfig
 x86_64                 randconfig-u0-02281849
 i386                   randconfig-x015-201808
 i386                   randconfig-x019-201808
@@ -109,19 +113,7 @@ i386                   randconfig-x011-201808
 i386                   randconfig-x017-201808
 i386                   randconfig-x013-201808
 i386                   randconfig-x018-201808
-x86_64                                   rhel
-x86_64                               rhel-7.2
 x86_64                 randconfig-h0-02281934
-x86_64                 randconfig-x000-201808
-x86_64                 randconfig-x005-201808
-x86_64                 randconfig-x008-201808
-x86_64                 randconfig-x006-201808
-x86_64                 randconfig-x001-201808
-x86_64                 randconfig-x007-201808
-x86_64                 randconfig-x009-201808
-x86_64                 randconfig-x002-201808
-x86_64                 randconfig-x003-201808
-x86_64                 randconfig-x004-201808
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -135,6 +127,16 @@ arm64                               defconfig
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
+x86_64                 randconfig-x000-201808
+x86_64                 randconfig-x005-201808
+x86_64                 randconfig-x008-201808
+x86_64                 randconfig-x006-201808
+x86_64                 randconfig-x001-201808
+x86_64                 randconfig-x007-201808
+x86_64                 randconfig-x009-201808
+x86_64                 randconfig-x002-201808
+x86_64                 randconfig-x003-201808
+x86_64                 randconfig-x004-201808
 i386                   randconfig-x004-201808
 i386                   randconfig-x002-201808
 i386                   randconfig-x007-201808
