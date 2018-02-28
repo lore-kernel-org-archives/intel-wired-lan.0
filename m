@@ -1,160 +1,51 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 01 Mar 2018 05:01:36 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 77930e7439b75e7ef580424bf90248a945aba17b
-Message-ID: <5a9718b0.S9r2dzHycfrMV5Hz%fengguang.wu@intel.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu,  1 Mar 2018 00:17:36 +0100
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbevf: fix unused variable
+ warning
+Message-ID: <20180228231745.366681-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 77930e7439b75e7ef580424bf90248a945aba17b  Documentation: e1000e: Update kernel documentation
+The new ixgbevf_set_rx_buffer_len() function causes a harmless warnings
+in configurations with large page size:
 
-elapsed time: 100m
+drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c: In function 'ixgbevf_set_rx_buffer_len':
+drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:1758:15: error: unused variable 'max_frame' [-Werror=unused-variable]
 
-configs tested: 136
+This rephrases the code so that the compiler can see the use of that
+variable, making it slightly easier to read in the process.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Fixes: f15c5ba5b6cd ("ixgbevf: add support for using order 1 pages to receive large frames")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-x86_64                 randconfig-a0-03010121
-i386                               tinyconfig
-i386                   randconfig-c0-03010122
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i0-201808
-i386                     randconfig-i1-201808
-x86_64                              federa-25
-x86_64                                  kexec
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201808
-i386                     randconfig-a1-201808
-x86_64                 randconfig-s0-03010316
-x86_64                 randconfig-s1-03010316
-x86_64                 randconfig-s2-03010316
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x017-201808
-x86_64                 randconfig-x013-201808
-x86_64                 randconfig-x016-201808
-x86_64                 randconfig-x018-201808
-x86_64                 randconfig-x015-201808
-x86_64                 randconfig-x012-201808
-x86_64                 randconfig-x014-201808
-x86_64                 randconfig-x011-201808
-x86_64                 randconfig-x010-201808
-x86_64                 randconfig-x019-201808
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201808
-i386                     randconfig-s1-201808
-x86_64                 randconfig-s3-03010312
-x86_64                 randconfig-s4-03010312
-x86_64                 randconfig-s5-03010312
-x86_64                 randconfig-s3-03010416
-x86_64                 randconfig-s4-03010416
-x86_64                 randconfig-s5-03010416
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201808
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-u0-03010237
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x015-201808
-i386                   randconfig-x019-201808
-i386                   randconfig-x010-201808
-i386                   randconfig-x014-201808
-i386                   randconfig-x016-201808
-i386                   randconfig-x012-201808
-i386                   randconfig-x011-201808
-i386                   randconfig-x017-201808
-i386                   randconfig-x013-201808
-i386                   randconfig-x018-201808
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                randconfig-ne0-02281522
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x000-201808
-x86_64                 randconfig-x005-201808
-x86_64                 randconfig-x008-201808
-x86_64                 randconfig-x006-201808
-x86_64                 randconfig-x001-201808
-x86_64                 randconfig-x007-201808
-x86_64                 randconfig-x009-201808
-x86_64                 randconfig-x002-201808
-x86_64                 randconfig-x003-201808
-x86_64                 randconfig-x004-201808
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                   randconfig-x004-201808
-i386                   randconfig-x002-201808
-i386                   randconfig-x007-201808
-i386                   randconfig-x009-201808
-i386                   randconfig-x003-201808
-i386                   randconfig-x001-201808
-i386                   randconfig-x008-201808
-i386                   randconfig-x005-201808
-i386                   randconfig-x006-201808
-i386                   randconfig-x000-201808
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index f37307131eb6..4da449e0a4ba 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1766,12 +1766,12 @@ static void ixgbevf_set_rx_buffer_len(struct ixgbevf_adapter *adapter,
+ 
+ 	set_ring_build_skb_enabled(rx_ring);
+ 
+-#if (PAGE_SIZE < 8192)
+-	if (max_frame <= IXGBEVF_MAX_FRAME_BUILD_SKB)
+-		return;
++	if (PAGE_SIZE < 8192) {
++		if (max_frame <= IXGBEVF_MAX_FRAME_BUILD_SKB)
++			return;
+ 
+-	set_ring_uses_large_buffer(rx_ring);
+-#endif
++		set_ring_uses_large_buffer(rx_ring);
++	}
+ }
+ 
+ /**
+-- 
+2.9.0
 
-Thanks,
-Fengguang
