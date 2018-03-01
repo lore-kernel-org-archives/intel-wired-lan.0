@@ -1,45 +1,56 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Mar 2018 21:15:23 +0000
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbevf: fix unused variable
- warning
-In-Reply-To: <20180228231745.366681-1-arnd@arndb.de>
-References: <20180228231745.366681-1-arnd@arndb.de>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94AFD1@ORSMSX104.amr.corp.intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 1 Mar 2018 15:05:44 -0800
+Subject: [Intel-wired-lan] ixgbe, TSO, and NETIF_F_TSO_MANGLEID
+Message-ID: <2e4fbd7e-6ecc-7811-9275-6971d745977e@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Arnd Bergmann
-> Sent: Wednesday, February 28, 2018 3:18 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org; David S. Miller
-> <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [net-next PATCH] ixgbevf: fix unused variable
-> warning
-> 
-> The new ixgbevf_set_rx_buffer_len() function causes a harmless warnings in
-> configurations with large page size:
-> 
-> drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c: In function
-> 'ixgbevf_set_rx_buffer_len':
-> drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:1758:15: error: unused
-> variable 'max_frame' [-Werror=unused-variable]
-> 
-> This rephrases the code so that the compiler can see the use of that variable,
-> making it slightly easier to read in the process.
-> 
-> Fixes: f15c5ba5b6cd ("ixgbevf: add support for using order 1 pages to receive
-> large frames")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+Hi folks,
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+In trying to get TSO working for ipsec offload, I've found that 
+NETIF_F_TSO_MANGLEID is not set, so the NETIF_F_TSO bit is getting 
+stripped in ixgbe_features_check().
+
+Back in commit
+commit b83e30104bd9 ("ixgbe/ixgbevf: Add support for GSO partial")
+
+NETIF_F_TSO_MANGLEID was added to netdev->vlan_features in 
+ixgbe_probe(), but it is never added to netdev->features.  The patch 
+also added a check for NETIF_F_TSO_MANGLEID in ixgbe_features_check(), 
+but the test is looking in the "features" passed into the function.  As 
+far as I can tell, the calls into .ndo_features_check() are using 
+dev->features, not dev->vlan_features.
+
+Should NETIF_F_TSO_MANGLEID be added to netdev->features as well? 
+Something like:
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c 
+b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 82c0543..dcb408b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -10441,7 +10441,9 @@ static int ixgbe_probe(struct pci_dev *pdev, 
+const struct pci_device_id *ent)
+         if (pci_using_dac)
+                 netdev->features |= NETIF_F_HIGHDMA;
+
+-       netdev->vlan_features |= netdev->features | NETIF_F_TSO_MANGLEID;
++       netdev->features |= NETIF_F_TSO_MANGLEID;
++       netdev->vlan_features |= NETIF_F_TSO_MANGLEID;
++
+         netdev->hw_enc_features |= netdev->vlan_features;
+         netdev->mpls_features |= NETIF_F_SG |
+                                  NETIF_F_TSO |
 
 
+
+Cheers,
+sln
+
+-- 
+==================================================
+Shannon Nelson           shannon.nelson at oracle.com
+Parents can't afford to be squeamish
