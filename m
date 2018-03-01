@@ -1,71 +1,31 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 1 Mar 2018 11:07:40 -0800
-Subject: [Intel-wired-lan] [PATCH] e1000e: Fix link status in case of
- error.
-In-Reply-To: <20180301064018.kdy34jixrsmwossf@f1.synalogic.ca>
-References: <20180228052006.12074-1-bpoirier@suse.com>
- <CAKgT0Uc_Dur56FxJfqoh90E=pUYtiKJr20f3fado-GdL8yUi5w@mail.gmail.com>
- <20180301064018.kdy34jixrsmwossf@f1.synalogic.ca>
-Message-ID: <CAKgT0Ueq8Wv7wQqxQR9EZmnhtPCuyW_tfP-HXvVrZFAXUEkwMw@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 1 Mar 2018 21:11:21 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add receive length error
+ counter.
+In-Reply-To: <1519819149-10012-1-git-send-email-xiangxia.m.yue@gmail.com>
+References: <1519819149-10012-1-git-send-email-xiangxia.m.yue@gmail.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94AFB1@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Feb 28, 2018 at 10:40 PM, Benjamin Poirier <bpoirier@suse.com> wrote:
-> On 2018/02/28 08:48, Alexander Duyck wrote:
->> On Tue, Feb 27, 2018 at 9:20 PM, Benjamin Poirier <bpoirier@suse.com> wrote:
->> > Before commit 19110cfbb34d ("e1000e: Separate signaling for link check/link
->> > up"), errors which happen after "get_link_status = false" in the copper
->> > check_for_link callbacks would be ignored and the link considered up. After
->> > that commit, any error implies that the link is down. Since all
->> > combinations of link up/down and error/no error are possible, do the same
->> > thing as e1000e_phy_has_link_generic() and return the link status in a
->> > separate variable.
->> >
->> > Fixes: 19110cfbb34d ("e1000e: Separate signaling for link check/link up")
->> > Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
->>
->> This seems more like a refactor than a fix. There are valid cases
->> where errors can be ignored after we set the link to up. For example
->> if we cannot negotiate flow control we may not care as long as the
->> link is established. In such a case we may see errors establishing
->> flow control and they should be ignored.
->
-> Indeed, before commit 19110cfbb34d ("e1000e: Separate signaling for link
-> check/link up") a failure of e1000e_config_fc_after_link_up() in
-> e1000e_check_for_copper_link() would be ignored. After that commit,
-> there is an extra 2s delay before link up, like what was just fixed for
-> autoneg in commit d8ca384786c2 ("e1000e: Fix check_for_link return value
-> with autoneg off"). That was an unintended change in behavior. This is
-> what this patch purports to fix. The same is true for other failure
-> paths in e1000_check_for_copper_link_ich8lan() that happen after
-> get_link_status = false.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tonghao Zhang
+> Sent: Wednesday, February 28, 2018 3:59 AM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Add receive length error counter.
+> 
+> ixgbe enabled rlec counter and the rx_error used it.
+> We can export the counter directly via ethtool -S ethX.
+> 
+> Signed-off-by: Tonghao Zhang <xiangxia.m.yue@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-Maybe we should just revert 19110cfbb34d ("e1000e: Separate signaling
-for link check/link up"). Looking over the logic for it the whole
-concept is just wrong. In the real-world it is actually possible for
-us to lose link just after testing for it, and when that happens we
-wouldn't want the link to be reported as up as it will appear to be a
-link flap. If the LSC is actually firing that fast we would want to
-stay down, and we know the original issue was we were getting false
-LSC messages which should now be solved.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-The reason why this behavior is the way it is was because the
-assumption was that if we need to check for link then we should assume
-the link is down. Getting false LSC events did cause link flaps, but
-that was mostly due to misrecognized events, and now that we resolved
-that it should no longer be the case. The fact that we are now
-ignoring it after testing the link actually leads to undesirable
-effects such as us having windows where the link is toggling up and
-back down and we could possibly ignore it and report link up anyway
-until we can get around to testing it again. If we make use of the RFC
-you are currently working on to fix the race I pointed out, and we
-revert the patch that separates signaling, then we should stay link
-down during a LSC storm and come back up once the link has stabilized.
-Otherwise we run the risk of reporting link up which may cause issues
-if the link is electrically unstable after a cable is just connected
-or pulled and we start trying to use it.
 
-- Alex
