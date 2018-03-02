@@ -1,76 +1,72 @@
-From: Stefan Assmann <sassmann@redhat.com>
-Date: Fri, 2 Mar 2018 08:21:23 +0100
-Subject: [Intel-wired-lan] SRIOV on Intel x710 fail to get attached both
- at VM creation time and VM runtime
-In-Reply-To: <CAKgT0UcXmQ8nkFD9LsNmkU9AHaoC7evb0mB0NFqUC2df_NRy0g@mail.gmail.com>
-References: <39dcd27f99192edd77baf4e418443edd@codeaurora.org>
- <2a249cb55b6520cf2a25fbb5903ea56d@codeaurora.org>
- <CAKgT0UcXmQ8nkFD9LsNmkU9AHaoC7evb0mB0NFqUC2df_NRy0g@mail.gmail.com>
-Message-ID: <20180302072123.t5afapjnrnzppmen@w541.fritz.box>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri,  2 Mar 2018 10:43:36 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v2 0/8] igb: offloading of
+ receive filters
+Message-ID: <20180302184344.5744-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2018-03-01 19:40, Alexander Duyck wrote:
-> On Thu, Mar 1, 2018 at 8:12 AM,  <poza@codeaurora.org> wrote:
-> > + intel-wired-lan at lists.osuosl.org
-> >
-> >
-> > On 2018-03-01 21:41, poza at codeaurora.org wrote:
-> >>
-> >> Hi All,
-> >>
-> >> I am facing the following issue on kernel 4.14.14.
-> >>
-> >> Enable SRIOV on Intel x710 card.
-> >> echo 32 > /sys/class/net/eth1/device/sriov_numvfs
-> >> start net_pool
-> >> virsh net-start intel_pool
-> >>
-> >> case 1)
-> >> attach the VF while creatig VM:
-> >> virt-install --accelerate --import --disk /home/disk.img --network
-> >> network=intel_pool  --boot uefi --name poza-guest --os-type linux
-> >> --os-variant rhel7 --ram 8000 --vcpus 4
-> >>
-> >> case 2)
-> >> create VM:
-> >> virt-install --accelerate --import --disk /home/disk.img --boot uefi
-> >> --name poza-guest --os-type linux --os-variant rhel7 --ram 8000
-> >> --vcpus 4
-> >> attach it:
-> >> virsh attach-interface --domain oza-guest --type network --source
-> >> intel_pool --target eth1
-> >>
-> >> kernel logs:
-> >> [44287.825287] i40evf 0000:01:02.0: Unable to send opcode 2 to PF, err
-> >> I40E_ERR_QUEUE_EMPTY, aq_err OK
-> >> [44287.962640] i40e 0000:01:00.0: VF 0 still in reset. Try again.
-> >> error: Failed to attach interface
-> >> error: Cannot set interface MAC/vlanid to 52:54:00:e9:f1:b5/0 for
-> >> ifname eth1 vf 0: Resource temporarily unavailable
-> >>
-> >>
-> >> The same use case works with following card with the same kernel
-> >> version and rootfs.
-> >> Ethernet controller: Mellanox Technologies MT27710 Family [ConnectX-4 Lx]
-> >>
-> >> for details logs please have a look at
-> >> https://bugzilla.kernel.org/show_bug.cgi?id=198959
-> >>
-> >> Regards,
-> >> Oza.
-> 
-> So the first question that jumps to mind is what is the firmware
-> version on the PF, ethtool -i should tell you. Are there any issues
-> bringing up the PF and getting it to pass traffic?
+Hi,
 
-There's a patch on Intel-wired-lan titled "i40e: Fix attach VF to VM
-issue" which should fix the problem. It's not upstream yet.
+Changes from v1:
+ - Addressed review comments from Alexander Duyck and Florian
+   Fainelli;
+ - Adding and removing cls_flower filters are now proposed in the same
+   patch;
+ - cls_flower filters are kept in a separated list from "ethtool"
+   filters (so that section of the original cover letter is no longer
+   valid);
+ - The patch adding support for ethtool filters is now independent from
+   the rest of the series;
 
-As a workaround you could unload/blacklist the i40evf driver in the
-host.
+Original cover letter:
 
-  Stefan
+This series enables some ethtool and tc-flower filters to be offloaded
+to igb-based network controllers. This is useful when the system
+configurator want to steer kinds of traffic to a specific hardware
+queue.
+
+The first two commits are bug fixes.
+
+The basis of this series is to export the internal API used to
+configure address filters, so they can be used by ethtool, and
+extending the functionality so an source address can be handled.
+
+Then, we enable the tc-flower offloading implementation to re-use the
+same infrastructure as ethtool, and storing them in the per-adapter
+"nfc" (Network Filter Config?) list. But for consistency, for
+destructive access they are separated, i.e. an filter added by
+tc-flower can only be removed by tc-flower, but ethtool can read them
+all.
+
+Only support for VLAN Prio, Source and Destination MAC Address, and
+Ethertype is enabled for now.
+
+Open question:
+  - igb is initialized with the number of traffic classes as 1, if we
+  want to use multiple traffic classes we need to increase this value,
+  the only way I could find is to use mqprio (for example). Should igb
+  be initialized with, say, the number of queues as its "num_tc"?
+
+
+Vinicius Costa Gomes (8):
+  igb: Fix not adding filter elements to the list
+  igb: Fix queue selection on MAC filters on i210 and i211
+  igb: Enable the hardware traffic class feature bit for igb models
+  igb: Add support for MAC address filters specifying source addresses
+  igb: Enable nfc filters to specify MAC addresses
+  igb: Add MAC address support for ethtool nftuple filters
+  igb: Add the skeletons for tc-flower offloading
+  igb: Add support for adding offloaded clsflower filters
+
+ drivers/net/ethernet/intel/igb/e1000_defines.h |   2 +
+ drivers/net/ethernet/intel/igb/igb.h           |  12 +
+ drivers/net/ethernet/intel/igb/igb_ethtool.c   |  65 +++++-
+ drivers/net/ethernet/intel/igb/igb_main.c      | 294 ++++++++++++++++++++++++-
+ 4 files changed, 359 insertions(+), 14 deletions(-)
+
+--
+2.16.2
