@@ -1,55 +1,84 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 2 Mar 2018 12:55:09 -0800
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbevf: fix unused variable
- warning
-In-Reply-To: <20180228231745.366681-1-arnd@arndb.de>
-References: <20180228231745.366681-1-arnd@arndb.de>
-Message-ID: <CAKgT0UcgjKeFoy0nm70CP+EshSccGgAqsq6gtwsMqdvqM6CSWg@mail.gmail.com>
+Date: Fri, 2 Mar 2018 12:58:41 -0800
+Subject: [Intel-wired-lan] SRIOV on Intel x710 fail to get attached both
+ at VM creation time and VM runtime
+In-Reply-To: <20180302072123.t5afapjnrnzppmen@w541.fritz.box>
+References: <39dcd27f99192edd77baf4e418443edd@codeaurora.org>
+ <2a249cb55b6520cf2a25fbb5903ea56d@codeaurora.org>
+ <CAKgT0UcXmQ8nkFD9LsNmkU9AHaoC7evb0mB0NFqUC2df_NRy0g@mail.gmail.com>
+ <20180302072123.t5afapjnrnzppmen@w541.fritz.box>
+Message-ID: <CAKgT0Ue1oFzkxiDXR-F1EnQQitMLsyZRjfmXhBWY-BNtANMcjQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Feb 28, 2018 at 3:17 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> The new ixgbevf_set_rx_buffer_len() function causes a harmless warnings
-> in configurations with large page size:
+On Thu, Mar 1, 2018 at 11:21 PM, Stefan Assmann <sassmann@redhat.com> wrote:
+> On 2018-03-01 19:40, Alexander Duyck wrote:
+>> On Thu, Mar 1, 2018 at 8:12 AM,  <poza@codeaurora.org> wrote:
+>> > + intel-wired-lan at lists.osuosl.org
+>> >
+>> >
+>> > On 2018-03-01 21:41, poza at codeaurora.org wrote:
+>> >>
+>> >> Hi All,
+>> >>
+>> >> I am facing the following issue on kernel 4.14.14.
+>> >>
+>> >> Enable SRIOV on Intel x710 card.
+>> >> echo 32 > /sys/class/net/eth1/device/sriov_numvfs
+>> >> start net_pool
+>> >> virsh net-start intel_pool
+>> >>
+>> >> case 1)
+>> >> attach the VF while creatig VM:
+>> >> virt-install --accelerate --import --disk /home/disk.img --network
+>> >> network=intel_pool  --boot uefi --name poza-guest --os-type linux
+>> >> --os-variant rhel7 --ram 8000 --vcpus 4
+>> >>
+>> >> case 2)
+>> >> create VM:
+>> >> virt-install --accelerate --import --disk /home/disk.img --boot uefi
+>> >> --name poza-guest --os-type linux --os-variant rhel7 --ram 8000
+>> >> --vcpus 4
+>> >> attach it:
+>> >> virsh attach-interface --domain oza-guest --type network --source
+>> >> intel_pool --target eth1
+>> >>
+>> >> kernel logs:
+>> >> [44287.825287] i40evf 0000:01:02.0: Unable to send opcode 2 to PF, err
+>> >> I40E_ERR_QUEUE_EMPTY, aq_err OK
+>> >> [44287.962640] i40e 0000:01:00.0: VF 0 still in reset. Try again.
+>> >> error: Failed to attach interface
+>> >> error: Cannot set interface MAC/vlanid to 52:54:00:e9:f1:b5/0 for
+>> >> ifname eth1 vf 0: Resource temporarily unavailable
+>> >>
+>> >>
+>> >> The same use case works with following card with the same kernel
+>> >> version and rootfs.
+>> >> Ethernet controller: Mellanox Technologies MT27710 Family [ConnectX-4 Lx]
+>> >>
+>> >> for details logs please have a look at
+>> >> https://bugzilla.kernel.org/show_bug.cgi?id=198959
+>> >>
+>> >> Regards,
+>> >> Oza.
+>>
+>> So the first question that jumps to mind is what is the firmware
+>> version on the PF, ethtool -i should tell you. Are there any issues
+>> bringing up the PF and getting it to pass traffic?
 >
-> drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c: In function 'ixgbevf_set_rx_buffer_len':
-> drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:1758:15: error: unused variable 'max_frame' [-Werror=unused-variable]
+> There's a patch on Intel-wired-lan titled "i40e: Fix attach VF to VM
+> issue" which should fix the problem. It's not upstream yet.
 >
-> This rephrases the code so that the compiler can see the use of that
-> variable, making it slightly easier to read in the process.
+> As a workaround you could unload/blacklist the i40evf driver in the
+> host.
 >
-> Fixes: f15c5ba5b6cd ("ixgbevf: add support for using order 1 pages to receive large frames")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index f37307131eb6..4da449e0a4ba 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -1766,12 +1766,12 @@ static void ixgbevf_set_rx_buffer_len(struct ixgbevf_adapter *adapter,
->
->         set_ring_build_skb_enabled(rx_ring);
->
-> -#if (PAGE_SIZE < 8192)
-> -       if (max_frame <= IXGBEVF_MAX_FRAME_BUILD_SKB)
-> -               return;
-> +       if (PAGE_SIZE < 8192) {
-> +               if (max_frame <= IXGBEVF_MAX_FRAME_BUILD_SKB)
-> +                       return;
->
-> -       set_ring_uses_large_buffer(rx_ring);
-> -#endif
-> +               set_ring_uses_large_buffer(rx_ring);
-> +       }
->  }
->
->  /**
+>   Stefan
 
-The fix looks good to me.
+Either that or there should be an sriov_drivers_autoprobe sysfs value
+for the PF that you can set to 0 and that should prevent the VF
+drivers from auto-loading.
 
-Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
+- Alex
