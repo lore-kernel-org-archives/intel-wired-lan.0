@@ -1,115 +1,39 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri,  2 Mar 2018 10:43:43 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v2 7/8] igb: Add the skeletons
- for tc-flower offloading
+Date: Fri,  2 Mar 2018 10:43:39 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v2 3/8] igb: Enable the
+ hardware traffic class feature bit for igb models
 In-Reply-To: <20180302184344.5744-1-vinicius.gomes@intel.com>
 References: <20180302184344.5744-1-vinicius.gomes@intel.com>
-Message-ID: <20180302184344.5744-8-vinicius.gomes@intel.com>
+Message-ID: <20180302184344.5744-4-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This adds basic functions needed to implement offloading for filters
-created by tc-flower.
+This will allow functionality depending on the hardware being traffic
+class aware to work. In particular the tc-flower offloading checks
+verifies that this bit is set.
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 66 +++++++++++++++++++++++++++++++
- 1 file changed, 66 insertions(+)
+ drivers/net/ethernet/intel/igb/igb_main.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 71e03b5227df..b5a6bd37bb16 100644
+index 0ea32be07d71..3c4d209aad76 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -35,6 +35,7 @@
- #include <net/checksum.h>
- #include <net/ip6_checksum.h>
- #include <net/pkt_sched.h>
-+#include <net/pkt_cls.h>
- #include <linux/net_tstamp.h>
- #include <linux/mii.h>
- #include <linux/ethtool.h>
-@@ -2496,6 +2497,69 @@ static int igb_offload_cbs(struct igb_adapter *adapter,
- 	return 0;
- }
+@@ -2804,6 +2804,9 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (hw->mac.type >= e1000_82576)
+ 		netdev->features |= NETIF_F_SCTP_CRC;
  
-+static int igb_configure_clsflower(struct igb_adapter *adapter,
-+				   struct tc_cls_flower_offload *cls_flower)
-+{
-+	return -EOPNOTSUPP;
-+}
++	if (hw->mac.type >= e1000_i350)
++		netdev->features |= NETIF_F_HW_TC;
 +
-+static int igb_delete_clsflower(struct igb_adapter *adapter,
-+				struct tc_cls_flower_offload *cls_flower)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static int igb_setup_tc_cls_flower(struct igb_adapter *adapter,
-+				   struct tc_cls_flower_offload *cls_flower)
-+{
-+	switch (cls_flower->command) {
-+	case TC_CLSFLOWER_REPLACE:
-+		return igb_configure_clsflower(adapter, cls_flower);
-+	case TC_CLSFLOWER_DESTROY:
-+		return igb_delete_clsflower(adapter, cls_flower);
-+	case TC_CLSFLOWER_STATS:
-+		return -EOPNOTSUPP;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int igb_setup_tc_block_cb(enum tc_setup_type type, void *type_data,
-+				 void *cb_priv)
-+{
-+	struct igb_adapter *adapter = cb_priv;
-+
-+	if (!tc_cls_can_offload_and_chain0(adapter->netdev, type_data))
-+		return -EOPNOTSUPP;
-+
-+	switch (type) {
-+	case TC_SETUP_CLSFLOWER:
-+		return igb_setup_tc_cls_flower(adapter, type_data);
-+
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+}
-+
-+static int igb_setup_tc_block(struct igb_adapter *adapter,
-+			      struct tc_block_offload *f)
-+{
-+	if (f->binder_type != TCF_BLOCK_BINDER_TYPE_CLSACT_INGRESS)
-+		return -EOPNOTSUPP;
-+
-+	switch (f->command) {
-+	case TC_BLOCK_BIND:
-+		return tcf_block_cb_register(f->block, igb_setup_tc_block_cb,
-+					     adapter, adapter);
-+	case TC_BLOCK_UNBIND:
-+		tcf_block_cb_unregister(f->block, igb_setup_tc_block_cb,
-+					adapter);
-+		return 0;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+}
-+
- static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 			void *type_data)
- {
-@@ -2504,6 +2568,8 @@ static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 	switch (type) {
- 	case TC_SETUP_QDISC_CBS:
- 		return igb_offload_cbs(adapter, type_data);
-+	case TC_SETUP_BLOCK:
-+		return igb_setup_tc_block(adapter, type_data);
- 
- 	default:
- 		return -EOPNOTSUPP;
+ #define IGB_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
+ 				  NETIF_F_GSO_GRE_CSUM | \
+ 				  NETIF_F_GSO_IPXIP4 | \
 -- 
 2.16.2
 
