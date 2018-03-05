@@ -1,291 +1,152 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 28 Feb 2018 15:47:31 -0800
-Subject: [Intel-wired-lan] [PATCH 8/8] Documentation: fm10k: Add kernel
- documentation
-In-Reply-To: <20180228175032.11148-8-jeffrey.t.kirsher@intel.com>
-References: <20180228175032.11148-1-jeffrey.t.kirsher@intel.com>
- <20180228175032.11148-8-jeffrey.t.kirsher@intel.com>
-Message-ID: <7a37762f-8194-b630-a8eb-0c7d05fd16f5@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 06 Mar 2018 04:09:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 0eaa5ac0b04bfcb3a73d56e7f4eab3a97e638534
+Message-ID: <5a9da411.1/443kslLmsJ0ntQ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/28/2018 9:50 AM, Jeff Kirsher wrote:
-> Added the fm10k.txt kernel documentation which apparently was missing.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 0eaa5ac0b04bfcb3a73d56e7f4eab3a97e638534  e1000e: Fix check_for_link return value with autoneg off
 
-I haven't really looked at this much, but a brief glance suggests that a 
-lot of the comments from the i40e and ixgbe files apply to this.  I 
-would guess they probably apply to the rest of the files.
+elapsed time: 237m
 
-Does FdirPballoc even show up in this driver?  Or any other module 
-parameters?  Is there a FlowDirector in fm10k - I don't see it in its 
-ethtool.c code?
+configs tested: 128
 
-sln
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> 
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> ---
->   Documentation/networking/fm10k.txt | 250 +++++++++++++++++++++++++++++++++++++
->   1 file changed, 250 insertions(+)
->   create mode 100644 Documentation/networking/fm10k.txt
-> 
-> diff --git a/Documentation/networking/fm10k.txt b/Documentation/networking/fm10k.txt
-> new file mode 100644
-> index 000000000000..9f6d7d54b132
-> --- /dev/null
-> +++ b/Documentation/networking/fm10k.txt
-> @@ -0,0 +1,250 @@
-> +README for Intel(R) Ethernet Multi-host Controller Driver
-> +=========================================================
-> +
-> +February 23, 2018
-> +Copyright(c) 2015-2018 Intel Corporation.
-> +
-> +Contents
-> +========
-> +- Identifying Your Adapter
-> +- Additional Configurations
-> +- Performance Tuning
-> +- Known Issues
-> +- Support
-> +
-> +Identifying Your Adapter
-> +------------------------
-> +The driver in this release is compatible with devices based on the Intel(R)
-> +Ethernet Multi-host Controller.
-> +
-> +For information on how to identify your adapter, and for the latest Intel
-> +network drivers, refer to the Intel Support website:
-> +http://www.intel.com/support
-> +
-> +
-> +Flow Control
-> +------------
-> +The Intel(R) Ethernet Switch Host Interface Driver does not support Flow
-> +Control. It will not send pause frames. This may result in dropped frames.
-> +
-> +
-> +Intel(R) Ethernet Flow Director
-> +-------------------------------
-> +The Intel Ethernet Flow Director performs the following tasks:
-> +
-> +- Directs receive packets according to their flows to different queues.
-> +- Enables tight control on routing a flow in the platform.
-> +- Matches flows and CPU cores for flow affinity.
-> +- Supports multiple parameters for flexible flow classification and load
-> +  balancing (in SFP mode only).
-> +
-> +NOTE: An included script (set_irq_affinity) automates setting the IRQ to CPU
-> +affinity.
-> +
-> +ethtool commands:
-> +
-> +To enable or disable the Intel Ethernet Flow Director:
-> +
-> +  # ethtool -K ethX ntuple <on|off>
-> +
-> +When disabling ntuple filters, all the user programmed filters are flushed from
-> +the driver cache and hardware. All needed filters must be re-added when ntuple
-> +is re-enabled.
-> +
-> +To add a filter that directs packet to queue 2, use -U or -N switch:
-> +
-> +  # ethtool -N ethX flow-type tcp4 src-ip 192.168.10.1 dst-ip \
-> +  192.168.10.2 src-port 2000 dst-port 2001 action 2 [loc 1]
-> +
-> +To see the list of filters currently present:
-> +  # ethtool <-u|-n> ethX
-> +
-> +
-> +FdirPballoc
-> +-----------
-> +Valid Range: 1-3
-> +Specifies the Flow Director allocated packet buffer size.
-> +1 = 64k
-> +2 = 128k
-> +3 = 256k
-> +
-> +
-> +AtrSampleRate
-> +-------------
-> +Valid Range: 0-255
-> +This parameter is used with the Flow Director and is the software ATR transmit
-> +packet sample rate. For example, when AtrSampleRate is set to 20, every 20th
-> +packet looks to see if the packet will create a new flow. A value of 0
-> +indicates that ATR should be disabled and no samples will be taken.
-> +
-> +
-> +Node
-> +----
-> +Valid Range: 0-n
-> +0 - n: where n is the number of the NUMA node that should be used to allocate
-> +memory for this adapter port.
-> +-1: uses the driver default of allocating memory on whichever processor is
-> +running modprobe.
-> +The Node parameter allows you to choose which NUMA node you want to have the
-> +adapter allocate memory from. All driver structures, in-memory queues, and
-> +receive buffers will be allocated on the node specified. This parameter is
-> +only useful when interrupt affinity is specified; otherwise, part of the
-> +interrupt time could run on a different core than where the memory is
-> +allocated causing slower memory access and impacting throughput, CPU, or both.
-> +
-> +
-> +max_vfs
-> +-------
-> +This parameter adds support for SR-IOV. It causes the driver to spawn up to
-> +max_vfs worth of virtual functions.
-> +Valid Range:0-64
-> +
-> +NOTE: This parameter is only used on kernel 3.7.x and below. On kernel 3.8.x
-> +and above, use sysfs to enable VFs. Also, for Red Hat distributions, this
-> +parameter is only used on version 6.6 and older. For version 6.7 and newer, use
-> +sysfs. For example:
-> +#echo $num_vf_enabled > /sys/class/net/$dev/device/sriov_numvfs	//enable
-> +VFs
-> +#echo 0 > /sys/class/net/$dev/device/sriov_numvfs	//disable VFs
-> +
-> +The parameters for the driver are referenced by position. Thus, if you have a
-> +dual port adapter, or more than one adapter in your system, and want N virtual
-> +functions per port, you must specify a number for each port with each parameter
-> +separated by a comma. For example:
-> +
-> +  modprobe fm10k max_vfs=4
-> +
-> +This will spawn 4 VFs on the first port.
-> +
-> +  modprobe fm10k max_vfs=2,4
-> +
-> +This will spawn 2 VFs on the first port and 4 VFs on the second port.
-> +
-> +NOTE: Caution must be used in loading the driver with these parameters.
-> +Depending on your system configuration, number of slots, etc., it is impossible
-> +to predict in all cases where the positions would be on the command line.
-> +
-> +NOTE: Neither the device nor the driver control how VFs are mapped into config
-> +space. Bus layout will vary by operating system. On operating systems that
-> +support it, you can check sysfs to find the mapping.
-> +
-> +NOTE: When SR-IOV mode is enabled, hardware VLAN filtering and VLAN tag
-> +stripping/insertion will remain enabled. Please remove the old VLAN filter
-> +before the new VLAN filter is added. For example,
-> +ip link set eth0 vf 0 vlan 100	// set vlan 100 for VF 0
-> +ip link set eth0 vf 0 vlan 0	// Delete vlan 100
-> +ip link set eth0 vf 0 vlan 200	// set a new vlan 200 for VF 0
-> +
-> +
-> +Additional Features and Configurations
-> +-------------------------------------------
-> +
-> +Jumbo Frames
-> +------------
-> +Jumbo Frames support is enabled by changing the Maximum Transmission Unit (MTU)
-> +to a value larger than the default value of 1500.
-> +
-> +Use the ifconfig command to increase the MTU size. For example, enter the
-> +following where <x> is the interface number:
-> +
-> +   ifconfig eth<x> mtu 9000 up
-> +Alternatively, you can use the ip command as follows:
-> +   ip link set mtu 9000 dev eth<x>
-> +   ip link set up dev eth<x>
-> +
-> +This setting is not saved across reboots. The setting change can be made
-> +permanent by adding 'MTU=9000' to the file:
-> +/etc/sysconfig/network-scripts/ifcfg-eth<x> for RHEL or to the file
-> +/etc/sysconfig/network/<config_file> for SLES.
-> +
-> +NOTE: The maximum MTU setting for Jumbo Frames is 15342. This value coincides
-> +with the maximum Jumbo Frames size of 15364 bytes.
-> +
-> +NOTE: This driver will attempt to use multiple page sized buffers to receive
-> +each jumbo packet. This should help to avoid buffer starvation issues when
-> +allocating receive packets.
-> +
-> +
-> +Generic Receive Offload, aka GRO
-> +--------------------------------
-> +The driver supports the in-kernel software implementation of GRO. GRO has
-> +shown that by coalescing Rx traffic into larger chunks of data, CPU
-> +utilization can be significantly reduced when under large Rx load. GRO is an
-> +evolution of the previously-used LRO interface. GRO is able to coalesce
-> +other protocols besides TCP. It's also safe to use with configurations that
-> +are problematic for LRO, namely bridging and iSCSI.
-> +
-> +
-> +ethtool
-> +-------
-> +The driver utilizes the ethtool interface for driver configuration and
-> +diagnostics, as well as displaying statistical information. The latest ethtool
-> +version is required for this functionality. Download it at:
-> +http://ftp.kernel.org/pub/software/network/ethtool/
-> +
-> +Supported ethtool Commands and Options for Filtering
-> +----------------------------------------------------
-> +-n --show-nfc
-> +  Retrieves the receive network flow classification configurations.
-> +
-> +rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
-> +  Retrieves the hash options for the specified network traffic type.
-> +
-> +-N --config-nfc
-> +  Configures the receive network flow classification.
-> +
-> +rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
-> +m|v|t|s|d|f|n|r...
-> +  Configures the hash options for the specified network traffic type.
-> +
-> +  udp4 UDP over IPv4
-> +  udp6 UDP over IPv6
-> +
-> +  f Hash on bytes 0 and 1 of the Layer 4 header of the rx packet.
-> +  n Hash on bytes 2 and 3 of the Layer 4 header of the rx packet.
-> +
-> +
-> +FCoE
-> +----
-> +This release of the fm10k driver contains new code to enable users to use
-> +Fiber Channel over Ethernet (FCoE) and Data Center Bridging (DCB)
-> +functionality that is supported by the 82598-based hardware. This code has
-> +no default effect on the regular driver operation, and configuring DCB and
-> +FCoE is outside the scope of this driver README. Refer to
-> +http://www.open-fcoe.org/ for FCoE project information and contact
-> +fm10k-eedc at lists.sourceforge.net for DCB information.
-> +
-> +
-> +MAC and VLAN anti-spoofing feature
-> +----------------------------------
-> +When a malicious driver attempts to send a spoofed packet, it is dropped by the
-> +hardware and not transmitted.
-> +
-> +An interrupt is sent to the PF driver notifying it of the spoof attempt. When a
-> +spoofed packet is detected, the PF driver will send the following message to
-> +the system log (displayed by the "dmesg" command):
-> +NOTE: This feature can be disabled for a specific Virtual Function (VF):
-> +ip link set <pf dev> vf <vf id> spoofchk {off|on}
-> +
-> +
-> +Known Issues/Troubleshooting
-> +----------------------------
-> +
-> +Enabling SR-IOV in a 64-bit Microsoft* Windows Server* 2012/R2 guest OS under
-> +Linux KVM
-> +--------------------------------------------------------------------------------
-> +KVM Hypervisor/VMM supports direct assignment of a PCIe device to a VM. This
-> +includes traditional PCIe devices, as well as SR-IOV-capable devices based on
-> +the Intel Ethernet Controller XL710.
-> +
-> +
-> +Support
-> +-------
-> +For general information, go to the Intel support website at:
-> +http://www.intel.com/support/
-> +
-> +or the Intel Wired Networking project hosted by Sourceforge at:
-> +http://sourceforge.net/projects/e1000
-> +If an issue is identified with the released source code on a supported kernel
-> +with a supported adapter, email the specific information related to the issue
-> +to e1000-devel at lists.sf.net.
-> 
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-x015-201809
+i386                   randconfig-x019-201809
+i386                   randconfig-x010-201809
+i386                   randconfig-x014-201809
+i386                   randconfig-x016-201809
+i386                   randconfig-x011-201809
+i386                   randconfig-x012-201809
+i386                   randconfig-x017-201809
+i386                   randconfig-x013-201809
+i386                   randconfig-x018-201809
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201809
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+i386                     randconfig-i0-201809
+i386                     randconfig-i1-201809
+i386                             allmodconfig
+x86_64                 randconfig-x017-201809
+x86_64                 randconfig-x013-201809
+x86_64                 randconfig-x016-201809
+x86_64                 randconfig-x018-201809
+x86_64                 randconfig-x012-201809
+x86_64                 randconfig-x015-201809
+x86_64                 randconfig-x014-201809
+x86_64                 randconfig-x011-201809
+x86_64                 randconfig-x010-201809
+x86_64                 randconfig-x019-201809
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                     randconfig-a1-201809
+i386                     randconfig-a0-201809
+i386                     randconfig-s0-201809
+i386                     randconfig-s1-201809
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201809
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+i386                   randconfig-x079-201809
+i386                   randconfig-x071-201809
+i386                   randconfig-x077-201809
+i386                   randconfig-x072-201809
+i386                   randconfig-x076-201809
+i386                   randconfig-x074-201809
+i386                   randconfig-x078-201809
+i386                   randconfig-x073-201809
+i386                   randconfig-x070-201809
+i386                   randconfig-x075-201809
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+x86_64                 randconfig-x000-201809
+x86_64                 randconfig-x005-201809
+x86_64                 randconfig-x008-201809
+x86_64                 randconfig-x001-201809
+x86_64                 randconfig-x006-201809
+x86_64                 randconfig-x007-201809
+x86_64                 randconfig-x009-201809
+x86_64                 randconfig-x002-201809
+x86_64                 randconfig-x003-201809
+x86_64                 randconfig-x004-201809
+x86_64                                  kexec
+x86_64                              federa-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                 randconfig-x004-03041453
+i386                 randconfig-x005-03041453
+i386                 randconfig-x001-03041453
+i386                 randconfig-x008-03041453
+i386                 randconfig-x000-03041453
+i386                 randconfig-x006-03041453
+i386                 randconfig-x003-03041453
+i386                 randconfig-x002-03041453
+i386                 randconfig-x009-03041453
+i386                 randconfig-x007-03041453
+
+Thanks,
+Fengguang
