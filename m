@@ -1,37 +1,156 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 5 Mar 2018 22:01:48 +0000
-Subject: [Intel-wired-lan] [PATCH] i40evf/i40evf_main: Fix variable
- assignment in i40evf_parse_cls_flower
-In-Reply-To: <20180215174435.GA19969@embeddedor.com>
-References: <20180215174435.GA19969@embeddedor.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94B3AC@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 06 Mar 2018 08:07:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
+ 41b0c4814d918186ca18dca29f19990c0c3e35e4
+Message-ID: <5a9ddbad./WBUihOxlv/sBNLV%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Gustavo A. R. Silva
-> Sent: Thursday, February 15, 2018 9:45 AM
-> To: Ramamurthy, Harshitha <harshitha.ramamurthy@intel.com>; Kirsher,
-> Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org; Gustavo A. R. Silva <garsilva@embeddedor.com>
-> Subject: [Intel-wired-lan] [PATCH] i40evf/i40evf_main: Fix variable
-> assignment in i40evf_parse_cls_flower
-> 
-> It seems this is a copy-paste error and that the proper variable to use in this
-> particular case is _src_ instead of _dst_.
-> 
-> Addresses-Coverity-ID: 1465282 ("Copy-paste error")
-> Fixes: 0075fa0fadd0 ("i40evf: Add support to apply cloud filters")
-> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
-> ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+branch HEAD: 41b0c4814d918186ca18dca29f19990c0c3e35e4  e1000e: allocate ring descriptors with dma_zalloc_coherent
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 351m
 
+configs tested: 132
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-n0-201809
+x86_64                 randconfig-x000-201809
+x86_64                 randconfig-x005-201809
+x86_64                 randconfig-x008-201809
+x86_64                 randconfig-x001-201809
+x86_64                 randconfig-x006-201809
+x86_64                 randconfig-x007-201809
+x86_64                 randconfig-x009-201809
+x86_64                 randconfig-x002-201809
+x86_64                 randconfig-x003-201809
+x86_64                 randconfig-x004-201809
+i386                     randconfig-i0-201809
+i386                     randconfig-i1-201809
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-v0-03060236
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                     randconfig-a1-201809
+i386                     randconfig-a0-201809
+x86_64                 randconfig-s0-03060439
+x86_64                 randconfig-s1-03060439
+x86_64                 randconfig-s2-03060439
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x017-201809
+x86_64                 randconfig-x013-201809
+x86_64                 randconfig-x016-201809
+x86_64                 randconfig-x018-201809
+x86_64                 randconfig-x012-201809
+x86_64                 randconfig-x015-201809
+x86_64                 randconfig-x014-201809
+x86_64                 randconfig-x011-201809
+x86_64                 randconfig-x010-201809
+x86_64                 randconfig-x019-201809
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                     randconfig-s0-201809
+i386                     randconfig-s1-201809
+i386                               tinyconfig
+x86_64                   randconfig-i0-201809
+arm                     davinci_all_defconfig
+arm                          pxa168_defconfig
+arm                           tegra_defconfig
+sh                         microdev_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x015-201809
+i386                   randconfig-x019-201809
+i386                   randconfig-x010-201809
+i386                   randconfig-x014-201809
+i386                   randconfig-x016-201809
+i386                   randconfig-x011-201809
+i386                   randconfig-x012-201809
+i386                   randconfig-x017-201809
+i386                   randconfig-x013-201809
+i386                   randconfig-x018-201809
+i386                   randconfig-x004-201809
+i386                   randconfig-x002-201809
+i386                   randconfig-x007-201809
+i386                   randconfig-x009-201809
+i386                   randconfig-x003-201809
+i386                   randconfig-x001-201809
+i386                   randconfig-x008-201809
+i386                   randconfig-x006-201809
+i386                   randconfig-x005-201809
+i386                   randconfig-x000-201809
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+s390                        default_defconfig
+i386                   randconfig-x079-201809
+i386                   randconfig-x071-201809
+i386                   randconfig-x077-201809
+i386                   randconfig-x072-201809
+i386                   randconfig-x076-201809
+i386                   randconfig-x074-201809
+i386                   randconfig-x078-201809
+i386                   randconfig-x073-201809
+i386                   randconfig-x070-201809
+i386                   randconfig-x075-201809
+i386                             allmodconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
