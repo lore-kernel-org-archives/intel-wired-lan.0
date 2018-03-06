@@ -1,47 +1,43 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 6 Mar 2018 06:53:59 -0800
-Subject: [Intel-wired-lan] [PATCH 2/2] e1000e: Fix link check race
- condition
-In-Reply-To: <20180306015553.10441-2-bpoirier@suse.com>
-References: <20180306015553.10441-1-bpoirier@suse.com>
- <20180306015553.10441-2-bpoirier@suse.com>
-Message-ID: <CAKgT0UfVVA43gbEQSyJ3XithVun6UST+_-b-=tQiCugU=PPzfg@mail.gmail.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Tue, 6 Mar 2018 18:39:30 +0900
+Subject: [Intel-wired-lan] [PATCH v3 2/2] kconfig: rename
+ silentoldconfig to syncconfig
+In-Reply-To: <1519886077-31914-2-git-send-email-yamada.masahiro@socionext.com>
+References: <1519886077-31914-1-git-send-email-yamada.masahiro@socionext.com>
+ <1519886077-31914-2-git-send-email-yamada.masahiro@socionext.com>
+Message-ID: <CAK7LNARM_1fXyh8hnnAw7DGC97LZ7-pcriqWC9gQ4uSnU==Vpg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Mar 5, 2018 at 5:55 PM, Benjamin Poirier <bpoirier@suse.com> wrote:
-> Alex reported the following race condition:
+2018-03-01 15:34 GMT+09:00 Masahiro Yamada <yamada.masahiro@socionext.com>:
+> As commit cedd55d49dee ("kconfig: Remove silentoldconfig from help
+> and docs; fix kconfig/conf's help") mentioned, 'silentoldconfig' is a
+> historical misnomer.  That commit removed it from help and docs since
+> it is an internal interface.  If so, it should be allowed to rename
+> it to something more intuitive.  'syncconfig' is the one I came up
+> with because it updates the .config if necessary, then synchronize
+> include/generated/autoconf.h and include/config/* with it.
 >
-> /* link goes up... interrupt... schedule watchdog */
-> \ e1000_watchdog_task
->         \ e1000e_has_link
->                 \ hw->mac.ops.check_for_link() === e1000e_check_for_copper_link
->                         \ e1000e_phy_has_link_generic(..., &link)
->                                 link = true
+> You should not manually invoke 'silentoldcofig'.  Display warning if
+> used in case existing scripts are doing wrong.
 >
->                                          /* link goes down... interrupt */
->                                          \ e1000_msix_other
->                                                  hw->mac.get_link_status = true
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> ---
 >
->                         /* link is up */
->                         mac->get_link_status = false
+> Changes in v3:
+>   - Fix Documentation/networking/i40e.txt
+>   - Display warning if silentoldconfig is used
 >
->                 link_active = true
->                 /* link_active is true, wrongly, and stays so because
->                  * get_link_status is false */
+> Changes in v2:
+>   - newly added
 >
-> Avoid this problem by making sure that we don't set get_link_status = false
-> after having checked the link.
->
-> It seems this problem has been present since the introduction of e1000e.
->
-> Link: https://lkml.org/lkml/2018/1/29/338
-> Reported-by: Alexander Duyck <alexander.duyck@gmail.com>
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 
-Looks good. Thanks.
+Both applied to linux-kbuild/kconfig.
 
-Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
+
+-- 
+Best Regards
+Masahiro Yamada
