@@ -1,163 +1,148 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 06 Mar 2018 08:45:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- ed3eadd7f36272b86f98404683e4b3152c54964a
-Message-ID: <5a9de493.P2NMKVMf1dK/lznw%fengguang.wu@intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Tue,  6 Mar 2018 10:55:52 +0900
+Subject: [Intel-wired-lan] [PATCH 1/2] Revert "e1000e: Separate signaling
+ for link check/link up"
+Message-ID: <20180306015553.10441-1-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: ed3eadd7f36272b86f98404683e4b3152c54964a  igb: Add support for adding offloaded clsflower filters
+This reverts commit 19110cfbb34d4af0cdfe14cd243f3b09dc95b013.
+This reverts commit 4110e02eb45ea447ec6f5459c9934de0a273fb91.
+This reverts commit d3604515c9eda464a92e8e67aae82dfe07fe3c98.
 
-elapsed time: 240m
+Commit 19110cfbb34d ("e1000e: Separate signaling for link check/link up")
+changed what happens to the link status when there is an error which
+happens after "get_link_status = false" in the copper check_for_link
+callbacks. Previously, such an error would be ignored and the link
+considered up. After that commit, any error implies that the link is down.
 
-configs tested: 139
+Revert commit 19110cfbb34d ("e1000e: Separate signaling for link check/link
+up") and its followups. After reverting, the race condition described in
+the log of commit 19110cfbb34d is reintroduced. It may still be triggered
+by LSC events but this should keep the link down in case the link is
+electrically unstable, as discussed. The race may no longer be
+triggered by RXO events because commit 4aea7a5c5e94 ("e1000e: Avoid
+receiver overrun interrupt bursts") restored reading icr in the Other
+handler.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Link: https://lkml.org/lkml/2018/3/1/789
+Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 13 ++++---------
+ drivers/net/ethernet/intel/e1000e/mac.c     | 13 ++++---------
+ drivers/net/ethernet/intel/e1000e/netdev.c  |  2 +-
+ 3 files changed, 9 insertions(+), 19 deletions(-)
 
-i386                   randconfig-x015-201809
-i386                   randconfig-x019-201809
-i386                   randconfig-x010-201809
-i386                   randconfig-x014-201809
-i386                   randconfig-x016-201809
-i386                   randconfig-x011-201809
-i386                   randconfig-x012-201809
-i386                   randconfig-x017-201809
-i386                   randconfig-x013-201809
-i386                   randconfig-x018-201809
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201809
-x86_64                 randconfig-x000-201809
-x86_64                 randconfig-x005-201809
-x86_64                 randconfig-x008-201809
-x86_64                 randconfig-x001-201809
-x86_64                 randconfig-x006-201809
-x86_64                 randconfig-x007-201809
-x86_64                 randconfig-x009-201809
-x86_64                 randconfig-x002-201809
-x86_64                 randconfig-x003-201809
-x86_64                 randconfig-x004-201809
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                     randconfig-i0-201809
-i386                     randconfig-i1-201809
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x017-201809
-x86_64                 randconfig-x013-201809
-x86_64                 randconfig-x016-201809
-x86_64                 randconfig-x018-201809
-x86_64                 randconfig-x012-201809
-x86_64                 randconfig-x015-201809
-x86_64                 randconfig-x014-201809
-x86_64                 randconfig-x011-201809
-x86_64                 randconfig-x010-201809
-x86_64                 randconfig-x019-201809
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-i386                     randconfig-a1-201809
-i386                     randconfig-a0-201809
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                     randconfig-s0-201809
-i386                     randconfig-s1-201809
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-i386                             allmodconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201809
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                               tinyconfig
-i386                   randconfig-x079-201809
-i386                   randconfig-x071-201809
-i386                   randconfig-x077-201809
-i386                   randconfig-x072-201809
-i386                   randconfig-x076-201809
-i386                   randconfig-x074-201809
-i386                   randconfig-x078-201809
-i386                   randconfig-x073-201809
-i386                   randconfig-x070-201809
-i386                   randconfig-x075-201809
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-x004-201809
-i386                   randconfig-x002-201809
-i386                   randconfig-x007-201809
-i386                   randconfig-x009-201809
-i386                   randconfig-x003-201809
-i386                   randconfig-x001-201809
-i386                   randconfig-x008-201809
-i386                   randconfig-x006-201809
-i386                   randconfig-x005-201809
-i386                   randconfig-x000-201809
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index ff308b05d68c..d6d4ed7acf03 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -1367,9 +1367,6 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
+  *  Checks to see of the link status of the hardware has changed.  If a
+  *  change in link status has been detected, then we read the PHY registers
+  *  to get the current speed/duplex if link exists.
+- *
+- *  Returns a negative error code (-E1000_ERR_*) or 0 (link down) or 1 (link
+- *  up).
+  **/
+ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ {
+@@ -1385,7 +1382,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	 * Change or Rx Sequence Error interrupt.
+ 	 */
+ 	if (!mac->get_link_status)
+-		return 1;
++		return 0;
+ 
+ 	/* First we want to see if the MII Status Register reports
+ 	 * link.  If so, then we want to get the current speed/duplex
+@@ -1602,7 +1599,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	 * we have already determined whether we have link or not.
+ 	 */
+ 	if (!mac->autoneg)
+-		return 1;
++		return -E1000_ERR_CONFIG;
+ 
+ 	/* Auto-Neg is enabled.  Auto Speed Detection takes care
+ 	 * of MAC speed/duplex configuration.  So we only need to
+@@ -1616,12 +1613,10 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+ 	 * different link partner.
+ 	 */
+ 	ret_val = e1000e_config_fc_after_link_up(hw);
+-	if (ret_val) {
++	if (ret_val)
+ 		e_dbg("Error configuring flow control\n");
+-		return ret_val;
+-	}
+ 
+-	return 1;
++	return ret_val;
+ }
+ 
+ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
+index db735644b312..b322011ec282 100644
+--- a/drivers/net/ethernet/intel/e1000e/mac.c
++++ b/drivers/net/ethernet/intel/e1000e/mac.c
+@@ -410,9 +410,6 @@ void e1000e_clear_hw_cntrs_base(struct e1000_hw *hw)
+  *  Checks to see of the link status of the hardware has changed.  If a
+  *  change in link status has been detected, then we read the PHY registers
+  *  to get the current speed/duplex if link exists.
+- *
+- *  Returns a negative error code (-E1000_ERR_*) or 0 (link down) or 1 (link
+- *  up).
+  **/
+ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+ {
+@@ -426,7 +423,7 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+ 	 * Change or Rx Sequence Error interrupt.
+ 	 */
+ 	if (!mac->get_link_status)
+-		return 1;
++		return 0;
+ 
+ 	/* First we want to see if the MII Status Register reports
+ 	 * link.  If so, then we want to get the current speed/duplex
+@@ -450,7 +447,7 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+ 	 * we have already determined whether we have link or not.
+ 	 */
+ 	if (!mac->autoneg)
+-		return 1;
++		return -E1000_ERR_CONFIG;
+ 
+ 	/* Auto-Neg is enabled.  Auto Speed Detection takes care
+ 	 * of MAC speed/duplex configuration.  So we only need to
+@@ -464,12 +461,10 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
+ 	 * different link partner.
+ 	 */
+ 	ret_val = e1000e_config_fc_after_link_up(hw);
+-	if (ret_val) {
++	if (ret_val)
+ 		e_dbg("Error configuring flow control\n");
+-		return ret_val;
+-	}
+ 
+-	return 1;
++	return ret_val;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 9fd4050a91ca..8a3aa85b159c 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5090,7 +5090,7 @@ static bool e1000e_has_link(struct e1000_adapter *adapter)
+ 	case e1000_media_type_copper:
+ 		if (hw->mac.get_link_status) {
+ 			ret_val = hw->mac.ops.check_for_link(hw);
+-			link_active = ret_val > 0;
++			link_active = !hw->mac.get_link_status;
+ 		} else {
+ 			link_active = true;
+ 		}
+-- 
+2.16.2
 
-Thanks,
-Fengguang
