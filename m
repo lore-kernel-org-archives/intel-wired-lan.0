@@ -1,58 +1,150 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 06 Mar 2018 13:26:05 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v2 8/8] igb: Add support
- for adding offloaded clsflower filters
-In-Reply-To: <20180306112806.6fa39148@cakuba.netronome.com>
-References: <20180302184344.5744-1-vinicius.gomes@intel.com>
- <20180302184344.5744-9-vinicius.gomes@intel.com>
- <20180305131350.326a886d@cakuba.netronome.com> <87muzl10ph.fsf@intel.com>
- <20180306112806.6fa39148@cakuba.netronome.com>
-Message-ID: <87d10g28wi.fsf@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 07 Mar 2018 07:12:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 22b8d8115d1b940d548a5fddcbce4cdd30083cfc
+Message-ID: <5a9f2067.NOPDMn+hFeFo0A+Z%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: 22b8d8115d1b940d548a5fddcbce4cdd30083cfc  ethernet: natsemi: correct spelling
 
-Jakub Kicinski <kubakici@wp.pl> writes:
+elapsed time: 388m
 
-> On Tue, 06 Mar 2018 11:08:26 -0800, Vinicius Costa Gomes wrote:
->> >> +static int igb_parse_cls_flower(struct igb_adapter *adapter,
->> >> +				struct tc_cls_flower_offload *f,
->> >> +				int traffic_class,
->> >> +				struct igb_nfc_filter *input)
->> >> +{
->> >> +	if (f->dissector->used_keys &
->> >> +	    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
->> >> +	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
->> >> +	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
->> >> +	      BIT(FLOW_DISSECTOR_KEY_VLAN))) {
->> >> +		dev_err(&adapter->pdev->dev, "Unsupported key used: 0x%x\n",
->> >> +			f->dissector->used_keys);  
->> >
->> > This will probably trigger for opportunistic offload (non-skip_sw) and
->> > confuse users.
->> 
->> I see your point. I will change to 'dev_warn()', it should not surprise
->> users too much, right?
->
-> Yes, I think that would be fine, other drivers are doing that already.
->
-> IMHO best approach is to not print anything unless skip-sw is set.  If
-> you used netlink's extack capability exclusively it would "just work".
-> Extack will only carry the error in case offload is requested.  Could
-> you consider using extack or do you have a preference to print into the
-> logs?  You could do both, too.
+configs tested: 126
 
-I will go with extack-only, but I had to tweak the message a little as
-there's no support for format strings in extack.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
->
-> You can get to extack via f->common->extack.
+cris                 etrax-100lx_v2_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-x000-201809
+x86_64                 randconfig-x005-201809
+x86_64                 randconfig-x008-201809
+x86_64                 randconfig-x001-201809
+x86_64                 randconfig-x006-201809
+x86_64                 randconfig-x007-201809
+x86_64                 randconfig-x009-201809
+x86_64                 randconfig-x002-201809
+x86_64                 randconfig-x003-201809
+x86_64                 randconfig-x004-201809
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                     randconfig-i0-201809
+i386                     randconfig-i1-201809
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+i386                             allmodconfig
+x86_64                                  kexec
+i386                     randconfig-a1-201809
+i386                     randconfig-a0-201809
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s0-201809
+i386                     randconfig-s1-201809
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+i386                               tinyconfig
+x86_64                   randconfig-i0-201809
+i386                   randconfig-x015-201809
+i386                   randconfig-x019-201809
+i386                   randconfig-x010-201809
+i386                   randconfig-x014-201809
+i386                   randconfig-x016-201809
+i386                   randconfig-x011-201809
+i386                   randconfig-x012-201809
+i386                   randconfig-x017-201809
+i386                   randconfig-x013-201809
+i386                   randconfig-x018-201809
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-x017-201809
+x86_64                 randconfig-x013-201809
+x86_64                 randconfig-x016-201809
+x86_64                 randconfig-x018-201809
+x86_64                 randconfig-x012-201809
+x86_64                 randconfig-x015-201809
+x86_64                 randconfig-x014-201809
+x86_64                 randconfig-x011-201809
+x86_64                 randconfig-x010-201809
+x86_64                 randconfig-x019-201809
+i386                   randconfig-x004-201809
+i386                   randconfig-x002-201809
+i386                   randconfig-x007-201809
+i386                   randconfig-x009-201809
+i386                   randconfig-x003-201809
+i386                   randconfig-x001-201809
+i386                   randconfig-x008-201809
+i386                   randconfig-x006-201809
+i386                   randconfig-x005-201809
+i386                   randconfig-x000-201809
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+c6x                        evmc6678_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+i386                   randconfig-x079-201809
+i386                   randconfig-x071-201809
+i386                   randconfig-x077-201809
+i386                   randconfig-x072-201809
+i386                   randconfig-x076-201809
+i386                   randconfig-x074-201809
+i386                   randconfig-x078-201809
+i386                   randconfig-x073-201809
+i386                   randconfig-x070-201809
+i386                   randconfig-x075-201809
 
-
-Cheers,
---
-Vinicius
+Thanks,
+Fengguang
