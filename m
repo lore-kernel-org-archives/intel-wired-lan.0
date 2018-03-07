@@ -1,159 +1,329 @@
 From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-Date: Tue,  6 Mar 2018 17:12:27 -0800
-Subject: [Intel-wired-lan] [RFC v3 net-next 15/18] igb: Refactor
- igb_configure_cbs()
+Date: Tue,  6 Mar 2018 17:12:30 -0800
+Subject: [Intel-wired-lan] [RFC v3 net-next 18/18] igb: Add support for TBS
+ offload
 In-Reply-To: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
 References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
-Message-ID: <20180307011230.24001-16-jesus.sanchez-palencia@intel.com>
+Message-ID: <20180307011230.24001-19-jesus.sanchez-palencia@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Make this function retrieve what it needs from the Tx ring being
-addressed since it already relies on what had been saved on it before.
-Also, since this function will be used by the upcoming Launchtime
-patches rename it to better reflect its intention. Note that
-Launchtime is not part of what 802.1Qav specifies, but the i210
-datasheet refers to this set of functionality as "Qav Transmission
-Mode".
+Implement HW offload support for SO_TXTIME through igb's Launchtime
+feature. This is done by extending igb_setup_tc() so it supports
+TC_SETUP_QDISC_TBS and configuring i210 so time based transmit
+arbitration is enabled.
 
-Here we also perform a tiny refactor at is_any_cbs_enabled(), and add
-further documentation to igb_setup_tx_mode().
+The FQTSS transmission mode added before is extended so strict
+priority (SP) queues wait for stream reservation (SR) ones.
+igb_config_tx_modes() is extended so it can support enabling/disabling
+Launchtime following the previous approach used for the credit-based
+shaper (CBS).
+
+As the previous flow, FQTSS transmission mode is enabled automatically
+by the driver once Launchtime (or CBS, as before) is enabled.
+Similarly, it's automatically disabled when the feature is disabled
+for the last queue that had it setup on.
+
+The driver just consumes the transmit times from the skbuffs directly,
+so no special handling is done in case an 'invalid' time is provided.
+We assume this has been handled by the TBS qdisc already.
 
 Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 54 ++++++++++++++-----------------
- 1 file changed, 25 insertions(+), 29 deletions(-)
+ drivers/net/ethernet/intel/igb/e1000_defines.h |  16 +++
+ drivers/net/ethernet/intel/igb/igb.h           |   1 +
+ drivers/net/ethernet/intel/igb/igb_main.c      | 135 ++++++++++++++++++++++---
+ 3 files changed, 137 insertions(+), 15 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+index 83cabff1e0ab..9e357848c550 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -1066,6 +1066,22 @@
+ #define E1000_TQAVCTRL_XMIT_MODE	BIT(0)
+ #define E1000_TQAVCTRL_DATAFETCHARB	BIT(4)
+ #define E1000_TQAVCTRL_DATATRANARB	BIT(8)
++#define E1000_TQAVCTRL_DATATRANTIM	BIT(9)
++#define E1000_TQAVCTRL_SP_WAIT_SR	BIT(10)
++/* Fetch Time Delta - bits 31:16
++ *
++ * This field holds the value to be reduced from the launch time for
++ * fetch time decision. The FetchTimeDelta value is defined in 32 ns
++ * granularity.
++ *
++ * This field is 16 bits wide, and so the maximum value is:
++ *
++ * 65535 * 32 = 2097120 ~= 2.1 msec
++ *
++ * XXX: We are configuring the max value here since we couldn't come up
++ * with a reason for not doing so.
++ */
++#define E1000_TQAVCTRL_FETCHTIME_DELTA	(0xFFFF << 16)
+ 
+ /* TX Qav Credit Control fields */
+ #define E1000_TQAVCC_IDLESLOPE_MASK	0xFFFF
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index 1c6b8d9176a8..4e1146efa399 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -281,6 +281,7 @@ struct igb_ring {
+ 	u16 count;			/* number of desc. in the ring */
+ 	u8 queue_index;			/* logical index of the ring*/
+ 	u8 reg_idx;			/* physical index of the ring */
++	bool launchtime_enable;		/* true if LaunchTime is enabled */
+ 	bool cbs_enable;		/* indicates if CBS is enabled */
+ 	s32 idleslope;			/* idleSlope in kbps */
+ 	s32 sendslope;			/* sendSlope in kbps */
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index b88fae785369..49cfbe4fd2b1 100644
+index 10d7809a85d7..fa931f66a1f8 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1673,23 +1673,17 @@ static void set_queue_mode(struct e1000_hw *hw, int queue, enum queue_mode mode)
- }
- 
- /**
-- *  igb_configure_cbs - Configure Credit-Based Shaper (CBS)
-+ *  igb_config_tx_modes - Configure "Qav Tx mode" features on igb
-  *  @adapter: pointer to adapter struct
-  *  @queue: queue number
-- *  @enable: true = enable CBS, false = disable CBS
-- *  @idleslope: idleSlope in kbps
-- *  @sendslope: sendSlope in kbps
-- *  @hicredit: hiCredit in bytes
-- *  @locredit: loCredit in bytes
-  *
-- *  Configure CBS for a given hardware queue. When disabling, idleslope,
-- *  sendslope, hicredit, locredit arguments are ignored. Returns 0 if
-- *  success. Negative otherwise.
-+ *  Configure CBS for a given hardware queue. Parameters are retrieved
-+ *  from the correct Tx ring, so igb_save_cbs_params() should be used
-+ *  for setting those correctly prior to this function being called.
-  **/
--static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
--			      bool enable, int idleslope, int sendslope,
--			      int hicredit, int locredit)
-+static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
- {
-+	struct igb_ring *ring = adapter->tx_ring[queue];
- 	struct net_device *netdev = adapter->netdev;
- 	struct e1000_hw *hw = &adapter->hw;
- 	u32 tqavcc;
-@@ -1698,7 +1692,7 @@ static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
- 	WARN_ON(hw->mac.type != e1000_i210);
- 	WARN_ON(queue < 0 || queue > 1);
- 
--	if (enable) {
-+	if (ring->cbs_enable) {
- 		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_HIGH);
- 		set_queue_mode(hw, queue, QUEUE_MODE_STREAM_RESERVATION);
- 
-@@ -1759,14 +1753,15 @@ static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
- 		 *       calculated value, so the resulting bandwidth might
- 		 *       be slightly higher for some configurations.
- 		 */
--		value = DIV_ROUND_UP_ULL(idleslope * 61034ULL, 1000000);
-+		value = DIV_ROUND_UP_ULL(ring->idleslope * 61034ULL, 1000000);
- 
- 		tqavcc = rd32(E1000_I210_TQAVCC(queue));
- 		tqavcc &= ~E1000_TQAVCC_IDLESLOPE_MASK;
- 		tqavcc |= value;
- 		wr32(E1000_I210_TQAVCC(queue), tqavcc);
- 
--		wr32(E1000_I210_TQAVHC(queue), 0x80000000 + hicredit * 0x7735);
-+		wr32(E1000_I210_TQAVHC(queue),
-+		     0x80000000 + ring->hicredit * 0x7735);
- 	} else {
- 		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_LOW);
- 		set_queue_mode(hw, queue, QUEUE_MODE_STRICT_PRIORITY);
-@@ -1786,8 +1781,9 @@ static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
- 	 */
- 
- 	netdev_dbg(netdev, "CBS %s: queue %d idleslope %d sendslope %d hiCredit %d locredit %d\n",
--		   (enable) ? "enabled" : "disabled", queue,
--		   idleslope, sendslope, hicredit, locredit);
-+		   (ring->cbs_enable) ? "enabled" : "disabled", queue,
-+		   ring->idleslope, ring->sendslope, ring->hicredit,
-+		   ring->locredit);
- }
- 
- static int igb_save_cbs_params(struct igb_adapter *adapter, int queue,
-@@ -1812,19 +1808,25 @@ static int igb_save_cbs_params(struct igb_adapter *adapter, int queue,
- 
- static bool is_any_cbs_enabled(struct igb_adapter *adapter)
- {
--	struct igb_ring *ring;
- 	int i;
- 
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
--		ring = adapter->tx_ring[i];
--
--		if (ring->cbs_enable)
-+		if (adapter->tx_ring[i]->cbs_enable)
- 			return true;
- 	}
- 
+@@ -1684,13 +1684,26 @@ static bool is_any_cbs_enabled(struct igb_adapter *adapter)
  	return false;
  }
  
-+/**
-+ *  igb_setup_tx_mode - Switch to/from Qav Tx mode when applicable
-+ *  @adapter: pointer to adapter struct
-+ *
-+ *  Configure TQAVCTRL register switching the controller's Tx mode
-+ *  if FQTSS mode is enabled or disabled. Additionally, will issue
-+ *  a call to igb_config_tx_modes() per queue so any previously saved
-+ *  Tx parameters are applied.
-+ **/
- static void igb_setup_tx_mode(struct igb_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
-@@ -1884,11 +1886,7 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
- 			    adapter->num_tx_queues : I210_SR_QUEUES_NUM;
++static bool is_any_txtime_enabled(struct igb_adapter *adapter)
++{
++	int i;
++
++	for (i = 0; i < adapter->num_tx_queues; i++) {
++		if (adapter->tx_ring[i]->launchtime_enable)
++			return true;
++	}
++
++	return false;
++}
++
+ /**
+  *  igb_config_tx_modes - Configure "Qav Tx mode" features on igb
+  *  @adapter: pointer to adapter struct
+  *  @queue: queue number
+  *
+- *  Configure CBS for a given hardware queue. Parameters are retrieved
+- *  from the correct Tx ring, so igb_save_cbs_params() should be used
++ *  Configure CBS and Launchtime for a given hardware queue.
++ *  Parameters are retrieved from the correct Tx ring, so
++ *  igb_save_cbs_params() and igb_save_txtime_params() should be used
+  *  for setting those correctly prior to this function being called.
+  **/
+ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
+@@ -1704,10 +1717,20 @@ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
+ 	WARN_ON(hw->mac.type != e1000_i210);
+ 	WARN_ON(queue < 0 || queue > 1);
  
- 		for (i = 0; i < max_queue; i++) {
--			struct igb_ring *ring = adapter->tx_ring[i];
--
--			igb_configure_cbs(adapter, i, ring->cbs_enable,
--					  ring->idleslope, ring->sendslope,
--					  ring->hicredit, ring->locredit);
-+			igb_config_tx_modes(adapter, i);
- 		}
+-	if (ring->cbs_enable) {
++	/* If any of the Qav features is enabled, configure queues as SR and
++	 * with HIGH PRIO. If none is, then configure them with LOW PRIO and
++	 * as SP.
++	 */
++	if (ring->cbs_enable || ring->launchtime_enable) {
+ 		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_HIGH);
+ 		set_queue_mode(hw, queue, QUEUE_MODE_STREAM_RESERVATION);
++	} else {
++		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_LOW);
++		set_queue_mode(hw, queue, QUEUE_MODE_STRICT_PRIORITY);
++	}
+ 
++	/* If CBS is enabled, set DataTranARB and config its parameters. */
++	if (ring->cbs_enable) {
+ 		/* Always set data transfer arbitration to credit-based
+ 		 * shaper algorithm on TQAVCTRL if CBS is enabled for any of
+ 		 * the queues.
+@@ -1783,8 +1806,6 @@ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
+ 		wr32(E1000_I210_TQAVHC(queue),
+ 		     0x80000000 + ring->hicredit * 0x7735);
  	} else {
- 		wr32(E1000_RXPBS, I210_RXPBSIZE_DEFAULT);
-@@ -2482,9 +2480,7 @@ static int igb_offload_cbs(struct igb_adapter *adapter,
- 		return err;
+-		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_LOW);
+-		set_queue_mode(hw, queue, QUEUE_MODE_STRICT_PRIORITY);
  
- 	if (is_fqtss_enabled(adapter)) {
--		igb_configure_cbs(adapter, qopt->queue, qopt->enable,
--				  qopt->idleslope, qopt->sendslope,
--				  qopt->hicredit, qopt->locredit);
-+		igb_config_tx_modes(adapter, qopt->queue);
+ 		/* Set idleSlope to zero. */
+ 		tqavcc = rd32(E1000_I210_TQAVCC(queue));
+@@ -1805,17 +1826,61 @@ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
+ 		}
+ 	}
  
- 		if (!is_any_cbs_enabled(adapter))
- 			enable_fqtss(adapter, false);
++	/* If LaunchTime is enabled, set DataTranTIM. */
++	if (ring->launchtime_enable) {
++		/* Always set DataTranTIM on TQAVCTRL if LaunchTime is enabled
++		 * for any of the SR queues, and configure fetchtime delta.
++		 * XXX NOTE:
++		 *     - LaunchTime will be enabled for all SR queues.
++		 *     - A fixed offset can be added relative to the launch
++		 *       time of all packets if configured at reg LAUNCH_OS0.
++		 *       We are keeping it as 0 for now (default value).
++		 */
++		tqavctrl = rd32(E1000_I210_TQAVCTRL);
++		tqavctrl |= E1000_TQAVCTRL_DATATRANTIM |
++		       E1000_TQAVCTRL_FETCHTIME_DELTA;
++		wr32(E1000_I210_TQAVCTRL, tqavctrl);
++	} else {
++		/* If Launchtime is not enabled for any SR queues anymore,
++		 * then clear DataTranTIM on TQAVCTRL and clear fetchtime delta,
++		 * effectively disabling Launchtime.
++		 */
++		if (!is_any_txtime_enabled(adapter)) {
++			tqavctrl = rd32(E1000_I210_TQAVCTRL);
++			tqavctrl &= ~E1000_TQAVCTRL_DATATRANTIM;
++			tqavctrl &= ~E1000_TQAVCTRL_FETCHTIME_DELTA;
++			wr32(E1000_I210_TQAVCTRL, tqavctrl);
++		}
++	}
++
+ 	/* XXX: In i210 controller the sendSlope and loCredit parameters from
+ 	 * CBS are not configurable by software so we don't do any 'controller
+ 	 * configuration' in respect to these parameters.
+ 	 */
+ 
+-	netdev_dbg(netdev, "CBS %s: queue %d idleslope %d sendslope %d hiCredit %d locredit %d\n",
+-		   (ring->cbs_enable) ? "enabled" : "disabled", queue,
++	netdev_dbg(netdev, "Qav Tx mode: cbs %s, launchtime %s, queue %d \
++			    idleslope %d sendslope %d hiCredit %d \
++			    locredit %d\n",
++		   (ring->cbs_enable) ? "enabled" : "disabled",
++		   (ring->launchtime_enable) ? "enabled" : "disabled", queue,
+ 		   ring->idleslope, ring->sendslope, ring->hicredit,
+ 		   ring->locredit);
+ }
+ 
++static int igb_save_txtime_params(struct igb_adapter *adapter, int queue,
++				  bool enable)
++{
++	struct igb_ring *ring;
++
++	if (queue < 0 || queue > adapter->num_tx_queues)
++		return -EINVAL;
++
++	ring = adapter->tx_ring[queue];
++	ring->launchtime_enable = enable;
++
++	return 0;
++}
++
+ static int igb_save_cbs_params(struct igb_adapter *adapter, int queue,
+ 			       bool enable, int idleslope, int sendslope,
+ 			       int hicredit, int locredit)
+@@ -1859,10 +1924,11 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
+ 		int i, max_queue;
+ 
+ 		/* Configure TQAVCTRL register: set transmit mode to 'Qav',
+-		 * set data fetch arbitration to 'round robin'.
++		 * set data fetch arbitration to 'round robin', set SP_WAIT_SR
++		 * so SP queues wait for SR ones.
+ 		 */
+ 		val = rd32(E1000_I210_TQAVCTRL);
+-		val |= E1000_TQAVCTRL_XMIT_MODE;
++		val |= E1000_TQAVCTRL_XMIT_MODE | E1000_TQAVCTRL_SP_WAIT_SR;
+ 		val &= ~E1000_TQAVCTRL_DATAFETCHARB;
+ 		wr32(E1000_I210_TQAVCTRL, val);
+ 
+@@ -2485,7 +2551,7 @@ static void igb_offload_apply(struct igb_adapter *adapter, s32 queue)
+ 
+ 	igb_config_tx_modes(adapter, queue);
+ 
+-	if (!is_any_cbs_enabled(adapter))
++	if (!is_any_cbs_enabled(adapter) && !is_any_txtime_enabled(adapter))
+ 		enable_fqtss(adapter, false);
+ }
+ 
+@@ -2514,6 +2580,30 @@ static int igb_offload_cbs(struct igb_adapter *adapter,
+ 	return 0;
+ }
+ 
++static int igb_offload_txtime(struct igb_adapter *adapter,
++			      struct tc_tbs_qopt_offload *qopt)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	int err;
++
++	/* Launchtime offloading is only supported by i210 controller. */
++	if (hw->mac.type != e1000_i210)
++		return -EOPNOTSUPP;
++
++	/* Launchtime offloading is only supported by queues 0 and 1. */
++	if (qopt->queue < 0 || qopt->queue > 1)
++		return -EINVAL;
++
++	err = igb_save_txtime_params(adapter, qopt->queue, qopt->enable);
++
++	if (err)
++		return err;
++
++	igb_offload_apply(adapter, qopt->queue);
++
++	return 0;
++}
++
+ static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
+ 			void *type_data)
+ {
+@@ -2522,6 +2612,8 @@ static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
+ 	switch (type) {
+ 	case TC_SETUP_QDISC_CBS:
+ 		return igb_offload_cbs(adapter, type_data);
++	case TC_SETUP_QDISC_TBS:
++		return igb_offload_txtime(adapter, type_data);
+ 
+ 	default:
+ 		return -EOPNOTSUPP;
+@@ -5333,11 +5425,14 @@ static void igb_set_itr(struct igb_q_vector *q_vector)
+ 	}
+ }
+ 
+-static void igb_tx_ctxtdesc(struct igb_ring *tx_ring, u32 vlan_macip_lens,
+-			    u32 type_tucmd, u32 mss_l4len_idx)
++static void igb_tx_ctxtdesc(struct igb_ring *tx_ring,
++			    struct igb_tx_buffer *first,
++			    u32 vlan_macip_lens, u32 type_tucmd,
++			    u32 mss_l4len_idx)
+ {
+ 	struct e1000_adv_tx_context_desc *context_desc;
+ 	u16 i = tx_ring->next_to_use;
++	struct timespec64 ts;
+ 
+ 	context_desc = IGB_TX_CTXTDESC(tx_ring, i);
+ 
+@@ -5352,9 +5447,18 @@ static void igb_tx_ctxtdesc(struct igb_ring *tx_ring, u32 vlan_macip_lens,
+ 		mss_l4len_idx |= tx_ring->reg_idx << 4;
+ 
+ 	context_desc->vlan_macip_lens	= cpu_to_le32(vlan_macip_lens);
+-	context_desc->seqnum_seed	= 0;
+ 	context_desc->type_tucmd_mlhl	= cpu_to_le32(type_tucmd);
+ 	context_desc->mss_l4len_idx	= cpu_to_le32(mss_l4len_idx);
++
++	/* We assume there is always a valid tx time available. Invalid times
++	 * should have been handled by the upper layers.
++	 */
++	if (tx_ring->launchtime_enable) {
++		ts = ns_to_timespec64(first->skb->tstamp);
++		context_desc->seqnum_seed = cpu_to_le32(ts.tv_nsec / 32);
++	} else {
++		context_desc->seqnum_seed = 0;
++	}
+ }
+ 
+ static int igb_tso(struct igb_ring *tx_ring,
+@@ -5437,7 +5541,8 @@ static int igb_tso(struct igb_ring *tx_ring,
+ 	vlan_macip_lens |= (ip.hdr - skb->data) << E1000_ADVTXD_MACLEN_SHIFT;
+ 	vlan_macip_lens |= first->tx_flags & IGB_TX_FLAGS_VLAN_MASK;
+ 
+-	igb_tx_ctxtdesc(tx_ring, vlan_macip_lens, type_tucmd, mss_l4len_idx);
++	igb_tx_ctxtdesc(tx_ring, first, vlan_macip_lens,
++			type_tucmd, mss_l4len_idx);
+ 
+ 	return 1;
+ }
+@@ -5492,7 +5597,7 @@ static void igb_tx_csum(struct igb_ring *tx_ring, struct igb_tx_buffer *first)
+ 	vlan_macip_lens |= skb_network_offset(skb) << E1000_ADVTXD_MACLEN_SHIFT;
+ 	vlan_macip_lens |= first->tx_flags & IGB_TX_FLAGS_VLAN_MASK;
+ 
+-	igb_tx_ctxtdesc(tx_ring, vlan_macip_lens, type_tucmd, 0);
++	igb_tx_ctxtdesc(tx_ring, first, vlan_macip_lens, type_tucmd, 0);
+ }
+ 
+ #define IGB_SET_FLAG(_input, _flag, _result) \
 -- 
 2.16.2
 
