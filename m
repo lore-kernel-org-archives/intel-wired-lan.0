@@ -1,26 +1,31 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Wed, 7 Mar 2018 09:37:22 -0800
-Subject: [Intel-wired-lan] [RFC v3 net-next 08/18] net: SO_TXTIME: Add
- clockid and drop_if_late params
-In-Reply-To: <20180307173524.i6mpg3f2rjnwl3xe@localhost>
-References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
- <20180307011230.24001-9-jesus.sanchez-palencia@intel.com>
- <1520391209.109662.33.camel@gmail.com>
- <20180307052410.m2yqmokrivjlwcjz@localhost>
- <CAF=yD-J+3y_RNiW791eW+5i=6Op_0jmM1G8fHiKuKXDqtb8XjA@mail.gmail.com>
- <20180307173524.i6mpg3f2rjnwl3xe@localhost>
-Message-ID: <20180307173722.hvqorkaiougt4qjm@localhost>
+From: Jakub Kicinski <kubakici@wp.pl>
+Date: Wed, 7 Mar 2018 11:48:31 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v3 8/8] igb: Add support
+ for adding offloaded clsflower filters
+In-Reply-To: <20180307012957.7052-9-vinicius.gomes@intel.com>
+References: <20180307012957.7052-1-vinicius.gomes@intel.com>
+ <20180307012957.7052-9-vinicius.gomes@intel.com>
+Message-ID: <20180307114831.16b1788b@cakuba.netronome.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Mar 07, 2018 at 09:35:24AM -0800, Richard Cochran wrote:
-> The discussion on v2 ended with this per-message idea, in preference
-> to the per-socket idea, IIRC.
+On Tue,  6 Mar 2018 17:29:57 -0800, Vinicius Costa Gomes wrote:
+> This allows filters added by tc-flower and specifying MAC addresses,
+> Ethernet types, and the VLAN priority field, to be offloaded to the
+> controller.
+> 
+> This reuses most of the infrastructure used by ethtool, but clsflower
+> filters are kept in a separated list, so they are invisible to
+> ethtool.
+> 
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 
-(But my own opinion is that per-socket is good enough...)
- 
-Thanks,
-Richard
+LGTM, thanks!
+
+> +		NL_SET_ERR_MSG(extack,
+
+One nit: consider using NL_SET_ERR_MSG_MOD to prefix the message with
+driver name.
