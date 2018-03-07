@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  7 Mar 2018 06:17:20 -0800
-Subject: [Intel-wired-lan] [next PATCH S87-V4 2/7] i40e: rename
- i40e_vlan_rx_register to i40e_setup_vlan_stripping
+Date: Wed,  7 Mar 2018 06:17:22 -0800
+Subject: [Intel-wired-lan] [next PATCH S87-V4 4/7] i40e: track filter type
+ statistics when deleting invalid filters
 In-Reply-To: <20180307141725.79649-1-alice.michael@intel.com>
 References: <20180307141725.79649-1-alice.michael@intel.com>
-Message-ID: <20180307141725.79649-2-alice.michael@intel.com>
+Message-ID: <20180307141725.79649-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,79 +13,93 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-We used to use the function i40e_vlan_rx_register as a way to hook
-into the now defunct .ndo_vlan_rx_register netdev hook. This was
-removed but we kept the function around because we still used it
-internally to control enabling or disabling of VLAN stripping.
+When hardware has trouble with a particular filter, we delete it from
+the list. Unfortunately, we did not properly update the per-filter
+statistic when doing so.
 
-Simplify this function and make its intent clear. Pass the *vsi
-pointer directly instead of the netdev pointer. Additionally, move
-it closer to the point where it is called in the file.
-
-This helps clarify the functions use and purpose, and makes the
-code a bit easier to understand.
+Create a helper function to handle this, and properly reduce the
+necessary counter so that it tracks the number of active filters
+properly.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 31 +++++++++++++----------------
- 1 file changed, 14 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 56 ++++++++++++++++++++++++-----
+ 1 file changed, 48 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4b34bbc..31938b2 100644
+index 183c8b8..0b45650 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2720,22 +2720,6 @@ void i40e_vlan_stripping_disable(struct i40e_vsi *vsi)
+@@ -8137,6 +8137,51 @@ u32 i40e_get_global_fd_count(struct i40e_pf *pf)
  }
  
  /**
-- * i40e_vlan_rx_register - Setup or shutdown vlan offload
-- * @netdev: network interface to be adjusted
-- * @features: netdev features to test if VLAN offload is enabled or not
-- **/
--static void i40e_vlan_rx_register(struct net_device *netdev, u32 features)
--{
--	struct i40e_netdev_priv *np = netdev_priv(netdev);
--	struct i40e_vsi *vsi = np->vsi;
--
--	if (features & NETIF_F_HW_VLAN_CTAG_RX)
--		i40e_vlan_stripping_enable(vsi);
--	else
--		i40e_vlan_stripping_disable(vsi);
--}
--
--/**
-  * i40e_add_vlan_all_mac - Add a MAC/VLAN filter for each existing MAC address
-  * @vsi: the vsi being configured
-  * @vid: vlan id to be added (0 = untagged only , -1 = any)
-@@ -2900,6 +2884,19 @@ static int i40e_vlan_rx_kill_vid(struct net_device *netdev,
- }
- 
- /**
-+ * i40e_setup_vlan_stripping - Enable or disable VLAN stripping
-+ * @vsi: the vsi being configured
-+ * @features: netdevice feature flags
-+ **/
-+static void i40e_setup_vlan_stripping(struct i40e_vsi *vsi, u32 features)
++ * i40e_delete_invalid_filter - Delete an invalid FDIR filter
++ * @pf: board private structure
++ * @filter: FDir filter to remove
++ */
++static void i40e_delete_invalid_filter(struct i40e_pf *pf,
++				       struct i40e_fdir_filter *filter)
 +{
-+	if (features & NETIF_F_HW_VLAN_CTAG_RX)
-+		i40e_vlan_stripping_enable(vsi);
-+	else
-+		i40e_vlan_stripping_disable(vsi);
++	/* Update counters */
++	pf->fdir_pf_active_filters--;
++	pf->fd_inv = 0;
++
++	switch (filter->flow_type) {
++	case TCP_V4_FLOW:
++		pf->fd_tcp4_filter_cnt--;
++		break;
++	case UDP_V4_FLOW:
++		pf->fd_udp4_filter_cnt--;
++		break;
++	case SCTP_V4_FLOW:
++		pf->fd_sctp4_filter_cnt--;
++		break;
++	case IP_USER_FLOW:
++		switch (filter->ip4_proto) {
++		case IPPROTO_TCP:
++			pf->fd_tcp4_filter_cnt--;
++			break;
++		case IPPROTO_UDP:
++			pf->fd_udp4_filter_cnt--;
++			break;
++		case IPPROTO_SCTP:
++			pf->fd_sctp4_filter_cnt--;
++			break;
++		case IPPROTO_IP:
++			pf->fd_ip4_filter_cnt--;
++			break;
++		}
++		break;
++	}
++
++	/* Remove the filter from the list and free memory */
++	hlist_del(&filter->fdir_node);
++	kfree(filter);
 +}
 +
 +/**
-  * i40e_restore_vlan - Reinstate vlans when vsi/netdev comes back up
-  * @vsi: the vsi being brought back up
+  * i40e_fdir_check_and_reenable - Function to reenabe FD ATR or SB if disabled
+  * @pf: board private structure
   **/
-@@ -2910,7 +2907,7 @@ static void i40e_restore_vlan(struct i40e_vsi *vsi)
- 	if (!vsi->netdev)
- 		return;
+@@ -8180,14 +8225,9 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+ 	/* if hw had a problem adding a filter, delete it */
+ 	if (pf->fd_inv > 0) {
+ 		hlist_for_each_entry_safe(filter, node,
+-					  &pf->fdir_filter_list, fdir_node) {
+-			if (filter->fd_id == pf->fd_inv) {
+-				hlist_del(&filter->fdir_node);
+-				kfree(filter);
+-				pf->fdir_pf_active_filters--;
+-				pf->fd_inv = 0;
+-			}
+-		}
++					  &pf->fdir_filter_list, fdir_node)
++			if (filter->fd_id == pf->fd_inv)
++				i40e_delete_invalid_filter(pf, filter);
+ 	}
+ }
  
--	i40e_vlan_rx_register(vsi->netdev, vsi->netdev->features);
-+	i40e_setup_vlan_stripping(vsi, vsi->netdev->features);
- 
- 	for_each_set_bit(vid, vsi->active_vlans, VLAN_N_VID)
- 		i40e_vlan_rx_add_vid(vsi->netdev, htons(ETH_P_8021Q),
 -- 
 2.9.5
 
