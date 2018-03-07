@@ -1,56 +1,122 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  7 Mar 2018 06:17:25 -0800
-Subject: [Intel-wired-lan] [next PATCH S87-V4 7/7] i40e: restore TCPv4 input
- set when re-enabling ATR
-In-Reply-To: <20180307141725.79649-1-alice.michael@intel.com>
-References: <20180307141725.79649-1-alice.michael@intel.com>
-Message-ID: <20180307141725.79649-7-alice.michael@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 7 Mar 2018 22:29:44 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v3 6/8] igb: Add MAC
+ address support for ethtool nftuple filters
+In-Reply-To: <20180307012957.7052-7-vinicius.gomes@intel.com>
+References: <20180307012957.7052-1-vinicius.gomes@intel.com>
+ <20180307012957.7052-7-vinicius.gomes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7FFA86@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Vinicius Costa Gomes
+> Sent: Tuesday, March 6, 2018 5:30 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; Sanchez-Palencia, Jesus <jesus.sanchez-
+> palencia at intel.com>
+> Subject: [Intel-wired-lan] [next-queue PATCH v3 6/8] igb: Add MAC address
+> support for ethtool nftuple filters
+> 
+> This adds the capability of configuring the queue steering of arriving
+> packets based on their source and destination MAC addresses.
+> 
+> In practical terms this adds support for the following use cases,
+> characterized by these examples:
+> 
+> $ ethtool -N eth0 flow-type ether dst aa:aa:aa:aa:aa:aa action 0
+> (this will direct packets with destination address "aa:aa:aa:aa:aa:aa"
+> to the RX queue 0)
+> 
+> $ ethtool -N eth0 flow-type ether src 44:44:44:44:44:44 action 3
+> (this will direct packets with destination address "44:44:44:44:44:44"
+> to the RX queue 3)
 
-When we re-enable ATR we need to restore the input set for TCPv4
-filters, in order for ATR to function correctly. We already do this for
-the normal case of re-enabling ATR when disabling ntuple support.
-However, when re-enabling ATR after the last tcp4 filter is removed (but
-when ntuple support is still active), we did not restore the TCPv4
-filter input set.
+I assume this example should read "... source address"  rather than "...destination".
 
-This can cause problems if the TCPv4 filters from FDir had changed the
-input set, as ATR will no longer behave as expected.
-
-When clearing the ATR auto-disable flag, make sure we restore the TCPv4
-input set to avoid this.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 89bcfd1..0df21e4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8157,6 +8157,15 @@ static void i40e_reenable_fdir_sb(struct i40e_pf *pf)
- static void i40e_reenable_fdir_atr(struct i40e_pf *pf)
- {
- 	if (pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED) {
-+		/* ATR uses the same filtering logic as SB rules. It only
-+		 * functions properly if the input set mask is at the default
-+		 * settings. It is safe to restore the default input set
-+		 * because there are no active TCPv4 filter rules.
-+		 */
-+		i40e_write_fd_input_set(pf, I40E_FILTER_PCTYPE_NONF_IPV4_TCP,
-+					I40E_L3_SRC_MASK | I40E_L3_DST_MASK |
-+					I40E_L4_SRC_MASK | I40E_L4_DST_MASK);
-+
- 		pf->flags &= ~I40E_FLAG_FD_ATR_AUTO_DISABLED;
- 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
- 		    (I40E_DEBUG_FD & pf->hw.debug_mask))
--- 
-2.9.5
-
+> 
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c | 35
+> ++++++++++++++++++++++++----
+>  1 file changed, 31 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> index 94fc9a4bed8b..3f98299d4cd0 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> @@ -2494,6 +2494,23 @@ static int igb_get_ethtool_nfc_entry(struct
+> igb_adapter *adapter,
+>  			fsp->h_ext.vlan_tci = rule->filter.vlan_tci;
+>  			fsp->m_ext.vlan_tci = htons(VLAN_PRIO_MASK);
+>  		}
+> +		if (rule->filter.match_flags &
+> IGB_FILTER_FLAG_DST_MAC_ADDR) {
+> +			ether_addr_copy(fsp->h_u.ether_spec.h_dest,
+> +					rule->filter.dst_addr);
+> +			/* As we only support matching by the full
+> +			 * mask, return the mask to userspace
+> +			 */
+> +			eth_broadcast_addr(fsp->m_u.ether_spec.h_dest);
+> +		}
+> +		if (rule->filter.match_flags &
+> IGB_FILTER_FLAG_SRC_MAC_ADDR) {
+> +			ether_addr_copy(fsp->h_u.ether_spec.h_source,
+> +					rule->filter.src_addr);
+> +			/* As we only support matching by the full
+> +			 * mask, return the mask to userspace
+> +			 */
+> +			eth_broadcast_addr(fsp-
+> >m_u.ether_spec.h_source);
+> +		}
+> +
+>  		return 0;
+>  	}
+>  	return -EINVAL;
+> @@ -2932,10 +2949,6 @@ static int igb_add_ethtool_nfc_entry(struct
+> igb_adapter *adapter,
+>  	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW)
+>  		return -EINVAL;
+> 
+> -	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK &&
+> -	    fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK))
+> -		return -EINVAL;
+> -
+>  	input = kzalloc(sizeof(*input), GFP_KERNEL);
+>  	if (!input)
+>  		return -ENOMEM;
+> @@ -2945,6 +2958,20 @@ static int igb_add_ethtool_nfc_entry(struct
+> igb_adapter *adapter,
+>  		input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
+>  	}
+> 
+> +	/* Only support matching addresses by the full mask */
+> +	if (is_broadcast_ether_addr(fsp->m_u.ether_spec.h_source)) {
+> +		input->filter.match_flags |=
+> IGB_FILTER_FLAG_SRC_MAC_ADDR;
+> +		ether_addr_copy(input->filter.src_addr,
+> +				fsp->h_u.ether_spec.h_source);
+> +	}
+> +
+> +	/* Only support matching addresses by the full mask */
+> +	if (is_broadcast_ether_addr(fsp->m_u.ether_spec.h_dest)) {
+> +		input->filter.match_flags |=
+> IGB_FILTER_FLAG_DST_MAC_ADDR;
+> +		ether_addr_copy(input->filter.dst_addr,
+> +				fsp->h_u.ether_spec.h_dest);
+> +	}
+> +
+>  	if ((fsp->flow_type & FLOW_EXT) && fsp->m_ext.vlan_tci) {
+>  		if (fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK)) {
+>  			err = -EINVAL;
+> --
+> 2.16.2
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
