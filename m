@@ -1,329 +1,67 @@
 From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-Date: Tue,  6 Mar 2018 17:12:30 -0800
-Subject: [Intel-wired-lan] [RFC v3 net-next 18/18] igb: Add support for TBS
- offload
+Date: Tue,  6 Mar 2018 17:12:24 -0800
+Subject: [Intel-wired-lan] [RFC v3 net-next 12/18] net/sched: Allow creating
+ a Qdisc watchdog with other clocks
 In-Reply-To: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
 References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
-Message-ID: <20180307011230.24001-19-jesus.sanchez-palencia@intel.com>
+Message-ID: <20180307011230.24001-13-jesus.sanchez-palencia@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Implement HW offload support for SO_TXTIME through igb's Launchtime
-feature. This is done by extending igb_setup_tc() so it supports
-TC_SETUP_QDISC_TBS and configuring i210 so time based transmit
-arbitration is enabled.
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 
-The FQTSS transmission mode added before is extended so strict
-priority (SP) queues wait for stream reservation (SR) ones.
-igb_config_tx_modes() is extended so it can support enabling/disabling
-Launchtime following the previous approach used for the credit-based
-shaper (CBS).
+This adds 'qdisc_watchdog_init_clockid()' that allows a clockid to be
+passed, this allows other time references to be used when scheduling
+the Qdisc to run.
 
-As the previous flow, FQTSS transmission mode is enabled automatically
-by the driver once Launchtime (or CBS, as before) is enabled.
-Similarly, it's automatically disabled when the feature is disabled
-for the last queue that had it setup on.
-
-The driver just consumes the transmit times from the skbuffs directly,
-so no special handling is done in case an 'invalid' time is provided.
-We assume this has been handled by the TBS qdisc already.
-
-Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_defines.h |  16 +++
- drivers/net/ethernet/intel/igb/igb.h           |   1 +
- drivers/net/ethernet/intel/igb/igb_main.c      | 135 ++++++++++++++++++++++---
- 3 files changed, 137 insertions(+), 15 deletions(-)
+ include/net/pkt_sched.h |  2 ++
+ net/sched/sch_api.c     | 11 +++++++++--
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index 83cabff1e0ab..9e357848c550 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -1066,6 +1066,22 @@
- #define E1000_TQAVCTRL_XMIT_MODE	BIT(0)
- #define E1000_TQAVCTRL_DATAFETCHARB	BIT(4)
- #define E1000_TQAVCTRL_DATATRANARB	BIT(8)
-+#define E1000_TQAVCTRL_DATATRANTIM	BIT(9)
-+#define E1000_TQAVCTRL_SP_WAIT_SR	BIT(10)
-+/* Fetch Time Delta - bits 31:16
-+ *
-+ * This field holds the value to be reduced from the launch time for
-+ * fetch time decision. The FetchTimeDelta value is defined in 32 ns
-+ * granularity.
-+ *
-+ * This field is 16 bits wide, and so the maximum value is:
-+ *
-+ * 65535 * 32 = 2097120 ~= 2.1 msec
-+ *
-+ * XXX: We are configuring the max value here since we couldn't come up
-+ * with a reason for not doing so.
-+ */
-+#define E1000_TQAVCTRL_FETCHTIME_DELTA	(0xFFFF << 16)
+diff --git a/include/net/pkt_sched.h b/include/net/pkt_sched.h
+index 815b92a23936..2466ea143d01 100644
+--- a/include/net/pkt_sched.h
++++ b/include/net/pkt_sched.h
+@@ -72,6 +72,8 @@ struct qdisc_watchdog {
+ 	struct Qdisc	*qdisc;
+ };
  
- /* TX Qav Credit Control fields */
- #define E1000_TQAVCC_IDLESLOPE_MASK	0xFFFF
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 1c6b8d9176a8..4e1146efa399 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -281,6 +281,7 @@ struct igb_ring {
- 	u16 count;			/* number of desc. in the ring */
- 	u8 queue_index;			/* logical index of the ring*/
- 	u8 reg_idx;			/* physical index of the ring */
-+	bool launchtime_enable;		/* true if LaunchTime is enabled */
- 	bool cbs_enable;		/* indicates if CBS is enabled */
- 	s32 idleslope;			/* idleSlope in kbps */
- 	s32 sendslope;			/* sendSlope in kbps */
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 10d7809a85d7..fa931f66a1f8 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1684,13 +1684,26 @@ static bool is_any_cbs_enabled(struct igb_adapter *adapter)
- 	return false;
++void qdisc_watchdog_init_clockid(struct qdisc_watchdog *wd, struct Qdisc *qdisc,
++				 clockid_t clockid);
+ void qdisc_watchdog_init(struct qdisc_watchdog *wd, struct Qdisc *qdisc);
+ void qdisc_watchdog_schedule_ns(struct qdisc_watchdog *wd, u64 expires);
+ 
+diff --git a/net/sched/sch_api.c b/net/sched/sch_api.c
+index 68f9d942bed4..beb1dc296bfb 100644
+--- a/net/sched/sch_api.c
++++ b/net/sched/sch_api.c
+@@ -596,12 +596,19 @@ static enum hrtimer_restart qdisc_watchdog(struct hrtimer *timer)
+ 	return HRTIMER_NORESTART;
  }
  
-+static bool is_any_txtime_enabled(struct igb_adapter *adapter)
-+{
-+	int i;
-+
-+	for (i = 0; i < adapter->num_tx_queues; i++) {
-+		if (adapter->tx_ring[i]->launchtime_enable)
-+			return true;
-+	}
-+
-+	return false;
-+}
-+
- /**
-  *  igb_config_tx_modes - Configure "Qav Tx mode" features on igb
-  *  @adapter: pointer to adapter struct
-  *  @queue: queue number
-  *
-- *  Configure CBS for a given hardware queue. Parameters are retrieved
-- *  from the correct Tx ring, so igb_save_cbs_params() should be used
-+ *  Configure CBS and Launchtime for a given hardware queue.
-+ *  Parameters are retrieved from the correct Tx ring, so
-+ *  igb_save_cbs_params() and igb_save_txtime_params() should be used
-  *  for setting those correctly prior to this function being called.
-  **/
- static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
-@@ -1704,10 +1717,20 @@ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
- 	WARN_ON(hw->mac.type != e1000_i210);
- 	WARN_ON(queue < 0 || queue > 1);
- 
--	if (ring->cbs_enable) {
-+	/* If any of the Qav features is enabled, configure queues as SR and
-+	 * with HIGH PRIO. If none is, then configure them with LOW PRIO and
-+	 * as SP.
-+	 */
-+	if (ring->cbs_enable || ring->launchtime_enable) {
- 		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_HIGH);
- 		set_queue_mode(hw, queue, QUEUE_MODE_STREAM_RESERVATION);
-+	} else {
-+		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_LOW);
-+		set_queue_mode(hw, queue, QUEUE_MODE_STRICT_PRIORITY);
-+	}
- 
-+	/* If CBS is enabled, set DataTranARB and config its parameters. */
-+	if (ring->cbs_enable) {
- 		/* Always set data transfer arbitration to credit-based
- 		 * shaper algorithm on TQAVCTRL if CBS is enabled for any of
- 		 * the queues.
-@@ -1783,8 +1806,6 @@ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
- 		wr32(E1000_I210_TQAVHC(queue),
- 		     0x80000000 + ring->hicredit * 0x7735);
- 	} else {
--		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_LOW);
--		set_queue_mode(hw, queue, QUEUE_MODE_STRICT_PRIORITY);
- 
- 		/* Set idleSlope to zero. */
- 		tqavcc = rd32(E1000_I210_TQAVCC(queue));
-@@ -1805,17 +1826,61 @@ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
- 		}
- 	}
- 
-+	/* If LaunchTime is enabled, set DataTranTIM. */
-+	if (ring->launchtime_enable) {
-+		/* Always set DataTranTIM on TQAVCTRL if LaunchTime is enabled
-+		 * for any of the SR queues, and configure fetchtime delta.
-+		 * XXX NOTE:
-+		 *     - LaunchTime will be enabled for all SR queues.
-+		 *     - A fixed offset can be added relative to the launch
-+		 *       time of all packets if configured at reg LAUNCH_OS0.
-+		 *       We are keeping it as 0 for now (default value).
-+		 */
-+		tqavctrl = rd32(E1000_I210_TQAVCTRL);
-+		tqavctrl |= E1000_TQAVCTRL_DATATRANTIM |
-+		       E1000_TQAVCTRL_FETCHTIME_DELTA;
-+		wr32(E1000_I210_TQAVCTRL, tqavctrl);
-+	} else {
-+		/* If Launchtime is not enabled for any SR queues anymore,
-+		 * then clear DataTranTIM on TQAVCTRL and clear fetchtime delta,
-+		 * effectively disabling Launchtime.
-+		 */
-+		if (!is_any_txtime_enabled(adapter)) {
-+			tqavctrl = rd32(E1000_I210_TQAVCTRL);
-+			tqavctrl &= ~E1000_TQAVCTRL_DATATRANTIM;
-+			tqavctrl &= ~E1000_TQAVCTRL_FETCHTIME_DELTA;
-+			wr32(E1000_I210_TQAVCTRL, tqavctrl);
-+		}
-+	}
-+
- 	/* XXX: In i210 controller the sendSlope and loCredit parameters from
- 	 * CBS are not configurable by software so we don't do any 'controller
- 	 * configuration' in respect to these parameters.
- 	 */
- 
--	netdev_dbg(netdev, "CBS %s: queue %d idleslope %d sendslope %d hiCredit %d locredit %d\n",
--		   (ring->cbs_enable) ? "enabled" : "disabled", queue,
-+	netdev_dbg(netdev, "Qav Tx mode: cbs %s, launchtime %s, queue %d \
-+			    idleslope %d sendslope %d hiCredit %d \
-+			    locredit %d\n",
-+		   (ring->cbs_enable) ? "enabled" : "disabled",
-+		   (ring->launchtime_enable) ? "enabled" : "disabled", queue,
- 		   ring->idleslope, ring->sendslope, ring->hicredit,
- 		   ring->locredit);
- }
- 
-+static int igb_save_txtime_params(struct igb_adapter *adapter, int queue,
-+				  bool enable)
-+{
-+	struct igb_ring *ring;
-+
-+	if (queue < 0 || queue > adapter->num_tx_queues)
-+		return -EINVAL;
-+
-+	ring = adapter->tx_ring[queue];
-+	ring->launchtime_enable = enable;
-+
-+	return 0;
-+}
-+
- static int igb_save_cbs_params(struct igb_adapter *adapter, int queue,
- 			       bool enable, int idleslope, int sendslope,
- 			       int hicredit, int locredit)
-@@ -1859,10 +1924,11 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
- 		int i, max_queue;
- 
- 		/* Configure TQAVCTRL register: set transmit mode to 'Qav',
--		 * set data fetch arbitration to 'round robin'.
-+		 * set data fetch arbitration to 'round robin', set SP_WAIT_SR
-+		 * so SP queues wait for SR ones.
- 		 */
- 		val = rd32(E1000_I210_TQAVCTRL);
--		val |= E1000_TQAVCTRL_XMIT_MODE;
-+		val |= E1000_TQAVCTRL_XMIT_MODE | E1000_TQAVCTRL_SP_WAIT_SR;
- 		val &= ~E1000_TQAVCTRL_DATAFETCHARB;
- 		wr32(E1000_I210_TQAVCTRL, val);
- 
-@@ -2485,7 +2551,7 @@ static void igb_offload_apply(struct igb_adapter *adapter, s32 queue)
- 
- 	igb_config_tx_modes(adapter, queue);
- 
--	if (!is_any_cbs_enabled(adapter))
-+	if (!is_any_cbs_enabled(adapter) && !is_any_txtime_enabled(adapter))
- 		enable_fqtss(adapter, false);
- }
- 
-@@ -2514,6 +2580,30 @@ static int igb_offload_cbs(struct igb_adapter *adapter,
- 	return 0;
- }
- 
-+static int igb_offload_txtime(struct igb_adapter *adapter,
-+			      struct tc_tbs_qopt_offload *qopt)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	int err;
-+
-+	/* Launchtime offloading is only supported by i210 controller. */
-+	if (hw->mac.type != e1000_i210)
-+		return -EOPNOTSUPP;
-+
-+	/* Launchtime offloading is only supported by queues 0 and 1. */
-+	if (qopt->queue < 0 || qopt->queue > 1)
-+		return -EINVAL;
-+
-+	err = igb_save_txtime_params(adapter, qopt->queue, qopt->enable);
-+
-+	if (err)
-+		return err;
-+
-+	igb_offload_apply(adapter, qopt->queue);
-+
-+	return 0;
-+}
-+
- static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 			void *type_data)
+-void qdisc_watchdog_init(struct qdisc_watchdog *wd, struct Qdisc *qdisc)
++void qdisc_watchdog_init_clockid(struct qdisc_watchdog *wd, struct Qdisc *qdisc,
++				 clockid_t clockid)
  {
-@@ -2522,6 +2612,8 @@ static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 	switch (type) {
- 	case TC_SETUP_QDISC_CBS:
- 		return igb_offload_cbs(adapter, type_data);
-+	case TC_SETUP_QDISC_TBS:
-+		return igb_offload_txtime(adapter, type_data);
- 
- 	default:
- 		return -EOPNOTSUPP;
-@@ -5333,11 +5425,14 @@ static void igb_set_itr(struct igb_q_vector *q_vector)
- 	}
+-	hrtimer_init(&wd->timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS_PINNED);
++	hrtimer_init(&wd->timer, clockid, HRTIMER_MODE_ABS_PINNED);
+ 	wd->timer.function = qdisc_watchdog;
+ 	wd->qdisc = qdisc;
  }
- 
--static void igb_tx_ctxtdesc(struct igb_ring *tx_ring, u32 vlan_macip_lens,
--			    u32 type_tucmd, u32 mss_l4len_idx)
-+static void igb_tx_ctxtdesc(struct igb_ring *tx_ring,
-+			    struct igb_tx_buffer *first,
-+			    u32 vlan_macip_lens, u32 type_tucmd,
-+			    u32 mss_l4len_idx)
- {
- 	struct e1000_adv_tx_context_desc *context_desc;
- 	u16 i = tx_ring->next_to_use;
-+	struct timespec64 ts;
- 
- 	context_desc = IGB_TX_CTXTDESC(tx_ring, i);
- 
-@@ -5352,9 +5447,18 @@ static void igb_tx_ctxtdesc(struct igb_ring *tx_ring, u32 vlan_macip_lens,
- 		mss_l4len_idx |= tx_ring->reg_idx << 4;
- 
- 	context_desc->vlan_macip_lens	= cpu_to_le32(vlan_macip_lens);
--	context_desc->seqnum_seed	= 0;
- 	context_desc->type_tucmd_mlhl	= cpu_to_le32(type_tucmd);
- 	context_desc->mss_l4len_idx	= cpu_to_le32(mss_l4len_idx);
++EXPORT_SYMBOL(qdisc_watchdog_init_clockid);
 +
-+	/* We assume there is always a valid tx time available. Invalid times
-+	 * should have been handled by the upper layers.
-+	 */
-+	if (tx_ring->launchtime_enable) {
-+		ts = ns_to_timespec64(first->skb->tstamp);
-+		context_desc->seqnum_seed = cpu_to_le32(ts.tv_nsec / 32);
-+	} else {
-+		context_desc->seqnum_seed = 0;
-+	}
- }
++void qdisc_watchdog_init(struct qdisc_watchdog *wd, struct Qdisc *qdisc)
++{
++	qdisc_watchdog_init_clockid(wd, qdisc, CLOCK_MONOTONIC);
++}
+ EXPORT_SYMBOL(qdisc_watchdog_init);
  
- static int igb_tso(struct igb_ring *tx_ring,
-@@ -5437,7 +5541,8 @@ static int igb_tso(struct igb_ring *tx_ring,
- 	vlan_macip_lens |= (ip.hdr - skb->data) << E1000_ADVTXD_MACLEN_SHIFT;
- 	vlan_macip_lens |= first->tx_flags & IGB_TX_FLAGS_VLAN_MASK;
- 
--	igb_tx_ctxtdesc(tx_ring, vlan_macip_lens, type_tucmd, mss_l4len_idx);
-+	igb_tx_ctxtdesc(tx_ring, first, vlan_macip_lens,
-+			type_tucmd, mss_l4len_idx);
- 
- 	return 1;
- }
-@@ -5492,7 +5597,7 @@ static void igb_tx_csum(struct igb_ring *tx_ring, struct igb_tx_buffer *first)
- 	vlan_macip_lens |= skb_network_offset(skb) << E1000_ADVTXD_MACLEN_SHIFT;
- 	vlan_macip_lens |= first->tx_flags & IGB_TX_FLAGS_VLAN_MASK;
- 
--	igb_tx_ctxtdesc(tx_ring, vlan_macip_lens, type_tucmd, 0);
-+	igb_tx_ctxtdesc(tx_ring, first, vlan_macip_lens, type_tucmd, 0);
- }
- 
- #define IGB_SET_FLAG(_input, _flag, _result) \
+ void qdisc_watchdog_schedule_ns(struct qdisc_watchdog *wd, u64 expires)
 -- 
 2.16.2
 
