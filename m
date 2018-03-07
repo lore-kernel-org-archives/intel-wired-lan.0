@@ -1,43 +1,57 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed, 07 Mar 2018 14:24:04 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v3 8/8] igb: Add support
- for adding offloaded clsflower filters
-In-Reply-To: <20180307114831.16b1788b@cakuba.netronome.com>
-References: <20180307012957.7052-1-vinicius.gomes@intel.com>
- <20180307012957.7052-9-vinicius.gomes@intel.com>
- <20180307114831.16b1788b@cakuba.netronome.com>
-Message-ID: <87tvtrzfqz.fsf@intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Wed,  7 Mar 2018 06:17:19 -0800
+Subject: [Intel-wired-lan] [next PATCH S87-V4 1/7] i40e: Fix attach VF to VM
+ issue
+Message-ID: <20180307141725.79649-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 
-Jakub Kicinski <kubakici@wp.pl> writes:
+Fix for "Resource temporarily unavailable" problem when virsh is
+trying to attach a device to VM. When the VF driver is loaded on
+host and virsh is trying to attach it to the VM and set a MAC
+address, it ends with a race condition between i40e_reset_vf and
+i40e_ndo_set_vf_mac functions. The bug is fixed by adding polling
+in i40e_ndo_set_vf_mac function For when the VF is in Reset mode.
 
-> On Tue,  6 Mar 2018 17:29:57 -0800, Vinicius Costa Gomes wrote:
->> This allows filters added by tc-flower and specifying MAC addresses,
->> Ethernet types, and the VLAN priority field, to be offloaded to the
->> controller.
->> 
->> This reuses most of the infrastructure used by ethtool, but clsflower
->> filters are kept in a separated list, so they are invisible to
->> ethtool.
->> 
->> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
->
-> LGTM, thanks!
->
->> +		NL_SET_ERR_MSG(extack,
->
-> One nit: consider using NL_SET_ERR_MSG_MOD to prefix the message with
-> driver name.
+Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Sure thing. Will send a v4 with this shortly.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 6049a56..8559c09 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -3742,6 +3742,7 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 	int ret = 0;
+ 	struct hlist_node *h;
+ 	int bkt;
++	u8 i;
+ 
+ 	/* validate the request */
+ 	if (vf_id >= pf->num_alloc_vfs) {
+@@ -3753,6 +3754,16 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 
+ 	vf = &(pf->vf[vf_id]);
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
++
++	/* When the VF is resetting wait until it is done.
++	 * It can take up to 200 milliseconds,
++	 * but wait for up to 300 milliseconds to be safe.
++	 */
++	for (i = 0; i < 15; i++) {
++		if (test_bit(I40E_VF_STATE_INIT, &vf->vf_states))
++			break;
++		msleep(20);
++	}
+ 	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
+ 		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
+ 			vf_id);
+-- 
+2.9.5
 
-
-Cheers,
---
-Vinicius
