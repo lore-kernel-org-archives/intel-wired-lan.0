@@ -1,151 +1,76 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 07 Mar 2018 08:10:57 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- f8f61bf698ed912651af041bd4c1b957a9d9daa8
-Message-ID: <5a9f2e11.zjVWAuWwopPumXDB%fengguang.wu@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Tue,  6 Mar 2018 17:29:49 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v3 0/8] igb: offloading of
+ receive filters
+Message-ID: <20180307012957.7052-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: f8f61bf698ed912651af041bd4c1b957a9d9daa8  e1000e: Fix link check race condition
+Hi,
 
-elapsed time: 345m
+Changes from v2:
+ - Addressed review comments from Jakub Kicinski, mostly about coding
+   style adjustments and more consistent error reporting;
 
-configs tested: 127
+Changes from v1:
+ - Addressed review comments from Alexander Duyck and Florian
+   Fainelli;
+ - Adding and removing cls_flower filters are now proposed in the same
+   patch;
+ - cls_flower filters are kept in a separated list from "ethtool"
+   filters (so that section of the original cover letter is no longer
+   valid);
+ - The patch adding support for ethtool filters is now independent from
+   the rest of the series;
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Original cover letter:
 
-i386                               tinyconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201809
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                     randconfig-i0-201809
-i386                     randconfig-i1-201809
-cris                 etrax-100lx_v2_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                     randconfig-a1-201809
-i386                     randconfig-a0-201809
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                     randconfig-s0-201809
-i386                     randconfig-s1-201809
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201809
-i386                   randconfig-x004-201809
-i386                   randconfig-x002-201809
-i386                   randconfig-x007-201809
-i386                   randconfig-x009-201809
-i386                   randconfig-x003-201809
-i386                   randconfig-x001-201809
-i386                   randconfig-x008-201809
-i386                   randconfig-x006-201809
-i386                   randconfig-x005-201809
-i386                   randconfig-x000-201809
-x86_64                 randconfig-x017-201809
-x86_64                 randconfig-x013-201809
-x86_64                 randconfig-x016-201809
-x86_64                 randconfig-x018-201809
-x86_64                 randconfig-x012-201809
-x86_64                 randconfig-x015-201809
-x86_64                 randconfig-x014-201809
-x86_64                 randconfig-x011-201809
-x86_64                 randconfig-x010-201809
-x86_64                 randconfig-x019-201809
-i386                   randconfig-x015-201809
-i386                   randconfig-x019-201809
-i386                   randconfig-x010-201809
-i386                   randconfig-x014-201809
-i386                   randconfig-x016-201809
-i386                   randconfig-x011-201809
-i386                   randconfig-x012-201809
-i386                   randconfig-x017-201809
-i386                   randconfig-x013-201809
-i386                   randconfig-x018-201809
-i386                   randconfig-x079-201809
-i386                   randconfig-x071-201809
-i386                   randconfig-x077-201809
-i386                   randconfig-x072-201809
-i386                   randconfig-x076-201809
-i386                   randconfig-x074-201809
-i386                   randconfig-x078-201809
-i386                   randconfig-x073-201809
-i386                   randconfig-x070-201809
-i386                   randconfig-x075-201809
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-x86_64                 randconfig-x000-201809
-x86_64                 randconfig-x005-201809
-x86_64                 randconfig-x008-201809
-x86_64                 randconfig-x001-201809
-x86_64                 randconfig-x006-201809
-x86_64                 randconfig-x007-201809
-x86_64                 randconfig-x009-201809
-x86_64                 randconfig-x002-201809
-x86_64                 randconfig-x003-201809
-x86_64                 randconfig-x004-201809
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-i386                             allmodconfig
+This series enables some ethtool and tc-flower filters to be offloaded
+to igb-based network controllers. This is useful when the system
+configurator want to steer kinds of traffic to a specific hardware
+queue.
 
-Thanks,
-Fengguang
+The first two commits are bug fixes.
+
+The basis of this series is to export the internal API used to
+configure address filters, so they can be used by ethtool, and
+extending the functionality so an source address can be handled.
+
+Then, we enable the tc-flower offloading implementation to re-use the
+same infrastructure as ethtool, and storing them in the per-adapter
+"nfc" (Network Filter Config?) list. But for consistency, for
+destructive access they are separated, i.e. an filter added by
+tc-flower can only be removed by tc-flower, but ethtool can read them
+all.
+
+Only support for VLAN Prio, Source and Destination MAC Address, and
+Ethertype is enabled for now.
+
+Open question:
+  - igb is initialized with the number of traffic classes as 1, if we
+  want to use multiple traffic classes we need to increase this value,
+  the only way I could find is to use mqprio (for example). Should igb
+  be initialized with, say, the number of queues as its "num_tc"?
+
+
+Vinicius Costa Gomes (8):
+  igb: Fix not adding filter elements to the list
+  igb: Fix queue selection on MAC filters on i210 and i211
+  igb: Enable the hardware traffic class feature bit for igb models
+  igb: Add support for MAC address filters specifying source addresses
+  igb: Enable nfc filters to specify MAC addresses
+  igb: Add MAC address support for ethtool nftuple filters
+  igb: Add the skeletons for tc-flower offloading
+  igb: Add support for adding offloaded clsflower filters
+
+ drivers/net/ethernet/intel/igb/e1000_defines.h |   2 +
+ drivers/net/ethernet/intel/igb/igb.h           |  12 +
+ drivers/net/ethernet/intel/igb/igb_ethtool.c   |  65 +++++-
+ drivers/net/ethernet/intel/igb/igb_main.c      | 306 ++++++++++++++++++++++++-
+ 4 files changed, 371 insertions(+), 14 deletions(-)
+
+--
+2.16.2
