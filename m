@@ -1,36 +1,32 @@
 From: Richard Cochran <richardcochran@gmail.com>
-Date: Tue, 6 Mar 2018 21:24:11 -0800
-Subject: [Intel-wired-lan] [RFC v3 net-next 08/18] net: SO_TXTIME: Add
- clockid and drop_if_late params
-In-Reply-To: <1520391209.109662.33.camel@gmail.com>
+Date: Tue, 6 Mar 2018 21:28:49 -0800
+Subject: [Intel-wired-lan] [RFC v3 net-next 00/18] Time based packet
+ transmission
+In-Reply-To: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
 References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
- <20180307011230.24001-9-jesus.sanchez-palencia@intel.com>
- <1520391209.109662.33.camel@gmail.com>
-Message-ID: <20180307052410.m2yqmokrivjlwcjz@localhost>
+Message-ID: <20180307052849.droj77rqa7epqvfe@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Mar 06, 2018 at 06:53:29PM -0800, Eric Dumazet wrote:
-> This is adding 32+1 bits to sk_buff, and possibly holes in this very
-> very hot (and already too fat) structure.
-> 
-> Do we really need 32 bits for a clockid_t ?
+On Tue, Mar 06, 2018 at 05:12:12PM -0800, Jesus Sanchez-Palencia wrote:
+> Design changes since v2:
+>  - Now on the dequeue() path, tbs only drops an expired packet if it has the
+>    skb->tc_drop_if_late flag set. In practical terms, this will define if
+>    the semantics of txtime on a system is "not earlier than" or "not later
+>    than" a given timestamp;
+>  - Now on the enqueue() path, the qdisc will drop a packet if its clockid
+>    doesn't match the qdisc's one;
+>  - Sorting the packets based on their txtime is now an option for the disc.
+>    Effectively, this means it can be configured in 4 modes: HW offload or
+>    SW best-effort, sorting enabled or disabled;
 
-Probably we can live with fewer bits.
+While all of this makes the series and the configuration more complex,
+still I like the fact that the interface offers these different modes.
 
-For clock IDs with a positive sign, the max possible clock value is 16.
-
-For clock IDs with a negative sign, IIRC, three bits are for the type
-code (we have also posix timers packed like this) and the are for the
-file descriptor.  So maybe we could use 16 bits, allowing 12 bits or
-so for encoding the FD.
-
-The downside would be that this forces the application to make sure
-and open the dynamic posix clock early enough before the FD count gets
-too high.
+Looking forward to testing this...
 
 Thanks,
 Richard
