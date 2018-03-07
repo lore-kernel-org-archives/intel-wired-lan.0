@@ -1,11 +1,11 @@
 From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
-Date: Wed, 7 Mar 2018 11:59:45 -0500
-Subject: [Intel-wired-lan] [RFC v3 net-next 02/18] net: Clear
- skb->tstamp only on the forwarding path
-In-Reply-To: <20180307011230.24001-3-jesus.sanchez-palencia@intel.com>
+Date: Wed, 7 Mar 2018 12:00:22 -0500
+Subject: [Intel-wired-lan] [RFC v3 net-next 05/18] net: ipv4: raw: Hook
+ into time based transmission.
+In-Reply-To: <20180307011230.24001-6-jesus.sanchez-palencia@intel.com>
 References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
- <20180307011230.24001-3-jesus.sanchez-palencia@intel.com>
-Message-ID: <CAF=yD-JYdh=tBcjSFCV51+EAWKQ2kR0RwgkP1ZWQesMo8caqcw@mail.gmail.com>
+ <20180307011230.24001-6-jesus.sanchez-palencia@intel.com>
+Message-ID: <CAF=yD-JSrTcSFJ18xA7sxNTt8U_CZuHuTahWLw_AgYCHteVD1A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,44 +14,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Tue, Mar 6, 2018 at 8:12 PM, Jesus Sanchez-Palencia
 <jesus.sanchez-palencia@intel.com> wrote:
-> This is done in preparation for the upcoming time based transmission
-> patchset. Now that skb->tstamp will be used to hold packet's txtime,
-> we must ensure that it is being cleared when traversing namespaces.
-> Also, doing that from skb_scrub_packet() would break our feature when
-> tunnels are used.
-
-Then the right location to move to is skb_scrub_packet below the test for xnet.
-
+> From: Richard Cochran <rcochran@linutronix.de>
+>
+> For raw packets, copy the desired future transmit time from the CMSG
+> cookie into the skb.
+>
+> Signed-off-by: Richard Cochran <rcochran@linutronix.de>
 > Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 > ---
->  include/linux/netdevice.h | 1 +
->  net/core/skbuff.c         | 1 -
->  2 files changed, 1 insertion(+), 1 deletion(-)
+>  net/ipv4/raw.c | 2 ++
+>  1 file changed, 2 insertions(+)
 >
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index dbe6344b727a..7104de2bc957 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> @@ -3379,6 +3379,7 @@ static __always_inline int ____dev_forward_skb(struct net_device *dev,
+> diff --git a/net/ipv4/raw.c b/net/ipv4/raw.c
+> index 54648d20bf0f..8e05970ba7c4 100644
+> --- a/net/ipv4/raw.c
+> +++ b/net/ipv4/raw.c
+> @@ -381,6 +381,7 @@ static int raw_send_hdrinc(struct sock *sk, struct flowi4 *fl4,
 >
->         skb_scrub_packet(skb, true);
->         skb->priority = 0;
-> +       skb->tstamp = 0;
->         return 0;
->  }
->
-> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-> index 715c13495ba6..678fc5416ae1 100644
-> --- a/net/core/skbuff.c
-> +++ b/net/core/skbuff.c
-> @@ -4865,7 +4865,6 @@ EXPORT_SYMBOL(skb_try_coalesce);
->   */
->  void skb_scrub_packet(struct sk_buff *skb, bool xnet)
->  {
-> -       skb->tstamp = 0;
->         skb->pkt_type = PACKET_HOST;
->         skb->skb_iif = 0;
->         skb->ignore_df = 0;
-> --
-> 2.16.2
->
+>         skb->priority = sk->sk_priority;
+>         skb->mark = sk->sk_mark;
+> +       skb->tstamp = sockc->transmit_time;
+
+This implements the feature only for the hdrincl case and silently
+drops the txtime request on other raw sockets (incl. corked).
+
+At the least, should probably fail if sockc.transmit_time is non-zero
+and the hdrincl path is not taken. Or implement by passing through
+inet_cork and set in __ip_make_skb. Then be careful to ignore the
+field for other protocols, where it may be uninitialized.
