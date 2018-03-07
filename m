@@ -1,122 +1,72 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 7 Mar 2018 22:29:44 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH v3 6/8] igb: Add MAC
- address support for ethtool nftuple filters
-In-Reply-To: <20180307012957.7052-7-vinicius.gomes@intel.com>
-References: <20180307012957.7052-1-vinicius.gomes@intel.com>
- <20180307012957.7052-7-vinicius.gomes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C7FFA86@ORSMSX101.amr.corp.intel.com>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Wed, 07 Mar 2018 14:45:45 -0800
+Subject: [Intel-wired-lan] [RFC v3 net-next 08/18] net: SO_TXTIME: Add
+ clockid and drop_if_late params
+In-Reply-To: <b612233d-cad6-9fb3-0d08-763bc25553c1@intel.com>
+References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
+ <20180307011230.24001-9-jesus.sanchez-palencia@intel.com>
+ <1520391209.109662.33.camel@gmail.com>
+ <b612233d-cad6-9fb3-0d08-763bc25553c1@intel.com>
+Message-ID: <1520462745.109662.59.camel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Vinicius Costa Gomes
-> Sent: Tuesday, March 6, 2018 5:30 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; Sanchez-Palencia, Jesus <jesus.sanchez-
-> palencia at intel.com>
-> Subject: [Intel-wired-lan] [next-queue PATCH v3 6/8] igb: Add MAC address
-> support for ethtool nftuple filters
+On Wed, 2018-03-07 at 13:52 -0800, Jesus Sanchez-Palencia wrote:
+> Hi,
+...
+> I should have mentioned on the commit msg, but the tc_drop_if_late is
+> actually
+> filling a 1 bit hole that was already there.
 > 
-> This adds the capability of configuring the queue steering of arriving
-> packets based on their source and destination MAC addresses.
 > 
-> In practical terms this adds support for the following use cases,
-> characterized by these examples:
+> > 
+> > Do we really need 32 bits for a clockid_t ?
 > 
-> $ ethtool -N eth0 flow-type ether dst aa:aa:aa:aa:aa:aa action 0
-> (this will direct packets with destination address "aa:aa:aa:aa:aa:aa"
-> to the RX queue 0)
+> There is a 2 bytes hole just after tc_index, so a u16 clockid would
+> fit
+> perfectly without increasing the skbuffs size / cachelines any
+> further.
 > 
-> $ ethtool -N eth0 flow-type ether src 44:44:44:44:44:44 action 3
-> (this will direct packets with destination address "44:44:44:44:44:44"
-> to the RX queue 3)
+> From Richard's reply, it seems safe to just change the definition
+> here if we
+> make it explicit on the SCM_CLOCKID documentation the caveat about
+> the max
+> possible fd count for dynamic clocks.
+> 
+> How does that sound?
 
-I assume this example should read "... source address"  rather than "...destination".
+Not convincing really :/
 
-> 
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_ethtool.c | 35
-> ++++++++++++++++++++++++----
->  1 file changed, 31 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> index 94fc9a4bed8b..3f98299d4cd0 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> @@ -2494,6 +2494,23 @@ static int igb_get_ethtool_nfc_entry(struct
-> igb_adapter *adapter,
->  			fsp->h_ext.vlan_tci = rule->filter.vlan_tci;
->  			fsp->m_ext.vlan_tci = htons(VLAN_PRIO_MASK);
->  		}
-> +		if (rule->filter.match_flags &
-> IGB_FILTER_FLAG_DST_MAC_ADDR) {
-> +			ether_addr_copy(fsp->h_u.ether_spec.h_dest,
-> +					rule->filter.dst_addr);
-> +			/* As we only support matching by the full
-> +			 * mask, return the mask to userspace
-> +			 */
-> +			eth_broadcast_addr(fsp->m_u.ether_spec.h_dest);
-> +		}
-> +		if (rule->filter.match_flags &
-> IGB_FILTER_FLAG_SRC_MAC_ADDR) {
-> +			ether_addr_copy(fsp->h_u.ether_spec.h_source,
-> +					rule->filter.src_addr);
-> +			/* As we only support matching by the full
-> +			 * mask, return the mask to userspace
-> +			 */
-> +			eth_broadcast_addr(fsp-
-> >m_u.ether_spec.h_source);
-> +		}
-> +
->  		return 0;
->  	}
->  	return -EINVAL;
-> @@ -2932,10 +2949,6 @@ static int igb_add_ethtool_nfc_entry(struct
-> igb_adapter *adapter,
->  	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW)
->  		return -EINVAL;
-> 
-> -	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK &&
-> -	    fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK))
-> -		return -EINVAL;
-> -
->  	input = kzalloc(sizeof(*input), GFP_KERNEL);
->  	if (!input)
->  		return -ENOMEM;
-> @@ -2945,6 +2958,20 @@ static int igb_add_ethtool_nfc_entry(struct
-> igb_adapter *adapter,
->  		input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
->  	}
-> 
-> +	/* Only support matching addresses by the full mask */
-> +	if (is_broadcast_ether_addr(fsp->m_u.ether_spec.h_source)) {
-> +		input->filter.match_flags |=
-> IGB_FILTER_FLAG_SRC_MAC_ADDR;
-> +		ether_addr_copy(input->filter.src_addr,
-> +				fsp->h_u.ether_spec.h_source);
-> +	}
-> +
-> +	/* Only support matching addresses by the full mask */
-> +	if (is_broadcast_ether_addr(fsp->m_u.ether_spec.h_dest)) {
-> +		input->filter.match_flags |=
-> IGB_FILTER_FLAG_DST_MAC_ADDR;
-> +		ether_addr_copy(input->filter.dst_addr,
-> +				fsp->h_u.ether_spec.h_dest);
-> +	}
-> +
->  	if ((fsp->flow_type & FLOW_EXT) && fsp->m_ext.vlan_tci) {
->  		if (fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK)) {
->  			err = -EINVAL;
-> --
-> 2.16.2
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Next big feature needing one bit in sk_buff will add it, and add a
+63bit hole.
+
+Then next feature(s) will happily consume 'because there are holes
+anyway'.
+
+Then at some point we will cross cache line boundary and performance
+will take a 10 % hit.
+
+It is a never ending trend.
+
+If you really need 33 bits, then maybe we'll ask you to guard the new
+bits with some #if IS_ENABLED(CONFIG_...) so that we can opt-out.
+
+Why do we _really_ need dynamic clocks being supported in core
+networking stack, other than 'that is needed to send 2 packets per
+second with precise departure time and arbitrary user defined clocks,
+so lets do that, and do not care of the other 10,000,000 packets we
+receive/send per second'
+
+I have one patch (TXCS, something that I called XPS in the past)
+implementing the remote-freeing of skbs that help workloads where skb
+are produced on cpu A and consumed on cpu B,
+using an additional 16bit field that I have not upstreamed yet (even if
+Mellanox folks want that), simply because of this additional field...
+
+Maybe I should eat this hole before you take it ?
+
+No, we need to be extra careful.
+
