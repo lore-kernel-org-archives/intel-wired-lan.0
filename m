@@ -1,65 +1,608 @@
 From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-Date: Tue,  6 Mar 2018 17:12:29 -0800
-Subject: [Intel-wired-lan] [RFC v3 net-next 17/18] igb: Refactor
- igb_offload_cbs()
+Date: Tue,  6 Mar 2018 17:12:25 -0800
+Subject: [Intel-wired-lan] [RFC v3 net-next 13/18] net/sched: Introduce the
+ TBS Qdisc
 In-Reply-To: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
 References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
-Message-ID: <20180307011230.24001-18-jesus.sanchez-palencia@intel.com>
+Message-ID: <20180307011230.24001-14-jesus.sanchez-palencia@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Split code into a separate function (igb_offload_apply()) that will be
-used by TBS offload implementation.
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+
+TBS (Time Based Scheduler) uses the information added earlier in this
+series (the socket option SO_TXTIME and the new role of
+sk_buff->tstamp) to schedule traffic transmission based on absolute
+time.
+
+For some workloads, just bandwidth enforcement is not enough, and
+precise control of the transmission of packets is necessary.
+
+Example:
+
+$ tc qdisc replace dev enp2s0 parent root handle 100 mqprio num_tc 3 \
+           map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 queues 1 at 0 1 at 1 2 at 2 hw 0
+
+$ tc qdisc add dev enp2s0 parent 100:1 tbs delta 100000 \
+           clockid CLOCK_REALTIME sorting
+
+In this example, the Qdisc will provide SW best-effort for the control
+of the transmission time to the network adapter, the time stamp in socket
+are in reference to the clockid CLOCK_REALTIME and packets leave the
+Qdisc "delta" (100000) nanoseconds before its transmission time. It will
+also enable sorting of the buffered packets based on their txtime.
+
+The qdisc will drop packets on enqueue() if their skbuff clockid does not
+match the clock reference of the Qdisc. Moreover, the tc_drop_if_late
+flag from skbuffs will be used on dequeue() to determine if a packet
+that has expired while being enqueued should be dropped or not.
 
 Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
+ include/linux/netdevice.h      |   1 +
+ include/uapi/linux/pkt_sched.h |  17 ++
+ net/sched/Kconfig              |  11 +
+ net/sched/Makefile             |   1 +
+ net/sched/sch_tbs.c            | 474 +++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 504 insertions(+)
+ create mode 100644 net/sched/sch_tbs.c
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 9c33f2d18d8c..10d7809a85d7 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2476,6 +2476,19 @@ igb_features_check(struct sk_buff *skb, struct net_device *dev,
- 	return features;
- }
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 7104de2bc957..09b5b2e08f04 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -781,6 +781,7 @@ enum tc_setup_type {
+ 	TC_SETUP_QDISC_CBS,
+ 	TC_SETUP_QDISC_RED,
+ 	TC_SETUP_QDISC_PRIO,
++	TC_SETUP_QDISC_TBS,
+ };
  
-+static void igb_offload_apply(struct igb_adapter *adapter, s32 queue)
+ /* These structures hold the attributes of bpf state that are being passed
+diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
+index 37b5096ae97b..a33b5b9da81a 100644
+--- a/include/uapi/linux/pkt_sched.h
++++ b/include/uapi/linux/pkt_sched.h
+@@ -934,4 +934,21 @@ enum {
+ 
+ #define TCA_CBS_MAX (__TCA_CBS_MAX - 1)
+ 
++
++/* TBS */
++struct tc_tbs_qopt {
++	__s32 delta;
++	__s32 clockid;
++	__u32 flags;
++#define TC_TBS_SORTING_ON BIT(0)
++};
++
++enum {
++	TCA_TBS_UNSPEC,
++	TCA_TBS_PARMS,
++	__TCA_TBS_MAX,
++};
++
++#define TCA_TBS_MAX (__TCA_TBS_MAX - 1)
++
+ #endif
+diff --git a/net/sched/Kconfig b/net/sched/Kconfig
+index a01169fb5325..9e68fef78d50 100644
+--- a/net/sched/Kconfig
++++ b/net/sched/Kconfig
+@@ -183,6 +183,17 @@ config NET_SCH_CBS
+ 	  To compile this code as a module, choose M here: the
+ 	  module will be called sch_cbs.
+ 
++config NET_SCH_TBS
++	tristate "Time Based Scheduler (TBS)"
++	---help---
++	  Say Y here if you want to use the Time Based Scheduler (TBS) packet
++	  scheduling algorithm.
++
++	  See the top of <file:net/sched/sch_tbs.c> for more details.
++
++	  To compile this code as a module, choose M here: the
++	  module will be called sch_tbs.
++
+ config NET_SCH_GRED
+ 	tristate "Generic Random Early Detection (GRED)"
+ 	---help---
+diff --git a/net/sched/Makefile b/net/sched/Makefile
+index 8811d3804878..f02378a0a8f2 100644
+--- a/net/sched/Makefile
++++ b/net/sched/Makefile
+@@ -54,6 +54,7 @@ obj-$(CONFIG_NET_SCH_FQ)	+= sch_fq.o
+ obj-$(CONFIG_NET_SCH_HHF)	+= sch_hhf.o
+ obj-$(CONFIG_NET_SCH_PIE)	+= sch_pie.o
+ obj-$(CONFIG_NET_SCH_CBS)	+= sch_cbs.o
++obj-$(CONFIG_NET_SCH_TBS)	+= sch_tbs.o
+ 
+ obj-$(CONFIG_NET_CLS_U32)	+= cls_u32.o
+ obj-$(CONFIG_NET_CLS_ROUTE4)	+= cls_route.o
+diff --git a/net/sched/sch_tbs.c b/net/sched/sch_tbs.c
+new file mode 100644
+index 000000000000..c19eedda9bc5
+--- /dev/null
++++ b/net/sched/sch_tbs.c
+@@ -0,0 +1,474 @@
++/*
++ * net/sched/sch_tbs.c	Time Based Shaper
++ *
++ *		This program is free software; you can redistribute it and/or
++ *		modify it under the terms of the GNU General Public License
++ *		as published by the Free Software Foundation; either version
++ *		2 of the License, or (at your option) any later version.
++ *
++ * Authors:	Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
++ *		Vinicius Costa Gomes <vinicius.gomes@intel.com>
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/string.h>
++#include <linux/errno.h>
++#include <linux/rbtree.h>
++#include <linux/skbuff.h>
++#include <linux/posix-timers.h>
++#include <net/netlink.h>
++#include <net/sch_generic.h>
++#include <net/pkt_sched.h>
++#include <net/sock.h>
++
++#define SORTING_IS_ON(x) (x->flags & TC_TBS_SORTING_ON)
++
++struct tbs_sched_data {
++	bool sorting;
++	int clockid;
++	int queue;
++	s32 delta; /* in ns */
++	ktime_t last; /* The txtime of the last skb sent to the netdevice. */
++	struct rb_root head;
++	struct qdisc_watchdog watchdog;
++	struct Qdisc *qdisc;
++	int (*enqueue)(struct sk_buff *skb, struct Qdisc *sch,
++		       struct sk_buff **to_free);
++	struct sk_buff *(*dequeue)(struct Qdisc *sch);
++	struct sk_buff *(*peek)(struct Qdisc *sch);
++};
++
++static const struct nla_policy tbs_policy[TCA_TBS_MAX + 1] = {
++	[TCA_TBS_PARMS]	= { .len = sizeof(struct tc_tbs_qopt) },
++};
++
++typedef ktime_t (*get_time_func_t)(void);
++
++static const get_time_func_t clockid_to_get_time[MAX_CLOCKS] = {
++	[CLOCK_MONOTONIC] = ktime_get,
++	[CLOCK_REALTIME] = ktime_get_real,
++	[CLOCK_BOOTTIME] = ktime_get_boottime,
++	[CLOCK_TAI] = ktime_get_clocktai,
++};
++
++static ktime_t get_time_by_clockid(clockid_t clockid)
 +{
-+	if (!is_fqtss_enabled(adapter)) {
-+		enable_fqtss(adapter, true);
-+		return;
-+	}
++	get_time_func_t func = clockid_to_get_time[clockid];
 +
-+	igb_config_tx_modes(adapter, queue);
++	if (!func)
++		return 0;
 +
-+	if (!is_any_cbs_enabled(adapter))
-+		enable_fqtss(adapter, false);
++	return func();
 +}
 +
- static int igb_offload_cbs(struct igb_adapter *adapter,
- 			   struct tc_cbs_qopt_offload *qopt)
- {
-@@ -2496,15 +2509,7 @@ static int igb_offload_cbs(struct igb_adapter *adapter,
- 	if (err)
- 		return err;
- 
--	if (is_fqtss_enabled(adapter)) {
--		igb_config_tx_modes(adapter, qopt->queue);
--
--		if (!is_any_cbs_enabled(adapter))
--			enable_fqtss(adapter, false);
--
--	} else {
--		enable_fqtss(adapter, true);
--	}
-+	igb_offload_apply(adapter, qopt->queue);
- 
- 	return 0;
- }
++static inline int validate_input_params(struct tc_tbs_qopt *qopt,
++					struct netlink_ext_ack *extack)
++{
++	/* Check if params comply to the following rules:
++	 *	* If SW best-effort, then clockid and delta must be valid
++	 *	  regardless of sorting enabled or not.
++	 *
++	 *	* Dynamic clockids are not supported.
++	 *	* Delta must be a positive integer.
++	 */
++	if ((qopt->clockid & CLOCKID_INVALID) == CLOCKID_INVALID ||
++	    qopt->clockid >= MAX_CLOCKS) {
++		NL_SET_ERR_MSG(extack, "Invalid clockid");
++		return -EINVAL;
++	} else if (qopt->clockid < 0 ||
++		   !clockid_to_get_time[qopt->clockid]) {
++		NL_SET_ERR_MSG(extack, "Clockid is not supported");
++		return -ENOTSUPP;
++	}
++
++	if (qopt->delta < 0) {
++		NL_SET_ERR_MSG(extack, "Delta must be positive");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static bool is_packet_valid(struct Qdisc *sch, struct sk_buff *nskb)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++	ktime_t txtime = nskb->tstamp;
++	struct sock *sk = nskb->sk;
++	ktime_t now;
++
++	if (sk && !sock_flag(sk, SOCK_TXTIME))
++		return false;
++
++	/* We don't perform crosstimestamping.
++	 * Drop if packet's clockid differs from qdisc's.
++	 */
++	if (nskb->txtime_clockid != q->clockid)
++		return false;
++
++	now = get_time_by_clockid(q->clockid);
++	if (ktime_before(txtime, now) || ktime_before(txtime, q->last))
++		return false;
++
++	return true;
++}
++
++static struct sk_buff *tbs_peek(struct Qdisc *sch)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++
++	return q->peek(sch);
++}
++
++static struct sk_buff *tbs_peek_timesortedlist(struct Qdisc *sch)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++	struct rb_node *p;
++
++	p = rb_first(&q->head);
++	if (!p)
++		return NULL;
++
++	return rb_to_skb(p);
++}
++
++static void reset_watchdog(struct Qdisc *sch)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++	struct sk_buff *skb = tbs_peek(sch);
++	ktime_t next;
++
++	if (!skb)
++		return;
++
++	next = ktime_sub_ns(skb->tstamp, q->delta);
++	qdisc_watchdog_schedule_ns(&q->watchdog, ktime_to_ns(next));
++}
++
++static int tbs_enqueue(struct sk_buff *nskb, struct Qdisc *sch,
++		       struct sk_buff **to_free)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++
++	return q->enqueue(nskb, sch, to_free);
++}
++
++static int tbs_enqueue_scheduledfifo(struct sk_buff *nskb, struct Qdisc *sch,
++				     struct sk_buff **to_free)
++{
++	int err;
++
++	if (!is_packet_valid(sch, nskb))
++		return qdisc_drop(nskb, sch, to_free);
++
++	err = qdisc_enqueue_tail(nskb, sch);
++
++	/* If there is only 1 packet, then we must reset the watchdog. */
++	if (err >= 0 && sch->q.qlen == 1)
++		reset_watchdog(sch);
++
++	return err;
++}
++
++static int tbs_enqueue_timesortedlist(struct sk_buff *nskb, struct Qdisc *sch,
++				      struct sk_buff **to_free)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++	struct rb_node **p = &q->head.rb_node, *parent = NULL;
++	ktime_t txtime = nskb->tstamp;
++
++	if (!is_packet_valid(sch, nskb))
++		return qdisc_drop(nskb, sch, to_free);
++
++	while (*p) {
++		struct sk_buff *skb;
++
++		parent = *p;
++		skb = rb_to_skb(parent);
++		if (ktime_after(txtime, skb->tstamp))
++			p = &parent->rb_right;
++		else
++			p = &parent->rb_left;
++	}
++	rb_link_node(&nskb->rbnode, parent, p);
++	rb_insert_color(&nskb->rbnode, &q->head);
++
++	qdisc_qstats_backlog_inc(sch, nskb);
++	sch->q.qlen++;
++
++	/* Now we may need to re-arm the qdisc watchdog for the next packet. */
++	reset_watchdog(sch);
++
++	return NET_XMIT_SUCCESS;
++}
++
++static void timesortedlist_erase(struct Qdisc *sch, struct sk_buff *skb,
++				 bool drop)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++
++	rb_erase(&skb->rbnode, &q->head);
++
++	qdisc_qstats_backlog_dec(sch, skb);
++
++	if (drop) {
++		struct sk_buff *to_free = NULL;
++
++		qdisc_drop(skb, sch, &to_free);
++		kfree_skb_list(to_free);
++		qdisc_qstats_overlimit(sch);
++	} else {
++		qdisc_bstats_update(sch, skb);
++
++		q->last = skb->tstamp;
++	}
++
++	sch->q.qlen--;
++
++	/* The rbnode field in the skb re-uses these fields, now that
++	 * we are done with the rbnode, reset them.
++	 */
++	skb->next = NULL;
++	skb->prev = NULL;
++	skb->dev = qdisc_dev(sch);
++}
++
++static struct sk_buff *tbs_dequeue(struct Qdisc *sch)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++
++	return q->dequeue(sch);
++}
++
++static struct sk_buff *tbs_dequeue_scheduledfifo(struct Qdisc *sch)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++	struct sk_buff *skb = tbs_peek(sch);
++	ktime_t now, next;
++
++	if (!skb)
++		return NULL;
++
++	now = get_time_by_clockid(q->clockid);
++
++	/* Drop if packet has expired while in queue and the drop_if_late
++	 * flag is set.
++	 */
++	if (skb->tc_drop_if_late && ktime_before(skb->tstamp, now)) {
++		struct sk_buff *to_free = NULL;
++
++		qdisc_queue_drop_head(sch, &to_free);
++		kfree_skb_list(to_free);
++		qdisc_qstats_overlimit(sch);
++
++		skb = NULL;
++		goto out;
++	}
++
++	next = ktime_sub_ns(skb->tstamp, q->delta);
++
++	/* Dequeue only if now is within the [txtime - delta, txtime] range. */
++	if (ktime_after(now, next))
++		skb = qdisc_dequeue_head(sch);
++	else
++		skb = NULL;
++
++out:
++	/* Now we may need to re-arm the qdisc watchdog for the next packet. */
++	reset_watchdog(sch);
++
++	return skb;
++}
++
++static struct sk_buff *tbs_dequeue_timesortedlist(struct Qdisc *sch)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++	struct sk_buff *skb;
++	ktime_t now, next;
++
++	skb = tbs_peek(sch);
++	if (!skb)
++		return NULL;
++
++	now = get_time_by_clockid(q->clockid);
++
++	/* Drop if packet has expired while in queue and the drop_if_late
++	 * flag is set.
++	 */
++	if (skb->tc_drop_if_late && ktime_before(skb->tstamp, now)) {
++		timesortedlist_erase(sch, skb, true);
++		skb = NULL;
++		goto out;
++	}
++
++	next = ktime_sub_ns(skb->tstamp, q->delta);
++
++	/* Dequeue only if now is within the [txtime - delta, txtime] range. */
++	if (ktime_after(now, next))
++		timesortedlist_erase(sch, skb, false);
++	else
++		skb = NULL;
++
++out:
++	/* Now we may need to re-arm the qdisc watchdog for the next packet. */
++	reset_watchdog(sch);
++
++	return skb;
++}
++
++static inline void setup_queueing_mode(struct tbs_sched_data *q)
++{
++	if (q->sorting) {
++		q->enqueue = tbs_enqueue_timesortedlist;
++		q->dequeue = tbs_dequeue_timesortedlist;
++		q->peek = tbs_peek_timesortedlist;
++	} else {
++		q->enqueue = tbs_enqueue_scheduledfifo;
++		q->dequeue = tbs_dequeue_scheduledfifo;
++		q->peek = qdisc_peek_head;
++	}
++}
++
++static int tbs_init(struct Qdisc *sch, struct nlattr *opt,
++		    struct netlink_ext_ack *extack)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++	struct net_device *dev = qdisc_dev(sch);
++	struct nlattr *tb[TCA_TBS_MAX + 1];
++	struct tc_tbs_qopt *qopt;
++	int err;
++
++	if (!opt) {
++		NL_SET_ERR_MSG(extack, "Missing TBS qdisc options which are mandatory");
++		return -EINVAL;
++	}
++
++	err = nla_parse_nested(tb, TCA_TBS_MAX, opt, tbs_policy, extack);
++	if (err < 0)
++		return err;
++
++	if (!tb[TCA_TBS_PARMS]) {
++		NL_SET_ERR_MSG(extack, "Missing mandatory TBS parameters");
++		return -EINVAL;
++	}
++
++	qopt = nla_data(tb[TCA_TBS_PARMS]);
++
++	pr_debug("delta %d clockid %d sorting %s\n",
++		 qopt->delta, qopt->clockid,
++		 SORTING_IS_ON(qopt) ? "on" : "off");
++
++	err = validate_input_params(qopt, extack);
++	if (err < 0)
++		return err;
++
++	q->queue = sch->dev_queue - netdev_get_tx_queue(dev, 0);
++
++	/* Everything went OK, save the parameters used. */
++	q->delta = qopt->delta;
++	q->clockid = qopt->clockid;
++	q->sorting = SORTING_IS_ON(qopt);
++
++	/* Select queueing mode based on parameters. */
++	setup_queueing_mode(q);
++
++	qdisc_watchdog_init_clockid(&q->watchdog, sch, q->clockid);
++
++	return 0;
++}
++
++static void timesortedlist_clear(struct Qdisc *sch)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++	struct rb_node *p = rb_first(&q->head);
++
++	while (p) {
++		struct sk_buff *skb = rb_to_skb(p);
++
++		p = rb_next(p);
++
++		rb_erase(&skb->rbnode, &q->head);
++		rtnl_kfree_skbs(skb, skb);
++		sch->q.qlen--;
++	}
++}
++
++static void tbs_reset(struct Qdisc *sch)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++
++	/* Only cancel watchdog if it's been initialized. */
++	if (q->watchdog.qdisc == sch)
++		qdisc_watchdog_cancel(&q->watchdog);
++
++	/* No matter which mode we are on, it's safe to clear both lists. */
++	timesortedlist_clear(sch);
++	__qdisc_reset_queue(&sch->q);
++
++	sch->qstats.backlog = 0;
++	sch->q.qlen = 0;
++
++	q->last = 0;
++}
++
++static void tbs_destroy(struct Qdisc *sch)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++
++	/* Only cancel watchdog if it's been initialized. */
++	if (q->watchdog.qdisc == sch)
++		qdisc_watchdog_cancel(&q->watchdog);
++}
++
++static int tbs_dump(struct Qdisc *sch, struct sk_buff *skb)
++{
++	struct tbs_sched_data *q = qdisc_priv(sch);
++	struct tc_tbs_qopt opt = { };
++	struct nlattr *nest;
++
++	nest = nla_nest_start(skb, TCA_OPTIONS);
++	if (!nest)
++		goto nla_put_failure;
++
++	opt.delta = q->delta;
++	opt.clockid = q->clockid;
++	if (q->sorting)
++		opt.flags |= TC_TBS_SORTING_ON;
++
++	if (nla_put(skb, TCA_TBS_PARMS, sizeof(opt), &opt))
++		goto nla_put_failure;
++
++	return nla_nest_end(skb, nest);
++
++nla_put_failure:
++	nla_nest_cancel(skb, nest);
++	return -1;
++}
++
++static struct Qdisc_ops tbs_qdisc_ops __read_mostly = {
++	.id		=	"tbs",
++	.priv_size	=	sizeof(struct tbs_sched_data),
++	.enqueue	=	tbs_enqueue,
++	.dequeue	=	tbs_dequeue,
++	.peek		=	tbs_peek,
++	.init		=	tbs_init,
++	.reset		=	tbs_reset,
++	.destroy	=	tbs_destroy,
++	.dump		=	tbs_dump,
++	.owner		=	THIS_MODULE,
++};
++
++static int __init tbs_module_init(void)
++{
++	return register_qdisc(&tbs_qdisc_ops);
++}
++
++static void __exit tbs_module_exit(void)
++{
++	unregister_qdisc(&tbs_qdisc_ops);
++}
++module_init(tbs_module_init)
++module_exit(tbs_module_exit)
++MODULE_LICENSE("GPL");
 -- 
 2.16.2
 
