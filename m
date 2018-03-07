@@ -1,264 +1,52 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue,  6 Mar 2018 17:29:57 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v3 8/8] igb: Add support for
- adding offloaded clsflower filters
-In-Reply-To: <20180307012957.7052-1-vinicius.gomes@intel.com>
-References: <20180307012957.7052-1-vinicius.gomes@intel.com>
-Message-ID: <20180307012957.7052-9-vinicius.gomes@intel.com>
+From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+Date: Tue,  6 Mar 2018 17:12:14 -0800
+Subject: [Intel-wired-lan] [RFC v3 net-next 02/18] net: Clear skb->tstamp
+ only on the forwarding path
+In-Reply-To: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
+References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
+Message-ID: <20180307011230.24001-3-jesus.sanchez-palencia@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This allows filters added by tc-flower and specifying MAC addresses,
-Ethernet types, and the VLAN priority field, to be offloaded to the
-controller.
+This is done in preparation for the upcoming time based transmission
+patchset. Now that skb->tstamp will be used to hold packet's txtime,
+we must ensure that it is being cleared when traversing namespaces.
+Also, doing that from skb_scrub_packet() would break our feature when
+tunnels are used.
 
-This reuses most of the infrastructure used by ethtool, but clsflower
-filters are kept in a separated list, so they are invisible to
-ethtool.
-
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Signed-off-by: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb.h      |   2 +
- drivers/net/ethernet/intel/igb/igb_main.c | 188 +++++++++++++++++++++++++++++-
- 2 files changed, 188 insertions(+), 2 deletions(-)
+ include/linux/netdevice.h | 1 +
+ net/core/skbuff.c         | 1 -
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 43ce6d64f693..0edd3a74d043 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -463,6 +463,7 @@ struct igb_nfc_input {
- struct igb_nfc_filter {
- 	struct hlist_node nfc_node;
- 	struct igb_nfc_input filter;
-+	unsigned long cookie;
- 	u16 etype_reg_index;
- 	u16 sw_idx;
- 	u16 action;
-@@ -601,6 +602,7 @@ struct igb_adapter {
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index dbe6344b727a..7104de2bc957 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -3379,6 +3379,7 @@ static __always_inline int ____dev_forward_skb(struct net_device *dev,
  
- 	/* RX network flow classification support */
- 	struct hlist_head nfc_filter_list;
-+	struct hlist_head cls_flower_list;
- 	unsigned int nfc_filter_count;
- 	/* lock for RX network flow classification filter */
- 	spinlock_t nfc_lock;
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index b5a6bd37bb16..66174ae7d62d 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2497,16 +2497,197 @@ static int igb_offload_cbs(struct igb_adapter *adapter,
+ 	skb_scrub_packet(skb, true);
+ 	skb->priority = 0;
++	skb->tstamp = 0;
  	return 0;
  }
  
-+#define ETHER_TYPE_FULL_MASK ((__force __be16)~0)
-+#define VLAN_PRIO_FULL_MASK (0x07)
-+
-+static int igb_parse_cls_flower(struct igb_adapter *adapter,
-+				struct tc_cls_flower_offload *f,
-+				int traffic_class,
-+				struct igb_nfc_filter *input)
-+{
-+	struct netlink_ext_ack *extack = f->common.extack;
-+
-+	if (f->dissector->used_keys &
-+	    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT(FLOW_DISSECTOR_KEY_VLAN))) {
-+		NL_SET_ERR_MSG(extack,
-+			       "Unsupported key used, only BASIC, CONTROL, ETH_ADDRS and VLAN are supported");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_ETH_ADDRS)) {
-+		struct flow_dissector_key_eth_addrs *key, *mask;
-+
-+		key = skb_flow_dissector_target(f->dissector,
-+						FLOW_DISSECTOR_KEY_ETH_ADDRS,
-+						f->key);
-+		mask = skb_flow_dissector_target(f->dissector,
-+						 FLOW_DISSECTOR_KEY_ETH_ADDRS,
-+						 f->mask);
-+
-+		if (!is_zero_ether_addr(mask->dst)) {
-+			if (!is_broadcast_ether_addr(mask->dst)) {
-+				NL_SET_ERR_MSG(extack, "Only full masks are supported for destination MAC address");
-+				return -EINVAL;
-+			}
-+
-+			input->filter.match_flags |=
-+				IGB_FILTER_FLAG_DST_MAC_ADDR;
-+			ether_addr_copy(input->filter.dst_addr, key->dst);
-+		}
-+
-+		if (!is_zero_ether_addr(mask->src)) {
-+			if (!is_broadcast_ether_addr(mask->src)) {
-+				NL_SET_ERR_MSG(extack, "Only full masks are supported for source MAC address");
-+				return -EINVAL;
-+			}
-+
-+			input->filter.match_flags |=
-+				IGB_FILTER_FLAG_SRC_MAC_ADDR;
-+			ether_addr_copy(input->filter.src_addr, key->src);
-+		}
-+	}
-+
-+	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_BASIC)) {
-+		struct flow_dissector_key_basic *key, *mask;
-+
-+		key = skb_flow_dissector_target(f->dissector,
-+						FLOW_DISSECTOR_KEY_BASIC,
-+						f->key);
-+		mask = skb_flow_dissector_target(f->dissector,
-+						 FLOW_DISSECTOR_KEY_BASIC,
-+						 f->mask);
-+
-+		if (mask->n_proto) {
-+			if (mask->n_proto != ETHER_TYPE_FULL_MASK) {
-+				NL_SET_ERR_MSG(extack, "Only full mask is supported for EtherType filter");
-+				return -EINVAL;
-+			}
-+
-+			input->filter.match_flags |= IGB_FILTER_FLAG_ETHER_TYPE;
-+			input->filter.etype = key->n_proto;
-+		}
-+	}
-+
-+	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_VLAN)) {
-+		struct flow_dissector_key_vlan *key, *mask;
-+
-+		key = skb_flow_dissector_target(f->dissector,
-+						FLOW_DISSECTOR_KEY_VLAN,
-+						f->key);
-+		mask = skb_flow_dissector_target(f->dissector,
-+						 FLOW_DISSECTOR_KEY_VLAN,
-+						 f->mask);
-+
-+		if (mask->vlan_priority) {
-+			if (mask->vlan_priority != VLAN_PRIO_FULL_MASK) {
-+				NL_SET_ERR_MSG(extack, "Only full mask is supported for VLAN priority");
-+				return -EINVAL;
-+			}
-+
-+			input->filter.match_flags |= IGB_FILTER_FLAG_VLAN_TCI;
-+			input->filter.vlan_tci = key->vlan_priority;
-+		}
-+	}
-+
-+	input->action = traffic_class;
-+	input->cookie = f->cookie;
-+
-+	return 0;
-+}
-+
- static int igb_configure_clsflower(struct igb_adapter *adapter,
- 				   struct tc_cls_flower_offload *cls_flower)
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 715c13495ba6..678fc5416ae1 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -4865,7 +4865,6 @@ EXPORT_SYMBOL(skb_try_coalesce);
+  */
+ void skb_scrub_packet(struct sk_buff *skb, bool xnet)
  {
--	return -EOPNOTSUPP;
-+	struct netlink_ext_ack *extack = cls_flower->common.extack;
-+	struct igb_nfc_filter *filter, *f;
-+	int err, tc;
-+
-+	tc = tc_classid_to_hwtc(adapter->netdev, cls_flower->classid);
-+	if (tc < 0) {
-+		NL_SET_ERR_MSG(extack, "Invalid traffic class");
-+		return -EINVAL;
-+	}
-+
-+	filter = kzalloc(sizeof(*filter), GFP_KERNEL);
-+	if (!filter)
-+		return -ENOMEM;
-+
-+	err = igb_parse_cls_flower(adapter, cls_flower, tc, filter);
-+	if (err < 0)
-+		goto err_parse;
-+
-+	spin_lock(&adapter->nfc_lock);
-+
-+	hlist_for_each_entry(f, &adapter->nfc_filter_list, nfc_node) {
-+		if (!memcmp(&f->filter, &filter->filter, sizeof(f->filter))) {
-+			err = -EEXIST;
-+			NL_SET_ERR_MSG(extack,
-+				       "This filter is already set in ethtool");
-+			goto err_locked;
-+		}
-+	}
-+
-+	hlist_for_each_entry(f, &adapter->cls_flower_list, nfc_node) {
-+		if (!memcmp(&f->filter, &filter->filter, sizeof(f->filter))) {
-+			err = -EEXIST;
-+			NL_SET_ERR_MSG(extack,
-+				       "This filter is already set in cls_flower");
-+			goto err_locked;
-+		}
-+	}
-+
-+	err = igb_add_filter(adapter, filter);
-+	if (err < 0) {
-+		NL_SET_ERR_MSG(extack, "Could not add filter to the adapter");
-+		goto err_locked;
-+	}
-+
-+	hlist_add_head(&filter->nfc_node, &adapter->cls_flower_list);
-+
-+	spin_unlock(&adapter->nfc_lock);
-+
-+	return 0;
-+
-+err_locked:
-+	spin_unlock(&adapter->nfc_lock);
-+
-+err_parse:
-+	kfree(filter);
-+
-+	return err;
- }
- 
- static int igb_delete_clsflower(struct igb_adapter *adapter,
- 				struct tc_cls_flower_offload *cls_flower)
- {
--	return -EOPNOTSUPP;
-+	struct igb_nfc_filter *filter;
-+	int err;
-+
-+	spin_lock(&adapter->nfc_lock);
-+
-+	hlist_for_each_entry(filter, &adapter->cls_flower_list, nfc_node)
-+		if (filter->cookie == cls_flower->cookie)
-+			break;
-+
-+	if (!filter) {
-+		err = -ENOENT;
-+		goto out;
-+	}
-+
-+	err = igb_erase_filter(adapter, filter);
-+	if (err < 0)
-+		goto out;
-+
-+	hlist_del(&filter->nfc_node);
-+	kfree(filter);
-+
-+out:
-+	spin_unlock(&adapter->nfc_lock);
-+
-+	return err;
- }
- 
- static int igb_setup_tc_cls_flower(struct igb_adapter *adapter,
-@@ -9271,6 +9452,9 @@ static void igb_nfc_filter_exit(struct igb_adapter *adapter)
- 	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node)
- 		igb_erase_filter(adapter, rule);
- 
-+	hlist_for_each_entry(rule, &adapter->cls_flower_list, nfc_node)
-+		igb_erase_filter(adapter, rule);
-+
- 	spin_unlock(&adapter->nfc_lock);
- }
- 
+-	skb->tstamp = 0;
+ 	skb->pkt_type = PACKET_HOST;
+ 	skb->skb_iif = 0;
+ 	skb->ignore_df = 0;
 -- 
 2.16.2
 
