@@ -1,28 +1,36 @@
-From: David Miller <davem@davemloft.net>
-Date: Thu, 08 Mar 2018 11:25:53 -0500 (EST)
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Thu, 8 Mar 2018 08:44:18 -0800
 Subject: [Intel-wired-lan] [RFC v3 net-next 08/18] net: SO_TXTIME: Add
  clockid and drop_if_late params
-In-Reply-To: <20180308113722.GB28493@localhost>
-References: <b612233d-cad6-9fb3-0d08-763bc25553c1@intel.com>
- <1520462745.109662.59.camel@gmail.com>
- <20180308113722.GB28493@localhost>
-Message-ID: <20180308.112553.749777250006660851.davem@davemloft.net>
+In-Reply-To: <CANn89iJZbepLCr+biMWGeSFvG0ub3tdKfW3ci+75Hz9ndO1M9g@mail.gmail.com>
+References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
+ <20180307011230.24001-9-jesus.sanchez-palencia@intel.com>
+ <1520391209.109662.33.camel@gmail.com>
+ <20180307052410.m2yqmokrivjlwcjz@localhost>
+ <CAF=yD-J+3y_RNiW791eW+5i=6Op_0jmM1G8fHiKuKXDqtb8XjA@mail.gmail.com>
+ <20180307173524.i6mpg3f2rjnwl3xe@localhost>
+ <20180307173722.hvqorkaiougt4qjm@localhost>
+ <CANn89iJZbepLCr+biMWGeSFvG0ub3tdKfW3ci+75Hz9ndO1M9g@mail.gmail.com>
+Message-ID: <20180308164418.f3vmql2kluvattq6@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Miroslav Lichvar <mlichvar@redhat.com>
-Date: Thu, 8 Mar 2018 12:37:22 +0100
+On Wed, Mar 07, 2018 at 09:47:40AM -0800, Eric Dumazet wrote:
+> I would love if skb->tstamp could be either 0 or expressed in
+> ktime_get() base all the time.
+> 
+> ( Even if we would have to convert this to other bases when/if needed)
 
-> Well, I'd not expect it to be a common use case, but a public NTP
-> server could be sending millions of packets per second in traffic
-> peaks (typically at *:00:00) over multiple interfaces.
+We really do need variable clock IDs.  Otherwise the HW offloading
+case won't work.  The desired transmit time must be expressed in terms
+of the clock inside the MAC.  This clock is not necessarily related to
+the system time at all.
 
-That's the problem.
+But in addition to the performance concerns, I think putting this into
+a socket option is the more natural solution.
 
-Bloating up sk_buff for an uncommon use case, penalizing all others,
-is a non-starter.
-
-Sorry.
+Thanks,
+Richard
