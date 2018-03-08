@@ -1,10 +1,9 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu,  8 Mar 2018 14:52:11 -0800
-Subject: [Intel-wired-lan] [S87 v5 7/7] i40e: restore TCPv4 input set when
- re-enabling ATR
+Date: Thu,  8 Mar 2018 14:52:06 -0800
+Subject: [Intel-wired-lan] [S87 v5 2/7] i40e: Cleanup i40e_vlan_rx_register
 In-Reply-To: <20180308225211.12254-1-jeffrey.t.kirsher@intel.com>
 References: <20180308225211.12254-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180308225211.12254-7-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180308225211.12254-2-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,44 +12,60 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-When we re-enable ATR we need to restore the input set for TCPv4
-filters, in order for ATR to function correctly. We already do this for
-the normal case of re-enabling ATR when disabling ntuple support.
-However, when re-enabling ATR after the last tcp4 filter is removed (but
-when ntuple support is still active), we did not restore the TCPv4
-filter input set.
+We used to use the function i40e_vlan_rx_register as a way to hook
+into the now defunct .ndo_vlan_rx_register netdev hook. This was
+removed but we kept the function around because we still used it
+internally to control enabling or disabling of VLAN stripping.
 
-This can cause problems if the TCPv4 filters from FDir had changed the
-input set, as ATR will no longer behave as expected.
-
-When clearing the ATR auto-disable flag, make sure we restore the TCPv4
-input set to avoid this.
+As pointed out in upstream review, VLAN stripping is only used in a
+single location and the previous function is quite small, just inline
+it into i40e_restore_vlan() rather than carrying the function
+separately.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 21 ++++-----------------
+ 1 file changed, 4 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 89bcfd1c3213..0df21e4f2a0f 100644
+index 4b34bbc83b99..183c8b84b7ea 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8157,6 +8157,15 @@ static void i40e_reenable_fdir_sb(struct i40e_pf *pf)
- static void i40e_reenable_fdir_atr(struct i40e_pf *pf)
- {
- 	if (pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED) {
-+		/* ATR uses the same filtering logic as SB rules. It only
-+		 * functions properly if the input set mask is at the default
-+		 * settings. It is safe to restore the default input set
-+		 * because there are no active TCPv4 filter rules.
-+		 */
-+		i40e_write_fd_input_set(pf, I40E_FILTER_PCTYPE_NONF_IPV4_TCP,
-+					I40E_L3_SRC_MASK | I40E_L3_DST_MASK |
-+					I40E_L4_SRC_MASK | I40E_L4_DST_MASK);
-+
- 		pf->flags &= ~I40E_FLAG_FD_ATR_AUTO_DISABLED;
- 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
- 		    (I40E_DEBUG_FD & pf->hw.debug_mask))
+@@ -2719,22 +2719,6 @@ void i40e_vlan_stripping_disable(struct i40e_vsi *vsi)
+ 	}
+ }
+ 
+-/**
+- * i40e_vlan_rx_register - Setup or shutdown vlan offload
+- * @netdev: network interface to be adjusted
+- * @features: netdev features to test if VLAN offload is enabled or not
+- **/
+-static void i40e_vlan_rx_register(struct net_device *netdev, u32 features)
+-{
+-	struct i40e_netdev_priv *np = netdev_priv(netdev);
+-	struct i40e_vsi *vsi = np->vsi;
+-
+-	if (features & NETIF_F_HW_VLAN_CTAG_RX)
+-		i40e_vlan_stripping_enable(vsi);
+-	else
+-		i40e_vlan_stripping_disable(vsi);
+-}
+-
+ /**
+  * i40e_add_vlan_all_mac - Add a MAC/VLAN filter for each existing MAC address
+  * @vsi: the vsi being configured
+@@ -2910,7 +2894,10 @@ static void i40e_restore_vlan(struct i40e_vsi *vsi)
+ 	if (!vsi->netdev)
+ 		return;
+ 
+-	i40e_vlan_rx_register(vsi->netdev, vsi->netdev->features);
++	if (vsi->netdev->features & NETIF_F_HW_VLAN_CTAG_RX)
++		i40e_vlan_stripping_enable(vsi);
++	else
++		i40e_vlan_stripping_disable(vsi);
+ 
+ 	for_each_set_bit(vid, vsi->active_vlans, VLAN_N_VID)
+ 		i40e_vlan_rx_add_vid(vsi->netdev, htons(ETH_P_8021Q),
 -- 
 2.14.3
 
