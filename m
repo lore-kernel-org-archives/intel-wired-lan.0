@@ -1,105 +1,106 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu,  8 Mar 2018 14:52:08 -0800
-Subject: [Intel-wired-lan] [S87 v5 4/7] i40e: track filter type statistics
- when deleting invalid filters
-In-Reply-To: <20180308225211.12254-1-jeffrey.t.kirsher@intel.com>
-References: <20180308225211.12254-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180308225211.12254-4-jeffrey.t.kirsher@intel.com>
+From: Henrik Austad <henrik@austad.us>
+Date: Thu, 8 Mar 2018 23:54:36 +0100
+Subject: [Intel-wired-lan] [RFC v3 net-next 00/18] Time based packet
+ transmission
+In-Reply-To: <2a8f5476-0236-c379-f180-68c5b956dea3@intel.com>
+References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
+ <20180308140904.GA28001@sisyphus.home.austad.us>
+ <2a8f5476-0236-c379-f180-68c5b956dea3@intel.com>
+Message-ID: <20180308225436.6ipei445l5eug3q6@icarus.home.austad.us>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+On Thu, Mar 08, 2018 at 10:06:46AM -0800, Jesus Sanchez-Palencia wrote:
+> Hi,
+> 
+> 
+> On 03/08/2018 06:09 AM, Henrik Austad wrote:
+> 
+> (...)
+> 
+> > 
+> > A lot of new knobs, I see the need, I would've like to have fewer, but 
+> > you've documented them pretty well. Perhaps we should add something to 
+> > Documentation/ at one stage?
+> 
+> Sure. The idea is working on that once the interfaces have been accepted.
 
-When hardware has trouble with a particular filter, we delete it from
-the list. Unfortunately, we did not properly update the per-filter
-statistic when doing so.
+Yeah, probably a good idea.
 
-Create a helper function to handle this, and properly reduce the
-necessary counter so that it tracks the number of active filters
-properly.
+> > Anyways, the patches applied cleanly so I gave them a (very) quick spin. 
+> > Using udp_tai and tcpdump in the other end to grab the frames
+> > 
+> > Setting up with hw offload and sorting in qdisc.
+> > 
+> > Sender (every 10ms) (4.16-rc4 on a core2duo 1.8Ghz w/i210 and max_rss 
+> > bypass as dual-core and i210 is not friends):
+> > 
+> > udp_tai -c1 -i eth2 -p 20 -P 10000000
+> > 
+> > Receiver (imx7, kernel 4.9.11):
+> > chrt -r 20 tcpdump -i eth0 ether host a0:36:9f:3f:c0:b8 | grep "UDP, length 256" > tai_imx7.log
+> > 
+> > Note: this involves 2 swtiches and a somewhat hackish kernel running on the 
+> > receiver, so these numbers can only improve.
+> > 
+> > count    2340.000000
+> > mean        0.043770
+> > std         0.047784
+> > min         0.009025
+> > 25%         0.010003
+> > 50%         0.010010
+> > 75%         0.109998
+> > max         0.120060
+> > 
+> 
+> Thanks for giving it a shot.
+> 
+> But I'm not sure I follow the numbers above, sorry :/
+> Are you computing the packet's Rx timestamp offset from the (expected) Tx time?
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 56 ++++++++++++++++++++++++-----
- 1 file changed, 48 insertions(+), 8 deletions(-)
+Just looking at the timestamp when the frames were received. They should be 
+sent at regular intervals if I read udp_tai.c correctly, so the assumption 
+was that the timestamp from tcpdump should give an inkling to how well it 
+worked.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 183c8b84b7ea..0b45650b7e31 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8136,6 +8136,51 @@ u32 i40e_get_global_fd_count(struct i40e_pf *pf)
- 	return fcnt_prog;
- }
- 
-+/**
-+ * i40e_delete_invalid_filter - Delete an invalid FDIR filter
-+ * @pf: board private structure
-+ * @filter: FDir filter to remove
-+ */
-+static void i40e_delete_invalid_filter(struct i40e_pf *pf,
-+				       struct i40e_fdir_filter *filter)
-+{
-+	/* Update counters */
-+	pf->fdir_pf_active_filters--;
-+	pf->fd_inv = 0;
-+
-+	switch (filter->flow_type) {
-+	case TCP_V4_FLOW:
-+		pf->fd_tcp4_filter_cnt--;
-+		break;
-+	case UDP_V4_FLOW:
-+		pf->fd_udp4_filter_cnt--;
-+		break;
-+	case SCTP_V4_FLOW:
-+		pf->fd_sctp4_filter_cnt--;
-+		break;
-+	case IP_USER_FLOW:
-+		switch (filter->ip4_proto) {
-+		case IPPROTO_TCP:
-+			pf->fd_tcp4_filter_cnt--;
-+			break;
-+		case IPPROTO_UDP:
-+			pf->fd_udp4_filter_cnt--;
-+			break;
-+		case IPPROTO_SCTP:
-+			pf->fd_sctp4_filter_cnt--;
-+			break;
-+		case IPPROTO_IP:
-+			pf->fd_ip4_filter_cnt--;
-+			break;
-+		}
-+		break;
-+	}
-+
-+	/* Remove the filter from the list and free memory */
-+	hlist_del(&filter->fdir_node);
-+	kfree(filter);
-+}
-+
- /**
-  * i40e_fdir_check_and_reenable - Function to reenabe FD ATR or SB if disabled
-  * @pf: board private structure
-@@ -8180,14 +8225,9 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
- 	/* if hw had a problem adding a filter, delete it */
- 	if (pf->fd_inv > 0) {
- 		hlist_for_each_entry_safe(filter, node,
--					  &pf->fdir_filter_list, fdir_node) {
--			if (filter->fd_id == pf->fd_inv) {
--				hlist_del(&filter->fdir_node);
--				kfree(filter);
--				pf->fdir_pf_active_filters--;
--				pf->fd_inv = 0;
--			}
--		}
-+					  &pf->fdir_filter_list, fdir_node)
-+			if (filter->fd_id == pf->fd_inv)
-+				i40e_delete_invalid_filter(pf, filter);
- 	}
- }
- 
--- 
-2.14.3
+I set it up to send a frame every 10ms and computed the diff between each 
+UDP packet received. Nothing fancy, just tcpdump and grep for the 
+timestamp and look at the distribution.
 
+> > I have to dig more into why this is happening, a lot frames delayed much 
+> > more than I'd expect, but at this stage I'm pretty sure this is pebkac. One 
+> > obvious fix is move some hw around and do a direct link, but I didn't have 
+> > time for that right now.
+> > 
+> > I'm very interested in doing what Richard's original test was when he used 
+> > ptp-synched clocks and also used hw receive-time and compared with expected 
+> > tx-time. So, while I'm getting that up and running, I thought I should 
+> > share the early results.
+> 
+> Sure, thanks. Which delta and clockid are you using, please?
+
+I used the example provided in -00,
+
+tc qdisc replace dev eth2 parent root handle 100 mqprio num_tc 3 \
+ map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 queues 1 at 0 1 at 1 2 at 2 hw 0
+
+tc qdisc add dev eth2 parent 100:1 tbs offload delta 100000 clockid \
+ CLOCK_REALTIME sorting
+
+> Also, was this clock synchronized to the PHC? You need that for hw offload with
+> sorting enabled.
+
+Hmm, good point, no, NIC clock was not synchronized, I'll do that in the 
+next round for both sender and receiver!
+
+-henrik
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 195 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180308/c4066803/attachment-0001.asc>
