@@ -1,88 +1,101 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu,  8 Mar 2018 14:52:10 -0800
-Subject: [Intel-wired-lan] [S87 v5 6/7] i40e: fix for wrong partition id
- calculation on OCP mezz cards
+Date: Thu,  8 Mar 2018 14:52:09 -0800
+Subject: [Intel-wired-lan] [S87 v5 5/7] i40e: factor out re-enable functions
+ for ATR and SB
 In-Reply-To: <20180308225211.12254-1-jeffrey.t.kirsher@intel.com>
 References: <20180308225211.12254-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180308225211.12254-6-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180308225211.12254-5-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mariusz Stachura <mariusz.stachura@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-This patch overwrites number of ports for X722 devices with support
-for OCP PHY mezzanine.
-The old method with checking if port is disabled in the PRTGEN_CNF
-register cannot be used in this case. When the OCP is removed, ports
-were seen as disabled, which resulted in wrong calculation of partition
-id, that caused WoL to be disabled on certain ports.
+A future patch needs to expand on the logic for re-enabling ATR. Doing
+so would cause some code to break the 80-character line limit.
 
-Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+To reduce the level of indentation, factor out helper functions for
+re-enabling ATR and SB rules.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 23 ++++++++++++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_type.h   |  3 +++
- 2 files changed, 25 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 48 +++++++++++++++++++----------
+ 1 file changed, 32 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 6ee310257cf7..792d4204bc3f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -3201,9 +3201,10 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 	u32 valid_functions, num_functions;
- 	u32 number, logical_id, phys_id;
- 	struct i40e_hw_capabilities *p;
-+	u16 id, ocp_cfg_word0;
-+	i40e_status status;
- 	u8 major_rev;
- 	u32 i = 0;
--	u16 id;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 0b45650b7e31..89bcfd1c3213 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8136,6 +8136,34 @@ u32 i40e_get_global_fd_count(struct i40e_pf *pf)
+ 	return fcnt_prog;
+ }
  
- 	cap = (struct i40e_aqc_list_capabilities_element_resp *) buff;
- 
-@@ -3390,6 +3391,26 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 			hw->num_ports++;
- 	}
- 
-+	/* OCP cards case: if a mezz is removed the ethernet port is at
-+	 * disabled state in PRTGEN_CNF register. Additional NVM read is
-+	 * needed in order to check if we are dealing with OCP card.
-+	 * Those cards have 4 PFs at minimum, so using PRTGEN_CNF for counting
-+	 * physical ports results in wrong partition id calculation and thus
-+	 * not supporting WoL.
-+	 */
-+	if (hw->mac.type == I40E_MAC_X722) {
-+		if (!i40e_acquire_nvm(hw, I40E_RESOURCE_READ)) {
-+			status = i40e_aq_read_nvm(hw, I40E_SR_EMP_MODULE_PTR,
-+						  2 * I40E_SR_OCP_CFG_WORD0,
-+						  sizeof(ocp_cfg_word0),
-+						  &ocp_cfg_word0, true, NULL);
-+			if (!status &&
-+			    (ocp_cfg_word0 & I40E_SR_OCP_ENABLED))
-+				hw->num_ports = 4;
-+			i40e_release_nvm(hw);
-+		}
++/**
++ * i40e_reenable_fdir_sb - Restore FDir SB capability
++ * @pf: board private structure
++ **/
++static void i40e_reenable_fdir_sb(struct i40e_pf *pf)
++{
++	if (pf->flags & I40E_FLAG_FD_SB_AUTO_DISABLED) {
++		pf->flags &= ~I40E_FLAG_FD_SB_AUTO_DISABLED;
++		if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
++		    (I40E_DEBUG_FD & pf->hw.debug_mask))
++			dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
 +	}
++}
 +
- 	valid_functions = p->valid_functions;
- 	num_functions = 0;
- 	while (valid_functions) {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 7485bd47fdd0..7ff2c6d55490 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -1337,6 +1337,9 @@ struct i40e_hw_port_stats {
- #define I40E_SR_PCIE_ALT_MODULE_MAX_SIZE	1024
- #define I40E_SR_CONTROL_WORD_1_SHIFT		0x06
- #define I40E_SR_CONTROL_WORD_1_MASK	(0x03 << I40E_SR_CONTROL_WORD_1_SHIFT)
-+#define I40E_PTR_TYPE				BIT(15)
-+#define I40E_SR_OCP_CFG_WORD0			0x2B
-+#define I40E_SR_OCP_ENABLED			BIT(15)
++/**
++ * i40e_reenable_fdir_atr - Restore FDir ATR capability
++ * @pf: board private structure
++ **/
++static void i40e_reenable_fdir_atr(struct i40e_pf *pf)
++{
++	if (pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED) {
++		pf->flags &= ~I40E_FLAG_FD_ATR_AUTO_DISABLED;
++		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
++		    (I40E_DEBUG_FD & pf->hw.debug_mask))
++			dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table and there are no conflicting ntuple rules\n");
++	}
++}
++
+ /**
+  * i40e_delete_invalid_filter - Delete an invalid FDIR filter
+  * @pf: board private structure
+@@ -8199,28 +8227,16 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+ 	fcnt_avail = pf->fdir_pf_filter_count;
+ 	if ((fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM)) ||
+ 	    (pf->fd_add_err == 0) ||
+-	    (i40e_get_current_atr_cnt(pf) < pf->fd_atr_cnt)) {
+-		if (pf->flags & I40E_FLAG_FD_SB_AUTO_DISABLED) {
+-			pf->flags &= ~I40E_FLAG_FD_SB_AUTO_DISABLED;
+-			if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
+-			    (I40E_DEBUG_FD & pf->hw.debug_mask))
+-				dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
+-		}
+-	}
++	    (i40e_get_current_atr_cnt(pf) < pf->fd_atr_cnt))
++		i40e_reenable_fdir_sb(pf);
  
- /* Shadow RAM related */
- #define I40E_SR_SECTOR_SIZE_IN_WORDS	0x800
+ 	/* We should wait for even more space before re-enabling ATR.
+ 	 * Additionally, we cannot enable ATR as long as we still have TCP SB
+ 	 * rules active.
+ 	 */
+ 	if ((fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM_FOR_ATR)) &&
+-	    (pf->fd_tcp4_filter_cnt == 0)) {
+-		if (pf->flags & I40E_FLAG_FD_ATR_AUTO_DISABLED) {
+-			pf->flags &= ~I40E_FLAG_FD_ATR_AUTO_DISABLED;
+-			if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+-			    (I40E_DEBUG_FD & pf->hw.debug_mask))
+-				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table and there are no conflicting ntuple rules\n");
+-		}
+-	}
++	    (pf->fd_tcp4_filter_cnt == 0))
++		i40e_reenable_fdir_atr(pf);
+ 
+ 	/* if hw had a problem adding a filter, delete it */
+ 	if (pf->fd_inv > 0) {
 -- 
 2.14.3
 
