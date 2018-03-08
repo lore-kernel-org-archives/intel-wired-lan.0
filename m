@@ -1,79 +1,140 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed,  7 Mar 2018 16:37:05 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v3 0/8] igb: offloading of
- receive filters
-Message-ID: <20180308003713.29195-1-vinicius.gomes@intel.com>
+Date: Wed,  7 Mar 2018 16:37:09 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v4 4/8] igb: Add support for
+ MAC address filters specifying source addresses
+In-Reply-To: <20180308003713.29195-1-vinicius.gomes@intel.com>
+References: <20180308003713.29195-1-vinicius.gomes@intel.com>
+Message-ID: <20180308003713.29195-5-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+Makes it possible to direct packets to queues based on their source
+address. Documents the expected usage of the 'flags' parameter.
 
-Changes from v3:
- - Addressed review comments from Aaron F. Brown and
-   Jakub Kicinski;
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+---
+ drivers/net/ethernet/intel/igb/e1000_defines.h |  1 +
+ drivers/net/ethernet/intel/igb/igb.h           |  1 +
+ drivers/net/ethernet/intel/igb/igb_main.c      | 38 ++++++++++++++++++++++----
+ 3 files changed, 35 insertions(+), 5 deletions(-)
 
-Changes from v2:
- - Addressed review comments from Jakub Kicinski, mostly about coding
-   style adjustments and more consistent error reporting;
-
-Changes from v1:
- - Addressed review comments from Alexander Duyck and Florian
-   Fainelli;
- - Adding and removing cls_flower filters are now proposed in the same
-   patch;
- - cls_flower filters are kept in a separated list from "ethtool"
-   filters (so that section of the original cover letter is no longer
-   valid);
- - The patch adding support for ethtool filters is now independent from
-   the rest of the series;
-
-Original cover letter:
-
-This series enables some ethtool and tc-flower filters to be offloaded
-to igb-based network controllers. This is useful when the system
-configurator want to steer kinds of traffic to a specific hardware
-queue.
-
-The first two commits are bug fixes.
-
-The basis of this series is to export the internal API used to
-configure address filters, so they can be used by ethtool, and
-extending the functionality so an source address can be handled.
-
-Then, we enable the tc-flower offloading implementation to re-use the
-same infrastructure as ethtool, and storing them in the per-adapter
-"nfc" (Network Filter Config?) list. But for consistency, for
-destructive access they are separated, i.e. an filter added by
-tc-flower can only be removed by tc-flower, but ethtool can read them
-all.
-
-Only support for VLAN Prio, Source and Destination MAC Address, and
-Ethertype is enabled for now.
-
-Open question:
-  - igb is initialized with the number of traffic classes as 1, if we
-  want to use multiple traffic classes we need to increase this value,
-  the only way I could find is to use mqprio (for example). Should igb
-  be initialized with, say, the number of queues as its "num_tc"?
-
-Vinicius Costa Gomes (8):
-  igb: Fix not adding filter elements to the list
-  igb: Fix queue selection on MAC filters on i210 and i211
-  igb: Enable the hardware traffic class feature bit for igb models
-  igb: Add support for MAC address filters specifying source addresses
-  igb: Enable nfc filters to specify MAC addresses
-  igb: Add MAC address support for ethtool nftuple filters
-  igb: Add the skeletons for tc-flower offloading
-  igb: Add support for adding offloaded clsflower filters
-
- drivers/net/ethernet/intel/igb/e1000_defines.h |   2 +
- drivers/net/ethernet/intel/igb/igb.h           |  12 +
- drivers/net/ethernet/intel/igb/igb_ethtool.c   |  65 +++++-
- drivers/net/ethernet/intel/igb/igb_main.c      | 306 ++++++++++++++++++++++++-
- 4 files changed, 371 insertions(+), 14 deletions(-)
-
---
+diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+index 573bf177fd08..c6f552de30dd 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -490,6 +490,7 @@
+  * manageability enabled, allowing us room for 15 multicast addresses.
+  */
+ #define E1000_RAH_AV  0x80000000        /* Receive descriptor valid */
++#define E1000_RAH_ASEL_SRC_ADDR 0x00010000
+ #define E1000_RAH_QSEL_ENABLE 0x10000000
+ #define E1000_RAL_MAC_ADDR_LEN 4
+ #define E1000_RAH_MAC_ADDR_LEN 2
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index 55d6f17d5799..4501b28ff7c5 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -473,6 +473,7 @@ struct igb_mac_addr {
+ 
+ #define IGB_MAC_STATE_DEFAULT	0x1
+ #define IGB_MAC_STATE_IN_USE	0x2
++#define IGB_MAC_STATE_SRC_ADDR  0x4
+ 
+ /* board specific private data structure */
+ struct igb_adapter {
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 8684d5ed56e1..76969467de31 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -6843,8 +6843,13 @@ static void igb_set_default_mac_filter(struct igb_adapter *adapter)
+ 	igb_rar_set_index(adapter, 0);
+ }
+ 
+-static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+-			      const u8 queue)
++/* Add a MAC filter for 'addr' directing matching traffic to 'queue',
++ * 'flags' is used to indicate what kind of match is made, match is by
++ * default for the destination address, if matching by source address
++ * is desired the flag IGB_MAC_STATE_SRC_ADDR can be used.
++ */
++static int igb_add_mac_filter_flags(struct igb_adapter *adapter, const u8 *addr,
++				    const u8 queue, const u8 flags)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	int rar_entries = hw->mac.rar_entry_count -
+@@ -6864,7 +6869,7 @@ static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 
+ 		ether_addr_copy(adapter->mac_table[i].addr, addr);
+ 		adapter->mac_table[i].queue = queue;
+-		adapter->mac_table[i].state |= IGB_MAC_STATE_IN_USE;
++		adapter->mac_table[i].state |= IGB_MAC_STATE_IN_USE | flags;
+ 
+ 		igb_rar_set_index(adapter, i);
+ 		return i;
+@@ -6873,8 +6878,20 @@ static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 	return -ENOSPC;
+ }
+ 
+-static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
++static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 			      const u8 queue)
++{
++	return igb_add_mac_filter_flags(adapter, addr, queue, 0);
++}
++
++/* Remove a MAC filter for 'addr' directing matching traffic to
++ * 'queue', 'flags' is used to indicate what kind of match need to be
++ * removed, match is by default for the destination address, if
++ * matching by source address is to be removed the flag
++ * IGB_MAC_STATE_SRC_ADDR can be used.
++ */
++static int igb_del_mac_filter_flags(struct igb_adapter *adapter, const u8 *addr,
++				    const u8 queue, const u8 flags)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	int rar_entries = hw->mac.rar_entry_count -
+@@ -6891,12 +6908,14 @@ static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 	for (i = 0; i < rar_entries; i++) {
+ 		if (!(adapter->mac_table[i].state & IGB_MAC_STATE_IN_USE))
+ 			continue;
++		if ((adapter->mac_table[i].state & flags) != flags)
++			continue;
+ 		if (adapter->mac_table[i].queue != queue)
+ 			continue;
+ 		if (!ether_addr_equal(adapter->mac_table[i].addr, addr))
+ 			continue;
+ 
+-		adapter->mac_table[i].state &= ~IGB_MAC_STATE_IN_USE;
++		adapter->mac_table[i].state = 0;
+ 		memset(adapter->mac_table[i].addr, 0, ETH_ALEN);
+ 		adapter->mac_table[i].queue = 0;
+ 
+@@ -6907,6 +6926,12 @@ static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 	return -ENOENT;
+ }
+ 
++static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
++			      const u8 queue)
++{
++	return igb_del_mac_filter_flags(adapter, addr, queue, 0);
++}
++
+ static int igb_uc_sync(struct net_device *netdev, const unsigned char *addr)
+ {
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+@@ -8750,6 +8775,9 @@ static void igb_rar_set_index(struct igb_adapter *adapter, u32 index)
+ 		if (is_valid_ether_addr(addr))
+ 			rar_high |= E1000_RAH_AV;
+ 
++		if (adapter->mac_table[index].state & IGB_MAC_STATE_SRC_ADDR)
++			rar_high |= E1000_RAH_ASEL_SRC_ADDR;
++
+ 		switch (hw->mac.type) {
+ 		case e1000_82575:
+ 		case e1000_i210:
+-- 
 2.16.2
+
