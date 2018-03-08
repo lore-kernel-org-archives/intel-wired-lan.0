@@ -1,98 +1,51 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 7 Mar 2018 21:53:09 -0800
-Subject: [Intel-wired-lan] [next PATCH S87-V4 2/7] i40e: rename
- i40e_vlan_rx_register to i40e_setup_vlan_stripping
-In-Reply-To: <20180307141725.79649-2-alice.michael@intel.com>
-References: <20180307141725.79649-1-alice.michael@intel.com>
- <20180307141725.79649-2-alice.michael@intel.com>
-Message-ID: <104f662b-4a50-f5ba-e295-62bf7172b951@oracle.com>
+From: Miroslav Lichvar <mlichvar@redhat.com>
+Date: Thu, 8 Mar 2018 12:37:22 +0100
+Subject: [Intel-wired-lan] [RFC v3 net-next 08/18] net: SO_TXTIME: Add
+ clockid and drop_if_late params
+In-Reply-To: <1520462745.109662.59.camel@gmail.com>
+References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
+ <20180307011230.24001-9-jesus.sanchez-palencia@intel.com>
+ <1520391209.109662.33.camel@gmail.com>
+ <b612233d-cad6-9fb3-0d08-763bc25553c1@intel.com>
+ <1520462745.109662.59.camel@gmail.com>
+Message-ID: <20180308113722.GB28493@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/7/2018 6:17 AM, Alice Michael wrote:
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> We used to use the function i40e_vlan_rx_register as a way to hook
-> into the now defunct .ndo_vlan_rx_register netdev hook. This was
-> removed but we kept the function around because we still used it
-> internally to control enabling or disabling of VLAN stripping.
-> 
-> Simplify this function and make its intent clear. Pass the *vsi
-> pointer directly instead of the netdev pointer. Additionally, move
-> it closer to the point where it is called in the file.
-> 
-> This helps clarify the functions use and purpose, and makes the
-> code a bit easier to understand.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_main.c | 31 +++++++++++++----------------
->   1 file changed, 14 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 4b34bbc..31938b2 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -2720,22 +2720,6 @@ void i40e_vlan_stripping_disable(struct i40e_vsi *vsi)
->   }
->   
->   /**
-> - * i40e_vlan_rx_register - Setup or shutdown vlan offload
-> - * @netdev: network interface to be adjusted
-> - * @features: netdev features to test if VLAN offload is enabled or not
-> - **/
-> -static void i40e_vlan_rx_register(struct net_device *netdev, u32 features)
-> -{
-> -	struct i40e_netdev_priv *np = netdev_priv(netdev);
-> -	struct i40e_vsi *vsi = np->vsi;
-> -
-> -	if (features & NETIF_F_HW_VLAN_CTAG_RX)
-> -		i40e_vlan_stripping_enable(vsi);
-> -	else
-> -		i40e_vlan_stripping_disable(vsi);
-> -}
-> -
-> -/**
->    * i40e_add_vlan_all_mac - Add a MAC/VLAN filter for each existing MAC address
->    * @vsi: the vsi being configured
->    * @vid: vlan id to be added (0 = untagged only , -1 = any)
-> @@ -2900,6 +2884,19 @@ static int i40e_vlan_rx_kill_vid(struct net_device *netdev,
->   }
->   
->   /**
-> + * i40e_setup_vlan_stripping - Enable or disable VLAN stripping
-> + * @vsi: the vsi being configured
-> + * @features: netdevice feature flags
-> + **/
-> +static void i40e_setup_vlan_stripping(struct i40e_vsi *vsi, u32 features)
-> +{
-> +	if (features & NETIF_F_HW_VLAN_CTAG_RX)
-> +		i40e_vlan_stripping_enable(vsi);
-> +	else
-> +		i40e_vlan_stripping_disable(vsi);
-> +}
-> +
-> +/**
->    * i40e_restore_vlan - Reinstate vlans when vsi/netdev comes back up
->    * @vsi: the vsi being brought back up
->    **/
-> @@ -2910,7 +2907,7 @@ static void i40e_restore_vlan(struct i40e_vsi *vsi)
->   	if (!vsi->netdev)
->   		return;
->   
-> -	i40e_vlan_rx_register(vsi->netdev, vsi->netdev->features);
-> +	i40e_setup_vlan_stripping(vsi, vsi->netdev->features);
+On Wed, Mar 07, 2018 at 02:45:45PM -0800, Eric Dumazet wrote:
+> On Wed, 2018-03-07 at 13:52 -0800, Jesus Sanchez-Palencia wrote:
+> > > Do we really need 32 bits for a clockid_t ?
+> > 
+> > There is a 2 bytes hole just after tc_index, so a u16 clockid would
+> > fit
+> > perfectly without increasing the skbuffs size / cachelines any
+> > further.
 
-IIRC, in a response to a previous review comment, Jake said he was going 
-to simplify this and just get rid of the i40e_setup_vlan_stripping() 
-function and put the code here.  Is that not going to happen?
-
-sln
-
->   
->   	for_each_set_bit(vid, vsi->active_vlans, VLAN_N_VID)
->   		i40e_vlan_rx_add_vid(vsi->netdev, htons(ETH_P_8021Q),
+> Not convincing really :/
 > 
+> Next big feature needing one bit in sk_buff will add it, and add a
+> 63bit hole.
+
+Would it be possible to put the clockid in skb_shared_info? If that's
+technically difficult or does not make sense, I'm ok with the clockid
+being a socket option.
+
+If a packet is sent immediately after changing the clockid via
+setsockopt(), will it be still guaranteed that the packet is
+restricted by the new id?
+
+> Why do we _really_ need dynamic clocks being supported in core
+> networking stack, other than 'that is needed to send 2 packets per
+> second with precise departure time and arbitrary user defined clocks,
+> so lets do that, and do not care of the other 10,000,000 packets we
+> receive/send per second'
+
+Well, I'd not expect it to be a common use case, but a public NTP
+server could be sending millions of packets per second in traffic
+peaks (typically at *:00:00) over multiple interfaces.
+
+-- 
+Miroslav Lichvar
