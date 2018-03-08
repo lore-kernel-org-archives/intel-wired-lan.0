@@ -1,163 +1,200 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 08 Mar 2018 10:32:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- c968b70eab46c3f46bca5bc9e6c2b337e2190a03
-Message-ID: <5aa0a0cd.8voyQv4ARvint+gR%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Wed, 7 Mar 2018 21:55:28 -0800
+Subject: [Intel-wired-lan] [next PATCH S87-V4 3/7] i40e: Fix permission
+ check for VF MAC filters
+In-Reply-To: <20180307141725.79649-3-alice.michael@intel.com>
+References: <20180307141725.79649-1-alice.michael@intel.com>
+ <20180307141725.79649-3-alice.michael@intel.com>
+Message-ID: <aa1889ff-afde-4417-ec97-014724470e18@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: c968b70eab46c3f46bca5bc9e6c2b337e2190a03  igb: Add support for adding offloaded clsflower filters
+On 3/7/2018 6:17 AM, Alice Michael wrote:
+> From: Filip Sadowski <filip.sadowski@intel.com>
+> 
+> When VF requests adding of MAC filters the checking is done against number
+> of already present MAC filters not adding them at the same time. It makes
+> it possible to add a bunch of filters at once possibly exceeding
+> acceptable limit of I40E_VC_MAX_MAC_ADDR_PER_VF filters.
+> 
+> This happens because when checking vf->num_mac, we do not check how many
+> filters are being requested at once. Modify the check function to ensure
+> that it knows how many filters are being requested. This allows the
+> check to ensure that the total number of filters in a single request
+> does not cause us to go over the limit.
+> 
+> Additionally, move the check to within the lock to ensure that the
+> vf->num_mac is checked while holding the lock to maintain consistency.
+> We could have simply moved the call to i40e_vf_check_permission to
+> within the loop, but this could cause a request to be non-atomic, and
+> add some but not all the addresses, while reporting an error code. We
+> want to avoid this behavior so that users are not confused about which
+> filters have or have not been added.
+> 
+> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+> ---
+>   drivers/net/ethernet/intel/i40e/i40e_main.c        | 18 ++---
+>   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 79 ++++++++++++++--------
+>   2 files changed, 55 insertions(+), 42 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 31938b2..183c8b8 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -2884,19 +2884,6 @@ static int i40e_vlan_rx_kill_vid(struct net_device *netdev,
+>   }
+>   
+>   /**
+> - * i40e_setup_vlan_stripping - Enable or disable VLAN stripping
+> - * @vsi: the vsi being configured
+> - * @features: netdevice feature flags
+> - **/
+> -static void i40e_setup_vlan_stripping(struct i40e_vsi *vsi, u32 features)
+> -{
+> -	if (features & NETIF_F_HW_VLAN_CTAG_RX)
+> -		i40e_vlan_stripping_enable(vsi);
+> -	else
+> -		i40e_vlan_stripping_disable(vsi);
+> -}
+> -
+> -/**
+>    * i40e_restore_vlan - Reinstate vlans when vsi/netdev comes back up
+>    * @vsi: the vsi being brought back up
+>    **/
+> @@ -2907,7 +2894,10 @@ static void i40e_restore_vlan(struct i40e_vsi *vsi)
+>   	if (!vsi->netdev)
+>   		return;
+>   
+> -	i40e_setup_vlan_stripping(vsi, vsi->netdev->features);
+> +	if (vsi->netdev->features & NETIF_F_HW_VLAN_CTAG_RX)
+> +		i40e_vlan_stripping_enable(vsi);
+> +	else
+> +		i40e_vlan_stripping_disable(vsi);
 
-elapsed time: 378m
+Oh, here's Jake's change... probably doesn't belong here.
+sln
 
-configs tested: 139
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-i386                   randconfig-x015-201809
-i386                   randconfig-x019-201809
-i386                   randconfig-x010-201809
-i386                   randconfig-x014-201809
-i386                   randconfig-x016-201809
-i386                   randconfig-x011-201809
-i386                   randconfig-x012-201809
-i386                   randconfig-x017-201809
-i386                   randconfig-x013-201809
-i386                   randconfig-x018-201809
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201809
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-i386                     randconfig-a1-201809
-i386                     randconfig-a0-201809
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-x86_64                 randconfig-x017-201809
-x86_64                 randconfig-x013-201809
-x86_64                 randconfig-x016-201809
-x86_64                 randconfig-x018-201809
-x86_64                 randconfig-x012-201809
-x86_64                 randconfig-x015-201809
-x86_64                 randconfig-x014-201809
-x86_64                 randconfig-x011-201809
-x86_64                 randconfig-x010-201809
-x86_64                 randconfig-x019-201809
-i386                     randconfig-s0-201809
-i386                     randconfig-s1-201809
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                           32r2_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201809
-i386                             allmodconfig
-i386                   randconfig-x004-201809
-i386                   randconfig-x002-201809
-i386                   randconfig-x007-201809
-i386                   randconfig-x009-201809
-i386                   randconfig-x003-201809
-i386                   randconfig-x001-201809
-i386                   randconfig-x008-201809
-i386                   randconfig-x006-201809
-i386                   randconfig-x005-201809
-i386                   randconfig-x000-201809
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-x000-201809
-x86_64                 randconfig-x005-201809
-x86_64                 randconfig-x008-201809
-x86_64                 randconfig-x001-201809
-x86_64                 randconfig-x006-201809
-x86_64                 randconfig-x007-201809
-x86_64                 randconfig-x009-201809
-x86_64                 randconfig-x002-201809
-x86_64                 randconfig-x003-201809
-x86_64                 randconfig-x004-201809
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                                  kexec
-x86_64                              federa-25
-x86_64                                   rhel
-x86_64                               rhel-7.2
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-i386                   randconfig-x079-201809
-i386                   randconfig-x071-201809
-i386                   randconfig-x077-201809
-i386                   randconfig-x072-201809
-i386                   randconfig-x076-201809
-i386                   randconfig-x074-201809
-i386                   randconfig-x078-201809
-i386                   randconfig-x073-201809
-i386                   randconfig-x070-201809
-i386                   randconfig-x075-201809
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-
-Thanks,
-Fengguang
+>   
+>   	for_each_set_bit(vid, vsi->active_vlans, VLAN_N_VID)
+>   		i40e_vlan_rx_add_vid(vsi->netdev, htons(ETH_P_8021Q),
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index 8559c09..8d9a456 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -2369,25 +2369,47 @@ static int i40e_vc_get_stats_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+>   /**
+>    * i40e_check_vf_permission
+>    * @vf: pointer to the VF info
+> - * @macaddr: pointer to the MAC Address being checked
+> + * @al: MAC address list from virtchnl
+>    *
+> - * Check if the VF has permission to add or delete unicast MAC address
+> - * filters and return error code -EPERM if not.  Then check if the
+> - * address filter requested is broadcast or zero and if so return
+> - * an invalid MAC address error code.
+> + * Check that the given list of MAC addresses is allowed. Will return -EPERM
+> + * if any address in the list is not valid. Checks the following conditions:
+> + *
+> + * 1) broadcast and zero addresses are never valid
+> + * 2) unicast addresses are not allowed if the VMM has administratively set
+> + *    the VF MAC address, unless the VF is marked as privileged.
+> + * 3) There is enough space to add all the addresses.
+> + *
+> + * Note that to guarantee consistency, it is expected this function be called
+> + * while holding the mac_filter_hash_lock, as otherwise the current number of
+> + * addresses might not be accurate.
+>    **/
+> -static inline int i40e_check_vf_permission(struct i40e_vf *vf, u8 *macaddr)
+> +static inline int i40e_check_vf_permission(struct i40e_vf *vf,
+> +					   struct virtchnl_ether_addr_list *al)
+>   {
+>   	struct i40e_pf *pf = vf->pf;
+> -	int ret = 0;
+> +	int i;
+> +
+> +	/* If this VF is not privileged, then we can't add more than a limited
+> +	 * number of addresses. Check to make sure that the additions do not
+> +	 * push us over the limit.
+> +	 */
+> +	if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps) &&
+> +	    (vf->num_mac + al->num_elements) > I40E_VC_MAX_MAC_ADDR_PER_VF) {
+> +		dev_err(&pf->pdev->dev,
+> +			"Cannot add more MAC addresses, VF is not trusted, switch the VF to trusted to add more functionality\n");
+> +		return -EPERM;
+> +	}
+> +
+> +	for (i = 0; i < al->num_elements; i++) {
+> +		u8 *addr = al->list[i].addr;
+> +
+> +		if (is_broadcast_ether_addr(addr) ||
+> +		    is_zero_ether_addr(addr)) {
+> +			dev_err(&pf->pdev->dev, "invalid VF MAC addr %pM\n",
+> +				addr);
+> +			return I40E_ERR_INVALID_MAC_ADDR;
+> +		}
+>   
+> -	if (is_broadcast_ether_addr(macaddr) ||
+> -		   is_zero_ether_addr(macaddr)) {
+> -		dev_err(&pf->pdev->dev, "invalid VF MAC addr %pM\n", macaddr);
+> -		ret = I40E_ERR_INVALID_MAC_ADDR;
+> -	} else if (vf->pf_set_mac && !is_multicast_ether_addr(macaddr) &&
+> -		   !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps) &&
+> -		   !ether_addr_equal(macaddr, vf->default_lan_addr.addr)) {
+>   		/* If the host VMM administrator has set the VF MAC address
+>   		 * administratively via the ndo_set_vf_mac command then deny
+>   		 * permission to the VF to add or delete unicast MAC addresses.
+> @@ -2395,16 +2417,16 @@ static inline int i40e_check_vf_permission(struct i40e_vf *vf, u8 *macaddr)
+>   		 * The VF may request to set the MAC address filter already
+>   		 * assigned to it so do not return an error in that case.
+>   		 */
+> -		dev_err(&pf->pdev->dev,
+> -			"VF attempting to override administratively set MAC address, reload the VF driver to resume normal operation\n");
+> -		ret = -EPERM;
+> -	} else if ((vf->num_mac >= I40E_VC_MAX_MAC_ADDR_PER_VF) &&
+> -		   !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
+> -		dev_err(&pf->pdev->dev,
+> -			"VF is not trusted, switch the VF to trusted to add more functionality\n");
+> -		ret = -EPERM;
+> +		if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps) &&
+> +		    !is_multicast_ether_addr(addr) && vf->pf_set_mac &&
+> +		    !ether_addr_equal(addr, vf->default_lan_addr.addr)) {
+> +			dev_err(&pf->pdev->dev,
+> +				"VF attempting to override administratively set MAC address, reload the VF driver to resume normal operation\n");
+> +			return -EPERM;
+> +		}
+>   	}
+> -	return ret;
+> +
+> +	return 0;
+>   }
+>   
+>   /**
+> @@ -2431,11 +2453,6 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+>   		goto error_param;
+>   	}
+>   
+> -	for (i = 0; i < al->num_elements; i++) {
+> -		ret = i40e_check_vf_permission(vf, al->list[i].addr);
+> -		if (ret)
+> -			goto error_param;
+> -	}
+>   	vsi = pf->vsi[vf->lan_vsi_idx];
+>   
+>   	/* Lock once, because all function inside for loop accesses VSI's
+> @@ -2443,6 +2460,12 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+>   	 */
+>   	spin_lock_bh(&vsi->mac_filter_hash_lock);
+>   
+> +	ret = i40e_check_vf_permission(vf, al);
+> +	if (ret) {
+> +		spin_unlock_bh(&vsi->mac_filter_hash_lock);
+> +		goto error_param;
+> +	}
+> +
+>   	/* add new addresses to the list */
+>   	for (i = 0; i < al->num_elements; i++) {
+>   		struct i40e_mac_filter *f;
+> 
