@@ -1,159 +1,105 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu,  8 Mar 2018 14:52:07 -0800
-Subject: [Intel-wired-lan] [S87 v5 3/7] i40e: Fix permission check for VF
- MAC filters
+Date: Thu,  8 Mar 2018 14:52:08 -0800
+Subject: [Intel-wired-lan] [S87 v5 4/7] i40e: track filter type statistics
+ when deleting invalid filters
 In-Reply-To: <20180308225211.12254-1-jeffrey.t.kirsher@intel.com>
 References: <20180308225211.12254-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180308225211.12254-3-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180308225211.12254-4-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Filip Sadowski <filip.sadowski@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-When VF requests adding of MAC filters the checking is done against number
-of already present MAC filters not adding them at the same time. It makes
-it possible to add a bunch of filters at once possibly exceeding
-acceptable limit of I40E_VC_MAX_MAC_ADDR_PER_VF filters.
+When hardware has trouble with a particular filter, we delete it from
+the list. Unfortunately, we did not properly update the per-filter
+statistic when doing so.
 
-This happens because when checking vf->num_mac, we do not check how many
-filters are being requested at once. Modify the check function to ensure
-that it knows how many filters are being requested. This allows the
-check to ensure that the total number of filters in a single request
-does not cause us to go over the limit.
+Create a helper function to handle this, and properly reduce the
+necessary counter so that it tracks the number of active filters
+properly.
 
-Additionally, move the check to within the lock to ensure that the
-vf->num_mac is checked while holding the lock to maintain consistency.
-We could have simply moved the call to i40e_vf_check_permission to
-within the loop, but this could cause a request to be non-atomic, and
-add some but not all the addresses, while reporting an error code. We
-want to avoid this behavior so that users are not confused about which
-filters have or have not been added.
-
-Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 79 ++++++++++++++--------
- 1 file changed, 51 insertions(+), 28 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 56 ++++++++++++++++++++++++-----
+ 1 file changed, 48 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 8559c099525d..8d9a4568ca24 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2369,25 +2369,47 @@ static int i40e_vc_get_stats_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- /**
-  * i40e_check_vf_permission
-  * @vf: pointer to the VF info
-- * @macaddr: pointer to the MAC Address being checked
-+ * @al: MAC address list from virtchnl
-  *
-- * Check if the VF has permission to add or delete unicast MAC address
-- * filters and return error code -EPERM if not.  Then check if the
-- * address filter requested is broadcast or zero and if so return
-- * an invalid MAC address error code.
-+ * Check that the given list of MAC addresses is allowed. Will return -EPERM
-+ * if any address in the list is not valid. Checks the following conditions:
-+ *
-+ * 1) broadcast and zero addresses are never valid
-+ * 2) unicast addresses are not allowed if the VMM has administratively set
-+ *    the VF MAC address, unless the VF is marked as privileged.
-+ * 3) There is enough space to add all the addresses.
-+ *
-+ * Note that to guarantee consistency, it is expected this function be called
-+ * while holding the mac_filter_hash_lock, as otherwise the current number of
-+ * addresses might not be accurate.
-  **/
--static inline int i40e_check_vf_permission(struct i40e_vf *vf, u8 *macaddr)
-+static inline int i40e_check_vf_permission(struct i40e_vf *vf,
-+					   struct virtchnl_ether_addr_list *al)
- {
- 	struct i40e_pf *pf = vf->pf;
--	int ret = 0;
-+	int i;
-+
-+	/* If this VF is not privileged, then we can't add more than a limited
-+	 * number of addresses. Check to make sure that the additions do not
-+	 * push us over the limit.
-+	 */
-+	if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps) &&
-+	    (vf->num_mac + al->num_elements) > I40E_VC_MAX_MAC_ADDR_PER_VF) {
-+		dev_err(&pf->pdev->dev,
-+			"Cannot add more MAC addresses, VF is not trusted, switch the VF to trusted to add more functionality\n");
-+		return -EPERM;
-+	}
-+
-+	for (i = 0; i < al->num_elements; i++) {
-+		u8 *addr = al->list[i].addr;
-+
-+		if (is_broadcast_ether_addr(addr) ||
-+		    is_zero_ether_addr(addr)) {
-+			dev_err(&pf->pdev->dev, "invalid VF MAC addr %pM\n",
-+				addr);
-+			return I40E_ERR_INVALID_MAC_ADDR;
-+		}
- 
--	if (is_broadcast_ether_addr(macaddr) ||
--		   is_zero_ether_addr(macaddr)) {
--		dev_err(&pf->pdev->dev, "invalid VF MAC addr %pM\n", macaddr);
--		ret = I40E_ERR_INVALID_MAC_ADDR;
--	} else if (vf->pf_set_mac && !is_multicast_ether_addr(macaddr) &&
--		   !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps) &&
--		   !ether_addr_equal(macaddr, vf->default_lan_addr.addr)) {
- 		/* If the host VMM administrator has set the VF MAC address
- 		 * administratively via the ndo_set_vf_mac command then deny
- 		 * permission to the VF to add or delete unicast MAC addresses.
-@@ -2395,16 +2417,16 @@ static inline int i40e_check_vf_permission(struct i40e_vf *vf, u8 *macaddr)
- 		 * The VF may request to set the MAC address filter already
- 		 * assigned to it so do not return an error in that case.
- 		 */
--		dev_err(&pf->pdev->dev,
--			"VF attempting to override administratively set MAC address, reload the VF driver to resume normal operation\n");
--		ret = -EPERM;
--	} else if ((vf->num_mac >= I40E_VC_MAX_MAC_ADDR_PER_VF) &&
--		   !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
--		dev_err(&pf->pdev->dev,
--			"VF is not trusted, switch the VF to trusted to add more functionality\n");
--		ret = -EPERM;
-+		if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps) &&
-+		    !is_multicast_ether_addr(addr) && vf->pf_set_mac &&
-+		    !ether_addr_equal(addr, vf->default_lan_addr.addr)) {
-+			dev_err(&pf->pdev->dev,
-+				"VF attempting to override administratively set MAC address, reload the VF driver to resume normal operation\n");
-+			return -EPERM;
-+		}
- 	}
--	return ret;
-+
-+	return 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 183c8b84b7ea..0b45650b7e31 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8136,6 +8136,51 @@ u32 i40e_get_global_fd_count(struct i40e_pf *pf)
+ 	return fcnt_prog;
  }
  
- /**
-@@ -2431,11 +2453,6 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 		goto error_param;
- 	}
- 
--	for (i = 0; i < al->num_elements; i++) {
--		ret = i40e_check_vf_permission(vf, al->list[i].addr);
--		if (ret)
--			goto error_param;
--	}
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 
- 	/* Lock once, because all function inside for loop accesses VSI's
-@@ -2443,6 +2460,12 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 	 */
- 	spin_lock_bh(&vsi->mac_filter_hash_lock);
- 
-+	ret = i40e_check_vf_permission(vf, al);
-+	if (ret) {
-+		spin_unlock_bh(&vsi->mac_filter_hash_lock);
-+		goto error_param;
++/**
++ * i40e_delete_invalid_filter - Delete an invalid FDIR filter
++ * @pf: board private structure
++ * @filter: FDir filter to remove
++ */
++static void i40e_delete_invalid_filter(struct i40e_pf *pf,
++				       struct i40e_fdir_filter *filter)
++{
++	/* Update counters */
++	pf->fdir_pf_active_filters--;
++	pf->fd_inv = 0;
++
++	switch (filter->flow_type) {
++	case TCP_V4_FLOW:
++		pf->fd_tcp4_filter_cnt--;
++		break;
++	case UDP_V4_FLOW:
++		pf->fd_udp4_filter_cnt--;
++		break;
++	case SCTP_V4_FLOW:
++		pf->fd_sctp4_filter_cnt--;
++		break;
++	case IP_USER_FLOW:
++		switch (filter->ip4_proto) {
++		case IPPROTO_TCP:
++			pf->fd_tcp4_filter_cnt--;
++			break;
++		case IPPROTO_UDP:
++			pf->fd_udp4_filter_cnt--;
++			break;
++		case IPPROTO_SCTP:
++			pf->fd_sctp4_filter_cnt--;
++			break;
++		case IPPROTO_IP:
++			pf->fd_ip4_filter_cnt--;
++			break;
++		}
++		break;
 +	}
 +
- 	/* add new addresses to the list */
- 	for (i = 0; i < al->num_elements; i++) {
- 		struct i40e_mac_filter *f;
++	/* Remove the filter from the list and free memory */
++	hlist_del(&filter->fdir_node);
++	kfree(filter);
++}
++
+ /**
+  * i40e_fdir_check_and_reenable - Function to reenabe FD ATR or SB if disabled
+  * @pf: board private structure
+@@ -8180,14 +8225,9 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+ 	/* if hw had a problem adding a filter, delete it */
+ 	if (pf->fd_inv > 0) {
+ 		hlist_for_each_entry_safe(filter, node,
+-					  &pf->fdir_filter_list, fdir_node) {
+-			if (filter->fd_id == pf->fd_inv) {
+-				hlist_del(&filter->fdir_node);
+-				kfree(filter);
+-				pf->fdir_pf_active_filters--;
+-				pf->fd_inv = 0;
+-			}
+-		}
++					  &pf->fdir_filter_list, fdir_node)
++			if (filter->fd_id == pf->fd_inv)
++				i40e_delete_invalid_filter(pf, filter);
+ 	}
+ }
+ 
 -- 
 2.14.3
 
