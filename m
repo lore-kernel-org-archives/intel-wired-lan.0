@@ -1,74 +1,39 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed,  7 Mar 2018 16:37:07 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v4 2/8] igb: Fix queue
- selection on MAC filters on i210 and i211
+Date: Wed,  7 Mar 2018 16:37:08 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v4 3/8] igb: Enable the
+ hardware traffic class feature bit for igb models
 In-Reply-To: <20180308003713.29195-1-vinicius.gomes@intel.com>
 References: <20180308003713.29195-1-vinicius.gomes@intel.com>
-Message-ID: <20180308003713.29195-3-vinicius.gomes@intel.com>
+Message-ID: <20180308003713.29195-4-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On the RAH registers there are semantic differences on the meaning of
-the "queue" parameter for traffic steering depending on the controller
-model: there is the 82575 meaning, which "queue" means a RX Hardware
-Queue, and the i350 meaning, where it is a reception pool.
+This will allow functionality depending on the hardware being traffic
+class aware to work. In particular the tc-flower offloading checks
+verifies that this bit is set.
 
-The previous behaviour was having no effect for i210 and i211 based
-controllers because the QSEL bit of the RAH register wasn't being set.
-
-This patch separates the condition in discrete cases, so the different
-handling is clearer.
-
-Fixes: 83c21335c876 ("igb: improve MAC filter handling")
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_defines.h |  1 +
- drivers/net/ethernet/intel/igb/igb_main.c      | 15 +++++++++++----
- 2 files changed, 12 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index 83cabff1e0ab..573bf177fd08 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -490,6 +490,7 @@
-  * manageability enabled, allowing us room for 15 multicast addresses.
-  */
- #define E1000_RAH_AV  0x80000000        /* Receive descriptor valid */
-+#define E1000_RAH_QSEL_ENABLE 0x10000000
- #define E1000_RAL_MAC_ADDR_LEN 4
- #define E1000_RAH_MAC_ADDR_LEN 2
- #define E1000_RAH_POOL_MASK 0x03FC0000
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 715bb32e6901..eabedc6b6518 100644
+index eabedc6b6518..8684d5ed56e1 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8747,12 +8747,19 @@ static void igb_rar_set_index(struct igb_adapter *adapter, u32 index)
- 		if (is_valid_ether_addr(addr))
- 			rar_high |= E1000_RAH_AV;
+@@ -2806,6 +2806,9 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (hw->mac.type >= e1000_82576)
+ 		netdev->features |= NETIF_F_SCTP_CRC;
  
--		if (hw->mac.type == e1000_82575)
-+		switch (hw->mac.type) {
-+		case e1000_82575:
-+		case e1000_i210:
-+		case e1000_i211:
-+			rar_high |= E1000_RAH_QSEL_ENABLE;
- 			rar_high |= E1000_RAH_POOL_1 *
--				    adapter->mac_table[index].queue;
--		else
-+				      adapter->mac_table[index].queue;
-+			break;
-+		default:
- 			rar_high |= E1000_RAH_POOL_1 <<
--				    adapter->mac_table[index].queue;
-+				adapter->mac_table[index].queue;
-+			break;
-+		}
- 	}
- 
- 	wr32(E1000_RAL(index), rar_low);
++	if (hw->mac.type >= e1000_i350)
++		netdev->features |= NETIF_F_HW_TC;
++
+ #define IGB_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
+ 				  NETIF_F_GSO_GRE_CSUM | \
+ 				  NETIF_F_GSO_IPXIP4 | \
 -- 
 2.16.2
 
