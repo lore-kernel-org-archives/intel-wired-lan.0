@@ -1,220 +1,94 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 09 Mar 2018 17:21:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- afe8c702a4df8e0b6d3d725a03fb3b69870d78a8
-Message-ID: <5aa2521c.Ol4WHL9vEsO2fEAB%fengguang.wu@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Date: Fri,  9 Mar 2018 09:21:21 -0800
+Subject: [Intel-wired-lan] [PATCH 00/15] Add ice driver
+Message-ID: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: afe8c702a4df8e0b6d3d725a03fb3b69870d78a8  i40e: restore TCPv4 input set when re-enabling ATR
+This patch series adds the ice driver, which will support the Intel(R)
+E800 Series of network devices.
 
-TIMEOUT after 608m
+This is the first phase in the release of this driver where we implement
+basic transmit and receive. The idea behind the multi-phase release is to
+aid in code review as well as testing. Subsequent phases will implement
+advanced features (like SR-IOV, tunnelling, flow director, QoS, etc.) that
+build upon the previous phase(s). Each phase will be submitted as a patch
+series.
 
+I cc'd netdev for review since this is a new driver, even though this is
+targetted to go through Jeff Kirsher's Intel Wired LAN git tree(s).
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+Anirudh Venkataramanan (15):
+  ice: Add basic driver framework for Intel(R) E800 Series
+  ice: Add support for control queues
+  ice: Start hardware initialization
+  ice: Get switch config, scheduler config and device capabilities
+  ice: Get MAC/PHY/link info and scheduler topology
+  ice: Initialize PF and setup miscellaneous interrupt
+  ice: Add support for VSI allocation and deallocation
+  ice: Add support for switch filter programming
+  ice: Configure VSIs for Tx/Rx
+  ice: Implement transmit and NAPI support
+  ice: Add support for VLANs and offloads
+  ice: Add stats and ethtool support
+  ice: Update Tx scheduler tree for VSI multi-Tx queue support
+  ice: Support link events, reset and rebuild
+  ice: Implement filter sync, NDO operations and bump version
 
-configs timed out: 43
+ Documentation/networking/ice.txt                |   39 +
+ MAINTAINERS                                     |    1 +
+ drivers/net/ethernet/intel/Kconfig              |   14 +
+ drivers/net/ethernet/intel/Makefile             |    1 +
+ drivers/net/ethernet/intel/ice/Makefile         |   34 +
+ drivers/net/ethernet/intel/ice/ice.h            |  328 ++
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 1366 ++++++
+ drivers/net/ethernet/intel/ice/ice_common.c     | 2244 +++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h     |  100 +
+ drivers/net/ethernet/intel/ice/ice_controlq.c   | 1080 +++++
+ drivers/net/ethernet/intel/ice/ice_controlq.h   |  108 +
+ drivers/net/ethernet/intel/ice/ice_devids.h     |   33 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c    |  972 ++++
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  280 ++
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h  |  487 ++
+ drivers/net/ethernet/intel/ice/ice_main.c       | 5507 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_nvm.c        |  245 +
+ drivers/net/ethernet/intel/ice/ice_osdep.h      |   87 +
+ drivers/net/ethernet/intel/ice/ice_sched.c      | 1673 +++++++
+ drivers/net/ethernet/intel/ice/ice_sched.h      |   57 +
+ drivers/net/ethernet/intel/ice/ice_status.h     |   46 +
+ drivers/net/ethernet/intel/ice/ice_switch.c     | 1897 ++++++++
+ drivers/net/ethernet/intel/ice/ice_switch.h     |  175 +
+ drivers/net/ethernet/intel/ice/ice_txrx.c       | 1796 ++++++++
+ drivers/net/ethernet/intel/ice/ice_txrx.h       |  206 +
+ drivers/net/ethernet/intel/ice/ice_type.h       |  407 ++
+ 26 files changed, 19183 insertions(+)
+ create mode 100644 Documentation/networking/ice.txt
+ create mode 100644 drivers/net/ethernet/intel/ice/Makefile
+ create mode 100644 drivers/net/ethernet/intel/ice/ice.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_common.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_common.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_controlq.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_controlq.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_devids.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_ethtool.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_main.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_nvm.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_osdep.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_sched.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_sched.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_status.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_switch.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_switch.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_txrx.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_txrx.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_type.h
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-arm                            customconfig-0
-arm                            customconfig-1
-arm                            customconfig-2
-arm64                          customconfig-0
-arm64                          customconfig-1
-arm64                          customconfig-2
-blackfin                         allmodconfig
-blackfin                         allyesconfig
-cris                             allmodconfig
-cris                             allyesconfig
-i386                           customconfig-0
-i386                           customconfig-1
-i386                           customconfig-2
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-s390                             allmodconfig
-s390                             allyesconfig
-sh                               allmodconfig
-sh                               allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-tile                             allmodconfig
-tile                             allyesconfig
-x86_64                           allyesconfig
-x86_64                         customconfig-0
-x86_64                         customconfig-1
-x86_64                         customconfig-2
-x86_64                              federa-25
-x86_64                                    lkp
-xtensa                           allmodconfig
-xtensa                           allyesconfig
+-- 
+2.14.3
 
-configs tested: 145
-
-cris                 etrax-100lx_v2_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-x015-201809
-i386                   randconfig-x019-201809
-i386                   randconfig-x010-201809
-i386                   randconfig-x014-201809
-i386                   randconfig-x016-201809
-i386                   randconfig-x011-201809
-i386                   randconfig-x012-201809
-i386                   randconfig-x017-201809
-i386                   randconfig-x013-201809
-i386                   randconfig-x018-201809
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201809
-i386                     randconfig-i0-201809
-i386                     randconfig-i1-201809
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-a1-201809
-i386                     randconfig-a0-201809
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-x86_64                 randconfig-x017-201809
-x86_64                 randconfig-x013-201809
-x86_64                 randconfig-x016-201809
-x86_64                 randconfig-x018-201809
-x86_64                 randconfig-x012-201809
-x86_64                 randconfig-x015-201809
-x86_64                 randconfig-x014-201809
-x86_64                 randconfig-x011-201809
-x86_64                 randconfig-x010-201809
-x86_64                 randconfig-x019-201809
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201809
-i386                     randconfig-s1-201809
-i386                               tinyconfig
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201809
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-i386                   randconfig-x079-201809
-i386                   randconfig-x071-201809
-i386                   randconfig-x077-201809
-i386                   randconfig-x072-201809
-i386                   randconfig-x076-201809
-i386                   randconfig-x074-201809
-i386                   randconfig-x078-201809
-i386                   randconfig-x073-201809
-i386                   randconfig-x070-201809
-i386                   randconfig-x075-201809
-i386                   randconfig-x004-201809
-i386                   randconfig-x002-201809
-i386                   randconfig-x007-201809
-i386                   randconfig-x009-201809
-i386                   randconfig-x003-201809
-i386                   randconfig-x001-201809
-i386                   randconfig-x008-201809
-i386                   randconfig-x006-201809
-i386                   randconfig-x005-201809
-i386                   randconfig-x000-201809
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x000-201809
-x86_64                 randconfig-x005-201809
-x86_64                 randconfig-x008-201809
-x86_64                 randconfig-x001-201809
-x86_64                 randconfig-x006-201809
-x86_64                 randconfig-x007-201809
-x86_64                 randconfig-x009-201809
-x86_64                 randconfig-x002-201809
-x86_64                 randconfig-x003-201809
-x86_64                 randconfig-x004-201809
-
-Thanks,
-Fengguang
