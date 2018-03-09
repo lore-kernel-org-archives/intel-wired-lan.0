@@ -1,482 +1,969 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  9 Mar 2018 09:21:22 -0800
-Subject: [Intel-wired-lan] [PATCH 01/15] ice: Add basic driver framework for
- Intel(R) E800 Series
+Date: Fri,  9 Mar 2018 09:21:35 -0800
+Subject: [Intel-wired-lan] [PATCH 14/15] ice: Support link events,
+ reset and rebuild
 In-Reply-To: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
 References: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180309172136.9073-2-anirudh.venkataramanan@intel.com>
+Message-ID: <20180309172136.9073-15-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds a basic driver framework for the Intel(R) E800 Ethernet
-Series of network devices. There is no functionality right now other than
-the ability to load.
+Link events are posted to a PF's admin receive queue (ARQ). This patch
+adds the ability to detect and process link events.
+
+This patch also adds the ability to process resets.
+
+The driver can process the following resets:
+    1) EMP Reset (EMPR)
+    2) Global Reset (GLOBR)
+    3) Core Reset (CORER)
+    4) Physical Function Reset (PFR)
+
+EMPR is the largest level of reset that the driver can handle. An EMPR
+resets the manageability block and also the data path, including PHY and
+link for all the PFs. The affected PFs are notified of this event through
+a miscellaneous interrupt.
+
+GLOBR is a subset of EMPR. It does everything EMPR does except that it
+doesn't reset the manageability block.
+
+CORER is a subset of GLOBR. It does everything GLOBR does but doesn't
+reset PHY and link.
+
+PFR is a subset of CORER and affects only the given physical function.
+In other words, PFR can be thought of as a CORER for a single PF. Since
+only the issuing PF is affected, a PFR doesn't result in the miscellaneousi
+interrupt being triggered.
+
+All the resets have the following in common:
+1) Tx/Rx is halted and all queues are stopped.
+2) All the VSIs and filters programmed for the PF are lost and have to be
+   reprogrammed.
+3) Control queue interfaces are reset and have to be reprogrammed.
+
+In the rebuild flow, control queues are reinitialized, VSIs are reallocated
+and filters are restored.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- Documentation/networking/ice.txt            |  39 +++++++
- MAINTAINERS                                 |   1 +
- drivers/net/ethernet/intel/Kconfig          |  14 +++
- drivers/net/ethernet/intel/Makefile         |   1 +
- drivers/net/ethernet/intel/ice/Makefile     |  27 +++++
- drivers/net/ethernet/intel/ice/ice.h        |  48 ++++++++
- drivers/net/ethernet/intel/ice/ice_devids.h |  33 ++++++
- drivers/net/ethernet/intel/ice/ice_main.c   | 172 ++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_type.h   |  42 +++++++
- 9 files changed, 377 insertions(+)
- create mode 100644 Documentation/networking/ice.txt
- create mode 100644 drivers/net/ethernet/intel/ice/Makefile
- create mode 100644 drivers/net/ethernet/intel/ice/ice.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_devids.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_main.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_type.h
+ drivers/net/ethernet/intel/ice/ice.h            |  19 +
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  19 +
+ drivers/net/ethernet/intel/ice/ice_common.c     |  60 +++
+ drivers/net/ethernet/intel/ice/ice_common.h     |   5 +
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |   2 +
+ drivers/net/ethernet/intel/ice/ice_main.c       | 581 +++++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_type.h       |   1 +
+ 7 files changed, 681 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/networking/ice.txt b/Documentation/networking/ice.txt
-new file mode 100644
-index 000000000000..6261c46378e1
---- /dev/null
-+++ b/Documentation/networking/ice.txt
-@@ -0,0 +1,39 @@
-+Intel(R) Ethernet Connection E800 Series Linux Driver
-+===================================================================
-+
-+Intel ice Linux driver.
-+Copyright(c) 2018 Intel Corporation.
-+
-+Contents
-+========
-+- Enabling the driver
-+- Support
-+
-+The driver in this release supports Intel's E800 Series of products. For
-+more information, visit Intel's support page at http://support.intel.com.
-+
-+Enabling the driver
-+===================
-+
-+The driver is enabled via the standard kernel configuration system,
-+using the make command:
-+
-+     Make oldconfig/silentoldconfig/menuconfig/etc.
-+
-+The driver is located in the menu structure at:
-+
-+	-> Device Drivers
-+	  -> Network device support (NETDEVICES [=y])
-+	    -> Ethernet driver support
-+	      -> Intel devices
-+	        -> Intel(R) Ethernet Connection E800 Series Support
-+
-+Support
-+=======
-+
-+For general information, go to the Intel support website at:
-+
-+    http://support.intel.com
-+
-+If an issue is identified with the released source code, please email
-+the maintainer listed in the MAINTAINERS file.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 079af8b7ae8e..f1fe3bbec595 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7019,6 +7019,7 @@ F:	Documentation/networking/ixgbe.txt
- F:	Documentation/networking/ixgbevf.txt
- F:	Documentation/networking/i40e.txt
- F:	Documentation/networking/i40evf.txt
-+F:	Documentation/networking/ice.txt
- F:	drivers/net/ethernet/intel/
- F:	drivers/net/ethernet/intel/*/
- F:	include/linux/avf/virtchnl.h
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 1feb54b6d92e..14d287bed33c 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -251,6 +251,20 @@ config I40EVF
- 	  will be called i40evf.  MSI-X interrupt support is required
- 	  for this driver to work correctly.
- 
-+config ICE
-+	tristate "Intel(R) Ethernet Connection E800 Series Support"
-+	default n
-+	depends on PCI_MSI
-+	---help---
-+	  This driver supports Intel(R) Ethernet Connection E800 Series of
-+	  devices.  For more information on how to identify your adapter, go
-+	  to the Adapter & Driver ID Guide that can be located at:
-+
-+	  <http://support.intel.com>
-+
-+	  To compile this driver as a module, choose M here. The module
-+	  will be called ice.
-+
- config FM10K
- 	tristate "Intel(R) FM10000 Ethernet Switch Host Interface Support"
- 	default n
-diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
-index 90af7757a885..807a4f8c7e4e 100644
---- a/drivers/net/ethernet/intel/Makefile
-+++ b/drivers/net/ethernet/intel/Makefile
-@@ -14,3 +14,4 @@ obj-$(CONFIG_I40E) += i40e/
- obj-$(CONFIG_IXGB) += ixgb/
- obj-$(CONFIG_I40EVF) += i40evf/
- obj-$(CONFIG_FM10K) += fm10k/
-+obj-$(CONFIG_ICE) += ice/
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-new file mode 100644
-index 000000000000..2a177ea21b74
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -0,0 +1,27 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+################################################################################
-+#
-+# Intel(R) Ethernet Connection E800 Series Linux Driver
-+# Copyright (c) 2018, Intel Corporation.
-+#
-+# This program is free software; you can redistribute it and/or modify it
-+# under the terms and conditions of the GNU General Public License,
-+# version 2, as published by the Free Software Foundation.
-+#
-+# This program is distributed in the hope it will be useful, but WITHOUT
-+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+# more details.
-+#
-+# The full GNU General Public License is included in this distribution in
-+# the file called "COPYING".
-+#
-+################################################################################
-+
-+#
-+# Makefile for the Intel(R) Ethernet Connection E800 Series Linux Driver
-+#
-+
-+obj-$(CONFIG_ICE) += ice.o
-+
-+ice-y := ice_main.o
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-new file mode 100644
-index 000000000000..d781027330cc
---- /dev/null
+index c32dc36a9801..e2d4b4de1f1d 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -0,0 +1,48 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
+@@ -91,6 +91,11 @@ extern const char ice_drv_ver[];
+ #define ICE_RX_DESC(R, i) (&(((union ice_32b_rx_flex_desc *)((R)->desc))[i]))
+ #define ICE_TX_CTX_DESC(R, i) (&(((struct ice_tx_ctx_desc *)((R)->desc))[i]))
+ 
++/* Macro for each VSI in a PF */
++#define ice_for_each_vsi(pf, i) \
++	for ((i) = 0; (i) < (pf)->num_alloc_vsi; (i)++)
 +
-+#ifndef _ICE_H_
-+#define _ICE_H_
++/* Macros for each tx/rx ring in a VSI */
+ #define ice_for_each_txq(vsi, i) \
+ 	for ((i) = 0; (i) < (vsi)->num_txq; (i)++)
+ 
+@@ -122,7 +127,16 @@ struct ice_sw {
+ 
+ enum ice_state {
+ 	__ICE_DOWN,
++	__ICE_NEEDS_RESTART,
++	__ICE_RESET_RECOVERY_PENDING,	/* set by driver when reset starts */
+ 	__ICE_PFR_REQ,			/* set by driver and peers */
++	__ICE_CORER_REQ,		/* set by driver and peers */
++	__ICE_GLOBR_REQ,		/* set by driver and peers */
++	__ICE_CORER_RECV,		/* set by OICR handler */
++	__ICE_GLOBR_RECV,		/* set by OICR handler */
++	__ICE_EMPR_RECV,		/* set by OICR handler */
++	__ICE_SUSPENDED,		/* set on module remove path */
++	__ICE_RESET_FAILED,		/* set by reset/rebuild */
+ 	__ICE_ADMINQ_EVENT_PENDING,
+ 	__ICE_CFG_BUSY,
+ 	__ICE_SERVICE_SCHED,
+@@ -240,6 +254,11 @@ struct ice_pf {
+ 	u16 q_left_rx;		/* remaining num rx queues left unclaimed */
+ 	u16 next_vsi;		/* Next free slot in pf->vsi[] - 0-based! */
+ 	u16 num_alloc_vsi;
++	u16 corer_count;	/* Core reset count */
++	u16 globr_count;	/* Global reset count */
++	u16 empr_count;		/* EMP reset count */
++	u16 pfr_count;		/* PF reset count */
 +
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/netdevice.h>
-+#include <linux/compiler.h>
-+#include <linux/pci.h>
-+#include <linux/aer.h>
-+#include <linux/bitmap.h>
-+#include "ice_devids.h"
-+#include "ice_type.h"
-+
-+#define ICE_BAR0		0
-+
-+#define ICE_DFLT_NETIF_M (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
-+
-+enum ice_state {
-+	__ICE_DOWN,
-+	__ICE_STATE_NBITS		/* must be last */
+ 	struct ice_hw_port_stats stats;
+ 	struct ice_hw_port_stats stats_prev;
+ 	struct ice_hw hw;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 62509635fc5e..8cade22c1cf6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1023,6 +1023,23 @@ struct ice_aqc_get_link_status_data {
+ 	__le64 reserved4;
+ };
+ 
++/* Set event mask command (direct 0x0613) */
++struct ice_aqc_set_event_mask {
++	u8	lport_num;
++	u8	reserved[7];
++	__le16	event_mask;
++#define ICE_AQ_LINK_EVENT_UPDOWN		BIT(1)
++#define ICE_AQ_LINK_EVENT_MEDIA_NA		BIT(2)
++#define ICE_AQ_LINK_EVENT_LINK_FAULT		BIT(3)
++#define ICE_AQ_LINK_EVENT_PHY_TEMP_ALARM	BIT(4)
++#define ICE_AQ_LINK_EVENT_EXCESSIVE_ERRORS	BIT(5)
++#define ICE_AQ_LINK_EVENT_SIGNAL_DETECT		BIT(6)
++#define ICE_AQ_LINK_EVENT_AN_COMPLETED		BIT(7)
++#define ICE_AQ_LINK_EVENT_MODULE_QUAL_FAIL	BIT(8)
++#define ICE_AQ_LINK_EVENT_PORT_TX_SUSPENDED	BIT(9)
++	u8	reserved1[6];
 +};
 +
-+struct ice_pf {
-+	struct pci_dev *pdev;
-+	DECLARE_BITMAP(state, __ICE_STATE_NBITS);
-+	u32 msg_enable;
-+	struct ice_hw hw;
-+};
-+#endif /* _ICE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_devids.h b/drivers/net/ethernet/intel/ice/ice_devids.h
-new file mode 100644
-index 000000000000..d6bfee547b88
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_devids.h
-@@ -0,0 +1,33 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
+ /* NVM Read command (indirect 0x0701)
+  * NVM Erase commands (direct 0x0702)
+  * NVM Update commands (indirect 0x0703)
+@@ -1229,6 +1246,7 @@ struct ice_aq_desc {
+ 		struct ice_aqc_dis_txqs dis_txqs;
+ 		struct ice_aqc_add_get_update_free_vsi vsi_cmd;
+ 		struct ice_aqc_alloc_free_res_cmd sw_res_ctrl;
++		struct ice_aqc_set_event_mask set_event_mask;
+ 		struct ice_aqc_get_link_status get_link_status;
+ 	} params;
+ };
+@@ -1308,6 +1326,7 @@ enum ice_adminq_opc {
+ 	ice_aqc_opc_set_phy_cfg				= 0x0601,
+ 	ice_aqc_opc_restart_an				= 0x0605,
+ 	ice_aqc_opc_get_link_status			= 0x0607,
++	ice_aqc_opc_set_event_mask			= 0x0613,
+ 
+ 	/* NVM commands */
+ 	ice_aqc_opc_nvm_read				= 0x0701,
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 311e7b2a4fb7..92f196ebaa36 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1438,6 +1438,39 @@ ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool atomic_restart)
+ 	return status;
+ }
+ 
++/**
++ * ice_get_link_status - get status of the HW network link
++ * @pi: port information structure
++ * @link_up: pointer to bool (true/false = linkup/linkdown)
 + *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
++ * Variable link_up is true if link is up, false if link is down.
++ * The variable link_up is invalid if status is non zero. As a
++ * result of this call, link status reporting becomes enabled
 + */
++enum ice_status ice_get_link_status(struct ice_port_info *pi, bool *link_up)
++{
++	struct ice_phy_info *phy_info;
++	enum ice_status status = 0;
 +
-+#ifndef _ICE_DEVIDS_H_
-+#define _ICE_DEVIDS_H_
++	if (!pi)
++		return ICE_ERR_PARAM;
 +
-+/* Device IDs */
-+/* Intel(R) Ethernet Controller C810 for backplane */
-+#define ICE_DEV_ID_C810_BACKPLANE	0x1591
-+/* Intel(R) Ethernet Controller C810 for QSFP */
-+#define ICE_DEV_ID_C810_QSFP		0x1592
-+/* Intel(R) Ethernet Controller C810 for SFP */
-+#define ICE_DEV_ID_C810_SFP		0x1593
-+/* Intel(R) Ethernet Controller C810/X557-AT 10GBASE-T */
-+#define ICE_DEV_ID_C810_10G_BASE_T	0x1594
-+/* Intel(R) Ethernet Controller C810 1GbE */
-+#define ICE_DEV_ID_C810_SGMII		0x1595
++	phy_info = &pi->phy;
 +
-+#endif /* _ICE_DEVIDS_H_ */
++	if (phy_info->get_link_info) {
++		status = ice_update_link_info(pi);
++
++		if (status)
++			ice_debug(pi->hw, ICE_DBG_LINK,
++				  "get link status error, status = %d\n",
++				  status);
++	}
++
++	*link_up = phy_info->link_info.link_info & ICE_AQ_LINK_UP;
++
++	return status;
++}
++
+ /**
+  * ice_aq_set_link_restart_an
+  * @pi: pointer to the port information structure
+@@ -1467,6 +1500,33 @@ ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
+ 	return ice_aq_send_cmd(pi->hw, &desc, NULL, 0, cd);
+ }
+ 
++/**
++ * ice_aq_set_event_mask
++ * @hw: pointer to the hw struct
++ * @port_num: port number of the physical function
++ * @mask: event mask to be set
++ * @cd: pointer to command details structure or NULL
++ *
++ * Set event mask (0x0613)
++ */
++enum ice_status
++ice_aq_set_event_mask(struct ice_hw *hw, u8 port_num, u16 mask,
++		      struct ice_sq_cd *cd)
++{
++	struct ice_aqc_set_event_mask *cmd;
++	struct ice_aq_desc desc;
++
++	cmd = &desc.params.set_event_mask;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_event_mask);
++
++	cmd->lport_num = port_num;
++
++	cmd->event_mask = cpu_to_le16(mask);
++
++	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
++}
++
+ /**
+  * __ice_aq_get_set_rss_lut
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 3e33a47cb61a..2921f3c6ce4b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -34,6 +34,8 @@ enum ice_status
+ ice_clean_rq_elem(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+ 		  struct ice_rq_event_info *e, u16 *pending);
+ enum ice_status
++ice_get_link_status(struct ice_port_info *pi, bool *link_up);
++enum ice_status
+ ice_acquire_res(struct ice_hw *hw, enum ice_aq_res_ids res,
+ 		enum ice_aq_res_access_type access);
+ void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res);
+@@ -80,6 +82,9 @@ enum ice_status
+ ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
+ 		     struct ice_link_status *link, struct ice_sq_cd *cd);
+ enum ice_status
++ice_aq_set_event_mask(struct ice_hw *hw, u8 port_num, u16 mask,
++		      struct ice_sq_cd *cd);
++enum ice_status
+ ice_dis_vsi_txq(struct ice_port_info *pi, u8 num_queues, u16 *q_ids,
+ 		u32 *q_teids, struct ice_sq_cd *cmd_details);
+ enum ice_status
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 0d24ec3ca975..c371043c8946 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -99,6 +99,8 @@
+ #define GLGEN_RSTCTL			0x000B8180
+ #define GLGEN_RSTCTL_GRSTDEL_S		0
+ #define GLGEN_RSTCTL_GRSTDEL_M		ICE_M(0x3F, GLGEN_RSTCTL_GRSTDEL_S)
++#define GLGEN_RSTAT_RESET_TYPE_S	2
++#define GLGEN_RSTAT_RESET_TYPE_M	ICE_M(0x3, GLGEN_RSTAT_RESET_TYPE_S)
+ #define GLGEN_RTRIG			0x000B8190
+ #define GLGEN_RTRIG_CORER_S		0
+ #define GLGEN_RTRIG_CORER_M		BIT(GLGEN_RTRIG_CORER_S)
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-new file mode 100644
-index 000000000000..0631812aef2b
---- /dev/null
+index beccce4a9ae2..c8801c1f8f88 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -0,0 +1,172 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
+@@ -43,6 +43,8 @@ MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all)");
+ static struct workqueue_struct *ice_wq;
+ static const struct net_device_ops ice_netdev_ops;
+ 
++static void ice_pf_dis_all_vsi(struct ice_pf *pf);
++static void ice_rebuild(struct ice_pf *pf);
+ static int ice_vsi_release(struct ice_vsi *vsi);
+ 
+ /**
+@@ -228,6 +230,132 @@ static void ice_free_fltr_list(struct device *dev, struct list_head *h)
+ 	}
+ }
+ 
++/**
++ * ice_is_reset_recovery_pending - schedule a reset
++ * @state: pf state field
 + */
-+
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include "ice.h"
-+
-+#define DRV_VERSION	"ice-0.0.1-k"
-+#define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
-+static const char ice_drv_ver[] = DRV_VERSION;
-+static const char ice_driver_string[] = DRV_SUMMARY;
-+static const char ice_copyright[] = "Copyright (c) 2018, Intel Corporation.";
-+
-+MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
-+MODULE_DESCRIPTION(DRV_SUMMARY);
-+MODULE_LICENSE("GPL");
-+MODULE_VERSION(DRV_VERSION);
-+
-+static int debug = -1;
-+module_param(debug, int, 0644);
-+MODULE_PARM_DESC(debug, "netif message level (0=none,...,0x7FFF=all)");
++static bool ice_is_reset_recovery_pending(unsigned long int *state)
++{
++	return test_bit(__ICE_RESET_RECOVERY_PENDING, state);
++}
 +
 +/**
-+ * ice_probe - Device initialization routine
-+ * @pdev: PCI device information struct
-+ * @ent: entry in ice_pci_tbl
++ * ice_prepare_for_reset - prep for the core to reset
++ * @pf: board private structure
 + *
-+ * Returns 0 on success, negative on failure
++ * Inform or close all dependent features in prep for reset.
 + */
-+static int ice_probe(struct pci_dev *pdev,
-+		     const struct pci_device_id __always_unused *ent)
++static void
++ice_prepare_for_reset(struct ice_pf *pf)
 +{
-+	struct ice_pf *pf;
-+	struct ice_hw *hw;
-+	int err;
++	struct ice_hw *hw = &pf->hw;
++	u32 v;
 +
-+	/* this driver uses devres, see Documentation/driver-model/devres.txt */
-+	err = pcim_enable_device(pdev);
-+	if (err)
-+		return err;
++	ice_for_each_vsi(pf, v)
++		if (pf->vsi[v])
++			ice_remove_vsi_fltr(hw, pf->vsi[v]->vsi_num);
 +
-+	err = pcim_iomap_regions(pdev, BIT(ICE_BAR0), pci_name(pdev));
-+	if (err) {
-+		dev_err(&pdev->dev, "I/O map error %d\n", err);
-+		return err;
++	dev_dbg(&pf->pdev->dev, "Tearing down internal switch for reset\n");
++
++	/* disable the VSIs and their queues that are not already DOWN */
++	/* pf_dis_all_vsi modifies netdev structures -rtnl_lock needed */
++	ice_pf_dis_all_vsi(pf);
++
++	ice_for_each_vsi(pf, v)
++		if (pf->vsi[v])
++			pf->vsi[v]->vsi_num = 0;
++
++	ice_shutdown_all_ctrlq(hw);
++}
++
++/**
++ * ice_do_reset - Initiate one of many types of resets
++ * @pf: board private structure
++ * @reset_type: reset type requested
++ * before this function was called.
++ */
++static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
++{
++	struct device *dev = &pf->pdev->dev;
++	struct ice_hw *hw = &pf->hw;
++
++	dev_dbg(dev, "reset_type 0x%x requested\n", reset_type);
++	WARN_ON(in_interrupt());
++
++	/* PFR is a bit of a special case because it doesn't result in an OICR
++	 * interrupt. So for PFR, we prepare for reset, issue the reset and
++	 * rebuild sequentially.
++	 */
++	if (reset_type == ICE_RESET_PFR) {
++		set_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
++		ice_prepare_for_reset(pf);
 +	}
 +
-+	pf = devm_kzalloc(&pdev->dev, sizeof(*pf), GFP_KERNEL);
-+	if (!pf)
-+		return -ENOMEM;
-+
-+	/* set up for high or low dma */
-+	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
-+	if (err)
-+		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
-+	if (err) {
-+		dev_err(&pdev->dev, "DMA configuration failed: 0x%x\n", err);
-+		return err;
++	/* trigger the reset */
++	if (ice_reset(hw, reset_type)) {
++		dev_err(dev, "reset %d failed\n", reset_type);
++		set_bit(__ICE_RESET_FAILED, pf->state);
++		clear_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
++		return;
 +	}
 +
-+	pci_enable_pcie_error_reporting(pdev);
-+	pci_set_master(pdev);
++	if (reset_type == ICE_RESET_PFR) {
++		pf->pfr_count++;
++		ice_rebuild(pf);
++		clear_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
++	}
++}
 +
-+	pf->pdev = pdev;
-+	pci_set_drvdata(pdev, pf);
-+	set_bit(__ICE_DOWN, pf->state);
++/**
++ * ice_reset_subtask - Set up for resetting the device and driver
++ * @pf: board private structure
++ */
++static void ice_reset_subtask(struct ice_pf *pf)
++{
++	enum ice_reset_req reset_type;
 +
-+	hw = &pf->hw;
-+	hw->hw_addr = pcim_iomap_table(pdev)[ICE_BAR0];
-+	hw->back = pf;
-+	hw->vendor_id = pdev->vendor;
-+	hw->device_id = pdev->device;
-+	pci_read_config_byte(pdev, PCI_REVISION_ID, &hw->revision_id);
-+	hw->subsystem_vendor_id = pdev->subsystem_vendor;
-+	hw->subsystem_device_id = pdev->subsystem_device;
-+	hw->bus.device = PCI_SLOT(pdev->devfn);
-+	hw->bus.func = PCI_FUNC(pdev->devfn);
-+	pf->msg_enable = netif_msg_init(debug, ICE_DFLT_NETIF_M);
++	rtnl_lock();
++
++	/* When a CORER/GLOBR/EMPR is about to happen, the hardware triggers an
++	 * OICR interrupt. The OICR handler (ice_misc_intr) determines what
++	 * type of reset happened and sets __ICE_RESET_RECOVERY_PENDING bit in
++	 * pf->state. So if reset/recovery is pending (as indicated by this bit)
++	 * we do a rebuild and return.
++	 */
++	if (ice_is_reset_recovery_pending(pf->state)) {
++		clear_bit(__ICE_GLOBR_RECV, pf->state);
++		clear_bit(__ICE_CORER_RECV, pf->state);
++		ice_prepare_for_reset(pf);
++
++		/* make sure we are ready to rebuild */
++		if (ice_check_reset(&pf->hw))
++			set_bit(__ICE_RESET_FAILED, pf->state);
++		else
++			ice_rebuild(pf);
++		clear_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
++		goto unlock;
++	}
++
++	/* No pending resets to finish processing. Check for new resets */
++	if (test_and_clear_bit(__ICE_GLOBR_REQ, pf->state))
++		reset_type = ICE_RESET_GLOBR;
++	else if (test_and_clear_bit(__ICE_CORER_REQ, pf->state))
++		reset_type = ICE_RESET_CORER;
++	else if (test_and_clear_bit(__ICE_PFR_REQ, pf->state))
++		reset_type = ICE_RESET_PFR;
++	else
++		goto unlock;
++
++	/* reset if not already down or resetting */
++	if (!test_bit(__ICE_DOWN, pf->state) &&
++	    !test_bit(__ICE_CFG_BUSY, pf->state)) {
++		ice_do_reset(pf, reset_type);
++	}
++
++unlock:
++	rtnl_unlock();
++}
++
+ /**
+  * ice_watchdog_subtask - periodic tasks not using event driven scheduling
+  * @pf: board private structure
+@@ -326,6 +454,144 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
+ 		    speed, fc);
+ }
+ 
++/**
++ * ice_init_link_events - enable/initialize link events
++ * @pi: pointer to the port_info instance
++ *
++ * Returns -EIO on failure, 0 on success
++ */
++static int ice_init_link_events(struct ice_port_info *pi)
++{
++	u16 mask;
++
++	mask = ~((u16)(ICE_AQ_LINK_EVENT_UPDOWN | ICE_AQ_LINK_EVENT_MEDIA_NA |
++		       ICE_AQ_LINK_EVENT_MODULE_QUAL_FAIL));
++
++	if (ice_aq_set_event_mask(pi->hw, pi->lport, mask, NULL)) {
++		dev_dbg(ice_hw_to_dev(pi->hw),
++			"Failed to set link event mask for port %d\n",
++			pi->lport);
++		return -EIO;
++	}
++
++	if (ice_aq_get_link_info(pi, true, NULL, NULL)) {
++		dev_dbg(ice_hw_to_dev(pi->hw),
++			"Failed to enable link events for port %d\n",
++			pi->lport);
++		return -EIO;
++	}
 +
 +	return 0;
 +}
 +
 +/**
-+ * ice_remove - Device removal routine
-+ * @pdev: PCI device information struct
++ * ice_vsi_link_event - update the vsi's netdev
++ * @vsi: the vsi on which the link event occurred
++ * @link_up: whether or not the vsi needs to be set up or down
 + */
-+static void ice_remove(struct pci_dev *pdev)
++static void ice_vsi_link_event(struct ice_vsi *vsi, bool link_up)
 +{
-+	struct ice_pf *pf = pci_get_drvdata(pdev);
-+
-+	if (!pf)
++	if (!vsi || test_bit(__ICE_DOWN, vsi->state))
 +		return;
 +
-+	set_bit(__ICE_DOWN, pf->state);
-+	pci_disable_pcie_error_reporting(pdev);
++	if (vsi->type == ICE_VSI_PF) {
++		if (!vsi->netdev) {
++			dev_dbg(&vsi->back->pdev->dev,
++				"vsi->netdev is not initialized!\n");
++			return;
++		}
++		if (link_up) {
++			netif_carrier_on(vsi->netdev);
++			netif_tx_wake_all_queues(vsi->netdev);
++		} else {
++			netif_carrier_off(vsi->netdev);
++			netif_tx_stop_all_queues(vsi->netdev);
++		}
++	}
 +}
 +
-+/* ice_pci_tbl - PCI Device ID Table
++/**
++ * ice_link_event - process the link event
++ * @pf: pf that the link event is associated with
++ * @pi: port_info for the port that the link event is associated with
 + *
-+ * Wildcard entries (PCI_ANY_ID) should come last
-+ * Last entry must be all 0s
-+ *
-+ * { Vendor ID, Device ID, SubVendor ID, SubDevice ID,
-+ *   Class, Class Mask, private data (not used) }
++ * Returns -EIO if ice_get_link_status() fails
++ * Returns 0 on success
 + */
-+static const struct pci_device_id ice_pci_tbl[] = {
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_BACKPLANE), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_QSFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_SFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_10G_BASE_T), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_SGMII), 0 },
-+	/* required last entry */
-+	{ 0, }
-+};
-+MODULE_DEVICE_TABLE(pci, ice_pci_tbl);
++static int
++ice_link_event(struct ice_pf *pf, struct ice_port_info *pi)
++{
++	u8 new_link_speed, old_link_speed;
++	struct ice_phy_info *phy_info;
++	bool new_link_same_as_old;
++	bool new_link, old_link;
++	u8 lport;
++	u16 v;
 +
-+static struct pci_driver ice_driver = {
-+	.name = KBUILD_MODNAME,
-+	.id_table = ice_pci_tbl,
-+	.probe = ice_probe,
-+	.remove = ice_remove,
-+};
++	phy_info = &pi->phy;
++	phy_info->link_info_old = phy_info->link_info;
++	/* Force ice_get_link_status() to update link info */
++	phy_info->get_link_info = true;
++
++	old_link = (phy_info->link_info_old.link_info & ICE_AQ_LINK_UP);
++	old_link_speed = phy_info->link_info_old.link_speed;
++
++	lport = pi->lport;
++	if (ice_get_link_status(pi, &new_link)) {
++		dev_dbg(&pf->pdev->dev,
++			"Could not get link status for port %d\n", lport);
++		return -EIO;
++	}
++
++	new_link_speed = phy_info->link_info.link_speed;
++
++	new_link_same_as_old = (new_link == old_link &&
++				new_link_speed == old_link_speed);
++
++	ice_for_each_vsi(pf, v) {
++		struct ice_vsi *vsi = pf->vsi[v];
++
++		if (!vsi || !vsi->port_info)
++			continue;
++
++		if (new_link_same_as_old &&
++		    (test_bit(__ICE_DOWN, vsi->state) ||
++		    new_link == netif_carrier_ok(vsi->netdev)))
++			continue;
++
++		if (vsi->port_info->lport == lport) {
++			ice_print_link_msg(vsi, new_link);
++			ice_vsi_link_event(vsi, new_link);
++		}
++	}
++
++	return 0;
++}
 +
 +/**
-+ * ice_module_init - Driver registration routine
++ * ice_handle_link_event - handle link event via ARQ
++ * @pf: pf that the link event is associated with
 + *
-+ * ice_module_init is the first routine called when the driver is
-+ * loaded. All it does is register with the PCI subsystem.
++ * Return -EINVAL if port_info is null
++ * Return status on succes
 + */
-+static int __init ice_module_init(void)
++static int ice_handle_link_event(struct ice_pf *pf)
 +{
++	struct ice_port_info *port_info;
 +	int status;
 +
-+	pr_info("%s - version %s\n", ice_driver_string, ice_drv_ver);
-+	pr_info("%s\n", ice_copyright);
++	port_info = pf->hw.port_info;
++	if (!port_info)
++		return -EINVAL;
 +
-+	status = pci_register_driver(&ice_driver);
++	status = ice_link_event(pf, port_info);
 +	if (status)
-+		pr_err("failed to register pci driver, err %d\n", status);
++		dev_dbg(&pf->pdev->dev,
++			"Could not process link event, error %d\n", status);
 +
 +	return status;
 +}
-+module_init(ice_module_init);
++
+ /**
+  * __ice_clean_ctrlq - helper function to clean controlq rings
+  * @pf: ptr to struct ice_pf
+@@ -340,6 +606,10 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
+ 	const char *qtype;
+ 	u32 oldval, val;
+ 
++	/* Do not clean control queue if/when PF reset fails */
++	if (test_bit(__ICE_RESET_FAILED, pf->state))
++		return 0;
++
+ 	switch (q_type) {
+ 	case ICE_CTL_Q_ADMIN:
+ 		cq = &hw->adminq;
+@@ -406,6 +676,7 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
+ 
+ 	do {
+ 		enum ice_status ret;
++		u16 opcode;
+ 
+ 		ret = ice_clean_rq_elem(hw, cq, &event, &pending);
+ 		if (ret == ICE_ERR_AQ_NO_WORK)
+@@ -416,6 +687,21 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
+ 				ret);
+ 			break;
+ 		}
++
++		opcode = le16_to_cpu(event.desc.opcode);
++
++		switch (opcode) {
++		case ice_aqc_opc_get_link_status:
++			if (ice_handle_link_event(pf))
++				dev_err(&pf->pdev->dev,
++					"Could not handle link event");
++			break;
++		default:
++			dev_dbg(&pf->pdev->dev,
++				"%s Receive Queue unknown event 0x%04x ignored\n",
++				qtype, opcode);
++			break;
++		}
+ 	} while (pending && (i++ < ICE_DFLT_IRQ_WORK));
+ 
+ 	devm_kfree(&pf->pdev->dev, event.msg_buf);
+@@ -495,6 +781,17 @@ static void ice_service_task(struct work_struct *work)
+ 	unsigned long start_time = jiffies;
+ 
+ 	/* subtasks */
++
++	/* process reset requests first */
++	ice_reset_subtask(pf);
++
++	/* bail if a reset/recovery cycle is pending */
++	if (ice_is_reset_recovery_pending(pf->state) ||
++	    test_bit(__ICE_SUSPENDED, pf->state)) {
++		ice_service_task_complete(pf);
++		return;
++	}
++
+ 	ice_watchdog_subtask(pf);
+ 	ice_clean_adminq_subtask(pf);
+ 
+@@ -1220,6 +1517,37 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+ 	if (!(oicr & PFINT_OICR_INTEVENT_M))
+ 		goto ena_intr;
+ 
++	if (oicr & PFINT_OICR_GRST_M) {
++		u32 reset;
++		/* we have a reset warning */
++		ena_mask &= ~PFINT_OICR_GRST_M;
++		reset = (rd32(hw, GLGEN_RSTAT) & GLGEN_RSTAT_RESET_TYPE_M) >>
++			GLGEN_RSTAT_RESET_TYPE_S;
++
++		if (reset == ICE_RESET_CORER)
++			pf->corer_count++;
++		else if (reset == ICE_RESET_GLOBR)
++			pf->globr_count++;
++		else
++			pf->empr_count++;
++
++		/* If a reset cycle isn't already in progress, we set a bit in
++		 * pf->state so that the service task can start a reset/rebuild.
++		 * We also make note of which reset happened so that peer
++		 * devices/drivers can be informed.
++		 */
++		if (!test_bit(__ICE_RESET_RECOVERY_PENDING, pf->state)) {
++			if (reset == ICE_RESET_CORER)
++				set_bit(__ICE_CORER_RECV, pf->state);
++			else if (reset == ICE_RESET_GLOBR)
++				set_bit(__ICE_GLOBR_RECV, pf->state);
++			else
++				set_bit(__ICE_EMPR_RECV, pf->state);
++
++			set_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
++		}
++	}
++
+ 	if (oicr & PFINT_OICR_HMC_ERR_M) {
+ 		ena_mask &= ~PFINT_OICR_HMC_ERR_M;
+ 		dev_dbg(&pf->pdev->dev,
+@@ -1238,9 +1566,10 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+ 		 */
+ 		if (oicr & (PFINT_OICR_PE_CRITERR_M |
+ 			    PFINT_OICR_PCI_EXCEPTION_M |
+-			    PFINT_OICR_ECC_ERR_M))
++			    PFINT_OICR_ECC_ERR_M)) {
+ 			set_bit(__ICE_PFR_REQ, pf->state);
+-
++			ice_service_task_schedule(pf);
++		}
+ 		ena_mask &= ~oicr;
+ 	}
+ 	ret = IRQ_HANDLED;
+@@ -1496,6 +1825,13 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+ 			 dev_driver_string(&pf->pdev->dev),
+ 			 dev_name(&pf->pdev->dev));
+ 
++	/* Do not request IRQ but do enable OICR interrupt since settings are
++	 * lost during reset. Note that this function is called only during
++	 * rebuild path and not while reset is in progress.
++	 */
++	if (ice_is_reset_recovery_pending(pf->state))
++		goto skip_req_irq;
++
+ 	/* reserve one vector in irq_tracker for misc interrupts */
+ 	oicr_idx = ice_get_res(pf, pf->irq_tracker, 1, ICE_RES_MISC_VEC_ID);
+ 	if (oicr_idx < 0)
+@@ -1514,6 +1850,7 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+ 		return err;
+ 	}
+ 
++skip_req_irq:
+ 	ice_ena_misc_vector(pf);
+ 
+ 	val = (pf->oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
+@@ -2079,6 +2416,100 @@ static int ice_vsi_cfg_rss(struct ice_vsi *vsi)
+ 	return err;
+ }
+ 
++/**
++ * ice_vsi_reinit_setup - return resource and reallocate resource for a VSI
++ * @vsi: pointer to the ice_vsi
++ *
++ * This reallocates the VSIs queue resources
++ *
++ * Returns 0 on success and negative value on failure
++ */
++static int ice_vsi_reinit_setup(struct ice_vsi *vsi)
++{
++	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
++	int ret, i;
++
++	if (!vsi)
++		return -EINVAL;
++
++	ice_vsi_free_q_vectors(vsi);
++	ice_free_res(vsi->back->irq_tracker, vsi->base_vector, vsi->idx);
++	vsi->base_vector = 0;
++	ice_vsi_clear_rings(vsi);
++	ice_vsi_free_arrays(vsi, false);
++	ice_vsi_set_num_qs(vsi);
++
++	/* Initialize VSI struct elements and create VSI in FW */
++	ret = ice_vsi_add(vsi);
++	if (ret < 0)
++		goto err_vsi;
++
++	ret = ice_vsi_alloc_arrays(vsi, false);
++	if (ret < 0)
++		goto err_vsi;
++
++	switch (vsi->type) {
++	case ICE_VSI_PF:
++		if (!vsi->netdev) {
++			ret = ice_cfg_netdev(vsi);
++			if (ret)
++				goto err_rings;
++
++			ret = register_netdev(vsi->netdev);
++			if (ret)
++				goto err_rings;
++
++			netif_carrier_off(vsi->netdev);
++			netif_tx_stop_all_queues(vsi->netdev);
++		}
++
++		ret = ice_vsi_alloc_q_vectors(vsi);
++		if (ret)
++			goto err_rings;
++
++		ret = ice_vsi_setup_vector_base(vsi);
++		if (ret)
++			goto err_vectors;
++
++		ret = ice_vsi_alloc_rings(vsi);
++		if (ret)
++			goto err_vectors;
++
++		ice_vsi_map_rings_to_vectors(vsi);
++		break;
++	default:
++		break;
++	}
++
++	ice_vsi_set_tc_cfg(vsi);
++
++	/* configure VSI nodes based on number of queues and TC's */
++	for (i = 0; i < vsi->tc_cfg.numtc; i++)
++		max_txqs[i] = vsi->num_txq;
++
++	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->vsi_num,
++			      vsi->tc_cfg.ena_tc, max_txqs);
++	if (ret) {
++		dev_info(&vsi->back->pdev->dev,
++			 "Failed VSI lan queue config\n");
++		goto err_vectors;
++	}
++	return 0;
++
++err_vectors:
++	ice_vsi_free_q_vectors(vsi);
++err_rings:
++	if (vsi->netdev) {
++		unregister_netdev(vsi->netdev);
++		free_netdev(vsi->netdev);
++		vsi->netdev = NULL;
++	}
++err_vsi:
++	ice_vsi_clear(vsi);
++	set_bit(__ICE_RESET_FAILED, vsi->back->state);
++	return ret;
++}
++
+ /**
+  * ice_vsi_setup - Set up a VSI by a given type
+  * @pf: board private structure
+@@ -2354,10 +2785,17 @@ static int ice_setup_pf_sw(struct ice_pf *pf)
+ 	struct ice_vsi *vsi;
+ 	int status = 0;
+ 
+-	vsi = ice_vsi_setup(pf, ICE_VSI_PF, pf->hw.port_info);
+-	if (!vsi) {
+-		status = -ENOMEM;
+-		goto error_exit;
++	if (!ice_is_reset_recovery_pending(pf->state)) {
++		vsi = ice_vsi_setup(pf, ICE_VSI_PF, pf->hw.port_info);
++		if (!vsi) {
++			status = -ENOMEM;
++			goto error_exit;
++		}
++	} else {
++		vsi = pf->vsi[0];
++		status = ice_vsi_reinit_setup(vsi);
++		if (status < 0)
++			return -EIO;
+ 	}
+ 
+ 	/* tmp_add_list contains a list of MAC addresses for which MAC
+@@ -2746,6 +3184,12 @@ static int ice_probe(struct pci_dev *pdev,
+ 	/* since everything is good, start the service timer */
+ 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
+ 
++	err = ice_init_link_events(pf->hw.port_info);
++	if (err) {
++		dev_err(&pdev->dev, "ice_init_link_events failed: %d\n", err);
++		goto err_alloc_sw_unroll;
++	}
++
+ 	return 0;
+ 
+ err_alloc_sw_unroll:
+@@ -4229,6 +4673,131 @@ static int ice_vsi_release(struct ice_vsi *vsi)
+ 	return 0;
+ }
+ 
++/**
++ * ice_dis_vsi - pause a VSI
++ * @vsi: the VSI being paused
++ */
++static void ice_dis_vsi(struct ice_vsi *vsi)
++{
++	if (test_bit(__ICE_DOWN, vsi->state))
++		return;
++
++	set_bit(__ICE_NEEDS_RESTART, vsi->state);
++
++	if (vsi->netdev && netif_running(vsi->netdev) &&
++	    vsi->type == ICE_VSI_PF)
++		vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
++
++	ice_vsi_close(vsi);
++}
 +
 +/**
-+ * ice_module_exit - Driver exit cleanup routine
-+ *
-+ * ice_module_exit is called just before the driver is removed
-+ * from memory.
++ * ice_ena_vsi - resume a VSI
++ * @vsi: the VSI being resume
 + */
-+static void __exit ice_module_exit(void)
++static void ice_ena_vsi(struct ice_vsi *vsi)
 +{
-+	pci_unregister_driver(&ice_driver);
-+	pr_info("module unloaded\n");
++	if (!test_and_clear_bit(__ICE_NEEDS_RESTART, vsi->state))
++		return;
++
++	if (vsi->netdev && netif_running(vsi->netdev))
++		vsi->netdev->netdev_ops->ndo_open(vsi->netdev);
++	else if (ice_vsi_open(vsi))
++		/* this clears the DOWN bit */
++		dev_dbg(&vsi->back->pdev->dev, "Failed open VSI 0x%04X on switch 0x%04X\n",
++			vsi->vsi_num, vsi->vsw->sw_id);
 +}
-+module_exit(ice_module_exit);
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-new file mode 100644
-index 000000000000..ad01e5f73d2c
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -0,0 +1,42 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
++
++/**
++ * ice_pf_dis_all_vsi - Pause all VSIs on a PF
++ * @pf: the PF
 + */
++static void ice_pf_dis_all_vsi(struct ice_pf *pf)
++{
++	int v;
 +
-+#ifndef _ICE_TYPE_H_
-+#define _ICE_TYPE_H_
++	ice_for_each_vsi(pf, v)
++		if (pf->vsi[v])
++			ice_dis_vsi(pf->vsi[v]);
++}
 +
-+/* Bus parameters */
-+struct ice_bus_info {
-+	u16 device;
-+	u8 func;
-+};
++/**
++ * ice_pf_ena_all_vsi - Resume all VSIs on a PF
++ * @pf: the PF
++ */
++static void ice_pf_ena_all_vsi(struct ice_pf *pf)
++{
++	int v;
 +
-+/* Port hardware description */
-+struct ice_hw {
-+	u8 __iomem *hw_addr;
-+	void *back;
++	ice_for_each_vsi(pf, v)
++		if (pf->vsi[v])
++			ice_ena_vsi(pf->vsi[v]);
++}
 +
-+	/* pci info */
-+	u16 device_id;
-+	u16 vendor_id;
-+	u16 subsystem_device_id;
-+	u16 subsystem_vendor_id;
-+	u8 revision_id;
++/**
++ * ice_rebuild - rebuild after reset
++ * @pf: pf to rebuild
++ */
++static void ice_rebuild(struct ice_pf *pf)
++{
++	struct device *dev = &pf->pdev->dev;
++	struct ice_hw *hw = &pf->hw;
++	enum ice_status ret;
++	int err;
 +
-+	struct ice_bus_info bus;
-+};
++	if (test_bit(__ICE_DOWN, pf->state))
++		goto clear_recovery;
 +
-+#endif /* _ICE_TYPE_H_ */
++	dev_dbg(dev, "rebuilding pf\n");
++
++	ret = ice_init_all_ctrlq(hw);
++	if (ret) {
++		dev_err(dev, "control queues init failed %d\n", ret);
++		goto fail_reset;
++	}
++
++	ret = ice_clear_pf_cfg(hw);
++	if (ret) {
++		dev_err(dev, "clear PF configuration failed %d\n", ret);
++		goto fail_reset;
++	}
++
++	ice_clear_pxe_mode(hw);
++
++	ret = ice_get_caps(hw);
++	if (ret) {
++		dev_err(dev, "ice_get_caps failed %d\n", ret);
++		goto fail_reset;
++	}
++
++	/* basic nic switch setup */
++	err = ice_setup_pf_sw(pf);
++	if (err) {
++		dev_err(dev, "ice_setup_pf_sw failed\n");
++		goto fail_reset;
++	}
++
++	/* start misc vector */
++	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags)) {
++		err = ice_req_irq_msix_misc(pf);
++		if (err) {
++			dev_err(dev, "misc vector setup failed: %d\n", err);
++			goto fail_reset;
++		}
++	}
++
++	/* restart the VSIs that were rebuilt and running before the reset */
++	ice_pf_ena_all_vsi(pf);
++
++	return;
++
++fail_reset:
++	ice_shutdown_all_ctrlq(hw);
++	set_bit(__ICE_RESET_FAILED, pf->state);
++clear_recovery:
++	set_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
++}
++
+ /**
+  * ice_set_rss - Set RSS keys and lut
+  * @vsi: Pointer to VSI structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 019c124c6240..fa6c84849282 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -31,6 +31,7 @@ static inline bool ice_is_tc_ena(u8 bitmap, u8 tc)
+ 
+ /* debug masks - set these bits in hw->debug_mask to control output */
+ #define ICE_DBG_INIT		BIT_ULL(1)
++#define ICE_DBG_LINK		BIT_ULL(4)
+ #define ICE_DBG_QCTX		BIT_ULL(6)
+ #define ICE_DBG_NVM		BIT_ULL(7)
+ #define ICE_DBG_LAN		BIT_ULL(8)
 -- 
 2.14.3
 
