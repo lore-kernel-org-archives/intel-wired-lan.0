@@ -1,98 +1,220 @@
-From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
-Date: Thu, 8 Mar 2018 15:58:59 -0800
-Subject: [Intel-wired-lan] [RFC v3 net-next 00/18] Time based packet
- transmission
-In-Reply-To: <20180308225436.6ipei445l5eug3q6@icarus.home.austad.us>
-References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
- <20180308140904.GA28001@sisyphus.home.austad.us>
- <2a8f5476-0236-c379-f180-68c5b956dea3@intel.com>
- <20180308225436.6ipei445l5eug3q6@icarus.home.austad.us>
-Message-ID: <0307c7bd-5208-9c8b-9eb0-4c4b7fdaeb31@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 09 Mar 2018 17:21:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ afe8c702a4df8e0b6d3d725a03fb3b69870d78a8
+Message-ID: <5aa2521c.Ol4WHL9vEsO2fEAB%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: afe8c702a4df8e0b6d3d725a03fb3b69870d78a8  i40e: restore TCPv4 input set when re-enabling ATR
+
+TIMEOUT after 608m
 
 
-On 03/08/2018 02:54 PM, Henrik Austad wrote:
-> Just looking at the timestamp when the frames were received. They should be 
-> sent at regular intervals if I read udp_tai.c correctly, so the assumption 
-> was that the timestamp from tcpdump should give an inkling to how well it 
-> worked.
-> 
-> I set it up to send a frame every 10ms and computed the diff between each 
-> UDP packet received. Nothing fancy, just tcpdump and grep for the 
-> timestamp and look at the distribution.
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
 
-Ok, I see it now. Just as a reference, this is how I've been running tcpdump on
-my tests:
+configs timed out: 43
 
-$ tcpdump -i enp3s0 -w foo.pcap -j adapter_unsynced \
-	-tt --time-stamp-precision=nano udp port 7788 -c 10000
+alpha                            allmodconfig
+alpha                            allyesconfig
+arm                            customconfig-0
+arm                            customconfig-1
+arm                            customconfig-2
+arm64                          customconfig-0
+arm64                          customconfig-1
+arm64                          customconfig-2
+blackfin                         allmodconfig
+blackfin                         allyesconfig
+cris                             allmodconfig
+cris                             allyesconfig
+i386                           customconfig-0
+i386                           customconfig-1
+i386                           customconfig-2
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+mips                             allmodconfig
+mips                             allyesconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+s390                             allmodconfig
+s390                             allyesconfig
+sh                               allmodconfig
+sh                               allyesconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+sparc64                          allmodconfig
+sparc64                          allyesconfig
+tile                             allmodconfig
+tile                             allyesconfig
+x86_64                           allyesconfig
+x86_64                         customconfig-0
+x86_64                         customconfig-1
+x86_64                         customconfig-2
+x86_64                              federa-25
+x86_64                                    lkp
+xtensa                           allmodconfig
+xtensa                           allyesconfig
 
+configs tested: 145
 
-> 
->>> I have to dig more into why this is happening, a lot frames delayed much 
->>> more than I'd expect, but at this stage I'm pretty sure this is pebkac. One 
->>> obvious fix is move some hw around and do a direct link, but I didn't have 
->>> time for that right now.
->>>
->>> I'm very interested in doing what Richard's original test was when he used 
->>> ptp-synched clocks and also used hw receive-time and compared with expected 
->>> tx-time. So, while I'm getting that up and running, I thought I should 
->>> share the early results.
->>
->> Sure, thanks. Which delta and clockid are you using, please?
-> 
-> I used the example provided in -00,
-> 
-> tc qdisc replace dev eth2 parent root handle 100 mqprio num_tc 3 \
->  map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 queues 1 at 0 1 at 1 2 at 2 hw 0
-> 
-> tc qdisc add dev eth2 parent 100:1 tbs offload delta 100000 clockid \
->  CLOCK_REALTIME sorting
-
-
-The delta value is highly dependent on the system. I recommend playing around
-with it a bit before running long tests. On my KabyLake desktop I noticed that
-150us is quite reliable value, for example. (same kernel as yours, and no
-preempt-rt applied) But that is not the issue here it seems.
-
-
-
-> 
->> Also, was this clock synchronized to the PHC? You need that for hw offload with
->> sorting enabled.
-> 
-> Hmm, good point, no, NIC clock was not synchronized, I'll do that in the 
-> next round for both sender and receiver!
-
-Oh, then you need to get that setup first. Here I synchronize both PHCs over the
-network first with ptp4l:
-
-Rx) $ ptp4l --summary_interval=3 -i enp3s0 -m -2
-Tx) $ ptp4l --summary_interval=3 -i enp3s0 -s -m -2 &
-
-My Rx is the PTP master and the Tx is the PTP slave.
-Then I synchronize the PHC to the system clock on the Tx side only:
-
-Tx) $ phc2sys -a -r -r -u 8 &
-
-
-And udp_tai is using CLOCK_REALTIME. The UTC vs TAI 37s offset makes no
-difference for this test specifically because I compensate for it when
-calculating the offsets on the Rx side.
-
-For the next patchset version I will be providing a more complete set of testing
-instructions. I hope that helps for now.
-
+cris                 etrax-100lx_v2_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-x015-201809
+i386                   randconfig-x019-201809
+i386                   randconfig-x010-201809
+i386                   randconfig-x014-201809
+i386                   randconfig-x016-201809
+i386                   randconfig-x011-201809
+i386                   randconfig-x012-201809
+i386                   randconfig-x017-201809
+i386                   randconfig-x013-201809
+i386                   randconfig-x018-201809
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201809
+i386                     randconfig-i0-201809
+i386                     randconfig-i1-201809
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                                   samsung
+arm                        mvebu_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       imx_v6_v7_defconfig
+arm64                            allmodconfig
+arm                           tegra_defconfig
+arm                                      arm5
+arm64                            alldefconfig
+arm                                        sh
+arm                                     arm67
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-a1-201809
+i386                     randconfig-a0-201809
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+x86_64                 randconfig-x017-201809
+x86_64                 randconfig-x013-201809
+x86_64                 randconfig-x016-201809
+x86_64                 randconfig-x018-201809
+x86_64                 randconfig-x012-201809
+x86_64                 randconfig-x015-201809
+x86_64                 randconfig-x014-201809
+x86_64                 randconfig-x011-201809
+x86_64                 randconfig-x010-201809
+x86_64                 randconfig-x019-201809
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s0-201809
+i386                     randconfig-s1-201809
+i386                               tinyconfig
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201809
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+i386                   randconfig-x079-201809
+i386                   randconfig-x071-201809
+i386                   randconfig-x077-201809
+i386                   randconfig-x072-201809
+i386                   randconfig-x076-201809
+i386                   randconfig-x074-201809
+i386                   randconfig-x078-201809
+i386                   randconfig-x073-201809
+i386                   randconfig-x070-201809
+i386                   randconfig-x075-201809
+i386                   randconfig-x004-201809
+i386                   randconfig-x002-201809
+i386                   randconfig-x007-201809
+i386                   randconfig-x009-201809
+i386                   randconfig-x003-201809
+i386                   randconfig-x001-201809
+i386                   randconfig-x008-201809
+i386                   randconfig-x006-201809
+i386                   randconfig-x005-201809
+i386                   randconfig-x000-201809
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x000-201809
+x86_64                 randconfig-x005-201809
+x86_64                 randconfig-x008-201809
+x86_64                 randconfig-x001-201809
+x86_64                 randconfig-x006-201809
+x86_64                 randconfig-x007-201809
+x86_64                 randconfig-x009-201809
+x86_64                 randconfig-x002-201809
+x86_64                 randconfig-x003-201809
+x86_64                 randconfig-x004-201809
 
 Thanks,
-Jesus
-
-
-
-
+Fengguang
