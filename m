@@ -1,1254 +1,989 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  9 Mar 2018 09:21:34 -0800
-Subject: [Intel-wired-lan] [PATCH 13/15] ice: Update Tx scheduler tree for
- VSI multi-Tx queue support
+Date: Fri,  9 Mar 2018 09:21:36 -0800
+Subject: [Intel-wired-lan] [PATCH 15/15] ice: Implement filter sync,
+ NDO operations and bump version
 In-Reply-To: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
 References: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180309172136.9073-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20180309172136.9073-16-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds the ability for a VSI to use multiple Tx queues. More
-specifically, the patch
-    1) Provides the ability to update the Tx scheduler tree in the
-       firmware. The driver can configure the Tx scheduler tree by
-       adding/removing multiple Tx queues per TC per VSI.
+This patch implements multiple pieces of functionality:
 
-    2) Allows a VSI to reconfigure its Tx queues during runtime.
+1. Added ice_vsi_sync_filters, which is called through the service task
+   to push filter updates to the hardware.
 
-    3) Synchronizes the Tx scheduler update operations using locks.
+2. Add support to enable/disable promiscuous mode on an interface.
+   Enabling/disabling promiscuous mode on an interface results in
+   addition/removal of a promisc filter rule through ice_vsi_sync_filters.
+
+3. Implement handlers for ndo_set_mac_address, ndo_change_mtu,
+   ndo_poll_controller and ndo_set_rx_mode.
+
+This patch also marks the end of the driver addition by bumping up the
+driver version.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h            |   7 +
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  28 +
- drivers/net/ethernet/intel/ice/ice_common.c     |  54 ++
+ drivers/net/ethernet/intel/ice/ice.h            |  14 +
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  21 +
+ drivers/net/ethernet/intel/ice/ice_common.c     |  28 ++
  drivers/net/ethernet/intel/ice/ice_common.h     |   3 +
- drivers/net/ethernet/intel/ice/ice_main.c       |  20 +-
- drivers/net/ethernet/intel/ice/ice_sched.c      | 886 ++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_sched.h      |   4 +
- drivers/net/ethernet/intel/ice/ice_type.h       |   7 +
- 8 files changed, 1006 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h  |  12 +
+ drivers/net/ethernet/intel/ice/ice_main.c       | 567 +++++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_switch.c     |  77 ++++
+ drivers/net/ethernet/intel/ice/ice_switch.h     |   2 +
+ drivers/net/ethernet/intel/ice/ice_type.h       |   5 +
+ 9 files changed, 728 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index c09921d43f7a..c32dc36a9801 100644
+index e2d4b4de1f1d..55dbe9ffee56 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -56,6 +56,7 @@ extern const char ice_drv_ver[];
- #define ICE_MIN_NUM_DESC	8
- #define ICE_MAX_NUM_DESC	8160
- #define ICE_REQ_DESC_MULTIPLE	32
-+#define ICE_DFLT_TRAFFIC_CLASS	BIT(0)
- #define ICE_INT_NAME_STR_LEN	(IFNAMSIZ + 16)
- #define ICE_ETHTOOL_FWVER_LEN	32
- #define ICE_AQ_LEN		64
-@@ -275,6 +276,12 @@ static inline void ice_irq_dynamic_ena(struct ice_hw *hw, struct ice_vsi *vsi,
- 	wr32(hw, GLINT_DYN_CTL(vector), val);
- }
- 
-+static inline void ice_vsi_set_tc_cfg(struct ice_vsi *vsi)
-+{
-+	vsi->tc_cfg.ena_tc =  ICE_DFLT_TRAFFIC_CLASS;
-+	vsi->tc_cfg.numtc = 1;
-+}
-+
- void ice_set_ethtool_ops(struct net_device *netdev);
- void ice_update_pf_stats(struct ice_pf *pf);
- void ice_update_vsi_stats(struct ice_vsi *vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 2c8d8533f87d..62509635fc5e 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -645,6 +645,25 @@ struct ice_aqc_get_topo {
- 	__le32 addr_low;
+@@ -138,11 +138,20 @@ enum ice_state {
+ 	__ICE_SUSPENDED,		/* set on module remove path */
+ 	__ICE_RESET_FAILED,		/* set by reset/rebuild */
+ 	__ICE_ADMINQ_EVENT_PENDING,
++	__ICE_FLTR_OVERFLOW_PROMISC,
+ 	__ICE_CFG_BUSY,
+ 	__ICE_SERVICE_SCHED,
+ 	__ICE_STATE_NBITS		/* must be last */
  };
  
-+/* Update TSE (indirect 0x0403)
-+ * Get TSE (indirect 0x0404)
-+ */
-+struct ice_aqc_get_cfg_elem {
-+	__le16 num_elem_req;	/* Used by commands */
-+	__le16 num_elem_resp;	/* Used by responses */
-+	__le32 reserved;
++enum ice_vsi_flags {
++	ICE_VSI_FLAG_UMAC_FLTR_CHANGED,
++	ICE_VSI_FLAG_MMAC_FLTR_CHANGED,
++	ICE_VSI_FLAG_VLAN_FLTR_CHANGED,
++	ICE_VSI_FLAG_PROMISC_CHANGED,
++	ICE_VSI_FLAG_NBITS		/* must be last */
++};
++
+ /* struct that defines a VSI, associated with a dev */
+ struct ice_vsi {
+ 	struct net_device *netdev;
+@@ -157,7 +166,9 @@ struct ice_vsi {
+ 
+ 	u64 tx_linearize;
+ 	DECLARE_BITMAP(state, __ICE_STATE_NBITS);
++	DECLARE_BITMAP(flags, ICE_VSI_FLAG_NBITS);
+ 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
++	unsigned int current_netdev_flags;
+ 	u32 tx_restart;
+ 	u32 tx_busy;
+ 	u32 rx_buf_failed;
+@@ -189,6 +200,9 @@ struct ice_vsi {
+ 	struct ice_eth_stats eth_stats;
+ 	struct ice_eth_stats eth_stats_prev;
+ 
++	struct list_head tmp_sync_list;		/* MAC filters to be synced */
++	struct list_head tmp_unsync_list;	/* MAC filters to be unsynced */
++
+ 	bool irqs_ready;
+ 	bool current_isup;		 /* Sync 'link up' logging */
+ 	bool stat_offsets_loaded;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 8cade22c1cf6..fc19c287ebc5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -149,6 +149,24 @@ struct ice_aqc_manage_mac_read_resp {
+ 	u8 mac_addr[ETH_ALEN];
+ };
+ 
++/* Manage MAC address, write command - direct (0x0108) */
++struct ice_aqc_manage_mac_write {
++	u8 port_num;
++	u8 flags;
++#define ICE_AQC_MAN_MAC_WR_MC_MAG_EN		BIT(0)
++#define ICE_AQC_MAN_MAC_WR_WOL_LAA_PFR_KEEP	BIT(1)
++#define ICE_AQC_MAN_MAC_WR_S		6
++#define ICE_AQC_MAN_MAC_WR_M		(3 << ICE_AQC_MAN_MAC_WR_S)
++#define ICE_AQC_MAN_MAC_UPDATE_LAA	0
++#define ICE_AQC_MAN_MAC_UPDATE_LAA_WOL	(BIT(0) << ICE_AQC_MAN_MAC_WR_S)
++	/* High 16 bits of MAC address in big endian order */
++	__be16 sah;
++	/* Low 32 bits of MAC address in big endian order */
++	__be32 sal;
 +	__le32 addr_high;
 +	__le32 addr_low;
 +};
 +
-+/* This is the buffer for:
-+ * Suspend Nodes (indirect 0x0409)
-+ * Resume Nodes (indirect 0x040A)
-+ */
-+struct ice_aqc_suspend_resume_elem {
-+	__le32 teid[1];
-+};
-+
- /* Add TSE (indirect 0x0401)
-  * Delete TSE (indirect 0x040F)
-  * Move TSE (indirect 0x0408)
-@@ -705,6 +724,11 @@ struct ice_aqc_txsched_topo_grp_info_hdr {
- 	__le16 reserved2;
+ /* Clear PXE Command and response (direct 0x0110) */
+ struct ice_aqc_clear_pxe {
+ 	u8 rx_cnt;
+@@ -1228,6 +1246,7 @@ struct ice_aq_desc {
+ 		struct ice_aqc_q_shutdown q_shutdown;
+ 		struct ice_aqc_req_res res_owner;
+ 		struct ice_aqc_manage_mac_read mac_read;
++		struct ice_aqc_manage_mac_write mac_write;
+ 		struct ice_aqc_clear_pxe clear_pxe;
+ 		struct ice_aqc_list_caps get_cap;
+ 		struct ice_aqc_get_phy_caps get_phy;
+@@ -1272,6 +1291,7 @@ enum ice_aq_err {
+ 	ICE_AQ_RC_ENOMEM	= 9,  /* Out of memory */
+ 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
+ 	ICE_AQ_RC_EEXIST	= 13, /* object already exists */
++	ICE_AQ_RC_ENOSPC	= 16, /* No space left or allocation failure */
  };
  
-+struct ice_aqc_add_elem {
-+	struct ice_aqc_txsched_topo_grp_info_hdr hdr;
-+	struct ice_aqc_txsched_elem_data generic[1];
-+};
-+
- struct ice_aqc_get_topo_elem {
- 	struct ice_aqc_txsched_topo_grp_info_hdr hdr;
- 	struct ice_aqc_txsched_elem_data
-@@ -1195,6 +1219,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_get_sw_cfg get_sw_conf;
- 		struct ice_aqc_sw_rules sw_rules;
- 		struct ice_aqc_get_topo get_topo;
-+		struct ice_aqc_get_cfg_elem get_update_elem;
- 		struct ice_aqc_query_txsched_res query_sched_res;
- 		struct ice_aqc_add_move_delete_elem add_move_delete_elem;
- 		struct ice_aqc_nvm nvm;
-@@ -1272,6 +1297,9 @@ enum ice_adminq_opc {
+ /* Admin Queue command opcodes */
+@@ -1290,6 +1310,7 @@ enum ice_adminq_opc {
  
- 	/* transmit scheduler commands */
- 	ice_aqc_opc_get_dflt_topo			= 0x0400,
-+	ice_aqc_opc_add_sched_elems			= 0x0401,
-+	ice_aqc_opc_suspend_sched_elems			= 0x0409,
-+	ice_aqc_opc_resume_sched_elems			= 0x040A,
- 	ice_aqc_opc_delete_sched_elems			= 0x040F,
- 	ice_aqc_opc_query_sched_res			= 0x0412,
+ 	/* manage MAC address */
+ 	ice_aqc_opc_manage_mac_read			= 0x0107,
++	ice_aqc_opc_manage_mac_write			= 0x0108,
  
+ 	/* PXE */
+ 	ice_aqc_opc_clear_pxe_mode			= 0x0110,
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index b97c0e27196b..311e7b2a4fb7 100644
+index 92f196ebaa36..9ad8096026c0 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.c
 +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -2100,3 +2100,57 @@ ice_dis_vsi_txq(struct ice_port_info *pi, u8 num_queues, u16 *q_ids,
- 	mutex_unlock(&pi->sched_lock);
+@@ -1238,6 +1238,34 @@ enum ice_status ice_get_caps(struct ice_hw *hw)
  	return status;
  }
-+
+ 
 +/**
-+ * ice_cfg_vsi_qs - configure the new/exisiting VSI queues
-+ * @pi: port information structure
-+ * @vsi_id: VSI Id
-+ * @tc_bitmap: TC bitmap
-+ * @maxqs: max queues array per TC
-+ * @owner: lan or rdma
++ * ice_aq_manage_mac_write - manage MAC address write command
++ * @hw: pointer to the hw struct
++ * @mac_addr: MAC address to be written as LAA/LAA+WoL/Port address
++ * @flags: flags to control write behavior
++ * @cd: pointer to command details structure or NULL
 + *
-+ * This function adds/updates the VSI queues per TC.
-+ */
-+static enum ice_status
-+ice_cfg_vsi_qs(struct ice_port_info *pi, u16 vsi_id, u8 tc_bitmap,
-+	       u16 *maxqs, u8 owner)
-+{
-+	enum ice_status status = 0;
-+	u8 i;
-+
-+	if (!pi || pi->port_state != ICE_SCHED_PORT_STATE_READY)
-+		return ICE_ERR_CFG;
-+
-+	mutex_lock(&pi->sched_lock);
-+
-+	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
-+		/* configuration is possible only if TC node is present */
-+		if (!ice_sched_get_tc_node(pi, i))
-+			continue;
-+
-+		status = ice_sched_cfg_vsi(pi, vsi_id, i, maxqs[i], owner,
-+					   ice_is_tc_ena(tc_bitmap, i));
-+		if (status)
-+			break;
-+	}
-+
-+	mutex_unlock(&pi->sched_lock);
-+	return status;
-+}
-+
-+/**
-+ * ice_cfg_vsi_lan - configure VSI lan queues
-+ * @pi: port information structure
-+ * @vsi_id: VSI Id
-+ * @tc_bitmap: TC bitmap
-+ * @max_lanqs: max lan queues array per TC
-+ *
-+ * This function adds/updates the VSI lan queues per TC.
++ * This function is used to write MAC address to the NVM (0x0108).
 + */
 +enum ice_status
-+ice_cfg_vsi_lan(struct ice_port_info *pi, u16 vsi_id, u8 tc_bitmap,
-+		u16 *max_lanqs)
++ice_aq_manage_mac_write(struct ice_hw *hw, u8 *mac_addr, u8 flags,
++			struct ice_sq_cd *cd)
 +{
-+	return ice_cfg_vsi_qs(pi, vsi_id, tc_bitmap, max_lanqs,
-+			      ICE_SCHED_NODE_OWNER_LAN);
++	struct ice_aqc_manage_mac_write *cmd;
++	struct ice_aq_desc desc;
++
++	cmd = &desc.params.mac_write;
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_manage_mac_write);
++
++	cmd->flags = flags;
++
++	/* Prep values for flags, sah, sal */
++	cmd->sah = htons(*((u16 *)mac_addr));
++	cmd->sal = htonl(*((u32 *)(mac_addr + 2)));
++
++	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
 +}
++
+ /**
+  * ice_aq_clear_pxe_mode
+  * @hw: pointer to the hw struct
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index bc52b7bcc78c..3e33a47cb61a 100644
+index 2921f3c6ce4b..8e87d3b95d5f 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.h
 +++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -83,6 +83,9 @@ enum ice_status
- ice_dis_vsi_txq(struct ice_port_info *pi, u8 num_queues, u16 *q_ids,
- 		u32 *q_teids, struct ice_sq_cd *cmd_details);
- enum ice_status
-+ice_cfg_vsi_lan(struct ice_port_info *pi, u16 vsi_id, u8 tc_bitmap,
-+		u16 *max_lanqs);
+@@ -72,6 +72,9 @@ enum ice_status
+ ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc,
+ 		void *buf, u16 buf_size, struct ice_sq_cd *cd);
+ enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd);
 +enum ice_status
- ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_id, u8 tc, u8 num_qgrps,
- 		struct ice_aqc_add_tx_qgrp *buf, u16 buf_size,
- 		struct ice_sq_cd *cd);
++ice_aq_manage_mac_write(struct ice_hw *hw, u8 *mac_addr, u8 flags,
++			struct ice_sq_cd *cd);
+ enum ice_status ice_clear_pf_cfg(struct ice_hw *hw);
+ enum ice_status
+ ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool atomic_restart);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index b1f38624da21..67fb0a9ba0df 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -367,6 +367,18 @@ enum ice_tx_desc_len_fields {
+ 	ICE_TX_DESC_LEN_L4_LEN_S	= 14 /* 4 BITS */
+ };
+ 
++#define ICE_TXD_QW1_MACLEN_M (0x7FUL << ICE_TX_DESC_LEN_MACLEN_S)
++#define ICE_TXD_QW1_IPLEN_M  (0x7FUL << ICE_TX_DESC_LEN_IPLEN_S)
++#define ICE_TXD_QW1_L4LEN_M  (0xFUL << ICE_TX_DESC_LEN_L4_LEN_S)
++
++/* Tx descriptor field limits in bytes */
++#define ICE_TXD_MACLEN_MAX ((ICE_TXD_QW1_MACLEN_M >> \
++			     ICE_TX_DESC_LEN_MACLEN_S) * ICE_BYTES_PER_WORD)
++#define ICE_TXD_IPLEN_MAX ((ICE_TXD_QW1_IPLEN_M >> \
++			    ICE_TX_DESC_LEN_IPLEN_S) * ICE_BYTES_PER_DWORD)
++#define ICE_TXD_L4LEN_MAX ((ICE_TXD_QW1_L4LEN_M >> \
++			    ICE_TX_DESC_LEN_L4_LEN_S) * ICE_BYTES_PER_DWORD)
++
+ #define ICE_TXD_QW1_TX_BUF_SZ_S	34
+ #define ICE_TXD_QW1_L2TAG1_S	48
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 644e88f64939..beccce4a9ae2 100644
+index c8801c1f8f88..5702329ff1b9 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2094,10 +2094,11 @@ static struct ice_vsi *
- ice_vsi_setup(struct ice_pf *pf, enum ice_vsi_type type,
- 	      struct ice_port_info *pi)
- {
-+	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
- 	struct device *dev = &pf->pdev->dev;
- 	struct ice_vsi_ctx ctxt = { 0 };
- 	struct ice_vsi *vsi;
--	int ret;
-+	int ret, i;
+@@ -21,7 +21,7 @@
  
- 	vsi = ice_vsi_alloc(pf, type);
- 	if (!vsi) {
-@@ -2165,6 +2166,20 @@ ice_vsi_setup(struct ice_pf *pf, enum ice_vsi_type type,
- 		 */
- 		goto err_rings;
+ #include "ice.h"
+ 
+-#define DRV_VERSION	"ice-0.0.1-k"
++#define DRV_VERSION	"ice-0.7.0-k"
+ #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
+ const char ice_drv_ver[] = DRV_VERSION;
+ static const char ice_driver_string[] = DRV_SUMMARY;
+@@ -212,6 +212,48 @@ static int ice_add_mac_to_list(struct ice_vsi *vsi, struct list_head *add_list,
+ 	return 0;
+ }
+ 
++/**
++ * ice_add_mac_to_sync_list - creates list of mac addresses to be synced
++ * @netdev: the net device on which the sync is happening
++ * @addr: mac address to sync
++ *
++ * This is a callback function which is called by the in kernel device sync
++ * functions (like __dev_uc_sync, __dev_mc_sync, etc). This function only
++ * populates the tmp_sync_list, which is later used by ice_add_mac to add the
++ * mac filters from the hardware.
++ */
++static int ice_add_mac_to_sync_list(struct net_device *netdev, const u8 *addr)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++
++	if (ice_add_mac_to_list(vsi, &vsi->tmp_sync_list, addr))
++		return -EINVAL;
++
++	return 0;
++}
++
++/**
++ * ice_add_mac_to_unsync_list - creates list of mac addresses to be unsynced
++ * @netdev: the net device on which the unsync is happening
++ * @addr: mac address to unsync
++ *
++ * This is a callback function which is called by the in kernel device unsync
++ * functions (like __dev_uc_unsync, __dev_mc_unsync, etc). This function only
++ * populates the tmp_unsync_list, which is later used by ice_remove_mac to
++ * delete the mac filters from the hardware.
++ */
++static int ice_add_mac_to_unsync_list(struct net_device *netdev, const u8 *addr)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++
++	if (ice_add_mac_to_list(vsi, &vsi->tmp_unsync_list, addr))
++		return -EINVAL;
++
++	return 0;
++}
++
+ /**
+  * ice_free_fltr_list - free filter lists helper
+  * @dev: pointer to the device struct
+@@ -230,6 +272,183 @@ static void ice_free_fltr_list(struct device *dev, struct list_head *h)
  	}
+ }
+ 
++/**
++ * ice_vsi_fltr_changed - check if filter state changed
++ * @vsi: VSI to be checked
++ *
++ * returns true if filter state has changed, false otherwise.
++ */
++static bool ice_vsi_fltr_changed(struct ice_vsi *vsi)
++{
++	return test_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags) ||
++	       test_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags) ||
++	       test_bit(ICE_VSI_FLAG_VLAN_FLTR_CHANGED, vsi->flags);
++}
 +
-+	ice_vsi_set_tc_cfg(vsi);
++/**
++ * ice_vsi_sync_fltr - Update the VSI filter list to the HW
++ * @vsi: ptr to the VSI
++ *
++ * Push any outstanding VSI filter changes through the AdminQ.
++ */
++static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
++{
++	struct device *dev = &vsi->back->pdev->dev;
++	struct net_device *netdev = vsi->netdev;
++	bool promisc_forced_on = false;
++	struct ice_pf *pf = vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	enum ice_status status = 0;
++	u32 changed_flags = 0;
++	int err = 0;
 +
-+	/* configure VSI nodes based on number of queues and TC's */
-+	for (i = 0; i < vsi->tc_cfg.numtc; i++)
-+		max_txqs[i] = vsi->num_txq;
++	if (!vsi->netdev)
++		return -EINVAL;
 +
-+	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->vsi_num,
-+			      vsi->tc_cfg.ena_tc, max_txqs);
-+	if (ret) {
-+		dev_info(&pf->pdev->dev, "Failed VSI lan queue config\n");
-+		goto err_rings;
++	while (test_and_set_bit(__ICE_CFG_BUSY, vsi->state))
++		usleep_range(1000, 2000);
++
++	changed_flags = vsi->current_netdev_flags ^ vsi->netdev->flags;
++	vsi->current_netdev_flags = vsi->netdev->flags;
++
++	INIT_LIST_HEAD(&vsi->tmp_sync_list);
++	INIT_LIST_HEAD(&vsi->tmp_unsync_list);
++
++	if (ice_vsi_fltr_changed(vsi)) {
++		clear_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags);
++		clear_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags);
++		clear_bit(ICE_VSI_FLAG_VLAN_FLTR_CHANGED, vsi->flags);
++
++		/* grab the netdev's addr_list_lock */
++		netif_addr_lock_bh(netdev);
++		__dev_uc_sync(netdev, ice_add_mac_to_sync_list,
++			      ice_add_mac_to_unsync_list);
++		__dev_mc_sync(netdev, ice_add_mac_to_sync_list,
++			      ice_add_mac_to_unsync_list);
++		/* our temp lists are populated. release lock */
++		netif_addr_unlock_bh(netdev);
 +	}
 +
- 	return vsi;
++	/* Remove mac addresses in the unsync list */
++	status = ice_remove_mac(hw, &vsi->tmp_unsync_list);
++	ice_free_fltr_list(dev, &vsi->tmp_unsync_list);
++	if (status) {
++		netdev_err(netdev, "Failed to delete MAC filters\n");
++		/* if we failed because of alloc failures, just bail */
++		if (status == ICE_ERR_NO_MEMORY) {
++			err = -ENOMEM;
++			goto out;
++		}
++	}
++
++	/* Add mac addresses in the sync list */
++	status = ice_add_mac(hw, &vsi->tmp_sync_list);
++	ice_free_fltr_list(dev, &vsi->tmp_sync_list);
++	if (status) {
++		netdev_err(netdev, "Failed to add MAC filters\n");
++		/* If there is no more space for new umac filters, vsi
++		 * should go into promiscuous mode. There should be some
++		 * space reserved for promiscuous filters.
++		 */
++		if (hw->adminq.sq_last_status == ICE_AQ_RC_ENOSPC &&
++		    !test_and_set_bit(__ICE_FLTR_OVERFLOW_PROMISC,
++				      vsi->state)) {
++			promisc_forced_on = true;
++			netdev_warn(netdev,
++				    "Reached MAC filter limit, forcing promisc mode on VSI %d\n",
++				    vsi->vsi_num);
++		} else {
++			err = -EIO;
++			goto out;
++		}
++	}
++	/* check for changes in promiscuous modes */
++	if (changed_flags & IFF_ALLMULTI)
++		netdev_warn(netdev, "Unsupported configuration\n");
++
++	if (((changed_flags & IFF_PROMISC) || promisc_forced_on) ||
++	    test_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags)) {
++		clear_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags);
++		if (vsi->current_netdev_flags & IFF_PROMISC) {
++			/* Apply TX filter rule to get traffic from VMs */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, true,
++						  ICE_FLTR_TX);
++			if (status) {
++				netdev_err(netdev, "Error setting default VSI %i tx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags &= ~IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++			/* Apply RX filter rule to get traffic from wire */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, true,
++						  ICE_FLTR_RX);
++			if (status) {
++				netdev_err(netdev, "Error setting default VSI %i rx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags &= ~IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++		} else {
++			/* Clear TX filter rule to stop traffic from VMs */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, false,
++						  ICE_FLTR_TX);
++			if (status) {
++				netdev_err(netdev, "Error clearing default VSI %i tx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags |= IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++			/* Clear filter RX to remove traffic from wire */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, false,
++						  ICE_FLTR_RX);
++			if (status) {
++				netdev_err(netdev, "Error clearing default VSI %i rx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags |= IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++		}
++	}
++	goto exit;
++
++out_promisc:
++	set_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags);
++	goto exit;
++out:
++	/* if something went wrong then set the changed flag so we try again */
++	set_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags);
++	set_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags);
++exit:
++	clear_bit(__ICE_CFG_BUSY, vsi->state);
++	return err;
++}
++
++/**
++ * ice_sync_fltr_subtask - Sync the VSI filter list with HW
++ * @pf: board private structure
++ */
++static void ice_sync_fltr_subtask(struct ice_pf *pf)
++{
++	int v;
++
++	if (!pf || !(test_bit(ICE_FLAG_FLTR_SYNC, pf->flags)))
++		return;
++
++	clear_bit(ICE_FLAG_FLTR_SYNC, pf->flags);
++
++	for (v = 0; v < pf->num_alloc_vsi; v++)
++		if (pf->vsi[v] && ice_vsi_fltr_changed(pf->vsi[v]) &&
++		    ice_vsi_sync_fltr(pf->vsi[v])) {
++			/* come back and try again later */
++			set_bit(ICE_FLAG_FLTR_SYNC, pf->flags);
++			break;
++		}
++}
++
+ /**
+  * ice_is_reset_recovery_pending - schedule a reset
+  * @state: pf state field
+@@ -792,6 +1011,7 @@ static void ice_service_task(struct work_struct *work)
+ 		return;
+ 	}
  
++	ice_sync_fltr_subtask(pf);
+ 	ice_watchdog_subtask(pf);
+ 	ice_clean_adminq_subtask(pf);
+ 
+@@ -2500,6 +2720,7 @@ static int ice_vsi_reinit_setup(struct ice_vsi *vsi)
+ 	ice_vsi_free_q_vectors(vsi);
  err_rings:
-@@ -2407,8 +2422,7 @@ static void ice_determine_q_usage(struct ice_pf *pf)
- 	q_left_tx = pf->hw.func_caps.common_cap.num_txq;
- 	q_left_rx = pf->hw.func_caps.common_cap.num_rxq;
+ 	if (vsi->netdev) {
++		vsi->current_netdev_flags = 0;
+ 		unregister_netdev(vsi->netdev);
+ 		free_netdev(vsi->netdev);
+ 		vsi->netdev = NULL;
+@@ -3309,6 +3530,197 @@ static void __exit ice_module_exit(void)
+ }
+ module_exit(ice_module_exit);
  
--	/* initial support for only 1 tx queue */
--	pf->num_lan_tx = 1;
-+	pf->num_lan_tx = min_t(int, q_left_tx, num_online_cpus());
++/**
++ * ice_set_mac_address - NDO callback to set mac address
++ * @netdev: network interface device structure
++ * @pi: pointer to an address structure
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int ice_set_mac_address(struct net_device *netdev, void *pi)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	struct sockaddr *addr = pi;
++	enum ice_status status;
++	LIST_HEAD(a_mac_list);
++	LIST_HEAD(r_mac_list);
++	u8 flags = 0;
++	int err;
++	u8 *mac;
++
++	mac = (u8 *)addr->sa_data;
++
++	if (!is_valid_ether_addr(mac))
++		return -EADDRNOTAVAIL;
++
++	if (ether_addr_equal(netdev->dev_addr, mac)) {
++		netdev_warn(netdev, "already using mac %pM\n", mac);
++		return 0;
++	}
++
++	if (test_bit(__ICE_DOWN, pf->state) ||
++	    ice_is_reset_recovery_pending(pf->state)) {
++		netdev_err(netdev, "can't set mac %pM. device not ready\n",
++			   mac);
++		return -EBUSY;
++	}
++
++	/* When we change the mac address we also have to change the mac address
++	 * based filter rules that were created previously for the old mac
++	 * address. So first, we remove the old filter rule using ice_remove_mac
++	 * and then create a new filter rule using ice_add_mac. Note that for
++	 * both these operations, we first need to form a "list" of mac
++	 * addresses (even though in this case, we have only 1 mac address to be
++	 * added/removed) and this done using ice_add_mac_to_list. Depending on
++	 * the ensuing operation this "list" of mac addresses is either to be
++	 * added or removed from the filter.
++	 */
++	err = ice_add_mac_to_list(vsi, &r_mac_list, netdev->dev_addr);
++	if (err) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++	status = ice_remove_mac(hw, &r_mac_list);
++	if (status) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++	err = ice_add_mac_to_list(vsi, &a_mac_list, mac);
++	if (err) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++	status = ice_add_mac(hw, &a_mac_list);
++	if (status) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++free_lists:
++	/* free list entries */
++	ice_free_fltr_list(&pf->pdev->dev, &r_mac_list);
++	ice_free_fltr_list(&pf->pdev->dev, &a_mac_list);
++
++	if (err) {
++		netdev_err(netdev, "can't set mac %pM. filter update failed\n",
++			   mac);
++		return err;
++	}
++
++	/* change the netdev's mac address */
++	memcpy(netdev->dev_addr, mac, netdev->addr_len);
++	netdev_dbg(vsi->netdev, "updated mac address to %pM\n",
++		   netdev->dev_addr);
++
++	/* write new mac address to the firmware */
++	flags = ICE_AQC_MAN_MAC_UPDATE_LAA_WOL;
++	status = ice_aq_manage_mac_write(hw, mac, flags, NULL);
++	if (status) {
++		netdev_err(netdev, "can't set mac %pM. write to firmware failed.\n",
++			   mac);
++	}
++	return 0;
++}
++
++/**
++ * ice_set_rx_mode - NDO callback to set the netdev filters
++ * @netdev: network interface device structure
++ */
++static void ice_set_rx_mode(struct net_device *netdev)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++
++	if (!vsi)
++		return;
++
++	/* Set the flags to synchronize filters
++	 * ndo_set_rx_mode may be triggered even without a change in netdev
++	 * flags
++	 */
++	set_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags);
++	set_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags);
++	set_bit(ICE_FLAG_FLTR_SYNC, vsi->back->flags);
++
++	/* schedule our worker thread which will take care of
++	 * applying the new filter changes
++	 */
++	ice_service_task_schedule(vsi->back);
++}
++
++/**
++ * ice_fdb_add - add an entry to the hardware database
++ * @ndm: the input from the stack
++ * @tb: pointer to array of nladdr (unused)
++ * @dev: the net device pointer
++ * @addr: the MAC address entry being added
++ * @vid: VLAN id
++ * @flags: instructions from stack about fdb operation
++ */
++static int ice_fdb_add(struct ndmsg *ndm, struct nlattr __always_unused *tb[],
++		       struct net_device *dev, const unsigned char *addr,
++		       u16 vid, u16 flags)
++{
++	int err;
++
++	if (vid) {
++		netdev_err(dev, "VLANs aren't supported yet for dev_uc|mc_add()\n");
++		return -EINVAL;
++	}
++	if (ndm->ndm_state && !(ndm->ndm_state & NUD_PERMANENT)) {
++		netdev_err(dev, "FDB only supports static addresses\n");
++		return -EINVAL;
++	}
++
++	if (is_unicast_ether_addr(addr) || is_link_local_ether_addr(addr))
++		err = dev_uc_add_excl(dev, addr);
++	else if (is_multicast_ether_addr(addr))
++		err = dev_mc_add_excl(dev, addr);
++	else
++		err = -EINVAL;
++
++	/* Only return duplicate errors if NLM_F_EXCL is set */
++	if (err == -EEXIST && !(flags & NLM_F_EXCL))
++		err = 0;
++
++	return err;
++}
++
++/**
++ * ice_fdb_del - delete an entry from the hardware database
++ * @ndm: the input from the stack
++ * @tb: pointer to array of nladdr (unused)
++ * @dev: the net device pointer
++ * @addr: the MAC address entry being added
++ * @vid: VLAN id
++ */
++static int ice_fdb_del(struct ndmsg *ndm, __always_unused struct nlattr *tb[],
++		       struct net_device *dev, const unsigned char *addr,
++		       __always_unused u16 vid)
++{
++	int err;
++
++	if (ndm->ndm_state & NUD_PERMANENT) {
++		netdev_err(dev, "FDB only supports static addresses\n");
++		return -EINVAL;
++	}
++
++	if (is_unicast_ether_addr(addr))
++		err = dev_uc_del(dev, addr);
++	else if (is_multicast_ether_addr(addr))
++		err = dev_mc_del(dev, addr);
++	else
++		err = -EINVAL;
++
++	return err;
++}
++
+ /**
+  * ice_vsi_manage_vlan_insertion - Manage VLAN insertion for the VSI for Tx
+  * @vsi: the vsi being changed
+@@ -3699,6 +4111,8 @@ static int ice_vsi_cfg(struct ice_vsi *vsi)
+ {
+ 	int err;
  
- 	/* only 1 rx queue unless RSS is enabled */
- 	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags))
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 74dbdb3d5df2..57d678eed61e 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -373,6 +373,110 @@ ice_aq_get_dflt_topo(struct ice_hw *hw, u8 lport,
++	ice_set_rx_mode(vsi->netdev);
++
+ 	err = ice_restore_vlan(vsi);
+ 	if (err)
+ 		return err;
+@@ -4391,6 +4805,30 @@ void ice_get_stats64(struct net_device *netdev, struct rtnl_link_stats64 *stats)
+ 	stats->rx_length_errors = vsi_stats->rx_length_errors;
+ }
+ 
++#ifdef CONFIG_NET_POLL_CONTROLLER
++/**
++ * ice_netpoll - polling "interrupt" handler
++ * @netdev: network interface device structure
++ *
++ * Used by netconsole to send skbs without having to re-enable interrupts.
++ * This is not called in the normal interrupt path.
++ */
++static void ice_netpoll(struct net_device *netdev)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	int i;
++
++	if (test_bit(__ICE_DOWN, vsi->state) ||
++	    !test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
++		return;
++
++	for (i = 0; i < vsi->num_q_vectors; i++)
++		ice_msix_clean_rings(0, vsi->q_vectors[i]);
++}
++#endif /* CONFIG_NET_POLL_CONTROLLER */
++
+ /**
+  * ice_napi_disable_all - Disable NAPI for all q_vectors in the VSI
+  * @vsi: VSI having NAPI disabled
+@@ -4798,6 +5236,73 @@ static void ice_rebuild(struct ice_pf *pf)
+ 	set_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
+ }
+ 
++/**
++ * ice_change_mtu - NDO callback to change the MTU
++ * @netdev: network interface device structure
++ * @new_mtu: new value for maximum frame size
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int ice_change_mtu(struct net_device *netdev, int new_mtu)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	u8 count = 0;
++
++	if (new_mtu == netdev->mtu) {
++		netdev_warn(netdev, "mtu is already %d\n", netdev->mtu);
++		return 0;
++	}
++
++	if (new_mtu < netdev->min_mtu) {
++		netdev_err(netdev, "new mtu invalid. min_mtu is %d\n",
++			   netdev->min_mtu);
++		return -EINVAL;
++	} else if (new_mtu > netdev->max_mtu) {
++		netdev_err(netdev, "new mtu invalid. max_mtu is %d\n",
++			   netdev->min_mtu);
++		return -EINVAL;
++	}
++	/* if a reset is in progress, wait for some time for it to complete */
++	do {
++		if (ice_is_reset_recovery_pending(pf->state)) {
++			count++;
++			usleep_range(1000, 2000);
++		} else {
++			break;
++		}
++
++	} while (count < 100);
++
++	if (count == 100) {
++		netdev_err(netdev, "can't change mtu. Device is busy\n");
++		return -EBUSY;
++	}
++
++	netdev->mtu = new_mtu;
++
++	/* if VSI is up, bring it down and then back up */
++	if (!test_and_set_bit(__ICE_DOWN, vsi->state)) {
++		int err;
++
++		err = ice_down(vsi);
++		if (err) {
++			netdev_err(netdev, "change mtu if_up err %d\n", err);
++			return err;
++		}
++
++		err = ice_up(vsi);
++		if (err) {
++			netdev_err(netdev, "change mtu if_up err %d\n", err);
++			return err;
++		}
++	}
++
++	netdev_dbg(netdev, "changed mtu to %d\n", new_mtu);
++	return 0;
++}
++
+ /**
+  * ice_set_rss - Set RSS keys and lut
+  * @vsi: Pointer to VSI structure
+@@ -4931,12 +5436,72 @@ static int ice_stop(struct net_device *netdev)
+ 	return 0;
+ }
+ 
++/**
++ * ice_features_check - Validate encapsulated packet conforms to limits
++ * @skb: skb buffer
++ * @netdev: This port's netdev
++ * @features: Offload features that the stack believes apply
++ */
++static netdev_features_t
++ice_features_check(struct sk_buff *skb,
++		   struct net_device __always_unused *netdev,
++		   netdev_features_t features)
++{
++	size_t len;
++
++	/* No point in doing any of this if neither checksum nor GSO are
++	 * being requested for this frame.  We can rule out both by just
++	 * checking for CHECKSUM_PARTIAL
++	 */
++	if (skb->ip_summed != CHECKSUM_PARTIAL)
++		return features;
++
++	/* We cannot support GSO if the MSS is going to be less than
++	 * 64 bytes.  If it is then we need to drop support for GSO.
++	 */
++	if (skb_is_gso(skb) && (skb_shinfo(skb)->gso_size < 64))
++		features &= ~NETIF_F_GSO_MASK;
++
++	len = skb_network_header(skb) - skb->data;
++	if (len & ~(ICE_TXD_MACLEN_MAX))
++		goto out_rm_features;
++
++	len = skb_transport_header(skb) - skb_network_header(skb);
++	if (len & ~(ICE_TXD_IPLEN_MAX))
++		goto out_rm_features;
++
++	if (skb->encapsulation) {
++		len = skb_inner_network_header(skb) - skb_transport_header(skb);
++		if (len & ~(ICE_TXD_L4LEN_MAX))
++			goto out_rm_features;
++
++		len = skb_inner_transport_header(skb) -
++		      skb_inner_network_header(skb);
++		if (len & ~(ICE_TXD_IPLEN_MAX))
++			goto out_rm_features;
++	}
++
++	return features;
++out_rm_features:
++	return features & ~(NETIF_F_CSUM_MASK | NETIF_F_GSO_MASK);
++}
++
+ static const struct net_device_ops ice_netdev_ops = {
+ 	.ndo_open = ice_open,
+ 	.ndo_stop = ice_stop,
+ 	.ndo_start_xmit = ice_start_xmit,
++	.ndo_features_check = ice_features_check,
++	.ndo_set_rx_mode = ice_set_rx_mode,
++	.ndo_set_mac_address = ice_set_mac_address,
++	.ndo_validate_addr = eth_validate_addr,
++	.ndo_change_mtu = ice_change_mtu,
+ 	.ndo_get_stats64 = ice_get_stats64,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller = ice_netpoll,
++#endif /* CONFIG_NET_POLL_CONTROLLER */
+ 	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
+ 	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
+ 	.ndo_set_features = ice_set_features,
++	.ndo_fdb_add = ice_fdb_add,
++	.ndo_fdb_del = ice_fdb_del,
+ };
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 424090f598c3..fbdfeed6aa4e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -1640,6 +1640,83 @@ ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
  	return status;
  }
  
 +/**
-+ * ice_aq_add_sched_elems - adds scheduling element
-+ * @hw: pointer to the hw struct
-+ * @grps_req: the number of groups that are requested to be added
-+ * @buf: pointer to buffer
-+ * @buf_size: buffer size in bytes
-+ * @grps_added: returns total number of groups added
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Add scheduling elements (0x0401)
++ * ice_cfg_dflt_vsi - add filter rule to set/unset given VSI as default
++ * VSI for the switch (represented by swid)
++ * @hw: pointer to the hardware structure
++ * @vsi_id: number of VSI to set as default
++ * @set: true to add the above mentioned switch rule, false to remove it
++ * @direction: ICE_FLTR_RX or ICE_FLTR_TX
 + */
-+static enum ice_status
-+ice_aq_add_sched_elems(struct ice_hw *hw, u16 grps_req,
-+		       struct ice_aqc_add_elem *buf, u16 buf_size,
-+		       u16 *grps_added, struct ice_sq_cd *cd)
++enum ice_status
++ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_id, bool set, u8 direction)
 +{
-+	struct ice_aqc_add_move_delete_elem *cmd;
-+	struct ice_aq_desc desc;
++	struct ice_aqc_sw_rules_elem *s_rule;
++	struct ice_fltr_info f_info;
++	enum ice_adminq_opc opcode;
 +	enum ice_status status;
++	u16 s_rule_size;
 +
-+	cmd = &desc.params.add_move_delete_elem;
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_add_sched_elems);
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+
-+	cmd->num_grps_req = cpu_to_le16(grps_req);
-+	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
-+	if (!status && grps_added)
-+		*grps_added = le16_to_cpu(cmd->num_grps_updated);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_suspend_resume_elems - suspend/resume scheduler elements
-+ * @hw: pointer to the hw struct
-+ * @elems_req: number of elements to suspend
-+ * @buf: pointer to buffer
-+ * @buf_size: buffer size in bytes
-+ * @elems_ret: returns total number of elements suspended
-+ * @cd: pointer to command details structure or NULL
-+ * @cmd_code: command code for suspend or resume
-+ *
-+ * suspend/resume scheduler elements
-+ */
-+static enum ice_status
-+ice_suspend_resume_elems(struct ice_hw *hw, u16 elems_req,
-+			 struct ice_aqc_suspend_resume_elem *buf, u16 buf_size,
-+			 u16 *elems_ret, struct ice_sq_cd *cd,
-+			 enum ice_adminq_opc cmd_code)
-+{
-+	struct ice_aqc_get_cfg_elem *cmd;
-+	struct ice_aq_desc desc;
-+	enum ice_status status;
-+
-+	cmd = &desc.params.get_update_elem;
-+	ice_fill_dflt_direct_cmd_desc(&desc, cmd_code);
-+	cmd->num_elem_req = cpu_to_le16(elems_req);
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
-+	if (!status && elems_ret)
-+		*elems_ret = le16_to_cpu(cmd->num_elem_resp);
-+	return status;
-+}
-+
-+/**
-+ * ice_aq_suspend_sched_elems - suspend scheduler elements
-+ * @hw: pointer to the hw struct
-+ * @elems_req: number of elements to suspend
-+ * @buf: pointer to buffer
-+ * @buf_size: buffer size in bytes
-+ * @elems_ret: returns total number of elements suspended
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Suspend scheduling elements (0x0409)
-+ */
-+static enum ice_status
-+ice_aq_suspend_sched_elems(struct ice_hw *hw, u16 elems_req,
-+			   struct ice_aqc_suspend_resume_elem *buf,
-+			   u16 buf_size, u16 *elems_ret, struct ice_sq_cd *cd)
-+{
-+	return ice_suspend_resume_elems(hw, elems_req, buf, buf_size, elems_ret,
-+					cd, ice_aqc_opc_suspend_sched_elems);
-+}
-+
-+/**
-+ * ice_aq_resume_sched_elems - resume scheduler elements
-+ * @hw: pointer to the hw struct
-+ * @elems_req: number of elements to resume
-+ * @buf: pointer to buffer
-+ * @buf_size: buffer size in bytes
-+ * @elems_ret: returns total number of elements resumed
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * resume scheduling elements (0x040A)
-+ */
-+static enum ice_status
-+ice_aq_resume_sched_elems(struct ice_hw *hw, u16 elems_req,
-+			  struct ice_aqc_suspend_resume_elem *buf,
-+			  u16 buf_size, u16 *elems_ret, struct ice_sq_cd *cd)
-+{
-+	return ice_suspend_resume_elems(hw, elems_req, buf, buf_size, elems_ret,
-+					cd, ice_aqc_opc_resume_sched_elems);
-+}
-+
- /**
-  * ice_aq_query_sched_res - query scheduler resource
-  * @hw: pointer to the hw struct
-@@ -393,6 +497,46 @@ ice_aq_query_sched_res(struct ice_hw *hw, u16 buf_size,
- 	return ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
- }
- 
-+/**
-+ * ice_sched_suspend_resume_elems - suspend or resume hw nodes
-+ * @hw: pointer to the hw struct
-+ * @num_nodes: number of nodes
-+ * @node_teids: array of node teids to be suspended or resumed
-+ * @suspend: true means suspend / false means resume
-+ *
-+ * This function suspends or resumes hw nodes
-+ */
-+static enum ice_status
-+ice_sched_suspend_resume_elems(struct ice_hw *hw, u8 num_nodes, u32 *node_teids,
-+			       bool suspend)
-+{
-+	struct ice_aqc_suspend_resume_elem *buf;
-+	u16 i, buf_size, num_elem_ret = 0;
-+	enum ice_status status;
-+
-+	buf_size = sizeof(*buf) * num_nodes;
-+	buf = devm_kzalloc(ice_hw_to_dev(hw), buf_size, GFP_KERNEL);
-+	if (!buf)
++	s_rule_size = set ? ICE_SW_RULE_RX_TX_ETH_HDR_SIZE :
++			    ICE_SW_RULE_RX_TX_NO_HDR_SIZE;
++	s_rule = devm_kzalloc(ice_hw_to_dev(hw), s_rule_size, GFP_KERNEL);
++	if (!s_rule)
 +		return ICE_ERR_NO_MEMORY;
 +
-+	for (i = 0; i < num_nodes; i++)
-+		buf->teid[i] = cpu_to_le32(node_teids[i]);
++	memset(&f_info, 0, sizeof(f_info));
 +
-+	if (suspend)
-+		status = ice_aq_suspend_sched_elems(hw, num_nodes, buf,
-+						    buf_size, &num_elem_ret,
-+						    NULL);
++	f_info.lkup_type = ICE_SW_LKUP_DFLT;
++	f_info.flag = direction;
++	f_info.fltr_act = ICE_FWD_TO_VSI;
++	f_info.fwd_id.vsi_id = vsi_id;
++
++	if (f_info.flag & ICE_FLTR_RX) {
++		f_info.src = hw->port_info->lport;
++		if (!set)
++			f_info.fltr_rule_id =
++				hw->port_info->dflt_rx_vsi_rule_id;
++	} else if (f_info.flag & ICE_FLTR_TX) {
++		f_info.src = vsi_id;
++		if (!set)
++			f_info.fltr_rule_id =
++				hw->port_info->dflt_tx_vsi_rule_id;
++	}
++
++	if (set)
++		opcode = ice_aqc_opc_add_sw_rules;
 +	else
-+		status = ice_aq_resume_sched_elems(hw, num_nodes, buf,
-+						   buf_size, &num_elem_ret,
-+						   NULL);
-+	if (status || num_elem_ret != num_nodes)
-+		ice_debug(hw, ICE_DBG_SCHED, "suspend/resume failed\n");
++		opcode = ice_aqc_opc_remove_sw_rules;
 +
-+	devm_kfree(ice_hw_to_dev(hw), buf);
-+	return status;
-+}
++	ice_fill_sw_rule(hw, &f_info, s_rule, opcode);
 +
- /**
-  * ice_sched_clear_tx_topo - clears the schduler tree nodes
-  * @pi: port information structure
-@@ -476,6 +620,215 @@ void ice_sched_cleanup_all(struct ice_hw *hw)
- 	hw->max_cgds = 0;
- }
- 
-+/**
-+ * ice_sched_create_vsi_info_entry - create an empty new VSI entry
-+ * @pi: port information structure
-+ * @vsi_id: VSI Id
-+ *
-+ * This function creates a new VSI entry and adds it to list
-+ */
-+static struct ice_sched_vsi_info *
-+ice_sched_create_vsi_info_entry(struct ice_port_info *pi, u16 vsi_id)
-+{
-+	struct ice_sched_vsi_info *vsi_elem;
++	status = ice_aq_sw_rules(hw, s_rule, s_rule_size, 1, opcode, NULL);
++	if (status || !(f_info.flag & ICE_FLTR_TX_RX))
++		goto out;
++	if (set) {
++		u16 index = le16_to_cpu(s_rule->pdata.lkup_tx_rx.index);
 +
-+	if (!pi)
-+		return NULL;
-+
-+	vsi_elem = devm_kzalloc(ice_hw_to_dev(pi->hw), sizeof(*vsi_elem),
-+				GFP_KERNEL);
-+	if (!vsi_elem)
-+		return NULL;
-+
-+	list_add(&vsi_elem->list_entry, &pi->vsi_info_list);
-+	vsi_elem->vsi_id = vsi_id;
-+	return vsi_elem;
-+}
-+
-+/**
-+ * ice_sched_add_elems - add nodes to hw and SW DB
-+ * @pi: port information structure
-+ * @tc_node: pointer to the branch node
-+ * @parent: pointer to the parent node
-+ * @layer: layer number to add nodes
-+ * @num_nodes: number of nodes
-+ * @num_nodes_added: pointer to num nodes added
-+ * @first_node_teid: if new nodes are added then return the teid of first node
-+ *
-+ * This function add nodes to hw as well as to SW DB for a given layer
-+ */
-+static enum ice_status
-+ice_sched_add_elems(struct ice_port_info *pi, struct ice_sched_node *tc_node,
-+		    struct ice_sched_node *parent, u8 layer, u16 num_nodes,
-+		    u16 *num_nodes_added, u32 *first_node_teid)
-+{
-+	struct ice_sched_node *prev, *new_node;
-+	struct ice_aqc_add_elem *buf;
-+	u16 i, num_groups_added = 0;
-+	enum ice_status status = 0;
-+	struct ice_hw *hw = pi->hw;
-+	u16 buf_size;
-+	u32 teid;
-+
-+	buf_size = sizeof(*buf) + sizeof(*buf->generic) * (num_nodes - 1);
-+	buf = devm_kzalloc(ice_hw_to_dev(hw), buf_size, GFP_KERNEL);
-+	if (!buf)
-+		return ICE_ERR_NO_MEMORY;
-+
-+	buf->hdr.parent_teid = parent->info.node_teid;
-+	buf->hdr.num_elems = cpu_to_le16(num_nodes);
-+	for (i = 0; i < num_nodes; i++) {
-+		buf->generic[i].parent_teid = parent->info.node_teid;
-+		buf->generic[i].data.elem_type = ICE_AQC_ELEM_TYPE_SE_GENERIC;
-+		buf->generic[i].data.valid_sections =
-+			ICE_AQC_ELEM_VALID_GENERIC | ICE_AQC_ELEM_VALID_CIR |
-+			ICE_AQC_ELEM_VALID_EIR;
-+		buf->generic[i].data.generic = 0;
-+		buf->generic[i].data.cir_bw.bw_profile_idx =
-+			ICE_SCHED_DFLT_RL_PROF_ID;
-+		buf->generic[i].data.eir_bw.bw_profile_idx =
-+			ICE_SCHED_DFLT_RL_PROF_ID;
-+	}
-+
-+	status = ice_aq_add_sched_elems(hw, 1, buf, buf_size,
-+					&num_groups_added, NULL);
-+	if (status || num_groups_added != 1) {
-+		ice_debug(hw, ICE_DBG_SCHED, "add elements failed\n");
-+		devm_kfree(ice_hw_to_dev(hw), buf);
-+		return ICE_ERR_CFG;
-+	}
-+
-+	*num_nodes_added = num_nodes;
-+	/* add nodes to the SW DB */
-+	for (i = 0; i < num_nodes; i++) {
-+		status = ice_sched_add_node(pi, layer, &buf->generic[i]);
-+		if (status) {
-+			ice_debug(hw, ICE_DBG_SCHED,
-+				  "add nodes in SW DB failed status =%d\n",
-+				  status);
-+			break;
++		if (f_info.flag & ICE_FLTR_TX) {
++			hw->port_info->dflt_tx_vsi_num = vsi_id;
++			hw->port_info->dflt_tx_vsi_rule_id = index;
++		} else if (f_info.flag & ICE_FLTR_RX) {
++			hw->port_info->dflt_rx_vsi_num = vsi_id;
++			hw->port_info->dflt_rx_vsi_rule_id = index;
 +		}
-+
-+		teid = le32_to_cpu(buf->generic[i].node_teid);
-+		new_node = ice_sched_find_node_by_teid(parent, teid);
-+
-+		if (!new_node) {
-+			ice_debug(hw, ICE_DBG_SCHED,
-+				  "Node is missing for teid =%d\n", teid);
-+			break;
-+		}
-+
-+		new_node->sibling = NULL;
-+		new_node->tc_num = tc_node->tc_num;
-+
-+		/* add it to previous node sibling pointer */
-+		/* Note: siblings are not linked across branches */
-+		prev = ice_sched_get_first_node(hw, tc_node, layer);
-+
-+		if (prev && prev != new_node) {
-+			while (prev->sibling)
-+				prev = prev->sibling;
-+			prev->sibling = new_node;
-+		}
-+
-+		if (i == 0)
-+			*first_node_teid = teid;
-+	}
-+
-+	devm_kfree(ice_hw_to_dev(hw), buf);
-+	return status;
-+}
-+
-+/**
-+ * ice_sched_add_nodes_to_layer - Add nodes to a given layer
-+ * @pi: port information structure
-+ * @tc_node: pointer to TC node
-+ * @parent: pointer to parent node
-+ * @layer: layer number to add nodes
-+ * @num_nodes: number of nodes to be added
-+ * @first_node_teid: pointer to the first node teid
-+ * @num_nodes_added: pointer to number of nodes added
-+ *
-+ * This function add nodes to a given layer.
-+ */
-+static enum ice_status
-+ice_sched_add_nodes_to_layer(struct ice_port_info *pi,
-+			     struct ice_sched_node *tc_node,
-+			     struct ice_sched_node *parent, u8 layer,
-+			     u16 num_nodes, u32 *first_node_teid,
-+			     u16 *num_nodes_added)
-+{
-+	u32 *first_teid_ptr = first_node_teid;
-+	u16 new_num_nodes, max_child_nodes;
-+	enum ice_status status = 0;
-+	struct ice_hw *hw = pi->hw;
-+	u16 num_added = 0;
-+	u32 temp;
-+
-+	if (!num_nodes)
-+		return status;
-+
-+	if (!parent || layer < hw->sw_entry_point_layer)
-+		return ICE_ERR_PARAM;
-+
-+	*num_nodes_added = 0;
-+
-+	/* max children per node per layer */
-+	max_child_nodes =
-+	    le16_to_cpu(hw->layer_info[parent->tx_sched_layer].max_children);
-+
-+	/* current number of children + required nodes exceed max children ? */
-+	if ((parent->num_children + num_nodes) > max_child_nodes) {
-+		/* Fail if the parent is a TC node */
-+		if (parent == tc_node)
-+			return ICE_ERR_CFG;
-+
-+		/* utilize all the spaces if the parent is not full */
-+		if (parent->num_children < max_child_nodes) {
-+			new_num_nodes = max_child_nodes - parent->num_children;
-+			/* this recursion is intentional, and wouldn't
-+			 * go more than 2 calls
-+			 */
-+			status = ice_sched_add_nodes_to_layer(pi, tc_node,
-+							      parent, layer,
-+							      new_num_nodes,
-+							      first_node_teid,
-+							      &num_added);
-+			if (status)
-+				return status;
-+
-+			*num_nodes_added += num_added;
-+		}
-+		/* Don't modify the first node teid memory if the first node was
-+		 * added already in the above call. Instead send some temp
-+		 * memory for all other recursive calls.
-+		 */
-+		if (num_added)
-+			first_teid_ptr = &temp;
-+
-+		new_num_nodes = num_nodes - num_added;
-+
-+		/* This parent is full, try the next sibling */
-+		parent = parent->sibling;
-+
-+		/* this recursion is intentional, for 1024 queues
-+		 * per VSI, it goes max of 16 iterations.
-+		 * 1024 / 8 = 128 layer 8 nodes
-+		 * 128 /8 = 16 (add 8 nodes per iteration)
-+		 */
-+		status = ice_sched_add_nodes_to_layer(pi, tc_node, parent,
-+						      layer, new_num_nodes,
-+						      first_teid_ptr,
-+						      &num_added);
-+		*num_nodes_added += num_added;
-+		return status;
-+	}
-+
-+	status = ice_sched_add_elems(pi, tc_node, parent, layer, num_nodes,
-+				     num_nodes_added, first_node_teid);
-+	return status;
-+}
-+
- /**
-  * ice_sched_get_qgrp_layer - get the current queue group layer number
-  * @hw: pointer to the hw struct
-@@ -488,6 +841,101 @@ static u8 ice_sched_get_qgrp_layer(struct ice_hw *hw)
- 	return hw->num_tx_sched_layers - ICE_QGRP_LAYER_OFFSET;
- }
- 
-+/**
-+ * ice_sched_get_vsi_layer - get the current VSI layer number
-+ * @hw: pointer to the hw struct
-+ *
-+ * This function returns the current VSI layer number
-+ */
-+static u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
-+{
-+	/* Num Layers       VSI layer
-+	 *     9               6
-+	 *     7               4
-+	 *     5 or less       sw_entry_point_layer
-+	 */
-+	/* calculate the vsi layer based on number of layers. */
-+	if (hw->num_tx_sched_layers > ICE_VSI_LAYER_OFFSET + 1) {
-+		u8 layer = hw->num_tx_sched_layers - ICE_VSI_LAYER_OFFSET;
-+
-+		if (layer > hw->sw_entry_point_layer)
-+			return layer;
-+	}
-+	return hw->sw_entry_point_layer;
-+}
-+
-+/**
-+ * ice_sched_get_num_nodes_per_layer - Get the total number of nodes per layer
-+ * @pi: pointer to the port info struct
-+ * @layer: layer number
-+ *
-+ * This function calculates the number of nodes present in the scheduler tree
-+ * including all the branches for a given layer
-+ */
-+static u16
-+ice_sched_get_num_nodes_per_layer(struct ice_port_info *pi, u8 layer)
-+{
-+	struct ice_hw *hw;
-+	u16 num_nodes = 0;
-+	u8 i;
-+
-+	if (!pi)
-+		return num_nodes;
-+
-+	hw = pi->hw;
-+
-+	/* Calculate the number of nodes for all TCs */
-+	for (i = 0; i < pi->root->num_children; i++) {
-+		struct ice_sched_node *tc_node, *node;
-+
-+		tc_node = pi->root->children[i];
-+
-+		/* Get the first node */
-+		node = ice_sched_get_first_node(hw, tc_node, layer);
-+		if (!node)
-+			continue;
-+
-+		/* count the siblings */
-+		while (node) {
-+			num_nodes++;
-+			node = node->sibling;
-+		}
-+	}
-+
-+	return num_nodes;
-+}
-+
-+/**
-+ * ice_sched_val_max_nodes - check max number of nodes reached or not
-+ * @pi: port information structure
-+ * @new_num_nodes_per_layer: pointer to the new number of nodes array
-+ *
-+ * This function checks whether the scheduler tree layers have enough space to
-+ * add new nodes
-+ */
-+static enum ice_status
-+ice_sched_validate_for_max_nodes(struct ice_port_info *pi,
-+				 u16 *new_num_nodes_per_layer)
-+{
-+	struct ice_hw *hw = pi->hw;
-+	u8 i, qg_layer;
-+	u16 num_nodes;
-+
-+	qg_layer = ice_sched_get_qgrp_layer(hw);
-+
-+	/* walk through all the layers from SW entry point to qgroup layer */
-+	for (i = hw->sw_entry_point_layer; i <= qg_layer; i++) {
-+		num_nodes = ice_sched_get_num_nodes_per_layer(pi, i);
-+		if (num_nodes + new_num_nodes_per_layer[i] >
-+		    le16_to_cpu(hw->layer_info[i].max_pf_nodes)) {
-+			ice_debug(hw, ICE_DBG_SCHED,
-+				  "max nodes reached for layer = %d\n", i);
-+			return ICE_ERR_CFG;
-+		}
-+	}
-+	return 0;
-+}
-+
- /**
-  * ice_rm_dflt_leaf_node - remove the default leaf node in the tree
-  * @pi: port information structure
-@@ -530,6 +978,7 @@ ice_sched_rm_dflt_nodes(struct ice_port_info *pi)
- 	struct ice_sched_node *node;
- 
- 	ice_rm_dflt_leaf_node(pi);
-+
- 	/* remove the default nodes except TC and root nodes */
- 	node = pi->root;
- 	while (node) {
-@@ -539,6 +988,7 @@ ice_sched_rm_dflt_nodes(struct ice_port_info *pi)
- 			ice_free_sched_node(pi, node);
- 			break;
- 		}
-+
- 		if (!node->num_children)
- 			break;
- 		node = node->children[0];
-@@ -734,8 +1184,10 @@ ice_sched_find_node_in_subtree(struct ice_hw *hw, struct ice_sched_node *base,
- 
- 		if (node == child)
- 			return true;
-+
- 		if (child->tx_sched_layer > node->tx_sched_layer)
- 			return false;
-+
- 		/* this recursion is intentional, and wouldn't
- 		 * go more than 8 calls
- 		 */
-@@ -765,13 +1217,17 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_id, u8 tc,
- 
- 	qgrp_layer = ice_sched_get_qgrp_layer(pi->hw);
- 	max_children = le16_to_cpu(pi->hw->layer_info[qgrp_layer].max_children);
-+
- 	list_elem = ice_sched_get_vsi_info_entry(pi, vsi_id);
- 	if (!list_elem)
- 		goto lan_q_exit;
-+
- 	vsi_node = list_elem->vsi_node[tc];
-+
- 	/* validate invalid VSI id */
- 	if (!vsi_node)
- 		goto lan_q_exit;
-+
- 	/* get the first q group node from VSI sub-tree */
- 	qgrp_node = ice_sched_get_first_node(pi->hw, vsi_node, qgrp_layer);
- 	while (qgrp_node) {
-@@ -782,6 +1238,436 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_id, u8 tc,
- 				break;
- 		qgrp_node = qgrp_node->sibling;
- 	}
-+
- lan_q_exit:
- 	return qgrp_node;
- }
-+
-+/**
-+ * ice_sched_get_vsi_node - Get a VSI node based on VSI id
-+ * @hw: pointer to the hw struct
-+ * @tc_node: pointer to the TC node
-+ * @vsi_id: VSI id
-+ *
-+ * This function retrieves a VSI node for a given VSI id from a given
-+ * TC branch
-+ */
-+static struct ice_sched_node *
-+ice_sched_get_vsi_node(struct ice_hw *hw, struct ice_sched_node *tc_node,
-+		       u16 vsi_id)
-+{
-+	struct ice_sched_node *node;
-+	u8 vsi_layer;
-+
-+	vsi_layer = ice_sched_get_vsi_layer(hw);
-+	node = ice_sched_get_first_node(hw, tc_node, vsi_layer);
-+
-+	/* Check whether it already exists */
-+	while (node) {
-+		if (node->vsi_id == vsi_id)
-+			return node;
-+		node = node->sibling;
-+	}
-+
-+	return node;
-+}
-+
-+/**
-+ * ice_sched_calc_vsi_child_nodes - calculate number of VSI child nodes
-+ * @hw: pointer to the hw struct
-+ * @num_qs: number of queues
-+ * @num_nodes: num nodes array
-+ *
-+ * This function calculates the number of VSI child nodes based on the
-+ * number of queues.
-+ */
-+static void
-+ice_sched_calc_vsi_child_nodes(struct ice_hw *hw, u16 num_qs, u16 *num_nodes)
-+{
-+	u16 num = num_qs;
-+	u8 i, qgl, vsil;
-+
-+	qgl = ice_sched_get_qgrp_layer(hw);
-+	vsil = ice_sched_get_vsi_layer(hw);
-+
-+	/* calculate num nodes from q group to VSI layer */
-+	for (i = qgl; i > vsil; i--) {
-+		u16 max_children = le16_to_cpu(hw->layer_info[i].max_children);
-+
-+		/* round to the next integer if there is a remainder */
-+		num = DIV_ROUND_UP(num, max_children);
-+
-+		/* need at least one node */
-+		num_nodes[i] = num ? num : 1;
-+	}
-+}
-+
-+/**
-+ * ice_sched_add_vsi_child_nodes - add VSI child nodes to tree
-+ * @pi: port information structure
-+ * @vsi_id: VSI id
-+ * @tc_node: pointer to the TC node
-+ * @num_nodes: pointer to the num nodes that needs to be added per layer
-+ * @owner: node owner (lan or rdma)
-+ *
-+ * This function adds the VSI child nodes to tree. It gets called for
-+ * lan and rdma separately.
-+ */
-+static enum ice_status
-+ice_sched_add_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id,
-+			      struct ice_sched_node *tc_node, u16 *num_nodes,
-+			      u8 owner)
-+{
-+	struct ice_sched_node *parent, *node;
-+	struct ice_hw *hw = pi->hw;
-+	enum ice_status status;
-+	u32 first_node_teid;
-+	u16 num_added = 0;
-+	u8 i, qgl, vsil;
-+
-+	status = ice_sched_validate_for_max_nodes(pi, num_nodes);
-+	if (status)
-+		return status;
-+
-+	qgl = ice_sched_get_qgrp_layer(hw);
-+	vsil = ice_sched_get_vsi_layer(hw);
-+	parent = ice_sched_get_vsi_node(hw, tc_node, vsi_id);
-+	for (i = vsil + 1; i <= qgl; i++) {
-+		if (!parent)
-+			return ICE_ERR_CFG;
-+		status = ice_sched_add_nodes_to_layer(pi, tc_node, parent, i,
-+						      num_nodes[i],
-+						      &first_node_teid,
-+						      &num_added);
-+		if (status || num_nodes[i] != num_added)
-+			return ICE_ERR_CFG;
-+
-+		/* The newly added node can be a new parent for the next
-+		 * layer nodes
-+		 */
-+		if (num_added) {
-+			parent = ice_sched_find_node_by_teid(tc_node,
-+							     first_node_teid);
-+			node = parent;
-+			while (node) {
-+				node->owner = owner;
-+				node = node->sibling;
-+			}
-+		} else {
-+			parent = parent->children[0];
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_sched_rm_vsi_child_nodes - remove VSI child nodes from the tree
-+ * @pi: port information structure
-+ * @vsi_node: pointer to the VSI node
-+ * @num_nodes: pointer to the num nodes that needs to be removed per layer
-+ * @owner: node owner (lan or rdma)
-+ *
-+ * This function removes the VSI child nodes from the tree. It gets called for
-+ * lan and rdma separately.
-+ */
-+static void
-+ice_sched_rm_vsi_child_nodes(struct ice_port_info *pi,
-+			     struct ice_sched_node *vsi_node, u16 *num_nodes,
-+			     u8 owner)
-+{
-+	struct ice_sched_node *node, *next;
-+	u8 i, qgl, vsil;
-+	u16 num;
-+
-+	qgl = ice_sched_get_qgrp_layer(pi->hw);
-+	vsil = ice_sched_get_vsi_layer(pi->hw);
-+
-+	for (i = qgl; i > vsil; i--) {
-+		num = num_nodes[i];
-+		node = ice_sched_get_first_node(pi->hw, vsi_node, i);
-+		while (node && num) {
-+			next = node->sibling;
-+			if (node->owner == owner && !node->num_children) {
-+				ice_free_sched_node(pi, node);
-+				num--;
-+			}
-+			node = next;
-+		}
-+	}
-+}
-+
-+/**
-+ * ice_sched_calc_vsi_support_nodes - calculate number of VSI support nodes
-+ * @hw: pointer to the hw struct
-+ * @tc_node: pointer to TC node
-+ * @num_nodes: pointer to num nodes array
-+ *
-+ * This function calculates the number of supported nodes needed to add this
-+ * VSI into tx tree including the VSI, parent and intermediate nodes in below
-+ * layers
-+ */
-+static void
-+ice_sched_calc_vsi_support_nodes(struct ice_hw *hw,
-+				 struct ice_sched_node *tc_node, u16 *num_nodes)
-+{
-+	struct ice_sched_node *node;
-+	u16 max_child;
-+	u8 i, vsil;
-+
-+	vsil = ice_sched_get_vsi_layer(hw);
-+	for (i = vsil; i >= hw->sw_entry_point_layer; i--)
-+		/* Add intermediate nodes if TC has no children and
-+		 * need at least one node for VSI
-+		 */
-+		if (!tc_node->num_children || i == vsil) {
-+			num_nodes[i]++;
-+		} else {
-+			/* If intermediate nodes are reached max children
-+			 * then add a new one.
-+			 */
-+			node = ice_sched_get_first_node(hw, tc_node, i);
-+			max_child = le16_to_cpu(hw->layer_info[i].max_children);
-+
-+			/* scan all the siblings */
-+			while (node) {
-+				if (node->num_children < max_child)
-+					break;
-+				node = node->sibling;
-+			}
-+
-+			/* all the nodes are full, allocate a new one */
-+			if (!node)
-+				num_nodes[i]++;
-+		}
-+}
-+
-+/**
-+ * ice_sched_add_vsi_support_nodes - add VSI supported nodes into tx tree
-+ * @pi: port information structure
-+ * @vsi_id: VSI Id
-+ * @tc_node: pointer to TC node
-+ * @num_nodes: pointer to num nodes array
-+ *
-+ * This function adds the VSI supported nodes into tx tree including the
-+ * VSI, its parent and intermediate nodes in below layers
-+ */
-+static enum ice_status
-+ice_sched_add_vsi_support_nodes(struct ice_port_info *pi, u16 vsi_id,
-+				struct ice_sched_node *tc_node, u16 *num_nodes)
-+{
-+	struct ice_sched_node *parent = tc_node;
-+	enum ice_status status;
-+	u32 first_node_teid;
-+	u16 num_added = 0;
-+	u8 i, vsil;
-+
-+	if (!pi)
-+		return ICE_ERR_PARAM;
-+
-+	status = ice_sched_validate_for_max_nodes(pi, num_nodes);
-+	if (status)
-+		return status;
-+
-+	vsil = ice_sched_get_vsi_layer(pi->hw);
-+	for (i = pi->hw->sw_entry_point_layer; i <= vsil; i++) {
-+		status = ice_sched_add_nodes_to_layer(pi, tc_node, parent,
-+						      i, num_nodes[i],
-+						      &first_node_teid,
-+						      &num_added);
-+		if (status || num_nodes[i] != num_added)
-+			return ICE_ERR_CFG;
-+
-+		/* The newly added node can be a new parent for the next
-+		 * layer nodes
-+		 */
-+		if (num_added)
-+			parent = ice_sched_find_node_by_teid(tc_node,
-+							     first_node_teid);
-+		else
-+			parent = parent->children[0];
-+
-+		if (!parent)
-+			return ICE_ERR_CFG;
-+
-+		if (i == vsil)
-+			parent->vsi_id = vsi_id;
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * ice_sched_add_vsi_to_topo - add a new VSI into tree
-+ * @pi: port information structure
-+ * @vsi_id: VSI Id
-+ * @tc: TC number
-+ *
-+ * This function adds a new VSI into scheduler tree
-+ */
-+static enum ice_status
-+ice_sched_add_vsi_to_topo(struct ice_port_info *pi, u16 vsi_id, u8 tc)
-+{
-+	u16 num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
-+	struct ice_sched_node *tc_node;
-+	struct ice_hw *hw = pi->hw;
-+
-+	tc_node = ice_sched_get_tc_node(pi, tc);
-+	if (!tc_node)
-+		return ICE_ERR_PARAM;
-+
-+	/* calculate number of supported nodes needed for this VSI */
-+	ice_sched_calc_vsi_support_nodes(hw, tc_node, num_nodes);
-+
-+	/* add vsi supported nodes to tc subtree */
-+	return ice_sched_add_vsi_support_nodes(pi, vsi_id, tc_node, num_nodes);
-+}
-+
-+/**
-+ * ice_sched_update_vsi_child_nodes - update VSI child nodes
-+ * @pi: port information structure
-+ * @vsi_id: VSI Id
-+ * @tc: TC number
-+ * @new_numqs: new number of max queues
-+ * @owner: owner of this subtree
-+ *
-+ * This function updates the VSI child nodes based on the number of queues
-+ */
-+static enum ice_status
-+ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id, u8 tc,
-+				 u16 new_numqs, u8 owner)
-+{
-+	u16 prev_num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
-+	u16 new_num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
-+	struct ice_sched_node *vsi_node;
-+	struct ice_sched_node *tc_node;
-+	struct ice_sched_vsi_info *vsi;
-+	enum ice_status status = 0;
-+	struct ice_hw *hw = pi->hw;
-+	u16 prev_numqs;
-+	u8 i;
-+
-+	tc_node = ice_sched_get_tc_node(pi, tc);
-+	if (!tc_node)
-+		return ICE_ERR_CFG;
-+
-+	vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_id);
-+	if (!vsi_node)
-+		return ICE_ERR_CFG;
-+
-+	vsi = ice_sched_get_vsi_info_entry(pi, vsi_id);
-+	if (!vsi)
-+		return ICE_ERR_CFG;
-+
-+	if (owner == ICE_SCHED_NODE_OWNER_LAN)
-+		prev_numqs = vsi->max_lanq[tc];
-+	else
-+		return ICE_ERR_PARAM;
-+
-+	/* num queues are not changed */
-+	if (prev_numqs == new_numqs)
-+		return status;
-+
-+	/* calculate number of nodes based on prev/new number of qs */
-+	if (prev_numqs)
-+		ice_sched_calc_vsi_child_nodes(hw, prev_numqs, prev_num_nodes);
-+
-+	if (new_numqs)
-+		ice_sched_calc_vsi_child_nodes(hw, new_numqs, new_num_nodes);
-+
-+	if (prev_numqs > new_numqs) {
-+		for (i = 0; i < ICE_AQC_TOPO_MAX_LEVEL_NUM; i++)
-+			new_num_nodes[i] = prev_num_nodes[i] - new_num_nodes[i];
-+
-+		ice_sched_rm_vsi_child_nodes(pi, vsi_node, new_num_nodes,
-+					     owner);
 +	} else {
-+		for (i = 0; i < ICE_AQC_TOPO_MAX_LEVEL_NUM; i++)
-+			new_num_nodes[i] -= prev_num_nodes[i];
-+
-+		status = ice_sched_add_vsi_child_nodes(pi, vsi_id, tc_node,
-+						       new_num_nodes, owner);
-+		if (status)
-+			return status;
-+	}
-+
-+	if (owner == ICE_SCHED_NODE_OWNER_LAN)
-+		vsi->max_lanq[tc] = new_numqs;
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_sched_cfg_vsi - configure the new/exisiting VSI
-+ * @pi: port information structure
-+ * @vsi_id: VSI Id
-+ * @tc: TC number
-+ * @maxqs: max number of queues
-+ * @owner: lan or rdma
-+ * @enable: TC enabled or disabled
-+ *
-+ * This function adds/updates VSI nodes based on the number of queues. If TC is
-+ * enabled and VSI is in suspended state then resume the VSI back. If TC is
-+ * disabled then suspend the VSI if it is not already.
-+ */
-+enum ice_status
-+ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_id, u8 tc, u16 maxqs,
-+		  u8 owner, bool enable)
-+{
-+	struct ice_sched_node *vsi_node, *tc_node;
-+	struct ice_sched_vsi_info *vsi;
-+	enum ice_status status = 0;
-+	struct ice_hw *hw = pi->hw;
-+
-+	tc_node = ice_sched_get_tc_node(pi, tc);
-+	if (!tc_node)
-+		return ICE_ERR_PARAM;
-+
-+	vsi = ice_sched_get_vsi_info_entry(pi, vsi_id);
-+	if (!vsi)
-+		vsi = ice_sched_create_vsi_info_entry(pi, vsi_id);
-+	if (!vsi)
-+		return ICE_ERR_NO_MEMORY;
-+
-+	vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_id);
-+
-+	/* suspend the VSI if tc is not enabled */
-+	if (!enable) {
-+		if (vsi_node && vsi_node->in_use) {
-+			u32 teid = le32_to_cpu(vsi_node->info.node_teid);
-+
-+			status = ice_sched_suspend_resume_elems(hw, 1, &teid,
-+								true);
-+			if (!status)
-+				vsi_node->in_use = false;
++		if (f_info.flag & ICE_FLTR_TX) {
++			hw->port_info->dflt_tx_vsi_num = ICE_DFLT_VSI_INVAL;
++			hw->port_info->dflt_tx_vsi_rule_id = ICE_INVAL_ACT;
++		} else if (f_info.flag & ICE_FLTR_RX) {
++			hw->port_info->dflt_rx_vsi_num = ICE_DFLT_VSI_INVAL;
++			hw->port_info->dflt_rx_vsi_rule_id = ICE_INVAL_ACT;
 +		}
-+		return status;
 +	}
 +
-+	/* TC is enabled, if it is a new VSI then add it to the tree */
-+	if (!vsi_node) {
-+		status = ice_sched_add_vsi_to_topo(pi, vsi_id, tc);
-+		if (status)
-+			return status;
-+		vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_id);
-+		if (!vsi_node)
-+			return ICE_ERR_CFG;
-+		vsi->vsi_node[tc] = vsi_node;
-+		vsi_node->in_use = true;
-+	}
-+
-+	/* update the VSI child nodes */
-+	status = ice_sched_update_vsi_child_nodes(pi, vsi_id, tc, maxqs, owner);
-+	if (status)
-+		return status;
-+
-+	/* TC is enabled, resume the VSI if it is in the suspend state */
-+	if (!vsi_node->in_use) {
-+		u32 teid = le32_to_cpu(vsi_node->info.node_teid);
-+
-+		status = ice_sched_suspend_resume_elems(hw, 1, &teid, false);
-+		if (!status)
-+			vsi_node->in_use = true;
-+	}
-+
++out:
++	devm_kfree(ice_hw_to_dev(hw), s_rule);
 +	return status;
 +}
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index a3a9fc14603a..a17ca145c8bc 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -21,6 +21,7 @@
- #include "ice_common.h"
- 
- #define ICE_QGRP_LAYER_OFFSET	2
-+#define ICE_VSI_LAYER_OFFSET	4
- 
- struct ice_sched_agg_vsi_info {
- 	struct list_head list_entry;
-@@ -50,4 +51,7 @@ struct ice_sched_node *ice_sched_get_tc_node(struct ice_port_info *pi, u8 tc);
- struct ice_sched_node *
- ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_id, u8 tc,
- 			   u8 owner);
++
+ /**
+  * ice_remove_vlan_internal - Remove one VLAN based filter rule
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 60c63264a393..b063b87f1558 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -169,5 +169,7 @@ enum ice_status ice_remove_mac(struct ice_hw *hw, struct list_head *m_lst);
+ void ice_remove_vsi_fltr(struct ice_hw *hw, u16 vsi_id);
+ enum ice_status ice_add_vlan(struct ice_hw *hw, struct list_head *m_list);
+ enum ice_status ice_remove_vlan(struct ice_hw *hw, struct list_head *v_list);
 +enum ice_status
-+ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_id, u8 tc, u16 maxqs,
-+		  u8 owner, bool enable);
- #endif /* _ICE_SCHED_H_ */
++ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_id, bool set, u8 direction);
+ 
+ #endif /* _ICE_SWITCH_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 66143d1fd2b5..019c124c6240 100644
+index fa6c84849282..7d8d3ff94098 100644
 --- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -24,6 +24,11 @@
+@@ -24,6 +24,9 @@
  #include "ice_controlq.h"
  #include "ice_lan_tx_rx.h"
  
-+static inline bool ice_is_tc_ena(u8 bitmap, u8 tc)
-+{
-+	return test_bit(tc, (unsigned long *)&bitmap);
-+}
++#define ICE_BYTES_PER_WORD	2
++#define ICE_BYTES_PER_DWORD	4
 +
- /* debug masks - set these bits in hw->debug_mask to control output */
- #define ICE_DBG_INIT		BIT_ULL(1)
- #define ICE_DBG_QCTX		BIT_ULL(6)
-@@ -208,6 +213,8 @@ enum ice_agg_type {
- 	ICE_AGG_TYPE_QG
- };
- 
-+#define ICE_SCHED_DFLT_RL_PROF_ID	0
-+
- /* vsi type list entry to locate corresponding vsi/ag nodes */
- struct ice_sched_vsi_info {
- 	struct ice_sched_node *vsi_node[ICE_MAX_TRAFFIC_CLASS];
+ static inline bool ice_is_tc_ena(u8 bitmap, u8 tc)
+ {
+ 	return test_bit(tc, (unsigned long *)&bitmap);
+@@ -241,7 +244,9 @@ struct ice_port_info {
+ 	u8 port_state;
+ #define ICE_SCHED_PORT_STATE_INIT	0x0
+ #define ICE_SCHED_PORT_STATE_READY	0x1
++	u16 dflt_tx_vsi_rule_id;
+ 	u16 dflt_tx_vsi_num;
++	u16 dflt_rx_vsi_rule_id;
+ 	u16 dflt_rx_vsi_num;
+ 	struct ice_fc_info fc;
+ 	struct ice_mac_info mac;
 -- 
 2.14.3
 
