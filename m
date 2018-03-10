@@ -1,51 +1,60 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 10 Mar 2018 04:50:14 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] Revert "e1000e: Separate
- signaling for link check/link up"
-In-Reply-To: <20180306015553.10441-1-bpoirier@suse.com>
+Date: Sat, 10 Mar 2018 04:53:31 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2] e1000e: Fix link check race
+ condition
+In-Reply-To: <20180306015553.10441-2-bpoirier@suse.com>
 References: <20180306015553.10441-1-bpoirier@suse.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C801AAC@ORSMSX101.amr.corp.intel.com>
+ <20180306015553.10441-2-bpoirier@suse.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C801AC3@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Benjamin Poirier
+> From: netdev-owner at vger.kernel.org [mailto:netdev-
+> owner at vger.kernel.org] On Behalf Of Benjamin Poirier
 > Sent: Monday, March 5, 2018 5:56 PM
 > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org; Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-> Subject: [Intel-wired-lan] [PATCH 1/2] Revert "e1000e: Separate signaling for
-> link check/link up"
+> Cc: Alexander Duyck <alexander.duyck@gmail.com>; Lennart Sorensen
+> <lsorense@csclub.uwaterloo.ca>; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [PATCH 2/2] e1000e: Fix link check race condition
 > 
-> This reverts commit 19110cfbb34d4af0cdfe14cd243f3b09dc95b013.
-> This reverts commit 4110e02eb45ea447ec6f5459c9934de0a273fb91.
-> This reverts commit d3604515c9eda464a92e8e67aae82dfe07fe3c98.
+> Alex reported the following race condition:
 > 
-> Commit 19110cfbb34d ("e1000e: Separate signaling for link check/link up")
-> changed what happens to the link status when there is an error which
-> happens after "get_link_status = false" in the copper check_for_link
-> callbacks. Previously, such an error would be ignored and the link
-> considered up. After that commit, any error implies that the link is down.
+> /* link goes up... interrupt... schedule watchdog */
+> \ e1000_watchdog_task
+> 	\ e1000e_has_link
+> 		\ hw->mac.ops.check_for_link() ===
+> e1000e_check_for_copper_link
+> 			\ e1000e_phy_has_link_generic(..., &link)
+> 				link = true
 > 
-> Revert commit 19110cfbb34d ("e1000e: Separate signaling for link check/link
-> up") and its followups. After reverting, the race condition described in
-> the log of commit 19110cfbb34d is reintroduced. It may still be triggered
-> by LSC events but this should keep the link down in case the link is
-> electrically unstable, as discussed. The race may no longer be
-> triggered by RXO events because commit 4aea7a5c5e94 ("e1000e: Avoid
-> receiver overrun interrupt bursts") restored reading icr in the Other
-> handler.
+> 					 /* link goes down... interrupt */
+> 					 \ e1000_msix_other
+> 						 hw->mac.get_link_status =
+> true
 > 
-> Link: https://lkml.org/lkml/2018/3/1/789
+> 			/* link is up */
+> 			mac->get_link_status = false
+> 
+> 		link_active = true
+> 		/* link_active is true, wrongly, and stays so because
+> 		 * get_link_status is false */
+> 
+> Avoid this problem by making sure that we don't set get_link_status = false
+> after having checked the link.
+> 
+> It seems this problem has been present since the introduction of e1000e.
+> 
+> Link: https://lkml.org/lkml/2018/1/29/338
+> Reported-by: Alexander Duyck <alexander.duyck@gmail.com>
 > Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/ich8lan.c | 13 ++++---------
->  drivers/net/ethernet/intel/e1000e/mac.c     | 13 ++++---------
->  drivers/net/ethernet/intel/e1000e/netdev.c  |  2 +-
->  3 files changed, 9 insertions(+), 19 deletions(-)
-> 
+>  drivers/net/ethernet/intel/e1000e/ich8lan.c | 31 ++++++++++++++++-------
+> ------
+>  drivers/net/ethernet/intel/e1000e/mac.c     | 14 ++++++-------
+>  2 files changed, 24 insertions(+), 21 deletions(-)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
