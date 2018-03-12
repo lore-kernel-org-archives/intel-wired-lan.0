@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 12 Mar 2018 21:21:21 +0000
-Subject: [Intel-wired-lan] [S87 v5 5/7] i40e: factor out re-enable
- functions for ATR and SB
-In-Reply-To: <20180308225211.12254-5-jeffrey.t.kirsher@intel.com>
+Date: Mon, 12 Mar 2018 21:21:54 +0000
+Subject: [Intel-wired-lan] [S87 v5 6/7] i40e: fix for wrong partition id
+ calculation on OCP mezz cards
+In-Reply-To: <20180308225211.12254-6-jeffrey.t.kirsher@intel.com>
 References: <20180308225211.12254-1-jeffrey.t.kirsher@intel.com>
- <20180308225211.12254-5-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94BE3E@ORSMSX104.amr.corp.intel.com>
+ <20180308225211.12254-6-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94BE4E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Thursday, March 8, 2018 2:52 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [S87 v5 5/7] i40e: factor out re-enable functions for
-> ATR and SB
+> Cc: Stachura, Mariusz <mariusz.stachura@intel.com>
+> Subject: [Intel-wired-lan] [S87 v5 6/7] i40e: fix for wrong partition id
+> calculation on OCP mezz cards
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Mariusz Stachura <mariusz.stachura@intel.com>
 > 
-> A future patch needs to expand on the logic for re-enabling ATR. Doing so
-> would cause some code to break the 80-character line limit.
+> This patch overwrites number of ports for X722 devices with support for OCP
+> PHY mezzanine.
+> The old method with checking if port is disabled in the PRTGEN_CNF register
+> cannot be used in this case. When the OCP is removed, ports were seen as
+> disabled, which resulted in wrong calculation of partition id, that caused WoL
+> to be disabled on certain ports.
 > 
-> To reduce the level of indentation, factor out helper functions for re-
-> enabling ATR and SB rules.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 48 +++++++++++++++++++--
-> --------
->  1 file changed, 32 insertions(+), 16 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 23
+> ++++++++++++++++++++++-
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   |  3 +++
+>  2 files changed, 25 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
