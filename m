@@ -1,11 +1,11 @@
 From: Malek, Patryk <patryk.malek@intel.com>
-Date: Tue, 13 Mar 2018 08:20:27 +0000
-Subject: [Intel-wired-lan] [next PATCH S88 6/8] i40e: Prevent setting
- link speed on I40E_DEV_ID_25G_B
-In-Reply-To: <20180312140022.59580-6-alice.michael@intel.com>
+Date: Tue, 13 Mar 2018 08:20:43 +0000
+Subject: [Intel-wired-lan] [next PATCH S88 2/8] i40e: Prevent setting
+ link speed on KX_X722
+In-Reply-To: <20180312140022.59580-2-alice.michael@intel.com>
 References: <20180312140022.59580-1-alice.michael@intel.com>
- <20180312140022.59580-6-alice.michael@intel.com>
-Message-ID: <FA03331EB45A2544B0CBCB1A14B6429E296A0619@IRSMSX104.ger.corp.intel.com>
+ <20180312140022.59580-2-alice.michael@intel.com>
+Message-ID: <FA03331EB45A2544B0CBCB1A14B6429E296A0624@IRSMSX104.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,7 +19,7 @@ From: Michael, Alice
 Sent: Monday, March 12, 2018 15:00
 To: alice.michael; intel-wired-lan at lists.osuosl.org
 Cc: Malek, Patryk <patryk.malek@intel.com>
-Subject: [next PATCH S88 6/8] i40e: Prevent setting link speed on I40E_DEV_ID_25G_B
+Subject: [next PATCH S88 2/8] i40e: Prevent setting link speed on KX_X722
 
 From: Patryk Ma?ek <patryk.malek@intel.com>
 
@@ -28,21 +28,23 @@ This patch adds one more device id to the list which we check that against.
 
 Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index d86d090..722eb6b 100644
+index 9bb85da..d86d090 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -861,6 +861,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
+@@ -860,7 +860,8 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
+ 	if (hw->device_id == I40E_DEV_ID_KX_B ||
  	    hw->device_id == I40E_DEV_ID_KX_C ||
  	    hw->device_id == I40E_DEV_ID_20G_KR2 ||
- 	    hw->device_id == I40E_DEV_ID_20G_KR2_A ||
-+	    hw->device_id == I40E_DEV_ID_25G_B ||
- 	    hw->device_id == I40E_DEV_ID_KX_X722) {
+-	    hw->device_id == I40E_DEV_ID_20G_KR2_A) {
++	    hw->device_id == I40E_DEV_ID_20G_KR2_A ||
++	    hw->device_id == I40E_DEV_ID_KX_X722) {
  		netdev_info(netdev, "Changing settings is not supported on backplane.\n");
  		return -EOPNOTSUPP;
+ 	}
 --
 2.9.5
 
