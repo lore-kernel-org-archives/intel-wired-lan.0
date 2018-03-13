@@ -1,59 +1,48 @@
-From: Malek, Patryk <patryk.malek@intel.com>
-Date: Tue, 13 Mar 2018 08:20:43 +0000
-Subject: [Intel-wired-lan] [next PATCH S88 2/8] i40e: Prevent setting
- link speed on KX_X722
-In-Reply-To: <20180312140022.59580-2-alice.michael@intel.com>
-References: <20180312140022.59580-1-alice.michael@intel.com>
- <20180312140022.59580-2-alice.michael@intel.com>
-Message-ID: <FA03331EB45A2544B0CBCB1A14B6429E296A0624@IRSMSX104.ger.corp.intel.com>
+From: Venkataramanan, Anirudh <anirudh.venkataramanan@intel.com>
+Date: Tue, 13 Mar 2018 19:05:19 +0000
+Subject: [Intel-wired-lan] [PATCH 12/15] ice: Add stats and ethtool
+ support
+In-Reply-To: <20180309151428.4d73358c@cakuba.netronome.com>
+References: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
+ <20180309172136.9073-13-anirudh.venkataramanan@intel.com>
+ <20180309151428.4d73358c@cakuba.netronome.com>
+Message-ID: <1520967916.696.21.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK, thanks
+On Fri, 2018-03-09 at 15:14 -0800, Jakub Kicinski wrote:
+> On Fri,  9 Mar 2018 09:21:33 -0800, Anirudh Venkataramanan wrote:
+> > +static const struct ice_stats ice_net_stats[] = {
+> > +	ICE_NETDEV_STAT(rx_packets),
+> > +	ICE_NETDEV_STAT(tx_packets),
+> > +	ICE_NETDEV_STAT(rx_bytes),
+> > +	ICE_NETDEV_STAT(tx_bytes),
+> > +	ICE_NETDEV_STAT(rx_errors),
+> > +	ICE_NETDEV_STAT(tx_errors),
+> > +	ICE_NETDEV_STAT(rx_dropped),
+> > +	ICE_NETDEV_STAT(tx_dropped),
+> > +	ICE_NETDEV_STAT(multicast),
+> > +	ICE_NETDEV_STAT(rx_length_errors),
+> > +	ICE_NETDEV_STAT(rx_crc_errors),
+> > +};
+> 
+> Please don't duplicate standard netdev stats in ethtool -S.
 
------Original Message-----
-From: Michael, Alice 
-Sent: Monday, March 12, 2018 15:00
-To: alice.michael; intel-wired-lan at lists.osuosl.org
-Cc: Malek, Patryk <patryk.malek@intel.com>
-Subject: [next PATCH S88 2/8] i40e: Prevent setting link speed on KX_X722
+Jacub,
 
-From: Patryk Ma?ek <patryk.malek@intel.com>
+Thanks for the feedback. I am not sure I understand what's being asked
+here. Do you mean to say that standard netdev stats should not be
+printed when we do ethtool -S or something else?
 
-Setting link settings on backplane devices shouldn't be allowed.
-This patch adds one more device id to the list which we check that against.
-
-Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 9bb85da..d86d090 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -860,7 +860,8 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
- 	if (hw->device_id == I40E_DEV_ID_KX_B ||
- 	    hw->device_id == I40E_DEV_ID_KX_C ||
- 	    hw->device_id == I40E_DEV_ID_20G_KR2 ||
--	    hw->device_id == I40E_DEV_ID_20G_KR2_A) {
-+	    hw->device_id == I40E_DEV_ID_20G_KR2_A ||
-+	    hw->device_id == I40E_DEV_ID_KX_X722) {
- 		netdev_info(netdev, "Changing settings is not supported on backplane.\n");
- 		return -EOPNOTSUPP;
- 	}
---
-2.9.5
-
---------------------------------------------------------------------
-
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
+Thanks!
+Ani
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3302 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180313/ba4111cb/attachment.bin>
