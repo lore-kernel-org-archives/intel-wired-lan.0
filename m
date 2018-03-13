@@ -1,33 +1,150 @@
-From: Saleem, Shiraz <shiraz.saleem@intel.com>
-Date: Mon, 12 Mar 2018 22:55:45 +0000
-Subject: [Intel-wired-lan] [next PATCH S88 3/8] i40e: Close client on
- suspend and restore client MSIx on resume
-In-Reply-To: <20180312140022.59580-3-alice.michael@intel.com>
-References: <20180312140022.59580-1-alice.michael@intel.com>
- <20180312140022.59580-3-alice.michael@intel.com>
-Message-ID: <9DD61F30A802C4429A01CA4200E302A789F64409@fmsmsx116.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 13 Mar 2018 08:30:54 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 79c130c3137a767d18ddb51af1b5b104d9c22aef
+Message-ID: <5aa71bbe.hQDJ5pShCBM4HrFH%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->Subject: [next PATCH S88 3/8] i40e: Close client on suspend and restore client
->MSIx on resume
->
->From: Shiraz Saleem <shiraz.saleem@intel.com>
->
->During suspend client MSIx vectors are freed while they are still in use causing a
->crash on entering S3.
->
->Fix this calling client close before freeing up its MSIx vectors.
->Also update the client MSIx vectors on resume before client open is called.
->
->Fixes commit b980c0634fe5 ("i40e: shutdown all IRQs and disable MSI-X when
->suspended")
->
->Reported-by: Stefan Assmann <sassmann@redhat.com>
->Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
->---
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 79c130c3137a767d18ddb51af1b5b104d9c22aef  i40e: restore TCPv4 input set when re-enabling ATR
 
-ACK. Thank you Alice!
+elapsed time: 174m
+
+configs tested: 126
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+i386                   randconfig-x013-201810
+i386                   randconfig-x014-201810
+i386                   randconfig-x015-201810
+i386                   randconfig-x012-201810
+i386                   randconfig-x019-201810
+i386                   randconfig-x016-201810
+i386                   randconfig-x010-201810
+i386                   randconfig-x018-201810
+i386                   randconfig-x011-201810
+i386                   randconfig-x017-201810
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-03121123
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                   randconfig-i1-03121123
+i386                   randconfig-i0-03121123
+x86_64                 randconfig-x010-201810
+x86_64                 randconfig-x014-201810
+x86_64                 randconfig-x013-201810
+x86_64                 randconfig-x019-201810
+x86_64                 randconfig-x011-201810
+x86_64                 randconfig-x015-201810
+x86_64                 randconfig-x018-201810
+x86_64                 randconfig-x016-201810
+x86_64                 randconfig-x017-201810
+x86_64                 randconfig-x012-201810
+i386                     randconfig-a0-201810
+i386                     randconfig-a1-201810
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-s1-201810
+i386                     randconfig-s0-201810
+x86_64                           allmodconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+i386                             allmodconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                 randconfig-i0-03122117
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-x006-201810
+i386                   randconfig-x000-201810
+i386                   randconfig-x008-201810
+i386                   randconfig-x004-201810
+i386                   randconfig-x009-201810
+i386                   randconfig-x003-201810
+i386                   randconfig-x002-201810
+i386                   randconfig-x005-201810
+i386                   randconfig-x001-201810
+i386                   randconfig-x007-201810
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+x86_64                 randconfig-x002-201810
+x86_64                 randconfig-x006-201810
+x86_64                 randconfig-x005-201810
+x86_64                 randconfig-x009-201810
+x86_64                 randconfig-x004-201810
+x86_64                 randconfig-x001-201810
+x86_64                 randconfig-x008-201810
+x86_64                 randconfig-x003-201810
+x86_64                 randconfig-x007-201810
+x86_64                 randconfig-x000-201810
+i386                   randconfig-x073-201810
+i386                   randconfig-x075-201810
+i386                   randconfig-x071-201810
+i386                   randconfig-x076-201810
+i386                   randconfig-x079-201810
+i386                   randconfig-x077-201810
+i386                   randconfig-x070-201810
+i386                   randconfig-x074-201810
+i386                   randconfig-x078-201810
+i386                   randconfig-x072-201810
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+
+Thanks,
+Fengguang
