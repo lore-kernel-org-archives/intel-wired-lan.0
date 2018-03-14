@@ -1,31 +1,55 @@
-From: Stephen Hemminger <stephen@networkplumber.org>
-Date: Wed, 14 Mar 2018 08:13:17 -0700
-Subject: [Intel-wired-lan] [PATCH 12/15] ice: Add stats and ethtool
- support
-In-Reply-To: <20180313141414.00007d11@intel.com>
-References: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
- <20180309172136.9073-13-anirudh.venkataramanan@intel.com>
- <20180309151428.4d73358c@cakuba.netronome.com>
- <1520967916.696.21.camel@intel.com>
- <a6f3bd20-705e-2022-23c8-1e3b5a8c93a6@gmail.com>
- <20180313141414.00007d11@intel.com>
-Message-ID: <20180314081317.1bbfe856@xeon-e3>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Tue, 13 Mar 2018 23:19:52 -0400
+Subject: [Intel-wired-lan] [PATCH 1/7] i40e/i40evf: Eliminate duplicate
+ barriers on weakly-ordered archs
+Message-ID: <1520997599-17298-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 13 Mar 2018 14:14:14 -0700
-Jesse Brandeburg <jesse.brandeburg@intel.com> wrote:
+Code includes wmb() followed by writel(). writel() already has a barrier
+on some architectures like arm64.
 
-> Maybe it's just that I've been doing this too long, but I regularly
-> (and many other customers/users do as well) depend on the ethtool stats
-> being atomically updated w.r.t. each other.  This means that if I'm
-> getting the over rx_packets, as well as the per-queue rx_packets, and I
-> read them all at once from the driver with ethtool, then I can check
-> that things are working as expected.
+This ends up CPU observing two barriers back to back before executing the
+register write.
 
-Any application depending on this behavior is really fragile.
-It is unportable to other devices (which I guess is to Intel's benefit)
-and relying on guarantees not provided by current Linux network devices.
+Since code already has an explicit barrier call, changing writel() to
+writel_relaxed().
+
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index e554aa6cf..7028516 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1375,7 +1375,7 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
+ 	 * such as IA-64).
+ 	 */
+ 	wmb();
+-	writel(val, rx_ring->tail);
++	writel_relaxed(val, rx_ring->tail);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 357d605..2d323fc 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -667,7 +667,7 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
+ 	 * such as IA-64).
+ 	 */
+ 	wmb();
+-	writel(val, rx_ring->tail);
++	writel_relaxed(val, rx_ring->tail);
+ }
+ 
+ /**
+-- 
+2.7.4
+
