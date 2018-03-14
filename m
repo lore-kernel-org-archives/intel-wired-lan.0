@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 14 Mar 2018 23:30:32 +0000
-Subject: [Intel-wired-lan] [PATCH S88 4/8] i40e: add doxygen comment for
- new mode parameter
-In-Reply-To: <20180314181918.21582-4-jeffrey.t.kirsher@intel.com>
+Date: Wed, 14 Mar 2018 23:30:59 +0000
+Subject: [Intel-wired-lan] [PATCH S88 5/8] i40e: Fix incorrect return
+ types
+In-Reply-To: <20180314181918.21582-5-jeffrey.t.kirsher@intel.com>
 References: <20180314181918.21582-1-jeffrey.t.kirsher@intel.com>
- <20180314181918.21582-4-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94C2DD@ORSMSX104.amr.corp.intel.com>
+ <20180314181918.21582-5-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94C2ED@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Wednesday, March 14, 2018 11:19 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S88 4/8] i40e: add doxygen comment for
-> new mode parameter
+> Cc: Dziggel, Douglas A <douglas.a.dziggel@intel.com>
+> Subject: [Intel-wired-lan] [PATCH S88 5/8] i40e: Fix incorrect return types
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Doug Dziggel <douglas.a.dziggel@intel.com>
 > 
-> A recent patch updated the signature for i40e_aq_set_switch_config() to
-> add a new parameter 'mode'. It forgot to document the parameter in the
-> doxygen function header comment. Add the parameter to the function
-> description now.
+> Fix return types from i40e_status to enum i40e_status_code.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Doug Dziggel <douglas.a.dziggel@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c    | 4 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h | 4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
