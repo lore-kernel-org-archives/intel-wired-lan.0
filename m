@@ -1,158 +1,200 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 15 Mar 2018 06:19:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- ab0e2592c900d6430323714e1053fbc3e04d5507
-Message-ID: <5aa9a000.JVwOu7RE9+KsTvlX%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 14 Mar 2018 15:16:33 -0700
+Subject: [Intel-wired-lan] [PATCH 02/15] ice: Add support for control
+ queues
+In-Reply-To: <af3a595f-a9ab-8706-3d94-151a92d5d63a@oracle.com>
+References: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
+ <20180309172136.9073-3-anirudh.venkataramanan@intel.com>
+ <af3a595f-a9ab-8706-3d94-151a92d5d63a@oracle.com>
+Message-ID: <1521065793.19147.7.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: ab0e2592c900d6430323714e1053fbc3e04d5507  i40e: Fix the polling mechanism of GLGEN_RSTAT.DEVSTATE
+On Mon, 2018-03-12 at 19:05 -0700, Shannon Nelson wrote:
+> On 3/9/2018 9:21 AM, Anirudh Venkataramanan wrote:
+> > A control queue is a hardware interface which is used by the driver
+> > to interact with other subsystems (like firmware, PHY, etc.). It is
+> > implemented as a producer-consumer ring. More specifically, an
+> > "admin queue" is a type of control queue used to interact with the
+> > firmware.
+> > 
+> > This patch introduces data structures and functions to initialize
+> > and teardown control/admin queues. Once the admin queue is
+> > initialized,
+> > the driver uses it to get the firmware version.
+> > 
+> > Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel
+> > .com>
+> > ---
+> >    drivers/net/ethernet/intel/ice/Makefile         |   4 +-
+> >    drivers/net/ethernet/intel/ice/ice.h            |   1 +
+> >    drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 108 +++
+> >    drivers/net/ethernet/intel/ice/ice_common.c     | 144 ++++
+> >    drivers/net/ethernet/intel/ice/ice_common.h     |  39 +
+> >    drivers/net/ethernet/intel/ice/ice_controlq.c   | 979
+> > ++++++++++++++++++++++++
+> >    drivers/net/ethernet/intel/ice/ice_controlq.h   |  97 +++
+> >    drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  46 ++
+> >    drivers/net/ethernet/intel/ice/ice_main.c       |  11 +-
+> >    drivers/net/ethernet/intel/ice/ice_osdep.h      |  86 +++
+> >    drivers/net/ethernet/intel/ice/ice_status.h     |  35 +
+> >    drivers/net/ethernet/intel/ice/ice_type.h       |  22 +
+> >    12 files changed, 1570 insertions(+), 2 deletions(-)
+> >    create mode 100644
+> > drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> >    create mode 100644 drivers/net/ethernet/intel/ice/ice_common.c
+> >    create mode 100644 drivers/net/ethernet/intel/ice/ice_common.h
+> >    create mode 100644 drivers/net/ethernet/intel/ice/ice_controlq.c
+> >    create mode 100644 drivers/net/ethernet/intel/ice/ice_controlq.h
+> >    create mode 100644
+> > drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> >    create mode 100644 drivers/net/ethernet/intel/ice/ice_osdep.h
+> >    create mode 100644 drivers/net/ethernet/intel/ice/ice_status.h
+> > 
+> > diff --git a/drivers/net/ethernet/intel/ice/Makefile
+> > b/drivers/net/ethernet/intel/ice/Makefile
+> > index 2a177ea21b74..eebf619e84a8 100644
+> > --- a/drivers/net/ethernet/intel/ice/Makefile
+> > +++ b/drivers/net/ethernet/intel/ice/Makefile
+> > @@ -24,4 +24,6 @@
+> >    
+> >    obj-$(CONFIG_ICE) += ice.o
+> >    
+> > -ice-y := ice_main.o
+> > +ice-y := ice_main.o  \
+> > +      ice_controlq.o \
+> > +      ice_common.o
+> > diff --git a/drivers/net/ethernet/intel/ice/ice.h
+> > b/drivers/net/ethernet/intel/ice/ice.h
+> > index d781027330cc..ea2fb63bb095 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice.h
+> > +++ b/drivers/net/ethernet/intel/ice/ice.h
+> > @@ -26,6 +26,7 @@
+> >    #include <linux/compiler.h>
+> >    #include <linux/pci.h>
+> >    #include <linux/aer.h>
+> > +#include <linux/delay.h>
+> >    #include <linux/bitmap.h>
+> >    #include "ice_devids.h"
+> >    #include "ice_type.h"
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> > b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> > new file mode 100644
+> > index 000000000000..885fa3c6fec4
+> > --- /dev/null
+> > +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> > @@ -0,0 +1,108 @@
+> > +/* SPDX-License-Identifier: GPL-2.0-only */
+> > +/* Intel(R) Ethernet Connection E800 Series Linux Driver
+> > + * Copyright (c) 2018, Intel Corporation.
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > modify it
+> > + * under the terms and conditions of the GNU General Public
+> > License,
+> > + * version 2, as published by the Free Software Foundation.
+> > + *
+> > + * This program is distributed in the hope it will be useful, but
+> > WITHOUT
+> > + * ANY WARRANTY; without even the implied warranty of
+> > MERCHANTABILITY or
+> > + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+> > License for
+> > + * more details.
+> > + *
+> > + * The full GNU General Public License is included in this
+> > distribution in
+> > + * the file called "COPYING".
+> > + */
+> > +
+> > +#ifndef _ICE_ADMINQ_CMD_H_
+> > +#define _ICE_ADMINQ_CMD_H_
+> > +
+> > +/* This header file defines the Admin Queue commands, error codes
+> > and
+> > + * descriptor format.  It is shared between Firmware and Software.
+> > + */
+> > +
+> > +struct ice_aqc_generic {
+> > +     __le32 param0;
+> > +     __le32 param1;
+> > +     __le32 addr_high;
+> > +     __le32 addr_low;
+> > +};
+> > +
+> > +/* Get version (direct 0x0001) */
+> > +struct ice_aqc_get_ver {
+> > +     __le32 rom_ver;
+> > +     __le32 fw_build;
+> > +     u8 fw_branch;
+> > +     u8 fw_major;
+> > +     u8 fw_minor;
+> > +     u8 fw_patch;
+> > +     u8 api_branch;
+> > +     u8 api_major;
+> > +     u8 api_minor;
+> > +     u8 api_patch;
+> > +};
+> > +
+> > +/* Queue Shutdown (direct 0x0003) */
+> > +struct ice_aqc_q_shutdown {
+> > +#define ICE_AQC_DRIVER_UNLOADING     BIT(0)
+> > +     __le32 driver_unloading;
+> > +     u8 reserved[12];
+> > +};
+> > +
+> > +/**
+> > + * struct ice_aq_desc - Admin Queue (AQ) descriptor
+> > + * @flags: ICE_AQ_FLAG_* flags
+> > + * @opcode: AQ command opcode
+> > + * @datalen: length in bytes of indirect/external data buffer
+> > + * @retval: return value from firmware
+> > + * @cookie_h: opaque data high-half
+> > + * @cookie_l: opaque data low-half
+> > + * @params: command-specific parameters
+> > + *
+> > + * Descriptor format for commands the driver posts on the Admin
+> > Transmit Queue
+> > + * (ATQ).  The firmware writes back onto the command descriptor
+> > and returns
+> > + * the result of the command.  Asynchronous events that are not an
+> > immediate
+> > + * result of the command are written to the Admin Receive Queue
+> > (ARQ) using
+> > + * the same descriptor format.  Descriptors are in little-endian
+> > notation with
+> > + * 32-bit words.
+> > + */
+> > +struct ice_aq_desc {
+> > +     __le16 flags;
+> > +     __le16 opcode;
+> > +     __le16 datalen;
+> > +     __le16 retval;
+> > +     __le32 cookie_high;
+> > +     __le32 cookie_low;
+> > +     union {
+> > +             u8 raw[16];
+> > +             struct ice_aqc_generic generic;
+> > +             struct ice_aqc_get_ver get_ver;
+> > +             struct ice_aqc_q_shutdown q_shutdown;
+> > +     } params;
+> > +};
+> 
+> You might put a compile-time size check on this struct - it helped
+> many 
+> times in i40e development.
 
-elapsed time: 229m
-
-configs tested: 134
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                randconfig-in0-03142009
-i386                   randconfig-x013-201810
-i386                   randconfig-x014-201810
-i386                   randconfig-x015-201810
-i386                   randconfig-x012-201810
-i386                   randconfig-x019-201810
-i386                   randconfig-x016-201810
-i386                   randconfig-x010-201810
-i386                   randconfig-x018-201810
-i386                   randconfig-x011-201810
-i386                   randconfig-x017-201810
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201810
-x86_64                 randconfig-x002-201810
-x86_64                 randconfig-x006-201810
-x86_64                 randconfig-x005-201810
-x86_64                 randconfig-x009-201810
-x86_64                 randconfig-x004-201810
-x86_64                 randconfig-x001-201810
-x86_64                 randconfig-x008-201810
-x86_64                 randconfig-x003-201810
-x86_64                 randconfig-x007-201810
-x86_64                 randconfig-x000-201810
-i386                     randconfig-i1-201810
-i386                     randconfig-i0-201810
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-x86_64                 randconfig-x010-201810
-x86_64                 randconfig-x014-201810
-x86_64                 randconfig-x013-201810
-x86_64                 randconfig-x019-201810
-x86_64                 randconfig-x011-201810
-x86_64                 randconfig-x015-201810
-x86_64                 randconfig-x018-201810
-x86_64                 randconfig-x016-201810
-x86_64                 randconfig-x017-201810
-x86_64                 randconfig-x012-201810
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                     randconfig-a0-201810
-i386                     randconfig-a1-201810
-cris                 etrax-100lx_v2_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201810
-i386                     randconfig-s0-201810
-x86_64                           allmodconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201810
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-arm                        clps711x_defconfig
-arm                          collie_defconfig
-powerpc                     taishan_defconfig
-xtensa                    smp_lx200_defconfig
-i386                   randconfig-h0-03141416
-i386                   randconfig-h1-03141416
-x86_64                                   rhel
-x86_64                               rhel-7.2
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-i386                   randconfig-x073-201810
-i386                   randconfig-x075-201810
-i386                   randconfig-x071-201810
-i386                   randconfig-x076-201810
-i386                   randconfig-x079-201810
-i386                   randconfig-x077-201810
-i386                   randconfig-x070-201810
-i386                   randconfig-x074-201810
-i386                   randconfig-x078-201810
-i386                   randconfig-x072-201810
-i386                   randconfig-x006-201810
-i386                   randconfig-x000-201810
-i386                   randconfig-x008-201810
-i386                   randconfig-x004-201810
-i386                   randconfig-x009-201810
-i386                   randconfig-x003-201810
-i386                   randconfig-x002-201810
-i386                   randconfig-x005-201810
-i386                   randconfig-x001-201810
-i386                   randconfig-x007-201810
-
-Thanks,
-Fengguang
+We have taken appropriate actions to prevent the issues had with i40e
+so that the ice driver should not need the same checks that i40e
+required.  Also there are Linux kernel macros that are more appropriate
+ for build-time checks.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180314/ee94f0b0/attachment.asc>
