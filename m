@@ -1,94 +1,31 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 14 Mar 2018 03:07:09 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH v4 2/8] igb: Fix queue
- selection on MAC filters on i210 and i211
-In-Reply-To: <20180308003713.29195-3-vinicius.gomes@intel.com>
-References: <20180308003713.29195-1-vinicius.gomes@intel.com>
- <20180308003713.29195-3-vinicius.gomes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C8032BA@ORSMSX101.amr.corp.intel.com>
+From: Stephen Hemminger <stephen@networkplumber.org>
+Date: Wed, 14 Mar 2018 08:13:17 -0700
+Subject: [Intel-wired-lan] [PATCH 12/15] ice: Add stats and ethtool
+ support
+In-Reply-To: <20180313141414.00007d11@intel.com>
+References: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
+ <20180309172136.9073-13-anirudh.venkataramanan@intel.com>
+ <20180309151428.4d73358c@cakuba.netronome.com>
+ <1520967916.696.21.camel@intel.com>
+ <a6f3bd20-705e-2022-23c8-1e3b5a8c93a6@gmail.com>
+ <20180313141414.00007d11@intel.com>
+Message-ID: <20180314081317.1bbfe856@xeon-e3>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Vinicius Costa Gomes
-> Sent: Wednesday, March 7, 2018 4:37 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; Sanchez-Palencia, Jesus <jesus.sanchez-
-> palencia at intel.com>
-> Subject: [Intel-wired-lan] [next-queue PATCH v4 2/8] igb: Fix queue selection
-> on MAC filters on i210 and i211
-> 
-> On the RAH registers there are semantic differences on the meaning of
-> the "queue" parameter for traffic steering depending on the controller
-> model: there is the 82575 meaning, which "queue" means a RX Hardware
-> Queue, and the i350 meaning, where it is a reception pool.
-> 
-> The previous behaviour was having no effect for i210 and i211 based
-> controllers because the QSEL bit of the RAH register wasn't being set.
-> 
-> This patch separates the condition in discrete cases, so the different
-> handling is clearer.
-> 
-> Fixes: 83c21335c876 ("igb: improve MAC filter handling")
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/e1000_defines.h |  1 +
->  drivers/net/ethernet/intel/igb/igb_main.c      | 15 +++++++++++----
->  2 files changed, 12 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h
-> b/drivers/net/ethernet/intel/igb/e1000_defines.h
-> index 83cabff1e0ab..573bf177fd08 100644
-> --- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-> +++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-> @@ -490,6 +490,7 @@
->   * manageability enabled, allowing us room for 15 multicast addresses.
->   */
->  #define E1000_RAH_AV  0x80000000        /* Receive descriptor valid */
-> +#define E1000_RAH_QSEL_ENABLE 0x10000000
->  #define E1000_RAL_MAC_ADDR_LEN 4
->  #define E1000_RAH_MAC_ADDR_LEN 2
->  #define E1000_RAH_POOL_MASK 0x03FC0000
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
-> b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 715bb32e6901..eabedc6b6518 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -8747,12 +8747,19 @@ static void igb_rar_set_index(struct igb_adapter
-> *adapter, u32 index)
->  		if (is_valid_ether_addr(addr))
->  			rar_high |= E1000_RAH_AV;
-> 
-> -		if (hw->mac.type == e1000_82575)
-> +		switch (hw->mac.type) {
-> +		case e1000_82575:
-> +		case e1000_i210:
-> +		case e1000_i211:
-> +			rar_high |= E1000_RAH_QSEL_ENABLE;
->  			rar_high |= E1000_RAH_POOL_1 *
-> -				    adapter->mac_table[index].queue;
-> -		else
-> +				      adapter->mac_table[index].queue;
-> +			break;
-> +		default:
->  			rar_high |= E1000_RAH_POOL_1 <<
-> -				    adapter->mac_table[index].queue;
-> +				adapter->mac_table[index].queue;
+On Tue, 13 Mar 2018 14:14:14 -0700
+Jesse Brandeburg <jesse.brandeburg@intel.com> wrote:
 
-Small nit.  Shouldn't this line be indented more to be a few spaces past the "|=" operator as above?
+> Maybe it's just that I've been doing this too long, but I regularly
+> (and many other customers/users do as well) depend on the ethtool stats
+> being atomically updated w.r.t. each other.  This means that if I'm
+> getting the over rx_packets, as well as the per-queue rx_packets, and I
+> read them all at once from the driver with ethtool, then I can check
+> that things are working as expected.
 
-> +			break;
-> +		}
->  	}
-> 
->  	wr32(E1000_RAL(index), rar_low);
-> --
-> 2.16.2
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Any application depending on this behavior is really fragile.
+It is unportable to other devices (which I guess is to Intel's benefit)
+and relying on guarantees not provided by current Linux network devices.
