@@ -1,40 +1,64 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 14 Mar 2018 11:19:14 -0700
-Subject: [Intel-wired-lan] [PATCH S88 4/8] i40e: add doxygen comment for new
- mode parameter
-In-Reply-To: <20180314181918.21582-1-jeffrey.t.kirsher@intel.com>
-References: <20180314181918.21582-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180314181918.21582-4-jeffrey.t.kirsher@intel.com>
+Date: Wed, 14 Mar 2018 11:19:11 -0700
+Subject: [Intel-wired-lan] [PATCH S88 1/8] i40e: Properly check allowed
+ advertisement capabilities
+Message-ID: <20180314181918.21582-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Jan Sokolowski <jan.sokolowski@intel.com>
 
-A recent patch updated the signature for i40e_aq_set_switch_config() to
-add a new parameter 'mode'. It forgot to document the parameter in the
-doxygen function header comment. Add the parameter to the function
-description now.
+The i40e_set_link_ksettings and i40e_get_link_ksettings use different
+codepaths to check available and supported advertisement modes. This
+creates scenarios where it's possible to set a mode that's not allowed,
+resulting in a link down.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Fix setting advertisement in i40e_set_link_ksettings by calling
+i40e_get_link_ksettings to check what modes are allowed.
+
+Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 792d4204bc3f..2d00e953b6fe 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -2416,6 +2416,7 @@ i40e_status i40e_aq_get_switch_config(struct i40e_hw *hw,
-  * i40e_aq_set_switch_config
-  * @hw: pointer to the hardware structure
-  * @flags: bit flag values to set
-+ * @mode: cloud filter mode
-  * @valid_flags: which bit flags to set
-  * @mode: cloud filter mode
-  * @cmd_details: pointer to command details structure or NULL
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index f9493f11fbb2..9bb85daa2c6c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -871,23 +871,21 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
+ 	/* save autoneg out of ksettings */
+ 	autoneg = copy_ks.base.autoneg;
+ 
+-	memset(&safe_ks, 0, sizeof(safe_ks));
++	/* get our own copy of the bits to check against */
++	memset(&safe_ks, 0, sizeof(struct ethtool_link_ksettings));
++	safe_ks.base.cmd = copy_ks.base.cmd;
++	safe_ks.base.link_mode_masks_nwords =
++		copy_ks.base.link_mode_masks_nwords;
++	i40e_get_link_ksettings(netdev, &safe_ks);
++
+ 	/* Get link modes supported by hardware and check against modes
+ 	 * requested by the user.  Return an error if unsupported mode was set.
+ 	 */
+-	i40e_phy_type_to_ethtool(pf, &safe_ks);
+ 	if (!bitmap_subset(copy_ks.link_modes.advertising,
+ 			   safe_ks.link_modes.supported,
+ 			   __ETHTOOL_LINK_MODE_MASK_NBITS))
+ 		return -EINVAL;
+ 
+-	/* get our own copy of the bits to check against */
+-	memset(&safe_ks, 0, sizeof(struct ethtool_link_ksettings));
+-	safe_ks.base.cmd = copy_ks.base.cmd;
+-	safe_ks.base.link_mode_masks_nwords =
+-		copy_ks.base.link_mode_masks_nwords;
+-	i40e_get_link_ksettings(netdev, &safe_ks);
+-
+ 	/* set autoneg back to what it currently is */
+ 	copy_ks.base.autoneg = safe_ks.base.autoneg;
+ 
 -- 
 2.14.3
 
