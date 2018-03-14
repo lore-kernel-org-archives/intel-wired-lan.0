@@ -1,115 +1,84 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 14 Mar 2018 11:19:13 -0700
-Subject: [Intel-wired-lan] [PATCH S88 3/8] i40e: Close client on suspend and
- restore client MSIx on resume
+Date: Wed, 14 Mar 2018 11:19:18 -0700
+Subject: [Intel-wired-lan] [PATCH S88 8/8] i40e: Fix the polling mechanism
+ of GLGEN_RSTAT.DEVSTATE
 In-Reply-To: <20180314181918.21582-1-jeffrey.t.kirsher@intel.com>
 References: <20180314181918.21582-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180314181918.21582-3-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180314181918.21582-8-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shiraz Saleem <shiraz.saleem@intel.com>
+From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 
-During suspend client MSIx vectors are freed while they are still
-in use causing a crash on entering S3.
+This fixes the polling mechanism of GLGEN_RSTAT.DEVSTATE in the
+PF Reset path when Global Reset is in progress. While the driver
+is polling for the end of the PF Reset and the Global Reset is
+triggered, abandon the PF Reset path and prepare for the
+upcoming Global Reset.
 
-Fix this calling client close before freeing up its MSIx vectors.
-Also update the client MSIx vectors on resume before client
-open is called.
-
-Fixes commit b980c0634fe5 ("i40e: shutdown all IRQs and disable MSI-X
-when suspended")
-
-Reported-by: Stefan Assmann <sassmann@redhat.com>
-Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
+Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h        |  1 +
- drivers/net/ethernet/intel/i40e/i40e_client.c | 16 +++++++++++++---
- drivers/net/ethernet/intel/i40e/i40e_main.c   |  8 ++++++++
- 3 files changed, 22 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 35 ++++++++++++++++++++++-----
+ 1 file changed, 29 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 956299c45d5f..1e1cd5204b4d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -1042,6 +1042,7 @@ void i40e_notify_client_of_l2_param_changes(struct i40e_vsi *vsi);
- void i40e_notify_client_of_netdev_close(struct i40e_vsi *vsi, bool reset);
- void i40e_notify_client_of_vf_enable(struct i40e_pf *pf, u32 num_vfs);
- void i40e_notify_client_of_vf_reset(struct i40e_pf *pf, u32 vf_id);
-+void i40e_client_update_msix_info(struct i40e_pf *pf);
- int i40e_vf_client_capable(struct i40e_pf *pf, u32 vf_id);
- /**
-  * i40e_irq_dynamic_enable - Enable default interrupt generation settings
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 0680a627d27b..a04bbfcca266 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -288,6 +288,17 @@ int i40e_vf_client_capable(struct i40e_pf *pf, u32 vf_id)
- 	return capable;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 27d4d208bd04..b70a6d583c2f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1209,6 +1209,29 @@ static enum i40e_media_type i40e_get_media_type(struct i40e_hw *hw)
+ 	return media;
  }
  
-+void i40e_client_update_msix_info(struct i40e_pf *pf)
++/**
++ * i40e_poll_globr - Poll for Global Reset completion
++ * @hw: pointer to the hardware structure
++ * @retry_limit: how many times to retry before failure
++ **/
++static i40e_status i40e_poll_globr(struct i40e_hw *hw,
++				   u32 retry_limit)
 +{
-+	struct i40e_client_instance *cdev = pf->cinst;
++	u32 cnt, reg = 0;
 +
-+	if (!cdev || !cdev->client)
-+		return;
++	for (cnt = 0; cnt < retry_limit; cnt++) {
++		reg = rd32(hw, I40E_GLGEN_RSTAT);
++		if (!(reg & I40E_GLGEN_RSTAT_DEVSTATE_MASK))
++			return 0;
++		msleep(100);
++	}
 +
-+	cdev->lan_info.msix_count = pf->num_iwarp_msix;
-+	cdev->lan_info.msix_entries = &pf->msix_entries[pf->iwarp_base_vector];
++	hw_dbg(hw, "Global reset failed.\n");
++	hw_dbg(hw, "I40E_GLGEN_RSTAT = 0x%x\n", reg);
++
++	return I40E_ERR_RESET_FAILED;
 +}
 +
+ #define I40E_PF_RESET_WAIT_COUNT_A0	200
+ #define I40E_PF_RESET_WAIT_COUNT	200
  /**
-  * i40e_client_add_instance - add a client instance struct to the instance list
-  * @pf: pointer to the board struct
-@@ -329,9 +340,6 @@ static void i40e_client_add_instance(struct i40e_pf *pf)
- 		return;
- 	}
- 
--	cdev->lan_info.msix_count = pf->num_iwarp_msix;
--	cdev->lan_info.msix_entries = &pf->msix_entries[pf->iwarp_base_vector];
--
- 	mac = list_first_entry(&cdev->lan_info.netdev->dev_addrs.list,
- 			       struct netdev_hw_addr, list);
- 	if (mac)
-@@ -341,6 +349,8 @@ static void i40e_client_add_instance(struct i40e_pf *pf)
- 
- 	cdev->client = registered_client;
- 	pf->cinst = cdev;
-+
-+	i40e_client_update_msix_info(pf);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 0df21e4f2a0f..5a77dbf972f5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10595,6 +10595,9 @@ static int i40e_restore_interrupt_scheme(struct i40e_pf *pf)
- 	if (err)
- 		goto err_unwind;
- 
-+	if (pf->flags & I40E_FLAG_IWARP_ENABLED)
-+		i40e_client_update_msix_info(pf);
-+
- 	return 0;
- 
- err_unwind:
-@@ -14345,6 +14348,11 @@ static int __maybe_unused i40e_suspend(struct device *dev)
- 	del_timer_sync(&pf->service_timer);
- 	cancel_work_sync(&pf->service_task);
- 
-+	/* Client close must be called explicitly here because the timer
-+	 * has been stopped.
-+	 */
-+	i40e_notify_client_of_netdev_close(pf->vsi[pf->lan_vsi], false);
-+
- 	if (pf->wol_en && (pf->hw_features & I40E_HW_WOL_MC_MAGIC_PKT_WAKE))
- 		i40e_enable_mc_magic_wake(pf);
- 
+@@ -1285,14 +1308,14 @@ i40e_status i40e_pf_reset(struct i40e_hw *hw)
+ 			if (!(reg & I40E_PFGEN_CTRL_PFSWR_MASK))
+ 				break;
+ 			reg2 = rd32(hw, I40E_GLGEN_RSTAT);
+-			if (reg2 & I40E_GLGEN_RSTAT_DEVSTATE_MASK) {
+-				hw_dbg(hw, "Core reset upcoming. Skipping PF reset request.\n");
+-				hw_dbg(hw, "I40E_GLGEN_RSTAT = 0x%x\n", reg2);
+-				return I40E_ERR_NOT_READY;
+-			}
++			if (reg2 & I40E_GLGEN_RSTAT_DEVSTATE_MASK)
++				break;
+ 			usleep_range(1000, 2000);
+ 		}
+-		if (reg & I40E_PFGEN_CTRL_PFSWR_MASK) {
++		if (reg2 & I40E_GLGEN_RSTAT_DEVSTATE_MASK) {
++			if (i40e_poll_globr(hw, grst_del))
++				return I40E_ERR_RESET_FAILED;
++		} else if (reg & I40E_PFGEN_CTRL_PFSWR_MASK) {
+ 			hw_dbg(hw, "PF reset polling failed to complete.\n");
+ 			return I40E_ERR_RESET_FAILED;
+ 		}
 -- 
 2.14.3
 
