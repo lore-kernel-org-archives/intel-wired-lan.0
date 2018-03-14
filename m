@@ -1,8 +1,8 @@
 From: Sinan Kaya <okaya@codeaurora.org>
-Date: Tue, 13 Mar 2018 23:19:52 -0400
+Date: Tue, 13 Mar 2018 23:20:22 -0400
 Subject: [Intel-wired-lan] [PATCH 1/7] i40e/i40evf: Eliminate duplicate
  barriers on weakly-ordered archs
-Message-ID: <1520997599-17298-1-git-send-email-okaya@codeaurora.org>
+Message-ID: <1520997629-17361-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
