@@ -1,82 +1,150 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Wed, 14 Mar 2018 18:57:40 -0400
-Subject: [Intel-wired-lan] [PATCH 7/7] ixgbevf: eliminate duplicate
- barriers on weakly-ordered archs
-In-Reply-To: <CAKgT0UcriMiyV0q6y_x9r3-HJRAWp5_CpsK2jTqh3qvOV=Kkzw@mail.gmail.com>
-References: <1520997629-17361-1-git-send-email-okaya@codeaurora.org>
- <1520997629-17361-7-git-send-email-okaya@codeaurora.org>
- <12150aa0-77ba-878e-31f4-d4f8d6a28ccb@codeaurora.org>
- <2a4f4dec64b7462ae64152f6c2df9754@codeaurora.org>
- <CAKgT0UcriMiyV0q6y_x9r3-HJRAWp5_CpsK2jTqh3qvOV=Kkzw@mail.gmail.com>
-Message-ID: <d565406d-1bc7-6fb0-3f36-87a28ac69070@codeaurora.org>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 15 Mar 2018 07:21:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
+ 089915f0f23f1a09b4aecebe88212c5a4fef37fa
+Message-ID: <5aa9ae90.rDeUTAUyHZiXiqFZ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Alexander,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+branch HEAD: 089915f0f23f1a09b4aecebe88212c5a4fef37fa  i40e: restore TCPv4 input set when re-enabling ATR
 
-On 3/14/2018 5:49 PM, Alexander Duyck wrote:
-> On Wed, Mar 14, 2018 at 5:13 AM,  <okaya@codeaurora.org> wrote:
->> On 2018-03-14 01:08, Timur Tabi wrote:
->>>
->>> On 3/13/18 10:20 PM, Sinan Kaya wrote:
+elapsed time: 223m
 
-> Actually I would argue this whole patch set is pointless. For starters
-> why is it we are only updating the Intel Ethernet drivers here? 
+configs tested: 126
 
-I did a regex search for wmb() followed by writel() in each drivers directory.
-I scrubbed the ones I care about and posted this series. Note also that
-I have one Infiniband patch in the series. 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-I considered "ease of change", "popular usage" and "performance critical
-path" as the determining criteria for my filtering. 
+i386                               tinyconfig
+i386                     randconfig-n0-201810
+i386                     randconfig-i1-201810
+i386                     randconfig-i0-201810
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x010-201810
+x86_64                 randconfig-x014-201810
+x86_64                 randconfig-x013-201810
+x86_64                 randconfig-x019-201810
+x86_64                 randconfig-x011-201810
+x86_64                 randconfig-x015-201810
+x86_64                 randconfig-x018-201810
+x86_64                 randconfig-x016-201810
+x86_64                 randconfig-x017-201810
+x86_64                 randconfig-x012-201810
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                     randconfig-a0-201810
+i386                     randconfig-a1-201810
+i386                     randconfig-s1-201810
+i386                     randconfig-s0-201810
+x86_64                   randconfig-i0-201810
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                   randconfig-x013-201810
+i386                   randconfig-x014-201810
+i386                   randconfig-x015-201810
+i386                   randconfig-x012-201810
+i386                   randconfig-x019-201810
+i386                   randconfig-x016-201810
+i386                   randconfig-x010-201810
+i386                   randconfig-x018-201810
+i386                   randconfig-x011-201810
+i386                   randconfig-x017-201810
+i386                   randconfig-x073-201810
+i386                   randconfig-x075-201810
+i386                   randconfig-x071-201810
+i386                   randconfig-x076-201810
+i386                   randconfig-x079-201810
+i386                   randconfig-x077-201810
+i386                   randconfig-x070-201810
+i386                   randconfig-x074-201810
+i386                   randconfig-x078-201810
+i386                   randconfig-x072-201810
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+x86_64                                  kexec
+x86_64                              federa-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+x86_64                 randconfig-x002-201810
+x86_64                 randconfig-x006-201810
+x86_64                 randconfig-x005-201810
+x86_64                 randconfig-x009-201810
+x86_64                 randconfig-x004-201810
+x86_64                 randconfig-x001-201810
+x86_64                 randconfig-x008-201810
+x86_64                 randconfig-x003-201810
+x86_64                 randconfig-x007-201810
+x86_64                 randconfig-x000-201810
+i386                             allmodconfig
+i386                   randconfig-x006-201810
+i386                   randconfig-x000-201810
+i386                   randconfig-x008-201810
+i386                   randconfig-x004-201810
+i386                   randconfig-x009-201810
+i386                   randconfig-x003-201810
+i386                   randconfig-x002-201810
+i386                   randconfig-x005-201810
+i386                   randconfig-x001-201810
+i386                   randconfig-x007-201810
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
 
-
-> This
-> seems like something that is going to impact the whole kernel tree
-> since many of us have been writing drivers for some time assuming x86
-> style behavior.
-
-That's true. We used relaxed API heavily on ARM for a long time but
-it did not exist on other architectures. For this reason, relaxed
-architectures have been paying double penalty in order to use the common
-drivers. 
-
-Now that relaxed API is present on all architectures, we can go and scrub
-all drivers to see what needs to change and what can remain.
-
-> 
-> It doesn't make sense to be optimizing the drivers for one subset of
-> architectures. The scope of the work needed to update the drivers for
-> this would be ridiculous. Also I don't see how this could be expected
-> to work on any other architecture when we pretty much need to have a
-> wmb() before calling the writel on x86 to deal with accesses between
-> coherent and non-coherent memory. It seems to me more like somebody
-> added what they considered to be an optimization somewhere that is a
-> workaround for a poorly written driver. Either that or the barrier is
-> serving a different purpose then the one we were using.
-
-Is there a semantic problem with the definition of wmb() vs. writel() vs.
-writel_relaxed()? I thought everything is well described in barriers
-document about what to expect from these APIs.
-
-AFAIK, writel() is equal to writel_relaxed() on x86 architecture.
-It doesn't really change anything for x86 but it saves barriers on
-other architectures.
-
-> 
-> It would make more sense to put in the effort making writel and
-> writel_relaxed consistent between architectures before we go through
-> and start modifying driver code to support different architectures.
-> 
-
-Is there an arch problem that I'm not seeing?
-
-Sinan
-
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+Thanks,
+Fengguang
