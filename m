@@ -1,16 +1,18 @@
 From: Sinan Kaya <okaya@codeaurora.org>
-Date: Tue, 13 Mar 2018 23:20:22 -0400
-Subject: [Intel-wired-lan] [PATCH 1/7] i40e/i40evf: Eliminate duplicate
- barriers on weakly-ordered archs
-Message-ID: <1520997629-17361-1-git-send-email-okaya@codeaurora.org>
+Date: Tue, 13 Mar 2018 23:20:23 -0400
+Subject: [Intel-wired-lan] [PATCH 2/7] ixgbe: eliminate duplicate barriers
+ on weakly-ordered archs
+In-Reply-To: <1520997629-17361-1-git-send-email-okaya@codeaurora.org>
+References: <1520997629-17361-1-git-send-email-okaya@codeaurora.org>
+Message-ID: <1520997629-17361-2-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Code includes wmb() followed by writel(). writel() already has a barrier
-on some architectures like arm64.
+Code includes wmb() followed by writel() in multiple places. writel()
+already has a barrier on some architectures like arm64.
 
 This ends up CPU observing two barriers back to back before executing the
 register write.
@@ -20,36 +22,40 @@ writel_relaxed().
 
 Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 2 +-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index e554aa6cf..7028516 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1375,7 +1375,7 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
- 	 * such as IA-64).
- 	 */
- 	wmb();
--	writel(val, rx_ring->tail);
-+	writel_relaxed(val, rx_ring->tail);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 0da5aa2..35ca1d8 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -1692,7 +1692,7 @@ void ixgbe_alloc_rx_buffers(struct ixgbe_ring *rx_ring, u16 cleaned_count)
+ 		 * such as IA-64).
+ 		 */
+ 		wmb();
+-		writel(i, rx_ring->tail);
++		writel_relaxed(i, rx_ring->tail);
+ 	}
  }
  
- /**
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 357d605..2d323fc 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -667,7 +667,7 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
- 	 * such as IA-64).
+@@ -2453,7 +2453,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 		 * know there are new descriptors to fetch.
+ 		 */
+ 		wmb();
+-		writel(ring->next_to_use, ring->tail);
++		writel_relaxed(ring->next_to_use, ring->tail);
+ 
+ 		xdp_do_flush_map();
+ 	}
+@@ -10014,7 +10014,7 @@ static void ixgbe_xdp_flush(struct net_device *dev)
+ 	 * are new descriptors to fetch.
  	 */
  	wmb();
--	writel(val, rx_ring->tail);
-+	writel_relaxed(val, rx_ring->tail);
- }
+-	writel(ring->next_to_use, ring->tail);
++	writel_relaxed(ring->next_to_use, ring->tail);
  
- /**
+ 	return;
+ }
 -- 
 2.7.4
 
