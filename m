@@ -1,38 +1,61 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 14 Mar 2018 20:22:41 +0000
-Subject: [Intel-wired-lan] Documentation: networking: ixgb: Remove
- reference to IXGB_NAPI
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C8039BC@ORSMSX101.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 14 Mar 2018 14:49:00 -0700
+Subject: [Intel-wired-lan] [PATCH 7/7] ixgbevf: eliminate duplicate
+ barriers on weakly-ordered archs
+In-Reply-To: <2a4f4dec64b7462ae64152f6c2df9754@codeaurora.org>
+References: <1520997629-17361-1-git-send-email-okaya@codeaurora.org>
+ <1520997629-17361-7-git-send-email-okaya@codeaurora.org>
+ <12150aa0-77ba-878e-31f4-d4f8d6a28ccb@codeaurora.org>
+ <2a4f4dec64b7462ae64152f6c2df9754@codeaurora.org>
+Message-ID: <CAKgT0UcriMiyV0q6y_x9r3-HJRAWp5_CpsK2jTqh3qvOV=Kkzw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From patchwork Mon Jan 29 12:17:54 2018
-> Content-Type: text/plain; charset="utf-8"
-> MIME-Version: 1.0
-> Content-Transfer-Encoding: 7bit
-> Subject: Documentation: networking: ixgb: Remove reference to IXGB_NAPI
-> X-Patchwork-Submitter: Corentin Labbe <clabbe@baylibre.com>
-> X-Patchwork-Id: 867294
-> X-Patchwork-Delegate: jeffrey.t.kirsher at intel.com
-> Message-Id: <1517228274-1305-1-git-send-email-clabbe@baylibre.com>
-> To: corbet at lwn.net,	jeffrey.t.kirsher at intel.com
-> Cc: Corentin Labbe <clabbe@baylibre.com>, intel-wired-lan at lists.osuosl.org, 
->  linux-kernel at vger.kernel.org, linux-doc at vger.kernel.org
-> Date: Mon, 29 Jan 2018 12:17:54 +0000
-> From: Corentin Labbe <clabbe@baylibre.com>
-> List-Id: Intel Wired Ethernet Linux Kernel Driver Development  <intel-wired-lan.osuosl.org>
+On Wed, Mar 14, 2018 at 5:13 AM,  <okaya@codeaurora.org> wrote:
+> On 2018-03-14 01:08, Timur Tabi wrote:
+>>
+>> On 3/13/18 10:20 PM, Sinan Kaya wrote:
+>>>
+>>> +/* Assumes caller has executed a write barrier to order memory and
+>>> device
+>>> + * requests.
+>>> + */
+>>>   static inline void ixgbevf_write_tail(struct ixgbevf_ring *ring, u32
+>>> value)
+>>>   {
+>>> -       writel(value, ring->tail);
+>>> +       writel_relaxed(value, ring->tail);
+>>>   }
+>>
+>>
+>> Why not put the wmb() in this function, or just get rid of the wmb()
+>> in the rest of the file and keep this as writel?  That way, you can
+>> avoid the comment and the risk that comes with it.
 >
-> NAPI is enabled by default and IXGB_NAPI was removed since
-> commit 6d37ab282e24 ("ixgb: make NAPI the only option and the default")
-> Update the doc accordingly.
 >
-> Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
-> ---
->  Documentation/networking/ixgb.txt | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> Sure, both solutions will work. I want to see what the maintainer prefers. I
+> can repost accordingly.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Actually I would argue this whole patch set is pointless. For starters
+why is it we are only updating the Intel Ethernet drivers here? This
+seems like something that is going to impact the whole kernel tree
+since many of us have been writing drivers for some time assuming x86
+style behavior.
 
+It doesn't make sense to be optimizing the drivers for one subset of
+architectures. The scope of the work needed to update the drivers for
+this would be ridiculous. Also I don't see how this could be expected
+to work on any other architecture when we pretty much need to have a
+wmb() before calling the writel on x86 to deal with accesses between
+coherent and non-coherent memory. It seems to me more like somebody
+added what they considered to be an optimization somewhere that is a
+workaround for a poorly written driver. Either that or the barrier is
+serving a different purpose then the one we were using.
+
+It would make more sense to put in the effort making writel and
+writel_relaxed consistent between architectures before we go through
+and start modifying driver code to support different architectures.
