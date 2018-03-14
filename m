@@ -1,150 +1,40 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 15 Mar 2018 07:21:52 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 089915f0f23f1a09b4aecebe88212c5a4fef37fa
-Message-ID: <5aa9ae90.rDeUTAUyHZiXiqFZ%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 14 Mar 2018 23:09:40 +0000
+Subject: [Intel-wired-lan] [PATCH S88 1/8] i40e: Properly check allowed
+ advertisement capabilities
+In-Reply-To: <20180314181918.21582-1-jeffrey.t.kirsher@intel.com>
+References: <20180314181918.21582-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94C2BB@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 089915f0f23f1a09b4aecebe88212c5a4fef37fa  i40e: restore TCPv4 input set when re-enabling ATR
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Wednesday, March 14, 2018 11:19 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Sokolowski, Jan <jan.sokolowski@intel.com>
+> Subject: [Intel-wired-lan] [PATCH S88 1/8] i40e: Properly check allowed
+> advertisement capabilities
+> 
+> From: Jan Sokolowski <jan.sokolowski@intel.com>
+> 
+> The i40e_set_link_ksettings and i40e_get_link_ksettings use different
+> codepaths to check available and supported advertisement modes. This
+> creates scenarios where it's possible to set a mode that's not allowed,
+> resulting in a link down.
+> 
+> Fix setting advertisement in i40e_set_link_ksettings by calling
+> i40e_get_link_ksettings to check what modes are allowed.
+> 
+> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 16 +++++++---------
+>  1 file changed, 7 insertions(+), 9 deletions(-)
 
-elapsed time: 223m
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-configs tested: 126
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-i386                               tinyconfig
-i386                     randconfig-n0-201810
-i386                     randconfig-i1-201810
-i386                     randconfig-i0-201810
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x010-201810
-x86_64                 randconfig-x014-201810
-x86_64                 randconfig-x013-201810
-x86_64                 randconfig-x019-201810
-x86_64                 randconfig-x011-201810
-x86_64                 randconfig-x015-201810
-x86_64                 randconfig-x018-201810
-x86_64                 randconfig-x016-201810
-x86_64                 randconfig-x017-201810
-x86_64                 randconfig-x012-201810
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                     randconfig-a0-201810
-i386                     randconfig-a1-201810
-i386                     randconfig-s1-201810
-i386                     randconfig-s0-201810
-x86_64                   randconfig-i0-201810
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-i386                   randconfig-x013-201810
-i386                   randconfig-x014-201810
-i386                   randconfig-x015-201810
-i386                   randconfig-x012-201810
-i386                   randconfig-x019-201810
-i386                   randconfig-x016-201810
-i386                   randconfig-x010-201810
-i386                   randconfig-x018-201810
-i386                   randconfig-x011-201810
-i386                   randconfig-x017-201810
-i386                   randconfig-x073-201810
-i386                   randconfig-x075-201810
-i386                   randconfig-x071-201810
-i386                   randconfig-x076-201810
-i386                   randconfig-x079-201810
-i386                   randconfig-x077-201810
-i386                   randconfig-x070-201810
-i386                   randconfig-x074-201810
-i386                   randconfig-x078-201810
-i386                   randconfig-x072-201810
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                                  kexec
-x86_64                              federa-25
-x86_64                                   rhel
-x86_64                               rhel-7.2
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-x86_64                 randconfig-x002-201810
-x86_64                 randconfig-x006-201810
-x86_64                 randconfig-x005-201810
-x86_64                 randconfig-x009-201810
-x86_64                 randconfig-x004-201810
-x86_64                 randconfig-x001-201810
-x86_64                 randconfig-x008-201810
-x86_64                 randconfig-x003-201810
-x86_64                 randconfig-x007-201810
-x86_64                 randconfig-x000-201810
-i386                             allmodconfig
-i386                   randconfig-x006-201810
-i386                   randconfig-x000-201810
-i386                   randconfig-x008-201810
-i386                   randconfig-x004-201810
-i386                   randconfig-x009-201810
-i386                   randconfig-x003-201810
-i386                   randconfig-x002-201810
-i386                   randconfig-x005-201810
-i386                   randconfig-x001-201810
-i386                   randconfig-x007-201810
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-
-Thanks,
-Fengguang
