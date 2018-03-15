@@ -1,52 +1,75 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 15 Mar 2018 10:47:35 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 0/2] net:setup XPS mapping for
- each online CPU
-In-Reply-To: <1521134431.2681.26.camel@redhat.com>
-References: <cover.1521124830.git.pabeni@redhat.com>
- <CANn89iKcHzs2enS-CjNx3xJWwXwjX9Uu_7JYihOR4=HPsQLj6Q@mail.gmail.com>
- <1521129082.2681.13.camel@redhat.com>
- <CANn89iLJOVuN-1j+9_qr_LaU7AE6COHdnp4Rc7fe9p6_s=hCCA@mail.gmail.com>
- <1521134431.2681.26.camel@redhat.com>
-Message-ID: <CAKgT0UfnVxW0s+pzcJib0fXnQvFV3pyYz26y7msKf2_s9tLjrg@mail.gmail.com>
+From: Venkataramanan, Anirudh <anirudh.venkataramanan@intel.com>
+Date: Thu, 15 Mar 2018 18:27:50 +0000
+Subject: [Intel-wired-lan] [PATCH 03/15] ice: Start hardware
+ initialization
+In-Reply-To: <f07d8b58-aea8-c7a9-fc93-ac6d220ade37@oracle.com>
+References: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
+ <20180309172136.9073-4-anirudh.venkataramanan@intel.com>
+ <657f1de9-9727-6b01-1f79-957db6ef8852@oracle.com>
+ <1521065151.696.91.camel@intel.com>
+ <f07d8b58-aea8-c7a9-fc93-ac6d220ade37@oracle.com>
+Message-ID: <1521138469.15392.0.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Mar 15, 2018 at 10:20 AM, Paolo Abeni <pabeni@redhat.com> wrote:
-> Hi,
->
-> On Thu, 2018-03-15 at 15:59 +0000, Eric Dumazet wrote:
->> On Thu, Mar 15, 2018 at 8:51 AM Paolo Abeni <pabeni@redhat.com> wrote:
->> > I'm sorry, I do not follow. AFAICS with unconnected sockets without XPS
->> > we always hit the netdev_pick_tx()/skb_tx_hash()/skb_flow_dissect()
->> > overhead in xmit path.
->>
->> Then fix this if you want, instead of fixing one NIC only, or by enforcing
->> XPS by all NIC.
->>
->> For unconnected sockets, picking the TX queue based on current cpu is good,
->> we do not have to enforce ordering as much as possible.
->>
->> (pfifo_fast no longer can enforce it anyway)
->
-> Thank you for the prompt reply.
->
-> I'm double checking to avoid misinterpretation on my side: are you
-> suggesting to plug a CPU-based selection logic for unconnected sockets
-> in netdev_pick_tx() or to cook patches like 2/2 for all the relevant
-> NICs?
->
-> Thanks!
->
-> Paolo
+On Thu, 2018-03-15 at 10:00 -0700, Shannon Nelson wrote:
+> On 3/14/2018 3:05 PM, Venkataramanan, Anirudh wrote:
+> > On Mon, 2018-03-12 at 19:05 -0700, Shannon Nelson wrote:
+> > > On 3/9/2018 9:21 AM, Anirudh Venkataramanan wrote:
+> 
+> 
+> > > > +
+> > > > +/**
+> > > > + * ice_read_sr_aq - Read Shadow RAM.
+> > > > + * @hw: pointer to the HW structure
+> > > > + * @offset: offset in words from module start
+> > > > + * @words: number of words to read
+> > > > + * @data: buffer for words reads from Shadow RAM
+> > > > + * @last_command: tells the AdminQ that this is the last
+> > > > command
+> > > > + *
+> > > > + * Reads 16-bit word buffers from the Shadow RAM using the
+> > > > admin
+> > > > command.
+> > > > + */
+> > > > +static enum ice_status
+> > > > +ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, u16
+> > > > *data,
+> > > > +	       bool last_command)
+> > > > +{
+> > > > +	enum ice_status status;
+> > > > +
+> > > > +	status = ice_check_sr_access_params(hw, offset,
+> > > > words);
+> > > > +	if (!status)
+> > > > +		status = ice_aq_read_nvm(hw, 0, 2 * offset, 2
+> > > > *
+> > > > words, data,
+> > > 
+> > > Why the doubling of offset and words?  If this is some general
+> > > adjustment made for the AQ interface, it should be made in
+> > > ice_aq_read_nvm().  If not, then some explanation is needed here.
+> > 
+> > ice_read_sr_aq expects a word offset and size in words. The
+> > ice_aq_read_nvm interface expects offset and size in bytes. The
+> > doubling is a conversion from word offset/size to byte offset/size.
+> 
+> In that case, this might be a good place for a small comment for
+> readers 
+> like me who don't have the spec available.
 
-We just need to watch out for any possible side effects. For example
-using XPS on a virtualization host has been problematic as you end up
-with the traffic getting reordered if the VM jumps from CPU to CPU.
+Sure thing! :-)
 
-Thanks.
-
-- Alex
+> 
+> sln
+> 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3302 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180315/7f02ce32/attachment.bin>
