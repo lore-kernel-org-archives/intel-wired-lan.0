@@ -1,83 +1,59 @@
-From: Eric Dumazet <edumazet@google.com>
-Date: Thu, 15 Mar 2018 15:59:17 +0000
-Subject: [Intel-wired-lan] [RFC PATCH 0/2] net:setup XPS mapping for
- each online CPU
-In-Reply-To: <1521129082.2681.13.camel@redhat.com>
-References: <cover.1521124830.git.pabeni@redhat.com>
- <CANn89iKcHzs2enS-CjNx3xJWwXwjX9Uu_7JYihOR4=HPsQLj6Q@mail.gmail.com>
- <1521129082.2681.13.camel@redhat.com>
-Message-ID: <CANn89iLJOVuN-1j+9_qr_LaU7AE6COHdnp4Rc7fe9p6_s=hCCA@mail.gmail.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Thu, 15 Mar 2018 12:21:17 -0400
+Subject: [Intel-wired-lan] [PATCH 7/7] ixgbevf: eliminate duplicate
+ barriers on weakly-ordered archs
+In-Reply-To: <CAKgT0UcBQRoSPPZ73bdu1oEBGqBA8_c3ZAjti20=+9UwEqpXbw@mail.gmail.com>
+References: <1520997629-17361-1-git-send-email-okaya@codeaurora.org>
+ <1520997629-17361-7-git-send-email-okaya@codeaurora.org>
+ <12150aa0-77ba-878e-31f4-d4f8d6a28ccb@codeaurora.org>
+ <2a4f4dec64b7462ae64152f6c2df9754@codeaurora.org>
+ <CAKgT0UcriMiyV0q6y_x9r3-HJRAWp5_CpsK2jTqh3qvOV=Kkzw@mail.gmail.com>
+ <d565406d-1bc7-6fb0-3f36-87a28ac69070@codeaurora.org>
+ <CAKgT0UeBHGDmr0uXfuPQJKOomiH9uvXRVYpyDwMOzjkxAZMSYg@mail.gmail.com>
+ <53bf7dfe-32ee-1861-e6ea-81f667590a43@codeaurora.org>
+ <CAKgT0UcBQRoSPPZ73bdu1oEBGqBA8_c3ZAjti20=+9UwEqpXbw@mail.gmail.com>
+Message-ID: <eee8269d-b711-828c-ab84-5933bf86d024@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Mar 15, 2018 at 8:51 AM Paolo Abeni <pabeni@redhat.com> wrote:
+On 3/15/2018 10:32 AM, Alexander Duyck wrote:
+> We tend to do something like:
+>   update tx_buffer_info
+>   update tx_desc
+>   wmb()
+>   point first tx_buffer_info next_to_watch value at last tx_desc
+>   update next_to_use
+>   notify device via writel
+> 
+> We do it this way because we have to synchronize between the Tx
+> cleanup path and the hardware so we basically lump the two barriers
+> together. instead of invoking both a smp_wmb and a wmb. Now that I
+> look at the pseudocode though I wonder if we shouldn't move the
+> next_to_use update before the wmb, but that might be material for
+> another patch. Anyway, in the Tx cleanup path we should have an
+> smp_rmb() after we read the next_to_watch values so that we avoid
+> reading any of the other fields in the buffer_info if either the field
+> is NULL or the descriptor pointed to has not been written back.
 
-> Hi,
+How do you feel about keeping wmb() very close to writel_relaxed() like this?
 
-> On Thu, 2018-03-15 at 15:31 +0000, Eric Dumazet wrote:
-> > On Thu, Mar 15, 2018 at 8:08 AM Paolo Abeni <pabeni@redhat.com> wrote:
-> >
-> > > Currently, most MQ netdevice setup the default XPS configuration
-mapping
-> >
-> > 1-1
-> > > the first real_num_tx_queues queues and CPUs and no mapping is
-created for
-> > > the CPUs with id greater then real_num_tx_queues, if any.
-> > > As a result, the xmit path for unconnected sockets on such cores
-> >
-> > experiences a
-> > > relevant overhead in netdev_pick_tx(), which needs to dissect each
-packet
-> >
-> > and
-> > > compute its hash.
-> > > Such scenario is easily triggered. e.g. from DNS server under relevant
-> >
-> > load, as
-> > > the user-space process is moved away from the CPUs serving the
-softirqs
-> >
-> > (note:
-> > > this is beneficial for the overall DNS server performances).
-> > > This series introduces an helper to easily setup up XPS mapping for
-all
-> >
-> > the
-> > > online CPUs, and use it in the ixgbe driver, demonstrating a relevant
-> > > performance improvement in the above scenario.
-> > > Paolo Abeni (2):
-> > >    net: introduce netif_set_xps()
-> > >    ixgbe: setup XPS via netif_set_xps()
-> >
-> >
-> > Resent, not HTML this time, sorry for duplication.
-> >
-> > I truly believe XPS should not be setup by devices.
-> >
-> > XPS is policy, and policy does belong to user space.
+   update tx_buffer_info
+   update tx_desc
+   point first tx_buffer_info next_to_watch value at last tx_desc
+   update next_to_use
+   wmb()
+   notify device via writel_relaxed()
 
-> Thank you for your comments!
+I'm afraid that if the order of wmb() and writel() is not very
+obvious or hidden in multiple functions, somebody can introduce a very nasty
+bug in the future.
 
-> As general principle, I agree policies should be in user-space, but I
-> also think that the kernel should provide a reasonable default. Many MQ
-> devices already configure XPS and their default is AFAICS sub-optimal.
+We also have to think about code maintenance.
 
-> > Note that if XPS is not setup, MQ queue selection is just fine by
-default ;
-
-> I'm sorry, I do not follow. AFAICS with unconnected sockets without XPS
-> we always hit the netdev_pick_tx()/skb_tx_hash()/skb_flow_dissect()
-> overhead in xmit path.
-
-
-Then fix this if you want, instead of fixing one NIC only, or by enforcing
-XPS by all NIC.
-
-For unconnected sockets, picking the TX queue based on current cpu is good,
-we do not have to enforce ordering as much as possible.
-
-(pfifo_fast no longer can enforce it anyway)
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
