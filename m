@@ -1,58 +1,84 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Thu, 15 Mar 2018 10:00:26 -0700
-Subject: [Intel-wired-lan] [PATCH 03/15] ice: Start hardware
- initialization
-In-Reply-To: <1521065151.696.91.camel@intel.com>
-References: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
- <20180309172136.9073-4-anirudh.venkataramanan@intel.com>
- <657f1de9-9727-6b01-1f79-957db6ef8852@oracle.com>
- <1521065151.696.91.camel@intel.com>
-Message-ID: <f07d8b58-aea8-c7a9-fc93-ac6d220ade37@oracle.com>
+From: Paolo Abeni <pabeni@redhat.com>
+Date: Thu, 15 Mar 2018 18:05:38 +0100
+Subject: [Intel-wired-lan] [RFC PATCH 2/2] ixgbe: setup XPS via
+ netif_set_xps()
+In-Reply-To: <CAKgT0UcoVECKfXBAThcLqb8vRtJetqGjop9pGxNL8Q5rXRtiyg@mail.gmail.com>
+References: <cover.1521124830.git.pabeni@redhat.com>
+ <384ee099d617f3d3786a618b11cc10616923ec45.1521124830.git.pabeni@redhat.com>
+ <CAKgT0UcoVECKfXBAThcLqb8vRtJetqGjop9pGxNL8Q5rXRtiyg@mail.gmail.com>
+Message-ID: <1521133538.2681.18.camel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/14/2018 3:05 PM, Venkataramanan, Anirudh wrote:
-> On Mon, 2018-03-12 at 19:05 -0700, Shannon Nelson wrote:
->> On 3/9/2018 9:21 AM, Anirudh Venkataramanan wrote:
+Hi, 
 
-
->>> +
->>> +/**
->>> + * ice_read_sr_aq - Read Shadow RAM.
->>> + * @hw: pointer to the HW structure
->>> + * @offset: offset in words from module start
->>> + * @words: number of words to read
->>> + * @data: buffer for words reads from Shadow RAM
->>> + * @last_command: tells the AdminQ that this is the last command
->>> + *
->>> + * Reads 16-bit word buffers from the Shadow RAM using the admin
->>> command.
->>> + */
->>> +static enum ice_status
->>> +ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, u16
->>> *data,
->>> +	       bool last_command)
->>> +{
->>> +	enum ice_status status;
->>> +
->>> +	status = ice_check_sr_access_params(hw, offset, words);
->>> +	if (!status)
->>> +		status = ice_aq_read_nvm(hw, 0, 2 * offset, 2 *
->>> words, data,
->>
->> Why the doubling of offset and words?  If this is some general
->> adjustment made for the AQ interface, it should be made in
->> ice_aq_read_nvm().  If not, then some explanation is needed here.
+On Thu, 2018-03-15 at 09:43 -0700, Alexander Duyck wrote:
+> On Thu, Mar 15, 2018 at 8:08 AM, Paolo Abeni <pabeni@redhat.com> wrote:
+> > Before this commit, ixgbe with the default setting lacks XPS mapping
+> > for CPUs id greater than the number of tx queues.
+> > 
+> > As a consequence the xmit path for such CPUs experience a relevant cost
+> > in __netdev_pick_tx, mainly due to skb_tx_hash(), as reported by the perf
+> > tool:
+> > 
+> > 7.55%--netdev_pick_tx
+> >         |
+> >         --6.92%--__netdev_pick_tx
+> >                   |
+> >                   --6.35%--__skb_tx_hash
+> >                             |
+> >                             --5.94%--__skb_get_hash
+> >                                       |
+> >                                       --3.22%--__skb_flow_dissect
+> > 
+> > in the following  scenario:
+> > 
+> > ethtool -L em1 combined 1
+> > taskset 2 netperf -H 192.168.1.1 -t UDP_STREAM -- -m 1
+> > MIGRATED UDP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.101.1 () port 0 AF_INET
+> > Socket  Message  Elapsed      Messages
+> > Size    Size     Time         Okay Errors   Throughput
+> > bytes   bytes    secs            #      #   10^6bits/sec
+> > 
+> > 212992       1   10.00     11497225      0       9.20
+> > 
+> > After this commit the perf tool reports:
+> > 
+> > 0.85%--__netdev_pick_tx
+> > 
+> > and netperf reports:
+> > 
+> > MIGRATED UDP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.101.1 () port 0 AF_INET
+> > Socket  Message  Elapsed      Messages
+> > Size    Size     Time         Okay Errors   Throughput
+> > bytes   bytes    secs            #      #   10^6bits/sec
+> > 
+> > 212992       1   10.00     12736058      0      10.19
+> > 
+> > roughly +10% in xmit tput.
+> > 
+> > Signed-off-by: Paolo Abeni <pabeni@redhat.com>
 > 
-> ice_read_sr_aq expects a word offset and size in words. The
-> ice_aq_read_nvm interface expects offset and size in bytes. The
-> doubling is a conversion from word offset/size to byte offset/size.
+> I think we shouldn't be configuring XPS if number of Tx or Rx queues
+> is less than the number of CPUs, or ATR is not enabled.
 
-In that case, this might be a good place for a small comment for readers 
-like me who don't have the spec available.
+Thank you for the feedback!
 
-sln
+Please note the currently the ixgbe driver is enabling XPS regardless
+of the above considerations.
 
+> Really the XPS bits are only really supposed to be used with the ATR
+> functionality enabled. If we don't have enough queues for a 1:1
+> mapping we should probably not be programming XPS since ATR isn't
+> going to function right anyway.
+
+uhm... I don't know the details of ATR, but apparently it is for TCP
+only, while the use-case I'm referring to is plain (no tunnel)
+unconnected UDP traffic. Am I missing something?
+
+thanks,
+
+Paolo
