@@ -1,93 +1,58 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 15 Mar 2018 09:58:05 -0700
-Subject: [Intel-wired-lan] [PATCH 7/7] ixgbevf: eliminate duplicate
- barriers on weakly-ordered archs
-In-Reply-To: <0175e460-3424-9838-1064-9f63dab3304f@codeaurora.org>
-References: <1520997629-17361-1-git-send-email-okaya@codeaurora.org>
- <1520997629-17361-7-git-send-email-okaya@codeaurora.org>
- <12150aa0-77ba-878e-31f4-d4f8d6a28ccb@codeaurora.org>
- <2a4f4dec64b7462ae64152f6c2df9754@codeaurora.org>
- <CAKgT0UcriMiyV0q6y_x9r3-HJRAWp5_CpsK2jTqh3qvOV=Kkzw@mail.gmail.com>
- <d565406d-1bc7-6fb0-3f36-87a28ac69070@codeaurora.org>
- <CAKgT0UeBHGDmr0uXfuPQJKOomiH9uvXRVYpyDwMOzjkxAZMSYg@mail.gmail.com>
- <53bf7dfe-32ee-1861-e6ea-81f667590a43@codeaurora.org>
- <CAKgT0UcBQRoSPPZ73bdu1oEBGqBA8_c3ZAjti20=+9UwEqpXbw@mail.gmail.com>
- <eee8269d-b711-828c-ab84-5933bf86d024@codeaurora.org>
- <0175e460-3424-9838-1064-9f63dab3304f@codeaurora.org>
-Message-ID: <CAKgT0UfqueJNq3cL3P=uWZ3xsJ1PXTMHSKTMgZO9uKmTUUCGPg@mail.gmail.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 15 Mar 2018 10:00:26 -0700
+Subject: [Intel-wired-lan] [PATCH 03/15] ice: Start hardware
+ initialization
+In-Reply-To: <1521065151.696.91.camel@intel.com>
+References: <20180309172136.9073-1-anirudh.venkataramanan@intel.com>
+ <20180309172136.9073-4-anirudh.venkataramanan@intel.com>
+ <657f1de9-9727-6b01-1f79-957db6ef8852@oracle.com>
+ <1521065151.696.91.camel@intel.com>
+Message-ID: <f07d8b58-aea8-c7a9-fc93-ac6d220ade37@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Mar 15, 2018 at 9:27 AM, Sinan Kaya <okaya@codeaurora.org> wrote:
-> On 3/15/2018 12:21 PM, Sinan Kaya wrote:
->> On 3/15/2018 10:32 AM, Alexander Duyck wrote:
->>> We tend to do something like:
->>>   update tx_buffer_info
->>>   update tx_desc
->>>   wmb()
->>>   point first tx_buffer_info next_to_watch value at last tx_desc
->>>   update next_to_use
->>>   notify device via writel
->>>
->>> We do it this way because we have to synchronize between the Tx
->>> cleanup path and the hardware so we basically lump the two barriers
->>> together. instead of invoking both a smp_wmb and a wmb. Now that I
->>> look at the pseudocode though I wonder if we shouldn't move the
->>> next_to_use update before the wmb, but that might be material for
->>> another patch. Anyway, in the Tx cleanup path we should have an
->>> smp_rmb() after we read the next_to_watch values so that we avoid
->>> reading any of the other fields in the buffer_info if either the field
->>> is NULL or the descriptor pointed to has not been written back.
->>
->> How do you feel about keeping wmb() very close to writel_relaxed() like this?
->>
->>    update tx_buffer_info
->>    update tx_desc
->>    point first tx_buffer_info next_to_watch value at last tx_desc
->>    update next_to_use
->>    wmb()
->>    notify device via writel_relaxed()
->>
->> I'm afraid that if the order of wmb() and writel() is not very
->> obvious or hidden in multiple functions, somebody can introduce a very nasty
->> bug in the future.
->>
->> We also have to think about code maintenance.
->>
->
-> Now that I read your email again, I think this is the reason if I understood you
-> correctly.
->
-> "instead of invoking both a smp_wmb and a wmb"
->
-> You'd need something like
->
->     update tx_buffer_info
->     update tx_desc
->     smp_wmb()
->     point first tx_buffer_info next_to_watch value at last tx_desc
->     update next_to_use
->     wmb()
->     notify device via writel_relaxed()
->
-> Let me work on your comments.
+On 3/14/2018 3:05 PM, Venkataramanan, Anirudh wrote:
+> On Mon, 2018-03-12 at 19:05 -0700, Shannon Nelson wrote:
+>> On 3/9/2018 9:21 AM, Anirudh Venkataramanan wrote:
 
-Yes, we would be doing something like that, but we are using just a
-single wmb() to cover both cases since hardware will never look at the
-tx_buffer_info and software will never read that descriptor ring as
-long as the next_to_watch is NULL. By doing it this way we should have
-both cases covered and not need to worry
 
-The only other bit still remaining is the "maybe_stop_tx" logic which
-lives between the wmb and writel_relaxed. That logic has a smp_mb
-living in it that is triggered if we have to stop the queue. Once
-again though that is only viewed by software so it existing between
-the wmb and the writel_relaxed should not be an issue.
+>>> +
+>>> +/**
+>>> + * ice_read_sr_aq - Read Shadow RAM.
+>>> + * @hw: pointer to the HW structure
+>>> + * @offset: offset in words from module start
+>>> + * @words: number of words to read
+>>> + * @data: buffer for words reads from Shadow RAM
+>>> + * @last_command: tells the AdminQ that this is the last command
+>>> + *
+>>> + * Reads 16-bit word buffers from the Shadow RAM using the admin
+>>> command.
+>>> + */
+>>> +static enum ice_status
+>>> +ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, u16
+>>> *data,
+>>> +	       bool last_command)
+>>> +{
+>>> +	enum ice_status status;
+>>> +
+>>> +	status = ice_check_sr_access_params(hw, offset, words);
+>>> +	if (!status)
+>>> +		status = ice_aq_read_nvm(hw, 0, 2 * offset, 2 *
+>>> words, data,
+>>
+>> Why the doubling of offset and words?  If this is some general
+>> adjustment made for the AQ interface, it should be made in
+>> ice_aq_read_nvm().  If not, then some explanation is needed here.
+> 
+> ice_read_sr_aq expects a word offset and size in words. The
+> ice_aq_read_nvm interface expects offset and size in bytes. The
+> doubling is a conversion from word offset/size to byte offset/size.
 
-Starting to understand why I was a bit hesitant to have us start
-taking on these changes now? :-)
+In that case, this might be a good place for a small comment for readers 
+like me who don't have the spec available.
 
-- Alex
+sln
+
