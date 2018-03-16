@@ -1,157 +1,74 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 16 Mar 2018 11:41:38 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- c83289c57564f827786bf368fb3f4e4d902debcf
-Message-ID: <5aab3cf2.kNzuT90ZtQaGEzRP%fengguang.wu@intel.com>
+From: Stephen Hemminger <stephen@networkplumber.org>
+Date: Thu, 15 Mar 2018 21:41:53 -0700
+Subject: [Intel-wired-lan] [PATCH v2 12/15] ice: Add stats and ethtool
+ support
+In-Reply-To: <CAKgT0UcpfznPj5S5sBwMnC0WPhDaMnFJnQqS3_EMb5tZr10wAA@mail.gmail.com>
+References: <20180315234802.31336-1-anirudh.venkataramanan@intel.com>
+ <20180315234802.31336-13-anirudh.venkataramanan@intel.com>
+ <20180315165247.165ac10e@xeon-e3>
+ <CAKgT0UcpfznPj5S5sBwMnC0WPhDaMnFJnQqS3_EMb5tZr10wAA@mail.gmail.com>
+Message-ID: <20180315214153.5f3759e1@xeon-e3>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: c83289c57564f827786bf368fb3f4e4d902debcf  ixgbe: enable tso with ipsec offload
+On Thu, 15 Mar 2018 17:50:10 -0700
+Alexander Duyck <alexander.duyck@gmail.com> wrote:
 
-elapsed time: 336m
+> On Thu, Mar 15, 2018 at 4:52 PM, Stephen Hemminger
+> <stephen@networkplumber.org> wrote:
+> > On Thu, 15 Mar 2018 16:47:59 -0700
+> > Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> wrote:
+> >  
+> >> +
+> >> +static const struct ice_stats ice_gstrings_vsi_stats[] = {
+> >> +     ICE_VSI_STAT("tx_unicast", eth_stats.tx_unicast),
+> >> +     ICE_VSI_STAT("rx_unicast", eth_stats.rx_unicast),
+> >> +     ICE_VSI_STAT("tx_multicast", eth_stats.tx_multicast),
+> >> +     ICE_VSI_STAT("rx_multicast", eth_stats.rx_multicast),
+> >> +     ICE_VSI_STAT("tx_broadcast", eth_stats.tx_broadcast),
+> >> +     ICE_VSI_STAT("rx_broadcast", eth_stats.rx_broadcast),
+> >> +     ICE_VSI_STAT("tx_bytes", eth_stats.tx_bytes),
+> >> +     ICE_VSI_STAT("rx_bytes", eth_stats.rx_bytes),
+> >> +     ICE_VSI_STAT("rx_discards", eth_stats.rx_discards),
+> >> +     ICE_VSI_STAT("tx_errors", eth_stats.tx_errors),
+> >> +     ICE_VSI_STAT("tx_linearize", tx_linearize),
+> >> +     ICE_VSI_STAT("rx_unknown_protocol", eth_stats.rx_unknown_protocol),
+> >> +     ICE_VSI_STAT("rx_alloc_fail", rx_buf_failed),
+> >> +     ICE_VSI_STAT("rx_pg_alloc_fail", rx_page_failed),
+> >> +};
+> >> +  
+> >
+> > Ignoring feedback from maintainers is unlikely to help get your driver adopted.  
+> 
+> Your feedback wasn't ignored, the netdev stats are gone. I double
+> checked and there was this in addition to the netdev stats before so I
+> think the suggestion to remove the netdev stats was just taken
+> literally.
+> 
+> The VSI is a slightly different entity from the netdev itself. A
+> netdev can be backed by a VSI in the case of the PF, but the VSI can
+> be used in other ways such as what we did in i40e where we were using
+> it to spawn queue groups to work with mqprio as a filter target and in
+> that case the queue groups wouldn't have a netdev directly associated
+> with them so in that case it might make sense to leave these as
+> separate stats.
+> 
+> - Alex
 
-configs tested: 133
+Sorry I was confused because eth_stats and thought is was a copy
+of net_stats. This looks good.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+After reading ice_stat_update40 I can see why you needed
+to know starting point.
 
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                randconfig-it0-03160926
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201810
-i386         randconfig-n0-201810+bisect_validate
-x86_64                 randconfig-x002-201810
-x86_64                 randconfig-x006-201810
-x86_64                 randconfig-x005-201810
-x86_64                 randconfig-x009-201810
-x86_64                 randconfig-x004-201810
-x86_64                 randconfig-x001-201810
-x86_64                 randconfig-x008-201810
-x86_64                 randconfig-x003-201810
-x86_64                 randconfig-x007-201810
-x86_64                 randconfig-x000-201810
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i1-201810
-i386                     randconfig-i0-201810
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201810
-i386                     randconfig-a1-201810
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201810
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-powerpc                           allnoconfig
-x86_64                randconfig-ne0-03160914
-i386                   randconfig-x006-201810
-i386                   randconfig-x000-201810
-i386                   randconfig-x008-201810
-i386                   randconfig-x004-201810
-i386                   randconfig-x009-201810
-i386                   randconfig-x003-201810
-i386                   randconfig-x002-201810
-i386                   randconfig-x005-201810
-i386                   randconfig-x001-201810
-i386                   randconfig-x007-201810
-x86_64                 randconfig-x010-201810
-x86_64                 randconfig-x014-201810
-x86_64                 randconfig-x013-201810
-x86_64                 randconfig-x019-201810
-x86_64                 randconfig-x011-201810
-x86_64                 randconfig-x015-201810
-x86_64                 randconfig-x018-201810
-x86_64                 randconfig-x016-201810
-x86_64                 randconfig-x017-201810
-x86_64                 randconfig-x012-201810
-i386                   randconfig-x013-201810
-i386                   randconfig-x014-201810
-i386                   randconfig-x015-201810
-i386                   randconfig-x012-201810
-i386                   randconfig-x019-201810
-i386                   randconfig-x016-201810
-i386                   randconfig-x010-201810
-i386                   randconfig-x018-201810
-i386                   randconfig-x011-201810
-i386                   randconfig-x017-201810
-i386                   randconfig-x073-201810
-i386                   randconfig-x075-201810
-i386                   randconfig-x071-201810
-i386                   randconfig-x076-201810
-i386                   randconfig-x079-201810
-i386                   randconfig-x077-201810
-i386                   randconfig-x070-201810
-i386                   randconfig-x074-201810
-i386                   randconfig-x078-201810
-i386                   randconfig-x072-201810
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
+Since ice_fetch_u64_stats_per_ring is called only by ice_update_vsi_ring_stats,
+and the update is only done by watchdog and when stats are fetched;
+it doesn't look like you need to use the _irq variant of u64_stats_fetch_begin.
+That would save having to disable local irq's while handling stats.
 
-Thanks,
-Fengguang
+
+Acked-by: Stephen Hemminger <stephen@networkplumber.org>
+
