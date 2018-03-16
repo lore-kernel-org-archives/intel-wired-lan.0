@@ -1,10 +1,8 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 16 Mar 2018 01:26:31 -0700
-Subject: [Intel-wired-lan] [next PATCH S89 2/8] i40e: move
- I40E_FLAG_UDP_FILTER_SYNC to the state field
-In-Reply-To: <20180316082637.49915-1-alice.michael@intel.com>
-References: <20180316082637.49915-1-alice.michael@intel.com>
-Message-ID: <20180316082637.49915-2-alice.michael@intel.com>
+Date: Fri, 16 Mar 2018 01:26:30 -0700
+Subject: [Intel-wired-lan] [next PATCH S89 1/8] i40e: move
+ I40E_FLAG_FILTER_SYNC to a state bit
+Message-ID: <20180316082637.49915-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,87 +11,106 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-This flag is modified during run time, possibly even when the RTNL lock
-is not held. Additionally it has a few places which should be using
-test_and_set or test_and_clear atomic bit operations.
+The I40E_FLAG_FILTER_SYNC flag is modified during run time possibly when
+the RTNL lock is not held. Thus, it should not be part of pf->flags, and
+instead should be using atomic bit operations in the pf->state field.
 
-Create a new state bit __I40E_UDP_SYNC_PENDING and use it instead of the
-ole I40E_FLAG_UDP_FILTER_SYNC flag.
+Create a __I40E_MACVLAN_SYNC_PENDING state bit, and use it instead of
+the old I40E_FLAG_FILTER_SYNC flag.
 
-This is part of a larger effort to remove the need for using cmpxchg64
-in i40e_set_priv_flags.
+This is part of a larger effort to remove the need for cmpxchg64 in
+i40e_set_priv_flags().
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
  drivers/net/ethernet/intel/i40e/i40e.h      |  3 ++-
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++++------
- 2 files changed, 6 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 16 +++++++++-------
+ 2 files changed, 11 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index e83fb37..ff309501 100644
+index 1e1cd52..e83fb37 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -163,6 +163,7 @@ enum i40e_state_t {
+@@ -162,6 +162,7 @@ enum i40e_state_t {
+ 	__I40E_RESET_FAILED,
  	__I40E_PORT_SUSPENDED,
  	__I40E_VF_DISABLE,
- 	__I40E_MACVLAN_SYNC_PENDING,
-+	__I40E_UDP_FILTER_SYNC_PENDING,
++	__I40E_MACVLAN_SYNC_PENDING,
  	/* This must be last as it determines the size of the BITMAP */
  	__I40E_STATE_SIZE__,
  };
-@@ -526,7 +527,7 @@ struct i40e_pf {
- #define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(11)
- #define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(12)
- #define I40E_FLAG_MFP_ENABLED			BIT_ULL(13)
--#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(14)
-+/* Gap for BIT_ULL(14) */
- #define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(15)
- #define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(16)
- #define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(17)
+@@ -516,7 +517,7 @@ struct i40e_pf {
+ #define I40E_FLAG_MSIX_ENABLED			BIT_ULL(2)
+ #define I40E_FLAG_RSS_ENABLED			BIT_ULL(3)
+ #define I40E_FLAG_VMDQ_ENABLED			BIT_ULL(4)
+-#define I40E_FLAG_FILTER_SYNC			BIT_ULL(5)
++/* Gap for BIT_ULL(5) */
+ #define I40E_FLAG_SRIOV_ENABLED			BIT_ULL(6)
+ #define I40E_FLAG_DCB_CAPABLE			BIT_ULL(7)
+ #define I40E_FLAG_DCB_ENABLED			BIT_ULL(8)
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index e96c22a..a24f99a 100644
+index 5a77dbf..e96c22a 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9721,7 +9721,7 @@ static void i40e_sync_udp_filters(struct i40e_pf *pf)
- 			pf->pending_udp_bitmap |= BIT_ULL(i);
+@@ -1382,7 +1382,7 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
+ 		hash_add(vsi->mac_filter_hash, &f->hlist, key);
+ 
+ 		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
+-		vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
++		set_bit(__I40E_MACVLAN_SYNC_PENDING, vsi->back->state);
  	}
  
--	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
-+	set_bit(__I40E_UDP_FILTER_SYNC_PENDING, pf->state);
+ 	/* If we're asked to add a filter that has been marked for removal, it
+@@ -1432,7 +1432,7 @@ void __i40e_del_filter(struct i40e_vsi *vsi, struct i40e_mac_filter *f)
+ 	}
+ 
+ 	vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
+-	vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
++	set_bit(__I40E_MACVLAN_SYNC_PENDING, vsi->state);
  }
  
  /**
-@@ -9735,11 +9735,9 @@ static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
- 	u16 port;
- 	int i;
+@@ -1955,7 +1955,7 @@ static void i40e_set_rx_mode(struct net_device *netdev)
+ 	/* check for other flag changes */
+ 	if (vsi->current_netdev_flags != vsi->netdev->flags) {
+ 		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
+-		vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
++		set_bit(__I40E_MACVLAN_SYNC_PENDING, vsi->back->state);
+ 	}
+ }
  
--	if (!(pf->flags & I40E_FLAG_UDP_FILTER_SYNC))
-+	if (!test_and_clear_bit(__I40E_UDP_FILTER_SYNC_PENDING, pf->state))
+@@ -2577,9 +2577,10 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
+ {
+ 	int v;
+ 
+-	if (!pf || !(pf->flags & I40E_FLAG_FILTER_SYNC))
++	if (!pf)
++		return;
++	if (!test_and_clear_bit(__I40E_MACVLAN_SYNC_PENDING, pf->state))
  		return;
+-	pf->flags &= ~I40E_FLAG_FILTER_SYNC;
  
--	pf->flags &= ~I40E_FLAG_UDP_FILTER_SYNC;
--
- 	for (i = 0; i < I40E_MAX_PF_UDP_OFFLOAD_PORTS; i++) {
- 		if (pf->pending_udp_bitmap & BIT_ULL(i)) {
- 			pf->pending_udp_bitmap &= ~BIT_ULL(i);
-@@ -11439,7 +11437,7 @@ static void i40e_udp_tunnel_add(struct net_device *netdev,
- 	/* New port: add it and mark its index in the bitmap */
- 	pf->udp_ports[next_idx].port = port;
- 	pf->pending_udp_bitmap |= BIT_ULL(next_idx);
--	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
-+	set_bit(__I40E_UDP_FILTER_SYNC_PENDING, pf->state);
- }
+ 	for (v = 0; v < pf->num_alloc_vsi; v++) {
+ 		if (pf->vsi[v] &&
+@@ -2588,7 +2589,8 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
  
- /**
-@@ -11480,7 +11478,7 @@ static void i40e_udp_tunnel_del(struct net_device *netdev,
- 	 */
- 	pf->udp_ports[idx].port = 0;
- 	pf->pending_udp_bitmap |= BIT_ULL(idx);
--	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
-+	set_bit(__I40E_UDP_FILTER_SYNC_PENDING, pf->state);
+ 			if (ret) {
+ 				/* come back and try again later */
+-				pf->flags |= I40E_FLAG_FILTER_SYNC;
++				set_bit(__I40E_MACVLAN_SYNC_PENDING,
++					pf->state);
+ 				break;
+ 			}
+ 		}
+@@ -12240,7 +12242,7 @@ static int i40e_add_vsi(struct i40e_vsi *vsi)
  
- 	return;
- not_found:
+ 	if (f_count) {
+ 		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
+-		pf->flags |= I40E_FLAG_FILTER_SYNC;
++		set_bit(__I40E_MACVLAN_SYNC_PENDING, pf->state);
+ 	}
+ 
+ 	/* Update VSI BW information */
 -- 
 2.9.5
 
