@@ -1,18 +1,18 @@
 From: Sinan Kaya <okaya@codeaurora.org>
-Date: Fri, 16 Mar 2018 12:16:14 -0400
-Subject: [Intel-wired-lan] [PATCH v3 01/18] i40e/i40evf: Eliminate duplicate
+Date: Fri, 16 Mar 2018 12:16:15 -0400
+Subject: [Intel-wired-lan] [PATCH v3 02/18] ixgbe: eliminate duplicate
  barriers on weakly-ordered archs
 In-Reply-To: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
 References: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
-Message-ID: <1521216991-28706-2-git-send-email-okaya@codeaurora.org>
+Message-ID: <1521216991-28706-3-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Code includes wmb() followed by writel(). writel() already has a barrier
-on some architectures like arm64.
+Code includes wmb() followed by writel() in multiple places. writel()
+already has a barrier on some architectures like arm64.
 
 This ends up CPU observing two barriers back to back before executing the
 register write.
@@ -22,72 +22,49 @@ writel_relaxed().
 
 Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 8 ++++----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 4 ++--
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index e554aa6cf..9455869 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -185,7 +185,7 @@ static int i40e_program_fdir_filter(struct i40e_fdir_filter *fdir_data,
- 	/* Mark the data descriptor to be watched */
- 	first->next_to_watch = tx_desc;
- 
--	writel(tx_ring->next_to_use, tx_ring->tail);
-+	writel_relaxed(tx_ring->next_to_use, tx_ring->tail);
- 	return 0;
- 
- dma_fail:
-@@ -1375,7 +1375,7 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
- 	 * such as IA-64).
- 	 */
- 	wmb();
--	writel(val, rx_ring->tail);
-+	writel_relaxed(val, rx_ring->tail);
- }
- 
- /**
-@@ -2258,7 +2258,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 0da5aa2..58ed70f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -1692,7 +1692,7 @@ void ixgbe_alloc_rx_buffers(struct ixgbe_ring *rx_ring, u16 cleaned_count)
+ 		 * such as IA-64).
  		 */
  		wmb();
- 
--		writel(xdp_ring->next_to_use, xdp_ring->tail);
-+		writel_relaxed(xdp_ring->next_to_use, xdp_ring->tail);
+-		writel(i, rx_ring->tail);
++		writel_relaxed(i, rx_ring->tail);
  	}
- 
- 	rx_ring->skb = skb;
-@@ -3286,7 +3286,7 @@ static inline int i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 
- 	/* notify HW of packet */
- 	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
--		writel(i, tx_ring->tail);
-+		writel_relaxed(i, tx_ring->tail);
- 
- 		/* we need this if more than one processor can write to our tail
- 		 * at a time, it synchronizes IO on IA64/Altix systems
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 357d605..56eea20 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -667,7 +667,7 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
- 	 * such as IA-64).
- 	 */
- 	wmb();
--	writel(val, rx_ring->tail);
-+	writel_relaxed(val, rx_ring->tail);
  }
  
- /**
-@@ -2243,7 +2243,7 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+@@ -2453,7 +2453,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 		 * know there are new descriptors to fetch.
+ 		 */
+ 		wmb();
+-		writel(ring->next_to_use, ring->tail);
++		writel_relaxed(ring->next_to_use, ring->tail);
  
- 	/* notify HW of packet */
+ 		xdp_do_flush_map();
+ 	}
+@@ -8078,7 +8078,7 @@ static int ixgbe_tx_map(struct ixgbe_ring *tx_ring,
+ 	ixgbe_maybe_stop_tx(tx_ring, DESC_NEEDED);
+ 
  	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
 -		writel(i, tx_ring->tail);
 +		writel_relaxed(i, tx_ring->tail);
  
  		/* we need this if more than one processor can write to our tail
  		 * at a time, it synchronizes IO on IA64/Altix systems
+@@ -10014,7 +10014,7 @@ static void ixgbe_xdp_flush(struct net_device *dev)
+ 	 * are new descriptors to fetch.
+ 	 */
+ 	wmb();
+-	writel(ring->next_to_use, ring->tail);
++	writel_relaxed(ring->next_to_use, ring->tail);
+ 
+ 	return;
+ }
 -- 
 2.7.4
 
