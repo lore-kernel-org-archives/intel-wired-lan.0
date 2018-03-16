@@ -1,43 +1,41 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Fri, 16 Mar 2018 12:16:22 -0400
-Subject: [Intel-wired-lan] [PATCH v3 09/18] fm10k: Eliminate duplicate
- barriers on weakly-ordered archs
-In-Reply-To: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
-References: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
-Message-ID: <1521216991-28706-10-git-send-email-okaya@codeaurora.org>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Fri, 16 Mar 2018 09:21:16 -0700
+Subject: [Intel-wired-lan] [PATCH v2 03/15] ice: Start hardware
+ initialization
+In-Reply-To: <20180315234802.31336-4-anirudh.venkataramanan@intel.com>
+References: <20180315234802.31336-1-anirudh.venkataramanan@intel.com>
+ <20180315234802.31336-4-anirudh.venkataramanan@intel.com>
+Message-ID: <e39c8a7c-a6ad-3414-fec9-31540b65b010@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Code includes wmb() followed by writel(). writel() already has a
-barrier on some architectures like arm64.
+On 3/15/2018 4:47 PM, Anirudh Venkataramanan wrote:
+> This patch implements multiple pieces of the initialization flow
+> as follows:
+> 
+> 1) A reset is issued to ensure a clean device state, followed
+>     by initialization of admin queue interface.
+> 
+> 2) Once the admin queue interface is up, clear the PF config
+>     and transition the device to non-PXE mode.
+> 
+> 3) Get the NVM configuration stored in the device's non-volatile
+>     memory (NVM) using ice_init_nvm.
+> 
+> CC: Shannon Nelson <shannon.nelson@oracle.com>
+> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> ---
+> v2: Addressed Shannon Nelson's review comments by
+>      1) removing an unnecessary register write in ice_aq_clear_pxe_mode.
+>      2) adding a comment explaining the need to convert word sized values
+>         to byte sized values.
 
-This ends up CPU observing two barriers back to back before executing
-the register write.
+These two changes look fine.
 
-Since code already has an explicit barrier call, changing writel() to
-writel_relaxed().
+sln
 
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
----
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 8e12aae..8d04e26 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -179,7 +179,7 @@ void fm10k_alloc_rx_buffers(struct fm10k_ring *rx_ring, u16 cleaned_count)
- 		wmb();
- 
- 		/* notify hardware of new descriptors */
--		writel(i, rx_ring->tail);
-+		writel_relaxed(i, rx_ring->tail);
- 	}
- }
- 
--- 
-2.7.4
+Acked-by: Shannon Nelson <shannon.nelson@oracle.com>
 
