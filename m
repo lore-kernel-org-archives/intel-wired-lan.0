@@ -1,94 +1,170 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 16 Mar 2018 15:34:05 -0700
-Subject: [Intel-wired-lan] [PATCH 4/5] ixgbevf: Add support for meta data
-In-Reply-To: <20180316223406.7295-1-anthony.l.nguyen@intel.com>
-References: <20180316223406.7295-1-anthony.l.nguyen@intel.com>
-Message-ID: <20180316223406.7295-5-anthony.l.nguyen@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 17 Mar 2018 07:05:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ ffc7c890104ab7b4e01727906958692692417a59
+Message-ID: <5aac4da6.TMOlBPhH8fqJBmi8%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add support for XDP meta data when using build skb.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: ffc7c890104ab7b4e01727906958692692417a59  ixgbe: enable tso with ipsec offload
 
-Based on commit 366a88fe2f40 ("bpf, ixgbe: add meta data support")
+Regressions in current branch:
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Acked-by: John Fastabend <john.fastabend@gmail.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 29 +++++++++++++++++++----
- 1 file changed, 25 insertions(+), 4 deletions(-)
+drivers/net/ethernet/intel/ice/ice_ethtool.c:187:42-43: WARNING: Use ARRAY_SIZE
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 5167e81e0cf1..3d9033f26eff 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -889,6 +889,20 @@ struct sk_buff *ixgbevf_construct_skb(struct ixgbevf_ring *rx_ring,
- #if L1_CACHE_BYTES < 128
- 	prefetch(xdp->data + L1_CACHE_BYTES);
- #endif
-+	/* Note, we get here by enabling legacy-rx via:
-+	 *
-+	 *    ethtool --set-priv-flags <dev> legacy-rx on
-+	 *
-+	 * In this mode, we currently get 0 extra XDP headroom as
-+	 * opposed to having legacy-rx off, where we process XDP
-+	 * packets going to stack via ixgbevf_build_skb().
-+	 *
-+	 * For ixgbevf_construct_skb() mode it means that the
-+	 * xdp->data_meta will always point to xdp->data, since
-+	 * the helper cannot expand the head. Should this ever
-+	 * changed in future for legacy-rx mode on, then lets also
-+	 * add xdp->data_meta handling here.
-+	 */
- 
- 	/* allocate a skb to store the frags */
- 	skb = napi_alloc_skb(&rx_ring->q_vector->napi, IXGBEVF_RX_HDR_SIZE);
-@@ -936,6 +950,7 @@ static struct sk_buff *ixgbevf_build_skb(struct ixgbevf_ring *rx_ring,
- 					 struct xdp_buff *xdp,
- 					 union ixgbe_adv_rx_desc *rx_desc)
- {
-+	unsigned int metasize = xdp->data - xdp->data_meta;
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = ixgbevf_rx_pg_size(rx_ring) / 2;
- #else
-@@ -945,10 +960,14 @@ static struct sk_buff *ixgbevf_build_skb(struct ixgbevf_ring *rx_ring,
- #endif
- 	struct sk_buff *skb;
- 
--	/* prefetch first cache line of first page */
--	prefetch(xdp->data);
-+	/* Prefetch first cache line of first page. If xdp->data_meta
-+	 * is unused, this points to xdp->data, otherwise, we likely
-+	 * have a consumer accessing first few bytes of meta data,
-+	 * and then actual data.
-+	 */
-+	prefetch(xdp->data_meta);
- #if L1_CACHE_BYTES < 128
--	prefetch(xdp->data + L1_CACHE_BYTES);
-+	prefetch(xdp->data_meta + L1_CACHE_BYTES);
- #endif
- 
- 	/* build an skb around the page buffer */
-@@ -959,6 +978,8 @@ static struct sk_buff *ixgbevf_build_skb(struct ixgbevf_ring *rx_ring,
- 	/* update pointers within the skb to store the data */
- 	skb_reserve(skb, xdp->data - xdp->data_hard_start);
- 	__skb_put(skb, xdp->data_end - xdp->data);
-+	if (metasize)
-+		skb_metadata_set(skb, metasize);
- 
- 	/* update buffer offset */
- #if (PAGE_SIZE < 8192)
-@@ -1126,7 +1147,7 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
- 		if (!skb) {
- 			xdp.data = page_address(rx_buffer->page) +
- 				   rx_buffer->page_offset;
--			xdp_set_data_meta_invalid(&xdp);
-+			xdp.data_meta = xdp.data;
- 			xdp.data_hard_start = xdp.data -
- 					      ixgbevf_rx_offset(rx_ring);
- 			xdp.data_end = xdp.data + size;
--- 
-2.13.6
+Error ids grouped by kconfigs:
 
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-intel-ice-ice_ethtool.c:WARNING:Use-ARRAY_SIZE
+
+elapsed time: 194m
+
+configs tested: 139
+
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+mips                      malta_kvm_defconfig
+mips                malta_qemu_32r6_defconfig
+sh                          r7785rp_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201810
+i386                     randconfig-i1-201810
+i386                     randconfig-i0-201810
+i386                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                                  kexec
+i386                     randconfig-a0-201810
+i386                     randconfig-a1-201810
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+arm                         at91_dt_defconfig
+arm                          badge4_defconfig
+arm                          tango4_defconfig
+powerpc                           allnoconfig
+sh                           se7705_defconfig
+x86_64                 randconfig-x010-201810
+x86_64                 randconfig-x014-201810
+x86_64                 randconfig-x013-201810
+x86_64                 randconfig-x019-201810
+x86_64                 randconfig-x011-201810
+x86_64                 randconfig-x015-201810
+x86_64                 randconfig-x018-201810
+x86_64                 randconfig-x016-201810
+x86_64                 randconfig-x017-201810
+x86_64                 randconfig-x012-201810
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s1-201810
+i386                     randconfig-s0-201810
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-03170615
+x86_64                 randconfig-s4-03170615
+x86_64                 randconfig-s5-03170615
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+x86_64                   randconfig-i0-201810
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                   randconfig-x006-201810
+i386                   randconfig-x000-201810
+i386                   randconfig-x008-201810
+i386                   randconfig-x004-201810
+i386                   randconfig-x009-201810
+i386                   randconfig-x003-201810
+i386                   randconfig-x002-201810
+i386                   randconfig-x005-201810
+i386                   randconfig-x001-201810
+i386                   randconfig-x007-201810
+i386                   randconfig-x013-201810
+i386                   randconfig-x014-201810
+i386                   randconfig-x015-201810
+i386                   randconfig-x012-201810
+i386                   randconfig-x019-201810
+i386                   randconfig-x016-201810
+i386                   randconfig-x010-201810
+i386                   randconfig-x018-201810
+i386                   randconfig-x011-201810
+i386                   randconfig-x017-201810
+i386                   randconfig-x073-201810
+i386                   randconfig-x075-201810
+i386                   randconfig-x071-201810
+i386                   randconfig-x076-201810
+i386                   randconfig-x079-201810
+i386                   randconfig-x077-201810
+i386                   randconfig-x070-201810
+i386                   randconfig-x074-201810
+i386                   randconfig-x078-201810
+i386                   randconfig-x072-201810
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+x86_64                 randconfig-x002-201810
+x86_64                 randconfig-x006-201810
+x86_64                 randconfig-x005-201810
+x86_64                 randconfig-x009-201810
+x86_64                 randconfig-x004-201810
+x86_64                 randconfig-x001-201810
+x86_64                 randconfig-x008-201810
+x86_64                 randconfig-x003-201810
+x86_64                 randconfig-x007-201810
+x86_64                 randconfig-x000-201810
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
