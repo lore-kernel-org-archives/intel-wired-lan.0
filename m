@@ -1,42 +1,134 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Fri, 16 Mar 2018 11:09:05 -0700
-Subject: [Intel-wired-lan] [next-queue v2 2/4] ixgbe: remove unneeded ipsec
- test in TX path
+Date: Fri, 16 Mar 2018 11:09:07 -0700
+Subject: [Intel-wired-lan] [next-queue v2 4/4] ixgbe: enable tso with ipsec
+ offload
 In-Reply-To: <1521223747-12018-1-git-send-email-shannon.nelson@oracle.com>
 References: <1521223747-12018-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <1521223747-12018-3-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1521223747-12018-5-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Since the ipsec data fields will be zero anyway in the non-ipsec
-case, we can remove the conditional jump.
+Fix things up to support TSO offload in conjunction
+with IPsec hw offload.  This raises throughput with
+IPsec offload on to nearly line rate.
 
-Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
 Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+v2 updates from Alex's comments:
+ - changed feature add from variable to #define
+ - fixed a reverse christmas tree miss
+ - GSO_PARTIAL'd the ipv4 header checksum
+ - dropped an extra blank line
 
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c |  9 +++++++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  | 26 ++++++++++++++++++--------
+ 2 files changed, 25 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index 5ddea43..68af127 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -929,8 +929,13 @@ void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter)
+ 	ixgbe_ipsec_clear_hw_tables(adapter);
+ 
+ 	adapter->netdev->xfrmdev_ops = &ixgbe_xfrmdev_ops;
+-	adapter->netdev->features |= NETIF_F_HW_ESP;
+-	adapter->netdev->hw_enc_features |= NETIF_F_HW_ESP;
++
++#define IXGBE_ESP_FEATURES	(NETIF_F_HW_ESP | \
++				 NETIF_F_HW_ESP_TX_CSUM | \
++				 NETIF_F_GSO_ESP)
++
++	adapter->netdev->features |= IXGBE_ESP_FEATURES;
++	adapter->netdev->hw_enc_features |= IXGBE_ESP_FEATURES;
+ 
+ 	return;
+ 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 153cd9e..a54f3d8 100644
+index a54f3d8..b947435 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7864,10 +7864,8 @@ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
- 	vlan_macip_lens |= skb_network_offset(skb) << IXGBE_ADVTXD_MACLEN_SHIFT;
- 	vlan_macip_lens |= first->tx_flags & IXGBE_TX_FLAGS_VLAN_MASK;
+@@ -7721,7 +7721,8 @@ static void ixgbe_service_task(struct work_struct *work)
  
--	if (first->tx_flags & IXGBE_TX_FLAGS_IPSEC) {
--		fceof_saidx |= itd->sa_idx;
--		type_tucmd |= itd->flags | itd->trailer_len;
--	}
+ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+ 		     struct ixgbe_tx_buffer *first,
+-		     u8 *hdr_len)
++		     u8 *hdr_len,
++		     struct ixgbe_ipsec_tx_data *itd)
+ {
+ 	u32 vlan_macip_lens, type_tucmd, mss_l4len_idx;
+ 	struct sk_buff *skb = first->skb;
+@@ -7735,6 +7736,7 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+ 		unsigned char *hdr;
+ 	} l4;
+ 	u32 paylen, l4_offset;
++	u32 fceof_saidx = 0;
+ 	int err;
+ 
+ 	if (skb->ip_summed != CHECKSUM_PARTIAL)
+@@ -7760,13 +7762,15 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+ 	if (ip.v4->version == 4) {
+ 		unsigned char *csum_start = skb_checksum_start(skb);
+ 		unsigned char *trans_start = ip.hdr + (ip.v4->ihl * 4);
++		int len = csum_start - trans_start;
+ 
+ 		/* IP header will have to cancel out any data that
+-		 * is not a part of the outer IP header
++		 * is not a part of the outer IP header, so set to
++		 * a reverse csum if needed, else init check to 0.
+ 		 */
+-		ip.v4->check = csum_fold(csum_partial(trans_start,
+-						      csum_start - trans_start,
+-						      0));
++		ip.v4->check = (skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) ?
++					   csum_fold(csum_partial(trans_start,
++								  len, 0)) : 0;
+ 		type_tucmd |= IXGBE_ADVTXD_TUCMD_IPV4;
+ 
+ 		ip.v4->tot_len = 0;
+@@ -7797,12 +7801,15 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+ 	mss_l4len_idx = (*hdr_len - l4_offset) << IXGBE_ADVTXD_L4LEN_SHIFT;
+ 	mss_l4len_idx |= skb_shinfo(skb)->gso_size << IXGBE_ADVTXD_MSS_SHIFT;
+ 
 +	fceof_saidx |= itd->sa_idx;
 +	type_tucmd |= itd->flags | itd->trailer_len;
++
+ 	/* vlan_macip_lens: HEADLEN, MACLEN, VLAN tag */
+ 	vlan_macip_lens = l4.hdr - ip.hdr;
+ 	vlan_macip_lens |= (ip.hdr - skb->data) << IXGBE_ADVTXD_MACLEN_SHIFT;
+ 	vlan_macip_lens |= first->tx_flags & IXGBE_TX_FLAGS_VLAN_MASK;
  
- 	ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, fceof_saidx, type_tucmd, 0);
- }
+-	ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, 0, type_tucmd,
++	ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, fceof_saidx, type_tucmd,
+ 			  mss_l4len_idx);
+ 
+ 	return 1;
+@@ -8493,7 +8500,7 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+ 	if (skb->sp && !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
+ 		goto out_drop;
+ #endif
+-	tso = ixgbe_tso(tx_ring, first, &hdr_len);
++	tso = ixgbe_tso(tx_ring, first, &hdr_len, &ipsec_tx);
+ 	if (tso < 0)
+ 		goto out_drop;
+ 	else if (!tso)
+@@ -9902,8 +9909,11 @@ ixgbe_features_check(struct sk_buff *skb, struct net_device *dev,
+ 
+ 	/* We can only support IPV4 TSO in tunnels if we can mangle the
+ 	 * inner IP ID field, so strip TSO if MANGLEID is not supported.
++	 * IPsec offoad sets skb->encapsulation but still can handle
++	 * the TSO, so it's the exception.
+ 	 */
+-	if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID))
++	if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID) &&
++	    !skb->sp)
+ 		features &= ~NETIF_F_TSO;
+ 
+ 	return features;
 -- 
 2.7.4
 
