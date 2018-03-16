@@ -1,74 +1,93 @@
-From: Stephen Hemminger <stephen@networkplumber.org>
-Date: Thu, 15 Mar 2018 21:41:53 -0700
-Subject: [Intel-wired-lan] [PATCH v2 12/15] ice: Add stats and ethtool
- support
-In-Reply-To: <CAKgT0UcpfznPj5S5sBwMnC0WPhDaMnFJnQqS3_EMb5tZr10wAA@mail.gmail.com>
-References: <20180315234802.31336-1-anirudh.venkataramanan@intel.com>
- <20180315234802.31336-13-anirudh.venkataramanan@intel.com>
- <20180315165247.165ac10e@xeon-e3>
- <CAKgT0UcpfznPj5S5sBwMnC0WPhDaMnFJnQqS3_EMb5tZr10wAA@mail.gmail.com>
-Message-ID: <20180315214153.5f3759e1@xeon-e3>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Fri, 16 Mar 2018 12:16:14 -0400
+Subject: [Intel-wired-lan] [PATCH v3 01/18] i40e/i40evf: Eliminate duplicate
+ barriers on weakly-ordered archs
+In-Reply-To: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
+References: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
+Message-ID: <1521216991-28706-2-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 15 Mar 2018 17:50:10 -0700
-Alexander Duyck <alexander.duyck@gmail.com> wrote:
+Code includes wmb() followed by writel(). writel() already has a barrier
+on some architectures like arm64.
 
-> On Thu, Mar 15, 2018 at 4:52 PM, Stephen Hemminger
-> <stephen@networkplumber.org> wrote:
-> > On Thu, 15 Mar 2018 16:47:59 -0700
-> > Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> wrote:
-> >  
-> >> +
-> >> +static const struct ice_stats ice_gstrings_vsi_stats[] = {
-> >> +     ICE_VSI_STAT("tx_unicast", eth_stats.tx_unicast),
-> >> +     ICE_VSI_STAT("rx_unicast", eth_stats.rx_unicast),
-> >> +     ICE_VSI_STAT("tx_multicast", eth_stats.tx_multicast),
-> >> +     ICE_VSI_STAT("rx_multicast", eth_stats.rx_multicast),
-> >> +     ICE_VSI_STAT("tx_broadcast", eth_stats.tx_broadcast),
-> >> +     ICE_VSI_STAT("rx_broadcast", eth_stats.rx_broadcast),
-> >> +     ICE_VSI_STAT("tx_bytes", eth_stats.tx_bytes),
-> >> +     ICE_VSI_STAT("rx_bytes", eth_stats.rx_bytes),
-> >> +     ICE_VSI_STAT("rx_discards", eth_stats.rx_discards),
-> >> +     ICE_VSI_STAT("tx_errors", eth_stats.tx_errors),
-> >> +     ICE_VSI_STAT("tx_linearize", tx_linearize),
-> >> +     ICE_VSI_STAT("rx_unknown_protocol", eth_stats.rx_unknown_protocol),
-> >> +     ICE_VSI_STAT("rx_alloc_fail", rx_buf_failed),
-> >> +     ICE_VSI_STAT("rx_pg_alloc_fail", rx_page_failed),
-> >> +};
-> >> +  
-> >
-> > Ignoring feedback from maintainers is unlikely to help get your driver adopted.  
-> 
-> Your feedback wasn't ignored, the netdev stats are gone. I double
-> checked and there was this in addition to the netdev stats before so I
-> think the suggestion to remove the netdev stats was just taken
-> literally.
-> 
-> The VSI is a slightly different entity from the netdev itself. A
-> netdev can be backed by a VSI in the case of the PF, but the VSI can
-> be used in other ways such as what we did in i40e where we were using
-> it to spawn queue groups to work with mqprio as a filter target and in
-> that case the queue groups wouldn't have a netdev directly associated
-> with them so in that case it might make sense to leave these as
-> separate stats.
-> 
-> - Alex
+This ends up CPU observing two barriers back to back before executing the
+register write.
 
-Sorry I was confused because eth_stats and thought is was a copy
-of net_stats. This looks good.
+Since code already has an explicit barrier call, changing writel() to
+writel_relaxed().
 
-After reading ice_stat_update40 I can see why you needed
-to know starting point.
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 8 ++++----
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-Since ice_fetch_u64_stats_per_ring is called only by ice_update_vsi_ring_stats,
-and the update is only done by watchdog and when stats are fetched;
-it doesn't look like you need to use the _irq variant of u64_stats_fetch_begin.
-That would save having to disable local irq's while handling stats.
-
-
-Acked-by: Stephen Hemminger <stephen@networkplumber.org>
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index e554aa6cf..9455869 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -185,7 +185,7 @@ static int i40e_program_fdir_filter(struct i40e_fdir_filter *fdir_data,
+ 	/* Mark the data descriptor to be watched */
+ 	first->next_to_watch = tx_desc;
+ 
+-	writel(tx_ring->next_to_use, tx_ring->tail);
++	writel_relaxed(tx_ring->next_to_use, tx_ring->tail);
+ 	return 0;
+ 
+ dma_fail:
+@@ -1375,7 +1375,7 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
+ 	 * such as IA-64).
+ 	 */
+ 	wmb();
+-	writel(val, rx_ring->tail);
++	writel_relaxed(val, rx_ring->tail);
+ }
+ 
+ /**
+@@ -2258,7 +2258,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		 */
+ 		wmb();
+ 
+-		writel(xdp_ring->next_to_use, xdp_ring->tail);
++		writel_relaxed(xdp_ring->next_to_use, xdp_ring->tail);
+ 	}
+ 
+ 	rx_ring->skb = skb;
+@@ -3286,7 +3286,7 @@ static inline int i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 
+ 	/* notify HW of packet */
+ 	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
+-		writel(i, tx_ring->tail);
++		writel_relaxed(i, tx_ring->tail);
+ 
+ 		/* we need this if more than one processor can write to our tail
+ 		 * at a time, it synchronizes IO on IA64/Altix systems
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 357d605..56eea20 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -667,7 +667,7 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
+ 	 * such as IA-64).
+ 	 */
+ 	wmb();
+-	writel(val, rx_ring->tail);
++	writel_relaxed(val, rx_ring->tail);
+ }
+ 
+ /**
+@@ -2243,7 +2243,7 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 
+ 	/* notify HW of packet */
+ 	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
+-		writel(i, tx_ring->tail);
++		writel_relaxed(i, tx_ring->tail);
+ 
+ 		/* we need this if more than one processor can write to our tail
+ 		 * at a time, it synchronizes IO on IA64/Altix systems
+-- 
+2.7.4
 
