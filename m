@@ -1,52 +1,43 @@
 From: Sinan Kaya <okaya@codeaurora.org>
-Date: Fri, 16 Mar 2018 12:16:19 -0400
-Subject: [Intel-wired-lan] [PATCH v3 06/18] ixgbevf: eliminate duplicate
+Date: Fri, 16 Mar 2018 12:16:22 -0400
+Subject: [Intel-wired-lan] [PATCH v3 09/18] fm10k: Eliminate duplicate
  barriers on weakly-ordered archs
 In-Reply-To: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
 References: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
-Message-ID: <1521216991-28706-7-git-send-email-okaya@codeaurora.org>
+Message-ID: <1521216991-28706-10-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Code includes wmb() followed by writel() in multiple places. writel()
-already has a barrier on some architectures like arm64.
+Code includes wmb() followed by writel(). writel() already has a
+barrier on some architectures like arm64.
 
-This ends up CPU observing two barriers back to back before executing the
-register write.
+This ends up CPU observing two barriers back to back before executing
+the register write.
 
 Since code already has an explicit barrier call, changing writel() to
 writel_relaxed().
 
 Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 6bf778a..774b2a6 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -659,7 +659,7 @@ static void ixgbevf_alloc_rx_buffers(struct ixgbevf_ring *rx_ring,
- 		 * such as IA-64).
- 		 */
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 8e12aae..8d04e26 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -179,7 +179,7 @@ void fm10k_alloc_rx_buffers(struct fm10k_ring *rx_ring, u16 cleaned_count)
  		wmb();
+ 
+ 		/* notify hardware of new descriptors */
 -		writel(i, rx_ring->tail);
 +		writel_relaxed(i, rx_ring->tail);
  	}
  }
  
-@@ -3644,7 +3644,7 @@ static void ixgbevf_tx_map(struct ixgbevf_ring *tx_ring,
- 	tx_ring->next_to_use = i;
- 
- 	/* notify HW of packet */
--	writel(i, tx_ring->tail);
-+	writel_relaxed(i, tx_ring->tail);
- 
- 	return;
- dma_error:
 -- 
 2.7.4
 
