@@ -1,55 +1,46 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 15 Mar 2018 17:50:10 -0700
-Subject: [Intel-wired-lan] [PATCH v2 12/15] ice: Add stats and ethtool
- support
-In-Reply-To: <20180315165247.165ac10e@xeon-e3>
-References: <20180315234802.31336-1-anirudh.venkataramanan@intel.com>
- <20180315234802.31336-13-anirudh.venkataramanan@intel.com>
- <20180315165247.165ac10e@xeon-e3>
-Message-ID: <CAKgT0UcpfznPj5S5sBwMnC0WPhDaMnFJnQqS3_EMb5tZr10wAA@mail.gmail.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Thu, 15 Mar 2018 20:50:58 -0400
+Subject: [Intel-wired-lan] [PATCH 6/7] e1000: eliminate duplicate
+ barriers on weakly-ordered archs
+In-Reply-To: <CAKgT0UcfEwL9Jas149a=h3R4zeu4oA=uywJ9dpYD9kDdnpWQFA@mail.gmail.com>
+References: <1520997629-17361-1-git-send-email-okaya@codeaurora.org>
+ <1520997629-17361-6-git-send-email-okaya@codeaurora.org>
+ <CAKgT0UfJwYFy5g_2TE5W4MgdEvyH2CvBAS2imdw9UUiumuUOhQ@mail.gmail.com>
+ <39dc5bb4-02b1-bf7e-fbfc-17fc484e4fb7@codeaurora.org>
+ <CAKgT0UcfEwL9Jas149a=h3R4zeu4oA=uywJ9dpYD9kDdnpWQFA@mail.gmail.com>
+Message-ID: <95118f6e-d406-f2b6-dc67-249dc5f648f9@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Mar 15, 2018 at 4:52 PM, Stephen Hemminger
-<stephen@networkplumber.org> wrote:
-> On Thu, 15 Mar 2018 16:47:59 -0700
-> Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> wrote:
->
->> +
->> +static const struct ice_stats ice_gstrings_vsi_stats[] = {
->> +     ICE_VSI_STAT("tx_unicast", eth_stats.tx_unicast),
->> +     ICE_VSI_STAT("rx_unicast", eth_stats.rx_unicast),
->> +     ICE_VSI_STAT("tx_multicast", eth_stats.tx_multicast),
->> +     ICE_VSI_STAT("rx_multicast", eth_stats.rx_multicast),
->> +     ICE_VSI_STAT("tx_broadcast", eth_stats.tx_broadcast),
->> +     ICE_VSI_STAT("rx_broadcast", eth_stats.rx_broadcast),
->> +     ICE_VSI_STAT("tx_bytes", eth_stats.tx_bytes),
->> +     ICE_VSI_STAT("rx_bytes", eth_stats.rx_bytes),
->> +     ICE_VSI_STAT("rx_discards", eth_stats.rx_discards),
->> +     ICE_VSI_STAT("tx_errors", eth_stats.tx_errors),
->> +     ICE_VSI_STAT("tx_linearize", tx_linearize),
->> +     ICE_VSI_STAT("rx_unknown_protocol", eth_stats.rx_unknown_protocol),
->> +     ICE_VSI_STAT("rx_alloc_fail", rx_buf_failed),
->> +     ICE_VSI_STAT("rx_pg_alloc_fail", rx_page_failed),
->> +};
->> +
->
-> Ignoring feedback from maintainers is unlikely to help get your driver adopted.
+On 3/15/2018 8:25 PM, Alexander Duyck wrote:
+> On Thu, Mar 15, 2018 at 4:30 PM, Sinan Kaya <okaya@codeaurora.org> wrote:
+>> On 3/14/2018 9:41 PM, Alexander Duyck wrote:
+>>>>  }
+>>>>
+>>> So you missed the writel in e1000_xmit_frame. You should probably get
+>>> that one too while you are doing these updates. The wmb() is in
+>>> e1000_tx_queue().
+>>>
+>>
+>> I brought wmb() outside along with the next descriptor assignment to be
+>> similar to the rest of the other code.
+>>
+>> if wmb() and writel() are not visible in the same function, let's not touch
+>> the code.
+> 
+> Maybe for e1000 we should just skip the driver entirely. Odds are you
+> aren't going to have any e1000 parts running on ARM anyway since most
+> of them are legacy PCI or PCI-X parts that were made over 10 years
+> ago. Most of your efforts would probably be best spent on igb, igbvf,
+> ixgbe, ixgbevf, i40e, i40evf, and fm10k.
+> 
 
-Your feedback wasn't ignored, the netdev stats are gone. I double
-checked and there was this in addition to the netdev stats before so I
-think the suggestion to remove the netdev stats was just taken
-literally.
+Sure. I'll drop it.
 
-The VSI is a slightly different entity from the netdev itself. A
-netdev can be backed by a VSI in the case of the PF, but the VSI can
-be used in other ways such as what we did in i40e where we were using
-it to spawn queue groups to work with mqprio as a filter target and in
-that case the queue groups wouldn't have a netdev directly associated
-with them so in that case it might make sense to leave these as
-separate stats.
-
-- Alex
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
