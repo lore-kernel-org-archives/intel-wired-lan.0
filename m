@@ -1,48 +1,34 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Fri, 16 Mar 2018 09:21:20 -0700
-Subject: [Intel-wired-lan] [PATCH v2 04/15] ice: Get switch config,
- scheduler config and device capabilities
-In-Reply-To: <20180315234802.31336-5-anirudh.venkataramanan@intel.com>
-References: <20180315234802.31336-1-anirudh.venkataramanan@intel.com>
- <20180315234802.31336-5-anirudh.venkataramanan@intel.com>
-Message-ID: <b6d78fc5-a145-45ef-7367-a0783d1a4310@oracle.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 16 Mar 2018 09:30:24 -0700
+Subject: [Intel-wired-lan] [PATCH v3 09/18] fm10k: Eliminate duplicate
+ barriers on weakly-ordered archs
+In-Reply-To: <1521216991-28706-10-git-send-email-okaya@codeaurora.org>
+References: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
+ <1521216991-28706-10-git-send-email-okaya@codeaurora.org>
+Message-ID: <CAKgT0UcKdCpzFgX4qn7EdYnedOsJa9as5g24tfb6qFLXTxZ29A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/15/2018 4:47 PM, Anirudh Venkataramanan wrote:
-> This patch adds to the initialization flow by getting switch
-> configuration, scheduler configuration and device capabilities.
-> 
-> Switch configuration:
-> On boot, an L2 switch element is created in the firmware per physical
-> function. Each physical function is also mapped to a port, to which its
-> switch element is connected. In other words, this switch can be visualized
-> as an embedded vSwitch that can connect a physical functions's virtual
-> station interfaces (VSIs) to the egress/ingress port. Egress/ingress
-> filters will be eventually created and applied on this switch element.
-> As part of the initialization flow, the driver gets configuration data
-> from this switch element and stores it.
-> 
-> Scheduler configuration:
-> The Tx scheduler is a subsystem responsible for setting and enforcing QoS.
-> As part of the initialization flow, the driver queries and stores the
-> default scheduler configuration for the given physical function.
-> 
-> Device capabilities:
-> As part of initialization, the driver has to determine what the device is
-> capable of (ex. max queues, VSIs, etc). This information is obtained from
-> the firmware and stored by the driver.
-> 
-> CC: Shannon Nelson <shannon.nelson@oracle.com>
-> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-> ---
-> v2: Addressed Shannon Nelson's review comment by changing retry count value
->      to 2.
+On Fri, Mar 16, 2018 at 9:16 AM, Sinan Kaya <okaya@codeaurora.org> wrote:
+> Code includes wmb() followed by writel(). writel() already has a
+> barrier on some architectures like arm64.
+>
+> This ends up CPU observing two barriers back to back before executing
+> the register write.
+>
+> Since code already has an explicit barrier call, changing writel() to
+> writel_relaxed().
+>
+> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 
-The fix looks fine.
-sln
+You can update the writel call in fm10k_tx_map as well.
 
-Acked-by: Shannon Nelson <shannon.nelson@oracle.com>
+Of the drivers updated in drivers/net/ethernet/intel/* it looks like
+this is the only one that still requires any additional changes.
+
+Thanks.
+
+- Alex
