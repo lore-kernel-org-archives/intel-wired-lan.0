@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 16 Mar 2018 01:26:33 -0700
-Subject: [Intel-wired-lan] [next PATCH S89 4/8] i40e: move
- I40E_FLAG_TEMP_LINK_POLLING to state field
+Date: Fri, 16 Mar 2018 01:26:31 -0700
+Subject: [Intel-wired-lan] [next PATCH S89 2/8] i40e: move
+ I40E_FLAG_UDP_FILTER_SYNC to the state field
 In-Reply-To: <20180316082637.49915-1-alice.michael@intel.com>
 References: <20180316082637.49915-1-alice.michael@intel.com>
-Message-ID: <20180316082637.49915-4-alice.michael@intel.com>
+Message-ID: <20180316082637.49915-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,70 +13,87 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-This flag is modified outside of the RTNL lock and thus should not be
-part of the pf->flags variable.
+This flag is modified during run time, possibly even when the RTNL lock
+is not held. Additionally it has a few places which should be using
+test_and_set or test_and_clear atomic bit operations.
 
-Use a state bit instead, so that we can use atomic bit operations.
+Create a new state bit __I40E_UDP_SYNC_PENDING and use it instead of the
+ole I40E_FLAG_UDP_FILTER_SYNC flag.
 
-This is part of a larger effort to remove cmpxchg64 in
-i40e_set_priv_flags()
+This is part of a larger effort to remove the need for using cmpxchg64
+in i40e_set_priv_flags.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      | 3 ++-
- drivers/net/ethernet/intel/i40e/i40e_main.c | 7 +++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h      |  3 ++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++++------
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index c41d99b..2dd89f8 100644
+index e83fb37..ff309501 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -166,6 +166,7 @@ enum i40e_state_t {
+@@ -163,6 +163,7 @@ enum i40e_state_t {
+ 	__I40E_PORT_SUSPENDED,
  	__I40E_VF_DISABLE,
  	__I40E_MACVLAN_SYNC_PENDING,
- 	__I40E_UDP_FILTER_SYNC_PENDING,
-+	__I40E_TEMP_LINK_POLLING,
++	__I40E_UDP_FILTER_SYNC_PENDING,
  	/* This must be last as it determines the size of the BITMAP */
  	__I40E_STATE_SIZE__,
  };
-@@ -534,7 +535,7 @@ struct i40e_pf {
+@@ -526,7 +527,7 @@ struct i40e_pf {
+ #define I40E_FLAG_FD_SB_AUTO_DISABLED		BIT_ULL(11)
+ #define I40E_FLAG_FD_ATR_AUTO_DISABLED		BIT_ULL(12)
+ #define I40E_FLAG_MFP_ENABLED			BIT_ULL(13)
+-#define I40E_FLAG_UDP_FILTER_SYNC		BIT_ULL(14)
++/* Gap for BIT_ULL(14) */
+ #define I40E_FLAG_HW_ATR_EVICT_ENABLED		BIT_ULL(15)
+ #define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(16)
  #define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(17)
- #define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(18)
- #define I40E_FLAG_TRUE_PROMISC_SUPPORT		BIT_ULL(19)
--#define I40E_FLAG_TEMP_LINK_POLLING		BIT_ULL(20)
-+/* Gap for BIT_ULL(20) */
- #define I40E_FLAG_LEGACY_RX			BIT_ULL(21)
- #define I40E_FLAG_PTP				BIT_ULL(22)
- #define I40E_FLAG_IWARP_ENABLED			BIT_ULL(23)
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 44d15cf..01ecd9d 100644
+index e96c22a..a24f99a 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8432,13 +8432,12 @@ static void i40e_link_event(struct i40e_pf *pf)
+@@ -9721,7 +9721,7 @@ static void i40e_sync_udp_filters(struct i40e_pf *pf)
+ 			pf->pending_udp_bitmap |= BIT_ULL(i);
+ 	}
  
- 	/* On success, disable temp link polling */
- 	if (status == I40E_SUCCESS) {
--		if (pf->flags & I40E_FLAG_TEMP_LINK_POLLING)
--			pf->flags &= ~I40E_FLAG_TEMP_LINK_POLLING;
-+		clear_bit(__I40E_TEMP_LINK_POLLING, pf->state);
- 	} else {
- 		/* Enable link polling temporarily until i40e_get_link_status
- 		 * returns I40E_SUCCESS
- 		 */
--		pf->flags |= I40E_FLAG_TEMP_LINK_POLLING;
-+		set_bit(__I40E_TEMP_LINK_POLLING, pf->state);
- 		dev_dbg(&pf->pdev->dev, "couldn't get link state, status: %d\n",
- 			status);
+-	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
++	set_bit(__I40E_UDP_FILTER_SYNC_PENDING, pf->state);
+ }
+ 
+ /**
+@@ -9735,11 +9735,9 @@ static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
+ 	u16 port;
+ 	int i;
+ 
+-	if (!(pf->flags & I40E_FLAG_UDP_FILTER_SYNC))
++	if (!test_and_clear_bit(__I40E_UDP_FILTER_SYNC_PENDING, pf->state))
  		return;
-@@ -8490,7 +8489,7 @@ static void i40e_watchdog_subtask(struct i40e_pf *pf)
- 	pf->service_timer_previous = jiffies;
  
- 	if ((pf->flags & I40E_FLAG_LINK_POLLING_ENABLED) ||
--	    (pf->flags & I40E_FLAG_TEMP_LINK_POLLING))
-+	    test_bit(__I40E_TEMP_LINK_POLLING, pf->state))
- 		i40e_link_event(pf);
+-	pf->flags &= ~I40E_FLAG_UDP_FILTER_SYNC;
+-
+ 	for (i = 0; i < I40E_MAX_PF_UDP_OFFLOAD_PORTS; i++) {
+ 		if (pf->pending_udp_bitmap & BIT_ULL(i)) {
+ 			pf->pending_udp_bitmap &= ~BIT_ULL(i);
+@@ -11439,7 +11437,7 @@ static void i40e_udp_tunnel_add(struct net_device *netdev,
+ 	/* New port: add it and mark its index in the bitmap */
+ 	pf->udp_ports[next_idx].port = port;
+ 	pf->pending_udp_bitmap |= BIT_ULL(next_idx);
+-	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
++	set_bit(__I40E_UDP_FILTER_SYNC_PENDING, pf->state);
+ }
  
- 	/* Update the stats for active netdevs so the network stack
+ /**
+@@ -11480,7 +11478,7 @@ static void i40e_udp_tunnel_del(struct net_device *netdev,
+ 	 */
+ 	pf->udp_ports[idx].port = 0;
+ 	pf->pending_udp_bitmap |= BIT_ULL(idx);
+-	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
++	set_bit(__I40E_UDP_FILTER_SYNC_PENDING, pf->state);
+ 
+ 	return;
+ not_found:
 -- 
 2.9.5
 
