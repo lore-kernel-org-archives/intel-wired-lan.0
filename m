@@ -1,170 +1,20 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 17 Mar 2018 07:05:10 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- ffc7c890104ab7b4e01727906958692692417a59
-Message-ID: <5aac4da6.TMOlBPhH8fqJBmi8%fengguang.wu@intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Sat, 17 Mar 2018 16:57:46 -0400 (EDT)
+Subject: [Intel-wired-lan] [PATCH 0/5] Enable XDP for ixgbevf
+In-Reply-To: <20180316223406.7295-1-anthony.l.nguyen@intel.com>
+References: <20180316223406.7295-1-anthony.l.nguyen@intel.com>
+Message-ID: <20180317.165746.11352895395829724.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: ffc7c890104ab7b4e01727906958692692417a59  ixgbe: enable tso with ipsec offload
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Fri, 16 Mar 2018 15:34:01 -0700
 
-Regressions in current branch:
+> This patch series implements support for XDP on ixgbevf;
+> it is mainly based on the ixgbe implementation and supports
+> the following actions: XDP_PASS, XDP_DROP, and XDP_TX.
 
-drivers/net/ethernet/intel/ice/ice_ethtool.c:187:42-43: WARNING: Use ARRAY_SIZE
-
-Error ids grouped by kconfigs:
-
-recent_errors
-??? i386-allmodconfig
-    ??? drivers-net-ethernet-intel-ice-ice_ethtool.c:WARNING:Use-ARRAY_SIZE
-
-elapsed time: 194m
-
-configs tested: 139
-
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-mips                      malta_kvm_defconfig
-mips                malta_qemu_32r6_defconfig
-sh                          r7785rp_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201810
-i386                     randconfig-i1-201810
-i386                     randconfig-i0-201810
-i386                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                                  kexec
-i386                     randconfig-a0-201810
-i386                     randconfig-a1-201810
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-arm                         at91_dt_defconfig
-arm                          badge4_defconfig
-arm                          tango4_defconfig
-powerpc                           allnoconfig
-sh                           se7705_defconfig
-x86_64                 randconfig-x010-201810
-x86_64                 randconfig-x014-201810
-x86_64                 randconfig-x013-201810
-x86_64                 randconfig-x019-201810
-x86_64                 randconfig-x011-201810
-x86_64                 randconfig-x015-201810
-x86_64                 randconfig-x018-201810
-x86_64                 randconfig-x016-201810
-x86_64                 randconfig-x017-201810
-x86_64                 randconfig-x012-201810
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201810
-i386                     randconfig-s0-201810
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-03170615
-x86_64                 randconfig-s4-03170615
-x86_64                 randconfig-s5-03170615
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-x86_64                   randconfig-i0-201810
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-i386                   randconfig-x006-201810
-i386                   randconfig-x000-201810
-i386                   randconfig-x008-201810
-i386                   randconfig-x004-201810
-i386                   randconfig-x009-201810
-i386                   randconfig-x003-201810
-i386                   randconfig-x002-201810
-i386                   randconfig-x005-201810
-i386                   randconfig-x001-201810
-i386                   randconfig-x007-201810
-i386                   randconfig-x013-201810
-i386                   randconfig-x014-201810
-i386                   randconfig-x015-201810
-i386                   randconfig-x012-201810
-i386                   randconfig-x019-201810
-i386                   randconfig-x016-201810
-i386                   randconfig-x010-201810
-i386                   randconfig-x018-201810
-i386                   randconfig-x011-201810
-i386                   randconfig-x017-201810
-i386                   randconfig-x073-201810
-i386                   randconfig-x075-201810
-i386                   randconfig-x071-201810
-i386                   randconfig-x076-201810
-i386                   randconfig-x079-201810
-i386                   randconfig-x077-201810
-i386                   randconfig-x070-201810
-i386                   randconfig-x074-201810
-i386                   randconfig-x078-201810
-i386                   randconfig-x072-201810
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-x86_64                 randconfig-x002-201810
-x86_64                 randconfig-x006-201810
-x86_64                 randconfig-x005-201810
-x86_64                 randconfig-x009-201810
-x86_64                 randconfig-x004-201810
-x86_64                 randconfig-x001-201810
-x86_64                 randconfig-x008-201810
-x86_64                 randconfig-x003-201810
-x86_64                 randconfig-x007-201810
-x86_64                 randconfig-x000-201810
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-
-Thanks,
-Fengguang
+I'm extremely pleased to see these patches.
