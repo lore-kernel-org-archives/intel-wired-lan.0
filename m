@@ -1,1731 +1,989 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 19 Mar 2018 12:49:10 -0700
-Subject: [Intel-wired-lan] [v3 02/15] ice: Add support for control queues
+Date: Mon, 19 Mar 2018 12:49:23 -0700
+Subject: [Intel-wired-lan] [v3 15/15] ice: Implement filter sync,
+ NDO operations and bump version
 In-Reply-To: <20180319194923.20153-1-anirudh.venkataramanan@intel.com>
 References: <20180319194923.20153-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180319194923.20153-3-anirudh.venkataramanan@intel.com>
+Message-ID: <20180319194923.20153-16-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-A control queue is a hardware interface which is used by the driver
-to interact with other subsystems (like firmware, PHY, etc.). It is
-implemented as a producer-consumer ring. More specifically, an
-"admin queue" is a type of control queue used to interact with the
-firmware.
+This patch implements multiple pieces of functionality:
 
-This patch introduces data structures and functions to initialize
-and teardown control/admin queues. Once the admin queue is initialized,
-the driver uses it to get the firmware version.
+1. Added ice_vsi_sync_filters, which is called through the service task
+   to push filter updates to the hardware.
+
+2. Add support to enable/disable promiscuous mode on an interface.
+   Enabling/disabling promiscuous mode on an interface results in
+   addition/removal of a promisc filter rule through ice_vsi_sync_filters.
+
+3. Implement handlers for ndo_set_mac_address, ndo_change_mtu,
+   ndo_poll_controller and ndo_set_rx_mode.
+
+This patch also marks the end of the driver addition by bumping up the
+driver version.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile         |   4 +-
- drivers/net/ethernet/intel/ice/ice.h            |   1 +
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 108 +++
- drivers/net/ethernet/intel/ice/ice_common.c     | 144 ++++
- drivers/net/ethernet/intel/ice/ice_common.h     |  39 +
- drivers/net/ethernet/intel/ice/ice_controlq.c   | 979 ++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_controlq.h   |  97 +++
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  46 ++
- drivers/net/ethernet/intel/ice/ice_main.c       |  11 +-
- drivers/net/ethernet/intel/ice/ice_osdep.h      |  86 +++
- drivers/net/ethernet/intel/ice/ice_status.h     |  35 +
- drivers/net/ethernet/intel/ice/ice_type.h       |  22 +
- 12 files changed, 1570 insertions(+), 2 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_common.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_common.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_controlq.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_controlq.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_hw_autogen.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_osdep.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_status.h
+ drivers/net/ethernet/intel/ice/ice.h            |  14 +
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  21 +
+ drivers/net/ethernet/intel/ice/ice_common.c     |  28 ++
+ drivers/net/ethernet/intel/ice/ice_common.h     |   3 +
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h  |  12 +
+ drivers/net/ethernet/intel/ice/ice_main.c       | 567 +++++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_switch.c     |  77 ++++
+ drivers/net/ethernet/intel/ice/ice_switch.h     |   2 +
+ drivers/net/ethernet/intel/ice/ice_type.h       |   5 +
+ 9 files changed, 728 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 2a177ea21b74..eebf619e84a8 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -24,4 +24,6 @@
- 
- obj-$(CONFIG_ICE) += ice.o
- 
--ice-y := ice_main.o
-+ice-y := ice_main.o	\
-+	 ice_controlq.o	\
-+	 ice_common.o
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index d781027330cc..ea2fb63bb095 100644
+index 6d7d03b80dbf..9bb8a99b929e 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -26,6 +26,7 @@
- #include <linux/compiler.h>
- #include <linux/pci.h>
- #include <linux/aer.h>
-+#include <linux/delay.h>
- #include <linux/bitmap.h>
- #include "ice_devids.h"
- #include "ice_type.h"
+@@ -139,11 +139,20 @@ enum ice_state {
+ 	__ICE_SUSPENDED,		/* set on module remove path */
+ 	__ICE_RESET_FAILED,		/* set by reset/rebuild */
+ 	__ICE_ADMINQ_EVENT_PENDING,
++	__ICE_FLTR_OVERFLOW_PROMISC,
+ 	__ICE_CFG_BUSY,
+ 	__ICE_SERVICE_SCHED,
+ 	__ICE_STATE_NBITS		/* must be last */
+ };
+ 
++enum ice_vsi_flags {
++	ICE_VSI_FLAG_UMAC_FLTR_CHANGED,
++	ICE_VSI_FLAG_MMAC_FLTR_CHANGED,
++	ICE_VSI_FLAG_VLAN_FLTR_CHANGED,
++	ICE_VSI_FLAG_PROMISC_CHANGED,
++	ICE_VSI_FLAG_NBITS		/* must be last */
++};
++
+ /* struct that defines a VSI, associated with a dev */
+ struct ice_vsi {
+ 	struct net_device *netdev;
+@@ -158,7 +167,9 @@ struct ice_vsi {
+ 
+ 	u64 tx_linearize;
+ 	DECLARE_BITMAP(state, __ICE_STATE_NBITS);
++	DECLARE_BITMAP(flags, ICE_VSI_FLAG_NBITS);
+ 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
++	unsigned int current_netdev_flags;
+ 	u32 tx_restart;
+ 	u32 tx_busy;
+ 	u32 rx_buf_failed;
+@@ -189,6 +200,9 @@ struct ice_vsi {
+ 	struct ice_eth_stats eth_stats;
+ 	struct ice_eth_stats eth_stats_prev;
+ 
++	struct list_head tmp_sync_list;		/* MAC filters to be synced */
++	struct list_head tmp_unsync_list;	/* MAC filters to be unsynced */
++
+ 	bool irqs_ready;
+ 	bool current_isup;		 /* Sync 'link up' logging */
+ 	bool stat_offsets_loaded;
 diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-new file mode 100644
-index 000000000000..885fa3c6fec4
---- /dev/null
+index 8cade22c1cf6..fc19c287ebc5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
 +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -0,0 +1,108 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
-+
-+#ifndef _ICE_ADMINQ_CMD_H_
-+#define _ICE_ADMINQ_CMD_H_
-+
-+/* This header file defines the Admin Queue commands, error codes and
-+ * descriptor format.  It is shared between Firmware and Software.
-+ */
-+
-+struct ice_aqc_generic {
-+	__le32 param0;
-+	__le32 param1;
+@@ -149,6 +149,24 @@ struct ice_aqc_manage_mac_read_resp {
+ 	u8 mac_addr[ETH_ALEN];
+ };
+ 
++/* Manage MAC address, write command - direct (0x0108) */
++struct ice_aqc_manage_mac_write {
++	u8 port_num;
++	u8 flags;
++#define ICE_AQC_MAN_MAC_WR_MC_MAG_EN		BIT(0)
++#define ICE_AQC_MAN_MAC_WR_WOL_LAA_PFR_KEEP	BIT(1)
++#define ICE_AQC_MAN_MAC_WR_S		6
++#define ICE_AQC_MAN_MAC_WR_M		(3 << ICE_AQC_MAN_MAC_WR_S)
++#define ICE_AQC_MAN_MAC_UPDATE_LAA	0
++#define ICE_AQC_MAN_MAC_UPDATE_LAA_WOL	(BIT(0) << ICE_AQC_MAN_MAC_WR_S)
++	/* High 16 bits of MAC address in big endian order */
++	__be16 sah;
++	/* Low 32 bits of MAC address in big endian order */
++	__be32 sal;
 +	__le32 addr_high;
 +	__le32 addr_low;
 +};
 +
-+/* Get version (direct 0x0001) */
-+struct ice_aqc_get_ver {
-+	__le32 rom_ver;
-+	__le32 fw_build;
-+	u8 fw_branch;
-+	u8 fw_major;
-+	u8 fw_minor;
-+	u8 fw_patch;
-+	u8 api_branch;
-+	u8 api_major;
-+	u8 api_minor;
-+	u8 api_patch;
-+};
-+
-+/* Queue Shutdown (direct 0x0003) */
-+struct ice_aqc_q_shutdown {
-+#define ICE_AQC_DRIVER_UNLOADING	BIT(0)
-+	__le32 driver_unloading;
-+	u8 reserved[12];
-+};
-+
-+/**
-+ * struct ice_aq_desc - Admin Queue (AQ) descriptor
-+ * @flags: ICE_AQ_FLAG_* flags
-+ * @opcode: AQ command opcode
-+ * @datalen: length in bytes of indirect/external data buffer
-+ * @retval: return value from firmware
-+ * @cookie_h: opaque data high-half
-+ * @cookie_l: opaque data low-half
-+ * @params: command-specific parameters
-+ *
-+ * Descriptor format for commands the driver posts on the Admin Transmit Queue
-+ * (ATQ).  The firmware writes back onto the command descriptor and returns
-+ * the result of the command.  Asynchronous events that are not an immediate
-+ * result of the command are written to the Admin Receive Queue (ARQ) using
-+ * the same descriptor format.  Descriptors are in little-endian notation with
-+ * 32-bit words.
-+ */
-+struct ice_aq_desc {
-+	__le16 flags;
-+	__le16 opcode;
-+	__le16 datalen;
-+	__le16 retval;
-+	__le32 cookie_high;
-+	__le32 cookie_low;
-+	union {
-+		u8 raw[16];
-+		struct ice_aqc_generic generic;
-+		struct ice_aqc_get_ver get_ver;
-+		struct ice_aqc_q_shutdown q_shutdown;
-+	} params;
-+};
-+
-+/* FW defined boundary for a large buffer, 4k >= Large buffer > 512 bytes */
-+#define ICE_AQ_LG_BUF	512
-+
-+#define ICE_AQ_FLAG_LB_S	9
-+#define ICE_AQ_FLAG_BUF_S	12
-+#define ICE_AQ_FLAG_SI_S	13
-+
-+#define ICE_AQ_FLAG_LB		BIT(ICE_AQ_FLAG_LB_S)  /* 0x200  */
-+#define ICE_AQ_FLAG_BUF		BIT(ICE_AQ_FLAG_BUF_S) /* 0x1000 */
-+#define ICE_AQ_FLAG_SI		BIT(ICE_AQ_FLAG_SI_S)  /* 0x2000 */
-+
-+/* error codes */
-+enum ice_aq_err {
-+	ICE_AQ_RC_OK		= 0,  /* success */
-+};
-+
-+/* Admin Queue command opcodes */
-+enum ice_adminq_opc {
-+	/* AQ commands */
-+	ice_aqc_opc_get_ver				= 0x0001,
-+	ice_aqc_opc_q_shutdown				= 0x0003,
-+};
-+
-+#endif /* _ICE_ADMINQ_CMD_H_ */
+ /* Clear PXE Command and response (direct 0x0110) */
+ struct ice_aqc_clear_pxe {
+ 	u8 rx_cnt;
+@@ -1228,6 +1246,7 @@ struct ice_aq_desc {
+ 		struct ice_aqc_q_shutdown q_shutdown;
+ 		struct ice_aqc_req_res res_owner;
+ 		struct ice_aqc_manage_mac_read mac_read;
++		struct ice_aqc_manage_mac_write mac_write;
+ 		struct ice_aqc_clear_pxe clear_pxe;
+ 		struct ice_aqc_list_caps get_cap;
+ 		struct ice_aqc_get_phy_caps get_phy;
+@@ -1272,6 +1291,7 @@ enum ice_aq_err {
+ 	ICE_AQ_RC_ENOMEM	= 9,  /* Out of memory */
+ 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
+ 	ICE_AQ_RC_EEXIST	= 13, /* object already exists */
++	ICE_AQ_RC_ENOSPC	= 16, /* No space left or allocation failure */
+ };
+ 
+ /* Admin Queue command opcodes */
+@@ -1290,6 +1310,7 @@ enum ice_adminq_opc {
+ 
+ 	/* manage MAC address */
+ 	ice_aqc_opc_manage_mac_read			= 0x0107,
++	ice_aqc_opc_manage_mac_write			= 0x0108,
+ 
+ 	/* PXE */
+ 	ice_aqc_opc_clear_pxe_mode			= 0x0110,
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-new file mode 100644
-index 000000000000..d980f0518744
---- /dev/null
+index 316262b3c7a0..a36220792026 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
 +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -0,0 +1,144 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
-+
-+#include "ice_common.h"
-+#include "ice_adminq_cmd.h"
-+
+@@ -1246,6 +1246,34 @@ enum ice_status ice_get_caps(struct ice_hw *hw)
+ 	return status;
+ }
+ 
 +/**
-+ * ice_debug_cq
-+ * @hw: pointer to the hardware structure
-+ * @mask: debug mask
-+ * @desc: pointer to control queue descriptor
-+ * @buf: pointer to command buffer
-+ * @buf_len: max length of buf
-+ *
-+ * Dumps debug log about control command with descriptor contents.
-+ */
-+void ice_debug_cq(struct ice_hw *hw, u32 __maybe_unused mask, void *desc,
-+		  void *buf, u16 buf_len)
-+{
-+	struct ice_aq_desc *cq_desc = (struct ice_aq_desc *)desc;
-+	u16 len;
-+
-+#ifndef CONFIG_DYNAMIC_DEBUG
-+	if (!(mask & hw->debug_mask))
-+		return;
-+#endif
-+
-+	if (!desc)
-+		return;
-+
-+	len = le16_to_cpu(cq_desc->datalen);
-+
-+	ice_debug(hw, mask,
-+		  "CQ CMD: opcode 0x%04X, flags 0x%04X, datalen 0x%04X, retval 0x%04X\n",
-+		  le16_to_cpu(cq_desc->opcode),
-+		  le16_to_cpu(cq_desc->flags),
-+		  le16_to_cpu(cq_desc->datalen), le16_to_cpu(cq_desc->retval));
-+	ice_debug(hw, mask, "\tcookie (h,l) 0x%08X 0x%08X\n",
-+		  le32_to_cpu(cq_desc->cookie_high),
-+		  le32_to_cpu(cq_desc->cookie_low));
-+	ice_debug(hw, mask, "\tparam (0,1)  0x%08X 0x%08X\n",
-+		  le32_to_cpu(cq_desc->params.generic.param0),
-+		  le32_to_cpu(cq_desc->params.generic.param1));
-+	ice_debug(hw, mask, "\taddr (h,l)   0x%08X 0x%08X\n",
-+		  le32_to_cpu(cq_desc->params.generic.addr_high),
-+		  le32_to_cpu(cq_desc->params.generic.addr_low));
-+	if (buf && cq_desc->datalen != 0) {
-+		ice_debug(hw, mask, "Buffer:\n");
-+		if (buf_len < len)
-+			len = buf_len;
-+
-+		ice_debug_array(hw, mask, 16, 1, (u8 *)buf, len);
-+	}
-+}
-+
-+/* FW Admin Queue command wrappers */
-+
-+/**
-+ * ice_aq_send_cmd - send FW Admin Queue command to FW Admin Queue
++ * ice_aq_manage_mac_write - manage MAC address write command
 + * @hw: pointer to the hw struct
-+ * @desc: descriptor describing the command
-+ * @buf: buffer to use for indirect commands (NULL for direct commands)
-+ * @buf_size: size of buffer for indirect commands (0 for direct commands)
-+ * @cd: pointer to command details structure
-+ *
-+ * Helper function to send FW Admin Queue commands to the FW Admin Queue.
-+ */
-+enum ice_status
-+ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf,
-+		u16 buf_size, struct ice_sq_cd *cd)
-+{
-+	return ice_sq_send_cmd(hw, &hw->adminq, desc, buf, buf_size, cd);
-+}
-+
-+/**
-+ * ice_aq_get_fw_ver
-+ * @hw: pointer to the hw struct
++ * @mac_addr: MAC address to be written as LAA/LAA+WoL/Port address
++ * @flags: flags to control write behavior
 + * @cd: pointer to command details structure or NULL
 + *
-+ * Get the firmware version (0x0001) from the admin queue commands
++ * This function is used to write MAC address to the NVM (0x0108).
 + */
-+enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd)
++enum ice_status
++ice_aq_manage_mac_write(struct ice_hw *hw, u8 *mac_addr, u8 flags,
++			struct ice_sq_cd *cd)
 +{
-+	struct ice_aqc_get_ver *resp;
-+	struct ice_aq_desc desc;
-+	enum ice_status status;
-+
-+	resp = &desc.params.get_ver;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_ver);
-+
-+	status = ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
-+
-+	if (!status) {
-+		hw->fw_branch = resp->fw_branch;
-+		hw->fw_maj_ver = resp->fw_major;
-+		hw->fw_min_ver = resp->fw_minor;
-+		hw->fw_patch = resp->fw_patch;
-+		hw->fw_build = le32_to_cpu(resp->fw_build);
-+		hw->api_branch = resp->api_branch;
-+		hw->api_maj_ver = resp->api_major;
-+		hw->api_min_ver = resp->api_minor;
-+		hw->api_patch = resp->api_patch;
-+	}
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_aq_q_shutdown
-+ * @hw: pointer to the hw struct
-+ * @unloading: is the driver unloading itself
-+ *
-+ * Tell the Firmware that we're shutting down the AdminQ and whether
-+ * or not the driver is unloading as well (0x0003).
-+ */
-+enum ice_status ice_aq_q_shutdown(struct ice_hw *hw, bool unloading)
-+{
-+	struct ice_aqc_q_shutdown *cmd;
++	struct ice_aqc_manage_mac_write *cmd;
 +	struct ice_aq_desc desc;
 +
-+	cmd = &desc.params.q_shutdown;
++	cmd = &desc.params.mac_write;
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_manage_mac_write);
 +
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_q_shutdown);
++	cmd->flags = flags;
 +
-+	if (unloading)
-+		cmd->driver_unloading = cpu_to_le32(ICE_AQC_DRIVER_UNLOADING);
++	/* Prep values for flags, sah, sal */
++	cmd->sah = htons(*((u16 *)mac_addr));
++	cmd->sal = htonl(*((u32 *)(mac_addr + 2)));
 +
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
++	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
 +}
++
+ /**
+  * ice_aq_clear_pxe_mode
+  * @hw: pointer to the hw struct
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-new file mode 100644
-index 000000000000..1e3caecc38c6
---- /dev/null
+index 2921f3c6ce4b..8e87d3b95d5f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
 +++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -0,0 +1,39 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
-+
-+#ifndef _ICE_COMMON_H_
-+#define _ICE_COMMON_H_
-+
-+#include "ice.h"
-+#include "ice_type.h"
-+
-+void ice_debug_cq(struct ice_hw *hw, u32 mask, void *desc, void *buf,
-+		  u16 buf_len);
-+enum ice_status ice_init_all_ctrlq(struct ice_hw *hw);
-+void ice_shutdown_all_ctrlq(struct ice_hw *hw);
+@@ -72,6 +72,9 @@ enum ice_status
+ ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc,
+ 		void *buf, u16 buf_size, struct ice_sq_cd *cd);
+ enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd);
 +enum ice_status
-+ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
-+		struct ice_aq_desc *desc, void *buf, u16 buf_size,
-+		struct ice_sq_cd *cd);
-+bool ice_check_sq_alive(struct ice_hw *hw, struct ice_ctl_q_info *cq);
-+enum ice_status ice_aq_q_shutdown(struct ice_hw *hw, bool unloading);
-+void ice_fill_dflt_direct_cmd_desc(struct ice_aq_desc *desc, u16 opcode);
-+enum ice_status
-+ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc,
-+		void *buf, u16 buf_size, struct ice_sq_cd *cd);
-+enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd);
-+#endif /* _ICE_COMMON_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-new file mode 100644
-index 000000000000..b1143d66d4bd
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -0,0 +1,979 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
-+
-+#include "ice_common.h"
-+
-+/**
-+ * ice_adminq_init_regs - Initialize AdminQ registers
-+ * @hw: pointer to the hardware structure
-+ *
-+ * This assumes the alloc_sq and alloc_rq functions have already been called
-+ */
-+static void ice_adminq_init_regs(struct ice_hw *hw)
-+{
-+	struct ice_ctl_q_info *cq = &hw->adminq;
-+
-+	cq->sq.head = PF_FW_ATQH;
-+	cq->sq.tail = PF_FW_ATQT;
-+	cq->sq.len = PF_FW_ATQLEN;
-+	cq->sq.bah = PF_FW_ATQBAH;
-+	cq->sq.bal = PF_FW_ATQBAL;
-+	cq->sq.len_mask = PF_FW_ATQLEN_ATQLEN_M;
-+	cq->sq.len_ena_mask = PF_FW_ATQLEN_ATQENABLE_M;
-+	cq->sq.head_mask = PF_FW_ATQH_ATQH_M;
-+
-+	cq->rq.head = PF_FW_ARQH;
-+	cq->rq.tail = PF_FW_ARQT;
-+	cq->rq.len = PF_FW_ARQLEN;
-+	cq->rq.bah = PF_FW_ARQBAH;
-+	cq->rq.bal = PF_FW_ARQBAL;
-+	cq->rq.len_mask = PF_FW_ARQLEN_ARQLEN_M;
-+	cq->rq.len_ena_mask = PF_FW_ARQLEN_ARQENABLE_M;
-+	cq->rq.head_mask = PF_FW_ARQH_ARQH_M;
-+}
-+
-+/**
-+ * ice_check_sq_alive
-+ * @hw: pointer to the hw struct
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * Returns true if Queue is enabled else false.
-+ */
-+bool ice_check_sq_alive(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	/* check both queue-length and queue-enable fields */
-+	if (cq->sq.len && cq->sq.len_mask && cq->sq.len_ena_mask)
-+		return (rd32(hw, cq->sq.len) & (cq->sq.len_mask |
-+						cq->sq.len_ena_mask)) ==
-+			(cq->num_sq_entries | cq->sq.len_ena_mask);
-+
-+	return false;
-+}
-+
-+/**
-+ * ice_alloc_ctrlq_sq_ring - Allocate Control Transmit Queue (ATQ) rings
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ */
-+static enum ice_status
-+ice_alloc_ctrlq_sq_ring(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	size_t size = cq->num_sq_entries * sizeof(struct ice_aq_desc);
-+
-+	cq->sq.desc_buf.va = dmam_alloc_coherent(ice_hw_to_dev(hw), size,
-+						 &cq->sq.desc_buf.pa,
-+						 GFP_KERNEL | __GFP_ZERO);
-+	if (!cq->sq.desc_buf.va)
-+		return ICE_ERR_NO_MEMORY;
-+	cq->sq.desc_buf.size = size;
-+
-+	cq->sq.cmd_buf = devm_kcalloc(ice_hw_to_dev(hw), cq->num_sq_entries,
-+				      sizeof(struct ice_sq_cd), GFP_KERNEL);
-+	if (!cq->sq.cmd_buf) {
-+		dmam_free_coherent(ice_hw_to_dev(hw), cq->sq.desc_buf.size,
-+				   cq->sq.desc_buf.va, cq->sq.desc_buf.pa);
-+		cq->sq.desc_buf.va = NULL;
-+		cq->sq.desc_buf.pa = 0;
-+		cq->sq.desc_buf.size = 0;
-+		return ICE_ERR_NO_MEMORY;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_alloc_ctrlq_rq_ring - Allocate Control Receive Queue (ARQ) rings
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ */
-+static enum ice_status
-+ice_alloc_ctrlq_rq_ring(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	size_t size = cq->num_rq_entries * sizeof(struct ice_aq_desc);
-+
-+	cq->rq.desc_buf.va = dmam_alloc_coherent(ice_hw_to_dev(hw), size,
-+						 &cq->rq.desc_buf.pa,
-+						 GFP_KERNEL | __GFP_ZERO);
-+	if (!cq->rq.desc_buf.va)
-+		return ICE_ERR_NO_MEMORY;
-+	cq->rq.desc_buf.size = size;
-+	return 0;
-+}
-+
-+/**
-+ * ice_free_ctrlq_sq_ring - Free Control Transmit Queue (ATQ) rings
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * This assumes the posted send buffers have already been cleaned
-+ * and de-allocated
-+ */
-+static void ice_free_ctrlq_sq_ring(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	dmam_free_coherent(ice_hw_to_dev(hw), cq->sq.desc_buf.size,
-+			   cq->sq.desc_buf.va, cq->sq.desc_buf.pa);
-+	cq->sq.desc_buf.va = NULL;
-+	cq->sq.desc_buf.pa = 0;
-+	cq->sq.desc_buf.size = 0;
-+}
-+
-+/**
-+ * ice_free_ctrlq_rq_ring - Free Control Receive Queue (ARQ) rings
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * This assumes the posted receive buffers have already been cleaned
-+ * and de-allocated
-+ */
-+static void ice_free_ctrlq_rq_ring(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	dmam_free_coherent(ice_hw_to_dev(hw), cq->rq.desc_buf.size,
-+			   cq->rq.desc_buf.va, cq->rq.desc_buf.pa);
-+	cq->rq.desc_buf.va = NULL;
-+	cq->rq.desc_buf.pa = 0;
-+	cq->rq.desc_buf.size = 0;
-+}
-+
-+/**
-+ * ice_alloc_rq_bufs - Allocate pre-posted buffers for the ARQ
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ */
-+static enum ice_status
-+ice_alloc_rq_bufs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	int i;
-+
-+	/* We'll be allocating the buffer info memory first, then we can
-+	 * allocate the mapped buffers for the event processing
-+	 */
-+	cq->rq.dma_head = devm_kcalloc(ice_hw_to_dev(hw), cq->num_rq_entries,
-+				       sizeof(cq->rq.desc_buf), GFP_KERNEL);
-+	if (!cq->rq.dma_head)
-+		return ICE_ERR_NO_MEMORY;
-+	cq->rq.r.rq_bi = (struct ice_dma_mem *)cq->rq.dma_head;
-+
-+	/* allocate the mapped buffers */
-+	for (i = 0; i < cq->num_rq_entries; i++) {
-+		struct ice_aq_desc *desc;
-+		struct ice_dma_mem *bi;
-+
-+		bi = &cq->rq.r.rq_bi[i];
-+		bi->va = dmam_alloc_coherent(ice_hw_to_dev(hw),
-+					     cq->rq_buf_size, &bi->pa,
-+					     GFP_KERNEL | __GFP_ZERO);
-+		if (!bi->va)
-+			goto unwind_alloc_rq_bufs;
-+		bi->size = cq->rq_buf_size;
-+
-+		/* now configure the descriptors for use */
-+		desc = ICE_CTL_Q_DESC(cq->rq, i);
-+
-+		desc->flags = cpu_to_le16(ICE_AQ_FLAG_BUF);
-+		if (cq->rq_buf_size > ICE_AQ_LG_BUF)
-+			desc->flags |= cpu_to_le16(ICE_AQ_FLAG_LB);
-+		desc->opcode = 0;
-+		/* This is in accordance with Admin queue design, there is no
-+		 * register for buffer size configuration
-+		 */
-+		desc->datalen = cpu_to_le16(bi->size);
-+		desc->retval = 0;
-+		desc->cookie_high = 0;
-+		desc->cookie_low = 0;
-+		desc->params.generic.addr_high =
-+			cpu_to_le32(upper_32_bits(bi->pa));
-+		desc->params.generic.addr_low =
-+			cpu_to_le32(lower_32_bits(bi->pa));
-+		desc->params.generic.param0 = 0;
-+		desc->params.generic.param1 = 0;
-+	}
-+	return 0;
-+
-+unwind_alloc_rq_bufs:
-+	/* don't try to free the one that failed... */
-+	i--;
-+	for (; i >= 0; i--) {
-+		dmam_free_coherent(ice_hw_to_dev(hw), cq->rq.r.rq_bi[i].size,
-+				   cq->rq.r.rq_bi[i].va, cq->rq.r.rq_bi[i].pa);
-+		cq->rq.r.rq_bi[i].va = NULL;
-+		cq->rq.r.rq_bi[i].pa = 0;
-+		cq->rq.r.rq_bi[i].size = 0;
-+	}
-+	devm_kfree(ice_hw_to_dev(hw), cq->rq.dma_head);
-+
-+	return ICE_ERR_NO_MEMORY;
-+}
-+
-+/**
-+ * ice_alloc_sq_bufs - Allocate empty buffer structs for the ATQ
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ */
-+static enum ice_status
-+ice_alloc_sq_bufs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	int i;
-+
-+	/* No mapped memory needed yet, just the buffer info structures */
-+	cq->sq.dma_head = devm_kcalloc(ice_hw_to_dev(hw), cq->num_sq_entries,
-+				       sizeof(cq->sq.desc_buf), GFP_KERNEL);
-+	if (!cq->sq.dma_head)
-+		return ICE_ERR_NO_MEMORY;
-+	cq->sq.r.sq_bi = (struct ice_dma_mem *)cq->sq.dma_head;
-+
-+	/* allocate the mapped buffers */
-+	for (i = 0; i < cq->num_sq_entries; i++) {
-+		struct ice_dma_mem *bi;
-+
-+		bi = &cq->sq.r.sq_bi[i];
-+		bi->va = dmam_alloc_coherent(ice_hw_to_dev(hw),
-+					     cq->sq_buf_size, &bi->pa,
-+					     GFP_KERNEL | __GFP_ZERO);
-+		if (!bi->va)
-+			goto unwind_alloc_sq_bufs;
-+		bi->size = cq->sq_buf_size;
-+	}
-+	return 0;
-+
-+unwind_alloc_sq_bufs:
-+	/* don't try to free the one that failed... */
-+	i--;
-+	for (; i >= 0; i--) {
-+		dmam_free_coherent(ice_hw_to_dev(hw), cq->sq.r.sq_bi[i].size,
-+				   cq->sq.r.sq_bi[i].va, cq->sq.r.sq_bi[i].pa);
-+		cq->sq.r.sq_bi[i].va = NULL;
-+		cq->sq.r.sq_bi[i].pa = 0;
-+		cq->sq.r.sq_bi[i].size = 0;
-+	}
-+	devm_kfree(ice_hw_to_dev(hw), cq->sq.dma_head);
-+
-+	return ICE_ERR_NO_MEMORY;
-+}
-+
-+/**
-+ * ice_free_rq_bufs - Free ARQ buffer info elements
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ */
-+static void ice_free_rq_bufs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	int i;
-+
-+	/* free descriptors */
-+	for (i = 0; i < cq->num_rq_entries; i++) {
-+		dmam_free_coherent(ice_hw_to_dev(hw), cq->rq.r.rq_bi[i].size,
-+				   cq->rq.r.rq_bi[i].va, cq->rq.r.rq_bi[i].pa);
-+		cq->rq.r.rq_bi[i].va = NULL;
-+		cq->rq.r.rq_bi[i].pa = 0;
-+		cq->rq.r.rq_bi[i].size = 0;
-+	}
-+
-+	/* free the dma header */
-+	devm_kfree(ice_hw_to_dev(hw), cq->rq.dma_head);
-+}
-+
-+/**
-+ * ice_free_sq_bufs - Free ATQ buffer info elements
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ */
-+static void ice_free_sq_bufs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	int i;
-+
-+	/* only unmap if the address is non-NULL */
-+	for (i = 0; i < cq->num_sq_entries; i++)
-+		if (cq->sq.r.sq_bi[i].pa) {
-+			dmam_free_coherent(ice_hw_to_dev(hw),
-+					   cq->sq.r.sq_bi[i].size,
-+					   cq->sq.r.sq_bi[i].va,
-+					   cq->sq.r.sq_bi[i].pa);
-+			cq->sq.r.sq_bi[i].va = NULL;
-+			cq->sq.r.sq_bi[i].pa = 0;
-+			cq->sq.r.sq_bi[i].size = 0;
-+		}
-+
-+	/* free the buffer info list */
-+	devm_kfree(ice_hw_to_dev(hw), cq->sq.cmd_buf);
-+
-+	/* free the dma header */
-+	devm_kfree(ice_hw_to_dev(hw), cq->sq.dma_head);
-+}
-+
-+/**
-+ * ice_cfg_sq_regs - configure Control ATQ registers
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * Configure base address and length registers for the transmit queue
-+ */
-+static enum ice_status
-+ice_cfg_sq_regs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	u32 reg = 0;
-+
-+	/* Clear Head and Tail */
-+	wr32(hw, cq->sq.head, 0);
-+	wr32(hw, cq->sq.tail, 0);
-+
-+	/* set starting point */
-+	wr32(hw, cq->sq.len, (cq->num_sq_entries | cq->sq.len_ena_mask));
-+	wr32(hw, cq->sq.bal, lower_32_bits(cq->sq.desc_buf.pa));
-+	wr32(hw, cq->sq.bah, upper_32_bits(cq->sq.desc_buf.pa));
-+
-+	/* Check one register to verify that config was applied */
-+	reg = rd32(hw, cq->sq.bal);
-+	if (reg != lower_32_bits(cq->sq.desc_buf.pa))
-+		return ICE_ERR_AQ_ERROR;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_cfg_rq_regs - configure Control ARQ register
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * Configure base address and length registers for the receive (event q)
-+ */
-+static enum ice_status
-+ice_cfg_rq_regs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	u32 reg = 0;
-+
-+	/* Clear Head and Tail */
-+	wr32(hw, cq->rq.head, 0);
-+	wr32(hw, cq->rq.tail, 0);
-+
-+	/* set starting point */
-+	wr32(hw, cq->rq.len, (cq->num_rq_entries | cq->rq.len_ena_mask));
-+	wr32(hw, cq->rq.bal, lower_32_bits(cq->rq.desc_buf.pa));
-+	wr32(hw, cq->rq.bah, upper_32_bits(cq->rq.desc_buf.pa));
-+
-+	/* Update tail in the HW to post pre-allocated buffers */
-+	wr32(hw, cq->rq.tail, (u32)(cq->num_rq_entries - 1));
-+
-+	/* Check one register to verify that config was applied */
-+	reg = rd32(hw, cq->rq.bal);
-+	if (reg != lower_32_bits(cq->rq.desc_buf.pa))
-+		return ICE_ERR_AQ_ERROR;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_init_sq - main initialization routine for Control ATQ
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * This is the main initialization routine for the Control Send Queue
-+ * Prior to calling this function, drivers *MUST* set the following fields
-+ * in the cq->structure:
-+ *     - cq->num_sq_entries
-+ *     - cq->sq_buf_size
-+ *
-+ * Do *NOT* hold the lock when calling this as the memory allocation routines
-+ * called are not going to be atomic context safe
-+ */
-+static enum ice_status ice_init_sq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	enum ice_status ret_code;
-+
-+	if (cq->sq.count > 0) {
-+		/* queue already initialized */
-+		ret_code = ICE_ERR_NOT_READY;
-+		goto init_ctrlq_exit;
-+	}
-+
-+	/* verify input for valid configuration */
-+	if (!cq->num_sq_entries || !cq->sq_buf_size) {
-+		ret_code = ICE_ERR_CFG;
-+		goto init_ctrlq_exit;
-+	}
-+
-+	cq->sq.next_to_use = 0;
-+	cq->sq.next_to_clean = 0;
-+
-+	/* allocate the ring memory */
-+	ret_code = ice_alloc_ctrlq_sq_ring(hw, cq);
-+	if (ret_code)
-+		goto init_ctrlq_exit;
-+
-+	/* allocate buffers in the rings */
-+	ret_code = ice_alloc_sq_bufs(hw, cq);
-+	if (ret_code)
-+		goto init_ctrlq_free_rings;
-+
-+	/* initialize base registers */
-+	ret_code = ice_cfg_sq_regs(hw, cq);
-+	if (ret_code)
-+		goto init_ctrlq_free_rings;
-+
-+	/* success! */
-+	cq->sq.count = cq->num_sq_entries;
-+	goto init_ctrlq_exit;
-+
-+init_ctrlq_free_rings:
-+	ice_free_ctrlq_sq_ring(hw, cq);
-+
-+init_ctrlq_exit:
-+	return ret_code;
-+}
-+
-+/**
-+ * ice_init_rq - initialize ARQ
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * The main initialization routine for the Admin Receive (Event) Queue.
-+ * Prior to calling this function, drivers *MUST* set the following fields
-+ * in the cq->structure:
-+ *     - cq->num_rq_entries
-+ *     - cq->rq_buf_size
-+ *
-+ * Do *NOT* hold the lock when calling this as the memory allocation routines
-+ * called are not going to be atomic context safe
-+ */
-+static enum ice_status ice_init_rq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	enum ice_status ret_code;
-+
-+	if (cq->rq.count > 0) {
-+		/* queue already initialized */
-+		ret_code = ICE_ERR_NOT_READY;
-+		goto init_ctrlq_exit;
-+	}
-+
-+	/* verify input for valid configuration */
-+	if (!cq->num_rq_entries || !cq->rq_buf_size) {
-+		ret_code = ICE_ERR_CFG;
-+		goto init_ctrlq_exit;
-+	}
-+
-+	cq->rq.next_to_use = 0;
-+	cq->rq.next_to_clean = 0;
-+
-+	/* allocate the ring memory */
-+	ret_code = ice_alloc_ctrlq_rq_ring(hw, cq);
-+	if (ret_code)
-+		goto init_ctrlq_exit;
-+
-+	/* allocate buffers in the rings */
-+	ret_code = ice_alloc_rq_bufs(hw, cq);
-+	if (ret_code)
-+		goto init_ctrlq_free_rings;
-+
-+	/* initialize base registers */
-+	ret_code = ice_cfg_rq_regs(hw, cq);
-+	if (ret_code)
-+		goto init_ctrlq_free_rings;
-+
-+	/* success! */
-+	cq->rq.count = cq->num_rq_entries;
-+	goto init_ctrlq_exit;
-+
-+init_ctrlq_free_rings:
-+	ice_free_ctrlq_rq_ring(hw, cq);
-+
-+init_ctrlq_exit:
-+	return ret_code;
-+}
-+
-+/**
-+ * ice_shutdown_sq - shutdown the Control ATQ
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * The main shutdown routine for the Control Transmit Queue
-+ */
-+static enum ice_status
-+ice_shutdown_sq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	enum ice_status ret_code = 0;
-+
-+	mutex_lock(&cq->sq_lock);
-+
-+	if (!cq->sq.count) {
-+		ret_code = ICE_ERR_NOT_READY;
-+		goto shutdown_sq_out;
-+	}
-+
-+	/* Stop firmware AdminQ processing */
-+	wr32(hw, cq->sq.head, 0);
-+	wr32(hw, cq->sq.tail, 0);
-+	wr32(hw, cq->sq.len, 0);
-+	wr32(hw, cq->sq.bal, 0);
-+	wr32(hw, cq->sq.bah, 0);
-+
-+	cq->sq.count = 0;	/* to indicate uninitialized queue */
-+
-+	/* free ring buffers and the ring itself */
-+	ice_free_sq_bufs(hw, cq);
-+	ice_free_ctrlq_sq_ring(hw, cq);
-+
-+shutdown_sq_out:
-+	mutex_unlock(&cq->sq_lock);
-+	return ret_code;
-+}
-+
-+/**
-+ * ice_aq_ver_check - Check the reported AQ API version.
-+ * @fw_branch: The "branch" of FW, typically describes the device type
-+ * @fw_major: The major version of the FW API
-+ * @fw_minor: The minor version increment of the FW API
-+ *
-+ * Checks if the driver should load on a given AQ API version.
-+ *
-+ * Return: 'true' iff the driver should attempt to load. 'false' otherwise.
-+ */
-+static bool ice_aq_ver_check(u8 fw_branch, u8 fw_major, u8 fw_minor)
-+{
-+	if (fw_branch != EXP_FW_API_VER_BRANCH)
-+		return false;
-+	if (fw_major != EXP_FW_API_VER_MAJOR)
-+		return false;
-+	if (fw_minor != EXP_FW_API_VER_MINOR)
-+		return false;
-+	return true;
-+}
-+
-+/**
-+ * ice_shutdown_rq - shutdown Control ARQ
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * The main shutdown routine for the Control Receive Queue
-+ */
-+static enum ice_status
-+ice_shutdown_rq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	enum ice_status ret_code = 0;
-+
-+	mutex_lock(&cq->rq_lock);
-+
-+	if (!cq->rq.count) {
-+		ret_code = ICE_ERR_NOT_READY;
-+		goto shutdown_rq_out;
-+	}
-+
-+	/* Stop Control Queue processing */
-+	wr32(hw, cq->rq.head, 0);
-+	wr32(hw, cq->rq.tail, 0);
-+	wr32(hw, cq->rq.len, 0);
-+	wr32(hw, cq->rq.bal, 0);
-+	wr32(hw, cq->rq.bah, 0);
-+
-+	/* set rq.count to 0 to indicate uninitialized queue */
-+	cq->rq.count = 0;
-+
-+	/* free ring buffers and the ring itself */
-+	ice_free_rq_bufs(hw, cq);
-+	ice_free_ctrlq_rq_ring(hw, cq);
-+
-+shutdown_rq_out:
-+	mutex_unlock(&cq->rq_lock);
-+	return ret_code;
-+}
-+
-+/**
-+ * ice_init_check_adminq - Check version for Admin Queue to know if its alive
-+ * @hw: pointer to the hardware structure
-+ */
-+static enum ice_status ice_init_check_adminq(struct ice_hw *hw)
-+{
-+	struct ice_ctl_q_info *cq = &hw->adminq;
-+	enum ice_status status;
-+
-+	status = ice_aq_get_fw_ver(hw, NULL);
-+	if (status)
-+		goto init_ctrlq_free_rq;
-+
-+	if (!ice_aq_ver_check(hw->api_branch, hw->api_maj_ver,
-+			      hw->api_min_ver)) {
-+		status = ICE_ERR_FW_API_VER;
-+		goto init_ctrlq_free_rq;
-+	}
-+
-+	return 0;
-+
-+init_ctrlq_free_rq:
-+	ice_shutdown_rq(hw, cq);
-+	ice_shutdown_sq(hw, cq);
-+	mutex_destroy(&cq->sq_lock);
-+	mutex_destroy(&cq->rq_lock);
-+	return status;
-+}
-+
-+/**
-+ * ice_init_ctrlq - main initialization routine for any control Queue
-+ * @hw: pointer to the hardware structure
-+ * @q_type: specific Control queue type
-+ *
-+ * Prior to calling this function, drivers *MUST* set the following fields
-+ * in the cq->structure:
-+ *     - cq->num_sq_entries
-+ *     - cq->num_rq_entries
-+ *     - cq->rq_buf_size
-+ *     - cq->sq_buf_size
-+ *
-+ */
-+static enum ice_status ice_init_ctrlq(struct ice_hw *hw, enum ice_ctl_q q_type)
-+{
-+	struct ice_ctl_q_info *cq;
-+	enum ice_status ret_code;
-+
-+	switch (q_type) {
-+	case ICE_CTL_Q_ADMIN:
-+		ice_adminq_init_regs(hw);
-+		cq = &hw->adminq;
-+		break;
-+	default:
-+		return ICE_ERR_PARAM;
-+	}
-+	cq->qtype = q_type;
-+
-+	/* verify input for valid configuration */
-+	if (!cq->num_rq_entries || !cq->num_sq_entries ||
-+	    !cq->rq_buf_size || !cq->sq_buf_size) {
-+		return ICE_ERR_CFG;
-+	}
-+	mutex_init(&cq->sq_lock);
-+	mutex_init(&cq->rq_lock);
-+
-+	/* setup SQ command write back timeout */
-+	cq->sq_cmd_timeout = ICE_CTL_Q_SQ_CMD_TIMEOUT;
-+
-+	/* allocate the ATQ */
-+	ret_code = ice_init_sq(hw, cq);
-+	if (ret_code)
-+		goto init_ctrlq_destroy_locks;
-+
-+	/* allocate the ARQ */
-+	ret_code = ice_init_rq(hw, cq);
-+	if (ret_code)
-+		goto init_ctrlq_free_sq;
-+
-+	/* success! */
-+	return 0;
-+
-+init_ctrlq_free_sq:
-+	ice_shutdown_sq(hw, cq);
-+init_ctrlq_destroy_locks:
-+	mutex_destroy(&cq->sq_lock);
-+	mutex_destroy(&cq->rq_lock);
-+	return ret_code;
-+}
-+
-+/**
-+ * ice_init_all_ctrlq - main initialization routine for all control queues
-+ * @hw: pointer to the hardware structure
-+ *
-+ * Prior to calling this function, drivers *MUST* set the following fields
-+ * in the cq->structure for all control queues:
-+ *     - cq->num_sq_entries
-+ *     - cq->num_rq_entries
-+ *     - cq->rq_buf_size
-+ *     - cq->sq_buf_size
-+ */
-+enum ice_status ice_init_all_ctrlq(struct ice_hw *hw)
-+{
-+	enum ice_status ret_code;
-+
-+	/* Init FW admin queue */
-+	ret_code = ice_init_ctrlq(hw, ICE_CTL_Q_ADMIN);
-+	if (ret_code)
-+		return ret_code;
-+
-+	return ice_init_check_adminq(hw);
-+}
-+
-+/**
-+ * ice_shutdown_ctrlq - shutdown routine for any control queue
-+ * @hw: pointer to the hardware structure
-+ * @q_type: specific Control queue type
-+ */
-+static void ice_shutdown_ctrlq(struct ice_hw *hw, enum ice_ctl_q q_type)
-+{
-+	struct ice_ctl_q_info *cq;
-+
-+	switch (q_type) {
-+	case ICE_CTL_Q_ADMIN:
-+		cq = &hw->adminq;
-+		if (ice_check_sq_alive(hw, cq))
-+			ice_aq_q_shutdown(hw, true);
-+		break;
-+	default:
-+		return;
-+	}
-+
-+	ice_shutdown_sq(hw, cq);
-+	ice_shutdown_rq(hw, cq);
-+	mutex_destroy(&cq->sq_lock);
-+	mutex_destroy(&cq->rq_lock);
-+}
-+
-+/**
-+ * ice_shutdown_all_ctrlq - shutdown routine for all control queues
-+ * @hw: pointer to the hardware structure
-+ */
-+void ice_shutdown_all_ctrlq(struct ice_hw *hw)
-+{
-+	/* Shutdown FW admin queue */
-+	ice_shutdown_ctrlq(hw, ICE_CTL_Q_ADMIN);
-+}
-+
-+/**
-+ * ice_clean_sq - cleans Admin send queue (ATQ)
-+ * @hw: pointer to the hardware structure
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * returns the number of free desc
-+ */
-+static u16 ice_clean_sq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	struct ice_ctl_q_ring *sq = &cq->sq;
-+	u16 ntc = sq->next_to_clean;
-+	struct ice_sq_cd *details;
-+	struct ice_aq_desc *desc;
-+
-+	desc = ICE_CTL_Q_DESC(*sq, ntc);
-+	details = ICE_CTL_Q_DETAILS(*sq, ntc);
-+
-+	while (rd32(hw, cq->sq.head) != ntc) {
-+		ice_debug(hw, ICE_DBG_AQ_MSG,
-+			  "ntc %d head %d.\n", ntc, rd32(hw, cq->sq.head));
-+		memset(desc, 0, sizeof(*desc));
-+		memset(details, 0, sizeof(*details));
-+		ntc++;
-+		if (ntc == sq->count)
-+			ntc = 0;
-+		desc = ICE_CTL_Q_DESC(*sq, ntc);
-+		details = ICE_CTL_Q_DETAILS(*sq, ntc);
-+	}
-+
-+	sq->next_to_clean = ntc;
-+
-+	return ICE_CTL_Q_DESC_UNUSED(sq);
-+}
-+
-+/**
-+ * ice_sq_done - check if FW has processed the Admin Send Queue (ATQ)
-+ * @hw: pointer to the hw struct
-+ * @cq: pointer to the specific Control queue
-+ *
-+ * Returns true if the firmware has processed all descriptors on the
-+ * admin send queue. Returns false if there are still requests pending.
-+ */
-+static bool ice_sq_done(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	/* AQ designers suggest use of head for better
-+	 * timing reliability than DD bit
-+	 */
-+	return rd32(hw, cq->sq.head) == cq->sq.next_to_use;
-+}
-+
-+/**
-+ * ice_sq_send_cmd - send command to Control Queue (ATQ)
-+ * @hw: pointer to the hw struct
-+ * @cq: pointer to the specific Control queue
-+ * @desc: prefilled descriptor describing the command (non DMA mem)
-+ * @buf: buffer to use for indirect commands (or NULL for direct commands)
-+ * @buf_size: size of buffer for indirect commands (or 0 for direct commands)
-+ * @cd: pointer to command details structure
-+ *
-+ * This is the main send command routine for the ATQ.  It runs the q,
-+ * cleans the queue, etc.
-+ */
-+enum ice_status
-+ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
-+		struct ice_aq_desc *desc, void *buf, u16 buf_size,
-+		struct ice_sq_cd *cd)
-+{
-+	struct ice_dma_mem *dma_buf = NULL;
-+	struct ice_aq_desc *desc_on_ring;
-+	bool cmd_completed = false;
-+	enum ice_status status = 0;
-+	struct ice_sq_cd *details;
-+	u32 total_delay = 0;
-+	u16 retval = 0;
-+	u32 val = 0;
-+
-+	mutex_lock(&cq->sq_lock);
-+
-+	cq->sq_last_status = ICE_AQ_RC_OK;
-+
-+	if (!cq->sq.count) {
-+		ice_debug(hw, ICE_DBG_AQ_MSG,
-+			  "Control Send queue not initialized.\n");
-+		status = ICE_ERR_AQ_EMPTY;
-+		goto sq_send_command_error;
-+	}
-+
-+	if ((buf && !buf_size) || (!buf && buf_size)) {
-+		status = ICE_ERR_PARAM;
-+		goto sq_send_command_error;
-+	}
-+
-+	if (buf) {
-+		if (buf_size > cq->sq_buf_size) {
-+			ice_debug(hw, ICE_DBG_AQ_MSG,
-+				  "Invalid buffer size for Control Send queue: %d.\n",
-+				  buf_size);
-+			status = ICE_ERR_INVAL_SIZE;
-+			goto sq_send_command_error;
-+		}
-+
-+		desc->flags |= cpu_to_le16(ICE_AQ_FLAG_BUF);
-+		if (buf_size > ICE_AQ_LG_BUF)
-+			desc->flags |= cpu_to_le16(ICE_AQ_FLAG_LB);
-+	}
-+
-+	val = rd32(hw, cq->sq.head);
-+	if (val >= cq->num_sq_entries) {
-+		ice_debug(hw, ICE_DBG_AQ_MSG,
-+			  "head overrun at %d in the Control Send Queue ring\n",
-+			  val);
-+		status = ICE_ERR_AQ_EMPTY;
-+		goto sq_send_command_error;
-+	}
-+
-+	details = ICE_CTL_Q_DETAILS(cq->sq, cq->sq.next_to_use);
-+	if (cd)
-+		memcpy(details, cd, sizeof(*details));
-+	else
-+		memset(details, 0, sizeof(*details));
-+
-+	/* Call clean and check queue available function to reclaim the
-+	 * descriptors that were processed by FW/MBX; the function returns the
-+	 * number of desc available. The clean function called here could be
-+	 * called in a separate thread in case of asynchronous completions.
-+	 */
-+	if (ice_clean_sq(hw, cq) == 0) {
-+		ice_debug(hw, ICE_DBG_AQ_MSG,
-+			  "Error: Control Send Queue is full.\n");
-+		status = ICE_ERR_AQ_FULL;
-+		goto sq_send_command_error;
-+	}
-+
-+	/* initialize the temp desc pointer with the right desc */
-+	desc_on_ring = ICE_CTL_Q_DESC(cq->sq, cq->sq.next_to_use);
-+
-+	/* if the desc is available copy the temp desc to the right place */
-+	memcpy(desc_on_ring, desc, sizeof(*desc_on_ring));
-+
-+	/* if buf is not NULL assume indirect command */
-+	if (buf) {
-+		dma_buf = &cq->sq.r.sq_bi[cq->sq.next_to_use];
-+		/* copy the user buf into the respective DMA buf */
-+		memcpy(dma_buf->va, buf, buf_size);
-+		desc_on_ring->datalen = cpu_to_le16(buf_size);
-+
-+		/* Update the address values in the desc with the pa value
-+		 * for respective buffer
-+		 */
-+		desc_on_ring->params.generic.addr_high =
-+			cpu_to_le32(upper_32_bits(dma_buf->pa));
-+		desc_on_ring->params.generic.addr_low =
-+			cpu_to_le32(lower_32_bits(dma_buf->pa));
-+	}
-+
-+	/* Debug desc and buffer */
-+	ice_debug(hw, ICE_DBG_AQ_MSG,
-+		  "ATQ: Control Send queue desc and buffer:\n");
-+
-+	ice_debug_cq(hw, ICE_DBG_AQ_CMD, (void *)desc_on_ring, buf, buf_size);
-+
-+	(cq->sq.next_to_use)++;
-+	if (cq->sq.next_to_use == cq->sq.count)
-+		cq->sq.next_to_use = 0;
-+	wr32(hw, cq->sq.tail, cq->sq.next_to_use);
-+
-+	do {
-+		if (ice_sq_done(hw, cq))
-+			break;
-+
-+		mdelay(1);
-+		total_delay++;
-+	} while (total_delay < cq->sq_cmd_timeout);
-+
-+	/* if ready, copy the desc back to temp */
-+	if (ice_sq_done(hw, cq)) {
-+		memcpy(desc, desc_on_ring, sizeof(*desc));
-+		if (buf) {
-+			/* get returned length to copy */
-+			u16 copy_size = le16_to_cpu(desc->datalen);
-+
-+			if (copy_size > buf_size) {
-+				ice_debug(hw, ICE_DBG_AQ_MSG,
-+					  "Return len %d > than buf len %d\n",
-+					  copy_size, buf_size);
-+				status = ICE_ERR_AQ_ERROR;
-+			} else {
-+				memcpy(buf, dma_buf->va, copy_size);
-+			}
-+		}
-+		retval = le16_to_cpu(desc->retval);
-+		if (retval) {
-+			ice_debug(hw, ICE_DBG_AQ_MSG,
-+				  "Control Send Queue command completed with error 0x%x\n",
-+				  retval);
-+
-+			/* strip off FW internal code */
-+			retval &= 0xff;
-+		}
-+		cmd_completed = true;
-+		if (!status && retval != ICE_AQ_RC_OK)
-+			status = ICE_ERR_AQ_ERROR;
-+		cq->sq_last_status = (enum ice_aq_err)retval;
-+	}
-+
-+	ice_debug(hw, ICE_DBG_AQ_MSG,
-+		  "ATQ: desc and buffer writeback:\n");
-+
-+	ice_debug_cq(hw, ICE_DBG_AQ_CMD, (void *)desc, buf, buf_size);
-+
-+	/* save writeback AQ if requested */
-+	if (details->wb_desc)
-+		memcpy(details->wb_desc, desc_on_ring,
-+		       sizeof(*details->wb_desc));
-+
-+	/* update the error if time out occurred */
-+	if (!cmd_completed) {
-+		ice_debug(hw, ICE_DBG_AQ_MSG,
-+			  "Control Send Queue Writeback timeout.\n");
-+		status = ICE_ERR_AQ_TIMEOUT;
-+	}
-+
-+sq_send_command_error:
-+	mutex_unlock(&cq->sq_lock);
-+	return status;
-+}
-+
-+/**
-+ * ice_fill_dflt_direct_cmd_desc - AQ descriptor helper function
-+ * @desc: pointer to the temp descriptor (non DMA mem)
-+ * @opcode: the opcode can be used to decide which flags to turn off or on
-+ *
-+ * Fill the desc with default values
-+ */
-+void ice_fill_dflt_direct_cmd_desc(struct ice_aq_desc *desc, u16 opcode)
-+{
-+	/* zero out the desc */
-+	memset(desc, 0, sizeof(*desc));
-+	desc->opcode = cpu_to_le16(opcode);
-+	desc->flags = cpu_to_le16(ICE_AQ_FLAG_SI);
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.h b/drivers/net/ethernet/intel/ice/ice_controlq.h
-new file mode 100644
-index 000000000000..143578d02aec
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.h
-@@ -0,0 +1,97 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
-+
-+#ifndef _ICE_CONTROLQ_H_
-+#define _ICE_CONTROLQ_H_
-+
-+#include "ice_adminq_cmd.h"
-+
-+#define ICE_CTL_Q_DESC(R, i) \
-+	(&(((struct ice_aq_desc *)((R).desc_buf.va))[i]))
-+
-+#define ICE_CTL_Q_DESC_UNUSED(R) \
-+	(u16)((((R)->next_to_clean > (R)->next_to_use) ? 0 : (R)->count) + \
-+	      (R)->next_to_clean - (R)->next_to_use - 1)
-+
-+/* Defines that help manage the driver vs FW API checks.
-+ * Take a look at ice_aq_ver_check in ice_controlq.c for actual usage.
-+ *
-+ */
-+#define EXP_FW_API_VER_BRANCH		0x00
-+#define EXP_FW_API_VER_MAJOR		0x00
-+#define EXP_FW_API_VER_MINOR		0x01
-+
-+/* Different control queue types: These are mainly for SW consumption. */
-+enum ice_ctl_q {
-+	ICE_CTL_Q_UNKNOWN = 0,
-+	ICE_CTL_Q_ADMIN,
-+};
-+
-+/* Control Queue default settings */
-+#define ICE_CTL_Q_SQ_CMD_TIMEOUT	250  /* msecs */
-+
-+struct ice_ctl_q_ring {
-+	void *dma_head;			/* Virtual address to dma head */
-+	struct ice_dma_mem desc_buf;	/* descriptor ring memory */
-+	void *cmd_buf;			/* command buffer memory */
-+
-+	union {
-+		struct ice_dma_mem *sq_bi;
-+		struct ice_dma_mem *rq_bi;
-+	} r;
-+
-+	u16 count;		/* Number of descriptors */
-+
-+	/* used for interrupt processing */
-+	u16 next_to_use;
-+	u16 next_to_clean;
-+
-+	/* used for queue tracking */
-+	u32 head;
-+	u32 tail;
-+	u32 len;
-+	u32 bah;
-+	u32 bal;
-+	u32 len_mask;
-+	u32 len_ena_mask;
-+	u32 head_mask;
-+};
-+
-+/* sq transaction details */
-+struct ice_sq_cd {
-+	struct ice_aq_desc *wb_desc;
-+};
-+
-+#define ICE_CTL_Q_DETAILS(R, i) (&(((struct ice_sq_cd *)((R).cmd_buf))[i]))
-+
-+/* Control Queue information */
-+struct ice_ctl_q_info {
-+	enum ice_ctl_q qtype;
-+	struct ice_ctl_q_ring rq;	/* receive queue */
-+	struct ice_ctl_q_ring sq;	/* send queue */
-+	u32 sq_cmd_timeout;		/* send queue cmd write back timeout */
-+	u16 num_rq_entries;		/* receive queue depth */
-+	u16 num_sq_entries;		/* send queue depth */
-+	u16 rq_buf_size;		/* receive queue buffer size */
-+	u16 sq_buf_size;		/* send queue buffer size */
-+	struct mutex sq_lock;		/* Send queue lock */
-+	struct mutex rq_lock;		/* Receive queue lock */
-+	enum ice_aq_err sq_last_status;	/* last status on send queue */
-+	enum ice_aq_err rq_last_status;	/* last status on receive queue */
-+};
-+
-+#endif /* _ICE_CONTROLQ_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-new file mode 100644
-index 000000000000..3d6bb273e4c8
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -0,0 +1,46 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
-+
-+/* Machine-generated file */
-+
-+#ifndef _ICE_HW_AUTOGEN_H_
-+#define _ICE_HW_AUTOGEN_H_
-+
-+#define PF_FW_ARQBAH			0x00080180
-+#define PF_FW_ARQBAL			0x00080080
-+#define PF_FW_ARQH			0x00080380
-+#define PF_FW_ARQH_ARQH_S		0
-+#define PF_FW_ARQH_ARQH_M		ICE_M(0x3FF, PF_FW_ARQH_ARQH_S)
-+#define PF_FW_ARQLEN			0x00080280
-+#define PF_FW_ARQLEN_ARQLEN_S		0
-+#define PF_FW_ARQLEN_ARQLEN_M		ICE_M(0x3FF, PF_FW_ARQLEN_ARQLEN_S)
-+#define PF_FW_ARQLEN_ARQENABLE_S	31
-+#define PF_FW_ARQLEN_ARQENABLE_M	BIT(PF_FW_ARQLEN_ARQENABLE_S)
-+#define PF_FW_ARQT			0x00080480
-+#define PF_FW_ATQBAH			0x00080100
-+#define PF_FW_ATQBAL			0x00080000
-+#define PF_FW_ATQH			0x00080300
-+#define PF_FW_ATQH_ATQH_S		0
-+#define PF_FW_ATQH_ATQH_M		ICE_M(0x3FF, PF_FW_ATQH_ATQH_S)
-+#define PF_FW_ATQLEN			0x00080200
-+#define PF_FW_ATQLEN_ATQLEN_S		0
-+#define PF_FW_ATQLEN_ATQLEN_M		ICE_M(0x3FF, PF_FW_ATQLEN_ATQLEN_S)
-+#define PF_FW_ATQLEN_ATQENABLE_S	31
-+#define PF_FW_ATQLEN_ATQENABLE_M	BIT(PF_FW_ATQLEN_ATQENABLE_S)
-+#define PF_FW_ATQT			0x00080400
-+
-+#endif /* _ICE_HW_AUTOGEN_H_ */
++ice_aq_manage_mac_write(struct ice_hw *hw, u8 *mac_addr, u8 flags,
++			struct ice_sq_cd *cd);
+ enum ice_status ice_clear_pf_cfg(struct ice_hw *hw);
+ enum ice_status
+ ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool atomic_restart);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index b1f38624da21..67fb0a9ba0df 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -367,6 +367,18 @@ enum ice_tx_desc_len_fields {
+ 	ICE_TX_DESC_LEN_L4_LEN_S	= 14 /* 4 BITS */
+ };
+ 
++#define ICE_TXD_QW1_MACLEN_M (0x7FUL << ICE_TX_DESC_LEN_MACLEN_S)
++#define ICE_TXD_QW1_IPLEN_M  (0x7FUL << ICE_TX_DESC_LEN_IPLEN_S)
++#define ICE_TXD_QW1_L4LEN_M  (0xFUL << ICE_TX_DESC_LEN_L4_LEN_S)
++
++/* Tx descriptor field limits in bytes */
++#define ICE_TXD_MACLEN_MAX ((ICE_TXD_QW1_MACLEN_M >> \
++			     ICE_TX_DESC_LEN_MACLEN_S) * ICE_BYTES_PER_WORD)
++#define ICE_TXD_IPLEN_MAX ((ICE_TXD_QW1_IPLEN_M >> \
++			    ICE_TX_DESC_LEN_IPLEN_S) * ICE_BYTES_PER_DWORD)
++#define ICE_TXD_L4LEN_MAX ((ICE_TXD_QW1_L4LEN_M >> \
++			    ICE_TX_DESC_LEN_L4_LEN_S) * ICE_BYTES_PER_DWORD)
++
+ #define ICE_TXD_QW1_TX_BUF_SZ_S	34
+ #define ICE_TXD_QW1_L2TAG1_S	48
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 0631812aef2b..408ae90d6562 100644
+index 90f44be5f858..faffb6c8f05c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -34,7 +34,11 @@ MODULE_VERSION(DRV_VERSION);
+@@ -21,7 +21,7 @@
  
- static int debug = -1;
- module_param(debug, int, 0644);
--MODULE_PARM_DESC(debug, "netif message level (0=none,...,0x7FFF=all)");
-+#ifndef CONFIG_DYNAMIC_DEBUG
-+MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all), hw debug_mask (0x8XXXXXXX)");
-+#else
-+MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all)");
-+#endif /* !CONFIG_DYNAMIC_DEBUG */
+ #include "ice.h"
  
- /**
-  * ice_probe - Device initialization routine
-@@ -93,6 +97,11 @@ static int ice_probe(struct pci_dev *pdev,
- 	hw->bus.func = PCI_FUNC(pdev->devfn);
- 	pf->msg_enable = netif_msg_init(debug, ICE_DFLT_NETIF_M);
- 
-+#ifndef CONFIG_DYNAMIC_DEBUG
-+	if (debug < -1)
-+		hw->debug_mask = debug;
-+#endif
-+
+-#define DRV_VERSION	"ice-0.0.1-k"
++#define DRV_VERSION	"ice-0.7.0-k"
+ #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
+ const char ice_drv_ver[] = DRV_VERSION;
+ static const char ice_driver_string[] = DRV_SUMMARY;
+@@ -214,6 +214,48 @@ static int ice_add_mac_to_list(struct ice_vsi *vsi, struct list_head *add_list,
  	return 0;
  }
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_osdep.h b/drivers/net/ethernet/intel/ice/ice_osdep.h
-new file mode 100644
-index 000000000000..fc6576a3a9d1
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_osdep.h
-@@ -0,0 +1,86 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
++/**
++ * ice_add_mac_to_sync_list - creates list of mac addresses to be synced
++ * @netdev: the net device on which the sync is happening
++ * @addr: mac address to sync
 + *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
++ * This is a callback function which is called by the in kernel device sync
++ * functions (like __dev_uc_sync, __dev_mc_sync, etc). This function only
++ * populates the tmp_sync_list, which is later used by ice_add_mac to add the
++ * mac filters from the hardware.
 + */
++static int ice_add_mac_to_sync_list(struct net_device *netdev, const u8 *addr)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
 +
-+#ifndef _ICE_OSDEP_H_
-+#define _ICE_OSDEP_H_
++	if (ice_add_mac_to_list(vsi, &vsi->tmp_sync_list, addr))
++		return -EINVAL;
 +
-+#include <linux/types.h>
-+#include <linux/io.h>
-+#ifndef CONFIG_64BIT
-+#include <linux/io-64-nonatomic-lo-hi.h>
-+#endif
++	return 0;
++}
 +
-+#define wr32(a, reg, value)	writel((value), ((a)->hw_addr + (reg)))
-+#define rd32(a, reg)		readl((a)->hw_addr + (reg))
-+#define wr64(a, reg, value)	writeq((value), ((a)->hw_addr + (reg)))
-+#define rd64(a, reg)		readq((a)->hw_addr + (reg))
-+
-+#define ICE_M(m, s)		((m) << (s))
-+
-+struct ice_dma_mem {
-+	void *va;
-+	dma_addr_t pa;
-+	size_t size;
-+};
-+
-+#define ice_hw_to_dev(ptr)	\
-+	(&(container_of((ptr), struct ice_pf, hw))->pdev->dev)
-+
-+#ifdef CONFIG_DYNAMIC_DEBUG
-+#define ice_debug(hw, type, fmt, args...) \
-+	dev_dbg(ice_hw_to_dev(hw), fmt, ##args)
-+
-+#define ice_debug_array(hw, type, rowsize, groupsize, buf, len) \
-+	print_hex_dump_debug(KBUILD_MODNAME " ",		\
-+			     DUMP_PREFIX_OFFSET, rowsize,	\
-+			     groupsize, buf, len, false)
-+#else
-+#define ice_debug(hw, type, fmt, args...)			\
-+do {								\
-+	if ((type) & (hw)->debug_mask)				\
-+		dev_info(ice_hw_to_dev(hw), fmt, ##args);	\
-+} while (0)
-+
-+#ifdef DEBUG
-+#define ice_debug_array(hw, type, rowsize, groupsize, buf, len) \
-+do {								\
-+	if ((type) & (hw)->debug_mask)				\
-+		print_hex_dump_debug(KBUILD_MODNAME,		\
-+				     DUMP_PREFIX_OFFSET,	\
-+				     rowsize, groupsize, buf,	\
-+				     len, false);		\
-+} while (0)
-+#else
-+#define ice_debug_array(hw, type, rowsize, groupsize, buf, len) \
-+do {								\
-+	struct ice_hw *hw_l = hw;				\
-+	if ((type) & (hw_l)->debug_mask) {			\
-+		u16 len_l = len;				\
-+		u8 *buf_l = buf;				\
-+		int i;						\
-+		for (i = 0; i < (len_l - 16); i += 16)		\
-+			ice_debug(hw_l, type, "0x%04X  %16ph\n",\
-+				  i, ((buf_l) + i));		\
-+		if (i < len_l)					\
-+			ice_debug(hw_l, type, "0x%04X  %*ph\n", \
-+				  i, ((len_l) - i), ((buf_l) + i));\
-+	}							\
-+} while (0)
-+#endif /* DEBUG */
-+#endif /* CONFIG_DYNAMIC_DEBUG */
-+
-+#endif /* _ICE_OSDEP_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_status.h b/drivers/net/ethernet/intel/ice/ice_status.h
-new file mode 100644
-index 000000000000..940d6f57adcf
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_status.h
-@@ -0,0 +1,35 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
++/**
++ * ice_add_mac_to_unsync_list - creates list of mac addresses to be unsynced
++ * @netdev: the net device on which the unsync is happening
++ * @addr: mac address to unsync
 + *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
++ * This is a callback function which is called by the in kernel device unsync
++ * functions (like __dev_uc_unsync, __dev_mc_unsync, etc). This function only
++ * populates the tmp_unsync_list, which is later used by ice_remove_mac to
++ * delete the mac filters from the hardware.
 + */
++static int ice_add_mac_to_unsync_list(struct net_device *netdev, const u8 *addr)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
 +
-+#ifndef _ICE_STATUS_H_
-+#define _ICE_STATUS_H_
++	if (ice_add_mac_to_list(vsi, &vsi->tmp_unsync_list, addr))
++		return -EINVAL;
 +
-+/* Error Codes */
-+enum ice_status {
-+	ICE_ERR_PARAM				= -1,
-+	ICE_ERR_NOT_READY			= -3,
-+	ICE_ERR_INVAL_SIZE			= -6,
-+	ICE_ERR_FW_API_VER			= -10,
-+	ICE_ERR_NO_MEMORY			= -11,
-+	ICE_ERR_CFG				= -12,
-+	ICE_ERR_AQ_ERROR			= -100,
-+	ICE_ERR_AQ_TIMEOUT			= -101,
-+	ICE_ERR_AQ_FULL				= -102,
-+	ICE_ERR_AQ_EMPTY			= -104,
-+};
++	return 0;
++}
 +
-+#endif /* _ICE_STATUS_H_ */
+ /**
+  * ice_free_fltr_list - free filter lists helper
+  * @dev: pointer to the device struct
+@@ -232,6 +274,183 @@ static void ice_free_fltr_list(struct device *dev, struct list_head *h)
+ 	}
+ }
+ 
++/**
++ * ice_vsi_fltr_changed - check if filter state changed
++ * @vsi: VSI to be checked
++ *
++ * returns true if filter state has changed, false otherwise.
++ */
++static bool ice_vsi_fltr_changed(struct ice_vsi *vsi)
++{
++	return test_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags) ||
++	       test_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags) ||
++	       test_bit(ICE_VSI_FLAG_VLAN_FLTR_CHANGED, vsi->flags);
++}
++
++/**
++ * ice_vsi_sync_fltr - Update the VSI filter list to the HW
++ * @vsi: ptr to the VSI
++ *
++ * Push any outstanding VSI filter changes through the AdminQ.
++ */
++static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
++{
++	struct device *dev = &vsi->back->pdev->dev;
++	struct net_device *netdev = vsi->netdev;
++	bool promisc_forced_on = false;
++	struct ice_pf *pf = vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	enum ice_status status = 0;
++	u32 changed_flags = 0;
++	int err = 0;
++
++	if (!vsi->netdev)
++		return -EINVAL;
++
++	while (test_and_set_bit(__ICE_CFG_BUSY, vsi->state))
++		usleep_range(1000, 2000);
++
++	changed_flags = vsi->current_netdev_flags ^ vsi->netdev->flags;
++	vsi->current_netdev_flags = vsi->netdev->flags;
++
++	INIT_LIST_HEAD(&vsi->tmp_sync_list);
++	INIT_LIST_HEAD(&vsi->tmp_unsync_list);
++
++	if (ice_vsi_fltr_changed(vsi)) {
++		clear_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags);
++		clear_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags);
++		clear_bit(ICE_VSI_FLAG_VLAN_FLTR_CHANGED, vsi->flags);
++
++		/* grab the netdev's addr_list_lock */
++		netif_addr_lock_bh(netdev);
++		__dev_uc_sync(netdev, ice_add_mac_to_sync_list,
++			      ice_add_mac_to_unsync_list);
++		__dev_mc_sync(netdev, ice_add_mac_to_sync_list,
++			      ice_add_mac_to_unsync_list);
++		/* our temp lists are populated. release lock */
++		netif_addr_unlock_bh(netdev);
++	}
++
++	/* Remove mac addresses in the unsync list */
++	status = ice_remove_mac(hw, &vsi->tmp_unsync_list);
++	ice_free_fltr_list(dev, &vsi->tmp_unsync_list);
++	if (status) {
++		netdev_err(netdev, "Failed to delete MAC filters\n");
++		/* if we failed because of alloc failures, just bail */
++		if (status == ICE_ERR_NO_MEMORY) {
++			err = -ENOMEM;
++			goto out;
++		}
++	}
++
++	/* Add mac addresses in the sync list */
++	status = ice_add_mac(hw, &vsi->tmp_sync_list);
++	ice_free_fltr_list(dev, &vsi->tmp_sync_list);
++	if (status) {
++		netdev_err(netdev, "Failed to add MAC filters\n");
++		/* If there is no more space for new umac filters, vsi
++		 * should go into promiscuous mode. There should be some
++		 * space reserved for promiscuous filters.
++		 */
++		if (hw->adminq.sq_last_status == ICE_AQ_RC_ENOSPC &&
++		    !test_and_set_bit(__ICE_FLTR_OVERFLOW_PROMISC,
++				      vsi->state)) {
++			promisc_forced_on = true;
++			netdev_warn(netdev,
++				    "Reached MAC filter limit, forcing promisc mode on VSI %d\n",
++				    vsi->vsi_num);
++		} else {
++			err = -EIO;
++			goto out;
++		}
++	}
++	/* check for changes in promiscuous modes */
++	if (changed_flags & IFF_ALLMULTI)
++		netdev_warn(netdev, "Unsupported configuration\n");
++
++	if (((changed_flags & IFF_PROMISC) || promisc_forced_on) ||
++	    test_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags)) {
++		clear_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags);
++		if (vsi->current_netdev_flags & IFF_PROMISC) {
++			/* Apply TX filter rule to get traffic from VMs */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, true,
++						  ICE_FLTR_TX);
++			if (status) {
++				netdev_err(netdev, "Error setting default VSI %i tx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags &= ~IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++			/* Apply RX filter rule to get traffic from wire */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, true,
++						  ICE_FLTR_RX);
++			if (status) {
++				netdev_err(netdev, "Error setting default VSI %i rx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags &= ~IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++		} else {
++			/* Clear TX filter rule to stop traffic from VMs */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, false,
++						  ICE_FLTR_TX);
++			if (status) {
++				netdev_err(netdev, "Error clearing default VSI %i tx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags |= IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++			/* Clear filter RX to remove traffic from wire */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, false,
++						  ICE_FLTR_RX);
++			if (status) {
++				netdev_err(netdev, "Error clearing default VSI %i rx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags |= IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++		}
++	}
++	goto exit;
++
++out_promisc:
++	set_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags);
++	goto exit;
++out:
++	/* if something went wrong then set the changed flag so we try again */
++	set_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags);
++	set_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags);
++exit:
++	clear_bit(__ICE_CFG_BUSY, vsi->state);
++	return err;
++}
++
++/**
++ * ice_sync_fltr_subtask - Sync the VSI filter list with HW
++ * @pf: board private structure
++ */
++static void ice_sync_fltr_subtask(struct ice_pf *pf)
++{
++	int v;
++
++	if (!pf || !(test_bit(ICE_FLAG_FLTR_SYNC, pf->flags)))
++		return;
++
++	clear_bit(ICE_FLAG_FLTR_SYNC, pf->flags);
++
++	for (v = 0; v < pf->num_alloc_vsi; v++)
++		if (pf->vsi[v] && ice_vsi_fltr_changed(pf->vsi[v]) &&
++		    ice_vsi_sync_fltr(pf->vsi[v])) {
++			/* come back and try again later */
++			set_bit(ICE_FLAG_FLTR_SYNC, pf->flags);
++			break;
++		}
++}
++
+ /**
+  * ice_is_reset_recovery_pending - schedule a reset
+  * @state: pf state field
+@@ -794,6 +1013,7 @@ static void ice_service_task(struct work_struct *work)
+ 		return;
+ 	}
+ 
++	ice_sync_fltr_subtask(pf);
+ 	ice_watchdog_subtask(pf);
+ 	ice_clean_adminq_subtask(pf);
+ 
+@@ -2505,6 +2725,7 @@ static int ice_vsi_reinit_setup(struct ice_vsi *vsi)
+ 	ice_vsi_free_q_vectors(vsi);
+ err_rings:
+ 	if (vsi->netdev) {
++		vsi->current_netdev_flags = 0;
+ 		unregister_netdev(vsi->netdev);
+ 		free_netdev(vsi->netdev);
+ 		vsi->netdev = NULL;
+@@ -3314,6 +3535,197 @@ static void __exit ice_module_exit(void)
+ }
+ module_exit(ice_module_exit);
+ 
++/**
++ * ice_set_mac_address - NDO callback to set mac address
++ * @netdev: network interface device structure
++ * @pi: pointer to an address structure
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int ice_set_mac_address(struct net_device *netdev, void *pi)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	struct sockaddr *addr = pi;
++	enum ice_status status;
++	LIST_HEAD(a_mac_list);
++	LIST_HEAD(r_mac_list);
++	u8 flags = 0;
++	int err;
++	u8 *mac;
++
++	mac = (u8 *)addr->sa_data;
++
++	if (!is_valid_ether_addr(mac))
++		return -EADDRNOTAVAIL;
++
++	if (ether_addr_equal(netdev->dev_addr, mac)) {
++		netdev_warn(netdev, "already using mac %pM\n", mac);
++		return 0;
++	}
++
++	if (test_bit(__ICE_DOWN, pf->state) ||
++	    ice_is_reset_recovery_pending(pf->state)) {
++		netdev_err(netdev, "can't set mac %pM. device not ready\n",
++			   mac);
++		return -EBUSY;
++	}
++
++	/* When we change the mac address we also have to change the mac address
++	 * based filter rules that were created previously for the old mac
++	 * address. So first, we remove the old filter rule using ice_remove_mac
++	 * and then create a new filter rule using ice_add_mac. Note that for
++	 * both these operations, we first need to form a "list" of mac
++	 * addresses (even though in this case, we have only 1 mac address to be
++	 * added/removed) and this done using ice_add_mac_to_list. Depending on
++	 * the ensuing operation this "list" of mac addresses is either to be
++	 * added or removed from the filter.
++	 */
++	err = ice_add_mac_to_list(vsi, &r_mac_list, netdev->dev_addr);
++	if (err) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++	status = ice_remove_mac(hw, &r_mac_list);
++	if (status) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++	err = ice_add_mac_to_list(vsi, &a_mac_list, mac);
++	if (err) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++	status = ice_add_mac(hw, &a_mac_list);
++	if (status) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++free_lists:
++	/* free list entries */
++	ice_free_fltr_list(&pf->pdev->dev, &r_mac_list);
++	ice_free_fltr_list(&pf->pdev->dev, &a_mac_list);
++
++	if (err) {
++		netdev_err(netdev, "can't set mac %pM. filter update failed\n",
++			   mac);
++		return err;
++	}
++
++	/* change the netdev's mac address */
++	memcpy(netdev->dev_addr, mac, netdev->addr_len);
++	netdev_dbg(vsi->netdev, "updated mac address to %pM\n",
++		   netdev->dev_addr);
++
++	/* write new mac address to the firmware */
++	flags = ICE_AQC_MAN_MAC_UPDATE_LAA_WOL;
++	status = ice_aq_manage_mac_write(hw, mac, flags, NULL);
++	if (status) {
++		netdev_err(netdev, "can't set mac %pM. write to firmware failed.\n",
++			   mac);
++	}
++	return 0;
++}
++
++/**
++ * ice_set_rx_mode - NDO callback to set the netdev filters
++ * @netdev: network interface device structure
++ */
++static void ice_set_rx_mode(struct net_device *netdev)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++
++	if (!vsi)
++		return;
++
++	/* Set the flags to synchronize filters
++	 * ndo_set_rx_mode may be triggered even without a change in netdev
++	 * flags
++	 */
++	set_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags);
++	set_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags);
++	set_bit(ICE_FLAG_FLTR_SYNC, vsi->back->flags);
++
++	/* schedule our worker thread which will take care of
++	 * applying the new filter changes
++	 */
++	ice_service_task_schedule(vsi->back);
++}
++
++/**
++ * ice_fdb_add - add an entry to the hardware database
++ * @ndm: the input from the stack
++ * @tb: pointer to array of nladdr (unused)
++ * @dev: the net device pointer
++ * @addr: the MAC address entry being added
++ * @vid: VLAN id
++ * @flags: instructions from stack about fdb operation
++ */
++static int ice_fdb_add(struct ndmsg *ndm, struct nlattr __always_unused *tb[],
++		       struct net_device *dev, const unsigned char *addr,
++		       u16 vid, u16 flags)
++{
++	int err;
++
++	if (vid) {
++		netdev_err(dev, "VLANs aren't supported yet for dev_uc|mc_add()\n");
++		return -EINVAL;
++	}
++	if (ndm->ndm_state && !(ndm->ndm_state & NUD_PERMANENT)) {
++		netdev_err(dev, "FDB only supports static addresses\n");
++		return -EINVAL;
++	}
++
++	if (is_unicast_ether_addr(addr) || is_link_local_ether_addr(addr))
++		err = dev_uc_add_excl(dev, addr);
++	else if (is_multicast_ether_addr(addr))
++		err = dev_mc_add_excl(dev, addr);
++	else
++		err = -EINVAL;
++
++	/* Only return duplicate errors if NLM_F_EXCL is set */
++	if (err == -EEXIST && !(flags & NLM_F_EXCL))
++		err = 0;
++
++	return err;
++}
++
++/**
++ * ice_fdb_del - delete an entry from the hardware database
++ * @ndm: the input from the stack
++ * @tb: pointer to array of nladdr (unused)
++ * @dev: the net device pointer
++ * @addr: the MAC address entry being added
++ * @vid: VLAN id
++ */
++static int ice_fdb_del(struct ndmsg *ndm, __always_unused struct nlattr *tb[],
++		       struct net_device *dev, const unsigned char *addr,
++		       __always_unused u16 vid)
++{
++	int err;
++
++	if (ndm->ndm_state & NUD_PERMANENT) {
++		netdev_err(dev, "FDB only supports static addresses\n");
++		return -EINVAL;
++	}
++
++	if (is_unicast_ether_addr(addr))
++		err = dev_uc_del(dev, addr);
++	else if (is_multicast_ether_addr(addr))
++		err = dev_mc_del(dev, addr);
++	else
++		err = -EINVAL;
++
++	return err;
++}
++
+ /**
+  * ice_vsi_manage_vlan_insertion - Manage VLAN insertion for the VSI for Tx
+  * @vsi: the vsi being changed
+@@ -3704,6 +4116,8 @@ static int ice_vsi_cfg(struct ice_vsi *vsi)
+ {
+ 	int err;
+ 
++	ice_set_rx_mode(vsi->netdev);
++
+ 	err = ice_restore_vlan(vsi);
+ 	if (err)
+ 		return err;
+@@ -4393,6 +4807,30 @@ void ice_get_stats64(struct net_device *netdev, struct rtnl_link_stats64 *stats)
+ 	stats->rx_length_errors = vsi_stats->rx_length_errors;
+ }
+ 
++#ifdef CONFIG_NET_POLL_CONTROLLER
++/**
++ * ice_netpoll - polling "interrupt" handler
++ * @netdev: network interface device structure
++ *
++ * Used by netconsole to send skbs without having to re-enable interrupts.
++ * This is not called in the normal interrupt path.
++ */
++static void ice_netpoll(struct net_device *netdev)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	int i;
++
++	if (test_bit(__ICE_DOWN, vsi->state) ||
++	    !test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
++		return;
++
++	for (i = 0; i < vsi->num_q_vectors; i++)
++		ice_msix_clean_rings(0, vsi->q_vectors[i]);
++}
++#endif /* CONFIG_NET_POLL_CONTROLLER */
++
+ /**
+  * ice_napi_disable_all - Disable NAPI for all q_vectors in the VSI
+  * @vsi: VSI having NAPI disabled
+@@ -4800,6 +5238,73 @@ static void ice_rebuild(struct ice_pf *pf)
+ 	set_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
+ }
+ 
++/**
++ * ice_change_mtu - NDO callback to change the MTU
++ * @netdev: network interface device structure
++ * @new_mtu: new value for maximum frame size
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int ice_change_mtu(struct net_device *netdev, int new_mtu)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	u8 count = 0;
++
++	if (new_mtu == netdev->mtu) {
++		netdev_warn(netdev, "mtu is already %d\n", netdev->mtu);
++		return 0;
++	}
++
++	if (new_mtu < netdev->min_mtu) {
++		netdev_err(netdev, "new mtu invalid. min_mtu is %d\n",
++			   netdev->min_mtu);
++		return -EINVAL;
++	} else if (new_mtu > netdev->max_mtu) {
++		netdev_err(netdev, "new mtu invalid. max_mtu is %d\n",
++			   netdev->min_mtu);
++		return -EINVAL;
++	}
++	/* if a reset is in progress, wait for some time for it to complete */
++	do {
++		if (ice_is_reset_recovery_pending(pf->state)) {
++			count++;
++			usleep_range(1000, 2000);
++		} else {
++			break;
++		}
++
++	} while (count < 100);
++
++	if (count == 100) {
++		netdev_err(netdev, "can't change mtu. Device is busy\n");
++		return -EBUSY;
++	}
++
++	netdev->mtu = new_mtu;
++
++	/* if VSI is up, bring it down and then back up */
++	if (!test_and_set_bit(__ICE_DOWN, vsi->state)) {
++		int err;
++
++		err = ice_down(vsi);
++		if (err) {
++			netdev_err(netdev, "change mtu if_up err %d\n", err);
++			return err;
++		}
++
++		err = ice_up(vsi);
++		if (err) {
++			netdev_err(netdev, "change mtu if_up err %d\n", err);
++			return err;
++		}
++	}
++
++	netdev_dbg(netdev, "changed mtu to %d\n", new_mtu);
++	return 0;
++}
++
+ /**
+  * ice_set_rss - Set RSS keys and lut
+  * @vsi: Pointer to VSI structure
+@@ -4933,12 +5438,72 @@ static int ice_stop(struct net_device *netdev)
+ 	return 0;
+ }
+ 
++/**
++ * ice_features_check - Validate encapsulated packet conforms to limits
++ * @skb: skb buffer
++ * @netdev: This port's netdev
++ * @features: Offload features that the stack believes apply
++ */
++static netdev_features_t
++ice_features_check(struct sk_buff *skb,
++		   struct net_device __always_unused *netdev,
++		   netdev_features_t features)
++{
++	size_t len;
++
++	/* No point in doing any of this if neither checksum nor GSO are
++	 * being requested for this frame.  We can rule out both by just
++	 * checking for CHECKSUM_PARTIAL
++	 */
++	if (skb->ip_summed != CHECKSUM_PARTIAL)
++		return features;
++
++	/* We cannot support GSO if the MSS is going to be less than
++	 * 64 bytes.  If it is then we need to drop support for GSO.
++	 */
++	if (skb_is_gso(skb) && (skb_shinfo(skb)->gso_size < 64))
++		features &= ~NETIF_F_GSO_MASK;
++
++	len = skb_network_header(skb) - skb->data;
++	if (len & ~(ICE_TXD_MACLEN_MAX))
++		goto out_rm_features;
++
++	len = skb_transport_header(skb) - skb_network_header(skb);
++	if (len & ~(ICE_TXD_IPLEN_MAX))
++		goto out_rm_features;
++
++	if (skb->encapsulation) {
++		len = skb_inner_network_header(skb) - skb_transport_header(skb);
++		if (len & ~(ICE_TXD_L4LEN_MAX))
++			goto out_rm_features;
++
++		len = skb_inner_transport_header(skb) -
++		      skb_inner_network_header(skb);
++		if (len & ~(ICE_TXD_IPLEN_MAX))
++			goto out_rm_features;
++	}
++
++	return features;
++out_rm_features:
++	return features & ~(NETIF_F_CSUM_MASK | NETIF_F_GSO_MASK);
++}
++
+ static const struct net_device_ops ice_netdev_ops = {
+ 	.ndo_open = ice_open,
+ 	.ndo_stop = ice_stop,
+ 	.ndo_start_xmit = ice_start_xmit,
++	.ndo_features_check = ice_features_check,
++	.ndo_set_rx_mode = ice_set_rx_mode,
++	.ndo_set_mac_address = ice_set_mac_address,
++	.ndo_validate_addr = eth_validate_addr,
++	.ndo_change_mtu = ice_change_mtu,
+ 	.ndo_get_stats64 = ice_get_stats64,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller = ice_netpoll,
++#endif /* CONFIG_NET_POLL_CONTROLLER */
+ 	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
+ 	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
+ 	.ndo_set_features = ice_set_features,
++	.ndo_fdb_add = ice_fdb_add,
++	.ndo_fdb_del = ice_fdb_del,
+ };
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 424090f598c3..fbdfeed6aa4e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -1640,6 +1640,83 @@ ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
+ 	return status;
+ }
+ 
++/**
++ * ice_cfg_dflt_vsi - add filter rule to set/unset given VSI as default
++ * VSI for the switch (represented by swid)
++ * @hw: pointer to the hardware structure
++ * @vsi_id: number of VSI to set as default
++ * @set: true to add the above mentioned switch rule, false to remove it
++ * @direction: ICE_FLTR_RX or ICE_FLTR_TX
++ */
++enum ice_status
++ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_id, bool set, u8 direction)
++{
++	struct ice_aqc_sw_rules_elem *s_rule;
++	struct ice_fltr_info f_info;
++	enum ice_adminq_opc opcode;
++	enum ice_status status;
++	u16 s_rule_size;
++
++	s_rule_size = set ? ICE_SW_RULE_RX_TX_ETH_HDR_SIZE :
++			    ICE_SW_RULE_RX_TX_NO_HDR_SIZE;
++	s_rule = devm_kzalloc(ice_hw_to_dev(hw), s_rule_size, GFP_KERNEL);
++	if (!s_rule)
++		return ICE_ERR_NO_MEMORY;
++
++	memset(&f_info, 0, sizeof(f_info));
++
++	f_info.lkup_type = ICE_SW_LKUP_DFLT;
++	f_info.flag = direction;
++	f_info.fltr_act = ICE_FWD_TO_VSI;
++	f_info.fwd_id.vsi_id = vsi_id;
++
++	if (f_info.flag & ICE_FLTR_RX) {
++		f_info.src = hw->port_info->lport;
++		if (!set)
++			f_info.fltr_rule_id =
++				hw->port_info->dflt_rx_vsi_rule_id;
++	} else if (f_info.flag & ICE_FLTR_TX) {
++		f_info.src = vsi_id;
++		if (!set)
++			f_info.fltr_rule_id =
++				hw->port_info->dflt_tx_vsi_rule_id;
++	}
++
++	if (set)
++		opcode = ice_aqc_opc_add_sw_rules;
++	else
++		opcode = ice_aqc_opc_remove_sw_rules;
++
++	ice_fill_sw_rule(hw, &f_info, s_rule, opcode);
++
++	status = ice_aq_sw_rules(hw, s_rule, s_rule_size, 1, opcode, NULL);
++	if (status || !(f_info.flag & ICE_FLTR_TX_RX))
++		goto out;
++	if (set) {
++		u16 index = le16_to_cpu(s_rule->pdata.lkup_tx_rx.index);
++
++		if (f_info.flag & ICE_FLTR_TX) {
++			hw->port_info->dflt_tx_vsi_num = vsi_id;
++			hw->port_info->dflt_tx_vsi_rule_id = index;
++		} else if (f_info.flag & ICE_FLTR_RX) {
++			hw->port_info->dflt_rx_vsi_num = vsi_id;
++			hw->port_info->dflt_rx_vsi_rule_id = index;
++		}
++	} else {
++		if (f_info.flag & ICE_FLTR_TX) {
++			hw->port_info->dflt_tx_vsi_num = ICE_DFLT_VSI_INVAL;
++			hw->port_info->dflt_tx_vsi_rule_id = ICE_INVAL_ACT;
++		} else if (f_info.flag & ICE_FLTR_RX) {
++			hw->port_info->dflt_rx_vsi_num = ICE_DFLT_VSI_INVAL;
++			hw->port_info->dflt_rx_vsi_rule_id = ICE_INVAL_ACT;
++		}
++	}
++
++out:
++	devm_kfree(ice_hw_to_dev(hw), s_rule);
++	return status;
++}
++
+ /**
+  * ice_remove_vlan_internal - Remove one VLAN based filter rule
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 60c63264a393..b063b87f1558 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -169,5 +169,7 @@ enum ice_status ice_remove_mac(struct ice_hw *hw, struct list_head *m_lst);
+ void ice_remove_vsi_fltr(struct ice_hw *hw, u16 vsi_id);
+ enum ice_status ice_add_vlan(struct ice_hw *hw, struct list_head *m_list);
+ enum ice_status ice_remove_vlan(struct ice_hw *hw, struct list_head *v_list);
++enum ice_status
++ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_id, bool set, u8 direction);
+ 
+ #endif /* _ICE_SWITCH_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index ad01e5f73d2c..cfa98e55a33a 100644
+index 100cb3cf8364..a9e8e28b64be 100644
 --- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -18,6 +18,15 @@
- #ifndef _ICE_TYPE_H_
- #define _ICE_TYPE_H_
+@@ -24,6 +24,9 @@
+ #include "ice_controlq.h"
+ #include "ice_lan_tx_rx.h"
  
-+#include "ice_status.h"
-+#include "ice_hw_autogen.h"
-+#include "ice_osdep.h"
-+#include "ice_controlq.h"
++#define ICE_BYTES_PER_WORD	2
++#define ICE_BYTES_PER_DWORD	4
 +
-+/* debug masks - set these bits in hw->debug_mask to control output */
-+#define ICE_DBG_AQ_MSG		BIT_ULL(24)
-+#define ICE_DBG_AQ_CMD		BIT_ULL(27)
-+
- /* Bus parameters */
- struct ice_bus_info {
- 	u16 device;
-@@ -28,6 +37,7 @@ struct ice_bus_info {
- struct ice_hw {
- 	u8 __iomem *hw_addr;
- 	void *back;
-+	u64 debug_mask;		/* bitmap for debug mask */
- 
- 	/* pci info */
- 	u16 device_id;
-@@ -37,6 +47,18 @@ struct ice_hw {
- 	u8 revision_id;
- 
- 	struct ice_bus_info bus;
-+	/* Control Queue info */
-+	struct ice_ctl_q_info adminq;
-+
-+	u8 api_branch;		/* API branch version */
-+	u8 api_maj_ver;		/* API major version */
-+	u8 api_min_ver;		/* API minor version */
-+	u8 api_patch;		/* API patch version */
-+	u8 fw_branch;		/* firmware branch version */
-+	u8 fw_maj_ver;		/* firmware major version */
-+	u8 fw_min_ver;		/* firmware minor version */
-+	u8 fw_patch;		/* firmware patch version */
-+	u32 fw_build;		/* firmware build number */
- };
- 
- #endif /* _ICE_TYPE_H_ */
+ static inline bool ice_is_tc_ena(u8 bitmap, u8 tc)
+ {
+ 	return test_bit(tc, (unsigned long *)&bitmap);
+@@ -241,7 +244,9 @@ struct ice_port_info {
+ 	u8 port_state;
+ #define ICE_SCHED_PORT_STATE_INIT	0x0
+ #define ICE_SCHED_PORT_STATE_READY	0x1
++	u16 dflt_tx_vsi_rule_id;
+ 	u16 dflt_tx_vsi_num;
++	u16 dflt_rx_vsi_rule_id;
+ 	u16 dflt_rx_vsi_num;
+ 	struct ice_fc_info fc;
+ 	struct ice_mac_info mac;
 -- 
 2.14.3
 
