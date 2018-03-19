@@ -1,38 +1,482 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 19 Mar 2018 21:17:08 +0000
-Subject: [Intel-wired-lan] [next PATCH S89 8/8] i40e: re-number feature
- flags to remove gaps
-In-Reply-To: <20180316082637.49915-8-alice.michael@intel.com>
-References: <20180316082637.49915-1-alice.michael@intel.com>
- <20180316082637.49915-8-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94CCE6@ORSMSX104.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 19 Mar 2018 14:56:30 -0700
+Subject: [Intel-wired-lan] [PATCH v3 01/15] ice: Add basic driver framework
+ for Intel(R) E800 Series
+Message-ID: <20180319215644.31978-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Friday, March 16, 2018 1:27 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S89 8/8] i40e: re-number feature flags
-> to remove gaps
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> Remove the gaps created by the recent refactor of various feature flags that
-> have moved to the state field. Use only a u32 now that we have fewer than
-> 32 flags in the field.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h | 57 ++++++++++++++++--------------
-> ----
->  1 file changed, 26 insertions(+), 31 deletions(-)
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+This patch adds a basic driver framework for the Intel(R) E800 Ethernet
+Series of network devices. There is no functionality right now other than
+the ability to load.
 
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+ Documentation/networking/ice.txt            |  39 +++++++
+ MAINTAINERS                                 |   1 +
+ drivers/net/ethernet/intel/Kconfig          |  14 +++
+ drivers/net/ethernet/intel/Makefile         |   1 +
+ drivers/net/ethernet/intel/ice/Makefile     |  27 +++++
+ drivers/net/ethernet/intel/ice/ice.h        |  48 ++++++++
+ drivers/net/ethernet/intel/ice/ice_devids.h |  33 ++++++
+ drivers/net/ethernet/intel/ice/ice_main.c   | 172 ++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_type.h   |  42 +++++++
+ 9 files changed, 377 insertions(+)
+ create mode 100644 Documentation/networking/ice.txt
+ create mode 100644 drivers/net/ethernet/intel/ice/Makefile
+ create mode 100644 drivers/net/ethernet/intel/ice/ice.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_devids.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_main.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_type.h
+
+diff --git a/Documentation/networking/ice.txt b/Documentation/networking/ice.txt
+new file mode 100644
+index 000000000000..6261c46378e1
+--- /dev/null
++++ b/Documentation/networking/ice.txt
+@@ -0,0 +1,39 @@
++Intel(R) Ethernet Connection E800 Series Linux Driver
++===================================================================
++
++Intel ice Linux driver.
++Copyright(c) 2018 Intel Corporation.
++
++Contents
++========
++- Enabling the driver
++- Support
++
++The driver in this release supports Intel's E800 Series of products. For
++more information, visit Intel's support page at http://support.intel.com.
++
++Enabling the driver
++===================
++
++The driver is enabled via the standard kernel configuration system,
++using the make command:
++
++     Make oldconfig/silentoldconfig/menuconfig/etc.
++
++The driver is located in the menu structure at:
++
++	-> Device Drivers
++	  -> Network device support (NETDEVICES [=y])
++	    -> Ethernet driver support
++	      -> Intel devices
++	        -> Intel(R) Ethernet Connection E800 Series Support
++
++Support
++=======
++
++For general information, go to the Intel support website at:
++
++    http://support.intel.com
++
++If an issue is identified with the released source code, please email
++the maintainer listed in the MAINTAINERS file.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 214c9bca232a..79f9c33904bc 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -7063,6 +7063,7 @@ F:	Documentation/networking/ixgbe.txt
+ F:	Documentation/networking/ixgbevf.txt
+ F:	Documentation/networking/i40e.txt
+ F:	Documentation/networking/i40evf.txt
++F:	Documentation/networking/ice.txt
+ F:	drivers/net/ethernet/intel/
+ F:	drivers/net/ethernet/intel/*/
+ F:	include/linux/avf/virtchnl.h
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 1feb54b6d92e..14d287bed33c 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -251,6 +251,20 @@ config I40EVF
+ 	  will be called i40evf.  MSI-X interrupt support is required
+ 	  for this driver to work correctly.
+ 
++config ICE
++	tristate "Intel(R) Ethernet Connection E800 Series Support"
++	default n
++	depends on PCI_MSI
++	---help---
++	  This driver supports Intel(R) Ethernet Connection E800 Series of
++	  devices.  For more information on how to identify your adapter, go
++	  to the Adapter & Driver ID Guide that can be located at:
++
++	  <http://support.intel.com>
++
++	  To compile this driver as a module, choose M here. The module
++	  will be called ice.
++
+ config FM10K
+ 	tristate "Intel(R) FM10000 Ethernet Switch Host Interface Support"
+ 	default n
+diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
+index 90af7757a885..807a4f8c7e4e 100644
+--- a/drivers/net/ethernet/intel/Makefile
++++ b/drivers/net/ethernet/intel/Makefile
+@@ -14,3 +14,4 @@ obj-$(CONFIG_I40E) += i40e/
+ obj-$(CONFIG_IXGB) += ixgb/
+ obj-$(CONFIG_I40EVF) += i40evf/
+ obj-$(CONFIG_FM10K) += fm10k/
++obj-$(CONFIG_ICE) += ice/
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+new file mode 100644
+index 000000000000..2a177ea21b74
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -0,0 +1,27 @@
++# SPDX-License-Identifier: GPL-2.0-only
++################################################################################
++#
++# Intel(R) Ethernet Connection E800 Series Linux Driver
++# Copyright (c) 2018, Intel Corporation.
++#
++# This program is free software; you can redistribute it and/or modify it
++# under the terms and conditions of the GNU General Public License,
++# version 2, as published by the Free Software Foundation.
++#
++# This program is distributed in the hope it will be useful, but WITHOUT
++# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++# more details.
++#
++# The full GNU General Public License is included in this distribution in
++# the file called "COPYING".
++#
++################################################################################
++
++#
++# Makefile for the Intel(R) Ethernet Connection E800 Series Linux Driver
++#
++
++obj-$(CONFIG_ICE) += ice.o
++
++ice-y := ice_main.o
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+new file mode 100644
+index 000000000000..d781027330cc
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -0,0 +1,48 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Intel(R) Ethernet Connection E800 Series Linux Driver
++ * Copyright (c) 2018, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * The full GNU General Public License is included in this distribution in
++ * the file called "COPYING".
++ */
++
++#ifndef _ICE_H_
++#define _ICE_H_
++
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/netdevice.h>
++#include <linux/compiler.h>
++#include <linux/pci.h>
++#include <linux/aer.h>
++#include <linux/bitmap.h>
++#include "ice_devids.h"
++#include "ice_type.h"
++
++#define ICE_BAR0		0
++
++#define ICE_DFLT_NETIF_M (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
++
++enum ice_state {
++	__ICE_DOWN,
++	__ICE_STATE_NBITS		/* must be last */
++};
++
++struct ice_pf {
++	struct pci_dev *pdev;
++	DECLARE_BITMAP(state, __ICE_STATE_NBITS);
++	u32 msg_enable;
++	struct ice_hw hw;
++};
++#endif /* _ICE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_devids.h b/drivers/net/ethernet/intel/ice/ice_devids.h
+new file mode 100644
+index 000000000000..d6bfee547b88
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_devids.h
+@@ -0,0 +1,33 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Intel(R) Ethernet Connection E800 Series Linux Driver
++ * Copyright (c) 2018, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * The full GNU General Public License is included in this distribution in
++ * the file called "COPYING".
++ */
++
++#ifndef _ICE_DEVIDS_H_
++#define _ICE_DEVIDS_H_
++
++/* Device IDs */
++/* Intel(R) Ethernet Controller C810 for backplane */
++#define ICE_DEV_ID_C810_BACKPLANE	0x1591
++/* Intel(R) Ethernet Controller C810 for QSFP */
++#define ICE_DEV_ID_C810_QSFP		0x1592
++/* Intel(R) Ethernet Controller C810 for SFP */
++#define ICE_DEV_ID_C810_SFP		0x1593
++/* Intel(R) Ethernet Controller C810/X557-AT 10GBASE-T */
++#define ICE_DEV_ID_C810_10G_BASE_T	0x1594
++/* Intel(R) Ethernet Controller C810 1GbE */
++#define ICE_DEV_ID_C810_SGMII		0x1595
++
++#endif /* _ICE_DEVIDS_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+new file mode 100644
+index 000000000000..0631812aef2b
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -0,0 +1,172 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Intel(R) Ethernet Connection E800 Series Linux Driver
++ * Copyright (c) 2018, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * The full GNU General Public License is included in this distribution in
++ * the file called "COPYING".
++ */
++
++/* Intel(R) Ethernet Connection E800 Series Linux Driver */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include "ice.h"
++
++#define DRV_VERSION	"ice-0.0.1-k"
++#define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
++static const char ice_drv_ver[] = DRV_VERSION;
++static const char ice_driver_string[] = DRV_SUMMARY;
++static const char ice_copyright[] = "Copyright (c) 2018, Intel Corporation.";
++
++MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
++MODULE_DESCRIPTION(DRV_SUMMARY);
++MODULE_LICENSE("GPL");
++MODULE_VERSION(DRV_VERSION);
++
++static int debug = -1;
++module_param(debug, int, 0644);
++MODULE_PARM_DESC(debug, "netif message level (0=none,...,0x7FFF=all)");
++
++/**
++ * ice_probe - Device initialization routine
++ * @pdev: PCI device information struct
++ * @ent: entry in ice_pci_tbl
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int ice_probe(struct pci_dev *pdev,
++		     const struct pci_device_id __always_unused *ent)
++{
++	struct ice_pf *pf;
++	struct ice_hw *hw;
++	int err;
++
++	/* this driver uses devres, see Documentation/driver-model/devres.txt */
++	err = pcim_enable_device(pdev);
++	if (err)
++		return err;
++
++	err = pcim_iomap_regions(pdev, BIT(ICE_BAR0), pci_name(pdev));
++	if (err) {
++		dev_err(&pdev->dev, "I/O map error %d\n", err);
++		return err;
++	}
++
++	pf = devm_kzalloc(&pdev->dev, sizeof(*pf), GFP_KERNEL);
++	if (!pf)
++		return -ENOMEM;
++
++	/* set up for high or low dma */
++	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
++	if (err)
++		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
++	if (err) {
++		dev_err(&pdev->dev, "DMA configuration failed: 0x%x\n", err);
++		return err;
++	}
++
++	pci_enable_pcie_error_reporting(pdev);
++	pci_set_master(pdev);
++
++	pf->pdev = pdev;
++	pci_set_drvdata(pdev, pf);
++	set_bit(__ICE_DOWN, pf->state);
++
++	hw = &pf->hw;
++	hw->hw_addr = pcim_iomap_table(pdev)[ICE_BAR0];
++	hw->back = pf;
++	hw->vendor_id = pdev->vendor;
++	hw->device_id = pdev->device;
++	pci_read_config_byte(pdev, PCI_REVISION_ID, &hw->revision_id);
++	hw->subsystem_vendor_id = pdev->subsystem_vendor;
++	hw->subsystem_device_id = pdev->subsystem_device;
++	hw->bus.device = PCI_SLOT(pdev->devfn);
++	hw->bus.func = PCI_FUNC(pdev->devfn);
++	pf->msg_enable = netif_msg_init(debug, ICE_DFLT_NETIF_M);
++
++	return 0;
++}
++
++/**
++ * ice_remove - Device removal routine
++ * @pdev: PCI device information struct
++ */
++static void ice_remove(struct pci_dev *pdev)
++{
++	struct ice_pf *pf = pci_get_drvdata(pdev);
++
++	if (!pf)
++		return;
++
++	set_bit(__ICE_DOWN, pf->state);
++	pci_disable_pcie_error_reporting(pdev);
++}
++
++/* ice_pci_tbl - PCI Device ID Table
++ *
++ * Wildcard entries (PCI_ANY_ID) should come last
++ * Last entry must be all 0s
++ *
++ * { Vendor ID, Device ID, SubVendor ID, SubDevice ID,
++ *   Class, Class Mask, private data (not used) }
++ */
++static const struct pci_device_id ice_pci_tbl[] = {
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_BACKPLANE), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_QSFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_SFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_10G_BASE_T), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_SGMII), 0 },
++	/* required last entry */
++	{ 0, }
++};
++MODULE_DEVICE_TABLE(pci, ice_pci_tbl);
++
++static struct pci_driver ice_driver = {
++	.name = KBUILD_MODNAME,
++	.id_table = ice_pci_tbl,
++	.probe = ice_probe,
++	.remove = ice_remove,
++};
++
++/**
++ * ice_module_init - Driver registration routine
++ *
++ * ice_module_init is the first routine called when the driver is
++ * loaded. All it does is register with the PCI subsystem.
++ */
++static int __init ice_module_init(void)
++{
++	int status;
++
++	pr_info("%s - version %s\n", ice_driver_string, ice_drv_ver);
++	pr_info("%s\n", ice_copyright);
++
++	status = pci_register_driver(&ice_driver);
++	if (status)
++		pr_err("failed to register pci driver, err %d\n", status);
++
++	return status;
++}
++module_init(ice_module_init);
++
++/**
++ * ice_module_exit - Driver exit cleanup routine
++ *
++ * ice_module_exit is called just before the driver is removed
++ * from memory.
++ */
++static void __exit ice_module_exit(void)
++{
++	pci_unregister_driver(&ice_driver);
++	pr_info("module unloaded\n");
++}
++module_exit(ice_module_exit);
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+new file mode 100644
+index 000000000000..ad01e5f73d2c
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -0,0 +1,42 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Intel(R) Ethernet Connection E800 Series Linux Driver
++ * Copyright (c) 2018, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * The full GNU General Public License is included in this distribution in
++ * the file called "COPYING".
++ */
++
++#ifndef _ICE_TYPE_H_
++#define _ICE_TYPE_H_
++
++/* Bus parameters */
++struct ice_bus_info {
++	u16 device;
++	u8 func;
++};
++
++/* Port hardware description */
++struct ice_hw {
++	u8 __iomem *hw_addr;
++	void *back;
++
++	/* pci info */
++	u16 device_id;
++	u16 vendor_id;
++	u16 subsystem_device_id;
++	u16 subsystem_vendor_id;
++	u8 revision_id;
++
++	struct ice_bus_info bus;
++};
++
++#endif /* _ICE_TYPE_H_ */
+-- 
+2.14.3
 
