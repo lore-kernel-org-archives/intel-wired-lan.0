@@ -1,38 +1,99 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 19 Mar 2018 18:44:19 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix read-modify-write in x550
- phy setup
-In-Reply-To: <1521116527-49781-1-git-send-email-paul.greenwalt@intel.com>
-References: <1521116527-49781-1-git-send-email-paul.greenwalt@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A94C961@ORSMSX104.amr.corp.intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Date: Mon, 19 Mar 2018 12:49:08 -0700
+Subject: [Intel-wired-lan] [v3 00/15] Add ice driver
+Message-ID: <20180319194923.20153-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Paul Greenwalt
-> Sent: Thursday, March 15, 2018 5:22 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: fix read-modify-write in x550 phy
-> setup
-> 
-> Replaced an assignment operation with an OR operation.
-> 
-> The variable assignment was overwriting the value read from the PHY
-> register. The OR operation sets only the intended register bits.
-> 
-> The bits that were being overwritten are reserved, so the assignment had no
-> functional impact.
-> 
-> Reported by: Shannon Nelson <shannon.nelson@oracle.com>
-> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+This patch series adds the ice driver, which will support the Intel(R)
+E800 Series of network devices.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+This is the first phase in the release of this driver where we implement
+basic transmit and receive. The idea behind the multi-phase release is to
+aid in code review as well as testing. Subsequent phases will implement
+advanced features (like SR-IOV, tunnelling, flow director, QoS, etc.) that
+build upon the previous phase(s). Each phase will be submitted as a patch
+series.
 
+v3: Use ARRAY_SIZE instead of sizeof in patch #12
+v2: Addressed community feedback
+  patch #3 : Removed register write based on Shannon's comments
+  patch #4 : Change retries value based on Shannon's comments
+  patch #6 : Remove reference to "lump" as Shannon suggested
+  patch #7 : Add define for magic number as Shannon suggested
+  patch #12: Reworked based on multiple comments (Jakub, Stephen, et al.)
+
+Anirudh Venkataramanan (15):
+  ice: Add basic driver framework for Intel(R) E800 Series
+  ice: Add support for control queues
+  ice: Start hardware initialization
+  ice: Get switch config, scheduler config and device capabilities
+  ice: Get MAC/PHY/link info and scheduler topology
+  ice: Initialize PF and setup miscellaneous interrupt
+  ice: Add support for VSI allocation and deallocation
+  ice: Add support for switch filter programming
+  ice: Configure VSIs for Tx/Rx
+  ice: Implement transmit and NAPI support
+  ice: Add support for VLANs and offloads
+  ice: Add stats and ethtool support
+  ice: Update Tx scheduler tree for VSI multi-Tx queue support
+  ice: Support link events, reset and rebuild
+  ice: Implement filter sync, NDO operations and bump version
+
+ Documentation/networking/ice.txt                |   39 +
+ MAINTAINERS                                     |    1 +
+ drivers/net/ethernet/intel/Kconfig              |   14 +
+ drivers/net/ethernet/intel/Makefile             |    1 +
+ drivers/net/ethernet/intel/ice/Makefile         |   34 +
+ drivers/net/ethernet/intel/ice/ice.h            |  326 ++
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 1366 ++++++
+ drivers/net/ethernet/intel/ice/ice_common.c     | 2247 +++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h     |  100 +
+ drivers/net/ethernet/intel/ice/ice_controlq.c   | 1080 +++++
+ drivers/net/ethernet/intel/ice/ice_controlq.h   |  108 +
+ drivers/net/ethernet/intel/ice/ice_devids.h     |   33 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c    |  954 ++++
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  280 ++
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h  |  487 ++
+ drivers/net/ethernet/intel/ice/ice_main.c       | 5509 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_nvm.c        |  250 +
+ drivers/net/ethernet/intel/ice/ice_osdep.h      |   87 +
+ drivers/net/ethernet/intel/ice/ice_sched.c      | 1673 +++++++
+ drivers/net/ethernet/intel/ice/ice_sched.h      |   57 +
+ drivers/net/ethernet/intel/ice/ice_status.h     |   46 +
+ drivers/net/ethernet/intel/ice/ice_switch.c     | 1897 ++++++++
+ drivers/net/ethernet/intel/ice/ice_switch.h     |  175 +
+ drivers/net/ethernet/intel/ice/ice_txrx.c       | 1796 ++++++++
+ drivers/net/ethernet/intel/ice/ice_txrx.h       |  206 +
+ drivers/net/ethernet/intel/ice/ice_type.h       |  408 ++
+ 26 files changed, 19174 insertions(+)
+ create mode 100644 Documentation/networking/ice.txt
+ create mode 100644 drivers/net/ethernet/intel/ice/Makefile
+ create mode 100644 drivers/net/ethernet/intel/ice/ice.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_common.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_common.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_controlq.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_controlq.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_devids.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_ethtool.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_main.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_nvm.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_osdep.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_sched.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_sched.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_status.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_switch.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_switch.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_txrx.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_txrx.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_type.h
+
+-- 
+2.14.3
 
