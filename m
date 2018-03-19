@@ -1,10 +1,10 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 19 Mar 2018 14:56:32 -0700
-Subject: [Intel-wired-lan] [PATCH v3 03/15] ice: Start hardware
- initialization
+Date: Mon, 19 Mar 2018 14:56:33 -0700
+Subject: [Intel-wired-lan] [PATCH v3 04/15] ice: Get switch config,
+ scheduler config and device capabilities
 In-Reply-To: <20180319215644.31978-1-jeffrey.t.kirsher@intel.com>
 References: <20180319215644.31978-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20180319215644.31978-3-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180319215644.31978-4-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,751 +13,637 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-This patch implements multiple pieces of the initialization flow
-as follows:
+This patch adds to the initialization flow by getting switch
+configuration, scheduler configuration and device capabilities.
 
-1) A reset is issued to ensure a clean device state, followed
-   by initialization of admin queue interface.
+Switch configuration:
+On boot, an L2 switch element is created in the firmware per physical
+function. Each physical function is also mapped to a port, to which its
+switch element is connected. In other words, this switch can be visualized
+as an embedded vSwitch that can connect a physical functions's virtual
+station interfaces (VSIs) to the egress/ingress port. Egress/ingress
+filters will be eventually created and applied on this switch element.
+As part of the initialization flow, the driver gets configuration data
+from this switch element and stores it.
 
-2) Once the admin queue interface is up, clear the PF config
-   and transition the device to non-PXE mode.
+Scheduler configuration:
+The Tx scheduler is a subsystem responsible for setting and enforcing QoS.
+As part of the initialization flow, the driver queries and stores the
+default scheduler configuration for the given physical function.
 
-3) Get the NVM configuration stored in the device's non-volatile
-   memory (NVM) using ice_init_nvm.
+Device capabilities:
+As part of initialization, the driver has to determine what the device is
+capable of (ex. max queues, VSIs, etc). This information is obtained from
+the firmware and stored by the driver.
 
 CC: Shannon Nelson <shannon.nelson@oracle.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 Acked-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile         |   3 +-
+ drivers/net/ethernet/intel/ice/Makefile         |   4 +-
  drivers/net/ethernet/intel/ice/ice.h            |   2 +
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  79 +++++
- drivers/net/ethernet/intel/ice/ice_common.c     | 405 ++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h     |  11 +
- drivers/net/ethernet/intel/ice/ice_controlq.h   |   3 +
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  30 ++
- drivers/net/ethernet/intel/ice/ice_main.c       |  31 ++
- drivers/net/ethernet/intel/ice/ice_nvm.c        | 250 +++++++++++++++
- drivers/net/ethernet/intel/ice/ice_osdep.h      |   1 +
- drivers/net/ethernet/intel/ice/ice_status.h     |   5 +
- drivers/net/ethernet/intel/ice/ice_type.h       |  49 +++
- 12 files changed, 868 insertions(+), 1 deletion(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_nvm.c
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 209 ++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_common.c     | 231 ++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h     |   2 +
+ drivers/net/ethernet/intel/ice/ice_sched.c      | 354 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_sched.h      |  42 +++
+ drivers/net/ethernet/intel/ice/ice_switch.c     | 158 +++++++++++
+ drivers/net/ethernet/intel/ice/ice_switch.h     |  28 ++
+ drivers/net/ethernet/intel/ice/ice_type.h       | 109 ++++++++
+ 10 files changed, 1138 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_sched.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_sched.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_switch.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_switch.h
 
 diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index eebf619e84a8..373d481dbb25 100644
+index 373d481dbb25..809d85c04398 100644
 --- a/drivers/net/ethernet/intel/ice/Makefile
 +++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -26,4 +26,5 @@ obj-$(CONFIG_ICE) += ice.o
- 
+@@ -27,4 +27,6 @@ obj-$(CONFIG_ICE) += ice.o
  ice-y := ice_main.o	\
  	 ice_controlq.o	\
--	 ice_common.o
-+	 ice_common.o	\
-+	 ice_nvm.o
+ 	 ice_common.o	\
+-	 ice_nvm.o
++	 ice_nvm.o	\
++	 ice_switch.o	\
++	 ice_sched.o
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index ea2fb63bb095..ab2800c31906 100644
+index ab2800c31906..f6e3339591bb 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -30,8 +30,10 @@
+@@ -30,7 +30,9 @@
  #include <linux/bitmap.h>
  #include "ice_devids.h"
  #include "ice_type.h"
-+#include "ice_common.h"
++#include "ice_switch.h"
+ #include "ice_common.h"
++#include "ice_sched.h"
  
  #define ICE_BAR0		0
-+#define ICE_AQ_LEN		64
- 
- #define ICE_DFLT_NETIF_M (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
- 
+ #define ICE_AQ_LEN		64
 diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 885fa3c6fec4..05b22a1ffd70 100644
+index 05b22a1ffd70..66a3f41df673 100644
 --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
 +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -50,6 +50,67 @@ struct ice_aqc_q_shutdown {
- 	u8 reserved[12];
+@@ -22,6 +22,8 @@
+  * descriptor format.  It is shared between Firmware and Software.
+  */
+ 
++#define ICE_AQC_TOPO_MAX_LEVEL_NUM	0x9
++
+ struct ice_aqc_generic {
+ 	__le32 param0;
+ 	__le32 param1;
+@@ -82,6 +84,40 @@ struct ice_aqc_req_res {
+ 	u8 reserved[2];
  };
  
-+/* Request resource ownership (direct 0x0008)
-+ * Release resource ownership (direct 0x0009)
++/* Get function capabilities (indirect 0x000A)
++ * Get device capabilities (indirect 0x000B)
 + */
-+struct ice_aqc_req_res {
-+	__le16 res_id;
-+#define ICE_AQC_RES_ID_NVM		1
-+#define ICE_AQC_RES_ID_SDP		2
-+#define ICE_AQC_RES_ID_CHNG_LOCK	3
-+#define ICE_AQC_RES_ID_GLBL_LOCK	4
-+	__le16 access_type;
-+#define ICE_AQC_RES_ACCESS_READ		1
-+#define ICE_AQC_RES_ACCESS_WRITE	2
-+
-+	/* Upon successful completion, FW writes this value and driver is
-+	 * expected to release resource before timeout. This value is provided
-+	 * in milliseconds.
-+	 */
-+	__le32 timeout;
-+#define ICE_AQ_RES_NVM_READ_DFLT_TIMEOUT_MS	3000
-+#define ICE_AQ_RES_NVM_WRITE_DFLT_TIMEOUT_MS	180000
-+#define ICE_AQ_RES_CHNG_LOCK_DFLT_TIMEOUT_MS	1000
-+#define ICE_AQ_RES_GLBL_LOCK_DFLT_TIMEOUT_MS	3000
-+	/* For SDP: pin id of the SDP */
-+	__le32 res_number;
-+	/* Status is only used for ICE_AQC_RES_ID_GLBL_LOCK */
-+	__le16 status;
-+#define ICE_AQ_RES_GLBL_SUCCESS		0
-+#define ICE_AQ_RES_GLBL_IN_PROG		1
-+#define ICE_AQ_RES_GLBL_DONE		2
++struct ice_aqc_list_caps {
++	u8 cmd_flags;
++	u8 pf_index;
 +	u8 reserved[2];
++	__le32 count;
++	__le32 addr_high;
++	__le32 addr_low;
 +};
 +
-+/* Clear PXE Command and response (direct 0x0110) */
-+struct ice_aqc_clear_pxe {
-+	u8 rx_cnt;
-+#define ICE_AQC_CLEAR_PXE_RX_CNT		0x2
-+	u8 reserved[15];
++/* Device/Function buffer entry, repeated per reported capability */
++struct ice_aqc_list_caps_elem {
++	__le16 cap;
++#define ICE_AQC_CAPS_VSI				0x0017
++#define ICE_AQC_CAPS_RSS				0x0040
++#define ICE_AQC_CAPS_RXQS				0x0041
++#define ICE_AQC_CAPS_TXQS				0x0042
++#define ICE_AQC_CAPS_MSIX				0x0043
++#define ICE_AQC_CAPS_MAX_MTU				0x0047
++
++	u8 major_ver;
++	u8 minor_ver;
++	/* Number of resources described by this capability */
++	__le32 number;
++	/* Only meaningful for some types of resources */
++	__le32 logical_id;
++	/* Only meaningful for some types of resources */
++	__le32 phys_id;
++	__le64 rsvd1;
++	__le64 rsvd2;
 +};
 +
-+/* NVM Read command (indirect 0x0701)
-+ * NVM Erase commands (direct 0x0702)
-+ * NVM Update commands (indirect 0x0703)
+ /* Clear PXE Command and response (direct 0x0110) */
+ struct ice_aqc_clear_pxe {
+ 	u8 rx_cnt;
+@@ -89,6 +125,161 @@ struct ice_aqc_clear_pxe {
+ 	u8 reserved[15];
+ };
+ 
++/* Get switch configuration (0x0200) */
++struct ice_aqc_get_sw_cfg {
++	/* Reserved for command and copy of request flags for response */
++	__le16 flags;
++	/* First desc in case of command and next_elem in case of response
++	 * In case of response, if it is not zero, means all the configuration
++	 * was not returned and new command shall be sent with this value in
++	 * the 'first desc' field
++	 */
++	__le16 element;
++	/* Reserved for command, only used for response */
++	__le16 num_elems;
++	__le16 rsvd;
++	__le32 addr_high;
++	__le32 addr_low;
++};
++
++/* Each entry in the response buffer is of the following type: */
++struct ice_aqc_get_sw_cfg_resp_elem {
++	/* VSI/Port Number */
++	__le16 vsi_port_num;
++#define ICE_AQC_GET_SW_CONF_RESP_VSI_PORT_NUM_S	0
++#define ICE_AQC_GET_SW_CONF_RESP_VSI_PORT_NUM_M	\
++			(0x3FF << ICE_AQC_GET_SW_CONF_RESP_VSI_PORT_NUM_S)
++#define ICE_AQC_GET_SW_CONF_RESP_TYPE_S	14
++#define ICE_AQC_GET_SW_CONF_RESP_TYPE_M	(0x3 << ICE_AQC_GET_SW_CONF_RESP_TYPE_S)
++#define ICE_AQC_GET_SW_CONF_RESP_PHYS_PORT	0
++#define ICE_AQC_GET_SW_CONF_RESP_VIRT_PORT	1
++#define ICE_AQC_GET_SW_CONF_RESP_VSI		2
++
++	/* SWID VSI/Port belongs to */
++	__le16 swid;
++
++	/* Bit 14..0 : PF/VF number VSI belongs to
++	 * Bit 15 : VF indication bit
++	 */
++	__le16 pf_vf_num;
++#define ICE_AQC_GET_SW_CONF_RESP_FUNC_NUM_S	0
++#define ICE_AQC_GET_SW_CONF_RESP_FUNC_NUM_M	\
++				(0x7FFF << ICE_AQC_GET_SW_CONF_RESP_FUNC_NUM_S)
++#define ICE_AQC_GET_SW_CONF_RESP_IS_VF		BIT(15)
++};
++
++/* The response buffer is as follows. Note that the length of the
++ * elements array varies with the length of the command response.
 + */
-+struct ice_aqc_nvm {
-+	u8	cmd_flags;
-+#define ICE_AQC_NVM_LAST_CMD		BIT(0)
-+#define ICE_AQC_NVM_PCIR_REQ		BIT(0)	/* Used by NVM Update reply */
-+#define ICE_AQC_NVM_PRESERVATION_S	1
-+#define ICE_AQC_NVM_PRESERVATION_M	(3 << CSR_AQ_NVM_PRESERVATION_S)
-+#define ICE_AQC_NVM_NO_PRESERVATION	(0 << CSR_AQ_NVM_PRESERVATION_S)
-+#define ICE_AQC_NVM_PRESERVE_ALL	BIT(1)
-+#define ICE_AQC_NVM_PRESERVE_SELECTED	(3 << CSR_AQ_NVM_PRESERVATION_S)
-+#define ICE_AQC_NVM_FLASH_ONLY		BIT(7)
-+	u8	module_typeid;
-+	__le16	length;
-+#define ICE_AQC_NVM_ERASE_LEN	0xFFFF
-+	__le32	offset;
-+	__le32	addr_high;
-+	__le32	addr_low;
++struct ice_aqc_get_sw_cfg_resp {
++	struct ice_aqc_get_sw_cfg_resp_elem elements[1];
 +};
 +
- /**
-  * struct ice_aq_desc - Admin Queue (AQ) descriptor
-  * @flags: ICE_AQ_FLAG_* flags
-@@ -79,6 +140,9 @@ struct ice_aq_desc {
- 		struct ice_aqc_generic generic;
- 		struct ice_aqc_get_ver get_ver;
++/* Add TSE (indirect 0x0401)
++ * Delete TSE (indirect 0x040F)
++ * Move TSE (indirect 0x0408)
++ */
++struct ice_aqc_add_move_delete_elem {
++	__le16 num_grps_req;
++	__le16 num_grps_updated;
++	__le32 reserved;
++	__le32 addr_high;
++	__le32 addr_low;
++};
++
++struct ice_aqc_elem_info_bw {
++	__le16 bw_profile_idx;
++	__le16 bw_alloc;
++};
++
++struct ice_aqc_txsched_elem {
++	u8 elem_type; /* Special field, reserved for some aq calls */
++#define ICE_AQC_ELEM_TYPE_UNDEFINED		0x0
++#define ICE_AQC_ELEM_TYPE_ROOT_PORT		0x1
++#define ICE_AQC_ELEM_TYPE_TC			0x2
++#define ICE_AQC_ELEM_TYPE_SE_GENERIC		0x3
++#define ICE_AQC_ELEM_TYPE_ENTRY_POINT		0x4
++#define ICE_AQC_ELEM_TYPE_LEAF			0x5
++#define ICE_AQC_ELEM_TYPE_SE_PADDED		0x6
++	u8 valid_sections;
++#define ICE_AQC_ELEM_VALID_GENERIC		BIT(0)
++#define ICE_AQC_ELEM_VALID_CIR			BIT(1)
++#define ICE_AQC_ELEM_VALID_EIR			BIT(2)
++#define ICE_AQC_ELEM_VALID_SHARED		BIT(3)
++	u8 generic;
++#define ICE_AQC_ELEM_GENERIC_MODE_M		0x1
++#define ICE_AQC_ELEM_GENERIC_PRIO_S		0x1
++#define ICE_AQC_ELEM_GENERIC_PRIO_M	(0x7 << ICE_AQC_ELEM_GENERIC_PRIO_S)
++#define ICE_AQC_ELEM_GENERIC_SP_S		0x4
++#define ICE_AQC_ELEM_GENERIC_SP_M	(0x1 << ICE_AQC_ELEM_GENERIC_SP_S)
++#define ICE_AQC_ELEM_GENERIC_ADJUST_VAL_S	0x5
++#define ICE_AQC_ELEM_GENERIC_ADJUST_VAL_M	\
++	(0x3 << ICE_AQC_ELEM_GENERIC_ADJUST_VAL_S)
++	u8 flags; /* Special field, reserved for some aq calls */
++#define ICE_AQC_ELEM_FLAG_SUSPEND_M		0x1
++	struct ice_aqc_elem_info_bw cir_bw;
++	struct ice_aqc_elem_info_bw eir_bw;
++	__le16 srl_id;
++	__le16 reserved2;
++};
++
++struct ice_aqc_txsched_elem_data {
++	__le32 parent_teid;
++	__le32 node_teid;
++	struct ice_aqc_txsched_elem data;
++};
++
++struct ice_aqc_txsched_topo_grp_info_hdr {
++	__le32 parent_teid;
++	__le16 num_elems;
++	__le16 reserved2;
++};
++
++struct ice_aqc_delete_elem {
++	struct ice_aqc_txsched_topo_grp_info_hdr hdr;
++	__le32 teid[1];
++};
++
++/* Query Scheduler Resource Allocation (indirect 0x0412)
++ * This indirect command retrieves the scheduler resources allocated by
++ * EMP Firmware to the given PF.
++ */
++struct ice_aqc_query_txsched_res {
++	u8 reserved[8];
++	__le32 addr_high;
++	__le32 addr_low;
++};
++
++struct ice_aqc_generic_sched_props {
++	__le16 phys_levels;
++	__le16 logical_levels;
++	u8 flattening_bitmap;
++	u8 max_device_cgds;
++	u8 max_pf_cgds;
++	u8 rsvd0;
++	__le16 rdma_qsets;
++	u8 rsvd1[22];
++};
++
++struct ice_aqc_layer_props {
++	u8 logical_layer;
++	u8 chunk_size;
++	__le16 max_device_nodes;
++	__le16 max_pf_nodes;
++	u8 rsvd0[2];
++	__le16 max_shared_rate_lmtr;
++	__le16 max_children;
++	__le16 max_cir_rl_profiles;
++	__le16 max_eir_rl_profiles;
++	__le16 max_srl_profiles;
++	u8 rsvd1[14];
++};
++
++struct ice_aqc_query_txsched_res_resp {
++	struct ice_aqc_generic_sched_props sched_props;
++	struct ice_aqc_layer_props layer_props[ICE_AQC_TOPO_MAX_LEVEL_NUM];
++};
++
+ /* NVM Read command (indirect 0x0701)
+  * NVM Erase commands (direct 0x0702)
+  * NVM Update commands (indirect 0x0703)
+@@ -142,6 +333,10 @@ struct ice_aq_desc {
  		struct ice_aqc_q_shutdown q_shutdown;
-+		struct ice_aqc_req_res res_owner;
-+		struct ice_aqc_clear_pxe clear_pxe;
-+		struct ice_aqc_nvm nvm;
+ 		struct ice_aqc_req_res res_owner;
+ 		struct ice_aqc_clear_pxe clear_pxe;
++		struct ice_aqc_list_caps get_cap;
++		struct ice_aqc_get_sw_cfg get_sw_conf;
++		struct ice_aqc_query_txsched_res query_sched_res;
++		struct ice_aqc_add_move_delete_elem add_move_delete_elem;
+ 		struct ice_aqc_nvm nvm;
  	} params;
  };
+@@ -150,16 +345,19 @@ struct ice_aq_desc {
+ #define ICE_AQ_LG_BUF	512
  
-@@ -96,6 +160,8 @@ struct ice_aq_desc {
+ #define ICE_AQ_FLAG_LB_S	9
++#define ICE_AQ_FLAG_RD_S	10
+ #define ICE_AQ_FLAG_BUF_S	12
+ #define ICE_AQ_FLAG_SI_S	13
+ 
+ #define ICE_AQ_FLAG_LB		BIT(ICE_AQ_FLAG_LB_S)  /* 0x200  */
++#define ICE_AQ_FLAG_RD		BIT(ICE_AQ_FLAG_RD_S)  /* 0x400  */
+ #define ICE_AQ_FLAG_BUF		BIT(ICE_AQ_FLAG_BUF_S) /* 0x1000 */
+ #define ICE_AQ_FLAG_SI		BIT(ICE_AQ_FLAG_SI_S)  /* 0x2000 */
+ 
  /* error codes */
  enum ice_aq_err {
  	ICE_AQ_RC_OK		= 0,  /* success */
-+	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
-+	ICE_AQ_RC_EEXIST	= 13, /* object already exists */
++	ICE_AQ_RC_ENOMEM	= 9,  /* Out of memory */
+ 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
+ 	ICE_AQ_RC_EEXIST	= 13, /* object already exists */
  };
+@@ -174,11 +372,22 @@ enum ice_adminq_opc {
+ 	ice_aqc_opc_req_res				= 0x0008,
+ 	ice_aqc_opc_release_res				= 0x0009,
  
- /* Admin Queue command opcodes */
-@@ -103,6 +169,19 @@ enum ice_adminq_opc {
- 	/* AQ commands */
- 	ice_aqc_opc_get_ver				= 0x0001,
- 	ice_aqc_opc_q_shutdown				= 0x0003,
++	/* device/function capabilities */
++	ice_aqc_opc_list_func_caps			= 0x000A,
++	ice_aqc_opc_list_dev_caps			= 0x000B,
 +
-+	/* resource ownership */
-+	ice_aqc_opc_req_res				= 0x0008,
-+	ice_aqc_opc_release_res				= 0x0009,
-+
-+	/* PXE */
-+	ice_aqc_opc_clear_pxe_mode			= 0x0110,
-+
-+	ice_aqc_opc_clear_pf_cfg			= 0x02A4,
-+
-+	/* NVM commands */
-+	ice_aqc_opc_nvm_read				= 0x0701,
-+
- };
+ 	/* PXE */
+ 	ice_aqc_opc_clear_pxe_mode			= 0x0110,
  
- #endif /* _ICE_ADMINQ_CMD_H_ */
++	/* internal switch commands */
++	ice_aqc_opc_get_sw_cfg				= 0x0200,
++
+ 	ice_aqc_opc_clear_pf_cfg			= 0x02A4,
+ 
++	/* transmit scheduler commands */
++	ice_aqc_opc_delete_sched_elems			= 0x040F,
++	ice_aqc_opc_query_sched_res			= 0x0412,
++
+ 	/* NVM commands */
+ 	ice_aqc_opc_nvm_read				= 0x0701,
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index d980f0518744..04cee856d456 100644
+index 04cee856d456..10f8b2ce5d44 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.c
 +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -18,6 +18,224 @@
+@@ -16,6 +16,7 @@
+  */
+ 
  #include "ice_common.h"
++#include "ice_sched.h"
  #include "ice_adminq_cmd.h"
  
-+#define ICE_PF_RESET_WAIT_COUNT	200
+ #define ICE_PF_RESET_WAIT_COUNT	200
+@@ -84,8 +85,37 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
+ 	if (status)
+ 		goto err_unroll_cqinit;
+ 
++	status = ice_get_caps(hw);
++	if (status)
++		goto err_unroll_cqinit;
 +
++	hw->port_info = devm_kzalloc(ice_hw_to_dev(hw),
++				     sizeof(*hw->port_info), GFP_KERNEL);
++	if (!hw->port_info) {
++		status = ICE_ERR_NO_MEMORY;
++		goto err_unroll_cqinit;
++	}
++
++	/* set the back pointer to hw */
++	hw->port_info->hw = hw;
++
++	/* Initialize port_info struct with switch configuration data */
++	status = ice_get_initial_sw_cfg(hw);
++	if (status)
++		goto err_unroll_alloc;
++
++	/* Query the allocated resources for tx scheduler */
++	status = ice_sched_query_res_alloc(hw);
++	if (status) {
++		ice_debug(hw, ICE_DBG_SCHED,
++			  "Failed to get scheduler allocated resources\n");
++		goto err_unroll_alloc;
++	}
++
+ 	return 0;
+ 
++err_unroll_alloc:
++	devm_kfree(ice_hw_to_dev(hw), hw->port_info);
+ err_unroll_cqinit:
+ 	ice_shutdown_all_ctrlq(hw);
+ 	return status;
+@@ -97,7 +127,12 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
+  */
+ void ice_deinit_hw(struct ice_hw *hw)
+ {
++	ice_sched_cleanup_all(hw);
+ 	ice_shutdown_all_ctrlq(hw);
++	if (hw->port_info) {
++		devm_kfree(ice_hw_to_dev(hw), hw->port_info);
++		hw->port_info = NULL;
++	}
+ }
+ 
+ /**
+@@ -519,6 +554,202 @@ void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res)
+ 	}
+ }
+ 
 +/**
-+ * ice_set_mac_type - Sets MAC type
-+ * @hw: pointer to the HW structure
++ * ice_parse_caps - parse function/device capabilities
++ * @hw: pointer to the hw struct
++ * @buf: pointer to a buffer containing function/device capability records
++ * @cap_count: number of capability records in the list
++ * @opc: type of capabilities list to parse
 + *
-+ * This function sets the MAC type of the adapter based on the
-+ * vendor ID and device ID stored in the hw structure.
++ * Helper function to parse function(0x000a)/device(0x000b) capabilities list.
 + */
-+static enum ice_status ice_set_mac_type(struct ice_hw *hw)
++static void
++ice_parse_caps(struct ice_hw *hw, void *buf, u32 cap_count,
++	       enum ice_adminq_opc opc)
 +{
-+	if (hw->vendor_id != PCI_VENDOR_ID_INTEL)
-+		return ICE_ERR_DEVICE_NOT_SUPPORTED;
++	struct ice_aqc_list_caps_elem *cap_resp;
++	struct ice_hw_func_caps *func_p = NULL;
++	struct ice_hw_dev_caps *dev_p = NULL;
++	struct ice_hw_common_caps *caps;
++	u32 i;
 +
-+	hw->mac_type = ICE_MAC_GENERIC;
-+	return 0;
++	if (!buf)
++		return;
++
++	cap_resp = (struct ice_aqc_list_caps_elem *)buf;
++
++	if (opc == ice_aqc_opc_list_dev_caps) {
++		dev_p = &hw->dev_caps;
++		caps = &dev_p->common_cap;
++	} else if (opc == ice_aqc_opc_list_func_caps) {
++		func_p = &hw->func_caps;
++		caps = &func_p->common_cap;
++	} else {
++		ice_debug(hw, ICE_DBG_INIT, "wrong opcode\n");
++		return;
++	}
++
++	for (i = 0; caps && i < cap_count; i++, cap_resp++) {
++		u32 logical_id = le32_to_cpu(cap_resp->logical_id);
++		u32 phys_id = le32_to_cpu(cap_resp->phys_id);
++		u32 number = le32_to_cpu(cap_resp->number);
++		u16 cap = le16_to_cpu(cap_resp->cap);
++
++		switch (cap) {
++		case ICE_AQC_CAPS_VSI:
++			if (dev_p) {
++				dev_p->num_vsi_allocd_to_host = number;
++				ice_debug(hw, ICE_DBG_INIT,
++					  "HW caps: Dev.VSI cnt = %d\n",
++					  dev_p->num_vsi_allocd_to_host);
++			} else if (func_p) {
++				func_p->guaranteed_num_vsi = number;
++				ice_debug(hw, ICE_DBG_INIT,
++					  "HW caps: Func.VSI cnt = %d\n",
++					  func_p->guaranteed_num_vsi);
++			}
++			break;
++		case ICE_AQC_CAPS_RSS:
++			caps->rss_table_size = number;
++			caps->rss_table_entry_width = logical_id;
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: RSS table size = %d\n",
++				  caps->rss_table_size);
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: RSS table width = %d\n",
++				  caps->rss_table_entry_width);
++			break;
++		case ICE_AQC_CAPS_RXQS:
++			caps->num_rxq = number;
++			caps->rxq_first_id = phys_id;
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: Num Rx Qs = %d\n", caps->num_rxq);
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: Rx first queue ID = %d\n",
++				  caps->rxq_first_id);
++			break;
++		case ICE_AQC_CAPS_TXQS:
++			caps->num_txq = number;
++			caps->txq_first_id = phys_id;
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: Num Tx Qs = %d\n", caps->num_txq);
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: Tx first queue ID = %d\n",
++				  caps->txq_first_id);
++			break;
++		case ICE_AQC_CAPS_MSIX:
++			caps->num_msix_vectors = number;
++			caps->msix_vector_first_id = phys_id;
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: MSIX vector count = %d\n",
++				  caps->num_msix_vectors);
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: MSIX first vector index = %d\n",
++				  caps->msix_vector_first_id);
++			break;
++		case ICE_AQC_CAPS_MAX_MTU:
++			caps->max_mtu = number;
++			if (dev_p)
++				ice_debug(hw, ICE_DBG_INIT,
++					  "HW caps: Dev.MaxMTU = %d\n",
++					  caps->max_mtu);
++			else if (func_p)
++				ice_debug(hw, ICE_DBG_INIT,
++					  "HW caps: func.MaxMTU = %d\n",
++					  caps->max_mtu);
++			break;
++		default:
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: Unknown capability[%d]: 0x%x\n", i,
++				  cap);
++			break;
++		}
++	}
 +}
 +
 +/**
-+ * ice_clear_pf_cfg - Clear PF configuration
-+ * @hw: pointer to the hardware structure
++ * ice_aq_discover_caps - query function/device capabilities
++ * @hw: pointer to the hw struct
++ * @buf: a virtual buffer to hold the capabilities
++ * @buf_size: Size of the virtual buffer
++ * @data_size: Size of the returned data, or buf size needed if AQ err==ENOMEM
++ * @opc: capabilities type to discover - pass in the command opcode
++ * @cd: pointer to command details structure or NULL
++ *
++ * Get the function(0x000a)/device(0x000b) capabilities description from
++ * the firmware.
 + */
-+enum ice_status ice_clear_pf_cfg(struct ice_hw *hw)
++static enum ice_status
++ice_aq_discover_caps(struct ice_hw *hw, void *buf, u16 buf_size, u16 *data_size,
++		     enum ice_adminq_opc opc, struct ice_sq_cd *cd)
 +{
++	struct ice_aqc_list_caps *cmd;
 +	struct ice_aq_desc desc;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_clear_pf_cfg);
-+
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
-+}
-+
-+/**
-+ * ice_init_hw - main hardware initialization routine
-+ * @hw: pointer to the hardware structure
-+ */
-+enum ice_status ice_init_hw(struct ice_hw *hw)
-+{
 +	enum ice_status status;
 +
-+	/* Set MAC type based on DeviceID */
-+	status = ice_set_mac_type(hw);
-+	if (status)
-+		return status;
++	cmd = &desc.params.get_cap;
 +
-+	hw->pf_id = (u8)(rd32(hw, PF_FUNC_RID) &
-+			 PF_FUNC_RID_FUNC_NUM_M) >>
-+		PF_FUNC_RID_FUNC_NUM_S;
++	if (opc != ice_aqc_opc_list_func_caps &&
++	    opc != ice_aqc_opc_list_dev_caps)
++		return ICE_ERR_PARAM;
 +
-+	status = ice_reset(hw, ICE_RESET_PFR);
-+	if (status)
-+		return status;
++	ice_fill_dflt_direct_cmd_desc(&desc, opc);
 +
-+	status = ice_init_all_ctrlq(hw);
-+	if (status)
-+		goto err_unroll_cqinit;
++	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
++	if (!status)
++		ice_parse_caps(hw, buf, le32_to_cpu(cmd->count), opc);
++	*data_size = le16_to_cpu(desc.datalen);
 +
-+	status = ice_clear_pf_cfg(hw);
-+	if (status)
-+		goto err_unroll_cqinit;
-+
-+	ice_clear_pxe_mode(hw);
-+
-+	status = ice_init_nvm(hw);
-+	if (status)
-+		goto err_unroll_cqinit;
-+
-+	return 0;
-+
-+err_unroll_cqinit:
-+	ice_shutdown_all_ctrlq(hw);
 +	return status;
 +}
 +
 +/**
-+ * ice_deinit_hw - unroll initialization operations done by ice_init_hw
++ * ice_get_caps - get info about the HW
 + * @hw: pointer to the hardware structure
 + */
-+void ice_deinit_hw(struct ice_hw *hw)
++enum ice_status ice_get_caps(struct ice_hw *hw)
 +{
-+	ice_shutdown_all_ctrlq(hw);
-+}
++	enum ice_status status;
++	u16 data_size = 0;
++	u16 cbuf_len;
++	u8 retries;
 +
-+/**
-+ * ice_check_reset - Check to see if a global reset is complete
-+ * @hw: pointer to the hardware structure
-+ */
-+enum ice_status ice_check_reset(struct ice_hw *hw)
-+{
-+	u32 cnt, reg = 0, grst_delay;
-+
-+	/* Poll for Device Active state in case a recent CORER, GLOBR,
-+	 * or EMPR has occurred. The grst delay value is in 100ms units.
-+	 * Add 1sec for outstanding AQ commands that can take a long time.
++	/* The driver doesn't know how many capabilities the device will return
++	 * so the buffer size required isn't known ahead of time. The driver
++	 * starts with cbuf_len and if this turns out to be insufficient, the
++	 * device returns ICE_AQ_RC_ENOMEM and also the buffer size it needs.
++	 * The driver then allocates the buffer of this size and retries the
++	 * operation. So it follows that the retry count is 2.
 +	 */
-+	grst_delay = ((rd32(hw, GLGEN_RSTCTL) & GLGEN_RSTCTL_GRSTDEL_M) >>
-+		      GLGEN_RSTCTL_GRSTDEL_S) + 10;
++#define ICE_GET_CAP_BUF_COUNT	40
++#define ICE_GET_CAP_RETRY_COUNT	2
 +
-+	for (cnt = 0; cnt < grst_delay; cnt++) {
-+		mdelay(100);
-+		reg = rd32(hw, GLGEN_RSTAT);
-+		if (!(reg & GLGEN_RSTAT_DEVSTATE_M))
-+			break;
-+	}
++	cbuf_len = ICE_GET_CAP_BUF_COUNT *
++		sizeof(struct ice_aqc_list_caps_elem);
 +
-+	if (cnt == grst_delay) {
-+		ice_debug(hw, ICE_DBG_INIT,
-+			  "Global reset polling failed to complete.\n");
-+		return ICE_ERR_RESET_FAILED;
-+	}
++	retries = ICE_GET_CAP_RETRY_COUNT;
 +
-+#define ICE_RESET_DONE_MASK	(GLNVM_ULD_CORER_DONE_M | \
-+				 GLNVM_ULD_GLOBR_DONE_M)
++	do {
++		void *cbuf;
 +
-+	/* Device is Active; check Global Reset processes are done */
-+	for (cnt = 0; cnt < ICE_PF_RESET_WAIT_COUNT; cnt++) {
-+		reg = rd32(hw, GLNVM_ULD) & ICE_RESET_DONE_MASK;
-+		if (reg == ICE_RESET_DONE_MASK) {
-+			ice_debug(hw, ICE_DBG_INIT,
-+				  "Global reset processes done. %d\n", cnt);
-+			break;
-+		}
-+		mdelay(10);
-+	}
++		cbuf = devm_kzalloc(ice_hw_to_dev(hw), cbuf_len, GFP_KERNEL);
++		if (!cbuf)
++			return ICE_ERR_NO_MEMORY;
 +
-+	if (cnt == ICE_PF_RESET_WAIT_COUNT) {
-+		ice_debug(hw, ICE_DBG_INIT,
-+			  "Wait for Reset Done timed out. GLNVM_ULD = 0x%x\n",
-+			  reg);
-+		return ICE_ERR_RESET_FAILED;
-+	}
++		status = ice_aq_discover_caps(hw, cbuf, cbuf_len, &data_size,
++					      ice_aqc_opc_list_func_caps, NULL);
++		devm_kfree(ice_hw_to_dev(hw), cbuf);
 +
-+	return 0;
-+}
-+
-+/**
-+ * ice_pf_reset - Reset the PF
-+ * @hw: pointer to the hardware structure
-+ *
-+ * If a global reset has been triggered, this function checks
-+ * for its completion and then issues the PF reset
-+ */
-+static enum ice_status ice_pf_reset(struct ice_hw *hw)
-+{
-+	u32 cnt, reg;
-+
-+	/* If@function entry a global reset was already in progress, i.e.
-+	 * state is not 'device active' or any of the reset done bits are not
-+	 * set in GLNVM_ULD, there is no need for a PF Reset; poll until the
-+	 * global reset is done.
-+	 */
-+	if ((rd32(hw, GLGEN_RSTAT) & GLGEN_RSTAT_DEVSTATE_M) ||
-+	    (rd32(hw, GLNVM_ULD) & ICE_RESET_DONE_MASK) ^ ICE_RESET_DONE_MASK) {
-+		/* poll on global reset currently in progress until done */
-+		if (ice_check_reset(hw))
-+			return ICE_ERR_RESET_FAILED;
-+
-+		return 0;
-+	}
-+
-+	/* Reset the PF */
-+	reg = rd32(hw, PFGEN_CTRL);
-+
-+	wr32(hw, PFGEN_CTRL, (reg | PFGEN_CTRL_PFSWR_M));
-+
-+	for (cnt = 0; cnt < ICE_PF_RESET_WAIT_COUNT; cnt++) {
-+		reg = rd32(hw, PFGEN_CTRL);
-+		if (!(reg & PFGEN_CTRL_PFSWR_M))
++		if (!status || hw->adminq.sq_last_status != ICE_AQ_RC_ENOMEM)
 +			break;
 +
-+		mdelay(1);
-+	}
++		/* If ENOMEM is returned, try again with bigger buffer */
++		cbuf_len = data_size;
++	} while (--retries);
 +
-+	if (cnt == ICE_PF_RESET_WAIT_COUNT) {
-+		ice_debug(hw, ICE_DBG_INIT,
-+			  "PF reset polling failed to complete.\n");
-+		return ICE_ERR_RESET_FAILED;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_reset - Perform different types of reset
-+ * @hw: pointer to the hardware structure
-+ * @req: reset request
-+ *
-+ * This function triggers a reset as specified by the req parameter.
-+ *
-+ * Note:
-+ * If anything other than a PF reset is triggered, PXE mode is restored.
-+ * This has to be cleared using ice_clear_pxe_mode again, once the AQ
-+ * interface has been restored in the rebuild flow.
-+ */
-+enum ice_status ice_reset(struct ice_hw *hw, enum ice_reset_req req)
-+{
-+	u32 val = 0;
-+
-+	switch (req) {
-+	case ICE_RESET_PFR:
-+		return ice_pf_reset(hw);
-+	case ICE_RESET_CORER:
-+		ice_debug(hw, ICE_DBG_INIT, "CoreR requested\n");
-+		val = GLGEN_RTRIG_CORER_M;
-+		break;
-+	case ICE_RESET_GLOBR:
-+		ice_debug(hw, ICE_DBG_INIT, "GlobalR requested\n");
-+		val = GLGEN_RTRIG_GLOBR_M;
-+		break;
-+	}
-+
-+	val |= rd32(hw, GLGEN_RTRIG);
-+	wr32(hw, GLGEN_RTRIG, val);
-+	ice_flush(hw);
-+
-+	/* wait for the FW to be ready */
-+	return ice_check_reset(hw);
++	return status;
 +}
 +
  /**
-  * ice_debug_cq
-  * @hw: pointer to the hardware structure
-@@ -142,3 +360,190 @@ enum ice_status ice_aq_q_shutdown(struct ice_hw *hw, bool unloading)
- 
- 	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
- }
-+
-+/**
-+ * ice_aq_req_res
-+ * @hw: pointer to the hw struct
-+ * @res: resource id
-+ * @access: access type
-+ * @sdp_number: resource number
-+ * @timeout: the maximum time in ms that the driver may hold the resource
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * requests common resource using the admin queue commands (0x0008)
-+ */
-+static enum ice_status
-+ice_aq_req_res(struct ice_hw *hw, enum ice_aq_res_ids res,
-+	       enum ice_aq_res_access_type access, u8 sdp_number, u32 *timeout,
-+	       struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_req_res *cmd_resp;
-+	struct ice_aq_desc desc;
-+	enum ice_status status;
-+
-+	cmd_resp = &desc.params.res_owner;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_req_res);
-+
-+	cmd_resp->res_id = cpu_to_le16(res);
-+	cmd_resp->access_type = cpu_to_le16(access);
-+	cmd_resp->res_number = cpu_to_le32(sdp_number);
-+
-+	status = ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
-+	/* The completion specifies the maximum time in ms that the driver
-+	 * may hold the resource in the Timeout field.
-+	 * If the resource is held by someone else, the command completes with
-+	 * busy return value and the timeout field indicates the maximum time
-+	 * the current owner of the resource has to free it.
-+	 */
-+	if (!status || hw->adminq.sq_last_status == ICE_AQ_RC_EBUSY)
-+		*timeout = le32_to_cpu(cmd_resp->timeout);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_aq_release_res
-+ * @hw: pointer to the hw struct
-+ * @res: resource id
-+ * @sdp_number: resource number
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * release common resource using the admin queue commands (0x0009)
-+ */
-+static enum ice_status
-+ice_aq_release_res(struct ice_hw *hw, enum ice_aq_res_ids res, u8 sdp_number,
-+		   struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_req_res *cmd;
-+	struct ice_aq_desc desc;
-+
-+	cmd = &desc.params.res_owner;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_release_res);
-+
-+	cmd->res_id = cpu_to_le16(res);
-+	cmd->res_number = cpu_to_le32(sdp_number);
-+
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
-+}
-+
-+/**
-+ * ice_acquire_res
-+ * @hw: pointer to the HW structure
-+ * @res: resource id
-+ * @access: access type (read or write)
-+ *
-+ * This function will attempt to acquire the ownership of a resource.
-+ */
-+enum ice_status
-+ice_acquire_res(struct ice_hw *hw, enum ice_aq_res_ids res,
-+		enum ice_aq_res_access_type access)
-+{
-+#define ICE_RES_POLLING_DELAY_MS	10
-+	u32 delay = ICE_RES_POLLING_DELAY_MS;
-+	enum ice_status status;
-+	u32 time_left = 0;
-+	u32 timeout;
-+
-+	status = ice_aq_req_res(hw, res, access, 0, &time_left, NULL);
-+
-+	/* An admin queue return code of ICE_AQ_RC_EEXIST means that another
-+	 * driver has previously acquired the resource and performed any
-+	 * necessary updates; in this case the caller does not obtain the
-+	 * resource and has no further work to do.
-+	 */
-+	if (hw->adminq.sq_last_status == ICE_AQ_RC_EEXIST) {
-+		status = ICE_ERR_AQ_NO_WORK;
-+		goto ice_acquire_res_exit;
-+	}
-+
-+	if (status)
-+		ice_debug(hw, ICE_DBG_RES,
-+			  "resource %d acquire type %d failed.\n", res, access);
-+
-+	/* If necessary, poll until the current lock owner timeouts */
-+	timeout = time_left;
-+	while (status && timeout && time_left) {
-+		mdelay(delay);
-+		timeout = (timeout > delay) ? timeout - delay : 0;
-+		status = ice_aq_req_res(hw, res, access, 0, &time_left, NULL);
-+
-+		if (hw->adminq.sq_last_status == ICE_AQ_RC_EEXIST) {
-+			/* lock free, but no work to do */
-+			status = ICE_ERR_AQ_NO_WORK;
-+			break;
-+		}
-+
-+		if (!status)
-+			/* lock acquired */
-+			break;
-+	}
-+	if (status && status != ICE_ERR_AQ_NO_WORK)
-+		ice_debug(hw, ICE_DBG_RES, "resource acquire timed out.\n");
-+
-+ice_acquire_res_exit:
-+	if (status == ICE_ERR_AQ_NO_WORK) {
-+		if (access == ICE_RES_WRITE)
-+			ice_debug(hw, ICE_DBG_RES,
-+				  "resource indicates no work to do.\n");
-+		else
-+			ice_debug(hw, ICE_DBG_RES,
-+				  "Warning: ICE_ERR_AQ_NO_WORK not expected\n");
-+	}
-+	return status;
-+}
-+
-+/**
-+ * ice_release_res
-+ * @hw: pointer to the HW structure
-+ * @res: resource id
-+ *
-+ * This function will release a resource using the proper Admin Command.
-+ */
-+void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res)
-+{
-+	enum ice_status status;
-+	u32 total_delay = 0;
-+
-+	status = ice_aq_release_res(hw, res, 0, NULL);
-+
-+	/* there are some rare cases when trying to release the resource
-+	 * results in an admin Q timeout, so handle them correctly
-+	 */
-+	while ((status == ICE_ERR_AQ_TIMEOUT) &&
-+	       (total_delay < hw->adminq.sq_cmd_timeout)) {
-+		mdelay(1);
-+		status = ice_aq_release_res(hw, res, 0, NULL);
-+		total_delay++;
-+	}
-+}
-+
-+/**
-+ * ice_aq_clear_pxe_mode
-+ * @hw: pointer to the hw struct
-+ *
-+ * Tell the firmware that the driver is taking over from PXE (0x0110).
-+ */
-+static enum ice_status ice_aq_clear_pxe_mode(struct ice_hw *hw)
-+{
-+	struct ice_aq_desc desc;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_clear_pxe_mode);
-+	desc.params.clear_pxe.rx_cnt = ICE_AQC_CLEAR_PXE_RX_CNT;
-+
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
-+}
-+
-+/**
-+ * ice_clear_pxe_mode - clear pxe operations mode
-+ * @hw: pointer to the hw struct
-+ *
-+ * Make sure all PXE mode settings are cleared, including things
-+ * like descriptor fetch/write-back mode.
-+ */
-+void ice_clear_pxe_mode(struct ice_hw *hw)
-+{
-+	if (ice_check_sq_alive(hw, &hw->adminq))
-+		ice_aq_clear_pxe_mode(hw);
-+}
+  * ice_aq_clear_pxe_mode
+  * @hw: pointer to the hw struct
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 1e3caecc38c6..0876fd98090a 100644
+index 0876fd98090a..63ca2a26a274 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.h
 +++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -23,12 +23,22 @@
+@@ -20,6 +20,7 @@
+ 
+ #include "ice.h"
+ #include "ice_type.h"
++#include "ice_switch.h"
  
  void ice_debug_cq(struct ice_hw *hw, u32 mask, void *desc, void *buf,
  		  u16 buf_len);
-+enum ice_status ice_init_hw(struct ice_hw *hw);
-+void ice_deinit_hw(struct ice_hw *hw);
-+enum ice_status ice_check_reset(struct ice_hw *hw);
-+enum ice_status ice_reset(struct ice_hw *hw, enum ice_reset_req req);
- enum ice_status ice_init_all_ctrlq(struct ice_hw *hw);
- void ice_shutdown_all_ctrlq(struct ice_hw *hw);
- enum ice_status
-+ice_acquire_res(struct ice_hw *hw, enum ice_aq_res_ids res,
-+		enum ice_aq_res_access_type access);
-+void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res);
-+enum ice_status ice_init_nvm(struct ice_hw *hw);
-+enum ice_status
- ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+@@ -39,6 +40,7 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
  		struct ice_aq_desc *desc, void *buf, u16 buf_size,
  		struct ice_sq_cd *cd);
-+void ice_clear_pxe_mode(struct ice_hw *hw);
+ void ice_clear_pxe_mode(struct ice_hw *hw);
++enum ice_status ice_get_caps(struct ice_hw *hw);
  bool ice_check_sq_alive(struct ice_hw *hw, struct ice_ctl_q_info *cq);
  enum ice_status ice_aq_q_shutdown(struct ice_hw *hw, bool unloading);
  void ice_fill_dflt_direct_cmd_desc(struct ice_aq_desc *desc, u16 opcode);
-@@ -36,4 +46,5 @@ enum ice_status
- ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc,
- 		void *buf, u16 buf_size, struct ice_sq_cd *cd);
- enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd);
-+enum ice_status ice_clear_pf_cfg(struct ice_hw *hw);
- #endif /* _ICE_COMMON_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.h b/drivers/net/ethernet/intel/ice/ice_controlq.h
-index 143578d02aec..835c035419a3 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.h
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.h
-@@ -20,6 +20,9 @@
- 
- #include "ice_adminq_cmd.h"
- 
-+/* Maximum buffer lengths for all control queue types */
-+#define ICE_AQ_MAX_BUF_LEN 4096
-+
- #define ICE_CTL_Q_DESC(R, i) \
- 	(&(((struct ice_aq_desc *)((R).desc_buf.va))[i]))
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 3d6bb273e4c8..e258a12099b8 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -42,5 +42,35 @@
- #define PF_FW_ATQLEN_ATQENABLE_S	31
- #define PF_FW_ATQLEN_ATQENABLE_M	BIT(PF_FW_ATQLEN_ATQENABLE_S)
- #define PF_FW_ATQT			0x00080400
-+#define GLGEN_RSTAT			0x000B8188
-+#define GLGEN_RSTAT_DEVSTATE_S		0
-+#define GLGEN_RSTAT_DEVSTATE_M		ICE_M(0x3, GLGEN_RSTAT_DEVSTATE_S)
-+#define GLGEN_RSTCTL			0x000B8180
-+#define GLGEN_RSTCTL_GRSTDEL_S		0
-+#define GLGEN_RSTCTL_GRSTDEL_M		ICE_M(0x3F, GLGEN_RSTCTL_GRSTDEL_S)
-+#define GLGEN_RTRIG			0x000B8190
-+#define GLGEN_RTRIG_CORER_S		0
-+#define GLGEN_RTRIG_CORER_M		BIT(GLGEN_RTRIG_CORER_S)
-+#define GLGEN_RTRIG_GLOBR_S		1
-+#define GLGEN_RTRIG_GLOBR_M		BIT(GLGEN_RTRIG_GLOBR_S)
-+#define GLGEN_STAT			0x000B612C
-+#define PFGEN_CTRL			0x00091000
-+#define PFGEN_CTRL_PFSWR_S		0
-+#define PFGEN_CTRL_PFSWR_M		BIT(PFGEN_CTRL_PFSWR_S)
-+#define GLLAN_RCTL_0			0x002941F8
-+#define GLNVM_FLA			0x000B6108
-+#define GLNVM_FLA_LOCKED_S		6
-+#define GLNVM_FLA_LOCKED_M		BIT(GLNVM_FLA_LOCKED_S)
-+#define GLNVM_GENS			0x000B6100
-+#define GLNVM_GENS_SR_SIZE_S		5
-+#define GLNVM_GENS_SR_SIZE_M		ICE_M(0x7, GLNVM_GENS_SR_SIZE_S)
-+#define GLNVM_ULD			0x000B6008
-+#define GLNVM_ULD_CORER_DONE_S		3
-+#define GLNVM_ULD_CORER_DONE_M		BIT(GLNVM_ULD_CORER_DONE_S)
-+#define GLNVM_ULD_GLOBR_DONE_S		4
-+#define GLNVM_ULD_GLOBR_DONE_M		BIT(GLNVM_ULD_GLOBR_DONE_S)
-+#define PF_FUNC_RID			0x0009E880
-+#define PF_FUNC_RID_FUNC_NUM_S		0
-+#define PF_FUNC_RID_FUNC_NUM_M		ICE_M(0x7, PF_FUNC_RID_FUNC_NUM_S)
- 
- #endif /* _ICE_HW_AUTOGEN_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 408ae90d6562..2ee4a0547ba3 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -40,6 +40,18 @@ MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all), hw debug_mask (0x8XXXX
- MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all)");
- #endif /* !CONFIG_DYNAMIC_DEBUG */
- 
-+/**
-+ * ice_set_ctrlq_len - helper function to set controlq length
-+ * @hw: pointer to the hw instance
-+ */
-+static void ice_set_ctrlq_len(struct ice_hw *hw)
-+{
-+	hw->adminq.num_rq_entries = ICE_AQ_LEN;
-+	hw->adminq.num_sq_entries = ICE_AQ_LEN;
-+	hw->adminq.rq_buf_size = ICE_AQ_MAX_BUF_LEN;
-+	hw->adminq.sq_buf_size = ICE_AQ_MAX_BUF_LEN;
-+}
-+
- /**
-  * ice_probe - Device initialization routine
-  * @pdev: PCI device information struct
-@@ -95,6 +107,8 @@ static int ice_probe(struct pci_dev *pdev,
- 	hw->subsystem_device_id = pdev->subsystem_device;
- 	hw->bus.device = PCI_SLOT(pdev->devfn);
- 	hw->bus.func = PCI_FUNC(pdev->devfn);
-+	ice_set_ctrlq_len(hw);
-+
- 	pf->msg_enable = netif_msg_init(debug, ICE_DFLT_NETIF_M);
- 
- #ifndef CONFIG_DYNAMIC_DEBUG
-@@ -102,7 +116,22 @@ static int ice_probe(struct pci_dev *pdev,
- 		hw->debug_mask = debug;
- #endif
- 
-+	err = ice_init_hw(hw);
-+	if (err) {
-+		dev_err(&pdev->dev, "ice_init_hw failed: %d\n", err);
-+		err = -EIO;
-+		goto err_exit_unroll;
-+	}
-+
-+	dev_info(&pdev->dev, "firmware %d.%d.%05d api %d.%d\n",
-+		 hw->fw_maj_ver, hw->fw_min_ver, hw->fw_build,
-+		 hw->api_maj_ver, hw->api_min_ver);
-+
- 	return 0;
-+
-+err_exit_unroll:
-+	pci_disable_pcie_error_reporting(pdev);
-+	return err;
- }
- 
- /**
-@@ -117,6 +146,8 @@ static void ice_remove(struct pci_dev *pdev)
- 		return;
- 
- 	set_bit(__ICE_DOWN, pf->state);
-+
-+	ice_deinit_hw(&pf->hw);
- 	pci_disable_pcie_error_reporting(pdev);
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
 new file mode 100644
-index 000000000000..76c438db68ff
+index 000000000000..66e48ae4a3ed
 --- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -0,0 +1,250 @@
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -0,0 +1,354 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/* Intel(R) Ethernet Connection E800 Series Linux Driver
 + * Copyright (c) 2018, Intel Corporation.
@@ -775,360 +661,736 @@ index 000000000000..76c438db68ff
 + * the file called "COPYING".
 + */
 +
-+#include "ice_common.h"
++#include "ice_sched.h"
 +
 +/**
-+ * ice_aq_read_nvm
++ * ice_aq_delete_sched_elems - delete scheduler elements
 + * @hw: pointer to the hw struct
-+ * @module_typeid: module pointer location in words from the NVM beginning
-+ * @offset: byte offset from the module beginning
-+ * @length: length of the section to be read (in bytes from the offset)
-+ * @data: command buffer (size [bytes] = length)
-+ * @last_command: tells if this is the last command in a series
++ * @grps_req: number of groups to delete
++ * @buf: pointer to buffer
++ * @buf_size: buffer size in bytes
++ * @grps_del: returns total number of elements deleted
 + * @cd: pointer to command details structure or NULL
 + *
-+ * Read the NVM using the admin queue commands (0x0701)
++ * Delete scheduling elements (0x040F)
 + */
 +static enum ice_status
-+ice_aq_read_nvm(struct ice_hw *hw, u8 module_typeid, u32 offset, u16 length,
-+		void *data, bool last_command, struct ice_sq_cd *cd)
++ice_aq_delete_sched_elems(struct ice_hw *hw, u16 grps_req,
++			  struct ice_aqc_delete_elem *buf, u16 buf_size,
++			  u16 *grps_del, struct ice_sq_cd *cd)
++{
++	struct ice_aqc_add_move_delete_elem *cmd;
++	struct ice_aq_desc desc;
++	enum ice_status status;
++
++	cmd = &desc.params.add_move_delete_elem;
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_delete_sched_elems);
++	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
++	cmd->num_grps_req = cpu_to_le16(grps_req);
++
++	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
++	if (!status && grps_del)
++		*grps_del = le16_to_cpu(cmd->num_grps_updated);
++
++	return status;
++}
++
++/**
++ * ice_sched_remove_elems - remove nodes from hw
++ * @hw: pointer to the hw struct
++ * @parent: pointer to the parent node
++ * @num_nodes: number of nodes
++ * @node_teids: array of node teids to be deleted
++ *
++ * This function remove nodes from hw
++ */
++static enum ice_status
++ice_sched_remove_elems(struct ice_hw *hw, struct ice_sched_node *parent,
++		       u16 num_nodes, u32 *node_teids)
++{
++	struct ice_aqc_delete_elem *buf;
++	u16 i, num_groups_removed = 0;
++	enum ice_status status;
++	u16 buf_size;
++
++	buf_size = sizeof(*buf) + sizeof(u32) * (num_nodes - 1);
++	buf = devm_kzalloc(ice_hw_to_dev(hw), buf_size, GFP_KERNEL);
++	if (!buf)
++		return ICE_ERR_NO_MEMORY;
++	buf->hdr.parent_teid = parent->info.node_teid;
++	buf->hdr.num_elems = cpu_to_le16(num_nodes);
++	for (i = 0; i < num_nodes; i++)
++		buf->teid[i] = cpu_to_le32(node_teids[i]);
++	status = ice_aq_delete_sched_elems(hw, 1, buf, buf_size,
++					   &num_groups_removed, NULL);
++	if (status || num_groups_removed != 1)
++		ice_debug(hw, ICE_DBG_SCHED, "remove elements failed\n");
++	devm_kfree(ice_hw_to_dev(hw), buf);
++	return status;
++}
++
++/**
++ * ice_sched_get_first_node - get the first node of the given layer
++ * @hw: pointer to the hw struct
++ * @parent: pointer the base node of the subtree
++ * @layer: layer number
++ *
++ * This function retrieves the first node of the given layer from the subtree
++ */
++static struct ice_sched_node *
++ice_sched_get_first_node(struct ice_hw *hw, struct ice_sched_node *parent,
++			 u8 layer)
++{
++	u8 i;
++
++	if (layer < hw->sw_entry_point_layer)
++		return NULL;
++	for (i = 0; i < parent->num_children; i++) {
++		struct ice_sched_node *node = parent->children[i];
++
++		if (node) {
++			if (node->tx_sched_layer == layer)
++				return node;
++			/* this recursion is intentional, and wouldn't
++			 * go more than 9 calls
++			 */
++			return ice_sched_get_first_node(hw, node, layer);
++		}
++	}
++	return NULL;
++}
++
++/**
++ * ice_sched_get_tc_node - get pointer to TC node
++ * @pi: port information structure
++ * @tc: TC number
++ *
++ * This function returns the TC node pointer
++ */
++struct ice_sched_node *ice_sched_get_tc_node(struct ice_port_info *pi, u8 tc)
++{
++	u8 i;
++
++	if (!pi)
++		return NULL;
++	for (i = 0; i < pi->root->num_children; i++)
++		if (pi->root->children[i]->tc_num == tc)
++			return pi->root->children[i];
++	return NULL;
++}
++
++/**
++ * ice_free_sched_node - Free a Tx scheduler node from SW DB
++ * @pi: port information structure
++ * @node: pointer to the ice_sched_node struct
++ *
++ * This function frees up a node from SW DB as well as from HW
++ *
++ * This function needs to be called with the port_info->sched_lock held
++ */
++void ice_free_sched_node(struct ice_port_info *pi, struct ice_sched_node *node)
++{
++	struct ice_sched_node *parent;
++	struct ice_hw *hw = pi->hw;
++	u8 i, j;
++
++	/* Free the children before freeing up the parent node
++	 * The parent array is updated below and that shifts the nodes
++	 * in the array. So always pick the first child if num children > 0
++	 */
++	while (node->num_children)
++		ice_free_sched_node(pi, node->children[0]);
++
++	/* Leaf, TC and root nodes can't be deleted by SW */
++	if (node->tx_sched_layer >= hw->sw_entry_point_layer &&
++	    node->info.data.elem_type != ICE_AQC_ELEM_TYPE_TC &&
++	    node->info.data.elem_type != ICE_AQC_ELEM_TYPE_ROOT_PORT &&
++	    node->info.data.elem_type != ICE_AQC_ELEM_TYPE_LEAF) {
++		u32 teid = le32_to_cpu(node->info.node_teid);
++		enum ice_status status;
++
++		status = ice_sched_remove_elems(hw, node->parent, 1, &teid);
++		if (status)
++			ice_debug(hw, ICE_DBG_SCHED,
++				  "remove element failed %d\n", status);
++	}
++	parent = node->parent;
++	/* root has no parent */
++	if (parent) {
++		struct ice_sched_node *p, *tc_node;
++
++		/* update the parent */
++		for (i = 0; i < parent->num_children; i++)
++			if (parent->children[i] == node) {
++				for (j = i + 1; j < parent->num_children; j++)
++					parent->children[j - 1] =
++						parent->children[j];
++				parent->num_children--;
++				break;
++			}
++
++		/* search for previous sibling that points to this node and
++		 * remove the reference
++		 */
++		tc_node = ice_sched_get_tc_node(pi, node->tc_num);
++		if (!tc_node) {
++			ice_debug(hw, ICE_DBG_SCHED,
++				  "Invalid TC number %d\n", node->tc_num);
++			goto err_exit;
++		}
++		p = ice_sched_get_first_node(hw, tc_node, node->tx_sched_layer);
++		while (p) {
++			if (p->sibling == node) {
++				p->sibling = node->sibling;
++				break;
++			}
++			p = p->sibling;
++		}
++	}
++err_exit:
++	/* leaf nodes have no children */
++	if (node->children)
++		devm_kfree(ice_hw_to_dev(hw), node->children);
++	devm_kfree(ice_hw_to_dev(hw), node);
++}
++
++/**
++ * ice_aq_query_sched_res - query scheduler resource
++ * @hw: pointer to the hw struct
++ * @buf_size: buffer size in bytes
++ * @buf: pointer to buffer
++ * @cd: pointer to command details structure or NULL
++ *
++ * Query scheduler resource allocation (0x0412)
++ */
++static enum ice_status
++ice_aq_query_sched_res(struct ice_hw *hw, u16 buf_size,
++		       struct ice_aqc_query_txsched_res_resp *buf,
++		       struct ice_sq_cd *cd)
 +{
 +	struct ice_aq_desc desc;
-+	struct ice_aqc_nvm *cmd;
 +
-+	cmd = &desc.params.nvm;
-+
-+	/* In offset the highest byte must be zeroed. */
-+	if (offset & 0xFF000000)
-+		return ICE_ERR_PARAM;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_nvm_read);
-+
-+	/* If this is the last command in a series, set the proper flag. */
-+	if (last_command)
-+		cmd->cmd_flags |= ICE_AQC_NVM_LAST_CMD;
-+	cmd->module_typeid = module_typeid;
-+	cmd->offset = cpu_to_le32(offset);
-+	cmd->length = cpu_to_le16(length);
-+
-+	return ice_aq_send_cmd(hw, &desc, data, length, cd);
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_query_sched_res);
++	return ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
 +}
 +
 +/**
-+ * ice_check_sr_access_params - verify params for Shadow RAM R/W operations.
-+ * @hw: pointer to the HW structure
-+ * @offset: offset in words from module start
-+ * @words: number of words to access
-+ */
-+static enum ice_status
-+ice_check_sr_access_params(struct ice_hw *hw, u32 offset, u16 words)
-+{
-+	if ((offset + words) > hw->nvm.sr_words) {
-+		ice_debug(hw, ICE_DBG_NVM,
-+			  "NVM error: offset beyond SR lmt.\n");
-+		return ICE_ERR_PARAM;
-+	}
-+
-+	if (words > ICE_SR_SECTOR_SIZE_IN_WORDS) {
-+		/* We can access only up to 4KB (one sector), in one AQ write */
-+		ice_debug(hw, ICE_DBG_NVM,
-+			  "NVM error: tried to access %d words, limit is %d.\n",
-+			  words, ICE_SR_SECTOR_SIZE_IN_WORDS);
-+		return ICE_ERR_PARAM;
-+	}
-+
-+	if (((offset + (words - 1)) / ICE_SR_SECTOR_SIZE_IN_WORDS) !=
-+	    (offset / ICE_SR_SECTOR_SIZE_IN_WORDS)) {
-+		/* A single access cannot spread over two sectors */
-+		ice_debug(hw, ICE_DBG_NVM,
-+			  "NVM error: cannot spread over two sectors.\n");
-+		return ICE_ERR_PARAM;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_read_sr_aq - Read Shadow RAM.
-+ * @hw: pointer to the HW structure
-+ * @offset: offset in words from module start
-+ * @words: number of words to read
-+ * @data: buffer for words reads from Shadow RAM
-+ * @last_command: tells the AdminQ that this is the last command
++ * ice_sched_clear_tx_topo - clears the schduler tree nodes
++ * @pi: port information structure
 + *
-+ * Reads 16-bit word buffers from the Shadow RAM using the admin command.
++ * This function removes all the nodes from HW as well as from SW DB.
 + */
-+static enum ice_status
-+ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, u16 *data,
-+	       bool last_command)
++static void ice_sched_clear_tx_topo(struct ice_port_info *pi)
 +{
-+	enum ice_status status;
++	struct ice_sched_agg_info *agg_info;
++	struct ice_sched_vsi_info *vsi_elem;
++	struct ice_sched_agg_info *atmp;
++	struct ice_sched_vsi_info *tmp;
++	struct ice_hw *hw;
 +
-+	status = ice_check_sr_access_params(hw, offset, words);
-+
-+	/* values in "offset" and "words" parameters are sized as words
-+	 * (16 bits) but ice_aq_read_nvm expects these values in bytes.
-+	 * So do this conversion while calling ice_aq_read_nvm.
-+	 */
-+	if (!status)
-+		status = ice_aq_read_nvm(hw, 0, 2 * offset, 2 * words, data,
-+					 last_command, NULL);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_read_sr_word_aq - Reads Shadow RAM via AQ
-+ * @hw: pointer to the HW structure
-+ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-+ * @data: word read from the Shadow RAM
-+ *
-+ * Reads one 16 bit word from the Shadow RAM using the ice_read_sr_aq method.
-+ */
-+static enum ice_status
-+ice_read_sr_word_aq(struct ice_hw *hw, u16 offset, u16 *data)
-+{
-+	enum ice_status status;
-+
-+	status = ice_read_sr_aq(hw, offset, 1, data, true);
-+	if (!status)
-+		*data = le16_to_cpu(*(__le16 *)data);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_acquire_nvm - Generic request for acquiring the NVM ownership
-+ * @hw: pointer to the HW structure
-+ * @access: NVM access type (read or write)
-+ *
-+ * This function will request NVM ownership.
-+ */
-+static enum
-+ice_status ice_acquire_nvm(struct ice_hw *hw,
-+			   enum ice_aq_res_access_type access)
-+{
-+	if (hw->nvm.blank_nvm_mode)
-+		return 0;
-+
-+	return ice_acquire_res(hw, ICE_NVM_RES_ID, access);
-+}
-+
-+/**
-+ * ice_release_nvm - Generic request for releasing the NVM ownership
-+ * @hw: pointer to the HW structure
-+ *
-+ * This function will release NVM ownership.
-+ */
-+static void ice_release_nvm(struct ice_hw *hw)
-+{
-+	if (hw->nvm.blank_nvm_mode)
++	if (!pi)
 +		return;
 +
-+	ice_release_res(hw, ICE_NVM_RES_ID);
-+}
++	hw = pi->hw;
 +
-+/**
-+ * ice_read_sr_word - Reads Shadow RAM word and acquire NVM if necessary
-+ * @hw: pointer to the HW structure
-+ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-+ * @data: word read from the Shadow RAM
-+ *
-+ * Reads one 16 bit word from the Shadow RAM using the ice_read_sr_word_aq.
-+ */
-+static enum ice_status
-+ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data)
-+{
-+	enum ice_status status;
++	list_for_each_entry_safe(agg_info, atmp, &pi->agg_list, list_entry) {
++		struct ice_sched_agg_vsi_info *agg_vsi_info;
++		struct ice_sched_agg_vsi_info *vtmp;
 +
-+	status = ice_acquire_nvm(hw, ICE_RES_READ);
-+	if (!status) {
-+		status = ice_read_sr_word_aq(hw, offset, data);
-+		ice_release_nvm(hw);
++		list_for_each_entry_safe(agg_vsi_info, vtmp,
++					 &agg_info->agg_vsi_list, list_entry) {
++			list_del(&agg_vsi_info->list_entry);
++			devm_kfree(ice_hw_to_dev(hw), agg_vsi_info);
++		}
 +	}
 +
-+	return status;
++	/* remove the vsi list */
++	list_for_each_entry_safe(vsi_elem, tmp, &pi->vsi_info_list,
++				 list_entry) {
++		list_del(&vsi_elem->list_entry);
++		devm_kfree(ice_hw_to_dev(hw), vsi_elem);
++	}
++
++	if (pi->root) {
++		ice_free_sched_node(pi, pi->root);
++		pi->root = NULL;
++	}
 +}
 +
 +/**
-+ * ice_init_nvm - initializes NVM setting
++ * ice_sched_clear_port - clear the scheduler elements from SW DB for a port
++ * @pi: port information structure
++ *
++ * Cleanup scheduling elements from SW DB
++ */
++static void ice_sched_clear_port(struct ice_port_info *pi)
++{
++	if (!pi || pi->port_state != ICE_SCHED_PORT_STATE_READY)
++		return;
++
++	pi->port_state = ICE_SCHED_PORT_STATE_INIT;
++	mutex_lock(&pi->sched_lock);
++	ice_sched_clear_tx_topo(pi);
++	mutex_unlock(&pi->sched_lock);
++	mutex_destroy(&pi->sched_lock);
++}
++
++/**
++ * ice_sched_cleanup_all - cleanup scheduler elements from SW DB for all ports
 + * @hw: pointer to the hw struct
 + *
-+ * This function reads and populates NVM settings such as Shadow RAM size,
-+ * max_timeout, and blank_nvm_mode
++ * Cleanup scheduling elements from SW DB for all the ports
 + */
-+enum ice_status ice_init_nvm(struct ice_hw *hw)
++void ice_sched_cleanup_all(struct ice_hw *hw)
 +{
-+	struct ice_nvm_info *nvm = &hw->nvm;
-+	u16 eetrack_lo, eetrack_hi;
++	if (!hw || !hw->port_info)
++		return;
++
++	if (hw->layer_info)
++		devm_kfree(ice_hw_to_dev(hw), hw->layer_info);
++
++	ice_sched_clear_port(hw->port_info);
++
++	hw->num_tx_sched_layers = 0;
++	hw->num_tx_sched_phys_layers = 0;
++	hw->flattened_layers = 0;
++	hw->max_cgds = 0;
++}
++
++/**
++ * ice_sched_query_res_alloc - query the FW for num of logical sched layers
++ * @hw: pointer to the HW struct
++ *
++ * query FW for allocated scheduler resources and store in HW struct
++ */
++enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw)
++{
++	struct ice_aqc_query_txsched_res_resp *buf;
 +	enum ice_status status = 0;
-+	u32 fla, gens_stat;
-+	u8 sr_size;
 +
-+	/* The SR size is stored regardless of the nvm programming mode
-+	 * as the blank mode may be used in the factory line.
-+	 */
-+	gens_stat = rd32(hw, GLNVM_GENS);
-+	sr_size = (gens_stat & GLNVM_GENS_SR_SIZE_M) >> GLNVM_GENS_SR_SIZE_S;
-+
-+	/* Switching to words (sr_size contains power of 2) */
-+	nvm->sr_words = BIT(sr_size) * ICE_SR_WORDS_IN_1KB;
-+
-+	/* Check if we are in the normal or blank NVM programming mode */
-+	fla = rd32(hw, GLNVM_FLA);
-+	if (fla & GLNVM_FLA_LOCKED_M) { /* Normal programming mode */
-+		nvm->blank_nvm_mode = false;
-+	} else { /* Blank programming mode */
-+		nvm->blank_nvm_mode = true;
-+		status = ICE_ERR_NVM_BLANK_MODE;
-+		ice_debug(hw, ICE_DBG_NVM,
-+			  "NVM init error: unsupported blank mode.\n");
++	if (hw->layer_info)
 +		return status;
++
++	buf = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*buf), GFP_KERNEL);
++	if (!buf)
++		return ICE_ERR_NO_MEMORY;
++
++	status = ice_aq_query_sched_res(hw, sizeof(*buf), buf, NULL);
++	if (status)
++		goto sched_query_out;
++
++	hw->num_tx_sched_layers = le16_to_cpu(buf->sched_props.logical_levels);
++	hw->num_tx_sched_phys_layers =
++		le16_to_cpu(buf->sched_props.phys_levels);
++	hw->flattened_layers = buf->sched_props.flattening_bitmap;
++	hw->max_cgds = buf->sched_props.max_pf_cgds;
++
++	 hw->layer_info = devm_kmemdup(ice_hw_to_dev(hw), buf->layer_props,
++				       (hw->num_tx_sched_layers *
++					sizeof(*hw->layer_info)),
++				       GFP_KERNEL);
++	if (!hw->layer_info) {
++		status = ICE_ERR_NO_MEMORY;
++		goto sched_query_out;
 +	}
 +
-+	status = ice_read_sr_word(hw, ICE_SR_NVM_DEV_STARTER_VER, &hw->nvm.ver);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT,
-+			  "Failed to read DEV starter version.\n");
-+		return status;
-+	}
++sched_query_out:
++	devm_kfree(ice_hw_to_dev(hw), buf);
++	return status;
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
+new file mode 100644
+index 000000000000..fb93acf340ed
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_sched.h
+@@ -0,0 +1,42 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Intel(R) Ethernet Connection E800 Series Linux Driver
++ * Copyright (c) 2018, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * The full GNU General Public License is included in this distribution in
++ * the file called "COPYING".
++ */
 +
-+	status = ice_read_sr_word(hw, ICE_SR_NVM_EETRACK_LO, &eetrack_lo);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to read EETRACK lo.\n");
-+		return status;
-+	}
-+	status = ice_read_sr_word(hw, ICE_SR_NVM_EETRACK_HI, &eetrack_hi);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to read EETRACK hi.\n");
-+		return status;
-+	}
++#ifndef _ICE_SCHED_H_
++#define _ICE_SCHED_H_
 +
-+	hw->nvm.eetrack = (eetrack_hi << 16) | eetrack_lo;
++#include "ice_common.h"
++
++struct ice_sched_agg_vsi_info {
++	struct list_head list_entry;
++	DECLARE_BITMAP(tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
++	u16 vsi_id;
++};
++
++struct ice_sched_agg_info {
++	struct list_head agg_vsi_list;
++	struct list_head list_entry;
++	DECLARE_BITMAP(tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
++	u32 agg_id;
++	enum ice_agg_type agg_type;
++};
++
++/* FW AQ command calls */
++enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw);
++void ice_sched_cleanup_all(struct ice_hw *hw);
++void ice_free_sched_node(struct ice_port_info *pi, struct ice_sched_node *node);
++struct ice_sched_node *ice_sched_get_tc_node(struct ice_port_info *pi, u8 tc);
++#endif /* _ICE_SCHED_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+new file mode 100644
+index 000000000000..5824a1e57a17
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -0,0 +1,158 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Intel(R) Ethernet Connection E800 Series Linux Driver
++ * Copyright (c) 2018, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * The full GNU General Public License is included in this distribution in
++ * the file called "COPYING".
++ */
++
++#include "ice_switch.h"
++
++/**
++ * ice_aq_get_sw_cfg - get switch configuration
++ * @hw: pointer to the hardware structure
++ * @buf: pointer to the result buffer
++ * @buf_size: length of the buffer available for response
++ * @req_desc: pointer to requested descriptor
++ * @num_elems: pointer to number of elements
++ * @cd: pointer to command details structure or NULL
++ *
++ * Get switch configuration (0x0200) to be placed in 'buff'.
++ * This admin command returns information such as initial VSI/port number
++ * and switch ID it belongs to.
++ *
++ * NOTE: *req_desc is both an input/output parameter.
++ * The caller of this function first calls this function with *request_desc set
++ * to 0.  If the response from f/w has *req_desc set to 0, all the switch
++ * configuration information has been returned; if non-zero (meaning not all
++ * the information was returned), the caller should call this function again
++ * with *req_desc set to the previous value returned by f/w to get the
++ * next block of switch configuration information.
++ *
++ * *num_elems is output only parameter. This reflects the number of elements
++ * in response buffer. The caller of this function to use *num_elems while
++ * parsing the response buffer.
++ */
++static enum ice_status
++ice_aq_get_sw_cfg(struct ice_hw *hw, struct ice_aqc_get_sw_cfg_resp *buf,
++		  u16 buf_size, u16 *req_desc, u16 *num_elems,
++		  struct ice_sq_cd *cd)
++{
++	struct ice_aqc_get_sw_cfg *cmd;
++	enum ice_status status;
++	struct ice_aq_desc desc;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_sw_cfg);
++	cmd = &desc.params.get_sw_conf;
++	cmd->element = cpu_to_le16(*req_desc);
++
++	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
++	if (!status) {
++		*req_desc = le16_to_cpu(cmd->element);
++		*num_elems = le16_to_cpu(cmd->num_elems);
++	}
 +
 +	return status;
 +}
-diff --git a/drivers/net/ethernet/intel/ice/ice_osdep.h b/drivers/net/ethernet/intel/ice/ice_osdep.h
-index fc6576a3a9d1..d7af84c714c1 100644
---- a/drivers/net/ethernet/intel/ice/ice_osdep.h
-+++ b/drivers/net/ethernet/intel/ice/ice_osdep.h
-@@ -29,6 +29,7 @@
- #define wr64(a, reg, value)	writeq((value), (@->hw_addr + (reg)))
- #define rd64(a, reg)		readq((a)->hw_addr + (reg))
- 
-+#define ice_flush(a)		rd32((a), GLGEN_STAT)
- #define ICE_M(m, s)		((m) << (s))
- 
- struct ice_dma_mem {
-diff --git a/drivers/net/ethernet/intel/ice/ice_status.h b/drivers/net/ethernet/intel/ice/ice_status.h
-index 940d6f57adcf..1fb6eb8301cf 100644
---- a/drivers/net/ethernet/intel/ice/ice_status.h
-+++ b/drivers/net/ethernet/intel/ice/ice_status.h
-@@ -23,12 +23,17 @@ enum ice_status {
- 	ICE_ERR_PARAM				= -1,
- 	ICE_ERR_NOT_READY			= -3,
- 	ICE_ERR_INVAL_SIZE			= -6,
-+	ICE_ERR_DEVICE_NOT_SUPPORTED		= -8,
-+	ICE_ERR_RESET_FAILED			= -9,
- 	ICE_ERR_FW_API_VER			= -10,
- 	ICE_ERR_NO_MEMORY			= -11,
- 	ICE_ERR_CFG				= -12,
-+	ICE_ERR_OUT_OF_RANGE			= -13,
-+	ICE_ERR_NVM_BLANK_MODE			= -53,
- 	ICE_ERR_AQ_ERROR			= -100,
- 	ICE_ERR_AQ_TIMEOUT			= -101,
- 	ICE_ERR_AQ_FULL				= -102,
-+	ICE_ERR_AQ_NO_WORK			= -103,
- 	ICE_ERR_AQ_EMPTY			= -104,
- };
- 
++
++/* ice_init_port_info - Initialize port_info with switch configuration data
++ * @pi: pointer to port_info
++ * @vsi_port_num: VSI number or port number
++ * @type: Type of switch element (port or VSI)
++ * @swid: switch ID of the switch the element is attached to
++ * @pf_vf_num: PF or VF number
++ * @is_vf: true if the element is a VF, false otherwise
++ */
++static void
++ice_init_port_info(struct ice_port_info *pi, u16 vsi_port_num, u8 type,
++		   u16 swid, u16 pf_vf_num, bool is_vf)
++{
++	switch (type) {
++	case ICE_AQC_GET_SW_CONF_RESP_PHYS_PORT:
++		pi->lport = (u8)(vsi_port_num & ICE_LPORT_MASK);
++		pi->sw_id = swid;
++		pi->pf_vf_num = pf_vf_num;
++		pi->is_vf = is_vf;
++		pi->dflt_tx_vsi_num = ICE_DFLT_VSI_INVAL;
++		pi->dflt_rx_vsi_num = ICE_DFLT_VSI_INVAL;
++		break;
++	default:
++		ice_debug(pi->hw, ICE_DBG_SW,
++			  "incorrect VSI/port type received\n");
++		break;
++	}
++}
++
++/* ice_get_initial_sw_cfg - Get initial port and default VSI data
++ * @hw: pointer to the hardware structure
++ */
++enum ice_status ice_get_initial_sw_cfg(struct ice_hw *hw)
++{
++	struct ice_aqc_get_sw_cfg_resp *rbuf;
++	enum ice_status status;
++	u16 req_desc = 0;
++	u16 num_elems;
++	u16 i;
++
++	rbuf = devm_kzalloc(ice_hw_to_dev(hw), ICE_SW_CFG_MAX_BUF_LEN,
++			    GFP_KERNEL);
++
++	if (!rbuf)
++		return ICE_ERR_NO_MEMORY;
++
++	/* Multiple calls to ice_aq_get_sw_cfg may be required
++	 * to get all the switch configuration information. The need
++	 * for additional calls is indicated by ice_aq_get_sw_cfg
++	 * writing a non-zero value in req_desc
++	 */
++	do {
++		status = ice_aq_get_sw_cfg(hw, rbuf, ICE_SW_CFG_MAX_BUF_LEN,
++					   &req_desc, &num_elems, NULL);
++
++		if (status)
++			break;
++
++		for (i = 0; i < num_elems; i++) {
++			struct ice_aqc_get_sw_cfg_resp_elem *ele;
++			u16 pf_vf_num, swid, vsi_port_num;
++			bool is_vf = false;
++			u8 type;
++
++			ele = rbuf[i].elements;
++			vsi_port_num = le16_to_cpu(ele->vsi_port_num) &
++				ICE_AQC_GET_SW_CONF_RESP_VSI_PORT_NUM_M;
++
++			pf_vf_num = le16_to_cpu(ele->pf_vf_num) &
++				ICE_AQC_GET_SW_CONF_RESP_FUNC_NUM_M;
++
++			swid = le16_to_cpu(ele->swid);
++
++			if (le16_to_cpu(ele->pf_vf_num) &
++			    ICE_AQC_GET_SW_CONF_RESP_IS_VF)
++				is_vf = true;
++
++			type = le16_to_cpu(ele->vsi_port_num) >>
++				ICE_AQC_GET_SW_CONF_RESP_TYPE_S;
++
++			if (type == ICE_AQC_GET_SW_CONF_RESP_VSI) {
++				/* FW VSI is not needed. Just continue. */
++				continue;
++			}
++
++			ice_init_port_info(hw->port_info, vsi_port_num,
++					   type, swid, pf_vf_num, is_vf);
++		}
++	} while (req_desc && !status);
++
++	devm_kfree(ice_hw_to_dev(hw), (void *)rbuf);
++	return status;
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+new file mode 100644
+index 000000000000..57d10e58e0b2
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -0,0 +1,28 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Intel(R) Ethernet Connection E800 Series Linux Driver
++ * Copyright (c) 2018, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * The full GNU General Public License is included in this distribution in
++ * the file called "COPYING".
++ */
++
++#ifndef _ICE_SWITCH_H_
++#define _ICE_SWITCH_H_
++
++#include "ice_common.h"
++
++#define ICE_SW_CFG_MAX_BUF_LEN 2048
++#define ICE_DFLT_VSI_INVAL 0xff
++
++enum ice_status ice_get_initial_sw_cfg(struct ice_hw *hw);
++
++#endif /* _ICE_SWITCH_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index cfa98e55a33a..e40fab48cf7f 100644
+index e40fab48cf7f..69a8c1a5ce84 100644
 --- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -24,20 +24,58 @@
- #include "ice_controlq.h"
- 
+@@ -26,6 +26,8 @@
  /* debug masks - set these bits in hw->debug_mask to control output */
-+#define ICE_DBG_INIT		BIT_ULL(1)
-+#define ICE_DBG_NVM		BIT_ULL(7)
-+#define ICE_DBG_RES		BIT_ULL(17)
+ #define ICE_DBG_INIT		BIT_ULL(1)
+ #define ICE_DBG_NVM		BIT_ULL(7)
++#define ICE_DBG_SW		BIT_ULL(13)
++#define ICE_DBG_SCHED		BIT_ULL(14)
+ #define ICE_DBG_RES		BIT_ULL(17)
  #define ICE_DBG_AQ_MSG		BIT_ULL(24)
  #define ICE_DBG_AQ_CMD		BIT_ULL(27)
- 
-+enum ice_aq_res_ids {
-+	ICE_NVM_RES_ID = 1,
-+	ICE_SPD_RES_ID,
-+	ICE_GLOBAL_CFG_LOCK_RES_ID,
-+	ICE_CHANGE_LOCK_RES_ID
-+};
-+
-+enum ice_aq_res_access_type {
-+	ICE_RES_READ = 1,
-+	ICE_RES_WRITE
-+};
-+
-+/* Various MAC types */
-+enum ice_mac_type {
-+	ICE_MAC_UNKNOWN = 0,
-+	ICE_MAC_GENERIC,
-+};
-+
-+/* Various RESET request, These are not tied with HW reset types */
-+enum ice_reset_req {
-+	ICE_RESET_PFR	= 0,
-+	ICE_RESET_CORER	= 1,
-+	ICE_RESET_GLOBR	= 2,
-+};
-+
- /* Bus parameters */
- struct ice_bus_info {
- 	u16 device;
- 	u8 func;
+@@ -48,6 +50,38 @@ enum ice_mac_type {
+ 	ICE_MAC_GENERIC,
  };
  
-+/* NVM Information */
-+struct ice_nvm_info {
-+	u32 eetrack;              /* NVM data version */
-+	u32 oem_ver;              /* OEM version info */
-+	u16 sr_words;             /* Shadow RAM size in words */
-+	u16 ver;                  /* NVM package version */
-+	bool blank_nvm_mode;      /* is NVM empty (no FW present) */
++/* Common HW capabilities for SW use */
++struct ice_hw_common_caps {
++	/* TX/RX queues */
++	u16 num_rxq;		/* Number/Total RX queues */
++	u16 rxq_first_id;	/* First queue ID for RX queues */
++	u16 num_txq;		/* Number/Total TX queues */
++	u16 txq_first_id;	/* First queue ID for TX queues */
++
++	/* MSI-X vectors */
++	u16 num_msix_vectors;
++	u16 msix_vector_first_id;
++
++	/* Max MTU for function or device */
++	u16 max_mtu;
++
++	/* RSS related capabilities */
++	u16 rss_table_size;		/* 512 for PFs and 64 for VFs */
++	u8 rss_table_entry_width;	/* RSS Entry width in bits */
++};
++
++/* Function specific capabilities */
++struct ice_hw_func_caps {
++	struct ice_hw_common_caps common_cap;
++	u32 guaranteed_num_vsi;
++};
++
++/* Device wide capabilities */
++struct ice_hw_dev_caps {
++	struct ice_hw_common_caps common_cap;
++	u32 num_vsi_allocd_to_host;	/* Excluding EMP VSI */
++};
++
+ /* Various RESET request, These are not tied with HW reset types */
+ enum ice_reset_req {
+ 	ICE_RESET_PFR	= 0,
+@@ -70,10 +104,76 @@ struct ice_nvm_info {
+ 	bool blank_nvm_mode;      /* is NVM empty (no FW present) */
+ };
+ 
++/* Max number of port to queue branches w.r.t topology */
++#define ICE_MAX_TRAFFIC_CLASS 8
++
++struct ice_sched_node {
++	struct ice_sched_node *parent;
++	struct ice_sched_node *sibling; /* next sibling in the same layer */
++	struct ice_sched_node **children;
++	struct ice_aqc_txsched_elem_data info;
++	u32 agg_id;			/* aggregator group id */
++	u16 vsi_id;
++	bool in_use;			/* suspended or in use */
++	u8 tx_sched_layer;		/* Logical Layer (1-9) */
++	u8 num_children;
++	u8 tc_num;
++	u8 owner;
++#define ICE_SCHED_NODE_OWNER_LAN	0
++};
++
++/* The aggregator type determines if identifier is for a VSI group,
++ * aggregator group, aggregator of queues, or queue group.
++ */
++enum ice_agg_type {
++	ICE_AGG_TYPE_UNKNOWN = 0,
++	ICE_AGG_TYPE_VSI,
++	ICE_AGG_TYPE_AGG, /* aggregator */
++	ICE_AGG_TYPE_Q,
++	ICE_AGG_TYPE_QG
++};
++
++/* vsi type list entry to locate corresponding vsi/ag nodes */
++struct ice_sched_vsi_info {
++	struct ice_sched_node *vsi_node[ICE_MAX_TRAFFIC_CLASS];
++	struct ice_sched_node *ag_node[ICE_MAX_TRAFFIC_CLASS];
++	struct list_head list_entry;
++	u16 max_lanq[ICE_MAX_TRAFFIC_CLASS];
++	u16 vsi_id;
++};
++
++/* driver defines the policy */
++struct ice_sched_tx_policy {
++	u16 max_num_vsis;
++	u8 max_num_lan_qs_per_tc[ICE_MAX_TRAFFIC_CLASS];
++	bool rdma_ena;
++};
++
++struct ice_port_info {
++	struct ice_sched_node *root;	/* Root Node per Port */
++	struct ice_hw *hw;		/* back pointer to hw instance */
++	u16 sw_id;			/* Initial switch ID belongs to port */
++	u16 pf_vf_num;
++	u8 port_state;
++#define ICE_SCHED_PORT_STATE_INIT	0x0
++#define ICE_SCHED_PORT_STATE_READY	0x1
++	u16 dflt_tx_vsi_num;
++	u16 dflt_rx_vsi_num;
++	struct mutex sched_lock;	/* protect access to TXSched tree */
++	struct ice_sched_tx_policy sched_policy;
++	struct list_head vsi_info_list;
++	struct list_head agg_list;	/* lists all aggregator */
++	u8 lport;
++#define ICE_LPORT_MASK		0xff
++	bool is_vf;
 +};
 +
  /* Port hardware description */
  struct ice_hw {
  	u8 __iomem *hw_addr;
  	void *back;
++	struct ice_aqc_layer_props *layer_info;
++	struct ice_port_info *port_info;
  	u64 debug_mask;		/* bitmap for debug mask */
-+	enum ice_mac_type mac_type;
+ 	enum ice_mac_type mac_type;
  
- 	/* pci info */
- 	u16 device_id;
-@@ -46,7 +84,11 @@ struct ice_hw {
- 	u16 subsystem_vendor_id;
- 	u8 revision_id;
+@@ -86,8 +186,17 @@ struct ice_hw {
  
-+	u8 pf_id;		/* device profile info */
+ 	u8 pf_id;		/* device profile info */
+ 
++	/* TX Scheduler values */
++	u16 num_tx_sched_layers;
++	u16 num_tx_sched_phys_layers;
++	u8 flattened_layers;
++	u8 max_cgds;
++	u8 sw_entry_point_layer;
 +
  	struct ice_bus_info bus;
-+	struct ice_nvm_info nvm;
-+
+ 	struct ice_nvm_info nvm;
++	struct ice_hw_dev_caps dev_caps;	/* device capabilities */
++	struct ice_hw_func_caps func_caps;	/* function capabilities */
+ 
  	/* Control Queue info */
  	struct ice_ctl_q_info adminq;
- 
-@@ -61,4 +103,11 @@ struct ice_hw {
- 	u32 fw_build;		/* firmware build number */
- };
- 
-+/* Checksum and Shadow RAM pointers */
-+#define ICE_SR_NVM_DEV_STARTER_VER	0x18
-+#define ICE_SR_NVM_EETRACK_LO		0x2D
-+#define ICE_SR_NVM_EETRACK_HI		0x2E
-+#define ICE_SR_SECTOR_SIZE_IN_WORDS	0x800
-+#define ICE_SR_WORDS_IN_1KB		512
-+
- #endif /* _ICE_TYPE_H_ */
 -- 
 2.14.3
 
