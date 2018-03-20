@@ -1,161 +1,94 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 20 Mar 2018 06:23:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 11e08164e0cd186a00163e8ff1d440251cd2b893
-Message-ID: <5ab0386e.JDFNeAlPvtDNMzz1%fengguang.wu@intel.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Mon, 19 Mar 2018 22:42:16 -0400
+Subject: [Intel-wired-lan] [PATCH v4 01/17] i40e/i40evf: Eliminate duplicate
+ barriers on weakly-ordered archs
+In-Reply-To: <1521513753-7325-1-git-send-email-okaya@codeaurora.org>
+References: <1521513753-7325-1-git-send-email-okaya@codeaurora.org>
+Message-ID: <1521513753-7325-2-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 11e08164e0cd186a00163e8ff1d440251cd2b893  ixgbevf: Add XDP queue stats reporting
+Code includes wmb() followed by writel(). writel() already has a barrier
+on some architectures like arm64.
 
-elapsed time: 333m
+This ends up CPU observing two barriers back to back before executing the
+register write.
 
-configs tested: 137
+Since code already has an explicit barrier call, changing writel() to
+writel_relaxed().
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 8 ++++----
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-cris                 etrax-100lx_v2_defconfig
-i386                   randconfig-x013-201811
-i386                   randconfig-x014-201811
-i386                   randconfig-x012-201811
-i386                   randconfig-x015-201811
-i386                   randconfig-x016-201811
-i386                   randconfig-x019-201811
-i386                   randconfig-x010-201811
-i386                   randconfig-x018-201811
-i386                   randconfig-x011-201811
-i386                   randconfig-x017-201811
-i386                     randconfig-n0-201811
-i386                     randconfig-i1-201811
-i386                     randconfig-i0-201811
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                             allmodconfig
-x86_64                 randconfig-x010-201811
-x86_64                 randconfig-x013-201811
-x86_64                 randconfig-x014-201811
-x86_64                 randconfig-x019-201811
-x86_64                 randconfig-x011-201811
-x86_64                 randconfig-x015-201811
-x86_64                 randconfig-x018-201811
-x86_64                 randconfig-x016-201811
-x86_64                 randconfig-x017-201811
-x86_64                 randconfig-x012-201811
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                                   samsung
-arm                        mvebu_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       imx_v6_v7_defconfig
-arm64                            allmodconfig
-arm                           tegra_defconfig
-arm                                      arm5
-arm64                            alldefconfig
-arm                                        sh
-arm                                     arm67
-i386                   randconfig-a0-03190951
-i386                   randconfig-a1-03190951
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-s1-201811
-i386                     randconfig-s0-201811
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-i386                               tinyconfig
-x86_64                   randconfig-i0-201811
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-x073-201811
-i386                   randconfig-x075-201811
-i386                   randconfig-x071-201811
-i386                   randconfig-x076-201811
-i386                   randconfig-x079-201811
-i386                   randconfig-x070-201811
-i386                   randconfig-x077-201811
-i386                   randconfig-x074-201811
-i386                   randconfig-x078-201811
-i386                   randconfig-x072-201811
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-x006-201811
-i386                   randconfig-x000-201811
-i386                   randconfig-x008-201811
-i386                   randconfig-x004-201811
-i386                   randconfig-x009-201811
-i386                   randconfig-x003-201811
-i386                   randconfig-x005-201811
-i386                   randconfig-x002-201811
-i386                   randconfig-x001-201811
-i386                   randconfig-x007-201811
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x002-201811
-x86_64                 randconfig-x006-201811
-x86_64                 randconfig-x005-201811
-x86_64                 randconfig-x009-201811
-x86_64                 randconfig-x004-201811
-x86_64                 randconfig-x001-201811
-x86_64                 randconfig-x008-201811
-x86_64                 randconfig-x003-201811
-x86_64                 randconfig-x000-201811
-x86_64                 randconfig-x007-201811
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index e554aa6cf..9455869 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -185,7 +185,7 @@ static int i40e_program_fdir_filter(struct i40e_fdir_filter *fdir_data,
+ 	/* Mark the data descriptor to be watched */
+ 	first->next_to_watch = tx_desc;
+ 
+-	writel(tx_ring->next_to_use, tx_ring->tail);
++	writel_relaxed(tx_ring->next_to_use, tx_ring->tail);
+ 	return 0;
+ 
+ dma_fail:
+@@ -1375,7 +1375,7 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
+ 	 * such as IA-64).
+ 	 */
+ 	wmb();
+-	writel(val, rx_ring->tail);
++	writel_relaxed(val, rx_ring->tail);
+ }
+ 
+ /**
+@@ -2258,7 +2258,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		 */
+ 		wmb();
+ 
+-		writel(xdp_ring->next_to_use, xdp_ring->tail);
++		writel_relaxed(xdp_ring->next_to_use, xdp_ring->tail);
+ 	}
+ 
+ 	rx_ring->skb = skb;
+@@ -3286,7 +3286,7 @@ static inline int i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 
+ 	/* notify HW of packet */
+ 	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
+-		writel(i, tx_ring->tail);
++		writel_relaxed(i, tx_ring->tail);
+ 
+ 		/* we need this if more than one processor can write to our tail
+ 		 * at a time, it synchronizes IO on IA64/Altix systems
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 357d605..56eea20 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -667,7 +667,7 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
+ 	 * such as IA-64).
+ 	 */
+ 	wmb();
+-	writel(val, rx_ring->tail);
++	writel_relaxed(val, rx_ring->tail);
+ }
+ 
+ /**
+@@ -2243,7 +2243,7 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 
+ 	/* notify HW of packet */
+ 	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
+-		writel(i, tx_ring->tail);
++		writel_relaxed(i, tx_ring->tail);
+ 
+ 		/* we need this if more than one processor can write to our tail
+ 		 * at a time, it synchronizes IO on IA64/Altix systems
+-- 
+2.7.4
 
-Thanks,
-Fengguang
