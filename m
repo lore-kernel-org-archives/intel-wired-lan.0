@@ -1,52 +1,154 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Mon, 19 Mar 2018 22:42:22 -0400
-Subject: [Intel-wired-lan] [PATCH v4 07/17] fm10k: Eliminate duplicate
- barriers on weakly-ordered archs
-In-Reply-To: <1521513753-7325-1-git-send-email-okaya@codeaurora.org>
-References: <1521513753-7325-1-git-send-email-okaya@codeaurora.org>
-Message-ID: <1521513753-7325-8-git-send-email-okaya@codeaurora.org>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 20 Mar 2018 13:03:51 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 87cc3719efa6c6bd875e67892450bd03a9e147e4
+Message-ID: <5ab09637.RyOx0ibmfIuPDe/w%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Code includes wmb() followed by writel(). writel() already has a
-barrier on some architectures like arm64.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 87cc3719efa6c6bd875e67892450bd03a9e147e4  ice: Implement filter sync, NDO operations and bump version
 
-This ends up CPU observing two barriers back to back before executing
-the register write.
+Regressions in current branch:
 
-Since code already has an explicit barrier call, changing writel() to
-writel_relaxed().
+drivers/net/ethernet/intel/ice/ice_ethtool.c:187:42-43: WARNING: Use ARRAY_SIZE
 
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
----
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Error ids grouped by kconfigs:
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 8e12aae..eebef01 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -179,7 +179,7 @@ void fm10k_alloc_rx_buffers(struct fm10k_ring *rx_ring, u16 cleaned_count)
- 		wmb();
- 
- 		/* notify hardware of new descriptors */
--		writel(i, rx_ring->tail);
-+		writel_relaxed(i, rx_ring->tail);
- 	}
- }
- 
-@@ -1054,7 +1054,7 @@ static void fm10k_tx_map(struct fm10k_ring *tx_ring,
- 
- 	/* notify HW of packet */
- 	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
--		writel(i, tx_ring->tail);
-+		writel_relaxed(i, tx_ring->tail);
- 
- 		/* we need this if more than one processor can write to our tail
- 		 * at a time, it synchronizes IO on IA64/Altix systems
--- 
-2.7.4
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-intel-ice-ice_ethtool.c:WARNING:Use-ARRAY_SIZE
 
+elapsed time: 288m
+
+configs tested: 123
+
+i386                   randconfig-x013-201811
+i386                   randconfig-x014-201811
+i386                   randconfig-x012-201811
+i386                   randconfig-x015-201811
+i386                   randconfig-x016-201811
+i386                   randconfig-x019-201811
+i386                   randconfig-x010-201811
+i386                   randconfig-x018-201811
+i386                   randconfig-x011-201811
+i386                   randconfig-x017-201811
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201811
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+i386                     randconfig-i1-201811
+i386                     randconfig-i0-201811
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201811
+x86_64                 randconfig-x013-201811
+x86_64                 randconfig-x014-201811
+x86_64                 randconfig-x019-201811
+x86_64                 randconfig-x011-201811
+x86_64                 randconfig-x015-201811
+x86_64                 randconfig-x018-201811
+x86_64                 randconfig-x016-201811
+x86_64                 randconfig-x017-201811
+x86_64                 randconfig-x012-201811
+i386                   randconfig-a0-03190951
+i386                   randconfig-a1-03190951
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                     randconfig-s1-201811
+i386                     randconfig-s0-201811
+i386                               tinyconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+i386                   randconfig-x006-201811
+i386                   randconfig-x000-201811
+i386                   randconfig-x008-201811
+i386                   randconfig-x004-201811
+i386                   randconfig-x009-201811
+i386                   randconfig-x003-201811
+i386                   randconfig-x005-201811
+i386                   randconfig-x002-201811
+i386                   randconfig-x001-201811
+i386                   randconfig-x007-201811
+i386                   randconfig-x073-201811
+i386                   randconfig-x075-201811
+i386                   randconfig-x071-201811
+i386                   randconfig-x076-201811
+i386                   randconfig-x079-201811
+i386                   randconfig-x070-201811
+i386                   randconfig-x077-201811
+i386                   randconfig-x074-201811
+i386                   randconfig-x078-201811
+i386                   randconfig-x072-201811
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+x86_64                 randconfig-x002-201811
+x86_64                 randconfig-x006-201811
+x86_64                 randconfig-x005-201811
+x86_64                 randconfig-x009-201811
+x86_64                 randconfig-x004-201811
+x86_64                 randconfig-x001-201811
+x86_64                 randconfig-x008-201811
+x86_64                 randconfig-x003-201811
+x86_64                 randconfig-x000-201811
+x86_64                 randconfig-x007-201811
+
+Thanks,
+Fengguang
