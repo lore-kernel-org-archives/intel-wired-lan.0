@@ -1,482 +1,989 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 20 Mar 2018 07:58:05 -0700
-Subject: [Intel-wired-lan] [PATCH v4 01/15] ice: Add basic driver framework
- for Intel(R) E800 Series
+Date: Tue, 20 Mar 2018 07:58:19 -0700
+Subject: [Intel-wired-lan] [PATCH v4 15/15] ice: Implement filter sync,
+ NDO operations and bump version
 In-Reply-To: <20180320145819.19133-1-anirudh.venkataramanan@intel.com>
 References: <20180320145819.19133-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180320145819.19133-2-anirudh.venkataramanan@intel.com>
+Message-ID: <20180320145819.19133-16-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds a basic driver framework for the Intel(R) E800 Ethernet
-Series of network devices. There is no functionality right now other than
-the ability to load.
+This patch implements multiple pieces of functionality:
+
+1. Added ice_vsi_sync_filters, which is called through the service task
+   to push filter updates to the hardware.
+
+2. Add support to enable/disable promiscuous mode on an interface.
+   Enabling/disabling promiscuous mode on an interface results in
+   addition/removal of a promisc filter rule through ice_vsi_sync_filters.
+
+3. Implement handlers for ndo_set_mac_address, ndo_change_mtu,
+   ndo_poll_controller and ndo_set_rx_mode.
+
+This patch also marks the end of the driver addition by bumping up the
+driver version.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- Documentation/networking/ice.txt            |  39 +++++++
- MAINTAINERS                                 |   1 +
- drivers/net/ethernet/intel/Kconfig          |  14 +++
- drivers/net/ethernet/intel/Makefile         |   1 +
- drivers/net/ethernet/intel/ice/Makefile     |  27 +++++
- drivers/net/ethernet/intel/ice/ice.h        |  48 ++++++++
- drivers/net/ethernet/intel/ice/ice_devids.h |  33 ++++++
- drivers/net/ethernet/intel/ice/ice_main.c   | 172 ++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_type.h   |  42 +++++++
- 9 files changed, 377 insertions(+)
- create mode 100644 Documentation/networking/ice.txt
- create mode 100644 drivers/net/ethernet/intel/ice/Makefile
- create mode 100644 drivers/net/ethernet/intel/ice/ice.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_devids.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_main.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_type.h
+ drivers/net/ethernet/intel/ice/ice.h            |  14 +
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  21 +
+ drivers/net/ethernet/intel/ice/ice_common.c     |  28 ++
+ drivers/net/ethernet/intel/ice/ice_common.h     |   3 +
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h  |  12 +
+ drivers/net/ethernet/intel/ice/ice_main.c       | 567 +++++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_switch.c     |  77 ++++
+ drivers/net/ethernet/intel/ice/ice_switch.h     |   2 +
+ drivers/net/ethernet/intel/ice/ice_type.h       |   5 +
+ 9 files changed, 728 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/networking/ice.txt b/Documentation/networking/ice.txt
-new file mode 100644
-index 000000000000..6261c46378e1
---- /dev/null
-+++ b/Documentation/networking/ice.txt
-@@ -0,0 +1,39 @@
-+Intel(R) Ethernet Connection E800 Series Linux Driver
-+===================================================================
-+
-+Intel ice Linux driver.
-+Copyright(c) 2018 Intel Corporation.
-+
-+Contents
-+========
-+- Enabling the driver
-+- Support
-+
-+The driver in this release supports Intel's E800 Series of products. For
-+more information, visit Intel's support page at http://support.intel.com.
-+
-+Enabling the driver
-+===================
-+
-+The driver is enabled via the standard kernel configuration system,
-+using the make command:
-+
-+     Make oldconfig/silentoldconfig/menuconfig/etc.
-+
-+The driver is located in the menu structure at:
-+
-+	-> Device Drivers
-+	  -> Network device support (NETDEVICES [=y])
-+	    -> Ethernet driver support
-+	      -> Intel devices
-+	        -> Intel(R) Ethernet Connection E800 Series Support
-+
-+Support
-+=======
-+
-+For general information, go to the Intel support website at:
-+
-+    http://support.intel.com
-+
-+If an issue is identified with the released source code, please email
-+the maintainer listed in the MAINTAINERS file.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 214c9bca232a..79f9c33904bc 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7063,6 +7063,7 @@ F:	Documentation/networking/ixgbe.txt
- F:	Documentation/networking/ixgbevf.txt
- F:	Documentation/networking/i40e.txt
- F:	Documentation/networking/i40evf.txt
-+F:	Documentation/networking/ice.txt
- F:	drivers/net/ethernet/intel/
- F:	drivers/net/ethernet/intel/*/
- F:	include/linux/avf/virtchnl.h
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 1feb54b6d92e..14d287bed33c 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -251,6 +251,20 @@ config I40EVF
- 	  will be called i40evf.  MSI-X interrupt support is required
- 	  for this driver to work correctly.
- 
-+config ICE
-+	tristate "Intel(R) Ethernet Connection E800 Series Support"
-+	default n
-+	depends on PCI_MSI
-+	---help---
-+	  This driver supports Intel(R) Ethernet Connection E800 Series of
-+	  devices.  For more information on how to identify your adapter, go
-+	  to the Adapter & Driver ID Guide that can be located at:
-+
-+	  <http://support.intel.com>
-+
-+	  To compile this driver as a module, choose M here. The module
-+	  will be called ice.
-+
- config FM10K
- 	tristate "Intel(R) FM10000 Ethernet Switch Host Interface Support"
- 	default n
-diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
-index 90af7757a885..807a4f8c7e4e 100644
---- a/drivers/net/ethernet/intel/Makefile
-+++ b/drivers/net/ethernet/intel/Makefile
-@@ -14,3 +14,4 @@ obj-$(CONFIG_I40E) += i40e/
- obj-$(CONFIG_IXGB) += ixgb/
- obj-$(CONFIG_I40EVF) += i40evf/
- obj-$(CONFIG_FM10K) += fm10k/
-+obj-$(CONFIG_ICE) += ice/
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-new file mode 100644
-index 000000000000..2a177ea21b74
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -0,0 +1,27 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+################################################################################
-+#
-+# Intel(R) Ethernet Connection E800 Series Linux Driver
-+# Copyright (c) 2018, Intel Corporation.
-+#
-+# This program is free software; you can redistribute it and/or modify it
-+# under the terms and conditions of the GNU General Public License,
-+# version 2, as published by the Free Software Foundation.
-+#
-+# This program is distributed in the hope it will be useful, but WITHOUT
-+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+# more details.
-+#
-+# The full GNU General Public License is included in this distribution in
-+# the file called "COPYING".
-+#
-+################################################################################
-+
-+#
-+# Makefile for the Intel(R) Ethernet Connection E800 Series Linux Driver
-+#
-+
-+obj-$(CONFIG_ICE) += ice.o
-+
-+ice-y := ice_main.o
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-new file mode 100644
-index 000000000000..d781027330cc
---- /dev/null
+index 6d7d03b80dbf..9bb8a99b929e 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -0,0 +1,48 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
-+
-+#ifndef _ICE_H_
-+#define _ICE_H_
-+
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/netdevice.h>
-+#include <linux/compiler.h>
-+#include <linux/pci.h>
-+#include <linux/aer.h>
-+#include <linux/bitmap.h>
-+#include "ice_devids.h"
-+#include "ice_type.h"
-+
-+#define ICE_BAR0		0
-+
-+#define ICE_DFLT_NETIF_M (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
-+
-+enum ice_state {
-+	__ICE_DOWN,
-+	__ICE_STATE_NBITS		/* must be last */
+@@ -139,11 +139,20 @@ enum ice_state {
+ 	__ICE_SUSPENDED,		/* set on module remove path */
+ 	__ICE_RESET_FAILED,		/* set by reset/rebuild */
+ 	__ICE_ADMINQ_EVENT_PENDING,
++	__ICE_FLTR_OVERFLOW_PROMISC,
+ 	__ICE_CFG_BUSY,
+ 	__ICE_SERVICE_SCHED,
+ 	__ICE_STATE_NBITS		/* must be last */
+ };
+ 
++enum ice_vsi_flags {
++	ICE_VSI_FLAG_UMAC_FLTR_CHANGED,
++	ICE_VSI_FLAG_MMAC_FLTR_CHANGED,
++	ICE_VSI_FLAG_VLAN_FLTR_CHANGED,
++	ICE_VSI_FLAG_PROMISC_CHANGED,
++	ICE_VSI_FLAG_NBITS		/* must be last */
 +};
 +
-+struct ice_pf {
-+	struct pci_dev *pdev;
-+	DECLARE_BITMAP(state, __ICE_STATE_NBITS);
-+	u32 msg_enable;
-+	struct ice_hw hw;
+ /* struct that defines a VSI, associated with a dev */
+ struct ice_vsi {
+ 	struct net_device *netdev;
+@@ -158,7 +167,9 @@ struct ice_vsi {
+ 
+ 	u64 tx_linearize;
+ 	DECLARE_BITMAP(state, __ICE_STATE_NBITS);
++	DECLARE_BITMAP(flags, ICE_VSI_FLAG_NBITS);
+ 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
++	unsigned int current_netdev_flags;
+ 	u32 tx_restart;
+ 	u32 tx_busy;
+ 	u32 rx_buf_failed;
+@@ -189,6 +200,9 @@ struct ice_vsi {
+ 	struct ice_eth_stats eth_stats;
+ 	struct ice_eth_stats eth_stats_prev;
+ 
++	struct list_head tmp_sync_list;		/* MAC filters to be synced */
++	struct list_head tmp_unsync_list;	/* MAC filters to be unsynced */
++
+ 	bool irqs_ready;
+ 	bool current_isup;		 /* Sync 'link up' logging */
+ 	bool stat_offsets_loaded;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 8cade22c1cf6..fc19c287ebc5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -149,6 +149,24 @@ struct ice_aqc_manage_mac_read_resp {
+ 	u8 mac_addr[ETH_ALEN];
+ };
+ 
++/* Manage MAC address, write command - direct (0x0108) */
++struct ice_aqc_manage_mac_write {
++	u8 port_num;
++	u8 flags;
++#define ICE_AQC_MAN_MAC_WR_MC_MAG_EN		BIT(0)
++#define ICE_AQC_MAN_MAC_WR_WOL_LAA_PFR_KEEP	BIT(1)
++#define ICE_AQC_MAN_MAC_WR_S		6
++#define ICE_AQC_MAN_MAC_WR_M		(3 << ICE_AQC_MAN_MAC_WR_S)
++#define ICE_AQC_MAN_MAC_UPDATE_LAA	0
++#define ICE_AQC_MAN_MAC_UPDATE_LAA_WOL	(BIT(0) << ICE_AQC_MAN_MAC_WR_S)
++	/* High 16 bits of MAC address in big endian order */
++	__be16 sah;
++	/* Low 32 bits of MAC address in big endian order */
++	__be32 sal;
++	__le32 addr_high;
++	__le32 addr_low;
 +};
-+#endif /* _ICE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_devids.h b/drivers/net/ethernet/intel/ice/ice_devids.h
-new file mode 100644
-index 000000000000..d6bfee547b88
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_devids.h
-@@ -0,0 +1,33 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
 +
-+#ifndef _ICE_DEVIDS_H_
-+#define _ICE_DEVIDS_H_
-+
-+/* Device IDs */
-+/* Intel(R) Ethernet Controller C810 for backplane */
-+#define ICE_DEV_ID_C810_BACKPLANE	0x1591
-+/* Intel(R) Ethernet Controller C810 for QSFP */
-+#define ICE_DEV_ID_C810_QSFP		0x1592
-+/* Intel(R) Ethernet Controller C810 for SFP */
-+#define ICE_DEV_ID_C810_SFP		0x1593
-+/* Intel(R) Ethernet Controller C810/X557-AT 10GBASE-T */
-+#define ICE_DEV_ID_C810_10G_BASE_T	0x1594
-+/* Intel(R) Ethernet Controller C810 1GbE */
-+#define ICE_DEV_ID_C810_SGMII		0x1595
-+
-+#endif /* _ICE_DEVIDS_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-new file mode 100644
-index 000000000000..0631812aef2b
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -0,0 +1,172 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
-+
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include "ice.h"
-+
-+#define DRV_VERSION	"ice-0.0.1-k"
-+#define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
-+static const char ice_drv_ver[] = DRV_VERSION;
-+static const char ice_driver_string[] = DRV_SUMMARY;
-+static const char ice_copyright[] = "Copyright (c) 2018, Intel Corporation.";
-+
-+MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
-+MODULE_DESCRIPTION(DRV_SUMMARY);
-+MODULE_LICENSE("GPL");
-+MODULE_VERSION(DRV_VERSION);
-+
-+static int debug = -1;
-+module_param(debug, int, 0644);
-+MODULE_PARM_DESC(debug, "netif message level (0=none,...,0x7FFF=all)");
-+
+ /* Clear PXE Command and response (direct 0x0110) */
+ struct ice_aqc_clear_pxe {
+ 	u8 rx_cnt;
+@@ -1228,6 +1246,7 @@ struct ice_aq_desc {
+ 		struct ice_aqc_q_shutdown q_shutdown;
+ 		struct ice_aqc_req_res res_owner;
+ 		struct ice_aqc_manage_mac_read mac_read;
++		struct ice_aqc_manage_mac_write mac_write;
+ 		struct ice_aqc_clear_pxe clear_pxe;
+ 		struct ice_aqc_list_caps get_cap;
+ 		struct ice_aqc_get_phy_caps get_phy;
+@@ -1272,6 +1291,7 @@ enum ice_aq_err {
+ 	ICE_AQ_RC_ENOMEM	= 9,  /* Out of memory */
+ 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
+ 	ICE_AQ_RC_EEXIST	= 13, /* object already exists */
++	ICE_AQ_RC_ENOSPC	= 16, /* No space left or allocation failure */
+ };
+ 
+ /* Admin Queue command opcodes */
+@@ -1290,6 +1310,7 @@ enum ice_adminq_opc {
+ 
+ 	/* manage MAC address */
+ 	ice_aqc_opc_manage_mac_read			= 0x0107,
++	ice_aqc_opc_manage_mac_write			= 0x0108,
+ 
+ 	/* PXE */
+ 	ice_aqc_opc_clear_pxe_mode			= 0x0110,
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 316262b3c7a0..a36220792026 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1246,6 +1246,34 @@ enum ice_status ice_get_caps(struct ice_hw *hw)
+ 	return status;
+ }
+ 
 +/**
-+ * ice_probe - Device initialization routine
-+ * @pdev: PCI device information struct
-+ * @ent: entry in ice_pci_tbl
++ * ice_aq_manage_mac_write - manage MAC address write command
++ * @hw: pointer to the hw struct
++ * @mac_addr: MAC address to be written as LAA/LAA+WoL/Port address
++ * @flags: flags to control write behavior
++ * @cd: pointer to command details structure or NULL
 + *
-+ * Returns 0 on success, negative on failure
++ * This function is used to write MAC address to the NVM (0x0108).
 + */
-+static int ice_probe(struct pci_dev *pdev,
-+		     const struct pci_device_id __always_unused *ent)
++enum ice_status
++ice_aq_manage_mac_write(struct ice_hw *hw, u8 *mac_addr, u8 flags,
++			struct ice_sq_cd *cd)
 +{
-+	struct ice_pf *pf;
-+	struct ice_hw *hw;
-+	int err;
++	struct ice_aqc_manage_mac_write *cmd;
++	struct ice_aq_desc desc;
 +
-+	/* this driver uses devres, see Documentation/driver-model/devres.txt */
-+	err = pcim_enable_device(pdev);
-+	if (err)
-+		return err;
++	cmd = &desc.params.mac_write;
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_manage_mac_write);
 +
-+	err = pcim_iomap_regions(pdev, BIT(ICE_BAR0), pci_name(pdev));
-+	if (err) {
-+		dev_err(&pdev->dev, "I/O map error %d\n", err);
-+		return err;
-+	}
++	cmd->flags = flags;
 +
-+	pf = devm_kzalloc(&pdev->dev, sizeof(*pf), GFP_KERNEL);
-+	if (!pf)
-+		return -ENOMEM;
++	/* Prep values for flags, sah, sal */
++	cmd->sah = htons(*((u16 *)mac_addr));
++	cmd->sal = htonl(*((u32 *)(mac_addr + 2)));
 +
-+	/* set up for high or low dma */
-+	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
-+	if (err)
-+		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
-+	if (err) {
-+		dev_err(&pdev->dev, "DMA configuration failed: 0x%x\n", err);
-+		return err;
-+	}
++	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
++}
 +
-+	pci_enable_pcie_error_reporting(pdev);
-+	pci_set_master(pdev);
+ /**
+  * ice_aq_clear_pxe_mode
+  * @hw: pointer to the hw struct
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 2921f3c6ce4b..8e87d3b95d5f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -72,6 +72,9 @@ enum ice_status
+ ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc,
+ 		void *buf, u16 buf_size, struct ice_sq_cd *cd);
+ enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd);
++enum ice_status
++ice_aq_manage_mac_write(struct ice_hw *hw, u8 *mac_addr, u8 flags,
++			struct ice_sq_cd *cd);
+ enum ice_status ice_clear_pf_cfg(struct ice_hw *hw);
+ enum ice_status
+ ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool atomic_restart);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index b1f38624da21..67fb0a9ba0df 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -367,6 +367,18 @@ enum ice_tx_desc_len_fields {
+ 	ICE_TX_DESC_LEN_L4_LEN_S	= 14 /* 4 BITS */
+ };
+ 
++#define ICE_TXD_QW1_MACLEN_M (0x7FUL << ICE_TX_DESC_LEN_MACLEN_S)
++#define ICE_TXD_QW1_IPLEN_M  (0x7FUL << ICE_TX_DESC_LEN_IPLEN_S)
++#define ICE_TXD_QW1_L4LEN_M  (0xFUL << ICE_TX_DESC_LEN_L4_LEN_S)
 +
-+	pf->pdev = pdev;
-+	pci_set_drvdata(pdev, pf);
-+	set_bit(__ICE_DOWN, pf->state);
++/* Tx descriptor field limits in bytes */
++#define ICE_TXD_MACLEN_MAX ((ICE_TXD_QW1_MACLEN_M >> \
++			     ICE_TX_DESC_LEN_MACLEN_S) * ICE_BYTES_PER_WORD)
++#define ICE_TXD_IPLEN_MAX ((ICE_TXD_QW1_IPLEN_M >> \
++			    ICE_TX_DESC_LEN_IPLEN_S) * ICE_BYTES_PER_DWORD)
++#define ICE_TXD_L4LEN_MAX ((ICE_TXD_QW1_L4LEN_M >> \
++			    ICE_TX_DESC_LEN_L4_LEN_S) * ICE_BYTES_PER_DWORD)
 +
-+	hw = &pf->hw;
-+	hw->hw_addr = pcim_iomap_table(pdev)[ICE_BAR0];
-+	hw->back = pf;
-+	hw->vendor_id = pdev->vendor;
-+	hw->device_id = pdev->device;
-+	pci_read_config_byte(pdev, PCI_REVISION_ID, &hw->revision_id);
-+	hw->subsystem_vendor_id = pdev->subsystem_vendor;
-+	hw->subsystem_device_id = pdev->subsystem_device;
-+	hw->bus.device = PCI_SLOT(pdev->devfn);
-+	hw->bus.func = PCI_FUNC(pdev->devfn);
-+	pf->msg_enable = netif_msg_init(debug, ICE_DFLT_NETIF_M);
+ #define ICE_TXD_QW1_TX_BUF_SZ_S	34
+ #define ICE_TXD_QW1_L2TAG1_S	48
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 90f44be5f858..faffb6c8f05c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -21,7 +21,7 @@
+ 
+ #include "ice.h"
+ 
+-#define DRV_VERSION	"ice-0.0.1-k"
++#define DRV_VERSION	"ice-0.7.0-k"
+ #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
+ const char ice_drv_ver[] = DRV_VERSION;
+ static const char ice_driver_string[] = DRV_SUMMARY;
+@@ -214,6 +214,48 @@ static int ice_add_mac_to_list(struct ice_vsi *vsi, struct list_head *add_list,
+ 	return 0;
+ }
+ 
++/**
++ * ice_add_mac_to_sync_list - creates list of mac addresses to be synced
++ * @netdev: the net device on which the sync is happening
++ * @addr: mac address to sync
++ *
++ * This is a callback function which is called by the in kernel device sync
++ * functions (like __dev_uc_sync, __dev_mc_sync, etc). This function only
++ * populates the tmp_sync_list, which is later used by ice_add_mac to add the
++ * mac filters from the hardware.
++ */
++static int ice_add_mac_to_sync_list(struct net_device *netdev, const u8 *addr)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++
++	if (ice_add_mac_to_list(vsi, &vsi->tmp_sync_list, addr))
++		return -EINVAL;
 +
 +	return 0;
 +}
 +
 +/**
-+ * ice_remove - Device removal routine
-+ * @pdev: PCI device information struct
++ * ice_add_mac_to_unsync_list - creates list of mac addresses to be unsynced
++ * @netdev: the net device on which the unsync is happening
++ * @addr: mac address to unsync
++ *
++ * This is a callback function which is called by the in kernel device unsync
++ * functions (like __dev_uc_unsync, __dev_mc_unsync, etc). This function only
++ * populates the tmp_unsync_list, which is later used by ice_remove_mac to
++ * delete the mac filters from the hardware.
 + */
-+static void ice_remove(struct pci_dev *pdev)
++static int ice_add_mac_to_unsync_list(struct net_device *netdev, const u8 *addr)
 +{
-+	struct ice_pf *pf = pci_get_drvdata(pdev);
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
 +
-+	if (!pf)
++	if (ice_add_mac_to_list(vsi, &vsi->tmp_unsync_list, addr))
++		return -EINVAL;
++
++	return 0;
++}
++
+ /**
+  * ice_free_fltr_list - free filter lists helper
+  * @dev: pointer to the device struct
+@@ -232,6 +274,183 @@ static void ice_free_fltr_list(struct device *dev, struct list_head *h)
+ 	}
+ }
+ 
++/**
++ * ice_vsi_fltr_changed - check if filter state changed
++ * @vsi: VSI to be checked
++ *
++ * returns true if filter state has changed, false otherwise.
++ */
++static bool ice_vsi_fltr_changed(struct ice_vsi *vsi)
++{
++	return test_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags) ||
++	       test_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags) ||
++	       test_bit(ICE_VSI_FLAG_VLAN_FLTR_CHANGED, vsi->flags);
++}
++
++/**
++ * ice_vsi_sync_fltr - Update the VSI filter list to the HW
++ * @vsi: ptr to the VSI
++ *
++ * Push any outstanding VSI filter changes through the AdminQ.
++ */
++static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
++{
++	struct device *dev = &vsi->back->pdev->dev;
++	struct net_device *netdev = vsi->netdev;
++	bool promisc_forced_on = false;
++	struct ice_pf *pf = vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	enum ice_status status = 0;
++	u32 changed_flags = 0;
++	int err = 0;
++
++	if (!vsi->netdev)
++		return -EINVAL;
++
++	while (test_and_set_bit(__ICE_CFG_BUSY, vsi->state))
++		usleep_range(1000, 2000);
++
++	changed_flags = vsi->current_netdev_flags ^ vsi->netdev->flags;
++	vsi->current_netdev_flags = vsi->netdev->flags;
++
++	INIT_LIST_HEAD(&vsi->tmp_sync_list);
++	INIT_LIST_HEAD(&vsi->tmp_unsync_list);
++
++	if (ice_vsi_fltr_changed(vsi)) {
++		clear_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags);
++		clear_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags);
++		clear_bit(ICE_VSI_FLAG_VLAN_FLTR_CHANGED, vsi->flags);
++
++		/* grab the netdev's addr_list_lock */
++		netif_addr_lock_bh(netdev);
++		__dev_uc_sync(netdev, ice_add_mac_to_sync_list,
++			      ice_add_mac_to_unsync_list);
++		__dev_mc_sync(netdev, ice_add_mac_to_sync_list,
++			      ice_add_mac_to_unsync_list);
++		/* our temp lists are populated. release lock */
++		netif_addr_unlock_bh(netdev);
++	}
++
++	/* Remove mac addresses in the unsync list */
++	status = ice_remove_mac(hw, &vsi->tmp_unsync_list);
++	ice_free_fltr_list(dev, &vsi->tmp_unsync_list);
++	if (status) {
++		netdev_err(netdev, "Failed to delete MAC filters\n");
++		/* if we failed because of alloc failures, just bail */
++		if (status == ICE_ERR_NO_MEMORY) {
++			err = -ENOMEM;
++			goto out;
++		}
++	}
++
++	/* Add mac addresses in the sync list */
++	status = ice_add_mac(hw, &vsi->tmp_sync_list);
++	ice_free_fltr_list(dev, &vsi->tmp_sync_list);
++	if (status) {
++		netdev_err(netdev, "Failed to add MAC filters\n");
++		/* If there is no more space for new umac filters, vsi
++		 * should go into promiscuous mode. There should be some
++		 * space reserved for promiscuous filters.
++		 */
++		if (hw->adminq.sq_last_status == ICE_AQ_RC_ENOSPC &&
++		    !test_and_set_bit(__ICE_FLTR_OVERFLOW_PROMISC,
++				      vsi->state)) {
++			promisc_forced_on = true;
++			netdev_warn(netdev,
++				    "Reached MAC filter limit, forcing promisc mode on VSI %d\n",
++				    vsi->vsi_num);
++		} else {
++			err = -EIO;
++			goto out;
++		}
++	}
++	/* check for changes in promiscuous modes */
++	if (changed_flags & IFF_ALLMULTI)
++		netdev_warn(netdev, "Unsupported configuration\n");
++
++	if (((changed_flags & IFF_PROMISC) || promisc_forced_on) ||
++	    test_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags)) {
++		clear_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags);
++		if (vsi->current_netdev_flags & IFF_PROMISC) {
++			/* Apply TX filter rule to get traffic from VMs */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, true,
++						  ICE_FLTR_TX);
++			if (status) {
++				netdev_err(netdev, "Error setting default VSI %i tx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags &= ~IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++			/* Apply RX filter rule to get traffic from wire */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, true,
++						  ICE_FLTR_RX);
++			if (status) {
++				netdev_err(netdev, "Error setting default VSI %i rx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags &= ~IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++		} else {
++			/* Clear TX filter rule to stop traffic from VMs */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, false,
++						  ICE_FLTR_TX);
++			if (status) {
++				netdev_err(netdev, "Error clearing default VSI %i tx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags |= IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++			/* Clear filter RX to remove traffic from wire */
++			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, false,
++						  ICE_FLTR_RX);
++			if (status) {
++				netdev_err(netdev, "Error clearing default VSI %i rx rule\n",
++					   vsi->vsi_num);
++				vsi->current_netdev_flags |= IFF_PROMISC;
++				err = -EIO;
++				goto out_promisc;
++			}
++		}
++	}
++	goto exit;
++
++out_promisc:
++	set_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags);
++	goto exit;
++out:
++	/* if something went wrong then set the changed flag so we try again */
++	set_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags);
++	set_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags);
++exit:
++	clear_bit(__ICE_CFG_BUSY, vsi->state);
++	return err;
++}
++
++/**
++ * ice_sync_fltr_subtask - Sync the VSI filter list with HW
++ * @pf: board private structure
++ */
++static void ice_sync_fltr_subtask(struct ice_pf *pf)
++{
++	int v;
++
++	if (!pf || !(test_bit(ICE_FLAG_FLTR_SYNC, pf->flags)))
 +		return;
 +
-+	set_bit(__ICE_DOWN, pf->state);
-+	pci_disable_pcie_error_reporting(pdev);
++	clear_bit(ICE_FLAG_FLTR_SYNC, pf->flags);
++
++	for (v = 0; v < pf->num_alloc_vsi; v++)
++		if (pf->vsi[v] && ice_vsi_fltr_changed(pf->vsi[v]) &&
++		    ice_vsi_sync_fltr(pf->vsi[v])) {
++			/* come back and try again later */
++			set_bit(ICE_FLAG_FLTR_SYNC, pf->flags);
++			break;
++		}
 +}
 +
-+/* ice_pci_tbl - PCI Device ID Table
+ /**
+  * ice_is_reset_recovery_pending - schedule a reset
+  * @state: pf state field
+@@ -794,6 +1013,7 @@ static void ice_service_task(struct work_struct *work)
+ 		return;
+ 	}
+ 
++	ice_sync_fltr_subtask(pf);
+ 	ice_watchdog_subtask(pf);
+ 	ice_clean_adminq_subtask(pf);
+ 
+@@ -2505,6 +2725,7 @@ static int ice_vsi_reinit_setup(struct ice_vsi *vsi)
+ 	ice_vsi_free_q_vectors(vsi);
+ err_rings:
+ 	if (vsi->netdev) {
++		vsi->current_netdev_flags = 0;
+ 		unregister_netdev(vsi->netdev);
+ 		free_netdev(vsi->netdev);
+ 		vsi->netdev = NULL;
+@@ -3314,6 +3535,197 @@ static void __exit ice_module_exit(void)
+ }
+ module_exit(ice_module_exit);
+ 
++/**
++ * ice_set_mac_address - NDO callback to set mac address
++ * @netdev: network interface device structure
++ * @pi: pointer to an address structure
 + *
-+ * Wildcard entries (PCI_ANY_ID) should come last
-+ * Last entry must be all 0s
-+ *
-+ * { Vendor ID, Device ID, SubVendor ID, SubDevice ID,
-+ *   Class, Class Mask, private data (not used) }
++ * Returns 0 on success, negative on failure
 + */
-+static const struct pci_device_id ice_pci_tbl[] = {
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_BACKPLANE), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_QSFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_SFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_10G_BASE_T), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_C810_SGMII), 0 },
-+	/* required last entry */
-+	{ 0, }
-+};
-+MODULE_DEVICE_TABLE(pci, ice_pci_tbl);
++static int ice_set_mac_address(struct net_device *netdev, void *pi)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	struct sockaddr *addr = pi;
++	enum ice_status status;
++	LIST_HEAD(a_mac_list);
++	LIST_HEAD(r_mac_list);
++	u8 flags = 0;
++	int err;
++	u8 *mac;
 +
-+static struct pci_driver ice_driver = {
-+	.name = KBUILD_MODNAME,
-+	.id_table = ice_pci_tbl,
-+	.probe = ice_probe,
-+	.remove = ice_remove,
-+};
++	mac = (u8 *)addr->sa_data;
++
++	if (!is_valid_ether_addr(mac))
++		return -EADDRNOTAVAIL;
++
++	if (ether_addr_equal(netdev->dev_addr, mac)) {
++		netdev_warn(netdev, "already using mac %pM\n", mac);
++		return 0;
++	}
++
++	if (test_bit(__ICE_DOWN, pf->state) ||
++	    ice_is_reset_recovery_pending(pf->state)) {
++		netdev_err(netdev, "can't set mac %pM. device not ready\n",
++			   mac);
++		return -EBUSY;
++	}
++
++	/* When we change the mac address we also have to change the mac address
++	 * based filter rules that were created previously for the old mac
++	 * address. So first, we remove the old filter rule using ice_remove_mac
++	 * and then create a new filter rule using ice_add_mac. Note that for
++	 * both these operations, we first need to form a "list" of mac
++	 * addresses (even though in this case, we have only 1 mac address to be
++	 * added/removed) and this done using ice_add_mac_to_list. Depending on
++	 * the ensuing operation this "list" of mac addresses is either to be
++	 * added or removed from the filter.
++	 */
++	err = ice_add_mac_to_list(vsi, &r_mac_list, netdev->dev_addr);
++	if (err) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++	status = ice_remove_mac(hw, &r_mac_list);
++	if (status) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++	err = ice_add_mac_to_list(vsi, &a_mac_list, mac);
++	if (err) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++	status = ice_add_mac(hw, &a_mac_list);
++	if (status) {
++		err = -EADDRNOTAVAIL;
++		goto free_lists;
++	}
++
++free_lists:
++	/* free list entries */
++	ice_free_fltr_list(&pf->pdev->dev, &r_mac_list);
++	ice_free_fltr_list(&pf->pdev->dev, &a_mac_list);
++
++	if (err) {
++		netdev_err(netdev, "can't set mac %pM. filter update failed\n",
++			   mac);
++		return err;
++	}
++
++	/* change the netdev's mac address */
++	memcpy(netdev->dev_addr, mac, netdev->addr_len);
++	netdev_dbg(vsi->netdev, "updated mac address to %pM\n",
++		   netdev->dev_addr);
++
++	/* write new mac address to the firmware */
++	flags = ICE_AQC_MAN_MAC_UPDATE_LAA_WOL;
++	status = ice_aq_manage_mac_write(hw, mac, flags, NULL);
++	if (status) {
++		netdev_err(netdev, "can't set mac %pM. write to firmware failed.\n",
++			   mac);
++	}
++	return 0;
++}
 +
 +/**
-+ * ice_module_init - Driver registration routine
-+ *
-+ * ice_module_init is the first routine called when the driver is
-+ * loaded. All it does is register with the PCI subsystem.
++ * ice_set_rx_mode - NDO callback to set the netdev filters
++ * @netdev: network interface device structure
 + */
-+static int __init ice_module_init(void)
++static void ice_set_rx_mode(struct net_device *netdev)
 +{
-+	int status;
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
 +
-+	pr_info("%s - version %s\n", ice_driver_string, ice_drv_ver);
-+	pr_info("%s\n", ice_copyright);
++	if (!vsi)
++		return;
 +
-+	status = pci_register_driver(&ice_driver);
-+	if (status)
-+		pr_err("failed to register pci driver, err %d\n", status);
++	/* Set the flags to synchronize filters
++	 * ndo_set_rx_mode may be triggered even without a change in netdev
++	 * flags
++	 */
++	set_bit(ICE_VSI_FLAG_UMAC_FLTR_CHANGED, vsi->flags);
++	set_bit(ICE_VSI_FLAG_MMAC_FLTR_CHANGED, vsi->flags);
++	set_bit(ICE_FLAG_FLTR_SYNC, vsi->back->flags);
 +
++	/* schedule our worker thread which will take care of
++	 * applying the new filter changes
++	 */
++	ice_service_task_schedule(vsi->back);
++}
++
++/**
++ * ice_fdb_add - add an entry to the hardware database
++ * @ndm: the input from the stack
++ * @tb: pointer to array of nladdr (unused)
++ * @dev: the net device pointer
++ * @addr: the MAC address entry being added
++ * @vid: VLAN id
++ * @flags: instructions from stack about fdb operation
++ */
++static int ice_fdb_add(struct ndmsg *ndm, struct nlattr __always_unused *tb[],
++		       struct net_device *dev, const unsigned char *addr,
++		       u16 vid, u16 flags)
++{
++	int err;
++
++	if (vid) {
++		netdev_err(dev, "VLANs aren't supported yet for dev_uc|mc_add()\n");
++		return -EINVAL;
++	}
++	if (ndm->ndm_state && !(ndm->ndm_state & NUD_PERMANENT)) {
++		netdev_err(dev, "FDB only supports static addresses\n");
++		return -EINVAL;
++	}
++
++	if (is_unicast_ether_addr(addr) || is_link_local_ether_addr(addr))
++		err = dev_uc_add_excl(dev, addr);
++	else if (is_multicast_ether_addr(addr))
++		err = dev_mc_add_excl(dev, addr);
++	else
++		err = -EINVAL;
++
++	/* Only return duplicate errors if NLM_F_EXCL is set */
++	if (err == -EEXIST && !(flags & NLM_F_EXCL))
++		err = 0;
++
++	return err;
++}
++
++/**
++ * ice_fdb_del - delete an entry from the hardware database
++ * @ndm: the input from the stack
++ * @tb: pointer to array of nladdr (unused)
++ * @dev: the net device pointer
++ * @addr: the MAC address entry being added
++ * @vid: VLAN id
++ */
++static int ice_fdb_del(struct ndmsg *ndm, __always_unused struct nlattr *tb[],
++		       struct net_device *dev, const unsigned char *addr,
++		       __always_unused u16 vid)
++{
++	int err;
++
++	if (ndm->ndm_state & NUD_PERMANENT) {
++		netdev_err(dev, "FDB only supports static addresses\n");
++		return -EINVAL;
++	}
++
++	if (is_unicast_ether_addr(addr))
++		err = dev_uc_del(dev, addr);
++	else if (is_multicast_ether_addr(addr))
++		err = dev_mc_del(dev, addr);
++	else
++		err = -EINVAL;
++
++	return err;
++}
++
+ /**
+  * ice_vsi_manage_vlan_insertion - Manage VLAN insertion for the VSI for Tx
+  * @vsi: the vsi being changed
+@@ -3704,6 +4116,8 @@ static int ice_vsi_cfg(struct ice_vsi *vsi)
+ {
+ 	int err;
+ 
++	ice_set_rx_mode(vsi->netdev);
++
+ 	err = ice_restore_vlan(vsi);
+ 	if (err)
+ 		return err;
+@@ -4393,6 +4807,30 @@ void ice_get_stats64(struct net_device *netdev, struct rtnl_link_stats64 *stats)
+ 	stats->rx_length_errors = vsi_stats->rx_length_errors;
+ }
+ 
++#ifdef CONFIG_NET_POLL_CONTROLLER
++/**
++ * ice_netpoll - polling "interrupt" handler
++ * @netdev: network interface device structure
++ *
++ * Used by netconsole to send skbs without having to re-enable interrupts.
++ * This is not called in the normal interrupt path.
++ */
++static void ice_netpoll(struct net_device *netdev)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	int i;
++
++	if (test_bit(__ICE_DOWN, vsi->state) ||
++	    !test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
++		return;
++
++	for (i = 0; i < vsi->num_q_vectors; i++)
++		ice_msix_clean_rings(0, vsi->q_vectors[i]);
++}
++#endif /* CONFIG_NET_POLL_CONTROLLER */
++
+ /**
+  * ice_napi_disable_all - Disable NAPI for all q_vectors in the VSI
+  * @vsi: VSI having NAPI disabled
+@@ -4800,6 +5238,73 @@ static void ice_rebuild(struct ice_pf *pf)
+ 	set_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
+ }
+ 
++/**
++ * ice_change_mtu - NDO callback to change the MTU
++ * @netdev: network interface device structure
++ * @new_mtu: new value for maximum frame size
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int ice_change_mtu(struct net_device *netdev, int new_mtu)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	u8 count = 0;
++
++	if (new_mtu == netdev->mtu) {
++		netdev_warn(netdev, "mtu is already %d\n", netdev->mtu);
++		return 0;
++	}
++
++	if (new_mtu < netdev->min_mtu) {
++		netdev_err(netdev, "new mtu invalid. min_mtu is %d\n",
++			   netdev->min_mtu);
++		return -EINVAL;
++	} else if (new_mtu > netdev->max_mtu) {
++		netdev_err(netdev, "new mtu invalid. max_mtu is %d\n",
++			   netdev->min_mtu);
++		return -EINVAL;
++	}
++	/* if a reset is in progress, wait for some time for it to complete */
++	do {
++		if (ice_is_reset_recovery_pending(pf->state)) {
++			count++;
++			usleep_range(1000, 2000);
++		} else {
++			break;
++		}
++
++	} while (count < 100);
++
++	if (count == 100) {
++		netdev_err(netdev, "can't change mtu. Device is busy\n");
++		return -EBUSY;
++	}
++
++	netdev->mtu = new_mtu;
++
++	/* if VSI is up, bring it down and then back up */
++	if (!test_and_set_bit(__ICE_DOWN, vsi->state)) {
++		int err;
++
++		err = ice_down(vsi);
++		if (err) {
++			netdev_err(netdev, "change mtu if_up err %d\n", err);
++			return err;
++		}
++
++		err = ice_up(vsi);
++		if (err) {
++			netdev_err(netdev, "change mtu if_up err %d\n", err);
++			return err;
++		}
++	}
++
++	netdev_dbg(netdev, "changed mtu to %d\n", new_mtu);
++	return 0;
++}
++
+ /**
+  * ice_set_rss - Set RSS keys and lut
+  * @vsi: Pointer to VSI structure
+@@ -4933,12 +5438,72 @@ static int ice_stop(struct net_device *netdev)
+ 	return 0;
+ }
+ 
++/**
++ * ice_features_check - Validate encapsulated packet conforms to limits
++ * @skb: skb buffer
++ * @netdev: This port's netdev
++ * @features: Offload features that the stack believes apply
++ */
++static netdev_features_t
++ice_features_check(struct sk_buff *skb,
++		   struct net_device __always_unused *netdev,
++		   netdev_features_t features)
++{
++	size_t len;
++
++	/* No point in doing any of this if neither checksum nor GSO are
++	 * being requested for this frame.  We can rule out both by just
++	 * checking for CHECKSUM_PARTIAL
++	 */
++	if (skb->ip_summed != CHECKSUM_PARTIAL)
++		return features;
++
++	/* We cannot support GSO if the MSS is going to be less than
++	 * 64 bytes.  If it is then we need to drop support for GSO.
++	 */
++	if (skb_is_gso(skb) && (skb_shinfo(skb)->gso_size < 64))
++		features &= ~NETIF_F_GSO_MASK;
++
++	len = skb_network_header(skb) - skb->data;
++	if (len & ~(ICE_TXD_MACLEN_MAX))
++		goto out_rm_features;
++
++	len = skb_transport_header(skb) - skb_network_header(skb);
++	if (len & ~(ICE_TXD_IPLEN_MAX))
++		goto out_rm_features;
++
++	if (skb->encapsulation) {
++		len = skb_inner_network_header(skb) - skb_transport_header(skb);
++		if (len & ~(ICE_TXD_L4LEN_MAX))
++			goto out_rm_features;
++
++		len = skb_inner_transport_header(skb) -
++		      skb_inner_network_header(skb);
++		if (len & ~(ICE_TXD_IPLEN_MAX))
++			goto out_rm_features;
++	}
++
++	return features;
++out_rm_features:
++	return features & ~(NETIF_F_CSUM_MASK | NETIF_F_GSO_MASK);
++}
++
+ static const struct net_device_ops ice_netdev_ops = {
+ 	.ndo_open = ice_open,
+ 	.ndo_stop = ice_stop,
+ 	.ndo_start_xmit = ice_start_xmit,
++	.ndo_features_check = ice_features_check,
++	.ndo_set_rx_mode = ice_set_rx_mode,
++	.ndo_set_mac_address = ice_set_mac_address,
++	.ndo_validate_addr = eth_validate_addr,
++	.ndo_change_mtu = ice_change_mtu,
+ 	.ndo_get_stats64 = ice_get_stats64,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller = ice_netpoll,
++#endif /* CONFIG_NET_POLL_CONTROLLER */
+ 	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
+ 	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
+ 	.ndo_set_features = ice_set_features,
++	.ndo_fdb_add = ice_fdb_add,
++	.ndo_fdb_del = ice_fdb_del,
+ };
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 424090f598c3..fbdfeed6aa4e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -1640,6 +1640,83 @@ ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
+ 	return status;
+ }
+ 
++/**
++ * ice_cfg_dflt_vsi - add filter rule to set/unset given VSI as default
++ * VSI for the switch (represented by swid)
++ * @hw: pointer to the hardware structure
++ * @vsi_id: number of VSI to set as default
++ * @set: true to add the above mentioned switch rule, false to remove it
++ * @direction: ICE_FLTR_RX or ICE_FLTR_TX
++ */
++enum ice_status
++ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_id, bool set, u8 direction)
++{
++	struct ice_aqc_sw_rules_elem *s_rule;
++	struct ice_fltr_info f_info;
++	enum ice_adminq_opc opcode;
++	enum ice_status status;
++	u16 s_rule_size;
++
++	s_rule_size = set ? ICE_SW_RULE_RX_TX_ETH_HDR_SIZE :
++			    ICE_SW_RULE_RX_TX_NO_HDR_SIZE;
++	s_rule = devm_kzalloc(ice_hw_to_dev(hw), s_rule_size, GFP_KERNEL);
++	if (!s_rule)
++		return ICE_ERR_NO_MEMORY;
++
++	memset(&f_info, 0, sizeof(f_info));
++
++	f_info.lkup_type = ICE_SW_LKUP_DFLT;
++	f_info.flag = direction;
++	f_info.fltr_act = ICE_FWD_TO_VSI;
++	f_info.fwd_id.vsi_id = vsi_id;
++
++	if (f_info.flag & ICE_FLTR_RX) {
++		f_info.src = hw->port_info->lport;
++		if (!set)
++			f_info.fltr_rule_id =
++				hw->port_info->dflt_rx_vsi_rule_id;
++	} else if (f_info.flag & ICE_FLTR_TX) {
++		f_info.src = vsi_id;
++		if (!set)
++			f_info.fltr_rule_id =
++				hw->port_info->dflt_tx_vsi_rule_id;
++	}
++
++	if (set)
++		opcode = ice_aqc_opc_add_sw_rules;
++	else
++		opcode = ice_aqc_opc_remove_sw_rules;
++
++	ice_fill_sw_rule(hw, &f_info, s_rule, opcode);
++
++	status = ice_aq_sw_rules(hw, s_rule, s_rule_size, 1, opcode, NULL);
++	if (status || !(f_info.flag & ICE_FLTR_TX_RX))
++		goto out;
++	if (set) {
++		u16 index = le16_to_cpu(s_rule->pdata.lkup_tx_rx.index);
++
++		if (f_info.flag & ICE_FLTR_TX) {
++			hw->port_info->dflt_tx_vsi_num = vsi_id;
++			hw->port_info->dflt_tx_vsi_rule_id = index;
++		} else if (f_info.flag & ICE_FLTR_RX) {
++			hw->port_info->dflt_rx_vsi_num = vsi_id;
++			hw->port_info->dflt_rx_vsi_rule_id = index;
++		}
++	} else {
++		if (f_info.flag & ICE_FLTR_TX) {
++			hw->port_info->dflt_tx_vsi_num = ICE_DFLT_VSI_INVAL;
++			hw->port_info->dflt_tx_vsi_rule_id = ICE_INVAL_ACT;
++		} else if (f_info.flag & ICE_FLTR_RX) {
++			hw->port_info->dflt_rx_vsi_num = ICE_DFLT_VSI_INVAL;
++			hw->port_info->dflt_rx_vsi_rule_id = ICE_INVAL_ACT;
++		}
++	}
++
++out:
++	devm_kfree(ice_hw_to_dev(hw), s_rule);
 +	return status;
 +}
-+module_init(ice_module_init);
 +
-+/**
-+ * ice_module_exit - Driver exit cleanup routine
-+ *
-+ * ice_module_exit is called just before the driver is removed
-+ * from memory.
-+ */
-+static void __exit ice_module_exit(void)
-+{
-+	pci_unregister_driver(&ice_driver);
-+	pr_info("module unloaded\n");
-+}
-+module_exit(ice_module_exit);
+ /**
+  * ice_remove_vlan_internal - Remove one VLAN based filter rule
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 60c63264a393..b063b87f1558 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -169,5 +169,7 @@ enum ice_status ice_remove_mac(struct ice_hw *hw, struct list_head *m_lst);
+ void ice_remove_vsi_fltr(struct ice_hw *hw, u16 vsi_id);
+ enum ice_status ice_add_vlan(struct ice_hw *hw, struct list_head *m_list);
+ enum ice_status ice_remove_vlan(struct ice_hw *hw, struct list_head *v_list);
++enum ice_status
++ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_id, bool set, u8 direction);
+ 
+ #endif /* _ICE_SWITCH_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-new file mode 100644
-index 000000000000..ad01e5f73d2c
---- /dev/null
+index 100cb3cf8364..a9e8e28b64be 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -0,0 +1,42 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Intel(R) Ethernet Connection E800 Series Linux Driver
-+ * Copyright (c) 2018, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ */
+@@ -24,6 +24,9 @@
+ #include "ice_controlq.h"
+ #include "ice_lan_tx_rx.h"
+ 
++#define ICE_BYTES_PER_WORD	2
++#define ICE_BYTES_PER_DWORD	4
 +
-+#ifndef _ICE_TYPE_H_
-+#define _ICE_TYPE_H_
-+
-+/* Bus parameters */
-+struct ice_bus_info {
-+	u16 device;
-+	u8 func;
-+};
-+
-+/* Port hardware description */
-+struct ice_hw {
-+	u8 __iomem *hw_addr;
-+	void *back;
-+
-+	/* pci info */
-+	u16 device_id;
-+	u16 vendor_id;
-+	u16 subsystem_device_id;
-+	u16 subsystem_vendor_id;
-+	u8 revision_id;
-+
-+	struct ice_bus_info bus;
-+};
-+
-+#endif /* _ICE_TYPE_H_ */
+ static inline bool ice_is_tc_ena(u8 bitmap, u8 tc)
+ {
+ 	return test_bit(tc, (unsigned long *)&bitmap);
+@@ -241,7 +244,9 @@ struct ice_port_info {
+ 	u8 port_state;
+ #define ICE_SCHED_PORT_STATE_INIT	0x0
+ #define ICE_SCHED_PORT_STATE_READY	0x1
++	u16 dflt_tx_vsi_rule_id;
+ 	u16 dflt_tx_vsi_num;
++	u16 dflt_rx_vsi_rule_id;
+ 	u16 dflt_rx_vsi_num;
+ 	struct ice_fc_info fc;
+ 	struct ice_mac_info mac;
 -- 
 2.14.3
 
