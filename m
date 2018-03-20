@@ -1,80 +1,69 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 21 Mar 2018 02:17:43 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 35/55]
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:9925:12: error: 'struct
- sk_buff' has no member named 'sp'; did you mean 'sk'?
-Message-ID: <201803210241.5Al1Tpht%fengguang.wu@intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Tue, 20 Mar 2018 21:08:29 +0000
+Subject: [Intel-wired-lan] [RFC PATCH 2/5] ixgbevf: Add support for
+ XDP_TX action
+In-Reply-To: <a2a3ae8e-771b-7185-434c-91e419adfec0@gmail.com>
+References: <20180226213745.14508-1-anthony.l.nguyen@intel.com>
+ <20180226213745.14508-3-anthony.l.nguyen@intel.com>
+ <a2a3ae8e-771b-7185-434c-91e419adfec0@gmail.com>
+Message-ID: <4C5EDC162D52824D9E7FB1446983F3EEC925F2DB@ORSMSX116.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   87cc3719efa6c6bd875e67892450bd03a9e147e4
-commit: 747053c601fe8547518069b8791337716b71c4c6 [35/55] ixgbe: enable tso with ipsec offload
-config: powerpc-skiroot_defconfig (attached as .config)
-compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 747053c601fe8547518069b8791337716b71c4c6
-        # save the attached .config to linux build tree
-        make.cross ARCH=powerpc 
 
-All errors (new ones prefixed by >>):
 
-   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_features_check':
->> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:9925:12: error: 'struct sk_buff' has no member named 'sp'; did you mean 'sk'?
-         !skb->sp)
-               ^~
-               sk
+> -----Original Message-----
+> From: John Fastabend [mailto:john.fastabend at gmail.com]
+> Sent: Friday, March 16, 2018 2:06 PM
+> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: Daniel Borkmann <daniel@iogearbox.net>
+> Subject: Re: [Intel-wired-lan] [RFC PATCH 2/5] ixgbevf: Add support for XDP_TX
+> action
+> 
+> On 02/26/2018 01:37 PM, Tony Nguyen wrote:
+> > This implements the XDP_TX action which is modeled on the ixgbe
+> > implementation. However instead of using CPU id to determine which XDP
+> > queue to use, this uses the received RX queue index, which is similar
+> > to i40e. Doing this eliminates the restriction that number of CPUs not
+> > exceed number of XDP queues that ixgbe has.
+> >
+> 
+> For XDP_TX using the receive queue as the index for tx is going to solve the
+> fewer queues than CPUs issue however for redirects this creates a different
+> problem. Namely, how to choose a TX queue and get exclusive access to it. In
+> ixgbe because everything is aligned by cpu index we can be guaranteed to have
+> exclusive access to a queue, that scheme doesn't work with the above.
+> 
+> However, I think that is fine because in general expecting to have as many driver
+> queues as CPUs in a VM is possibly more of a stretch than in the hypervisor.
+> 
+> So do you plan to implement xdp_redirect in the future? If so any ideas how to
+> support that? Maybe look over some of the patches on the list around this. Also
+> supporting more cpus than queues in ixgbe is still needed.
+> 
+> Thanks,
+> John
+> 
+There are no immediate plans to implement xdp_redirect.  The current plan is to
+wait for the xdp_redirect changes to bottom out and then look into the
+implementation.
 
-vim +9925 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-
-  9896	
-  9897	static netdev_features_t
-  9898	ixgbe_features_check(struct sk_buff *skb, struct net_device *dev,
-  9899			     netdev_features_t features)
-  9900	{
-  9901		unsigned int network_hdr_len, mac_hdr_len;
-  9902	
-  9903		/* Make certain the headers can be described by a context descriptor */
-  9904		mac_hdr_len = skb_network_header(skb) - skb->data;
-  9905		if (unlikely(mac_hdr_len > IXGBE_MAX_MAC_HDR_LEN))
-  9906			return features & ~(NETIF_F_HW_CSUM |
-  9907					    NETIF_F_SCTP_CRC |
-  9908					    NETIF_F_HW_VLAN_CTAG_TX |
-  9909					    NETIF_F_TSO |
-  9910					    NETIF_F_TSO6);
-  9911	
-  9912		network_hdr_len = skb_checksum_start(skb) - skb_network_header(skb);
-  9913		if (unlikely(network_hdr_len >  IXGBE_MAX_NETWORK_HDR_LEN))
-  9914			return features & ~(NETIF_F_HW_CSUM |
-  9915					    NETIF_F_SCTP_CRC |
-  9916					    NETIF_F_TSO |
-  9917					    NETIF_F_TSO6);
-  9918	
-  9919		/* We can only support IPV4 TSO in tunnels if we can mangle the
-  9920		 * inner IP ID field, so strip TSO if MANGLEID is not supported.
-  9921		 * IPsec offoad sets skb->encapsulation but still can handle
-  9922		 * the TSO, so it's the exception.
-  9923		 */
-  9924		if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID) &&
-> 9925		    !skb->sp)
-  9926			features &= ~NETIF_F_TSO;
-  9927	
-  9928		return features;
-  9929	}
-  9930	
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 20118 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180321/b4465526/attachment-0001.bin>
+Thanks,
+Tony
+> 
+> > Also, based on the number of queues available, the number of TX queues
+> > may be reduced when an XDP program is loaded in order to accommodate
+> > the XDP queues.
+> >
+> > Based largely on commit 33fdc82f0883 ("ixgbe: add support for XDP_TX
+> > action")
+> >
+> > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> > ---
+> 
+> 
+> [...]
