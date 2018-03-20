@@ -1,1194 +1,2156 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 20 Mar 2018 07:58:09 -0700
-Subject: [Intel-wired-lan] [PATCH v4 05/15] ice: Get MAC/PHY/link info and
- scheduler topology
+Date: Tue, 20 Mar 2018 07:58:16 -0700
+Subject: [Intel-wired-lan] [PATCH v4 12/15] ice: Add stats and ethtool
+ support
 In-Reply-To: <20180320145819.19133-1-anirudh.venkataramanan@intel.com>
 References: <20180320145819.19133-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180320145819.19133-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20180320145819.19133-13-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds code to continue the initialization flow as follows:
+This patch implements a watchdog task to get packet statistics from
+the device.
 
-1) Get PHY/link information and store it
-2) Get default scheduler tree topology and store it
-3) Get the MAC address associated with the port and store it
+This patch also adds support for the following ethtool operations:
 
+ethtool devname
+ethtool -s devname [msglvl N] [msglevel type on|off]
+ethtool -g|--show-ring devname
+ethtool -G|--set-ring devname [rx N] [tx N]
+ethtool -i|--driver devname
+ethtool -d|--register-dump devname [raw on|off] [hex on|off] [file name]
+ethtool -k|--show-features|--show-offload devname
+ethtool -K|--features|--offload devname feature on|off
+ethtool -P|--show-permaddr devname
+ethtool -S|--statistics devname
+ethtool -a|--show-pause devname
+ethtool -A|--pause devname [autoneg on|off] [rx on|off] [tx on|off]
+ethtool -r|--negotiate devname
+
+CC: Andrew Lunn <andrew@lunn.ch>
+CC: Jakub Kicinski <kubakici@wp.pl>
+CC: Stephen Hemminger <stephen@networkplumber.org>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Acked-by: Stephen Hemminger <stephen@networkplumber.org>
 ---
- drivers/net/ethernet/intel/ice/ice.h            |   1 +
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 261 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.c     | 264 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h     |   3 +
- drivers/net/ethernet/intel/ice/ice_sched.c      | 328 ++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_sched.h      |   6 +
- drivers/net/ethernet/intel/ice/ice_status.h     |   1 +
- drivers/net/ethernet/intel/ice/ice_type.h       |  65 +++++
- 8 files changed, 929 insertions(+)
+ drivers/net/ethernet/intel/ice/Makefile         |   3 +-
+ drivers/net/ethernet/intel/ice/ice.h            |  28 +-
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  43 ++
+ drivers/net/ethernet/intel/ice/ice_common.c     | 195 +++++
+ drivers/net/ethernet/intel/ice/ice_common.h     |   5 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c    | 954 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  80 ++
+ drivers/net/ethernet/intel/ice/ice_main.c       | 469 +++++++++++-
+ drivers/net/ethernet/intel/ice/ice_type.h       |  70 ++
+ 9 files changed, 1842 insertions(+), 5 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_ethtool.c
 
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index 0abeb20c006d..643d63016624 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -30,4 +30,5 @@ ice-y := ice_main.o	\
+ 	 ice_nvm.o	\
+ 	 ice_switch.o	\
+ 	 ice_sched.o	\
+-	 ice_txrx.o
++	 ice_txrx.o	\
++	 ice_ethtool.o
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index f6e3339591bb..9681e971bcab 100644
+index f10ae53cc4ac..6014ef9c36e1 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -24,6 +24,7 @@
- #include <linux/module.h>
- #include <linux/netdevice.h>
- #include <linux/compiler.h>
-+#include <linux/etherdevice.h>
+@@ -27,12 +27,14 @@
+ #include <linux/etherdevice.h>
+ #include <linux/skbuff.h>
+ #include <linux/cpumask.h>
++#include <linux/rtnetlink.h>
+ #include <linux/if_vlan.h>
+ #include <linux/dma-mapping.h>
  #include <linux/pci.h>
+ #include <linux/workqueue.h>
  #include <linux/aer.h>
+ #include <linux/interrupt.h>
++#include <linux/ethtool.h>
+ #include <linux/timer.h>
  #include <linux/delay.h>
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 66a3f41df673..13e3b7f3e24d 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -118,6 +118,35 @@ struct ice_aqc_list_caps_elem {
- 	__le64 rsvd2;
- };
- 
-+/* Manage MAC address, read command - indirect (0x0107)
-+ * This struct is also used for the response
-+ */
-+struct ice_aqc_manage_mac_read {
-+	__le16 flags; /* Zeroed by device driver */
-+#define ICE_AQC_MAN_MAC_LAN_ADDR_VALID		BIT(4)
-+#define ICE_AQC_MAN_MAC_SAN_ADDR_VALID		BIT(5)
-+#define ICE_AQC_MAN_MAC_PORT_ADDR_VALID		BIT(6)
-+#define ICE_AQC_MAN_MAC_WOL_ADDR_VALID		BIT(7)
-+#define ICE_AQC_MAN_MAC_READ_S			4
-+#define ICE_AQC_MAN_MAC_READ_M			(0xF << ICE_AQC_MAN_MAC_READ_S)
-+	u8 lport_num;
-+	u8 lport_num_valid;
-+#define ICE_AQC_MAN_MAC_PORT_NUM_IS_VALID	BIT(0)
-+	u8 num_addr; /* Used in response */
-+	u8 reserved[3];
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+/* Response buffer format for manage MAC read command */
-+struct ice_aqc_manage_mac_read_resp {
-+	u8 lport_num;
-+	u8 addr_type;
-+#define ICE_AQC_MAN_MAC_ADDR_TYPE_LAN		0
-+#define ICE_AQC_MAN_MAC_ADDR_TYPE_WOL		1
-+	u8 mac_addr[ETH_ALEN];
-+};
-+
- /* Clear PXE Command and response (direct 0x0110) */
- struct ice_aqc_clear_pxe {
- 	u8 rx_cnt;
-@@ -175,6 +204,16 @@ struct ice_aqc_get_sw_cfg_resp {
- 	struct ice_aqc_get_sw_cfg_resp_elem elements[1];
- };
- 
-+/* Get Default Topology (indirect 0x0400) */
-+struct ice_aqc_get_topo {
-+	u8 port_num;
-+	u8 num_branches;
-+	__le16 reserved1;
-+	__le32 reserved2;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
- /* Add TSE (indirect 0x0401)
-  * Delete TSE (indirect 0x040F)
-  * Move TSE (indirect 0x0408)
-@@ -235,6 +274,12 @@ struct ice_aqc_txsched_topo_grp_info_hdr {
- 	__le16 reserved2;
- };
- 
-+struct ice_aqc_get_topo_elem {
-+	struct ice_aqc_txsched_topo_grp_info_hdr hdr;
-+	struct ice_aqc_txsched_elem_data
-+		generic[ICE_AQC_TOPO_MAX_LEVEL_NUM];
-+};
-+
- struct ice_aqc_delete_elem {
- 	struct ice_aqc_txsched_topo_grp_info_hdr hdr;
- 	__le32 teid[1];
-@@ -280,6 +325,210 @@ struct ice_aqc_query_txsched_res_resp {
- 	struct ice_aqc_layer_props layer_props[ICE_AQC_TOPO_MAX_LEVEL_NUM];
- };
- 
-+/* Get PHY capabilities (indirect 0x0600) */
-+struct ice_aqc_get_phy_caps {
-+	u8 lport_num;
-+	u8 reserved;
-+	__le16 param0;
-+	/* 18.0 - Report qualified modules */
-+#define ICE_AQC_GET_PHY_RQM		BIT(0)
-+	/* 18.1 - 18.2 : Report mode
-+	 * 00b - Report NVM capabilities
-+	 * 01b - Report topology capabilities
-+	 * 10b - Report SW configured
-+	 */
-+#define ICE_AQC_REPORT_MODE_S		1
-+#define ICE_AQC_REPORT_MODE_M		(3 << ICE_AQC_REPORT_MODE_S)
-+#define ICE_AQC_REPORT_NVM_CAP		0
-+#define ICE_AQC_REPORT_TOPO_CAP		BIT(1)
-+#define ICE_AQC_REPORT_SW_CFG		BIT(2)
-+	__le32 reserved1;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+/* This is #define of PHY type (Extended):
-+ * The first set of defines is for phy_type_low.
-+ */
-+#define ICE_PHY_TYPE_LOW_100BASE_TX		BIT_ULL(0)
-+#define ICE_PHY_TYPE_LOW_100M_SGMII		BIT_ULL(1)
-+#define ICE_PHY_TYPE_LOW_1000BASE_T		BIT_ULL(2)
-+#define ICE_PHY_TYPE_LOW_1000BASE_SX		BIT_ULL(3)
-+#define ICE_PHY_TYPE_LOW_1000BASE_LX		BIT_ULL(4)
-+#define ICE_PHY_TYPE_LOW_1000BASE_KX		BIT_ULL(5)
-+#define ICE_PHY_TYPE_LOW_1G_SGMII		BIT_ULL(6)
-+#define ICE_PHY_TYPE_LOW_2500BASE_T		BIT_ULL(7)
-+#define ICE_PHY_TYPE_LOW_2500BASE_X		BIT_ULL(8)
-+#define ICE_PHY_TYPE_LOW_2500BASE_KX		BIT_ULL(9)
-+#define ICE_PHY_TYPE_LOW_5GBASE_T		BIT_ULL(10)
-+#define ICE_PHY_TYPE_LOW_5GBASE_KR		BIT_ULL(11)
-+#define ICE_PHY_TYPE_LOW_10GBASE_T		BIT_ULL(12)
-+#define ICE_PHY_TYPE_LOW_10G_SFI_DA		BIT_ULL(13)
-+#define ICE_PHY_TYPE_LOW_10GBASE_SR		BIT_ULL(14)
-+#define ICE_PHY_TYPE_LOW_10GBASE_LR		BIT_ULL(15)
-+#define ICE_PHY_TYPE_LOW_10GBASE_KR_CR1		BIT_ULL(16)
-+#define ICE_PHY_TYPE_LOW_10G_SFI_AOC_ACC	BIT_ULL(17)
-+#define ICE_PHY_TYPE_LOW_10G_SFI_C2C		BIT_ULL(18)
-+#define ICE_PHY_TYPE_LOW_25GBASE_T		BIT_ULL(19)
-+#define ICE_PHY_TYPE_LOW_25GBASE_CR		BIT_ULL(20)
-+#define ICE_PHY_TYPE_LOW_25GBASE_CR_S		BIT_ULL(21)
-+#define ICE_PHY_TYPE_LOW_25GBASE_CR1		BIT_ULL(22)
-+#define ICE_PHY_TYPE_LOW_25GBASE_SR		BIT_ULL(23)
-+#define ICE_PHY_TYPE_LOW_25GBASE_LR		BIT_ULL(24)
-+#define ICE_PHY_TYPE_LOW_25GBASE_KR		BIT_ULL(25)
-+#define ICE_PHY_TYPE_LOW_25GBASE_KR_S		BIT_ULL(26)
-+#define ICE_PHY_TYPE_LOW_25GBASE_KR1		BIT_ULL(27)
-+#define ICE_PHY_TYPE_LOW_25G_AUI_AOC_ACC	BIT_ULL(28)
-+#define ICE_PHY_TYPE_LOW_25G_AUI_C2C		BIT_ULL(29)
-+#define ICE_PHY_TYPE_LOW_40GBASE_CR4		BIT_ULL(30)
-+#define ICE_PHY_TYPE_LOW_40GBASE_SR4		BIT_ULL(31)
-+#define ICE_PHY_TYPE_LOW_40GBASE_LR4		BIT_ULL(32)
-+#define ICE_PHY_TYPE_LOW_40GBASE_KR4		BIT_ULL(33)
-+#define ICE_PHY_TYPE_LOW_40G_XLAUI_AOC_ACC	BIT_ULL(34)
-+#define ICE_PHY_TYPE_LOW_40G_XLAUI		BIT_ULL(35)
-+#define ICE_PHY_TYPE_LOW_MAX_INDEX		63
-+
-+struct ice_aqc_get_phy_caps_data {
-+	__le64 phy_type_low; /* Use values from ICE_PHY_TYPE_LOW_* */
-+	__le64 reserved;
-+	u8 caps;
-+#define ICE_AQC_PHY_EN_TX_LINK_PAUSE			BIT(0)
-+#define ICE_AQC_PHY_EN_RX_LINK_PAUSE			BIT(1)
-+#define ICE_AQC_PHY_LOW_POWER_MODE			BIT(2)
-+#define ICE_AQC_PHY_EN_LINK				BIT(3)
-+#define ICE_AQC_PHY_AN_MODE				BIT(4)
-+#define ICE_AQC_GET_PHY_EN_MOD_QUAL			BIT(5)
-+	u8 low_power_ctrl;
-+#define ICE_AQC_PHY_EN_D3COLD_LOW_POWER_AUTONEG		BIT(0)
-+	__le16 eee_cap;
-+#define ICE_AQC_PHY_EEE_EN_100BASE_TX			BIT(0)
-+#define ICE_AQC_PHY_EEE_EN_1000BASE_T			BIT(1)
-+#define ICE_AQC_PHY_EEE_EN_10GBASE_T			BIT(2)
-+#define ICE_AQC_PHY_EEE_EN_1000BASE_KX			BIT(3)
-+#define ICE_AQC_PHY_EEE_EN_10GBASE_KR			BIT(4)
-+#define ICE_AQC_PHY_EEE_EN_25GBASE_KR			BIT(5)
-+#define ICE_AQC_PHY_EEE_EN_40GBASE_KR4			BIT(6)
-+	__le16 eeer_value;
-+	u8 phy_id_oui[4]; /* PHY/Module ID connected on the port */
-+	u8 link_fec_options;
-+#define ICE_AQC_PHY_FEC_10G_KR_40G_KR4_EN		BIT(0)
-+#define ICE_AQC_PHY_FEC_10G_KR_40G_KR4_REQ		BIT(1)
-+#define ICE_AQC_PHY_FEC_25G_RS_528_REQ			BIT(2)
-+#define ICE_AQC_PHY_FEC_25G_KR_REQ			BIT(3)
-+#define ICE_AQC_PHY_FEC_25G_RS_544_REQ			BIT(4)
-+#define ICE_AQC_PHY_FEC_25G_RS_CLAUSE91_EN		BIT(6)
-+#define ICE_AQC_PHY_FEC_25G_KR_CLAUSE74_EN		BIT(7)
-+	u8 extended_compliance_code;
-+#define ICE_MODULE_TYPE_TOTAL_BYTE			3
-+	u8 module_type[ICE_MODULE_TYPE_TOTAL_BYTE];
-+#define ICE_AQC_MOD_TYPE_BYTE0_SFP_PLUS			0xA0
-+#define ICE_AQC_MOD_TYPE_BYTE0_QSFP_PLUS		0x80
-+#define ICE_AQC_MOD_TYPE_BYTE1_SFP_PLUS_CU_PASSIVE	BIT(0)
-+#define ICE_AQC_MOD_TYPE_BYTE1_SFP_PLUS_CU_ACTIVE	BIT(1)
-+#define ICE_AQC_MOD_TYPE_BYTE1_10G_BASE_SR		BIT(4)
-+#define ICE_AQC_MOD_TYPE_BYTE1_10G_BASE_LR		BIT(5)
-+#define ICE_AQC_MOD_TYPE_BYTE1_10G_BASE_LRM		BIT(6)
-+#define ICE_AQC_MOD_TYPE_BYTE1_10G_BASE_ER		BIT(7)
-+#define ICE_AQC_MOD_TYPE_BYTE2_SFP_PLUS			0xA0
-+#define ICE_AQC_MOD_TYPE_BYTE2_QSFP_PLUS		0x86
-+	u8 qualified_module_count;
-+#define ICE_AQC_QUAL_MOD_COUNT_MAX			16
-+	struct {
-+		u8 v_oui[3];
-+		u8 rsvd1;
-+		u8 v_part[16];
-+		__le32 v_rev;
-+		__le64 rsvd8;
-+	} qual_modules[ICE_AQC_QUAL_MOD_COUNT_MAX];
-+};
-+
-+/* Get link status (indirect 0x0607), also used for Link Status Event */
-+struct ice_aqc_get_link_status {
-+	u8 lport_num;
-+	u8 reserved;
-+	__le16 cmd_flags;
-+#define ICE_AQ_LSE_M			0x3
-+#define ICE_AQ_LSE_NOP			0x0
-+#define ICE_AQ_LSE_DIS			0x2
-+#define ICE_AQ_LSE_ENA			0x3
-+	/* only response uses this flag */
-+#define ICE_AQ_LSE_IS_ENABLED		0x1
-+	__le32 reserved2;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+/* Get link status response data structure, also used for Link Status Event */
-+struct ice_aqc_get_link_status_data {
-+	u8 topo_media_conflict;
-+#define ICE_AQ_LINK_TOPO_CONFLICT	BIT(0)
-+#define ICE_AQ_LINK_MEDIA_CONFLICT	BIT(1)
-+#define ICE_AQ_LINK_TOPO_CORRUPT	BIT(2)
-+	u8 reserved1;
-+	u8 link_info;
-+#define ICE_AQ_LINK_UP			BIT(0)	/* Link Status */
-+#define ICE_AQ_LINK_FAULT		BIT(1)
-+#define ICE_AQ_LINK_FAULT_TX		BIT(2)
-+#define ICE_AQ_LINK_FAULT_RX		BIT(3)
-+#define ICE_AQ_LINK_FAULT_REMOTE	BIT(4)
-+#define ICE_AQ_LINK_UP_PORT		BIT(5)	/* External Port Link Status */
-+#define ICE_AQ_MEDIA_AVAILABLE		BIT(6)
-+#define ICE_AQ_SIGNAL_DETECT		BIT(7)
-+	u8 an_info;
-+#define ICE_AQ_AN_COMPLETED		BIT(0)
-+#define ICE_AQ_LP_AN_ABILITY		BIT(1)
-+#define ICE_AQ_PD_FAULT			BIT(2)	/* Parallel Detection Fault */
-+#define ICE_AQ_FEC_EN			BIT(3)
-+#define ICE_AQ_PHY_LOW_POWER		BIT(4)	/* Low Power State */
-+#define ICE_AQ_LINK_PAUSE_TX		BIT(5)
-+#define ICE_AQ_LINK_PAUSE_RX		BIT(6)
-+#define ICE_AQ_QUALIFIED_MODULE		BIT(7)
-+	u8 ext_info;
-+#define ICE_AQ_LINK_PHY_TEMP_ALARM	BIT(0)
-+#define ICE_AQ_LINK_EXCESSIVE_ERRORS	BIT(1)	/* Excessive Link Errors */
-+	/* Port TX Suspended */
-+#define ICE_AQ_LINK_TX_S		2
-+#define ICE_AQ_LINK_TX_M		(0x03 << ICE_AQ_LINK_TX_S)
-+#define ICE_AQ_LINK_TX_ACTIVE		0
-+#define ICE_AQ_LINK_TX_DRAINED		1
-+#define ICE_AQ_LINK_TX_FLUSHED		3
-+	u8 reserved2;
-+	__le16 max_frame_size;
-+	u8 cfg;
-+#define ICE_AQ_LINK_25G_KR_FEC_EN	BIT(0)
-+#define ICE_AQ_LINK_25G_RS_528_FEC_EN	BIT(1)
-+#define ICE_AQ_LINK_25G_RS_544_FEC_EN	BIT(2)
-+	/* Pacing Config */
-+#define ICE_AQ_CFG_PACING_S		3
-+#define ICE_AQ_CFG_PACING_M		(0xF << ICE_AQ_CFG_PACING_S)
-+#define ICE_AQ_CFG_PACING_TYPE_M	BIT(7)
-+#define ICE_AQ_CFG_PACING_TYPE_AVG	0
-+#define ICE_AQ_CFG_PACING_TYPE_FIXED	ICE_AQ_CFG_PACING_TYPE_M
-+	/* External Device Power Ability */
-+	u8 power_desc;
-+#define ICE_AQ_PWR_CLASS_M		0x3
-+#define ICE_AQ_LINK_PWR_BASET_LOW_HIGH	0
-+#define ICE_AQ_LINK_PWR_BASET_HIGH	1
-+#define ICE_AQ_LINK_PWR_QSFP_CLASS_1	0
-+#define ICE_AQ_LINK_PWR_QSFP_CLASS_2	1
-+#define ICE_AQ_LINK_PWR_QSFP_CLASS_3	2
-+#define ICE_AQ_LINK_PWR_QSFP_CLASS_4	3
-+	__le16 link_speed;
-+#define ICE_AQ_LINK_SPEED_10MB		BIT(0)
-+#define ICE_AQ_LINK_SPEED_100MB		BIT(1)
-+#define ICE_AQ_LINK_SPEED_1000MB	BIT(2)
-+#define ICE_AQ_LINK_SPEED_2500MB	BIT(3)
-+#define ICE_AQ_LINK_SPEED_5GB		BIT(4)
-+#define ICE_AQ_LINK_SPEED_10GB		BIT(5)
-+#define ICE_AQ_LINK_SPEED_20GB		BIT(6)
-+#define ICE_AQ_LINK_SPEED_25GB		BIT(7)
-+#define ICE_AQ_LINK_SPEED_40GB		BIT(8)
-+#define ICE_AQ_LINK_SPEED_UNKNOWN	BIT(15)
-+	__le32 reserved3; /* Aligns next field to 8-byte boundary */
-+	__le64 phy_type_low; /* Use values from ICE_PHY_TYPE_LOW_* */
-+	__le64 reserved4;
-+};
-+
- /* NVM Read command (indirect 0x0701)
-  * NVM Erase commands (direct 0x0702)
-  * NVM Update commands (indirect 0x0703)
-@@ -332,12 +581,16 @@ struct ice_aq_desc {
- 		struct ice_aqc_get_ver get_ver;
- 		struct ice_aqc_q_shutdown q_shutdown;
- 		struct ice_aqc_req_res res_owner;
-+		struct ice_aqc_manage_mac_read mac_read;
- 		struct ice_aqc_clear_pxe clear_pxe;
- 		struct ice_aqc_list_caps get_cap;
-+		struct ice_aqc_get_phy_caps get_phy;
- 		struct ice_aqc_get_sw_cfg get_sw_conf;
-+		struct ice_aqc_get_topo get_topo;
- 		struct ice_aqc_query_txsched_res query_sched_res;
- 		struct ice_aqc_add_move_delete_elem add_move_delete_elem;
- 		struct ice_aqc_nvm nvm;
-+		struct ice_aqc_get_link_status get_link_status;
- 	} params;
- };
- 
-@@ -376,6 +629,9 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_list_func_caps			= 0x000A,
- 	ice_aqc_opc_list_dev_caps			= 0x000B,
- 
-+	/* manage MAC address */
-+	ice_aqc_opc_manage_mac_read			= 0x0107,
-+
- 	/* PXE */
- 	ice_aqc_opc_clear_pxe_mode			= 0x0110,
- 
-@@ -385,9 +641,14 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_clear_pf_cfg			= 0x02A4,
- 
- 	/* transmit scheduler commands */
-+	ice_aqc_opc_get_dflt_topo			= 0x0400,
- 	ice_aqc_opc_delete_sched_elems			= 0x040F,
- 	ice_aqc_opc_query_sched_res			= 0x0412,
- 
-+	/* PHY commands */
-+	ice_aqc_opc_get_phy_caps			= 0x0600,
-+	ice_aqc_opc_get_link_status			= 0x0607,
-+
- 	/* NVM commands */
- 	ice_aqc_opc_nvm_read				= 0x0701,
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 10f8b2ce5d44..91f34d90a1f4 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -50,13 +50,238 @@ enum ice_status ice_clear_pf_cfg(struct ice_hw *hw)
- 	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
- }
- 
-+/**
-+ * ice_aq_manage_mac_read - manage MAC address read command
-+ * @hw: pointer to the hw struct
-+ * @buf: a virtual buffer to hold the manage MAC read response
-+ * @buf_size: Size of the virtual buffer
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * This function is used to return per PF station MAC address (0x0107).
-+ * NOTE: Upon successful completion of this command, MAC address information
-+ * is returned in user specified buffer. Please interpret user specified
-+ * buffer as "manage_mac_read" response.
-+ * Response such as various MAC addresses are stored in HW struct (port.mac)
-+ * ice_aq_discover_caps is expected to be called before this function is called.
-+ */
-+static enum ice_status
-+ice_aq_manage_mac_read(struct ice_hw *hw, void *buf, u16 buf_size,
-+		       struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_manage_mac_read_resp *resp;
-+	struct ice_aqc_manage_mac_read *cmd;
-+	struct ice_aq_desc desc;
-+	enum ice_status status;
-+	u16 flags;
-+
-+	cmd = &desc.params.mac_read;
-+
-+	if (buf_size < sizeof(*resp))
-+		return ICE_ERR_BUF_TOO_SHORT;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_manage_mac_read);
-+
-+	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
-+	if (status)
-+		return status;
-+
-+	resp = (struct ice_aqc_manage_mac_read_resp *)buf;
-+	flags = le16_to_cpu(cmd->flags) & ICE_AQC_MAN_MAC_READ_M;
-+
-+	if (!(flags & ICE_AQC_MAN_MAC_LAN_ADDR_VALID)) {
-+		ice_debug(hw, ICE_DBG_LAN, "got invalid MAC address\n");
-+		return ICE_ERR_CFG;
-+	}
-+
-+	ether_addr_copy(hw->port_info->mac.lan_addr, resp->mac_addr);
-+	ether_addr_copy(hw->port_info->mac.perm_addr, resp->mac_addr);
-+	return 0;
-+}
-+
-+/**
-+ * ice_aq_get_phy_caps - returns PHY capabilities
-+ * @pi: port information structure
-+ * @qual_mods: report qualified modules
-+ * @report_mode: report mode capabilities
-+ * @pcaps: structure for PHY capabilities to be filled
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Returns the various PHY capabilities supported on the Port (0x0600)
-+ */
-+static enum ice_status
-+ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8 report_mode,
-+		    struct ice_aqc_get_phy_caps_data *pcaps,
-+		    struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_get_phy_caps *cmd;
-+	u16 pcaps_size = sizeof(*pcaps);
-+	struct ice_aq_desc desc;
-+	enum ice_status status;
-+
-+	cmd = &desc.params.get_phy;
-+
-+	if (!pcaps || (report_mode & ~ICE_AQC_REPORT_MODE_M) || !pi)
-+		return ICE_ERR_PARAM;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_phy_caps);
-+
-+	if (qual_mods)
-+		cmd->param0 |= cpu_to_le16(ICE_AQC_GET_PHY_RQM);
-+
-+	cmd->param0 |= cpu_to_le16(report_mode);
-+	status = ice_aq_send_cmd(pi->hw, &desc, pcaps, pcaps_size, cd);
-+
-+	if (!status && report_mode == ICE_AQC_REPORT_TOPO_CAP)
-+		pi->phy.phy_type_low = le64_to_cpu(pcaps->phy_type_low);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_get_media_type - Gets media type
-+ * @pi: port information structure
-+ */
-+static enum ice_media_type ice_get_media_type(struct ice_port_info *pi)
-+{
-+	struct ice_link_status *hw_link_info;
-+
-+	if (!pi)
-+		return ICE_MEDIA_UNKNOWN;
-+
-+	hw_link_info = &pi->phy.link_info;
-+
-+	if (hw_link_info->phy_type_low) {
-+		switch (hw_link_info->phy_type_low) {
-+		case ICE_PHY_TYPE_LOW_1000BASE_SX:
-+		case ICE_PHY_TYPE_LOW_1000BASE_LX:
-+		case ICE_PHY_TYPE_LOW_10GBASE_SR:
-+		case ICE_PHY_TYPE_LOW_10GBASE_LR:
-+		case ICE_PHY_TYPE_LOW_10G_SFI_C2C:
-+		case ICE_PHY_TYPE_LOW_25GBASE_SR:
-+		case ICE_PHY_TYPE_LOW_25GBASE_LR:
-+		case ICE_PHY_TYPE_LOW_25G_AUI_C2C:
-+		case ICE_PHY_TYPE_LOW_40GBASE_SR4:
-+		case ICE_PHY_TYPE_LOW_40GBASE_LR4:
-+			return ICE_MEDIA_FIBER;
-+		case ICE_PHY_TYPE_LOW_100BASE_TX:
-+		case ICE_PHY_TYPE_LOW_1000BASE_T:
-+		case ICE_PHY_TYPE_LOW_2500BASE_T:
-+		case ICE_PHY_TYPE_LOW_5GBASE_T:
-+		case ICE_PHY_TYPE_LOW_10GBASE_T:
-+		case ICE_PHY_TYPE_LOW_25GBASE_T:
-+			return ICE_MEDIA_BASET;
-+		case ICE_PHY_TYPE_LOW_10G_SFI_DA:
-+		case ICE_PHY_TYPE_LOW_25GBASE_CR:
-+		case ICE_PHY_TYPE_LOW_25GBASE_CR_S:
-+		case ICE_PHY_TYPE_LOW_25GBASE_CR1:
-+		case ICE_PHY_TYPE_LOW_40GBASE_CR4:
-+			return ICE_MEDIA_DA;
-+		case ICE_PHY_TYPE_LOW_1000BASE_KX:
-+		case ICE_PHY_TYPE_LOW_2500BASE_KX:
-+		case ICE_PHY_TYPE_LOW_2500BASE_X:
-+		case ICE_PHY_TYPE_LOW_5GBASE_KR:
-+		case ICE_PHY_TYPE_LOW_10GBASE_KR_CR1:
-+		case ICE_PHY_TYPE_LOW_25GBASE_KR:
-+		case ICE_PHY_TYPE_LOW_25GBASE_KR1:
-+		case ICE_PHY_TYPE_LOW_25GBASE_KR_S:
-+		case ICE_PHY_TYPE_LOW_40GBASE_KR4:
-+			return ICE_MEDIA_BACKPLANE;
-+		}
-+	}
-+
-+	return ICE_MEDIA_UNKNOWN;
-+}
-+
-+/**
-+ * ice_aq_get_link_info
-+ * @pi: port information structure
-+ * @ena_lse: enable/disable LinkStatusEvent reporting
-+ * @link: pointer to link status structure - optional
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Get Link Status (0x607). Returns the link status of the adapter.
-+ */
-+enum ice_status
-+ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
-+		     struct ice_link_status *link, struct ice_sq_cd *cd)
-+{
-+	struct ice_link_status *hw_link_info_old, *hw_link_info;
-+	struct ice_aqc_get_link_status_data link_data = { 0 };
-+	struct ice_aqc_get_link_status *resp;
-+	enum ice_media_type *hw_media_type;
-+	struct ice_fc_info *hw_fc_info;
-+	bool tx_pause, rx_pause;
-+	struct ice_aq_desc desc;
-+	enum ice_status status;
-+	u16 cmd_flags;
-+
-+	if (!pi)
-+		return ICE_ERR_PARAM;
-+	hw_link_info_old = &pi->phy.link_info_old;
-+	hw_media_type = &pi->phy.media_type;
-+	hw_link_info = &pi->phy.link_info;
-+	hw_fc_info = &pi->fc;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_link_status);
-+	cmd_flags = (ena_lse) ? ICE_AQ_LSE_ENA : ICE_AQ_LSE_DIS;
-+	resp = &desc.params.get_link_status;
-+	resp->cmd_flags = cpu_to_le16(cmd_flags);
-+	resp->lport_num = pi->lport;
-+
-+	status = ice_aq_send_cmd(pi->hw, &desc, &link_data, sizeof(link_data),
-+				 cd);
-+
-+	if (status)
-+		return status;
-+
-+	/* save off old link status information */
-+	*hw_link_info_old = *hw_link_info;
-+
-+	/* update current link status information */
-+	hw_link_info->link_speed = le16_to_cpu(link_data.link_speed);
-+	hw_link_info->phy_type_low = le64_to_cpu(link_data.phy_type_low);
-+	*hw_media_type = ice_get_media_type(pi);
-+	hw_link_info->link_info = link_data.link_info;
-+	hw_link_info->an_info = link_data.an_info;
-+	hw_link_info->ext_info = link_data.ext_info;
-+	hw_link_info->max_frame_size = le16_to_cpu(link_data.max_frame_size);
-+	hw_link_info->pacing = link_data.cfg & ICE_AQ_CFG_PACING_M;
-+
-+	/* update fc info */
-+	tx_pause = !!(link_data.an_info & ICE_AQ_LINK_PAUSE_TX);
-+	rx_pause = !!(link_data.an_info & ICE_AQ_LINK_PAUSE_RX);
-+	if (tx_pause && rx_pause)
-+		hw_fc_info->current_mode = ICE_FC_FULL;
-+	else if (tx_pause)
-+		hw_fc_info->current_mode = ICE_FC_TX_PAUSE;
-+	else if (rx_pause)
-+		hw_fc_info->current_mode = ICE_FC_RX_PAUSE;
-+	else
-+		hw_fc_info->current_mode = ICE_FC_NONE;
-+
-+	hw_link_info->lse_ena =
-+		!!(resp->cmd_flags & cpu_to_le16(ICE_AQ_LSE_IS_ENABLED));
-+
-+	/* save link status information */
-+	if (link)
-+		*link = *hw_link_info;
-+
-+	/* flag cleared so calling functions don't call AQ again */
-+	pi->phy.get_link_info = false;
-+
-+	return status;
-+}
-+
- /**
-  * ice_init_hw - main hardware initialization routine
-  * @hw: pointer to the hardware structure
-  */
- enum ice_status ice_init_hw(struct ice_hw *hw)
- {
-+	struct ice_aqc_get_phy_caps_data *pcaps;
- 	enum ice_status status;
-+	u16 mac_buf_len;
-+	void *mac_buf;
- 
- 	/* Set MAC type based on DeviceID */
- 	status = ice_set_mac_type(hw);
-@@ -112,8 +337,46 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
- 		goto err_unroll_alloc;
- 	}
- 
-+	/* Initialize port_info struct with scheduler data */
-+	status = ice_sched_init_port(hw->port_info);
-+	if (status)
-+		goto err_unroll_sched;
-+
-+	pcaps = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*pcaps), GFP_KERNEL);
-+	if (!pcaps) {
-+		status = ICE_ERR_NO_MEMORY;
-+		goto err_unroll_sched;
-+	}
-+
-+	/* Initialize port_info struct with PHY capabilities */
-+	status = ice_aq_get_phy_caps(hw->port_info, false,
-+				     ICE_AQC_REPORT_TOPO_CAP, pcaps, NULL);
-+	devm_kfree(ice_hw_to_dev(hw), pcaps);
-+	if (status)
-+		goto err_unroll_sched;
-+
-+	/* Initialize port_info struct with link information */
-+	status = ice_aq_get_link_info(hw->port_info, false, NULL, NULL);
-+	if (status)
-+		goto err_unroll_sched;
-+
-+	/* Get port MAC information */
-+	mac_buf_len = sizeof(struct ice_aqc_manage_mac_read_resp);
-+	mac_buf = devm_kzalloc(ice_hw_to_dev(hw), mac_buf_len, GFP_KERNEL);
-+
-+	if (!mac_buf)
-+		goto err_unroll_sched;
-+
-+	status = ice_aq_manage_mac_read(hw, mac_buf, mac_buf_len, NULL);
-+	devm_kfree(ice_hw_to_dev(hw), mac_buf);
-+
-+	if (status)
-+		goto err_unroll_sched;
-+
- 	return 0;
- 
-+err_unroll_sched:
-+	ice_sched_cleanup_all(hw);
- err_unroll_alloc:
- 	devm_kfree(ice_hw_to_dev(hw), hw->port_info);
- err_unroll_cqinit:
-@@ -129,6 +392,7 @@ void ice_deinit_hw(struct ice_hw *hw)
- {
- 	ice_sched_cleanup_all(hw);
- 	ice_shutdown_all_ctrlq(hw);
-+
- 	if (hw->port_info) {
- 		devm_kfree(ice_hw_to_dev(hw), hw->port_info);
- 		hw->port_info = NULL;
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 63ca2a26a274..3e3b18fc421d 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -49,4 +49,7 @@ ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc,
- 		void *buf, u16 buf_size, struct ice_sq_cd *cd);
- enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd);
- enum ice_status ice_clear_pf_cfg(struct ice_hw *hw);
-+enum ice_status
-+ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
-+		     struct ice_link_status *link, struct ice_sq_cd *cd);
- #endif /* _ICE_COMMON_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 66e48ae4a3ed..0a547141b125 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -17,6 +17,141 @@
- 
+ #include <linux/bitmap.h>
+@@ -48,10 +50,14 @@
+ #include "ice_common.h"
  #include "ice_sched.h"
  
-+/**
-+ * ice_sched_add_root_node - Insert the Tx scheduler root node in SW DB
-+ * @pi: port information structure
-+ * @info: Scheduler element information from firmware
-+ *
-+ * This function inserts the root node of the scheduling tree topology
-+ * to the SW DB.
++extern const char ice_drv_ver[];
+ #define ICE_BAR0		0
+ #define ICE_DFLT_NUM_DESC	128
++#define ICE_MIN_NUM_DESC	8
++#define ICE_MAX_NUM_DESC	8160
+ #define ICE_REQ_DESC_MULTIPLE	32
+ #define ICE_INT_NAME_STR_LEN	(IFNAMSIZ + 16)
++#define ICE_ETHTOOL_FWVER_LEN	32
+ #define ICE_AQ_LEN		64
+ #define ICE_MIN_MSIX		2
+ #define ICE_NO_VSI		0xffff
+@@ -70,6 +76,8 @@
+ #define ICE_RES_MISC_VEC_ID	(ICE_RES_VALID_BIT - 1)
+ #define ICE_INVAL_Q_INDEX	0xffff
+ 
++#define ICE_VSIQF_HKEY_ARRAY_SIZE	((VSIQF_HKEY_MAX_INDEX + 1) *	4)
++
+ #define ICE_DFLT_NETIF_M (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
+ 
+ #define ICE_MAX_MTU	(ICE_AQ_SET_MAC_FRAME_SIZE_MAX - \
+@@ -116,6 +124,7 @@ enum ice_state {
+ 	__ICE_DOWN,
+ 	__ICE_PFR_REQ,			/* set by driver and peers */
+ 	__ICE_ADMINQ_EVENT_PENDING,
++	__ICE_CFG_BUSY,
+ 	__ICE_SERVICE_SCHED,
+ 	__ICE_STATE_NBITS		/* must be last */
+ };
+@@ -132,8 +141,13 @@ struct ice_vsi {
+ 
+ 	irqreturn_t (*irq_handler)(int irq, void *data);
+ 
++	u64 tx_linearize;
+ 	DECLARE_BITMAP(state, __ICE_STATE_NBITS);
+ 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
++	u32 tx_restart;
++	u32 tx_busy;
++	u32 rx_buf_failed;
++	u32 rx_page_failed;
+ 	int num_q_vectors;
+ 	int base_vector;
+ 	enum ice_vsi_type type;
+@@ -155,8 +169,14 @@ struct ice_vsi {
+ 
+ 	struct ice_aqc_vsi_props info;	 /* VSI properties */
+ 
++	/* VSI stats */
++	struct rtnl_link_stats64 net_stats;
++	struct ice_eth_stats eth_stats;
++	struct ice_eth_stats eth_stats_prev;
++
+ 	bool irqs_ready;
+ 	bool current_isup;		 /* Sync 'link up' logging */
++	bool stat_offsets_loaded;
+ 
+ 	/* queue information */
+ 	u8 tx_mapping_mode;		 /* ICE_MAP_MODE_[CONTIG|SCATTER] */
+@@ -219,8 +239,10 @@ struct ice_pf {
+ 	u16 q_left_rx;		/* remaining num rx queues left unclaimed */
+ 	u16 next_vsi;		/* Next free slot in pf->vsi[] - 0-based! */
+ 	u16 num_alloc_vsi;
+-
++	struct ice_hw_port_stats stats;
++	struct ice_hw_port_stats stats_prev;
+ 	struct ice_hw hw;
++	bool stat_prev_loaded;	/* has previous stats been loaded */
+ 	char int_name[ICE_INT_NAME_STR_LEN];
+ };
+ 
+@@ -253,8 +275,12 @@ static inline void ice_irq_dynamic_ena(struct ice_hw *hw, struct ice_vsi *vsi,
+ 	wr32(hw, GLINT_DYN_CTL(vector), val);
+ }
+ 
++void ice_set_ethtool_ops(struct net_device *netdev);
++int ice_up(struct ice_vsi *vsi);
++int ice_down(struct ice_vsi *vsi);
+ int ice_set_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
+ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
+ void ice_fill_rss_lut(u8 *lut, u16 rss_table_size, u16 rss_size);
++void ice_print_link_msg(struct ice_vsi *vsi, bool isup);
+ 
+ #endif /* _ICE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 49102817f0a9..2c8d8533f87d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -873,6 +873,45 @@ struct ice_aqc_get_phy_caps_data {
+ 	} qual_modules[ICE_AQC_QUAL_MOD_COUNT_MAX];
+ };
+ 
++/* Set PHY capabilities (direct 0x0601)
++ * NOTE: This command must be followed by setup link and restart auto-neg
 + */
-+static enum ice_status
-+ice_sched_add_root_node(struct ice_port_info *pi,
-+			struct ice_aqc_txsched_elem_data *info)
-+{
-+	struct ice_sched_node *root;
-+	struct ice_hw *hw;
-+	u16 max_children;
++struct ice_aqc_set_phy_cfg {
++	u8 lport_num;
++	u8 reserved[7];
++	__le32 addr_high;
++	__le32 addr_low;
++};
 +
-+	if (!pi)
-+		return ICE_ERR_PARAM;
++/* Set PHY config command data structure */
++struct ice_aqc_set_phy_cfg_data {
++	__le64 phy_type_low; /* Use values from ICE_PHY_TYPE_LOW_* */
++	__le64 rsvd0;
++	u8 caps;
++#define ICE_AQ_PHY_ENA_TX_PAUSE_ABILITY		BIT(0)
++#define ICE_AQ_PHY_ENA_RX_PAUSE_ABILITY		BIT(1)
++#define ICE_AQ_PHY_ENA_LOW_POWER		BIT(2)
++#define ICE_AQ_PHY_ENA_LINK			BIT(3)
++#define ICE_AQ_PHY_ENA_ATOMIC_LINK		BIT(5)
++	u8 low_power_ctrl;
++	__le16 eee_cap; /* Value from ice_aqc_get_phy_caps */
++	__le16 eeer_value;
++	u8 link_fec_opt; /* Use defines from ice_aqc_get_phy_caps */
++	u8 rsvd1;
++};
 +
-+	hw = pi->hw;
-+
-+	root = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*root), GFP_KERNEL);
-+	if (!root)
-+		return ICE_ERR_NO_MEMORY;
-+
-+	max_children = le16_to_cpu(hw->layer_info[0].max_children);
-+	root->children = devm_kcalloc(ice_hw_to_dev(hw), max_children,
-+				      sizeof(*root), GFP_KERNEL);
-+	if (!root->children) {
-+		devm_kfree(ice_hw_to_dev(hw), root);
-+		return ICE_ERR_NO_MEMORY;
-+	}
-+
-+	memcpy(&root->info, info, sizeof(*info));
-+	pi->root = root;
-+	return 0;
-+}
-+
-+/**
-+ * ice_sched_find_node_by_teid - Find the Tx scheduler node in SW DB
-+ * @start_node: pointer to the starting ice_sched_node struct in a sub-tree
-+ * @teid: node teid to search
-+ *
-+ * This function searches for a node matching the teid in the scheduling tree
-+ * from the SW DB. The search is recursive and is restricted by the number of
-+ * layers it has searched through; stopping at the max supported layer.
-+ *
-+ * This function needs to be called when holding the port_info->sched_lock
++/* Restart AN command data structure (direct 0x0605)
++ * Also used for response, with only the lport_num field present.
 + */
-+struct ice_sched_node *
-+ice_sched_find_node_by_teid(struct ice_sched_node *start_node, u32 teid)
-+{
-+	u16 i;
++struct ice_aqc_restart_an {
++	u8 lport_num;
++	u8 reserved;
++	u8 cmd_flags;
++#define ICE_AQC_RESTART_AN_LINK_RESTART	BIT(1)
++#define ICE_AQC_RESTART_AN_LINK_ENABLE	BIT(2)
++	u8 reserved2[13];
++};
 +
-+	/* The TEID is same as that of the start_node */
-+	if (ICE_TXSCHED_GET_NODE_TEID(start_node) == teid)
-+		return start_node;
-+
-+	/* The node has no children or is at the max layer */
-+	if (!start_node->num_children ||
-+	    start_node->tx_sched_layer >= ICE_AQC_TOPO_MAX_LEVEL_NUM ||
-+	    start_node->info.data.elem_type == ICE_AQC_ELEM_TYPE_LEAF)
-+		return NULL;
-+
-+	/* Check if teid matches to any of the children nodes */
-+	for (i = 0; i < start_node->num_children; i++)
-+		if (ICE_TXSCHED_GET_NODE_TEID(start_node->children[i]) == teid)
-+			return start_node->children[i];
-+
-+	/* Search within each child's sub-tree */
-+	for (i = 0; i < start_node->num_children; i++) {
-+		struct ice_sched_node *tmp;
-+
-+		tmp = ice_sched_find_node_by_teid(start_node->children[i],
-+						  teid);
-+		if (tmp)
-+			return tmp;
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-+ * ice_sched_add_node - Insert the Tx scheduler node in SW DB
-+ * @pi: port information structure
-+ * @layer: Scheduler layer of the node
-+ * @info: Scheduler element information from firmware
-+ *
-+ * This function inserts a scheduler node to the SW DB.
-+ */
-+enum ice_status
-+ice_sched_add_node(struct ice_port_info *pi, u8 layer,
-+		   struct ice_aqc_txsched_elem_data *info)
-+{
-+	struct ice_sched_node *parent;
-+	struct ice_sched_node *node;
-+	struct ice_hw *hw;
-+	u16 max_children;
-+
-+	if (!pi)
-+		return ICE_ERR_PARAM;
-+
-+	hw = pi->hw;
-+
-+	/* A valid parent node should be there */
-+	parent = ice_sched_find_node_by_teid(pi->root,
-+					     le32_to_cpu(info->parent_teid));
-+	if (!parent) {
-+		ice_debug(hw, ICE_DBG_SCHED,
-+			  "Parent Node not found for parent_teid=0x%x\n",
-+			  le32_to_cpu(info->parent_teid));
-+		return ICE_ERR_PARAM;
-+	}
-+
-+	node = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*node), GFP_KERNEL);
-+	if (!node)
-+		return ICE_ERR_NO_MEMORY;
-+	max_children = le16_to_cpu(hw->layer_info[layer].max_children);
-+	if (max_children) {
-+		node->children = devm_kcalloc(ice_hw_to_dev(hw), max_children,
-+					      sizeof(*node), GFP_KERNEL);
-+		if (!node->children) {
-+			devm_kfree(ice_hw_to_dev(hw), node);
-+			return ICE_ERR_NO_MEMORY;
-+		}
-+	}
-+
-+	node->in_use = true;
-+	node->parent = parent;
-+	node->tx_sched_layer = layer;
-+	parent->children[parent->num_children++] = node;
-+	memcpy(&node->info, info, sizeof(*info));
-+	return 0;
-+}
-+
- /**
-  * ice_aq_delete_sched_elems - delete scheduler elements
-  * @hw: pointer to the hw struct
-@@ -208,6 +343,36 @@ void ice_free_sched_node(struct ice_port_info *pi, struct ice_sched_node *node)
- 	devm_kfree(ice_hw_to_dev(hw), node);
+ /* Get link status (indirect 0x0607), also used for Link Status Event */
+ struct ice_aqc_get_link_status {
+ 	u8 lport_num;
+@@ -1151,6 +1190,8 @@ struct ice_aq_desc {
+ 		struct ice_aqc_clear_pxe clear_pxe;
+ 		struct ice_aqc_list_caps get_cap;
+ 		struct ice_aqc_get_phy_caps get_phy;
++		struct ice_aqc_set_phy_cfg set_phy;
++		struct ice_aqc_restart_an restart_an;
+ 		struct ice_aqc_get_sw_cfg get_sw_conf;
+ 		struct ice_aqc_sw_rules sw_rules;
+ 		struct ice_aqc_get_topo get_topo;
+@@ -1236,6 +1277,8 @@ enum ice_adminq_opc {
+ 
+ 	/* PHY commands */
+ 	ice_aqc_opc_get_phy_caps			= 0x0600,
++	ice_aqc_opc_set_phy_cfg				= 0x0601,
++	ice_aqc_opc_restart_an				= 0x0605,
+ 	ice_aqc_opc_get_link_status			= 0x0607,
+ 
+ 	/* NVM commands */
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index ed329c4b4c52..43cca9370444 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1275,6 +1275,201 @@ void ice_clear_pxe_mode(struct ice_hw *hw)
+ 		ice_aq_clear_pxe_mode(hw);
  }
  
 +/**
-+ * ice_aq_get_dflt_topo - gets default scheduler topology
++ * ice_aq_set_phy_cfg
 + * @hw: pointer to the hw struct
 + * @lport: logical port number
-+ * @buf: pointer to buffer
-+ * @buf_size: buffer size in bytes
-+ * @num_branches: returns total number of queue to port branches
++ * @cfg: structure with PHY configuration data to be set
 + * @cd: pointer to command details structure or NULL
 + *
-+ * Get default scheduler topology (0x400)
++ * Set the various PHY configuration parameters supported on the Port.
++ * One or more of the Set PHY config parameters may be ignored in an MFP
++ * mode as the PF may not have the privilege to set some of the PHY Config
++ * parameters. This status will be indicated by the command response (0x0601).
 + */
 +static enum ice_status
-+ice_aq_get_dflt_topo(struct ice_hw *hw, u8 lport,
-+		     struct ice_aqc_get_topo_elem *buf, u16 buf_size,
-+		     u8 *num_branches, struct ice_sq_cd *cd)
++ice_aq_set_phy_cfg(struct ice_hw *hw, u8 lport,
++		   struct ice_aqc_set_phy_cfg_data *cfg, struct ice_sq_cd *cd)
 +{
-+	struct ice_aqc_get_topo *cmd;
++	struct ice_aqc_set_phy_cfg *cmd;
 +	struct ice_aq_desc desc;
++
++	if (!cfg)
++		return ICE_ERR_PARAM;
++
++	cmd = &desc.params.set_phy;
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_phy_cfg);
++	cmd->lport_num = lport;
++
++	return ice_aq_send_cmd(hw, &desc, cfg, sizeof(*cfg), cd);
++}
++
++/**
++ * ice_update_link_info - update status of the HW network link
++ * @pi: port info structure of the interested logical port
++ */
++static enum ice_status
++ice_update_link_info(struct ice_port_info *pi)
++{
++	struct ice_aqc_get_phy_caps_data *pcaps;
++	struct ice_phy_info *phy_info;
 +	enum ice_status status;
++	struct ice_hw *hw;
 +
-+	cmd = &desc.params.get_topo;
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_dflt_topo);
-+	cmd->port_num = lport;
-+	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
-+	if (!status && num_branches)
-+		*num_branches = cmd->num_branches;
++	if (!pi)
++		return ICE_ERR_PARAM;
 +
++	hw = pi->hw;
++
++	pcaps = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*pcaps), GFP_KERNEL);
++	if (!pcaps)
++		return ICE_ERR_NO_MEMORY;
++
++	phy_info = &pi->phy;
++	status = ice_aq_get_link_info(pi, true, NULL, NULL);
++	if (status)
++		goto out;
++
++	if (phy_info->link_info.link_info & ICE_AQ_MEDIA_AVAILABLE) {
++		status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_SW_CFG,
++					     pcaps, NULL);
++		if (status)
++			goto out;
++
++		memcpy(phy_info->link_info.module_type, &pcaps->module_type,
++		       sizeof(phy_info->link_info.module_type));
++	}
++out:
++	devm_kfree(ice_hw_to_dev(hw), pcaps);
 +	return status;
 +}
 +
- /**
-  * ice_aq_query_sched_res - query scheduler resource
-  * @hw: pointer to the hw struct
-@@ -311,6 +476,169 @@ void ice_sched_cleanup_all(struct ice_hw *hw)
- 	hw->max_cgds = 0;
- }
- 
 +/**
-+ * ice_rm_dflt_leaf_node - remove the default leaf node in the tree
++ * ice_set_fc
 + * @pi: port information structure
++ * @aq_failures: pointer to status code, specific to ice_set_fc routine
++ * @atomic_restart: enable automatic link update
 + *
-+ * This function removes the leaf node that was created by the FW
-+ * during initialization
++ * Set the requested flow control mode.
 + */
-+static void
-+ice_rm_dflt_leaf_node(struct ice_port_info *pi)
++enum ice_status
++ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool atomic_restart)
 +{
-+	struct ice_sched_node *node;
-+
-+	node = pi->root;
-+	while (node) {
-+		if (!node->num_children)
-+			break;
-+		node = node->children[0];
-+	}
-+	if (node && node->info.data.elem_type == ICE_AQC_ELEM_TYPE_LEAF) {
-+		u32 teid = le32_to_cpu(node->info.node_teid);
-+		enum ice_status status;
-+
-+		/* remove the default leaf node */
-+		status = ice_sched_remove_elems(pi->hw, node->parent, 1, &teid);
-+		if (!status)
-+			ice_free_sched_node(pi, node);
-+	}
-+}
-+
-+/**
-+ * ice_sched_rm_dflt_nodes - free the default nodes in the tree
-+ * @pi: port information structure
-+ *
-+ * This function frees all the nodes except root and TC that were created by
-+ * the FW during initialization
-+ */
-+static void
-+ice_sched_rm_dflt_nodes(struct ice_port_info *pi)
-+{
-+	struct ice_sched_node *node;
-+
-+	ice_rm_dflt_leaf_node(pi);
-+	/* remove the default nodes except TC and root nodes */
-+	node = pi->root;
-+	while (node) {
-+		if (node->tx_sched_layer >= pi->hw->sw_entry_point_layer &&
-+		    node->info.data.elem_type != ICE_AQC_ELEM_TYPE_TC &&
-+		    node->info.data.elem_type != ICE_AQC_ELEM_TYPE_ROOT_PORT) {
-+			ice_free_sched_node(pi, node);
-+			break;
-+		}
-+		if (!node->num_children)
-+			break;
-+		node = node->children[0];
-+	}
-+}
-+
-+/**
-+ * ice_sched_init_port - Initialize scheduler by querying information from FW
-+ * @pi: port info structure for the tree to cleanup
-+ *
-+ * This function is the initial call to find the total number of Tx scheduler
-+ * resources, default topology created by firmware and storing the information
-+ * in SW DB.
-+ */
-+enum ice_status ice_sched_init_port(struct ice_port_info *pi)
-+{
-+	struct ice_aqc_get_topo_elem *buf;
++	struct ice_aqc_set_phy_cfg_data cfg = { 0 };
++	struct ice_aqc_get_phy_caps_data *pcaps;
 +	enum ice_status status;
++	u8 pause_mask = 0x0;
 +	struct ice_hw *hw;
-+	u8 num_branches;
-+	u16 num_elems;
-+	u8 i, j;
 +
 +	if (!pi)
 +		return ICE_ERR_PARAM;
 +	hw = pi->hw;
++	*aq_failures = ICE_SET_FC_AQ_FAIL_NONE;
 +
-+	/* Query the Default Topology from FW */
-+	buf = devm_kcalloc(ice_hw_to_dev(hw), ICE_TXSCHED_MAX_BRANCHES,
-+			   sizeof(*buf), GFP_KERNEL);
-+	if (!buf)
++	switch (pi->fc.req_mode) {
++	case ICE_FC_FULL:
++		pause_mask |= ICE_AQC_PHY_EN_TX_LINK_PAUSE;
++		pause_mask |= ICE_AQC_PHY_EN_RX_LINK_PAUSE;
++		break;
++	case ICE_FC_RX_PAUSE:
++		pause_mask |= ICE_AQC_PHY_EN_RX_LINK_PAUSE;
++		break;
++	case ICE_FC_TX_PAUSE:
++		pause_mask |= ICE_AQC_PHY_EN_TX_LINK_PAUSE;
++		break;
++	default:
++		break;
++	}
++
++	pcaps = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*pcaps), GFP_KERNEL);
++	if (!pcaps)
 +		return ICE_ERR_NO_MEMORY;
 +
-+	/* Query default scheduling tree topology */
-+	status = ice_aq_get_dflt_topo(hw, pi->lport, buf,
-+				      sizeof(*buf) * ICE_TXSCHED_MAX_BRANCHES,
-+				      &num_branches, NULL);
-+	if (status)
-+		goto err_init_port;
-+
-+	/* num_branches should be between 1-8 */
-+	if (num_branches < 1 || num_branches > ICE_TXSCHED_MAX_BRANCHES) {
-+		ice_debug(hw, ICE_DBG_SCHED, "num_branches unexpected %d\n",
-+			  num_branches);
-+		status = ICE_ERR_PARAM;
-+		goto err_init_port;
++	/* Get the current phy config */
++	status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_SW_CFG, pcaps,
++				     NULL);
++	if (status) {
++		*aq_failures = ICE_SET_FC_AQ_FAIL_GET;
++		goto out;
 +	}
 +
-+	/* get the number of elements on the default/first branch */
-+	num_elems = le16_to_cpu(buf[0].hdr.num_elems);
++	/* clear the old pause settings */
++	cfg.caps = pcaps->caps & ~(ICE_AQC_PHY_EN_TX_LINK_PAUSE |
++				   ICE_AQC_PHY_EN_RX_LINK_PAUSE);
++	/* set the new capabilities */
++	cfg.caps |= pause_mask;
++	/* If the capabilities have changed, then set the new config */
++	if (cfg.caps != pcaps->caps) {
++		int retry_count, retry_max = 10;
 +
-+	/* num_elems should always be between 1-9 */
-+	if (num_elems < 1 || num_elems > ICE_AQC_TOPO_MAX_LEVEL_NUM) {
-+		ice_debug(hw, ICE_DBG_SCHED, "num_elems unexpected %d\n",
-+			  num_elems);
-+		status = ICE_ERR_PARAM;
-+		goto err_init_port;
-+	}
++		/* Auto restart link so settings take effect */
++		if (atomic_restart)
++			cfg.caps |= ICE_AQ_PHY_ENA_ATOMIC_LINK;
++		/* Copy over all the old settings */
++		cfg.phy_type_low = pcaps->phy_type_low;
++		cfg.low_power_ctrl = pcaps->low_power_ctrl;
++		cfg.eee_cap = pcaps->eee_cap;
++		cfg.eeer_value = pcaps->eeer_value;
++		cfg.link_fec_opt = pcaps->link_fec_options;
 +
-+	/* If the last node is a leaf node then the index of the Q group
-+	 * layer is two less than the number of elements.
-+	 */
-+	if (num_elems > 2 && buf[0].generic[num_elems - 1].data.elem_type ==
-+	    ICE_AQC_ELEM_TYPE_LEAF)
-+		pi->last_node_teid =
-+			le32_to_cpu(buf[0].generic[num_elems - 2].node_teid);
-+	else
-+		pi->last_node_teid =
-+			le32_to_cpu(buf[0].generic[num_elems - 1].node_teid);
-+
-+	/* Insert the Tx Sched root node */
-+	status = ice_sched_add_root_node(pi, &buf[0].generic[0]);
-+	if (status)
-+		goto err_init_port;
-+
-+	/* Parse the default tree and cache the information */
-+	for (i = 0; i < num_branches; i++) {
-+		num_elems = le16_to_cpu(buf[i].hdr.num_elems);
-+
-+		/* Skip root element as already inserted */
-+		for (j = 1; j < num_elems; j++) {
-+			/* update the sw entry point */
-+			if (buf[0].generic[j].data.elem_type ==
-+			    ICE_AQC_ELEM_TYPE_ENTRY_POINT)
-+				hw->sw_entry_point_layer = j;
-+
-+			status = ice_sched_add_node(pi, j, &buf[i].generic[j]);
-+			if (status)
-+				goto err_init_port;
++		status = ice_aq_set_phy_cfg(hw, pi->lport, &cfg, NULL);
++		if (status) {
++			*aq_failures = ICE_SET_FC_AQ_FAIL_SET;
++			goto out;
 +		}
++
++		/* Update the link info
++		 * It sometimes takes a really long time for link to
++		 * come back from the atomic reset. Thus, we wait a
++		 * little bit.
++		 */
++		for (retry_count = 0; retry_count < retry_max; retry_count++) {
++			status = ice_update_link_info(pi);
++
++			if (!status)
++				break;
++
++			mdelay(100);
++		}
++
++		if (status)
++			*aq_failures = ICE_SET_FC_AQ_FAIL_UPDATE;
 +	}
 +
-+	/* Remove the default nodes. */
-+	if (pi->root)
-+		ice_sched_rm_dflt_nodes(pi);
-+
-+	/* initialize the port for handling the scheduler tree */
-+	pi->port_state = ICE_SCHED_PORT_STATE_READY;
-+	mutex_init(&pi->sched_lock);
-+	INIT_LIST_HEAD(&pi->agg_list);
-+	INIT_LIST_HEAD(&pi->vsi_info_list);
-+
-+err_init_port:
-+	if (status && pi->root) {
-+		ice_free_sched_node(pi, pi->root);
-+		pi->root = NULL;
-+	}
-+
-+	devm_kfree(ice_hw_to_dev(hw), buf);
++out:
++	devm_kfree(ice_hw_to_dev(hw), pcaps);
 +	return status;
 +}
 +
- /**
-  * ice_sched_query_res_alloc - query the FW for num of logical sched layers
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index fb93acf340ed..6a9c0ae4220d 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -35,8 +35,14 @@ struct ice_sched_agg_info {
- };
- 
- /* FW AQ command calls */
-+enum ice_status ice_sched_init_port(struct ice_port_info *pi);
- enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw);
- void ice_sched_cleanup_all(struct ice_hw *hw);
-+struct ice_sched_node *
-+ice_sched_find_node_by_teid(struct ice_sched_node *start_node, u32 teid);
++/**
++ * ice_aq_set_link_restart_an
++ * @pi: pointer to the port information structure
++ * @ena_link: if true: enable link, if false: disable link
++ * @cd: pointer to command details structure or NULL
++ *
++ * Sets up the link and restarts the Auto-Negotiation over the link.
++ */
 +enum ice_status
-+ice_sched_add_node(struct ice_port_info *pi, u8 layer,
-+		   struct ice_aqc_txsched_elem_data *info);
- void ice_free_sched_node(struct ice_port_info *pi, struct ice_sched_node *node);
- struct ice_sched_node *ice_sched_get_tc_node(struct ice_port_info *pi, u8 tc);
- #endif /* _ICE_SCHED_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_status.h b/drivers/net/ethernet/intel/ice/ice_status.h
-index 1fb6eb8301cf..47ab8c4d1c96 100644
---- a/drivers/net/ethernet/intel/ice/ice_status.h
-+++ b/drivers/net/ethernet/intel/ice/ice_status.h
-@@ -29,6 +29,7 @@ enum ice_status {
- 	ICE_ERR_NO_MEMORY			= -11,
- 	ICE_ERR_CFG				= -12,
- 	ICE_ERR_OUT_OF_RANGE			= -13,
-+	ICE_ERR_BUF_TOO_SHORT			= -52,
- 	ICE_ERR_NVM_BLANK_MODE			= -53,
- 	ICE_ERR_AQ_ERROR			= -100,
- 	ICE_ERR_AQ_TIMEOUT			= -101,
++ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
++			   struct ice_sq_cd *cd)
++{
++	struct ice_aqc_restart_an *cmd;
++	struct ice_aq_desc desc;
++
++	cmd = &desc.params.restart_an;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_restart_an);
++
++	cmd->cmd_flags = ICE_AQC_RESTART_AN_LINK_RESTART;
++	cmd->lport_num = pi->lport;
++	if (ena_link)
++		cmd->cmd_flags |= ICE_AQC_RESTART_AN_LINK_ENABLE;
++	else
++		cmd->cmd_flags &= ~ICE_AQC_RESTART_AN_LINK_ENABLE;
++
++	return ice_aq_send_cmd(pi->hw, &desc, NULL, 0, cd);
++}
++
+ /**
+  * __ice_aq_get_set_rss_lut
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 5de509394e21..bc52b7bcc78c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -72,6 +72,11 @@ ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc,
+ enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd);
+ enum ice_status ice_clear_pf_cfg(struct ice_hw *hw);
+ enum ice_status
++ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool atomic_restart);
++enum ice_status
++ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
++			   struct ice_sq_cd *cd);
++enum ice_status
+ ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
+ 		     struct ice_link_status *link, struct ice_sq_cd *cd);
+ enum ice_status
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+new file mode 100644
+index 000000000000..1f522e594078
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -0,0 +1,954 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Intel(R) Ethernet Connection E800 Series Linux Driver
++ * Copyright (c) 2018, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * The full GNU General Public License is included in this distribution in
++ * the file called "COPYING".
++ */
++
++/* ethtool support for ice */
++
++#include "ice.h"
++
++struct ice_stats {
++	char stat_string[ETH_GSTRING_LEN];
++	int sizeof_stat;
++	int stat_offset;
++};
++
++#define ICE_STAT(_type, _name, _stat) { \
++	.stat_string = _name, \
++	.sizeof_stat = FIELD_SIZEOF(_type, _stat), \
++	.stat_offset = offsetof(_type, _stat) \
++}
++
++#define ICE_VSI_STAT(_name, _stat) \
++		ICE_STAT(struct ice_vsi, _name, _stat)
++#define ICE_PF_STAT(_name, _stat) \
++		ICE_STAT(struct ice_pf, _name, _stat)
++
++static int ice_q_stats_len(struct net_device *netdev)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++
++	return ((np->vsi->num_txq + np->vsi->num_rxq) *
++		(sizeof(struct ice_q_stats) / sizeof(u64)));
++}
++
++#define ICE_PF_STATS_LEN	ARRAY_SIZE(ice_gstrings_pf_stats)
++#define ICE_VSI_STATS_LEN	ARRAY_SIZE(ice_gstrings_vsi_stats)
++
++#define ICE_ALL_STATS_LEN(n)	(ICE_PF_STATS_LEN + ICE_VSI_STATS_LEN + \
++				 ice_q_stats_len(n))
++
++static const struct ice_stats ice_gstrings_vsi_stats[] = {
++	ICE_VSI_STAT("tx_unicast", eth_stats.tx_unicast),
++	ICE_VSI_STAT("rx_unicast", eth_stats.rx_unicast),
++	ICE_VSI_STAT("tx_multicast", eth_stats.tx_multicast),
++	ICE_VSI_STAT("rx_multicast", eth_stats.rx_multicast),
++	ICE_VSI_STAT("tx_broadcast", eth_stats.tx_broadcast),
++	ICE_VSI_STAT("rx_broadcast", eth_stats.rx_broadcast),
++	ICE_VSI_STAT("tx_bytes", eth_stats.tx_bytes),
++	ICE_VSI_STAT("rx_bytes", eth_stats.rx_bytes),
++	ICE_VSI_STAT("rx_discards", eth_stats.rx_discards),
++	ICE_VSI_STAT("tx_errors", eth_stats.tx_errors),
++	ICE_VSI_STAT("tx_linearize", tx_linearize),
++	ICE_VSI_STAT("rx_unknown_protocol", eth_stats.rx_unknown_protocol),
++	ICE_VSI_STAT("rx_alloc_fail", rx_buf_failed),
++	ICE_VSI_STAT("rx_pg_alloc_fail", rx_page_failed),
++};
++
++/* These PF_STATs might look like duplicates of some NETDEV_STATs,
++ * but they aren't. This device is capable of supporting multiple
++ * VSIs/netdevs on a single PF. The NETDEV_STATs are for individual
++ * netdevs whereas the PF_STATs are for the physical function that's
++ * hosting these netdevs.
++ *
++ * The PF_STATs are appended to the netdev stats only when ethtool -S
++ * is queried on the base PF netdev.
++ */
++static struct ice_stats ice_gstrings_pf_stats[] = {
++	ICE_PF_STAT("tx_bytes", stats.eth.tx_bytes),
++	ICE_PF_STAT("rx_bytes", stats.eth.rx_bytes),
++	ICE_PF_STAT("tx_unicast", stats.eth.tx_unicast),
++	ICE_PF_STAT("rx_unicast", stats.eth.rx_unicast),
++	ICE_PF_STAT("tx_multicast", stats.eth.tx_multicast),
++	ICE_PF_STAT("rx_multicast", stats.eth.rx_multicast),
++	ICE_PF_STAT("tx_broadcast", stats.eth.tx_broadcast),
++	ICE_PF_STAT("rx_broadcast", stats.eth.rx_broadcast),
++	ICE_PF_STAT("tx_errors", stats.eth.tx_errors),
++	ICE_PF_STAT("tx_size_64", stats.tx_size_64),
++	ICE_PF_STAT("rx_size_64", stats.rx_size_64),
++	ICE_PF_STAT("tx_size_127", stats.tx_size_127),
++	ICE_PF_STAT("rx_size_127", stats.rx_size_127),
++	ICE_PF_STAT("tx_size_255", stats.tx_size_255),
++	ICE_PF_STAT("rx_size_255", stats.rx_size_255),
++	ICE_PF_STAT("tx_size_511", stats.tx_size_511),
++	ICE_PF_STAT("rx_size_511", stats.rx_size_511),
++	ICE_PF_STAT("tx_size_1023", stats.tx_size_1023),
++	ICE_PF_STAT("rx_size_1023", stats.rx_size_1023),
++	ICE_PF_STAT("tx_size_1522", stats.tx_size_1522),
++	ICE_PF_STAT("rx_size_1522", stats.rx_size_1522),
++	ICE_PF_STAT("tx_size_big", stats.tx_size_big),
++	ICE_PF_STAT("rx_size_big", stats.rx_size_big),
++	ICE_PF_STAT("link_xon_tx", stats.link_xon_tx),
++	ICE_PF_STAT("link_xon_rx", stats.link_xon_rx),
++	ICE_PF_STAT("link_xoff_tx", stats.link_xoff_tx),
++	ICE_PF_STAT("link_xoff_rx", stats.link_xoff_rx),
++	ICE_PF_STAT("tx_dropped_link_down", stats.tx_dropped_link_down),
++	ICE_PF_STAT("rx_undersize", stats.rx_undersize),
++	ICE_PF_STAT("rx_fragments", stats.rx_fragments),
++	ICE_PF_STAT("rx_oversize", stats.rx_oversize),
++	ICE_PF_STAT("rx_jabber", stats.rx_jabber),
++	ICE_PF_STAT("rx_csum_bad", hw_csum_rx_error),
++	ICE_PF_STAT("rx_length_errors", stats.rx_len_errors),
++	ICE_PF_STAT("rx_dropped", stats.eth.rx_discards),
++	ICE_PF_STAT("rx_crc_errors", stats.crc_errors),
++	ICE_PF_STAT("illegal_bytes", stats.illegal_bytes),
++	ICE_PF_STAT("mac_local_faults", stats.mac_local_faults),
++	ICE_PF_STAT("mac_remote_faults", stats.mac_remote_faults),
++};
++
++static u32 ice_regs_dump_list[] = {
++	PFGEN_STATE,
++	PRTGEN_STATUS,
++	QRX_CTRL(0),
++	QINT_TQCTL(0),
++	QINT_RQCTL(0),
++	PFINT_OICR_ENA,
++	QRX_ITR(0),
++};
++
++/**
++ * ice_nvm_version_str - format the NVM version strings
++ * @hw: ptr to the hardware info
++ */
++static char *ice_nvm_version_str(struct ice_hw *hw)
++{
++	static char buf[ICE_ETHTOOL_FWVER_LEN];
++	u8 ver, patch;
++	u32 full_ver;
++	u16 build;
++
++	full_ver = hw->nvm.oem_ver;
++	ver = (u8)((full_ver & ICE_OEM_VER_MASK) >> ICE_OEM_VER_SHIFT);
++	build = (u16)((full_ver & ICE_OEM_VER_BUILD_MASK) >>
++		      ICE_OEM_VER_BUILD_SHIFT);
++	patch = (u8)(full_ver & ICE_OEM_VER_PATCH_MASK);
++
++	snprintf(buf, sizeof(buf), "%x.%02x 0x%x %d.%d.%d",
++		 (hw->nvm.ver & ICE_NVM_VER_HI_MASK) >> ICE_NVM_VER_HI_SHIFT,
++		 (hw->nvm.ver & ICE_NVM_VER_LO_MASK) >> ICE_NVM_VER_LO_SHIFT,
++		 hw->nvm.eetrack, ver, build, patch);
++
++	return buf;
++}
++
++static void
++ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++
++	strlcpy(drvinfo->driver, KBUILD_MODNAME, sizeof(drvinfo->driver));
++	strlcpy(drvinfo->version, ice_drv_ver, sizeof(drvinfo->version));
++	strlcpy(drvinfo->fw_version, ice_nvm_version_str(&pf->hw),
++		sizeof(drvinfo->fw_version));
++	strlcpy(drvinfo->bus_info, pci_name(pf->pdev),
++		sizeof(drvinfo->bus_info));
++}
++
++static int ice_get_regs_len(struct net_device __always_unused *netdev)
++{
++	return ARRAY_SIZE(ice_regs_dump_list);
++}
++
++static void
++ice_get_regs(struct net_device *netdev, struct ethtool_regs *regs, void *p)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_pf *pf = np->vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	u32 *regs_buf = (u32 *)p;
++	int i;
++
++	regs->version = 1;
++
++	for (i = 0; i < ARRAY_SIZE(ice_regs_dump_list) / sizeof(u32); ++i)
++		regs_buf[i] = rd32(hw, ice_regs_dump_list[i]);
++}
++
++static u32 ice_get_msglevel(struct net_device *netdev)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_pf *pf = np->vsi->back;
++
++#ifndef CONFIG_DYNAMIC_DEBUG
++	if (pf->hw.debug_mask)
++		netdev_info(netdev, "hw debug_mask: 0x%llX\n",
++			    pf->hw.debug_mask);
++#endif /* !CONFIG_DYNAMIC_DEBUG */
++
++	return pf->msg_enable;
++}
++
++static void ice_set_msglevel(struct net_device *netdev, u32 data)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_pf *pf = np->vsi->back;
++
++#ifndef CONFIG_DYNAMIC_DEBUG
++	if (ICE_DBG_USER & data)
++		pf->hw.debug_mask = data;
++	else
++		pf->msg_enable = data;
++#else
++	pf->msg_enable = data;
++#endif /* !CONFIG_DYNAMIC_DEBUG */
++}
++
++static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	char *p = (char *)data;
++	unsigned int i;
++
++	switch (stringset) {
++	case ETH_SS_STATS:
++		for (i = 0; i < ICE_VSI_STATS_LEN; i++) {
++			snprintf(p, ETH_GSTRING_LEN, "%s",
++				 ice_gstrings_vsi_stats[i].stat_string);
++			p += ETH_GSTRING_LEN;
++		}
++
++		ice_for_each_txq(vsi, i) {
++			snprintf(p, ETH_GSTRING_LEN,
++				 "tx-queue-%u.tx_packets", i);
++			p += ETH_GSTRING_LEN;
++			snprintf(p, ETH_GSTRING_LEN, "tx-queue-%u.tx_bytes", i);
++			p += ETH_GSTRING_LEN;
++		}
++
++		ice_for_each_rxq(vsi, i) {
++			snprintf(p, ETH_GSTRING_LEN,
++				 "rx-queue-%u.rx_packets", i);
++			p += ETH_GSTRING_LEN;
++			snprintf(p, ETH_GSTRING_LEN, "rx-queue-%u.rx_bytes", i);
++			p += ETH_GSTRING_LEN;
++		}
++
++		if (vsi->type != ICE_VSI_PF)
++			return;
++
++		for (i = 0; i < ICE_PF_STATS_LEN; i++) {
++			snprintf(p, ETH_GSTRING_LEN, "port.%s",
++				 ice_gstrings_pf_stats[i].stat_string);
++			p += ETH_GSTRING_LEN;
++		}
++
++		break;
++	default:
++		break;
++	}
++}
++
++static int ice_get_sset_count(struct net_device *netdev, int sset)
++{
++	switch (sset) {
++	case ETH_SS_STATS:
++		return ICE_ALL_STATS_LEN(netdev);
++	default:
++		return -EOPNOTSUPP;
++	}
++}
++
++static void
++ice_get_ethtool_stats(struct net_device *netdev,
++		      struct ethtool_stats __always_unused *stats, u64 *data)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	struct ice_ring *ring;
++	unsigned int j = 0;
++	int i = 0;
++	char *p;
++
++	for (j = 0; j < ICE_VSI_STATS_LEN; j++) {
++		p = (char *)vsi + ice_gstrings_vsi_stats[j].stat_offset;
++		data[i++] = (ice_gstrings_vsi_stats[j].sizeof_stat ==
++			    sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
++	}
++
++	/* populate per queue stats */
++	rcu_read_lock();
++
++	ice_for_each_txq(vsi, j) {
++		ring = READ_ONCE(vsi->tx_rings[j]);
++		if (!ring)
++			continue;
++		data[i++] = ring->stats.pkts;
++		data[i++] = ring->stats.bytes;
++	}
++
++	ice_for_each_rxq(vsi, j) {
++		ring = READ_ONCE(vsi->rx_rings[j]);
++		data[i++] = ring->stats.pkts;
++		data[i++] = ring->stats.bytes;
++	}
++
++	rcu_read_unlock();
++
++	if (vsi->type != ICE_VSI_PF)
++		return;
++
++	for (j = 0; j < ICE_PF_STATS_LEN; j++) {
++		p = (char *)pf + ice_gstrings_pf_stats[j].stat_offset;
++		data[i++] = (ice_gstrings_pf_stats[j].sizeof_stat ==
++			     sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
++	}
++}
++
++static int
++ice_get_link_ksettings(struct net_device *netdev,
++		       struct ethtool_link_ksettings *ks)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_link_status *hw_link_info;
++	struct ice_vsi *vsi = np->vsi;
++	bool link_up;
++
++	hw_link_info = &vsi->port_info->phy.link_info;
++	link_up = hw_link_info->link_info & ICE_AQ_LINK_UP;
++
++	ethtool_link_ksettings_add_link_mode(ks, supported,
++					     10000baseT_Full);
++	ethtool_link_ksettings_add_link_mode(ks, advertising,
++					     10000baseT_Full);
++
++	/* set speed and duplex */
++	if (link_up) {
++		switch (hw_link_info->link_speed) {
++		case ICE_AQ_LINK_SPEED_100MB:
++			ks->base.speed = SPEED_100;
++			break;
++		case ICE_AQ_LINK_SPEED_2500MB:
++			ks->base.speed = SPEED_2500;
++			break;
++		case ICE_AQ_LINK_SPEED_5GB:
++			ks->base.speed = SPEED_5000;
++			break;
++		case ICE_AQ_LINK_SPEED_10GB:
++			ks->base.speed = SPEED_10000;
++			break;
++		case ICE_AQ_LINK_SPEED_25GB:
++			ks->base.speed = SPEED_25000;
++			break;
++		case ICE_AQ_LINK_SPEED_40GB:
++			ks->base.speed = SPEED_40000;
++			break;
++		default:
++			ks->base.speed = SPEED_UNKNOWN;
++			break;
++		}
++
++		ks->base.duplex = DUPLEX_FULL;
++	} else {
++		ks->base.speed = SPEED_UNKNOWN;
++		ks->base.duplex = DUPLEX_UNKNOWN;
++	}
++
++	/* set autoneg settings */
++	ks->base.autoneg = ((hw_link_info->an_info & ICE_AQ_AN_COMPLETED) ?
++			    AUTONEG_ENABLE : AUTONEG_DISABLE);
++
++	/* set media type settings */
++	switch (vsi->port_info->phy.media_type) {
++	case ICE_MEDIA_FIBER:
++		ethtool_link_ksettings_add_link_mode(ks, supported, FIBRE);
++		ks->base.port = PORT_FIBRE;
++		break;
++	case ICE_MEDIA_BASET:
++		ethtool_link_ksettings_add_link_mode(ks, supported, TP);
++		ethtool_link_ksettings_add_link_mode(ks, advertising, TP);
++		ks->base.port = PORT_TP;
++		break;
++	case ICE_MEDIA_BACKPLANE:
++		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
++		ethtool_link_ksettings_add_link_mode(ks, supported, Backplane);
++		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
++		ethtool_link_ksettings_add_link_mode(ks, advertising,
++						     Backplane);
++		ks->base.port = PORT_NONE;
++		break;
++	case ICE_MEDIA_DA:
++		ethtool_link_ksettings_add_link_mode(ks, supported, FIBRE);
++		ethtool_link_ksettings_add_link_mode(ks, advertising, FIBRE);
++		ks->base.port = PORT_DA;
++		break;
++	default:
++		ks->base.port = PORT_OTHER;
++		break;
++	}
++
++	/* flow control is symmetric and always supported */
++	ethtool_link_ksettings_add_link_mode(ks, supported, Pause);
++
++	switch (vsi->port_info->fc.req_mode) {
++	case ICE_FC_FULL:
++		ethtool_link_ksettings_add_link_mode(ks, advertising, Pause);
++		break;
++	case ICE_FC_TX_PAUSE:
++		ethtool_link_ksettings_add_link_mode(ks, advertising,
++						     Asym_Pause);
++		break;
++	case ICE_FC_RX_PAUSE:
++		ethtool_link_ksettings_add_link_mode(ks, advertising, Pause);
++		ethtool_link_ksettings_add_link_mode(ks, advertising,
++						     Asym_Pause);
++		break;
++	case ICE_FC_PFC:
++	default:
++		ethtool_link_ksettings_del_link_mode(ks, advertising, Pause);
++		ethtool_link_ksettings_del_link_mode(ks, advertising,
++						     Asym_Pause);
++		break;
++	}
++
++	return 0;
++}
++
++/**
++ * ice_get_rxnfc - command to get RX flow classification rules
++ * @netdev: network interface device structure
++ * @cmd: ethtool rxnfc command
++ * @rule_locs: buffer to rturn Rx flow classification rules
++ *
++ * Returns Success if the command is supported.
++ */
++static int ice_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
++			 u32 __always_unused *rule_locs)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	int ret = -EOPNOTSUPP;
++
++	switch (cmd->cmd) {
++	case ETHTOOL_GRXRINGS:
++		cmd->data = vsi->rss_size;
++		ret = 0;
++		break;
++	default:
++		break;
++	}
++
++	return ret;
++}
++
++static void
++ice_get_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++
++	ring->rx_max_pending = ICE_MAX_NUM_DESC;
++	ring->tx_max_pending = ICE_MAX_NUM_DESC;
++	ring->rx_pending = vsi->rx_rings[0]->count;
++	ring->tx_pending = vsi->tx_rings[0]->count;
++	ring->rx_mini_pending = ICE_MIN_NUM_DESC;
++	ring->rx_mini_max_pending = 0;
++	ring->rx_jumbo_max_pending = 0;
++	ring->rx_jumbo_pending = 0;
++}
++
++static int
++ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
++{
++	struct ice_ring *tx_rings = NULL, *rx_rings = NULL;
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	int i, timeout = 50, err = 0;
++	u32 new_rx_cnt, new_tx_cnt;
++
++	if (ring->tx_pending > ICE_MAX_NUM_DESC ||
++	    ring->tx_pending < ICE_MIN_NUM_DESC ||
++	    ring->rx_pending > ICE_MAX_NUM_DESC ||
++	    ring->rx_pending < ICE_MIN_NUM_DESC) {
++		netdev_err(netdev, "Descriptors requested (Tx: %d / Rx: %d) out of range [%d-%d]\n",
++			   ring->tx_pending, ring->rx_pending,
++			   ICE_MIN_NUM_DESC, ICE_MAX_NUM_DESC);
++		return -EINVAL;
++	}
++
++	new_tx_cnt = ALIGN(ring->tx_pending, ICE_REQ_DESC_MULTIPLE);
++	new_rx_cnt = ALIGN(ring->rx_pending, ICE_REQ_DESC_MULTIPLE);
++
++	/* if nothing to do return success */
++	if (new_tx_cnt == vsi->tx_rings[0]->count &&
++	    new_rx_cnt == vsi->rx_rings[0]->count) {
++		netdev_dbg(netdev, "Nothing to change, descriptor count is same as requested\n");
++		return 0;
++	}
++
++	while (test_and_set_bit(__ICE_CFG_BUSY, pf->state)) {
++		timeout--;
++		if (!timeout)
++			return -EBUSY;
++		usleep_range(1000, 2000);
++	}
++
++	/* set for the next time the netdev is started */
++	if (!netif_running(vsi->netdev)) {
++		for (i = 0; i < vsi->alloc_txq; i++)
++			vsi->tx_rings[i]->count = new_tx_cnt;
++		for (i = 0; i < vsi->alloc_rxq; i++)
++			vsi->rx_rings[i]->count = new_rx_cnt;
++		netdev_dbg(netdev, "Link is down, descriptor count change happens when link is brought up\n");
++		goto done;
++	}
++
++	if (new_tx_cnt == vsi->tx_rings[0]->count)
++		goto process_rx;
++
++	/* alloc updated Tx resources */
++	netdev_info(netdev, "Changing Tx descriptor count from %d to %d\n",
++		    vsi->tx_rings[0]->count, new_tx_cnt);
++
++	tx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_txq,
++				sizeof(struct ice_ring), GFP_KERNEL);
++	if (!tx_rings) {
++		err = -ENOMEM;
++		goto done;
++	}
++
++	for (i = 0; i < vsi->num_txq; i++) {
++		/* clone ring and setup updated count */
++		tx_rings[i] = *vsi->tx_rings[i];
++		tx_rings[i].count = new_tx_cnt;
++		tx_rings[i].desc = NULL;
++		tx_rings[i].tx_buf = NULL;
++		err = ice_setup_tx_ring(&tx_rings[i]);
++		if (err) {
++			while (i) {
++				i--;
++				ice_clean_tx_ring(&tx_rings[i]);
++			}
++			devm_kfree(&pf->pdev->dev, tx_rings);
++			goto done;
++		}
++	}
++
++process_rx:
++	if (new_rx_cnt == vsi->rx_rings[0]->count)
++		goto process_link;
++
++	/* alloc updated Rx resources */
++	netdev_info(netdev, "Changing Rx descriptor count from %d to %d\n",
++		    vsi->rx_rings[0]->count, new_rx_cnt);
++
++	rx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_rxq,
++				sizeof(struct ice_ring), GFP_KERNEL);
++	if (!rx_rings) {
++		err = -ENOMEM;
++		goto done;
++	}
++
++	for (i = 0; i < vsi->num_rxq; i++) {
++		/* clone ring and setup updated count */
++		rx_rings[i] = *vsi->rx_rings[i];
++		rx_rings[i].count = new_rx_cnt;
++		rx_rings[i].desc = NULL;
++		rx_rings[i].rx_buf = NULL;
++		/* this is to allow wr32 to have something to write to
++		 * during early allocation of Rx buffers
++		 */
++		rx_rings[i].tail = vsi->back->hw.hw_addr + PRTGEN_STATUS;
++
++		err = ice_setup_rx_ring(&rx_rings[i]);
++		if (err)
++			goto rx_unwind;
++
++		/* allocate Rx buffers */
++		err = ice_alloc_rx_bufs(&rx_rings[i],
++					ICE_DESC_UNUSED(&rx_rings[i]));
++rx_unwind:
++		if (err) {
++			while (i) {
++				i--;
++				ice_free_rx_ring(&rx_rings[i]);
++			}
++			devm_kfree(&pf->pdev->dev, rx_rings);
++			err = -ENOMEM;
++			goto free_tx;
++		}
++	}
++
++process_link:
++	/* Bring interface down, copy in the new ring info, then restore the
++	 * interface. if VSI is up, bring it down and then back up
++	 */
++	if (!test_and_set_bit(__ICE_DOWN, vsi->state)) {
++		ice_down(vsi);
++
++		if (tx_rings) {
++			for (i = 0; i < vsi->alloc_txq; i++) {
++				ice_free_tx_ring(vsi->tx_rings[i]);
++				*vsi->tx_rings[i] = tx_rings[i];
++			}
++			devm_kfree(&pf->pdev->dev, tx_rings);
++		}
++
++		if (rx_rings) {
++			for (i = 0; i < vsi->alloc_rxq; i++) {
++				ice_free_rx_ring(vsi->rx_rings[i]);
++				/* copy the real tail offset */
++				rx_rings[i].tail = vsi->rx_rings[i]->tail;
++				/* this is to fake out the allocation routine
++				 * into thinking it has to realloc everything
++				 * but the recycling logic will let us re-use
++				 * the buffers allocated above
++				 */
++				rx_rings[i].next_to_use = 0;
++				rx_rings[i].next_to_clean = 0;
++				rx_rings[i].next_to_alloc = 0;
++				*vsi->rx_rings[i] = rx_rings[i];
++			}
++			devm_kfree(&pf->pdev->dev, rx_rings);
++		}
++
++		ice_up(vsi);
++	}
++	goto done;
++
++free_tx:
++	/* error cleanup if the Rx allocations failed after getting Tx */
++	if (tx_rings) {
++		for (i = 0; i < vsi->alloc_txq; i++)
++			ice_free_tx_ring(&tx_rings[i]);
++		devm_kfree(&pf->pdev->dev, tx_rings);
++	}
++
++done:
++	clear_bit(__ICE_CFG_BUSY, pf->state);
++	return err;
++}
++
++static int ice_nway_reset(struct net_device *netdev)
++{
++	/* restart autonegotiation */
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_link_status *hw_link_info;
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_port_info *pi;
++	enum ice_status status;
++	bool link_up;
++
++	pi = vsi->port_info;
++	hw_link_info = &pi->phy.link_info;
++	link_up = hw_link_info->link_info & ICE_AQ_LINK_UP;
++
++	status = ice_aq_set_link_restart_an(pi, link_up, NULL);
++	if (status) {
++		netdev_info(netdev, "link restart failed, err %d aq_err %d\n",
++			    status, pi->hw->adminq.sq_last_status);
++		return -EIO;
++	}
++
++	return 0;
++}
++
++/**
++ * ice_get_pauseparam - Get Flow Control status
++ * @netdev: network interface device structure
++ * @pause: ethernet pause (flow control) parameters
++ */
++static void
++ice_get_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_port_info *pi;
++
++	pi = np->vsi->port_info;
++	pause->autoneg =
++		((pi->phy.link_info.an_info & ICE_AQ_AN_COMPLETED) ?
++		 AUTONEG_ENABLE : AUTONEG_DISABLE);
++
++	if (pi->fc.current_mode == ICE_FC_RX_PAUSE) {
++		pause->rx_pause = 1;
++	} else if (pi->fc.current_mode == ICE_FC_TX_PAUSE) {
++		pause->tx_pause = 1;
++	} else if (pi->fc.current_mode == ICE_FC_FULL) {
++		pause->rx_pause = 1;
++		pause->tx_pause = 1;
++	}
++}
++
++/**
++ * ice_set_pauseparam - Set Flow Control parameter
++ * @netdev: network interface device structure
++ * @pause: return tx/rx flow control status
++ */
++static int
++ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_link_status *hw_link_info;
++	struct ice_pf *pf = np->vsi->back;
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_hw *hw = &pf->hw;
++	struct ice_port_info *pi;
++	enum ice_status status;
++	u8 aq_failures;
++	bool link_up;
++	int err = 0;
++
++	pi = vsi->port_info;
++	hw_link_info = &pi->phy.link_info;
++	link_up = hw_link_info->link_info & ICE_AQ_LINK_UP;
++
++	/* Changing the port's flow control is not supported if this isn't the
++	 * PF VSI
++	 */
++	if (vsi->type != ICE_VSI_PF) {
++		netdev_info(netdev, "Changing flow control parameters only supported for PF VSI\n");
++		return -EOPNOTSUPP;
++	}
++
++	if (pause->autoneg != (hw_link_info->an_info & ICE_AQ_AN_COMPLETED)) {
++		netdev_info(netdev, "To change autoneg please use: ethtool -s <dev> autoneg <on|off>\n");
++		return -EOPNOTSUPP;
++	}
++
++	/* If we have link and don't have autoneg */
++	if (!test_bit(__ICE_DOWN, pf->state) &&
++	    !(hw_link_info->an_info & ICE_AQ_AN_COMPLETED)) {
++		/* Send message that it might not necessarily work*/
++		netdev_info(netdev, "Autoneg did not complete so changing settings may not result in an actual change.\n");
++	}
++
++	if (pause->rx_pause && pause->tx_pause)
++		pi->fc.req_mode = ICE_FC_FULL;
++	else if (pause->rx_pause && !pause->tx_pause)
++		pi->fc.req_mode = ICE_FC_RX_PAUSE;
++	else if (!pause->rx_pause && pause->tx_pause)
++		pi->fc.req_mode = ICE_FC_TX_PAUSE;
++	else if (!pause->rx_pause && !pause->tx_pause)
++		pi->fc.req_mode = ICE_FC_NONE;
++	else
++		return -EINVAL;
++
++	/* Tell the OS link is going down, the link will go back up when fw
++	 * says it is ready asynchronously
++	 */
++	ice_print_link_msg(vsi, false);
++	netif_carrier_off(netdev);
++	netif_tx_stop_all_queues(netdev);
++
++	/* Set the FC mode and only restart AN if link is up */
++	status = ice_set_fc(pi, &aq_failures, link_up);
++
++	if (aq_failures & ICE_SET_FC_AQ_FAIL_GET) {
++		netdev_info(netdev, "Set fc failed on the get_phy_capabilities call with err %d aq_err %d\n",
++			    status, hw->adminq.sq_last_status);
++		err = -EAGAIN;
++	} else if (aq_failures & ICE_SET_FC_AQ_FAIL_SET) {
++		netdev_info(netdev, "Set fc failed on the set_phy_config call with err %d aq_err %d\n",
++			    status, hw->adminq.sq_last_status);
++		err = -EAGAIN;
++	} else if (aq_failures & ICE_SET_FC_AQ_FAIL_UPDATE) {
++		netdev_info(netdev, "Set fc failed on the get_link_info call with err %d aq_err %d\n",
++			    status, hw->adminq.sq_last_status);
++		err = -EAGAIN;
++	}
++
++	if (!test_bit(__ICE_DOWN, pf->state)) {
++		/* Give it a little more time to try to come back */
++		msleep(75);
++		if (!test_bit(__ICE_DOWN, pf->state))
++			return ice_nway_reset(netdev);
++	}
++
++	return err;
++}
++
++/**
++ * ice_get_rxfh_key_size - get the RSS hash key size
++ * @netdev: network interface device structure
++ *
++ * Returns the table size.
++ */
++static u32 ice_get_rxfh_key_size(struct net_device __always_unused *netdev)
++{
++	return ICE_VSIQF_HKEY_ARRAY_SIZE;
++}
++
++/**
++ * ice_get_rxfh_indir_size - get the rx flow hash indirection table size
++ * @netdev: network interface device structure
++ *
++ * Returns the table size.
++ */
++static u32 ice_get_rxfh_indir_size(struct net_device *netdev)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++
++	return np->vsi->rss_table_size;
++}
++
++/**
++ * ice_get_rxfh - get the rx flow hash indirection table
++ * @netdev: network interface device structure
++ * @indir: indirection table
++ * @key: hash key
++ * @hfunc: hash function
++ *
++ * Reads the indirection table directly from the hardware.
++ */
++static int
++ice_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key, u8 *hfunc)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	int ret = 0, i;
++	u8 *lut;
++
++	if (hfunc)
++		*hfunc = ETH_RSS_HASH_TOP;
++
++	if (!indir)
++		return 0;
++
++	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
++		/* RSS not supported return error here */
++		netdev_warn(netdev, "RSS is not configured on this VSI!\n");
++		return -EIO;
++	}
++
++	lut = devm_kzalloc(&pf->pdev->dev, vsi->rss_table_size, GFP_KERNEL);
++	if (!lut)
++		return -ENOMEM;
++
++	if (ice_get_rss(vsi, key, lut, vsi->rss_table_size)) {
++		ret = -EIO;
++		goto out;
++	}
++
++	for (i = 0; i < vsi->rss_table_size; i++)
++		indir[i] = (u32)(lut[i]);
++
++out:
++	devm_kfree(&pf->pdev->dev, lut);
++	return ret;
++}
++
++/**
++ * ice_set_rxfh - set the rx flow hash indirection table
++ * @netdev: network interface device structure
++ * @indir: indirection table
++ * @key: hash key
++ * @hfunc: hash function
++ *
++ * Returns -EINVAL if the table specifies an invalid queue id, otherwise
++ * returns 0 after programming the table.
++ */
++static int ice_set_rxfh(struct net_device *netdev, const u32 *indir,
++			const u8 *key, const u8 hfunc)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	u8 *seed = NULL;
++
++	if (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP)
++		return -EOPNOTSUPP;
++
++	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
++		/* RSS not supported return error here */
++		netdev_warn(netdev, "RSS is not configured on this VSI!\n");
++		return -EIO;
++	}
++
++	if (key) {
++		if (!vsi->rss_hkey_user) {
++			vsi->rss_hkey_user =
++				devm_kzalloc(&pf->pdev->dev,
++					     ICE_VSIQF_HKEY_ARRAY_SIZE,
++					     GFP_KERNEL);
++			if (!vsi->rss_hkey_user)
++				return -ENOMEM;
++		}
++		memcpy(vsi->rss_hkey_user, key, ICE_VSIQF_HKEY_ARRAY_SIZE);
++		seed = vsi->rss_hkey_user;
++	}
++
++	if (!vsi->rss_lut_user) {
++		vsi->rss_lut_user = devm_kzalloc(&pf->pdev->dev,
++						 vsi->rss_table_size,
++						 GFP_KERNEL);
++		if (!vsi->rss_lut_user)
++			return -ENOMEM;
++	}
++
++	/* Each 32 bits pointed by 'indir' is stored with a lut entry */
++	if (indir) {
++		int i;
++
++		for (i = 0; i < vsi->rss_table_size; i++)
++			vsi->rss_lut_user[i] = (u8)(indir[i]);
++	} else {
++		ice_fill_rss_lut(vsi->rss_lut_user, vsi->rss_table_size,
++				 vsi->rss_size);
++	}
++
++	if (ice_set_rss(vsi, seed, vsi->rss_lut_user, vsi->rss_table_size))
++		return -EIO;
++
++	return 0;
++}
++
++static const struct ethtool_ops ice_ethtool_ops = {
++	.get_link_ksettings	= ice_get_link_ksettings,
++	.get_drvinfo            = ice_get_drvinfo,
++	.get_regs_len           = ice_get_regs_len,
++	.get_regs               = ice_get_regs,
++	.get_msglevel           = ice_get_msglevel,
++	.set_msglevel           = ice_set_msglevel,
++	.get_link		= ethtool_op_get_link,
++	.get_strings		= ice_get_strings,
++	.get_ethtool_stats      = ice_get_ethtool_stats,
++	.get_sset_count		= ice_get_sset_count,
++	.get_rxnfc		= ice_get_rxnfc,
++	.get_ringparam		= ice_get_ringparam,
++	.set_ringparam		= ice_set_ringparam,
++	.nway_reset		= ice_nway_reset,
++	.get_pauseparam		= ice_get_pauseparam,
++	.set_pauseparam		= ice_set_pauseparam,
++	.get_rxfh_key_size	= ice_get_rxfh_key_size,
++	.get_rxfh_indir_size	= ice_get_rxfh_indir_size,
++	.get_rxfh		= ice_get_rxfh,
++	.set_rxfh		= ice_set_rxfh,
++};
++
++/**
++ * ice_set_ethtool_ops - setup netdev ethtool ops
++ * @netdev: network interface device structure
++ *
++ * setup netdev ethtool ops with ice specific ops
++ */
++void ice_set_ethtool_ops(struct net_device *netdev)
++{
++	netdev->ethtool_ops = &ice_ethtool_ops;
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 6303489866a4..0d24ec3ca975 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -108,6 +108,8 @@
+ #define PFGEN_CTRL			0x00091000
+ #define PFGEN_CTRL_PFSWR_S		0
+ #define PFGEN_CTRL_PFSWR_M		BIT(PFGEN_CTRL_PFSWR_S)
++#define PFGEN_STATE			0x00088000
++#define PRTGEN_STATUS			0x000B8100
+ #define PFHMC_ERRORDATA			0x00520500
+ #define PFHMC_ERRORINFO			0x00520400
+ #define GLINT_DYN_CTL(_INT)		(0x00160000 + ((_INT) * 4))
+@@ -179,6 +181,7 @@
+ #define QRX_CTRL_QENA_REQ_M		BIT(QRX_CTRL_QENA_REQ_S)
+ #define QRX_CTRL_QENA_STAT_S		2
+ #define QRX_CTRL_QENA_STAT_M		BIT(QRX_CTRL_QENA_STAT_S)
++#define QRX_ITR(_QRX)			(0x00292000 + ((_QRX) * 4))
+ #define QRX_TAIL(_QRX)			(0x00290000 + ((_QRX) * 4))
+ #define GLNVM_FLA			0x000B6108
+ #define GLNVM_FLA_LOCKED_S		6
+@@ -194,5 +197,82 @@
+ #define PF_FUNC_RID			0x0009E880
+ #define PF_FUNC_RID_FUNC_NUM_S		0
+ #define PF_FUNC_RID_FUNC_NUM_M		ICE_M(0x7, PF_FUNC_RID_FUNC_NUM_S)
++#define GLPRT_BPRCH(_i)			(0x00381384 + ((_i) * 8))
++#define GLPRT_BPRCL(_i)			(0x00381380 + ((_i) * 8))
++#define GLPRT_BPTCH(_i)			(0x00381244 + ((_i) * 8))
++#define GLPRT_BPTCL(_i)			(0x00381240 + ((_i) * 8))
++#define GLPRT_CRCERRS(_i)		(0x00380100 + ((_i) * 8))
++#define GLPRT_GORCH(_i)			(0x00380004 + ((_i) * 8))
++#define GLPRT_GORCL(_i)			(0x00380000 + ((_i) * 8))
++#define GLPRT_GOTCH(_i)			(0x00380B44 + ((_i) * 8))
++#define GLPRT_GOTCL(_i)			(0x00380B40 + ((_i) * 8))
++#define GLPRT_ILLERRC(_i)		(0x003801C0 + ((_i) * 8))
++#define GLPRT_LXOFFRXC(_i)		(0x003802C0 + ((_i) * 8))
++#define GLPRT_LXOFFTXC(_i)		(0x00381180 + ((_i) * 8))
++#define GLPRT_LXONRXC(_i)		(0x00380280 + ((_i) * 8))
++#define GLPRT_LXONTXC(_i)		(0x00381140 + ((_i) * 8))
++#define GLPRT_MLFC(_i)			(0x00380040 + ((_i) * 8))
++#define GLPRT_MPRCH(_i)			(0x00381344 + ((_i) * 8))
++#define GLPRT_MPRCL(_i)			(0x00381340 + ((_i) * 8))
++#define GLPRT_MPTCH(_i)			(0x00381204 + ((_i) * 8))
++#define GLPRT_MPTCL(_i)			(0x00381200 + ((_i) * 8))
++#define GLPRT_MRFC(_i)			(0x00380080 + ((_i) * 8))
++#define GLPRT_PRC1023H(_i)		(0x00380A04 + ((_i) * 8))
++#define GLPRT_PRC1023L(_i)		(0x00380A00 + ((_i) * 8))
++#define GLPRT_PRC127H(_i)		(0x00380944 + ((_i) * 8))
++#define GLPRT_PRC127L(_i)		(0x00380940 + ((_i) * 8))
++#define GLPRT_PRC1522H(_i)		(0x00380A44 + ((_i) * 8))
++#define GLPRT_PRC1522L(_i)		(0x00380A40 + ((_i) * 8))
++#define GLPRT_PRC255H(_i)		(0x00380984 + ((_i) * 8))
++#define GLPRT_PRC255L(_i)		(0x00380980 + ((_i) * 8))
++#define GLPRT_PRC511H(_i)		(0x003809C4 + ((_i) * 8))
++#define GLPRT_PRC511L(_i)		(0x003809C0 + ((_i) * 8))
++#define GLPRT_PRC64H(_i)		(0x00380904 + ((_i) * 8))
++#define GLPRT_PRC64L(_i)		(0x00380900 + ((_i) * 8))
++#define GLPRT_PRC9522H(_i)		(0x00380A84 + ((_i) * 8))
++#define GLPRT_PRC9522L(_i)		(0x00380A80 + ((_i) * 8))
++#define GLPRT_PTC1023H(_i)		(0x00380C84 + ((_i) * 8))
++#define GLPRT_PTC1023L(_i)		(0x00380C80 + ((_i) * 8))
++#define GLPRT_PTC127H(_i)		(0x00380BC4 + ((_i) * 8))
++#define GLPRT_PTC127L(_i)		(0x00380BC0 + ((_i) * 8))
++#define GLPRT_PTC1522H(_i)		(0x00380CC4 + ((_i) * 8))
++#define GLPRT_PTC1522L(_i)		(0x00380CC0 + ((_i) * 8))
++#define GLPRT_PTC255H(_i)		(0x00380C04 + ((_i) * 8))
++#define GLPRT_PTC255L(_i)		(0x00380C00 + ((_i) * 8))
++#define GLPRT_PTC511H(_i)		(0x00380C44 + ((_i) * 8))
++#define GLPRT_PTC511L(_i)		(0x00380C40 + ((_i) * 8))
++#define GLPRT_PTC64H(_i)		(0x00380B84 + ((_i) * 8))
++#define GLPRT_PTC64L(_i)		(0x00380B80 + ((_i) * 8))
++#define GLPRT_PTC9522H(_i)		(0x00380D04 + ((_i) * 8))
++#define GLPRT_PTC9522L(_i)		(0x00380D00 + ((_i) * 8))
++#define GLPRT_RFC(_i)			(0x00380AC0 + ((_i) * 8))
++#define GLPRT_RJC(_i)			(0x00380B00 + ((_i) * 8))
++#define GLPRT_RLEC(_i)			(0x00380140 + ((_i) * 8))
++#define GLPRT_ROC(_i)			(0x00380240 + ((_i) * 8))
++#define GLPRT_RUC(_i)			(0x00380200 + ((_i) * 8))
++#define GLPRT_TDOLD(_i)			(0x00381280 + ((_i) * 8))
++#define GLPRT_UPRCH(_i)			(0x00381304 + ((_i) * 8))
++#define GLPRT_UPRCL(_i)			(0x00381300 + ((_i) * 8))
++#define GLPRT_UPTCH(_i)			(0x003811C4 + ((_i) * 8))
++#define GLPRT_UPTCL(_i)			(0x003811C0 + ((_i) * 8))
++#define GLV_BPRCH(_i)			(0x003B6004 + ((_i) * 8))
++#define GLV_BPRCL(_i)			(0x003B6000 + ((_i) * 8))
++#define GLV_BPTCH(_i)			(0x0030E004 + ((_i) * 8))
++#define GLV_BPTCL(_i)			(0x0030E000 + ((_i) * 8))
++#define GLV_GORCH(_i)			(0x003B0004 + ((_i) * 8))
++#define GLV_GORCL(_i)			(0x003B0000 + ((_i) * 8))
++#define GLV_GOTCH(_i)			(0x00300004 + ((_i) * 8))
++#define GLV_GOTCL(_i)			(0x00300000 + ((_i) * 8))
++#define GLV_MPRCH(_i)			(0x003B4004 + ((_i) * 8))
++#define GLV_MPRCL(_i)			(0x003B4000 + ((_i) * 8))
++#define GLV_MPTCH(_i)			(0x0030C004 + ((_i) * 8))
++#define GLV_MPTCL(_i)			(0x0030C000 + ((_i) * 8))
++#define GLV_RDPC(_i)			(0x00294C04 + ((_i) * 4))
++#define GLV_TEPC(_VSI)			(0x00312000 + ((_VSI) * 4))
++#define GLV_UPRCH(_i)			(0x003B2004 + ((_i) * 8))
++#define GLV_UPRCL(_i)			(0x003B2000 + ((_i) * 8))
++#define GLV_UPTCH(_i)			(0x0030A004 + ((_i) * 8))
++#define GLV_UPTCL(_i)			(0x0030A000 + ((_i) * 8))
++#define VSIQF_HKEY_MAX_INDEX		12
+ 
+ #endif /* _ICE_HW_AUTOGEN_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index f966d783ec63..1dbe510e80fa 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -23,7 +23,7 @@
+ 
+ #define DRV_VERSION	"ice-0.0.1-k"
+ #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
+-static const char ice_drv_ver[] = DRV_VERSION;
++const char ice_drv_ver[] = DRV_VERSION;
+ static const char ice_driver_string[] = DRV_SUMMARY;
+ static const char ice_copyright[] = "Copyright (c) 2018, Intel Corporation.";
+ 
+@@ -44,6 +44,8 @@ static struct workqueue_struct *ice_wq;
+ static const struct net_device_ops ice_netdev_ops;
+ 
+ static int ice_vsi_release(struct ice_vsi *vsi);
++static void ice_update_vsi_stats(struct ice_vsi *vsi);
++static void ice_update_pf_stats(struct ice_pf *pf);
+ 
+ /**
+  * ice_get_free_slot - get the next non-NULL location index in array
+@@ -228,12 +230,41 @@ static void ice_free_fltr_list(struct device *dev, struct list_head *h)
+ 	}
+ }
+ 
++/**
++ * ice_watchdog_subtask - periodic tasks not using event driven scheduling
++ * @pf: board private structure
++ */
++static void ice_watchdog_subtask(struct ice_pf *pf)
++{
++	int i;
++
++	/* if interface is down do nothing */
++	if (test_bit(__ICE_DOWN, pf->state) ||
++	    test_bit(__ICE_CFG_BUSY, pf->state))
++		return;
++
++	/* make sure we don't do these things too often */
++	if (time_before(jiffies,
++			pf->serv_tmr_prev + pf->serv_tmr_period))
++		return;
++
++	pf->serv_tmr_prev = jiffies;
++
++	/* Update the stats for active netdevs so the network stack
++	 * can look at updated numbers whenever it cares to
++	 */
++	ice_update_pf_stats(pf);
++	for (i = 0; i < pf->num_alloc_vsi; i++)
++		if (pf->vsi[i] && pf->vsi[i]->netdev)
++			ice_update_vsi_stats(pf->vsi[i]);
++}
++
+ /**
+  * ice_print_link_msg - print link up or down message
+  * @vsi: the VSI whose link status is being queried
+  * @isup: boolean for if the link is now up or down
+  */
+-static void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
++void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
+ {
+ 	const char *speed;
+ 	const char *fc;
+@@ -466,6 +497,7 @@ static void ice_service_task(struct work_struct *work)
+ 	unsigned long start_time = jiffies;
+ 
+ 	/* subtasks */
++	ice_watchdog_subtask(pf);
+ 	ice_clean_adminq_subtask(pf);
+ 
+ 	/* Clear __ICE_SERVICE_SCHED flag to allow scheduling next event */
+@@ -1777,6 +1809,8 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
+ 	/* setup watchdog timeout value to be 5 second */
+ 	netdev->watchdog_timeo = 5 * HZ;
+ 
++	ice_set_ethtool_ops(netdev);
++
+ 	netdev->min_mtu = ETH_MIN_MTU;
+ 	netdev->max_mtu = ICE_MAX_MTU;
+ 
+@@ -3473,6 +3507,434 @@ static int ice_up_complete(struct ice_vsi *vsi)
+ 	return err;
+ }
+ 
++/**
++ * ice_up - Bring the connection back up after being down
++ * @vsi: VSI being configured
++ */
++int ice_up(struct ice_vsi *vsi)
++{
++	int err;
++
++	err = ice_vsi_cfg(vsi);
++	if (!err)
++		err = ice_up_complete(vsi);
++
++	return err;
++}
++
++/**
++ * ice_fetch_u64_stats_per_ring - get packets and bytes stats per ring
++ * @ring: Tx or Rx ring to read stats from
++ * @pkts: packets stats counter
++ * @bytes: bytes stats counter
++ *
++ * This function fetches stats from the ring considering the atomic operations
++ * that needs to be performed to read u64 values in 32 bit machine.
++ */
++static void ice_fetch_u64_stats_per_ring(struct ice_ring *ring, u64 *pkts,
++					 u64 *bytes)
++{
++	unsigned int start;
++	*pkts = 0;
++	*bytes = 0;
++
++	if (!ring)
++		return;
++	do {
++		start = u64_stats_fetch_begin_irq(&ring->syncp);
++		*pkts = ring->stats.pkts;
++		*bytes = ring->stats.bytes;
++	} while (u64_stats_fetch_retry_irq(&ring->syncp, start));
++}
++
++/**
++ * ice_stat_update40 - read 40 bit stat from the chip and update stat values
++ * @hw: ptr to the hardware info
++ * @hireg: high 32 bit HW register to read from
++ * @loreg: low 32 bit HW register to read from
++ * @prev_stat_loaded: bool to specify if previous stats are loaded
++ * @prev_stat: ptr to previous loaded stat value
++ * @cur_stat: ptr to current stat value
++ */
++static void ice_stat_update40(struct ice_hw *hw, u32 hireg, u32 loreg,
++			      bool prev_stat_loaded, u64 *prev_stat,
++			      u64 *cur_stat)
++{
++	u64 new_data;
++
++	new_data = rd32(hw, loreg);
++	new_data |= ((u64)(rd32(hw, hireg) & 0xFFFF)) << 32;
++
++	/* device stats are not reset@PFR, they likely will not be zeroed
++	 * when the driver starts. So save the first values read and use them as
++	 * offsets to be subtracted from the raw values in order to report stats
++	 * that count from zero.
++	 */
++	if (!prev_stat_loaded)
++		*prev_stat = new_data;
++	if (likely(new_data >= *prev_stat))
++		*cur_stat = new_data - *prev_stat;
++	else
++		/* to manage the potential roll-over */
++		*cur_stat = (new_data + BIT_ULL(40)) - *prev_stat;
++	*cur_stat &= 0xFFFFFFFFFFULL;
++}
++
++/**
++ * ice_stat_update32 - read 32 bit stat from the chip and update stat values
++ * @hw: ptr to the hardware info
++ * @reg: HW register to read from
++ * @prev_stat_loaded: bool to specify if previous stats are loaded
++ * @prev_stat: ptr to previous loaded stat value
++ * @cur_stat: ptr to current stat value
++ */
++static void ice_stat_update32(struct ice_hw *hw, u32 reg, bool prev_stat_loaded,
++			      u64 *prev_stat, u64 *cur_stat)
++{
++	u32 new_data;
++
++	new_data = rd32(hw, reg);
++
++	/* device stats are not reset at PFR, they likely will not be zeroed
++	 * when the driver starts. So save the first values read and use them as
++	 * offsets to be subtracted from the raw values in order to report stats
++	 * that count from zero.
++	 */
++	if (!prev_stat_loaded)
++		*prev_stat = new_data;
++	if (likely(new_data >= *prev_stat))
++		*cur_stat = new_data - *prev_stat;
++	else
++		/* to manage the potential roll-over */
++		*cur_stat = (new_data + BIT_ULL(32)) - *prev_stat;
++}
++
++/**
++ * ice_update_eth_stats - Update VSI-specific ethernet statistics counters
++ * @vsi: the VSI to be updated
++ */
++static void ice_update_eth_stats(struct ice_vsi *vsi)
++{
++	struct ice_eth_stats *prev_es, *cur_es;
++	struct ice_hw *hw = &vsi->back->hw;
++	u16 vsi_num = vsi->vsi_num;    /* HW absolute index of a VSI */
++
++	prev_es = &vsi->eth_stats_prev;
++	cur_es = &vsi->eth_stats;
++
++	ice_stat_update40(hw, GLV_GORCH(vsi_num), GLV_GORCL(vsi_num),
++			  vsi->stat_offsets_loaded, &prev_es->rx_bytes,
++			  &cur_es->rx_bytes);
++
++	ice_stat_update40(hw, GLV_UPRCH(vsi_num), GLV_UPRCL(vsi_num),
++			  vsi->stat_offsets_loaded, &prev_es->rx_unicast,
++			  &cur_es->rx_unicast);
++
++	ice_stat_update40(hw, GLV_MPRCH(vsi_num), GLV_MPRCL(vsi_num),
++			  vsi->stat_offsets_loaded, &prev_es->rx_multicast,
++			  &cur_es->rx_multicast);
++
++	ice_stat_update40(hw, GLV_BPRCH(vsi_num), GLV_BPRCL(vsi_num),
++			  vsi->stat_offsets_loaded, &prev_es->rx_broadcast,
++			  &cur_es->rx_broadcast);
++
++	ice_stat_update32(hw, GLV_RDPC(vsi_num), vsi->stat_offsets_loaded,
++			  &prev_es->rx_discards, &cur_es->rx_discards);
++
++	ice_stat_update40(hw, GLV_GOTCH(vsi_num), GLV_GOTCL(vsi_num),
++			  vsi->stat_offsets_loaded, &prev_es->tx_bytes,
++			  &cur_es->tx_bytes);
++
++	ice_stat_update40(hw, GLV_UPTCH(vsi_num), GLV_UPTCL(vsi_num),
++			  vsi->stat_offsets_loaded, &prev_es->tx_unicast,
++			  &cur_es->tx_unicast);
++
++	ice_stat_update40(hw, GLV_MPTCH(vsi_num), GLV_MPTCL(vsi_num),
++			  vsi->stat_offsets_loaded, &prev_es->tx_multicast,
++			  &cur_es->tx_multicast);
++
++	ice_stat_update40(hw, GLV_BPTCH(vsi_num), GLV_BPTCL(vsi_num),
++			  vsi->stat_offsets_loaded, &prev_es->tx_broadcast,
++			  &cur_es->tx_broadcast);
++
++	ice_stat_update32(hw, GLV_TEPC(vsi_num), vsi->stat_offsets_loaded,
++			  &prev_es->tx_errors, &cur_es->tx_errors);
++
++	vsi->stat_offsets_loaded = true;
++}
++
++/**
++ * ice_update_vsi_ring_stats - Update VSI stats counters
++ * @vsi: the VSI to be updated
++ */
++static void ice_update_vsi_ring_stats(struct ice_vsi *vsi)
++{
++	struct rtnl_link_stats64 *vsi_stats = &vsi->net_stats;
++	struct ice_ring *ring;
++	u64 pkts, bytes;
++	int i;
++
++	/* reset netdev stats */
++	vsi_stats->tx_packets = 0;
++	vsi_stats->tx_bytes = 0;
++	vsi_stats->rx_packets = 0;
++	vsi_stats->rx_bytes = 0;
++
++	/* reset non-netdev (extended) stats */
++	vsi->tx_restart = 0;
++	vsi->tx_busy = 0;
++	vsi->tx_linearize = 0;
++	vsi->rx_buf_failed = 0;
++	vsi->rx_page_failed = 0;
++
++	rcu_read_lock();
++
++	/* update Tx rings counters */
++	ice_for_each_txq(vsi, i) {
++		ring = READ_ONCE(vsi->tx_rings[i]);
++		ice_fetch_u64_stats_per_ring(ring, &pkts, &bytes);
++		vsi_stats->tx_packets += pkts;
++		vsi_stats->tx_bytes += bytes;
++		vsi->tx_restart += ring->tx_stats.restart_q;
++		vsi->tx_busy += ring->tx_stats.tx_busy;
++		vsi->tx_linearize += ring->tx_stats.tx_linearize;
++	}
++
++	/* update Rx rings counters */
++	ice_for_each_rxq(vsi, i) {
++		ring = READ_ONCE(vsi->rx_rings[i]);
++		ice_fetch_u64_stats_per_ring(ring, &pkts, &bytes);
++		vsi_stats->rx_packets += pkts;
++		vsi_stats->rx_bytes += bytes;
++		vsi->rx_buf_failed += ring->rx_stats.alloc_buf_failed;
++		vsi->rx_page_failed += ring->rx_stats.alloc_page_failed;
++	}
++
++	rcu_read_unlock();
++}
++
++/**
++ * ice_update_vsi_stats - Update VSI stats counters
++ * @vsi: the VSI to be updated
++ */
++static void ice_update_vsi_stats(struct ice_vsi *vsi)
++{
++	struct rtnl_link_stats64 *cur_ns = &vsi->net_stats;
++	struct ice_eth_stats *cur_es = &vsi->eth_stats;
++	struct ice_pf *pf = vsi->back;
++
++	if (test_bit(__ICE_DOWN, vsi->state) ||
++	    test_bit(__ICE_CFG_BUSY, pf->state))
++		return;
++
++	/* get stats as recorded by Tx/Rx rings */
++	ice_update_vsi_ring_stats(vsi);
++
++	/* get VSI stats as recorded by the hardware */
++	ice_update_eth_stats(vsi);
++
++	cur_ns->tx_errors = cur_es->tx_errors;
++	cur_ns->rx_dropped = cur_es->rx_discards;
++	cur_ns->tx_dropped = cur_es->tx_discards;
++	cur_ns->multicast = cur_es->rx_multicast;
++
++	/* update some more netdev stats if this is main VSI */
++	if (vsi->type == ICE_VSI_PF) {
++		cur_ns->rx_crc_errors = pf->stats.crc_errors;
++		cur_ns->rx_errors = pf->stats.crc_errors +
++				    pf->stats.illegal_bytes;
++		cur_ns->rx_length_errors = pf->stats.rx_len_errors;
++	}
++}
++
++/**
++ * ice_update_pf_stats - Update PF port stats counters
++ * @pf: PF whose stats needs to be updated
++ */
++static void ice_update_pf_stats(struct ice_pf *pf)
++{
++	struct ice_hw_port_stats *prev_ps, *cur_ps;
++	struct ice_hw *hw = &pf->hw;
++	u8 pf_id;
++
++	prev_ps = &pf->stats_prev;
++	cur_ps = &pf->stats;
++	pf_id = hw->pf_id;
++
++	ice_stat_update40(hw, GLPRT_GORCH(pf_id), GLPRT_GORCL(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->eth.rx_bytes,
++			  &cur_ps->eth.rx_bytes);
++
++	ice_stat_update40(hw, GLPRT_UPRCH(pf_id), GLPRT_UPRCL(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->eth.rx_unicast,
++			  &cur_ps->eth.rx_unicast);
++
++	ice_stat_update40(hw, GLPRT_MPRCH(pf_id), GLPRT_MPRCL(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->eth.rx_multicast,
++			  &cur_ps->eth.rx_multicast);
++
++	ice_stat_update40(hw, GLPRT_BPRCH(pf_id), GLPRT_BPRCL(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->eth.rx_broadcast,
++			  &cur_ps->eth.rx_broadcast);
++
++	ice_stat_update40(hw, GLPRT_GOTCH(pf_id), GLPRT_GOTCL(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->eth.tx_bytes,
++			  &cur_ps->eth.tx_bytes);
++
++	ice_stat_update40(hw, GLPRT_UPTCH(pf_id), GLPRT_UPTCL(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->eth.tx_unicast,
++			  &cur_ps->eth.tx_unicast);
++
++	ice_stat_update40(hw, GLPRT_MPTCH(pf_id), GLPRT_MPTCL(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->eth.tx_multicast,
++			  &cur_ps->eth.tx_multicast);
++
++	ice_stat_update40(hw, GLPRT_BPTCH(pf_id), GLPRT_BPTCL(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->eth.tx_broadcast,
++			  &cur_ps->eth.tx_broadcast);
++
++	ice_stat_update32(hw, GLPRT_TDOLD(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->tx_dropped_link_down,
++			  &cur_ps->tx_dropped_link_down);
++
++	ice_stat_update40(hw, GLPRT_PRC64H(pf_id), GLPRT_PRC64L(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->rx_size_64,
++			  &cur_ps->rx_size_64);
++
++	ice_stat_update40(hw, GLPRT_PRC127H(pf_id), GLPRT_PRC127L(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->rx_size_127,
++			  &cur_ps->rx_size_127);
++
++	ice_stat_update40(hw, GLPRT_PRC255H(pf_id), GLPRT_PRC255L(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->rx_size_255,
++			  &cur_ps->rx_size_255);
++
++	ice_stat_update40(hw, GLPRT_PRC511H(pf_id), GLPRT_PRC511L(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->rx_size_511,
++			  &cur_ps->rx_size_511);
++
++	ice_stat_update40(hw, GLPRT_PRC1023H(pf_id),
++			  GLPRT_PRC1023L(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->rx_size_1023, &cur_ps->rx_size_1023);
++
++	ice_stat_update40(hw, GLPRT_PRC1522H(pf_id),
++			  GLPRT_PRC1522L(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->rx_size_1522, &cur_ps->rx_size_1522);
++
++	ice_stat_update40(hw, GLPRT_PRC9522H(pf_id),
++			  GLPRT_PRC9522L(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->rx_size_big, &cur_ps->rx_size_big);
++
++	ice_stat_update40(hw, GLPRT_PTC64H(pf_id), GLPRT_PTC64L(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->tx_size_64,
++			  &cur_ps->tx_size_64);
++
++	ice_stat_update40(hw, GLPRT_PTC127H(pf_id), GLPRT_PTC127L(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->tx_size_127,
++			  &cur_ps->tx_size_127);
++
++	ice_stat_update40(hw, GLPRT_PTC255H(pf_id), GLPRT_PTC255L(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->tx_size_255,
++			  &cur_ps->tx_size_255);
++
++	ice_stat_update40(hw, GLPRT_PTC511H(pf_id), GLPRT_PTC511L(pf_id),
++			  pf->stat_prev_loaded, &prev_ps->tx_size_511,
++			  &cur_ps->tx_size_511);
++
++	ice_stat_update40(hw, GLPRT_PTC1023H(pf_id),
++			  GLPRT_PTC1023L(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->tx_size_1023, &cur_ps->tx_size_1023);
++
++	ice_stat_update40(hw, GLPRT_PTC1522H(pf_id),
++			  GLPRT_PTC1522L(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->tx_size_1522, &cur_ps->tx_size_1522);
++
++	ice_stat_update40(hw, GLPRT_PTC9522H(pf_id),
++			  GLPRT_PTC9522L(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->tx_size_big, &cur_ps->tx_size_big);
++
++	ice_stat_update32(hw, GLPRT_LXONRXC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->link_xon_rx, &cur_ps->link_xon_rx);
++
++	ice_stat_update32(hw, GLPRT_LXOFFRXC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->link_xoff_rx, &cur_ps->link_xoff_rx);
++
++	ice_stat_update32(hw, GLPRT_LXONTXC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->link_xon_tx, &cur_ps->link_xon_tx);
++
++	ice_stat_update32(hw, GLPRT_LXOFFTXC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->link_xoff_tx, &cur_ps->link_xoff_tx);
++
++	ice_stat_update32(hw, GLPRT_CRCERRS(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->crc_errors, &cur_ps->crc_errors);
++
++	ice_stat_update32(hw, GLPRT_ILLERRC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->illegal_bytes, &cur_ps->illegal_bytes);
++
++	ice_stat_update32(hw, GLPRT_MLFC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->mac_local_faults,
++			  &cur_ps->mac_local_faults);
++
++	ice_stat_update32(hw, GLPRT_MRFC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->mac_remote_faults,
++			  &cur_ps->mac_remote_faults);
++
++	ice_stat_update32(hw, GLPRT_RLEC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->rx_len_errors, &cur_ps->rx_len_errors);
++
++	ice_stat_update32(hw, GLPRT_RUC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->rx_undersize, &cur_ps->rx_undersize);
++
++	ice_stat_update32(hw, GLPRT_RFC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->rx_fragments, &cur_ps->rx_fragments);
++
++	ice_stat_update32(hw, GLPRT_ROC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->rx_oversize, &cur_ps->rx_oversize);
++
++	ice_stat_update32(hw, GLPRT_RJC(pf_id), pf->stat_prev_loaded,
++			  &prev_ps->rx_jabber, &cur_ps->rx_jabber);
++
++	pf->stat_prev_loaded = true;
++}
++
++/**
++ * ice_get_stats64 - get statistics for network device structure
++ * @netdev: network interface device structure
++ * @stats: main device statistics structure
++ */
++static
++void ice_get_stats64(struct net_device *netdev, struct rtnl_link_stats64 *stats)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct rtnl_link_stats64 *vsi_stats;
++	struct ice_vsi *vsi = np->vsi;
++
++	vsi_stats = &vsi->net_stats;
++
++	if (test_bit(__ICE_DOWN, vsi->state) || !vsi->num_txq || !vsi->num_rxq)
++		return;
++	/* netdev packet/byte stats come from ring counter. These are obtained
++	 * by summing up ring counters (done by ice_update_vsi_ring_stats).
++	 */
++	ice_update_vsi_ring_stats(vsi);
++	stats->tx_packets = vsi_stats->tx_packets;
++	stats->tx_bytes = vsi_stats->tx_bytes;
++	stats->rx_packets = vsi_stats->rx_packets;
++	stats->rx_bytes = vsi_stats->rx_bytes;
++
++	/* The rest of the stats can be read from the hardware but instead we
++	 * just return values that the watchdog task has already obtained from
++	 * the hardware.
++	 */
++	stats->multicast = vsi_stats->multicast;
++	stats->tx_errors = vsi_stats->tx_errors;
++	stats->tx_dropped = vsi_stats->tx_dropped;
++	stats->rx_errors = vsi_stats->rx_errors;
++	stats->rx_dropped = vsi_stats->rx_dropped;
++	stats->rx_crc_errors = vsi_stats->rx_crc_errors;
++	stats->rx_length_errors = vsi_stats->rx_length_errors;
++}
++
+ /**
+  * ice_napi_disable_all - Disable NAPI for all q_vectors in the VSI
+  * @vsi: VSI having NAPI disabled
+@@ -3492,7 +3954,7 @@ static void ice_napi_disable_all(struct ice_vsi *vsi)
+  * ice_down - Shutdown the connection
+  * @vsi: The VSI being stopped
+  */
+-static int ice_down(struct ice_vsi *vsi)
++int ice_down(struct ice_vsi *vsi)
+ {
+ 	int i, err;
+ 
+@@ -3892,6 +4354,7 @@ static const struct net_device_ops ice_netdev_ops = {
+ 	.ndo_open = ice_open,
+ 	.ndo_stop = ice_stop,
+ 	.ndo_start_xmit = ice_start_xmit,
++	.ndo_get_stats64 = ice_get_stats64,
+ 	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
+ 	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
+ 	.ndo_set_features = ice_set_features,
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 69a8c1a5ce84..cb9104ca969d 100644
+index 2f1ad8cb2456..a576d173b07d 100644
 --- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -26,6 +26,7 @@
- /* debug masks - set these bits in hw->debug_mask to control output */
- #define ICE_DBG_INIT		BIT_ULL(1)
- #define ICE_DBG_NVM		BIT_ULL(7)
-+#define ICE_DBG_LAN		BIT_ULL(8)
- #define ICE_DBG_SW		BIT_ULL(13)
- #define ICE_DBG_SCHED		BIT_ULL(14)
+@@ -34,6 +34,7 @@
  #define ICE_DBG_RES		BIT_ULL(17)
-@@ -44,12 +45,56 @@ enum ice_aq_res_access_type {
- 	ICE_RES_WRITE
+ #define ICE_DBG_AQ_MSG		BIT_ULL(24)
+ #define ICE_DBG_AQ_CMD		BIT_ULL(27)
++#define ICE_DBG_USER		BIT_ULL(31)
+ 
+ enum ice_aq_res_ids {
+ 	ICE_NVM_RES_ID = 1,
+@@ -56,6 +57,13 @@ enum ice_fc_mode {
+ 	ICE_FC_DFLT
  };
  
-+enum ice_fc_mode {
-+	ICE_FC_NONE = 0,
-+	ICE_FC_RX_PAUSE,
-+	ICE_FC_TX_PAUSE,
-+	ICE_FC_FULL,
-+	ICE_FC_PFC,
-+	ICE_FC_DFLT
++enum ice_set_fc_aq_failures {
++	ICE_SET_FC_AQ_FAIL_NONE = 0,
++	ICE_SET_FC_AQ_FAIL_GET,
++	ICE_SET_FC_AQ_FAIL_SET,
++	ICE_SET_FC_AQ_FAIL_UPDATE
 +};
 +
  /* Various MAC types */
  enum ice_mac_type {
  	ICE_MAC_UNKNOWN = 0,
- 	ICE_MAC_GENERIC,
+@@ -315,10 +323,72 @@ struct ice_hw {
+ 
  };
  
-+/* Media Types */
-+enum ice_media_type {
-+	ICE_MEDIA_UNKNOWN = 0,
-+	ICE_MEDIA_FIBER,
-+	ICE_MEDIA_BASET,
-+	ICE_MEDIA_BACKPLANE,
-+	ICE_MEDIA_DA,
++/* Statistics collected by each port, VSI, VEB, and S-channel */
++struct ice_eth_stats {
++	u64 rx_bytes;			/* gorc */
++	u64 rx_unicast;			/* uprc */
++	u64 rx_multicast;		/* mprc */
++	u64 rx_broadcast;		/* bprc */
++	u64 rx_discards;		/* rdpc */
++	u64 rx_unknown_protocol;	/* rupp */
++	u64 tx_bytes;			/* gotc */
++	u64 tx_unicast;			/* uptc */
++	u64 tx_multicast;		/* mptc */
++	u64 tx_broadcast;		/* bptc */
++	u64 tx_discards;		/* tdpc */
++	u64 tx_errors;			/* tepc */
 +};
 +
-+struct ice_link_status {
-+	/* Refer to ice_aq_phy_type for bits definition */
-+	u64 phy_type_low;
-+	u16 max_frame_size;
-+	u16 link_speed;
-+	bool lse_ena;	/* Link Status Event notification */
-+	u8 link_info;
-+	u8 an_info;
-+	u8 ext_info;
-+	u8 pacing;
-+	u8 req_speeds;
-+	/* Refer to #define from module_type[ICE_MODULE_TYPE_TOTAL_BYTE] of
-+	 * ice_aqc_get_phy_caps structure
-+	 */
-+	u8 module_type[ICE_MODULE_TYPE_TOTAL_BYTE];
++/* Statistics collected by the MAC */
++struct ice_hw_port_stats {
++	/* eth stats collected by the port */
++	struct ice_eth_stats eth;
++	/* additional port specific stats */
++	u64 tx_dropped_link_down;	/* tdold */
++	u64 crc_errors;			/* crcerrs */
++	u64 illegal_bytes;		/* illerrc */
++	u64 error_bytes;		/* errbc */
++	u64 mac_local_faults;		/* mlfc */
++	u64 mac_remote_faults;		/* mrfc */
++	u64 rx_len_errors;		/* rlec */
++	u64 link_xon_rx;		/* lxonrxc */
++	u64 link_xoff_rx;		/* lxoffrxc */
++	u64 link_xon_tx;		/* lxontxc */
++	u64 link_xoff_tx;		/* lxofftxc */
++	u64 rx_size_64;			/* prc64 */
++	u64 rx_size_127;		/* prc127 */
++	u64 rx_size_255;		/* prc255 */
++	u64 rx_size_511;		/* prc511 */
++	u64 rx_size_1023;		/* prc1023 */
++	u64 rx_size_1522;		/* prc1522 */
++	u64 rx_size_big;		/* prc9522 */
++	u64 rx_undersize;		/* ruc */
++	u64 rx_fragments;		/* rfc */
++	u64 rx_oversize;		/* roc */
++	u64 rx_jabber;			/* rjc */
++	u64 tx_size_64;			/* ptc64 */
++	u64 tx_size_127;		/* ptc127 */
++	u64 tx_size_255;		/* ptc255 */
++	u64 tx_size_511;		/* ptc511 */
++	u64 tx_size_1023;		/* ptc1023 */
++	u64 tx_size_1522;		/* ptc1522 */
++	u64 tx_size_big;		/* ptc9522 */
 +};
 +
-+/* PHY info such as phy_type, etc... */
-+struct ice_phy_info {
-+	struct ice_link_status link_info;
-+	struct ice_link_status link_info_old;
-+	u64 phy_type_low;
-+	enum ice_media_type media_type;
-+	bool get_link_info;
-+};
-+
- /* Common HW capabilities for SW use */
- struct ice_hw_common_caps {
- 	/* TX/RX queues */
-@@ -82,6 +127,12 @@ struct ice_hw_dev_caps {
- 	u32 num_vsi_allocd_to_host;	/* Excluding EMP VSI */
- };
+ /* Checksum and Shadow RAM pointers */
+ #define ICE_SR_NVM_DEV_STARTER_VER	0x18
+ #define ICE_SR_NVM_EETRACK_LO		0x2D
+ #define ICE_SR_NVM_EETRACK_HI		0x2E
++#define ICE_NVM_VER_LO_SHIFT		0
++#define ICE_NVM_VER_LO_MASK		(0xff << ICE_NVM_VER_LO_SHIFT)
++#define ICE_NVM_VER_HI_SHIFT		12
++#define ICE_NVM_VER_HI_MASK		(0xf << ICE_NVM_VER_HI_SHIFT)
++#define ICE_OEM_VER_PATCH_SHIFT		0
++#define ICE_OEM_VER_PATCH_MASK		(0xff << ICE_OEM_VER_PATCH_SHIFT)
++#define ICE_OEM_VER_BUILD_SHIFT		8
++#define ICE_OEM_VER_BUILD_MASK		(0xffff << ICE_OEM_VER_BUILD_SHIFT)
++#define ICE_OEM_VER_SHIFT		24
++#define ICE_OEM_VER_MASK		(0xff << ICE_OEM_VER_SHIFT)
+ #define ICE_SR_SECTOR_SIZE_IN_WORDS	0x800
+ #define ICE_SR_WORDS_IN_1KB		512
  
-+/* MAC info */
-+struct ice_mac_info {
-+	u8 lan_addr[ETH_ALEN];
-+	u8 perm_addr[ETH_ALEN];
-+};
-+
- /* Various RESET request, These are not tied with HW reset types */
- enum ice_reset_req {
- 	ICE_RESET_PFR	= 0,
-@@ -95,6 +146,12 @@ struct ice_bus_info {
- 	u8 func;
- };
- 
-+/* Flow control (FC) parameters */
-+struct ice_fc_info {
-+	enum ice_fc_mode current_mode;	/* FC mode in effect */
-+	enum ice_fc_mode req_mode;	/* FC mode requested by caller */
-+};
-+
- /* NVM Information */
- struct ice_nvm_info {
- 	u32 eetrack;              /* NVM data version */
-@@ -106,6 +163,7 @@ struct ice_nvm_info {
- 
- /* Max number of port to queue branches w.r.t topology */
- #define ICE_MAX_TRAFFIC_CLASS 8
-+#define ICE_TXSCHED_MAX_BRANCHES ICE_MAX_TRAFFIC_CLASS
- 
- struct ice_sched_node {
- 	struct ice_sched_node *parent;
-@@ -122,6 +180,9 @@ struct ice_sched_node {
- #define ICE_SCHED_NODE_OWNER_LAN	0
- };
- 
-+/* Access Macros for Tx Sched Elements data */
-+#define ICE_TXSCHED_GET_NODE_TEID(x) le32_to_cpu((x)->info.node_teid)
-+
- /* The aggregator type determines if identifier is for a VSI group,
-  * aggregator group, aggregator of queues, or queue group.
-  */
-@@ -152,6 +213,7 @@ struct ice_sched_tx_policy {
- struct ice_port_info {
- 	struct ice_sched_node *root;	/* Root Node per Port */
- 	struct ice_hw *hw;		/* back pointer to hw instance */
-+	u32 last_node_teid;		/* scheduler last node info */
- 	u16 sw_id;			/* Initial switch ID belongs to port */
- 	u16 pf_vf_num;
- 	u8 port_state;
-@@ -159,6 +221,9 @@ struct ice_port_info {
- #define ICE_SCHED_PORT_STATE_READY	0x1
- 	u16 dflt_tx_vsi_num;
- 	u16 dflt_rx_vsi_num;
-+	struct ice_fc_info fc;
-+	struct ice_mac_info mac;
-+	struct ice_phy_info phy;
- 	struct mutex sched_lock;	/* protect access to TXSched tree */
- 	struct ice_sched_tx_policy sched_policy;
- 	struct list_head vsi_info_list;
 -- 
 2.14.3
 
