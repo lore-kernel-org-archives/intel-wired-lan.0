@@ -1,149 +1,200 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 21 Mar 2018 09:19:40 -0700
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 35/55]
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:9925:12: error: 'struct
- sk_buff' has no member named 'sp'; did you mean 'sk'?
-In-Reply-To: <CAKgT0UeCJiL1FnrMYN=htPv55q6X1+DmtHfH4wuu8eeFSoBU-g@mail.gmail.com>
-References: <201803210241.5Al1Tpht%fengguang.wu@intel.com>
- <1521582652.2528.9.camel@intel.com>
- <9e091d1e-c3f9-23ec-ffe8-8bad83ce4ae9@oracle.com>
- <CAKgT0UeCJiL1FnrMYN=htPv55q6X1+DmtHfH4wuu8eeFSoBU-g@mail.gmail.com>
-Message-ID: <bf5e19ab-5be3-e6b1-c954-04dd8f313e94@oracle.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Wed, 21 Mar 2018 17:15:37 +0100
+Subject: [Intel-wired-lan] [PATCH] i40e: add support for XDP_REDIRECT
+Message-ID: <20180321161537.4435-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/21/2018 8:53 AM, Alexander Duyck wrote:
-> On Wed, Mar 21, 2018 at 8:33 AM, Shannon Nelson
-> <shannon.nelson@oracle.com> wrote:
->>
->>
->> On 3/20/2018 2:50 PM, Duyck, Alexander H wrote:
->>>
->>> On Wed, 2018-03-21 at 02:17 +0800, kbuild test robot wrote:
->>>>
->>>> tree:
->>>> https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
->>>> dev-queue
->>>> head:   87cc3719efa6c6bd875e67892450bd03a9e147e4
->>>> commit: 747053c601fe8547518069b8791337716b71c4c6 [35/55] ixgbe: enable
->>>> tso with ipsec offload
->>>> config: powerpc-skiroot_defconfig (attached as .config)
->>>> compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
->>>> reproduce:
->>>>           wget
->>>> https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O
->>>> ~/bin/make.cross
->>>>           chmod +x ~/bin/make.cross
->>>>           git checkout 747053c601fe8547518069b8791337716b71c4c6
->>>>           # save the attached .config to linux build tree
->>>>           make.cross ARCH=powerpc
->>>>
->>>> All errors (new ones prefixed by >>):
->>>>
->>>>      drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function
->>>> 'ixgbe_features_check':
->>>>>>
->>>>>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:9925:12: error: 'struct
->>>>>> sk_buff' has no member named 'sp'; did you mean 'sk'?
->>>>
->>>>
->>>>            !skb->sp)
->>>>                  ^~
->>>>                  sk
->>>>
->>>> vim +9925 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->>>>
->>>>     9896
->>>>     9897 static netdev_features_t
->>>>     9898 ixgbe_features_check(struct sk_buff *skb, struct net_device *dev,
->>>>     9899                      netdev_features_t features)
->>>>     9900 {
->>>>     9901         unsigned int network_hdr_len, mac_hdr_len;
->>>>     9902
->>>>     9903         /* Make certain the headers can be described by a context
->>>> descriptor */
->>>>     9904         mac_hdr_len = skb_network_header(skb) - skb->data;
->>>>     9905         if (unlikely(mac_hdr_len > IXGBE_MAX_MAC_HDR_LEN))
->>>>     9906                 return features & ~(NETIF_F_HW_CSUM |
->>>>     9907                                     NETIF_F_SCTP_CRC |
->>>>     9908                                     NETIF_F_HW_VLAN_CTAG_TX |
->>>>     9909                                     NETIF_F_TSO |
->>>>     9910                                     NETIF_F_TSO6);
->>>>     9911
->>>>     9912         network_hdr_len = skb_checksum_start(skb) -
->>>> skb_network_header(skb);
->>>>     9913         if (unlikely(network_hdr_len >
->>>> IXGBE_MAX_NETWORK_HDR_LEN))
->>>>     9914                 return features & ~(NETIF_F_HW_CSUM |
->>>>     9915                                     NETIF_F_SCTP_CRC |
->>>>     9916                                     NETIF_F_TSO |
->>>>     9917                                     NETIF_F_TSO6);
->>>>     9918
->>>>     9919         /* We can only support IPV4 TSO in tunnels if we can
->>>> mangle the
->>>>     9920          * inner IP ID field, so strip TSO if MANGLEID is not
->>>> supported.
->>>>     9921          * IPsec offoad sets skb->encapsulation but still can
->>>> handle
->>>>     9922          * the TSO, so it's the exception.
->>>>     9923          */
->>>>     9924         if (skb->encapsulation && !(features &
->>>> NETIF_F_TSO_MANGLEID) &&
->>>>>
->>>>> 9925                !skb->sp)
->>>>
->>>>
->>>>     9926                 features &= ~NETIF_F_TSO;
->>>>     9927
->>>>     9928         return features;
->>>>     9929 }
->>>
->>>
->>> What you may want to look at doing in order to fix this is flip the
->>> logic like so:
->>>
->>>          if (!skb->encapsulation || (features & NETIF_F_TSO_MANGLEID))
->>>                  return features;
->>> #ifdef CONFIG_XFRM
->>>          /* IPSec is a special case excluded from the above rule */
->>>          if (skb->sp)
->>>                  return features;
->>> #endif
->>>          return features & ~NETIF_F_TSO;
->>>
->>> Anyway just my $0.02, thanks.
->>
->>
->> Thanks, Alex, but I think this obfuscates the code a little, and might make
->> it harder to add other feature concerns in the future.  I'd rather keep the
->> look of the exception if possible.  Maybe something like this?
->>
->>          if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID))
->> #ifdef CONFIG_XFRM
->>                  if (!skb->sp)
->> #endif
->>                          features &= ~NETIF_F_TSO;
->>
->>          return features;
->>
->>
->> sln
-> 
-> That works. My only ask then would be add braces around the statement
-> since it is technically a multi-line statement at that point.
-> 
-> - Alex
-> 
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Sure - that makes sense.
+The driver now acts upon the XDP_REDIRECT return action. Two new ndos
+are implemented, ndo_xdp_xmit and ndo_xdp_flush.
 
-Jeff, can you tweak this inline or shall I repost it this afternoon?
+XDP_REDIRECT action enables XDP program to redirect frames to other
+netdevs. The target redirect/forward netdev might release the XDP data
+page within the ndo_xdp_xmit function (triggered by xdp_do_redirect),
+which meant that the i40e page count logic had to be tweaked.
 
-sln
+An example. i40e_clean_rx_irq is entered, and one rx_buffer is pulled
+from the hardware descriptor ring. Say that the actual page refcount
+is 1. XDP is enabled, and the redirect action is triggered. The target
+netdev ndo_xdp_xmit decreases the page refcount, resulting in the page
+being freed. The prior assumption was that the function owned the page
+until i40e_put_rx_buffer was called, increasing the refcount again.
 
+Now, we don't allow a refcount less than 2. Another option would be
+calling xdp_do_redirect *after* i40e_put_rx_buffer, but that would
+have required new/more conditionals.
 
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c |  2 +
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 83 +++++++++++++++++++++++------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h |  2 +
+ 3 files changed, 72 insertions(+), 15 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 79ab52276d12..2fb4261b4fd9 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -11815,6 +11815,8 @@ static const struct net_device_ops i40e_netdev_ops = {
+ 	.ndo_bridge_getlink	= i40e_ndo_bridge_getlink,
+ 	.ndo_bridge_setlink	= i40e_ndo_bridge_setlink,
+ 	.ndo_bpf		= i40e_xdp,
++	.ndo_xdp_xmit		= i40e_xdp_xmit,
++	.ndo_xdp_flush		= i40e_xdp_flush,
+ };
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index c6972bd07e49..2106ae04d053 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1589,8 +1589,8 @@ static bool i40e_alloc_mapped_page(struct i40e_ring *rx_ring,
+ 	bi->page = page;
+ 	bi->page_offset = i40e_rx_offset(rx_ring);
+ 
+-	/* initialize pagecnt_bias to 1 representing we fully own page */
+-	bi->pagecnt_bias = 1;
++	page_ref_add(page, USHRT_MAX - 1);
++	bi->pagecnt_bias = USHRT_MAX;
+ 
+ 	return true;
+ }
+@@ -1956,8 +1956,8 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer)
+ 	 * the pagecnt_bias and page count so that we fully restock the
+ 	 * number of references the driver holds.
+ 	 */
+-	if (unlikely(!pagecnt_bias)) {
+-		page_ref_add(page, USHRT_MAX);
++	if (unlikely(pagecnt_bias == 1)) {
++		page_ref_add(page, USHRT_MAX - 1);
+ 		rx_buffer->pagecnt_bias = USHRT_MAX;
+ 	}
+ 
+@@ -2215,7 +2215,7 @@ static int i40e_xmit_xdp_ring(struct xdp_buff *xdp,
+ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
+ 				    struct xdp_buff *xdp)
+ {
+-	int result = I40E_XDP_PASS;
++	int err, result = I40E_XDP_PASS;
+ 	struct i40e_ring *xdp_ring;
+ 	struct bpf_prog *xdp_prog;
+ 	u32 act;
+@@ -2234,6 +2234,10 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
+ 		xdp_ring = rx_ring->vsi->xdp_rings[rx_ring->queue_index];
+ 		result = i40e_xmit_xdp_ring(xdp, xdp_ring);
+ 		break;
++	case XDP_REDIRECT:
++		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
++		result = !err ? I40E_XDP_TX : I40E_XDP_CONSUMED;
++		break;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
+ 	case XDP_ABORTED:
+@@ -2269,6 +2273,16 @@ static void i40e_rx_buffer_flip(struct i40e_ring *rx_ring,
+ #endif
+ }
+ 
++static inline void i40e_xdp_ring_update_tail(struct i40e_ring *xdp_ring)
++{
++	/* Force memory writes to complete before letting h/w
++	 * know there are new descriptors to fetch.
++	 */
++	wmb();
++
++	writel(xdp_ring->next_to_use, xdp_ring->tail);
++}
++
+ /**
+  * i40e_clean_rx_irq - Clean completed descriptors from Rx ring - bounce buf
+  * @rx_ring: rx descriptor ring to transact packets on
+@@ -2403,16 +2417,9 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 	}
+ 
+ 	if (xdp_xmit) {
+-		struct i40e_ring *xdp_ring;
+-
+-		xdp_ring = rx_ring->vsi->xdp_rings[rx_ring->queue_index];
+-
+-		/* Force memory writes to complete before letting h/w
+-		 * know there are new descriptors to fetch.
+-		 */
+-		wmb();
+-
+-		writel(xdp_ring->next_to_use, xdp_ring->tail);
++		i40e_xdp_ring_update_tail(
++			rx_ring->vsi->xdp_rings[rx_ring->queue_index]);
++		xdp_do_flush_map();
+ 	}
+ 
+ 	rx_ring->skb = skb;
+@@ -3660,3 +3667,49 @@ netdev_tx_t i40e_lan_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 
+ 	return i40e_xmit_frame_ring(skb, tx_ring);
+ }
++
++/**
++ * i40e_xdp_xmit - Implements ndo_xdp_xmit
++ * @dev: netdev
++ * @xdp: XDP buffer
++ *
++ * Returns Zero if sent, else an error code
++ **/
++int i40e_xdp_xmit(struct net_device *dev, struct xdp_buff *xdp)
++{
++	struct i40e_netdev_priv *np = netdev_priv(dev);
++	unsigned int queue_index = smp_processor_id();
++	struct i40e_vsi *vsi = np->vsi;
++	int err;
++
++	if (test_bit(__I40E_VSI_DOWN, vsi->state))
++		return -EINVAL;
++
++	if (!i40e_enabled_xdp_vsi(vsi) || queue_index >= vsi->num_queue_pairs)
++		return -EINVAL;
++
++	err = i40e_xmit_xdp_ring(xdp, vsi->xdp_rings[queue_index]);
++	if (err != I40E_XDP_TX)
++		return -ENOMEM;
++
++	return 0;
++}
++
++/**
++ * i40e_xdp_flush - Implements ndo_xdp_flush
++ * @dev: netdev
++ **/
++void i40e_xdp_flush(struct net_device *dev)
++{
++	struct i40e_netdev_priv *np = netdev_priv(dev);
++	unsigned int queue_index = smp_processor_id();
++	struct i40e_vsi *vsi = np->vsi;
++
++	if (test_bit(__I40E_VSI_DOWN, vsi->state))
++		return;
++
++	if (!i40e_enabled_xdp_vsi(vsi) || queue_index >= vsi->num_queue_pairs)
++		return;
++
++	i40e_xdp_ring_update_tail(vsi->xdp_rings[queue_index]);
++}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index 2444f338bb0c..a97e59721393 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -510,6 +510,8 @@ u32 i40e_get_tx_pending(struct i40e_ring *ring, bool in_sw);
+ void i40e_detect_recover_hung(struct i40e_vsi *vsi);
+ int __i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size);
+ bool __i40e_chk_linearize(struct sk_buff *skb);
++int i40e_xdp_xmit(struct net_device *dev, struct xdp_buff *xdp);
++void i40e_xdp_flush(struct net_device *dev);
+ 
+ /**
+  * i40e_get_head - Retrieve head from head writeback
+-- 
+2.7.4
 
