@@ -1,165 +1,111 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 21 Mar 2018 09:37:02 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
- 8137a8e2190975ed9060111ce13000792360aba3
-Message-ID: <5ab1b73e./EI+XvgoGLp9oRtK%fengguang.wu@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Wed, 21 Mar 2018 08:33:47 -0700
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 35/55]
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:9925:12: error: 'struct
+ sk_buff' has no member named 'sp'; did you mean 'sk'?
+In-Reply-To: <1521582652.2528.9.camel@intel.com>
+References: <201803210241.5Al1Tpht%fengguang.wu@intel.com>
+ <1521582652.2528.9.camel@intel.com>
+Message-ID: <9e091d1e-c3f9-23ec-ffe8-8bad83ce4ae9@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: 8137a8e2190975ed9060111ce13000792360aba3  vmxnet3: remove unused flag "rxcsum" from struct vmxnet3_adapter
 
-elapsed time: 637m
 
-configs tested: 141
+On 3/20/2018 2:50 PM, Duyck, Alexander H wrote:
+> On Wed, 2018-03-21 at 02:17 +0800, kbuild test robot wrote:
+>> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+>> head:   87cc3719efa6c6bd875e67892450bd03a9e147e4
+>> commit: 747053c601fe8547518069b8791337716b71c4c6 [35/55] ixgbe: enable tso with ipsec offload
+>> config: powerpc-skiroot_defconfig (attached as .config)
+>> compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+>> reproduce:
+>>          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>>          chmod +x ~/bin/make.cross
+>>          git checkout 747053c601fe8547518069b8791337716b71c4c6
+>>          # save the attached .config to linux build tree
+>>          make.cross ARCH=powerpc
+>>
+>> All errors (new ones prefixed by >>):
+>>
+>>     drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_features_check':
+>>>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:9925:12: error: 'struct sk_buff' has no member named 'sp'; did you mean 'sk'?
+>>
+>>           !skb->sp)
+>>                 ^~
+>>                 sk
+>>
+>> vim +9925 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>
+>>    9896	
+>>    9897	static netdev_features_t
+>>    9898	ixgbe_features_check(struct sk_buff *skb, struct net_device *dev,
+>>    9899			     netdev_features_t features)
+>>    9900	{
+>>    9901		unsigned int network_hdr_len, mac_hdr_len;
+>>    9902	
+>>    9903		/* Make certain the headers can be described by a context descriptor */
+>>    9904		mac_hdr_len = skb_network_header(skb) - skb->data;
+>>    9905		if (unlikely(mac_hdr_len > IXGBE_MAX_MAC_HDR_LEN))
+>>    9906			return features & ~(NETIF_F_HW_CSUM |
+>>    9907					    NETIF_F_SCTP_CRC |
+>>    9908					    NETIF_F_HW_VLAN_CTAG_TX |
+>>    9909					    NETIF_F_TSO |
+>>    9910					    NETIF_F_TSO6);
+>>    9911	
+>>    9912		network_hdr_len = skb_checksum_start(skb) - skb_network_header(skb);
+>>    9913		if (unlikely(network_hdr_len >  IXGBE_MAX_NETWORK_HDR_LEN))
+>>    9914			return features & ~(NETIF_F_HW_CSUM |
+>>    9915					    NETIF_F_SCTP_CRC |
+>>    9916					    NETIF_F_TSO |
+>>    9917					    NETIF_F_TSO6);
+>>    9918	
+>>    9919		/* We can only support IPV4 TSO in tunnels if we can mangle the
+>>    9920		 * inner IP ID field, so strip TSO if MANGLEID is not supported.
+>>    9921		 * IPsec offoad sets skb->encapsulation but still can handle
+>>    9922		 * the TSO, so it's the exception.
+>>    9923		 */
+>>    9924		if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID) &&
+>>> 9925		    !skb->sp)
+>>
+>>    9926			features &= ~NETIF_F_TSO;
+>>    9927	
+>>    9928		return features;
+>>    9929	}
+> 
+> What you may want to look at doing in order to fix this is flip the
+> logic like so:
+> 
+> 	if (!skb->encapsulation || (features & NETIF_F_TSO_MANGLEID))
+> 		return features;
+> #ifdef CONFIG_XFRM
+> 	/* IPSec is a special case excluded from the above rule */
+> 	if (skb->sp)
+> 		return features;
+> #endif
+> 	return features & ~NETIF_F_TSO;
+> 
+> Anyway just my $0.02, thanks.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thanks, Alex, but I think this obfuscates the code a little, and might 
+make it harder to add other feature concerns in the future.  I'd rather 
+keep the look of the exception if possible.  Maybe something like this?
 
-arm                        vexpress_defconfig
-c6x                        evmc6472_defconfig
-powerpc                       ebony_defconfig
-x86_64                 randconfig-a0-03210731
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-i386                   randconfig-x013-201811
-i386                   randconfig-x014-201811
-i386                   randconfig-x012-201811
-i386                   randconfig-x015-201811
-i386                   randconfig-x016-201811
-i386                   randconfig-x019-201811
-i386                   randconfig-x010-201811
-i386                   randconfig-x018-201811
-i386                   randconfig-x011-201811
-i386                   randconfig-x017-201811
-x86_64                                    lkp
-i386                     randconfig-n0-201811
-x86_64                 randconfig-x002-201811
-x86_64                 randconfig-x006-201811
-x86_64                 randconfig-x005-201811
-x86_64                 randconfig-x009-201811
-x86_64                 randconfig-x004-201811
-x86_64                 randconfig-x001-201811
-x86_64                 randconfig-x008-201811
-x86_64                 randconfig-x003-201811
-x86_64                 randconfig-x000-201811
-x86_64                 randconfig-x007-201811
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-i386                     randconfig-i1-201811
-i386                     randconfig-i0-201811
-arm                             ezx_defconfig
-arm                         lubbock_defconfig
-sh                          polaris_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-a0-03190951
-i386                   randconfig-a1-03190951
-x86_64                 randconfig-s0-03210822
-x86_64                 randconfig-s1-03210822
-x86_64                 randconfig-s2-03210822
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-tile                         tilegx_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                           efm32_defconfig
-ia64                             allmodconfig
-m68k                          sun3x_defconfig
-powerpc64                           defconfig
-xtensa                generic_kc705_defconfig
-x86_64                 randconfig-x010-201811
-x86_64                 randconfig-x013-201811
-x86_64                 randconfig-x014-201811
-x86_64                 randconfig-x019-201811
-x86_64                 randconfig-x011-201811
-x86_64                 randconfig-x015-201811
-x86_64                 randconfig-x018-201811
-x86_64                 randconfig-x016-201811
-x86_64                 randconfig-x017-201811
-x86_64                 randconfig-x012-201811
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                 randconfig-s3-03210839
-x86_64                 randconfig-s4-03210839
-x86_64                 randconfig-s5-03210839
-i386                               tinyconfig
-x86_64                   randconfig-i0-201811
-i386                   randconfig-b0-03210842
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m32r                    m32700ut.up_defconfig
-powerpc                    sam440ep_defconfig
-sh                        sh7757lcr_defconfig
-x86_64                 randconfig-u0-03210833
-i386                   randconfig-x006-201811
-i386                   randconfig-x000-201811
-i386                   randconfig-x008-201811
-i386                   randconfig-x004-201811
-i386                   randconfig-x009-201811
-i386                   randconfig-x003-201811
-i386                   randconfig-x005-201811
-i386                   randconfig-x002-201811
-i386                   randconfig-x001-201811
-i386                   randconfig-x007-201811
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-arm                          iop32x_defconfig
-arm                          ks8695_defconfig
-sh                             shx3_defconfig
-i386                   randconfig-x073-201811
-i386                   randconfig-x075-201811
-i386                   randconfig-x071-201811
-i386                   randconfig-x076-201811
-i386                   randconfig-x079-201811
-i386                   randconfig-x070-201811
-i386                   randconfig-x077-201811
-i386                   randconfig-x074-201811
-i386                   randconfig-x078-201811
-i386                   randconfig-x072-201811
+	if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID))
+#ifdef CONFIG_XFRM
+		if (!skb->sp)
+#endif
+			features &= ~NETIF_F_TSO;
 
-Thanks,
-Fengguang
+	return features;
+
+
+sln
+
+
+
+
+
