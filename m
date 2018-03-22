@@ -1,360 +1,243 @@
-From: Tomas Charvat <tc@excello.cz>
-Date: Thu, 22 Mar 2018 16:48:09 +0100
-Subject: [Intel-wired-lan] 4.14.28 page allocation failure ksoftirqd/0
- e1000
-In-Reply-To: <CAKgT0UeSB3-WUJ9CvD6k4yRGeaJmdCs7D9SooMHPS7cO_wvE+A@mail.gmail.com>
-References: <368d2980-ca08-26cd-5ed7-b95bd50602f1@excello.cz>
- <CAKgT0UeSB3-WUJ9CvD6k4yRGeaJmdCs7D9SooMHPS7cO_wvE+A@mail.gmail.com>
-Message-ID: <44049369-1c16-d42a-de18-bcac03e24eb7@excello.cz>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 23 Mar 2018 01:33:41 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ b4595fec505fb834b79a8a70525a2db9ed5ffb34
+Message-ID: <5ab3e8f5.hWqu4B3dV46ELKwg%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks for clarification, it has happen during low memory condition
-according to snmp monitoring. It doesnt happen often.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: b4595fec505fb834b79a8a70525a2db9ed5ffb34  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-Tomas Charvat
-EXCELLO | Virusfree
-w: www.virusfree.cz
-e: tc at excello.cz
+elapsed time: 144m
 
-On 03/22/2018 04:45 PM, Alexander Duyck wrote:
-> On Thu, Mar 22, 2018 at 2:38 AM, Tomas Charvat <tc@excello.cz> wrote:
->> Hi I'm not sure whenever this is e1000 issue, however it appear only in
->> this form.
-> This is more-or-less a noisy warning. What is happening here is that
-> your system is under enough memory pressure where it cannot allocate
-> an order 0 page when it is asked to do so.
->
-> How much system memory do you have available to the domU hypervisor?
-> Is this something that doesn't start popping up until the system has
-> been running for a while? Is this something that pops up once in a
-> while or does it just keep displaying the allocation failure messages?
->
-> What you should probably look at doing if you want to limit how often
-> this comes up is to limit what is making use of system memory. So for
-> example if you reduce the ring size of the driver via "ethtool -G
-> <iface> rx 128" that would help to reduce the total memory consumed by
-> the driver itself. You may want to go through and identify if you have
-> any memory leaks. Another option would be to just add more RAM to the
-> system to increase the available resources.
->
->> [Thu Mar 22 10:00:08 2018] ksoftirqd/0: page allocation failure:
->> order:0, mode:0x1080120(GFP_ATOMIC|__GFP_COLD), nodemask=(null)
->> [Thu Mar 22 10:00:08 2018] CPU: 0 PID: 7 Comm: ksoftirqd/0 Not tainted
->> 4.14.28-gentoo #2
->> [Thu Mar 22 10:00:08 2018] Hardware name: Xen HVM domU, BIOS 4.9.1
->> 01/25/2018
->> [Thu Mar 22 10:00:08 2018] Call Trace:
->> [Thu Mar 22 10:00:08 2018]  dump_stack+0x5c/0x7e
->> [Thu Mar 22 10:00:08 2018]  warn_alloc+0x11a/0x1c0
->> [Thu Mar 22 10:00:08 2018]  __alloc_pages_nodemask+0xb4c/0xd50
->> [Thu Mar 22 10:00:08 2018]  page_frag_alloc+0x12c/0x160
->> [Thu Mar 22 10:00:08 2018]  netdev_alloc_frag+0x2d/0x40
->> [Thu Mar 22 10:00:08 2018]  e1000_alloc_rx_buffers+0xe7/0x490
->> [Thu Mar 22 10:00:08 2018]  ? netif_receive_skb_internal+0x47/0xf0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean_rx_irq+0x3a2/0x4d0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean+0x283/0x8e0
->> [Thu Mar 22 10:00:08 2018]  net_rx_action+0x206/0x2d0
->> [Thu Mar 22 10:00:08 2018]  __do_softirq+0xe4/0x1f2
->> [Thu Mar 22 10:00:08 2018]  run_ksoftirqd+0x20/0x40
->> [Thu Mar 22 10:00:08 2018]  smpboot_thread_fn+0xfe/0x150
->> [Thu Mar 22 10:00:08 2018]  kthread+0xf2/0x130
->> [Thu Mar 22 10:00:08 2018]  ? sort_range+0x20/0x20
->> [Thu Mar 22 10:00:08 2018]  ? __kthread_create_on_node+0x1a0/0x1a0
->> [Thu Mar 22 10:00:08 2018]  ret_from_fork+0x35/0x40
->> [Thu Mar 22 10:00:08 2018] Mem-Info:
->> [Thu Mar 22 10:00:08 2018] active_anon:372939 inactive_anon:62
->> isolated_anon:0
->>                             active_file:476675 inactive_file:215871
->> isolated_file:0
->>                             unevictable:0 dirty:81834 writeback:447
->> unstable:0
->>                             slab_reclaimable:142237 slab_unreclaimable:15379
->>                             mapped:77278 shmem:105 pagetables:9862 bounce:0
->>                             free:6564 free_pcp:451 free_cma:0
->> [Thu Mar 22 10:00:08 2018] Node 0 active_anon:1491756kB
->> inactive_anon:248kB active_file:1906700kB inactive_file:863484kB
->> unevictable:0kB isolated(anon):0kB isolated(file):0kB mapped:309112kB
->> dirty:327336kB writeback:1788kB shmem:420kB writeback_tmp:0kB
->> unstable:0kB all_unreclaimable? no
->> [Thu Mar 22 10:00:08 2018] Node 0 DMA free:15900kB min:28kB low:40kB
->> high:52kB active_anon:0kB inactive_anon:0kB active_file:0kB
->> inactive_file:0kB unevictable:0kB writepending:0kB present:15992kB
->> managed:15908kB mlocked:0kB kernel_stack:0kB pagetables:0kB bounce:0kB
->> free_pcp:0kB local_pcp:0kB free_cma:0kB
->> [Thu Mar 22 10:00:08 2018] lowmem_reserve[]: 0 3741 4931 4931
->> [Thu Mar 22 10:00:08 2018] Node 0 DMA32 free:7028kB min:6804kB
->> low:10632kB high:14460kB active_anon:974436kB inactive_anon:4kB
->> active_file:1478820kB inactive_file:722488kB unevictable:0kB
->> writepending:249676kB present:3915772kB managed:3835092kB mlocked:0kB
->> kernel_stack:4768kB pagetables:21908kB bounce:0kB free_pcp:1184kB
->> local_pcp:120kB free_cma:0kB
->> [Thu Mar 22 10:00:08 2018] lowmem_reserve[]: 0 0 1189 1189
->> [Thu Mar 22 10:00:08 2018] Node 0 Normal free:3328kB min:2164kB
->> low:3380kB high:4596kB active_anon:517320kB inactive_anon:244kB
->> active_file:427880kB inactive_file:140996kB unevictable:0kB
->> writepending:79448kB present:1302528kB managed:1210252kB mlocked:0kB
->> kernel_stack:4592kB pagetables:17540kB bounce:0kB free_pcp:620kB
->> local_pcp:28kB free_cma:0kB
->> [Thu Mar 22 10:00:08 2018] lowmem_reserve[]: 0 0 0 0
->> [Thu Mar 22 10:00:08 2018] Node 0 DMA: 1*4kB (U) 1*8kB (U) 1*16kB (U)
->> 0*32kB 2*64kB (U) 1*128kB (U) 1*256kB (U) 0*512kB 1*1024kB (U) 1*2048kB
->> (U) 3*4096kB (M) = 15900kB
->> [Thu Mar 22 10:00:08 2018] Node 0 DMA32: 49*4kB (MEH) 36*8kB (UMEH)
->> 25*16kB (MH) 54*32kB (UEH) 39*64kB (UEH) 7*128kB (H) 2*256kB (H) 1*512kB
->> (H) 0*1024kB 0*2048kB 0*4096kB = 7028kB
->> [Thu Mar 22 10:00:08 2018] Node 0 Normal: 22*4kB (H) 19*8kB (H) 25*16kB
->> (H) 14*32kB (H) 9*64kB (H) 5*128kB (H) 4*256kB (H) 0*512kB 0*1024kB
->> 0*2048kB 0*4096kB = 3328kB
->> [Thu Mar 22 10:00:08 2018] 692651 total pagecache pages
->> [Thu Mar 22 10:00:08 2018] 0 pages in swap cache
->> [Thu Mar 22 10:00:08 2018] Swap cache stats: add 0, delete 0, find 0/0
->> [Thu Mar 22 10:00:08 2018] Free swap  = 0kB
->> [Thu Mar 22 10:00:08 2018] Total swap = 0kB
->> [Thu Mar 22 10:00:08 2018] 1308573 pages RAM
->> [Thu Mar 22 10:00:08 2018] 0 pages HighMem/MovableOnly
->> [Thu Mar 22 10:00:08 2018] 43260 pages reserved
->> [Thu Mar 22 10:00:08 2018] ksoftirqd/0: page allocation failure:
->> order:0, mode:0x1080120(GFP_ATOMIC|__GFP_COLD), nodemask=(null)
->> [Thu Mar 22 10:00:08 2018] CPU: 0 PID: 7 Comm: ksoftirqd/0 Not tainted
->> 4.14.28-gentoo #2
->> [Thu Mar 22 10:00:08 2018] Hardware name: Xen HVM domU, BIOS 4.9.1
->> 01/25/2018
->> [Thu Mar 22 10:00:08 2018] Call Trace:
->> [Thu Mar 22 10:00:08 2018]  dump_stack+0x5c/0x7e
->> [Thu Mar 22 10:00:08 2018]  warn_alloc+0x11a/0x1c0
->> [Thu Mar 22 10:00:08 2018]  __alloc_pages_nodemask+0xb4c/0xd50
->> [Thu Mar 22 10:00:08 2018]  page_frag_alloc+0x12c/0x160
->> [Thu Mar 22 10:00:08 2018]  netdev_alloc_frag+0x2d/0x40
->> [Thu Mar 22 10:00:08 2018]  e1000_alloc_rx_buffers+0xe7/0x490
->> [Thu Mar 22 10:00:08 2018]  ? netif_receive_skb_internal+0x47/0xf0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean_rx_irq+0x3a2/0x4d0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean+0x283/0x8e0
->> [Thu Mar 22 10:00:08 2018]  net_rx_action+0x206/0x2d0
->> [Thu Mar 22 10:00:08 2018]  __do_softirq+0xe4/0x1f2
->> [Thu Mar 22 10:00:08 2018]  run_ksoftirqd+0x20/0x40
->> [Thu Mar 22 10:00:08 2018]  smpboot_thread_fn+0xfe/0x150
->> [Thu Mar 22 10:00:08 2018]  kthread+0xf2/0x130
->> [Thu Mar 22 10:00:08 2018]  ? sort_range+0x20/0x20
->> [Thu Mar 22 10:00:08 2018]  ? __kthread_create_on_node+0x1a0/0x1a0
->> [Thu Mar 22 10:00:08 2018]  ret_from_fork+0x35/0x40
->> [Thu Mar 22 10:00:08 2018] ksoftirqd/0: page allocation failure:
->> order:0, mode:0x1080120(GFP_ATOMIC|__GFP_COLD), nodemask=(null)
->> [Thu Mar 22 10:00:08 2018] CPU: 0 PID: 7 Comm: ksoftirqd/0 Not tainted
->> 4.14.28-gentoo #2
->> [Thu Mar 22 10:00:08 2018] Hardware name: Xen HVM domU, BIOS 4.9.1
->> 01/25/2018
->> [Thu Mar 22 10:00:08 2018] Call Trace:
->> [Thu Mar 22 10:00:08 2018]  dump_stack+0x5c/0x7e
->> [Thu Mar 22 10:00:08 2018]  warn_alloc+0x11a/0x1c0
->> [Thu Mar 22 10:00:08 2018]  __alloc_pages_nodemask+0xb4c/0xd50
->> [Thu Mar 22 10:00:08 2018]  page_frag_alloc+0x12c/0x160
->> [Thu Mar 22 10:00:08 2018]  netdev_alloc_frag+0x2d/0x40
->> [Thu Mar 22 10:00:08 2018]  e1000_alloc_rx_buffers+0xe7/0x490
->> [Thu Mar 22 10:00:08 2018]  ? netif_receive_skb_internal+0x47/0xf0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean_rx_irq+0x3a2/0x4d0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean+0x283/0x8e0
->> [Thu Mar 22 10:00:08 2018]  net_rx_action+0x206/0x2d0
->> [Thu Mar 22 10:00:08 2018]  __do_softirq+0xe4/0x1f2
->> [Thu Mar 22 10:00:08 2018]  run_ksoftirqd+0x20/0x40
->> [Thu Mar 22 10:00:08 2018]  smpboot_thread_fn+0xfe/0x150
->> [Thu Mar 22 10:00:08 2018]  kthread+0xf2/0x130
->> [Thu Mar 22 10:00:08 2018]  ? sort_range+0x20/0x20
->> [Thu Mar 22 10:00:08 2018]  ? __kthread_create_on_node+0x1a0/0x1a0
->> [Thu Mar 22 10:00:08 2018]  ret_from_fork+0x35/0x40
->> [Thu Mar 22 10:00:08 2018] ksoftirqd/0: page allocation failure:
->> order:0, mode:0x1080120(GFP_ATOMIC|__GFP_COLD), nodemask=(null)
->> [Thu Mar 22 10:00:08 2018] CPU: 0 PID: 7 Comm: ksoftirqd/0 Not tainted
->> 4.14.28-gentoo #2
->> [Thu Mar 22 10:00:08 2018] Hardware name: Xen HVM domU, BIOS 4.9.1
->> 01/25/2018
->> [Thu Mar 22 10:00:08 2018] Call Trace:
->> [Thu Mar 22 10:00:08 2018]  dump_stack+0x5c/0x7e
->> [Thu Mar 22 10:00:08 2018]  warn_alloc+0x11a/0x1c0
->> [Thu Mar 22 10:00:08 2018]  __alloc_pages_nodemask+0xb4c/0xd50
->> [Thu Mar 22 10:00:08 2018]  page_frag_alloc+0x12c/0x160
->> [Thu Mar 22 10:00:08 2018]  netdev_alloc_frag+0x2d/0x40
->> [Thu Mar 22 10:00:08 2018]  e1000_alloc_rx_buffers+0xe7/0x490
->> [Thu Mar 22 10:00:08 2018]  ? netif_receive_skb_internal+0x47/0xf0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean_rx_irq+0x442/0x4d0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean+0x283/0x8e0
->> [Thu Mar 22 10:00:08 2018]  net_rx_action+0x206/0x2d0
->> [Thu Mar 22 10:00:08 2018]  __do_softirq+0xe4/0x1f2
->> [Thu Mar 22 10:00:08 2018]  run_ksoftirqd+0x20/0x40
->> [Thu Mar 22 10:00:08 2018]  smpboot_thread_fn+0xfe/0x150
->> [Thu Mar 22 10:00:08 2018]  kthread+0xf2/0x130
->> [Thu Mar 22 10:00:08 2018]  ? sort_range+0x20/0x20
->> [Thu Mar 22 10:00:08 2018]  ? __kthread_create_on_node+0x1a0/0x1a0
->> [Thu Mar 22 10:00:08 2018]  ret_from_fork+0x35/0x40
->> [Thu Mar 22 10:00:08 2018] ksoftirqd/0: page allocation failure:
->> order:0, mode:0x1080120(GFP_ATOMIC|__GFP_COLD), nodemask=(null)
->> [Thu Mar 22 10:00:08 2018] CPU: 0 PID: 7 Comm: ksoftirqd/0 Not tainted
->> 4.14.28-gentoo #2
->> [Thu Mar 22 10:00:08 2018] Hardware name: Xen HVM domU, BIOS 4.9.1
->> 01/25/2018
->> [Thu Mar 22 10:00:08 2018] Call Trace:
->> [Thu Mar 22 10:00:08 2018]  dump_stack+0x5c/0x7e
->> [Thu Mar 22 10:00:08 2018]  warn_alloc+0x11a/0x1c0
->> [Thu Mar 22 10:00:08 2018]  __alloc_pages_nodemask+0xb4c/0xd50
->> [Thu Mar 22 10:00:08 2018]  page_frag_alloc+0x12c/0x160
->> [Thu Mar 22 10:00:08 2018]  netdev_alloc_frag+0x2d/0x40
->> [Thu Mar 22 10:00:08 2018]  e1000_alloc_rx_buffers+0xe7/0x490
->> [Thu Mar 22 10:00:08 2018]  ? netif_receive_skb_internal+0x47/0xf0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean_rx_irq+0x3a2/0x4d0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean+0x283/0x8e0
->> [Thu Mar 22 10:00:08 2018]  net_rx_action+0x206/0x2d0
->> [Thu Mar 22 10:00:08 2018]  __do_softirq+0xe4/0x1f2
->> [Thu Mar 22 10:00:08 2018]  run_ksoftirqd+0x20/0x40
->> [Thu Mar 22 10:00:08 2018]  smpboot_thread_fn+0xfe/0x150
->> [Thu Mar 22 10:00:08 2018]  kthread+0xf2/0x130
->> [Thu Mar 22 10:00:08 2018]  ? sort_range+0x20/0x20
->> [Thu Mar 22 10:00:08 2018]  ? __kthread_create_on_node+0x1a0/0x1a0
->> [Thu Mar 22 10:00:08 2018]  ret_from_fork+0x35/0x40
->> [Thu Mar 22 10:00:08 2018] ksoftirqd/0: page allocation failure:
->> order:0, mode:0x1080120(GFP_ATOMIC|__GFP_COLD), nodemask=(null)
->> [Thu Mar 22 10:00:08 2018] CPU: 0 PID: 7 Comm: ksoftirqd/0 Not tainted
->> 4.14.28-gentoo #2
->> [Thu Mar 22 10:00:08 2018] Hardware name: Xen HVM domU, BIOS 4.9.1
->> 01/25/2018
->> [Thu Mar 22 10:00:08 2018] Call Trace:
->> [Thu Mar 22 10:00:08 2018]  dump_stack+0x5c/0x7e
->> [Thu Mar 22 10:00:08 2018]  warn_alloc+0x11a/0x1c0
->> [Thu Mar 22 10:00:08 2018]  __alloc_pages_nodemask+0xb4c/0xd50
->> [Thu Mar 22 10:00:08 2018]  page_frag_alloc+0x12c/0x160
->> [Thu Mar 22 10:00:08 2018]  netdev_alloc_frag+0x2d/0x40
->> [Thu Mar 22 10:00:08 2018]  e1000_alloc_rx_buffers+0xe7/0x490
->> [Thu Mar 22 10:00:08 2018]  ? netif_receive_skb_internal+0x47/0xf0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean_rx_irq+0x3a2/0x4d0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean+0x283/0x8e0
->> [Thu Mar 22 10:00:08 2018]  net_rx_action+0x206/0x2d0
->> [Thu Mar 22 10:00:08 2018]  __do_softirq+0xe4/0x1f2
->> [Thu Mar 22 10:00:08 2018]  run_ksoftirqd+0x20/0x40
->> [Thu Mar 22 10:00:08 2018]  smpboot_thread_fn+0xfe/0x150
->> [Thu Mar 22 10:00:08 2018]  kthread+0xf2/0x130
->> [Thu Mar 22 10:00:08 2018]  ? sort_range+0x20/0x20
->> [Thu Mar 22 10:00:08 2018]  ? __kthread_create_on_node+0x1a0/0x1a0
->> [Thu Mar 22 10:00:08 2018]  ret_from_fork+0x35/0x40
->> [Thu Mar 22 10:00:08 2018] ksoftirqd/0: page allocation failure:
->> order:0, mode:0x1080120(GFP_ATOMIC|__GFP_COLD), nodemask=(null)
->> [Thu Mar 22 10:00:08 2018] CPU: 0 PID: 7 Comm: ksoftirqd/0 Not tainted
->> 4.14.28-gentoo #2
->> [Thu Mar 22 10:00:08 2018] Hardware name: Xen HVM domU, BIOS 4.9.1
->> 01/25/2018
->> [Thu Mar 22 10:00:08 2018] Call Trace:
->> [Thu Mar 22 10:00:08 2018]  dump_stack+0x5c/0x7e
->> [Thu Mar 22 10:00:08 2018]  warn_alloc+0x11a/0x1c0
->> [Thu Mar 22 10:00:08 2018]  __alloc_pages_nodemask+0xb4c/0xd50
->> [Thu Mar 22 10:00:08 2018]  page_frag_alloc+0x12c/0x160
->> [Thu Mar 22 10:00:08 2018]  netdev_alloc_frag+0x2d/0x40
->> [Thu Mar 22 10:00:08 2018]  e1000_alloc_rx_buffers+0xe7/0x490
->> [Thu Mar 22 10:00:08 2018]  ? netif_receive_skb_internal+0x47/0xf0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean_rx_irq+0x3a2/0x4d0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean+0x283/0x8e0
->> [Thu Mar 22 10:00:08 2018]  net_rx_action+0x206/0x2d0
->> [Thu Mar 22 10:00:08 2018]  __do_softirq+0xe4/0x1f2
->> [Thu Mar 22 10:00:08 2018]  run_ksoftirqd+0x20/0x40
->> [Thu Mar 22 10:00:08 2018]  smpboot_thread_fn+0xfe/0x150
->> [Thu Mar 22 10:00:08 2018]  kthread+0xf2/0x130
->> [Thu Mar 22 10:00:08 2018]  ? sort_range+0x20/0x20
->> [Thu Mar 22 10:00:08 2018]  ? __kthread_create_on_node+0x1a0/0x1a0
->> [Thu Mar 22 10:00:08 2018]  ret_from_fork+0x35/0x40
->> [Thu Mar 22 10:00:08 2018] ksoftirqd/0: page allocation failure:
->> order:0, mode:0x1080120(GFP_ATOMIC|__GFP_COLD), nodemask=(null)
->> [Thu Mar 22 10:00:08 2018] CPU: 0 PID: 7 Comm: ksoftirqd/0 Not tainted
->> 4.14.28-gentoo #2
->> [Thu Mar 22 10:00:08 2018] Hardware name: Xen HVM domU, BIOS 4.9.1
->> 01/25/2018
->> [Thu Mar 22 10:00:08 2018] Call Trace:
->> [Thu Mar 22 10:00:08 2018]  dump_stack+0x5c/0x7e
->> [Thu Mar 22 10:00:08 2018]  warn_alloc+0x11a/0x1c0
->> [Thu Mar 22 10:00:08 2018]  __alloc_pages_nodemask+0xb4c/0xd50
->> [Thu Mar 22 10:00:08 2018]  page_frag_alloc+0x12c/0x160
->> [Thu Mar 22 10:00:08 2018]  netdev_alloc_frag+0x2d/0x40
->> [Thu Mar 22 10:00:08 2018]  e1000_alloc_rx_buffers+0xe7/0x490
->> [Thu Mar 22 10:00:08 2018]  ? netif_receive_skb_internal+0x47/0xf0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean_rx_irq+0x3a2/0x4d0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean+0x283/0x8e0
->> [Thu Mar 22 10:00:08 2018]  net_rx_action+0x206/0x2d0
->> [Thu Mar 22 10:00:08 2018]  __do_softirq+0xe4/0x1f2
->> [Thu Mar 22 10:00:08 2018]  run_ksoftirqd+0x20/0x40
->> [Thu Mar 22 10:00:08 2018]  smpboot_thread_fn+0xfe/0x150
->> [Thu Mar 22 10:00:08 2018]  kthread+0xf2/0x130
->> [Thu Mar 22 10:00:08 2018]  ? sort_range+0x20/0x20
->> [Thu Mar 22 10:00:08 2018]  ? __kthread_create_on_node+0x1a0/0x1a0
->> [Thu Mar 22 10:00:08 2018]  ret_from_fork+0x35/0x40
->> [Thu Mar 22 10:00:08 2018] ksoftirqd/0: page allocation failure:
->> order:0, mode:0x1080120(GFP_ATOMIC|__GFP_COLD), nodemask=(null)
->> [Thu Mar 22 10:00:08 2018] CPU: 0 PID: 7 Comm: ksoftirqd/0 Not tainted
->> 4.14.28-gentoo #2
->> [Thu Mar 22 10:00:08 2018] Hardware name: Xen HVM domU, BIOS 4.9.1
->> 01/25/2018
->> [Thu Mar 22 10:00:08 2018] Call Trace:
->> [Thu Mar 22 10:00:08 2018]  dump_stack+0x5c/0x7e
->> [Thu Mar 22 10:00:08 2018]  warn_alloc+0x11a/0x1c0
->> [Thu Mar 22 10:00:08 2018]  __alloc_pages_nodemask+0xb4c/0xd50
->> [Thu Mar 22 10:00:08 2018]  page_frag_alloc+0x12c/0x160
->> [Thu Mar 22 10:00:08 2018]  netdev_alloc_frag+0x2d/0x40
->> [Thu Mar 22 10:00:08 2018]  e1000_alloc_rx_buffers+0xe7/0x490
->> [Thu Mar 22 10:00:08 2018]  ? netif_receive_skb_internal+0x47/0xf0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean_rx_irq+0x442/0x4d0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean+0x283/0x8e0
->> [Thu Mar 22 10:00:08 2018]  net_rx_action+0x206/0x2d0
->> [Thu Mar 22 10:00:08 2018]  __do_softirq+0xe4/0x1f2
->> [Thu Mar 22 10:00:08 2018]  run_ksoftirqd+0x20/0x40
->> [Thu Mar 22 10:00:08 2018]  smpboot_thread_fn+0xfe/0x150
->> [Thu Mar 22 10:00:08 2018]  kthread+0xf2/0x130
->> [Thu Mar 22 10:00:08 2018]  ? sort_range+0x20/0x20
->> [Thu Mar 22 10:00:08 2018]  ? __kthread_create_on_node+0x1a0/0x1a0
->> [Thu Mar 22 10:00:08 2018]  ret_from_fork+0x35/0x40
->> [Thu Mar 22 10:00:08 2018] ksoftirqd/0: page allocation failure:
->> order:0, mode:0x1080120(GFP_ATOMIC|__GFP_COLD), nodemask=(null)
->> [Thu Mar 22 10:00:08 2018] CPU: 0 PID: 7 Comm: ksoftirqd/0 Not tainted
->> 4.14.28-gentoo #2
->> [Thu Mar 22 10:00:08 2018] Hardware name: Xen HVM domU, BIOS 4.9.1
->> 01/25/2018
->> [Thu Mar 22 10:00:08 2018] Call Trace:
->> [Thu Mar 22 10:00:08 2018]  dump_stack+0x5c/0x7e
->> [Thu Mar 22 10:00:08 2018]  warn_alloc+0x11a/0x1c0
->> [Thu Mar 22 10:00:08 2018]  __alloc_pages_nodemask+0xb4c/0xd50
->> [Thu Mar 22 10:00:08 2018]  page_frag_alloc+0x12c/0x160
->> [Thu Mar 22 10:00:08 2018]  netdev_alloc_frag+0x2d/0x40
->> [Thu Mar 22 10:00:08 2018]  e1000_alloc_rx_buffers+0xe7/0x490
->> [Thu Mar 22 10:00:08 2018]  ? netif_receive_skb_internal+0x47/0xf0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean_rx_irq+0x3a2/0x4d0
->> [Thu Mar 22 10:00:08 2018]  e1000_clean+0x283/0x8e0
->> [Thu Mar 22 10:00:08 2018]  net_rx_action+0x206/0x2d0
->> [Thu Mar 22 10:00:08 2018]  __do_softirq+0xe4/0x1f2
->> [Thu Mar 22 10:00:08 2018]  run_ksoftirqd+0x20/0x40
->> [Thu Mar 22 10:00:08 2018]  smpboot_thread_fn+0xfe/0x150
->> [Thu Mar 22 10:00:08 2018]  kthread+0xf2/0x130
->> [Thu Mar 22 10:00:08 2018]  ? sort_range+0x20/0x20
->> [Thu Mar 22 10:00:08 2018]  ? __kthread_create_on_node+0x1a0/0x1a0
->> [Thu Mar 22 10:00:08 2018]  ret_from_fork+0x35/0x40
->>
->> Best regards
->>
->> --
->> Tomas Charvat
->> EXCELLO | Virusfree
->> w: www.virusfree.cz
->> e: tc at excello.cz
->>
->>
->>
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->>
+configs tested: 219
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: OpenPGP digital signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180322/94118e3a/attachment-0001.asc>
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                             ezx_defconfig
+arm                          nuc960_defconfig
+sh                           se7343_defconfig
+m68k                             allmodconfig
+microblaze                        allnoconfig
+x86_64                 randconfig-a0-03222143
+x86_64                 randconfig-a0-03222350
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                         lpc18xx_defconfig
+m68k                            mac_defconfig
+xtensa                  nommu_kc705_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-03222218
+x86_64                           allmodconfig
+arm                            zeus_defconfig
+m32r                       m32104ut_defconfig
+microblaze                       allmodconfig
+x86_64                randconfig-in0-03222143
+arm                       imx_v6_v7_defconfig
+m68k                             alldefconfig
+powerpc               mpc834x_itxgp_defconfig
+x86_64                randconfig-it0-03222144
+i386                               tinyconfig
+i386                   randconfig-x013-201811
+i386                   randconfig-x014-201811
+i386                   randconfig-x012-201811
+i386                   randconfig-x015-201811
+i386                   randconfig-x016-201811
+i386                   randconfig-x019-201811
+i386                   randconfig-x010-201811
+i386                   randconfig-x018-201811
+i386                   randconfig-x011-201811
+i386                   randconfig-x017-201811
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-03221105
+x86_64                 randconfig-x002-201811
+x86_64                 randconfig-x006-201811
+x86_64                 randconfig-x005-201811
+x86_64                 randconfig-x009-201811
+x86_64                 randconfig-x004-201811
+x86_64                 randconfig-x001-201811
+x86_64                 randconfig-x008-201811
+x86_64                 randconfig-x003-201811
+x86_64                 randconfig-x000-201811
+x86_64                 randconfig-x007-201811
+i386                   randconfig-i0-03221101
+i386                   randconfig-i1-03221101
+arm                         axm55xx_defconfig
+arm                            qcom_defconfig
+mips                         cobalt_defconfig
+x86_64                 randconfig-v0-03222144
+arm                            lart_defconfig
+arm                            mmp2_defconfig
+arm                        multi_v5_defconfig
+x86_64                 randconfig-g0-03222215
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-a0-201811
+i386                     randconfig-a1-201811
+x86_64                 randconfig-s0-03222256
+x86_64                 randconfig-s1-03222256
+x86_64                 randconfig-s2-03222256
+x86_64                 randconfig-s0-03230044
+x86_64                 randconfig-s1-03230044
+x86_64                 randconfig-s2-03230044
+x86_64                 randconfig-x010-201811
+x86_64                 randconfig-x013-201811
+x86_64                 randconfig-x014-201811
+x86_64                 randconfig-x019-201811
+x86_64                 randconfig-x011-201811
+x86_64                 randconfig-x015-201811
+x86_64                 randconfig-x018-201811
+x86_64                 randconfig-x016-201811
+x86_64                 randconfig-x017-201811
+x86_64                 randconfig-x012-201811
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-03221113
+i386                   randconfig-s1-03221113
+x86_64                 randconfig-s3-03222254
+x86_64                 randconfig-s4-03222254
+x86_64                 randconfig-s5-03222254
+x86_64                 randconfig-s3-03222351
+x86_64                 randconfig-s4-03222351
+x86_64                 randconfig-s5-03222351
+x86_64                 randconfig-s3-03230031
+x86_64                 randconfig-s4-03230031
+x86_64                 randconfig-s5-03230031
+x86_64                 randconfig-s3-03230058
+x86_64                 randconfig-s4-03230058
+x86_64                 randconfig-s5-03230058
+x86_64                            allnoconfig
+ia64                      gensparse_defconfig
+m68k                            q40_defconfig
+mips                        qi_lb60_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-i0-03221103
+i386                   randconfig-b0-03222143
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                        clps711x_defconfig
+microblaze                       allyesconfig
+powerpc                   motionpro_defconfig
+x86_64                 randconfig-u0-03222304
+x86_64                 randconfig-u0-03222347
+arm                          gemini_defconfig
+arm                            hisi_defconfig
+arm                          nuc910_defconfig
+arm                        shmobile_defconfig
+i386                   randconfig-h0-03222204
+i386                   randconfig-h1-03222204
+mips                           ip27_defconfig
+sh                           se7750_defconfig
+arm                          moxart_defconfig
+x86_64                randconfig-ne0-03222143
+x86_64                randconfig-ne0-03230009
+arm                        magician_defconfig
+blackfin               BF518F-EZBRD_defconfig
+x86_64                 randconfig-h0-03222144
+i386                   randconfig-x070-201811
+i386                   randconfig-x071-201811
+i386                   randconfig-x072-201811
+i386                   randconfig-x073-201811
+i386                   randconfig-x074-201811
+i386                   randconfig-x075-201811
+i386                   randconfig-x076-201811
+i386                   randconfig-x077-201811
+i386                   randconfig-x078-201811
+i386                   randconfig-x079-201811
+i386                  randconfig-sb0-03221058
+i386                   randconfig-x006-201811
+i386                   randconfig-x000-201811
+i386                   randconfig-x008-201811
+i386                   randconfig-x004-201811
+i386                   randconfig-x009-201811
+i386                   randconfig-x003-201811
+i386                   randconfig-x005-201811
+i386                   randconfig-x002-201811
+i386                   randconfig-x001-201811
+i386                   randconfig-x007-201811
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v7_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+blackfin                BF527-EZKIT_defconfig
+s390                             allmodconfig
+x86_64                randconfig-ws0-03222203
+x86_64                randconfig-ws0-03230057
+s390                             alldefconfig
+sh                            migor_defconfig
+sh                           se7712_defconfig
+arm                         ebsa110_defconfig
+ia64                         bigsur_defconfig
+powerpc                     redwood_defconfig
+x86_64                randconfig-ws0-03222202
+x86_64                randconfig-ws0-03222352
+x86_64                                  kexec
+arm                             mxs_defconfig
+powerpc                     sbc8548_defconfig
+sh                 kfr2r09-romimage_defconfig
+x86_64                 randconfig-r0-03222204
+i386                             allmodconfig
+arm                          iop33x_defconfig
+arm                        vexpress_defconfig
+sh                        sh7785lcr_defconfig
+i386                   randconfig-x0-03222214
+
+Thanks,
+Fengguang
