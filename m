@@ -1,48 +1,93 @@
-From: okaya@codeaurora.org <okaya@codeaurora.org>
-Date: Wed, 21 Mar 2018 18:14:52 -0400
-Subject: [Intel-wired-lan] [PATCH REPOST v4 5/7] ixgbevf: keep writel()
- closer to wmb()
-In-Reply-To: <20180321.175427.1419929873765406157.davem@davemloft.net>
-References: <1521658572-26354-1-git-send-email-okaya@codeaurora.org>
- <1521658572-26354-6-git-send-email-okaya@codeaurora.org>
- <1521668888.12746.32.camel@intel.com>
- <20180321.175427.1419929873765406157.davem@davemloft.net>
-Message-ID: <bbaf3dadb8fb6469f49edae6ce6b7d48@codeaurora.org>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Wed, 21 Mar 2018 17:33:44 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v5 0/9] igb: offloading of
+ receive filters
+Message-ID: <20180322003353.29970-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2018-03-21 17:54, David Miller wrote:
-> From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Date: Wed, 21 Mar 2018 14:48:08 -0700
-> 
->> On Wed, 2018-03-21 at 14:56 -0400, Sinan Kaya wrote:
->>> Remove ixgbevf_write_tail() in favor of moving writel() close to
->>> wmb().
->>> 
->>> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
->>> Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
->>> ---
->>>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      | 5 -----
->>>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++--
->>>  2 files changed, 2 insertions(+), 7 deletions(-)
->> 
->> This patch fails to compile because there is a call to
->> ixgbevf_write_tail() which you missed cleaning up.
-> 
-> For a change with delicate side effects, it doesn't create much
-> confidence if the code does not even compile.
-> 
-> Sinan, please put more care into the changes you are making.
+Hi,
 
-I think the issue is the tree that code is getting tested has 
-undelivered code as Alex mentioned.
+Changes from v4:
+ - Added a new bit to the MAC address filters internal representation
+ to mean that some MAC address filters are steering filters (i.e. they
+ direct traffic to queues);
+ - And, this is only supported in i210;
+ - Added a "Known Issue" section;
 
-I was using linux-next 4.16 rc4 for testing.
+Changes from v3:
+ - Addressed review comments from Aaron F. Brown and
+   Jakub Kicinski;
 
-I will rebase to Jeff's tree.
+Changes from v2:
+ - Addressed review comments from Jakub Kicinski, mostly about coding
+   style adjustments and more consistent error reporting;
 
-> 
-> Thank you.
+Changes from v1:
+ - Addressed review comments from Alexander Duyck and Florian
+   Fainelli;
+ - Adding and removing cls_flower filters are now proposed in the same
+   patch;
+ - cls_flower filters are kept in a separated list from "ethtool"
+   filters (so that section of the original cover letter is no longer
+   valid);
+ - The patch adding support for ethtool filters is now independent from
+   the rest of the series;
+
+Known issue:
+ - It seems that the the QSEL bits in the RAH registers do not have
+ any effect for source address (i.e. steering doesn't work for source
+ address filters), everything is pointing to a hardware (or
+ documentation) issue;
+
+Original cover letter:
+
+This series enables some ethtool and tc-flower filters to be offloaded
+to igb-based network controllers. This is useful when the system
+configurator want to steer kinds of traffic to a specific hardware
+queue.
+
+The first two commits are bug fixes.
+
+The basis of this series is to export the internal API used to
+configure address filters, so they can be used by ethtool, and
+extending the functionality so an source address can be handled.
+
+Then, we enable the tc-flower offloading implementation to re-use the
+same infrastructure as ethtool, and storing them in the per-adapter
+"nfc" (Network Filter Config?) list. But for consistency, for
+destructive access they are separated, i.e. an filter added by
+tc-flower can only be removed by tc-flower, but ethtool can read them
+all.
+
+Only support for VLAN Prio, Source and Destination MAC Address, and
+Ethertype is enabled for now.
+
+Open question:
+  - igb is initialized with the number of traffic classes as 1, if we
+  want to use multiple traffic classes we need to increase this value,
+  the only way I could find is to use mqprio (for example). Should igb
+  be initialized with, say, the number of queues as its "num_tc"?
+
+Vinicius Costa Gomes (9):
+  igb: Fix not adding filter elements to the list
+  igb: Fix queue selection on MAC filters on i210
+  igb: Enable the hardware traffic class feature bit for igb models
+  igb: Add support for MAC address filters specifying source addresses
+  igb: Add support for enabling queue steering in filters
+  igb: Enable nfc filters to specify MAC addresses
+  igb: Add MAC address support for ethtool nftuple filters
+  igb: Add the skeletons for tc-flower offloading
+  igb: Add support for adding offloaded clsflower filters
+
+ drivers/net/ethernet/intel/igb/e1000_defines.h |   2 +
+ drivers/net/ethernet/intel/igb/igb.h           |  13 +
+ drivers/net/ethernet/intel/igb/igb_ethtool.c   |  65 ++++-
+ drivers/net/ethernet/intel/igb/igb_main.c      | 332 ++++++++++++++++++++++++-
+ 4 files changed, 398 insertions(+), 14 deletions(-)
+
+--
+2.16.2
