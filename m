@@ -1,55 +1,55 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Thu, 22 Mar 2018 10:02:36 +0100
-Subject: [Intel-wired-lan] [PATCH] ixgbe: tweak page counting for
- XDP_REDIRECT
-Message-ID: <20180322090236.14357-1-bjorn.topel@gmail.com>
+From: Marco Berizzi <pupilla@libero.it>
+Date: Thu, 22 Mar 2018 11:40:09 +0100 (CET)
+Subject: [Intel-wired-lan] e1000e Detected Hardware Unit Hang
+In-Reply-To: <a97d11e0-6f94-e25c-4362-260073b07219@intel.com>
+References: <1969863829.1651192.1521629811656@mail.libero.it>
+ <1317189213.22495.1521649183803@mail.libero.it>
+ <a97d11e0-6f94-e25c-4362-260073b07219@intel.com>
+Message-ID: <1232121641.66220.1521715209616@mail.libero.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
+Neftin Sasha wrote:
+> 
+> On 21/03/2018 18:19, Marco Berizzi wrote:
+> 
+> > Marco Berizzi wrote:
+> > >
+> > 
+> > > Hello everyone,
+> > > 
+> > > I'm getting this error with a Slackware linux 64bit running 4.16-rc6:
+> > > I have also done a full hardware replacement, but the problem is still
+> > > present. This box is running squid, named, sshd and strongswan.
+> > > 
+> > > On february 3, I have replaced the network switch where this NIC is
+> > > connected to (from cisco 3750 to HPE 5130).
+> > > As you may see, the problem has popped up from Feb 13 with linux
+> > > 4.15.3, but yesterday the problem has arisen also with 4.15.2 (I
+> > > wanted to start a git bisect, but it is pointless).
+> > 
+> > I think I have found the root cause. Before getting this error the
+> > interface MTU was 9000bytes, and now it is 1500bytes.
+> > Good. Please, try also disable TCP segmentation offload: ethtool -K
+> > 
+> >  tso off. Keep us update.
 
-The current page counting scheme assumes that the reference count
-cannot decrease until the received frame is sent to the upper layers
-of the networking stack. This assumption does not hold for the
-XDP_REDIRECT action, since a page (pointed out by xdp_buff) can have
-its reference count decreased via the xdp_do_redirect call.
+Hi Sasha,
 
-To work around that, we now start off by a large page count and then
-don't allow a refcount less than two.
+thanks for the quick response.
+I have disabled the tso:
 
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ethtool -K eth2  tso off
+Cannot get device udp-fragmentation-offload settings: Operation not supported
+Cannot get device udp-fragmentation-offload settings: Operation not supported
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index fb80edbd2739..8dbb2ce06287 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1629,7 +1629,8 @@ static bool ixgbe_alloc_mapped_page(struct ixgbe_ring *rx_ring,
- 	bi->dma = dma;
- 	bi->page = page;
- 	bi->page_offset = ixgbe_rx_offset(rx_ring);
--	bi->pagecnt_bias = 1;
-+	page_ref_add(page, USHRT_MAX - 1);
-+	bi->pagecnt_bias = USHRT_MAX;
- 	rx_ring->rx_stats.alloc_rx_page++;
- 
- 	return true;
-@@ -2039,8 +2040,8 @@ static bool ixgbe_can_reuse_rx_page(struct ixgbe_rx_buffer *rx_buffer)
- 	 * the pagecnt_bias and page count so that we fully restock the
- 	 * number of references the driver holds.
- 	 */
--	if (unlikely(!pagecnt_bias)) {
--		page_ref_add(page, USHRT_MAX);
-+	if (unlikely(pagecnt_bias == 1)) {
-+		page_ref_add(page, USHRT_MAX - 1);
- 		rx_buffer->pagecnt_bias = USHRT_MAX;
- 	}
- 
--- 
-2.7.4
+I will keep you updated. Unfortunately I'm encountering this error
+message not more than once a day. So my response will be a little
+delayed.
 
+Thank you
+
+Marco
