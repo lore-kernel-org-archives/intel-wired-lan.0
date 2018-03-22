@@ -1,48 +1,60 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 22 Mar 2018 07:52:31 -0700
-Subject: [Intel-wired-lan] [PATCH v2 2/2] i40e: add support for
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Thu, 22 Mar 2018 16:14:33 +0100
+Subject: [Intel-wired-lan] [PATCH v3 1/2] i40e: tweak page counting for
  XDP_REDIRECT
-In-Reply-To: <CAJ+HfNiGWgJEE9K1rh3OrgixFaTJE4mDCBzYVGQJv3R8_rpLTQ@mail.gmail.com>
-References: <20180322090307.14409-1-bjorn.topel@gmail.com>
- <20180322090307.14409-2-bjorn.topel@gmail.com>
- <20180322125811.0dcc1b28@redhat.com>
- <CAJ+HfNiGWgJEE9K1rh3OrgixFaTJE4mDCBzYVGQJv3R8_rpLTQ@mail.gmail.com>
-Message-ID: <CAKgT0UcoMxQSCWzi1GKorRXNADX0yjrQBpv04cKvR5=g3+BjsQ@mail.gmail.com>
+Message-ID: <20180322151434.24338-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Mar 22, 2018 at 5:20 AM, Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
-> 2018-03-22 12:58 GMT+01:00 Jesper Dangaard Brouer <brouer@redhat.com>:
->>
->> On Thu, 22 Mar 2018 10:03:07 +0100 Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
->>
->>> +/**
->>> + * i40e_xdp_xmit - Implements ndo_xdp_xmit
->>> + * @dev: netdev
->>> + * @xdp: XDP buffer
->>> + *
->>> + * Returns Zero if sent, else an error code
->>> + **/
->>> +int i40e_xdp_xmit(struct net_device *dev, struct xdp_buff *xdp)
->>> +{
->>
->> The return code is used by the XDP redirect tracepoint... this is the
->> only way we have to debug/troubleshoot runtime issues with XDP. Thus,
->> these need to be consistent across drives and distinguishable.
->>
->
-> Thanks for pointing this out! I'll address all your comments and do a
-> respin (but I'll wait for Alex' comments, if any).
->
->
-> Bj?rn
->
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-The patch mostly looks okay to me. Maybe a bit of reverse xmas tree
-formatting needs to be addressed for the variable declarations in your
-two new functions but that is about it in terms of what I see.
+This commit tweaks the page counting for XDP_REDIRECT to function
+properly. XDP_REDIRECT support will be added in a future commit.
 
-- Alex
+The current page counting scheme assumes that the reference count
+cannot decrease until the received frame is sent to the upper layers
+of the networking stack. This assumption does not hold for the
+XDP_REDIRECT action, since a page (pointed out by xdp_buff) can have
+its reference count decreased via the xdp_do_redirect call.
+
+To work around that, we now start off by a large page count and then
+don't allow a refcount less than two.
+
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index e8eef9a56b6b..2f817d1466eb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1588,9 +1588,8 @@ static bool i40e_alloc_mapped_page(struct i40e_ring *rx_ring,
+ 	bi->dma = dma;
+ 	bi->page = page;
+ 	bi->page_offset = i40e_rx_offset(rx_ring);
+-
+-	/* initialize pagecnt_bias to 1 representing we fully own page */
+-	bi->pagecnt_bias = 1;
++	page_ref_add(page, USHRT_MAX - 1);
++	bi->pagecnt_bias = USHRT_MAX;
+ 
+ 	return true;
+ }
+@@ -1956,8 +1955,8 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer)
+ 	 * the pagecnt_bias and page count so that we fully restock the
+ 	 * number of references the driver holds.
+ 	 */
+-	if (unlikely(!pagecnt_bias)) {
+-		page_ref_add(page, USHRT_MAX);
++	if (unlikely(pagecnt_bias == 1)) {
++		page_ref_add(page, USHRT_MAX - 1);
+ 		rx_buffer->pagecnt_bias = USHRT_MAX;
+ 	}
+ 
+-- 
+2.7.4
+
