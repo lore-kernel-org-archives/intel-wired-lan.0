@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 22 Mar 2018 18:51:37 +0000
-Subject: [Intel-wired-lan] [PATCH REPOST v4 2/7] ixgbe: eliminate
+Date: Thu, 22 Mar 2018 18:52:13 +0000
+Subject: [Intel-wired-lan] [PATCH REPOST v4 1/7] i40e/i40evf: Eliminate
  duplicate barriers on weakly-ordered archs
-In-Reply-To: <1521658572-26354-3-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1521658572-26354-2-git-send-email-okaya@codeaurora.org>
 References: <1521658572-26354-1-git-send-email-okaya@codeaurora.org>
- <1521658572-26354-3-git-send-email-okaya@codeaurora.org>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A9567AB@ORSMSX104.amr.corp.intel.com>
+ <1521658572-26354-2-git-send-email-okaya@codeaurora.org>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A9567BB@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,11 +21,11 @@ List-ID: <intel-wired-lan.osuosl.org>
 > timur at codeaurora.org; linux-kernel at vger.kernel.org; Sinan Kaya
 > <okaya@codeaurora.org>; intel-wired-lan at lists.osuosl.org; linux-arm-
 > msm at vger.kernel.org; linux-arm-kernel at lists.infradead.org
-> Subject: [Intel-wired-lan] [PATCH REPOST v4 2/7] ixgbe: eliminate duplicate
-> barriers on weakly-ordered archs
+> Subject: [Intel-wired-lan] [PATCH REPOST v4 1/7] i40e/i40evf: Eliminate
+> duplicate barriers on weakly-ordered archs
 > 
-> Code includes wmb() followed by writel() in multiple places. writel() already
-> has a barrier on some architectures like arm64.
+> Code includes wmb() followed by writel(). writel() already has a barrier on
+> some architectures like arm64.
 > 
 > This ends up CPU observing two barriers back to back before executing the
 > register write.
@@ -36,8 +36,9 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 > Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 8 ++++----
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 4 ++--
+>  2 files changed, 6 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
