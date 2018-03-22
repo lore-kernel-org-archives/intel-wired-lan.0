@@ -1,95 +1,142 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed, 21 Mar 2018 17:33:51 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v5 7/9] igb: Add MAC address
- support for ethtool nftuple filters
+Date: Wed, 21 Mar 2018 17:33:48 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v5 4/9] igb: Add support for
+ MAC address filters specifying source addresses
 In-Reply-To: <20180322003353.29970-1-vinicius.gomes@intel.com>
 References: <20180322003353.29970-1-vinicius.gomes@intel.com>
-Message-ID: <20180322003353.29970-8-vinicius.gomes@intel.com>
+Message-ID: <20180322003353.29970-5-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This adds the capability of configuring the queue steering of arriving
-packets based on their source and destination MAC addresses.
-
-In practical terms this adds support for the following use cases,
-characterized by these examples:
-
-$ ethtool -N eth0 flow-type ether dst aa:aa:aa:aa:aa:aa action 0
-(this will direct packets with destination address "aa:aa:aa:aa:aa:aa"
-to the RX queue 0)
-
-$ ethtool -N eth0 flow-type ether src 44:44:44:44:44:44 action 3
-(this will direct packets with source address "44:44:44:44:44:44" to
-the RX queue 3)
+Makes it possible to direct packets to queues based on their source
+address. Documents the expected usage of the 'flags' parameter.
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 35 ++++++++++++++++++++++++----
- 1 file changed, 31 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/igb/e1000_defines.h |  1 +
+ drivers/net/ethernet/intel/igb/igb.h           |  1 +
+ drivers/net/ethernet/intel/igb/igb_main.c      | 40 ++++++++++++++++++++++----
+ 3 files changed, 37 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 4c6a1b78c413..27caa413ade2 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2494,6 +2494,23 @@ static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
- 			fsp->h_ext.vlan_tci = rule->filter.vlan_tci;
- 			fsp->m_ext.vlan_tci = htons(VLAN_PRIO_MASK);
- 		}
-+		if (rule->filter.match_flags & IGB_FILTER_FLAG_DST_MAC_ADDR) {
-+			ether_addr_copy(fsp->h_u.ether_spec.h_dest,
-+					rule->filter.dst_addr);
-+			/* As we only support matching by the full
-+			 * mask, return the mask to userspace
-+			 */
-+			eth_broadcast_addr(fsp->m_u.ether_spec.h_dest);
-+		}
-+		if (rule->filter.match_flags & IGB_FILTER_FLAG_SRC_MAC_ADDR) {
-+			ether_addr_copy(fsp->h_u.ether_spec.h_source,
-+					rule->filter.src_addr);
-+			/* As we only support matching by the full
-+			 * mask, return the mask to userspace
-+			 */
-+			eth_broadcast_addr(fsp->m_u.ether_spec.h_source);
-+		}
-+
- 		return 0;
- 	}
- 	return -EINVAL;
-@@ -2932,10 +2949,6 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
- 	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW)
- 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+index 83cabff1e0ab..a3e5514b044e 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -490,6 +490,7 @@
+  * manageability enabled, allowing us room for 15 multicast addresses.
+  */
+ #define E1000_RAH_AV  0x80000000        /* Receive descriptor valid */
++#define E1000_RAH_ASEL_SRC_ADDR 0x00010000
+ #define E1000_RAL_MAC_ADDR_LEN 4
+ #define E1000_RAH_MAC_ADDR_LEN 2
+ #define E1000_RAH_POOL_MASK 0x03FC0000
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index 55d6f17d5799..4501b28ff7c5 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -473,6 +473,7 @@ struct igb_mac_addr {
  
--	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK &&
--	    fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK))
--		return -EINVAL;
--
- 	input = kzalloc(sizeof(*input), GFP_KERNEL);
- 	if (!input)
- 		return -ENOMEM;
-@@ -2945,6 +2958,20 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
- 		input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
- 	}
+ #define IGB_MAC_STATE_DEFAULT	0x1
+ #define IGB_MAC_STATE_IN_USE	0x2
++#define IGB_MAC_STATE_SRC_ADDR  0x4
  
-+	/* Only support matching addresses by the full mask */
-+	if (is_broadcast_ether_addr(fsp->m_u.ether_spec.h_source)) {
-+		input->filter.match_flags |= IGB_FILTER_FLAG_SRC_MAC_ADDR;
-+		ether_addr_copy(input->filter.src_addr,
-+				fsp->h_u.ether_spec.h_source);
-+	}
+ /* board specific private data structure */
+ struct igb_adapter {
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 9ce29b8bb7da..a5a681f7fbb2 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -6843,8 +6843,14 @@ static void igb_set_default_mac_filter(struct igb_adapter *adapter)
+ 	igb_rar_set_index(adapter, 0);
+ }
+ 
+-static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+-			      const u8 queue)
++/* Add a MAC filter for 'addr' directing matching traffic to 'queue',
++ * 'flags' is used to indicate what kind of match is made, match is by
++ * default for the destination address, if matching by source address
++ * is desired the flag IGB_MAC_STATE_SRC_ADDR can be used.
++ */
++static int igb_add_mac_filter_flags(struct igb_adapter *adapter,
++				    const u8 *addr, const u8 queue,
++				    const u8 flags)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	int rar_entries = hw->mac.rar_entry_count -
+@@ -6864,7 +6870,7 @@ static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 
+ 		ether_addr_copy(adapter->mac_table[i].addr, addr);
+ 		adapter->mac_table[i].queue = queue;
+-		adapter->mac_table[i].state |= IGB_MAC_STATE_IN_USE;
++		adapter->mac_table[i].state |= IGB_MAC_STATE_IN_USE | flags;
+ 
+ 		igb_rar_set_index(adapter, i);
+ 		return i;
+@@ -6873,8 +6879,21 @@ static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 	return -ENOSPC;
+ }
+ 
+-static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
++static int igb_add_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 			      const u8 queue)
++{
++	return igb_add_mac_filter_flags(adapter, addr, queue, 0);
++}
 +
-+	/* Only support matching addresses by the full mask */
-+	if (is_broadcast_ether_addr(fsp->m_u.ether_spec.h_dest)) {
-+		input->filter.match_flags |= IGB_FILTER_FLAG_DST_MAC_ADDR;
-+		ether_addr_copy(input->filter.dst_addr,
-+				fsp->h_u.ether_spec.h_dest);
-+	}
++/* Remove a MAC filter for 'addr' directing matching traffic to
++ * 'queue', 'flags' is used to indicate what kind of match need to be
++ * removed, match is by default for the destination address, if
++ * matching by source address is to be removed the flag
++ * IGB_MAC_STATE_SRC_ADDR can be used.
++ */
++static int igb_del_mac_filter_flags(struct igb_adapter *adapter,
++				    const u8 *addr, const u8 queue,
++				    const u8 flags)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	int rar_entries = hw->mac.rar_entry_count -
+@@ -6891,12 +6910,14 @@ static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 	for (i = 0; i < rar_entries; i++) {
+ 		if (!(adapter->mac_table[i].state & IGB_MAC_STATE_IN_USE))
+ 			continue;
++		if ((adapter->mac_table[i].state & flags) != flags)
++			continue;
+ 		if (adapter->mac_table[i].queue != queue)
+ 			continue;
+ 		if (!ether_addr_equal(adapter->mac_table[i].addr, addr))
+ 			continue;
+ 
+-		adapter->mac_table[i].state &= ~IGB_MAC_STATE_IN_USE;
++		adapter->mac_table[i].state = 0;
+ 		memset(adapter->mac_table[i].addr, 0, ETH_ALEN);
+ 		adapter->mac_table[i].queue = 0;
+ 
+@@ -6907,6 +6928,12 @@ static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
+ 	return -ENOENT;
+ }
+ 
++static int igb_del_mac_filter(struct igb_adapter *adapter, const u8 *addr,
++			      const u8 queue)
++{
++	return igb_del_mac_filter_flags(adapter, addr, queue, 0);
++}
 +
- 	if ((fsp->flow_type & FLOW_EXT) && fsp->m_ext.vlan_tci) {
- 		if (fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK)) {
- 			err = -EINVAL;
+ static int igb_uc_sync(struct net_device *netdev, const unsigned char *addr)
+ {
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+@@ -8750,6 +8777,9 @@ static void igb_rar_set_index(struct igb_adapter *adapter, u32 index)
+ 		if (is_valid_ether_addr(addr))
+ 			rar_high |= E1000_RAH_AV;
+ 
++		if (adapter->mac_table[index].state & IGB_MAC_STATE_SRC_ADDR)
++			rar_high |= E1000_RAH_ASEL_SRC_ADDR;
++
+ 		switch (hw->mac.type) {
+ 		case e1000_82575:
+ 		case e1000_i210:
 -- 
 2.16.2
 
