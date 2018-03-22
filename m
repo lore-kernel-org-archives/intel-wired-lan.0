@@ -1,38 +1,263 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed, 21 Mar 2018 17:33:45 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v5 1/9] igb: Fix not adding
- filter elements to the list
+Date: Wed, 21 Mar 2018 17:33:53 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v5 9/9] igb: Add support for
+ adding offloaded clsflower filters
 In-Reply-To: <20180322003353.29970-1-vinicius.gomes@intel.com>
 References: <20180322003353.29970-1-vinicius.gomes@intel.com>
-Message-ID: <20180322003353.29970-2-vinicius.gomes@intel.com>
+Message-ID: <20180322003353.29970-10-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Because the order of the parameters passes to 'hlist_add_behind()' was
-inverted, the 'parent' node was added "behind" the 'input', as input
-is not in the list, this causes the 'input' node to be lost.
+This allows filters added by tc-flower and specifying MAC addresses,
+Ethernet types, and the VLAN priority field, to be offloaded to the
+controller.
 
-Fixes: 0e71def25281 ("igb: add support of RX network flow classification")
+This reuses most of the infrastructure used by ethtool, but clsflower
+filters are kept in a separated list, so they are invisible to
+ethtool.
+
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igb/igb.h      |   2 +
+ drivers/net/ethernet/intel/igb/igb_main.c | 188 +++++++++++++++++++++++++++++-
+ 2 files changed, 188 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 606e6761758f..143f0bb34e4d 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2864,7 +2864,7 @@ static int igb_update_ethtool_nfc_entry(struct igb_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index 66165879f12b..adfef068e866 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -464,6 +464,7 @@ struct igb_nfc_input {
+ struct igb_nfc_filter {
+ 	struct hlist_node nfc_node;
+ 	struct igb_nfc_input filter;
++	unsigned long cookie;
+ 	u16 etype_reg_index;
+ 	u16 sw_idx;
+ 	u16 action;
+@@ -603,6 +604,7 @@ struct igb_adapter {
  
- 	/* add filter to the list */
- 	if (parent)
--		hlist_add_behind(&parent->nfc_node, &input->nfc_node);
-+		hlist_add_behind(&input->nfc_node, &parent->nfc_node);
- 	else
- 		hlist_add_head(&input->nfc_node, &adapter->nfc_filter_list);
+ 	/* RX network flow classification support */
+ 	struct hlist_head nfc_filter_list;
++	struct hlist_head cls_flower_list;
+ 	unsigned int nfc_filter_count;
+ 	/* lock for RX network flow classification filter */
+ 	spinlock_t nfc_lock;
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 150231e4db9d..cc580b17dab3 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -2498,16 +2498,197 @@ static int igb_offload_cbs(struct igb_adapter *adapter,
+ 	return 0;
+ }
+ 
++#define ETHER_TYPE_FULL_MASK ((__force __be16)~0)
++#define VLAN_PRIO_FULL_MASK (0x07)
++
++static int igb_parse_cls_flower(struct igb_adapter *adapter,
++				struct tc_cls_flower_offload *f,
++				int traffic_class,
++				struct igb_nfc_filter *input)
++{
++	struct netlink_ext_ack *extack = f->common.extack;
++
++	if (f->dissector->used_keys &
++	    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
++	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
++	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
++	      BIT(FLOW_DISSECTOR_KEY_VLAN))) {
++		NL_SET_ERR_MSG_MOD(extack,
++				   "Unsupported key used, only BASIC, CONTROL, ETH_ADDRS and VLAN are supported");
++		return -EOPNOTSUPP;
++	}
++
++	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_ETH_ADDRS)) {
++		struct flow_dissector_key_eth_addrs *key, *mask;
++
++		key = skb_flow_dissector_target(f->dissector,
++						FLOW_DISSECTOR_KEY_ETH_ADDRS,
++						f->key);
++		mask = skb_flow_dissector_target(f->dissector,
++						 FLOW_DISSECTOR_KEY_ETH_ADDRS,
++						 f->mask);
++
++		if (!is_zero_ether_addr(mask->dst)) {
++			if (!is_broadcast_ether_addr(mask->dst)) {
++				NL_SET_ERR_MSG_MOD(extack, "Only full masks are supported for destination MAC address");
++				return -EINVAL;
++			}
++
++			input->filter.match_flags |=
++				IGB_FILTER_FLAG_DST_MAC_ADDR;
++			ether_addr_copy(input->filter.dst_addr, key->dst);
++		}
++
++		if (!is_zero_ether_addr(mask->src)) {
++			if (!is_broadcast_ether_addr(mask->src)) {
++				NL_SET_ERR_MSG_MOD(extack, "Only full masks are supported for source MAC address");
++				return -EINVAL;
++			}
++
++			input->filter.match_flags |=
++				IGB_FILTER_FLAG_SRC_MAC_ADDR;
++			ether_addr_copy(input->filter.src_addr, key->src);
++		}
++	}
++
++	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_BASIC)) {
++		struct flow_dissector_key_basic *key, *mask;
++
++		key = skb_flow_dissector_target(f->dissector,
++						FLOW_DISSECTOR_KEY_BASIC,
++						f->key);
++		mask = skb_flow_dissector_target(f->dissector,
++						 FLOW_DISSECTOR_KEY_BASIC,
++						 f->mask);
++
++		if (mask->n_proto) {
++			if (mask->n_proto != ETHER_TYPE_FULL_MASK) {
++				NL_SET_ERR_MSG_MOD(extack, "Only full mask is supported for EtherType filter");
++				return -EINVAL;
++			}
++
++			input->filter.match_flags |= IGB_FILTER_FLAG_ETHER_TYPE;
++			input->filter.etype = key->n_proto;
++		}
++	}
++
++	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_VLAN)) {
++		struct flow_dissector_key_vlan *key, *mask;
++
++		key = skb_flow_dissector_target(f->dissector,
++						FLOW_DISSECTOR_KEY_VLAN,
++						f->key);
++		mask = skb_flow_dissector_target(f->dissector,
++						 FLOW_DISSECTOR_KEY_VLAN,
++						 f->mask);
++
++		if (mask->vlan_priority) {
++			if (mask->vlan_priority != VLAN_PRIO_FULL_MASK) {
++				NL_SET_ERR_MSG_MOD(extack, "Only full mask is supported for VLAN priority");
++				return -EINVAL;
++			}
++
++			input->filter.match_flags |= IGB_FILTER_FLAG_VLAN_TCI;
++			input->filter.vlan_tci = key->vlan_priority;
++		}
++	}
++
++	input->action = traffic_class;
++	input->cookie = f->cookie;
++
++	return 0;
++}
++
+ static int igb_configure_clsflower(struct igb_adapter *adapter,
+ 				   struct tc_cls_flower_offload *cls_flower)
+ {
+-	return -EOPNOTSUPP;
++	struct netlink_ext_ack *extack = cls_flower->common.extack;
++	struct igb_nfc_filter *filter, *f;
++	int err, tc;
++
++	tc = tc_classid_to_hwtc(adapter->netdev, cls_flower->classid);
++	if (tc < 0) {
++		NL_SET_ERR_MSG_MOD(extack, "Invalid traffic class");
++		return -EINVAL;
++	}
++
++	filter = kzalloc(sizeof(*filter), GFP_KERNEL);
++	if (!filter)
++		return -ENOMEM;
++
++	err = igb_parse_cls_flower(adapter, cls_flower, tc, filter);
++	if (err < 0)
++		goto err_parse;
++
++	spin_lock(&adapter->nfc_lock);
++
++	hlist_for_each_entry(f, &adapter->nfc_filter_list, nfc_node) {
++		if (!memcmp(&f->filter, &filter->filter, sizeof(f->filter))) {
++			err = -EEXIST;
++			NL_SET_ERR_MSG_MOD(extack,
++					   "This filter is already set in ethtool");
++			goto err_locked;
++		}
++	}
++
++	hlist_for_each_entry(f, &adapter->cls_flower_list, nfc_node) {
++		if (!memcmp(&f->filter, &filter->filter, sizeof(f->filter))) {
++			err = -EEXIST;
++			NL_SET_ERR_MSG_MOD(extack,
++					   "This filter is already set in cls_flower");
++			goto err_locked;
++		}
++	}
++
++	err = igb_add_filter(adapter, filter);
++	if (err < 0) {
++		NL_SET_ERR_MSG_MOD(extack, "Could not add filter to the adapter");
++		goto err_locked;
++	}
++
++	hlist_add_head(&filter->nfc_node, &adapter->cls_flower_list);
++
++	spin_unlock(&adapter->nfc_lock);
++
++	return 0;
++
++err_locked:
++	spin_unlock(&adapter->nfc_lock);
++
++err_parse:
++	kfree(filter);
++
++	return err;
+ }
+ 
+ static int igb_delete_clsflower(struct igb_adapter *adapter,
+ 				struct tc_cls_flower_offload *cls_flower)
+ {
+-	return -EOPNOTSUPP;
++	struct igb_nfc_filter *filter;
++	int err;
++
++	spin_lock(&adapter->nfc_lock);
++
++	hlist_for_each_entry(filter, &adapter->cls_flower_list, nfc_node)
++		if (filter->cookie == cls_flower->cookie)
++			break;
++
++	if (!filter) {
++		err = -ENOENT;
++		goto out;
++	}
++
++	err = igb_erase_filter(adapter, filter);
++	if (err < 0)
++		goto out;
++
++	hlist_del(&filter->nfc_node);
++	kfree(filter);
++
++out:
++	spin_unlock(&adapter->nfc_lock);
++
++	return err;
+ }
+ 
+ static int igb_setup_tc_cls_flower(struct igb_adapter *adapter,
+@@ -9320,6 +9501,9 @@ static void igb_nfc_filter_exit(struct igb_adapter *adapter)
+ 	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node)
+ 		igb_erase_filter(adapter, rule);
+ 
++	hlist_for_each_entry(rule, &adapter->cls_flower_list, nfc_node)
++		igb_erase_filter(adapter, rule);
++
+ 	spin_unlock(&adapter->nfc_lock);
+ }
  
 -- 
 2.16.2
