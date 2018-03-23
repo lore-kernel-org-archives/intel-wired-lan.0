@@ -1,42 +1,76 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Fri, 23 Mar 2018 09:51:37 +0100 (CET)
-Subject: [Intel-wired-lan] [RFC v3 net-next 14/18] net/sched: Add HW
- offloading capability to TBS
-In-Reply-To: <8b6e4036-2357-3f7c-f72d-b6594da32348@intel.com>
-References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
- <20180307011230.24001-15-jesus.sanchez-palencia@intel.com>
- <alpine.DEB.2.21.1803211448310.3754@nanos.tec.linutronix.de>
- <8b6e4036-2357-3f7c-f72d-b6594da32348@intel.com>
-Message-ID: <alpine.DEB.2.21.1803230950560.4625@nanos.tec.linutronix.de>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 23 Mar 2018 14:53:04 -0700
+Subject: [Intel-wired-lan] [PATCH v7 0/7] netdev: intel: Eliminate
+ duplicate barriers on weakly-ordered archs
+In-Reply-To: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
+References: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
+Message-ID: <CAKgT0UcaxM8Mj9Y9fR0B+aafTm1SzTqh+gHT5ozgvyaoHvrzRQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 22 Mar 2018, Jesus Sanchez-Palencia wrote:
-> On 03/21/2018 07:22 AM, Thomas Gleixner wrote:
-> > Bah, and probably there you need CLOCK_TAI because that's what PTP is based
-> > on, so clock_system needs to accomodate that as well. Dammit, there goes
-> > the simple 2 bits implementation. CLOCK_TAI is 11, so we'd need 4 clock
-> > bits plus the adapter bit.
-> > 
-> > Though we could spare a bit. The fixed CLOCK_* space goes from 0 to 15. I
-> > don't see us adding new fixed clocks, so we really can reserve #15 for
-> > selecting the adapter clock if sparing that extra bit is truly required.
-> 
-> 
-> So what about just using the previous single 'clockid' argument, but then just
-> adding to uapi time.h something like:
-> 
-> #define DYNAMIC_CLOCKID 15
-> 
-> And using it for that, instead. This way applications that will use the raw hw
-> offload mode must use this value for their per-socket clockid, and the qdisc's
-> clockid would be implicitly initialized to the same value.
+On Fri, Mar 23, 2018 at 11:52 AM, Sinan Kaya <okaya@codeaurora.org> wrote:
+> Code includes wmb() followed by writel() in multiple places. writel()
+> already has a barrier on some architectures like arm64.
+>
+> This ends up CPU observing two barriers back to back before executing the
+> register write.
+>
+> Since code already has an explicit barrier call, changing writel() to
+> writel_relaxed().
+>
+> I did a regex search for wmb() followed by writel() in each drivers
+> directory.
+> I scrubbed the ones I care about in this series.
+>
+> I considered "ease of change", "popular usage" and "performance critical
+> path" as the determining criteria for my filtering.
+>
+> We used relaxed API heavily on ARM for a long time but
+> it did not exist on other architectures. For this reason, relaxed
+> architectures have been paying double penalty in order to use the common
+> drivers.
+>
+> Now that relaxed API is present on all architectures, we can go and scrub
+> all drivers to see what needs to change and what can remain.
+>
+> We start with mostly used ones and hope to increase the coverage over time.
+> It will take a while to cover all drivers.
+>
+> Feel free to apply patches individually.
 
-That's what I suggested above.
+I looked over the set and they seem good.
 
-Thanks,
+Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
 
-	tglx
+>
+> Changes since v6:
+> clean up between 2..6 and then make your Alex's changes on 1 and 7
+>     The mmiowb shouldn't be needed for Rx. Only one CPU will be running
+>     NAPI for the queue and we will synchronize this with a full writel
+>     anyway when we re-enable the interrupts.
+>
+> Sinan Kaya (7):
+>   i40e/i40evf: Eliminate duplicate barriers on weakly-ordered archs
+>   ixgbe: eliminate duplicate barriers on weakly-ordered archs
+>   igbvf: eliminate duplicate barriers on weakly-ordered archs
+>   igb: eliminate duplicate barriers on weakly-ordered archs
+>   fm10k: Eliminate duplicate barriers on weakly-ordered archs
+>   ixgbevf: keep writel() closer to wmb()
+>   ixgbevf: eliminate duplicate barriers on weakly-ordered archs
+>
+>  drivers/net/ethernet/intel/fm10k/fm10k_main.c     |  4 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 14 ++++++++++----
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c     |  4 ++--
+>  drivers/net/ethernet/intel/igb/igb_main.c         |  4 ++--
+>  drivers/net/ethernet/intel/igbvf/netdev.c         |  4 ++--
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  8 ++++----
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  5 -----
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 11 ++++++++---
+>  8 files changed, 30 insertions(+), 24 deletions(-)
+>
+> --
+> 2.7.4
+>
