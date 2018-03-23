@@ -1,10 +1,10 @@
 From: Sinan Kaya <okaya@codeaurora.org>
-Date: Fri, 23 Mar 2018 14:52:56 -0400
-Subject: [Intel-wired-lan] [PATCH v7 3/7] igbvf: eliminate duplicate
- barriers on weakly-ordered archs
+Date: Fri, 23 Mar 2018 14:52:57 -0400
+Subject: [Intel-wired-lan] [PATCH v7 4/7] igb: eliminate duplicate barriers
+ on weakly-ordered archs
 In-Reply-To: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
 References: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
-Message-ID: <1521831180-25014-4-git-send-email-okaya@codeaurora.org>
+Message-ID: <1521831180-25014-5-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,31 +22,31 @@ writel_relaxed().
 
 Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- drivers/net/ethernet/intel/igbvf/netdev.c | 4 ++--
+ drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index fa07876..df2283b 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -252,7 +252,7 @@ static void igbvf_alloc_rx_buffers(struct igbvf_ring *rx_ring,
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 3d4ff3c..c501378 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -5674,7 +5674,7 @@ static int igb_tx_map(struct igb_ring *tx_ring,
+ 	igb_maybe_stop_tx(tx_ring, DESC_NEEDED);
+ 
+ 	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
+-		writel(i, tx_ring->tail);
++		writel_relaxed(i, tx_ring->tail);
+ 
+ 		/* we need this if more than one processor can write to our tail
+ 		 * at a time, it synchronizes IO on IA64/Altix systems
+@@ -8079,7 +8079,7 @@ void igb_alloc_rx_buffers(struct igb_ring *rx_ring, u16 cleaned_count)
  		 * such as IA-64).
- 		*/
+ 		 */
  		wmb();
--		writel(i, adapter->hw.hw_addr + rx_ring->tail);
-+		writel_relaxed(i, adapter->hw.hw_addr + rx_ring->tail);
+-		writel(i, rx_ring->tail);
++		writel_relaxed(i, rx_ring->tail);
  	}
  }
  
-@@ -2298,7 +2298,7 @@ static inline void igbvf_tx_queue_adv(struct igbvf_adapter *adapter,
- 
- 	tx_ring->buffer_info[first].next_to_watch = tx_desc;
- 	tx_ring->next_to_use = i;
--	writel(i, adapter->hw.hw_addr + tx_ring->tail);
-+	writel_relaxed(i, adapter->hw.hw_addr + tx_ring->tail);
- 	/* we need this if more than one processor can write to our tail
- 	 * at a time, it synchronizes IO on IA64/Altix systems
- 	 */
 -- 
 2.7.4
 
