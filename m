@@ -1,10 +1,9 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Fri, 23 Mar 2018 22:34:30 +0000
-Subject: [Intel-wired-lan] [v4,
- 02/15] ice: Add support for control queues
-In-Reply-To: <20180320145819.19133-3-anirudh.venkataramanan@intel.com>
-References: <20180320145819.19133-3-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD261789F0C3@ORSMSX109.amr.corp.intel.com>
+Date: Fri, 23 Mar 2018 22:35:34 +0000
+Subject: [Intel-wired-lan] [v4, 03/15] ice: Start hardware initialization
+In-Reply-To: <20180320145819.19133-4-anirudh.venkataramanan@intel.com>
+References: <20180320145819.19133-4-anirudh.venkataramanan@intel.com>
+Message-ID: <C25D919FD1849B409D8D987DDC7FCD261789F0DA@ORSMSX109.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,43 +15,39 @@ List-ID: <intel-wired-lan.osuosl.org>
 > [mailto:anirudh.venkataramanan at intel.com]
 > Sent: Tuesday, March 20, 2018 7:58 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [v4,02/15] ice: Add support for control queues
+> Subject: [v4,03/15] ice: Start hardware initialization
 > 
-> A control queue is a hardware interface which is used by the driver
-> to interact with other subsystems (like firmware, PHY, etc.). It is
-> implemented as a producer-consumer ring. More specifically, an
-> "admin queue" is a type of control queue used to interact with the
-> firmware.
+> This patch implements multiple pieces of the initialization flow as follows:
 > 
-> This patch introduces data structures and functions to initialize
-> and teardown control/admin queues. Once the admin queue is initialized,
-> the driver uses it to get the firmware version.
+> 1) A reset is issued to ensure a clean device state, followed
+>    by initialization of admin queue interface.
 > 
+> 2) Once the admin queue interface is up, clear the PF config
+>    and transition the device to non-PXE mode.
+> 
+> 3) Get the NVM configuration stored in the device's non-volatile
+>    memory (NVM) using ice_init_nvm.
+> 
+> CC: Shannon Nelson <shannon.nelson@oracle.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
+> Acked-by: Shannon Nelson <shannon.nelson@oracle.com>
 > ---
->  drivers/net/ethernet/intel/ice/Makefile         |   4 +-
->  drivers/net/ethernet/intel/ice/ice.h            |   1 +
->  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 108 +++
->  drivers/net/ethernet/intel/ice/ice_common.c     | 144 ++++
->  drivers/net/ethernet/intel/ice/ice_common.h     |  39 +
->  drivers/net/ethernet/intel/ice/ice_controlq.c   | 979
+>  drivers/net/ethernet/intel/ice/Makefile         |   3 +-
+>  drivers/net/ethernet/intel/ice/ice.h            |   2 +
+>  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  79 +++++
+>  drivers/net/ethernet/intel/ice/ice_common.c     | 405
 > ++++++++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_controlq.h   |  97 +++
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  46 ++
->  drivers/net/ethernet/intel/ice/ice_main.c       |  11 +-
->  drivers/net/ethernet/intel/ice/ice_osdep.h      |  86 +++
->  drivers/net/ethernet/intel/ice/ice_status.h     |  35 +
->  drivers/net/ethernet/intel/ice/ice_type.h       |  22 +
->  12 files changed, 1570 insertions(+), 2 deletions(-)
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_common.c
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_common.h
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_controlq.c
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_controlq.h
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_hw_autogen.h
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_osdep.h
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_status.h
+>  drivers/net/ethernet/intel/ice/ice_common.h     |  11 +
+>  drivers/net/ethernet/intel/ice/ice_controlq.h   |   3 +
+>  drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  30 ++
+>  drivers/net/ethernet/intel/ice/ice_main.c       |  31 ++
+>  drivers/net/ethernet/intel/ice/ice_nvm.c        | 250 +++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_osdep.h      |   1 +
+>  drivers/net/ethernet/intel/ice/ice_status.h     |   5 +
+>  drivers/net/ethernet/intel/ice/ice_type.h       |  49 +++
+>  12 files changed, 868 insertions(+), 1 deletion(-)  create mode 100644
+> drivers/net/ethernet/intel/ice/ice_nvm.c
 
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
