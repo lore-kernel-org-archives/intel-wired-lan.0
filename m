@@ -1,44 +1,164 @@
-From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Fri, 23 Mar 2018 22:50:21 +0000
-Subject: [Intel-wired-lan] [v4,
- 10/15] ice: Implement transmit and NAPI support
-In-Reply-To: <20180320145819.19133-11-anirudh.venkataramanan@intel.com>
-References: <20180320145819.19133-11-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD261789F183@ORSMSX109.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 24 Mar 2018 06:56:41 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 9fa705fd7f70c94062f4a3116b20e17af50d01be
+Message-ID: <5ab58629.hE8/nwOPzidS9Yct%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Anirudh Venkataramanan
-> [mailto:anirudh.venkataramanan at intel.com]
-> Sent: Tuesday, March 20, 2018 7:58 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [v4,10/15] ice: Implement transmit and NAPI support
-> 
-> This patch implements ice_start_xmit (the handler for ndo_start_xmit) and
-> related functions. ice_start_xmit ultimately calls ice_tx_map, where the Tx
-> descriptor is built and posted to the hardware by bumping the ring tail.
-> 
-> This patch also implements ice_napi_poll, which is invoked when there's an
-> interrupt on the VSI's queues. The interrupt can be due to either a
-> completed Tx or an Rx event. In case of a completed Tx/Rx event, resources
-> are reclaimed. Additionally, in case of an Rx event, the skb is fetched and
-> passed up to the network stack.
-> 
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice.h           |    1 +
->  drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h |   46 ++
->  drivers/net/ethernet/intel/ice/ice_main.c      |   55 ++
->  drivers/net/ethernet/intel/ice/ice_txrx.c      | 1026
-> +++++++++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_txrx.h      |   45 ++
->  5 files changed, 1171 insertions(+), 2 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 9fa705fd7f70c94062f4a3116b20e17af50d01be  i40e: add support for XDP_REDIRECT
 
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
+elapsed time: 105m
 
+configs tested: 140
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201811
+x86_64                 randconfig-x002-201811
+x86_64                 randconfig-x006-201811
+x86_64                 randconfig-x005-201811
+x86_64                 randconfig-x009-201811
+x86_64                 randconfig-x004-201811
+x86_64                 randconfig-x001-201811
+x86_64                 randconfig-x008-201811
+x86_64                 randconfig-x003-201811
+x86_64                 randconfig-x000-201811
+x86_64                 randconfig-x007-201811
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                   randconfig-i1-03221101
+i386                   randconfig-i0-03221101
+i386                             allmodconfig
+i386                     randconfig-a0-201811
+i386                     randconfig-a1-201811
+x86_64                 randconfig-s0-03240605
+x86_64                 randconfig-s1-03240605
+x86_64                 randconfig-s2-03240605
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s1-201811
+i386                     randconfig-s0-201811
+x86_64                 randconfig-s3-03240609
+x86_64                 randconfig-s4-03240609
+x86_64                 randconfig-s5-03240609
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-i0-03221103
+i386                   randconfig-b0-03240604
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                randconfig-ne0-03240539
+i386                   randconfig-x006-201811
+i386                   randconfig-x000-201811
+i386                   randconfig-x008-201811
+i386                   randconfig-x004-201811
+i386                   randconfig-x009-201811
+i386                   randconfig-x003-201811
+i386                   randconfig-x005-201811
+i386                   randconfig-x002-201811
+i386                   randconfig-x001-201811
+i386                   randconfig-x007-201811
+x86_64                 randconfig-x010-201811
+x86_64                 randconfig-x013-201811
+x86_64                 randconfig-x014-201811
+x86_64                 randconfig-x019-201811
+x86_64                 randconfig-x011-201811
+x86_64                 randconfig-x015-201811
+x86_64                 randconfig-x018-201811
+x86_64                 randconfig-x016-201811
+x86_64                 randconfig-x017-201811
+x86_64                 randconfig-x012-201811
+i386                   randconfig-x013-201811
+i386                   randconfig-x014-201811
+i386                   randconfig-x012-201811
+i386                   randconfig-x015-201811
+i386                   randconfig-x016-201811
+i386                   randconfig-x019-201811
+i386                   randconfig-x010-201811
+i386                   randconfig-x018-201811
+i386                   randconfig-x011-201811
+i386                   randconfig-x017-201811
+i386                   randconfig-x073-201811
+i386                   randconfig-x075-201811
+i386                   randconfig-x071-201811
+i386                   randconfig-x076-201811
+i386                   randconfig-x079-201811
+i386                   randconfig-x070-201811
+i386                   randconfig-x077-201811
+i386                   randconfig-x074-201811
+i386                   randconfig-x078-201811
+i386                   randconfig-x072-201811
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+
+Thanks,
+Fengguang
