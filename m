@@ -1,66 +1,46 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Fri, 23 Mar 2018 14:53:00 -0400
-Subject: [Intel-wired-lan] [PATCH v7 7/7] ixgbevf: eliminate duplicate
- barriers on weakly-ordered archs
-In-Reply-To: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
-References: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
-Message-ID: <1521831180-25014-8-git-send-email-okaya@codeaurora.org>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 23 Mar 2018 18:55:19 +0000
+Subject: [Intel-wired-lan] [PATCH v3 1/2] i40e: tweak page counting for
+ XDP_REDIRECT
+In-Reply-To: <20180322151434.24338-1-bjorn.topel@gmail.com>
+References: <20180322151434.24338-1-bjorn.topel@gmail.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A957978@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Code includes wmb() followed by writel() in multiple places. writel()
-already has a barrier on some architectures like arm64.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Bj?rn T?pel
+> Sent: Thursday, March 22, 2018 8:15 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; Topel, Bjorn <bjorn.topel@intel.com>;
+> Karlsson, Magnus <magnus.karlsson@intel.com>
+> Subject: [Intel-wired-lan] [PATCH v3 1/2] i40e: tweak page counting for
+> XDP_REDIRECT
+> 
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
+> 
+> This commit tweaks the page counting for XDP_REDIRECT to function
+> properly. XDP_REDIRECT support will be added in a future commit.
+> 
+> The current page counting scheme assumes that the reference count cannot
+> decrease until the received frame is sent to the upper layers of the
+> networking stack. This assumption does not hold for the XDP_REDIRECT
+> action, since a page (pointed out by xdp_buff) can have its reference count
+> decreased via the xdp_do_redirect call.
+> 
+> To work around that, we now start off by a large page count and then don't
+> allow a refcount less than two.
+> 
+> Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
 
-This ends up CPU observing two barriers back to back before executing the
-register write.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Since code already has an explicit barrier call, changing writel() to
-writel_relaxed().
-
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 815cb1a..7277647 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -725,7 +725,7 @@ static void ixgbevf_alloc_rx_buffers(struct ixgbevf_ring *rx_ring,
- 		 * such as IA-64).
- 		 */
- 		wmb();
--		writel(i, rx_ring->tail);
-+		writel_relaxed(i, rx_ring->tail);
- 	}
- }
- 
-@@ -1232,7 +1232,7 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
- 		 * know there are new descriptors to fetch.
- 		 */
- 		wmb();
--		writel(xdp_ring->next_to_use, xdp_ring->tail);
-+		writel_relaxed(xdp_ring->next_to_use, xdp_ring->tail);
- 	}
- 
- 	u64_stats_update_begin(&rx_ring->syncp);
-@@ -4004,7 +4004,12 @@ static void ixgbevf_tx_map(struct ixgbevf_ring *tx_ring,
- 	tx_ring->next_to_use = i;
- 
- 	/* notify HW of packet */
--	writel(i, tx_ring->tail);
-+	writel_relaxed(i, tx_ring->tail);
-+
-+	/* We need this if more than one processor can write to our tail
-+	 * at a time, it synchronizes IO on IA64/Altix systems
-+	 */
-+	mmiowb();
- 
- 	return;
- dma_error:
--- 
-2.7.4
 
