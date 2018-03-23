@@ -1,18 +1,18 @@
 From: Sinan Kaya <okaya@codeaurora.org>
-Date: Fri, 23 Mar 2018 14:21:12 -0400
-Subject: [Intel-wired-lan] [PATCH v6 2/7] ixgbe: eliminate duplicate
+Date: Fri, 23 Mar 2018 14:21:13 -0400
+Subject: [Intel-wired-lan] [PATCH v6 3/7] igbvf: eliminate duplicate
  barriers on weakly-ordered archs
 In-Reply-To: <1521829277-9398-1-git-send-email-okaya@codeaurora.org>
 References: <1521829277-9398-1-git-send-email-okaya@codeaurora.org>
-Message-ID: <1521829277-9398-3-git-send-email-okaya@codeaurora.org>
+Message-ID: <1521829277-9398-4-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Code includes wmb() followed by writel() in multiple places. writel()
-already has a barrier on some architectures like arm64.
+Code includes wmb() followed by writel(). writel() already has a barrier
+on some architectures like arm64.
 
 This ends up CPU observing two barriers back to back before executing the
 register write.
@@ -22,19 +22,19 @@ writel_relaxed().
 
 Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/igbvf/netdev.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index e3b32ea..1ecc2f5 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1701,7 +1701,12 @@ void ixgbe_alloc_rx_buffers(struct ixgbe_ring *rx_ring, u16 cleaned_count)
+diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
+index fa07876..6dfd3dc 100644
+--- a/drivers/net/ethernet/intel/igbvf/netdev.c
++++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+@@ -252,7 +252,12 @@ static void igbvf_alloc_rx_buffers(struct igbvf_ring *rx_ring,
  		 * such as IA-64).
- 		 */
+ 		*/
  		wmb();
--		writel(i, rx_ring->tail);
-+		writel_relaxed(i, rx_ring->tail);
+-		writel(i, adapter->hw.hw_addr + rx_ring->tail);
++		writel_relaxed(i, adapter->hw.hw_addr + rx_ring->tail);
 +
 +		/* We need this if more than one processor can write to our tail
 +		 * at a time, it synchronizes IO on IA64/Altix systems
@@ -43,43 +43,15 @@ index e3b32ea..1ecc2f5 100644
  	}
  }
  
-@@ -2470,7 +2475,12 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- 		 * know there are new descriptors to fetch.
- 		 */
- 		wmb();
--		writel(ring->next_to_use, ring->tail);
-+		writel_relaxed(ring->next_to_use, ring->tail);
-+
-+		/* We need this if more than one processor can write to our tail
-+		 * at a time, it synchronizes IO on IA64/Altix systems
-+		 */
-+		mmiowb();
+@@ -2298,7 +2303,7 @@ static inline void igbvf_tx_queue_adv(struct igbvf_adapter *adapter,
  
- 		xdp_do_flush_map();
- 	}
-@@ -8101,7 +8111,7 @@ static int ixgbe_tx_map(struct ixgbe_ring *tx_ring,
- 	ixgbe_maybe_stop_tx(tx_ring, DESC_NEEDED);
- 
- 	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
--		writel(i, tx_ring->tail);
-+		writel_relaxed(i, tx_ring->tail);
- 
- 		/* we need this if more than one processor can write to our tail
- 		 * at a time, it synchronizes IO on IA64/Altix systems
-@@ -10038,7 +10048,12 @@ static void ixgbe_xdp_flush(struct net_device *dev)
- 	 * are new descriptors to fetch.
+ 	tx_ring->buffer_info[first].next_to_watch = tx_desc;
+ 	tx_ring->next_to_use = i;
+-	writel(i, adapter->hw.hw_addr + tx_ring->tail);
++	writel_relaxed(i, adapter->hw.hw_addr + tx_ring->tail);
+ 	/* we need this if more than one processor can write to our tail
+ 	 * at a time, it synchronizes IO on IA64/Altix systems
  	 */
- 	wmb();
--	writel(ring->next_to_use, ring->tail);
-+	writel_relaxed(ring->next_to_use, ring->tail);
-+
-+	/* We need this if more than one processor can write to our tail
-+	 * at a time, it synchronizes IO on IA64/Altix systems
-+	 */
-+	mmiowb();
- 
- 	return;
- }
 -- 
 2.7.4
 
