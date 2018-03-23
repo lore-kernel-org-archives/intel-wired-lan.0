@@ -1,10 +1,10 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Fri, 23 Mar 2018 22:37:25 +0000
+Date: Fri, 23 Mar 2018 22:39:12 +0000
 Subject: [Intel-wired-lan] [v4,
- 05/15] ice: Get MAC/PHY/link info and scheduler topology
-In-Reply-To: <20180320145819.19133-6-anirudh.venkataramanan@intel.com>
-References: <20180320145819.19133-6-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD261789F100@ORSMSX109.amr.corp.intel.com>
+ 06/15] ice: Initialize PF and setup miscellaneous interrupt
+In-Reply-To: <20180320145819.19133-7-anirudh.venkataramanan@intel.com>
+References: <20180320145819.19133-7-anirudh.venkataramanan@intel.com>
+Message-ID: <C25D919FD1849B409D8D987DDC7FCD261789F11C@ORSMSX109.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,29 +16,39 @@ List-ID: <intel-wired-lan.osuosl.org>
 > [mailto:anirudh.venkataramanan at intel.com]
 > Sent: Tuesday, March 20, 2018 7:58 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [v4,05/15] ice: Get MAC/PHY/link info and scheduler topology
+> Subject: [v4,06/15] ice: Initialize PF and setup miscellaneous interrupt
 > 
-> This patch adds code to continue the initialization flow as follows:
+> This patch continues the initialization flow as follows:
 > 
-> 1) Get PHY/link information and store it
-> 2) Get default scheduler tree topology and store it
-> 3) Get the MAC address associated with the port and store it
+> 1) Allocate and initialize necessary fields (like vsi, num_alloc_vsi,
+>    irq_tracker, etc) in the ice_pf instance.
 > 
+> 2) Setup the miscellaneous interrupt handler. This also known as the
+>    "other interrupt causes" (OIC) handler and is used to handle non
+>    hotpath interrupts (like control queue events, link events,
+>    exceptions, etc.
+> 
+> 3) Implement a background task to process admin queue receive (ARQ)
+>    events received by the driver.
+> 
+> CC: Shannon Nelson <shannon.nelson@oracle.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
+> Acked-by: Shannon Nelson <shannon.nelson@oracle.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h            |   1 +
->  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 261
-> +++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_common.c     | 264
-> +++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice.h            |  84 +++
+>  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |   2 +
+>  drivers/net/ethernet/intel/ice/ice_common.c     |   6 +
 >  drivers/net/ethernet/intel/ice/ice_common.h     |   3 +
->  drivers/net/ethernet/intel/ice/ice_sched.c      | 328
-> ++++++++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_sched.h      |   6 +
->  drivers/net/ethernet/intel/ice/ice_status.h     |   1 +
->  drivers/net/ethernet/intel/ice/ice_type.h       |  65 +++++
->  8 files changed, 929 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_controlq.c   | 101 ++++
+>  drivers/net/ethernet/intel/ice/ice_controlq.h   |   8 +
+>  drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  63 +++
+>  drivers/net/ethernet/intel/ice/ice_main.c       | 719
+> +++++++++++++++++++++++-
+>  drivers/net/ethernet/intel/ice/ice_txrx.h       |  43 ++
+>  drivers/net/ethernet/intel/ice/ice_type.h       |  11 +
+>  10 files changed, 1039 insertions(+), 1 deletion(-)  create mode 100644
+> drivers/net/ethernet/intel/ice/ice_txrx.h
 
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
