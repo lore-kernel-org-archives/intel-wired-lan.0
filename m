@@ -1,72 +1,95 @@
-From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Fri, 23 Mar 2018 23:43:53 +0000
-Subject: [Intel-wired-lan] [v4, 14/15] ice: Support link events,
- reset and rebuild
-In-Reply-To: <20180320145819.19133-15-anirudh.venkataramanan@intel.com>
-References: <20180320145819.19133-15-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD261789F232@ORSMSX109.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 23 Mar 2018 16:58:16 -0700
+Subject: [Intel-wired-lan] [PATCH v7 0/7] netdev: intel: Eliminate
+ duplicate barriers on weakly-ordered archs
+In-Reply-To: <CAKgT0UcaxM8Mj9Y9fR0B+aafTm1SzTqh+gHT5ozgvyaoHvrzRQ@mail.gmail.com>
+References: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
+ <CAKgT0UcaxM8Mj9Y9fR0B+aafTm1SzTqh+gHT5ozgvyaoHvrzRQ@mail.gmail.com>
+Message-ID: <1521849496.15055.16.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Anirudh Venkataramanan
-> [mailto:anirudh.venkataramanan at intel.com]
-> Sent: Tuesday, March 20, 2018 7:58 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [v4,14/15] ice: Support link events, reset and rebuild
+On Fri, 2018-03-23 at 14:53 -0700, Alexander Duyck wrote:
+> On Fri, Mar 23, 2018 at 11:52 AM, Sinan Kaya <okaya@codeaurora.org>
+> wrote:
+> > Code includes wmb() followed by writel() in multiple places. writel()
+> > already has a barrier on some architectures like arm64.
+> > 
+> > This ends up CPU observing two barriers back to back before executing
+> > the
+> > register write.
+> > 
+> > Since code already has an explicit barrier call, changing writel() to
+> > writel_relaxed().
+> > 
+> > I did a regex search for wmb() followed by writel() in each drivers
+> > directory.
+> > I scrubbed the ones I care about in this series.
+> > 
+> > I considered "ease of change", "popular usage" and "performance
+> > critical
+> > path" as the determining criteria for my filtering.
+> > 
+> > We used relaxed API heavily on ARM for a long time but
+> > it did not exist on other architectures. For this reason, relaxed
+> > architectures have been paying double penalty in order to use the
+> > common
+> > drivers.
+> > 
+> > Now that relaxed API is present on all architectures, we can go and
+> > scrub
+> > all drivers to see what needs to change and what can remain.
+> > 
+> > We start with mostly used ones and hope to increase the coverage over
+> > time.
+> > It will take a while to cover all drivers.
+> > 
+> > Feel free to apply patches individually.
 > 
-> Link events are posted to a PF's admin receive queue (ARQ). This patch adds
-> the ability to detect and process link events.
+> I looked over the set and they seem good.
 > 
-> This patch also adds the ability to process resets.
-> 
-> The driver can process the following resets:
->     1) EMP Reset (EMPR)
->     2) Global Reset (GLOBR)
->     3) Core Reset (CORER)
->     4) Physical Function Reset (PFR)
-> 
-> EMPR is the largest level of reset that the driver can handle. An EMPR resets
-> the manageability block and also the data path, including PHY and link for all
-> the PFs. The affected PFs are notified of this event through a miscellaneous
-> interrupt.
-> 
-> GLOBR is a subset of EMPR. It does everything EMPR does except that it
-> doesn't reset the manageability block.
-> 
-> CORER is a subset of GLOBR. It does everything GLOBR does but doesn't
-> reset PHY and link.
-> 
-> PFR is a subset of CORER and affects only the given physical function.
-> In other words, PFR can be thought of as a CORER for a single PF. Since only
-> the issuing PF is affected, a PFR doesn't result in the miscellaneousi interrupt
-> being triggered.
-> 
-> All the resets have the following in common:
-> 1) Tx/Rx is halted and all queues are stopped.
-> 2) All the VSIs and filters programmed for the PF are lost and have to be
->    reprogrammed.
-> 3) Control queue interfaces are reset and have to be reprogrammed.
-> 
-> In the rebuild flow, control queues are reinitialized, VSIs are reallocated and
-> filters are restored.
-> 
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice.h            |  19 +
->  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  19 +
->  drivers/net/ethernet/intel/ice/ice_common.c     |  60 +++
->  drivers/net/ethernet/intel/ice/ice_common.h     |   5 +
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h |   2 +
->  drivers/net/ethernet/intel/ice/ice_main.c       | 581
-> +++++++++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_type.h       |   1 +
->  7 files changed, 681 insertions(+), 6 deletions(-)
+> Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
+Grrr, patch 1 does not apply cleanly to my next-queue tree (dev-queue
+branch).  I will deal with this series in a day or two, after I have dealt
+with my driver pull requests.
 
-
+> > 
+> > Changes since v6:
+> > clean up between 2..6 and then make your Alex's changes on 1 and 7
+> >     The mmiowb shouldn't be needed for Rx. Only one CPU will be running
+> >     NAPI for the queue and we will synchronize this with a full writel
+> >     anyway when we re-enable the interrupts.
+> > 
+> > Sinan Kaya (7):
+> >   i40e/i40evf: Eliminate duplicate barriers on weakly-ordered archs
+> >   ixgbe: eliminate duplicate barriers on weakly-ordered archs
+> >   igbvf: eliminate duplicate barriers on weakly-ordered archs
+> >   igb: eliminate duplicate barriers on weakly-ordered archs
+> >   fm10k: Eliminate duplicate barriers on weakly-ordered archs
+> >   ixgbevf: keep writel() closer to wmb()
+> >   ixgbevf: eliminate duplicate barriers on weakly-ordered archs
+> > 
+> >  drivers/net/ethernet/intel/fm10k/fm10k_main.c     |  4 ++--
+> >  drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 14 ++++++++++----
+> >  drivers/net/ethernet/intel/i40evf/i40e_txrx.c     |  4 ++--
+> >  drivers/net/ethernet/intel/igb/igb_main.c         |  4 ++--
+> >  drivers/net/ethernet/intel/igbvf/netdev.c         |  4 ++--
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  8 ++++----
+> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  5 -----
+> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 11 ++++++++---
+> >  8 files changed, 30 insertions(+), 24 deletions(-)
+> > 
+> > --
+> > 2.7.4
+> > 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180323/777698b2/attachment.asc>
