@@ -1,10 +1,10 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Fri, 23 Mar 2018 22:39:12 +0000
+Date: Fri, 23 Mar 2018 22:42:06 +0000
 Subject: [Intel-wired-lan] [v4,
- 06/15] ice: Initialize PF and setup miscellaneous interrupt
-In-Reply-To: <20180320145819.19133-7-anirudh.venkataramanan@intel.com>
-References: <20180320145819.19133-7-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD261789F11C@ORSMSX109.amr.corp.intel.com>
+ 07/15] ice: Add support for VSI allocation and deallocation
+In-Reply-To: <20180320145819.19133-8-anirudh.venkataramanan@intel.com>
+References: <20180320145819.19133-8-anirudh.venkataramanan@intel.com>
+Message-ID: <C25D919FD1849B409D8D987DDC7FCD261789F137@ORSMSX109.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,40 +16,52 @@ List-ID: <intel-wired-lan.osuosl.org>
 > [mailto:anirudh.venkataramanan at intel.com]
 > Sent: Tuesday, March 20, 2018 7:58 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [v4,06/15] ice: Initialize PF and setup miscellaneous interrupt
+> Subject: [v4,07/15] ice: Add support for VSI allocation and deallocation
 > 
-> This patch continues the initialization flow as follows:
+> This patch introduces data structures and functions to alloc/free
+> VSIs. The driver represents a VSI using the ice_vsi structure.
 > 
-> 1) Allocate and initialize necessary fields (like vsi, num_alloc_vsi,
->    irq_tracker, etc) in the ice_pf instance.
+> Some noteworthy points about VSI allocation:
 > 
-> 2) Setup the miscellaneous interrupt handler. This also known as the
->    "other interrupt causes" (OIC) handler and is used to handle non
->    hotpath interrupts (like control queue events, link events,
->    exceptions, etc.
+> 1) A VSI is allocated in the firmware using the "add VSI" admin queue
+>    command (implemented as ice_aq_add_vsi). The firmware returns an
+>    identifier for the allocated VSI. The VSI context is used to program
+>    certain aspects (loopback, queue map, etc.) of the VSI's configuration.
 > 
-> 3) Implement a background task to process admin queue receive (ARQ)
->    events received by the driver.
+> 2) A VSI is deleted using the "free VSI" admin queue command
+> (implemented
+>    as ice_aq_free_vsi).
+> 
+> 3) The driver represents a VSI using struct ice_vsi. This is allocated
+>    and initialized as part of the ice_vsi_alloc flow, and deallocated
+>    as part of the ice_vsi_delete flow.
+> 
+> 4) Once the VSI is created, a netdev is allocated and associated with it.
+>    The VSI's ring and vector related data structures are also allocated
+>    and initialized.
+> 
+> 5) A VSI's queues can either be contiguous or scattered. To do this, the
+>    driver maintains a bitmap (vsi->avail_txqs) which is kept in sync with
+>    the firmware's VSI queue allocation imap. If the VSI can't get a
+>    contiguous queue allocation, it will fallback to scatter. This is
+>    implemented in ice_vsi_get_qs which is called as part of the VSI setup
+>    flow. In the release flow, the VSI's queues are released and the bitmap
+>    is updated to reflect this by ice_vsi_put_qs.
 > 
 > CC: Shannon Nelson <shannon.nelson@oracle.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > Acked-by: Shannon Nelson <shannon.nelson@oracle.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h            |  84 +++
->  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |   2 +
->  drivers/net/ethernet/intel/ice/ice_common.c     |   6 +
->  drivers/net/ethernet/intel/ice/ice_common.h     |   3 +
->  drivers/net/ethernet/intel/ice/ice_controlq.c   | 101 ++++
->  drivers/net/ethernet/intel/ice/ice_controlq.h   |   8 +
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  63 +++
->  drivers/net/ethernet/intel/ice/ice_main.c       | 719
-> +++++++++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_txrx.h       |  43 ++
->  drivers/net/ethernet/intel/ice/ice_type.h       |  11 +
->  10 files changed, 1039 insertions(+), 1 deletion(-)  create mode 100644
-> drivers/net/ethernet/intel/ice/ice_txrx.h
-
+>  drivers/net/ethernet/intel/ice/ice.h            |   72 ++
+>  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  199 ++++
+>  drivers/net/ethernet/intel/ice/ice_main.c       | 1111
+> +++++++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_switch.c     |  115 +++
+>  drivers/net/ethernet/intel/ice/ice_switch.h     |   21 +
+>  drivers/net/ethernet/intel/ice/ice_txrx.h       |   26 +
+>  drivers/net/ethernet/intel/ice/ice_type.h       |    4 +
+>  7 files changed, 1548 insertions(+)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
 
