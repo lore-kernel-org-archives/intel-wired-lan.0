@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 23 Mar 2018 18:57:19 +0000
-Subject: [Intel-wired-lan] [PATCH v5 2/2] ixgbevf: eliminate duplicate
- barriers on weakly-ordered archs
-In-Reply-To: <1521733352-25266-2-git-send-email-okaya@codeaurora.org>
-References: <1521733352-25266-1-git-send-email-okaya@codeaurora.org>
- <1521733352-25266-2-git-send-email-okaya@codeaurora.org>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A9579AB@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 23 Mar 2018 18:58:38 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: tweak page counting for
+ XDP_REDIRECT
+In-Reply-To: <20180322090236.14357-1-bjorn.topel@gmail.com>
+References: <20180322090236.14357-1-bjorn.topel@gmail.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A9579BE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,29 +13,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Sinan Kaya
-> Sent: Thursday, March 22, 2018 8:43 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: sulrich at codeaurora.org; netdev at vger.kernel.org;
-> timur at codeaurora.org; linux-kernel at vger.kernel.org; Sinan Kaya
-> <okaya@codeaurora.org>; intel-wired-lan at lists.osuosl.org; linux-arm-
-> msm at vger.kernel.org; linux-arm-kernel at lists.infradead.org
-> Subject: [Intel-wired-lan] [PATCH v5 2/2] ixgbevf: eliminate duplicate barriers
-> on weakly-ordered archs
+> Behalf Of Bj?rn T?pel
+> Sent: Thursday, March 22, 2018 2:03 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; Topel, Bjorn <bjorn.topel@intel.com>;
+> Karlsson, Magnus <magnus.karlsson@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: tweak page counting for
+> XDP_REDIRECT
 > 
-> Code includes wmb() followed by writel() in multiple places. writel() already
-> has a barrier on some architectures like arm64.
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
 > 
-> This ends up CPU observing two barriers back to back before executing the
-> register write.
+> The current page counting scheme assumes that the reference count cannot
+> decrease until the received frame is sent to the upper layers of the
+> networking stack. This assumption does not hold for the XDP_REDIRECT
+> action, since a page (pointed out by xdp_buff) can have its reference count
+> decreased via the xdp_do_redirect call.
 > 
-> Since code already has an explicit barrier call, changing writel() to
-> writel_relaxed().
+> To work around that, we now start off by a large page count and then don't
+> allow a refcount less than two.
 > 
-> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+> Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
