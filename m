@@ -1,209 +1,62 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 23 Mar 2018 07:00:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 2581ff5201cebd2cacfe70be4a57ea6edbada4b7
-Message-ID: <5ab435a0.CQMFqNMboeR/qHFt%fengguang.wu@intel.com>
+From: Marco Berizzi <pupilla@libero.it>
+Date: Fri, 23 Mar 2018 16:09:16 +0100 (CET)
+Subject: [Intel-wired-lan] e1000e Detected Hardware Unit Hang
+In-Reply-To: <1232121641.66220.1521715209616@mail.libero.it>
+References: <1969863829.1651192.1521629811656@mail.libero.it>
+ <1317189213.22495.1521649183803@mail.libero.it>
+ <a97d11e0-6f94-e25c-4362-260073b07219@intel.com>
+ <1232121641.66220.1521715209616@mail.libero.it>
+Message-ID: <1104005455.161583.1521817756059@mail.libero.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 2581ff5201cebd2cacfe70be4a57ea6edbada4b7  i40e: add support for XDP_REDIRECT
+Marco Berizzi wrote:
+> 
+> Neftin Sasha wrote:
+> 
+> > On 21/03/2018 18:19, Marco Berizzi wrote:
+> > 
+> > > Marco Berizzi wrote:
+> > > >
+> > > 
+> > > > Hello everyone,
+> > > > 
+> > > > I'm getting this error with a Slackware linux 64bit running 4.16-rc6:
+> > > > I have also done a full hardware replacement, but the problem is still
+> > > > present. This box is running squid, named, sshd and strongswan.
+> > > > 
+> > > > On february 3, I have replaced the network switch where this NIC is
+> > > > connected to (from cisco 3750 to HPE 5130).
+> > > > As you may see, the problem has popped up from Feb 13 with linux
+> > > > 4.15.3, but yesterday the problem has arisen also with 4.15.2 (I
+> > > > wanted to start a git bisect, but it is pointless).
+> > > 
+> > > I think I have found the root cause. Before getting this error the
+> > > interface MTU was 9000bytes, and now it is 1500bytes.
+> > > Good. Please, try also disable TCP segmentation offload: ethtool -K
+> > > 
+> > > tso off. Keep us update.
+> 
+> Hi Sasha,
+> 
+> thanks for the quick response.
+> I have disabled the tso:
+> 
+> ethtool -K eth2 tso off
+> Cannot get device udp-fragmentation-offload settings: Operation not supported
+> Cannot get device udp-fragmentation-offload settings: Operation not supported
+> 
+> I will keep you updated. Unfortunately I'm encountering this error
+> message not more than once a day. So my response will be a little
+> delayed.
 
-elapsed time: 185m
+Hi Sasha,
 
-configs tested: 185
+after more than 24 hours no error messages has popped up, so this is a
+good workaround.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-m68k                             allmodconfig
-microblaze                        allnoconfig
-parisc                        c3000_defconfig
-x86_64                 randconfig-a0-03222350
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-i386                   randconfig-c0-03230127
-x86_64                           allmodconfig
-x86_64                randconfig-in0-03222143
-m68k                        m5307c3_defconfig
-mips                         tb0226_defconfig
-sparc                             allnoconfig
-x86_64                randconfig-it0-03222144
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-03221105
-x86_64                 randconfig-x002-201811
-x86_64                 randconfig-x006-201811
-x86_64                 randconfig-x005-201811
-x86_64                 randconfig-x009-201811
-x86_64                 randconfig-x004-201811
-x86_64                 randconfig-x001-201811
-x86_64                 randconfig-x008-201811
-x86_64                 randconfig-x003-201811
-x86_64                 randconfig-x000-201811
-x86_64                 randconfig-x007-201811
-i386                   randconfig-i1-03221101
-i386                   randconfig-i0-03221101
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                  TCM-BF518_defconfig
-m68k                       m5249evb_defconfig
-xtensa                       common_defconfig
-x86_64                 randconfig-v0-03222144
-x86_64                                  kexec
-x86_64                              federa-25
-x86_64                                   rhel
-x86_64                               rhel-7.2
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-m32r                       m32104ut_defconfig
-score                      spct6600_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                             allmodconfig
-i386                     randconfig-a0-201811
-i386                     randconfig-a1-201811
-x86_64                 randconfig-s0-03230344
-x86_64                 randconfig-s1-03230344
-x86_64                 randconfig-s2-03230344
-x86_64                 randconfig-s0-03230551
-x86_64                 randconfig-s1-03230551
-x86_64                 randconfig-s2-03230551
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x010-201811
-x86_64                 randconfig-x013-201811
-x86_64                 randconfig-x014-201811
-x86_64                 randconfig-x019-201811
-x86_64                 randconfig-x011-201811
-x86_64                 randconfig-x015-201811
-x86_64                 randconfig-x018-201811
-x86_64                 randconfig-x016-201811
-x86_64                 randconfig-x017-201811
-x86_64                 randconfig-x012-201811
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-s0-03221113
-i386                   randconfig-s1-03221113
-x86_64                 randconfig-s3-03230311
-x86_64                 randconfig-s4-03230311
-x86_64                 randconfig-s5-03230311
-x86_64                 randconfig-s3-03230559
-x86_64                 randconfig-s4-03230559
-x86_64                 randconfig-s5-03230559
-x86_64                 randconfig-s3-03230629
-x86_64                 randconfig-s4-03230629
-x86_64                 randconfig-s5-03230629
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-x86_64                 randconfig-i0-03221103
-i386                   randconfig-b0-03222143
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                        clps711x_defconfig
-microblaze                       allyesconfig
-powerpc                   motionpro_defconfig
-x86_64                 randconfig-u0-03230247
-x86_64                 randconfig-u0-03230559
-arm                         shannon_defconfig
-mips                        qi_lb60_defconfig
-sh                           se7724_defconfig
-i386                   randconfig-x013-201811
-i386                   randconfig-x014-201811
-i386                   randconfig-x012-201811
-i386                   randconfig-x015-201811
-i386                   randconfig-x016-201811
-i386                   randconfig-x019-201811
-i386                   randconfig-x010-201811
-i386                   randconfig-x018-201811
-i386                   randconfig-x011-201811
-i386                   randconfig-x017-201811
-cris                        etraxfs_defconfig
-microblaze                       allmodconfig
-x86_64                randconfig-ne0-03230309
-x86_64                 randconfig-h0-03230415
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-03221058
-i386                   randconfig-x006-201811
-i386                   randconfig-x000-201811
-i386                   randconfig-x008-201811
-i386                   randconfig-x004-201811
-i386                   randconfig-x009-201811
-i386                   randconfig-x003-201811
-i386                   randconfig-x005-201811
-i386                   randconfig-x002-201811
-i386                   randconfig-x001-201811
-i386                   randconfig-x007-201811
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                randconfig-ws0-03230356
-m68k                                defconfig
-powerpc               mpc86xx_basic_defconfig
-powerpc64                        alldefconfig
-x86_64                randconfig-ws0-03230147
-i386                   randconfig-x073-201811
-i386                   randconfig-x075-201811
-i386                   randconfig-x071-201811
-i386                   randconfig-x076-201811
-i386                   randconfig-x079-201811
-i386                   randconfig-x070-201811
-i386                   randconfig-x077-201811
-i386                   randconfig-x074-201811
-i386                   randconfig-x078-201811
-i386                   randconfig-x072-201811
-x86_64                 randconfig-r0-03222204
-arm                          iop33x_defconfig
-arm                        vexpress_defconfig
-sh                        sh7785lcr_defconfig
-arm                          iop32x_defconfig
-mips                          rb532_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-i386                   randconfig-x0-03230104
-
-Thanks,
-Fengguang
+Question: is there a way to get the 82579LM working with the tso? Or is this
+an hardware bug?
