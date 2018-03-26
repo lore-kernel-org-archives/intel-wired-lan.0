@@ -1,62 +1,68 @@
-From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Date: Mon, 26 Mar 2018 01:53:45 +0000
-Subject: [Intel-wired-lan] Patch for igb_main.c
-In-Reply-To: <CAAMvbhES0YLfp__ErFxivfMHhpCrOq0z47a4w84JP547VBhd_Q@mail.gmail.com>
-References: <CAAMvbhES0YLfp__ErFxivfMHhpCrOq0z47a4w84JP547VBhd_Q@mail.gmail.com>
-Message-ID: <1865EF4A-BA57-434D-946A-5FDBC5493925@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Mon, 26 Mar 2018 08:48:05 +0300
+Subject: [Intel-wired-lan] e1000e Detected Hardware Unit Hang
+In-Reply-To: <1104005455.161583.1521817756059@mail.libero.it>
+References: <1969863829.1651192.1521629811656@mail.libero.it>
+ <1317189213.22495.1521649183803@mail.libero.it>
+ <a97d11e0-6f94-e25c-4362-260073b07219@intel.com>
+ <1232121641.66220.1521715209616@mail.libero.it>
+ <1104005455.161583.1521817756059@mail.libero.it>
+Message-ID: <4a1bebce-0174-2604-79d4-1fd92a033ff6@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Please mail patches to intel-wired-lan at lists.osuosl.org, that is how.
-
-Sent from my iPhone
-
-> On Mar 25, 2018, at 16:47, James Courtier-Dutton <james.dutton@gmail.com> wrote:
+On 3/23/2018 18:09, Marco Berizzi wrote:
+> Marco Berizzi wrote:
+>>
+>> Neftin Sasha wrote:
+>>
+>>> On 21/03/2018 18:19, Marco Berizzi wrote:
+>>>
+>>>> Marco Berizzi wrote:
+>>>>>
+>>>>
+>>>>> Hello everyone,
+>>>>>
+>>>>> I'm getting this error with a Slackware linux 64bit running 4.16-rc6:
+>>>>> I have also done a full hardware replacement, but the problem is still
+>>>>> present. This box is running squid, named, sshd and strongswan.
+>>>>>
+>>>>> On february 3, I have replaced the network switch where this NIC is
+>>>>> connected to (from cisco 3750 to HPE 5130).
+>>>>> As you may see, the problem has popped up from Feb 13 with linux
+>>>>> 4.15.3, but yesterday the problem has arisen also with 4.15.2 (I
+>>>>> wanted to start a git bisect, but it is pointless).
+>>>>
+>>>> I think I have found the root cause. Before getting this error the
+>>>> interface MTU was 9000bytes, and now it is 1500bytes.
+>>>> Good. Please, try also disable TCP segmentation offload: ethtool -K
+>>>>
+>>>> tso off. Keep us update.
+>>
+>> Hi Sasha,
+>>
+>> thanks for the quick response.
+>> I have disabled the tso:
+>>
+>> ethtool -K eth2 tso off
+>> Cannot get device udp-fragmentation-offload settings: Operation not supported
+>> Cannot get device udp-fragmentation-offload settings: Operation not supported
+>>
+>> I will keep you updated. Unfortunately I'm encountering this error
+>> message not more than once a day. So my response will be a little
+>> delayed.
 > 
-> Hi,
+> Hi Sasha,
 > 
-> I have a patch for igb_main.c that helps bring up the igb NIC on the
-> Utilite Pro  embedded ARM PC.
-> How do I get this added to the kernel?
-> Summary below:
+> after more than 24 hours no error messages has popped up, so this is a
+> good workaround.
 > 
-> Kind Regards
+> Question: is there a way to get the 82579LM working with the tso? Or is this
+> an hardware bug?
 > 
-> James
-> 
-> 
-> Author: James Courtier-Dutton <James.Dutton@gmail.com>
-> Date:   Sat Jul 1 19:27:51 2017 +0100
-> 
->    net: igb: This helps to bring up the igb NIC by using a random MAC
-> address when no other sources of MAC addres are available.
-> 
->    This help bring up the igb NIC on the Utilite.
-> 
->    Signed-off-by: James Courtier-Dutton <James@superbug.co.uk>
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
-> b/drivers/net/ethernet/intel/igb/igb_main.c
-> index be456ba..d7c2c99 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -2509,6 +2509,11 @@ static int igb_probe(struct pci_dev *pdev,
-> const struct pci_device_id *ent)
->                        dev_err(&pdev->dev, "NVM Read Error\n");
->        }
-> 
-> +       if (!is_valid_ether_addr(hw->mac.addr)) {
-> +               dev_info(&pdev->dev, "Random MAC Address\n");
-> +               random_ether_addr(hw->mac.addr);
-> +       }
-> +
->        memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);
-> 
->        if (!is_valid_ether_addr(netdev->dev_addr)) {
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+This is HW bug. Currently we have no workaround in a driver. So, you can 
+try work with disable TSO or alternatively play with MTU size. Our more 
+new HW should go over this bug.
