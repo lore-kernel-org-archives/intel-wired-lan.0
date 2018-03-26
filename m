@@ -1,20 +1,17 @@
-From: David Miller <davem@davemloft.net>
-Date: Sat, 17 Mar 2018 16:57:46 -0400 (EDT)
-Subject: [Intel-wired-lan] [PATCH 0/5] Enable XDP for ixgbevf
-In-Reply-To: <20180316223406.7295-1-anthony.l.nguyen@intel.com>
-References: <20180316223406.7295-1-anthony.l.nguyen@intel.com>
-Message-ID: <20180317.165746.11352895395829724.davem@davemloft.net>
+From: Yang, Yi Y <yi.y.yang@intel.com>
+Date: Mon, 26 Mar 2018 00:37:22 +0000
+Subject: [Intel-wired-lan] Anybody knows technical details about NSH offload
+ in Intel NIC and how to use it?
+Message-ID: <79BBBFE6CB6C9B488C1A45ACD284F51961E65E6E@SHSMSX103.ccr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 16 Mar 2018 15:34:01 -0700
+Hi, folks
 
-> This patch series implements support for XDP on ixgbevf;
-> it is mainly based on the ixgbe implementation and supports
-> the following actions: XDP_PASS, XDP_DROP, and XDP_TX.
-
-I'm extremely pleased to see these patches.
+I noticed https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/intel-xxv710-dual-port-25g-product-brief.pdf, XXV710 can offload NSH, anybody knows any technical details and how to use it?
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180326/bbd6511b/attachment.html>
