@@ -1,36 +1,170 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Tue, 27 Mar 2018 10:48:11 -0400
-Subject: [Intel-wired-lan] [PATCH v7 0/7] netdev: intel: Eliminate
- duplicate barriers on weakly-ordered archs
-In-Reply-To: <CAKgT0UfeMY0WsJGARrVxNsHzr8OnNSJ2jaYbBTGQNkR_uizJuQ@mail.gmail.com>
-References: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
- <CAKgT0UcaxM8Mj9Y9fR0B+aafTm1SzTqh+gHT5ozgvyaoHvrzRQ@mail.gmail.com>
- <1521849496.15055.16.camel@intel.com>
- <862cdbeafb9cfd272a426b010943ffc5@codeaurora.org>
- <e3ada376-52a5-573b-33f1-9aa84af75f0d@codeaurora.org>
- <trinity-6d247cd1-94e3-4a58-a762-77724e895644-1522159460624@3c-app-gmx-bs61>
- <dcbd4406-73f7-4afa-850d-5f5d9f97ab02@codeaurora.org>
- <CAKgT0UfeMY0WsJGARrVxNsHzr8OnNSJ2jaYbBTGQNkR_uizJuQ@mail.gmail.com>
-Message-ID: <6fe4e3a4-219f-68d7-25f1-72ab86aae42e@codeaurora.org>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 28 Mar 2018 00:46:54 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 04c5ad225cbd075dfe6ce7954944e1201b483c76
+Message-ID: <5aba757e.M1bZs3vu95CjBhK+%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/27/2018 10:38 AM, Alexander Duyck wrote:
->> We are being told that if you use writel(), then you don't need a wmb() on
->> all architectures.
-> I'm not sure who told you that but that is incorrect, at least for
-> x86. If you attempt to use writel() without the wmb() we will have to
-> NAK the patches. We will accept the wmb() with writel_releaxed() since
-> that solves things for ARM.
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 04c5ad225cbd075dfe6ce7954944e1201b483c76  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-I added netdev and you to the RFC on writel and writel_relaxed list. 
-Feel free to raise your concerns.
+elapsed time: 105m
 
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+configs tested: 146
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                 randconfig-a0-03272043
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x010-201812
+i386                   randconfig-x011-201812
+i386                   randconfig-x012-201812
+i386                   randconfig-x013-201812
+i386                   randconfig-x014-201812
+i386                   randconfig-x015-201812
+i386                   randconfig-x016-201812
+i386                   randconfig-x017-201812
+i386                   randconfig-x018-201812
+i386                   randconfig-x019-201812
+i386                     randconfig-n0-201812
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                   randconfig-i0-03261925
+i386                   randconfig-i1-03261925
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                         ebsa110_defconfig
+sh                           se7619_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x010-201812
+x86_64                 randconfig-x014-201812
+x86_64                 randconfig-x013-201812
+x86_64                 randconfig-x019-201812
+x86_64                 randconfig-x011-201812
+x86_64                 randconfig-x015-201812
+x86_64                 randconfig-x018-201812
+x86_64                 randconfig-x016-201812
+x86_64                 randconfig-x017-201812
+x86_64                 randconfig-x012-201812
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-a0-03271841
+i386                   randconfig-a1-03271841
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                          badge4_defconfig
+arm                           spitz_defconfig
+ia64                          tiger_defconfig
+m68k                       m5275evb_defconfig
+sparc                            allmodconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s1-201812
+i386                     randconfig-s0-201812
+x86_64                 randconfig-s3-03272319
+x86_64                 randconfig-s4-03272319
+x86_64                 randconfig-s5-03272319
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-i0-03271755
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-u0-03272039
+i386                   randconfig-h0-03272046
+i386                   randconfig-h1-03272046
+i386                   randconfig-x070-201812
+i386                   randconfig-x071-201812
+i386                   randconfig-x072-201812
+i386                   randconfig-x073-201812
+i386                   randconfig-x074-201812
+i386                   randconfig-x075-201812
+i386                   randconfig-x076-201812
+i386                   randconfig-x077-201812
+i386                   randconfig-x078-201812
+i386                   randconfig-x079-201812
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                           allmodconfig
+i386                   randconfig-x000-201812
+i386                   randconfig-x001-201812
+i386                   randconfig-x002-201812
+i386                   randconfig-x003-201812
+i386                   randconfig-x004-201812
+i386                   randconfig-x005-201812
+i386                   randconfig-x006-201812
+i386                   randconfig-x007-201812
+i386                   randconfig-x008-201812
+i386                   randconfig-x009-201812
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-x002-201812
+x86_64                 randconfig-x006-201812
+x86_64                 randconfig-x005-201812
+x86_64                 randconfig-x004-201812
+x86_64                 randconfig-x009-201812
+x86_64                 randconfig-x001-201812
+x86_64                 randconfig-x008-201812
+x86_64                 randconfig-x003-201812
+x86_64                 randconfig-x007-201812
+x86_64                 randconfig-x000-201812
+i386                             allmodconfig
+
+Thanks,
+Fengguang
