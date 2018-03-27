@@ -1,114 +1,162 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Tue, 27 Mar 2018 13:33:48 -0400
-Subject: [Intel-wired-lan] [PATCH v7 0/7] netdev: intel: Eliminate
- duplicate barriers on weakly-ordered archs
-In-Reply-To: <1522169657.6503.1.camel@intel.com>
-References: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
- <CAKgT0UcaxM8Mj9Y9fR0B+aafTm1SzTqh+gHT5ozgvyaoHvrzRQ@mail.gmail.com>
- <1521849496.15055.16.camel@intel.com>
- <862cdbeafb9cfd272a426b010943ffc5@codeaurora.org>
- <e3ada376-52a5-573b-33f1-9aa84af75f0d@codeaurora.org>
- <1522169657.6503.1.camel@intel.com>
-Message-ID: <3107fa2b-c22c-3b44-527d-f1b9744d78b7@codeaurora.org>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 28 Mar 2018 03:07:02 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ a04a648b80223862569f327e2990f5223cdaeb8c
+Message-ID: <5aba9656.v+T7Q1TZUKKLdrfv%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/27/2018 12:54 PM, Jeff Kirsher wrote:
-> On Tue, 2018-03-27 at 08:42 -0400, Sinan Kaya wrote:
->> On 3/23/2018 10:34 PM, okaya at codeaurora.org wrote:
->>> On 2018-03-23 19:58, Jeff Kirsher wrote:
->>>> On Fri, 2018-03-23 at 14:53 -0700, Alexander Duyck wrote:
->>>>> On Fri, Mar 23, 2018 at 11:52 AM, Sinan Kaya <okaya@codeaurora.
->>>>> org>
->>>>> wrote:
->>>>>> Code includes wmb() followed by writel() in multiple places.
->>>>>> writel()
->>>>>> already has a barrier on some architectures like arm64.
->>>>>>
->>>>>> This ends up CPU observing two barriers back to back before
->>>>>> executing
->>>>>> the
->>>>>> register write.
->>>>>>
->>>>>> Since code already has an explicit barrier call, changing
->>>>>> writel() to
->>>>>> writel_relaxed().
->>>>>>
->>>>>> I did a regex search for wmb() followed by writel() in each
->>>>>> drivers
->>>>>> directory.
->>>>>> I scrubbed the ones I care about in this series.
->>>>>>
->>>>>> I considered "ease of change", "popular usage" and
->>>>>> "performance
->>>>>> critical
->>>>>> path" as the determining criteria for my filtering.
->>>>>>
->>>>>> We used relaxed API heavily on ARM for a long time but
->>>>>> it did not exist on other architectures. For this reason,
->>>>>> relaxed
->>>>>> architectures have been paying double penalty in order to use
->>>>>> the
->>>>>> common
->>>>>> drivers.
->>>>>>
->>>>>> Now that relaxed API is present on all architectures, we can
->>>>>> go and
->>>>>> scrub
->>>>>> all drivers to see what needs to change and what can remain.
->>>>>>
->>>>>> We start with mostly used ones and hope to increase the
->>>>>> coverage over
->>>>>> time.
->>>>>> It will take a while to cover all drivers.
->>>>>>
->>>>>> Feel free to apply patches individually.
->>>>>
->>>>> I looked over the set and they seem good.
->>>>>
->>>>> Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
->>>>
->>>> Grrr, patch 1 does not apply cleanly to my next-queue tree (dev-
->>>> queue
->>>> branch).  I will deal with this series in a day or two, after I
->>>> have dealt
->>>> with my driver pull requests.
->>>
->>> Sorry, you will have to replace the ones you took from me.
->>
->> Double sorry now.
->>
->> I don't know if you have been following "RFC on writel and
->> writel_relaxed" thread
->> or not but there are some new developments about wmb() requirement. 
->>
->> Basically, wmb() should never be used before writel() as writel()
->> seem to
->> provide coherency and observability guarantee.
->>
->> wmb()+writel_relaxed() is slower on some architectures than plain
->> writel()
->>
->> I'll have to rework these patches to have writel() only. 
->>
->> Are you able to drop the applied ones so that I can post V8 or is it
->> too late?
-> 
-> Currently I do not have any of your patches applied to my next-queue
-> tree (dev-queue branch).  So feel free to do any revisions you need to
-> do and to re-submit to intel-wired-lan at lists.osuosl.org (IWL) mailing
-> list.
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: a04a648b80223862569f327e2990f5223cdaeb8c  ixgbevf: ensure xdp_ring resources are free'd on error exit
 
-Thanks, Good to know. 
+elapsed time: 178m
 
-I'm waiting for the discussion to settle. I'll update as soon as I get
-a clear direction.
+configs tested: 138
 
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-c0-03280057
+x86_64                randconfig-it0-03280204
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201812
+i386                   randconfig-i1-03261925
+i386                   randconfig-i0-03261925
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+x86_64                 randconfig-x010-201812
+x86_64                 randconfig-x014-201812
+x86_64                 randconfig-x013-201812
+x86_64                 randconfig-x019-201812
+x86_64                 randconfig-x011-201812
+x86_64                 randconfig-x015-201812
+x86_64                 randconfig-x018-201812
+x86_64                 randconfig-x016-201812
+x86_64                 randconfig-x017-201812
+x86_64                 randconfig-x012-201812
+i386                   randconfig-a1-03271841
+i386                   randconfig-a0-03271841
+i386                     randconfig-s1-201812
+i386                     randconfig-s0-201812
+x86_64                 randconfig-s3-03280149
+x86_64                 randconfig-s4-03280149
+x86_64                 randconfig-s5-03280149
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-i0-03271755
+i386                   randconfig-b0-03280148
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                    vt8500_v6_v7_defconfig
+openrisc                         allmodconfig
+s390                    performance_defconfig
+x86_64                 randconfig-u0-03280045
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+score                      spct6600_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                               tinyconfig
+i386                   randconfig-x013-201812
+i386                   randconfig-x014-201812
+i386                   randconfig-x015-201812
+i386                   randconfig-x012-201812
+i386                   randconfig-x019-201812
+i386                   randconfig-x016-201812
+i386                   randconfig-x010-201812
+i386                   randconfig-x018-201812
+i386                   randconfig-x011-201812
+i386                   randconfig-x017-201812
+x86_64                randconfig-ne0-03280125
+i386                   randconfig-x073-201812
+i386                   randconfig-x075-201812
+i386                   randconfig-x071-201812
+i386                   randconfig-x076-201812
+i386                   randconfig-x079-201812
+i386                   randconfig-x077-201812
+i386                   randconfig-x070-201812
+i386                   randconfig-x074-201812
+i386                   randconfig-x078-201812
+i386                   randconfig-x072-201812
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x002-201812
+x86_64                 randconfig-x006-201812
+x86_64                 randconfig-x005-201812
+x86_64                 randconfig-x004-201812
+x86_64                 randconfig-x009-201812
+x86_64                 randconfig-x001-201812
+x86_64                 randconfig-x008-201812
+x86_64                 randconfig-x003-201812
+x86_64                 randconfig-x007-201812
+x86_64                 randconfig-x000-201812
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                   randconfig-x006-201812
+i386                   randconfig-x000-201812
+i386                   randconfig-x008-201812
+i386                   randconfig-x009-201812
+i386                   randconfig-x004-201812
+i386                   randconfig-x003-201812
+i386                   randconfig-x002-201812
+i386                   randconfig-x005-201812
+i386                   randconfig-x001-201812
+i386                   randconfig-x007-201812
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+
+Thanks,
+Fengguang
