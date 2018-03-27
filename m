@@ -1,39 +1,43 @@
-From: Lino Sanfilippo <LinoSanfilippo@gmx.de>
-Date: Tue, 27 Mar 2018 16:04:20 +0200
-Subject: [Intel-wired-lan] [PATCH v7 0/7] netdev: intel: Eliminate
- duplicate barriers on weakly-ordered archs
-In-Reply-To: <e3ada376-52a5-573b-33f1-9aa84af75f0d@codeaurora.org>
-References: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
- <CAKgT0UcaxM8Mj9Y9fR0B+aafTm1SzTqh+gHT5ozgvyaoHvrzRQ@mail.gmail.com>
- <1521849496.15055.16.camel@intel.com>
- <862cdbeafb9cfd272a426b010943ffc5@codeaurora.org>
- <e3ada376-52a5-573b-33f1-9aa84af75f0d@codeaurora.org>
-Message-ID: <trinity-6d247cd1-94e3-4a58-a762-77724e895644-1522159460624@3c-app-gmx-bs61>
+From: Colin King <colin.king@canonical.com>
+Date: Tue, 27 Mar 2018 15:21:48 +0100
+Subject: [Intel-wired-lan] [PATCH][next] ixgbevf: ensure xdp_ring resources
+ are free'd on error exit
+Message-ID: <20180327142148.13603-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+From: Colin Ian King <colin.king@canonical.com>
 
-> Double sorry now.
-> 
-> I don't know if you have been following "RFC on writel and writel_relaxed" thread
-> or not but there are some new developments about wmb() requirement. 
+The current error handling for failed resource setup for xdp_ring
+data is a break out of the loop and returning 0 indicated everying
+was OK, when in fact it is not.  Fix this by exiting via the
+error exit label err_setup_tx that will clean up the resources
+correctly and return and error status.
 
-Just out of interest: Where can this thread be found?
+Detected by CoverityScan, CID#1466879 ("Logically dead code")
 
-> 
-> Basically, wmb() should never be used before writel() as writel() seem to
-> provide coherency and observability guarantee.
-> 
+Fixes: 21092e9ce8b1 ("ixgbevf: Add support for XDP_TX action")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-AFAIU memory-barriers.txt writel() only guarantees correct order of accesses to
-IO-memory not RAM vs. IO-memory (this may be the case for some architectures 
-where the writel() implementation contains a wmb() but not for all).
-For the RAM vs. IO-memory case at least a a wmb()/rmb() has to be used. 
-Is this not correct? 
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 3d9033f26eff..e3d04f226d57 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -3420,7 +3420,7 @@ static int ixgbevf_setup_all_tx_resources(struct ixgbevf_adapter *adapter)
+ 		if (!err)
+ 			continue;
+ 		hw_dbg(&adapter->hw, "Allocation for XDP Queue %u failed\n", j);
+-		break;
++		goto err_setup_tx;
+ 	}
+ 
+ 	return 0;
+-- 
+2.15.1
 
-Regards,
-Lino
