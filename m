@@ -1,236 +1,88 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 27 Mar 2018 10:58:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- d9314c474d4fc1985e836b92fba4c40dd84885a7
-Message-ID: <5ab9b372.R5/usc1DUz+nyKpo%fengguang.wu@intel.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Tue, 27 Mar 2018 08:42:05 -0400
+Subject: [Intel-wired-lan] [PATCH v7 0/7] netdev: intel: Eliminate
+ duplicate barriers on weakly-ordered archs
+In-Reply-To: <862cdbeafb9cfd272a426b010943ffc5@codeaurora.org>
+References: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
+ <CAKgT0UcaxM8Mj9Y9fR0B+aafTm1SzTqh+gHT5ozgvyaoHvrzRQ@mail.gmail.com>
+ <1521849496.15055.16.camel@intel.com>
+ <862cdbeafb9cfd272a426b010943ffc5@codeaurora.org>
+Message-ID: <e3ada376-52a5-573b-33f1-9aa84af75f0d@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: d9314c474d4fc1985e836b92fba4c40dd84885a7  i40e: add support for XDP_REDIRECT
+Jeff,
 
-elapsed time: 317m
+On 3/23/2018 10:34 PM, okaya at codeaurora.org wrote:
+> On 2018-03-23 19:58, Jeff Kirsher wrote:
+>> On Fri, 2018-03-23 at 14:53 -0700, Alexander Duyck wrote:
+>>> On Fri, Mar 23, 2018 at 11:52 AM, Sinan Kaya <okaya@codeaurora.org>
+>>> wrote:
+>>> > Code includes wmb() followed by writel() in multiple places. writel()
+>>> > already has a barrier on some architectures like arm64.
+>>> >
+>>> > This ends up CPU observing two barriers back to back before executing
+>>> > the
+>>> > register write.
+>>> >
+>>> > Since code already has an explicit barrier call, changing writel() to
+>>> > writel_relaxed().
+>>> >
+>>> > I did a regex search for wmb() followed by writel() in each drivers
+>>> > directory.
+>>> > I scrubbed the ones I care about in this series.
+>>> >
+>>> > I considered "ease of change", "popular usage" and "performance
+>>> > critical
+>>> > path" as the determining criteria for my filtering.
+>>> >
+>>> > We used relaxed API heavily on ARM for a long time but
+>>> > it did not exist on other architectures. For this reason, relaxed
+>>> > architectures have been paying double penalty in order to use the
+>>> > common
+>>> > drivers.
+>>> >
+>>> > Now that relaxed API is present on all architectures, we can go and
+>>> > scrub
+>>> > all drivers to see what needs to change and what can remain.
+>>> >
+>>> > We start with mostly used ones and hope to increase the coverage over
+>>> > time.
+>>> > It will take a while to cover all drivers.
+>>> >
+>>> > Feel free to apply patches individually.
+>>>
+>>> I looked over the set and they seem good.
+>>>
+>>> Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
+>>
+>> Grrr, patch 1 does not apply cleanly to my next-queue tree (dev-queue
+>> branch).? I will deal with this series in a day or two, after I have dealt
+>> with my driver pull requests.
+> 
+> Sorry, you will have to replace the ones you took from me.
 
-configs tested: 212
+Double sorry now.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I don't know if you have been following "RFC on writel and writel_relaxed" thread
+or not but there are some new developments about wmb() requirement. 
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                           omap1_defconfig
-mips                       lemote2f_defconfig
-um                               allyesconfig
-x86_64                 randconfig-a0-03270022
-x86_64                 randconfig-a0-03270817
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-microblaze                       allmodconfig
-mips                  mips_paravirt_defconfig
-powerpc                     taishan_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-03270550
-x86_64                           allmodconfig
-x86_64                randconfig-it0-03270108
-i386                   randconfig-x010-201812
-i386                   randconfig-x011-201812
-i386                   randconfig-x012-201812
-i386                   randconfig-x013-201812
-i386                   randconfig-x014-201812
-i386                   randconfig-x015-201812
-i386                   randconfig-x016-201812
-i386                   randconfig-x017-201812
-i386                   randconfig-x018-201812
-i386                   randconfig-x019-201812
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-03261801
-i386                     randconfig-n0-201812
-x86_64                 randconfig-x002-201812
-x86_64                 randconfig-x006-201812
-x86_64                 randconfig-x005-201812
-x86_64                 randconfig-x004-201812
-x86_64                 randconfig-x009-201812
-x86_64                 randconfig-x001-201812
-x86_64                 randconfig-x008-201812
-x86_64                 randconfig-x003-201812
-x86_64                 randconfig-x007-201812
-x86_64                 randconfig-x000-201812
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-i386                   randconfig-i1-03261925
-i386                   randconfig-i0-03261925
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                         cm_x2xx_defconfig
-arm                       spear13xx_defconfig
-powerpc                     tqm8560_defconfig
-x86_64                 randconfig-v0-03262150
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-g0-03270321
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                            allnoconfig
-arm                          nuc960_defconfig
-arm                           tegra_defconfig
-m68k                            mac_defconfig
-sh                     sh7710voipgw_defconfig
-mips                      malta_kvm_defconfig
-powerpc                       ebony_defconfig
-sh                            migor_defconfig
-sh                   secureedge5410_defconfig
-arm                         hackkit_defconfig
-mips                       rbtx49xx_defconfig
-powerpc                   currituck_defconfig
-powerpc                 xes_mpc85xx_defconfig
-sh                           se7343_defconfig
-arm                       versatile_defconfig
-blackfin             BF527-TLL6527M_defconfig
-powerpc                 mpc832x_mds_defconfig
-sh                           se7780_defconfig
-arm                        cerfcube_defconfig
-arm                       netwinder_defconfig
-mips                      maltaaprp_defconfig
-mips                   sb1250_swarm_defconfig
-parisc                         a500_defconfig
-arm                          badge4_defconfig
-arm                          gemini_defconfig
-mips                           gcw0_defconfig
-mips                        nlm_xlr_defconfig
-arm                  colibri_pxa300_defconfig
-blackfin                   CM-BF527_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-sh                               allyesconfig
-arm                             pxa_defconfig
-arm                            u300_defconfig
-parisc                          712_defconfig
-powerpc                     asp8347_defconfig
-x86_64                 randconfig-x010-201812
-x86_64                 randconfig-x011-201812
-x86_64                 randconfig-x012-201812
-x86_64                 randconfig-x013-201812
-x86_64                 randconfig-x014-201812
-x86_64                 randconfig-x015-201812
-x86_64                 randconfig-x016-201812
-x86_64                 randconfig-x017-201812
-x86_64                 randconfig-x018-201812
-x86_64                 randconfig-x019-201812
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201812
-i386                     randconfig-s0-201812
-x86_64                 randconfig-s3-03270644
-x86_64                 randconfig-s4-03270644
-x86_64                 randconfig-s5-03270644
-x86_64                 randconfig-s3-03270911
-x86_64                 randconfig-s4-03270911
-x86_64                 randconfig-s5-03270911
-x86_64                 randconfig-s3-03270959
-x86_64                 randconfig-s4-03270959
-x86_64                 randconfig-s5-03270959
-x86_64                 randconfig-b0-03262152
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-u0-03270650
-i386                   randconfig-h0-03262136
-i386                   randconfig-h1-03262136
-mips                                defconfig
-x86_64                randconfig-ne0-03271014
-i386                             allmodconfig
-i386                 randconfig-x079-03261930
-i386                 randconfig-x077-03261930
-i386                 randconfig-x070-03261930
-i386                 randconfig-x075-03261930
-i386                 randconfig-x074-03261930
-i386                 randconfig-x072-03261930
-i386                 randconfig-x073-03261930
-i386                 randconfig-x078-03261930
-i386                 randconfig-x071-03261930
-i386                 randconfig-x076-03261930
-blackfin                            defconfig
-i386                  randconfig-sb0-03262033
-i386                   randconfig-x000-201812
-i386                   randconfig-x001-201812
-i386                   randconfig-x002-201812
-i386                   randconfig-x003-201812
-i386                   randconfig-x004-201812
-i386                   randconfig-x005-201812
-i386                   randconfig-x006-201812
-i386                   randconfig-x007-201812
-i386                   randconfig-x008-201812
-i386                   randconfig-x009-201812
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-arm                         cm_x300_defconfig
-ia64                            sim_defconfig
-powerpc                      walnut_defconfig
-m32r                   mappi2.vdec2_defconfig
-nios2                         3c120_defconfig
-sparc                       sparc32_defconfig
-arm                      integrator_defconfig
-mips                      maltasmvp_defconfig
-i386                 randconfig-x003-03262255
-i386                 randconfig-x008-03262255
-i386                 randconfig-x000-03262255
-i386                 randconfig-x007-03262255
-i386                 randconfig-x004-03262255
-i386                 randconfig-x009-03262255
-i386                 randconfig-x006-03262255
-i386                 randconfig-x001-03262255
-i386                 randconfig-x005-03262255
-i386                 randconfig-x002-03262255
-i386                   randconfig-x0-03270609
+Basically, wmb() should never be used before writel() as writel() seem to
+provide coherency and observability guarantee.
 
-Thanks,
-Fengguang
+wmb()+writel_relaxed() is slower on some architectures than plain writel()
+
+I'll have to rework these patches to have writel() only. 
+
+Are you able to drop the applied ones so that I can post V8 or is it too late?
+
+
+Sinan
+
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
