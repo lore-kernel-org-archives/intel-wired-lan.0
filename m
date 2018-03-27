@@ -1,41 +1,114 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 27 Mar 2018 17:14:00 +0000
-Subject: [Intel-wired-lan] [PATCH][next] ixgbevf: ensure xdp_ring
- resources are free'd on error exit
-In-Reply-To: <20180327142148.13603-1-colin.king@canonical.com>
-References: <20180327142148.13603-1-colin.king@canonical.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A95815B@ORSMSX104.amr.corp.intel.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Tue, 27 Mar 2018 13:33:48 -0400
+Subject: [Intel-wired-lan] [PATCH v7 0/7] netdev: intel: Eliminate
+ duplicate barriers on weakly-ordered archs
+In-Reply-To: <1522169657.6503.1.camel@intel.com>
+References: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
+ <CAKgT0UcaxM8Mj9Y9fR0B+aafTm1SzTqh+gHT5ozgvyaoHvrzRQ@mail.gmail.com>
+ <1521849496.15055.16.camel@intel.com>
+ <862cdbeafb9cfd272a426b010943ffc5@codeaurora.org>
+ <e3ada376-52a5-573b-33f1-9aa84af75f0d@codeaurora.org>
+ <1522169657.6503.1.camel@intel.com>
+Message-ID: <3107fa2b-c22c-3b44-527d-f1b9744d78b7@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Colin King
-> Sent: Tuesday, March 27, 2018 7:22 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org
-> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH][next] ixgbevf: ensure xdp_ring resources
-> are free'd on error exit
+On 3/27/2018 12:54 PM, Jeff Kirsher wrote:
+> On Tue, 2018-03-27 at 08:42 -0400, Sinan Kaya wrote:
+>> On 3/23/2018 10:34 PM, okaya at codeaurora.org wrote:
+>>> On 2018-03-23 19:58, Jeff Kirsher wrote:
+>>>> On Fri, 2018-03-23 at 14:53 -0700, Alexander Duyck wrote:
+>>>>> On Fri, Mar 23, 2018 at 11:52 AM, Sinan Kaya <okaya@codeaurora.
+>>>>> org>
+>>>>> wrote:
+>>>>>> Code includes wmb() followed by writel() in multiple places.
+>>>>>> writel()
+>>>>>> already has a barrier on some architectures like arm64.
+>>>>>>
+>>>>>> This ends up CPU observing two barriers back to back before
+>>>>>> executing
+>>>>>> the
+>>>>>> register write.
+>>>>>>
+>>>>>> Since code already has an explicit barrier call, changing
+>>>>>> writel() to
+>>>>>> writel_relaxed().
+>>>>>>
+>>>>>> I did a regex search for wmb() followed by writel() in each
+>>>>>> drivers
+>>>>>> directory.
+>>>>>> I scrubbed the ones I care about in this series.
+>>>>>>
+>>>>>> I considered "ease of change", "popular usage" and
+>>>>>> "performance
+>>>>>> critical
+>>>>>> path" as the determining criteria for my filtering.
+>>>>>>
+>>>>>> We used relaxed API heavily on ARM for a long time but
+>>>>>> it did not exist on other architectures. For this reason,
+>>>>>> relaxed
+>>>>>> architectures have been paying double penalty in order to use
+>>>>>> the
+>>>>>> common
+>>>>>> drivers.
+>>>>>>
+>>>>>> Now that relaxed API is present on all architectures, we can
+>>>>>> go and
+>>>>>> scrub
+>>>>>> all drivers to see what needs to change and what can remain.
+>>>>>>
+>>>>>> We start with mostly used ones and hope to increase the
+>>>>>> coverage over
+>>>>>> time.
+>>>>>> It will take a while to cover all drivers.
+>>>>>>
+>>>>>> Feel free to apply patches individually.
+>>>>>
+>>>>> I looked over the set and they seem good.
+>>>>>
+>>>>> Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
+>>>>
+>>>> Grrr, patch 1 does not apply cleanly to my next-queue tree (dev-
+>>>> queue
+>>>> branch).  I will deal with this series in a day or two, after I
+>>>> have dealt
+>>>> with my driver pull requests.
+>>>
+>>> Sorry, you will have to replace the ones you took from me.
+>>
+>> Double sorry now.
+>>
+>> I don't know if you have been following "RFC on writel and
+>> writel_relaxed" thread
+>> or not but there are some new developments about wmb() requirement. 
+>>
+>> Basically, wmb() should never be used before writel() as writel()
+>> seem to
+>> provide coherency and observability guarantee.
+>>
+>> wmb()+writel_relaxed() is slower on some architectures than plain
+>> writel()
+>>
+>> I'll have to rework these patches to have writel() only. 
+>>
+>> Are you able to drop the applied ones so that I can post V8 or is it
+>> too late?
 > 
-> From: Colin Ian King <colin.king@canonical.com>
+> Currently I do not have any of your patches applied to my next-queue
+> tree (dev-queue branch).  So feel free to do any revisions you need to
+> do and to re-submit to intel-wired-lan at lists.osuosl.org (IWL) mailing
+> list.
 > 
-> The current error handling for failed resource setup for xdp_ring data is a
-> break out of the loop and returning 0 indicated everying was OK, when in fact
-> it is not.  Fix this by exiting via the error exit label err_setup_tx that will clean
-> up the resources correctly and return and error status.
-> 
-> Detected by CoverityScan, CID#1466879 ("Logically dead code")
-> 
-> Fixes: 21092e9ce8b1 ("ixgbevf: Add support for XDP_TX action")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Thanks, Good to know. 
 
+I'm waiting for the discussion to settle. I'll update as soon as I get
+a clear direction.
 
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
