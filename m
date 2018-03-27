@@ -1,95 +1,36 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 27 Mar 2018 17:47:20 +0300
-Subject: [Intel-wired-lan] e1000e Detected Hardware Unit Hang
-In-Reply-To: <03dfb3bf-a834-38d3-5371-91b2b079d8e4@candelatech.com>
-References: <1969863829.1651192.1521629811656@mail.libero.it>
- <1317189213.22495.1521649183803@mail.libero.it>
- <a97d11e0-6f94-e25c-4362-260073b07219@intel.com>
- <1232121641.66220.1521715209616@mail.libero.it>
- <1104005455.161583.1521817756059@mail.libero.it>
- <4a1bebce-0174-2604-79d4-1fd92a033ff6@intel.com>
- <03dfb3bf-a834-38d3-5371-91b2b079d8e4@candelatech.com>
-Message-ID: <fc97931b-32aa-fd9c-35bd-d3c81a19d87c@intel.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Tue, 27 Mar 2018 10:48:11 -0400
+Subject: [Intel-wired-lan] [PATCH v7 0/7] netdev: intel: Eliminate
+ duplicate barriers on weakly-ordered archs
+In-Reply-To: <CAKgT0UfeMY0WsJGARrVxNsHzr8OnNSJ2jaYbBTGQNkR_uizJuQ@mail.gmail.com>
+References: <1521831180-25014-1-git-send-email-okaya@codeaurora.org>
+ <CAKgT0UcaxM8Mj9Y9fR0B+aafTm1SzTqh+gHT5ozgvyaoHvrzRQ@mail.gmail.com>
+ <1521849496.15055.16.camel@intel.com>
+ <862cdbeafb9cfd272a426b010943ffc5@codeaurora.org>
+ <e3ada376-52a5-573b-33f1-9aa84af75f0d@codeaurora.org>
+ <trinity-6d247cd1-94e3-4a58-a762-77724e895644-1522159460624@3c-app-gmx-bs61>
+ <dcbd4406-73f7-4afa-850d-5f5d9f97ab02@codeaurora.org>
+ <CAKgT0UfeMY0WsJGARrVxNsHzr8OnNSJ2jaYbBTGQNkR_uizJuQ@mail.gmail.com>
+Message-ID: <6fe4e3a4-219f-68d7-25f1-72ab86aae42e@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/26/2018 18:13, Ben Greear wrote:
+On 3/27/2018 10:38 AM, Alexander Duyck wrote:
+>> We are being told that if you use writel(), then you don't need a wmb() on
+>> all architectures.
+> I'm not sure who told you that but that is incorrect, at least for
+> x86. If you attempt to use writel() without the wmb() we will have to
+> NAK the patches. We will accept the wmb() with writel_releaxed() since
+> that solves things for ARM.
 > 
-> 
-> On 03/25/2018 10:48 PM, Neftin, Sasha wrote:
->> On 3/23/2018 18:09, Marco Berizzi wrote:
->>> Marco Berizzi wrote:
->>>>
->>>> Neftin Sasha wrote:
->>>>
->>>>> On 21/03/2018 18:19, Marco Berizzi wrote:
->>>>>
->>>>>> Marco Berizzi wrote:
->>>>>>>
->>>>>>
->>>>>>> Hello everyone,
->>>>>>>
->>>>>>> I'm getting this error with a Slackware linux 64bit running 
->>>>>>> 4.16-rc6:
->>>>>>> I have also done a full hardware replacement, but the problem is 
->>>>>>> still
->>>>>>> present. This box is running squid, named, sshd and strongswan.
->>>>>>>
->>>>>>> On february 3, I have replaced the network switch where this NIC is
->>>>>>> connected to (from cisco 3750 to HPE 5130).
->>>>>>> As you may see, the problem has popped up from Feb 13 with linux
->>>>>>> 4.15.3, but yesterday the problem has arisen also with 4.15.2 (I
->>>>>>> wanted to start a git bisect, but it is pointless).
->>>>>>
->>>>>> I think I have found the root cause. Before getting this error the
->>>>>> interface MTU was 9000bytes, and now it is 1500bytes.
->>>>>> Good. Please, try also disable TCP segmentation offload: ethtool -K
->>>>>>
->>>>>> tso off. Keep us update.
->>>>
->>>> Hi Sasha,
->>>>
->>>> thanks for the quick response.
->>>> I have disabled the tso:
->>>>
->>>> ethtool -K eth2 tso off
->>>> Cannot get device udp-fragmentation-offload settings: Operation not 
->>>> supported
->>>> Cannot get device udp-fragmentation-offload settings: Operation not 
->>>> supported
->>>>
->>>> I will keep you updated. Unfortunately I'm encountering this error
->>>> message not more than once a day. So my response will be a little
->>>> delayed.
->>>
->>> Hi Sasha,
->>>
->>> after more than 24 hours no error messages has popped up, so this is a
->>> good workaround.
->>>
->>> Question: is there a way to get the 82579LM working with the tso? Or 
->>> is this
->>> an hardware bug?
->>>
->> This is HW bug. Currently we have no workaround in a driver. So, you 
->> can try work with disable TSO or alternatively play with MTU size. Our 
->> more new HW should go over this bug.
-> 
-> Can you add driver code to automatically disable TSO for this chipset 
-> and any others
-> that need it?
-> 
-> Thanks,
-> Ben
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->>
-> 
-We prefer not. This LAN works as properly for a most platforms. For a 
-particular platform where is observed issue we recommended disable TSO 
-manually. This is could help avoid hand in some cases.
+
+I added netdev and you to the RFC on writel and writel_relaxed list. 
+Feel free to raise your concerns.
+
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
