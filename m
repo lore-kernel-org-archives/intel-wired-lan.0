@@ -1,56 +1,94 @@
-From: Venkataramanan, Anirudh <anirudh.venkataramanan@intel.com>
-Date: Thu, 29 Mar 2018 16:31:31 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Fix error return code
- in ice_init_hw()
-In-Reply-To: <1522241445-77090-1-git-send-email-weiyongjun1@huawei.com>
-References: <1522241445-77090-1-git-send-email-weiyongjun1@huawei.com>
-Message-ID: <1522341089.15392.172.camel@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Thu, 29 Mar 2018 14:07:41 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v6 00/10] igb: offloading of
+ receive filters
+Message-ID: <20180329210751.11531-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2018-03-28 at 12:50 +0000, Wei Yongjun wrote:
-> Fix to return error code ICE_ERR_NO_MEMORY from the alloc error
-> handling case instead of 0, as done elsewhere in this function.
-> 
-> Fixes: dc49c7723676 ("ice: Get MAC/PHY/link info and scheduler
-> topology")
-> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_common.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_common.c
-> b/drivers/net/ethernet/intel/ice/ice_common.c
-> index 385f5d4..21977ec 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_common.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-> @@ -468,8 +468,10 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
->  	mac_buf_len = sizeof(struct ice_aqc_manage_mac_read_resp);
->  	mac_buf = devm_kzalloc(ice_hw_to_dev(hw), mac_buf_len,
-> GFP_KERNEL);
->  
-> -	if (!mac_buf)
-> +	if (!mac_buf) {
-> +		status = ICE_ERR_NO_MEMORY;
->  		goto err_unroll_fltr_mgmt_struct;
-> +	}
->  
->  	status = ice_aq_manage_mac_read(hw, mac_buf, mac_buf_len,
-> NULL);
->  	devm_kfree(ice_hw_to_dev(hw), mac_buf);
-> 
 
-Acked-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Hi,
 
-Thanks!
-Ani
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/x-pkcs7-signature
-Size: 3302 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180329/75d04e0d/attachment.bin>
+Changes from v5:
+ - Filters can now be added for local MAC addresses, when removed,
+   they return to their initial configuration (thanks for the testing
+   Aaron);
+
+Changes from v4:
+ - Added a new bit to the MAC address filters internal
+ representation to mean that some filters are steering filters (i.e.
+ they direct traffic to queues);
+ - And, this is only supported in i210;
+
+Changes from v3:
+ - Addressed review comments from Aaron F. Brown and
+   Jakub Kicinski;
+
+Changes from v2:
+ - Addressed review comments from Jakub Kicinski, mostly about coding
+   style adjustments and more consistent error reporting;
+
+Changes from v1:
+ - Addressed review comments from Alexander Duyck and Florian
+   Fainelli;
+ - Adding and removing cls_flower filters are now proposed in the same
+   patch;
+ - cls_flower filters are kept in a separated list from "ethtool"
+   filters (so that section of the original cover letter is no longer
+   valid);
+ - The patch adding support for ethtool filters is now independent from
+   the rest of the series;
+
+Original cover letter:
+
+This series enables some ethtool and tc-flower filters to be offloaded
+to igb-based network controllers. This is useful when the system
+configurator want to steer kinds of traffic to a specific hardware
+queue.
+
+The first two commits are bug fixes.
+
+The basis of this series is to export the internal API used to
+configure address filters, so they can be used by ethtool, and
+extending the functionality so an source address can be handled.
+
+Then, we enable the tc-flower offloading implementation to re-use the
+same infrastructure as ethtool, and storing them in the per-adapter
+"nfc" (Network Filter Config?) list. But for consistency, for
+destructive access they are separated, i.e. an filter added by
+tc-flower can only be removed by tc-flower, but ethtool can read them
+all.
+
+Only support for VLAN Prio, Source and Destination MAC Address, and
+Ethertype is enabled for now.
+
+Open question:
+  - igb is initialized with the number of traffic classes as 1, if we
+  want to use multiple traffic classes we need to increase this value,
+  the only way I could find is to use mqprio (for example). Should igb
+  be initialized with, say, the number of queues as its "num_tc"?
+
+
+Vinicius Costa Gomes (10):
+  igb: Fix not adding filter elements to the list
+  igb: Fix queue selection on MAC filters on i210
+  igb: Enable the hardware traffic class feature bit for igb models
+  igb: Add support for MAC address filters specifying source addresses
+  igb: Add support for enabling queue steering in filters
+  igb: Allow filters to be added for the local MAC address
+  igb: Enable nfc filters to specify MAC addresses
+  igb: Add MAC address support for ethtool nftuple filters
+  igb: Add the skeletons for tc-flower offloading
+  igb: Add support for adding offloaded clsflower filters
+
+ drivers/net/ethernet/intel/igb/e1000_defines.h |   2 +
+ drivers/net/ethernet/intel/igb/igb.h           |  13 +
+ drivers/net/ethernet/intel/igb/igb_ethtool.c   |  65 ++++-
+ drivers/net/ethernet/intel/igb/igb_main.c      | 370 ++++++++++++++++++++++++-
+ 4 files changed, 433 insertions(+), 17 deletions(-)
+
+--
+2.16.3
