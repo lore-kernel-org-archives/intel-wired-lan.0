@@ -1,39 +1,35 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Thu, 29 Mar 2018 14:07:44 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v6 03/10] igb: Enable the
- hardware traffic class feature bit for igb models
-In-Reply-To: <20180329210751.11531-1-vinicius.gomes@intel.com>
-References: <20180329210751.11531-1-vinicius.gomes@intel.com>
-Message-ID: <20180329210751.11531-4-vinicius.gomes@intel.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Thu, 29 Mar 2018 22:02:21 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Fix error return code
+ in ice_init_hw()
+In-Reply-To: <1522241445-77090-1-git-send-email-weiyongjun1@huawei.com>
+References: <1522241445-77090-1-git-send-email-weiyongjun1@huawei.com>
+Message-ID: <C25D919FD1849B409D8D987DDC7FCD26194A4C58@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This will allow functionality depending on the hardware being traffic
-class aware to work. In particular the tc-flower offloading checks
-verifies that this bit is set.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Wei Yongjun
+> Sent: Wednesday, March 28, 2018 5:51 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org; kernel-janitors at vger.kernel.org; Wei
+> Yongjun <weiyongjun1@huawei.com>; netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH net-next] ice: Fix error return code in
+> ice_init_hw()
+> 
+> Fix to return error code ICE_ERR_NO_MEMORY from the alloc error handling
+> case instead of 0, as done elsewhere in this function.
+> 
+> Fixes: dc49c7723676 ("ice: Get MAC/PHY/link info and scheduler topology")
+> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_common.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 3 +++
- 1 file changed, 3 insertions(+)
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 0a79fef3c4fb..976898d39d6e 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2807,6 +2807,9 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (hw->mac.type >= e1000_82576)
- 		netdev->features |= NETIF_F_SCTP_CRC;
- 
-+	if (hw->mac.type >= e1000_i350)
-+		netdev->features |= NETIF_F_HW_TC;
-+
- #define IGB_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
- 				  NETIF_F_GSO_GRE_CSUM | \
- 				  NETIF_F_GSO_IPXIP4 | \
--- 
-2.16.3
 
