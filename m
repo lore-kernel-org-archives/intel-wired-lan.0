@@ -1,100 +1,97 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Thu, 29 Mar 2018 14:07:47 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v6 06/10] igb: Allow filters to
- be added for the local MAC address
+Date: Thu, 29 Mar 2018 14:07:48 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v6 07/10] igb: Enable nfc
+ filters to specify MAC addresses
 In-Reply-To: <20180329210751.11531-1-vinicius.gomes@intel.com>
 References: <20180329210751.11531-1-vinicius.gomes@intel.com>
-Message-ID: <20180329210751.11531-7-vinicius.gomes@intel.com>
+Message-ID: <20180329210751.11531-8-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Users expect that when adding a steering filter for the local MAC
-address, that all the traffic directed to that address will go to some
-queue.
+This allows igb_add_filter()/igb_erase_filter() to work on filters
+that include MAC addresses (both source and destination).
 
-Currently, it's not possible to configure entries in the "in use"
-state, which is the normal state of the local MAC address entry (it is
-the default), this patch allows to override the steering configuration
-of "in use" entries, if the filter to be added match the address and
-address type (source or destination) of an existing entry.
-
-There is a bit of a special handling for entries referring to the
-local MAC address, when they are removed, only the steering
-configuration is reset.
+For now, this only exposes the functionality, the next commit glues
+ethtool into this. Later in this series, these APIs are used to allow
+offloading of cls_flower filters.
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 40 +++++++++++++++++++++++++++----
- 1 file changed, 36 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/igb/igb.h         |  4 ++++
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 28 ++++++++++++++++++++++++++++
+ 2 files changed, 32 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index e3da35cab786..1b6fad88107a 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -6844,6 +6844,27 @@ static void igb_set_default_mac_filter(struct igb_adapter *adapter)
- 	igb_rar_set_index(adapter, 0);
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index f48ba090fd6a..b9b965921e9f 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -442,6 +442,8 @@ struct hwmon_buff {
+ enum igb_filter_match_flags {
+ 	IGB_FILTER_FLAG_ETHER_TYPE = 0x1,
+ 	IGB_FILTER_FLAG_VLAN_TCI   = 0x2,
++	IGB_FILTER_FLAG_SRC_MAC_ADDR   = 0x4,
++	IGB_FILTER_FLAG_DST_MAC_ADDR   = 0x8,
+ };
+ 
+ #define IGB_MAX_RXNFC_FILTERS 16
+@@ -456,6 +458,8 @@ struct igb_nfc_input {
+ 	u8 match_flags;
+ 	__be16 etype;
+ 	__be16 vlan_tci;
++	u8 src_addr[ETH_ALEN];
++	u8 dst_addr[ETH_ALEN];
+ };
+ 
+ struct igb_nfc_filter {
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 5975d432836f..31b2960a7869 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -2776,6 +2776,25 @@ int igb_add_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
+ 			return err;
+ 	}
+ 
++	if (input->filter.match_flags & IGB_FILTER_FLAG_DST_MAC_ADDR) {
++		err = igb_add_mac_steering_filter(adapter,
++						  input->filter.dst_addr,
++						  input->action, 0);
++		err = min_t(int, err, 0);
++		if (err)
++			return err;
++	}
++
++	if (input->filter.match_flags & IGB_FILTER_FLAG_SRC_MAC_ADDR) {
++		err = igb_add_mac_steering_filter(adapter,
++						  input->filter.src_addr,
++						  input->action,
++						  IGB_MAC_STATE_SRC_ADDR);
++		err = min_t(int, err, 0);
++		if (err)
++			return err;
++	}
++
+ 	if (input->filter.match_flags & IGB_FILTER_FLAG_VLAN_TCI)
+ 		err = igb_rxnfc_write_vlan_prio_filter(adapter, input);
+ 
+@@ -2824,6 +2843,15 @@ int igb_erase_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
+ 		igb_clear_vlan_prio_filter(adapter,
+ 					   ntohs(input->filter.vlan_tci));
+ 
++	if (input->filter.match_flags & IGB_FILTER_FLAG_SRC_MAC_ADDR)
++		igb_del_mac_steering_filter(adapter, input->filter.src_addr,
++					    input->action,
++					    IGB_MAC_STATE_SRC_ADDR);
++
++	if (input->filter.match_flags & IGB_FILTER_FLAG_DST_MAC_ADDR)
++		igb_del_mac_steering_filter(adapter, input->filter.dst_addr,
++					    input->action, 0);
++
+ 	return 0;
  }
  
-+/* If the filter to be added and an already existing filter express
-+ * the same address and address type, it should be possible to only
-+ * override the other configurations, for example the queue to steer
-+ * traffic.
-+ */
-+static bool igb_mac_entry_can_be_used(const struct igb_mac_addr *entry,
-+				      const u8 *addr, const u8 flags)
-+{
-+	if (!(entry->state & IGB_MAC_STATE_IN_USE))
-+		return true;
-+
-+	if ((entry->state & IGB_MAC_STATE_SRC_ADDR) !=
-+	    (flags & IGB_MAC_STATE_SRC_ADDR))
-+		return false;
-+
-+	if (!ether_addr_equal(addr, entry->addr))
-+		return false;
-+
-+	return true;
-+}
-+
- /* Add a MAC filter for 'addr' directing matching traffic to 'queue',
-  * 'flags' is used to indicate what kind of match is made, match is by
-  * default for the destination address, if matching by source address
-@@ -6866,7 +6887,8 @@ static int igb_add_mac_filter_flags(struct igb_adapter *adapter,
- 	 * addresses.
- 	 */
- 	for (i = 0; i < rar_entries; i++) {
--		if (adapter->mac_table[i].state & IGB_MAC_STATE_IN_USE)
-+		if (!igb_mac_entry_can_be_used(&adapter->mac_table[i],
-+					       addr, flags))
- 			continue;
- 
- 		ether_addr_copy(adapter->mac_table[i].addr, addr);
-@@ -6918,9 +6940,19 @@ static int igb_del_mac_filter_flags(struct igb_adapter *adapter,
- 		if (!ether_addr_equal(adapter->mac_table[i].addr, addr))
- 			continue;
- 
--		adapter->mac_table[i].state = 0;
--		memset(adapter->mac_table[i].addr, 0, ETH_ALEN);
--		adapter->mac_table[i].queue = 0;
-+		/* When a filter for the default address is "deleted",
-+		 * we return it to its initial configuration
-+		 */
-+		if (adapter->mac_table[i].state & IGB_MAC_STATE_DEFAULT) {
-+			adapter->mac_table[i].state =
-+				IGB_MAC_STATE_DEFAULT | IGB_MAC_STATE_IN_USE;
-+			adapter->mac_table[i].queue =
-+				adapter->vfs_allocated_count;
-+		} else {
-+			adapter->mac_table[i].state = 0;
-+			adapter->mac_table[i].queue = 0;
-+			memset(adapter->mac_table[i].addr, 0, ETH_ALEN);
-+		}
- 
- 		igb_rar_set_index(adapter, i);
- 		return 0;
 -- 
 2.16.3
 
