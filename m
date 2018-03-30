@@ -1,10 +1,10 @@
 From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Fri, 30 Mar 2018 16:05:25 -0500
-Subject: [Intel-wired-lan] [PATCH v5 06/14] net/mlx4_core: Report PCIe link
+Date: Fri, 30 Mar 2018 16:05:33 -0500
+Subject: [Intel-wired-lan] [PATCH v5 07/14] net/mlx5: Report PCIe link
  properties with pcie_print_link_status()
 In-Reply-To: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
 References: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <152244392572.135666.7155308160966322239.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <152244393306.135666.8628641854997205700.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,113 +14,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 From: Tal Gilboa <talgi@mellanox.com>
 
 Use pcie_print_link_status() to report PCIe link speed and possible
-limitations instead of implementing this in the driver itself.
+limitations.
 
 Signed-off-by: Tal Gilboa <talgi@mellanox.com>
-Signed-off-by: Tariq Toukan <tariqt@mellanox.com>
 [bhelgaas: changelog]
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Reviewed-by: Tariq Toukan <tariqt@mellanox.com>
 ---
- drivers/net/ethernet/mellanox/mlx4/main.c |   81 -----------------------------
- 1 file changed, 1 insertion(+), 80 deletions(-)
+ drivers/net/ethernet/mellanox/mlx5/core/main.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/ethernet/mellanox/mlx4/main.c b/drivers/net/ethernet/mellanox/mlx4/main.c
-index 4d84cab77105..30cacac54e69 100644
---- a/drivers/net/ethernet/mellanox/mlx4/main.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/main.c
-@@ -623,85 +623,6 @@ static int mlx4_dev_cap(struct mlx4_dev *dev, struct mlx4_dev_cap *dev_cap)
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/main.c b/drivers/net/ethernet/mellanox/mlx5/core/main.c
+index 2ef641c91c26..622f02d34aae 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/main.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/main.c
+@@ -1043,6 +1043,10 @@ static int mlx5_load_one(struct mlx5_core_dev *dev, struct mlx5_priv *priv,
+ 	dev_info(&pdev->dev, "firmware version: %d.%d.%d\n", fw_rev_maj(dev),
+ 		 fw_rev_min(dev), fw_rev_sub(dev));
  
--static int mlx4_get_pcie_dev_link_caps(struct mlx4_dev *dev,
--				       enum pci_bus_speed *speed,
--				       enum pcie_link_width *width)
--{
--	u32 lnkcap1, lnkcap2;
--	int err1, err2;
--
--#define  PCIE_MLW_CAP_SHIFT 4	/* start of MLW mask in link capabilities */
--
--	*speed = PCI_SPEED_UNKNOWN;
--	*width = PCIE_LNK_WIDTH_UNKNOWN;
--
--	err1 = pcie_capability_read_dword(dev->persist->pdev, PCI_EXP_LNKCAP,
--					  &lnkcap1);
--	err2 = pcie_capability_read_dword(dev->persist->pdev, PCI_EXP_LNKCAP2,
--					  &lnkcap2);
--	if (!err2 && lnkcap2) { /* PCIe r3.0-compliant */
--		if (lnkcap2 & PCI_EXP_LNKCAP2_SLS_8_0GB)
--			*speed = PCIE_SPEED_8_0GT;
--		else if (lnkcap2 & PCI_EXP_LNKCAP2_SLS_5_0GB)
--			*speed = PCIE_SPEED_5_0GT;
--		else if (lnkcap2 & PCI_EXP_LNKCAP2_SLS_2_5GB)
--			*speed = PCIE_SPEED_2_5GT;
--	}
--	if (!err1) {
--		*width = (lnkcap1 & PCI_EXP_LNKCAP_MLW) >> PCIE_MLW_CAP_SHIFT;
--		if (!lnkcap2) { /* pre-r3.0 */
--			if (lnkcap1 & PCI_EXP_LNKCAP_SLS_5_0GB)
--				*speed = PCIE_SPEED_5_0GT;
--			else if (lnkcap1 & PCI_EXP_LNKCAP_SLS_2_5GB)
--				*speed = PCIE_SPEED_2_5GT;
--		}
--	}
--
--	if (*speed == PCI_SPEED_UNKNOWN || *width == PCIE_LNK_WIDTH_UNKNOWN) {
--		return err1 ? err1 :
--			err2 ? err2 : -EINVAL;
--	}
--	return 0;
--}
--
--static void mlx4_check_pcie_caps(struct mlx4_dev *dev)
--{
--	enum pcie_link_width width, width_cap;
--	enum pci_bus_speed speed, speed_cap;
--	int err;
--
--#define PCIE_SPEED_STR(speed) \
--	(speed == PCIE_SPEED_8_0GT ? "8.0GT/s" : \
--	 speed == PCIE_SPEED_5_0GT ? "5.0GT/s" : \
--	 speed == PCIE_SPEED_2_5GT ? "2.5GT/s" : \
--	 "Unknown")
--
--	err = mlx4_get_pcie_dev_link_caps(dev, &speed_cap, &width_cap);
--	if (err) {
--		mlx4_warn(dev,
--			  "Unable to determine PCIe device BW capabilities\n");
--		return;
--	}
--
--	err = pcie_get_minimum_link(dev->persist->pdev, &speed, &width);
--	if (err || speed == PCI_SPEED_UNKNOWN ||
--	    width == PCIE_LNK_WIDTH_UNKNOWN) {
--		mlx4_warn(dev,
--			  "Unable to determine PCI device chain minimum BW\n");
--		return;
--	}
--
--	if (width != width_cap || speed != speed_cap)
--		mlx4_warn(dev,
--			  "PCIe BW is different than device's capability\n");
--
--	mlx4_info(dev, "PCIe link speed is %s, device supports %s\n",
--		  PCIE_SPEED_STR(speed), PCIE_SPEED_STR(speed_cap));
--	mlx4_info(dev, "PCIe link width is x%d, device supports x%d\n",
--		  width, width_cap);
--	return;
--}
--
- /*The function checks if there are live vf, return the num of them*/
- static int mlx4_how_many_lives_vf(struct mlx4_dev *dev)
- {
-@@ -3475,7 +3396,7 @@ static int mlx4_load_one(struct pci_dev *pdev, int pci_dev_data,
- 	 * express device capabilities are under-satisfied by the bus.
++	/* Only PFs hold the relevant PCIe information for this query */
++	if (mlx5_core_is_pf(dev))
++		pcie_print_link_status(dev->pdev);
++
+ 	/* on load removing any previous indication of internal error, device is
+ 	 * up
  	 */
- 	if (!mlx4_is_slave(dev))
--		mlx4_check_pcie_caps(dev);
-+		pcie_print_link_status(dev->persist->pdev);
- 
- 	/* In master functions, the communication channel must be initialized
- 	 * after obtaining its address from fw */
 
