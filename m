@@ -1,10 +1,10 @@
 From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Fri, 30 Mar 2018 16:05:48 -0500
-Subject: [Intel-wired-lan] [PATCH v5 09/14] bnx2x: Report PCIe link
+Date: Fri, 30 Mar 2018 16:05:55 -0500
+Subject: [Intel-wired-lan] [PATCH v5 10/14] bnxt_en: Report PCIe link
  properties with pcie_print_link_status()
 In-Reply-To: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
 References: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <152244394874.135666.109326052402414686.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <152244395584.135666.5051262627122405867.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -25,48 +25,44 @@ about 2000 MB/s for a 16 GT/s x1 link.
 
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c |   23 ++++++----------------
- 1 file changed, 6 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c |   19 +------------------
+ 1 file changed, 1 insertion(+), 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-index 74fc9af4aadb..c92601f1b0f3 100644
---- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-+++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-@@ -13922,8 +13922,6 @@ static int bnx2x_init_one(struct pci_dev *pdev,
- {
- 	struct net_device *dev = NULL;
- 	struct bnx2x *bp;
--	enum pcie_link_width pcie_width;
--	enum pci_bus_speed pcie_speed;
- 	int rc, max_non_def_sbs;
- 	int rx_count, tx_count, rss_count, doorbell_size;
- 	int max_cos_est;
-@@ -14091,21 +14089,12 @@ static int bnx2x_init_one(struct pci_dev *pdev,
- 		dev_addr_add(bp->dev, bp->fip_mac, NETDEV_HW_ADDR_T_SAN);
- 		rtnl_unlock();
- 	}
--	if (pcie_get_minimum_link(bp->pdev, &pcie_speed, &pcie_width) ||
--	    pcie_speed == PCI_SPEED_UNKNOWN ||
--	    pcie_width == PCIE_LNK_WIDTH_UNKNOWN)
--		BNX2X_DEV_INFO("Failed to determine PCI Express Bandwidth\n");
--	else
--		BNX2X_DEV_INFO(
--		       "%s (%c%d) PCI-E x%d %s found at mem %lx, IRQ %d, node addr %pM\n",
--		       board_info[ent->driver_data].name,
--		       (CHIP_REV(bp) >> 12) + 'A', (CHIP_METAL(bp) >> 4),
--		       pcie_width,
--		       pcie_speed == PCIE_SPEED_2_5GT ? "2.5GHz" :
--		       pcie_speed == PCIE_SPEED_5_0GT ? "5.0GHz" :
--		       pcie_speed == PCIE_SPEED_8_0GT ? "8.0GHz" :
--		       "Unknown",
--		       dev->base_addr, bp->pdev->irq, dev->dev_addr);
-+	BNX2X_DEV_INFO(
-+	       "%s (%c%d) PCI-E found at mem %lx, IRQ %d, node addr %pM\n",
-+	       board_info[ent->driver_data].name,
-+	       (CHIP_REV(bp) >> 12) + 'A', (CHIP_METAL(bp) >> 4),
-+	       dev->base_addr, bp->pdev->irq, dev->dev_addr);
-+	pcie_print_link_status(bp->pdev);
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt.c b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+index 1500243b9886..3be42431e029 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt.c
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+@@ -8469,22 +8469,6 @@ static int bnxt_init_mac_addr(struct bnxt *bp)
+ 	return rc;
+ }
  
- 	bnx2x_register_phc(bp);
+-static void bnxt_parse_log_pcie_link(struct bnxt *bp)
+-{
+-	enum pcie_link_width width = PCIE_LNK_WIDTH_UNKNOWN;
+-	enum pci_bus_speed speed = PCI_SPEED_UNKNOWN;
+-
+-	if (pcie_get_minimum_link(pci_physfn(bp->pdev), &speed, &width) ||
+-	    speed == PCI_SPEED_UNKNOWN || width == PCIE_LNK_WIDTH_UNKNOWN)
+-		netdev_info(bp->dev, "Failed to determine PCIe Link Info\n");
+-	else
+-		netdev_info(bp->dev, "PCIe: Speed %s Width x%d\n",
+-			    speed == PCIE_SPEED_2_5GT ? "2.5GT/s" :
+-			    speed == PCIE_SPEED_5_0GT ? "5.0GT/s" :
+-			    speed == PCIE_SPEED_8_0GT ? "8.0GT/s" :
+-			    "Unknown", width);
+-}
+-
+ static int bnxt_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ {
+ 	static int version_printed;
+@@ -8694,8 +8678,7 @@ static int bnxt_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	netdev_info(dev, "%s found at mem %lx, node addr %pM\n",
+ 		    board_info[ent->driver_data].name,
+ 		    (long)pci_resource_start(pdev, 0), dev->dev_addr);
+-
+-	bnxt_parse_log_pcie_link(bp);
++	pcie_print_link_status(pdev);
+ 
+ 	return 0;
  
 
