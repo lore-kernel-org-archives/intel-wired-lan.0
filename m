@@ -1,100 +1,65 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Fri, 30 Mar 2018 16:06:29 -0500
-Subject: [Intel-wired-lan] [PATCH v5 14/14] PCI: Remove unused
- pcie_get_minimum_link()
-In-Reply-To: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <152244398928.135666.9455627241901450661.stgit@bhelgaas-glaptop.roam.corp.google.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri, 30 Mar 2018 17:06:52 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH] igb: Fix the transmission mode
+ of queue 0 for Qav mode
+Message-ID: <20180331000652.2855-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+When Qav mode is enabled, queue 0 should be kept on Stream Reservation
+mode. From the i210 datasheet, section 8.12.19:
 
-In some cases pcie_get_minimum_link() returned misleading information
-because it found the slowest link and the narrowest link without
-considering the total bandwidth of the link.  For example, if the path
-contained a 16 GT/s x1 link and a 2.5 GT/s x16 link,
-pcie_get_minimum_link() returned 2.5 GT/s x1, which corresponds to 250 MB/s
-of bandwidth, not the actual available bandwidth of about 2000 MB/s for a
-16 GT/s x1 link.
+"Note: Queue0 QueueMode must be set to 1b when TransmitMode is set to
+Qav." ("QueueMode 1b" represents the Stream Reservation mode)
 
-Callers should use pcie_print_link_status() instead, or
-pcie_bandwidth_available() if they need more detailed information.
+The solution is to give queue 0 the all the credits it might need, so
+it has priority over queue 1.
 
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+A situation where this can happen is when cbs is "installed" only on
+queue 1, leaving queue 0 alone. For example:
+
+$ tc qdisc replace dev enp2s0 handle 100: parent root mqprio num_tc 3 \
+     	   map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 queues 1 at 0 1 at 1 2 at 2 hw 0
+
+$ tc qdisc replace dev enp2s0 parent 100:2 cbs locredit -1470 \
+     	   hicredit 30 sendslope -980000 idleslope 20000 offload 1
+
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/pci/pci.c   |   43 -------------------------------------------
- include/linux/pci.h |    2 --
- 2 files changed, 45 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index cec7aed09f6b..b6951c44ae6c 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -5103,49 +5103,6 @@ int pcie_set_mps(struct pci_dev *dev, int mps)
- }
- EXPORT_SYMBOL(pcie_set_mps);
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index c1c0bc30a16d..cce7ada89255 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -1700,7 +1700,22 @@ static void igb_configure_cbs(struct igb_adapter *adapter, int queue,
+ 	WARN_ON(hw->mac.type != e1000_i210);
+ 	WARN_ON(queue < 0 || queue > 1);
  
--/**
-- * pcie_get_minimum_link - determine minimum link settings of a PCI device
-- * @dev: PCI device to query
-- * @speed: storage for minimum speed
-- * @width: storage for minimum width
-- *
-- * This function will walk up the PCI device chain and determine the minimum
-- * link width and speed of the device.
-- */
--int pcie_get_minimum_link(struct pci_dev *dev, enum pci_bus_speed *speed,
--			  enum pcie_link_width *width)
--{
--	int ret;
--
--	*speed = PCI_SPEED_UNKNOWN;
--	*width = PCIE_LNK_WIDTH_UNKNOWN;
--
--	while (dev) {
--		u16 lnksta;
--		enum pci_bus_speed next_speed;
--		enum pcie_link_width next_width;
--
--		ret = pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
--		if (ret)
--			return ret;
--
--		next_speed = pcie_link_speed[lnksta & PCI_EXP_LNKSTA_CLS];
--		next_width = (lnksta & PCI_EXP_LNKSTA_NLW) >>
--			PCI_EXP_LNKSTA_NLW_SHIFT;
--
--		if (next_speed < *speed)
--			*speed = next_speed;
--
--		if (next_width < *width)
--			*width = next_width;
--
--		dev = dev->bus->self;
--	}
--
--	return 0;
--}
--EXPORT_SYMBOL(pcie_get_minimum_link);
--
- /**
-  * pcie_bandwidth_available - determine minimum link settings of a PCIe
-  *			      device and its bandwidth limitation
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 38f7957121ef..5ccee29fe1b1 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1081,8 +1081,6 @@ int pcie_get_readrq(struct pci_dev *dev);
- int pcie_set_readrq(struct pci_dev *dev, int rq);
- int pcie_get_mps(struct pci_dev *dev);
- int pcie_set_mps(struct pci_dev *dev, int mps);
--int pcie_get_minimum_link(struct pci_dev *dev, enum pci_bus_speed *speed,
--			  enum pcie_link_width *width);
- u32 pcie_bandwidth_available(struct pci_dev *dev, struct pci_dev **limiting_dev,
- 			     enum pci_bus_speed *speed,
- 			     enum pcie_link_width *width);
+-	if (enable) {
++	if (enable || queue == 0) {
++		/* i210 does not allow the queue 0 to be in the Strict
++		 * Priority mode while the Qav mode is enabled, so,
++		 * instead of disabling strict priority mode, we give
++		 * queue 0 the maximum of credits possible.
++		 *
++		 * See section 8.12.19 of the i210 datasheet, "Note:
++		 * Queue0 QueueMode must be set to 1b when
++		 * TransmitMode is set to Qav."
++		 */
++		if (queue == 0 && !enable) {
++			/* max "linkspeed" idleslope in kbps */
++			idleslope = 1000000;
++			hicredit = ETH_FRAME_LEN;
++		}
++
+ 		set_tx_desc_fetch_prio(hw, queue, TX_QUEUE_PRIO_HIGH);
+ 		set_queue_mode(hw, queue, QUEUE_MODE_STREAM_RESERVATION);
+ 
+-- 
+2.16.3
 
