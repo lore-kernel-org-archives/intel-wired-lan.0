@@ -1,244 +1,165 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 02 Apr 2018 23:42:18 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 704d7d2176b97751dfbd3df99ae857c77a7ac0d7
-Message-ID: <5ac24f5a.EwWIl0Mhg+AhjqNp%fengguang.wu@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Mon, 2 Apr 2018 15:56:06 +0000
+Subject: [Intel-wired-lan] [PATCH v5 12/14] fm10k: Report PCIe link
+ properties with pcie_print_link_status()
+In-Reply-To: <152244397259.135666.12655029447932912161.stgit@bhelgaas-glaptop.roam.corp.google.com>
+References: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <152244397259.135666.12655029447932912161.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5882D497EE@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 704d7d2176b97751dfbd3df99ae857c77a7ac0d7  ice: Fix error return code in ice_init_hw()
+> -----Original Message-----
+> From: Bjorn Helgaas [mailto:helgaas at kernel.org]
+> Sent: Friday, March 30, 2018 2:06 PM
+> To: Tal Gilboa <talgi@mellanox.com>
+> Cc: Tariq Toukan <tariqt@mellanox.com>; Keller, Jacob E
+> <jacob.e.keller@intel.com>; Ariel Elior <ariel.elior@cavium.com>; Ganesh
+> Goudar <ganeshgr@chelsio.com>; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; everest-linux-l2 at cavium.com; intel-wired-
+> lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org;
+> linux-pci at vger.kernel.org
+> Subject: [PATCH v5 12/14] fm10k: Report PCIe link properties with
+> pcie_print_link_status()
+> 
+> From: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> Use pcie_print_link_status() to report PCIe link speed and possible
+> limitations instead of implementing this in the driver itself.
+> 
+> Note that pcie_get_minimum_link() can return misleading information because
+> it finds the slowest link and the narrowest link without considering the
+> total bandwidth of the link.  If the path contains a 16 GT/s x1 link and a
+> 2.5 GT/s x16 link, pcie_get_minimum_link() returns 2.5 GT/s x1, which
+> corresponds to 250 MB/s of bandwidth, not the actual available bandwidth of
+> about 2000 MB/s for a 16 GT/s x1 link.
 
-elapsed time: 104m
+This comment is about what's being fixed, so it would have been easier to parse if it were written to more clearly indicate that we're removing (and not adding) this behavior.
 
-configs tested: 220
+Aside from the commit message (which I don't feel strongly enough needs a re-send of the patch) this looks good to me.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Acked-by: Jacob Keller <jacob.e.keller@intel.com>
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-a0-04022133
-x86_64                 randconfig-a0-04022221
-arm                         palmz72_defconfig
-arm64                            allmodconfig
-xtensa                              defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-04022158
-x86_64                randconfig-it0-04021021
-i386                               tinyconfig
-i386                   randconfig-x013-201813
-i386                   randconfig-x014-201813
-i386                   randconfig-x012-201813
-i386                   randconfig-x015-201813
-i386                   randconfig-x016-201813
-i386                   randconfig-x019-201813
-i386                   randconfig-x010-201813
-i386                   randconfig-x018-201813
-i386                   randconfig-x011-201813
-i386                   randconfig-x017-201813
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201813
-x86_64                 randconfig-x002-201813
-x86_64                 randconfig-x006-201813
-x86_64                 randconfig-x005-201813
-x86_64                 randconfig-x004-201813
-x86_64                 randconfig-x009-201813
-x86_64                 randconfig-x001-201813
-x86_64                 randconfig-x008-201813
-x86_64                 randconfig-x003-201813
-x86_64                 randconfig-x000-201813
-x86_64                 randconfig-x007-201813
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                   randconfig-i1-04021024
-i386                   randconfig-i0-04021024
-x86_64                 randconfig-v0-04021644
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                         cm_x2xx_defconfig
-m68k                        stmark2_defconfig
-mips                        maltaup_defconfig
-x86_64                 randconfig-g0-04021959
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-a0-201813
-i386                     randconfig-a1-201813
-x86_64                 randconfig-s0-04022133
-x86_64                 randconfig-s1-04022133
-x86_64                 randconfig-s2-04022133
-x86_64                 randconfig-s0-04022223
-x86_64                 randconfig-s1-04022223
-x86_64                 randconfig-s2-04022223
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                  colibri_pxa270_defconfig
-ia64                      gensparse_defconfig
-powerpc                      bamboo_defconfig
-powerpc                 mpc836x_rdk_defconfig
-s390                             allmodconfig
-arm                          nuc960_defconfig
-arm                         s3c2410_defconfig
-powerpc                        icon_defconfig
-sh                               allyesconfig
-x86_64                 randconfig-x010-201813
-x86_64                 randconfig-x013-201813
-x86_64                 randconfig-x014-201813
-x86_64                 randconfig-x019-201813
-x86_64                 randconfig-x011-201813
-x86_64                 randconfig-x015-201813
-x86_64                 randconfig-x018-201813
-x86_64                 randconfig-x016-201813
-x86_64                 randconfig-x017-201813
-x86_64                 randconfig-x012-201813
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s1-201813
-i386                     randconfig-s0-201813
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-04022128
-x86_64                 randconfig-s4-04022128
-x86_64                 randconfig-s5-04022128
-x86_64                 randconfig-s3-04022234
-x86_64                 randconfig-s4-04022234
-x86_64                 randconfig-s5-04022234
-x86_64                   randconfig-i0-201813
-i386                   randconfig-b0-04022015
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                            qcom_defconfig
-powerpc64                        allmodconfig
-mips                              allnoconfig
-powerpc                 mpc85xx_cds_defconfig
-um                                  defconfig
-arm                        neponset_defconfig
-arm                         s5pv210_defconfig
-mips                        nlm_xlp_defconfig
-x86_64                 randconfig-u0-04021643
-x86_64                 randconfig-u0-04022231
-mips                           xway_defconfig
-powerpc                 mpc832x_mds_defconfig
-powerpc               mpc86xx_basic_defconfig
-i386                   randconfig-h0-04022045
-i386                   randconfig-h1-04022045
-arm                          nuc950_defconfig
-blackfin                BF538-EZKIT_defconfig
-m68k                       m5275evb_defconfig
-openrisc                         allmodconfig
-x86_64                randconfig-ne0-04022157
-powerpc64                        allyesconfig
-sh                            hp6xx_defconfig
-sh                          r7785rp_defconfig
-x86_64                 randconfig-h0-04022034
-i386                   randconfig-x073-201813
-i386                   randconfig-x075-201813
-i386                   randconfig-x071-201813
-i386                   randconfig-x076-201813
-i386                   randconfig-x079-201813
-i386                   randconfig-x070-201813
-i386                   randconfig-x077-201813
-i386                   randconfig-x074-201813
-i386                   randconfig-x078-201813
-i386                   randconfig-x072-201813
-blackfin                  CM-BF537E_defconfig
-xtensa                           alldefconfig
-i386                  randconfig-sb0-04021656
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                randconfig-ws0-04022210
-x86_64                randconfig-ws0-04022011
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                        cerfcube_defconfig
-parisc                generic-64bit_defconfig
-sh                          landisk_defconfig
-arm                        magician_defconfig
-blackfin              BF561-ACVILON_defconfig
-sh                           se7722_defconfig
-x86_64                 randconfig-r0-04022158
-arm                       versatile_defconfig
-mips                       lemote2f_defconfig
-xtensa                generic_kc705_defconfig
-mips                                defconfig
-mips                      pistachio_defconfig
-i386                   randconfig-x006-201813
-i386                   randconfig-x000-201813
-i386                   randconfig-x008-201813
-i386                   randconfig-x009-201813
-i386                   randconfig-x004-201813
-i386                   randconfig-x003-201813
-i386                   randconfig-x005-201813
-i386                   randconfig-x002-201813
-i386                   randconfig-x001-201813
-i386                   randconfig-x007-201813
-i386                   randconfig-x0-04022159
-i386                   randconfig-x0-04022236
+Thanks Bjorn and Tal for fixing this!
 
-Thanks,
-Fengguang
+> 
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_pci.c |   87 --------------------------
+>  1 file changed, 1 insertion(+), 86 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> index a434fecfdfeb..aa05fb534942 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> @@ -2120,91 +2120,6 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
+>  	return 0;
+>  }
+> 
+> -static void fm10k_slot_warn(struct fm10k_intfc *interface)
+> -{
+> -	enum pcie_link_width width = PCIE_LNK_WIDTH_UNKNOWN;
+> -	enum pci_bus_speed speed = PCI_SPEED_UNKNOWN;
+> -	struct fm10k_hw *hw = &interface->hw;
+> -	int max_gts = 0, expected_gts = 0;
+> -
+> -	if (pcie_get_minimum_link(interface->pdev, &speed, &width) ||
+> -	    speed == PCI_SPEED_UNKNOWN || width ==
+> PCIE_LNK_WIDTH_UNKNOWN) {
+> -		dev_warn(&interface->pdev->dev,
+> -			 "Unable to determine PCI Express bandwidth.\n");
+> -		return;
+> -	}
+> -
+> -	switch (speed) {
+> -	case PCIE_SPEED_2_5GT:
+> -		/* 8b/10b encoding reduces max throughput by 20% */
+> -		max_gts = 2 * width;
+> -		break;
+> -	case PCIE_SPEED_5_0GT:
+> -		/* 8b/10b encoding reduces max throughput by 20% */
+> -		max_gts = 4 * width;
+> -		break;
+> -	case PCIE_SPEED_8_0GT:
+> -		/* 128b/130b encoding has less than 2% impact on throughput */
+> -		max_gts = 8 * width;
+> -		break;
+> -	default:
+> -		dev_warn(&interface->pdev->dev,
+> -			 "Unable to determine PCI Express bandwidth.\n");
+> -		return;
+> -	}
+> -
+> -	dev_info(&interface->pdev->dev,
+> -		 "PCI Express bandwidth of %dGT/s available\n",
+> -		 max_gts);
+> -	dev_info(&interface->pdev->dev,
+> -		 "(Speed:%s, Width: x%d, Encoding Loss:%s, Payload:%s)\n",
+> -		 (speed == PCIE_SPEED_8_0GT ? "8.0GT/s" :
+> -		  speed == PCIE_SPEED_5_0GT ? "5.0GT/s" :
+> -		  speed == PCIE_SPEED_2_5GT ? "2.5GT/s" :
+> -		  "Unknown"),
+> -		 hw->bus.width,
+> -		 (speed == PCIE_SPEED_2_5GT ? "20%" :
+> -		  speed == PCIE_SPEED_5_0GT ? "20%" :
+> -		  speed == PCIE_SPEED_8_0GT ? "<2%" :
+> -		  "Unknown"),
+> -		 (hw->bus.payload == fm10k_bus_payload_128 ? "128B" :
+> -		  hw->bus.payload == fm10k_bus_payload_256 ? "256B" :
+> -		  hw->bus.payload == fm10k_bus_payload_512 ? "512B" :
+> -		  "Unknown"));
+> -
+> -	switch (hw->bus_caps.speed) {
+> -	case fm10k_bus_speed_2500:
+> -		/* 8b/10b encoding reduces max throughput by 20% */
+> -		expected_gts = 2 * hw->bus_caps.width;
+> -		break;
+> -	case fm10k_bus_speed_5000:
+> -		/* 8b/10b encoding reduces max throughput by 20% */
+> -		expected_gts = 4 * hw->bus_caps.width;
+> -		break;
+> -	case fm10k_bus_speed_8000:
+> -		/* 128b/130b encoding has less than 2% impact on throughput */
+> -		expected_gts = 8 * hw->bus_caps.width;
+> -		break;
+> -	default:
+> -		dev_warn(&interface->pdev->dev,
+> -			 "Unable to determine expected PCI Express
+> bandwidth.\n");
+> -		return;
+> -	}
+> -
+> -	if (max_gts >= expected_gts)
+> -		return;
+> -
+> -	dev_warn(&interface->pdev->dev,
+> -		 "This device requires %dGT/s of bandwidth for optimal
+> performance.\n",
+> -		 expected_gts);
+> -	dev_warn(&interface->pdev->dev,
+> -		 "A %sslot with x%d lanes is suggested.\n",
+> -		 (hw->bus_caps.speed == fm10k_bus_speed_2500 ? "2.5GT/s " :
+> -		  hw->bus_caps.speed == fm10k_bus_speed_5000 ? "5.0GT/s " :
+> -		  hw->bus_caps.speed == fm10k_bus_speed_8000 ? "8.0GT/s " :
+> ""),
+> -		 hw->bus_caps.width);
+> -}
+> -
+>  /**
+>   * fm10k_probe - Device Initialization Routine
+>   * @pdev: PCI device information struct
+> @@ -2326,7 +2241,7 @@ static int fm10k_probe(struct pci_dev *pdev, const
+> struct pci_device_id *ent)
+>  	mod_timer(&interface->service_timer, (HZ * 2) + jiffies);
+> 
+>  	/* print warning for non-optimal configurations */
+> -	fm10k_slot_warn(interface);
+> +	pcie_print_link_status(interface->pdev);
+> 
+>  	/* report MAC address for logging */
+>  	dev_info(&pdev->dev, "%pM\n", netdev->dev_addr);
+
