@@ -1,209 +1,244 @@
-From: Tal Gilboa <talgi@mellanox.com>
-Date: Mon, 2 Apr 2018 17:34:06 +0300
-Subject: [Intel-wired-lan] [PATCH v5 03/14] PCI: Add
- pcie_bandwidth_capable() to compute max supported link bandwidth
-In-Reply-To: <20180402140501.GA244675@bhelgaas-glaptop.roam.corp.google.com>
-References: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <152244390359.135666.14890735614456271032.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <31e66048-e8b8-47ba-baf5-023560b4c124@mellanox.com>
- <20180402004049.GA131023@bhelgaas-glaptop.roam.corp.google.com>
- <50346f44-de3f-b226-69ad-6de45e94e261@mellanox.com>
- <20180402140501.GA244675@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <3decbba0-74a2-c906-b5b4-a04f261860eb@mellanox.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 02 Apr 2018 23:42:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 704d7d2176b97751dfbd3df99ae857c77a7ac0d7
+Message-ID: <5ac24f5a.EwWIl0Mhg+AhjqNp%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/2/2018 5:05 PM, Bjorn Helgaas wrote:
-> On Mon, Apr 02, 2018 at 10:34:58AM +0300, Tal Gilboa wrote:
->> On 4/2/2018 3:40 AM, Bjorn Helgaas wrote:
->>> On Sun, Apr 01, 2018 at 11:38:53PM +0300, Tal Gilboa wrote:
->>>> On 3/31/2018 12:05 AM, Bjorn Helgaas wrote:
->>>>> From: Tal Gilboa <talgi@mellanox.com>
->>>>>
->>>>> Add pcie_bandwidth_capable() to compute the max link bandwidth supported by
->>>>> a device, based on the max link speed and width, adjusted by the encoding
->>>>> overhead.
->>>>>
->>>>> The maximum bandwidth of the link is computed as:
->>>>>
->>>>>      max_link_speed * max_link_width * (1 - encoding_overhead)
->>>>>
->>>>> The encoding overhead is about 20% for 2.5 and 5.0 GT/s links using 8b/10b
->>>>> encoding, and about 1.5% for 8 GT/s or higher speed links using 128b/130b
->>>>> encoding.
->>>>>
->>>>> Signed-off-by: Tal Gilboa <talgi@mellanox.com>
->>>>> [bhelgaas: adjust for pcie_get_speed_cap() and pcie_get_width_cap()
->>>>> signatures, don't export outside drivers/pci]
->>>>> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
->>>>> Reviewed-by: Tariq Toukan <tariqt@mellanox.com>
->>>>> ---
->>>>>     drivers/pci/pci.c |   21 +++++++++++++++++++++
->>>>>     drivers/pci/pci.h |    9 +++++++++
->>>>>     2 files changed, 30 insertions(+)
->>>>>
->>>>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
->>>>> index 43075be79388..9ce89e254197 100644
->>>>> --- a/drivers/pci/pci.c
->>>>> +++ b/drivers/pci/pci.c
->>>>> @@ -5208,6 +5208,27 @@ enum pcie_link_width pcie_get_width_cap(struct pci_dev *dev)
->>>>>     	return PCIE_LNK_WIDTH_UNKNOWN;
->>>>>     }
->>>>> +/**
->>>>> + * pcie_bandwidth_capable - calculates a PCI device's link bandwidth capability
->>>>> + * @dev: PCI device
->>>>> + * @speed: storage for link speed
->>>>> + * @width: storage for link width
->>>>> + *
->>>>> + * Calculate a PCI device's link bandwidth by querying for its link speed
->>>>> + * and width, multiplying them, and applying encoding overhead.
->>>>> + */
->>>>> +u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed *speed,
->>>>> +			   enum pcie_link_width *width)
->>>>> +{
->>>>> +	*speed = pcie_get_speed_cap(dev);
->>>>> +	*width = pcie_get_width_cap(dev);
->>>>> +
->>>>> +	if (*speed == PCI_SPEED_UNKNOWN || *width == PCIE_LNK_WIDTH_UNKNOWN)
->>>>> +		return 0;
->>>>> +
->>>>> +	return *width * PCIE_SPEED2MBS_ENC(*speed);
->>>>> +}
->>>>> +
->>>>>     /**
->>>>>      * pci_select_bars - Make BAR mask from the type of resource
->>>>>      * @dev: the PCI device for which BAR mask is made
->>>>> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
->>>>> index 66738f1050c0..2a50172b9803 100644
->>>>> --- a/drivers/pci/pci.h
->>>>> +++ b/drivers/pci/pci.h
->>>>> @@ -261,8 +261,17 @@ void pci_disable_bridge_window(struct pci_dev *dev);
->>>>>     	 (speed) == PCIE_SPEED_2_5GT ? "2.5 GT/s" : \
->>>>>     	 "Unknown speed")
->>>>> +/* PCIe speed to Mb/s with encoding overhead: 20% for gen2, ~1.5% for gen3 */
->>>>> +#define PCIE_SPEED2MBS_ENC(speed) \
->>>>
->>>> Missing gen4.
->>>
->>> I made it "gen3+".  I think that's accurate, isn't it?  The spec
->>> doesn't seem to actually use "gen3" as a specific term, but sec 4.2.2
->>> says rates of 8 GT/s or higher (which I think includes gen3 and gen4)
->>> use 128b/130b encoding.
->>>
->>
->> I meant that PCIE_SPEED_16_0GT will return 0 from this macro since it wasn't
->> added. Need to return 15754.
-> 
-> Oh, duh, of course!  Sorry for being dense.  What about the following?
-> I included the calculation as opposed to just the magic numbers to try
-> to make it clear how they're derived.  This has the disadvantage of
-> truncating the result instead of rounding, but I doubt that's
-> significant in this context.  If it is, we could use the magic numbers
-> and put the computation in a comment.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 704d7d2176b97751dfbd3df99ae857c77a7ac0d7  ice: Fix error return code in ice_init_hw()
 
-We can always use DIV_ROUND_UP((speed * enc_nominator), 
-enc_denominator). I think this is confusing and since this introduces a 
-bandwidth limit I would prefer to give a wider limit than a wrong one, 
-even it is by less than 1Mb/s. My vote is for leaving it as you wrote below.
+elapsed time: 104m
 
-> 
-> Another question: we currently deal in Mb/s, not MB/s.  Mb/s has the
-> advantage of sort of corresponding to the GT/s numbers, but using MB/s
-> would have the advantage of smaller numbers that match the table here:
-> https://en.wikipedia.org/wiki/PCI_Express#History_and_revisions,
-> but I don't know what's most typical in user-facing situations.
-> What's better?
+configs tested: 220
 
-I don't know what's better but for network devices we measure bandwidth 
-in Gb/s, so presenting bandwidth in MB/s would mean additional 
-calculations. The truth is I would have prefer to use Gb/s instead of 
-Mb/s, but again, don't want to loss up to 1Gb/s.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> 
-> 
-> commit 946435491b35b7782157e9a4d1bd73071fba7709
-> Author: Tal Gilboa <talgi@mellanox.com>
-> Date:   Fri Mar 30 08:32:03 2018 -0500
-> 
->      PCI: Add pcie_bandwidth_capable() to compute max supported link bandwidth
->      
->      Add pcie_bandwidth_capable() to compute the max link bandwidth supported by
->      a device, based on the max link speed and width, adjusted by the encoding
->      overhead.
->      
->      The maximum bandwidth of the link is computed as:
->      
->        max_link_width * max_link_speed * (1 - encoding_overhead)
->      
->      2.5 and 5.0 GT/s links use 8b/10b encoding, which reduces the raw bandwidth
->      available by 20%; 8.0 GT/s and faster links use 128b/130b encoding, which
->      reduces it by about 1.5%.
->      
->      The result is in Mb/s, i.e., megabits/second, of raw bandwidth.
->      
->      Signed-off-by: Tal Gilboa <talgi@mellanox.com>
->      [bhelgaas: add 16 GT/s, adjust for pcie_get_speed_cap() and
->      pcie_get_width_cap() signatures, don't export outside drivers/pci]
->      Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
->      Reviewed-by: Tariq Toukan <tariqt@mellanox.com>
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 43075be79388..ff1e72060952 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -5208,6 +5208,28 @@ enum pcie_link_width pcie_get_width_cap(struct pci_dev *dev)
->   	return PCIE_LNK_WIDTH_UNKNOWN;
->   }
->   
-> +/**
-> + * pcie_bandwidth_capable - calculate a PCI device's link bandwidth capability
-> + * @dev: PCI device
-> + * @speed: storage for link speed
-> + * @width: storage for link width
-> + *
-> + * Calculate a PCI device's link bandwidth by querying for its link speed
-> + * and width, multiplying them, and applying encoding overhead.  The result
-> + * is in Mb/s, i.e., megabits/second of raw bandwidth.
-> + */
-> +u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed *speed,
-> +			   enum pcie_link_width *width)
-> +{
-> +	*speed = pcie_get_speed_cap(dev);
-> +	*width = pcie_get_width_cap(dev);
-> +
-> +	if (*speed == PCI_SPEED_UNKNOWN || *width == PCIE_LNK_WIDTH_UNKNOWN)
-> +		return 0;
-> +
-> +	return *width * PCIE_SPEED2MBS_ENC(*speed);
-> +}
-> +
->   /**
->    * pci_select_bars - Make BAR mask from the type of resource
->    * @dev: the PCI device for which BAR mask is made
-> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-> index 66738f1050c0..37f9299ed623 100644
-> --- a/drivers/pci/pci.h
-> +++ b/drivers/pci/pci.h
-> @@ -261,8 +261,18 @@ void pci_disable_bridge_window(struct pci_dev *dev);
->   	 (speed) == PCIE_SPEED_2_5GT ? "2.5 GT/s" : \
->   	 "Unknown speed")
->   
-> +/* PCIe speed to Mb/s reduced by encoding overhead */
-> +#define PCIE_SPEED2MBS_ENC(speed) \
-> +	((speed) == PCIE_SPEED_16_0GT ? (16000*(128/130)) : \
-> +	 (speed) == PCIE_SPEED_8_0GT  ?  (8000*(128/130)) : \
-> +	 (speed) == PCIE_SPEED_5_0GT  ?  (5000*(8/10)) : \
-> +	 (speed) == PCIE_SPEED_2_5GT  ?  (2500*(8/10)) : \
-> +	 0)
-> +
->   enum pci_bus_speed pcie_get_speed_cap(struct pci_dev *dev);
->   enum pcie_link_width pcie_get_width_cap(struct pci_dev *dev);
-> +u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed *speed,
-> +			   enum pcie_link_width *width);
->   
->   /* Single Root I/O Virtualization */
->   struct pci_sriov {
-> 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-a0-04022133
+x86_64                 randconfig-a0-04022221
+arm                         palmz72_defconfig
+arm64                            allmodconfig
+xtensa                              defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-04022158
+x86_64                randconfig-it0-04021021
+i386                               tinyconfig
+i386                   randconfig-x013-201813
+i386                   randconfig-x014-201813
+i386                   randconfig-x012-201813
+i386                   randconfig-x015-201813
+i386                   randconfig-x016-201813
+i386                   randconfig-x019-201813
+i386                   randconfig-x010-201813
+i386                   randconfig-x018-201813
+i386                   randconfig-x011-201813
+i386                   randconfig-x017-201813
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201813
+x86_64                 randconfig-x002-201813
+x86_64                 randconfig-x006-201813
+x86_64                 randconfig-x005-201813
+x86_64                 randconfig-x004-201813
+x86_64                 randconfig-x009-201813
+x86_64                 randconfig-x001-201813
+x86_64                 randconfig-x008-201813
+x86_64                 randconfig-x003-201813
+x86_64                 randconfig-x000-201813
+x86_64                 randconfig-x007-201813
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                   randconfig-i1-04021024
+i386                   randconfig-i0-04021024
+x86_64                 randconfig-v0-04021644
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                         cm_x2xx_defconfig
+m68k                        stmark2_defconfig
+mips                        maltaup_defconfig
+x86_64                 randconfig-g0-04021959
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-a0-201813
+i386                     randconfig-a1-201813
+x86_64                 randconfig-s0-04022133
+x86_64                 randconfig-s1-04022133
+x86_64                 randconfig-s2-04022133
+x86_64                 randconfig-s0-04022223
+x86_64                 randconfig-s1-04022223
+x86_64                 randconfig-s2-04022223
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                  colibri_pxa270_defconfig
+ia64                      gensparse_defconfig
+powerpc                      bamboo_defconfig
+powerpc                 mpc836x_rdk_defconfig
+s390                             allmodconfig
+arm                          nuc960_defconfig
+arm                         s3c2410_defconfig
+powerpc                        icon_defconfig
+sh                               allyesconfig
+x86_64                 randconfig-x010-201813
+x86_64                 randconfig-x013-201813
+x86_64                 randconfig-x014-201813
+x86_64                 randconfig-x019-201813
+x86_64                 randconfig-x011-201813
+x86_64                 randconfig-x015-201813
+x86_64                 randconfig-x018-201813
+x86_64                 randconfig-x016-201813
+x86_64                 randconfig-x017-201813
+x86_64                 randconfig-x012-201813
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s1-201813
+i386                     randconfig-s0-201813
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-04022128
+x86_64                 randconfig-s4-04022128
+x86_64                 randconfig-s5-04022128
+x86_64                 randconfig-s3-04022234
+x86_64                 randconfig-s4-04022234
+x86_64                 randconfig-s5-04022234
+x86_64                   randconfig-i0-201813
+i386                   randconfig-b0-04022015
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                            qcom_defconfig
+powerpc64                        allmodconfig
+mips                              allnoconfig
+powerpc                 mpc85xx_cds_defconfig
+um                                  defconfig
+arm                        neponset_defconfig
+arm                         s5pv210_defconfig
+mips                        nlm_xlp_defconfig
+x86_64                 randconfig-u0-04021643
+x86_64                 randconfig-u0-04022231
+mips                           xway_defconfig
+powerpc                 mpc832x_mds_defconfig
+powerpc               mpc86xx_basic_defconfig
+i386                   randconfig-h0-04022045
+i386                   randconfig-h1-04022045
+arm                          nuc950_defconfig
+blackfin                BF538-EZKIT_defconfig
+m68k                       m5275evb_defconfig
+openrisc                         allmodconfig
+x86_64                randconfig-ne0-04022157
+powerpc64                        allyesconfig
+sh                            hp6xx_defconfig
+sh                          r7785rp_defconfig
+x86_64                 randconfig-h0-04022034
+i386                   randconfig-x073-201813
+i386                   randconfig-x075-201813
+i386                   randconfig-x071-201813
+i386                   randconfig-x076-201813
+i386                   randconfig-x079-201813
+i386                   randconfig-x070-201813
+i386                   randconfig-x077-201813
+i386                   randconfig-x074-201813
+i386                   randconfig-x078-201813
+i386                   randconfig-x072-201813
+blackfin                  CM-BF537E_defconfig
+xtensa                           alldefconfig
+i386                  randconfig-sb0-04021656
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                randconfig-ws0-04022210
+x86_64                randconfig-ws0-04022011
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                        cerfcube_defconfig
+parisc                generic-64bit_defconfig
+sh                          landisk_defconfig
+arm                        magician_defconfig
+blackfin              BF561-ACVILON_defconfig
+sh                           se7722_defconfig
+x86_64                 randconfig-r0-04022158
+arm                       versatile_defconfig
+mips                       lemote2f_defconfig
+xtensa                generic_kc705_defconfig
+mips                                defconfig
+mips                      pistachio_defconfig
+i386                   randconfig-x006-201813
+i386                   randconfig-x000-201813
+i386                   randconfig-x008-201813
+i386                   randconfig-x009-201813
+i386                   randconfig-x004-201813
+i386                   randconfig-x003-201813
+i386                   randconfig-x005-201813
+i386                   randconfig-x002-201813
+i386                   randconfig-x001-201813
+i386                   randconfig-x007-201813
+i386                   randconfig-x0-04022159
+i386                   randconfig-x0-04022236
+
+Thanks,
+Fengguang
