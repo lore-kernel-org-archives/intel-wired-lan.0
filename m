@@ -1,94 +1,248 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Mon,  2 Apr 2018 15:06:30 -0400
-Subject: [Intel-wired-lan] [PATCH v8 7/7] ixgbevf: eliminate duplicate
- barriers on weakly-ordered archs
-In-Reply-To: <1522695990-31082-1-git-send-email-okaya@codeaurora.org>
-References: <1522695990-31082-1-git-send-email-okaya@codeaurora.org>
-Message-ID: <1522695990-31082-8-git-send-email-okaya@codeaurora.org>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Mon, 2 Apr 2018 14:37:54 -0500
+Subject: [Intel-wired-lan] [PATCH v5 03/14] PCI: Add
+ pcie_bandwidth_capable() to compute max supported link bandwidth
+In-Reply-To: <02874ECE860811409154E81DA85FBB5882D4980A@ORSMSX115.amr.corp.intel.com>
+References: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <152244390359.135666.14890735614456271032.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <31e66048-e8b8-47ba-baf5-023560b4c124@mellanox.com>
+ <20180402004049.GA131023@bhelgaas-glaptop.roam.corp.google.com>
+ <50346f44-de3f-b226-69ad-6de45e94e261@mellanox.com>
+ <20180402140501.GA244675@bhelgaas-glaptop.roam.corp.google.com>
+ <3decbba0-74a2-c906-b5b4-a04f261860eb@mellanox.com>
+ <02874ECE860811409154E81DA85FBB5882D4980A@ORSMSX115.amr.corp.intel.com>
+Message-ID: <20180402193754.GK9322@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-memory-barriers.txt has been updated as follows:
+On Mon, Apr 02, 2018 at 04:00:16PM +0000, Keller, Jacob E wrote:
+> > -----Original Message-----
+> > From: Tal Gilboa [mailto:talgi at mellanox.com]
+> > Sent: Monday, April 02, 2018 7:34 AM
+> > To: Bjorn Helgaas <helgaas@kernel.org>
+> > Cc: Tariq Toukan <tariqt@mellanox.com>; Keller, Jacob E
+> > <jacob.e.keller@intel.com>; Ariel Elior <ariel.elior@cavium.com>; Ganesh
+> > Goudar <ganeshgr@chelsio.com>; Kirsher, Jeffrey T
+> > <jeffrey.t.kirsher@intel.com>; everest-linux-l2 at cavium.com; intel-wired-
+> > lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org;
+> > linux-pci at vger.kernel.org
+> > Subject: Re: [PATCH v5 03/14] PCI: Add pcie_bandwidth_capable() to compute
+> > max supported link bandwidth
+> > 
+> > On 4/2/2018 5:05 PM, Bjorn Helgaas wrote:
+> > > On Mon, Apr 02, 2018 at 10:34:58AM +0300, Tal Gilboa wrote:
+> > >> On 4/2/2018 3:40 AM, Bjorn Helgaas wrote:
+> > >>> On Sun, Apr 01, 2018 at 11:38:53PM +0300, Tal Gilboa wrote:
+> > >>>> On 3/31/2018 12:05 AM, Bjorn Helgaas wrote:
+> > >>>>> From: Tal Gilboa <talgi@mellanox.com>
+> > >>>>>
+> > >>>>> Add pcie_bandwidth_capable() to compute the max link bandwidth
+> > supported by
+> > >>>>> a device, based on the max link speed and width, adjusted by the
+> > encoding
+> > >>>>> overhead.
+> > >>>>>
+> > >>>>> The maximum bandwidth of the link is computed as:
+> > >>>>>
+> > >>>>>      max_link_speed * max_link_width * (1 - encoding_overhead)
+> > >>>>>
+> > >>>>> The encoding overhead is about 20% for 2.5 and 5.0 GT/s links using
+> > 8b/10b
+> > >>>>> encoding, and about 1.5% for 8 GT/s or higher speed links using 128b/130b
+> > >>>>> encoding.
+> > >>>>>
+> > >>>>> Signed-off-by: Tal Gilboa <talgi@mellanox.com>
+> > >>>>> [bhelgaas: adjust for pcie_get_speed_cap() and pcie_get_width_cap()
+> > >>>>> signatures, don't export outside drivers/pci]
+> > >>>>> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> > >>>>> Reviewed-by: Tariq Toukan <tariqt@mellanox.com>
+> > >>>>> ---
+> > >>>>>     drivers/pci/pci.c |   21 +++++++++++++++++++++
+> > >>>>>     drivers/pci/pci.h |    9 +++++++++
+> > >>>>>     2 files changed, 30 insertions(+)
+> > >>>>>
+> > >>>>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > >>>>> index 43075be79388..9ce89e254197 100644
+> > >>>>> --- a/drivers/pci/pci.c
+> > >>>>> +++ b/drivers/pci/pci.c
+> > >>>>> @@ -5208,6 +5208,27 @@ enum pcie_link_width
+> > pcie_get_width_cap(struct pci_dev *dev)
+> > >>>>>     	return PCIE_LNK_WIDTH_UNKNOWN;
+> > >>>>>     }
+> > >>>>> +/**
+> > >>>>> + * pcie_bandwidth_capable - calculates a PCI device's link bandwidth
+> > capability
+> > >>>>> + * @dev: PCI device
+> > >>>>> + * @speed: storage for link speed
+> > >>>>> + * @width: storage for link width
+> > >>>>> + *
+> > >>>>> + * Calculate a PCI device's link bandwidth by querying for its link speed
+> > >>>>> + * and width, multiplying them, and applying encoding overhead.
+> > >>>>> + */
+> > >>>>> +u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed
+> > *speed,
+> > >>>>> +			   enum pcie_link_width *width)
+> > >>>>> +{
+> > >>>>> +	*speed = pcie_get_speed_cap(dev);
+> > >>>>> +	*width = pcie_get_width_cap(dev);
+> > >>>>> +
+> > >>>>> +	if (*speed == PCI_SPEED_UNKNOWN || *width ==
+> > PCIE_LNK_WIDTH_UNKNOWN)
+> > >>>>> +		return 0;
+> > >>>>> +
+> > >>>>> +	return *width * PCIE_SPEED2MBS_ENC(*speed);
+> > >>>>> +}
+> > >>>>> +
+> > >>>>>     /**
+> > >>>>>      * pci_select_bars - Make BAR mask from the type of resource
+> > >>>>>      * @dev: the PCI device for which BAR mask is made
+> > >>>>> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> > >>>>> index 66738f1050c0..2a50172b9803 100644
+> > >>>>> --- a/drivers/pci/pci.h
+> > >>>>> +++ b/drivers/pci/pci.h
+> > >>>>> @@ -261,8 +261,17 @@ void pci_disable_bridge_window(struct pci_dev
+> > *dev);
+> > >>>>>     	 (speed) == PCIE_SPEED_2_5GT ? "2.5 GT/s" : \
+> > >>>>>     	 "Unknown speed")
+> > >>>>> +/* PCIe speed to Mb/s with encoding overhead: 20% for gen2, ~1.5% for
+> > gen3 */
+> > >>>>> +#define PCIE_SPEED2MBS_ENC(speed) \
+> > >>>>
+> > >>>> Missing gen4.
+> > >>>
+> > >>> I made it "gen3+".  I think that's accurate, isn't it?  The spec
+> > >>> doesn't seem to actually use "gen3" as a specific term, but sec 4.2.2
+> > >>> says rates of 8 GT/s or higher (which I think includes gen3 and gen4)
+> > >>> use 128b/130b encoding.
+> > >>>
+> > >>
+> > >> I meant that PCIE_SPEED_16_0GT will return 0 from this macro since it wasn't
+> > >> added. Need to return 15754.
+> > >
+> > > Oh, duh, of course!  Sorry for being dense.  What about the following?
+> > > I included the calculation as opposed to just the magic numbers to try
+> > > to make it clear how they're derived.  This has the disadvantage of
+> > > truncating the result instead of rounding, but I doubt that's
+> > > significant in this context.  If it is, we could use the magic numbers
+> > > and put the computation in a comment.
+> > 
+> > We can always use DIV_ROUND_UP((speed * enc_nominator),
+> > enc_denominator). I think this is confusing and since this introduces a
+> > bandwidth limit I would prefer to give a wider limit than a wrong one,
+> > even it is by less than 1Mb/s. My vote is for leaving it as you wrote below.
+> > 
+> > > Another question: we currently deal in Mb/s, not MB/s.  Mb/s has the
+> > > advantage of sort of corresponding to the GT/s numbers, but using MB/s
+> > > would have the advantage of smaller numbers that match the table here:
+> > > https://en.wikipedia.org/wiki/PCI_Express#History_and_revisions,
+> > > but I don't know what's most typical in user-facing situations.
+> > > What's better?
+> > 
+> > I don't know what's better but for network devices we measure bandwidth
+> > in Gb/s, so presenting bandwidth in MB/s would mean additional
+> > calculations. The truth is I would have prefer to use Gb/s instead of
+> > Mb/s, but again, don't want to loss up to 1Gb/s.
+> 
+> I prefer this version with the calculation in line since it makes
+> the derivation clear. Keeping them in Mb/s makes it easier to
+> convert to Gb/s, which is what most people would expect.
 
-"When using writel(), a prior wmb() is not needed to guarantee that the
-cache coherent memory writes have completed before writing to the MMIO
-region."
+OK, let's keep this patch as-is since returning Mb/s means we
+don't have to worry about floating point, and it sounds like we
+agree the truncation isn't a big deal.
 
-Remove old IA-64 comments in the code along with unneeded wmb() in front
-of writel().
+I'll post a proposal to convert to Gb/s when printing.
 
-There are places in the code where wmb() has been used as a double barrier
-for CPU and IO in place of smp_wmb() and wmb() as an optimization. For
-such places, keep the wmb() but replace the following writel() with
-writel_relaxed() to have a sequence as
-
-wmb()
-writel_relaxed()
-mmio_wb()
-
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 23 +++++++----------------
- 1 file changed, 7 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 757dac6..29b71a7 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -719,12 +719,6 @@ static void ixgbevf_alloc_rx_buffers(struct ixgbevf_ring *rx_ring,
- 		/* update next to alloc since we have filled the ring */
- 		rx_ring->next_to_alloc = i;
- 
--		/* Force memory writes to complete before letting h/w
--		 * know there are new descriptors to fetch.  (Only
--		 * applicable for weak-ordered memory model archs,
--		 * such as IA-64).
--		 */
--		wmb();
- 		writel(i, rx_ring->tail);
- 	}
- }
-@@ -1228,10 +1222,6 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
- 		struct ixgbevf_ring *xdp_ring =
- 			adapter->xdp_ring[rx_ring->queue_index];
- 
--		/* Force memory writes to complete before letting h/w
--		 * know there are new descriptors to fetch.
--		 */
--		wmb();
- 		writel(xdp_ring->next_to_use, xdp_ring->tail);
- 	}
- 
-@@ -3985,11 +3975,7 @@ static void ixgbevf_tx_map(struct ixgbevf_ring *tx_ring,
- 	/* set the timestamp */
- 	first->time_stamp = jiffies;
- 
--	/* Force memory writes to complete before letting h/w know there
--	 * are new descriptors to fetch.  (Only applicable for weak-ordered
--	 * memory model archs, such as IA-64).
--	 *
--	 * We also need this memory barrier (wmb) to make certain all of the
-+	/* We also need this memory barrier (wmb) to make certain all of the
- 	 * status bits have been updated before next_to_watch is written.
- 	 */
- 	wmb();
-@@ -4004,7 +3990,12 @@ static void ixgbevf_tx_map(struct ixgbevf_ring *tx_ring,
- 	tx_ring->next_to_use = i;
- 
- 	/* notify HW of packet */
--	writel(i, tx_ring->tail);
-+	writel_relaxed(i, tx_ring->tail);
-+
-+	/* We need this if more than one processor can write to our tail
-+	 * at a time, it synchronizes IO on IA64/Altix systems
-+	 */
-+	mmiowb();
- 
- 	return;
- dma_error:
--- 
-2.7.4
-
+> > > commit 946435491b35b7782157e9a4d1bd73071fba7709
+> > > Author: Tal Gilboa <talgi@mellanox.com>
+> > > Date:   Fri Mar 30 08:32:03 2018 -0500
+> > >
+> > >      PCI: Add pcie_bandwidth_capable() to compute max supported link
+> > bandwidth
+> > >
+> > >      Add pcie_bandwidth_capable() to compute the max link bandwidth
+> > supported by
+> > >      a device, based on the max link speed and width, adjusted by the encoding
+> > >      overhead.
+> > >
+> > >      The maximum bandwidth of the link is computed as:
+> > >
+> > >        max_link_width * max_link_speed * (1 - encoding_overhead)
+> > >
+> > >      2.5 and 5.0 GT/s links use 8b/10b encoding, which reduces the raw
+> > bandwidth
+> > >      available by 20%; 8.0 GT/s and faster links use 128b/130b encoding, which
+> > >      reduces it by about 1.5%.
+> > >
+> > >      The result is in Mb/s, i.e., megabits/second, of raw bandwidth.
+> > >
+> > >      Signed-off-by: Tal Gilboa <talgi@mellanox.com>
+> > >      [bhelgaas: add 16 GT/s, adjust for pcie_get_speed_cap() and
+> > >      pcie_get_width_cap() signatures, don't export outside drivers/pci]
+> > >      Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> > >      Reviewed-by: Tariq Toukan <tariqt@mellanox.com>
+> > >
+> > > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > > index 43075be79388..ff1e72060952 100644
+> > > --- a/drivers/pci/pci.c
+> > > +++ b/drivers/pci/pci.c
+> > > @@ -5208,6 +5208,28 @@ enum pcie_link_width pcie_get_width_cap(struct
+> > pci_dev *dev)
+> > >   	return PCIE_LNK_WIDTH_UNKNOWN;
+> > >   }
+> > >
+> > > +/**
+> > > + * pcie_bandwidth_capable - calculate a PCI device's link bandwidth capability
+> > > + * @dev: PCI device
+> > > + * @speed: storage for link speed
+> > > + * @width: storage for link width
+> > > + *
+> > > + * Calculate a PCI device's link bandwidth by querying for its link speed
+> > > + * and width, multiplying them, and applying encoding overhead.  The result
+> > > + * is in Mb/s, i.e., megabits/second of raw bandwidth.
+> > > + */
+> > > +u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed
+> > *speed,
+> > > +			   enum pcie_link_width *width)
+> > > +{
+> > > +	*speed = pcie_get_speed_cap(dev);
+> > > +	*width = pcie_get_width_cap(dev);
+> > > +
+> > > +	if (*speed == PCI_SPEED_UNKNOWN || *width ==
+> > PCIE_LNK_WIDTH_UNKNOWN)
+> > > +		return 0;
+> > > +
+> > > +	return *width * PCIE_SPEED2MBS_ENC(*speed);
+> > > +}
+> > > +
+> > >   /**
+> > >    * pci_select_bars - Make BAR mask from the type of resource
+> > >    * @dev: the PCI device for which BAR mask is made
+> > > diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> > > index 66738f1050c0..37f9299ed623 100644
+> > > --- a/drivers/pci/pci.h
+> > > +++ b/drivers/pci/pci.h
+> > > @@ -261,8 +261,18 @@ void pci_disable_bridge_window(struct pci_dev *dev);
+> > >   	 (speed) == PCIE_SPEED_2_5GT ? "2.5 GT/s" : \
+> > >   	 "Unknown speed")
+> > >
+> > > +/* PCIe speed to Mb/s reduced by encoding overhead */
+> > > +#define PCIE_SPEED2MBS_ENC(speed) \
+> > > +	((speed) == PCIE_SPEED_16_0GT ? (16000*(128/130)) : \
+> > > +	 (speed) == PCIE_SPEED_8_0GT  ?  (8000*(128/130)) : \
+> > > +	 (speed) == PCIE_SPEED_5_0GT  ?  (5000*(8/10)) : \
+> > > +	 (speed) == PCIE_SPEED_2_5GT  ?  (2500*(8/10)) : \
+> > > +	 0)
+> > > +
+> > >   enum pci_bus_speed pcie_get_speed_cap(struct pci_dev *dev);
+> > >   enum pcie_link_width pcie_get_width_cap(struct pci_dev *dev);
+> > > +u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed
+> > *speed,
+> > > +			   enum pcie_link_width *width);
+> > >
+> > >   /* Single Root I/O Virtualization */
+> > >   struct pci_sriov {
+> > >
