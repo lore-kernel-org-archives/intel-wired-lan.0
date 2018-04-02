@@ -1,11 +1,16 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Mon, 2 Apr 2018 15:56:06 +0000
-Subject: [Intel-wired-lan] [PATCH v5 12/14] fm10k: Report PCIe link
- properties with pcie_print_link_status()
-In-Reply-To: <152244397259.135666.12655029447932912161.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Date: Mon, 2 Apr 2018 16:00:16 +0000
+Subject: [Intel-wired-lan] [PATCH v5 03/14] PCI: Add
+ pcie_bandwidth_capable() to compute max supported link bandwidth
+In-Reply-To: <3decbba0-74a2-c906-b5b4-a04f261860eb@mellanox.com>
 References: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <152244397259.135666.12655029447932912161.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5882D497EE@ORSMSX115.amr.corp.intel.com>
+ <152244390359.135666.14890735614456271032.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <31e66048-e8b8-47ba-baf5-023560b4c124@mellanox.com>
+ <20180402004049.GA131023@bhelgaas-glaptop.roam.corp.google.com>
+ <50346f44-de3f-b226-69ad-6de45e94e261@mellanox.com>
+ <20180402140501.GA244675@bhelgaas-glaptop.roam.corp.google.com>
+ <3decbba0-74a2-c906-b5b4-a04f261860eb@mellanox.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5882D4980A@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,153 +18,228 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Bjorn Helgaas [mailto:helgaas at kernel.org]
-> Sent: Friday, March 30, 2018 2:06 PM
-> To: Tal Gilboa <talgi@mellanox.com>
+> From: Tal Gilboa [mailto:talgi at mellanox.com]
+> Sent: Monday, April 02, 2018 7:34 AM
+> To: Bjorn Helgaas <helgaas@kernel.org>
 > Cc: Tariq Toukan <tariqt@mellanox.com>; Keller, Jacob E
 > <jacob.e.keller@intel.com>; Ariel Elior <ariel.elior@cavium.com>; Ganesh
 > Goudar <ganeshgr@chelsio.com>; Kirsher, Jeffrey T
 > <jeffrey.t.kirsher@intel.com>; everest-linux-l2 at cavium.com; intel-wired-
 > lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org;
 > linux-pci at vger.kernel.org
-> Subject: [PATCH v5 12/14] fm10k: Report PCIe link properties with
-> pcie_print_link_status()
+> Subject: Re: [PATCH v5 03/14] PCI: Add pcie_bandwidth_capable() to compute
+> max supported link bandwidth
 > 
-> From: Bjorn Helgaas <bhelgaas@google.com>
+> On 4/2/2018 5:05 PM, Bjorn Helgaas wrote:
+> > On Mon, Apr 02, 2018 at 10:34:58AM +0300, Tal Gilboa wrote:
+> >> On 4/2/2018 3:40 AM, Bjorn Helgaas wrote:
+> >>> On Sun, Apr 01, 2018 at 11:38:53PM +0300, Tal Gilboa wrote:
+> >>>> On 3/31/2018 12:05 AM, Bjorn Helgaas wrote:
+> >>>>> From: Tal Gilboa <talgi@mellanox.com>
+> >>>>>
+> >>>>> Add pcie_bandwidth_capable() to compute the max link bandwidth
+> supported by
+> >>>>> a device, based on the max link speed and width, adjusted by the
+> encoding
+> >>>>> overhead.
+> >>>>>
+> >>>>> The maximum bandwidth of the link is computed as:
+> >>>>>
+> >>>>>      max_link_speed * max_link_width * (1 - encoding_overhead)
+> >>>>>
+> >>>>> The encoding overhead is about 20% for 2.5 and 5.0 GT/s links using
+> 8b/10b
+> >>>>> encoding, and about 1.5% for 8 GT/s or higher speed links using 128b/130b
+> >>>>> encoding.
+> >>>>>
+> >>>>> Signed-off-by: Tal Gilboa <talgi@mellanox.com>
+> >>>>> [bhelgaas: adjust for pcie_get_speed_cap() and pcie_get_width_cap()
+> >>>>> signatures, don't export outside drivers/pci]
+> >>>>> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> >>>>> Reviewed-by: Tariq Toukan <tariqt@mellanox.com>
+> >>>>> ---
+> >>>>>     drivers/pci/pci.c |   21 +++++++++++++++++++++
+> >>>>>     drivers/pci/pci.h |    9 +++++++++
+> >>>>>     2 files changed, 30 insertions(+)
+> >>>>>
+> >>>>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> >>>>> index 43075be79388..9ce89e254197 100644
+> >>>>> --- a/drivers/pci/pci.c
+> >>>>> +++ b/drivers/pci/pci.c
+> >>>>> @@ -5208,6 +5208,27 @@ enum pcie_link_width
+> pcie_get_width_cap(struct pci_dev *dev)
+> >>>>>     	return PCIE_LNK_WIDTH_UNKNOWN;
+> >>>>>     }
+> >>>>> +/**
+> >>>>> + * pcie_bandwidth_capable - calculates a PCI device's link bandwidth
+> capability
+> >>>>> + * @dev: PCI device
+> >>>>> + * @speed: storage for link speed
+> >>>>> + * @width: storage for link width
+> >>>>> + *
+> >>>>> + * Calculate a PCI device's link bandwidth by querying for its link speed
+> >>>>> + * and width, multiplying them, and applying encoding overhead.
+> >>>>> + */
+> >>>>> +u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed
+> *speed,
+> >>>>> +			   enum pcie_link_width *width)
+> >>>>> +{
+> >>>>> +	*speed = pcie_get_speed_cap(dev);
+> >>>>> +	*width = pcie_get_width_cap(dev);
+> >>>>> +
+> >>>>> +	if (*speed == PCI_SPEED_UNKNOWN || *width ==
+> PCIE_LNK_WIDTH_UNKNOWN)
+> >>>>> +		return 0;
+> >>>>> +
+> >>>>> +	return *width * PCIE_SPEED2MBS_ENC(*speed);
+> >>>>> +}
+> >>>>> +
+> >>>>>     /**
+> >>>>>      * pci_select_bars - Make BAR mask from the type of resource
+> >>>>>      * @dev: the PCI device for which BAR mask is made
+> >>>>> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> >>>>> index 66738f1050c0..2a50172b9803 100644
+> >>>>> --- a/drivers/pci/pci.h
+> >>>>> +++ b/drivers/pci/pci.h
+> >>>>> @@ -261,8 +261,17 @@ void pci_disable_bridge_window(struct pci_dev
+> *dev);
+> >>>>>     	 (speed) == PCIE_SPEED_2_5GT ? "2.5 GT/s" : \
+> >>>>>     	 "Unknown speed")
+> >>>>> +/* PCIe speed to Mb/s with encoding overhead: 20% for gen2, ~1.5% for
+> gen3 */
+> >>>>> +#define PCIE_SPEED2MBS_ENC(speed) \
+> >>>>
+> >>>> Missing gen4.
+> >>>
+> >>> I made it "gen3+".  I think that's accurate, isn't it?  The spec
+> >>> doesn't seem to actually use "gen3" as a specific term, but sec 4.2.2
+> >>> says rates of 8 GT/s or higher (which I think includes gen3 and gen4)
+> >>> use 128b/130b encoding.
+> >>>
+> >>
+> >> I meant that PCIE_SPEED_16_0GT will return 0 from this macro since it wasn't
+> >> added. Need to return 15754.
+> >
+> > Oh, duh, of course!  Sorry for being dense.  What about the following?
+> > I included the calculation as opposed to just the magic numbers to try
+> > to make it clear how they're derived.  This has the disadvantage of
+> > truncating the result instead of rounding, but I doubt that's
+> > significant in this context.  If it is, we could use the magic numbers
+> > and put the computation in a comment.
 > 
-> Use pcie_print_link_status() to report PCIe link speed and possible
-> limitations instead of implementing this in the driver itself.
+> We can always use DIV_ROUND_UP((speed * enc_nominator),
+> enc_denominator). I think this is confusing and since this introduces a
+> bandwidth limit I would prefer to give a wider limit than a wrong one,
+> even it is by less than 1Mb/s. My vote is for leaving it as you wrote below.
 > 
-> Note that pcie_get_minimum_link() can return misleading information because
-> it finds the slowest link and the narrowest link without considering the
-> total bandwidth of the link.  If the path contains a 16 GT/s x1 link and a
-> 2.5 GT/s x16 link, pcie_get_minimum_link() returns 2.5 GT/s x1, which
-> corresponds to 250 MB/s of bandwidth, not the actual available bandwidth of
-> about 2000 MB/s for a 16 GT/s x1 link.
+> >
+> > Another question: we currently deal in Mb/s, not MB/s.  Mb/s has the
+> > advantage of sort of corresponding to the GT/s numbers, but using MB/s
+> > would have the advantage of smaller numbers that match the table here:
+> > https://en.wikipedia.org/wiki/PCI_Express#History_and_revisions,
+> > but I don't know what's most typical in user-facing situations.
+> > What's better?
+> 
+> I don't know what's better but for network devices we measure bandwidth
+> in Gb/s, so presenting bandwidth in MB/s would mean additional
+> calculations. The truth is I would have prefer to use Gb/s instead of
+> Mb/s, but again, don't want to loss up to 1Gb/s.
+> 
 
-This comment is about what's being fixed, so it would have been easier to parse if it were written to more clearly indicate that we're removing (and not adding) this behavior.
+I prefer this version with the calculation in line since it makes the derivation clear. Keeping them in Mb/s makes it easier to convert to Gb/s, which is what most people would expect.
 
-Aside from the commit message (which I don't feel strongly enough needs a re-send of the patch) this looks good to me.
+Thanks,
+Jake
 
-Acked-by: Jacob Keller <jacob.e.keller@intel.com>
-
-Thanks Bjorn and Tal for fixing this!
-
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> ---
->  drivers/net/ethernet/intel/fm10k/fm10k_pci.c |   87 --------------------------
->  1 file changed, 1 insertion(+), 86 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> index a434fecfdfeb..aa05fb534942 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> @@ -2120,91 +2120,6 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
->  	return 0;
->  }
-> 
-> -static void fm10k_slot_warn(struct fm10k_intfc *interface)
-> -{
-> -	enum pcie_link_width width = PCIE_LNK_WIDTH_UNKNOWN;
-> -	enum pci_bus_speed speed = PCI_SPEED_UNKNOWN;
-> -	struct fm10k_hw *hw = &interface->hw;
-> -	int max_gts = 0, expected_gts = 0;
-> -
-> -	if (pcie_get_minimum_link(interface->pdev, &speed, &width) ||
-> -	    speed == PCI_SPEED_UNKNOWN || width ==
-> PCIE_LNK_WIDTH_UNKNOWN) {
-> -		dev_warn(&interface->pdev->dev,
-> -			 "Unable to determine PCI Express bandwidth.\n");
-> -		return;
-> -	}
-> -
-> -	switch (speed) {
-> -	case PCIE_SPEED_2_5GT:
-> -		/* 8b/10b encoding reduces max throughput by 20% */
-> -		max_gts = 2 * width;
-> -		break;
-> -	case PCIE_SPEED_5_0GT:
-> -		/* 8b/10b encoding reduces max throughput by 20% */
-> -		max_gts = 4 * width;
-> -		break;
-> -	case PCIE_SPEED_8_0GT:
-> -		/* 128b/130b encoding has less than 2% impact on throughput */
-> -		max_gts = 8 * width;
-> -		break;
-> -	default:
-> -		dev_warn(&interface->pdev->dev,
-> -			 "Unable to determine PCI Express bandwidth.\n");
-> -		return;
-> -	}
-> -
-> -	dev_info(&interface->pdev->dev,
-> -		 "PCI Express bandwidth of %dGT/s available\n",
-> -		 max_gts);
-> -	dev_info(&interface->pdev->dev,
-> -		 "(Speed:%s, Width: x%d, Encoding Loss:%s, Payload:%s)\n",
-> -		 (speed == PCIE_SPEED_8_0GT ? "8.0GT/s" :
-> -		  speed == PCIE_SPEED_5_0GT ? "5.0GT/s" :
-> -		  speed == PCIE_SPEED_2_5GT ? "2.5GT/s" :
-> -		  "Unknown"),
-> -		 hw->bus.width,
-> -		 (speed == PCIE_SPEED_2_5GT ? "20%" :
-> -		  speed == PCIE_SPEED_5_0GT ? "20%" :
-> -		  speed == PCIE_SPEED_8_0GT ? "<2%" :
-> -		  "Unknown"),
-> -		 (hw->bus.payload == fm10k_bus_payload_128 ? "128B" :
-> -		  hw->bus.payload == fm10k_bus_payload_256 ? "256B" :
-> -		  hw->bus.payload == fm10k_bus_payload_512 ? "512B" :
-> -		  "Unknown"));
-> -
-> -	switch (hw->bus_caps.speed) {
-> -	case fm10k_bus_speed_2500:
-> -		/* 8b/10b encoding reduces max throughput by 20% */
-> -		expected_gts = 2 * hw->bus_caps.width;
-> -		break;
-> -	case fm10k_bus_speed_5000:
-> -		/* 8b/10b encoding reduces max throughput by 20% */
-> -		expected_gts = 4 * hw->bus_caps.width;
-> -		break;
-> -	case fm10k_bus_speed_8000:
-> -		/* 128b/130b encoding has less than 2% impact on throughput */
-> -		expected_gts = 8 * hw->bus_caps.width;
-> -		break;
-> -	default:
-> -		dev_warn(&interface->pdev->dev,
-> -			 "Unable to determine expected PCI Express
-> bandwidth.\n");
-> -		return;
-> -	}
-> -
-> -	if (max_gts >= expected_gts)
-> -		return;
-> -
-> -	dev_warn(&interface->pdev->dev,
-> -		 "This device requires %dGT/s of bandwidth for optimal
-> performance.\n",
-> -		 expected_gts);
-> -	dev_warn(&interface->pdev->dev,
-> -		 "A %sslot with x%d lanes is suggested.\n",
-> -		 (hw->bus_caps.speed == fm10k_bus_speed_2500 ? "2.5GT/s " :
-> -		  hw->bus_caps.speed == fm10k_bus_speed_5000 ? "5.0GT/s " :
-> -		  hw->bus_caps.speed == fm10k_bus_speed_8000 ? "8.0GT/s " :
-> ""),
-> -		 hw->bus_caps.width);
-> -}
-> -
->  /**
->   * fm10k_probe - Device Initialization Routine
->   * @pdev: PCI device information struct
-> @@ -2326,7 +2241,7 @@ static int fm10k_probe(struct pci_dev *pdev, const
-> struct pci_device_id *ent)
->  	mod_timer(&interface->service_timer, (HZ * 2) + jiffies);
-> 
->  	/* print warning for non-optimal configurations */
-> -	fm10k_slot_warn(interface);
-> +	pcie_print_link_status(interface->pdev);
-> 
->  	/* report MAC address for logging */
->  	dev_info(&pdev->dev, "%pM\n", netdev->dev_addr);
-
+> >
+> >
+> > commit 946435491b35b7782157e9a4d1bd73071fba7709
+> > Author: Tal Gilboa <talgi@mellanox.com>
+> > Date:   Fri Mar 30 08:32:03 2018 -0500
+> >
+> >      PCI: Add pcie_bandwidth_capable() to compute max supported link
+> bandwidth
+> >
+> >      Add pcie_bandwidth_capable() to compute the max link bandwidth
+> supported by
+> >      a device, based on the max link speed and width, adjusted by the encoding
+> >      overhead.
+> >
+> >      The maximum bandwidth of the link is computed as:
+> >
+> >        max_link_width * max_link_speed * (1 - encoding_overhead)
+> >
+> >      2.5 and 5.0 GT/s links use 8b/10b encoding, which reduces the raw
+> bandwidth
+> >      available by 20%; 8.0 GT/s and faster links use 128b/130b encoding, which
+> >      reduces it by about 1.5%.
+> >
+> >      The result is in Mb/s, i.e., megabits/second, of raw bandwidth.
+> >
+> >      Signed-off-by: Tal Gilboa <talgi@mellanox.com>
+> >      [bhelgaas: add 16 GT/s, adjust for pcie_get_speed_cap() and
+> >      pcie_get_width_cap() signatures, don't export outside drivers/pci]
+> >      Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> >      Reviewed-by: Tariq Toukan <tariqt@mellanox.com>
+> >
+> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > index 43075be79388..ff1e72060952 100644
+> > --- a/drivers/pci/pci.c
+> > +++ b/drivers/pci/pci.c
+> > @@ -5208,6 +5208,28 @@ enum pcie_link_width pcie_get_width_cap(struct
+> pci_dev *dev)
+> >   	return PCIE_LNK_WIDTH_UNKNOWN;
+> >   }
+> >
+> > +/**
+> > + * pcie_bandwidth_capable - calculate a PCI device's link bandwidth capability
+> > + * @dev: PCI device
+> > + * @speed: storage for link speed
+> > + * @width: storage for link width
+> > + *
+> > + * Calculate a PCI device's link bandwidth by querying for its link speed
+> > + * and width, multiplying them, and applying encoding overhead.  The result
+> > + * is in Mb/s, i.e., megabits/second of raw bandwidth.
+> > + */
+> > +u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed
+> *speed,
+> > +			   enum pcie_link_width *width)
+> > +{
+> > +	*speed = pcie_get_speed_cap(dev);
+> > +	*width = pcie_get_width_cap(dev);
+> > +
+> > +	if (*speed == PCI_SPEED_UNKNOWN || *width ==
+> PCIE_LNK_WIDTH_UNKNOWN)
+> > +		return 0;
+> > +
+> > +	return *width * PCIE_SPEED2MBS_ENC(*speed);
+> > +}
+> > +
+> >   /**
+> >    * pci_select_bars - Make BAR mask from the type of resource
+> >    * @dev: the PCI device for which BAR mask is made
+> > diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> > index 66738f1050c0..37f9299ed623 100644
+> > --- a/drivers/pci/pci.h
+> > +++ b/drivers/pci/pci.h
+> > @@ -261,8 +261,18 @@ void pci_disable_bridge_window(struct pci_dev *dev);
+> >   	 (speed) == PCIE_SPEED_2_5GT ? "2.5 GT/s" : \
+> >   	 "Unknown speed")
+> >
+> > +/* PCIe speed to Mb/s reduced by encoding overhead */
+> > +#define PCIE_SPEED2MBS_ENC(speed) \
+> > +	((speed) == PCIE_SPEED_16_0GT ? (16000*(128/130)) : \
+> > +	 (speed) == PCIE_SPEED_8_0GT  ?  (8000*(128/130)) : \
+> > +	 (speed) == PCIE_SPEED_5_0GT  ?  (5000*(8/10)) : \
+> > +	 (speed) == PCIE_SPEED_2_5GT  ?  (2500*(8/10)) : \
+> > +	 0)
+> > +
+> >   enum pci_bus_speed pcie_get_speed_cap(struct pci_dev *dev);
+> >   enum pcie_link_width pcie_get_width_cap(struct pci_dev *dev);
+> > +u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed
+> *speed,
+> > +			   enum pcie_link_width *width);
+> >
+> >   /* Single Root I/O Virtualization */
+> >   struct pci_sriov {
+> >
