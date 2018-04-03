@@ -1,69 +1,39 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Tue, 03 Apr 2018 17:16:14 -0400
-Subject: [Intel-wired-lan] [iwl next-queue PATCH 04/10] ixgbe/fm10k: Drop
- tracking stats for macvlan broadcast/multicast
+Date: Tue, 03 Apr 2018 17:16:19 -0400
+Subject: [Intel-wired-lan] [iwl next-queue PATCH 05/10] macvlan:
+ macvlan_count_rx shouldn't be static inline AND extern
 In-Reply-To: <20180403211519.7880.70243.stgit@ahduyck-green-test.jf.intel.com>
 References: <20180403211519.7880.70243.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <20180403211614.7880.55447.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <20180403211619.7880.24524.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Drop dead code now that we shouldn't be receiving broadcast or multicast
-frames on the queues associated to the macvlan netdev.
+It doesn't make sense to define macvlan_count_rx as a static inline and
+then add a forward declaration after that as an extern. I am dropping the
+extern declaration since it seems like it is something that likely got
+missed when the function was made an inline.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_main.c |    7 +++----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    7 +++----
- 2 files changed, 6 insertions(+), 8 deletions(-)
+ include/linux/if_macvlan.h |    4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index df86070..c51d61f 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -445,15 +445,14 @@ static void fm10k_type_trans(struct fm10k_ring *rx_ring,
- 			l2_accel = NULL;
- 	}
+diff --git a/include/linux/if_macvlan.h b/include/linux/if_macvlan.h
+index c5106ce..80089d6 100644
+--- a/include/linux/if_macvlan.h
++++ b/include/linux/if_macvlan.h
+@@ -61,10 +61,6 @@ extern int macvlan_common_newlink(struct net *src_net, struct net_device *dev,
+ 				  struct nlattr *tb[], struct nlattr *data[],
+ 				  struct netlink_ext_ack *extack);
  
--	skb->protocol = eth_type_trans(skb, dev);
+-extern void macvlan_count_rx(const struct macvlan_dev *vlan,
+-			     unsigned int len, bool success,
+-			     bool multicast);
 -
- 	/* Record Rx queue, or update macvlan statistics */
- 	if (!l2_accel)
- 		skb_record_rx_queue(skb, rx_ring->queue_index);
- 	else
- 		macvlan_count_rx(netdev_priv(dev), skb->len + ETH_HLEN, true,
--				 (skb->pkt_type == PACKET_BROADCAST) ||
--				 (skb->pkt_type == PACKET_MULTICAST));
-+				 false);
-+
-+	skb->protocol = eth_type_trans(skb, dev);
- }
+ extern void macvlan_dellink(struct net_device *dev, struct list_head *head);
  
- /**
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 6172c1b..2c5100e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1768,15 +1768,14 @@ static void ixgbe_process_skb_fields(struct ixgbe_ring *rx_ring,
- 	if (ixgbe_test_staterr(rx_desc, IXGBE_RXDADV_STAT_SECP))
- 		ixgbe_ipsec_rx(rx_ring, rx_desc, skb);
- 
--	skb->protocol = eth_type_trans(skb, dev);
--
- 	/* record Rx queue, or update MACVLAN statistics */
- 	if (netif_is_ixgbe(dev))
- 		skb_record_rx_queue(skb, rx_ring->queue_index);
- 	else
- 		macvlan_count_rx(netdev_priv(dev), skb->len + ETH_HLEN, true,
--				 (skb->pkt_type == PACKET_BROADCAST) ||
--				 (skb->pkt_type == PACKET_MULTICAST));
-+				 false);
-+
-+	skb->protocol = eth_type_trans(skb, dev);
- }
- 
- static void ixgbe_rx_skb(struct ixgbe_q_vector *q_vector,
+ extern int macvlan_link_register(struct rtnl_link_ops *ops);
 
