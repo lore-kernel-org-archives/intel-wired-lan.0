@@ -1,55 +1,76 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 3 Apr 2018 16:54:52 +0000
-Subject: [Intel-wired-lan] [PATCH v5 03/14] PCI: Add
- pcie_bandwidth_capable() to compute max supported link bandwidth
-In-Reply-To: <20180403140552.GB60020@bhelgaas-glaptop.roam.corp.google.com>
-References: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <152244390359.135666.14890735614456271032.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <31e66048-e8b8-47ba-baf5-023560b4c124@mellanox.com>
- <20180402004049.GA131023@bhelgaas-glaptop.roam.corp.google.com>
- <50346f44-de3f-b226-69ad-6de45e94e261@mellanox.com>
- <20180402140501.GA244675@bhelgaas-glaptop.roam.corp.google.com>
- <CA+P7+xr1N+X5DyPwNpWUtfqr9U4pLL9bMoB1wkBdf2K9n6cxKw@mail.gmail.com>
- <20180403140552.GB60020@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5882D4AA53@ORSMSX115.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 3 Apr 2018 10:47:59 -0700
+Subject: [Intel-wired-lan] [PATCH v8 0/7] netdev: intel: Eliminate
+ duplicate barriers on weakly-ordered archs
+In-Reply-To: <b8355df0-f3ba-c8c8-ccbb-53b1a294eab6@codeaurora.org>
+References: <1522695990-31082-1-git-send-email-okaya@codeaurora.org>
+ <b8355df0-f3ba-c8c8-ccbb-53b1a294eab6@codeaurora.org>
+Message-ID: <CAKgT0UfbCzTGuwCnYiXOBL5Lm3AhYw6Kf5i0K2e19mTjise+Ew@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Bjorn Helgaas [mailto:helgaas at kernel.org]
-> Sent: Tuesday, April 03, 2018 7:06 AM
-> To: Jacob Keller <jacob.keller@gmail.com>
-> Cc: Tal Gilboa <talgi@mellanox.com>; Tariq Toukan <tariqt@mellanox.com>;
-> Keller, Jacob E <jacob.e.keller@intel.com>; Ariel Elior <ariel.elior@cavium.com>;
-> Ganesh Goudar <ganeshgr@chelsio.com>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; everest-linux-l2 at cavium.com; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org;
-> linux-pci at vger.kernel.org
-> Subject: Re: [PATCH v5 03/14] PCI: Add pcie_bandwidth_capable() to compute
-> max supported link bandwidth
-> 
-> On Mon, Apr 02, 2018 at 05:30:54PM -0700, Jacob Keller wrote:
-> > On Mon, Apr 2, 2018 at 7:05 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > > +/* PCIe speed to Mb/s reduced by encoding overhead */
-> > > +#define PCIE_SPEED2MBS_ENC(speed) \
-> > > +       ((speed) == PCIE_SPEED_16_0GT ? (16000*(128/130)) : \
-> > > +        (speed) == PCIE_SPEED_8_0GT  ?  (8000*(128/130)) : \
-> > > +        (speed) == PCIE_SPEED_5_0GT  ?  (5000*(8/10)) : \
-> > > +        (speed) == PCIE_SPEED_2_5GT  ?  (2500*(8/10)) : \
-> > > +        0)
-> > > +
-> >
-> > Should this be "(speed * x ) / y" instead? wouldn't they calculate
-> > 128/130 and truncate that to zero before multiplying by the speed? Or
-> > are compilers smart enough to do this the other way to avoid the
-> > losses?
-> 
-> Yep, thanks for saving me yet more embarrassment.
+On Mon, Apr 2, 2018 at 7:59 PM, Sinan Kaya <okaya@codeaurora.org> wrote:
+> Alex,
+>
+> On 4/2/2018 3:06 PM, Sinan Kaya wrote:
+>> Code includes wmb() followed by writel() in multiple places. writel()
+>> already has a barrier on some architectures like arm64.
+>>
+>> This ends up CPU observing two barriers back to back before executing the
+>> register write.
+>>
+>> Since code already has an explicit barrier call, changing writel() to
+>> writel_relaxed().
+>>
+>> I did a regex search for wmb() followed by writel() in each drivers
+>> directory. I scrubbed the ones I care about in this series.
+>>
+>> I considered "ease of change", "popular usage" and "performance critical
+>> path" as the determining criteria for my filtering.
+>>
+>> We used relaxed API heavily on ARM for a long time but
+>> it did not exist on other architectures. For this reason, relaxed
+>> architectures have been paying double penalty in order to use the common
+>> drivers.
+>>
+>> Now that relaxed API is present on all architectures, we can go and scrub
+>> all drivers to see what needs to change and what can remain.
+>>
+>> We start with mostly used ones and hope to increase the coverage over time.
+>> It will take a while to cover all drivers.
+>>
+>> Feel free to apply patches individually.
+>>
+>> Change since 7:
+>>
+>> * API clarification with Linus and several architecture folks regarding
+>> writel()
+>>
+>> https://www.mail-archive.com/netdev at vger.kernel.org/msg225806.html
+>>
+>> * removed wmb() in front of writel() at several places.
+>> * remove old IA64 comments regarding ordering.
+>>
+>
+> What do you think about this version? Did I miss any SMP barriers?
 
-That's what patch review is for :D
+I would say we should probably just drop the whole set and start over.
+If we don't need the wmb() we are going to need to go through and
+clean up all of these paths and consider the barriers when updating
+the layout of the code.
 
-Thanks,
-Jake
+For example I have been thinking about it and in the case of x86 we
+are probably better off not bothering with the wmb() and
+writel_relaxed() and instead switch over to the smp_wmb() and writel()
+since in the case of a strongly ordered system like x86 or sparc this
+ends up translating out to a couple of compile barriers.
+
+I will also need time to reevaluate the Rx paths since dropping the
+wmb() may have other effects which I need to verify.
+
+Thanks.
+
+- Alex
