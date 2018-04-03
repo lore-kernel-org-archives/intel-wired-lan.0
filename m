@@ -1,11 +1,9 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 3 Apr 2018 18:52:47 +0000
-Subject: [Intel-wired-lan] [PATCH v8 2/7] ixgbe: eliminate duplicate
- barriers on weakly-ordered archs
-In-Reply-To: <1522695990-31082-3-git-send-email-okaya@codeaurora.org>
-References: <1522695990-31082-1-git-send-email-okaya@codeaurora.org>
- <1522695990-31082-3-git-send-email-okaya@codeaurora.org>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A95A833@ORSMSX104.amr.corp.intel.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Tue, 3 Apr 2018 19:25:57 +0000
+Subject: [Intel-wired-lan] [PATCH] ice: Bug fixes in ethtool code
+In-Reply-To: <20180402162606.16234-1-anirudh.venkataramanan@intel.com>
+References: <20180402162606.16234-1-anirudh.venkataramanan@intel.com>
+Message-ID: <C25D919FD1849B409D8D987DDC7FCD26194A4F98@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,39 +12,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Sinan Kaya
-> Sent: Monday, April 2, 2018 12:06 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: sulrich at codeaurora.org; netdev at vger.kernel.org;
-> timur at codeaurora.org; linux-kernel at vger.kernel.org; Sinan Kaya
-> <okaya@codeaurora.org>; intel-wired-lan at lists.osuosl.org; linux-arm-
-> msm at vger.kernel.org; linux-arm-kernel at lists.infradead.org
-> Subject: [Intel-wired-lan] [PATCH v8 2/7] ixgbe: eliminate duplicate barriers
-> on weakly-ordered archs
+> Behalf Of Anirudh Venkataramanan
+> Sent: Monday, April 2, 2018 9:26 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ice: Bug fixes in ethtool code
 > 
-> memory-barriers.txt has been updated as follows:
+> 1) Return correct size from ice_get_regs_len.
+> 2) Fix incorrect use of ARRAY_SIZE in ice_get_regs.
 > 
-> "When using writel(), a prior wmb() is not needed to guarantee that the
-> cache coherent memory writes have completed before writing to the MMIO
-> region."
-> 
-> Remove old IA-64 comments in the code along with unneeded wmb() in
-> front of writel().
-> 
-> There are places in the code where wmb() has been used as a double barrier
-> for CPU and IO in place of smp_wmb() and wmb() as an optimization. For
-> such places, keep the wmb() but replace the following writel() with
-> writel_relaxed() to have a sequence as
-> 
-> wmb()
-> writel_relaxed()
-> mmio_wb()
-> 
-> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+> Fixes: fcea6f3da546 (ice: Add stats and ethtool support)
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 23 ++---------------------
->  1 file changed, 2 insertions(+), 21 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
 
 
