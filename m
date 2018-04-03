@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 3 Apr 2018 18:52:13 +0000
-Subject: [Intel-wired-lan] [PATCH v8 1/7] i40e/i40evf: Eliminate
- duplicate barriers on weakly-ordered archs
-In-Reply-To: <1522695990-31082-2-git-send-email-okaya@codeaurora.org>
+Date: Tue, 3 Apr 2018 18:52:47 +0000
+Subject: [Intel-wired-lan] [PATCH v8 2/7] ixgbe: eliminate duplicate
+ barriers on weakly-ordered archs
+In-Reply-To: <1522695990-31082-3-git-send-email-okaya@codeaurora.org>
 References: <1522695990-31082-1-git-send-email-okaya@codeaurora.org>
- <1522695990-31082-2-git-send-email-okaya@codeaurora.org>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A95A822@ORSMSX104.amr.corp.intel.com>
+ <1522695990-31082-3-git-send-email-okaya@codeaurora.org>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A95A833@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,8 +21,8 @@ List-ID: <intel-wired-lan.osuosl.org>
 > timur at codeaurora.org; linux-kernel at vger.kernel.org; Sinan Kaya
 > <okaya@codeaurora.org>; intel-wired-lan at lists.osuosl.org; linux-arm-
 > msm at vger.kernel.org; linux-arm-kernel at lists.infradead.org
-> Subject: [Intel-wired-lan] [PATCH v8 1/7] i40e/i40evf: Eliminate duplicate
-> barriers on weakly-ordered archs
+> Subject: [Intel-wired-lan] [PATCH v8 2/7] ixgbe: eliminate duplicate barriers
+> on weakly-ordered archs
 > 
 > memory-barriers.txt has been updated as follows:
 > 
@@ -44,9 +44,8 @@ List-ID: <intel-wired-lan.osuosl.org>
 > 
 > Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 22 +++++++++-------------
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  8 +-------
->  2 files changed, 10 insertions(+), 20 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 23 ++---------------------
+>  1 file changed, 2 insertions(+), 21 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
