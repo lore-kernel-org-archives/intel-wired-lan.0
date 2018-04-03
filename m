@@ -1,52 +1,38 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 03 Apr 2018 11:26:07 -0700
-Subject: [Intel-wired-lan] [PATCH v8 0/7] netdev: intel: Eliminate
- duplicate barriers on weakly-ordered archs
-In-Reply-To: <92f46034-f041-05e4-56b7-01ae4cb04efc@codeaurora.org>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 3 Apr 2018 18:51:06 +0000
+Subject: [Intel-wired-lan] [PATCH v8 6/7] ixgbevf: keep writel() closer
+ to wmb()
+In-Reply-To: <1522695990-31082-7-git-send-email-okaya@codeaurora.org>
 References: <1522695990-31082-1-git-send-email-okaya@codeaurora.org>
- <b8355df0-f3ba-c8c8-ccbb-53b1a294eab6@codeaurora.org>
- <CAKgT0UfbCzTGuwCnYiXOBL5Lm3AhYw6Kf5i0K2e19mTjise+Ew@mail.gmail.com>
- <92f46034-f041-05e4-56b7-01ae4cb04efc@codeaurora.org>
-Message-ID: <1522779967.4236.22.camel@intel.com>
+ <1522695990-31082-7-git-send-email-okaya@codeaurora.org>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A95A803@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2018-04-03 at 13:50 -0400, Sinan Kaya wrote:
-> > > What do you think about this version? Did I miss any SMP
-> > > barriers?
-> > 
-> > I would say we should probably just drop the whole set and start
-> > over.
-> > If we don't need the wmb() we are going to need to go through and
-> > clean up all of these paths and consider the barriers when updating
-> > the layout of the code.
-> > 
-> > For example I have been thinking about it and in the case of x86 we
-> > are probably better off not bothering with the wmb() and
-> > writel_relaxed() and instead switch over to the smp_wmb() and
-> > writel()
-> > since in the case of a strongly ordered system like x86 or sparc
-> > this
-> > ends up translating out to a couple of compile barriers.
-> > 
-> > I will also need time to reevaluate the Rx paths since dropping the
-> > wmb() may have other effects which I need to verify.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Sinan Kaya
+> Sent: Monday, April 2, 2018 12:06 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: sulrich at codeaurora.org; netdev at vger.kernel.org;
+> timur at codeaurora.org; linux-kernel at vger.kernel.org; Sinan Kaya
+> <okaya@codeaurora.org>; intel-wired-lan at lists.osuosl.org; linux-arm-
+> msm at vger.kernel.org; linux-arm-kernel at lists.infradead.org
+> Subject: [Intel-wired-lan] [PATCH v8 6/7] ixgbevf: keep writel() closer to
+> wmb()
 > 
-> Sounds good, I'll let you work on it.
+> Remove ixgbevf_write_tail() in favor of moving writel() close to wmb().
 > 
-> @Jeff Kirsher: can you drop this version from your development branch
-> until
-> Alex posts the next version?
+> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+> Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      | 5 -----
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 6 +++---
+>  2 files changed, 3 insertions(+), 8 deletions(-)
 
-Already on it, I will work with Alex on any possible future versions of
-these patches.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180403/df3259a9/attachment-0001.asc>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
