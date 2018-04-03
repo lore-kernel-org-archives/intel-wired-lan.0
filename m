@@ -1,311 +1,36 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 03 Apr 2018 13:36:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 4c47f5d7386e18c3fd3cc3caf1159ca12ac33bd1
-Message-ID: <5ac312ec.P/UuZq3i5viBP/Au%fengguang.wu@intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Tue, 3 Apr 2018 09:05:52 -0500
+Subject: [Intel-wired-lan] [PATCH v5 03/14] PCI: Add
+ pcie_bandwidth_capable() to compute max supported link bandwidth
+In-Reply-To: <CA+P7+xr1N+X5DyPwNpWUtfqr9U4pLL9bMoB1wkBdf2K9n6cxKw@mail.gmail.com>
+References: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <152244390359.135666.14890735614456271032.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <31e66048-e8b8-47ba-baf5-023560b4c124@mellanox.com>
+ <20180402004049.GA131023@bhelgaas-glaptop.roam.corp.google.com>
+ <50346f44-de3f-b226-69ad-6de45e94e261@mellanox.com>
+ <20180402140501.GA244675@bhelgaas-glaptop.roam.corp.google.com>
+ <CA+P7+xr1N+X5DyPwNpWUtfqr9U4pLL9bMoB1wkBdf2K9n6cxKw@mail.gmail.com>
+Message-ID: <20180403140552.GB60020@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 4c47f5d7386e18c3fd3cc3caf1159ca12ac33bd1  igb: Enable the hardware traffic class feature bit for igb models
+On Mon, Apr 02, 2018 at 05:30:54PM -0700, Jacob Keller wrote:
+> On Mon, Apr 2, 2018 at 7:05 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> > +/* PCIe speed to Mb/s reduced by encoding overhead */
+> > +#define PCIE_SPEED2MBS_ENC(speed) \
+> > +       ((speed) == PCIE_SPEED_16_0GT ? (16000*(128/130)) : \
+> > +        (speed) == PCIE_SPEED_8_0GT  ?  (8000*(128/130)) : \
+> > +        (speed) == PCIE_SPEED_5_0GT  ?  (5000*(8/10)) : \
+> > +        (speed) == PCIE_SPEED_2_5GT  ?  (2500*(8/10)) : \
+> > +        0)
+> > +
+> 
+> Should this be "(speed * x ) / y" instead? wouldn't they calculate
+> 128/130 and truncate that to zero before multiplying by the speed? Or
+> are compilers smart enough to do this the other way to avoid the
+> losses?
 
-elapsed time: 593m
-
-configs tested: 287
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                            lart_defconfig
-m32r                           usrv_defconfig
-mips                         tb0226_defconfig
-x86_64                           allmodconfig
-blackfin                BF609-EZKIT_defconfig
-mips                          malta_defconfig
-x86_64                 randconfig-a0-04030927
-x86_64                 randconfig-a0-04031004
-x86_64                 randconfig-a0-04031110
-blackfin                BF561-EZKIT_defconfig
-mips                          ath25_defconfig
-s390                       zfcpdump_defconfig
-arm                          moxart_defconfig
-m32r                   m32700ut.smp_defconfig
-m68k                        stmark2_defconfig
-i386                   randconfig-c0-04030942
-i386                   randconfig-c0-04031038
-arm                                 defconfig
-powerpc64                        allyesconfig
-sh                               j2_defconfig
-x86_64                randconfig-in0-04030922
-i386                   randconfig-x010-201813
-i386                   randconfig-x011-201813
-i386                   randconfig-x012-201813
-i386                   randconfig-x013-201813
-i386                   randconfig-x014-201813
-i386                   randconfig-x015-201813
-i386                   randconfig-x016-201813
-i386                   randconfig-x017-201813
-i386                   randconfig-x018-201813
-i386                   randconfig-x019-201813
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201813
-x86_64                 randconfig-x000-201813
-x86_64                 randconfig-x001-201813
-x86_64                 randconfig-x002-201813
-x86_64                 randconfig-x003-201813
-x86_64                 randconfig-x004-201813
-x86_64                 randconfig-x005-201813
-x86_64                 randconfig-x006-201813
-x86_64                 randconfig-x007-201813
-x86_64                 randconfig-x008-201813
-x86_64                 randconfig-x009-201813
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201813
-i386                     randconfig-i1-201813
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                       imx_v6_v7_defconfig
-powerpc                 mpc836x_mds_defconfig
-xtensa                generic_kc705_defconfig
-m32r                      mappi.smp_defconfig
-mn10300                     asb2364_defconfig
-parisc                           alldefconfig
-powerpc                         c2k_defconfig
-powerpc                      walnut_defconfig
-sh                         microdev_defconfig
-arm                         s3c6400_defconfig
-powerpc                          allyesconfig
-sh                                allnoconfig
-x86_64                              defconfig
-microblaze                        allnoconfig
-sh                          lboxre2_defconfig
-x86_64                 randconfig-g0-04030936
-x86_64                 randconfig-g0-04031007
-x86_64                 randconfig-g0-04031118
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x010-201813
-x86_64                 randconfig-x011-201813
-x86_64                 randconfig-x012-201813
-x86_64                 randconfig-x013-201813
-x86_64                 randconfig-x014-201813
-x86_64                 randconfig-x015-201813
-x86_64                 randconfig-x016-201813
-x86_64                 randconfig-x017-201813
-x86_64                 randconfig-x018-201813
-x86_64                 randconfig-x019-201813
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-a0-201813
-i386                     randconfig-a1-201813
-x86_64                 randconfig-s0-04030922
-x86_64                 randconfig-s1-04030922
-x86_64                 randconfig-s2-04030922
-x86_64                 randconfig-s0-04031008
-x86_64                 randconfig-s1-04031008
-x86_64                 randconfig-s2-04031008
-frv                                 defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                   CM-BF548_defconfig
-ia64                         bigsur_defconfig
-mips                        qi_lb60_defconfig
-powerpc                     mpc83xx_defconfig
-um                               alldefconfig
-arm                         iop13xx_defconfig
-parisc                      default_defconfig
-powerpc                 mpc8315_rdb_defconfig
-powerpc                 xes_mpc85xx_defconfig
-arm                         cm_x300_defconfig
-arm                           tegra_defconfig
-blackfin               BF518F-EZBRD_defconfig
-m68k                            q40_defconfig
-parisc                generic-64bit_defconfig
-arm                       mainstone_defconfig
-mips                         mpc30x_defconfig
-mips                          rm200_defconfig
-s390                           gcov_defconfig
-arm                            dove_defconfig
-arm                        spear3xx_defconfig
-powerpc                        warp_defconfig
-sh                           se7722_defconfig
-blackfin                BF527-EZKIT_defconfig
-blackfin                 BlackStamp_defconfig
-m68k                        mvme16x_defconfig
-mips                      bmips_stb_defconfig
-mips                        generic_defconfig
-arm                          badge4_defconfig
-mips                            gpr_defconfig
-mips                         tb0219_defconfig
-sh                           sh2007_defconfig
-arm                           u8500_defconfig
-blackfin                  CM-BF537U_defconfig
-mips                        workpad_defconfig
-powerpc                     rainier_defconfig
-sh                           se7705_defconfig
-powerpc                     asp8347_defconfig
-powerpc                   lite5200b_defconfig
-powerpc                      pasemi_defconfig
-sh                            shmin_defconfig
-arm                       aspeed_g4_defconfig
-arm                       versatile_defconfig
-blackfin              BF561-ACVILON_defconfig
-mips                   sb1250_swarm_defconfig
-powerpc                     skiroot_defconfig
-i386                     randconfig-s0-201813
-i386                     randconfig-s1-201813
-x86_64                 randconfig-s3-04030946
-x86_64                 randconfig-s4-04030946
-x86_64                 randconfig-s5-04030946
-x86_64                 randconfig-s3-04031047
-x86_64                 randconfig-s4-04031047
-x86_64                 randconfig-s5-04031047
-arm                      footbridge_defconfig
-powerpc                 mpc837x_rdb_defconfig
-powerpc                     sbc834x_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-b0-04030939
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-blackfin                   CM-BF533_defconfig
-mips                     loongson1c_defconfig
-s390                    performance_defconfig
-sparc                       sparc32_defconfig
-blackfin                  TCM-BF518_defconfig
-cris                          dev88_defconfig
-mips                  mips_paravirt_defconfig
-sh                        edosk7705_defconfig
-arm                         axm55xx_defconfig
-um                                  defconfig
-x86_64                 randconfig-b0-04030913
-x86_64                 randconfig-b0-04030948
-m68k                       m5249evb_defconfig
-powerpc               mpc85xx_basic_defconfig
-mips                        bcm47xx_defconfig
-sh                         ecovec24_defconfig
-blackfin          BF527-AD7160-EVAL_defconfig
-m68k                             alldefconfig
-powerpc                      mgcoge_defconfig
-sh                             espt_defconfig
-sh                          kfr2r09_defconfig
-i386                                defconfig
-ia64                          tiger_defconfig
-mips                        bcm63xx_defconfig
-x86_64                 randconfig-u0-04030917
-x86_64                 randconfig-u0-04030943
-x86_64                 randconfig-u0-04031047
-i386                   randconfig-h0-04031103
-i386                   randconfig-h1-04031103
-powerpc                     taishan_defconfig
-arm                              allmodconfig
-arm                          iop33x_defconfig
-x86_64                randconfig-ne0-04030958
-arm                           omap1_defconfig
-arm                           stm32_defconfig
-sh                           se7712_defconfig
-arm                          nuc910_defconfig
-xtensa                  nommu_kc705_defconfig
-arm                              allyesconfig
-blackfin                    DNP5370_defconfig
-sh                        dreamcast_defconfig
-x86_64                 randconfig-h0-04030946
-i386                   randconfig-x070-201813
-i386                   randconfig-x071-201813
-i386                   randconfig-x072-201813
-i386                   randconfig-x073-201813
-i386                   randconfig-x074-201813
-i386                   randconfig-x075-201813
-i386                   randconfig-x076-201813
-i386                   randconfig-x077-201813
-i386                   randconfig-x078-201813
-i386                   randconfig-x079-201813
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-04030931
-i386                   randconfig-x000-201813
-i386                   randconfig-x001-201813
-i386                   randconfig-x002-201813
-i386                   randconfig-x003-201813
-i386                   randconfig-x004-201813
-i386                   randconfig-x005-201813
-i386                   randconfig-x006-201813
-i386                   randconfig-x007-201813
-i386                   randconfig-x008-201813
-i386                   randconfig-x009-201813
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                randconfig-ws0-04030959
-m68k                       m5275evb_defconfig
-s390                                defconfig
-x86_64                randconfig-ws0-04030913
-i386                             alldefconfig
-i386                              allnoconfig
-parisc                          712_defconfig
-powerpc                     tqm8560_defconfig
-powerpc                 mpc8272_ads_defconfig
-sh                          rsk7201_defconfig
-alpha                             allnoconfig
-arm                     eseries_pxa_defconfig
-powerpc                     sbc8548_defconfig
-arm                         orion5x_defconfig
-x86_64                 randconfig-r0-04030949
-x86_64                 randconfig-r0-04031114
-ia64                             allmodconfig
-powerpc                      katmai_defconfig
-powerpc                    sam440ep_defconfig
-i386                   randconfig-x0-04030916
-i386                   randconfig-x0-04030947
-i386                   randconfig-x0-04031057
-
-Thanks,
-Fengguang
+Yep, thanks for saving me yet more embarrassment.
