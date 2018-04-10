@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 10 Apr 2018 22:16:30 +0000
-Subject: [Intel-wired-lan] [iwl next-queue PATCH 08/10] ixgbe/fm10k:
- Only support macvlan offload for types that support destination filtering
-In-Reply-To: <20180403211635.7880.27194.stgit@ahduyck-green-test.jf.intel.com>
+Date: Tue, 10 Apr 2018 22:17:01 +0000
+Subject: [Intel-wired-lan] [iwl next-queue PATCH 09/10] ixgbe: Drop
+ real_adapter from l2 fwd acceleration structure
+In-Reply-To: <20180403211640.7880.19722.stgit@ahduyck-green-test.jf.intel.com>
 References: <20180403211519.7880.70243.stgit@ahduyck-green-test.jf.intel.com>
- <20180403211635.7880.27194.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A95AF3F@ORSMSX104.amr.corp.intel.com>
+ <20180403211640.7880.19722.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A95AF4F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,20 +19,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
 > <jeffrey.t.kirsher@intel.com>
 > Cc: netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [iwl next-queue PATCH 08/10] ixgbe/fm10k: Only
-> support macvlan offload for types that support destination filtering
+> Subject: [Intel-wired-lan] [iwl next-queue PATCH 09/10] ixgbe: Drop
+> real_adapter from l2 fwd acceleration structure
 > 
-> Both the ixgbe and fm10k drivers support destination filtering.
-> 
-> Instead of adding a ton of complexity to support either source or passthru
-> mode we can instead just avoid offloading them for now. Doing this we avoid
-> leaking packets into interfaces that aren't meant to receive them.
+> This patch drops the real_adapter member from the fwd_adapter structure.
+> The general idea behind the change is that the real_adapter is carrying
+> unnecessary data since we could always just grab the adapter structure from
+> netdev_priv(macvlan->lowerdev) if we really needed to get at it.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |    8 ++++++++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    7 +++++++
->  2 files changed, 15 insertions(+)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    1 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   28 ++++++++++++++------
+> -----
+>  2 files changed, 16 insertions(+), 13 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
