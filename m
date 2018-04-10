@@ -1,48 +1,39 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 10 Apr 2018 10:49:49 -0700
-Subject: [Intel-wired-lan] [PATCH] ice: Fix initialization for
- num_nodes_added
-Message-ID: <20180410174949.8141-1-anirudh.venkataramanan@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Tue, 10 Apr 2018 10:49:50 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v7 01/10] igb: Fix not adding
+ filter elements to the list
+In-Reply-To: <20180410174959.18757-1-vinicius.gomes@intel.com>
+References: <20180410174959.18757-1-vinicius.gomes@intel.com>
+Message-ID: <20180410174959.18757-2-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ice_sched_add_nodes_to_layer is used recursively, and so we start
-with num_nodes_added being 0. This way, in case of an error or if
-num_nodes is NULL, the function just returns 0 to indicate that no
-nodes were added.
+Because the order of the parameters passes to 'hlist_add_behind()' was
+inverted, the 'parent' node was added "behind" the 'input', as input
+is not in the list, this causes the 'input' node to be lost.
 
-Fixes commit 5513b920a4f7 ("ice: Update Tx scheduler tree for VSI
-multi-Tx queue support")
-
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Fixes: 0e71def25281 ("igb: add support of RX network flow classification")
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sched.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index f16ff3e4a840..2e6c1d92cc88 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -751,14 +751,14 @@ ice_sched_add_nodes_to_layer(struct ice_port_info *pi,
- 	u16 num_added = 0;
- 	u32 temp;
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index e77ba0d5866d..5975d432836f 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -2865,7 +2865,7 @@ static int igb_update_ethtool_nfc_entry(struct igb_adapter *adapter,
  
-+	*num_nodes_added = 0;
-+
- 	if (!num_nodes)
- 		return status;
+ 	/* add filter to the list */
+ 	if (parent)
+-		hlist_add_behind(&parent->nfc_node, &input->nfc_node);
++		hlist_add_behind(&input->nfc_node, &parent->nfc_node);
+ 	else
+ 		hlist_add_head(&input->nfc_node, &adapter->nfc_filter_list);
  
- 	if (!parent || layer < hw->sw_entry_point_layer)
- 		return ICE_ERR_PARAM;
- 
--	*num_nodes_added = 0;
--
- 	/* max children per node per layer */
- 	max_child_nodes =
- 	    le16_to_cpu(hw->layer_info[parent->tx_sched_layer].max_children);
 -- 
-2.14.3
+2.17.0
 
