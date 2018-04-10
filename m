@@ -1,290 +1,170 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 10 Apr 2018 10:49:59 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v7 10/10] igb: Add support for
- adding offloaded clsflower filters
-In-Reply-To: <20180410174959.18757-1-vinicius.gomes@intel.com>
-References: <20180410174959.18757-1-vinicius.gomes@intel.com>
-Message-ID: <20180410174959.18757-11-vinicius.gomes@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 11 Apr 2018 05:24:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 8afffd81dea02e4b25eadecdf3c9d0257b95847b
+Message-ID: <5acd2baa.weV9sb2bkcTQI1MP%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This allows filters added by tc-flower and specifying MAC addresses,
-Ethernet types, and the VLAN priority field, to be offloaded to the
-controller.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 8afffd81dea02e4b25eadecdf3c9d0257b95847b  ice: Fix initialization for num_nodes_added
 
-This reuses most of the infrastructure used by ethtool, but clsflower
-filters are kept in a separated list, so they are invisible to
-ethtool.
+elapsed time: 105m
 
-To setup clsflower offloading:
+configs tested: 146
 
-$ tc qdisc replace dev eth0 handle 100: parent root mqprio \
-     	   	   num_tc 3 map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 \
-		   queues 1 at 0 1 at 1 2 at 2 hw 0
-(clsflower offloading depends on the netword driver to be configured
-with multiple traffic classes, we use mqprio's 'num_tc' parameter to
-set it to 3)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-$ tc qdisc add dev eth0 ingress
+x86_64                 randconfig-a0-04110318
+i386                               tinyconfig
+arm                          collie_defconfig
+mips                       lemote2f_defconfig
+mips                           mtx1_defconfig
+arm64                               defconfig
+ia64                              allnoconfig
+m68k                         apollo_defconfig
+i386                   randconfig-c0-04110248
+microblaze                    nommu_defconfig
+powerpc                     skiroot_defconfig
+powerpc                  storcenter_defconfig
+i386                   randconfig-x014-201814
+i386                   randconfig-x013-201814
+i386                   randconfig-x015-201814
+i386                   randconfig-x012-201814
+i386                   randconfig-x019-201814
+i386                   randconfig-x016-201814
+i386                   randconfig-x010-201814
+i386                   randconfig-x018-201814
+i386                   randconfig-x017-201814
+i386                   randconfig-x011-201814
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+i386                     randconfig-n0-201814
+x86_64                 randconfig-x006-201814
+x86_64                 randconfig-x002-201814
+x86_64                 randconfig-x005-201814
+x86_64                 randconfig-x009-201814
+x86_64                 randconfig-x004-201814
+x86_64                 randconfig-x001-201814
+x86_64                 randconfig-x008-201814
+x86_64                 randconfig-x007-201814
+x86_64                 randconfig-x000-201814
+x86_64                 randconfig-x003-201814
+ia64                             alldefconfig
+ia64                                defconfig
+i386                     randconfig-i1-201814
+i386                     randconfig-i0-201814
+x86_64                 randconfig-x014-201814
+x86_64                 randconfig-x013-201814
+x86_64                 randconfig-x010-201814
+x86_64                 randconfig-x019-201814
+x86_64                 randconfig-x015-201814
+x86_64                 randconfig-x011-201814
+x86_64                 randconfig-x018-201814
+x86_64                 randconfig-x016-201814
+x86_64                 randconfig-x017-201814
+x86_64                 randconfig-x012-201814
+i386                     randconfig-a0-201814
+i386                     randconfig-a1-201814
+x86_64                 randconfig-s0-04110324
+x86_64                 randconfig-s1-04110324
+x86_64                 randconfig-s2-04110324
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s1-201814
+i386                     randconfig-s0-201814
+x86_64                 randconfig-s3-04110359
+x86_64                 randconfig-s4-04110359
+x86_64                 randconfig-s5-04110359
+x86_64                 randconfig-s3-04110428
+x86_64                 randconfig-s4-04110428
+x86_64                 randconfig-s5-04110428
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-i0-04082321
+i386                             allyesconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+powerpc                 mpc8560_ads_defconfig
+powerpc                      ppc6xx_defconfig
+x86_64                randconfig-ne0-04110401
+i386                             allmodconfig
+arm                           spitz_defconfig
+powerpc                        fsp2_defconfig
+sh                            hp6xx_defconfig
+i386                   randconfig-x000-201814
+i386                   randconfig-x006-201814
+i386                   randconfig-x008-201814
+i386                   randconfig-x003-201814
+i386                   randconfig-x004-201814
+i386                   randconfig-x009-201814
+i386                   randconfig-x002-201814
+i386                   randconfig-x005-201814
+i386                   randconfig-x001-201814
+i386                   randconfig-x007-201814
+i386                   randconfig-x075-201814
+i386                   randconfig-x073-201814
+i386                   randconfig-x076-201814
+i386                   randconfig-x071-201814
+i386                   randconfig-x079-201814
+i386                   randconfig-x077-201814
+i386                   randconfig-x070-201814
+i386                   randconfig-x078-201814
+i386                   randconfig-x074-201814
+i386                   randconfig-x072-201814
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                              federa-25
+x86_64                                  kexec
+x86_64                 randconfig-r0-04110323
 
-Examples of filters:
-
-$ tc filter add dev eth0 parent ffff: flower \
-     	    dst_mac aa:aa:aa:aa:aa:aa \
-	    hw_tc 2 skip_sw
-(just a simple filter filtering for the destination MAC address and
-steering that traffic to queue 2)
-
-$ tc filter add dev enp2s0 parent ffff: proto 0x22f0 flower \
-     	    src_mac cc:cc:cc:cc:cc:cc \
-	    hw_tc 1 skip_sw
-(as the i210 doesn't support steering traffic based on the source
-address alone, we need to use another steering traffic, in this case
-we are using the ethernet type (0x22f0) to steer traffic to queue 1)
-
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
----
- drivers/net/ethernet/intel/igb/igb.h      |   2 +
- drivers/net/ethernet/intel/igb/igb_main.c | 188 +++++++++++++++++++++-
- 2 files changed, 188 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index b9b965921e9f..a413284fada6 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -465,6 +465,7 @@ struct igb_nfc_input {
- struct igb_nfc_filter {
- 	struct hlist_node nfc_node;
- 	struct igb_nfc_input filter;
-+	unsigned long cookie;
- 	u16 etype_reg_index;
- 	u16 sw_idx;
- 	u16 action;
-@@ -604,6 +605,7 @@ struct igb_adapter {
- 
- 	/* RX network flow classification support */
- 	struct hlist_head nfc_filter_list;
-+	struct hlist_head cls_flower_list;
- 	unsigned int nfc_filter_count;
- 	/* lock for RX network flow classification filter */
- 	spinlock_t nfc_lock;
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index e3f33fb8064e..3c2e68dd0902 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2499,16 +2499,197 @@ static int igb_offload_cbs(struct igb_adapter *adapter,
- 	return 0;
- }
- 
-+#define ETHER_TYPE_FULL_MASK ((__force __be16)~0)
-+#define VLAN_PRIO_FULL_MASK (0x07)
-+
-+static int igb_parse_cls_flower(struct igb_adapter *adapter,
-+				struct tc_cls_flower_offload *f,
-+				int traffic_class,
-+				struct igb_nfc_filter *input)
-+{
-+	struct netlink_ext_ack *extack = f->common.extack;
-+
-+	if (f->dissector->used_keys &
-+	    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT(FLOW_DISSECTOR_KEY_VLAN))) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Unsupported key used, only BASIC, CONTROL, ETH_ADDRS and VLAN are supported");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_ETH_ADDRS)) {
-+		struct flow_dissector_key_eth_addrs *key, *mask;
-+
-+		key = skb_flow_dissector_target(f->dissector,
-+						FLOW_DISSECTOR_KEY_ETH_ADDRS,
-+						f->key);
-+		mask = skb_flow_dissector_target(f->dissector,
-+						 FLOW_DISSECTOR_KEY_ETH_ADDRS,
-+						 f->mask);
-+
-+		if (!is_zero_ether_addr(mask->dst)) {
-+			if (!is_broadcast_ether_addr(mask->dst)) {
-+				NL_SET_ERR_MSG_MOD(extack, "Only full masks are supported for destination MAC address");
-+				return -EINVAL;
-+			}
-+
-+			input->filter.match_flags |=
-+				IGB_FILTER_FLAG_DST_MAC_ADDR;
-+			ether_addr_copy(input->filter.dst_addr, key->dst);
-+		}
-+
-+		if (!is_zero_ether_addr(mask->src)) {
-+			if (!is_broadcast_ether_addr(mask->src)) {
-+				NL_SET_ERR_MSG_MOD(extack, "Only full masks are supported for source MAC address");
-+				return -EINVAL;
-+			}
-+
-+			input->filter.match_flags |=
-+				IGB_FILTER_FLAG_SRC_MAC_ADDR;
-+			ether_addr_copy(input->filter.src_addr, key->src);
-+		}
-+	}
-+
-+	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_BASIC)) {
-+		struct flow_dissector_key_basic *key, *mask;
-+
-+		key = skb_flow_dissector_target(f->dissector,
-+						FLOW_DISSECTOR_KEY_BASIC,
-+						f->key);
-+		mask = skb_flow_dissector_target(f->dissector,
-+						 FLOW_DISSECTOR_KEY_BASIC,
-+						 f->mask);
-+
-+		if (mask->n_proto) {
-+			if (mask->n_proto != ETHER_TYPE_FULL_MASK) {
-+				NL_SET_ERR_MSG_MOD(extack, "Only full mask is supported for EtherType filter");
-+				return -EINVAL;
-+			}
-+
-+			input->filter.match_flags |= IGB_FILTER_FLAG_ETHER_TYPE;
-+			input->filter.etype = key->n_proto;
-+		}
-+	}
-+
-+	if (dissector_uses_key(f->dissector, FLOW_DISSECTOR_KEY_VLAN)) {
-+		struct flow_dissector_key_vlan *key, *mask;
-+
-+		key = skb_flow_dissector_target(f->dissector,
-+						FLOW_DISSECTOR_KEY_VLAN,
-+						f->key);
-+		mask = skb_flow_dissector_target(f->dissector,
-+						 FLOW_DISSECTOR_KEY_VLAN,
-+						 f->mask);
-+
-+		if (mask->vlan_priority) {
-+			if (mask->vlan_priority != VLAN_PRIO_FULL_MASK) {
-+				NL_SET_ERR_MSG_MOD(extack, "Only full mask is supported for VLAN priority");
-+				return -EINVAL;
-+			}
-+
-+			input->filter.match_flags |= IGB_FILTER_FLAG_VLAN_TCI;
-+			input->filter.vlan_tci = key->vlan_priority;
-+		}
-+	}
-+
-+	input->action = traffic_class;
-+	input->cookie = f->cookie;
-+
-+	return 0;
-+}
-+
- static int igb_configure_clsflower(struct igb_adapter *adapter,
- 				   struct tc_cls_flower_offload *cls_flower)
- {
--	return -EOPNOTSUPP;
-+	struct netlink_ext_ack *extack = cls_flower->common.extack;
-+	struct igb_nfc_filter *filter, *f;
-+	int err, tc;
-+
-+	tc = tc_classid_to_hwtc(adapter->netdev, cls_flower->classid);
-+	if (tc < 0) {
-+		NL_SET_ERR_MSG_MOD(extack, "Invalid traffic class");
-+		return -EINVAL;
-+	}
-+
-+	filter = kzalloc(sizeof(*filter), GFP_KERNEL);
-+	if (!filter)
-+		return -ENOMEM;
-+
-+	err = igb_parse_cls_flower(adapter, cls_flower, tc, filter);
-+	if (err < 0)
-+		goto err_parse;
-+
-+	spin_lock(&adapter->nfc_lock);
-+
-+	hlist_for_each_entry(f, &adapter->nfc_filter_list, nfc_node) {
-+		if (!memcmp(&f->filter, &filter->filter, sizeof(f->filter))) {
-+			err = -EEXIST;
-+			NL_SET_ERR_MSG_MOD(extack,
-+					   "This filter is already set in ethtool");
-+			goto err_locked;
-+		}
-+	}
-+
-+	hlist_for_each_entry(f, &adapter->cls_flower_list, nfc_node) {
-+		if (!memcmp(&f->filter, &filter->filter, sizeof(f->filter))) {
-+			err = -EEXIST;
-+			NL_SET_ERR_MSG_MOD(extack,
-+					   "This filter is already set in cls_flower");
-+			goto err_locked;
-+		}
-+	}
-+
-+	err = igb_add_filter(adapter, filter);
-+	if (err < 0) {
-+		NL_SET_ERR_MSG_MOD(extack, "Could not add filter to the adapter");
-+		goto err_locked;
-+	}
-+
-+	hlist_add_head(&filter->nfc_node, &adapter->cls_flower_list);
-+
-+	spin_unlock(&adapter->nfc_lock);
-+
-+	return 0;
-+
-+err_locked:
-+	spin_unlock(&adapter->nfc_lock);
-+
-+err_parse:
-+	kfree(filter);
-+
-+	return err;
- }
- 
- static int igb_delete_clsflower(struct igb_adapter *adapter,
- 				struct tc_cls_flower_offload *cls_flower)
- {
--	return -EOPNOTSUPP;
-+	struct igb_nfc_filter *filter;
-+	int err;
-+
-+	spin_lock(&adapter->nfc_lock);
-+
-+	hlist_for_each_entry(filter, &adapter->cls_flower_list, nfc_node)
-+		if (filter->cookie == cls_flower->cookie)
-+			break;
-+
-+	if (!filter) {
-+		err = -ENOENT;
-+		goto out;
-+	}
-+
-+	err = igb_erase_filter(adapter, filter);
-+	if (err < 0)
-+		goto out;
-+
-+	hlist_del(&filter->nfc_node);
-+	kfree(filter);
-+
-+out:
-+	spin_unlock(&adapter->nfc_lock);
-+
-+	return err;
- }
- 
- static int igb_setup_tc_cls_flower(struct igb_adapter *adapter,
-@@ -9353,6 +9534,9 @@ static void igb_nfc_filter_exit(struct igb_adapter *adapter)
- 	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node)
- 		igb_erase_filter(adapter, rule);
- 
-+	hlist_for_each_entry(rule, &adapter->cls_flower_list, nfc_node)
-+		igb_erase_filter(adapter, rule);
-+
- 	spin_unlock(&adapter->nfc_lock);
- }
- 
--- 
-2.17.0
-
+Thanks,
+Fengguang
