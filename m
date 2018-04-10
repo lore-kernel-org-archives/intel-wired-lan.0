@@ -1,97 +1,118 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 10 Apr 2018 10:49:56 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v7 07/10] igb: Enable nfc
- filters to specify MAC addresses
+Date: Tue, 10 Apr 2018 10:49:57 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v7 08/10] igb: Add MAC address
+ support for ethtool nftuple filters
 In-Reply-To: <20180410174959.18757-1-vinicius.gomes@intel.com>
 References: <20180410174959.18757-1-vinicius.gomes@intel.com>
-Message-ID: <20180410174959.18757-8-vinicius.gomes@intel.com>
+Message-ID: <20180410174959.18757-9-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This allows igb_add_filter()/igb_erase_filter() to work on filters
-that include MAC addresses (both source and destination).
+This adds the capability of configuring the queue steering of arriving
+packets based on their source and destination MAC addresses.
 
-For now, this only exposes the functionality, the next commit glues
-ethtool into this. Later in this series, these APIs are used to allow
-offloading of cls_flower filters.
+Source address steering (i.e. driving traffic to a specific queue),
+for the i210, does not work, but filtering does (i.e. accepting
+traffic based on the source address). So, trying to add a filter
+specifying only a source address will be an error.
+
+In practical terms this adds support for the following use cases,
+characterized by these examples:
+
+$ ethtool -N eth0 flow-type ether dst aa:aa:aa:aa:aa:aa action 0
+(this will direct packets with destination address "aa:aa:aa:aa:aa:aa"
+to the RX queue 0)
+
+$ ethtool -N eth0 flow-type ether src 44:44:44:44:44:44 \
+  	     	  	    	  proto 0x22f0 action 3
+(this will direct packets with source address "44:44:44:44:44:44" and
+ethertype 0x22f0 to the RX queue 3)
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb.h         |  4 +++
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 28 ++++++++++++++++++++
- 2 files changed, 32 insertions(+)
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 43 ++++++++++++++++++--
+ 1 file changed, 39 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index f48ba090fd6a..b9b965921e9f 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -442,6 +442,8 @@ struct hwmon_buff {
- enum igb_filter_match_flags {
- 	IGB_FILTER_FLAG_ETHER_TYPE = 0x1,
- 	IGB_FILTER_FLAG_VLAN_TCI   = 0x2,
-+	IGB_FILTER_FLAG_SRC_MAC_ADDR   = 0x4,
-+	IGB_FILTER_FLAG_DST_MAC_ADDR   = 0x8,
- };
- 
- #define IGB_MAX_RXNFC_FILTERS 16
-@@ -456,6 +458,8 @@ struct igb_nfc_input {
- 	u8 match_flags;
- 	__be16 etype;
- 	__be16 vlan_tci;
-+	u8 src_addr[ETH_ALEN];
-+	u8 dst_addr[ETH_ALEN];
- };
- 
- struct igb_nfc_filter {
 diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 5975d432836f..31b2960a7869 100644
+index 31b2960a7869..6697c273ab59 100644
 --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
 +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2776,6 +2776,25 @@ int igb_add_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
- 			return err;
+@@ -2495,6 +2495,23 @@ static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
+ 			fsp->h_ext.vlan_tci = rule->filter.vlan_tci;
+ 			fsp->m_ext.vlan_tci = htons(VLAN_PRIO_MASK);
+ 		}
++		if (rule->filter.match_flags & IGB_FILTER_FLAG_DST_MAC_ADDR) {
++			ether_addr_copy(fsp->h_u.ether_spec.h_dest,
++					rule->filter.dst_addr);
++			/* As we only support matching by the full
++			 * mask, return the mask to userspace
++			 */
++			eth_broadcast_addr(fsp->m_u.ether_spec.h_dest);
++		}
++		if (rule->filter.match_flags & IGB_FILTER_FLAG_SRC_MAC_ADDR) {
++			ether_addr_copy(fsp->h_u.ether_spec.h_source,
++					rule->filter.src_addr);
++			/* As we only support matching by the full
++			 * mask, return the mask to userspace
++			 */
++			eth_broadcast_addr(fsp->m_u.ether_spec.h_source);
++		}
++
+ 		return 0;
+ 	}
+ 	return -EINVAL;
+@@ -2768,8 +2785,16 @@ static int igb_rxnfc_write_vlan_prio_filter(struct igb_adapter *adapter,
+ 
+ int igb_add_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
+ {
++	struct e1000_hw *hw = &adapter->hw;
+ 	int err = -EINVAL;
+ 
++	if (hw->mac.type == e1000_i210 &&
++	    !(input->filter.match_flags & ~IGB_FILTER_FLAG_SRC_MAC_ADDR)) {
++		dev_err(&adapter->pdev->dev,
++			"i210 doesn't support flow classification rules specifying only source addresses.\n");
++		return -EOPNOTSUPP;
++	}
++
+ 	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
+ 		err = igb_rxnfc_write_etype_filter(adapter, input);
+ 		if (err)
+@@ -2933,10 +2958,6 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
+ 	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW)
+ 		return -EINVAL;
+ 
+-	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK &&
+-	    fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK))
+-		return -EINVAL;
+-
+ 	input = kzalloc(sizeof(*input), GFP_KERNEL);
+ 	if (!input)
+ 		return -ENOMEM;
+@@ -2946,6 +2967,20 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
+ 		input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
  	}
  
-+	if (input->filter.match_flags & IGB_FILTER_FLAG_DST_MAC_ADDR) {
-+		err = igb_add_mac_steering_filter(adapter,
-+						  input->filter.dst_addr,
-+						  input->action, 0);
-+		err = min_t(int, err, 0);
-+		if (err)
-+			return err;
++	/* Only support matching addresses by the full mask */
++	if (is_broadcast_ether_addr(fsp->m_u.ether_spec.h_source)) {
++		input->filter.match_flags |= IGB_FILTER_FLAG_SRC_MAC_ADDR;
++		ether_addr_copy(input->filter.src_addr,
++				fsp->h_u.ether_spec.h_source);
 +	}
 +
-+	if (input->filter.match_flags & IGB_FILTER_FLAG_SRC_MAC_ADDR) {
-+		err = igb_add_mac_steering_filter(adapter,
-+						  input->filter.src_addr,
-+						  input->action,
-+						  IGB_MAC_STATE_SRC_ADDR);
-+		err = min_t(int, err, 0);
-+		if (err)
-+			return err;
++	/* Only support matching addresses by the full mask */
++	if (is_broadcast_ether_addr(fsp->m_u.ether_spec.h_dest)) {
++		input->filter.match_flags |= IGB_FILTER_FLAG_DST_MAC_ADDR;
++		ether_addr_copy(input->filter.dst_addr,
++				fsp->h_u.ether_spec.h_dest);
 +	}
 +
- 	if (input->filter.match_flags & IGB_FILTER_FLAG_VLAN_TCI)
- 		err = igb_rxnfc_write_vlan_prio_filter(adapter, input);
- 
-@@ -2824,6 +2843,15 @@ int igb_erase_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
- 		igb_clear_vlan_prio_filter(adapter,
- 					   ntohs(input->filter.vlan_tci));
- 
-+	if (input->filter.match_flags & IGB_FILTER_FLAG_SRC_MAC_ADDR)
-+		igb_del_mac_steering_filter(adapter, input->filter.src_addr,
-+					    input->action,
-+					    IGB_MAC_STATE_SRC_ADDR);
-+
-+	if (input->filter.match_flags & IGB_FILTER_FLAG_DST_MAC_ADDR)
-+		igb_del_mac_steering_filter(adapter, input->filter.dst_addr,
-+					    input->action, 0);
-+
- 	return 0;
- }
- 
+ 	if ((fsp->flow_type & FLOW_EXT) && fsp->m_ext.vlan_tci) {
+ 		if (fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK)) {
+ 			err = -EINVAL;
 -- 
 2.17.0
 
