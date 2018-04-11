@@ -1,38 +1,131 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Wed, 11 Apr 2018 10:03:24 -0700
-Subject: [Intel-wired-lan] [PATCH] intel: Cleanup the copyright/license
- headers
-In-Reply-To: <20180411162708.10683-1-jeffrey.t.kirsher@intel.com>
-References: <20180411162708.10683-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <9bcd0fa6-89e3-093f-cfb3-26a7c49b038b@oracle.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 12 Apr 2018 01:04:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 6aec2dfcd967616f04990d4eab91debfb17c99a6
+Message-ID: <5ace402f.DM+xvBtKkp9yreAH%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/11/2018 9:27 AM, Jeff Kirsher wrote:
-> After many years of having a ~30 line copyright and license header to our
-> source files, we are finally able to reduce that to one line with the
-> advent of the SPDX identifier.
-> 
-> Also caught a few files missing the SPDX license identifier, so fixed
-> them up.
-> 
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> ---
-> Richard - I did not touch the igb_ptp.c header, since you have Copyright on
-> that file.
-> 
-> Shannon - I did not touch the ixgbe_ipsec.* headers, since you/Oracle
-> have Copyright on those two files.
->
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 6aec2dfcd967616f04990d4eab91debfb17c99a6  i40evf: Replace GFP_ATOMIC with GFP_KERNEL in i40evf_add_vlan
 
-Hi Jeff - thanks for your consideration.  Matching the rest of the 
-driver files with the SPDX and a one-line copyright should be fine:
+elapsed time: 25m
 
-// SPDX-License-Identifier: GPL-2.0
-/* Copyright(c) 2017 Oracle and/or its affiliates. */
+configs tested: 107
 
-Cheers,
-sln
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                               tinyconfig
+i386                   randconfig-x014-201814
+i386                   randconfig-x013-201814
+i386                   randconfig-x015-201814
+i386                   randconfig-x012-201814
+i386                   randconfig-x019-201814
+i386                   randconfig-x016-201814
+i386                   randconfig-x010-201814
+i386                   randconfig-x018-201814
+i386                   randconfig-x017-201814
+i386                   randconfig-x011-201814
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-n0-201814
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                     randconfig-a0-201814
+i386                     randconfig-a1-201814
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x014-201814
+x86_64                 randconfig-x013-201814
+x86_64                 randconfig-x010-201814
+x86_64                 randconfig-x019-201814
+x86_64                 randconfig-x015-201814
+x86_64                 randconfig-x011-201814
+x86_64                 randconfig-x018-201814
+x86_64                 randconfig-x016-201814
+x86_64                 randconfig-x017-201814
+x86_64                 randconfig-x012-201814
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201814
+i386                     randconfig-s1-201814
+x86_64                   randconfig-i0-201814
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-x000-201814
+i386                   randconfig-x006-201814
+i386                   randconfig-x008-201814
+i386                   randconfig-x003-201814
+i386                   randconfig-x004-201814
+i386                   randconfig-x009-201814
+i386                   randconfig-x002-201814
+i386                   randconfig-x005-201814
+i386                   randconfig-x001-201814
+i386                   randconfig-x007-201814
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-x006-201814
+x86_64                 randconfig-x002-201814
+x86_64                 randconfig-x005-201814
+x86_64                 randconfig-x009-201814
+x86_64                 randconfig-x004-201814
+x86_64                 randconfig-x001-201814
+x86_64                 randconfig-x008-201814
+x86_64                 randconfig-x007-201814
+x86_64                 randconfig-x000-201814
+x86_64                 randconfig-x003-201814
+i386                   randconfig-x075-201814
+i386                   randconfig-x073-201814
+i386                   randconfig-x076-201814
+i386                   randconfig-x071-201814
+i386                   randconfig-x079-201814
+i386                   randconfig-x077-201814
+i386                   randconfig-x070-201814
+i386                   randconfig-x078-201814
+i386                   randconfig-x074-201814
+i386                   randconfig-x072-201814
+
+Thanks,
+Fengguang
