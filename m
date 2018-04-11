@@ -1,193 +1,47 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 11 Apr 2018 07:37:26 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 87f7973749a4c105ad22d18de92b13ca0888399c
-Message-ID: <5acd4ab6.ubntORygJviUkkir%lkp@intel.com>
+From: Jia-Ju Bai <baijiaju1990@gmail.com>
+Date: Wed, 11 Apr 2018 10:08:18 +0800
+Subject: [Intel-wired-lan] [PATCH] intel: i40evf: Replace GFP_ATOMIC with
+ GFP_KERNEL in i40evf_add_vlan
+Message-ID: <1523412498-2177-1-git-send-email-baijiaju1990@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 87f7973749a4c105ad22d18de92b13ca0888399c  igb: Add support for adding offloaded clsflower filters
+i40evf_add_vlan() is never called in atomic context.
 
-elapsed time: 130m
+i40evf_add_vlan() is only called by i40evf_vlan_rx_add_vid(), 
+which is only set as ".ndo_vlan_rx_add_vid" in struct net_device_ops.
+".ndo_vlan_rx_add_vid" is not called in atomic context.
 
-configs tested: 169
+Despite never getting called from atomic context, 
+i40evf_add_vlan() calls kzalloc() with GFP_ATOMIC, 
+which does not sleep for allocation.
+GFP_ATOMIC is not necessary and can be replaced with GFP_KERNEL, 
+which can sleep and improve the possibility of sucessful allocation.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+This is found by a static analysis tool named DCNS written by myself.
+And I also manually check it.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-a0-04110318
-x86_64                 randconfig-a0-04110647
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-arm64                               defconfig
-ia64                              allnoconfig
-m68k                         apollo_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-04110248
-arm                         mv78xx0_defconfig
-m68k                            q40_defconfig
-sh                            hp6xx_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201814
-ia64                             alldefconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i1-201814
-i386                     randconfig-i0-201814
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-x86_64                           alldefconfig
-arm                        keystone_defconfig
-i386                                defconfig
-c6x                        evmc6457_defconfig
-x86_64                 randconfig-g0-04110116
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                             allmodconfig
-x86_64                 randconfig-x014-201814
-x86_64                 randconfig-x013-201814
-x86_64                 randconfig-x010-201814
-x86_64                 randconfig-x019-201814
-x86_64                 randconfig-x015-201814
-x86_64                 randconfig-x011-201814
-x86_64                 randconfig-x018-201814
-x86_64                 randconfig-x016-201814
-x86_64                 randconfig-x017-201814
-x86_64                 randconfig-x012-201814
-x86_64                                  kexec
-i386                     randconfig-a0-201814
-i386                     randconfig-a1-201814
-x86_64                 randconfig-s0-04110419
-x86_64                 randconfig-s1-04110419
-x86_64                 randconfig-s2-04110419
-arm                             mxs_defconfig
-arm                            netx_defconfig
-mips                        jmr3927_defconfig
-powerpc                          allmodconfig
-i386                             alldefconfig
-i386                              allnoconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201814
-i386                     randconfig-s1-201814
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-04110551
-x86_64                 randconfig-s4-04110551
-x86_64                 randconfig-s5-04110551
-x86_64                 randconfig-s3-04110629
-x86_64                 randconfig-s4-04110629
-x86_64                 randconfig-s5-04110629
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-i0-04082321
-i386                   randconfig-b0-04110145
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                             allyesconfig
-x86_64                 randconfig-u0-04110304
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-powerpc                 mpc8560_ads_defconfig
-powerpc                      ppc6xx_defconfig
-x86_64                randconfig-ne0-04110401
-arm                           spitz_defconfig
-powerpc                        fsp2_defconfig
-i386                   randconfig-x014-201814
-i386                   randconfig-x013-201814
-i386                   randconfig-x015-201814
-i386                   randconfig-x012-201814
-i386                   randconfig-x019-201814
-i386                   randconfig-x016-201814
-i386                   randconfig-x010-201814
-i386                   randconfig-x018-201814
-i386                   randconfig-x017-201814
-i386                   randconfig-x011-201814
-i386                   randconfig-x000-201814
-i386                   randconfig-x006-201814
-i386                   randconfig-x008-201814
-i386                   randconfig-x003-201814
-i386                   randconfig-x004-201814
-i386                   randconfig-x009-201814
-i386                   randconfig-x002-201814
-i386                   randconfig-x005-201814
-i386                   randconfig-x001-201814
-i386                   randconfig-x007-201814
-x86_64                 randconfig-x006-201814
-x86_64                 randconfig-x002-201814
-x86_64                 randconfig-x005-201814
-x86_64                 randconfig-x009-201814
-x86_64                 randconfig-x004-201814
-x86_64                 randconfig-x001-201814
-x86_64                 randconfig-x008-201814
-x86_64                 randconfig-x007-201814
-x86_64                 randconfig-x000-201814
-x86_64                 randconfig-x003-201814
-x86_64                              federa-25
-i386                   randconfig-x075-201814
-i386                   randconfig-x073-201814
-i386                   randconfig-x076-201814
-i386                   randconfig-x071-201814
-i386                   randconfig-x079-201814
-i386                   randconfig-x077-201814
-i386                   randconfig-x070-201814
-i386                   randconfig-x078-201814
-i386                   randconfig-x074-201814
-i386                   randconfig-x072-201814
-x86_64                 randconfig-r0-04110323
-i386                   randconfig-x0-04110123
-i386                   randconfig-x0-04110603
+Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+---
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-Fengguang
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 1825d95..04b2b9c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -770,7 +770,7 @@ i40evf_vlan_filter *i40evf_add_vlan(struct i40evf_adapter *adapter, u16 vlan)
+ 
+ 	f = i40evf_find_vlan(adapter, vlan);
+ 	if (!f) {
+-		f = kzalloc(sizeof(*f), GFP_ATOMIC);
++		f = kzalloc(sizeof(*f), GFP_KERNEL);
+ 		if (!f)
+ 			goto clearout;
+ 
+-- 
+1.9.1
+
