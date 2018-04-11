@@ -1,236 +1,221 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 11 Apr 2018 20:55:43 +0000
-Subject: [Intel-wired-lan] [PATCH v2] intel: Cleanup the
- copyright/license headers
-In-Reply-To: <20180411182527.29395-1-jeffrey.t.kirsher@intel.com>
-References: <20180411182527.29395-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A965816@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 12 Apr 2018 05:31:04 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ ea104f6a5c729056232df1e660fd1e5eb2e9f01f
+Message-ID: <5ace7e98.UbZ3zqRxBWa+ChX0%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Wednesday, April 11, 2018 11:25 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: richardcochran at gmail.com
-> Subject: [Intel-wired-lan] [PATCH v2] intel: Cleanup the copyright/license
-> headers
-> 
-> After many years of having a ~30 line copyright and license header to our
-> source files, we are finally able to reduce that to one line with the
-> advent of the SPDX identifier.
-> 
-> Also caught a few files missing the SPDX license identifier, so fixed
-> them up.
-> 
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> ---
-> v2: updated the license & copyright headers for igb_ptp.c,
->     ixgbe_ipsec.c/h based on feedback/permission from the copyright
->     owners of those files.
-> 
-> ---
->  drivers/net/ethernet/intel/e100.c                  | 28 +-------------------
->  drivers/net/ethernet/intel/e1000/Makefile          | 26 -------------------
->  drivers/net/ethernet/intel/e1000/e1000.h           | 29 +--------------------
->  drivers/net/ethernet/intel/e1000/e1000_ethtool.c   | 23 +----------------
->  drivers/net/ethernet/intel/e1000/e1000_hw.c        | 28 +-------------------
->  drivers/net/ethernet/intel/e1000/e1000_hw.h        | 28 +-------------------
->  drivers/net/ethernet/intel/e1000/e1000_main.c      | 28 +-------------------
->  drivers/net/ethernet/intel/e1000/e1000_osdep.h     | 29 +--------------------
->  drivers/net/ethernet/intel/e1000/e1000_param.c     | 28 +-------------------
->  drivers/net/ethernet/intel/e1000e/80003es2lan.c    | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/80003es2lan.h    | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/82571.c          | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/82571.h          | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/Makefile         | 27 +------------------
->  drivers/net/ethernet/intel/e1000e/defines.h        | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/e1000.h          | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/ethtool.c        | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/hw.h             | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/ich8lan.c        | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/ich8lan.h        | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/mac.c            | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/mac.h            | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/manage.c         | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/manage.h         | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/netdev.c         | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/nvm.c            | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/nvm.h            | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/param.c          | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/phy.c            | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/phy.h            | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/ptp.c            | 21 +--------------
->  drivers/net/ethernet/intel/e1000e/regs.h           | 21 +--------------
->  drivers/net/ethernet/intel/fm10k/Makefile          | 23 +----------------
->  drivers/net/ethernet/intel/fm10k/fm10k.h           | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_common.c    | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_common.h    | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c     | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c   | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c   | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_iov.c       | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_main.c      | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_mbx.c       | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_mbx.h       | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c    | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_pci.c       | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_pf.c        | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_pf.h        | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_tlv.c       | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_tlv.h       | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_type.h      | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_vf.c        | 20 +--------------
->  drivers/net/ethernet/intel/fm10k/fm10k_vf.h        | 20 +--------------
->  drivers/net/ethernet/intel/i40e/Makefile           | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e.h             | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c      | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_adminq.h      | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_alloc.h       | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_client.c      | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_client.h      | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_common.c      | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_dcb.c         | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_dcb.h         | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c      | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c     | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_devids.h      | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_diag.c        | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_diag.h        | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_hmc.c         | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_hmc.h         | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c     | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_lan_hmc.h     | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_nvm.c         | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_osdep.h       | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h   | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_ptp.c         | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_register.h    | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_status.h      | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_trace.h       | 23 +----------------
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h        | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_type.h        | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 26 +------------------
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/Makefile         | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_adminq.c    | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_adminq.h    | 26 +------------------
->  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_alloc.h     | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_common.c    | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_devids.h    | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_hmc.h       | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_lan_hmc.h   | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_osdep.h     | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_prototype.h | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_register.h  | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_status.h    | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_trace.h     | 23 +----------------
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.h      | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40e_type.h      | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40evf.h         | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40evf_client.c  |  2 ++
->  drivers/net/ethernet/intel/i40evf/i40evf_client.h  |  2 ++
->  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 26 +------------------
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 26 +------------------
->  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 26 +------------------
->  drivers/net/ethernet/intel/igb/Makefile            | 28 +-------------------
->  drivers/net/ethernet/intel/igb/e1000_82575.c       | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_82575.h       | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_defines.h     | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_hw.h          | 22 +---------------
->  drivers/net/ethernet/intel/igb/e1000_i210.c        | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_i210.h        | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_mac.c         | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_mac.h         | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_mbx.c         | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_mbx.h         | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_nvm.c         | 22 +---------------
->  drivers/net/ethernet/intel/igb/e1000_nvm.h         | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_phy.c         | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_phy.h         | 23 +----------------
->  drivers/net/ethernet/intel/igb/e1000_regs.h        | 23 +----------------
->  drivers/net/ethernet/intel/igb/igb.h               | 23 +----------------
->  drivers/net/ethernet/intel/igb/igb_ethtool.c       | 23 +----------------
->  drivers/net/ethernet/intel/igb/igb_hwmon.c         | 23 +----------------
->  drivers/net/ethernet/intel/igb/igb_main.c          | 23 +----------------
->  drivers/net/ethernet/intel/igb/igb_ptp.c           | 19 ++------------
->  drivers/net/ethernet/intel/igbvf/Makefile          | 28 +-------------------
->  drivers/net/ethernet/intel/igbvf/defines.h         | 26 +------------------
->  drivers/net/ethernet/intel/igbvf/ethtool.c         | 26 +------------------
->  drivers/net/ethernet/intel/igbvf/igbvf.h           | 26 +------------------
->  drivers/net/ethernet/intel/igbvf/mbx.c             | 26 +------------------
->  drivers/net/ethernet/intel/igbvf/mbx.h             | 26 +------------------
->  drivers/net/ethernet/intel/igbvf/netdev.c          | 26 +------------------
->  drivers/net/ethernet/intel/igbvf/regs.h            | 26 +------------------
->  drivers/net/ethernet/intel/igbvf/vf.c              | 26 +------------------
->  drivers/net/ethernet/intel/igbvf/vf.h              | 26 +------------------
->  drivers/net/ethernet/intel/ixgb/Makefile           | 27 -------------------
->  drivers/net/ethernet/intel/ixgb/ixgb.h             | 28 +-------------------
->  drivers/net/ethernet/intel/ixgb/ixgb_ee.c          | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgb/ixgb_ee.h          | 28 +-------------------
->  drivers/net/ethernet/intel/ixgb/ixgb_ethtool.c     | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgb/ixgb_hw.c          | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgb/ixgb_hw.h          | 28 +-------------------
->  drivers/net/ethernet/intel/ixgb/ixgb_ids.h         | 28 +-------------------
->  drivers/net/ethernet/intel/ixgb/ixgb_main.c        | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgb/ixgb_osdep.h       | 28 +-------------------
->  drivers/net/ethernet/intel/ixgb/ixgb_param.c       | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/Makefile          | 29 +--------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h           | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c     | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c     | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c    | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.h    | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.c       | 30 ++--------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.h       | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82598.c | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82598.h | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82599.c | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82599.h | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c    | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c   | 28 ++------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c   | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c      | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.h      | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c     | 28 ++------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h     | 27 +------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c       | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c       | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h       | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_model.h     | 26 +------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c       | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h       | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c       | 28 ++------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c     | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h     | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sysfs.c     | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h      | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c      | 29 ++-------------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h      | 24 +----------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c      | 26 +++----------------
->  drivers/net/ethernet/intel/ixgbevf/Makefile        | 28 +-------------------
->  drivers/net/ethernet/intel/ixgbevf/defines.h       | 26 +------------------
->  drivers/net/ethernet/intel/ixgbevf/ethtool.c       | 27 ++-----------------
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h       | 26 +------------------
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c  | 27 ++-----------------
->  drivers/net/ethernet/intel/ixgbevf/mbx.c           | 27 ++-----------------
->  drivers/net/ethernet/intel/ixgbevf/mbx.h           | 26 +------------------
->  drivers/net/ethernet/intel/ixgbevf/regs.h          | 26 +------------------
->  drivers/net/ethernet/intel/ixgbevf/vf.c            | 27 ++-----------------
->  drivers/net/ethernet/intel/ixgbevf/vf.h            | 26 +------------------
->  195 files changed, 222 insertions(+), 4624 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: ea104f6a5c729056232df1e660fd1e5eb2e9f01f  ice: Do not check INTEVENT bit for OICR interrupts
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 85m
 
+configs tested: 197
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+ia64                          tiger_defconfig
+xtensa                           allmodconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-a0-04120350
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+ia64                             alldefconfig
+mips                         mpc30x_defconfig
+powerpc                     skiroot_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-04120358
+arm                       imx_v4_v5_defconfig
+parisc                              defconfig
+powerpc                     ksi8560_defconfig
+i386                     randconfig-n0-201814
+x86_64                 randconfig-x006-201814
+x86_64                 randconfig-x002-201814
+x86_64                 randconfig-x005-201814
+x86_64                 randconfig-x009-201814
+x86_64                 randconfig-x004-201814
+x86_64                 randconfig-x001-201814
+x86_64                 randconfig-x008-201814
+x86_64                 randconfig-x007-201814
+x86_64                 randconfig-x000-201814
+x86_64                 randconfig-x003-201814
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386         randconfig-i1-201814-CONFIG_DEBUG_INFO_REDUCED
+i386                     randconfig-i1-201814
+i386                     randconfig-i0-201814
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                          pcm027_defconfig
+arm                      pxa255-idp_defconfig
+powerpc                      bamboo_defconfig
+arm                       omap2plus_defconfig
+arm                            zeus_defconfig
+mips                      loongson3_defconfig
+x86_64                 randconfig-g0-04120248
+x86_64                 randconfig-g0-04120440
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+i386                             allmodconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201814
+i386                     randconfig-a1-201814
+x86_64                 randconfig-s0-04120349
+x86_64                 randconfig-s1-04120349
+x86_64                 randconfig-s2-04120349
+x86_64                 randconfig-s0-04120443
+x86_64                 randconfig-s1-04120443
+x86_64                 randconfig-s2-04120443
+mips                        omega2p_defconfig
+powerpc                     ep8248e_defconfig
+sh                                  defconfig
+sh                   secureedge5410_defconfig
+arm                            u300_defconfig
+mips                             allyesconfig
+powerpc                 mpc832x_mds_defconfig
+s390                              allnoconfig
+x86_64                 randconfig-x014-201814
+x86_64                 randconfig-x013-201814
+x86_64                 randconfig-x010-201814
+x86_64                 randconfig-x019-201814
+x86_64                 randconfig-x015-201814
+x86_64                 randconfig-x011-201814
+x86_64                 randconfig-x018-201814
+x86_64                 randconfig-x016-201814
+x86_64                 randconfig-x017-201814
+x86_64                 randconfig-x012-201814
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201814
+i386                     randconfig-s1-201814
+x86_64                 randconfig-s3-04120342
+x86_64                 randconfig-s4-04120342
+x86_64                 randconfig-s5-04120342
+x86_64                 randconfig-s3-04120428
+x86_64                 randconfig-s4-04120428
+x86_64                 randconfig-s5-04120428
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201814
+i386                   randconfig-b0-04112113
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                         cm_x300_defconfig
+arm                           h5000_defconfig
+powerpc                      ppc40x_defconfig
+powerpc                     redwood_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                             allyesconfig
+x86_64                 randconfig-b0-04111207
+x86_64                 randconfig-u0-04120304
+i386                               tinyconfig
+i386                   randconfig-x014-201814
+i386                   randconfig-x013-201814
+i386                   randconfig-x015-201814
+i386                   randconfig-x012-201814
+i386                   randconfig-x019-201814
+i386                   randconfig-x016-201814
+i386                   randconfig-x010-201814
+i386                   randconfig-x018-201814
+i386                   randconfig-x017-201814
+i386                   randconfig-x011-201814
+sparc                            allmodconfig
+x86_64                randconfig-ne0-04120309
+i386                   randconfig-x000-201814
+i386                   randconfig-x006-201814
+i386                   randconfig-x008-201814
+i386                   randconfig-x003-201814
+i386                   randconfig-x004-201814
+i386                   randconfig-x009-201814
+i386                   randconfig-x002-201814
+i386                   randconfig-x005-201814
+i386                   randconfig-x001-201814
+i386                   randconfig-x007-201814
+i386                   randconfig-x075-201814
+i386                   randconfig-x073-201814
+i386                   randconfig-x076-201814
+i386                   randconfig-x071-201814
+i386                   randconfig-x079-201814
+i386                   randconfig-x077-201814
+i386                   randconfig-x070-201814
+i386                   randconfig-x078-201814
+i386                   randconfig-x074-201814
+i386                   randconfig-x072-201814
+x86_64                           allmodconfig
+x86_64                randconfig-ws0-04120108
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+mips                     decstation_defconfig
+parisc                generic-32bit_defconfig
+x86_64                 randconfig-r0-04112318
+x86_64                              defconfig
+m68k                        m5272c3_defconfig
+
+Thanks,
+Fengguang
