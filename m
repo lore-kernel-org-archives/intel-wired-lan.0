@@ -1,70 +1,246 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 11 Apr 2018 12:21:33 -0700
-Subject: [Intel-wired-lan] [PATCH v2] ice: Do not check INTEVENT bit for
- OICR interrupts
-Message-ID: <20180411192133.25503-1-anirudh.venkataramanan@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 12 Apr 2018 03:58:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ a4c7f6d8072e0a15ac9aa0f062435a93e6f1a3a0
+Message-ID: <5ace68d2.0W2XJhCFwPA63Qfm%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Ben Shelton <benjamin.h.shelton@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: a4c7f6d8072e0a15ac9aa0f062435a93e6f1a3a0  intel: Cleanup the copyright/license headers
 
-According to the hardware spec, checking the INTEVENT bit isn't a
-reliable way to detect if an OICR interrupt has occurred. This is
-because this bit can be cleared by the hardware/firmware before the
-interrupt service routine has run. So instead, just check for OICR
-events everytime.
+elapsed time: 115m
 
-Fixes: 940b61af02f4 ("ice: Initialize PF and setup miscellaneous
-interrupt")
+configs tested: 222
 
-Signed-off-by: Ben Shelton <benjamin.h.shelton@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
----
-v2: Add credits to the original author and fix formatting for "Fixes"
----
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 2 --
- drivers/net/ethernet/intel/ice/ice_main.c       | 4 ----
- 2 files changed, 6 deletions(-)
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+ia64                          tiger_defconfig
+xtensa                           allmodconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-a0-04120052
+x86_64                 randconfig-a0-04120244
+alpha                            allyesconfig
+arm                          nuc950_defconfig
+arm                  colibri_pxa300_defconfig
+arm                           stm32_defconfig
+powerpc                      bamboo_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-04120100
+i386                   randconfig-c0-04120253
+arm                       imx_v4_v5_defconfig
+powerpc                     ksi8560_defconfig
+x86_64                randconfig-it0-04112229
+i386                               tinyconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201814
+x86_64                 randconfig-x006-201814
+x86_64                 randconfig-x002-201814
+x86_64                 randconfig-x005-201814
+x86_64                 randconfig-x009-201814
+x86_64                 randconfig-x004-201814
+x86_64                 randconfig-x001-201814
+x86_64                 randconfig-x008-201814
+x86_64                 randconfig-x007-201814
+x86_64                 randconfig-x000-201814
+x86_64                 randconfig-x003-201814
+i386                     randconfig-i0-201814
+i386                     randconfig-i1-201814
+arm                          ixp4xx_defconfig
+powerpc                 mpc836x_rdk_defconfig
+powerpc                     sequoia_defconfig
+arm                       cns3420vb_defconfig
+powerpc                 canyonlands_defconfig
+sh                           se7750_defconfig
+powerpc                   motionpro_defconfig
+powerpc                     sbc834x_defconfig
+powerpc                  storcenter_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-g0-04120048
+x86_64                 randconfig-g0-04120224
+x86_64                 randconfig-g0-04120248
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201814
+i386                     randconfig-a1-201814
+x86_64                 randconfig-s0-04120104
+x86_64                 randconfig-s1-04120104
+x86_64                 randconfig-s2-04120104
+x86_64                 randconfig-s0-04120221
+x86_64                 randconfig-s1-04120221
+x86_64                 randconfig-s2-04120221
+x86_64                 randconfig-s0-04120312
+x86_64                 randconfig-s1-04120312
+x86_64                 randconfig-s2-04120312
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                            hisi_defconfig
+arm                        mini2440_defconfig
+xtensa                           allyesconfig
+arm                         lpc18xx_defconfig
+arm                        realview_defconfig
+sh                         apsh4a3a_defconfig
+sh                        sh7757lcr_defconfig
+sparc                            alldefconfig
+i386                     randconfig-s0-201814
+i386                     randconfig-s1-201814
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-04120150
+x86_64                 randconfig-s4-04120150
+x86_64                 randconfig-s5-04120150
+x86_64                 randconfig-s3-04120311
+x86_64                 randconfig-s4-04120311
+x86_64                 randconfig-s5-04120311
+arm                           corgi_defconfig
+arm                    vt8500_v6_v7_defconfig
+mips                       lemote2f_defconfig
+xtensa                  audio_kc705_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201814
+i386                   randconfig-b0-04112113
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                         cm_x300_defconfig
+arm                           h5000_defconfig
+powerpc                      ppc40x_defconfig
+powerpc                     redwood_defconfig
+x86_64                 randconfig-u0-04120130
+x86_64                 randconfig-u0-04120304
+arm                     eseries_pxa_defconfig
+arm                         socfpga_defconfig
+i386                   randconfig-h0-04111551
+i386                   randconfig-h1-04111551
+sparc                            allmodconfig
+x86_64                randconfig-ne0-04120101
+x86_64                randconfig-ne0-04120216
+x86_64                randconfig-ne0-04120309
+arm                             ezx_defconfig
+m68k                              allnoconfig
+powerpc                          allmodconfig
+x86_64                 randconfig-h0-04112017
+x86_64                 randconfig-x014-201814
+x86_64                 randconfig-x013-201814
+x86_64                 randconfig-x010-201814
+x86_64                 randconfig-x019-201814
+x86_64                 randconfig-x015-201814
+x86_64                 randconfig-x011-201814
+x86_64                 randconfig-x018-201814
+x86_64                 randconfig-x016-201814
+x86_64                 randconfig-x017-201814
+x86_64                 randconfig-x012-201814
+i386                   randconfig-x014-201814
+i386                   randconfig-x013-201814
+i386                   randconfig-x015-201814
+i386                   randconfig-x012-201814
+i386                   randconfig-x019-201814
+i386                   randconfig-x016-201814
+i386                   randconfig-x010-201814
+i386                   randconfig-x018-201814
+i386                   randconfig-x017-201814
+i386                   randconfig-x011-201814
+i386                   randconfig-x075-201814
+i386                   randconfig-x073-201814
+i386                   randconfig-x076-201814
+i386                   randconfig-x071-201814
+i386                   randconfig-x079-201814
+i386                   randconfig-x077-201814
+i386                   randconfig-x070-201814
+i386                   randconfig-x078-201814
+i386                   randconfig-x074-201814
+i386                   randconfig-x072-201814
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                  randconfig-sb0-04111102
+i386                   randconfig-x000-201814
+i386                   randconfig-x006-201814
+i386                   randconfig-x008-201814
+i386                   randconfig-x003-201814
+i386                   randconfig-x004-201814
+i386                   randconfig-x009-201814
+i386                   randconfig-x002-201814
+i386                   randconfig-x005-201814
+i386                   randconfig-x001-201814
+i386                   randconfig-x007-201814
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                         palmz72_defconfig
+arm                        vexpress_defconfig
+powerpc64                        alldefconfig
+x86_64                 randconfig-r0-04112318
+i386                             allmodconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                   randconfig-x0-04120106
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 1b9e2ef48a9d..499904874b3f 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -121,8 +121,6 @@
- #define PFINT_FW_CTL_CAUSE_ENA_S	30
- #define PFINT_FW_CTL_CAUSE_ENA_M	BIT(PFINT_FW_CTL_CAUSE_ENA_S)
- #define PFINT_OICR			0x0016CA00
--#define PFINT_OICR_INTEVENT_S		0
--#define PFINT_OICR_INTEVENT_M		BIT(PFINT_OICR_INTEVENT_S)
- #define PFINT_OICR_HLP_RDY_S		14
- #define PFINT_OICR_HLP_RDY_M		BIT(PFINT_OICR_HLP_RDY_S)
- #define PFINT_OICR_CPM_RDY_S		15
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 210b7910f1cd..5299caf55a7f 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1722,9 +1722,6 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 	oicr = rd32(hw, PFINT_OICR);
- 	ena_mask = rd32(hw, PFINT_OICR_ENA);
- 
--	if (!(oicr & PFINT_OICR_INTEVENT_M))
--		goto ena_intr;
--
- 	if (oicr & PFINT_OICR_GRST_M) {
- 		u32 reset;
- 		/* we have a reset warning */
-@@ -1782,7 +1779,6 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 	}
- 	ret = IRQ_HANDLED;
- 
--ena_intr:
- 	/* re-enable interrupt causes that are not handled during this pass */
- 	wr32(hw, PFINT_OICR_ENA, ena_mask);
- 	if (!test_bit(__ICE_DOWN, pf->state)) {
--- 
-2.14.3
-
+Thanks,
+Fengguang
