@@ -1,44 +1,44 @@
 From: Jacek Kalwas <jacek.kalwas@intel.com>
-Date: Thu, 12 Apr 2018 12:03:14 -0700
-Subject: [Intel-wired-lan] [net] xfrm: allow to release xfrm_state with flush
+Date: Thu, 12 Apr 2018 12:03:15 -0700
+Subject: [Intel-wired-lan] [net] xfrm: cover crypto status in xfrm_input
 In-Reply-To: <20180412190315.3102-1-jacek.kalwas@intel.com>
 References: <20180412190315.3102-1-jacek.kalwas@intel.com>
-Message-ID: <20180412190315.3102-2-jacek.kalwas@intel.com>
+Message-ID: <20180412190315.3102-3-jacek.kalwas@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Call to flush SAs doesn't release xfrm_state in case there was a
-traffic associated with that state and state was already deleted.
+Status checking in xfrm_input doesn't cover CRYPTO_GENERIC_ERROR and
+CRYPTO_INVALID_PACKET_SYNTAX.
 
-Given patch calls xfrm_policy_cache_flush despite of actual states
-deleted in xfrm_state_flush function.
+Given patch adds additional check for CRYPTO_INVALID_PACKET_SYNTAX and
+treats CRYPTO_GENERIC_ERROR as status matching LINUX_MIB_XFRMINERROR.
 
 Signed-off-by: Jacek Kalwas <jacek.kalwas@intel.com>
 ---
- net/xfrm/xfrm_state.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ net/xfrm/xfrm_input.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/net/xfrm/xfrm_state.c b/net/xfrm/xfrm_state.c
-index f9d2f2233f09..7d3d6a12a14f 100644
---- a/net/xfrm/xfrm_state.c
-+++ b/net/xfrm/xfrm_state.c
-@@ -734,10 +734,10 @@ int xfrm_state_flush(struct net *net, u8 proto, bool task_valid)
- 	}
- out:
- 	spin_unlock_bh(&net->xfrm.xfrm_state_lock);
--	if (cnt) {
-+	if (cnt)
- 		err = 0;
--		xfrm_policy_cache_flush();
--	}
+diff --git a/net/xfrm/xfrm_input.c b/net/xfrm/xfrm_input.c
+index 352abca2605f..08d70ea774f9 100644
+--- a/net/xfrm/xfrm_input.c
++++ b/net/xfrm/xfrm_input.c
+@@ -285,7 +285,12 @@ int xfrm_input(struct sk_buff *skb, int nexthdr, __be32 spi, int encap_type)
+ 					goto drop;
+ 				}
+ 
+-				XFRM_INC_STATS(net, LINUX_MIB_XFRMINBUFFERERROR);
++				if (xo->status & CRYPTO_INVALID_PACKET_SYNTAX) {
++					XFRM_INC_STATS(net, LINUX_MIB_XFRMINBUFFERERROR);
++					goto drop;
++				}
 +
-+	xfrm_policy_cache_flush();
- 	return err;
- }
- EXPORT_SYMBOL(xfrm_state_flush);
++				XFRM_INC_STATS(net, LINUX_MIB_XFRMINERROR);
+ 				goto drop;
+ 			}
+ 
 -- 
 2.14.3
 
