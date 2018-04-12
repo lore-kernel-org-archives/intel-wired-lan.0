@@ -1,37 +1,44 @@
 From: Jacek Kalwas <jacek.kalwas@intel.com>
-Date: Thu, 12 Apr 2018 12:03:13 -0700
-Subject: [Intel-wired-lan] [net] udp: enable UDP checksum offload for ESP
-Message-ID: <20180412190315.3102-1-jacek.kalwas@intel.com>
+Date: Thu, 12 Apr 2018 12:03:14 -0700
+Subject: [Intel-wired-lan] [net] xfrm: allow to release xfrm_state with flush
+In-Reply-To: <20180412190315.3102-1-jacek.kalwas@intel.com>
+References: <20180412190315.3102-1-jacek.kalwas@intel.com>
+Message-ID: <20180412190315.3102-2-jacek.kalwas@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In case NIC has support for ESP TX CSUM offload skb->ip_summed is not
-set to CHECKSUM_PARTIAL which results in checksum calculated by SW.
+Call to flush SAs doesn't release xfrm_state in case there was a
+traffic associated with that state and state was already deleted.
 
-Fix enables ESP TX CSUM for UDP by extending condition with check for
-NETIF_F_HW_ESP_TX_CSUM.
+Given patch calls xfrm_policy_cache_flush despite of actual states
+deleted in xfrm_state_flush function.
 
 Signed-off-by: Jacek Kalwas <jacek.kalwas@intel.com>
 ---
- net/ipv4/ip_output.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/xfrm/xfrm_state.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/ipv4/ip_output.c b/net/ipv4/ip_output.c
-index 4c11b810a447..a2dfb5a9ba76 100644
---- a/net/ipv4/ip_output.c
-+++ b/net/ipv4/ip_output.c
-@@ -907,7 +907,7 @@ static int __ip_append_data(struct sock *sk,
- 	    length + fragheaderlen <= mtu &&
- 	    rt->dst.dev->features & (NETIF_F_HW_CSUM | NETIF_F_IP_CSUM) &&
- 	    !(flags & MSG_MORE) &&
--	    !exthdrlen)
-+	    (!exthdrlen || (rt->dst.dev->features & NETIF_F_HW_ESP_TX_CSUM)))
- 		csummode = CHECKSUM_PARTIAL;
- 
- 	cork->length += length;
+diff --git a/net/xfrm/xfrm_state.c b/net/xfrm/xfrm_state.c
+index f9d2f2233f09..7d3d6a12a14f 100644
+--- a/net/xfrm/xfrm_state.c
++++ b/net/xfrm/xfrm_state.c
+@@ -734,10 +734,10 @@ int xfrm_state_flush(struct net *net, u8 proto, bool task_valid)
+ 	}
+ out:
+ 	spin_unlock_bh(&net->xfrm.xfrm_state_lock);
+-	if (cnt) {
++	if (cnt)
+ 		err = 0;
+-		xfrm_policy_cache_flush();
+-	}
++
++	xfrm_policy_cache_flush();
+ 	return err;
+ }
+ EXPORT_SYMBOL(xfrm_state_flush);
 -- 
 2.14.3
 
