@@ -1,173 +1,40 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 13 Apr 2018 08:17:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 4da7189bc62cd83d9c3f2d2ae5be402f511ee20c
-Message-ID: <5acff728.o9qxLBv4EQIQpOfn%lkp@intel.com>
+From: Jakub Kicinski <kubakici@wp.pl>
+Date: Thu, 12 Apr 2018 21:32:49 -0700
+Subject: [Intel-wired-lan] [PATCH v5 05/14] PCI: Add
+ pcie_print_link_status() to log link speed and whether it's limited
+In-Reply-To: <152244391852.135666.14903825998610307052.stgit@bhelgaas-glaptop.roam.corp.google.com>
+References: <152244269202.135666.3064353823697623332.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <152244391852.135666.14903825998610307052.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <20180412213249.06661048@cakuba.netronome.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 4da7189bc62cd83d9c3f2d2ae5be402f511ee20c  Subject: [v2] Documentation: ixgbe: Update kernel documentation X-Patchwork-Submitter: Jeff Kirsher <jeffrey.t.kirsher@intel.com> List-Id: Intel Wired Ethernet Linux Kernel Driver Development  <intel-wired-lan.osuosl.org>
+On Fri, 30 Mar 2018 16:05:18 -0500, Bjorn Helgaas wrote:
+> +	if (bw_avail >= bw_cap)
+> +		pci_info(dev, "%d Mb/s available bandwidth (%s x%d link)\n",
+> +			 bw_cap, PCIE_SPEED2STR(speed_cap), width_cap);
+> +	else
+> +		pci_info(dev, "%d Mb/s available bandwidth, limited by %s x%d link at %s (capable of %d Mb/s with %s x%d link)\n",
+> +			 bw_avail, PCIE_SPEED2STR(speed), width,
+> +			 limiting_dev ? pci_name(limiting_dev) : "<unknown>",
+> +			 bw_cap, PCIE_SPEED2STR(speed_cap), width_cap);
 
-elapsed time: 114m
+I was just looking at using this new function to print PCIe BW for a
+NIC, but I'm slightly worried that there is nothing in the message that
+says PCIe...  For a NIC some people may interpret the bandwidth as NIC
+bandwidth:
 
-configs tested: 149
+[   39.839989] nfp 0000:04:00.0: Netronome Flow Processor NFP4000/NFP6000 PCIe Card Probe
+[   39.848943] nfp 0000:04:00.0: 63.008 Gb/s available bandwidth (8 GT/s x8 link)
+[   39.857146] nfp 0000:04:00.0: RESERVED BARs: 0.0: General/MSI-X SRAM, 0.1: PCIe XPB/MSI-X PBA, 0.4: Explicit0, 0.5: Explicit1, fre4
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+It's not a 63Gbps NIC...  I'm sorry if this was discussed before and I
+didn't find it.  Would it make sense to add the "PCIe: " prefix to the
+message like bnx2x used to do?  Like:
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                     kmeter1_defconfig
-powerpc                     tqm8548_defconfig
-s390                    performance_defconfig
-x86_64                 randconfig-a0-04130747
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-i386                   randconfig-x014-201814
-i386                   randconfig-x013-201814
-i386                   randconfig-x015-201814
-i386                   randconfig-x012-201814
-i386                   randconfig-x019-201814
-i386                   randconfig-x016-201814
-i386                   randconfig-x010-201814
-i386                   randconfig-x018-201814
-i386                   randconfig-x017-201814
-i386                   randconfig-x011-201814
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201814
-x86_64                 randconfig-x006-201814
-x86_64                 randconfig-x002-201814
-x86_64                 randconfig-x005-201814
-x86_64                 randconfig-x009-201814
-x86_64                 randconfig-x004-201814
-x86_64                 randconfig-x001-201814
-x86_64                 randconfig-x008-201814
-x86_64                 randconfig-x007-201814
-x86_64                 randconfig-x000-201814
-x86_64                 randconfig-x003-201814
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i1-201814
-i386                     randconfig-i0-201814
-i386                             allmodconfig
-i386                     randconfig-a0-201814
-i386                     randconfig-a1-201814
-x86_64                 randconfig-s0-04130744
-x86_64                 randconfig-s1-04130744
-x86_64                 randconfig-s2-04130744
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                         mv78xx0_defconfig
-arm                            xcep_defconfig
-mips                      pic32mzda_defconfig
-powerpc                       ebony_defconfig
-sh                           se7712_defconfig
-x86_64                 randconfig-x014-201814
-x86_64                 randconfig-x013-201814
-x86_64                 randconfig-x010-201814
-x86_64                 randconfig-x019-201814
-x86_64                 randconfig-x015-201814
-x86_64                 randconfig-x011-201814
-x86_64                 randconfig-x018-201814
-x86_64                 randconfig-x016-201814
-x86_64                 randconfig-x017-201814
-x86_64                 randconfig-x012-201814
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201814
-i386                     randconfig-s0-201814
-x86_64                 randconfig-s3-04130733
-x86_64                 randconfig-s4-04130733
-x86_64                 randconfig-s5-04130733
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201814
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-sh                     magicpanelr2_defconfig
-sh                            titan_defconfig
-xtensa                            allnoconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                          ixp4xx_defconfig
-x86_64                randconfig-ne0-04130743
-i386                   randconfig-x000-201814
-i386                   randconfig-x001-201814
-i386                   randconfig-x002-201814
-i386                   randconfig-x003-201814
-i386                   randconfig-x004-201814
-i386                   randconfig-x005-201814
-i386                   randconfig-x006-201814
-i386                   randconfig-x007-201814
-i386                   randconfig-x008-201814
-i386                   randconfig-x009-201814
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x075-201814
-i386                   randconfig-x073-201814
-i386                   randconfig-x076-201814
-i386                   randconfig-x071-201814
-i386                   randconfig-x079-201814
-i386                   randconfig-x077-201814
-i386                   randconfig-x070-201814
-i386                   randconfig-x078-201814
-i386                   randconfig-x074-201814
-i386                   randconfig-x072-201814
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
+nfp 0000:04:00.0: PCIe: 63.008 Gb/s available bandwidth (8 GT/s x8 link)
 
-Thanks,
-Fengguang
+Sorry for a very late comment.
