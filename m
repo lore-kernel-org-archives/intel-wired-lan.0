@@ -1,11 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 14 Apr 2018 02:25:03 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH v7 10/10] igb: Add support
- for adding offloaded clsflower filters
-In-Reply-To: <20180410174959.18757-11-vinicius.gomes@intel.com>
-References: <20180410174959.18757-1-vinicius.gomes@intel.com>
- <20180410174959.18757-11-vinicius.gomes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C83A226@ORSMSX101.amr.corp.intel.com>
+Date: Sat, 14 Apr 2018 02:28:13 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH] igb: Fix the transmission
+ mode of queue 0 for Qav mode
+In-Reply-To: <20180331000652.2855-1-vinicius.gomes@intel.com>
+References: <20180331000652.2855-1-vinicius.gomes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C83A23E@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,53 +13,37 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > From: netdev-owner at vger.kernel.org [mailto:netdev-
 > owner at vger.kernel.org] On Behalf Of Vinicius Costa Gomes
-> Sent: Tuesday, April 10, 2018 10:50 AM
+> Sent: Friday, March 30, 2018 5:07 PM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Gomes, Vinicius <vinicius.gomes@intel.com>; Kirsher, Jeffrey T
 > <jeffrey.t.kirsher@intel.com>; netdev at vger.kernel.org; Sanchez-Palencia,
-> Jesus <jesus.sanchez-palencia@intel.com>
-> Subject: [next-queue PATCH v7 10/10] igb: Add support for adding offloaded
-> clsflower filters
+> Jesus <jesus.sanchez-palencia@intel.com>; Guedes, Andre
+> <andre.guedes@intel.com>
+> Subject: [next-queue PATCH] igb: Fix the transmission mode of queue 0 for
+> Qav mode
 > 
-> This allows filters added by tc-flower and specifying MAC addresses,
-> Ethernet types, and the VLAN priority field, to be offloaded to the
-> controller.
+> When Qav mode is enabled, queue 0 should be kept on Stream Reservation
+> mode. From the i210 datasheet, section 8.12.19:
 > 
-> This reuses most of the infrastructure used by ethtool, but clsflower
-> filters are kept in a separated list, so they are invisible to
-> ethtool.
+> "Note: Queue0 QueueMode must be set to 1b when TransmitMode is set to
+> Qav." ("QueueMode 1b" represents the Stream Reservation mode)
 > 
-> To setup clsflower offloading:
+> The solution is to give queue 0 the all the credits it might need, so
+> it has priority over queue 1.
 > 
-> $ tc qdisc replace dev eth0 handle 100: parent root mqprio \
->      	   	   num_tc 3 map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 \
-> 		   queues 1 at 0 1 at 1 2 at 2 hw 0
-> (clsflower offloading depends on the netword driver to be configured
-> with multiple traffic classes, we use mqprio's 'num_tc' parameter to
-> set it to 3)
+> A situation where this can happen is when cbs is "installed" only on
+> queue 1, leaving queue 0 alone. For example:
 > 
-> $ tc qdisc add dev eth0 ingress
+> $ tc qdisc replace dev enp2s0 handle 100: parent root mqprio num_tc 3 \
+>      	   map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 queues 1 at 0 1 at 1 2 at 2 hw 0
 > 
-> Examples of filters:
-> 
-> $ tc filter add dev eth0 parent ffff: flower \
->      	    dst_mac aa:aa:aa:aa:aa:aa \
-> 	    hw_tc 2 skip_sw
-> (just a simple filter filtering for the destination MAC address and
-> steering that traffic to queue 2)
-> 
-> $ tc filter add dev enp2s0 parent ffff: proto 0x22f0 flower \
->      	    src_mac cc:cc:cc:cc:cc:cc \
-> 	    hw_tc 1 skip_sw
-> (as the i210 doesn't support steering traffic based on the source
-> address alone, we need to use another steering traffic, in this case
-> we are using the ethernet type (0x22f0) to steer traffic to queue 1)
+> $ tc qdisc replace dev enp2s0 parent 100:2 cbs locredit -1470 \
+>      	   hicredit 30 sendslope -980000 idleslope 20000 offload 1
 > 
 > Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb.h      |   2 +
->  drivers/net/ethernet/intel/igb/igb_main.c | 188
-> +++++++++++++++++++++-
->  2 files changed, 188 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/igb/igb_main.c | 17 ++++++++++++++++-
+>  1 file changed, 16 insertions(+), 1 deletion(-)
+> 
 
 Tested by: Aaron Brown <aaron.f.brown@intel.com>
