@@ -1,47 +1,35 @@
-From: Steffen Klassert <steffen.klassert@secunet.com>
-Date: Fri, 13 Apr 2018 13:09:26 +0200
-Subject: [Intel-wired-lan] [net] xfrm: cover crypto status in xfrm_input
-In-Reply-To: <20180412190315.3102-3-jacek.kalwas@intel.com>
-References: <20180412190315.3102-1-jacek.kalwas@intel.com>
- <20180412190315.3102-3-jacek.kalwas@intel.com>
-Message-ID: <20180413110926.utpc4aq5kt7ogmby@gauss3.secunet.de>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Sat, 14 Apr 2018 02:16:45 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v7 01/10] igb: Fix not
+ adding filter elements to the list
+In-Reply-To: <20180410174959.18757-2-vinicius.gomes@intel.com>
+References: <20180410174959.18757-1-vinicius.gomes@intel.com>
+ <20180410174959.18757-2-vinicius.gomes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C83A165@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Apr 12, 2018 at 12:03:15PM -0700, Jacek Kalwas wrote:
-> Status checking in xfrm_input doesn't cover CRYPTO_GENERIC_ERROR and
-> CRYPTO_INVALID_PACKET_SYNTAX.
+> From: netdev-owner at vger.kernel.org [mailto:netdev-
+> owner at vger.kernel.org] On Behalf Of Vinicius Costa Gomes
+> Sent: Tuesday, April 10, 2018 10:50 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Gomes, Vinicius <vinicius.gomes@intel.com>; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; netdev at vger.kernel.org; Sanchez-Palencia,
+> Jesus <jesus.sanchez-palencia@intel.com>
+> Subject: [next-queue PATCH v7 01/10] igb: Fix not adding filter elements to
+> the list
 > 
-> Given patch adds additional check for CRYPTO_INVALID_PACKET_SYNTAX and
-> treats CRYPTO_GENERIC_ERROR as status matching LINUX_MIB_XFRMINERROR.
+> Because the order of the parameters passes to 'hlist_add_behind()' was
+> inverted, the 'parent' node was added "behind" the 'input', as input
+> is not in the list, this causes the 'input' node to be lost.
 > 
-> Signed-off-by: Jacek Kalwas <jacek.kalwas@intel.com>
+> Fixes: 0e71def25281 ("igb: add support of RX network flow classification")
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->  net/xfrm/xfrm_input.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/net/xfrm/xfrm_input.c b/net/xfrm/xfrm_input.c
-> index 352abca2605f..08d70ea774f9 100644
-> --- a/net/xfrm/xfrm_input.c
-> +++ b/net/xfrm/xfrm_input.c
-> @@ -285,7 +285,12 @@ int xfrm_input(struct sk_buff *skb, int nexthdr, __be32 spi, int encap_type)
->  					goto drop;
->  				}
->  
-> -				XFRM_INC_STATS(net, LINUX_MIB_XFRMINBUFFERERROR);
-> +				if (xo->status & CRYPTO_INVALID_PACKET_SYNTAX) {
-> +					XFRM_INC_STATS(net, LINUX_MIB_XFRMINBUFFERERROR);
-> +					goto drop;
-> +				}
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Please consider adding separate statistic counters for offloading.
-Reusing some other counter does not make it more usfull as it is now.
-Some time ago, each statistic counter was bumped at a unique place,
-so it was easy to identify where the packet was dropped. Unfortunately 
-this changed over the years. This was one of the concerns the userspace
-IPsec developers had during the IPsec workshop we held recently. So I
-think it is better to add new counters insted of reusing old ones here.
-
+Tested by: Aaron Brown <aaron.f.brown@intel.com>
