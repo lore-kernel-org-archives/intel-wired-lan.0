@@ -1,79 +1,78 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 16 Apr 2018 09:55:36 -0700
-Subject: [Intel-wired-lan] [PATCH] ice: Update NVM AQ command functions
-Message-ID: <20180416165536.7490-1-anirudh.venkataramanan@intel.com>
+Date: Mon, 16 Apr 2018 10:07:03 -0700
+Subject: [Intel-wired-lan] [PATCH] ice: Fix insufficient memory issue in
+ ice_aq_manage_mac_read
+Message-ID: <20180416170703.9153-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch updates the NVM read/erase/update AQ commands to align with
-the latest specification.
+From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
 
+For the MAC read operation, the device can return upto two (LAN and WoL)
+MAC addresses. Without access to adequate memory, the device will return
+an error. Fixed this by allocating the right amount of memory. Also, logic
+to detect and copy the LAN MAC address into the port_info structure has
+been added. Note that the WoL MAC address is ignored currently as the WoL
+feature isn't supported yet.
+
+Fixes: dc49c7723676 ("ice: Get MAC/PHY/link info and scheduler topology")
+
+Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 13 +++++++------
- drivers/net/ethernet/intel/ice/ice_nvm.c        |  7 ++++---
- 2 files changed, 11 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 22 +++++++++++++++++-----
+ 1 file changed, 17 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 5b13ca1bd85f..1f1b65954dce 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1049,7 +1049,9 @@ struct ice_aqc_set_event_mask {
-  * NVM Update commands (indirect 0x0703)
-  */
- struct ice_aqc_nvm {
--	u8	cmd_flags;
-+	__le16 offset_low;
-+	u8 offset_high;
-+	u8 cmd_flags;
- #define ICE_AQC_NVM_LAST_CMD		BIT(0)
- #define ICE_AQC_NVM_PCIR_REQ		BIT(0)	/* Used by NVM Update reply */
- #define ICE_AQC_NVM_PRESERVATION_S	1
-@@ -1058,12 +1060,11 @@ struct ice_aqc_nvm {
- #define ICE_AQC_NVM_PRESERVE_ALL	BIT(1)
- #define ICE_AQC_NVM_PRESERVE_SELECTED	(3 << CSR_AQ_NVM_PRESERVATION_S)
- #define ICE_AQC_NVM_FLASH_ONLY		BIT(7)
--	u8	module_typeid;
--	__le16	length;
-+	__le16 module_typeid;
-+	__le16 length;
- #define ICE_AQC_NVM_ERASE_LEN	0xFFFF
--	__le32	offset;
--	__le32	addr_high;
--	__le32	addr_low;
-+	__le32 addr_high;
-+	__le32 addr_low;
- };
- 
- /* Get/Set RSS key (indirect 0x0B04/0x0B02) */
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index fa7a69ac92b0..92da0a626ce0 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -16,7 +16,7 @@
-  * Read the NVM using the admin queue commands (0x0701)
-  */
- static enum ice_status
--ice_aq_read_nvm(struct ice_hw *hw, u8 module_typeid, u32 offset, u16 length,
-+ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
- 		void *data, bool last_command, struct ice_sq_cd *cd)
- {
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 21977ec984c4..71d032cc5fa7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -78,6 +78,7 @@ ice_aq_manage_mac_read(struct ice_hw *hw, void *buf, u16 buf_size,
  	struct ice_aq_desc desc;
-@@ -33,8 +33,9 @@ ice_aq_read_nvm(struct ice_hw *hw, u8 module_typeid, u32 offset, u16 length,
- 	/* If this is the last command in a series, set the proper flag. */
- 	if (last_command)
- 		cmd->cmd_flags |= ICE_AQC_NVM_LAST_CMD;
--	cmd->module_typeid = module_typeid;
--	cmd->offset = cpu_to_le32(offset);
-+	cmd->module_typeid = cpu_to_le16(module_typeid);
-+	cmd->offset_low = cpu_to_le16(offset & 0xFFFF);
-+	cmd->offset_high = (offset >> 16) & 0xFF;
- 	cmd->length = cpu_to_le16(length);
+ 	enum ice_status status;
+ 	u16 flags;
++	u8 i;
  
- 	return ice_aq_send_cmd(hw, &desc, data, length, cd);
+ 	cmd = &desc.params.mac_read;
+ 
+@@ -98,8 +99,16 @@ ice_aq_manage_mac_read(struct ice_hw *hw, void *buf, u16 buf_size,
+ 		return ICE_ERR_CFG;
+ 	}
+ 
+-	ether_addr_copy(hw->port_info->mac.lan_addr, resp->mac_addr);
+-	ether_addr_copy(hw->port_info->mac.perm_addr, resp->mac_addr);
++	/* A single port can report up to two (LAN and WoL) addresses */
++	for (i = 0; i < cmd->num_addr; i++)
++		if (resp[i].addr_type == ICE_AQC_MAN_MAC_ADDR_TYPE_LAN) {
++			ether_addr_copy(hw->port_info->mac.lan_addr,
++					resp[i].mac_addr);
++			ether_addr_copy(hw->port_info->mac.perm_addr,
++					resp[i].mac_addr);
++			break;
++		}
++
+ 	return 0;
+ }
+ 
+@@ -464,9 +473,12 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
+ 	if (status)
+ 		goto err_unroll_sched;
+ 
+-	/* Get port MAC information */
+-	mac_buf_len = sizeof(struct ice_aqc_manage_mac_read_resp);
+-	mac_buf = devm_kzalloc(ice_hw_to_dev(hw), mac_buf_len, GFP_KERNEL);
++	/* Get MAC information */
++	/* A single port can report up to two (LAN and WoL) addresses */
++	mac_buf = devm_kcalloc(ice_hw_to_dev(hw), 2,
++			       sizeof(struct ice_aqc_manage_mac_read_resp),
++			       GFP_KERNEL);
++	mac_buf_len = 2 * sizeof(struct ice_aqc_manage_mac_read_resp);
+ 
+ 	if (!mac_buf) {
+ 		status = ICE_ERR_NO_MEMORY;
 -- 
 2.14.3
 
