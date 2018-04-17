@@ -1,10 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 17 Apr 2018 00:54:26 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH v7 08/10] igb: Add MAC
- address support for ethtool nftuple filters
+Date: Tue, 17 Apr 2018 00:54:41 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v7 09/10] igb: Add the
+ skeletons for tc-flower offloading
 References: <20180410174959.18757-1-vinicius.gomes@intel.com>
- <20180410174959.18757-9-vinicius.gomes@intel.com> 
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C83AFD5@ORSMSX101.amr.corp.intel.com>
+ <20180410174959.18757-10-vinicius.gomes@intel.com> 
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C83AFE4@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,47 +15,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Friday, April 13, 2018 7:23 PM
 > To: 'Vinicius Costa Gomes' <vinicius.gomes@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: Gomes, Vinicius <vinicius.gomes@intel.com>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; netdev at vger.kernel.org; Sanchez-Palencia,
-> Jesus <jesus.sanchez-palencia@intel.com>
-> Subject: RE: [next-queue PATCH v7 08/10] igb: Add MAC address support for
-> ethtool nftuple filters
+> Cc: netdev at vger.kernel.org; Sanchez-Palencia, Jesus <jesus.sanchez-
+> palencia at intel.com>
+> Subject: RE: [Intel-wired-lan] [next-queue PATCH v7 09/10] igb: Add the
+> skeletons for tc-flower offloading
 > 
-> > From: netdev-owner at vger.kernel.org [mailto:netdev-
-> > owner at vger.kernel.org] On Behalf Of Vinicius Costa Gomes
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> > Behalf Of Vinicius Costa Gomes
 > > Sent: Tuesday, April 10, 2018 10:50 AM
 > > To: intel-wired-lan at lists.osuosl.org
-> > Cc: Gomes, Vinicius <vinicius.gomes@intel.com>; Kirsher, Jeffrey T
-> > <jeffrey.t.kirsher@intel.com>; netdev at vger.kernel.org; Sanchez-Palencia,
-> > Jesus <jesus.sanchez-palencia@intel.com>
-> > Subject: [next-queue PATCH v7 08/10] igb: Add MAC address support for
-> > ethtool nftuple filters
+> > Cc: netdev at vger.kernel.org; Sanchez-Palencia, Jesus <jesus.sanchez-
+> > palencia at intel.com>
+> > Subject: [Intel-wired-lan] [next-queue PATCH v7 09/10] igb: Add the
+> > skeletons for tc-flower offloading
 > >
-> > This adds the capability of configuring the queue steering of arriving
-> > packets based on their source and destination MAC addresses.
-> >
-> > Source address steering (i.e. driving traffic to a specific queue),
-> > for the i210, does not work, but filtering does (i.e. accepting
-> > traffic based on the source address). So, trying to add a filter
-> > specifying only a source address will be an error.
-> >
-> > In practical terms this adds support for the following use cases,
-> > characterized by these examples:
-> >
-> > $ ethtool -N eth0 flow-type ether dst aa:aa:aa:aa:aa:aa action 0
-> > (this will direct packets with destination address "aa:aa:aa:aa:aa:aa"
-> > to the RX queue 0)
-> >
-> > $ ethtool -N eth0 flow-type ether src 44:44:44:44:44:44 \
-> >   	     	  	    	  proto 0x22f0 action 3
-> > (this will direct packets with source address "44:44:44:44:44:44" and
-> > ethertype 0x22f0 to the RX queue 3)
+> > This adds basic functions needed to implement offloading for filters
+> > created by tc-flower.
 > >
 > > Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > > ---
-> >  drivers/net/ethernet/intel/igb/igb_ethtool.c | 43 ++++++++++++++++++-
-> -
-> >  1 file changed, 39 insertions(+), 4 deletions(-)
+> >  drivers/net/ethernet/intel/igb/igb_main.c | 66
+> > +++++++++++++++++++++++
+> >  1 file changed, 66 insertions(+)
 > >
 > 
 > Tested by: Aaron Brown <aaron.f.brown@intel.com>
