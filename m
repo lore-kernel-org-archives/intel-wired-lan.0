@@ -1,10 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 17 Apr 2018 00:52:44 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH v7 03/10] igb: Enable the
- hardware traffic class feature bit for igb models
+Date: Tue, 17 Apr 2018 00:53:05 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v7 04/10] igb: Add support
+ for MAC address filters specifying source addresses
 References: <20180410174959.18757-1-vinicius.gomes@intel.com>
- <20180410174959.18757-4-vinicius.gomes@intel.com> 
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C83AF66@ORSMSX101.amr.corp.intel.com>
+ <20180410174959.18757-5-vinicius.gomes@intel.com> 
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C83AF7A@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,31 +12,34 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Brown, Aaron F
-> Sent: Friday, April 13, 2018 7:18 PM
+> Sent: Friday, April 13, 2018 7:19 PM
 > To: 'Vinicius Costa Gomes' <vinicius.gomes@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; Sanchez-Palencia, Jesus <jesus.sanchez-
-> palencia at intel.com>
-> Subject: RE: [Intel-wired-lan] [next-queue PATCH v7 03/10] igb: Enable the
-> hardware traffic class feature bit for igb models
+> Cc: Gomes, Vinicius <vinicius.gomes@intel.com>; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; netdev at vger.kernel.org; Sanchez-Palencia,
+> Jesus <jesus.sanchez-palencia@intel.com>
+> Subject: RE: [next-queue PATCH v7 04/10] igb: Add support for MAC address
+> filters specifying source addresses
 > 
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> > Behalf Of Vinicius Costa Gomes
+> > From: netdev-owner at vger.kernel.org [mailto:netdev-
+> > owner at vger.kernel.org] On Behalf Of Vinicius Costa Gomes
 > > Sent: Tuesday, April 10, 2018 10:50 AM
 > > To: intel-wired-lan at lists.osuosl.org
-> > Cc: netdev at vger.kernel.org; Sanchez-Palencia, Jesus <jesus.sanchez-
-> > palencia at intel.com>
-> > Subject: [Intel-wired-lan] [next-queue PATCH v7 03/10] igb: Enable the
-> > hardware traffic class feature bit for igb models
+> > Cc: Gomes, Vinicius <vinicius.gomes@intel.com>; Kirsher, Jeffrey T
+> > <jeffrey.t.kirsher@intel.com>; netdev at vger.kernel.org; Sanchez-Palencia,
+> > Jesus <jesus.sanchez-palencia@intel.com>
+> > Subject: [next-queue PATCH v7 04/10] igb: Add support for MAC address
+> > filters specifying source addresses
 > >
-> > This will allow functionality depending on the hardware being traffic
-> > class aware to work. In particular the tc-flower offloading checks
-> > verifies that this bit is set.
+> > Makes it possible to direct packets to queues based on their source
+> > address. Documents the expected usage of the 'flags' parameter.
 > >
 > > Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > > ---
-> >  drivers/net/ethernet/intel/igb/igb_main.c | 3 +++
-> >  1 file changed, 3 insertions(+)
+> >  .../net/ethernet/intel/igb/e1000_defines.h    |  1 +
+> >  drivers/net/ethernet/intel/igb/igb.h          |  1 +
+> >  drivers/net/ethernet/intel/igb/igb_main.c     | 40 ++++++++++++++++---
+> >  3 files changed, 37 insertions(+), 5 deletions(-)
 > 
 > Tested by: Aaron Brown <aaron.f.brown@intel.com>
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
