@@ -1,10 +1,10 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Tue, 17 Apr 2018 21:13:31 +0000
-Subject: [Intel-wired-lan] [PATCH] ice: Fix initialization for
- num_nodes_added
-In-Reply-To: <20180410174949.8141-1-anirudh.venkataramanan@intel.com>
-References: <20180410174949.8141-1-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD26194B3A58@ORSMSX109.amr.corp.intel.com>
+Date: Tue, 17 Apr 2018 21:16:09 +0000
+Subject: [Intel-wired-lan] [PATCH] ice: Fix incorrect comment for action
+ type
+In-Reply-To: <20180411174147.14941-1-anirudh.venkataramanan@intel.com>
+References: <20180411174147.14941-1-anirudh.venkataramanan@intel.com>
+Message-ID: <C25D919FD1849B409D8D987DDC7FCD26194B3A6D@ORSMSX109.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,23 +14,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Anirudh Venkataramanan
-> Sent: Tuesday, April 10, 2018 10:50 AM
+> Sent: Wednesday, April 11, 2018 10:42 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ice: Fix initialization for
-> num_nodes_added
+> Subject: [Intel-wired-lan] [PATCH] ice: Fix incorrect comment for action type
 > 
-> ice_sched_add_nodes_to_layer is used recursively, and so we start with
-> num_nodes_added being 0. This way, in case of an error or if num_nodes is
-> NULL, the function just returns 0 to indicate that no nodes were added.
-> 
-> Fixes commit 5513b920a4f7 ("ice: Update Tx scheduler tree for VSI multi-Tx
-> queue support")
+> Action type 5 defines large action generic values. Fix comment to reflect that
+> better.
 > 
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_sched.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
 
