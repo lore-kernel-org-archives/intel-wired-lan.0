@@ -1,216 +1,51 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 20 Apr 2018 01:41:34 -0700
-Subject: [Intel-wired-lan] [next PATCH S90 2/8] i40e: fix reading LLDP
- configuration
+Date: Fri, 20 Apr 2018 01:41:40 -0700
+Subject: [Intel-wired-lan] [next PATCH S90 8/8] i40e: use %pI4b instead of
+ byte swapping before dev_err
 In-Reply-To: <20180420084140.8081-1-alice.michael@intel.com>
 References: <20180420084140.8081-1-alice.michael@intel.com>
-Message-ID: <20180420084140.8081-2-alice.michael@intel.com>
+Message-ID: <20180420084140.8081-8-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mariusz Stachura <mariusz.stachura@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Previous method for reading LLDP config was based on hard-coded
-offsets. It happened to work, because of structured architecture of
-the NVM memory. In the new approach, known as FLAT, we need to
-calculate the absolute address, instead of using relative values.
-Needed defines for memory location were added.
+Fix warnings regarding restricted __be32 type usage by strictly
+specifying the type of the ipv4 address being printed in the dev_err
+statement.
 
-Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_dcb.c    | 91 ++++++++++++++++++++++++---
- drivers/net/ethernet/intel/i40e/i40e_type.h   |  8 ++-
- drivers/net/ethernet/intel/i40evf/i40e_type.h | 10 ++-
- 3 files changed, 99 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-index 69e7d49..56bff8f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-@@ -921,6 +921,70 @@ i40e_status i40e_init_dcb(struct i40e_hw *hw)
- }
- 
- /**
-+ * _i40e_read_lldp_cfg - generic read of LLDP Configuration data from NVM
-+ * @hw: pointer to the HW structure
-+ * @lldp_cfg: pointer to hold lldp configuration variables
-+ * @module: address of the module pointer
-+ * @word_offset: offset of LLDP configuration
-+ *
-+ * Reads the LLDP configuration data from NVM using passed addresses
-+ **/
-+static i40e_status _i40e_read_lldp_cfg(struct i40e_hw *hw,
-+				       struct i40e_lldp_variables *lldp_cfg,
-+				       u8 module, u32 word_offset)
-+{
-+	u32 address, offset = (2 * word_offset);
-+	i40e_status ret;
-+	__le16 raw_mem;
-+	u16 mem;
-+
-+	ret = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
-+	if (ret)
-+		return ret;
-+
-+	ret = i40e_aq_read_nvm(hw, 0x0, module * 2, sizeof(raw_mem), &raw_mem,
-+			       true, NULL);
-+	i40e_release_nvm(hw);
-+	if (ret)
-+		return ret;
-+
-+	mem = le16_to_cpu(raw_mem);
-+	/* Check if this pointer needs to be read in word size or 4K sector
-+	 * units.
-+	 */
-+	if (mem & I40E_PTR_TYPE)
-+		address = (0x7FFF & mem) * 4096;
-+	else
-+		address = (0x7FFF & mem) * 2;
-+
-+	ret = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
-+	if (ret)
-+		goto err_lldp_cfg;
-+
-+	ret = i40e_aq_read_nvm(hw, module, offset, sizeof(raw_mem), &raw_mem,
-+			       true, NULL);
-+	i40e_release_nvm(hw);
-+	if (ret)
-+		return ret;
-+
-+	mem = le16_to_cpu(raw_mem);
-+	offset = mem + word_offset;
-+	offset *= 2;
-+
-+	ret = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
-+	if (ret)
-+		goto err_lldp_cfg;
-+
-+	ret = i40e_aq_read_nvm(hw, 0, address + offset,
-+			       sizeof(struct i40e_lldp_variables), lldp_cfg,
-+			       true, NULL);
-+	i40e_release_nvm(hw);
-+
-+err_lldp_cfg:
-+	return ret;
-+}
-+
-+/**
-  * i40e_read_lldp_cfg - read LLDP Configuration data from NVM
-  * @hw: pointer to the HW structure
-  * @lldp_cfg: pointer to hold lldp configuration variables
-@@ -931,21 +995,34 @@ i40e_status i40e_read_lldp_cfg(struct i40e_hw *hw,
- 			       struct i40e_lldp_variables *lldp_cfg)
- {
- 	i40e_status ret = 0;
--	u32 offset = (2 * I40E_NVM_LLDP_CFG_PTR);
-+	u32 mem;
- 
- 	if (!lldp_cfg)
- 		return I40E_ERR_PARAM;
- 
- 	ret = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
- 	if (ret)
--		goto err_lldp_cfg;
-+		return ret;
- 
--	ret = i40e_aq_read_nvm(hw, I40E_SR_EMP_MODULE_PTR, offset,
--			       sizeof(struct i40e_lldp_variables),
--			       (u8 *)lldp_cfg,
--			       true, NULL);
-+	ret = i40e_aq_read_nvm(hw, I40E_SR_NVM_CONTROL_WORD, 0, sizeof(mem),
-+			       &mem, true, NULL);
- 	i40e_release_nvm(hw);
-+	if (ret)
-+		return ret;
-+
-+	/* Read a bit that holds information whether we are running flat or
-+	 * structured NVM image. Flat image has LLDP configuration in shadow
-+	 * ram, so there is a need to pass different addresses for both cases.
-+	 */
-+	if (mem & I40E_SR_NVM_MAP_STRUCTURE_TYPE) {
-+		/* Flat NVM case */
-+		ret = _i40e_read_lldp_cfg(hw, lldp_cfg, I40E_SR_EMP_MODULE_PTR,
-+					  I40E_SR_LLDP_CFG_PTR);
-+	} else {
-+		/* Good old structured NVM image */
-+		ret = _i40e_read_lldp_cfg(hw, lldp_cfg, I40E_EMP_MODULE_PTR,
-+					  I40E_NVM_LLDP_CFG_PTR);
-+	}
- 
--err_lldp_cfg:
- 	return ret;
- }
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 40968a4..b430e48 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -1294,7 +1294,8 @@ struct i40e_hw_port_stats {
- 
- /* Checksum and Shadow RAM pointers */
- #define I40E_SR_NVM_CONTROL_WORD		0x00
--#define I40E_SR_EMP_MODULE_PTR			0x0F
-+#define I40E_EMP_MODULE_PTR			0x0F
-+#define I40E_SR_EMP_MODULE_PTR			0x48
- #define I40E_SR_PBA_FLAGS			0x15
- #define I40E_SR_PBA_BLOCK_PTR			0x16
- #define I40E_SR_BOOT_CONFIG_PTR			0x17
-@@ -1313,6 +1314,8 @@ struct i40e_hw_port_stats {
- #define I40E_SR_PCIE_ALT_MODULE_MAX_SIZE	1024
- #define I40E_SR_CONTROL_WORD_1_SHIFT		0x06
- #define I40E_SR_CONTROL_WORD_1_MASK	(0x03 << I40E_SR_CONTROL_WORD_1_SHIFT)
-+#define I40E_SR_CONTROL_WORD_1_NVM_BANK_VALID	BIT(5)
-+#define I40E_SR_NVM_MAP_STRUCTURE_TYPE		BIT(12)
- #define I40E_PTR_TYPE				BIT(15)
- #define I40E_SR_OCP_CFG_WORD0			0x2B
- #define I40E_SR_OCP_ENABLED			BIT(15)
-@@ -1430,7 +1433,8 @@ enum i40e_reset_type {
- };
- 
- /* IEEE 802.1AB LLDP Agent Variables from NVM */
--#define I40E_NVM_LLDP_CFG_PTR		0xD
-+#define I40E_NVM_LLDP_CFG_PTR   0x06
-+#define I40E_SR_LLDP_CFG_PTR    0x31
- struct i40e_lldp_variables {
- 	u16 length;
- 	u16 adminstatus;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index c77cb9f..9523aa1 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -1233,7 +1233,8 @@ struct i40e_hw_port_stats {
- 
- /* Checksum and Shadow RAM pointers */
- #define I40E_SR_NVM_CONTROL_WORD		0x00
--#define I40E_SR_EMP_MODULE_PTR			0x0F
-+#define I40E_EMP_MODULE_PTR			0x0F
-+#define I40E_SR_EMP_MODULE_PTR			0x48
- #define I40E_NVM_OEM_VER_OFF			0x83
- #define I40E_SR_NVM_DEV_STARTER_VERSION		0x18
- #define I40E_SR_NVM_WAKE_ON_LAN			0x19
-@@ -1249,6 +1250,9 @@ struct i40e_hw_port_stats {
- #define I40E_SR_PCIE_ALT_MODULE_MAX_SIZE	1024
- #define I40E_SR_CONTROL_WORD_1_SHIFT		0x06
- #define I40E_SR_CONTROL_WORD_1_MASK	(0x03 << I40E_SR_CONTROL_WORD_1_SHIFT)
-+#define I40E_SR_CONTROL_WORD_1_NVM_BANK_VALID	BIT(5)
-+#define I40E_SR_NVM_MAP_STRUCTURE_TYPE		BIT(12)
-+#define I40E_PTR_TYPE                           BIT(15)
- 
- /* Shadow RAM related */
- #define I40E_SR_SECTOR_SIZE_IN_WORDS	0x800
-@@ -1362,6 +1366,10 @@ enum i40e_reset_type {
- 	I40E_RESET_EMPR		= 3,
- };
- 
-+/* IEEE 802.1AB LLDP Agent Variables from NVM */
-+#define I40E_NVM_LLDP_CFG_PTR   0x06
-+#define I40E_SR_LLDP_CFG_PTR    0x31
-+
- /* RSS Hash Table Size */
- #define I40E_PFQF_CTL_0_HASHLUTSIZE_512	0x00010000
- 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b500bbf..c8659fb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -7213,8 +7213,7 @@ static int i40e_parse_cls_flower(struct i40e_vsi *vsi,
+ 			if (mask->dst == cpu_to_be32(0xffffffff)) {
+ 				field_flags |= I40E_CLOUD_FIELD_IIP;
+ 			} else {
+-				mask->dst = be32_to_cpu(mask->dst);
+-				dev_err(&pf->pdev->dev, "Bad ip dst mask %pI4\n",
++				dev_err(&pf->pdev->dev, "Bad ip dst mask %pI4b\n",
+ 					&mask->dst);
+ 				return I40E_ERR_CONFIG;
+ 			}
+@@ -7224,8 +7223,7 @@ static int i40e_parse_cls_flower(struct i40e_vsi *vsi,
+ 			if (mask->src == cpu_to_be32(0xffffffff)) {
+ 				field_flags |= I40E_CLOUD_FIELD_IIP;
+ 			} else {
+-				mask->src = be32_to_cpu(mask->src);
+-				dev_err(&pf->pdev->dev, "Bad ip src mask %pI4\n",
++				dev_err(&pf->pdev->dev, "Bad ip src mask %pI4b\n",
+ 					&mask->src);
+ 				return I40E_ERR_CONFIG;
+ 			}
 -- 
 2.9.5
 
