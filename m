@@ -1,43 +1,34 @@
-From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Thu, 19 Apr 2018 17:47:14 +0000
-Subject: [Intel-wired-lan] [PATCH] ice: Fix insufficient memory issue in
- ice_aq_manage_mac_read
-In-Reply-To: <20180416170703.9153-1-anirudh.venkataramanan@intel.com>
-References: <20180416170703.9153-1-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD26194C8BAE@ORSMSX109.amr.corp.intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Thu, 19 Apr 2018 17:06:57 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: return error on upsupported SFP
+ module when resetting
+Message-ID: <20180420000657.2316.31792.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Anirudh Venkataramanan
-> Sent: Monday, April 16, 2018 10:07 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ice: Fix insufficient memory issue in
-> ice_aq_manage_mac_read
-> 
-> From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
-> 
-> For the MAC read operation, the device can return upto two (LAN and WoL)
-> MAC addresses. Without access to adequate memory, the device will return
-> an error. Fixed this by allocating the right amount of memory. Also, logic to
-> detect and copy the LAN MAC address into the port_info structure has been
-> added. Note that the WoL MAC address is ignored currently as the WoL
-> feature isn't supported yet.
-> 
-> Fixes: dc49c7723676 ("ice: Get MAC/PHY/link info and scheduler topology")
-> 
-> Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_common.c | 22 +++++++++++++++++----
-> -
->  1 file changed, 17 insertions(+), 5 deletions(-)
+Add check for unsupported module and return the error code.
+This fixes a Coverity hit due to unused return status from setup_sfp.
 
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index beec1d0..a8148c7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -3408,6 +3408,9 @@ static s32 ixgbe_reset_hw_X550em(struct ixgbe_hw *hw)
+ 		hw->phy.sfp_setup_needed = false;
+ 	}
+ 
++	if (status == IXGBE_ERR_SFP_NOT_SUPPORTED)
++		return status;
++
+ 	/* Reset PHY */
+ 	if (!hw->phy.reset_disable && hw->phy.ops.reset)
+ 		hw->phy.ops.reset(hw);
 
