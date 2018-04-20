@@ -1,50 +1,35 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Fri, 20 Apr 2018 12:38:09 -0500
-Subject: [Intel-wired-lan] [PATCH] PCI: Add PCIe to
- pcie_print_link_status() messages
-In-Reply-To: <20180413181638.6424-1-jakub.kicinski@netronome.com>
-References: <20180413181638.6424-1-jakub.kicinski@netronome.com>
-Message-ID: <20180420173809.GR28657@bhelgaas-glaptop.roam.corp.google.com>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Fri, 20 Apr 2018 14:12:10 -0700
+Subject: [Intel-wired-lan] [PATCH RFC net-next] igb: adjust SYSTIM
+ register using TIMADJ register
+In-Reply-To: <1524254196-21705-1-git-send-email-kshitiz.gupta@ni.com>
+References: <1524254196-21705-1-git-send-email-kshitiz.gupta@ni.com>
+Message-ID: <20180420211210.43oyqmqoho6gdnfh@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Apr 13, 2018 at 11:16:38AM -0700, Jakub Kicinski wrote:
-> Currently the pcie_print_link_status() will print PCIe bandwidth
-> and link width information but does not mention it is pertaining
-> to the PCIe.  Since this and related functions are used exclusively
-> by networking drivers today users may get confused into thinking
-> that it's the NIC bandwidth that is being talked about.  Insert a
-> "PCIe" into the messages.
+On Fri, Apr 20, 2018 at 02:56:36PM -0500, Kshitiz Gupta wrote:
+> Currently the driver adjusts time by reading the current time and then
+> modifying it before writing to SYSTIM register. This can introduce
+> inaccuracies in SYSTIM. With a PREEMPT_RT kernel, spinlocks may be
+> interrupted, which in the existing implementation may lead to increased
+> time between the read and the write.
 > 
-> Signed-off-by: Jakub Kicinski <jakub.kicinski@netronome.com>
+> Alternatively as per section 7.8.3.2 in the i210 data sheet, this
+> operation can be done more accurately by using the TIMADJ registers,
+> but this should only be used for adjustments less than one 8th of the
+> sync interval. Once this register is written, the software can poll on
+> TSICR.TADJ to make sure that adjustment operation is completed.
 
-Applied to for-linus for v4.17, thanks!
+I doubt the utility of this.  The first jump is typically to correct a
+large offset of seconds, minutes, or even months.  After that, the
+servo corrects any remaining error.
 
-> ---
->  drivers/pci/pci.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index aa86e904f93c..73a0a4993f6a 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -5273,11 +5273,11 @@ void pcie_print_link_status(struct pci_dev *dev)
->  	bw_avail = pcie_bandwidth_available(dev, &limiting_dev, &speed, &width);
->  
->  	if (bw_avail >= bw_cap)
-> -		pci_info(dev, "%u.%03u Gb/s available bandwidth (%s x%d link)\n",
-> +		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth (%s x%d link)\n",
->  			 bw_cap / 1000, bw_cap % 1000,
->  			 PCIE_SPEED2STR(speed_cap), width_cap);
->  	else
-> -		pci_info(dev, "%u.%03u Gb/s available bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)\n",
-> +		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)\n",
->  			 bw_avail / 1000, bw_avail % 1000,
->  			 PCIE_SPEED2STR(speed), width,
->  			 limiting_dev ? pci_name(limiting_dev) : "<unknown>",
-> -- 
-> 2.16.2
-> 
+It would help if you would show us a clearly improved servo response
+with this change applied.
+
+Thanks,
+Richard
