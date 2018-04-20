@@ -1,43 +1,151 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 20 Apr 2018 01:41:35 -0700
-Subject: [Intel-wired-lan] [next PATCH S90 3/8] i40e: Add advertising 10G LR
- mode
+Date: Fri, 20 Apr 2018 01:41:38 -0700
+Subject: [Intel-wired-lan] [next PATCH S90 6/8] i40e: avoid overflow in
+ i40e_ptp_adjfreq()
 In-Reply-To: <20180420084140.8081-1-alice.michael@intel.com>
 References: <20180420084140.8081-1-alice.michael@intel.com>
-Message-ID: <20180420084140.8081-3-alice.michael@intel.com>
+Message-ID: <20180420084140.8081-6-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jakub Pawlak <jakub.pawlak@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-The advertising 10G LR mode should be possible to set
-but in the function i40e_set_link_ksettings() check for this
-is missed. This patch adds check for 10000baseLR_Full
-flag for 10G modes.
+When operating at 1GbE, the base incval for the PTP clock is so large
+that multiplying it by numbers close to the max_adj can overflow the
+u64.
 
-Signed-off-by: Jakub Pawlak <jakub.pawlak@intel.com>
+Rather than attempting to limit the max_adj to a value small enough to
+avoid overflow, instead calculate the incvalue adjustment based on the
+40GbE incvalue, and then multiply that by the scaling factor for the
+link speed.
+
+This sacrifices a small amount of precision in the adjustment but we
+avoid erratic behavior of the clock due to the overflow caused if ppb is
+very near the maximum adjustment.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e.h     |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c | 41 ++++++++++++++++++++----------
+ 2 files changed, 28 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index c1bbfb9..fc6a5ee 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -953,7 +953,9 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
- 	    ethtool_link_ksettings_test_link_mode(ks, advertising,
- 						  10000baseCR_Full) ||
- 	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  10000baseSR_Full))
-+						  10000baseSR_Full) ||
-+	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  10000baseLR_Full))
- 		config.link_speed |= I40E_LINK_SPEED_10GB;
- 	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
- 						  20000baseKR2_Full))
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 70d369e..1d59ab6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -586,7 +586,7 @@ struct i40e_pf {
+ 	unsigned long ptp_tx_start;
+ 	struct hwtstamp_config tstamp_config;
+ 	struct mutex tmreg_lock; /* Used to protect the SYSTIME registers. */
+-	u64 ptp_base_adj;
++	u32 ptp_adj_mult;
+ 	u32 tx_hwtstamp_timeouts;
+ 	u32 tx_hwtstamp_skipped;
+ 	u32 rx_hwtstamp_cleared;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+index 43d7c44..4cc8522 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+@@ -16,9 +16,9 @@
+  * At 1Gb link, the period is multiplied by 20. (32ns)
+  * 1588 functionality is not supported at 100Mbps.
+  */
+-#define I40E_PTP_40GB_INCVAL 0x0199999999ULL
+-#define I40E_PTP_10GB_INCVAL 0x0333333333ULL
+-#define I40E_PTP_1GB_INCVAL  0x2000000000ULL
++#define I40E_PTP_40GB_INCVAL      0x0199999999ULL
++#define I40E_PTP_10GB_INCVAL_MULT 2
++#define I40E_PTP_1GB_INCVAL_MULT  20
+ 
+ #define I40E_PRTTSYN_CTL1_TSYNTYPE_V1  BIT(I40E_PRTTSYN_CTL1_TSYNTYPE_SHIFT)
+ #define I40E_PRTTSYN_CTL1_TSYNTYPE_V2  (2 << \
+@@ -106,17 +106,24 @@ static int i40e_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
+ 		ppb = -ppb;
+ 	}
+ 
+-	smp_mb(); /* Force any pending update before accessing. */
+-	adj = READ_ONCE(pf->ptp_base_adj);
+-
+-	freq = adj;
++	freq = I40E_PTP_40GB_INCVAL;
+ 	freq *= ppb;
+ 	diff = div_u64(freq, 1000000000ULL);
+ 
+ 	if (neg_adj)
+-		adj -= diff;
++		adj = I40E_PTP_40GB_INCVAL - diff;
+ 	else
+-		adj += diff;
++		adj = I40E_PTP_40GB_INCVAL + diff;
++
++	/* At some link speeds, the base incval is so large that directly
++	 * multiplying by ppb would result in arithmetic overflow even when
++	 * using a u64. Avoid this by instead calculating the new incval
++	 * always in terms of the 40GbE clock rate and then multiplying by the
++	 * link speed factor afterwards. This does result in slightly lower
++	 * precision at lower link speeds, but it is fairly minor.
++	 */
++	smp_mb(); /* Force any pending update before accessing. */
++	adj *= READ_ONCE(pf->ptp_adj_mult);
+ 
+ 	wr32(hw, I40E_PRTTSYN_INC_L, adj & 0xFFFFFFFF);
+ 	wr32(hw, I40E_PRTTSYN_INC_H, adj >> 32);
+@@ -438,6 +445,7 @@ void i40e_ptp_set_increment(struct i40e_pf *pf)
+ 	struct i40e_link_status *hw_link_info;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	u64 incval;
++	u32 mult;
+ 
+ 	hw_link_info = &hw->phy.link_info;
+ 
+@@ -445,10 +453,10 @@ void i40e_ptp_set_increment(struct i40e_pf *pf)
+ 
+ 	switch (hw_link_info->link_speed) {
+ 	case I40E_LINK_SPEED_10GB:
+-		incval = I40E_PTP_10GB_INCVAL;
++		mult = I40E_PTP_10GB_INCVAL_MULT;
+ 		break;
+ 	case I40E_LINK_SPEED_1GB:
+-		incval = I40E_PTP_1GB_INCVAL;
++		mult = I40E_PTP_1GB_INCVAL_MULT;
+ 		break;
+ 	case I40E_LINK_SPEED_100MB:
+ 	{
+@@ -459,15 +467,20 @@ void i40e_ptp_set_increment(struct i40e_pf *pf)
+ 				 "1588 functionality is not supported at 100 Mbps. Stopping the PHC.\n");
+ 			warn_once++;
+ 		}
+-		incval = 0;
++		mult = 0;
+ 		break;
+ 	}
+ 	case I40E_LINK_SPEED_40GB:
+ 	default:
+-		incval = I40E_PTP_40GB_INCVAL;
++		mult = 1;
+ 		break;
+ 	}
+ 
++	/* The increment value is calculated by taking the base 40GbE incvalue
++	 * and multiplying it by a factor based on the link speed.
++	 */
++	incval = I40E_PTP_40GB_INCVAL * mult;
++
+ 	/* Write the new increment value into the increment register. The
+ 	 * hardware will not update the clock until both registers have been
+ 	 * written.
+@@ -476,7 +489,7 @@ void i40e_ptp_set_increment(struct i40e_pf *pf)
+ 	wr32(hw, I40E_PRTTSYN_INC_H, incval >> 32);
+ 
+ 	/* Update the base adjustement value. */
+-	WRITE_ONCE(pf->ptp_base_adj, incval);
++	WRITE_ONCE(pf->ptp_adj_mult, mult);
+ 	smp_mb(); /* Force the above update. */
+ }
+ 
 -- 
 2.9.5
 
