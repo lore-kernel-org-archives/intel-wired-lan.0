@@ -1,150 +1,215 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 20 Apr 2018 01:41:38 -0700
-Subject: [Intel-wired-lan] [next PATCH S90 6/8] i40e: avoid overflow in
- i40e_ptp_adjfreq()
+Date: Fri, 20 Apr 2018 01:41:34 -0700
+Subject: [Intel-wired-lan] [next PATCH S90 2/8] i40e: fix reading LLDP
+ configuration
 In-Reply-To: <20180420084140.8081-1-alice.michael@intel.com>
 References: <20180420084140.8081-1-alice.michael@intel.com>
-Message-ID: <20180420084140.8081-6-alice.michael@intel.com>
+Message-ID: <20180420084140.8081-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Mariusz Stachura <mariusz.stachura@intel.com>
 
-When operating at 1GbE, the base incval for the PTP clock is so large
-that multiplying it by numbers close to the max_adj can overflow the
-u64.
+Previous method for reading LLDP config was based on hard-coded
+offsets. It happened to work, because of structured architecture of
+the NVM memory. In the new approach, known as FLAT, we need to
+calculate the absolute address, instead of using relative values.
+Needed defines for memory location were added.
 
-Rather than attempting to limit the max_adj to a value small enough to
-avoid overflow, instead calculate the incvalue adjustment based on the
-40GbE incvalue, and then multiply that by the scaling factor for the
-link speed.
-
-This sacrifices a small amount of precision in the adjustment but we
-avoid erratic behavior of the clock due to the overflow caused if ppb is
-very near the maximum adjustment.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h     |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_ptp.c | 41 ++++++++++++++++++++----------
- 2 files changed, 28 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c    | 91 ++++++++++++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |  8 ++-
+ drivers/net/ethernet/intel/i40evf/i40e_type.h | 10 ++-
+ 3 files changed, 99 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 70d369e..1d59ab6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -586,7 +586,7 @@ struct i40e_pf {
- 	unsigned long ptp_tx_start;
- 	struct hwtstamp_config tstamp_config;
- 	struct mutex tmreg_lock; /* Used to protect the SYSTIME registers. */
--	u64 ptp_base_adj;
-+	u32 ptp_adj_mult;
- 	u32 tx_hwtstamp_timeouts;
- 	u32 tx_hwtstamp_skipped;
- 	u32 rx_hwtstamp_cleared;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index 43d7c44..4cc8522 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -16,9 +16,9 @@
-  * At 1Gb link, the period is multiplied by 20. (32ns)
-  * 1588 functionality is not supported at 100Mbps.
-  */
--#define I40E_PTP_40GB_INCVAL 0x0199999999ULL
--#define I40E_PTP_10GB_INCVAL 0x0333333333ULL
--#define I40E_PTP_1GB_INCVAL  0x2000000000ULL
-+#define I40E_PTP_40GB_INCVAL      0x0199999999ULL
-+#define I40E_PTP_10GB_INCVAL_MULT 2
-+#define I40E_PTP_1GB_INCVAL_MULT  20
- 
- #define I40E_PRTTSYN_CTL1_TSYNTYPE_V1  BIT(I40E_PRTTSYN_CTL1_TSYNTYPE_SHIFT)
- #define I40E_PRTTSYN_CTL1_TSYNTYPE_V2  (2 << \
-@@ -106,17 +106,24 @@ static int i40e_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
- 		ppb = -ppb;
- 	}
- 
--	smp_mb(); /* Force any pending update before accessing. */
--	adj = READ_ONCE(pf->ptp_base_adj);
--
--	freq = adj;
-+	freq = I40E_PTP_40GB_INCVAL;
- 	freq *= ppb;
- 	diff = div_u64(freq, 1000000000ULL);
- 
- 	if (neg_adj)
--		adj -= diff;
-+		adj = I40E_PTP_40GB_INCVAL - diff;
- 	else
--		adj += diff;
-+		adj = I40E_PTP_40GB_INCVAL + diff;
-+
-+	/* At some link speeds, the base incval is so large that directly
-+	 * multiplying by ppb would result in arithmetic overflow even when
-+	 * using a u64. Avoid this by instead calculating the new incval
-+	 * always in terms of the 40GbE clock rate and then multiplying by the
-+	 * link speed factor afterwards. This does result in slightly lower
-+	 * precision at lower link speeds, but it is fairly minor.
-+	 */
-+	smp_mb(); /* Force any pending update before accessing. */
-+	adj *= READ_ONCE(pf->ptp_adj_mult);
- 
- 	wr32(hw, I40E_PRTTSYN_INC_L, adj & 0xFFFFFFFF);
- 	wr32(hw, I40E_PRTTSYN_INC_H, adj >> 32);
-@@ -438,6 +445,7 @@ void i40e_ptp_set_increment(struct i40e_pf *pf)
- 	struct i40e_link_status *hw_link_info;
- 	struct i40e_hw *hw = &pf->hw;
- 	u64 incval;
-+	u32 mult;
- 
- 	hw_link_info = &hw->phy.link_info;
- 
-@@ -445,10 +453,10 @@ void i40e_ptp_set_increment(struct i40e_pf *pf)
- 
- 	switch (hw_link_info->link_speed) {
- 	case I40E_LINK_SPEED_10GB:
--		incval = I40E_PTP_10GB_INCVAL;
-+		mult = I40E_PTP_10GB_INCVAL_MULT;
- 		break;
- 	case I40E_LINK_SPEED_1GB:
--		incval = I40E_PTP_1GB_INCVAL;
-+		mult = I40E_PTP_1GB_INCVAL_MULT;
- 		break;
- 	case I40E_LINK_SPEED_100MB:
- 	{
-@@ -459,15 +467,20 @@ void i40e_ptp_set_increment(struct i40e_pf *pf)
- 				 "1588 functionality is not supported at 100 Mbps. Stopping the PHC.\n");
- 			warn_once++;
- 		}
--		incval = 0;
-+		mult = 0;
- 		break;
- 	}
- 	case I40E_LINK_SPEED_40GB:
- 	default:
--		incval = I40E_PTP_40GB_INCVAL;
-+		mult = 1;
- 		break;
- 	}
- 
-+	/* The increment value is calculated by taking the base 40GbE incvalue
-+	 * and multiplying it by a factor based on the link speed.
-+	 */
-+	incval = I40E_PTP_40GB_INCVAL * mult;
-+
- 	/* Write the new increment value into the increment register. The
- 	 * hardware will not update the clock until both registers have been
- 	 * written.
-@@ -476,7 +489,7 @@ void i40e_ptp_set_increment(struct i40e_pf *pf)
- 	wr32(hw, I40E_PRTTSYN_INC_H, incval >> 32);
- 
- 	/* Update the base adjustement value. */
--	WRITE_ONCE(pf->ptp_base_adj, incval);
-+	WRITE_ONCE(pf->ptp_adj_mult, mult);
- 	smp_mb(); /* Force the above update. */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+index 69e7d49..56bff8f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+@@ -921,6 +921,70 @@ i40e_status i40e_init_dcb(struct i40e_hw *hw)
  }
+ 
+ /**
++ * _i40e_read_lldp_cfg - generic read of LLDP Configuration data from NVM
++ * @hw: pointer to the HW structure
++ * @lldp_cfg: pointer to hold lldp configuration variables
++ * @module: address of the module pointer
++ * @word_offset: offset of LLDP configuration
++ *
++ * Reads the LLDP configuration data from NVM using passed addresses
++ **/
++static i40e_status _i40e_read_lldp_cfg(struct i40e_hw *hw,
++				       struct i40e_lldp_variables *lldp_cfg,
++				       u8 module, u32 word_offset)
++{
++	u32 address, offset = (2 * word_offset);
++	i40e_status ret;
++	__le16 raw_mem;
++	u16 mem;
++
++	ret = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
++	if (ret)
++		return ret;
++
++	ret = i40e_aq_read_nvm(hw, 0x0, module * 2, sizeof(raw_mem), &raw_mem,
++			       true, NULL);
++	i40e_release_nvm(hw);
++	if (ret)
++		return ret;
++
++	mem = le16_to_cpu(raw_mem);
++	/* Check if this pointer needs to be read in word size or 4K sector
++	 * units.
++	 */
++	if (mem & I40E_PTR_TYPE)
++		address = (0x7FFF & mem) * 4096;
++	else
++		address = (0x7FFF & mem) * 2;
++
++	ret = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
++	if (ret)
++		goto err_lldp_cfg;
++
++	ret = i40e_aq_read_nvm(hw, module, offset, sizeof(raw_mem), &raw_mem,
++			       true, NULL);
++	i40e_release_nvm(hw);
++	if (ret)
++		return ret;
++
++	mem = le16_to_cpu(raw_mem);
++	offset = mem + word_offset;
++	offset *= 2;
++
++	ret = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
++	if (ret)
++		goto err_lldp_cfg;
++
++	ret = i40e_aq_read_nvm(hw, 0, address + offset,
++			       sizeof(struct i40e_lldp_variables), lldp_cfg,
++			       true, NULL);
++	i40e_release_nvm(hw);
++
++err_lldp_cfg:
++	return ret;
++}
++
++/**
+  * i40e_read_lldp_cfg - read LLDP Configuration data from NVM
+  * @hw: pointer to the HW structure
+  * @lldp_cfg: pointer to hold lldp configuration variables
+@@ -931,21 +995,34 @@ i40e_status i40e_read_lldp_cfg(struct i40e_hw *hw,
+ 			       struct i40e_lldp_variables *lldp_cfg)
+ {
+ 	i40e_status ret = 0;
+-	u32 offset = (2 * I40E_NVM_LLDP_CFG_PTR);
++	u32 mem;
+ 
+ 	if (!lldp_cfg)
+ 		return I40E_ERR_PARAM;
+ 
+ 	ret = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
+ 	if (ret)
+-		goto err_lldp_cfg;
++		return ret;
+ 
+-	ret = i40e_aq_read_nvm(hw, I40E_SR_EMP_MODULE_PTR, offset,
+-			       sizeof(struct i40e_lldp_variables),
+-			       (u8 *)lldp_cfg,
+-			       true, NULL);
++	ret = i40e_aq_read_nvm(hw, I40E_SR_NVM_CONTROL_WORD, 0, sizeof(mem),
++			       &mem, true, NULL);
+ 	i40e_release_nvm(hw);
++	if (ret)
++		return ret;
++
++	/* Read a bit that holds information whether we are running flat or
++	 * structured NVM image. Flat image has LLDP configuration in shadow
++	 * ram, so there is a need to pass different addresses for both cases.
++	 */
++	if (mem & I40E_SR_NVM_MAP_STRUCTURE_TYPE) {
++		/* Flat NVM case */
++		ret = _i40e_read_lldp_cfg(hw, lldp_cfg, I40E_SR_EMP_MODULE_PTR,
++					  I40E_SR_LLDP_CFG_PTR);
++	} else {
++		/* Good old structured NVM image */
++		ret = _i40e_read_lldp_cfg(hw, lldp_cfg, I40E_EMP_MODULE_PTR,
++					  I40E_NVM_LLDP_CFG_PTR);
++	}
+ 
+-err_lldp_cfg:
+ 	return ret;
+ }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 40968a4..b430e48 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -1294,7 +1294,8 @@ struct i40e_hw_port_stats {
+ 
+ /* Checksum and Shadow RAM pointers */
+ #define I40E_SR_NVM_CONTROL_WORD		0x00
+-#define I40E_SR_EMP_MODULE_PTR			0x0F
++#define I40E_EMP_MODULE_PTR			0x0F
++#define I40E_SR_EMP_MODULE_PTR			0x48
+ #define I40E_SR_PBA_FLAGS			0x15
+ #define I40E_SR_PBA_BLOCK_PTR			0x16
+ #define I40E_SR_BOOT_CONFIG_PTR			0x17
+@@ -1313,6 +1314,8 @@ struct i40e_hw_port_stats {
+ #define I40E_SR_PCIE_ALT_MODULE_MAX_SIZE	1024
+ #define I40E_SR_CONTROL_WORD_1_SHIFT		0x06
+ #define I40E_SR_CONTROL_WORD_1_MASK	(0x03 << I40E_SR_CONTROL_WORD_1_SHIFT)
++#define I40E_SR_CONTROL_WORD_1_NVM_BANK_VALID	BIT(5)
++#define I40E_SR_NVM_MAP_STRUCTURE_TYPE		BIT(12)
+ #define I40E_PTR_TYPE				BIT(15)
+ #define I40E_SR_OCP_CFG_WORD0			0x2B
+ #define I40E_SR_OCP_ENABLED			BIT(15)
+@@ -1430,7 +1433,8 @@ enum i40e_reset_type {
+ };
+ 
+ /* IEEE 802.1AB LLDP Agent Variables from NVM */
+-#define I40E_NVM_LLDP_CFG_PTR		0xD
++#define I40E_NVM_LLDP_CFG_PTR   0x06
++#define I40E_SR_LLDP_CFG_PTR    0x31
+ struct i40e_lldp_variables {
+ 	u16 length;
+ 	u16 adminstatus;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index c77cb9f..9523aa1 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -1233,7 +1233,8 @@ struct i40e_hw_port_stats {
+ 
+ /* Checksum and Shadow RAM pointers */
+ #define I40E_SR_NVM_CONTROL_WORD		0x00
+-#define I40E_SR_EMP_MODULE_PTR			0x0F
++#define I40E_EMP_MODULE_PTR			0x0F
++#define I40E_SR_EMP_MODULE_PTR			0x48
+ #define I40E_NVM_OEM_VER_OFF			0x83
+ #define I40E_SR_NVM_DEV_STARTER_VERSION		0x18
+ #define I40E_SR_NVM_WAKE_ON_LAN			0x19
+@@ -1249,6 +1250,9 @@ struct i40e_hw_port_stats {
+ #define I40E_SR_PCIE_ALT_MODULE_MAX_SIZE	1024
+ #define I40E_SR_CONTROL_WORD_1_SHIFT		0x06
+ #define I40E_SR_CONTROL_WORD_1_MASK	(0x03 << I40E_SR_CONTROL_WORD_1_SHIFT)
++#define I40E_SR_CONTROL_WORD_1_NVM_BANK_VALID	BIT(5)
++#define I40E_SR_NVM_MAP_STRUCTURE_TYPE		BIT(12)
++#define I40E_PTR_TYPE                           BIT(15)
+ 
+ /* Shadow RAM related */
+ #define I40E_SR_SECTOR_SIZE_IN_WORDS	0x800
+@@ -1362,6 +1366,10 @@ enum i40e_reset_type {
+ 	I40E_RESET_EMPR		= 3,
+ };
+ 
++/* IEEE 802.1AB LLDP Agent Variables from NVM */
++#define I40E_NVM_LLDP_CFG_PTR   0x06
++#define I40E_SR_LLDP_CFG_PTR    0x31
++
+ /* RSS Hash Table Size */
+ #define I40E_PFQF_CTL_0_HASHLUTSIZE_512	0x00010000
  
 -- 
 2.9.5
