@@ -1,65 +1,62 @@
-From: Mauro Rodrigues <maurosr@linux.vnet.ibm.com>
-Date: Mon, 23 Apr 2018 15:51:43 -0300
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix free irq process when
- removing device due to PCI Errors]
-In-Reply-To: <f7422ddf-db30-14e6-efa9-14c4e14d9eaa@gpiccoli.net>
-References: <20180418175613.GA2121@korriban>
- <f7422ddf-db30-14e6-efa9-14c4e14d9eaa@gpiccoli.net>
-Message-ID: <20180423185143.GA7337@korriban>
+From: Jesus Sanchez-Palencia <jesus.sanchez-palencia@intel.com>
+Date: Mon, 23 Apr 2018 11:21:34 -0700
+Subject: [Intel-wired-lan] [RFC v3 net-next 13/18] net/sched: Introduce
+ the TBS Qdisc
+In-Reply-To: <alpine.DEB.2.21.1803211407520.3754@nanos.tec.linutronix.de>
+References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
+ <20180307011230.24001-14-jesus.sanchez-palencia@intel.com>
+ <alpine.DEB.2.21.1803211407520.3754@nanos.tec.linutronix.de>
+Message-ID: <768e8da5-502e-d36f-0f32-9324eaca4a1d@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Guilherme, thanks for your review, answer to your suggestion is
-inline.
+Hi Thomas,
 
-On Wed, Apr 18, 2018 at 03:14:14PM -0300, Guilherme G. Piccoli wrote:
-> Thanks Mauro, nice fix! A minor suggestion below.
-> Other than that, feel free to add:
-> 
-> Reviewed-by: Guilherme G. Piccoli <kernel@gpiccoli.net>
-> 
-> >
-> > [...]
-> >diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> >index afadba9..d170de8 100644
-> >--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> >+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> >@@ -6679,7 +6679,8 @@ int ixgbe_close(struct net_device *netdev)
-> >
-> >  	ixgbe_ptp_stop(adapter);
-> >
-> >-	if (netif_device_present(netdev))
-> >+	if (netif_device_present(netdev) ||
-> >+	    adapter->pdev->error_state == pci_channel_io_perm_failure)
-> 
-> How about using pci_channel_offline() here instead of manually
-> checking the error_state flag? It's a minor though heheh
 
-So the thing here is that I want to proceed through out this path only
-when the device is in pci_channle_io_perm_failure. Looking at the
-function you suggested there is a third state that would return True
-here which is pci_channel_io_frozen, it's also a concern that this list
-of possible values can increase eventually as well, so I would rather
-keep this as is.
+On 03/21/2018 06:46 AM, Thomas Gleixner wrote:
+> On Tue, 6 Mar 2018, Jesus Sanchez-Palencia wrote:
+>> +struct tbs_sched_data {
+>> +	bool sorting;
+>> +	int clockid;
+>> +	int queue;
+>> +	s32 delta; /* in ns */
+>> +	ktime_t last; /* The txtime of the last skb sent to the netdevice. */
+>> +	struct rb_root head;
+> 
+> Hmm. You are reimplementing timerqueue open coded. Have you checked whether
+> you could reuse the timerqueue implementation?
+> 
+> That requires to add a timerqueue node to struct skbuff
+> 
+> @@ -671,7 +671,8 @@ struct sk_buff {
+>  				unsigned long		dev_scratch;
+>  			};
+>  		};
+> -		struct rb_node	rbnode; /* used in netem & tcp stack */
+> +		struct rb_node		rbnode; /* used in netem & tcp stack */
+> +		struct timerqueue_node	tqnode;
+>  	};
+>  	struct sock		*sk;
+> 
+> Then you can use timerqueue_head in your scheduler data and all the open
+> coded rbtree handling goes away.
 
-I've just realized that I need to fix this in ixgbevf as well, so I'll
-send a second version of this one soon.
+
+I just noticed that doing the above increases the size of struct sk_buff by 8
+bytes - struct timerqueue_node is 32bytes long while struct rb_node is only
+24bytes long.
+
+Given the feedback we got here before against touching struct sk_buff at all for
+non-generic use cases, I will keep the implementation of sch_tbs.c as is, thus
+keeping the open-coded version for now, ok?
 
 Thanks,
+Jesus
 
-Mauro
-> 
-> Cheers,
-> 
-> 
-> Guilherme
-> 
-> >  		ixgbe_close_suspend(adapter);
-> >
-> >  	ixgbe_fdir_filter_exit(adapter);
-> >
-> 
+
+(...)
+
 
