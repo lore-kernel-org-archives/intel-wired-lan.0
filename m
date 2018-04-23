@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 23 Apr 2018 20:59:01 +0000
-Subject: [Intel-wired-lan] [next PATCH S90 8/8] i40e: use %pI4b instead
- of byte swapping before dev_err
-In-Reply-To: <20180420084140.8081-8-alice.michael@intel.com>
-References: <20180420084140.8081-1-alice.michael@intel.com>
- <20180420084140.8081-8-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A9769A9@ORSMSX104.amr.corp.intel.com>
+Date: Mon, 23 Apr 2018 21:00:03 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: return error on upsupported
+ SFP module when resetting
+In-Reply-To: <20180420000657.2316.31792.stgit@localhost6.localdomain6>
+References: <20180420000657.2316.31792.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1A9769B9@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,22 +13,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Friday, April 20, 2018 1:42 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S90 8/8] i40e: use %pI4b instead of
-> byte swapping before dev_err
+> Behalf Of Emil Tantilov
+> Sent: Thursday, April 19, 2018 5:07 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: return error on upsupported SFP
+> module when resetting
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> Add check for unsupported module and return the error code.
+> This fixes a Coverity hit due to unused return status from setup_sfp.
 > 
-> Fix warnings regarding restricted __be32 type usage by strictly specifying the
-> type of the ipv4 address being printed in the dev_err statement.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    3 +++
+>  1 file changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
