@@ -1,65 +1,38 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 24 Apr 2018 10:50:04 +0200 (CEST)
-Subject: [Intel-wired-lan] [RFC v3 net-next 13/18] net/sched: Introduce
- the TBS Qdisc
-In-Reply-To: <768e8da5-502e-d36f-0f32-9324eaca4a1d@intel.com>
-References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
- <20180307011230.24001-14-jesus.sanchez-palencia@intel.com>
- <alpine.DEB.2.21.1803211407520.3754@nanos.tec.linutronix.de>
- <768e8da5-502e-d36f-0f32-9324eaca4a1d@intel.com>
-Message-ID: <alpine.DEB.2.21.1804241012020.5261@nanos.tec.linutronix.de>
+From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+Date: Tue, 24 Apr 2018 15:16:48 +0200
+Subject: [Intel-wired-lan] [PATCH] net: ixgbevf: fix ixgbevf_xmit_frame()'s
+ return type
+Message-ID: <20180424131649.3955-1-luc.vanoostenryck@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 23 Apr 2018, Jesus Sanchez-Palencia wrote:
-> On 03/21/2018 06:46 AM, Thomas Gleixner wrote:
-> > On Tue, 6 Mar 2018, Jesus Sanchez-Palencia wrote:
-> >> +struct tbs_sched_data {
-> >> +	bool sorting;
-> >> +	int clockid;
-> >> +	int queue;
-> >> +	s32 delta; /* in ns */
-> >> +	ktime_t last; /* The txtime of the last skb sent to the netdevice. */
-> >> +	struct rb_root head;
-> > 
-> > Hmm. You are reimplementing timerqueue open coded. Have you checked whether
-> > you could reuse the timerqueue implementation?
-> > 
-> > That requires to add a timerqueue node to struct skbuff
-> > 
-> > @@ -671,7 +671,8 @@ struct sk_buff {
-> >  				unsigned long		dev_scratch;
-> >  			};
-> >  		};
-> > -		struct rb_node	rbnode; /* used in netem & tcp stack */
-> > +		struct rb_node		rbnode; /* used in netem & tcp stack */
-> > +		struct timerqueue_node	tqnode;
-> >  	};
-> >  	struct sock		*sk;
-> > 
-> > Then you can use timerqueue_head in your scheduler data and all the open
-> > coded rbtree handling goes away.
-> 
-> 
-> I just noticed that doing the above increases the size of struct sk_buff by 8
-> bytes - struct timerqueue_node is 32bytes long while struct rb_node is only
-> 24bytes long.
-> 
-> Given the feedback we got here before against touching struct sk_buff at all for
-> non-generic use cases, I will keep the implementation of sch_tbs.c as is, thus
-> keeping the open-coded version for now, ok?
+The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
+which is a typedef for an enum type, but the implementation in this
+driver returns an 'int'.
 
-The size of sk_buff is 216 and the size of sk_buff_fclones is 440
-bytes. The sk_buff and sk_buff_fclones kmem_caches use objects sized 256
-and 512 bytes because the kmem_caches are created with SLAB_HWCACHE_ALIGN.
+Fix this by returning 'netdev_tx_t' in this driver too.
 
-So adding 8 bytes to spare duplicated code will not change the kmem_cache
-object size and I really doubt that anyone will notice.
+Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-
-	tglx
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 3d9033f26..ce217a2e9 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -4137,7 +4137,7 @@ static int ixgbevf_xmit_frame_ring(struct sk_buff *skb,
+ 	return NETDEV_TX_OK;
+ }
+ 
+-static int ixgbevf_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
++static netdev_tx_t ixgbevf_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ {
+ 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+ 	struct ixgbevf_ring *tx_ring;
+-- 
+2.17.0
 
