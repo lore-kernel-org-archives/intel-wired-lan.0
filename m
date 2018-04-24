@@ -1,23 +1,55 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 24 Apr 2018 09:50:48 -0400 (EDT)
-Subject: [Intel-wired-lan] [RFC v3 net-next 13/18] net/sched: Introduce
- the TBS Qdisc
-In-Reply-To: <alpine.DEB.2.21.1804241012020.5261@nanos.tec.linutronix.de>
-References: <alpine.DEB.2.21.1803211407520.3754@nanos.tec.linutronix.de>
- <768e8da5-502e-d36f-0f32-9324eaca4a1d@intel.com>
- <alpine.DEB.2.21.1804241012020.5261@nanos.tec.linutronix.de>
-Message-ID: <20180424.095048.818224012961344954.davem@davemloft.net>
+From: Holger Schurig <holgerschurig@gmail.com>
+Date: Tue, 24 Apr 2018 17:14:58 +0200
+Subject: [Intel-wired-lan] [BUG] igb: reconnecting of cable not always
+ detected
+Message-ID: <87h8o0ocul.fsf@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 24 Apr 2018 10:50:04 +0200 (CEST)
+Hi all,
 
-> So adding 8 bytes to spare duplicated code will not change the kmem_cache
-> object size and I really doubt that anyone will notice.
+I'm on kernel 4.16.4 and have an issue with eth0, driver is igb. When I
+remove the ethernet cable, this is always detected:
 
-It's about where the cache lines end up when each and every byte is added
-to the structure, not just the slab object size.
+[    2.772360] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
+[    2.772363] igb: Copyright (c) 2007-2014 Intel Corporation.
+[    3.023707] igb 0000:02:00.0: added PHC on eth0
+[    3.023710] igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection
+[    3.023713] igb 0000:02:00.0: eth0: (PCIe:2.5Gb/s:Width x1) 00:13:95:1a:54:33
+[    3.023758] igb 0000:02:00.0: eth0: PBA No: 000300-000
+[    3.023762] igb 0000:02:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
+[    7.984921] igb 0000:02:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[   11.184593] igb 0000:02:00.0 eth0: igb: eth0 NIC Link is Down
+
+Sometimes, plugging the cable back in is detected ...
+
+[   43.736922] igb 0000:02:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+
+... but sometimes this is *NOT* detected. I can put the cable in and
+even after two minutes nothing has been detected.
+
+But when I run "rmmod igb" followed by "modpobe igb", the link is
+detected again:
+
+[  100.528609] igb 0000:02:00.0 eth0: igb: eth0 NIC Link is Down
+[ 2336.583244] igb 0000:02:00.0: removed PHC on eth0
+[ 2339.693521] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
+[ 2339.693524] igb: Copyright (c) 2007-2014 Intel Corporation.
+[ 2339.990553] pps pps0: new PPS source ptp0
+[ 2339.990561] igb 0000:02:00.0: added PHC on eth0
+[ 2339.990565] igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection
+[ 2339.990569] igb 0000:02:00.0: eth0: (PCIe:2.5Gb/s:Width x1) 00:13:95:1a:54:33
+[ 2339.990611] igb 0000:02:00.0: eth0: PBA No: 000300-000
+[ 2339.990615] igb 0000:02:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
+[ 2343.001114] igb 0000:02:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+
+(In above dmesg snippet the ethernet cable was the whole time inserted).
+
+
+Any tips on how I can debug this further?
+
+PS: I already tried a different switch and also a direct connection from
+device-to-device, without a switch.
