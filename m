@@ -1,78 +1,210 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 24 Apr 2018 11:09:02 -0700
-Subject: [Intel-wired-lan] [BUG] igb: reconnecting of cable not always
- detected
-In-Reply-To: <87h8o0ocul.fsf@gmail.com>
-References: <87h8o0ocul.fsf@gmail.com>
-Message-ID: <CAKgT0Udj+d7yzPN4Jph8uk7Z6fz0oyWrO+6W6CfygSYTkGJ0Xw@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 25 Apr 2018 02:13:06 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 9cf2f437ca5b39828984064fad213e68fc17ef11
+Message-ID: <5adf73b2.xmcCA3U0qpe/an3J%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Apr 24, 2018 at 8:14 AM, Holger Schurig <holgerschurig@gmail.com> wrote:
-> Hi all,
->
-> I'm on kernel 4.16.4 and have an issue with eth0, driver is igb. When I
-> remove the ethernet cable, this is always detected:
->
-> [    2.772360] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
-> [    2.772363] igb: Copyright (c) 2007-2014 Intel Corporation.
-> [    3.023707] igb 0000:02:00.0: added PHC on eth0
-> [    3.023710] igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection
-> [    3.023713] igb 0000:02:00.0: eth0: (PCIe:2.5Gb/s:Width x1) 00:13:95:1a:54:33
-> [    3.023758] igb 0000:02:00.0: eth0: PBA No: 000300-000
-> [    3.023762] igb 0000:02:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
-> [    7.984921] igb 0000:02:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-> [   11.184593] igb 0000:02:00.0 eth0: igb: eth0 NIC Link is Down
->
-> Sometimes, plugging the cable back in is detected ...
->
-> [   43.736922] igb 0000:02:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
->
-> ... but sometimes this is *NOT* detected. I can put the cable in and
-> even after two minutes nothing has been detected.
->
-> But when I run "rmmod igb" followed by "modpobe igb", the link is
-> detected again:
->
-> [  100.528609] igb 0000:02:00.0 eth0: igb: eth0 NIC Link is Down
-> [ 2336.583244] igb 0000:02:00.0: removed PHC on eth0
-> [ 2339.693521] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
-> [ 2339.693524] igb: Copyright (c) 2007-2014 Intel Corporation.
-> [ 2339.990553] pps pps0: new PPS source ptp0
-> [ 2339.990561] igb 0000:02:00.0: added PHC on eth0
-> [ 2339.990565] igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection
-> [ 2339.990569] igb 0000:02:00.0: eth0: (PCIe:2.5Gb/s:Width x1) 00:13:95:1a:54:33
-> [ 2339.990611] igb 0000:02:00.0: eth0: PBA No: 000300-000
-> [ 2339.990615] igb 0000:02:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
-> [ 2343.001114] igb 0000:02:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
->
-> (In above dmesg snippet the ethernet cable was the whole time inserted).
->
->
-> Any tips on how I can debug this further?
->
-> PS: I already tried a different switch and also a direct connection from
-> device-to-device, without a switch.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: 9cf2f437ca5b39828984064fad213e68fc17ef11  team: fix netconsole setup over team
 
-Sounds like the link is failing to re-establish. You might double
-check a few things. One is to verify if the link partner is
-recognizing the link as coming up or not. That would help to tell us
-if this is a problem of the driver detecting the link, or if the link
-itself is not being re-established.
+elapsed time: 271m
 
-Another thing you could look at doing is running "ethtool -r eth0"
-after plugging the cable in to see if that re-establishes the link or
-not. It should be easier anyway than having to unload and reload the
-driver.
+configs tested: 185
 
-If you could also provide an "lspci -vvv" and "ethtool -i" for the
-device it would help us in the debugging process as it would provide
-us with information on what NIC it is you are using and what firmware
-is in use on it.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Thanks.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-a0-04242050
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                           alldefconfig
+arm                            mps2_defconfig
+sh                           se7724_defconfig
+m68k                              allnoconfig
+mips                        generic_defconfig
+riscv                               defconfig
+nds32                               defconfig
+powerpc                      arches_defconfig
+powerpc                 mpc832x_mds_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-04242037
+i386                   randconfig-c0-04242302
+x86_64                randconfig-in0-04242056
+i386                   randconfig-x014-201816
+i386                   randconfig-x013-201816
+i386                   randconfig-x015-201816
+i386                   randconfig-x012-201816
+i386                   randconfig-x019-201816
+i386                   randconfig-x016-201816
+i386                   randconfig-x010-201816
+i386                   randconfig-x018-201816
+i386                   randconfig-x017-201816
+i386                   randconfig-x011-201816
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201816
+x86_64                 randconfig-x006-201816
+x86_64                 randconfig-x002-201816
+x86_64                 randconfig-x005-201816
+x86_64                 randconfig-x004-201816
+x86_64                 randconfig-x009-201816
+x86_64                 randconfig-x001-201816
+x86_64                 randconfig-x008-201816
+x86_64                 randconfig-x007-201816
+x86_64                 randconfig-x000-201816
+x86_64                 randconfig-x003-201816
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-i0-201816
+i386                     randconfig-i1-201816
+arm                         axm55xx_defconfig
+mips                          ath25_defconfig
+sh                          sdk7786_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+powerpc                        icon_defconfig
+x86_64                 randconfig-g0-04242220
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+i386                   randconfig-a1-04241604
+i386                   randconfig-a0-04241604
+x86_64                 randconfig-s0-04241604
+x86_64                 randconfig-s1-04241604
+x86_64                 randconfig-s2-04241604
+x86_64                            allnoconfig
+arm                       netwinder_defconfig
+powerpc                 mpc834x_itx_defconfig
+powerpc                     sbc8548_defconfig
+xtensa                  nommu_kc705_defconfig
+powerpc                 mpc8313_rdb_defconfig
+powerpc                     powernv_defconfig
+powerpc                      ppc44x_defconfig
+powerpc                      ppc6xx_defconfig
+sh                   sh7724_generic_defconfig
+x86_64                 randconfig-x014-201816
+x86_64                 randconfig-x013-201816
+x86_64                 randconfig-x010-201816
+x86_64                 randconfig-x019-201816
+x86_64                 randconfig-x015-201816
+x86_64                 randconfig-x011-201816
+x86_64                 randconfig-x018-201816
+x86_64                 randconfig-x016-201816
+x86_64                 randconfig-x017-201816
+x86_64                 randconfig-x012-201816
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                              federa-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s1-201816
+i386                     randconfig-s0-201816
+x86_64                 randconfig-s3-04242159
+x86_64                 randconfig-s4-04242159
+x86_64                 randconfig-s5-04242159
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+frv                                 defconfig
+tile                         tilegx_defconfig
+i386                               tinyconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+i386                   randconfig-b0-04242216
+x86_64                 randconfig-b0-04242107
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                     davinci_all_defconfig
+arm                        mini2440_defconfig
+arm                        multi_v7_defconfig
+x86_64                 randconfig-u0-04242224
+x86_64                 randconfig-u0-04250022
+mips                malta_kvm_guest_defconfig
+s390                    performance_defconfig
+x86_64                randconfig-ne0-04242218
+arm                         nhk8815_defconfig
+powerpc                     sbc834x_defconfig
+powerpc                      virtex_defconfig
+x86_64                 randconfig-h0-04242217
+i386                   randconfig-x075-201816
+i386                   randconfig-x073-201816
+i386                   randconfig-x076-201816
+i386                   randconfig-x071-201816
+i386                   randconfig-x079-201816
+i386                   randconfig-x077-201816
+i386                   randconfig-x070-201816
+i386                   randconfig-x078-201816
+i386                   randconfig-x074-201816
+i386                   randconfig-x072-201816
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                  randconfig-sb0-04242115
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                           allmodconfig
+x86_64                randconfig-ws0-04241917
+x86_64                                  kexec
+x86_64                 randconfig-r0-04241717
+arm                          imote2_defconfig
+powerpc                   bluestone_defconfig
+i386                   randconfig-x000-201816
+i386                   randconfig-x006-201816
+i386                   randconfig-x008-201816
+i386                   randconfig-x003-201816
+i386                   randconfig-x009-201816
+i386                   randconfig-x004-201816
+i386                   randconfig-x002-201816
+i386                   randconfig-x005-201816
+i386                   randconfig-x001-201816
+i386                   randconfig-x007-201816
+i386                   randconfig-x0-04242110
 
-- Alex
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
