@@ -1,198 +1,65 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 24 Apr 2018 00:49:46 +0000
-Subject: [Intel-wired-lan] [PATCH v2] Documentation: igbvf: Update
- kernel documentation
-In-Reply-To: <438925a8-280b-fb5c-5c05-0e6fd8e9dcce@oracle.com>
-References: <20180412215823.24727-1-jeffrey.t.kirsher@intel.com>
- <438925a8-280b-fb5c-5c05-0e6fd8e9dcce@oracle.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B8C85C4FB@ORSMSX101.amr.corp.intel.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 24 Apr 2018 10:50:04 +0200 (CEST)
+Subject: [Intel-wired-lan] [RFC v3 net-next 13/18] net/sched: Introduce
+ the TBS Qdisc
+In-Reply-To: <768e8da5-502e-d36f-0f32-9324eaca4a1d@intel.com>
+References: <20180307011230.24001-1-jesus.sanchez-palencia@intel.com>
+ <20180307011230.24001-14-jesus.sanchez-palencia@intel.com>
+ <alpine.DEB.2.21.1803211407520.3754@nanos.tec.linutronix.de>
+ <768e8da5-502e-d36f-0f32-9324eaca4a1d@intel.com>
+Message-ID: <alpine.DEB.2.21.1804241012020.5261@nanos.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Shannon Nelson
-> Sent: Friday, April 13, 2018 8:32 AM
-> To: intel-wired-lan at osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH v2] Documentation: igbvf: Update
-> kernel documentation
+On Mon, 23 Apr 2018, Jesus Sanchez-Palencia wrote:
+> On 03/21/2018 06:46 AM, Thomas Gleixner wrote:
+> > On Tue, 6 Mar 2018, Jesus Sanchez-Palencia wrote:
+> >> +struct tbs_sched_data {
+> >> +	bool sorting;
+> >> +	int clockid;
+> >> +	int queue;
+> >> +	s32 delta; /* in ns */
+> >> +	ktime_t last; /* The txtime of the last skb sent to the netdevice. */
+> >> +	struct rb_root head;
+> > 
+> > Hmm. You are reimplementing timerqueue open coded. Have you checked whether
+> > you could reuse the timerqueue implementation?
+> > 
+> > That requires to add a timerqueue node to struct skbuff
+> > 
+> > @@ -671,7 +671,8 @@ struct sk_buff {
+> >  				unsigned long		dev_scratch;
+> >  			};
+> >  		};
+> > -		struct rb_node	rbnode; /* used in netem & tcp stack */
+> > +		struct rb_node		rbnode; /* used in netem & tcp stack */
+> > +		struct timerqueue_node	tqnode;
+> >  	};
+> >  	struct sock		*sk;
+> > 
+> > Then you can use timerqueue_head in your scheduler data and all the open
+> > coded rbtree handling goes away.
 > 
-> On 4/12/2018 2:58 PM, Jeff Kirsher wrote:
-> > Updated the igbvf.txt kernel documentation with the latest information.
-> >
-> > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> > ---
-> > v2: fixed up documentation based on community feedback and internal
-> >      review
-> >
-> > ---
-> >   Documentation/networking/igbvf.txt | 86 ++++++++++++++++-------------
-> ---------
-> >   1 file changed, 36 insertions(+), 50 deletions(-)
-> >
-> > diff --git a/Documentation/networking/igbvf.txt
-> b/Documentation/networking/igbvf.txt
-> > index bd404735fb46..e2d54a8a567d 100644
-> > --- a/Documentation/networking/igbvf.txt
-> > +++ b/Documentation/networking/igbvf.txt
-> > @@ -2,79 +2,65 @@ Linux* Base Driver for Intel(R) Ethernet Network
-> Connection
-> >
-> ==========================================================
-> =
-> >
-> >   Intel Gigabit Linux driver.
-> > -Copyright(c) 1999 - 2013 Intel Corporation.
-> > +Copyright(c) 1999-2018 Intel Corporation.
-> >
-> >   Contents
-> >   ========
-> > -
-> >   - Identifying Your Adapter
-> >   - Additional Configurations
-> >   - Support
-> >
-> > -This file describes the igbvf Linux* Base Driver for Intel Network
-> Connection.
-> > +This virtual function driver supports kernel versions 2.6.x and newer.
 > 
-> No, it only supports the Linux kernel that it is in, this is not the
-> out-of-tree driver.
+> I just noticed that doing the above increases the size of struct sk_buff by 8
+> bytes - struct timerqueue_node is 32bytes long while struct rb_node is only
+> 24bytes long.
 > 
-> sln
+> Given the feedback we got here before against touching struct sk_buff at all for
+> non-generic use cases, I will keep the implementation of sch_tbs.c as is, thus
+> keeping the open-coded version for now, ok?
 
-True.  It makes little sense for the kernel driver documentation to specify anything but itself.
+The size of sk_buff is 216 and the size of sk_buff_fclones is 440
+bytes. The sk_buff and sk_buff_fclones kmem_caches use objects sized 256
+and 512 bytes because the kmem_caches are created with SLAB_HWCACHE_ALIGN.
 
-> 
-> >
-> > -The igbvf driver supports 82576-based virtual function devices that can
-> only
-> > -be activated on kernels that support SR-IOV. SR-IOV requires the correct
-> > -platform and OS support.
-> > +This driver supports Intel 82576-based virtual function devices-based
-> virtual
-> > +function devices
-> > +that can only be activated on kernels that support SR-IOV.
+So adding 8 bytes to spare duplicated code will not change the kmem_cache
+object size and I really doubt that anyone will notice.
 
-This seems to break formatting.  A new line follows "function devices" making a 2 word line with the sentence, "that can only be activated...", finishing on the following line.
+Thanks,
 
-> >
-> > -The igbvf driver requires the igb driver, version 2.0 or later. The igbvf
-> > -driver supports virtual functions generated by the igb driver with a
-> max_vfs
-> > -value of 1 or greater. For more information on the max_vfs parameter
-> refer
-> > -to the README included with the igb driver.
-> > +SR-IOV requires the correct platform and OS support.
-> >
-> > -The guest OS loading the igbvf driver must support MSI-X interrupts.
-> > +The guest OS loading this driver must support MSI-X interrupts.
-> >
-> > -This driver is only supported as a loadable module at this time.  Intel is
-> > -not supplying patches against the kernel source to allow for static linking
-> > -of the driver.  For questions related to hardware requirements, refer to
-> the
-> > -documentation supplied with your Intel Gigabit adapter.  All hardware
-> > -requirements listed apply to use with Linux.
-> > +This driver is only supported as a loadable module at this time. Intel is not
-> > +supplying patches against the kernel source to allow for static linking of
-> the
-> > +drivers.
+	tglx
 
-Should this even be included for the in kernel module?  The kernel driver does compile and function as a built in driver as well as a module.
-
-> >
-> > -Instructions on updating ethtool can be found in the section "Additional
-> > -Configurations" later in this document.
-> > +For questions related to hardware requirements, refer to the
-> documentation
-> > +supplied with your Intel adapter. All hardware requirements listed apply
-> to use
-> > +with Linux.
-> >
-> > -VLANs: There is a limit of a total of 32 shared VLANs to 1 or more VFs.
-> > +Driver information can be obtained using ethtool, lspci, and ifconfig.
-> > +Instructions on updating ethtool can be found in the section Additional
-> > +Configurations later in this document.
-> >
-> > -Identifying Your Adapter
-> > -========================
-> > -
-> > -The igbvf driver supports 82576-based virtual function devices that can
-> only
-> > -be activated on kernels that support SR-IOV.
-> > +VLANs: There is a limit of a total of 32 shared VLANs to 1 or more VFs.
-> >
-> > -For more information on how to identify your adapter, go to the Adapter
-> &
-> > -Driver ID Guide at:
-> >
-> > -    http://support.intel.com/support/go/network/adapter/idguide.htm
-> >
-> > -For the latest Intel network drivers for Linux, refer to the following
-> > -website.  In the search field, enter your adapter name or type, or use the
-> > -networking link on the left to search for your adapter:
-> > +Identifying Your Adapter
-> > +------------------------
-> > +For information on how to identify your adapter, and for the latest Intel
-> > +network drivers, refer to the Intel Support website:
-> > +http://www.intel.com/support
-> >
-> > -    http://downloadcenter.intel.com/scripts-df-
-> external/Support_Intel.aspx
-> >
-> > -Additional Configurations
-> > -=========================
-> > +Additional Features and Configurations
-> > +-------------------------------------------
-> >
-> > -  ethtool
-> > -  -------
-> > -  The driver utilizes the ethtool interface for driver configuration and
-> > -  diagnostics, as well as displaying statistical information.  The ethtool
-> > -  version 3.0 or later is required for this functionality, although we
-> > -  strongly recommend downloading the latest version at:
-> > +ethtool
-> > +-------
-> > +The driver utilizes the ethtool interface for driver configuration and
-> > +diagnostics, as well as displaying statistical information. The latest ethtool
-> > +version is required for this functionality. Download it at:
-> > +http://ftp.kernel.org/pub/software/network/ethtool/
-> >
-> > -  https://www.kernel.org/pub/software/network/ethtool/
-
-I am currently not able to resolve ftp.kernel.org, the new URL, but have no trouble with https://www.kernel.org, e.g. the removed URL.
-
-> >
-> >   Support
-> > -=======
-> > -
-> > +-------
-> >   For general information, go to the Intel support website at:
-> > -
-> > -    http://support.intel.com
-> > +http://www.intel.com/support/
-> >
-> >   or the Intel Wired Networking project hosted by Sourceforge at:
-> > -
-> > -    http://sourceforge.net/projects/e1000
-> > -
-> > -If an issue is identified with the released source code on the supported
-> > -kernel with a supported adapter, email the specific information related
-> > -to the issue to e1000-devel at lists.sf.net
-> > +http://sourceforge.net/projects/e1000
-> > +If an issue is identified with the released source code on a supported
-> kernel
-> > +with a supported adapter, email the specific information related to the
-> issue
-> > +to e1000-devel at lists.sf.net.
-> >
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
