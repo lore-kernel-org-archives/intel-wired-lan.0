@@ -1,72 +1,89 @@
-From: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
-Date: Wed, 25 Apr 2018 17:31:21 -0300
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe/ixgbevf: Fix free irq process
- when removing device due to PCI Errors
-Message-ID: <1524688281-12930-1-git-send-email-maurosr@linux.vnet.ibm.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 25 Apr 2018 13:56:48 -0700
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe/ixgbevf: Fix free irq
+ process when removing device due to PCI Errors
+In-Reply-To: <1524688281-12930-1-git-send-email-maurosr@linux.vnet.ibm.com>
+References: <1524688281-12930-1-git-send-email-maurosr@linux.vnet.ibm.com>
+Message-ID: <CAKgT0Uc+MgMmPaUS3USLNudOFNk39wmYW-LqmAgzoNqaXE0qYg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When a PCI error is detected ixgbe's pci error handler
-ixgbe_io_error_detected detaches the network device. In general the PCI
-error recovery mechanism may try to recover the device from the error or
-eventually remove it completely from the system.
+On Wed, Apr 25, 2018 at 1:31 PM, Mauro S. M. Rodrigues
+<maurosr@linux.vnet.ibm.com> wrote:
+> When a PCI error is detected ixgbe's pci error handler
+> ixgbe_io_error_detected detaches the network device. In general the PCI
+> error recovery mechanism may try to recover the device from the error or
+> eventually remove it completely from the system.
+>
+> Since commit f7f37e7ff2b9 ("ixgbe: handle close/suspend race with
+> netif_device_detach/present")
+> we only follow to ixgbe_close_suspend if
+> the device is preset, i.e. if it wasn't detached, and then the irqs are
+> freed. That prevents to free irqs when the PCI error recovery system
+> decides to remove the device and hitting a BUG_ON free_msi_irqs when it
+> search for non freed irqs associated with the device being removed:
+>
+> BUG_ON(irq_has_action(entry->irq + i));
+>
+> This is fixed allowing the ixgbe_close_suspend, and thus ixgbe_free_irq,
+> to be called also when the PCI error recovery mechanism sets the device
+> channel to permanent failure state.
+>
+> Reported-by: Naresh Bannoth <nbannoth@in.ibm.com>
+> Reported-by: Abdul Haleem <abdhalee@in.ibm.com>
+> Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+> ---
+> v2: Extended the fix to ixgbevf driver.
+>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 3 ++-
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 3 ++-
+>  2 files changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index afadba9..d170de8 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -6679,7 +6679,8 @@ int ixgbe_close(struct net_device *netdev)
+>
+>         ixgbe_ptp_stop(adapter);
+>
+> -       if (netif_device_present(netdev))
+> +       if (netif_device_present(netdev) ||
+> +           adapter->pdev->error_state == pci_channel_io_perm_failure)
+>                 ixgbe_close_suspend(adapter);
+>
+>         ixgbe_fdir_filter_exit(adapter);
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> index 3d9033f..f916dc5 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> @@ -3661,7 +3661,8 @@ int ixgbevf_close(struct net_device *netdev)
+>  {
+>         struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+>
+> -       if (netif_device_present(netdev))
+> +       if (netif_device_present(netdev) ||
+> +               adapter->pdev->error_state == pci_channel_io_perm_failure)
+>                 ixgbevf_close_suspend(adapter);
+>
+>         return 0;
 
-Since commit f7f37e7ff2b9 ("ixgbe: handle close/suspend race with
-netif_device_detach/present")
-we only follow to ixgbe_close_suspend if
-the device is preset, i.e. if it wasn't detached, and then the irqs are
-freed. That prevents to free irqs when the PCI error recovery system
-decides to remove the device and hitting a BUG_ON free_msi_irqs when it
-search for non freed irqs associated with the device being removed:
+This fix doesn't seem right to me. It seems like you are addressing a
+symptom instead of a cause.
 
-BUG_ON(irq_has_action(entry->irq + i));
+Would it make more sense to update ixgbe/ixgbevf_io_error_detected and
+have them call ixgbe/ixgbevf_close_suspend itself before releasing the
+RTNL mutex? Doing that would require just moving the 3 lines that
+include the call and the trailing blank line to the spot before we
+return on "state == pci_channel_io_perm_failure". It really seems like
+that might be a better way to handle this since I don't see how we
+recover from this sort of error any other way since we recommend
+disconnecting the device based on the error result.
 
-This is fixed allowing the ixgbe_close_suspend, and thus ixgbe_free_irq,
-to be called also when the PCI error recovery mechanism sets the device
-channel to permanent failure state.
+Thanks.
 
-Reported-by: Naresh Bannoth <nbannoth@in.ibm.com>
-Reported-by: Abdul Haleem <abdhalee@in.ibm.com>
-Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
----
-v2: Extended the fix to ixgbevf driver.
-
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 3 ++-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index afadba9..d170de8 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -6679,7 +6679,8 @@ int ixgbe_close(struct net_device *netdev)
- 
- 	ixgbe_ptp_stop(adapter);
- 
--	if (netif_device_present(netdev))
-+	if (netif_device_present(netdev) ||
-+	    adapter->pdev->error_state == pci_channel_io_perm_failure)
- 		ixgbe_close_suspend(adapter);
- 
- 	ixgbe_fdir_filter_exit(adapter);
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 3d9033f..f916dc5 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3661,7 +3661,8 @@ int ixgbevf_close(struct net_device *netdev)
- {
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 
--	if (netif_device_present(netdev))
-+	if (netif_device_present(netdev) ||
-+		adapter->pdev->error_state == pci_channel_io_perm_failure)
- 		ixgbevf_close_suspend(adapter);
- 
- 	return 0;
--- 
-2.7.4
-
+- Alex
