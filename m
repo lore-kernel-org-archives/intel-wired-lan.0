@@ -1,89 +1,246 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 25 Apr 2018 13:56:48 -0700
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe/ixgbevf: Fix free irq
- process when removing device due to PCI Errors
-In-Reply-To: <1524688281-12930-1-git-send-email-maurosr@linux.vnet.ibm.com>
-References: <1524688281-12930-1-git-send-email-maurosr@linux.vnet.ibm.com>
-Message-ID: <CAKgT0Uc+MgMmPaUS3USLNudOFNk39wmYW-LqmAgzoNqaXE0qYg@mail.gmail.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 25 Apr 2018 15:15:36 -0700
+Subject: [Intel-wired-lan] [PATCH v2] Documentation: fm10k: Add kernel
+ documentation
+Message-ID: <20180425221536.5811-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 25, 2018 at 1:31 PM, Mauro S. M. Rodrigues
-<maurosr@linux.vnet.ibm.com> wrote:
-> When a PCI error is detected ixgbe's pci error handler
-> ixgbe_io_error_detected detaches the network device. In general the PCI
-> error recovery mechanism may try to recover the device from the error or
-> eventually remove it completely from the system.
->
-> Since commit f7f37e7ff2b9 ("ixgbe: handle close/suspend race with
-> netif_device_detach/present")
-> we only follow to ixgbe_close_suspend if
-> the device is preset, i.e. if it wasn't detached, and then the irqs are
-> freed. That prevents to free irqs when the PCI error recovery system
-> decides to remove the device and hitting a BUG_ON free_msi_irqs when it
-> search for non freed irqs associated with the device being removed:
->
-> BUG_ON(irq_has_action(entry->irq + i));
->
-> This is fixed allowing the ixgbe_close_suspend, and thus ixgbe_free_irq,
-> to be called also when the PCI error recovery mechanism sets the device
-> channel to permanent failure state.
->
-> Reported-by: Naresh Bannoth <nbannoth@in.ibm.com>
-> Reported-by: Abdul Haleem <abdhalee@in.ibm.com>
-> Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
-> ---
-> v2: Extended the fix to ixgbevf driver.
->
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 3 ++-
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 3 ++-
->  2 files changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index afadba9..d170de8 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -6679,7 +6679,8 @@ int ixgbe_close(struct net_device *netdev)
->
->         ixgbe_ptp_stop(adapter);
->
-> -       if (netif_device_present(netdev))
-> +       if (netif_device_present(netdev) ||
-> +           adapter->pdev->error_state == pci_channel_io_perm_failure)
->                 ixgbe_close_suspend(adapter);
->
->         ixgbe_fdir_filter_exit(adapter);
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index 3d9033f..f916dc5 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -3661,7 +3661,8 @@ int ixgbevf_close(struct net_device *netdev)
->  {
->         struct ixgbevf_adapter *adapter = netdev_priv(netdev);
->
-> -       if (netif_device_present(netdev))
-> +       if (netif_device_present(netdev) ||
-> +               adapter->pdev->error_state == pci_channel_io_perm_failure)
->                 ixgbevf_close_suspend(adapter);
->
->         return 0;
+Added the fm10k.txt kernel documentation which apparently was missing.
 
-This fix doesn't seem right to me. It seems like you are addressing a
-symptom instead of a cause.
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
+v2: Fix documentation by removing module parameters that do not exist in
+the kernel driver.
 
-Would it make more sense to update ixgbe/ixgbevf_io_error_detected and
-have them call ixgbe/ixgbevf_close_suspend itself before releasing the
-RTNL mutex? Doing that would require just moving the 3 lines that
-include the call and the trailing blank line to the spot before we
-return on "state == pci_channel_io_perm_failure". It really seems like
-that might be a better way to handle this since I don't see how we
-recover from this sort of error any other way since we recommend
-disconnecting the device based on the error result.
+ Documentation/networking/fm10k.txt | 215 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 215 insertions(+)
+ create mode 100644 Documentation/networking/fm10k.txt
 
-Thanks.
+diff --git a/Documentation/networking/fm10k.txt b/Documentation/networking/fm10k.txt
+new file mode 100644
+index 000000000000..00f5473d5cd0
+--- /dev/null
++++ b/Documentation/networking/fm10k.txt
+@@ -0,0 +1,215 @@
++README for Intel(R) Ethernet Multi-host Controller Driver
++=========================================================
++
++February 23, 2017
++Copyright(c) 2015-2017 Intel Corporation.
++
++Contents
++========
++- Identifying Your Adapter
++- Additional Configurations
++- Performance Tuning
++- Known Issues
++- Support
++
++Identifying Your Adapter
++------------------------
++The driver in this release is compatible with devices based on the Intel(R)
++Ethernet Multi-host Controller.
++
++For information on how to identify your adapter, and for the latest Intel
++network drivers, refer to the Intel Support website:
++http://www.intel.com/support
++
++
++Flow Control
++------------
++The Intel(R) Ethernet Switch Host Interface Driver does not support Flow
++Control. It will not send pause frames. This may result in dropped frames.
++
++
++Intel(R) Ethernet Flow Director
++-------------------------------
++The Intel Ethernet Flow Director performs the following tasks:
++
++- Directs receive packets according to their flows to different queues.
++- Enables tight control on routing a flow in the platform.
++- Matches flows and CPU cores for flow affinity.
++- Supports multiple parameters for flexible flow classification and load
++  balancing (in SFP mode only).
++
++NOTE: An included script (set_irq_affinity) automates setting the IRQ to CPU
++affinity.
++
++ethtool commands:
++
++To enable or disable the Intel Ethernet Flow Director:
++
++  # ethtool -K ethX ntuple <on|off>
++
++When disabling ntuple filters, all the user programmed filters are flushed from
++the driver cache and hardware. All needed filters must be re-added when ntuple
++is re-enabled.
++
++To add a filter that directs packet to queue 2, use -U or -N switch:
++
++  # ethtool -N ethX flow-type tcp4 src-ip 192.168.10.1 dst-ip \
++  192.168.10.2 src-port 2000 dst-port 2001 action 2 [loc 1]
++
++To see the list of filters currently present:
++  # ethtool <-u|-n> ethX
++
++
++max_vfs
++-------
++This parameter adds support for SR-IOV. It causes the driver to spawn up to
++max_vfs worth of virtual functions.
++Valid Range:0-64
++
++NOTE: This parameter is only used on kernel 3.7.x and below. On kernel 3.8.x
++and above, use sysfs to enable VFs. Also, for Red Hat distributions, this
++parameter is only used on version 6.6 and older. For version 6.7 and newer, use
++sysfs. For example:
++#echo $num_vf_enabled > /sys/class/net/$dev/device/sriov_numvfs	//enable
++VFs
++#echo 0 > /sys/class/net/$dev/device/sriov_numvfs	//disable VFs
++
++The parameters for the driver are referenced by position. Thus, if you have a
++dual port adapter, or more than one adapter in your system, and want N virtual
++functions per port, you must specify a number for each port with each parameter
++separated by a comma. For example:
++
++  modprobe fm10k max_vfs=4
++
++This will spawn 4 VFs on the first port.
++
++  modprobe fm10k max_vfs=2,4
++
++This will spawn 2 VFs on the first port and 4 VFs on the second port.
++
++NOTE: Caution must be used in loading the driver with these parameters.
++Depending on your system configuration, number of slots, etc., it is impossible
++to predict in all cases where the positions would be on the command line.
++
++NOTE: Neither the device nor the driver control how VFs are mapped into config
++space. Bus layout will vary by operating system. On operating systems that
++support it, you can check sysfs to find the mapping.
++
++NOTE: When SR-IOV mode is enabled, hardware VLAN filtering and VLAN tag
++stripping/insertion will remain enabled. Please remove the old VLAN filter
++before the new VLAN filter is added. For example,
++ip link set eth0 vf 0 vlan 100	// set vlan 100 for VF 0
++ip link set eth0 vf 0 vlan 0	// Delete vlan 100
++ip link set eth0 vf 0 vlan 200	// set a new vlan 200 for VF 0
++
++
++Additional Features and Configurations
++-------------------------------------------
++
++Jumbo Frames
++------------
++Jumbo Frames support is enabled by changing the Maximum Transmission Unit (MTU)
++to a value larger than the default value of 1500.
++
++Use the ifconfig command to increase the MTU size. For example, enter the
++following where <x> is the interface number:
++
++   ifconfig eth<x> mtu 9000 up
++Alternatively, you can use the ip command as follows:
++   ip link set mtu 9000 dev eth<x>
++   ip link set up dev eth<x>
++
++This setting is not saved across reboots. The setting change can be made
++permanent by adding 'MTU=9000' to the file:
++/etc/sysconfig/network-scripts/ifcfg-eth<x> for RHEL or to the file
++/etc/sysconfig/network/<config_file> for SLES.
++
++NOTE: The maximum MTU setting for Jumbo Frames is 15342. This value coincides
++with the maximum Jumbo Frames size of 15364 bytes.
++
++NOTE: This driver will attempt to use multiple page sized buffers to receive
++each jumbo packet. This should help to avoid buffer starvation issues when
++allocating receive packets.
++
++
++Generic Receive Offload, aka GRO
++--------------------------------
++The driver supports the in-kernel software implementation of GRO. GRO has
++shown that by coalescing Rx traffic into larger chunks of data, CPU
++utilization can be significantly reduced when under large Rx load. GRO is an
++evolution of the previously-used LRO interface. GRO is able to coalesce
++other protocols besides TCP. It's also safe to use with configurations that
++are problematic for LRO, namely bridging and iSCSI.
++
++
++ethtool
++-------
++The driver utilizes the ethtool interface for driver configuration and
++diagnostics, as well as displaying statistical information. The latest ethtool
++version is required for this functionality. Download it at:
++http://ftp.kernel.org/pub/software/network/ethtool/
++
++Supported ethtool Commands and Options for Filtering
++----------------------------------------------------
++-n --show-nfc
++  Retrieves the receive network flow classification configurations.
++
++rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
++  Retrieves the hash options for the specified network traffic type.
++
++-N --config-nfc
++  Configures the receive network flow classification.
++
++rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
++m|v|t|s|d|f|n|r...
++  Configures the hash options for the specified network traffic type.
++
++  udp4 UDP over IPv4
++  udp6 UDP over IPv6
++
++  f Hash on bytes 0 and 1 of the Layer 4 header of the rx packet.
++  n Hash on bytes 2 and 3 of the Layer 4 header of the rx packet.
++
++
++FCoE
++----
++The fm10k driver supports Fiber Channel over Ethernet (FCoE) and Data Center
++Bridging (DCB). This code has no default effect on the regular driver
++operation. Configuring DCB and FCoE is outside the scope of this README. Refer
++to http://www.open-fcoe.org/ for FCoE project information and contact
++fm10k-eedc at lists.sourceforge.net for DCB information.
++
++
++MAC and VLAN anti-spoofing feature
++----------------------------------
++When a malicious driver attempts to send a spoofed packet, it is dropped by the
++hardware and not transmitted.
++
++An interrupt is sent to the PF driver notifying it of the spoof attempt. When a
++spoofed packet is detected, the PF driver will send the following message to
++the system log (displayed by the "dmesg" command):
++NOTE: This feature can be disabled for a specific Virtual Function (VF):
++ip link set <pf dev> vf <vf id> spoofchk {off|on}
++
++
++Known Issues/Troubleshooting
++----------------------------
++
++Enabling SR-IOV in a 64-bit Microsoft* Windows Server* 2012/R2 guest OS under
++Linux KVM
++--------------------------------------------------------------------------------
++KVM Hypervisor/VMM supports direct assignment of a PCIe device to a VM. This
++includes traditional PCIe devices, as well as SR-IOV-capable devices based on
++the Intel Ethernet Controller XL710.
++
++
++Support
++-------
++For general information, go to the Intel support website at:
++http://www.intel.com/support/
++
++or the Intel Wired Networking project hosted by Sourceforge at:
++http://sourceforge.net/projects/e1000
++If an issue is identified with the released source code on a supported kernel
++with a supported adapter, email the specific information related to the issue
++to e1000-devel at lists.sf.net.
+-- 
+2.14.3
 
-- Alex
