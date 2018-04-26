@@ -1,5 +1,5 @@
 From: Holger Schurig <holgerschurig@gmail.com>
-Date: Thu, 26 Apr 2018 09:54:27 +0200
+Date: Thu, 26 Apr 2018 11:08:22 +0200
 Subject: [Intel-wired-lan] [BUG] igb: reconnecting of cable not always
  detected
 In-Reply-To: <CAKgT0UdTf5pf53==hB71Ba_N1gJ-TH_3uMajozr1wykLEbK80g@mail.gmail.com>
@@ -7,126 +7,124 @@ References: <87h8o0ocul.fsf@gmail.com>
  <CAKgT0Udj+d7yzPN4Jph8uk7Z6fz0oyWrO+6W6CfygSYTkGJ0Xw@mail.gmail.com>
  <877eovobxl.fsf@gmail.com>
  <CAKgT0UdTf5pf53==hB71Ba_N1gJ-TH_3uMajozr1wykLEbK80g@mail.gmail.com>
-Message-ID: <8736zio11o.fsf@gmail.com>
+Message-ID: <87wowumj21.fsf@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> Was the orange LED on the igb NIC or on the TL SG-108? Based on the
-> comment below I am assuming it is the switch.
-
-The LEDs were on the switch.
-
-When everything works, the switch says green == 1000 MB/s.
-
-When cable is disconnected, switch doesn't light any LED.
-
-When cable is inserted and things fail, the switch says orange LED == 100 MB/s.
-Sometimes the insertion process works, then the switch will go, of
-course, to the green LED == 1000 MB/s.
-
-I must admit that I didn't look at the LEDs of the device.
-
-
-Now I looked there, and the device the left+green LED is on. In the
-failed case (so, in the dmesg output the last thing I see is "Link is
-Down", but the device still has left+green LED on.
-
-The right+orange LED on the device seems to indicate traffic, and it is
-constantly off in the failed case.
-
-
-
-> I assume you mean "ethtool -r" since that is what is supposed to be
-> restarting negotiation. The "ethtool -i" is what you provided above.
-
-Maybe I've edited my text too much and moved output along. Anyway, in
-the failed case neither "ethtool- r eth0" nor "ethtool -i eth0" nor
-"mii-tool eth0" work at all, they all emit error warning.
+Hi,
 
 > Thanks. I'm suspecting we may need to instrument igb_rd32 at this
 > point. In order to trigger what you are seeing I am assuming the
 > device has been detached due to a read failure of some sort.
 
-I'll do that and reply later. I first need to understand this source
-part :-)
+Okay, I added a printk to igb_rd32. And because no one calls this
+function directly (all access goes via the rd32/rd32_array macro) I also
+added the output of the calling function. This should help greatly in
+identifying the read from the hardware to the consumer.
+
+Finally, I noticed that igb_update_stats() produced a lot of churn that
+most likely are unrelated. So I helper variable to make output from this
+function go away.
+
+I installed this modified driver, rebooted, and removed / inserted the
+LAN cable until the error was present.
+
+As before, "ethtool" and "mii-tool" now said that the device is not
+there, while "ip link" showed the device as present.
 
 
-> Another thing you could look at doing is narrowing down the possible
-> factors involved. You could go through and limit phy settings and look
-> at possibly dropping features such as EEE if it is enabled on the
-> device.
+The full output of "journalctl -fk | grep igb" is 600 kB. So put the
+whole file at Google Drive:
 
-I actually tried a driver patch to remove 1000 GB/s from the driver, in
-the assumption that maybe this specific hardware has a bad layout and
-thus trouble (I don't really think that, because I never observed any
-data transfer problem).
+https://drive.google.com/open?id=1p9cCT2d_EHnSHh29oS3AepUgFTKGFSeA
 
-So, is the following patch (that didn't help) what in the line of what
-you suggested?
 
+
+I looked at the output to see patterns, e.g with
+
+grep -n igb_get_cfg_done_i210 igb.error.txt
+grep -n __igb_shutdown igb.error.txt
+...
+
+(and almost all other function names). I hoped to see patterns. But for
+my untrained eye, things looked not out of the order.
+
+
+
+
+
+(For reference, here is the debug patch)
 
 Index: linux-4.16/drivers/net/ethernet/intel/igb/igb_main.c
 ===================================================================
 --- linux-4.16.orig/drivers/net/ethernet/intel/igb/igb_main.c	2018-04-01 23:20:27.000000000 +0200
-+++ linux-4.16/drivers/net/ethernet/intel/igb/igb_main.c	2018-04-24 11:35:17.420760650 +0200
-@@ -2080,7 +2080,7 @@
- 
- 	if ((adapter->flags & IGB_FLAG_EEE) &&
- 	    (!hw->dev_spec._82575.eee_disable))
--		adapter->eee_advert = MDIO_EEE_100TX | MDIO_EEE_1000T;
-+		adapter->eee_advert = MDIO_EEE_100TX /* | MDIO_EEE_1000T */;
- 
- 	return 0;
++++ linux-4.16/drivers/net/ethernet/intel/igb/igb_main.c	2018-04-26 10:36:09.625135952 +0200
+@@ -759,7 +759,8 @@
+ 	}
  }
-@@ -2908,7 +2908,7 @@
- 	/* Initialize link properties that are user-changeable */
- 	adapter->fc_autoneg = true;
- 	hw->mac.autoneg = true;
--	hw->phy.autoneg_advertised = 0x2f;
-+	hw->phy.autoneg_advertised = 0x0f;
  
- 	hw->fc.requested_mode = e1000_fc_default;
- 	hw->fc.current_mode = e1000_fc_default;
-@@ -3099,7 +3099,7 @@
- 			if ((!err) &&
- 			    (!hw->dev_spec._82575.eee_disable)) {
- 				adapter->eee_advert =
--					MDIO_EEE_100TX | MDIO_EEE_1000T;
-+					MDIO_EEE_100TX /* | MDIO_EEE_1000T */;
- 				adapter->flags |= IGB_FLAG_EEE;
- 			}
- 			break;
-@@ -3110,7 +3110,7 @@
- 				if ((!err) &&
- 					(!hw->dev_spec._82575.eee_disable)) {
- 					adapter->eee_advert =
--					   MDIO_EEE_100TX | MDIO_EEE_1000T;
-+					   MDIO_EEE_100TX /* | MDIO_EEE_1000T */;
- 					adapter->flags |= IGB_FLAG_EEE;
- 				}
- 			}
-Index: linux-4.16/drivers/net/ethernet/intel/igb/igb_ethtool.c
+-u32 igb_rd32(struct e1000_hw *hw, u32 reg)
++int igb_rd32_silent = 0;
++u32 igb_rd32(const char *func, struct e1000_hw *hw, u32 reg)
+ {
+ 	struct igb_adapter *igb = container_of(hw, struct igb_adapter, hw);
+ 	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
+@@ -769,6 +770,8 @@
+ 		return ~value;
+ 
+ 	value = readl(&hw_addr[reg]);
++	if (!igb_rd32_silent)
++	printk("rd32 %s %08x %08x\n", func, reg, value);
+ 
+ 	/* reads should not return all F's */
+ 	if (!(~value) && (!reg || !(~readl(hw_addr)))) {
+@@ -5935,6 +5938,7 @@
+ 	if (pci_channel_offline(pdev))
+ 		return;
+ 
++	igb_rd32_silent = 1;
+ 	bytes = 0;
+ 	packets = 0;
+ 
+@@ -6100,6 +6104,7 @@
+ 		adapter->stats.b2ospc += rd32(E1000_B2OSPC);
+ 		adapter->stats.b2ogprc += rd32(E1000_B2OGPRC);
+ 	}
++	igb_rd32_silent = 0;
+ }
+ 
+ static void igb_tsync_interrupt(struct igb_adapter *adapter)
+Index: linux-4.16/drivers/net/ethernet/intel/igb/e1000_regs.h
 ===================================================================
---- linux-4.16.orig/drivers/net/ethernet/intel/igb/igb_ethtool.c	2018-04-01 23:20:27.000000000 +0200
-+++ linux-4.16/drivers/net/ethernet/intel/igb/igb_ethtool.c	2018-04-24 11:42:36.737959749 +0200
-@@ -170,7 +170,7 @@
- 			     SUPPORTED_10baseT_Full |
- 			     SUPPORTED_100baseT_Half |
- 			     SUPPORTED_100baseT_Full |
--			     SUPPORTED_1000baseT_Full|
-+			     /* SUPPORTED_1000baseT_Full| */ 
- 			     SUPPORTED_Autoneg |
- 			     SUPPORTED_TP |
- 			     SUPPORTED_Pause);
-@@ -3003,7 +3003,7 @@
- 	    (hw->phy.media_type != e1000_media_type_copper))
- 		return -EOPNOTSUPP;
+--- linux-4.16.orig/drivers/net/ethernet/intel/igb/e1000_regs.h	2018-04-01 23:20:27.000000000 +0200
++++ linux-4.16/drivers/net/ethernet/intel/igb/e1000_regs.h	2018-04-26 10:34:24.332157000 +0200
+@@ -370,7 +370,8 @@
  
--	edata->supported = (SUPPORTED_1000baseT_Full |
-+	edata->supported = (/* SUPPORTED_1000baseT_Full | */
- 			    SUPPORTED_100baseT_Full);
- 	if (!hw->dev_spec._82575.eee_disable)
- 		edata->advertised =
+ struct e1000_hw;
+ 
+-u32 igb_rd32(struct e1000_hw *hw, u32 reg);
++extern int igb_rd32_silent;
++u32 igb_rd32(const char *fname, struct e1000_hw *hw, u32 reg);
+ 
+ /* write operations, indexed using DWORDS */
+ #define wr32(reg, val) \
+@@ -380,14 +381,14 @@
+ 		writel((val), &hw_addr[(reg)]); \
+ } while (0)
+ 
+-#define rd32(reg) (igb_rd32(hw, reg))
++#define rd32(reg) (igb_rd32(__func__, hw, reg))
+ 
+ #define wrfl() ((void)rd32(E1000_STATUS))
+ 
+ #define array_wr32(reg, offset, value) \
+ 	wr32((reg) + ((offset) << 2), (value))
+ 
+-#define array_rd32(reg, offset) (igb_rd32(hw, reg + ((offset) << 2)))
++#define array_rd32(reg, offset) (igb_rd32(__func__, hw, reg + ((offset) << 2)))
+ 
+ /* DMA Coalescing registers */
+ #define E1000_PCIEMISC	0x05BB8 /* PCIE misc config register */
