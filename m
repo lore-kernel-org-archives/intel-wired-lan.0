@@ -1,246 +1,211 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 25 Apr 2018 15:15:36 -0700
-Subject: [Intel-wired-lan] [PATCH v2] Documentation: fm10k: Add kernel
- documentation
-Message-ID: <20180425221536.5811-1-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 26 Apr 2018 10:24:16 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE] BUILD INCOMPLETE
+ 8315ef6f395cc4e14171c59e1176711976deeb84
+Message-ID: <5ae13850.u6xYolfB5URE1mMn%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Added the fm10k.txt kernel documentation which apparently was missing.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
+branch HEAD: 8315ef6f395cc4e14171c59e1176711976deeb84  ixgbe: Avoid performing unnecessary resets for macvlan offload
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+TIMEOUT after 604m
+
+
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 79
+
+alpha                            allmodconfig
+alpha                            allyesconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                            customconfig-0
+arm                            customconfig-1
+arm                            customconfig-2
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                          customconfig-0
+arm64                          customconfig-1
+arm64                          customconfig-2
+blackfin                         allmodconfig
+blackfin                         allyesconfig
+cris                             allmodconfig
+cris                             allyesconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                           customconfig-0
+i386                           customconfig-1
+i386                           customconfig-2
+i386                                defconfig
+i386                            randconfig-a0
+i386                            randconfig-a1
+i386                            randconfig-i0
+i386                            randconfig-i1
+i386                               tinyconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                             allyesconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                          allyesconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                             allmodconfig
+s390                             allyesconfig
+s390                        default_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                               allyesconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+sparc64                          allmodconfig
+sparc64                          allyesconfig
+tile                             allmodconfig
+tile                             allyesconfig
+x86_64                             acpi-redef
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+x86_64                           allyesdebian
+x86_64                         customconfig-0
+x86_64                         customconfig-1
+x86_64                         customconfig-2
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                nfsroot
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+
+configs tested: 99
+
+i386                   randconfig-x010-201816
+i386                   randconfig-x011-201816
+i386                   randconfig-x012-201816
+i386                   randconfig-x013-201816
+i386                   randconfig-x014-201816
+i386                   randconfig-x015-201816
+i386                   randconfig-x016-201816
+i386                   randconfig-x017-201816
+i386                   randconfig-x018-201816
+i386                   randconfig-x019-201816
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201816
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x014-201816
+x86_64                 randconfig-x013-201816
+x86_64                 randconfig-x010-201816
+x86_64                 randconfig-x019-201816
+x86_64                 randconfig-x015-201816
+x86_64                 randconfig-x011-201816
+x86_64                 randconfig-x018-201816
+x86_64                 randconfig-x016-201816
+x86_64                 randconfig-x017-201816
+x86_64                 randconfig-x012-201816
+x86_64                              federa-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-s0-201816
+i386                     randconfig-s1-201816
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+x86_64                   randconfig-i0-201816
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x000-201816
+i386                   randconfig-x006-201816
+i386                   randconfig-x008-201816
+i386                   randconfig-x003-201816
+i386                   randconfig-x009-201816
+i386                   randconfig-x004-201816
+i386                   randconfig-x002-201816
+i386                   randconfig-x005-201816
+i386                   randconfig-x001-201816
+i386                   randconfig-x007-201816
+i386                   randconfig-x075-201816
+i386                   randconfig-x073-201816
+i386                   randconfig-x076-201816
+i386                   randconfig-x071-201816
+i386                   randconfig-x079-201816
+i386                   randconfig-x077-201816
+i386                   randconfig-x070-201816
+i386                   randconfig-x078-201816
+i386                   randconfig-x074-201816
+i386                   randconfig-x072-201816
+openrisc                 simple_smp_defconfig
+sh                           se7206_defconfig
+sh                           se7619_defconfig
+arm64                               defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-x000-201816
+x86_64                 randconfig-x001-201816
+x86_64                 randconfig-x002-201816
+x86_64                 randconfig-x003-201816
+x86_64                 randconfig-x004-201816
+x86_64                 randconfig-x005-201816
+x86_64                 randconfig-x006-201816
+x86_64                 randconfig-x007-201816
+x86_64                 randconfig-x008-201816
+x86_64                 randconfig-x009-201816
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+
 ---
-v2: Fix documentation by removing module parameters that do not exist in
-the kernel driver.
-
- Documentation/networking/fm10k.txt | 215 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 215 insertions(+)
- create mode 100644 Documentation/networking/fm10k.txt
-
-diff --git a/Documentation/networking/fm10k.txt b/Documentation/networking/fm10k.txt
-new file mode 100644
-index 000000000000..00f5473d5cd0
---- /dev/null
-+++ b/Documentation/networking/fm10k.txt
-@@ -0,0 +1,215 @@
-+README for Intel(R) Ethernet Multi-host Controller Driver
-+=========================================================
-+
-+February 23, 2017
-+Copyright(c) 2015-2017 Intel Corporation.
-+
-+Contents
-+========
-+- Identifying Your Adapter
-+- Additional Configurations
-+- Performance Tuning
-+- Known Issues
-+- Support
-+
-+Identifying Your Adapter
-+------------------------
-+The driver in this release is compatible with devices based on the Intel(R)
-+Ethernet Multi-host Controller.
-+
-+For information on how to identify your adapter, and for the latest Intel
-+network drivers, refer to the Intel Support website:
-+http://www.intel.com/support
-+
-+
-+Flow Control
-+------------
-+The Intel(R) Ethernet Switch Host Interface Driver does not support Flow
-+Control. It will not send pause frames. This may result in dropped frames.
-+
-+
-+Intel(R) Ethernet Flow Director
-+-------------------------------
-+The Intel Ethernet Flow Director performs the following tasks:
-+
-+- Directs receive packets according to their flows to different queues.
-+- Enables tight control on routing a flow in the platform.
-+- Matches flows and CPU cores for flow affinity.
-+- Supports multiple parameters for flexible flow classification and load
-+  balancing (in SFP mode only).
-+
-+NOTE: An included script (set_irq_affinity) automates setting the IRQ to CPU
-+affinity.
-+
-+ethtool commands:
-+
-+To enable or disable the Intel Ethernet Flow Director:
-+
-+  # ethtool -K ethX ntuple <on|off>
-+
-+When disabling ntuple filters, all the user programmed filters are flushed from
-+the driver cache and hardware. All needed filters must be re-added when ntuple
-+is re-enabled.
-+
-+To add a filter that directs packet to queue 2, use -U or -N switch:
-+
-+  # ethtool -N ethX flow-type tcp4 src-ip 192.168.10.1 dst-ip \
-+  192.168.10.2 src-port 2000 dst-port 2001 action 2 [loc 1]
-+
-+To see the list of filters currently present:
-+  # ethtool <-u|-n> ethX
-+
-+
-+max_vfs
-+-------
-+This parameter adds support for SR-IOV. It causes the driver to spawn up to
-+max_vfs worth of virtual functions.
-+Valid Range:0-64
-+
-+NOTE: This parameter is only used on kernel 3.7.x and below. On kernel 3.8.x
-+and above, use sysfs to enable VFs. Also, for Red Hat distributions, this
-+parameter is only used on version 6.6 and older. For version 6.7 and newer, use
-+sysfs. For example:
-+#echo $num_vf_enabled > /sys/class/net/$dev/device/sriov_numvfs	//enable
-+VFs
-+#echo 0 > /sys/class/net/$dev/device/sriov_numvfs	//disable VFs
-+
-+The parameters for the driver are referenced by position. Thus, if you have a
-+dual port adapter, or more than one adapter in your system, and want N virtual
-+functions per port, you must specify a number for each port with each parameter
-+separated by a comma. For example:
-+
-+  modprobe fm10k max_vfs=4
-+
-+This will spawn 4 VFs on the first port.
-+
-+  modprobe fm10k max_vfs=2,4
-+
-+This will spawn 2 VFs on the first port and 4 VFs on the second port.
-+
-+NOTE: Caution must be used in loading the driver with these parameters.
-+Depending on your system configuration, number of slots, etc., it is impossible
-+to predict in all cases where the positions would be on the command line.
-+
-+NOTE: Neither the device nor the driver control how VFs are mapped into config
-+space. Bus layout will vary by operating system. On operating systems that
-+support it, you can check sysfs to find the mapping.
-+
-+NOTE: When SR-IOV mode is enabled, hardware VLAN filtering and VLAN tag
-+stripping/insertion will remain enabled. Please remove the old VLAN filter
-+before the new VLAN filter is added. For example,
-+ip link set eth0 vf 0 vlan 100	// set vlan 100 for VF 0
-+ip link set eth0 vf 0 vlan 0	// Delete vlan 100
-+ip link set eth0 vf 0 vlan 200	// set a new vlan 200 for VF 0
-+
-+
-+Additional Features and Configurations
-+-------------------------------------------
-+
-+Jumbo Frames
-+------------
-+Jumbo Frames support is enabled by changing the Maximum Transmission Unit (MTU)
-+to a value larger than the default value of 1500.
-+
-+Use the ifconfig command to increase the MTU size. For example, enter the
-+following where <x> is the interface number:
-+
-+   ifconfig eth<x> mtu 9000 up
-+Alternatively, you can use the ip command as follows:
-+   ip link set mtu 9000 dev eth<x>
-+   ip link set up dev eth<x>
-+
-+This setting is not saved across reboots. The setting change can be made
-+permanent by adding 'MTU=9000' to the file:
-+/etc/sysconfig/network-scripts/ifcfg-eth<x> for RHEL or to the file
-+/etc/sysconfig/network/<config_file> for SLES.
-+
-+NOTE: The maximum MTU setting for Jumbo Frames is 15342. This value coincides
-+with the maximum Jumbo Frames size of 15364 bytes.
-+
-+NOTE: This driver will attempt to use multiple page sized buffers to receive
-+each jumbo packet. This should help to avoid buffer starvation issues when
-+allocating receive packets.
-+
-+
-+Generic Receive Offload, aka GRO
-+--------------------------------
-+The driver supports the in-kernel software implementation of GRO. GRO has
-+shown that by coalescing Rx traffic into larger chunks of data, CPU
-+utilization can be significantly reduced when under large Rx load. GRO is an
-+evolution of the previously-used LRO interface. GRO is able to coalesce
-+other protocols besides TCP. It's also safe to use with configurations that
-+are problematic for LRO, namely bridging and iSCSI.
-+
-+
-+ethtool
-+-------
-+The driver utilizes the ethtool interface for driver configuration and
-+diagnostics, as well as displaying statistical information. The latest ethtool
-+version is required for this functionality. Download it at:
-+http://ftp.kernel.org/pub/software/network/ethtool/
-+
-+Supported ethtool Commands and Options for Filtering
-+----------------------------------------------------
-+-n --show-nfc
-+  Retrieves the receive network flow classification configurations.
-+
-+rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
-+  Retrieves the hash options for the specified network traffic type.
-+
-+-N --config-nfc
-+  Configures the receive network flow classification.
-+
-+rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
-+m|v|t|s|d|f|n|r...
-+  Configures the hash options for the specified network traffic type.
-+
-+  udp4 UDP over IPv4
-+  udp6 UDP over IPv6
-+
-+  f Hash on bytes 0 and 1 of the Layer 4 header of the rx packet.
-+  n Hash on bytes 2 and 3 of the Layer 4 header of the rx packet.
-+
-+
-+FCoE
-+----
-+The fm10k driver supports Fiber Channel over Ethernet (FCoE) and Data Center
-+Bridging (DCB). This code has no default effect on the regular driver
-+operation. Configuring DCB and FCoE is outside the scope of this README. Refer
-+to http://www.open-fcoe.org/ for FCoE project information and contact
-+fm10k-eedc at lists.sourceforge.net for DCB information.
-+
-+
-+MAC and VLAN anti-spoofing feature
-+----------------------------------
-+When a malicious driver attempts to send a spoofed packet, it is dropped by the
-+hardware and not transmitted.
-+
-+An interrupt is sent to the PF driver notifying it of the spoof attempt. When a
-+spoofed packet is detected, the PF driver will send the following message to
-+the system log (displayed by the "dmesg" command):
-+NOTE: This feature can be disabled for a specific Virtual Function (VF):
-+ip link set <pf dev> vf <vf id> spoofchk {off|on}
-+
-+
-+Known Issues/Troubleshooting
-+----------------------------
-+
-+Enabling SR-IOV in a 64-bit Microsoft* Windows Server* 2012/R2 guest OS under
-+Linux KVM
-+--------------------------------------------------------------------------------
-+KVM Hypervisor/VMM supports direct assignment of a PCIe device to a VM. This
-+includes traditional PCIe devices, as well as SR-IOV-capable devices based on
-+the Intel Ethernet Controller XL710.
-+
-+
-+Support
-+-------
-+For general information, go to the Intel support website at:
-+http://www.intel.com/support/
-+
-+or the Intel Wired Networking project hosted by Sourceforge at:
-+http://sourceforge.net/projects/e1000
-+If an issue is identified with the released source code on a supported kernel
-+with a supported adapter, email the specific information related to the issue
-+to e1000-devel at lists.sf.net.
--- 
-2.14.3
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
