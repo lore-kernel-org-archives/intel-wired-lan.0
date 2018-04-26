@@ -1,156 +1,132 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 26 Apr 2018 15:03:59 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- db09706c5a13b6e4c7234914f4605e2e4bb06005
-Message-ID: <5ae179df.TRdQQrE2YcpYTswK%lkp@intel.com>
+From: Holger Schurig <holgerschurig@gmail.com>
+Date: Thu, 26 Apr 2018 09:54:27 +0200
+Subject: [Intel-wired-lan] [BUG] igb: reconnecting of cable not always
+ detected
+In-Reply-To: <CAKgT0UdTf5pf53==hB71Ba_N1gJ-TH_3uMajozr1wykLEbK80g@mail.gmail.com>
+References: <87h8o0ocul.fsf@gmail.com>
+ <CAKgT0Udj+d7yzPN4Jph8uk7Z6fz0oyWrO+6W6CfygSYTkGJ0Xw@mail.gmail.com>
+ <877eovobxl.fsf@gmail.com>
+ <CAKgT0UdTf5pf53==hB71Ba_N1gJ-TH_3uMajozr1wykLEbK80g@mail.gmail.com>
+Message-ID: <8736zio11o.fsf@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: db09706c5a13b6e4c7234914f4605e2e4bb06005  Documentation: fm10k: Add kernel documentation
+> Was the orange LED on the igb NIC or on the TL SG-108? Based on the
+> comment below I am assuming it is the switch.
 
-elapsed time: 518m
+The LEDs were on the switch.
 
-configs tested: 131
+When everything works, the switch says green == 1000 MB/s.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+When cable is disconnected, switch doesn't light any LED.
 
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-i386                   randconfig-x010-201816
-i386                   randconfig-x011-201816
-i386                   randconfig-x012-201816
-i386                   randconfig-x013-201816
-i386                   randconfig-x014-201816
-i386                   randconfig-x015-201816
-i386                   randconfig-x016-201816
-i386                   randconfig-x017-201816
-i386                   randconfig-x018-201816
-i386                   randconfig-x019-201816
-x86_64                              federa-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201816
-x86_64                 randconfig-x006-201816
-x86_64                 randconfig-x002-201816
-x86_64                 randconfig-x005-201816
-x86_64                 randconfig-x004-201816
-x86_64                 randconfig-x009-201816
-x86_64                 randconfig-x001-201816
-x86_64                 randconfig-x008-201816
-x86_64                 randconfig-x007-201816
-x86_64                 randconfig-x000-201816
-x86_64                 randconfig-x003-201816
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i1-201816
-i386                     randconfig-i0-201816
-x86_64                             acpi-redef
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                             allmodconfig
-x86_64                 randconfig-x014-201816
-x86_64                 randconfig-x013-201816
-x86_64                 randconfig-x010-201816
-x86_64                 randconfig-x019-201816
-x86_64                 randconfig-x015-201816
-x86_64                 randconfig-x011-201816
-x86_64                 randconfig-x018-201816
-x86_64                 randconfig-x016-201816
-x86_64                 randconfig-x017-201816
-x86_64                 randconfig-x012-201816
-i386                     randconfig-a0-201816
-i386                     randconfig-a1-201816
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201816
-i386                     randconfig-s0-201816
-x86_64                           allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201816
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                             allyesconfig
-x86_64                randconfig-ne0-04261026
-i386                   randconfig-x070-201816
-i386                   randconfig-x071-201816
-i386                   randconfig-x072-201816
-i386                   randconfig-x073-201816
-i386                   randconfig-x074-201816
-i386                   randconfig-x075-201816
-i386                   randconfig-x076-201816
-i386                   randconfig-x077-201816
-i386                   randconfig-x078-201816
-i386                   randconfig-x079-201816
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-x000-201816
-i386                   randconfig-x006-201816
-i386                   randconfig-x008-201816
-i386                   randconfig-x003-201816
-i386                   randconfig-x009-201816
-i386                   randconfig-x004-201816
-i386                   randconfig-x002-201816
-i386                   randconfig-x005-201816
-i386                   randconfig-x001-201816
-i386                   randconfig-x007-201816
+When cable is inserted and things fail, the switch says orange LED == 100 MB/s.
+Sometimes the insertion process works, then the switch will go, of
+course, to the green LED == 1000 MB/s.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+I must admit that I didn't look at the LEDs of the device.
+
+
+Now I looked there, and the device the left+green LED is on. In the
+failed case (so, in the dmesg output the last thing I see is "Link is
+Down", but the device still has left+green LED on.
+
+The right+orange LED on the device seems to indicate traffic, and it is
+constantly off in the failed case.
+
+
+
+> I assume you mean "ethtool -r" since that is what is supposed to be
+> restarting negotiation. The "ethtool -i" is what you provided above.
+
+Maybe I've edited my text too much and moved output along. Anyway, in
+the failed case neither "ethtool- r eth0" nor "ethtool -i eth0" nor
+"mii-tool eth0" work at all, they all emit error warning.
+
+> Thanks. I'm suspecting we may need to instrument igb_rd32 at this
+> point. In order to trigger what you are seeing I am assuming the
+> device has been detached due to a read failure of some sort.
+
+I'll do that and reply later. I first need to understand this source
+part :-)
+
+
+> Another thing you could look at doing is narrowing down the possible
+> factors involved. You could go through and limit phy settings and look
+> at possibly dropping features such as EEE if it is enabled on the
+> device.
+
+I actually tried a driver patch to remove 1000 GB/s from the driver, in
+the assumption that maybe this specific hardware has a bad layout and
+thus trouble (I don't really think that, because I never observed any
+data transfer problem).
+
+So, is the following patch (that didn't help) what in the line of what
+you suggested?
+
+
+Index: linux-4.16/drivers/net/ethernet/intel/igb/igb_main.c
+===================================================================
+--- linux-4.16.orig/drivers/net/ethernet/intel/igb/igb_main.c	2018-04-01 23:20:27.000000000 +0200
++++ linux-4.16/drivers/net/ethernet/intel/igb/igb_main.c	2018-04-24 11:35:17.420760650 +0200
+@@ -2080,7 +2080,7 @@
+ 
+ 	if ((adapter->flags & IGB_FLAG_EEE) &&
+ 	    (!hw->dev_spec._82575.eee_disable))
+-		adapter->eee_advert = MDIO_EEE_100TX | MDIO_EEE_1000T;
++		adapter->eee_advert = MDIO_EEE_100TX /* | MDIO_EEE_1000T */;
+ 
+ 	return 0;
+ }
+@@ -2908,7 +2908,7 @@
+ 	/* Initialize link properties that are user-changeable */
+ 	adapter->fc_autoneg = true;
+ 	hw->mac.autoneg = true;
+-	hw->phy.autoneg_advertised = 0x2f;
++	hw->phy.autoneg_advertised = 0x0f;
+ 
+ 	hw->fc.requested_mode = e1000_fc_default;
+ 	hw->fc.current_mode = e1000_fc_default;
+@@ -3099,7 +3099,7 @@
+ 			if ((!err) &&
+ 			    (!hw->dev_spec._82575.eee_disable)) {
+ 				adapter->eee_advert =
+-					MDIO_EEE_100TX | MDIO_EEE_1000T;
++					MDIO_EEE_100TX /* | MDIO_EEE_1000T */;
+ 				adapter->flags |= IGB_FLAG_EEE;
+ 			}
+ 			break;
+@@ -3110,7 +3110,7 @@
+ 				if ((!err) &&
+ 					(!hw->dev_spec._82575.eee_disable)) {
+ 					adapter->eee_advert =
+-					   MDIO_EEE_100TX | MDIO_EEE_1000T;
++					   MDIO_EEE_100TX /* | MDIO_EEE_1000T */;
+ 					adapter->flags |= IGB_FLAG_EEE;
+ 				}
+ 			}
+Index: linux-4.16/drivers/net/ethernet/intel/igb/igb_ethtool.c
+===================================================================
+--- linux-4.16.orig/drivers/net/ethernet/intel/igb/igb_ethtool.c	2018-04-01 23:20:27.000000000 +0200
++++ linux-4.16/drivers/net/ethernet/intel/igb/igb_ethtool.c	2018-04-24 11:42:36.737959749 +0200
+@@ -170,7 +170,7 @@
+ 			     SUPPORTED_10baseT_Full |
+ 			     SUPPORTED_100baseT_Half |
+ 			     SUPPORTED_100baseT_Full |
+-			     SUPPORTED_1000baseT_Full|
++			     /* SUPPORTED_1000baseT_Full| */ 
+ 			     SUPPORTED_Autoneg |
+ 			     SUPPORTED_TP |
+ 			     SUPPORTED_Pause);
+@@ -3003,7 +3003,7 @@
+ 	    (hw->phy.media_type != e1000_media_type_copper))
+ 		return -EOPNOTSUPP;
+ 
+-	edata->supported = (SUPPORTED_1000baseT_Full |
++	edata->supported = (/* SUPPORTED_1000baseT_Full | */
+ 			    SUPPORTED_100baseT_Full);
+ 	if (!hw->dev_spec._82575.eee_disable)
+ 		edata->advertised =
