@@ -1,11 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 1 May 2018 21:24:59 +0000
-Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: use macro to avoid passing
- the array and size separately
-In-Reply-To: <20180412181559.4343-4-jacob.e.keller@intel.com>
+Date: Tue, 1 May 2018 21:25:24 +0000
+Subject: [Intel-wired-lan] [PATCH 5/6] fm10k: warn if the stat size is
+ unknown
+In-Reply-To: <20180412181559.4343-5-jacob.e.keller@intel.com>
 References: <20180412181559.4343-1-jacob.e.keller@intel.com>
- <20180412181559.4343-4-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E8294D503@ORSMSX103.amr.corp.intel.com>
+ <20180412181559.4343-5-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E8294D515@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,21 +18,14 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Jacob Keller
 > Sent: Thursday, April 12, 2018 11:16 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: use macro to avoid passing the
-> array and size separately
+> Subject: [Intel-wired-lan] [PATCH 5/6] fm10k: warn if the stat size is unknown
 > 
-> Avoid potential bugs with fm10k_add_stat_strings and
-> fm10k_add_ethtool_stats by using a macro to calculate the ARRAY_SIZE
-> when passing. This helps ensure that the size is always correct.
-> 
-> Note that it assumes we only pass static const fm10k_stat arrays, and
-> that evaluation of the argument won't have side effects.
-> 
-> Change-Id: Id9396eef12cbab51a2559db80782e33fb20df274
+> Change-Id: I80172c86be68bdd1e1df00b650877b686c718b0f
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Title: use macro to avoid passing the array and size separately
-> Change-type: ImplementationChange
-> Reviewed-on: https://git-amr-1.devtools.intel.com/gerrit/198023
+> Title: warn if the stat size is unknown
+> Change-type: DefectResolution
+> Reviewed-on: https://git-amr-1.devtools.intel.com/gerrit/198024
+> Tested-by: nosbuild <nosbuild@intel.com>
 > ---
 
 Tested-by: Krishneil Singh  <krishneil.k.singh@intel.com>
