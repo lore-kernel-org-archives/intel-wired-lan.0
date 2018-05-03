@@ -1,10 +1,10 @@
 From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Thu, 03 May 2018 15:00:36 -0500
-Subject: [Intel-wired-lan] [PATCH v6 4/5] ixgbe: Report PCIe link properties
- with pcie_print_link_status()
+Date: Thu, 03 May 2018 15:00:43 -0500
+Subject: [Intel-wired-lan] [PATCH v6 5/5] PCI: Remove unused
+ pcie_get_minimum_link()
 In-Reply-To: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
 References: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <152537763602.62474.15659483976051204438.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <152537764322.62474.552711932384023140.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,108 +13,95 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bjorn Helgaas <bhelgaas@google.com>
 
-Previously the driver used pcie_get_minimum_link() to warn when the NIC
-is in a slot that can't supply as much bandwidth as the NIC could use.
+In some cases pcie_get_minimum_link() returned misleading information
+because it found the slowest link and the narrowest link without
+considering the total bandwidth of the link.
 
-pcie_get_minimum_link() can be misleading because it finds the slowest link
-and the narrowest link (which may be different links) without considering
-the total bandwidth of each link.  For a path with a 16 GT/s x1 link and a
-2.5 GT/s x16 link, it returns 2.5 GT/s x1, which corresponds to 250 MB/s of
-bandwidth, not the true available bandwidth of about 1969 MB/s for a
-16 GT/s x1 link.
+For example, consider a path with these two links:
 
-Use pcie_print_link_status() to report PCIe link speed and possible
-limitations instead of implementing this in the driver itself.  This finds
-the slowest link in the path to the device by computing the total bandwidth
-of each link and compares that with the capabilities of the device.
+  - 16.0 GT/s  x1 link  (16.0 * 10^9 * 128 / 130) *  1 / 8 = 1969 MB/s
+  -  2.5 GT/s x16 link  ( 2.5 * 10^9 *   8 /  10) * 16 / 8 = 4000 MB/s
 
-The dmesg change is:
+The available bandwidth of the path is limited by the 16 GT/s link to about
+1969 MB/s, but pcie_get_minimum_link() returned 2.5 GT/s x1, which
+corresponds to only 250 MB/s.
 
-  - PCI Express bandwidth of %dGT/s available
-  - (Speed:%s, Width: x%d, Encoding Loss:%s)
-  + %u.%03u Gb/s available PCIe bandwidth (%s x%d link)
+Callers should use pcie_print_link_status() instead, or
+pcie_bandwidth_available() if they need more detailed information.
 
-or, if the device is capable of better performance than is available in the
-current slot:
-
-  - This is not sufficient for optimal performance of this card.
-  - For optimal performance, at least %dGT/s of bandwidth is required.
-  - A slot with more lanes and/or higher speed is suggested.
-  + %u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)
-
-Note that the driver previously used dev_warn() to suggest using a
-different slot, but pcie_print_link_status() uses dev_info() because if the
-platform has no faster slot available, the user can't do anything about the
-warning and may not want to be bothered with it.
+Remove pcie_get_minimum_link() since there are no callers left.
 
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   47 +------------------------
- 1 file changed, 1 insertion(+), 46 deletions(-)
+ drivers/pci/pci.c   |   43 -------------------------------------------
+ include/linux/pci.h |    2 --
+ 2 files changed, 45 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index afadba99f7b8..8990285f6e12 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -270,9 +270,6 @@ static void ixgbe_check_minimum_link(struct ixgbe_adapter *adapter,
- 				     int expected_gts)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
--	int max_gts = 0;
--	enum pci_bus_speed speed = PCI_SPEED_UNKNOWN;
--	enum pcie_link_width width = PCIE_LNK_WIDTH_UNKNOWN;
- 	struct pci_dev *pdev;
- 
- 	/* Some devices are not connected over PCIe and thus do not negotiate
-@@ -288,49 +285,7 @@ static void ixgbe_check_minimum_link(struct ixgbe_adapter *adapter,
- 	else
- 		pdev = adapter->pdev;
- 
--	if (pcie_get_minimum_link(pdev, &speed, &width) ||
--	    speed == PCI_SPEED_UNKNOWN || width == PCIE_LNK_WIDTH_UNKNOWN) {
--		e_dev_warn("Unable to determine PCI Express bandwidth.\n");
--		return;
--	}
--
--	switch (speed) {
--	case PCIE_SPEED_2_5GT:
--		/* 8b/10b encoding reduces max throughput by 20% */
--		max_gts = 2 * width;
--		break;
--	case PCIE_SPEED_5_0GT:
--		/* 8b/10b encoding reduces max throughput by 20% */
--		max_gts = 4 * width;
--		break;
--	case PCIE_SPEED_8_0GT:
--		/* 128b/130b encoding reduces throughput by less than 2% */
--		max_gts = 8 * width;
--		break;
--	default:
--		e_dev_warn("Unable to determine PCI Express bandwidth.\n");
--		return;
--	}
--
--	e_dev_info("PCI Express bandwidth of %dGT/s available\n",
--		   max_gts);
--	e_dev_info("(Speed:%s, Width: x%d, Encoding Loss:%s)\n",
--		   (speed == PCIE_SPEED_8_0GT ? "8.0GT/s" :
--		    speed == PCIE_SPEED_5_0GT ? "5.0GT/s" :
--		    speed == PCIE_SPEED_2_5GT ? "2.5GT/s" :
--		    "Unknown"),
--		   width,
--		   (speed == PCIE_SPEED_2_5GT ? "20%" :
--		    speed == PCIE_SPEED_5_0GT ? "20%" :
--		    speed == PCIE_SPEED_8_0GT ? "<2%" :
--		    "Unknown"));
--
--	if (max_gts < expected_gts) {
--		e_dev_warn("This is not sufficient for optimal performance of this card.\n");
--		e_dev_warn("For optimal performance,@least %dGT/s of bandwidth is required.\n",
--			expected_gts);
--		e_dev_warn("A slot with more lanes and/or higher speed is suggested.\n");
--	}
-+	pcie_print_link_status(pdev);
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index e597655a5643..4bafa817c40a 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -5069,49 +5069,6 @@ int pcie_set_mps(struct pci_dev *dev, int mps)
  }
+ EXPORT_SYMBOL(pcie_set_mps);
  
- static void ixgbe_service_event_schedule(struct ixgbe_adapter *adapter)
+-/**
+- * pcie_get_minimum_link - determine minimum link settings of a PCI device
+- * @dev: PCI device to query
+- * @speed: storage for minimum speed
+- * @width: storage for minimum width
+- *
+- * This function will walk up the PCI device chain and determine the minimum
+- * link width and speed of the device.
+- */
+-int pcie_get_minimum_link(struct pci_dev *dev, enum pci_bus_speed *speed,
+-			  enum pcie_link_width *width)
+-{
+-	int ret;
+-
+-	*speed = PCI_SPEED_UNKNOWN;
+-	*width = PCIE_LNK_WIDTH_UNKNOWN;
+-
+-	while (dev) {
+-		u16 lnksta;
+-		enum pci_bus_speed next_speed;
+-		enum pcie_link_width next_width;
+-
+-		ret = pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
+-		if (ret)
+-			return ret;
+-
+-		next_speed = pcie_link_speed[lnksta & PCI_EXP_LNKSTA_CLS];
+-		next_width = (lnksta & PCI_EXP_LNKSTA_NLW) >>
+-			PCI_EXP_LNKSTA_NLW_SHIFT;
+-
+-		if (next_speed < *speed)
+-			*speed = next_speed;
+-
+-		if (next_width < *width)
+-			*width = next_width;
+-
+-		dev = dev->bus->self;
+-	}
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(pcie_get_minimum_link);
+-
+ /**
+  * pcie_bandwidth_available - determine minimum link settings of a PCIe
+  *			      device and its bandwidth limitation
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 73178a2fcee0..230615620a4a 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1079,8 +1079,6 @@ int pcie_get_readrq(struct pci_dev *dev);
+ int pcie_set_readrq(struct pci_dev *dev, int rq);
+ int pcie_get_mps(struct pci_dev *dev);
+ int pcie_set_mps(struct pci_dev *dev, int mps);
+-int pcie_get_minimum_link(struct pci_dev *dev, enum pci_bus_speed *speed,
+-			  enum pcie_link_width *width);
+ u32 pcie_bandwidth_available(struct pci_dev *dev, struct pci_dev **limiting_dev,
+ 			     enum pci_bus_speed *speed,
+ 			     enum pcie_link_width *width);
 
