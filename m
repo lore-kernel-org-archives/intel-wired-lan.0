@@ -1,10 +1,10 @@
 From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Thu, 03 May 2018 15:00:29 -0500
-Subject: [Intel-wired-lan] [PATCH v6 3/5] cxgb4: Report PCIe link properties
+Date: Thu, 03 May 2018 15:00:36 -0500
+Subject: [Intel-wired-lan] [PATCH v6 4/5] ixgbe: Report PCIe link properties
  with pcie_print_link_status()
 In-Reply-To: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
 References: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <152537762921.62474.3606947168382589745.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <152537763602.62474.15659483976051204438.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -30,112 +30,91 @@ of each link and compares that with the capabilities of the device.
 
 The dmesg change is:
 
-  - PCIe link speed is %s, device supports %s
-  - PCIe link width is x%d, device supports x%d
+  - PCI Express bandwidth of %dGT/s available
+  - (Speed:%s, Width: x%d, Encoding Loss:%s)
   + %u.%03u Gb/s available PCIe bandwidth (%s x%d link)
 
 or, if the device is capable of better performance than is available in the
 current slot:
 
-  - A slot with more lanes and/or higher speed is suggested for optimal performance.
+  - This is not sufficient for optimal performance of this card.
+  - For optimal performance, at least %dGT/s of bandwidth is required.
+  - A slot with more lanes and/or higher speed is suggested.
   + %u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)
+
+Note that the driver previously used dev_warn() to suggest using a
+different slot, but pcie_print_link_status() uses dev_info() because if the
+platform has no faster slot available, the user can't do anything about the
+warning and may not want to be bothered with it.
 
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c |   75 -----------------------
- 1 file changed, 1 insertion(+), 74 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   47 +------------------------
+ 1 file changed, 1 insertion(+), 46 deletions(-)
 
-diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
-index 24d2865b8806..7328f24ba1dd 100644
---- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
-+++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
-@@ -5042,79 +5042,6 @@ static int init_rss(struct adapter *adap)
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index afadba99f7b8..8990285f6e12 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -270,9 +270,6 @@ static void ixgbe_check_minimum_link(struct ixgbe_adapter *adapter,
+ 				     int expected_gts)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-	int max_gts = 0;
+-	enum pci_bus_speed speed = PCI_SPEED_UNKNOWN;
+-	enum pcie_link_width width = PCIE_LNK_WIDTH_UNKNOWN;
+ 	struct pci_dev *pdev;
+ 
+ 	/* Some devices are not connected over PCIe and thus do not negotiate
+@@ -288,49 +285,7 @@ static void ixgbe_check_minimum_link(struct ixgbe_adapter *adapter,
+ 	else
+ 		pdev = adapter->pdev;
+ 
+-	if (pcie_get_minimum_link(pdev, &speed, &width) ||
+-	    speed == PCI_SPEED_UNKNOWN || width == PCIE_LNK_WIDTH_UNKNOWN) {
+-		e_dev_warn("Unable to determine PCI Express bandwidth.\n");
+-		return;
+-	}
+-
+-	switch (speed) {
+-	case PCIE_SPEED_2_5GT:
+-		/* 8b/10b encoding reduces max throughput by 20% */
+-		max_gts = 2 * width;
+-		break;
+-	case PCIE_SPEED_5_0GT:
+-		/* 8b/10b encoding reduces max throughput by 20% */
+-		max_gts = 4 * width;
+-		break;
+-	case PCIE_SPEED_8_0GT:
+-		/* 128b/130b encoding reduces throughput by less than 2% */
+-		max_gts = 8 * width;
+-		break;
+-	default:
+-		e_dev_warn("Unable to determine PCI Express bandwidth.\n");
+-		return;
+-	}
+-
+-	e_dev_info("PCI Express bandwidth of %dGT/s available\n",
+-		   max_gts);
+-	e_dev_info("(Speed:%s, Width: x%d, Encoding Loss:%s)\n",
+-		   (speed == PCIE_SPEED_8_0GT ? "8.0GT/s" :
+-		    speed == PCIE_SPEED_5_0GT ? "5.0GT/s" :
+-		    speed == PCIE_SPEED_2_5GT ? "2.5GT/s" :
+-		    "Unknown"),
+-		   width,
+-		   (speed == PCIE_SPEED_2_5GT ? "20%" :
+-		    speed == PCIE_SPEED_5_0GT ? "20%" :
+-		    speed == PCIE_SPEED_8_0GT ? "<2%" :
+-		    "Unknown"));
+-
+-	if (max_gts < expected_gts) {
+-		e_dev_warn("This is not sufficient for optimal performance of this card.\n");
+-		e_dev_warn("For optimal performance,@least %dGT/s of bandwidth is required.\n",
+-			expected_gts);
+-		e_dev_warn("A slot with more lanes and/or higher speed is suggested.\n");
+-	}
++	pcie_print_link_status(pdev);
  }
  
--static int cxgb4_get_pcie_dev_link_caps(struct adapter *adap,
--					enum pci_bus_speed *speed,
--					enum pcie_link_width *width)
--{
--	u32 lnkcap1, lnkcap2;
--	int err1, err2;
--
--#define  PCIE_MLW_CAP_SHIFT 4   /* start of MLW mask in link capabilities */
--
--	*speed = PCI_SPEED_UNKNOWN;
--	*width = PCIE_LNK_WIDTH_UNKNOWN;
--
--	err1 = pcie_capability_read_dword(adap->pdev, PCI_EXP_LNKCAP,
--					  &lnkcap1);
--	err2 = pcie_capability_read_dword(adap->pdev, PCI_EXP_LNKCAP2,
--					  &lnkcap2);
--	if (!err2 && lnkcap2) { /* PCIe r3.0-compliant */
--		if (lnkcap2 & PCI_EXP_LNKCAP2_SLS_8_0GB)
--			*speed = PCIE_SPEED_8_0GT;
--		else if (lnkcap2 & PCI_EXP_LNKCAP2_SLS_5_0GB)
--			*speed = PCIE_SPEED_5_0GT;
--		else if (lnkcap2 & PCI_EXP_LNKCAP2_SLS_2_5GB)
--			*speed = PCIE_SPEED_2_5GT;
--	}
--	if (!err1) {
--		*width = (lnkcap1 & PCI_EXP_LNKCAP_MLW) >> PCIE_MLW_CAP_SHIFT;
--		if (!lnkcap2) { /* pre-r3.0 */
--			if (lnkcap1 & PCI_EXP_LNKCAP_SLS_5_0GB)
--				*speed = PCIE_SPEED_5_0GT;
--			else if (lnkcap1 & PCI_EXP_LNKCAP_SLS_2_5GB)
--				*speed = PCIE_SPEED_2_5GT;
--		}
--	}
--
--	if (*speed == PCI_SPEED_UNKNOWN || *width == PCIE_LNK_WIDTH_UNKNOWN)
--		return err1 ? err1 : err2 ? err2 : -EINVAL;
--	return 0;
--}
--
--static void cxgb4_check_pcie_caps(struct adapter *adap)
--{
--	enum pcie_link_width width, width_cap;
--	enum pci_bus_speed speed, speed_cap;
--
--#define PCIE_SPEED_STR(speed) \
--	(speed == PCIE_SPEED_8_0GT ? "8.0GT/s" : \
--	 speed == PCIE_SPEED_5_0GT ? "5.0GT/s" : \
--	 speed == PCIE_SPEED_2_5GT ? "2.5GT/s" : \
--	 "Unknown")
--
--	if (cxgb4_get_pcie_dev_link_caps(adap, &speed_cap, &width_cap)) {
--		dev_warn(adap->pdev_dev,
--			 "Unable to determine PCIe device BW capabilities\n");
--		return;
--	}
--
--	if (pcie_get_minimum_link(adap->pdev, &speed, &width) ||
--	    speed == PCI_SPEED_UNKNOWN || width == PCIE_LNK_WIDTH_UNKNOWN) {
--		dev_warn(adap->pdev_dev,
--			 "Unable to determine PCI Express bandwidth.\n");
--		return;
--	}
--
--	dev_info(adap->pdev_dev, "PCIe link speed is %s, device supports %s\n",
--		 PCIE_SPEED_STR(speed), PCIE_SPEED_STR(speed_cap));
--	dev_info(adap->pdev_dev, "PCIe link width is x%d, device supports x%d\n",
--		 width, width_cap);
--	if (speed < speed_cap || width < width_cap)
--		dev_info(adap->pdev_dev,
--			 "A slot with more lanes and/or higher speed is "
--			 "suggested for optimal performance.\n");
--}
--
- /* Dump basic information about the adapter */
- static void print_adapter_info(struct adapter *adapter)
- {
-@@ -5750,7 +5677,7 @@ static int init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	}
- 
- 	/* check for PCI Express bandwidth capabiltites */
--	cxgb4_check_pcie_caps(adapter);
-+	pcie_print_link_status(pdev);
- 
- 	err = init_rss(adapter);
- 	if (err)
+ static void ixgbe_service_event_schedule(struct ixgbe_adapter *adapter)
 
