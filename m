@@ -1,107 +1,26 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Thu, 03 May 2018 15:00:43 -0500
-Subject: [Intel-wired-lan] [PATCH v6 5/5] PCI: Remove unused
- pcie_get_minimum_link()
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 3 May 2018 20:29:38 +0000
+Subject: [Intel-wired-lan] [PATCH v6 0/5] PCI: Improve PCIe link status
+ reporting
 In-Reply-To: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
 References: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <152537764322.62474.552711932384023140.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5882DBA48B@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+> -----Original Message-----
+> This does change the dmesg reporting of link speeds, and in the ixgbe case,
+> it changes the reporting from KERN_WARN level to KERN_INFO.  If that's an
+> issue, let's talk about it.  I'm hoping the reduce code size, improved
+> functionality, and consistency across drivers is enough to make this
+> worthwhile.
+> 
 
-In some cases pcie_get_minimum_link() returned misleading information
-because it found the slowest link and the narrowest link without
-considering the total bandwidth of the link.
+I personally have no issue with this change, but I don't work on the ixgbe driver much anymore.
 
-For example, consider a path with these two links:
-
-  - 16.0 GT/s  x1 link  (16.0 * 10^9 * 128 / 130) *  1 / 8 = 1969 MB/s
-  -  2.5 GT/s x16 link  ( 2.5 * 10^9 *   8 /  10) * 16 / 8 = 4000 MB/s
-
-The available bandwidth of the path is limited by the 16 GT/s link to about
-1969 MB/s, but pcie_get_minimum_link() returned 2.5 GT/s x1, which
-corresponds to only 250 MB/s.
-
-Callers should use pcie_print_link_status() instead, or
-pcie_bandwidth_available() if they need more detailed information.
-
-Remove pcie_get_minimum_link() since there are no callers left.
-
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
----
- drivers/pci/pci.c   |   43 -------------------------------------------
- include/linux/pci.h |    2 --
- 2 files changed, 45 deletions(-)
-
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index e597655a5643..4bafa817c40a 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -5069,49 +5069,6 @@ int pcie_set_mps(struct pci_dev *dev, int mps)
- }
- EXPORT_SYMBOL(pcie_set_mps);
- 
--/**
-- * pcie_get_minimum_link - determine minimum link settings of a PCI device
-- * @dev: PCI device to query
-- * @speed: storage for minimum speed
-- * @width: storage for minimum width
-- *
-- * This function will walk up the PCI device chain and determine the minimum
-- * link width and speed of the device.
-- */
--int pcie_get_minimum_link(struct pci_dev *dev, enum pci_bus_speed *speed,
--			  enum pcie_link_width *width)
--{
--	int ret;
--
--	*speed = PCI_SPEED_UNKNOWN;
--	*width = PCIE_LNK_WIDTH_UNKNOWN;
--
--	while (dev) {
--		u16 lnksta;
--		enum pci_bus_speed next_speed;
--		enum pcie_link_width next_width;
--
--		ret = pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
--		if (ret)
--			return ret;
--
--		next_speed = pcie_link_speed[lnksta & PCI_EXP_LNKSTA_CLS];
--		next_width = (lnksta & PCI_EXP_LNKSTA_NLW) >>
--			PCI_EXP_LNKSTA_NLW_SHIFT;
--
--		if (next_speed < *speed)
--			*speed = next_speed;
--
--		if (next_width < *width)
--			*width = next_width;
--
--		dev = dev->bus->self;
--	}
--
--	return 0;
--}
--EXPORT_SYMBOL(pcie_get_minimum_link);
--
- /**
-  * pcie_bandwidth_available - determine minimum link settings of a PCIe
-  *			      device and its bandwidth limitation
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 73178a2fcee0..230615620a4a 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1079,8 +1079,6 @@ int pcie_get_readrq(struct pci_dev *dev);
- int pcie_set_readrq(struct pci_dev *dev, int rq);
- int pcie_get_mps(struct pci_dev *dev);
- int pcie_set_mps(struct pci_dev *dev, int mps);
--int pcie_get_minimum_link(struct pci_dev *dev, enum pci_bus_speed *speed,
--			  enum pcie_link_width *width);
- u32 pcie_bandwidth_available(struct pci_dev *dev, struct pci_dev **limiting_dev,
- 			     enum pci_bus_speed *speed,
- 			     enum pcie_link_width *width);
+Thanks,
+Jake
 
