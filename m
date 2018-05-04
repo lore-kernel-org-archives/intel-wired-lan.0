@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 03 May 2018 17:39:17 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 1/2] ixgbe: Add support for UDP
+Date: Thu, 03 May 2018 17:39:23 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 2/2] ixgbevf: Add support for UDP
  segmentation offload
 In-Reply-To: <20180504003556.4769.11407.stgit@localhost.localdomain>
 References: <20180504003556.4769.11407.stgit@localhost.localdomain>
-Message-ID: <20180504003916.4769.66271.stgit@localhost.localdomain>
+Message-ID: <20180504003923.4769.15585.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,14 +19,14 @@ segmentation offload.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   24 ++++++++++++++++++------
- 1 file changed, 18 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   25 ++++++++++++++++-----
+ 1 file changed, 19 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index a52d92e182ee..0bed3350a795 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7693,6 +7693,7 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 9a939dcaf727..c2986142c98a 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -3709,6 +3709,7 @@ static int ixgbevf_tso(struct ixgbevf_ring *tx_ring,
  	} ip;
  	union {
  		struct tcphdr *tcp;
@@ -34,7 +34,7 @@ index a52d92e182ee..0bed3350a795 100644
  		unsigned char *hdr;
  	} l4;
  	u32 paylen, l4_offset;
-@@ -7716,7 +7717,8 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+@@ -3731,7 +3732,8 @@ static int ixgbevf_tso(struct ixgbevf_ring *tx_ring,
  	l4.hdr = skb_checksum_start(skb);
  
  	/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
@@ -44,7 +44,7 @@ index a52d92e182ee..0bed3350a795 100644
  
  	/* initialize outer IP header fields */
  	if (ip.v4->version == 4) {
-@@ -7746,12 +7748,20 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+@@ -3759,12 +3761,20 @@ static int ixgbevf_tso(struct ixgbevf_ring *tx_ring,
  	/* determine offset of inner transport header */
  	l4_offset = l4.hdr - skb->data;
  
@@ -53,7 +53,7 @@ index a52d92e182ee..0bed3350a795 100644
 -
  	/* remove payload length from inner checksum */
  	paylen = skb->len - l4_offset;
--	csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
+-	csum_replace_by_diff(&l4.tcp->check, htonl(paylen));
 +
 +	if (type_tucmd & IXGBE_ADVTXD_TUCMD_L4T_TCP) {
 +		/* compute length of segmentation header */
@@ -69,29 +69,30 @@ index a52d92e182ee..0bed3350a795 100644
  
  	/* update gso size and bytecount with header size */
  	first->gso_segs = skb_shinfo(skb)->gso_segs;
-@@ -9931,6 +9941,7 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
- 	if (unlikely(mac_hdr_len > IXGBE_MAX_MAC_HDR_LEN))
+@@ -4368,6 +4378,7 @@ static void ixgbevf_get_stats(struct net_device *netdev,
+ 	if (unlikely(mac_hdr_len > IXGBEVF_MAX_MAC_HDR_LEN))
  		return features & ~(NETIF_F_HW_CSUM |
  				    NETIF_F_SCTP_CRC |
 +				    NETIF_F_GSO_UDP_L4 |
  				    NETIF_F_HW_VLAN_CTAG_TX |
  				    NETIF_F_TSO |
  				    NETIF_F_TSO6);
-@@ -9939,6 +9950,7 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
- 	if (unlikely(network_hdr_len >  IXGBE_MAX_NETWORK_HDR_LEN))
+@@ -4376,6 +4387,7 @@ static void ixgbevf_get_stats(struct net_device *netdev,
+ 	if (unlikely(network_hdr_len >  IXGBEVF_MAX_NETWORK_HDR_LEN))
  		return features & ~(NETIF_F_HW_CSUM |
  				    NETIF_F_SCTP_CRC |
 +				    NETIF_F_GSO_UDP_L4 |
  				    NETIF_F_TSO |
  				    NETIF_F_TSO6);
  
-@@ -10480,7 +10492,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 			    IXGBE_GSO_PARTIAL_FEATURES;
+@@ -4571,7 +4583,8 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 			      NETIF_F_TSO6 |
+ 			      NETIF_F_RXCSUM |
+ 			      NETIF_F_HW_CSUM |
+-			      NETIF_F_SCTP_CRC;
++			      NETIF_F_SCTP_CRC |
++			      NETIF_F_GSO_UDP_L4;
  
- 	if (hw->mac.type >= ixgbe_mac_82599EB)
--		netdev->features |= NETIF_F_SCTP_CRC;
-+		netdev->features |= NETIF_F_SCTP_CRC | NETIF_F_GSO_UDP_L4;
- 
- 	/* copy netdev features into list of user selectable features */
- 	netdev->hw_features |= netdev->features |
+ #define IXGBEVF_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
+ 				      NETIF_F_GSO_GRE_CSUM | \
 
