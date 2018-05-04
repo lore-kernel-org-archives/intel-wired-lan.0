@@ -1,26 +1,31 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 3 May 2018 20:29:38 +0000
-Subject: [Intel-wired-lan] [PATCH v6 0/5] PCI: Improve PCIe link status
- reporting
-In-Reply-To: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5882DBA48B@ORSMSX115.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 03 May 2018 17:39:10 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 0/2] ixgbe/ixgbevf: Add support for
+ UDP segmentation offload
+Message-ID: <20180504003556.4769.11407.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> This does change the dmesg reporting of link speeds, and in the ixgbe case,
-> it changes the reporting from KERN_WARN level to KERN_INFO.  If that's an
-> issue, let's talk about it.  I'm hoping the reduce code size, improved
-> functionality, and consistency across drivers is enough to make this
-> worthwhile.
-> 
+These patches are meant to be a follow-up to the following series:
+https://patchwork.ozlabs.org/project/netdev/list/?series=42476&archive=both&state=*
 
-I personally have no issue with this change, but I don't work on the ixgbe driver much anymore.
+These patches enable driver support for the new UDP segmentation offload
+feature. For now I am pushing them as an RFC as they haven't been
+officially productized or validated and I was using these mostly as a test
+vehicle to verify the offload could be supported generically by drivers.
 
-Thanks,
-Jake
+---
 
+Alexander Duyck (2):
+      ixgbe: Add support for UDP segmentation offload
+      ixgbevf: Add support for UDP segmentation offload
+
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |   24 +++++++++++++++-----
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   25 ++++++++++++++++-----
+ 2 files changed, 37 insertions(+), 12 deletions(-)
+
+--
