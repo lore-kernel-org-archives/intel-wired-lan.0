@@ -1,79 +1,162 @@
-From: Jan Kiszka <jan.kiszka@web.de>
-Date: Sun, 1 Apr 2018 23:29:17 +0200
-Subject: [Intel-wired-lan] [PATCH net] e1000e: Remove Other from EIAC.
-In-Reply-To: <20180131072627.18305-1-bpoirier@suse.com>
-References: <20180131072627.18305-1-bpoirier@suse.com>
-Message-ID: <c05c33b7-92f1-d8d5-76f0-64848dae3693@web.de>
+From: kbuild test robot <lkp@intel.com>
+Date: Mon, 07 May 2018 23:25:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 8ac8e5c1063ce490d55e0d17249c4b43426a80c0
+Message-ID: <5af06feb.X1vvrz9x6zQ2q2K7%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2018-01-31 08:26, Benjamin Poirier wrote:
-> It was reported that emulated e1000e devices in vmware esxi 6.5 Build
-> 7526125 do not link up after commit 4aea7a5c5e94 ("e1000e: Avoid receiver
-> overrun interrupt bursts", v4.15-rc1). Some tracing shows that after
-> e1000e_trigger_lsc() is called, ICR reads out as 0x0 in e1000_msix_other()
-> on emulated e1000e devices. In comparison, on real e1000e 82574 hardware,
-> icr=0x80000004 (_INT_ASSERTED | _LSC) in the same situation.
-> 
-> Some experimentation showed that this flaw in vmware e1000e emulation can
-> be worked around by not setting Other in EIAC. This is how it was before
-> 16ecba59bc33 ("e1000e: Do not read ICR in Other interrupt", v4.5-rc1).
-> 
-> Fixes: 4aea7a5c5e94 ("e1000e: Avoid receiver overrun interrupt bursts")
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 9f18d39bdc8f..625a4c9a86a4 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -1918,6 +1918,8 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
->  	bool enable = true;
->  
->  	icr = er32(ICR);
-> +	ew32(ICR, E1000_ICR_OTHER);
-> +
->  	if (icr & E1000_ICR_RXO) {
->  		ew32(ICR, E1000_ICR_RXO);
->  		enable = false;
-> @@ -2040,7 +2042,6 @@ static void e1000_configure_msix(struct e1000_adapter *adapter)
->  		       hw->hw_addr + E1000_EITR_82574(vector));
->  	else
->  		writel(1, hw->hw_addr + E1000_EITR_82574(vector));
-> -	adapter->eiac_mask |= E1000_IMS_OTHER;
->  
->  	/* Cause Tx interrupts on every write back */
->  	ivar |= BIT(31);
-> @@ -2265,7 +2266,7 @@ static void e1000_irq_enable(struct e1000_adapter *adapter)
->  
->  	if (adapter->msix_entries) {
->  		ew32(EIAC_82574, adapter->eiac_mask & E1000_EIAC_MASK_82574);
-> -		ew32(IMS, adapter->eiac_mask | E1000_IMS_LSC);
-> +		ew32(IMS, adapter->eiac_mask | E1000_IMS_OTHER | E1000_IMS_LSC);
->  	} else if (hw->mac.type >= e1000_pch_lpt) {
->  		ew32(IMS, IMS_ENABLE_MASK | E1000_IMS_ECCER);
->  	} else {
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 8ac8e5c1063ce490d55e0d17249c4b43426a80c0  ixgbe/ixgbevf: Free IRQ when PCI error recovery removes the device
 
-Shouldn't this be queued for stable as well? I'm missing it in 4.14 LTS
-at least.
+elapsed time: 72m
 
-BTW, it seems QEMU's e1000e model is affected by the same issue. I've
-proposed a fix for it [1].
+configs tested: 137
 
-Jan
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-[1] https://www.mail-archive.com/qemu-devel at nongnu.org/msg525182.html
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+ia64                        generic_defconfig
+powerpc64                           defconfig
+x86_64                 randconfig-a0-05071335
+powerpc                 mpc832x_mds_defconfig
+powerpc                  mpc885_ads_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-05071338
+x86_64                randconfig-it0-05070846
+i386                               tinyconfig
+x86_64                              federa-25
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201818
+x86_64                 randconfig-x002-201818
+x86_64                 randconfig-x006-201818
+x86_64                 randconfig-x005-201818
+x86_64                 randconfig-x001-201818
+x86_64                 randconfig-x009-201818
+x86_64                 randconfig-x004-201818
+x86_64                 randconfig-x003-201818
+x86_64                 randconfig-x007-201818
+x86_64                 randconfig-x000-201818
+x86_64                 randconfig-x008-201818
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-i0-201818
+i386                     randconfig-i1-201818
+i386                             allmodconfig
+i386                     randconfig-a0-201818
+i386                     randconfig-a1-201818
+x86_64                 randconfig-s0-05072222
+x86_64                 randconfig-s1-05072222
+x86_64                 randconfig-s2-05072222
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x010-201818
+x86_64                 randconfig-x014-201818
+x86_64                 randconfig-x013-201818
+x86_64                 randconfig-x011-201818
+x86_64                 randconfig-x015-201818
+x86_64                 randconfig-x019-201818
+x86_64                 randconfig-x016-201818
+x86_64                 randconfig-x018-201818
+x86_64                 randconfig-x012-201818
+x86_64                 randconfig-x017-201818
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201818
+i386                     randconfig-s1-201818
+x86_64                 randconfig-s3-05072220
+x86_64                 randconfig-s4-05072220
+x86_64                 randconfig-s5-05072220
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201818
+i386                   randconfig-b0-05072014
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                         bcm2835_defconfig
+arm                           efm32_defconfig
+x86_64                 randconfig-u0-05071829
+arm                         axm55xx_defconfig
+mips                           ip27_defconfig
+mips                      maltasmvp_defconfig
+i386                   randconfig-h0-05070458
+i386                   randconfig-h1-05070458
+x86_64                randconfig-ne0-05072200
+x86_64                 randconfig-h0-05070841
+i386                   randconfig-x013-201818
+i386                   randconfig-x014-201818
+i386                   randconfig-x019-201818
+i386                   randconfig-x016-201818
+i386                   randconfig-x015-201818
+i386                   randconfig-x012-201818
+i386                   randconfig-x018-201818
+i386                   randconfig-x010-201818
+i386                   randconfig-x011-201818
+i386                   randconfig-x017-201818
+arm64                               defconfig
+x86_64                           allmodconfig
+x86_64                randconfig-ws0-05071353
+i386                   randconfig-x073-201818
+i386                   randconfig-x075-201818
+i386                   randconfig-x079-201818
+i386                   randconfig-x071-201818
+i386                   randconfig-x076-201818
+i386                   randconfig-x074-201818
+i386                   randconfig-x078-201818
+i386                   randconfig-x077-201818
+i386                   randconfig-x070-201818
+i386                   randconfig-x072-201818
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-r0-05071352
+i386                   randconfig-x008-201818
+i386                   randconfig-x006-201818
+i386                   randconfig-x000-201818
+i386                   randconfig-x004-201818
+i386                   randconfig-x009-201818
+i386                   randconfig-x003-201818
+i386                   randconfig-x001-201818
+i386                   randconfig-x002-201818
+i386                   randconfig-x005-201818
+i386                   randconfig-x007-201818
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 181 bytes
-Desc: OpenPGP digital signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180401/e60928ec/attachment.asc>
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
