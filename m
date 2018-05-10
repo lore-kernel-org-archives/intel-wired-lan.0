@@ -1,80 +1,143 @@
-From: Benjamin Poirier <bpoirier@suse.com>
-Date: Thu, 10 May 2018 16:28:35 +0900
-Subject: [Intel-wired-lan] [PATCH] e1000e: Ignore TSYNCRXCTL when getting
- I219 clock attributes
-In-Reply-To: <02874ECE860811409154E81DA85FBB5882D918F3@ORSMSX115.amr.corp.intel.com>
-References: <02874ECE860811409154E81DA85FBB5882D918F3@ORSMSX115.amr.corp.intel.com>
-Message-ID: <20180510072835.5549-1-bpoirier@suse.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 10 May 2018 23:58:17 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 28f8bbe003f3cbf1ff31266f208bab6adfc2111d
+Message-ID: <5af46c19.zy9jA4OVuttDJ4+g%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There have been multiple reports of crashes that look like
-kernel: RIP: 0010:[<ffffffff8110303f>] timecounter_read+0xf/0x50
-[...]
-kernel: Call Trace:
-kernel:  [<ffffffffa0806b0f>] e1000e_phc_gettime+0x2f/0x60 [e1000e]
-kernel:  [<ffffffffa0806c5d>] e1000e_systim_overflow_work+0x1d/0x80 [e1000e]
-kernel:  [<ffffffff810992c5>] process_one_work+0x155/0x440
-kernel:  [<ffffffff81099e16>] worker_thread+0x116/0x4b0
-kernel:  [<ffffffff8109f422>] kthread+0xd2/0xf0
-kernel:  [<ffffffff8163184f>] ret_from_fork+0x3f/0x70
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 28f8bbe003f3cbf1ff31266f208bab6adfc2111d  PCI: Remove unused pcie_get_minimum_link()
 
-These can be traced back to the fact that e1000e_systim_reset() skips the
-timecounter_init() call if e1000e_get_base_timinca() returns -EINVAL, which
-leads to a null deref in timecounter_read().
+elapsed time: 92m
 
-Commit 83129b37ef35 ("e1000e: fix systim issues", v4.2-rc1) reworked
-e1000e_get_base_timinca() in such a way that it can return -EINVAL for
-e1000_pch_spt if the SYSCFI bit is not set in TSYNCRXCTL.
+configs tested: 118
 
-Some experimentation has shown that on I219 (e1000_pch_spt, "MAC: 12")
-adapters, the E1000_TSYNCRXCTL_SYSCFI flag is unstable; TSYNCRXCTL reads
-sometimes don't have the SYSCFI bit set. Retrying the read shortly after
-finds the bit to be set. This was observed at boot (probe) but also link up
-and link down.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Moreover, the phc (PTP Hardware Clock) seems to operate normally even after
-reads where SYSCFI=0. Therefore, remove this register read and
-unconditionally set the clock parameters.
+x86_64                 randconfig-a0-05102108
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                          simpad_defconfig
+powerpc                        icon_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                     randconfig-n0-201818
+i386                     randconfig-i0-201818
+i386                     randconfig-i1-201818
+arm                            mps2_defconfig
+mips                      maltaaprp_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                           h3600_defconfig
+arm                          pxa3xx_defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201818
+i386                     randconfig-a1-201818
+x86_64                 randconfig-s0-05101923
+x86_64                 randconfig-s1-05101923
+x86_64                 randconfig-s2-05101923
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+alpha                            allmodconfig
+arm                       aspeed_g5_defconfig
+powerpc                     akebono_defconfig
+powerpc                     tqm8548_defconfig
+x86_64                              federa-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-s3-05102105
+x86_64                 randconfig-s4-05102105
+x86_64                 randconfig-s5-05102105
+powerpc                      obs600_defconfig
+s390                    performance_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201818
+arm                        trizeps4_defconfig
+mips                   sb1250_swarm_defconfig
+sh                           se7619_defconfig
+x86_64                 randconfig-b0-05101859
+x86_64                 randconfig-u0-05101942
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+mips                        bcm63xx_defconfig
+sh                             sh03_defconfig
+x86_64                 randconfig-h0-05101849
+i386                  randconfig-sb0-05101840
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                         s3c2410_defconfig
+powerpc                 mpc836x_mds_defconfig
+x86_64                randconfig-ws0-05101905
+arm                         shannon_defconfig
+mips                       bmips_be_defconfig
+x86_64                randconfig-ws0-05101957
+mips                        generic_defconfig
+powerpc                     skiroot_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-r0-05101841
+alpha                             allnoconfig
+m68k                        m5272c3_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                   randconfig-x0-05102147
 
-Reported-by: Achim Mildenberger <admin@fph.physik.uni-karlsruhe.de>
-Message-Id: <20180425065243.g5mqewg5irkwgwgv@f2>
-Bugzilla: https://bugzilla.suse.com/show_bug.cgi?id=1075876
-Fixes: 83129b37ef35 ("e1000e: fix systim issues")
-Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index ec4a9759a6f2..3afb1f3b6f91 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3546,15 +3546,12 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
- 		}
- 		break;
- 	case e1000_pch_spt:
--		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
--			/* Stable 24MHz frequency */
--			incperiod = INCPERIOD_24MHZ;
--			incvalue = INCVALUE_24MHZ;
--			shift = INCVALUE_SHIFT_24MHZ;
--			adapter->cc.shift = shift;
--			break;
--		}
--		return -EINVAL;
-+		/* Stable 24MHz frequency */
-+		incperiod = INCPERIOD_24MHZ;
-+		incvalue = INCVALUE_24MHZ;
-+		shift = INCVALUE_SHIFT_24MHZ;
-+		adapter->cc.shift = shift;
-+		break;
- 	case e1000_pch_cnp:
- 		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
- 			/* Stable 24MHz frequency */
--- 
-2.16.3
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
