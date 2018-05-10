@@ -1,11 +1,11 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 10 May 2018 18:42:56 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: Ignore TSYNCRXCTL when
- getting I219 clock attributes
-In-Reply-To: <20180510072835.5549-1-bpoirier@suse.com>
-References: <02874ECE860811409154E81DA85FBB5882D918F3@ORSMSX115.amr.corp.intel.com>
- <20180510072835.5549-1-bpoirier@suse.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5882DD85D3@ORSMSX115.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 10 May 2018 19:12:54 +0000
+Subject: [Intel-wired-lan] [PATCH v6 4/5] ixgbe: Report PCIe link
+ properties with pcie_print_link_status()
+In-Reply-To: <152537763602.62474.15659483976051204438.stgit@bhelgaas-glaptop.roam.corp.google.com>
+References: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <152537763602.62474.15659483976051204438.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1B763F09@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,86 +13,61 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Benjamin Poirier [mailto:bpoirier at suse.com]
-> Sent: Thursday, May 10, 2018 12:29 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: Keller, Jacob E <jacob.e.keller@intel.com>; Achim Mildenberger
-> <admin@fph.physik.uni-karlsruhe.de>; olouvignes at gmail.com;
-> jayanth at goubiq.com; ehabkost at redhat.com; postmodern.mod3 at gmail.com;
-> Bart.VanAssche at wdc.com; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [PATCH] e1000e: Ignore TSYNCRXCTL when getting I219 clock attributes
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Bjorn Helgaas
+> Sent: Thursday, May 3, 2018 1:01 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Ganesh Goudar
+> <ganeshgr@chelsio.com>; Michael Chan <michael.chan@broadcom.com>;
+> Ariel Elior <ariel.elior@cavium.com>
+> Cc: Jakub Kicinski <kubakici@wp.pl>; linux-pci at vger.kernel.org; linux-
+> kernel at vger.kernel.org; Tal Gilboa <talgi@mellanox.com>; intel-wired-
+> lan at lists.osuosl.org; netdev at vger.kernel.org; everest-linux-
+> l2 at cavium.com; Tariq Toukan <tariqt@mellanox.com>
+> Subject: [Intel-wired-lan] [PATCH v6 4/5] ixgbe: Report PCIe link properties
+> with pcie_print_link_status()
 > 
-> There have been multiple reports of crashes that look like
-> kernel: RIP: 0010:[<ffffffff8110303f>] timecounter_read+0xf/0x50
-> [...]
-> kernel: Call Trace:
-> kernel:  [<ffffffffa0806b0f>] e1000e_phc_gettime+0x2f/0x60 [e1000e]
-> kernel:  [<ffffffffa0806c5d>] e1000e_systim_overflow_work+0x1d/0x80 [e1000e]
-> kernel:  [<ffffffff810992c5>] process_one_work+0x155/0x440
-> kernel:  [<ffffffff81099e16>] worker_thread+0x116/0x4b0
-> kernel:  [<ffffffff8109f422>] kthread+0xd2/0xf0
-> kernel:  [<ffffffff8163184f>] ret_from_fork+0x3f/0x70
+> From: Bjorn Helgaas <bhelgaas@google.com>
 > 
-> These can be traced back to the fact that e1000e_systim_reset() skips the
-> timecounter_init() call if e1000e_get_base_timinca() returns -EINVAL, which
-> leads to a null deref in timecounter_read().
+> Previously the driver used pcie_get_minimum_link() to warn when the NIC is
+> in a slot that can't supply as much bandwidth as the NIC could use.
 > 
-> Commit 83129b37ef35 ("e1000e: fix systim issues", v4.2-rc1) reworked
-> e1000e_get_base_timinca() in such a way that it can return -EINVAL for
-> e1000_pch_spt if the SYSCFI bit is not set in TSYNCRXCTL.
+> pcie_get_minimum_link() can be misleading because it finds the slowest link
+> and the narrowest link (which may be different links) without considering the
+> total bandwidth of each link.  For a path with a 16 GT/s x1 link and a
+> 2.5 GT/s x16 link, it returns 2.5 GT/s x1, which corresponds to 250 MB/s of
+> bandwidth, not the true available bandwidth of about 1969 MB/s for a
+> 16 GT/s x1 link.
 > 
-> Some experimentation has shown that on I219 (e1000_pch_spt, "MAC: 12")
-> adapters, the E1000_TSYNCRXCTL_SYSCFI flag is unstable; TSYNCRXCTL reads
-> sometimes don't have the SYSCFI bit set. Retrying the read shortly after
-> finds the bit to be set. This was observed at boot (probe) but also link up
-> and link down.
+> Use pcie_print_link_status() to report PCIe link speed and possible
+> limitations instead of implementing this in the driver itself.  This finds the
+> slowest link in the path to the device by computing the total bandwidth of
+> each link and compares that with the capabilities of the device.
 > 
-> Moreover, the phc (PTP Hardware Clock) seems to operate normally even after
-> reads where SYSCFI=0. Therefore, remove this register read and
-> unconditionally set the clock parameters.
+> The dmesg change is:
 > 
-> Reported-by: Achim Mildenberger <admin@fph.physik.uni-karlsruhe.de>
-> Message-Id: <20180425065243.g5mqewg5irkwgwgv@f2>
-> Bugzilla: https://bugzilla.suse.com/show_bug.cgi?id=1075876
-> Fixes: 83129b37ef35 ("e1000e: fix systim issues")
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+>   - PCI Express bandwidth of %dGT/s available
+>   - (Speed:%s, Width: x%d, Encoding Loss:%s)
+>   + %u.%03u Gb/s available PCIe bandwidth (%s x%d link)
+> 
+> or, if the device is capable of better performance than is available in the
+> current slot:
+> 
+>   - This is not sufficient for optimal performance of this card.
+>   - For optimal performance, at least %dGT/s of bandwidth is required.
+>   - A slot with more lanes and/or higher speed is suggested.
+>   + %u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s
+> (capable of %u.%03u Gb/s with %s x%d link)
+> 
+> Note that the driver previously used dev_warn() to suggest using a different
+> slot, but pcie_print_link_status() uses dev_info() because if the platform has
+> no faster slot available, the user can't do anything about the warning and
+> may not want to be bothered with it.
+> 
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 15 ++++++---------
->  1 file changed, 6 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
-> b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index ec4a9759a6f2..3afb1f3b6f91 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -3546,15 +3546,12 @@ s32 e1000e_get_base_timinca(struct e1000_adapter
-> *adapter, u32 *timinca)
->  		}
->  		break;
->  	case e1000_pch_spt:
-> -		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
-> -			/* Stable 24MHz frequency */
-> -			incperiod = INCPERIOD_24MHZ;
-> -			incvalue = INCVALUE_24MHZ;
-> -			shift = INCVALUE_SHIFT_24MHZ;
-> -			adapter->cc.shift = shift;
-> -			break;
-> -		}
-> -		return -EINVAL;
-> +		/* Stable 24MHz frequency */
-> +		incperiod = INCPERIOD_24MHZ;
-> +		incvalue = INCVALUE_24MHZ;
-> +		shift = INCVALUE_SHIFT_24MHZ;
-> +		adapter->cc.shift = shift;
-> +		break;
->  	case e1000_pch_cnp:
->  		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
->  			/* Stable 24MHz frequency */
-> --
-> 2.16.3
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   47 +------------------------
+>  1 file changed, 1 insertion(+), 46 deletions(-)
 
-Given testing showing that the clock operates fine regardless of the register read, I think this is probably fine. Normally I believe the register was used to check which frequency was in use, but it doesn't seem to serve that purpose here.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Thanks,
-Jake
+
