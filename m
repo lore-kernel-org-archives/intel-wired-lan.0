@@ -1,62 +1,175 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 10 May 2018 05:59:48 -0700
-Subject: [Intel-wired-lan] [next PATCH S91 10/11] i40e: free the skb after
- clearing the bitlock
-In-Reply-To: <20180510125949.79823-1-alice.michael@intel.com>
-References: <20180510125949.79823-1-alice.michael@intel.com>
-Message-ID: <20180510125949.79823-10-alice.michael@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 11 May 2018 06:06:35 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 9ecce51e67f49d48991c05ad9fba2b953c26ab3e
+Message-ID: <5af4c26b.cHMufh5LND1ef49O%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 9ecce51e67f49d48991c05ad9fba2b953c26ab3e  Documentation: e1000: Update kernel documentation
 
-In commit bbc4e7d273b5 ("i40e: fix race condition with PTP_TX_IN_PROGRESS
-bits") we modified the code which handles Tx timestamps so that we would
-clear the progress bit as soon as possible.
+Regressions in current branch:
 
-A later commit 0bc0706b46cd ("i40e: check for Tx timestamp timeouts during
-watchdog") introduced similar code for detecting and handling cleanup of
-a blocked Tx timestamp. This code did not use the same pattern for cleaning
-up the skb.
+block/blk-mq.h:115:9: error: implicit declaration of function 'cmpxchg64'; did you mean 'cmpxchg'? [-Werror=implicit-function-declaration]
+kernel/trace/../../block/blk-mq.h:115:9: error: implicit declaration of function 'cmpxchg64'; did you mean 'cmpxchg'? [-Werror=implicit-function-declaration]
 
-Update this code to wait to free the skb until after the bit lock is
-free, by first setting the ptp_tx_skb to NULL and clearing the lock.
+Error ids grouped by kconfigs:
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+recent_errors
+??? mips-jz4740
+??? ??? block-blk-mq.h:error:implicit-declaration-of-function-cmpxchg64-did-you-mean-cmpxchg
+??? mips-malta_kvm_defconfig
+    ??? block-blk-mq.h:error:implicit-declaration-of-function-cmpxchg64-did-you-mean-cmpxchg
+    ??? kernel-trace-..-..-block-blk-mq.h:error:implicit-declaration-of-function-cmpxchg64-did-you-mean-cmpxchg
+
+elapsed time: 127m
+
+configs tested: 139
+
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201818
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201818
+i386                     randconfig-i1-201818
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+sh                           se7619_defconfig
+x86_64                 randconfig-g0-05102359
+i386                             allmodconfig
+i386                     randconfig-a0-201818
+i386                     randconfig-a1-201818
+x86_64                 randconfig-s0-05101923
+x86_64                 randconfig-s1-05101923
+x86_64                 randconfig-s2-05101923
+openrisc                         allmodconfig
+powerpc                      mgcoge_defconfig
+sparc                             allnoconfig
+xtensa                       common_defconfig
+x86_64                 randconfig-x010-201818
+x86_64                 randconfig-x014-201818
+x86_64                 randconfig-x013-201818
+x86_64                 randconfig-x011-201818
+x86_64                 randconfig-x015-201818
+x86_64                 randconfig-x019-201818
+x86_64                 randconfig-x016-201818
+x86_64                 randconfig-x018-201818
+x86_64                 randconfig-x012-201818
+x86_64                 randconfig-x017-201818
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                              federa-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-s0-201818
+i386                     randconfig-s1-201818
+x86_64                 randconfig-s3-05110330
+x86_64                 randconfig-s4-05110330
+x86_64                 randconfig-s5-05110330
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                        multi_v7_defconfig
+arm                           sunxi_defconfig
+mips                           ip28_defconfig
+x86_64                   randconfig-i0-201818
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-u0-05110101
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x013-201818
+i386                   randconfig-x014-201818
+i386                   randconfig-x019-201818
+i386                   randconfig-x016-201818
+i386                   randconfig-x015-201818
+i386                   randconfig-x012-201818
+i386                   randconfig-x018-201818
+i386                   randconfig-x010-201818
+i386                   randconfig-x011-201818
+i386                   randconfig-x017-201818
+i386                   randconfig-h0-05110044
+i386                   randconfig-h1-05110044
+x86_64                randconfig-ne0-05101904
+arm                           corgi_defconfig
+powerpc                     pq2fads_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        shmobile_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                randconfig-ws0-05102331
+i386                   randconfig-x073-201818
+i386                   randconfig-x075-201818
+i386                   randconfig-x079-201818
+i386                   randconfig-x071-201818
+i386                   randconfig-x076-201818
+i386                   randconfig-x074-201818
+i386                   randconfig-x078-201818
+i386                   randconfig-x077-201818
+i386                   randconfig-x070-201818
+i386                   randconfig-x072-201818
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-x002-201818
+x86_64                 randconfig-x006-201818
+x86_64                 randconfig-x005-201818
+x86_64                 randconfig-x001-201818
+x86_64                 randconfig-x009-201818
+x86_64                 randconfig-x004-201818
+x86_64                 randconfig-x003-201818
+x86_64                 randconfig-x007-201818
+x86_64                 randconfig-x000-201818
+x86_64                 randconfig-x008-201818
+i386                   randconfig-x008-201818
+i386                   randconfig-x006-201818
+i386                   randconfig-x000-201818
+i386                   randconfig-x004-201818
+i386                   randconfig-x009-201818
+i386                   randconfig-x003-201818
+i386                   randconfig-x001-201818
+i386                   randconfig-x002-201818
+i386                   randconfig-x005-201818
+i386                   randconfig-x007-201818
+i386                   randconfig-x0-05102354
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_ptp.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index 8f30cd5..4280018 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -321,6 +321,8 @@ void i40e_ptp_rx_hang(struct i40e_pf *pf)
-  **/
- void i40e_ptp_tx_hang(struct i40e_pf *pf)
- {
-+	struct sk_buff *skb;
-+
- 	if (!(pf->flags & I40E_FLAG_PTP) || !pf->ptp_tx)
- 		return;
- 
-@@ -333,9 +335,12 @@ void i40e_ptp_tx_hang(struct i40e_pf *pf)
- 	 * within a second it is reasonable to assume that we never will.
- 	 */
- 	if (time_is_before_jiffies(pf->ptp_tx_start + HZ)) {
--		dev_kfree_skb_any(pf->ptp_tx_skb);
-+		skb = pf->ptp_tx_skb;
- 		pf->ptp_tx_skb = NULL;
- 		clear_bit_unlock(__I40E_PTP_TX_IN_PROGRESS, pf->state);
-+
-+		/* Free the skb after we clear the bitlock */
-+		dev_kfree_skb_any(skb);
- 		pf->tx_hwtstamp_timeouts++;
- 	}
- }
--- 
-2.9.5
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
