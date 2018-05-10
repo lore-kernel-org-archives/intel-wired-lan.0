@@ -1,143 +1,117 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 10 May 2018 23:58:17 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 28f8bbe003f3cbf1ff31266f208bab6adfc2111d
-Message-ID: <5af46c19.zy9jA4OVuttDJ4+g%lkp@intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Thu, 10 May 2018 11:33:57 -0500
+Subject: [Intel-wired-lan] [PATCH v6 5/5] PCI: Remove unused
+ pcie_get_minimum_link()
+In-Reply-To: <152537764322.62474.552711932384023140.stgit@bhelgaas-glaptop.roam.corp.google.com>
+References: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <152537764322.62474.552711932384023140.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <20180510163357.GB190385@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 28f8bbe003f3cbf1ff31266f208bab6adfc2111d  PCI: Remove unused pcie_get_minimum_link()
+On Thu, May 03, 2018 at 03:00:43PM -0500, Bjorn Helgaas wrote:
+> From: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> In some cases pcie_get_minimum_link() returned misleading information
+> because it found the slowest link and the narrowest link without
+> considering the total bandwidth of the link.
+> 
+> For example, consider a path with these two links:
+> 
+>   - 16.0 GT/s  x1 link  (16.0 * 10^9 * 128 / 130) *  1 / 8 = 1969 MB/s
+>   -  2.5 GT/s x16 link  ( 2.5 * 10^9 *   8 /  10) * 16 / 8 = 4000 MB/s
+> 
+> The available bandwidth of the path is limited by the 16 GT/s link to about
+> 1969 MB/s, but pcie_get_minimum_link() returned 2.5 GT/s x1, which
+> corresponds to only 250 MB/s.
+> 
+> Callers should use pcie_print_link_status() instead, or
+> pcie_bandwidth_available() if they need more detailed information.
+> 
+> Remove pcie_get_minimum_link() since there are no callers left.
+> 
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-elapsed time: 92m
+Hi Jeff,
 
-configs tested: 118
+I got your note that you applied this to dev-queue.  I assume that
+means you also applied the preceding patches that removed all the
+users.  I got a note about ixgbe, but not the others, so I'm just
+double-checking.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                 randconfig-a0-05102108
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                          simpad_defconfig
-powerpc                        icon_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                     randconfig-n0-201818
-i386                     randconfig-i0-201818
-i386                     randconfig-i1-201818
-arm                            mps2_defconfig
-mips                      maltaaprp_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                           h3600_defconfig
-arm                          pxa3xx_defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201818
-i386                     randconfig-a1-201818
-x86_64                 randconfig-s0-05101923
-x86_64                 randconfig-s1-05101923
-x86_64                 randconfig-s2-05101923
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-alpha                            allmodconfig
-arm                       aspeed_g5_defconfig
-powerpc                     akebono_defconfig
-powerpc                     tqm8548_defconfig
-x86_64                              federa-25
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-s3-05102105
-x86_64                 randconfig-s4-05102105
-x86_64                 randconfig-s5-05102105
-powerpc                      obs600_defconfig
-s390                    performance_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201818
-arm                        trizeps4_defconfig
-mips                   sb1250_swarm_defconfig
-sh                           se7619_defconfig
-x86_64                 randconfig-b0-05101859
-x86_64                 randconfig-u0-05101942
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-mips                        bcm63xx_defconfig
-sh                             sh03_defconfig
-x86_64                 randconfig-h0-05101849
-i386                  randconfig-sb0-05101840
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                         s3c2410_defconfig
-powerpc                 mpc836x_mds_defconfig
-x86_64                randconfig-ws0-05101905
-arm                         shannon_defconfig
-mips                       bmips_be_defconfig
-x86_64                randconfig-ws0-05101957
-mips                        generic_defconfig
-powerpc                     skiroot_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-r0-05101841
-alpha                             allnoconfig
-m68k                        m5272c3_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x0-05102147
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> ---
+>  drivers/pci/pci.c   |   43 -------------------------------------------
+>  include/linux/pci.h |    2 --
+>  2 files changed, 45 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index e597655a5643..4bafa817c40a 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -5069,49 +5069,6 @@ int pcie_set_mps(struct pci_dev *dev, int mps)
+>  }
+>  EXPORT_SYMBOL(pcie_set_mps);
+>  
+> -/**
+> - * pcie_get_minimum_link - determine minimum link settings of a PCI device
+> - * @dev: PCI device to query
+> - * @speed: storage for minimum speed
+> - * @width: storage for minimum width
+> - *
+> - * This function will walk up the PCI device chain and determine the minimum
+> - * link width and speed of the device.
+> - */
+> -int pcie_get_minimum_link(struct pci_dev *dev, enum pci_bus_speed *speed,
+> -			  enum pcie_link_width *width)
+> -{
+> -	int ret;
+> -
+> -	*speed = PCI_SPEED_UNKNOWN;
+> -	*width = PCIE_LNK_WIDTH_UNKNOWN;
+> -
+> -	while (dev) {
+> -		u16 lnksta;
+> -		enum pci_bus_speed next_speed;
+> -		enum pcie_link_width next_width;
+> -
+> -		ret = pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
+> -		if (ret)
+> -			return ret;
+> -
+> -		next_speed = pcie_link_speed[lnksta & PCI_EXP_LNKSTA_CLS];
+> -		next_width = (lnksta & PCI_EXP_LNKSTA_NLW) >>
+> -			PCI_EXP_LNKSTA_NLW_SHIFT;
+> -
+> -		if (next_speed < *speed)
+> -			*speed = next_speed;
+> -
+> -		if (next_width < *width)
+> -			*width = next_width;
+> -
+> -		dev = dev->bus->self;
+> -	}
+> -
+> -	return 0;
+> -}
+> -EXPORT_SYMBOL(pcie_get_minimum_link);
+> -
+>  /**
+>   * pcie_bandwidth_available - determine minimum link settings of a PCIe
+>   *			      device and its bandwidth limitation
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 73178a2fcee0..230615620a4a 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1079,8 +1079,6 @@ int pcie_get_readrq(struct pci_dev *dev);
+>  int pcie_set_readrq(struct pci_dev *dev, int rq);
+>  int pcie_get_mps(struct pci_dev *dev);
+>  int pcie_set_mps(struct pci_dev *dev, int mps);
+> -int pcie_get_minimum_link(struct pci_dev *dev, enum pci_bus_speed *speed,
+> -			  enum pcie_link_width *width);
+>  u32 pcie_bandwidth_available(struct pci_dev *dev, struct pci_dev **limiting_dev,
+>  			     enum pci_bus_speed *speed,
+>  			     enum pcie_link_width *width);
+> 
