@@ -1,283 +1,80 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 10 May 2018 08:17:22 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
- 0a3e92de1be42b5dbed4b81f835740d3f58c5430
-Message-ID: <5af38f92.lt2V7CSnIb2cnGMX%lkp@intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Thu, 10 May 2018 16:28:35 +0900
+Subject: [Intel-wired-lan] [PATCH] e1000e: Ignore TSYNCRXCTL when getting
+ I219 clock attributes
+In-Reply-To: <02874ECE860811409154E81DA85FBB5882D918F3@ORSMSX115.amr.corp.intel.com>
+References: <02874ECE860811409154E81DA85FBB5882D918F3@ORSMSX115.amr.corp.intel.com>
+Message-ID: <20180510072835.5549-1-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-branch HEAD: 0a3e92de1be42b5dbed4b81f835740d3f58c5430  fm10k: don't protect fm10k_queue_mac_request by fm10k_host_mbx_ready
+There have been multiple reports of crashes that look like
+kernel: RIP: 0010:[<ffffffff8110303f>] timecounter_read+0xf/0x50
+[...]
+kernel: Call Trace:
+kernel:  [<ffffffffa0806b0f>] e1000e_phc_gettime+0x2f/0x60 [e1000e]
+kernel:  [<ffffffffa0806c5d>] e1000e_systim_overflow_work+0x1d/0x80 [e1000e]
+kernel:  [<ffffffff810992c5>] process_one_work+0x155/0x440
+kernel:  [<ffffffff81099e16>] worker_thread+0x116/0x4b0
+kernel:  [<ffffffff8109f422>] kthread+0xd2/0xf0
+kernel:  [<ffffffff8163184f>] ret_from_fork+0x3f/0x70
 
-elapsed time: 488m
+These can be traced back to the fact that e1000e_systim_reset() skips the
+timecounter_init() call if e1000e_get_base_timinca() returns -EINVAL, which
+leads to a null deref in timecounter_read().
 
-configs tested: 258
+Commit 83129b37ef35 ("e1000e: fix systim issues", v4.2-rc1) reworked
+e1000e_get_base_timinca() in such a way that it can return -EINVAL for
+e1000_pch_spt if the SYSCFI bit is not set in TSYNCRXCTL.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Some experimentation has shown that on I219 (e1000_pch_spt, "MAC: 12")
+adapters, the E1000_TSYNCRXCTL_SYSCFI flag is unstable; TSYNCRXCTL reads
+sometimes don't have the SYSCFI bit set. Retrying the read shortly after
+finds the bit to be set. This was observed at boot (probe) but also link up
+and link down.
 
-sh                        sh7785lcr_defconfig
-sparc64                          allmodconfig
-arm                  colibri_pxa300_defconfig
-powerpc                    gamecube_defconfig
-arm                          pxa3xx_defconfig
-sparc64                             defconfig
-m68k                             alldefconfig
-arm                         mv78xx0_defconfig
-mips                        nlm_xlp_defconfig
-x86_64                 randconfig-a0-05100058
-x86_64                 randconfig-a0-05100631
-x86_64                 randconfig-a0-05100656
-x86_64                 randconfig-a0-05100733
-x86_64                 randconfig-a0-05100802
-i386                               tinyconfig
-ia64                             allmodconfig
-powerpc                       eiger_defconfig
-powerpc                   lite5200b_defconfig
-powerpc                  mpc885_ads_defconfig
-powerpc64                           defconfig
-um                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-05092304
-i386                   randconfig-c0-05100145
-i386                   randconfig-c0-05100604
-x86_64                           allmodconfig
-i386                             allyesconfig
-arm                         cm_x300_defconfig
-arm                         s5pv210_defconfig
-m68k                        m5407c3_defconfig
-x86_64                randconfig-in0-05082334
-x86_64                randconfig-in0-05100750
-m68k                                defconfig
-powerpc                    mvme5100_defconfig
-arm                          moxart_defconfig
-sh                   sh7770_generic_defconfig
-arm                     davinci_all_defconfig
-mips                      pistachio_defconfig
-x86_64                randconfig-it0-05100740
-i386                   randconfig-x013-201818
-i386                   randconfig-x014-201818
-i386                   randconfig-x019-201818
-i386                   randconfig-x016-201818
-i386                   randconfig-x015-201818
-i386                   randconfig-x012-201818
-i386                   randconfig-x018-201818
-i386                   randconfig-x010-201818
-i386                   randconfig-x011-201818
-i386                   randconfig-x017-201818
-x86_64                              federa-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201818
-x86_64                 randconfig-x002-201818
-x86_64                 randconfig-x006-201818
-x86_64                 randconfig-x005-201818
-x86_64                 randconfig-x001-201818
-x86_64                 randconfig-x009-201818
-x86_64                 randconfig-x004-201818
-x86_64                 randconfig-x003-201818
-x86_64                 randconfig-x007-201818
-x86_64                 randconfig-x000-201818
-x86_64                 randconfig-x008-201818
-i386                     randconfig-i1-201818
-i386                     randconfig-i0-201818
-mips                        omega2p_defconfig
-powerpc                    ge_imp3a_defconfig
-x86_64                 randconfig-v0-05082210
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-sh                           se7206_defconfig
-i386                                defconfig
-arm                        neponset_defconfig
-arm                        mvebu_v5_defconfig
-sh                          r7785rp_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-05091920
-x86_64                 randconfig-g0-05100159
-x86_64                 randconfig-g0-05100651
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x010-201818
-x86_64                 randconfig-x014-201818
-x86_64                 randconfig-x013-201818
-x86_64                 randconfig-x011-201818
-x86_64                 randconfig-x015-201818
-x86_64                 randconfig-x019-201818
-x86_64                 randconfig-x016-201818
-x86_64                 randconfig-x018-201818
-x86_64                 randconfig-x012-201818
-x86_64                 randconfig-x017-201818
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                                  kexec
-i386                     randconfig-a0-201818
-i386                     randconfig-a1-201818
-x86_64                 randconfig-s0-05100124
-x86_64                 randconfig-s1-05100124
-x86_64                 randconfig-s2-05100124
-x86_64                 randconfig-s0-05100143
-x86_64                 randconfig-s1-05100143
-x86_64                 randconfig-s2-05100143
-i386                             allmodconfig
-arm                         s3c6400_defconfig
-arm                           u8500_defconfig
-arm                          pxa168_defconfig
-powerpc                          allyesconfig
-powerpc                         ps3_defconfig
-s390                    performance_defconfig
-powerpc               corenet_basic_defconfig
-powerpc                    klondike_defconfig
-sh                           se7705_defconfig
-arm                        clps711x_defconfig
-parisc                      default_defconfig
-powerpc                         c2k_defconfig
-s390                                defconfig
-i386                     randconfig-s1-201818
-i386                     randconfig-s0-201818
-x86_64                 randconfig-s3-05100112
-x86_64                 randconfig-s4-05100112
-x86_64                 randconfig-s5-05100112
-x86_64                 randconfig-s3-05100155
-x86_64                 randconfig-s4-05100155
-x86_64                 randconfig-s5-05100155
-x86_64                 randconfig-s3-05100547
-x86_64                 randconfig-s4-05100547
-x86_64                 randconfig-s5-05100547
-x86_64                 randconfig-s3-05100700
-x86_64                 randconfig-s4-05100700
-x86_64                 randconfig-s5-05100700
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201818
-i386                   randconfig-b0-05100713
-sparc                               defconfig
-sparc64                           allnoconfig
-m68k                             allmodconfig
-sh                          sdk7786_defconfig
-x86_64                 randconfig-b0-05082322
-x86_64                 randconfig-b0-05100146
-arm                          tango4_defconfig
-microblaze                       allmodconfig
-x86_64                 randconfig-u0-05092344
-x86_64                 randconfig-u0-05100135
-arm                                 defconfig
-arm                            zeus_defconfig
-arm                       cns3420vb_defconfig
-xtensa                generic_kc705_defconfig
-x86_64                randconfig-ne0-05100042
-x86_64                randconfig-ne0-05100741
-mips                           ci20_defconfig
-sh                           se7722_defconfig
-openrisc                          allnoconfig
-m68k                        mvme147_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-05100059
-x86_64                 randconfig-h0-05100146
-x86_64                 randconfig-h0-05100706
-x86_64                 randconfig-h0-05100745
-i386                   randconfig-x073-201818
-i386                   randconfig-x075-201818
-i386                   randconfig-x079-201818
-i386                   randconfig-x071-201818
-i386                   randconfig-x076-201818
-i386                   randconfig-x074-201818
-i386                   randconfig-x078-201818
-i386                   randconfig-x077-201818
-i386                   randconfig-x070-201818
-i386                   randconfig-x072-201818
-powerpc                     asp8347_defconfig
-sparc                       sparc32_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                  randconfig-sb0-05082349
-i386                  randconfig-sb0-05100739
-i386                  randconfig-sb0-05100803
-i386                   randconfig-x008-201818
-i386                   randconfig-x006-201818
-i386                   randconfig-x000-201818
-i386                   randconfig-x004-201818
-i386                   randconfig-x009-201818
-i386                   randconfig-x003-201818
-i386                   randconfig-x001-201818
-i386                   randconfig-x002-201818
-i386                   randconfig-x005-201818
-i386                   randconfig-x007-201818
-arm                         bcm2835_defconfig
-m68k                          hp300_defconfig
-powerpc                       ebony_defconfig
-x86_64                randconfig-ws0-05100103
-x86_64                randconfig-ws0-05100147
-x86_64                              defconfig
-xtensa                           allyesconfig
-x86_64                randconfig-ws0-05091752
-i386                              allnoconfig
-i386                             alldefconfig
-nios2                         3c120_defconfig
-m68k                            q40_defconfig
-powerpc                     mpc5200_defconfig
-x86_64                 randconfig-r0-05100056
-x86_64                 randconfig-r0-05100147
-s390                             allyesconfig
-parisc                           alldefconfig
-sh                ecovec24-romimage_defconfig
-sparc                            alldefconfig
-i386                   randconfig-x0-05100123
-i386                   randconfig-x0-05100153
-i386                   randconfig-x0-05100740
+Moreover, the phc (PTP Hardware Clock) seems to operate normally even after
+reads where SYSCFI=0. Therefore, remove this register read and
+unconditionally set the clock parameters.
 
+Reported-by: Achim Mildenberger <admin@fph.physik.uni-karlsruhe.de>
+Message-Id: <20180425065243.g5mqewg5irkwgwgv@f2>
+Bugzilla: https://bugzilla.suse.com/show_bug.cgi?id=1075876
+Fixes: 83129b37ef35 ("e1000e: fix systim issues")
+Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/e1000e/netdev.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index ec4a9759a6f2..3afb1f3b6f91 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3546,15 +3546,12 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
+ 		}
+ 		break;
+ 	case e1000_pch_spt:
+-		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
+-			/* Stable 24MHz frequency */
+-			incperiod = INCPERIOD_24MHZ;
+-			incvalue = INCVALUE_24MHZ;
+-			shift = INCVALUE_SHIFT_24MHZ;
+-			adapter->cc.shift = shift;
+-			break;
+-		}
+-		return -EINVAL;
++		/* Stable 24MHz frequency */
++		incperiod = INCPERIOD_24MHZ;
++		incvalue = INCVALUE_24MHZ;
++		shift = INCVALUE_SHIFT_24MHZ;
++		adapter->cc.shift = shift;
++		break;
+ 	case e1000_pch_cnp:
+ 		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
+ 			/* Stable 24MHz frequency */
+-- 
+2.16.3
+
