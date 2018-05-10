@@ -1,49 +1,49 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 10 May 2018 05:59:39 -0700
-Subject: [Intel-wired-lan] [next PATCH S91 01/11] virtchnl: Whitespace and
- parenthesis cleanup
-Message-ID: <20180510125949.79823-1-alice.michael@intel.com>
+Date: Thu, 10 May 2018 05:59:42 -0700
+Subject: [Intel-wired-lan] [next PATCH S91 04/11] i40e: remove duplicate pfc
+ stats
+In-Reply-To: <20180510125949.79823-1-alice.michael@intel.com>
+References: <20180510125949.79823-1-alice.michael@intel.com>
+Message-ID: <20180510125949.79823-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Clean up existing instances of unnecessary parentheses in if
-statement and change order of conditionals to make it easier to read
+The pfc related priority stats are already handled separately as these
+stats are actually arrays of length I40E_MAX_USER_PRIORITY. Thus,
+including them within i40e_gstrings_stats will just duplicate data.
 
-The opening /* should be followed by a single space and the closing */
-should be preceded with a single space.
+Worse, the sizeof will be incorrect, as it will be the total size of the
+stat arrays, which in this case is 8 * sizeof(u64), so we will only copy
+the stat contents as if they were a u32.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Since we already correctly handle these stats else where, remove them
+from the i40e_gstrings_stats.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- include/linux/avf/virtchnl.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index b0a7f31..212b382 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -485,7 +485,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
- struct virtchnl_rss_lut {
- 	u16 vsi_id;
- 	u16 lut_entries;
--	u8 lut[1];        /* RSS lookup table*/
-+	u8 lut[1];        /* RSS lookup table */
- };
- 
- VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
-@@ -819,7 +819,7 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 		return VIRTCHNL_ERR_PARAM;
- 	}
- 	/* few more checks */
--	if ((valid_len != msglen) || (err_msg_format))
-+	if (err_msg_format || valid_len != msglen)
- 		return VIRTCHNL_STATUS_ERR_OPCODE_MISMATCH;
- 
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index a62142f..0f23739 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -103,10 +103,6 @@ static const struct i40e_stats i40e_gstrings_stats[] = {
+ 	I40E_PF_STAT("link_xoff_rx", stats.link_xoff_rx),
+ 	I40E_PF_STAT("link_xon_tx", stats.link_xon_tx),
+ 	I40E_PF_STAT("link_xoff_tx", stats.link_xoff_tx),
+-	I40E_PF_STAT("priority_xon_rx", stats.priority_xon_rx),
+-	I40E_PF_STAT("priority_xoff_rx", stats.priority_xoff_rx),
+-	I40E_PF_STAT("priority_xon_tx", stats.priority_xon_tx),
+-	I40E_PF_STAT("priority_xoff_tx", stats.priority_xoff_tx),
+ 	I40E_PF_STAT("rx_size_64", stats.rx_size_64),
+ 	I40E_PF_STAT("rx_size_127", stats.rx_size_127),
+ 	I40E_PF_STAT("rx_size_255", stats.rx_size_255),
 -- 
 2.9.5
 
