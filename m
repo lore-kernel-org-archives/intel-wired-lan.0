@@ -1,186 +1,183 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 10 May 2018 12:20:13 -0700
-Subject: [Intel-wired-lan] [PATCH] Documentation: e100: Update the Intel
- 10/100 driver doc
-Message-ID: <20180510192013.15363-1-jeffrey.t.kirsher@intel.com>
+Date: Thu, 10 May 2018 12:55:38 -0700
+Subject: [Intel-wired-lan] [PATCH v2] Documentation: e1000: Update kernel
+ documentation
+Message-ID: <20180510195538.19124-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Over the years, several of the links have changed or are no longer valid
-so update them.  In addition, the default values were incorrect for a
-couple of parameters.
+Updated the e1000.txt kernel documentation with the latest information.
 
-Converted the text file to the reStructuredText (RST) format, since the
+Also convert the text file to reStructuredText (RST) format, since the
 Linux kernel documentation now uses this format for documentation.
 
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- .../networking/{e100.txt => e100.rst}         | 60 +++++++++----------
+v2: fix the broken URL
+
+ .../networking/{e1000.txt => e1000.rst}       | 59 ++++---------------
  Documentation/networking/index.rst            |  1 +
  MAINTAINERS                                   |  2 +-
- 3 files changed, 29 insertions(+), 34 deletions(-)
- rename Documentation/networking/{e100.txt => e100.rst} (79%)
+ 3 files changed, 12 insertions(+), 50 deletions(-)
+ rename Documentation/networking/{e1000.txt => e1000.rst} (89%)
 
-diff --git a/Documentation/networking/e100.txt b/Documentation/networking/e100.rst
-similarity index 79%
-rename from Documentation/networking/e100.txt
-rename to Documentation/networking/e100.rst
-index 54810b82c01a..99c4899e3ec3 100644
---- a/Documentation/networking/e100.txt
-+++ b/Documentation/networking/e100.rst
-@@ -1,7 +1,7 @@
- Linux* Base Driver for the Intel(R) PRO/100 Family of Adapters
- ==============================================================
+diff --git a/Documentation/networking/e1000.txt b/Documentation/networking/e1000.rst
+similarity index 89%
+rename from Documentation/networking/e1000.txt
+rename to Documentation/networking/e1000.rst
+index 1f6ed848363d..616848940e63 100644
+--- a/Documentation/networking/e1000.txt
++++ b/Documentation/networking/e1000.rst
+@@ -154,7 +154,7 @@ NOTE:  When e1000 is loaded with default settings and multiple adapters
+        are in use simultaneously, the CPU utilization may increase non-
+        linearly.  In order to limit the CPU utilization without impacting
+        the overall throughput, we recommend that you load the driver as
+-       follows:
++       follows::
  
--March 15, 2011
-+March 15, 2013
+            modprobe e1000 InterruptThrottleRate=3000,3000,3000
  
- Contents
- ========
-@@ -36,16 +36,9 @@ Channel Bonding documentation can be found in the Linux kernel source:
- Identifying Your Adapter
- ========================
+@@ -167,8 +167,8 @@ NOTE:  When e1000 is loaded with default settings and multiple adapters
  
--For more information on how to identify your adapter, go to the Adapter &
--Driver ID Guide at:
+ RxDescriptors
+ -------------
+-Valid Range:   80-256 for 82542 and 82543-based adapters
+-               80-4096 for all other supported adapters
++Valid Range:   48-256 for 82542 and 82543-based adapters
++               48-4096 for all other supported adapters
+ Default Value: 256
+ 
+ This value specifies the number of receive buffer descriptors allocated
+@@ -230,8 +230,8 @@ speed.  Duplex should also be set when Speed is set to either 10 or 100.
+ 
+ TxDescriptors
+ -------------
+-Valid Range:   80-256 for 82542 and 82543-based adapters
+-               80-4096 for all other supported adapters
++Valid Range:   48-256 for 82542 and 82543-based adapters
++               48-4096 for all other supported adapters
+ Default Value: 256
+ 
+ This value is the number of transmit descriptors allocated by the driver.
+@@ -242,41 +242,10 @@ NOTE:  Depending on the available system resources, the request for a
+        higher number of transmit descriptors may be denied.  In this case,
+        use a lower number.
+ 
+-TxDescriptorStep
+-----------------
+-Valid Range:    1 (use every Tx Descriptor)
+-                4 (use every 4th Tx Descriptor)
 -
--  http://support.intel.com/support/network/adapter/pro100/21397.htm
+-Default Value:  1 (use every Tx Descriptor)
 -
--For the latest Intel network drivers for Linux, refer to the following
--website. In the search field, enter your adapter name or type, or use the
--networking link on the left to search for your adapter:
+-On certain non-Intel architectures, it has been observed that intense TX
+-traffic bursts of short packets may result in an improper descriptor
+-writeback. If this occurs, the driver will report a "TX Timeout" and reset
+-the adapter, after which the transmit flow will restart, though data may
+-have stalled for as much as 10 seconds before it resumes.
 -
--  http://downloadfinder.intel.com/scripts-df/support_intel.asp
-+For information on how to identify your adapter, and for the latest Intel
-+network drivers, refer to the Intel Support website:
-+http://www.intel.com/support
- 
- Driver Configuration Parameters
- ===============================
-@@ -57,22 +50,26 @@ Rx Descriptors: Number of receive descriptors. A receive descriptor is a data
-    structure that describes a receive buffer and its attributes to the network
-    controller. The data in the descriptor is used by the controller to write
-    data from the controller to host memory. In the 3.x.x driver the valid range
--   for this parameter is 64-256. The default value is 64. This parameter can be
--   changed using the command:
-+   for this parameter is 64-256. The default value is 256. This parameter can be
-+   changed using the command::
- 
--   ethtool -G eth? rx n, where n is the number of desired rx descriptors.
-+   ethtool -G eth? rx n
-+
-+   Where n is the number of desired Rx descriptors.
- 
- Tx Descriptors: Number of transmit descriptors. A transmit descriptor is a data
-    structure that describes a transmit buffer and its attributes to the network
-    controller. The data in the descriptor is used by the controller to read
-    data from the host memory to the controller. In the 3.x.x driver the valid
--   range for this parameter is 64-256. The default value is 64. This parameter
--   can be changed using the command:
-+   range for this parameter is 64-256. The default value is 128. This parameter
-+   can be changed using the command::
-+
-+   ethtool -G eth? tx n
- 
--   ethtool -G eth? tx n, where n is the number of desired tx descriptors.
-+   Where n is the number of desired Tx descriptors.
- 
- Speed/Duplex: The driver auto-negotiates the link speed and duplex settings by
--   default. The ethtool utility can be used as follows to force speed/duplex.
-+   default. The ethtool utility can be used as follows to force speed/duplex.::
- 
-    ethtool -s eth?  autoneg off speed {10|100} duplex {full|half}
- 
-@@ -81,7 +78,7 @@ Speed/Duplex: The driver auto-negotiates the link speed and duplex settings by
- 
- Event Log Message Level:  The driver uses the message level flag to log events
-    to syslog. The message level can be set at driver load time. It can also be
--   set using the command:
-+   set using the command::
- 
-    ethtool -s eth? msglvl n
- 
-@@ -112,9 +109,9 @@ Additional Configurations
-   ---------------------
-   In order to see link messages and other Intel driver information on your
-   console, you must set the dmesg level up to six. This can be done by
--  entering the following on the command line before loading the e100 driver:
-+  entering the following on the command line before loading the e100 driver::
- 
--       dmesg -n 8
-+       dmesg -n 6
- 
-   If you wish to see all messages issued by the driver, including debug
-   messages, set the dmesg level to eight.
-@@ -146,7 +143,8 @@ Additional Configurations
- 
-   NAPI (Rx polling mode) is supported in the e100 driver.
- 
--  See www.cyberus.ca/~hadi/usenix-paper.tgz for more information on NAPI.
-+  See https://wiki.linuxfoundation.org/networking/napi for more information
-+  on NAPI.
- 
-   Multiple Interfaces on Same Ethernet Broadcast Network
-   ------------------------------------------------------
-@@ -160,7 +158,7 @@ Additional Configurations
-   If you have multiple interfaces in a server, either turn on ARP
-   filtering by
- 
--  (1) entering: echo 1 > /proc/sys/net/ipv4/conf/all/arp_filter
-+  (1) entering:: echo 1 > /proc/sys/net/ipv4/conf/all/arp_filter
-       (this only works if your kernel's version is higher than 2.4.5), or
- 
-   (2) installing the interfaces in separate broadcast domains (either
-@@ -169,15 +167,11 @@ Additional Configurations
- 
- Support
- =======
+-The improper writeback does not occur on the first descriptor in a system
+-memory cache-line, which is typically 32 bytes, or 4 descriptors long.
 -
- For general information, go to the Intel support website at:
-+http://www.intel.com/support/
+-Setting TxDescriptorStep to a value of 4 will ensure that all TX descriptors
+-are aligned to the start of a system memory cache line, and so this problem
+-will not occur.
+-
+-NOTES: Setting TxDescriptorStep to 4 effectively reduces the number of
+-       TxDescriptors available for transmits to 1/4 of the normal allocation.
+-       This has a possible negative performance impact, which may be
+-       compensated for by allocating more descriptors using the TxDescriptors
+-       module parameter.
+-
+-       There are other conditions which may result in "TX Timeout", which will
+-       not be resolved by the use of the TxDescriptorStep parameter. As the
+-       issue addressed by this parameter has never been observed on Intel
+-       Architecture platforms, it should not be used on Intel platforms.
+-
+ TxIntDelay
+ ----------
+ Valid Range:   0-65535 (0=off)
+-Default Value: 64
++Default Value: 8
  
--    http://support.intel.com
+ This value delays the generation of transmit interrupts in units of
+ 1.024 microseconds.  Transmit interrupt reduction can improve CPU
+@@ -288,7 +257,7 @@ TxAbsIntDelay
+ -------------
+ (This parameter is supported only on 82540, 82545 and later adapters.)
+ Valid Range:   0-65535 (0=off)
+-Default Value: 64
++Default Value: 32
+ 
+ This value, in units of 1.024 microseconds, limits the delay in which a
+ transmit interrupt is generated.  Useful only if TxIntDelay is non-zero,
+@@ -310,7 +279,7 @@ Copybreak
+ ---------
+ Valid Range:   0-xxxxxxx (0=off)
+ Default Value: 256
+-Usage: insmod e1000.ko copybreak=128
++Usage: modprobe e1000.ko copybreak=128
+ 
+ Driver copies all packets below or equaling this size to a fresh RX
+ buffer before handing it up the stack.
+@@ -328,14 +297,6 @@ Default Value:  0 (disabled)
+ Allows PHY to turn off in lower power states. The user can turn off
+ this parameter in supported chipsets.
+ 
+-KumeranLockLoss
+----------------
+-Valid Range: 0-1
+-Default Value: 1 (enabled)
 -
--    or the Intel Wired Networking project hosted by Sourceforge at:
+-This workaround skips resetting the PHY at shutdown for the initial
+-silicon releases of ICH8 systems.
 -
--    http://sourceforge.net/projects/e1000
--
--If an issue is identified with the released source code on the supported
--kernel with a supported adapter, email the specific information related to the
--issue to e1000-devel at lists.sourceforge.net.
-+or the Intel Wired Networking project hosted by Sourceforge at:
-+http://sourceforge.net/projects/e1000
-+If an issue is identified with the released source code on a supported kernel
-+with a supported adapter, email the specific information related to the issue
-+to e1000-devel at lists.sf.net.
+ Speed and Duplex Configuration
+ ==============================
+ 
+@@ -397,12 +358,12 @@ Additional Configurations
+   ------------
+   Jumbo Frames support is enabled by changing the MTU to a value larger than
+   the default of 1500.  Use the ifconfig command to increase the MTU size.
+-  For example:
++  For example::
+ 
+        ifconfig eth<x> mtu 9000 up
+ 
+   This setting is not saved across reboots.  It can be made permanent if
+-  you add:
++  you add::
+ 
+        MTU=9000
+ 
 diff --git a/Documentation/networking/index.rst b/Documentation/networking/index.rst
-index cbd9bdd4a79e..d11a62977edd 100644
+index d11a62977edd..fec8588a588e 100644
 --- a/Documentation/networking/index.rst
 +++ b/Documentation/networking/index.rst
-@@ -10,6 +10,7 @@ Contents:
-    batman-adv
+@@ -11,6 +11,7 @@ Contents:
     can
     dpaa2/index
-+   e100
+    e100
++   e1000
     kapi
     z8530book
     msg_zerocopy
 diff --git a/MAINTAINERS b/MAINTAINERS
-index b22be10d5916..0a5e36927540 100644
+index 0a5e36927540..79a725453d22 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -7080,7 +7080,7 @@ Q:	http://patchwork.ozlabs.org/project/intel-wired-lan/list/
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git
+@@ -7081,7 +7081,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git
  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
  S:	Supported
--F:	Documentation/networking/e100.txt
-+F:	Documentation/networking/e100.rst
- F:	Documentation/networking/e1000.txt
+ F:	Documentation/networking/e100.rst
+-F:	Documentation/networking/e1000.txt
++F:	Documentation/networking/e1000.rst
  F:	Documentation/networking/e1000e.txt
  F:	Documentation/networking/igb.txt
+ F:	Documentation/networking/igbvf.txt
 -- 
 2.17.0
 
