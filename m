@@ -1,117 +1,98 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Thu, 10 May 2018 11:33:57 -0500
-Subject: [Intel-wired-lan] [PATCH v6 5/5] PCI: Remove unused
- pcie_get_minimum_link()
-In-Reply-To: <152537764322.62474.552711932384023140.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <152537764322.62474.552711932384023140.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <20180510163357.GB190385@bhelgaas-glaptop.roam.corp.google.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 10 May 2018 18:42:56 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: Ignore TSYNCRXCTL when
+ getting I219 clock attributes
+In-Reply-To: <20180510072835.5549-1-bpoirier@suse.com>
+References: <02874ECE860811409154E81DA85FBB5882D918F3@ORSMSX115.amr.corp.intel.com>
+ <20180510072835.5549-1-bpoirier@suse.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5882DD85D3@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, May 03, 2018 at 03:00:43PM -0500, Bjorn Helgaas wrote:
-> From: Bjorn Helgaas <bhelgaas@google.com>
+> -----Original Message-----
+> From: Benjamin Poirier [mailto:bpoirier at suse.com]
+> Sent: Thursday, May 10, 2018 12:29 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: Keller, Jacob E <jacob.e.keller@intel.com>; Achim Mildenberger
+> <admin@fph.physik.uni-karlsruhe.de>; olouvignes at gmail.com;
+> jayanth at goubiq.com; ehabkost at redhat.com; postmodern.mod3 at gmail.com;
+> Bart.VanAssche at wdc.com; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [PATCH] e1000e: Ignore TSYNCRXCTL when getting I219 clock attributes
 > 
-> In some cases pcie_get_minimum_link() returned misleading information
-> because it found the slowest link and the narrowest link without
-> considering the total bandwidth of the link.
+> There have been multiple reports of crashes that look like
+> kernel: RIP: 0010:[<ffffffff8110303f>] timecounter_read+0xf/0x50
+> [...]
+> kernel: Call Trace:
+> kernel:  [<ffffffffa0806b0f>] e1000e_phc_gettime+0x2f/0x60 [e1000e]
+> kernel:  [<ffffffffa0806c5d>] e1000e_systim_overflow_work+0x1d/0x80 [e1000e]
+> kernel:  [<ffffffff810992c5>] process_one_work+0x155/0x440
+> kernel:  [<ffffffff81099e16>] worker_thread+0x116/0x4b0
+> kernel:  [<ffffffff8109f422>] kthread+0xd2/0xf0
+> kernel:  [<ffffffff8163184f>] ret_from_fork+0x3f/0x70
 > 
-> For example, consider a path with these two links:
+> These can be traced back to the fact that e1000e_systim_reset() skips the
+> timecounter_init() call if e1000e_get_base_timinca() returns -EINVAL, which
+> leads to a null deref in timecounter_read().
 > 
->   - 16.0 GT/s  x1 link  (16.0 * 10^9 * 128 / 130) *  1 / 8 = 1969 MB/s
->   -  2.5 GT/s x16 link  ( 2.5 * 10^9 *   8 /  10) * 16 / 8 = 4000 MB/s
+> Commit 83129b37ef35 ("e1000e: fix systim issues", v4.2-rc1) reworked
+> e1000e_get_base_timinca() in such a way that it can return -EINVAL for
+> e1000_pch_spt if the SYSCFI bit is not set in TSYNCRXCTL.
 > 
-> The available bandwidth of the path is limited by the 16 GT/s link to about
-> 1969 MB/s, but pcie_get_minimum_link() returned 2.5 GT/s x1, which
-> corresponds to only 250 MB/s.
+> Some experimentation has shown that on I219 (e1000_pch_spt, "MAC: 12")
+> adapters, the E1000_TSYNCRXCTL_SYSCFI flag is unstable; TSYNCRXCTL reads
+> sometimes don't have the SYSCFI bit set. Retrying the read shortly after
+> finds the bit to be set. This was observed at boot (probe) but also link up
+> and link down.
 > 
-> Callers should use pcie_print_link_status() instead, or
-> pcie_bandwidth_available() if they need more detailed information.
+> Moreover, the phc (PTP Hardware Clock) seems to operate normally even after
+> reads where SYSCFI=0. Therefore, remove this register read and
+> unconditionally set the clock parameters.
 > 
-> Remove pcie_get_minimum_link() since there are no callers left.
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-
-Hi Jeff,
-
-I got your note that you applied this to dev-queue.  I assume that
-means you also applied the preceding patches that removed all the
-users.  I got a note about ixgbe, but not the others, so I'm just
-double-checking.
-
+> Reported-by: Achim Mildenberger <admin@fph.physik.uni-karlsruhe.de>
+> Message-Id: <20180425065243.g5mqewg5irkwgwgv@f2>
+> Bugzilla: https://bugzilla.suse.com/show_bug.cgi?id=1075876
+> Fixes: 83129b37ef35 ("e1000e: fix systim issues")
+> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 > ---
->  drivers/pci/pci.c   |   43 -------------------------------------------
->  include/linux/pci.h |    2 --
->  2 files changed, 45 deletions(-)
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 15 ++++++---------
+>  1 file changed, 6 insertions(+), 9 deletions(-)
 > 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index e597655a5643..4bafa817c40a 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -5069,49 +5069,6 @@ int pcie_set_mps(struct pci_dev *dev, int mps)
->  }
->  EXPORT_SYMBOL(pcie_set_mps);
->  
-> -/**
-> - * pcie_get_minimum_link - determine minimum link settings of a PCI device
-> - * @dev: PCI device to query
-> - * @speed: storage for minimum speed
-> - * @width: storage for minimum width
-> - *
-> - * This function will walk up the PCI device chain and determine the minimum
-> - * link width and speed of the device.
-> - */
-> -int pcie_get_minimum_link(struct pci_dev *dev, enum pci_bus_speed *speed,
-> -			  enum pcie_link_width *width)
-> -{
-> -	int ret;
-> -
-> -	*speed = PCI_SPEED_UNKNOWN;
-> -	*width = PCIE_LNK_WIDTH_UNKNOWN;
-> -
-> -	while (dev) {
-> -		u16 lnksta;
-> -		enum pci_bus_speed next_speed;
-> -		enum pcie_link_width next_width;
-> -
-> -		ret = pcie_capability_read_word(dev, PCI_EXP_LNKSTA, &lnksta);
-> -		if (ret)
-> -			return ret;
-> -
-> -		next_speed = pcie_link_speed[lnksta & PCI_EXP_LNKSTA_CLS];
-> -		next_width = (lnksta & PCI_EXP_LNKSTA_NLW) >>
-> -			PCI_EXP_LNKSTA_NLW_SHIFT;
-> -
-> -		if (next_speed < *speed)
-> -			*speed = next_speed;
-> -
-> -		if (next_width < *width)
-> -			*width = next_width;
-> -
-> -		dev = dev->bus->self;
-> -	}
-> -
-> -	return 0;
-> -}
-> -EXPORT_SYMBOL(pcie_get_minimum_link);
-> -
->  /**
->   * pcie_bandwidth_available - determine minimum link settings of a PCIe
->   *			      device and its bandwidth limitation
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 73178a2fcee0..230615620a4a 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -1079,8 +1079,6 @@ int pcie_get_readrq(struct pci_dev *dev);
->  int pcie_set_readrq(struct pci_dev *dev, int rq);
->  int pcie_get_mps(struct pci_dev *dev);
->  int pcie_set_mps(struct pci_dev *dev, int mps);
-> -int pcie_get_minimum_link(struct pci_dev *dev, enum pci_bus_speed *speed,
-> -			  enum pcie_link_width *width);
->  u32 pcie_bandwidth_available(struct pci_dev *dev, struct pci_dev **limiting_dev,
->  			     enum pci_bus_speed *speed,
->  			     enum pcie_link_width *width);
-> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
+> b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index ec4a9759a6f2..3afb1f3b6f91 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -3546,15 +3546,12 @@ s32 e1000e_get_base_timinca(struct e1000_adapter
+> *adapter, u32 *timinca)
+>  		}
+>  		break;
+>  	case e1000_pch_spt:
+> -		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
+> -			/* Stable 24MHz frequency */
+> -			incperiod = INCPERIOD_24MHZ;
+> -			incvalue = INCVALUE_24MHZ;
+> -			shift = INCVALUE_SHIFT_24MHZ;
+> -			adapter->cc.shift = shift;
+> -			break;
+> -		}
+> -		return -EINVAL;
+> +		/* Stable 24MHz frequency */
+> +		incperiod = INCPERIOD_24MHZ;
+> +		incvalue = INCVALUE_24MHZ;
+> +		shift = INCVALUE_SHIFT_24MHZ;
+> +		adapter->cc.shift = shift;
+> +		break;
+>  	case e1000_pch_cnp:
+>  		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
+>  			/* Stable 24MHz frequency */
+> --
+> 2.16.3
+
+Given testing showing that the clock operates fine regardless of the register read, I think this is probably fine. Normally I believe the register was used to check which frequency was in use, but it doesn't seem to serve that purpose here.
+
+Thanks,
+Jake
