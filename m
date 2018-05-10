@@ -1,84 +1,62 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 10 May 2018 05:59:49 -0700
-Subject: [Intel-wired-lan] [next PATCH S91-V1 11/11] i40evf: Fix a hardware
- reset support in VF driver
+Date: Thu, 10 May 2018 05:59:48 -0700
+Subject: [Intel-wired-lan] [next PATCH S91 10/11] i40e: free the skb after
+ clearing the bitlock
 In-Reply-To: <20180510125949.79823-1-alice.michael@intel.com>
 References: <20180510125949.79823-1-alice.michael@intel.com>
-Message-ID: <20180510125949.79823-11-alice.michael@intel.com>
+Message-ID: <20180510125949.79823-10-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-This patch fixes a hardware reset support in VF driver.
-It is needed because when a hardware reset is detected
-adapter->state is in __I40EVF_RESETTING state before
-i40evf_reset_task is called. Without this patch
-unloading VF driver after a hardware reset ends
-with a system crash.
+In commit bbc4e7d273b5 ("i40e: fix race condition with PTP_TX_IN_PROGRESS
+bits") we modified the code which handles Tx timestamps so that we would
+clear the progress bit as soon as possible.
 
-Signed-off-by: Pawe? Jab?o?ski <pawel.jablonski@intel.com>
+A later commit 0bc0706b46cd ("i40e: check for Tx timestamp timeouts during
+watchdog") introduced similar code for detecting and handling cleanup of
+a blocked Tx timestamp. This code did not use the same pattern for cleaning
+up the skb.
+
+Update this code to wait to free the skb until after the bit lock is
+free, by first setting the ptp_tx_skb to NULL and clearing the lock.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 21 +++++++++++++++++++--
- drivers/net/ethernet/intel/i40evf/i40evf_main.c |  3 ++-
- 2 files changed, 21 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index f17867a..b5daa5c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2841,6 +2841,23 @@ static int i40e_vlan_rx_add_vid(struct net_device *netdev,
- }
- 
- /**
-+ * i40e_vlan_rx_add_vid_up - Add a vlan id filter to HW offload in UP path
-+ * @netdev: network interface to be adjusted
-+ * @proto: unused protocol value
-+ * @vid: vlan id to be added
-+ **/
-+static void i40e_vlan_rx_add_vid_up(struct net_device *netdev,
-+				    __always_unused __be16 proto, u16 vid)
-+{
-+	struct i40e_netdev_priv *np = netdev_priv(netdev);
-+	struct i40e_vsi *vsi = np->vsi;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+index 8f30cd5..4280018 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+@@ -321,6 +321,8 @@ void i40e_ptp_rx_hang(struct i40e_pf *pf)
+  **/
+ void i40e_ptp_tx_hang(struct i40e_pf *pf)
+ {
++	struct sk_buff *skb;
 +
-+	if (vid >= VLAN_N_VID)
-+		return;
-+	set_bit(vid, vsi->active_vlans);
-+}
-+
-+/**
-  * i40e_vlan_rx_kill_vid - Remove a vlan id filter from HW offload
-  * @netdev: network interface to be adjusted
-  * @proto: unused protocol value
-@@ -2882,8 +2899,8 @@ static void i40e_restore_vlan(struct i40e_vsi *vsi)
- 		i40e_vlan_stripping_disable(vsi);
+ 	if (!(pf->flags & I40E_FLAG_PTP) || !pf->ptp_tx)
+ 		return;
  
- 	for_each_set_bit(vid, vsi->active_vlans, VLAN_N_VID)
--		i40e_vlan_rx_add_vid(vsi->netdev, htons(ETH_P_8021Q),
--				     vid);
-+		i40e_vlan_rx_add_vid_up(vsi->netdev, htons(ETH_P_8021Q),
-+					vid);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 95a222d..a7b87f9 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1925,7 +1925,8 @@ static void i40evf_reset_task(struct work_struct *work)
- 	 * ndo_open() returning, so we can't assume it means all our open
- 	 * tasks have finished, since we're not holding the rtnl_lock here.
+@@ -333,9 +335,12 @@ void i40e_ptp_tx_hang(struct i40e_pf *pf)
+ 	 * within a second it is reasonable to assume that we never will.
  	 */
--	running = (adapter->state == __I40EVF_RUNNING);
-+	running = ((adapter->state == __I40EVF_RUNNING) ||
-+		   (adapter->state == __I40EVF_RESETTING));
- 
- 	if (running) {
- 		netif_carrier_off(netdev);
+ 	if (time_is_before_jiffies(pf->ptp_tx_start + HZ)) {
+-		dev_kfree_skb_any(pf->ptp_tx_skb);
++		skb = pf->ptp_tx_skb;
+ 		pf->ptp_tx_skb = NULL;
+ 		clear_bit_unlock(__I40E_PTP_TX_IN_PROGRESS, pf->state);
++
++		/* Free the skb after we clear the bitlock */
++		dev_kfree_skb_any(skb);
+ 		pf->tx_hwtstamp_timeouts++;
+ 	}
+ }
 -- 
 2.9.5
 
