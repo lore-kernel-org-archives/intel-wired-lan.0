@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 11 May 2018 18:10:36 +0000
-Subject: [Intel-wired-lan] [next PATCH S91 03/11] i40e: calculate
- ethtool stats size in a separate function
-In-Reply-To: <20180510125949.79823-3-alice.michael@intel.com>
+Date: Fri, 11 May 2018 18:11:06 +0000
+Subject: [Intel-wired-lan] [next PATCH S91 04/11] i40e: remove duplicate
+ pfc stats
+In-Reply-To: <20180510125949.79823-4-alice.michael@intel.com>
 References: <20180510125949.79823-1-alice.michael@intel.com>
- <20180510125949.79823-3-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1B7650C9@ORSMSX104.amr.corp.intel.com>
+ <20180510125949.79823-4-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1B7650DA@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,19 +18,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Thursday, May 10, 2018 6:00 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S91 03/11] i40e: calculate ethtool stats
-> size in a separate function
+> Subject: [Intel-wired-lan] [next PATCH S91 04/11] i40e: remove duplicate pfc
+> stats
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Use a separate function to calculate the number of stats for a particular
-> device. This helps reduce the clutter in i40e_get_sset_count().
+> The pfc related priority stats are already handled separately as these stats
+> are actually arrays of length I40E_MAX_USER_PRIORITY. Thus, including them
+> within i40e_gstrings_stats will just duplicate data.
+> 
+> Worse, the sizeof will be incorrect, as it will be the total size of the stat arrays,
+> which in this case is 8 * sizeof(u64), so we will only copy the stat contents as if
+> they were a u32.
+> 
+> Since we already correctly handle these stats else where, remove them from
+> the i40e_gstrings_stats.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 28 +++++++++++++++++--
-> -------
->  1 file changed, 18 insertions(+), 10 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 ----
+>  1 file changed, 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
