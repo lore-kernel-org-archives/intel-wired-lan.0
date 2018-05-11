@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 11 May 2018 18:09:27 +0000
-Subject: [Intel-wired-lan] [next PATCH S91 01/11] virtchnl: Whitespace
- and parenthesis cleanup
-In-Reply-To: <20180510125949.79823-1-alice.michael@intel.com>
+Date: Fri, 11 May 2018 18:09:56 +0000
+Subject: [Intel-wired-lan] [next PATCH S91 02/11] i40evf: Fix client
+ header define
+In-Reply-To: <20180510125949.79823-2-alice.michael@intel.com>
 References: <20180510125949.79823-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1B7650AA@ORSMSX104.amr.corp.intel.com>
+ <20180510125949.79823-2-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1B7650BA@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +18,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Thursday, May 10, 2018 6:00 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S91 01/11] virtchnl: Whitespace and
-> parenthesis cleanup
+> Subject: [Intel-wired-lan] [next PATCH S91 02/11] i40evf: Fix client header
+> define
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 > 
-> Clean up existing instances of unnecessary parentheses in if statement and
-> change order of conditionals to make it easier to read
+> Fix up the VF client header define, since it is the same as the PF client
+> header.
 > 
-> The opening /* should be followed by a single space and the closing */
-> should be preceded with a single space.
-> 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 > ---
->  include/linux/avf/virtchnl.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf_client.h | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
