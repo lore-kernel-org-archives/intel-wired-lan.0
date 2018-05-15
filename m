@@ -1,56 +1,61 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 15 May 2018 10:47:48 -0700
-Subject: [Intel-wired-lan] [PATCH] ethtool: stop the line wrapping
- madness
-In-Reply-To: <ab0e04cf-e3e0-ed15-900c-5d1a3eab4f1c@molgen.mpg.de>
-References: <20180515173208.20352-1-mitch.a.williams@intel.com>
- <ab0e04cf-e3e0-ed15-900c-5d1a3eab4f1c@molgen.mpg.de>
-Message-ID: <1c7667a30ecdb7f31e3a6ff9131f22bbde45d5b1.camel@intel.com>
+From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+Date: Tue, 15 May 2018 17:58:07 +0000
+Subject: [Intel-wired-lan] Does a VF know that it is "trusted"?
+In-Reply-To: <F6FB0E698C9B3143BDF729DF22286646C4D7B0F0@ORSMSX116.amr.corp.intel.com>
+References: <51a0f92e-7b0e-e657-fcd8-b636ff8b7937@oracle.com>
+ <F6FB0E698C9B3143BDF729DF22286646C4D7B0F0@ORSMSX116.amr.corp.intel.com>
+Message-ID: <9BBC4E0CF881AA4299206E2E1412B6267A88651B@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2018-05-15 at 19:37 +0200, Paul Menzel wrote:
-> On 05/15/18 19:32, Mitch Williams wrote:
-> > Folks, we have a hard limit of 80 characters per line in the
-> kernel,
-> > mostly due to Linus' insistence on printing out each release on
-> greenbar
-> > with his Decwriter. So why do we have function and macro names that
-> are
-> > over 30 characters long? Add a tab or two and a few parameters and
-> boom!
-> > you're wrapping lines.
-> > 
-> > This patch is a search-n-replace of the newly-added ethtool link
-> > settings API with shorter names. In general, I replaced 'ksettings'
-> with
-> > 'ks' and elided some unnecessary verbiage. In nearly every instance
-> I
-> > unwrapped lines and made the code easier to read, especially on a
-> VT102.
-> 
-> Nice, let?s see what the others think.
-> 
-> > In the case of the Amazon Ethernet driver, I found a bug where they
-> were
-> > setting bits in the 'settings' field twice. Almost certainly this
-> > was supposed to set bits in the 'advertising' field instead. So I
-> fixed
-> > it.
-> 
-> Please split this out into a separate patch.
+No, the intent is that the VF does not know its trusted or not.  It asks and if it *is* trusted, then the PF grants the request.  VF only knows if the request was granted or not.  That is the current design anyway.  Mitch can probably comment more.
 
-Actually, I dusted the cobwebs off Mitch's original patch and in this
-version of the patch, the Amazon driver was not fixed.  So I need to
-fix up the patch description to remove the reference to the fix and I
-will put together a patch to fix the Amazon driver.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180515/7da98fd3/attachment.asc>
+Thanks,
+
+Carolyn
+
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
+> Of Skidmore, Donald C
+> Sent: Tuesday, May 15, 2018 10:30 AM
+> To: Shannon Nelson <shannon.nelson@oracle.com>; Intel Wired LAN <intel-
+> wired-lan at lists.osuosl.org>
+> Subject: Re: [Intel-wired-lan] Does a VF know that it is "trusted"?
+> 
+> For ixgbevf at least it isn't told it is "trusted" or not.  But you could ask for
+> something that would require it to be and based on the reply you should be
+> able to infer.
+> 
+> -Don
+> 
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of
+> > Shannon Nelson
+> > Sent: Tuesday, May 15, 2018 10:24 AM
+> > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> > Subject: [Intel-wired-lan] Does a VF know that it is "trusted"?
+> >
+> > If the admin has set the trusted attribute on a VF, e.g.
+> > 	ip link set dev eth4 vf 1 trust on
+> > does the vf know it is trusted?
+> >
+> > Is there an accepted (and simple?) way for the VF to check for its trust
+> level?
+> >
+> > sln
+> > --
+> > ==================================================
+> > Shannon Nelson           shannon.nelson at oracle.com
+> > Parents can't afford to be squeamish
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at osuosl.org
+> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
