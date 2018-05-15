@@ -1,10 +1,8 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue, 15 May 2018 21:06:04 +0200
-Subject: [Intel-wired-lan] [RFC PATCH bpf-next 01/12] xsk: remove rebind
- support
-In-Reply-To: <20180515190615.23099-1-bjorn.topel@gmail.com>
-References: <20180515190615.23099-1-bjorn.topel@gmail.com>
-Message-ID: <20180515190615.23099-2-bjorn.topel@gmail.com>
+Date: Tue, 15 May 2018 21:06:03 +0200
+Subject: [Intel-wired-lan] [RFC PATCH bpf-next 00/12] AF_XDP,
+ zero-copy support
+Message-ID: <20180515190615.23099-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,93 +11,169 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Supporting rebind, i.e. after a successful bind the process can call
-bind again without closing the socket, makes the setup state machine
-more complex. Let us constrain the state space, but not supporting
-rebind.
+This RFC introduces zerocopy (ZC) support for AF_XDP. Programs using
+AF_XDP sockets will now receive RX packets without any copies and can
+also transmit packets without incurring any copies. No modifications
+to the application are needed, but the NIC driver needs to be modified
+to support ZC. If ZC is not supported by the driver, the modes
+introduced in the AF_XDP patch will be used. Using ZC in our
+micro benchmarks results in significantly improved performance as can
+be seen in the performance section later in this cover letter.
 
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
----
- net/xdp/xsk.c | 30 +++++++++---------------------
- 1 file changed, 9 insertions(+), 21 deletions(-)
+Note that we did not post this as a proper patch set as suggested by
+Alexei due to mainly one reason. The i40e modifications need to be
+fully and properly implemented (we need support for dynamically
+creating and removing queues in the driver), split up in multiple
+patches, then reviewed and QA:ed by the Intel NIC team before they can
+become a proper patch. We just did not have time to finish all of this
+in this merge window. 
 
-diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
-index 009c5af5bba5..e59ca8e2618d 100644
---- a/net/xdp/xsk.c
-+++ b/net/xdp/xsk.c
-@@ -236,14 +236,6 @@ static int xsk_init_queue(u32 entries, struct xsk_queue **queue,
- 	return 0;
- }
- 
--static void __xsk_release(struct xdp_sock *xs)
--{
--	/* Wait for driver to stop using the xdp socket. */
--	synchronize_net();
--
--	dev_put(xs->dev);
--}
--
- static int xsk_release(struct socket *sock)
- {
- 	struct sock *sk = sock->sk;
-@@ -260,7 +252,9 @@ static int xsk_release(struct socket *sock)
- 	local_bh_enable();
- 
- 	if (xs->dev) {
--		__xsk_release(xs);
-+		/* Wait for driver to stop using the xdp socket. */
-+		synchronize_net();
-+		dev_put(xs->dev);
- 		xs->dev = NULL;
- 	}
- 
-@@ -294,9 +288,8 @@ static int xsk_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
- {
- 	struct sockaddr_xdp *sxdp = (struct sockaddr_xdp *)addr;
- 	struct sock *sk = sock->sk;
--	struct net_device *dev, *dev_curr;
- 	struct xdp_sock *xs = xdp_sk(sk);
--	struct xdp_umem *old_umem = NULL;
-+	struct net_device *dev;
- 	int err = 0;
- 
- 	if (addr_len < sizeof(struct sockaddr_xdp))
-@@ -305,7 +298,11 @@ static int xsk_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
- 		return -EINVAL;
- 
- 	mutex_lock(&xs->mutex);
--	dev_curr = xs->dev;
-+	if (xs->dev) {
-+		err = -EBUSY;
-+		goto out_release;
-+	}
-+
- 	dev = dev_get_by_index(sock_net(sk), sxdp->sxdp_ifindex);
- 	if (!dev) {
- 		err = -ENODEV;
-@@ -352,7 +349,6 @@ static int xsk_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
- 		}
- 
- 		xdp_get_umem(umem_xs->umem);
--		old_umem = xs->umem;
- 		xs->umem = umem_xs->umem;
- 		sockfd_put(sock);
- 	} else if (!xs->umem || !xdp_umem_validate_queues(xs->umem)) {
-@@ -364,14 +360,6 @@ static int xsk_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
- 		xskq_set_umem(xs->umem->cq, &xs->umem->props);
- 	}
- 
--	/* Rebind? */
--	if (dev_curr && (dev_curr != dev ||
--			 xs->queue_id != sxdp->sxdp_queue_id)) {
--		__xsk_release(xs);
--		if (old_umem)
--			xdp_put_umem(old_umem);
--	}
--
- 	xs->dev = dev;
- 	xs->queue_id = sxdp->sxdp_queue_id;
- 
+Alexei had two concerns in conjunction with adding ZC support to
+AF_XDP: show that the user interface holds and can deliver good
+performance for ZC and that the driver interfaces for ZC are good. We
+think that this patch set shows that we have addressed the first
+issue: performance is good and there is no change to the uapi. But
+please take a look at the code and see if you like the ZC interfaces
+that was the second concern.
+
+Note that for an untrusted application, HW packet steering to a
+specific queue pair (the one associated with the application) is a
+requirement when using ZC, as the application would otherwise be able
+to see other user space processes' packets. If the HW cannot support
+the required packet steering you need to use the XDP_SKB mode or the
+XDP_DRV mode without ZC turned on. The XSKMAP introduced in the AF_XDP
+patch set can be used to do load balancing in that case.
+
+For benchmarking, you can use the xdpsock application from the AF_XDP
+patch set without any modifications. Say that you would like your UDP
+traffic from port 4242 to end up in queue 16, that we will enable
+AF_XDP on. Here, we use ethtool for this:
+
+      ethtool -N p3p2 rx-flow-hash udp4 fn
+      ethtool -N p3p2 flow-type udp4 src-port 4242 dst-port 4242 \
+          action 16
+
+Running the rxdrop benchmark in XDP_DRV mode with zerocopy can then be
+done using:
+
+      samples/bpf/xdpsock -i p3p2 -q 16 -r -N
+
+We have run some benchmarks on a dual socket system with two Broadwell
+E5 2660 @ 2.0 GHz with hyperthreading turned off. Each socket has 14
+cores which gives a total of 28, but only two cores are used in these
+experiments. One for TR/RX and one for the user space application. The
+memory is DDR4 @ 2133 MT/s (1067 MHz) and the size of each DIMM is
+8192MB and with 8 of those DIMMs in the system we have 64 GB of total
+memory. The compiler used is gcc (Ubuntu 7.3.0-16ubuntu3) 7.3.0. The
+NIC is Intel I40E 40Gbit/s using the i40e driver.
+
+Below are the results in Mpps of the I40E NIC benchmark runs for 64
+and 1500 byte packets, generated by a commercial packet generator HW
+outputing packets at full 40 Gbit/s line rate. The results are without
+retpoline so that we can compare against previous numbers. 
+
+AF_XDP performance 64 byte packets. Results from the AF_XDP V3 patch
+set are also reported for ease of reference.
+
+Benchmark   XDP_SKB    XDP_DRV    XDP_DRV with zerocopy
+rxdrop       2.9*       9.6*       21.5
+txpush       2.6*       -          21.6
+l2fwd        1.9*       2.5*       15.0
+
+* From AF_XDP V3 patch set and cover letter.
+
+AF_XDP performance 1500 byte packets:
+Benchmark   XDP_SKB   XDP_DRV     XDP_DRV with zerocopy
+rxdrop       2.1        3.3       3.3
+l2fwd        1.4        1.8       3.1
+
+So why do we not get higher values for RX similar to the 34 Mpps we
+had in AF_PACKET V4? We made an experiment running the rxdrop
+benchmark without using the xdp_do_redirect/flush infrastructure nor
+using an XDP program (all traffic on a queue goes to one
+socket). Instead the driver acts directly on the AF_XDP socket. With
+this we got 36.9 Mpps, a significant improvement without any change to
+the uapi. So not forcing users to have an XDP program if they do not
+need it, might be a good idea. This measurement is actually higher
+than what we got with AF_PACKET V4.
+
+XDP performance on our system as a base line:
+
+64 byte packets:
+XDP stats       CPU     pps         issue-pps
+XDP-RX CPU      16      32.3M  0
+
+1500 byte packets:
+XDP stats       CPU     pps         issue-pps
+XDP-RX CPU      16      3.3M    0
+
+The structure of the patch set is as follows:
+
+Patch 1: Removes rebind support. Complicated to support for ZC,
+         so will not be supported for AF_XDP in any mode at this
+         point. Will be a follow up patch for the AF_XDP patch set.
+Patches 2-4: Plumbing for AF_XDP ZC support
+Patches 5-6: AF_XDP ZC for RX
+Patches 7-8: AF_XDP ZC for TX
+Patch 9: Minor performance fix for the sample application. ZC will
+         work with nearly as good performance without this.
+Patch 10-12: ZC support for i40e. Should be broken out in smaller
+             pieces as pre-patches.
+
+We based this patch set on bpf-next commit f2467c2dbc01
+("selftests/bpf: make sure build-id is on")
+
+To do for this RFC to become a patch set:
+
+* Implement dynamic creation and deletion of queues in the i40e driver
+
+* Properly splitting up the i40e changes
+
+* Have the Intel NIC team review the i40e changes from at least an
+  architecture point of view
+
+* Implement a more fair scheduling policy for multiple XSKs that share
+  an umem for TX. This can be combined with a batching API for
+  xsk_umem_consume_tx.
+
+We are planning on joining the iovisor call on Wednesday if you would
+like to have a chat with us about this.
+
+Thanks: Bj?rn and Magnus
+
+Bj?rn T?pel (8):
+  xsk: remove rebind support
+  xsk: moved struct xdp_umem definition
+  xsk: introduce xdp_umem_frame
+  net: xdp: added bpf_netdev_command XDP_SETUP_XSK_UMEM
+  xdp: add MEM_TYPE_ZERO_COPY
+  xsk: add zero-copy support for Rx
+  i40e: added queue pair disable/enable functions
+  i40e: implement AF_XDP zero-copy support for Rx
+
+Magnus Karlsson (4):
+  net: added netdevice operation for Tx
+  xsk: wire upp Tx zero-copy functions
+  samples/bpf: minor *_nb_free performance fix
+  i40e: implement Tx zero-copy
+
+ drivers/net/ethernet/intel/i40e/i40e.h      |  20 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 458 +++++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 635 +++++++++++++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h |  36 +-
+ include/linux/netdevice.h                   |  13 +
+ include/net/xdp.h                           |  10 +
+ include/net/xdp_sock.h                      |  45 +-
+ net/core/xdp.c                              |  47 +-
+ net/xdp/xdp_umem.c                          | 112 ++++-
+ net/xdp/xdp_umem.h                          |  42 +-
+ net/xdp/xdp_umem_props.h                    |  23 -
+ net/xdp/xsk.c                               | 162 +++++--
+ net/xdp/xsk_queue.h                         |  35 +-
+ samples/bpf/xdpsock_user.c                  |   8 +-
+ 14 files changed, 1458 insertions(+), 188 deletions(-)
+ delete mode 100644 net/xdp/xdp_umem_props.h
+
 -- 
 2.14.1
 
