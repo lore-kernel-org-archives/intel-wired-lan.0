@@ -1,48 +1,219 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 15 May 2018 13:31:30 -0700
-Subject: [Intel-wired-lan] i40e - Is i40e_force_link_state doing the
- right thing ?
-In-Reply-To: <CABOGejK8bnwU0iqO5-GRO8FX6tCaMYtS+UORPrug3E7LqeWg1Q@mail.gmail.com>
-References: <CABOGejK8bnwU0iqO5-GRO8FX6tCaMYtS+UORPrug3E7LqeWg1Q@mail.gmail.com>
-Message-ID: <CAKgT0Uf8BcK6hiY7Ff0_XYDMkB2T_mhxmW7oNbyHoPgW=fmG+w@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 16 May 2018 05:48:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ c70f84f0c6513c7fc4ec2b4a1494e45f09023393
+Message-ID: <5afb55c4.toUzu8T4FBZF6j+Z%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, May 15, 2018 at 1:15 PM, Chaitanya Lala
-<chaitanya.lala@gmail.com> wrote:
-> Hi,
->
-> I am trying to bring up a Intel XL710 4x10G Intel card using the
-> latest mainline top-of-tree.
-> The problem is that "ifconfig up" and "ifconfig down" do not take
-> effect at the link state level.
-> I tracked the problem down to i40e_force_link_state() when it is
-> called from i40e_down().
-> It calls i40e_force_link_state with "is_up" == false. In-turn it
-> calls, i40e_aq_set_link_restart_an(hw, true, NULL).
->
-> Should the second argument of  i40e_aq_set_link_restart_an be "is_up"
-> vs the current "true"
-> i.e. i40e_aq_set_link_restart_an(hw, is_up, NULL). ? When I make this
-> change, the link state syncs-up with
-> the interface administrative state.
->
-> Is this a bug ?
->
-> Thanks,
-> Chaitanya
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: c70f84f0c6513c7fc4ec2b4a1494e45f09023393  ena: Fix settings/advertising for ethtool
 
-If you are calling i40e_down the assumption is you are bringing the
-interface down, so as not to pass traffic. That is why the "is_up" is
-set to false.
+elapsed time: 204m
 
-Could you provide the dmesg results for when you load the driver and
-execute the "ifconfig up" and "ifconfig down" commands? That would
-help us to understand what might be going on.
+configs tested: 194
 
-Thanks.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-- Alex
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+mips                           ip32_defconfig
+parisc                           allyesconfig
+x86_64                 randconfig-a0-05152342
+x86_64                 randconfig-a0-05160454
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                     eseries_pxa_defconfig
+sparc                            allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-05152206
+i386                   randconfig-c0-05160339
+m68k                              allnoconfig
+m68k                                defconfig
+x86_64                randconfig-it0-05150724
+i386                   randconfig-x013-201819
+i386                   randconfig-x014-201819
+i386                   randconfig-x016-201819
+i386                   randconfig-x019-201819
+i386                   randconfig-x012-201819
+i386                   randconfig-x015-201819
+i386                   randconfig-x018-201819
+i386                   randconfig-x010-201819
+i386                   randconfig-x011-201819
+i386                   randconfig-x017-201819
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+openrisc                         allmodconfig
+x86_64                 randconfig-g0-05152339
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+x86_64                              federa-25
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-s0-05151756
+x86_64                 randconfig-s1-05151756
+x86_64                 randconfig-s2-05151756
+powerpc                     tqm5200_defconfig
+s390                    performance_defconfig
+sparc64                          alldefconfig
+arm                           h3600_defconfig
+arm                      integrator_defconfig
+m68k                             allmodconfig
+sh                      rts7751r2d1_defconfig
+arm                         lpc32xx_defconfig
+m68k                       m5249evb_defconfig
+sh                         ecovec24_defconfig
+xtensa                generic_kc705_defconfig
+arm                          gemini_defconfig
+mips                             alldefconfig
+mips                            ar7_defconfig
+x86_64                 randconfig-x010-201819
+x86_64                 randconfig-x013-201819
+x86_64                 randconfig-x014-201819
+x86_64                 randconfig-x011-201819
+x86_64                 randconfig-x015-201819
+x86_64                 randconfig-x019-201819
+x86_64                 randconfig-x016-201819
+x86_64                 randconfig-x018-201819
+x86_64                 randconfig-x012-201819
+x86_64                 randconfig-x017-201819
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201819
+i386                     randconfig-s1-201819
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-05160156
+x86_64                 randconfig-s4-05160156
+x86_64                 randconfig-s5-05160156
+x86_64                 randconfig-s3-05160433
+x86_64                 randconfig-s4-05160433
+x86_64                 randconfig-s5-05160433
+i386                               tinyconfig
+arm                          nuc960_defconfig
+powerpc                    socrates_defconfig
+sh                           se7343_defconfig
+arm                         hackkit_defconfig
+arm                            hisi_defconfig
+arm                          moxart_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201819
+i386                   randconfig-b0-05150726
+i386                   randconfig-b0-05160253
+i386                   randconfig-b0-05160405
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-b0-05151936
+m68k                             allyesconfig
+mips                           ci20_defconfig
+arm                           sama5_defconfig
+mips                        maltaup_defconfig
+x86_64                 randconfig-u0-05160243
+x86_64                 randconfig-u0-05160425
+x86_64                randconfig-ne0-05160136
+x86_64                randconfig-ne0-05160322
+arm                      acs5k_tiny_defconfig
+arm                          pxa3xx_defconfig
+parisc                           allmodconfig
+x86_64                 randconfig-h0-05160155
+i386                   randconfig-x073-201819
+i386                   randconfig-x075-201819
+i386                   randconfig-x079-201819
+i386                   randconfig-x071-201819
+i386                   randconfig-x076-201819
+i386                   randconfig-x074-201819
+i386                   randconfig-x078-201819
+i386                   randconfig-x070-201819
+i386                   randconfig-x077-201819
+i386                   randconfig-x072-201819
+arm                       multi_v4t_defconfig
+i386                  randconfig-sb0-05141136
+i386                   randconfig-x008-201819
+i386                   randconfig-x006-201819
+i386                   randconfig-x000-201819
+i386                   randconfig-x004-201819
+i386                   randconfig-x009-201819
+i386                   randconfig-x003-201819
+i386                   randconfig-x001-201819
+i386                   randconfig-x005-201819
+i386                   randconfig-x002-201819
+i386                   randconfig-x007-201819
+x86_64                 randconfig-x002-201819
+x86_64                 randconfig-x006-201819
+x86_64                 randconfig-x005-201819
+x86_64                 randconfig-x001-201819
+x86_64                 randconfig-x009-201819
+x86_64                 randconfig-x004-201819
+x86_64                 randconfig-x003-201819
+x86_64                 randconfig-x000-201819
+x86_64                 randconfig-x007-201819
+x86_64                 randconfig-x008-201819
+x86_64                              fedora-25
+x86_64                 randconfig-r0-05152159
+x86_64                 randconfig-r0-05160444
+powerpc                 mpc837x_mds_defconfig
+um                               allyesconfig
+i386                   randconfig-x0-05152332
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
