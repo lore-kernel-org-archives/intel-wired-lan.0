@@ -1,78 +1,110 @@
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Date: Mon, 14 May 2018 21:53:02 -0400
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Tue, 15 May 2018 09:37:44 +0200
 Subject: [Intel-wired-lan] [PATCH v4 1/1] drivers core: multi-threading
  device shutdown
-In-Reply-To: <CAHp75VeopFMFHq=rJCUcAw02kznJ5+0vLWr5500DsGtERiX6cw@mail.gmail.com>
+In-Reply-To: <20180514194254.14748-2-pasha.tatashin@oracle.com>
 References: <20180514194254.14748-1-pasha.tatashin@oracle.com>
  <20180514194254.14748-2-pasha.tatashin@oracle.com>
- <CAHp75VeopFMFHq=rJCUcAw02kznJ5+0vLWr5500DsGtERiX6cw@mail.gmail.com>
-Message-ID: <2d3c80ee-f990-0619-8107-7a0cb4c76f04@oracle.com>
+Message-ID: <20180515073744.GA28338@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Andy,
-
-Thank you for your comments. I will send an updated patch soon. My replies are below:
-
-On 05/14/2018 04:04 PM, Andy Shevchenko wrote:
-
-> Can we still preserve an order here? (Yes, even if the entire list is
-> not fully ordered)
-> In the context I see it would go before netdevice.h.
-
-Sure, I will move kthread.h.
-
->> +static struct device *
->> +device_get_child_by_index(struct device *parent, int index)
->> +{
->> +       struct klist_iter i;
->> +       struct device *dev = NULL, *d;
->> +       int child_index = 0;
->> +
->> +       if (!parent->p || index < 0)
->> +               return NULL;
->> +
->> +       klist_iter_init(&parent->p->klist_children, &i);
->> +       while ((d = next_device(&i))) {
->> +               if (child_index == index) {
->> +                       dev = d;
->> +                       break;
->> +               }
->> +               child_index++;
->> +       }
->> +       klist_iter_exit(&i);
->> +
->> +       return dev;
->> +}
+On Mon, May 14, 2018 at 03:42:54PM -0400, Pavel Tatashin wrote:
+> When system is rebooted, halted or kexeced device_shutdown() is
+> called.
 > 
-> This can be implemented as a subfunction to device_find_child(), can't it be?
-
-Yes, but that would make it very inefficient to search for an index in a list via function pointer call.
-
+> This function shuts down every single device by calling either:
 > 
->> +/**
+> 	dev->bus->shutdown(dev)
+> 	dev->driver->shutdown(dev)
 > 
-> Hmm... Why it's marked as kernel doc while it's just a plain comment?
-> Same applies to the rest of similar comments.
-
-Fixed this, thanks!
-
+> Even on a machine with just a moderate amount of devices, device_shutdown()
+> may take multiple seconds to complete. This is because many devices require
+> a specific delays to perform this operation.
 > 
->> +               for (i = 0; i < children_count; i++) {
->> +                       if (device_shutdown_serial) {
->> +                               device_shutdown_child_task(&tdata);
->> +                       } else {
->> +                               kthread_run(device_shutdown_child_task,
->> +                                           &tdata, "device_shutdown.%s",
->> +                                           dev_name(dev));
->> +                       }
->> +               }
+> Here is a sample analysis of time it takes to call device_shutdown() on a
+> two socket Intel(R) Xeon(R) CPU E5-2630 v4 @ 2.20GHz machine.
 > 
-> Can't we just use device_for_each_child() instead?
+> device_shutdown		2.95s
+> -----------------------------
+>  mlx4_shutdown		1.14s
+>  megasas_shutdown	0.24s
+>  ixgbe_shutdown		0.37s x 4 (four ixgbe devices on this machine).
+>  the rest		0.09s
+> 
+> In mlx4 we spent the most time, but that is because there is a 1 second
+> sleep, which is defined by hardware specifications:
+> mlx4_shutdown
+>  mlx4_unload_one
+>   mlx4_free_ownership
+>    msleep(1000)
+> 
+> With megasas we spend a quarter of a second, but sometimes longer (up-to
+> 0.5s) in this path:
+> 
+>     megasas_shutdown
+>       megasas_flush_cache
+>         megasas_issue_blocked_cmd
+>           wait_event_timeout
+> 
+> Finally, with ixgbe_shutdown() it takes 0.37 for each device, but that time
+> is spread all over the place, with bigger offenders:
+> 
+>     ixgbe_shutdown
+>       __ixgbe_shutdown
+>         ixgbe_close_suspend
+>           ixgbe_down
+>             ixgbe_init_hw_generic
+>               ixgbe_reset_hw_X540
+>                 msleep(100);                        0.104483472
+>                 ixgbe_get_san_mac_addr_generic      0.048414851
+>                 ixgbe_get_wwn_prefix_generic        0.048409893
+>               ixgbe_start_hw_X540
+>                 ixgbe_start_hw_generic
+>                   ixgbe_clear_hw_cntrs_generic      0.048581502
+>                   ixgbe_setup_fc_generic            0.024225800
+> 
+>     All the ixgbe_*generic functions end-up calling:
+>     ixgbe_read_eerd_X540()
+>       ixgbe_acquire_swfw_sync_X540
+>         usleep_range(5000, 6000);
+>       ixgbe_release_swfw_sync_X540
+>         usleep_range(5000, 6000);
+> 
+> While these are short sleeps, they end-up calling them over 24 times!
+> 24 * 0.0055s = 0.132s. Adding-up to 0.528s for four devices. Also we have
+> four msleep(100). Totaling to:  0.928s
+> 
+> While we should keep optimizing the individual device drivers, in some
+> cases this is simply a hardware property that forces a specific delay, and
+> we must wait.
+> 
+> So, the solution for this problem is to shutdown devices in parallel.
+> However, we must shutdown children before shutting down parents, so parent
+> device must wait for its children to finish.
+> 
+> With this patch, on the same machine devices_shutdown() takes 1.142s, and
+> without mlx4 one second delay only 0.38s
+> 
+> This feature can be optionally disabled via kernel parameter:
+> device_shutdown_serial. When booted with this parameter, device_shutdown()
+> will shutdown devices one by one.
+> 
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> ---
+>  drivers/base/core.c | 292 ++++++++++++++++++++++++++++++++++++--------
+>  1 file changed, 242 insertions(+), 50 deletions(-)
 
-No, at least without doing some memory allocation. Notice in this loop we are not traversing through children, instead we are starting number of children threads, and each thread finds a child to work on. Otherwise we would have to pass child pointer via argument, and we would need to keep that argument in some memory.
+Can you refactor this to be at least 2 patches?  One that moves code
+around to comon functions to make the second patch, that adds the new
+functionality, easier to review and understand?
 
-Pavel
+And I echo the "don't use kerneldoc for static functions" review
+comment, that's not needed at all.
+
+thanks,
+
+greg k-h
