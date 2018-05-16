@@ -1,254 +1,311 @@
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Date: Tue, 15 May 2018 22:40:04 -0400
-Subject: [Intel-wired-lan] [PATCH v5 3/3] drivers core: multi-threading
- device shutdown
-In-Reply-To: <20180516024004.28977-1-pasha.tatashin@oracle.com>
-References: <20180516024004.28977-1-pasha.tatashin@oracle.com>
-Message-ID: <20180516024004.28977-4-pasha.tatashin@oracle.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 16 May 2018 12:05:35 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ ca45cb64e7e48ea5f407bb4baff467931ce87732
+Message-ID: <5afbae0f.t19MSJ3AaOFDPXfd%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When system is rebooted, halted or kexeced device_shutdown() is
-called.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: ca45cb64e7e48ea5f407bb4baff467931ce87732  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-This function shuts down every single device by calling either:
+elapsed time: 483m
 
-	dev->bus->shutdown(dev)
-	dev->driver->shutdown(dev)
+configs tested: 286
 
-Even on a machine with just a moderate amount of devices, device_shutdown()
-may take multiple seconds to complete. This is because many devices require
-a specific delays to perform this operation.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Here is a sample analysis of time it takes to call device_shutdown() on a
-two socket Intel(R) Xeon(R) CPU E5-2630 v4 @ 2.20GHz machine.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+mips                           ip32_defconfig
+parisc                           allyesconfig
+arm                        mvebu_v7_defconfig
+sh                          r7785rp_defconfig
+i386                             alldefconfig
+m68k                         apollo_defconfig
+m68k                        m5272c3_defconfig
+mips                      pic32mzda_defconfig
+riscv                               defconfig
+xtensa                           alldefconfig
+arm                             mxs_defconfig
+mips                           jazz_defconfig
+arm                            dove_defconfig
+powerpc               mpc834x_itxgp_defconfig
+x86_64                 randconfig-a0-05160315
+x86_64                 randconfig-a0-05160454
+x86_64                 randconfig-a0-05160743
+x86_64                 randconfig-a0-05160827
+x86_64                 randconfig-a0-05160859
+x86_64                 randconfig-a0-05161000
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-05160339
+i386                   randconfig-c0-05160647
+x86_64                           allmodconfig
+ia64                             allyesconfig
+sh                           se7206_defconfig
+c6x                        evmc6472_defconfig
+m68k                        mvme147_defconfig
+arm                          badge4_defconfig
+nios2                         10m50_defconfig
+arm                           efm32_defconfig
+arm                        oxnas_v6_defconfig
+x86_64                randconfig-in0-05151857
+x86_64                randconfig-in0-05160907
+x86_64                randconfig-it0-05150724
+i386                               tinyconfig
+i386                   randconfig-x013-201819
+i386                   randconfig-x014-201819
+i386                   randconfig-x016-201819
+i386                   randconfig-x019-201819
+i386                   randconfig-x012-201819
+i386                   randconfig-x015-201819
+i386                   randconfig-x018-201819
+i386                   randconfig-x010-201819
+i386                   randconfig-x011-201819
+i386                   randconfig-x017-201819
+x86_64                              fedora-25
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-05160912
+x86_64                 randconfig-x002-201819
+x86_64                 randconfig-x006-201819
+x86_64                 randconfig-x005-201819
+x86_64                 randconfig-x001-201819
+x86_64                 randconfig-x009-201819
+x86_64                 randconfig-x004-201819
+x86_64                 randconfig-x003-201819
+x86_64                 randconfig-x000-201819
+x86_64                 randconfig-x007-201819
+x86_64                 randconfig-x008-201819
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                   randconfig-i1-05160852
+i386                   randconfig-i0-05160852
+ia64                        generic_defconfig
+microblaze                       allyesconfig
+x86_64                 randconfig-v0-05160944
+openrisc                         allmodconfig
+arm                      footbridge_defconfig
+powerpc                     redwood_defconfig
+arm                       netwinder_defconfig
+arm                         palmz72_defconfig
+arm                         ebsa110_defconfig
+arm                              zx_defconfig
+arm                  colibri_pxa270_defconfig
+x86_64                 randconfig-g0-05160415
+x86_64                 randconfig-g0-05160841
+x86_64                 randconfig-g0-05160922
+x86_64                 randconfig-g0-05160953
+x86_64                 randconfig-x010-201819
+x86_64                 randconfig-x011-201819
+x86_64                 randconfig-x012-201819
+x86_64                 randconfig-x013-201819
+x86_64                 randconfig-x014-201819
+x86_64                 randconfig-x015-201819
+x86_64                 randconfig-x016-201819
+x86_64                 randconfig-x017-201819
+x86_64                 randconfig-x018-201819
+x86_64                 randconfig-x019-201819
+i386                   randconfig-a0-05160922
+i386                   randconfig-a1-05160922
+x86_64                 randconfig-s0-05160346
+x86_64                 randconfig-s1-05160346
+x86_64                 randconfig-s2-05160346
+x86_64                 randconfig-s0-05160922
+x86_64                 randconfig-s1-05160922
+x86_64                 randconfig-s2-05160922
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                            mmp2_defconfig
+arm                      pxa255-idp_defconfig
+arm                           stm32_defconfig
+powerpc                     sbc834x_defconfig
+arm                             pxa_defconfig
+microblaze                       allmodconfig
+mips                      maltasmvp_defconfig
+powerpc                          g5_defconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                              federa-25
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201819
+i386                     randconfig-s1-201819
+x86_64                 randconfig-s3-05160335
+x86_64                 randconfig-s4-05160335
+x86_64                 randconfig-s5-05160335
+x86_64                 randconfig-s3-05160610
+x86_64                 randconfig-s4-05160610
+x86_64                 randconfig-s5-05160610
+x86_64                 randconfig-s3-05160819
+x86_64                 randconfig-s4-05160819
+x86_64                 randconfig-s5-05160819
+x86_64                 randconfig-s3-05160848
+x86_64                 randconfig-s4-05160848
+x86_64                 randconfig-s5-05160848
+x86_64                 randconfig-s3-05160921
+x86_64                 randconfig-s4-05160921
+x86_64                 randconfig-s5-05160921
+x86_64                 randconfig-s3-05160957
+x86_64                 randconfig-s4-05160957
+x86_64                 randconfig-s5-05160957
+i386                             allmodconfig
+arm                         hackkit_defconfig
+arm                            hisi_defconfig
+arm                          moxart_defconfig
+sh                          r7780mp_defconfig
+arm                          simpad_defconfig
+c6x                         dsk6455_defconfig
+sparc                            allyesconfig
+mips                    maltaup_xpa_defconfig
+powerpc64                        allyesconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201819
+i386                   randconfig-b0-05160405
+i386                   randconfig-b0-05160603
+i386                   randconfig-b0-05160837
+i386                   randconfig-b0-05160910
+i386                   randconfig-b0-05160942
+i386                   randconfig-b0-05161009
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+mips                          lasat_defconfig
+mips                        qi_lb60_defconfig
+arm                             ezx_defconfig
+arm                         orion5x_defconfig
+powerpc                 mpc834x_itx_defconfig
+x86_64                 randconfig-b0-05151936
+m68k                          atari_defconfig
+openrisc                         alldefconfig
+powerpc                          allyesconfig
+arm                         nhk8815_defconfig
+powerpc               corenet_basic_defconfig
+x86_64                 randconfig-u0-05160425
+x86_64                 randconfig-u0-05160536
+x86_64                 randconfig-u0-05160819
+x86_64                 randconfig-u0-05160850
+x86_64                 randconfig-u0-05160954
+arm                       multi_v4t_defconfig
+arm64                            allmodconfig
+arm                     davinci_all_defconfig
+arm                           h3600_defconfig
+i386                   randconfig-h0-05140445
+i386                   randconfig-h1-05140445
+powerpc64                        allmodconfig
+powerpc                     ksi8560_defconfig
+ia64                         bigsur_defconfig
+sh                           se7751_defconfig
+arm                         shannon_defconfig
+x86_64                randconfig-ne0-05160322
+x86_64                randconfig-ne0-05160541
+x86_64                randconfig-ne0-05160826
+x86_64                randconfig-ne0-05160946
+arm                          pxa3xx_defconfig
+parisc                           allmodconfig
+arm                         assabet_defconfig
+powerpc                 mpc8560_ads_defconfig
+openrisc                          allnoconfig
+powerpc                     asp8347_defconfig
+x86_64                 randconfig-h0-05160301
+x86_64                 randconfig-h0-05160850
+x86_64                 randconfig-h0-05160937
+i386                   randconfig-x008-201819
+i386                   randconfig-x006-201819
+i386                   randconfig-x000-201819
+i386                   randconfig-x004-201819
+i386                   randconfig-x009-201819
+i386                   randconfig-x003-201819
+i386                   randconfig-x001-201819
+i386                   randconfig-x005-201819
+i386                   randconfig-x002-201819
+i386                   randconfig-x007-201819
+i386                   randconfig-x073-201819
+i386                   randconfig-x075-201819
+i386                   randconfig-x079-201819
+i386                   randconfig-x071-201819
+i386                   randconfig-x076-201819
+i386                   randconfig-x074-201819
+i386                   randconfig-x078-201819
+i386                   randconfig-x070-201819
+i386                   randconfig-x077-201819
+i386                   randconfig-x072-201819
+m68k                         amcore_defconfig
+m68k                       m5208evb_defconfig
+i386                  randconfig-sb0-05141136
+i386                  randconfig-sb0-05160807
+i386                  randconfig-sb0-05160956
+x86_64                                  kexec
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+sh                      rts7751r2d1_defconfig
+powerpc                 mpc8272_ads_defconfig
+x86_64                              defconfig
+arm                        trizeps4_defconfig
+powerpc                     kmeter1_defconfig
+powerpc                    klondike_defconfig
+powerpc                     taishan_defconfig
+x86_64                 randconfig-r0-05160401
+x86_64                 randconfig-r0-05160545
+x86_64                 randconfig-r0-05160818
+x86_64                 randconfig-r0-05160910
+powerpc                 mpc837x_mds_defconfig
+um                               allyesconfig
+arm                           sama5_defconfig
+mips                malta_qemu_32r6_defconfig
+mips                           ip28_defconfig
+mips                         mpc30x_defconfig
+sh                             shx3_defconfig
+arm                          pxa168_defconfig
+s390                             alldefconfig
+mips                      bmips_stb_defconfig
+mips                        generic_defconfig
+powerpc                     kilauea_defconfig
+i386                   randconfig-x0-05152332
+i386                   randconfig-x0-05160820
+i386                   randconfig-x0-05160848
+i386                   randconfig-x0-05160928
 
-device_shutdown		2.95s
------------------------------
- mlx4_shutdown		1.14s
- megasas_shutdown	0.24s
- ixgbe_shutdown		0.37s x 4 (four ixgbe devices on this machine).
- the rest		0.09s
-
-In mlx4 we spent the most time, but that is because there is a 1 second
-sleep, which is defined by hardware specifications:
-mlx4_shutdown
- mlx4_unload_one
-  mlx4_free_ownership
-   msleep(1000)
-
-With megasas we spend a quarter of a second, but sometimes longer (up-to
-0.5s) in this path:
-
-    megasas_shutdown
-      megasas_flush_cache
-        megasas_issue_blocked_cmd
-          wait_event_timeout
-
-Finally, with ixgbe_shutdown() it takes 0.37 for each device, but that time
-is spread all over the place, with bigger offenders:
-
-    ixgbe_shutdown
-      __ixgbe_shutdown
-        ixgbe_close_suspend
-          ixgbe_down
-            ixgbe_init_hw_generic
-              ixgbe_reset_hw_X540
-                msleep(100);                        0.104483472
-                ixgbe_get_san_mac_addr_generic      0.048414851
-                ixgbe_get_wwn_prefix_generic        0.048409893
-              ixgbe_start_hw_X540
-                ixgbe_start_hw_generic
-                  ixgbe_clear_hw_cntrs_generic      0.048581502
-                  ixgbe_setup_fc_generic            0.024225800
-
-    All the ixgbe_*generic functions end-up calling:
-    ixgbe_read_eerd_X540()
-      ixgbe_acquire_swfw_sync_X540
-        usleep_range(5000, 6000);
-      ixgbe_release_swfw_sync_X540
-        usleep_range(5000, 6000);
-
-While these are short sleeps, they end-up calling them over 24 times!
-24 * 0.0055s = 0.132s. Adding-up to 0.528s for four devices. Also we have
-four msleep(100). Totaling to:  0.928s
-
-While we should keep optimizing the individual device drivers, in some
-cases this is simply a hardware property that forces a specific delay, and
-we must wait.
-
-So, the solution for this problem is to shutdown devices in parallel.
-However, we must shutdown children before shutting down parents, so parent
-device must wait for its children to finish.
-
-With this patch, on the same machine devices_shutdown() takes 1.142s, and
-without mlx4 one second delay only 0.38s
-
-This feature can be optionally disabled via kernel parameter:
-device_shutdown_serial. When booted with this parameter, device_shutdown()
-will shutdown devices one by one.
-
-Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 ---
- drivers/base/core.c | 70 +++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 68 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 210b619931bc..032a1922bcb7 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -22,6 +22,7 @@
- #include <linux/genhd.h>
- #include <linux/mutex.h>
- #include <linux/pm_runtime.h>
-+#include <linux/kthread.h>
- #include <linux/netdevice.h>
- #include <linux/sched/signal.h>
- #include <linux/sysfs.h>
-@@ -2850,19 +2851,39 @@ static void device_shutdown_one(struct device *dev)
- /*
-  * Passed as an argument to device_shutdown_child_task().
-  * child_next_index	the next available child index.
-+ * tasks_running	number of tasks still running. Each tasks decrements it
-+ *			when job is finished and the last task signals that the
-+ *			job is complete.
-+ * complete		Used to signal job competition.
-  * parent		Parent device.
-  */
- struct device_shutdown_task_data {
- 	atomic_t		child_next_index;
-+	atomic_t		tasks_running;
-+	struct completion	complete;
- 	struct device		*parent;
- };
- 
- static int device_shutdown_child_task(void *data);
-+static bool device_shutdown_serial;
-+
-+/*
-+ * These globals are used by tasks that are started for root devices.
-+ * device_root_tasks_finished	Number of root devices finished shutting down.
-+ * device_root_tasks_started	Total number of root devices tasks started.
-+ * device_root_tasks_done	The completion signal to the main thread.
-+ */
-+static atomic_t			device_root_tasks_finished;
-+static atomic_t			device_root_tasks_started;
-+static struct completion	device_root_tasks_done;
- 
- /*
-  * Shutdown device tree with root started in dev. If dev has no children
-  * simply shutdown only this device. If dev has children recursively shutdown
-  * children first, and only then the parent.
-+ * For performance reasons children are shutdown in parallel using kernel
-+ * threads. because we lock dev its children cannot be removed while this
-+ * functions is running.
-  */
- static void device_shutdown_tree(struct device *dev)
- {
-@@ -2876,11 +2897,20 @@ static void device_shutdown_tree(struct device *dev)
- 		int i;
- 
- 		atomic_set(&tdata.child_next_index, 0);
-+		atomic_set(&tdata.tasks_running, children_count);
-+		init_completion(&tdata.complete);
- 		tdata.parent = dev;
- 
- 		for (i = 0; i < children_count; i++) {
--			device_shutdown_child_task(&tdata);
-+			if (device_shutdown_serial) {
-+				device_shutdown_child_task(&tdata);
-+			} else {
-+				kthread_run(device_shutdown_child_task,
-+					    &tdata, "device_shutdown.%s",
-+					    dev_name(dev));
-+			}
- 		}
-+		wait_for_completion(&tdata.complete);
- 	}
- 	device_shutdown_one(dev);
- 	device_unlock(dev);
-@@ -2900,6 +2930,10 @@ static int device_shutdown_child_task(void *data)
- 	/* ref. counter is going to be decremented in device_shutdown_one() */
- 	get_device(dev);
- 	device_shutdown_tree(dev);
-+
-+	/* If we are the last to exit, signal the completion */
-+	if (atomic_dec_return(&tdata->tasks_running) == 0)
-+		complete(&tdata->complete);
- 	return 0;
- }
- 
-@@ -2910,9 +2944,14 @@ static int device_shutdown_child_task(void *data)
- static int device_shutdown_root_task(void *data)
- {
- 	struct device *dev = (struct device *)data;
-+	int root_devices;
- 
- 	device_shutdown_tree(dev);
- 
-+	/* If we are the last to exit, signal the completion */
-+	root_devices = atomic_inc_return(&device_root_tasks_finished);
-+	if (root_devices == atomic_read(&device_root_tasks_started))
-+		complete(&device_root_tasks_done);
- 	return 0;
- }
- 
-@@ -2921,10 +2960,17 @@ static int device_shutdown_root_task(void *data)
-  */
- void device_shutdown(void)
- {
-+	int root_devices = 0;
- 	struct device *dev;
- 
-+	atomic_set(&device_root_tasks_finished, 0);
-+	atomic_set(&device_root_tasks_started, 0);
-+	init_completion(&device_root_tasks_done);
-+
- 	/* Shutdown the root devices. The children are going to be
- 	 * shutdown first in device_shutdown_tree().
-+	 * We shutdown root devices in parallel by starting thread
-+	 * for each root device.
- 	 */
- 	spin_lock(&devices_kset->list_lock);
- 	while (!list_empty(&devices_kset->list)) {
-@@ -2955,13 +3001,33 @@ void device_shutdown(void)
- 			 */
- 			spin_unlock(&devices_kset->list_lock);
- 
--			device_shutdown_root_task(dev);
-+			root_devices++;
-+			if (device_shutdown_serial) {
-+				device_shutdown_root_task(dev);
-+			} else {
-+				kthread_run(device_shutdown_root_task,
-+					    dev, "device_root_shutdown.%s",
-+					    dev_name(dev));
-+			}
- 			spin_lock(&devices_kset->list_lock);
- 		}
- 	}
- 	spin_unlock(&devices_kset->list_lock);
-+
-+	/* Set number of root tasks started, and waits for completion */
-+	atomic_set(&device_root_tasks_started, root_devices);
-+	if (root_devices != atomic_read(&device_root_tasks_finished))
-+		wait_for_completion(&device_root_tasks_done);
-+}
-+
-+static int __init _device_shutdown_serial(char *arg)
-+{
-+	device_shutdown_serial = true;
-+	return 0;
- }
- 
-+early_param("device_shutdown_serial", _device_shutdown_serial);
-+
- /*
-  * Device logging functions
-  */
--- 
-2.17.0
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
