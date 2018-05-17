@@ -1,104 +1,156 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Thu, 17 May 2018 11:22:44 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 0/6] ixgbe/ixgbevf: IPsec hardware
- offload for 10Gbe VF
-Message-ID: <1526581370-30307-1-git-send-email-shannon.nelson@oracle.com>
+Date: Thu, 17 May 2018 11:22:47 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 3/6] ixgbe: add VF IPsec offload
+ request message handling
+In-Reply-To: <1526581370-30307-1-git-send-email-shannon.nelson@oracle.com>
+References: <1526581370-30307-1-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1526581370-30307-4-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This RFC patchset looks at adding IPsec hardware offload capabilities to
-ixgbevf, Intel's 10Gbe VF driver.
+Add an add and a delete message for IPsec offload requests from
+the VF.  These call into the ipsec functions that can translate
+the message buffer into a useful IPsec offload.
 
-I'm publishing this code as a way to start conversations on (a) is this
-is something that people want, and (b) how can we manage the potential
-security issues this can bring up?
+These new messages bump the mbox API version to 1.4.
 
-I intend to leave this code as an RFC for now for a number of reasons.
-Firstly, it raises some interesting security issues, discussed below.
-Secondly, this code only "mostly" works: I haven't done a lot of testing
-on it, but I do know that the VF's Tx encryption doesn't happen - the
-registers and descriptors seem to be set up correctly, just as in the
-PF, but the outbound encryption engine doesn't engage, and there is no
-error reporting available.  If there is sufficient interest in further
-work on these patches, I'll spend more time to track down this issue.
-It's likely something simple.
+Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  9 +++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h   |  5 +++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 17 ++++++++++++++++-
+ 3 files changed, 30 insertions(+), 1 deletion(-)
 
-Points to consider include:
-
- - Do VFs even need IPsec hardware offload?
- 	Is there anyone who actually might find this useful, either in
-	a cloud setting or possibly in a security appliance?
-
- - Sharing SPI/SA space with PF and other VFs
-	In a particular IPsec "peer" (VM or bare-metal or hypervisor),
-	the SPIs chosen for each SA are unique to each conversation
-	that is being encrypted, and the choosing of the SPIs is usually
-	orchestrated by the userland software such as StrongSwan or
-	LibreSwan running on that peer.
-
-	The Intel NIC has only one set of IPsec offload registers for use
-	with PF and VFs.  Because of this, when multiple peers on that
-	same host are each trying to run their own constellations of SPIs,
-	we have the opportunity for number space collisions.
-
-	The SPI collisions might be moot if the VMs are coordinated enough
-	to be using different networks: for example VM1 on 14.0.0.0/24
-	and VM2 on 15.0.0.0/24.  A typical way to keep VMs separate
-	is to put them on different tunnels and not worry about their
-	specific networks.  However, on something like Intel's 10gbe NIC,
-	the Rx decryption happens on the tunneled packet with no regard
-	for the tunnel id - if both VMs use the same network spaces inside
-	their tunnels, only separated by different tunnels, then their
-	SPI/IP spaces will collide.
-
- - Trusting the VF
-	To attempt a simple mitigation of security issues, I'm assuming
-	in this implementation that a VF with the offload must part of a
-	solution where all parts are managed together, and thus the VF is
-	"trusted".  Therefore, the 'trusted' bit must be enabled on the
-	VF, e.g.:
-	    ip link set dev ${PF} vf ${vf_id} trust on
-	This is probably more useful in an appliance that uses VFs for
-	specific traffic management rather than someone's cloud VM servers.
-
- - Other issues?
- 	What other issues am I missing in this?
-
-I would appreciate hearing your thoughts and concerns.
-
-Thanks,
-sln
-
-
-
-Shannon Nelson (6):
-  ixgbe: prep ipsec constants for later use
-  ixgbe: add VF ipsec management
-  ixgbe: add VF IPsec offload request message handling
-  ixgbevf: add defines for IPsec offload request
-  ixgbevf: add VF ipsec offload code
-  ixgbevf: enable VF ipsec offload operations
-
- drivers/net/ethernet/intel/ixgbe/ixgbe.h          |   9 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c    | 251 ++++++++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h    |  13 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h      |   5 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c    |  17 +-
- drivers/net/ethernet/intel/ixgbevf/Makefile       |   1 +
- drivers/net/ethernet/intel/ixgbevf/defines.h      |  10 +-
- drivers/net/ethernet/intel/ixgbevf/ethtool.c      |   2 +
- drivers/net/ethernet/intel/ixgbevf/ipsec.c        | 623 ++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbevf/ipsec.h        |  66 +++
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  28 +
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  71 ++-
- drivers/net/ethernet/intel/ixgbevf/mbx.h          |   5 +
- 13 files changed, 1067 insertions(+), 34 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ixgbevf/ipsec.c
- create mode 100644 drivers/net/ethernet/intel/ixgbevf/ipsec.h
-
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 4f08c71..b75ae5d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -1030,6 +1030,9 @@ void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
+ 		    struct sk_buff *skb);
+ int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring, struct ixgbe_tx_buffer *first,
+ 		   struct ixgbe_ipsec_tx_data *itd);
++void ixgbe_ipsec_vf_clear(struct ixgbe_adapter *adapter, u32 vf);
++int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *mbuf, u32 vf);
++int ixgbe_ipsec_vf_del_sa(struct ixgbe_adapter *adapter, u32 *mbuf, u32 vf);
+ #else
+ static inline void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter) { };
+ static inline void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter) { };
+@@ -1040,5 +1043,11 @@ static inline void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
+ static inline int ixgbe_ipsec_tx(struct ixgbe_ring *tx_ring,
+ 				 struct ixgbe_tx_buffer *first,
+ 				 struct ixgbe_ipsec_tx_data *itd) { return 0; };
++static inline void ixgbe_ipsec_vf_clear(struct ixgbe_adapter *adapter,
++					u32 vf) { };
++static inline int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter,
++					u32 *mbuf, u32 vf) { return -EACCES; };
++static inline int ixgbe_ipsec_vf_del_sa(struct ixgbe_adapter *adapter,
++					u32 *mbuf, u32 vf) { return -EACCES; };
+ #endif /* CONFIG_XFRM_OFFLOAD */
+ #endif /* _IXGBE_H_ */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
+index c4628b6..ad9aeaf 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
+@@ -76,6 +76,7 @@ enum ixgbe_pfvf_api_rev {
+ 	ixgbe_mbox_api_11,	/* API version 1.1, linux/freebsd VF driver */
+ 	ixgbe_mbox_api_12,	/* API version 1.2, linux/freebsd VF driver */
+ 	ixgbe_mbox_api_13,	/* API version 1.3, linux/freebsd VF driver */
++	ixgbe_mbox_api_14,	/* API version 1.4, linux/freebsd VF driver */
+ 	/* This value should always be last */
+ 	ixgbe_mbox_api_unknown,	/* indicates that API version is not known */
+ };
+@@ -106,6 +107,10 @@ enum ixgbe_pfvf_api_rev {
+ 
+ #define IXGBE_VF_UPDATE_XCAST_MODE	0x0c
+ 
++/* mailbox API, version 1.4 VF requests */
++#define IXGBE_VF_IPSEC_ADD	0x0d
++#define IXGBE_VF_IPSEC_DEL	0x0e
++
+ /* length of permanent address message returned from PF */
+ #define IXGBE_VF_PERMADDR_MSG_LEN 4
+ /* word in permanent address message with the current multicast type */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index 008aa07..7d992361 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -515,6 +515,7 @@ static s32 ixgbe_set_vf_lpe(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
+ 		case ixgbe_mbox_api_11:
+ 		case ixgbe_mbox_api_12:
+ 		case ixgbe_mbox_api_13:
++		case ixgbe_mbox_api_14:
+ 			/* Version 1.1 supports jumbo frames on VFs if PF has
+ 			 * jumbo frames enabled which means legacy VFs are
+ 			 * disabled
+@@ -742,6 +743,9 @@ static inline void ixgbe_vf_reset_event(struct ixgbe_adapter *adapter, u32 vf)
+ 	/* reset multicast table array for vf */
+ 	adapter->vfinfo[vf].num_vf_mc_hashes = 0;
+ 
++	/* clear any ipsec table info */
++	ixgbe_ipsec_vf_clear(adapter, vf);
++
+ 	/* Flush and reset the mta with the new values */
+ 	ixgbe_set_rx_mode(adapter->netdev);
+ 
+@@ -996,6 +1000,7 @@ static int ixgbe_negotiate_vf_api(struct ixgbe_adapter *adapter,
+ 	case ixgbe_mbox_api_11:
+ 	case ixgbe_mbox_api_12:
+ 	case ixgbe_mbox_api_13:
++	case ixgbe_mbox_api_14:
+ 		adapter->vfinfo[vf].vf_api = api;
+ 		return 0;
+ 	default:
+@@ -1021,6 +1026,7 @@ static int ixgbe_get_vf_queues(struct ixgbe_adapter *adapter,
+ 	case ixgbe_mbox_api_11:
+ 	case ixgbe_mbox_api_12:
+ 	case ixgbe_mbox_api_13:
++	case ixgbe_mbox_api_14:
+ 		break;
+ 	default:
+ 		return -1;
+@@ -1061,6 +1067,7 @@ static int ixgbe_get_vf_reta(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
+ 
+ 	/* verify the PF is supporting the correct API */
+ 	switch (adapter->vfinfo[vf].vf_api) {
++	case ixgbe_mbox_api_14:
+ 	case ixgbe_mbox_api_13:
+ 	case ixgbe_mbox_api_12:
+ 		break;
+@@ -1093,6 +1100,7 @@ static int ixgbe_get_vf_rss_key(struct ixgbe_adapter *adapter,
+ 
+ 	/* verify the PF is supporting the correct API */
+ 	switch (adapter->vfinfo[vf].vf_api) {
++	case ixgbe_mbox_api_14:
+ 	case ixgbe_mbox_api_13:
+ 	case ixgbe_mbox_api_12:
+ 		break;
+@@ -1118,8 +1126,9 @@ static int ixgbe_update_vf_xcast_mode(struct ixgbe_adapter *adapter,
+ 		/* promisc introduced in 1.3 version */
+ 		if (xcast_mode == IXGBEVF_XCAST_MODE_PROMISC)
+ 			return -EOPNOTSUPP;
+-		/* Fall threw */
++		/* Fall through */
+ 	case ixgbe_mbox_api_13:
++	case ixgbe_mbox_api_14:
+ 		break;
+ 	default:
+ 		return -EOPNOTSUPP;
+@@ -1245,6 +1254,12 @@ static int ixgbe_rcv_msg_from_vf(struct ixgbe_adapter *adapter, u32 vf)
+ 	case IXGBE_VF_UPDATE_XCAST_MODE:
+ 		retval = ixgbe_update_vf_xcast_mode(adapter, msgbuf, vf);
+ 		break;
++	case IXGBE_VF_IPSEC_ADD:
++		retval = ixgbe_ipsec_vf_add_sa(adapter, msgbuf, vf);
++		break;
++	case IXGBE_VF_IPSEC_DEL:
++		retval = ixgbe_ipsec_vf_del_sa(adapter, msgbuf, vf);
++		break;
+ 	default:
+ 		e_err(drv, "Unhandled Msg %8.8x\n", msgbuf[0]);
+ 		retval = IXGBE_ERR_MBX;
 -- 
 2.7.4
 
