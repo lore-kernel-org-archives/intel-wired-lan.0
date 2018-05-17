@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 17 May 2018 22:10:49 +0000
-Subject: [Intel-wired-lan] [next PATCH S92 2/9] i40e: always return VEB
- stat strings
-In-Reply-To: <20180517080840.30192-2-alice.michael@intel.com>
+Date: Thu, 17 May 2018 22:12:23 +0000
+Subject: [Intel-wired-lan] [next PATCH S92 3/9] i40e: always return all
+ queue stat strings
+In-Reply-To: <20180517080840.30192-3-alice.michael@intel.com>
 References: <20180517080840.30192-1-alice.michael@intel.com>
- <20180517080840.30192-2-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1B771840@ORSMSX104.amr.corp.intel.com>
+ <20180517080840.30192-3-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1B771850@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,8 +18,8 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Thursday, May 17, 2018 1:09 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S92 2/9] i40e: always return VEB stat
-> strings
+> Subject: [Intel-wired-lan] [next PATCH S92 3/9] i40e: always return all queue
+> stat strings
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
@@ -42,14 +42,14 @@ List-ID: <intel-wired-lan.osuosl.org>
 > device. We can check any values which remain constant for the life of the
 > device, but must not report different sizes depending on runtime attributes.
 > 
-> This patch specifically fixes the VEB statistics strings to always be reported.
-> Other issues will be fixed in future patches.
+> This patch specifically fixes the queue statistics to always return every queue
+> even if it's not currently in use.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 52 ++++++++++++----------
-> ----
->  1 file changed, 23 insertions(+), 29 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 22 +++++++++++++++++--
+> ---
+>  1 file changed, 17 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
