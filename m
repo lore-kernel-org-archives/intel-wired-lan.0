@@ -1,15 +1,24 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 22 May 2018 03:51:00 +0800
+From: Devale, Sindhu <sindhu.devale@intel.com>
+Date: Mon, 21 May 2018 23:51:48 +0000
 Subject: [Intel-wired-lan] [RFC PATCH jkirsher-next-queue] i40iw/i40e:
  i40iw_open_inc_ref() can be static
-In-Reply-To: <201805220348.Z5yGrkGk%fengguang.wu@intel.com>
+In-Reply-To: <20180521195100.GA37206@lkp-sb05>
 References: <201805220348.Z5yGrkGk%fengguang.wu@intel.com>
-Message-ID: <20180521195100.GA37206@lkp-sb05>
+ <20180521195100.GA37206@lkp-sb05>
+Message-ID: <2A835467-3A26-4701-BCD8-C3DF81548F4F@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+ACK.
+
+Thank you,
+Sindhu
+
+
+
 
 
 Fixes: 34a1361d548d ("i40iw/i40e: Remove link dependency on i40e")
@@ -40,3 +49,4 @@ index 65e1269..f4c5be1 100644
  {
  	struct i40iw_peer *peer;
  
+
