@@ -1,258 +1,108 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 22 May 2018 12:01:25 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- c241a874461c2344490b79f2e36cc27338403d30
-Message-ID: <5b039615.Rbras8Kd/+9GIojW%lkp@intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
+Date: Tue, 22 May 2018 11:44:29 -0400
+Subject: [Intel-wired-lan] [next-queue PATCH] ixgbevf: Fix coexistence of
+ malicious driver detection with XDP
+Message-ID: <20180522154429.80364.17986.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: c241a874461c2344490b79f2e36cc27338403d30  i40iw/i40e: Remove link dependency on i40e
+In the case of the VF driver it is supposed to provide a context descriptor
+that allows us to provide information about the header offsets inside of
+the frame. However in the case of XDP we don't really have any of that
+information since the data is minimally processed. As a result we were
+seeing malicious driver detection (MDD) events being triggered when the PF
+had that functionality enabled.
 
-Regressions in current branch:
+To address this I have added a bit of new code that will "prime" the XDP
+ring by providing one context descriptor that assumes the minimal setup of
+an Ethernet frame which is an L2 header length of 14. With just that we can
+provide enough information to make the hardware happy so that we don't
+trigger MDD events.
 
-drivers/infiniband/hw/i40iw/i40iw_main.c:110:6: sparse: symbol 'i40iw_open_inc_ref' was not declared. Should it be static?
-drivers/infiniband/hw/i40iw/i40iw_main.c:118:6: sparse: symbol 'i40iw_open_dec_ref' was not declared. Should it be static?
-
-Error ids grouped by kconfigs:
-
-recent_errors
-??? x86_64-allmodconfig
-    ??? drivers-infiniband-hw-i40iw-i40iw_main.c:sparse:symbol-i40iw_open_dec_ref-was-not-declared.-Should-it-be-static
-    ??? drivers-infiniband-hw-i40iw-i40iw_main.c:sparse:symbol-i40iw_open_inc_ref-was-not-declared.-Should-it-be-static
-
-elapsed time: 346m
-
-configs tested: 224
-
-mips                        bcm47xx_defconfig
-sh                   secureedge5410_defconfig
-m68k                       m5249evb_defconfig
-powerpc                     skiroot_defconfig
-arm64                             allnoconfig
-x86_64                 randconfig-a0-05220638
-x86_64                 randconfig-a0-05220933
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-05221035
-alpha                            allmodconfig
-arm                            dove_defconfig
-x86_64                randconfig-in0-05220615
-arm64                               defconfig
-powerpc                      mgcoge_defconfig
-powerpc                         ps3_defconfig
-x86_64                randconfig-it0-05220617
-i386                               tinyconfig
-i386                   randconfig-x012-201820
-i386                   randconfig-x014-201820
-i386                   randconfig-x017-201820
-i386                   randconfig-x016-201820
-i386                   randconfig-x018-201820
-i386                   randconfig-x013-201820
-i386                   randconfig-x011-201820
-i386                   randconfig-x015-201820
-i386                   randconfig-x019-201820
-i386                   randconfig-x010-201820
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201820
-x86_64                 randconfig-x003-201820
-x86_64                 randconfig-x007-201820
-x86_64                 randconfig-x000-201820
-x86_64                 randconfig-x005-201820
-x86_64                 randconfig-x004-201820
-x86_64                 randconfig-x001-201820
-x86_64                 randconfig-x008-201820
-x86_64                 randconfig-x002-201820
-x86_64                 randconfig-x006-201820
-x86_64                 randconfig-x009-201820
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201820
-i386                     randconfig-i1-201820
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm                       netwinder_defconfig
-arm                          prima2_defconfig
-x86_64                 randconfig-v0-05220642
-arm                     am200epdkit_defconfig
-powerpc                   bluestone_defconfig
-mips                      pistachio_defconfig
-sh                              ul2_defconfig
-arm                        realview_defconfig
-microblaze                       allyesconfig
-x86_64                                  kexec
-x86_64                 randconfig-g0-05220537
-x86_64                 randconfig-g0-05220654
-x86_64                 randconfig-g0-05221019
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x011-201820
-x86_64                 randconfig-x015-201820
-x86_64                 randconfig-x018-201820
-x86_64                 randconfig-x010-201820
-x86_64                 randconfig-x019-201820
-x86_64                 randconfig-x014-201820
-x86_64                 randconfig-x013-201820
-x86_64                 randconfig-x016-201820
-x86_64                 randconfig-x017-201820
-x86_64                 randconfig-x012-201820
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201820
-i386                     randconfig-a1-201820
-x86_64                 randconfig-s0-05220616
-x86_64                 randconfig-s1-05220616
-x86_64                 randconfig-s2-05220616
-x86_64                 randconfig-s0-05220658
-x86_64                 randconfig-s1-05220658
-x86_64                 randconfig-s2-05220658
-x86_64                 randconfig-s0-05221034
-x86_64                 randconfig-s1-05221034
-x86_64                 randconfig-s2-05221034
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                         lubbock_defconfig
-powerpc                      obs600_defconfig
-sh                           se7343_defconfig
-sparc64                          allyesconfig
-arm                      integrator_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201820
-i386                     randconfig-s0-201820
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-05220611
-x86_64                 randconfig-s4-05220611
-x86_64                 randconfig-s5-05220611
-x86_64                 randconfig-s3-05220703
-x86_64                 randconfig-s4-05220703
-x86_64                 randconfig-s5-05220703
-x86_64                 randconfig-s3-05221040
-x86_64                 randconfig-s4-05221040
-x86_64                 randconfig-s5-05221040
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                            u300_defconfig
-m68k                             allyesconfig
-x86_64                   randconfig-i0-201820
-i386                   randconfig-b0-05220458
-i386                   randconfig-b0-05220659
-i386                   randconfig-b0-05221011
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-b0-05220919
-arm                          pxa3xx_defconfig
-sh                          kfr2r09_defconfig
-mips                malta_kvm_guest_defconfig
-sh                          rsk7201_defconfig
-x86_64                 randconfig-u0-05220544
-x86_64                 randconfig-u0-05220729
-x86_64                 randconfig-u0-05221037
-x86_64                 randconfig-u0-05221109
-arm                         orion5x_defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc                     kilauea_defconfig
-sparc                       sparc32_defconfig
-xtensa                  cadence_csp_defconfig
-i386                   randconfig-h0-05220603
-i386                   randconfig-h1-05220603
-mips                      pic32mzda_defconfig
-powerpc                      katmai_defconfig
-mips                        bcm63xx_defconfig
-xtensa                           allmodconfig
-x86_64                randconfig-ne0-05220515
-x86_64                randconfig-ne0-05220654
-x86_64                randconfig-ne0-05221034
-sh                        dreamcast_defconfig
-x86_64                 randconfig-h0-05220633
-i386                  randconfig-sb0-05220614
-i386                   randconfig-x008-201820
-i386                   randconfig-x009-201820
-i386                   randconfig-x005-201820
-i386                   randconfig-x003-201820
-i386                   randconfig-x000-201820
-i386                   randconfig-x001-201820
-i386                   randconfig-x004-201820
-i386                   randconfig-x006-201820
-i386                   randconfig-x002-201820
-i386                   randconfig-x007-201820
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-sh                               alldefconfig
-x86_64                randconfig-ws0-05220639
-x86_64                randconfig-ws0-05220550
-i386                   randconfig-x078-201820
-i386                   randconfig-x079-201820
-i386                   randconfig-x070-201820
-i386                   randconfig-x076-201820
-i386                   randconfig-x075-201820
-i386                   randconfig-x074-201820
-i386                   randconfig-x071-201820
-i386                   randconfig-x073-201820
-i386                   randconfig-x077-201820
-i386                   randconfig-x072-201820
-m68k                            mac_defconfig
-powerpc                          g5_defconfig
-mips                         cobalt_defconfig
-openrisc                 simple_smp_defconfig
-x86_64                 randconfig-r0-05220605
-arm                             mxs_defconfig
-i386                   randconfig-x0-05220611
-i386                   randconfig-x0-05221021
-
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    1 +
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   36 +++++++++++++++++----
+ 2 files changed, 30 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index 70c7568..56a1031 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -76,6 +76,7 @@ enum ixgbevf_ring_state_t {
+ 	__IXGBEVF_TX_DETECT_HANG,
+ 	__IXGBEVF_HANG_CHECK_ARMED,
+ 	__IXGBEVF_TX_XDP_RING,
++	__IXGBEVF_TX_XDP_RING_PRIMED,
+ };
+ 
+ #define ring_is_xdp(ring) \
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index c298614..e2a8a03 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -991,24 +991,45 @@ static int ixgbevf_xmit_xdp_ring(struct ixgbevf_ring *ring,
+ 		return IXGBEVF_XDP_CONSUMED;
+ 
+ 	/* record the location of the first descriptor for this packet */
+-	tx_buffer = &ring->tx_buffer_info[ring->next_to_use];
+-	tx_buffer->bytecount = len;
+-	tx_buffer->gso_segs = 1;
+-	tx_buffer->protocol = 0;
+-
+ 	i = ring->next_to_use;
+-	tx_desc = IXGBEVF_TX_DESC(ring, i);
++	tx_buffer = &ring->tx_buffer_info[i];
+ 
+ 	dma_unmap_len_set(tx_buffer, len, len);
+ 	dma_unmap_addr_set(tx_buffer, dma, dma);
+ 	tx_buffer->data = xdp->data;
+-	tx_desc->read.buffer_addr = cpu_to_le64(dma);
++	tx_buffer->bytecount = len;
++	tx_buffer->gso_segs = 1;
++	tx_buffer->protocol = 0;
++
++	/* Populate minimal context descriptor that will provide for the
++	 * fact that we are expected to process Ethernet frames.
++	 */
++	if (!test_bit(__IXGBEVF_TX_XDP_RING_PRIMED, &ring->state)) {
++		struct ixgbe_adv_tx_context_desc *context_desc;
++
++		set_bit(__IXGBEVF_TX_XDP_RING_PRIMED, &ring->state);
++
++		context_desc = IXGBEVF_TX_CTXTDESC(ring, 0);
++		context_desc->vlan_macip_lens	=
++			cpu_to_le32(ETH_HLEN << IXGBE_ADVTXD_MACLEN_SHIFT);
++		context_desc->seqnum_seed	= 0;
++		context_desc->type_tucmd_mlhl	=
++			cpu_to_le32(IXGBE_TXD_CMD_DEXT |
++				    IXGBE_ADVTXD_DTYP_CTXT);
++		context_desc->mss_l4len_idx	= 0;
++
++		i = 1;
++	}
+ 
+ 	/* put descriptor type bits */
+ 	cmd_type = IXGBE_ADVTXD_DTYP_DATA |
+ 		   IXGBE_ADVTXD_DCMD_DEXT |
+ 		   IXGBE_ADVTXD_DCMD_IFCS;
+ 	cmd_type |= len | IXGBE_TXD_CMD;
++
++	tx_desc = IXGBEVF_TX_DESC(ring, i);
++	tx_desc->read.buffer_addr = cpu_to_le64(dma);
++
+ 	tx_desc->read.cmd_type_len = cpu_to_le32(cmd_type);
+ 	tx_desc->read.olinfo_status =
+ 			cpu_to_le32((len << IXGBE_ADVTXD_PAYLEN_SHIFT) |
+@@ -1688,6 +1709,7 @@ static void ixgbevf_configure_tx_ring(struct ixgbevf_adapter *adapter,
+ 	       sizeof(struct ixgbevf_tx_buffer) * ring->count);
+ 
+ 	clear_bit(__IXGBEVF_HANG_CHECK_ARMED, &ring->state);
++	clear_bit(__IXGBEVF_TX_XDP_RING_PRIMED, &ring->state);
+ 
+ 	IXGBE_WRITE_REG(hw, IXGBE_VFTXDCTL(reg_idx), txdctl);
+ 
+
