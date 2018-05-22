@@ -1,85 +1,156 @@
-From: William Kucharski <william.kucharski@oracle.com>
-Date: Tue, 22 May 2018 12:00:09 -0600
-Subject: [Intel-wired-lan] Regression: Approximate 34% performance hit in
- receive throughput over ixgbe seen due to build_skb patch
-Message-ID: <A940030A-CDBF-41CD-816F-0BBC76E7C4F4@oracle.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 23 May 2018 02:46:15 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
+ 3f76bdb437c6a9a4621ee64f1c877b7532efa7d3
+Message-ID: <5b046577.+8jj4F6UbHQvKFPh%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-A performance hit of approximately 34% in receive numbers for some packet sizes is
-seen when testing traffic over ixgbe links using the network test netperf.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+branch HEAD: 3f76bdb437c6a9a4621ee64f1c877b7532efa7d3  i40e: use the more traditional 'i' loop variable
 
-Starting with the top of tree commit 7addb3e4ad3db6a95a953c59884921b5883dcdec,
-a git bisect narrowed the issue down to:
+elapsed time: 61m
 
-commit 6f429223b31c550b835b4f066ac034d0cf0cc71e
+configs tested: 131
 
-    ixgbe: Add support for build_skb
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-    This patch adds build_skb support to the Rx path.  There are several
-    advantages to this change.
+arm                          ks8695_defconfig
+arm                            qcom_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+microblaze                          defconfig
+powerpc                     pq2fads_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-05230104
+x86_64                           allmodconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201820
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201820
+i386                     randconfig-i1-201820
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201820
+x86_64                 randconfig-x011-201820
+x86_64                 randconfig-x012-201820
+x86_64                 randconfig-x013-201820
+x86_64                 randconfig-x014-201820
+x86_64                 randconfig-x015-201820
+x86_64                 randconfig-x016-201820
+x86_64                 randconfig-x017-201820
+x86_64                 randconfig-x018-201820
+x86_64                 randconfig-x019-201820
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-a0-201820
+i386                     randconfig-a1-201820
+x86_64                 randconfig-s0-05230203
+x86_64                 randconfig-s1-05230203
+x86_64                 randconfig-s2-05230203
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                           allyesconfig
+arm                  colibri_pxa270_defconfig
+mips                                defconfig
+powerpc                       ebony_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201820
+i386                     randconfig-s1-201820
+x86_64                 randconfig-s3-05230050
+x86_64                 randconfig-s4-05230050
+x86_64                 randconfig-s5-05230050
+mips                      maltasmvp_defconfig
+powerpc                          allmodconfig
+powerpc                 mpc836x_mds_defconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                 mpc8315_rdb_defconfig
+powerpc                     tqm5200_defconfig
+x86_64                 randconfig-u0-05230148
+i386                               tinyconfig
+x86_64                randconfig-ne0-05230155
+i386                   randconfig-x012-201820
+i386                   randconfig-x014-201820
+i386                   randconfig-x017-201820
+i386                   randconfig-x016-201820
+i386                   randconfig-x018-201820
+i386                   randconfig-x013-201820
+i386                   randconfig-x011-201820
+i386                   randconfig-x015-201820
+i386                   randconfig-x019-201820
+i386                   randconfig-x010-201820
+i386                   randconfig-x008-201820
+i386                   randconfig-x009-201820
+i386                   randconfig-x005-201820
+i386                   randconfig-x003-201820
+i386                   randconfig-x000-201820
+i386                   randconfig-x001-201820
+i386                   randconfig-x004-201820
+i386                   randconfig-x006-201820
+i386                   randconfig-x002-201820
+i386                   randconfig-x007-201820
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x078-201820
+i386                   randconfig-x079-201820
+i386                   randconfig-x070-201820
+i386                   randconfig-x076-201820
+i386                   randconfig-x075-201820
+i386                   randconfig-x074-201820
+i386                   randconfig-x071-201820
+i386                   randconfig-x073-201820
+i386                   randconfig-x077-201820
+i386                   randconfig-x072-201820
+x86_64                 randconfig-x003-201820
+x86_64                 randconfig-x007-201820
+x86_64                 randconfig-x000-201820
+x86_64                 randconfig-x005-201820
+x86_64                 randconfig-x004-201820
+x86_64                 randconfig-x001-201820
+x86_64                 randconfig-x008-201820
+x86_64                 randconfig-x002-201820
+x86_64                 randconfig-x006-201820
+x86_64                 randconfig-x009-201820
+powerpc                     akebono_defconfig
+powerpc64                         allnoconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-05222314
 
-    1.  It avoids the memcpy and skb->head allocation for small packets which
-        improves performance by about 5% in my tests.
-    2.  It avoids the memcpy, skb->head allocation, and eth_get_headlen
-        for larger packets improving performance by about 10% in my tests.
-    3.  For VXLAN packets it allows the full header to be in skb->data which
-        improves the performance by as much as 30% in some of my tests.
-
-Netperf was sourced from:
-
-    https://hewlettpackard.github.io/netperf/
-
-Two machines were directly connected via ixgbe links.
-
-The process "netserver" was started on 10.196.11.8, and running this test:
-
-# netperf -l 60 -H 10.196.11.8 -i 10,2 -I 99,10 -t UDP_STREAM -- -m 64 -s 32768 -S 32768
-
-showed that on machines without the patch, we typically see performance
-like:
-
-Socket  Message  Elapsed      Messages
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
-
- 65536      64   60.00     35435847      0     302.38    <-- SEND
- 65536           60.00     35391087            302.00    <-- RECEIVE
-
-or
-
-Socket  Message  Elapsed      Messages                
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
-
- 65536      64   60.00     33708816      0     287.65
- 65536           60.00     33706010            287.62
-
-
-However, on machines with the patch, receive performance is seen to fall by an
-average of 34%, e.g.:
-
-Socket  Message  Elapsed      Messages
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
-
- 65536      64   60.00     35179881      0     300.20
- 65536           60.00     21418471            182.77
-
-or
-
-Socket  Message  Elapsed      Messages                
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
-
- 65536      64   60.00     36937716      0     315.20
- 65536           60.00     16838656            143.69
-
-     William Kucharski
-     william.kucharski@oracle.com
-
-
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
