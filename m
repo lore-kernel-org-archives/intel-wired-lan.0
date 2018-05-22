@@ -1,120 +1,67 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 22 May 2018 10:13:46 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH] ixgbevf: Fix coexistence
- of malicious driver detection with XDP
-In-Reply-To: <0031c065-9673-2e39-7cf7-bf30b7a2fb4b@oracle.com>
-References: <20180522154429.80364.17986.stgit@ahduyck-green-test.jf.intel.com>
- <0031c065-9673-2e39-7cf7-bf30b7a2fb4b@oracle.com>
-Message-ID: <CAKgT0UfbmP-Z552JpgqcM26FbDoLi6Yiyg1iprJ8VmRMhyHagg@mail.gmail.com>
+Date: Tue, 22 May 2018 11:23:58 -0700
+Subject: [Intel-wired-lan] Regression: Approximate 34% performance hit
+ in receive throughput over ixgbe seen due to build_skb patch
+In-Reply-To: <A940030A-CDBF-41CD-816F-0BBC76E7C4F4@oracle.com>
+References: <A940030A-CDBF-41CD-816F-0BBC76E7C4F4@oracle.com>
+Message-ID: <CAKgT0Ud2qriAkWcs56WEkw2vhYzBbWvzZOoY24ndsqPKaWn=Sg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, May 22, 2018 at 10:02 AM, Shannon Nelson
-<shannon.nelson@oracle.com> wrote:
-> On 5/22/2018 8:44 AM, Alexander Duyck wrote:
->>
->> In the case of the VF driver it is supposed to provide a context
->> descriptor
->> that allows us to provide information about the header offsets inside of
->> the frame. However in the case of XDP we don't really have any of that
->> information since the data is minimally processed. As a result we were
->> seeing malicious driver detection (MDD) events being triggered when the PF
->> had that functionality enabled.
->>
->> To address this I have added a bit of new code that will "prime" the XDP
->> ring by providing one context descriptor that assumes the minimal setup of
->> an Ethernet frame which is an L2 header length of 14. With just that we
->> can
->> provide enough information to make the hardware happy so that we don't
->> trigger MDD events.
->>
->> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
->> ---
->>   drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    1 +
->>   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   36
->> +++++++++++++++++----
->>   2 files changed, 30 insertions(+), 7 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
->> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
->> index 70c7568..56a1031 100644
->> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
->> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
->> @@ -76,6 +76,7 @@ enum ixgbevf_ring_state_t {
->>         __IXGBEVF_TX_DETECT_HANG,
->>         __IXGBEVF_HANG_CHECK_ARMED,
->>         __IXGBEVF_TX_XDP_RING,
->> +       __IXGBEVF_TX_XDP_RING_PRIMED,
->>   };
->>     #define ring_is_xdp(ring) \
->> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
->> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
->> index c298614..e2a8a03 100644
->> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
->> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
->> @@ -991,24 +991,45 @@ static int ixgbevf_xmit_xdp_ring(struct ixgbevf_ring
->> *ring,
->>                 return IXGBEVF_XDP_CONSUMED;
->>         /* record the location of the first descriptor for this packet */
->> -       tx_buffer = &ring->tx_buffer_info[ring->next_to_use];
->> -       tx_buffer->bytecount = len;
->> -       tx_buffer->gso_segs = 1;
->> -       tx_buffer->protocol = 0;
->> -
->>         i = ring->next_to_use;
->> -       tx_desc = IXGBEVF_TX_DESC(ring, i);
->> +       tx_buffer = &ring->tx_buffer_info[i];
->>         dma_unmap_len_set(tx_buffer, len, len);
->>         dma_unmap_addr_set(tx_buffer, dma, dma);
->>         tx_buffer->data = xdp->data;
->> -       tx_desc->read.buffer_addr = cpu_to_le64(dma);
->> +       tx_buffer->bytecount = len;
->> +       tx_buffer->gso_segs = 1;
->> +       tx_buffer->protocol = 0;
->> +
->> +       /* Populate minimal context descriptor that will provide for the
->> +        * fact that we are expected to process Ethernet frames.
->> +        */
->> +       if (!test_bit(__IXGBEVF_TX_XDP_RING_PRIMED, &ring->state)) {
->> +               struct ixgbe_adv_tx_context_desc *context_desc;
->> +
->> +               set_bit(__IXGBEVF_TX_XDP_RING_PRIMED, &ring->state);
->> +
->> +               context_desc = IXGBEVF_TX_CTXTDESC(ring, 0);
->> +               context_desc->vlan_macip_lens   =
->> +                       cpu_to_le32(ETH_HLEN <<
->> IXGBE_ADVTXD_MACLEN_SHIFT);
->> +               context_desc->seqnum_seed       = 0;
->> +               context_desc->type_tucmd_mlhl   =
->> +                       cpu_to_le32(IXGBE_TXD_CMD_DEXT |
->> +                                   IXGBE_ADVTXD_DTYP_CTXT);
->> +               context_desc->mss_l4len_idx     = 0;
->> +
->> +               i = 1;
+On Tue, May 22, 2018 at 11:00 AM, William Kucharski
+<william.kucharski@oracle.com> wrote:
+> A performance hit of approximately 34% in receive numbers for some packet sizes is
+> seen when testing traffic over ixgbe links using the network test netperf.
 >
+> Starting with the top of tree commit 7addb3e4ad3db6a95a953c59884921b5883dcdec,
+> a git bisect narrowed the issue down to:
 >
-> This setting of i looks odd to me.  If i is the index of the next Tx
-> descriptor to be used, why are hard coding it to 1 here?  If this bit of
-> code is only run the first time after the ring has been configured, then
-> next_to_use was 0, and the data is in tx_buffer_info[0], but now tx_desc[1]
-> will be filled in?  Or am I misreading this?
+> commit 6f429223b31c550b835b4f066ac034d0cf0cc71e
 >
-> sln
+>     ixgbe: Add support for build_skb
+>
+>     This patch adds build_skb support to the Rx path.  There are several
+>     advantages to this change.
+>
+>     1.  It avoids the memcpy and skb->head allocation for small packets which
+>         improves performance by about 5% in my tests.
+>     2.  It avoids the memcpy, skb->head allocation, and eth_get_headlen
+>         for larger packets improving performance by about 10% in my tests.
+>     3.  For VXLAN packets it allows the full header to be in skb->data which
+>         improves the performance by as much as 30% in some of my tests.
+>
+> Netperf was sourced from:
+>
+>     https://hewlettpackard.github.io/netperf/
+>
+> Two machines were directly connected via ixgbe links.
+>
+> The process "netserver" was started on 10.196.11.8, and running this test:
+>
+> # netperf -l 60 -H 10.196.11.8 -i 10,2 -I 99,10 -t UDP_STREAM -- -m 64 -s 32768 -S 32768
 
-No, you are reading this correctly.
+Okay, so I can already see what the most likely issue is. The
+build_skb code is more CPU efficient, but it will consume more memory
+in the process since it is avoiding the memcpy and is instead using a
+full 2K block of memory for a small frame. I'm suspecting any
+performance issue you are seeing may be due to a slow interrupt rate
+causing us to either exhaust available Tx memory, or overrun the
+available Rx memory.
 
-We populate tx_buffer_info[0], populate tx_desc[0] with the context
-descriptor, and tx_desc[1] with the data descriptor. This only happens
-for the first packet placed in the ring so we can just bump the
-tx_desc reference directly to 1 in this case since we will always know
-that next_to_use will be 0.
-
-We actually do this kind of thing in the normal transmit path,
-although there we reference the first tx_buffer_info structure via the
-"first" pointer.
+There end up being multiple ways to address this.
+1. Use a larger value for your "-s/-S" values to allow for more memory
+to be handled in the queues.
+2. Update the interrupt moderation code for the driver. You can either
+manually decrease the per-interrupt delay via "ethtool -C" or just
+update the adaptive ITR code, see commit b4ded8327fea ("ixgbe: Update
+adaptive ITR algorithm").
+3. There should be a private flag that can be updated via "ethtool
+--set-priv-flags" called "legacy-rx" that you can enable that will
+roll back to the original that did the copy-break type approach for
+small packets and the headers of the frame.
 
 Thanks.
 
