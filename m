@@ -1,32 +1,115 @@
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Date: Wed, 23 May 2018 07:31:52 -0400
-Subject: [Intel-wired-lan] [PATCH v2 1/1] drivers core: multi-threading
- device shutdown
-In-Reply-To: <20180523104029.GC15312@amd>
-References: <20180505154040.28614-1-pasha.tatashin@oracle.com>
- <20180505154040.28614-2-pasha.tatashin@oracle.com>
- <20180523104029.GC15312@amd>
-Message-ID: <CAGM2reb8emos6F+zqKLxDg4u23PHXC=phUbDiJH2YU8k_DtFMg@mail.gmail.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Wed, 23 May 2018 20:08:13 +0800
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: introduce a helper to
+ simplify code
+Message-ID: <20180523120813.14800-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Pavel,
+ixgbe_dbg_reg_ops_read and ixgbe_dbg_netdev_ops_read copy-pasting
+the same code except for ixgbe_dbg_netdev_ops_buf/ixgbe_dbg_reg_ops_buf,
+so introduce a helper ixgbe_dbg_common_ops_read to remove redundant code.
 
-Thank you for looking at this patch. BTW, the version 5 is out. The latest
-thread is anchered here:
-http://lkml.kernel.org/r/20180516024004.28977-1-pasha.tatashin at oracle.com
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c | 57 +++++++++---------------
+ 1 file changed, 21 insertions(+), 36 deletions(-)
 
-> ixgbe is network card, right? So ... it does not have any persistent
-> state and no moving parts, and there's no reason we could not "just
-> power it down"?
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
+index 55fe811..50dfb02 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
+@@ -10,15 +10,9 @@ static struct dentry *ixgbe_dbg_root;
+ 
+ static char ixgbe_dbg_reg_ops_buf[256] = "";
+ 
+-/**
+- * ixgbe_dbg_reg_ops_read - read for reg_ops datum
+- * @filp: the opened file
+- * @buffer: where to write the data for the user to read
+- * @count: the size of the user's buffer
+- * @ppos: file position offset
+- **/
+-static ssize_t ixgbe_dbg_reg_ops_read(struct file *filp, char __user *buffer,
+-				    size_t count, loff_t *ppos)
++static ssize_t ixgbe_dbg_common_ops_read(struct file *filp, char __user *buffer,
++					 size_t count, loff_t *ppos,
++					 char *dbg_buf)
+ {
+ 	struct ixgbe_adapter *adapter = filp->private_data;
+ 	char *buf;
+@@ -29,8 +23,7 @@ static ssize_t ixgbe_dbg_reg_ops_read(struct file *filp, char __user *buffer,
+ 		return 0;
+ 
+ 	buf = kasprintf(GFP_KERNEL, "%s: %s\n",
+-			adapter->netdev->name,
+-			ixgbe_dbg_reg_ops_buf);
++			adapter->netdev->name, dbg_buf);
+ 	if (!buf)
+ 		return -ENOMEM;
+ 
+@@ -46,6 +39,20 @@ static ssize_t ixgbe_dbg_reg_ops_read(struct file *filp, char __user *buffer,
+ }
+ 
+ /**
++ * ixgbe_dbg_reg_ops_read - read for reg_ops datum
++ * @filp: the opened file
++ * @buffer: where to write the data for the user to read
++ * @count: the size of the user's buffer
++ * @ppos: file position offset
++ **/
++static ssize_t ixgbe_dbg_reg_ops_read(struct file *filp, char __user *buffer,
++				      size_t count, loff_t *ppos)
++{
++	return ixgbe_dbg_common_ops_read(filp, buffer, count, ppos,
++					 ixgbe_dbg_reg_ops_buf);
++}
++
++/**
+  * ixgbe_dbg_reg_ops_write - write into reg_ops datum
+  * @filp: the opened file
+  * @buffer: where to find the user's data
+@@ -121,33 +128,11 @@ static char ixgbe_dbg_netdev_ops_buf[256] = "";
+  * @count: the size of the user's buffer
+  * @ppos: file position offset
+  **/
+-static ssize_t ixgbe_dbg_netdev_ops_read(struct file *filp,
+-					 char __user *buffer,
++static ssize_t ixgbe_dbg_netdev_ops_read(struct file *filp, char __user *buffer,
+ 					 size_t count, loff_t *ppos)
+ {
+-	struct ixgbe_adapter *adapter = filp->private_data;
+-	char *buf;
+-	int len;
+-
+-	/* don't allow partial reads */
+-	if (*ppos != 0)
+-		return 0;
+-
+-	buf = kasprintf(GFP_KERNEL, "%s: %s\n",
+-			adapter->netdev->name,
+-			ixgbe_dbg_netdev_ops_buf);
+-	if (!buf)
+-		return -ENOMEM;
+-
+-	if (count < strlen(buf)) {
+-		kfree(buf);
+-		return -ENOSPC;
+-	}
+-
+-	len = simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
+-
+-	kfree(buf);
+-	return len;
++	return ixgbe_dbg_common_ops_read(filp, buffer, count, ppos,
++					 ixgbe_dbg_netdev_ops_buf);
+ }
+ 
+ /**
+-- 
+2.7.0
 
-True to what you said, but the same path is used for both regular reboot,
-and kexec reboot. In the later case we want to make sure that devices are
-quieced and do not send any interrupts, do not do any DMA activity, and
-basically in the same state as when system was first cold booted, so the
-driver initializing functions can pick and bring the devices up. My
-understanding is that because we do not want to diverge the regular reboot
-and kexec reboot, we do it for both cases.
+
