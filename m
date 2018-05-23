@@ -1,26 +1,56 @@
-From: Stephen Hemminger <stephen@networkplumber.org>
-Date: Tue, 22 May 2018 18:47:02 -0700
-Subject: [Intel-wired-lan] [PATCH] e1000: check the return of
- pci_get_drvdata() in e1000_remove()
-In-Reply-To: <20180523001743.8492-1-chenbo@pdx.edu>
-References: <20180523001743.8492-1-chenbo@pdx.edu>
-Message-ID: <20180522184702.64cd62f6@xeon-e3>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Wed, 23 May 2018 12:40:29 +0200
+Subject: [Intel-wired-lan] [PATCH v2 1/1] drivers core: multi-threading
+ device shutdown
+In-Reply-To: <20180505154040.28614-2-pasha.tatashin@oracle.com>
+References: <20180505154040.28614-1-pasha.tatashin@oracle.com>
+ <20180505154040.28614-2-pasha.tatashin@oracle.com>
+Message-ID: <20180523104029.GC15312@amd>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 22 May 2018 17:17:43 -0700
-Bo Chen <chenbo@pdx.edu> wrote:
+Hi!
 
-> This check on pci_get_drvdata() prevents potential invalid pointer dereferences,
-> and is a common practice in *_remove() functions from other drivers, such as
-> 'intel/e100.c', 'amd/pcnet32.c', 'realtek/8139too.c', and 'broadcom/tg3.c'.
+> When system is rebooted, halted or kexeced device_shutdown() is
+> called.
 > 
-> Signed-off-by: Bo Chen <chenbo@pdx.edu>
+> This function shuts down every single device by calling either:
+> 
+> 	dev->bus->shutdown(dev)
+> 	dev->driver->shutdown(dev)
+...
+> Finally, with ixgbe_shutdown() it takes 0.37 for each device, but that time
+> is spread all over the place, with bigger offenders:
+> 
+>     ixgbe_shutdown
+>       __ixgbe_shutdown
+>         ixgbe_close_suspend
+>           ixgbe_down
+>             ixgbe_init_hw_generic
+>               ixgbe_reset_hw_X540
+>                 msleep(100);                        0.104483472
+>                 ixgbe_get_san_mac_addr_generic      0.048414851
+>                 ixgbe_get_wwn_prefix_generic        0.048409893
+>               ixgbe_start_hw_X540
+>                 ixgbe_start_hw_generic
+>                   ixgbe_clear_hw_cntrs_generic      0.048581502
+>                   ixgbe_setup_fc_generic            0.024225800
 
-Why check for something that can never be true.
-You are creating dead code paths that can never be exercised.
+ixgbe is network card, right? So ... it does not have any persistent
+state and no moving parts, and there's no reason we could not "just
+power it down"?
+>  /*
 
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 181 bytes
+Desc: Digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180523/8c822be1/attachment.asc>
