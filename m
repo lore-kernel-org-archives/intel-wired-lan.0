@@ -1,63 +1,143 @@
-From: Ganesh Goudar <ganeshgr@chelsio.com>
-Date: Thu, 24 May 2018 15:48:55 +0530
-Subject: [Intel-wired-lan] [PATCH v6 0/5] PCI: Improve PCIe link status
- reporting
-In-Reply-To: <20180523214651.GE150632@bhelgaas-glaptop.roam.corp.google.com>
-References: <152537719056.62474.2571390812509425478.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20180523214651.GE150632@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <20180524101853.GA4913@chelsio.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 24 May 2018 23:01:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ ae7eb3d8f3e7d60d36b93ad6b3ee11d5438da399
+Message-ID: <5b06d3b6.BzTAEut9unIVrCa6%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wednesday, May 05/23/18, 2018 at 16:46:51 -0500, Bjorn Helgaas wrote:
-> [+to Davem]
-> 
-> On Thu, May 03, 2018 at 03:00:07PM -0500, Bjorn Helgaas wrote:
-> > This is based on Tal's recent work to unify the approach for reporting PCIe
-> > link speed/width and whether the device is being limited by a slower
-> > upstream link.
-> > 
-> > The new pcie_print_link_status() interface appeared in v4.17-rc1; see
-> > 9e506a7b5147 ("PCI: Add pcie_print_link_status() to log link speed and
-> > whether it's limited").
-> > 
-> > That's a good way to replace use of pcie_get_minimum_link(), which gives
-> > misleading results when a path contains both a fast, narrow link and a
-> > slow, wide link: it reports the equivalent of a slow, narrow link.
-> > 
-> > This series removes the remaining uses of pcie_get_minimum_link() and then
-> > removes the interface itself.  I'd like to merge them all through the PCI
-> > tree to make the removal easy.
-> > 
-> > This does change the dmesg reporting of link speeds, and in the ixgbe case,
-> > it changes the reporting from KERN_WARN level to KERN_INFO.  If that's an
-> > issue, let's talk about it.  I'm hoping the reduce code size, improved
-> > functionality, and consistency across drivers is enough to make this
-> > worthwhile.
-> > 
-> > ---
-> > 
-> > Bjorn Helgaas (5):
-> >       bnx2x: Report PCIe link properties with pcie_print_link_status()
-> >       bnxt_en: Report PCIe link properties with pcie_print_link_status()
-> >       cxgb4: Report PCIe link properties with pcie_print_link_status()
-> >       ixgbe: Report PCIe link properties with pcie_print_link_status()
-> >       PCI: Remove unused pcie_get_minimum_link()
-> > 
-> > 
-> >  drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c |   23 ++-----
-> >  drivers/net/ethernet/broadcom/bnxt/bnxt.c        |   19 ------
-> >  drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c  |   75 ----------------------
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   47 --------------
-> >  drivers/pci/pci.c                                |   43 -------------
-> >  include/linux/pci.h                              |    2 -
-> >  6 files changed, 9 insertions(+), 200 deletions(-)
-> 
-> I applied all of these on pci/enumeration for v4.18.  If you'd rather take
-> them, Dave, let me know and I'll drop them.
-> 
-> I solicited more acks, but only heard from Jeff.
-Sorry for that, Thanks for cxgb4 changes.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: ae7eb3d8f3e7d60d36b93ad6b3ee11d5438da399  ixgbevf: fix possible race in the reset subtask
+
+elapsed time: 52m
+
+configs tested: 118
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201820
+x86_64                 randconfig-x003-201820
+x86_64                 randconfig-x007-201820
+x86_64                 randconfig-x000-201820
+x86_64                 randconfig-x005-201820
+x86_64                 randconfig-x004-201820
+x86_64                 randconfig-x001-201820
+x86_64                 randconfig-x008-201820
+x86_64                 randconfig-x002-201820
+x86_64                 randconfig-x006-201820
+x86_64                 randconfig-x009-201820
+i386                     randconfig-i0-201820
+i386                     randconfig-i1-201820
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                             allmodconfig
+x86_64                 randconfig-x011-201820
+x86_64                 randconfig-x015-201820
+x86_64                 randconfig-x018-201820
+x86_64                 randconfig-x010-201820
+x86_64                 randconfig-x019-201820
+x86_64                 randconfig-x014-201820
+x86_64                 randconfig-x013-201820
+x86_64                 randconfig-x016-201820
+x86_64                 randconfig-x017-201820
+x86_64                 randconfig-x012-201820
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-a0-05241249
+i386                   randconfig-a1-05241249
+arm                          nuc950_defconfig
+arm                         shannon_defconfig
+m68k                          atari_defconfig
+mips                        nlm_xlp_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201820
+i386                     randconfig-s1-201820
+x86_64                 randconfig-s3-05242023
+x86_64                 randconfig-s4-05242023
+x86_64                 randconfig-s5-05242023
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201820
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+i386                   randconfig-x012-201820
+i386                   randconfig-x014-201820
+i386                   randconfig-x017-201820
+i386                   randconfig-x016-201820
+i386                   randconfig-x018-201820
+i386                   randconfig-x013-201820
+i386                   randconfig-x011-201820
+i386                   randconfig-x015-201820
+i386                   randconfig-x019-201820
+i386                   randconfig-x010-201820
+powerpc                 mpc8560_ads_defconfig
+powerpc               mpc86xx_basic_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                   randconfig-x078-201820
+i386                   randconfig-x079-201820
+i386                   randconfig-x070-201820
+i386                   randconfig-x076-201820
+i386                   randconfig-x075-201820
+i386                   randconfig-x074-201820
+i386                   randconfig-x071-201820
+i386                   randconfig-x073-201820
+i386                   randconfig-x077-201820
+i386                   randconfig-x072-201820
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-x008-201820
+i386                   randconfig-x009-201820
+i386                   randconfig-x005-201820
+i386                   randconfig-x003-201820
+i386                   randconfig-x000-201820
+i386                   randconfig-x001-201820
+i386                   randconfig-x004-201820
+i386                   randconfig-x006-201820
+i386                   randconfig-x002-201820
+i386                   randconfig-x007-201820
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
