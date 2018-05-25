@@ -1,143 +1,49 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 24 May 2018 23:01:10 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- ae7eb3d8f3e7d60d36b93ad6b3ee11d5438da399
-Message-ID: <5b06d3b6.BzTAEut9unIVrCa6%lkp@intel.com>
+From: Venkatesh Srinivas <venkateshs@google.com>
+Date: Fri, 25 May 2018 00:13:21 -0400
+Subject: [Intel-wired-lan] [PATCH] igb: Use dma_wmb() instead of wmb()
+ before doorbell writes
+Message-ID: <20180525041321.140516-1-venkateshs@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: ae7eb3d8f3e7d60d36b93ad6b3ee11d5438da399  ixgbevf: fix possible race in the reset subtask
+igb writes to doorbells to post transmit and receive descriptors;
+after writing descriptors to memory but before writing to doorbells,
+use dma_wmb() rather than wmb(). wmb() is more heavyweight than
+necessary before doorbell writes.
 
-elapsed time: 52m
+On x86, this avoids SFENCEs before doorbell writes in both the
+tx and rx refill paths.
 
-configs tested: 118
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201820
-x86_64                 randconfig-x003-201820
-x86_64                 randconfig-x007-201820
-x86_64                 randconfig-x000-201820
-x86_64                 randconfig-x005-201820
-x86_64                 randconfig-x004-201820
-x86_64                 randconfig-x001-201820
-x86_64                 randconfig-x008-201820
-x86_64                 randconfig-x002-201820
-x86_64                 randconfig-x006-201820
-x86_64                 randconfig-x009-201820
-i386                     randconfig-i0-201820
-i386                     randconfig-i1-201820
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                             allmodconfig
-x86_64                 randconfig-x011-201820
-x86_64                 randconfig-x015-201820
-x86_64                 randconfig-x018-201820
-x86_64                 randconfig-x010-201820
-x86_64                 randconfig-x019-201820
-x86_64                 randconfig-x014-201820
-x86_64                 randconfig-x013-201820
-x86_64                 randconfig-x016-201820
-x86_64                 randconfig-x017-201820
-x86_64                 randconfig-x012-201820
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-a0-05241249
-i386                   randconfig-a1-05241249
-arm                          nuc950_defconfig
-arm                         shannon_defconfig
-m68k                          atari_defconfig
-mips                        nlm_xlp_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201820
-i386                     randconfig-s1-201820
-x86_64                 randconfig-s3-05242023
-x86_64                 randconfig-s4-05242023
-x86_64                 randconfig-s5-05242023
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                   randconfig-i0-201820
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
-i386                   randconfig-x012-201820
-i386                   randconfig-x014-201820
-i386                   randconfig-x017-201820
-i386                   randconfig-x016-201820
-i386                   randconfig-x018-201820
-i386                   randconfig-x013-201820
-i386                   randconfig-x011-201820
-i386                   randconfig-x015-201820
-i386                   randconfig-x019-201820
-i386                   randconfig-x010-201820
-powerpc                 mpc8560_ads_defconfig
-powerpc               mpc86xx_basic_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                   randconfig-x078-201820
-i386                   randconfig-x079-201820
-i386                   randconfig-x070-201820
-i386                   randconfig-x076-201820
-i386                   randconfig-x075-201820
-i386                   randconfig-x074-201820
-i386                   randconfig-x071-201820
-i386                   randconfig-x073-201820
-i386                   randconfig-x077-201820
-i386                   randconfig-x072-201820
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                   randconfig-x008-201820
-i386                   randconfig-x009-201820
-i386                   randconfig-x005-201820
-i386                   randconfig-x003-201820
-i386                   randconfig-x000-201820
-i386                   randconfig-x001-201820
-i386                   randconfig-x004-201820
-i386                   randconfig-x006-201820
-i386                   randconfig-x002-201820
-i386                   randconfig-x007-201820
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-
+Signed-off-by: Venkatesh Srinivas <venkateshs@google.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index cce7ada89255..8aea50867a5d 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -5674,7 +5674,7 @@ static int igb_tx_map(struct igb_ring *tx_ring,
+ 	 * We also need this memory barrier to make certain all of the
+ 	 * status bits have been updated before next_to_watch is written.
+ 	 */
+-	wmb();
++	dma_wmb();
+ 
+ 	/* set next_to_watch value indicating a packet is present */
+ 	first->next_to_watch = tx_desc;
+@@ -8093,7 +8093,7 @@ void igb_alloc_rx_buffers(struct igb_ring *rx_ring, u16 cleaned_count)
+ 		 * applicable for weak-ordered memory model archs,
+ 		 * such as IA-64).
+ 		 */
+-		wmb();
++		dma_wmb();
+ 		writel(i, rx_ring->tail);
+ 	}
+ }
+-- 
+2.17.0.921.gf22659ad46-goog
+
