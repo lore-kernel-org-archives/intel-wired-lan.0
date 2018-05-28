@@ -1,51 +1,107 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 25 May 2018 17:46:47 +0000
-Subject: [Intel-wired-lan] [PATCH] PCI: allow drivers to limit the
- number of VFs to 0
-In-Reply-To: <20180525170122.GA63280@bhelgaas-glaptop.roam.corp.google.com>
-References: <20180402224652.4058-1-jakub.kicinski@netronome.com>
- <20180524235748.GD15320@bhelgaas-glaptop.roam.corp.google.com>
- <20180524182015.1af7b4c9@cakuba>
- <20180525140223.GA45098@bhelgaas-glaptop.roam.corp.google.com>
- <20180525170122.GA63280@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5882E539EA@ORSMSX115.amr.corp.intel.com>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Date: Mon, 28 May 2018 11:07:20 +0200
+Subject: [Intel-wired-lan] [PATCH net-next] bpf, i40e: add meta data support
+Message-ID: <20180528090720.8230-1-daniel@iogearbox.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Bjorn Helgaas [mailto:helgaas at kernel.org]
-> Sent: Friday, May 25, 2018 10:01 AM
-> To: Jakub Kicinski <jakub.kicinski@netronome.com>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>; linux-pci at vger.kernel.org;
-> netdev at vger.kernel.org; Sathya Perla <sathya.perla@broadcom.com>; Felix
-> Manlunas <felix.manlunas@caviumnetworks.com>;
-> alexander.duyck at gmail.com; john.fastabend at gmail.com; Keller, Jacob E
-> <jacob.e.keller@intel.com>; Donald Dutile <ddutile@redhat.com>; oss-
-> drivers at netronome.com; Christoph Hellwig <hch@infradead.org>; Derek
-> Chickles <derek.chickles@caviumnetworks.com>; Satanand Burla
-> <satananda.burla@caviumnetworks.com>; Raghu Vatsavayi
-> <raghu.vatsavayi@caviumnetworks.com>; Ajit Khaparde
-> <ajit.khaparde@broadcom.com>; Sriharsha Basavapatna
-> <sriharsha.basavapatna@broadcom.com>; Somnath Kotur
-> <somnath.kotur@broadcom.com>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [PATCH] PCI: allow drivers to limit the number of VFs to 0
-> 
-> [+cc liquidio, benet, fm10k maintainers:
-> 
->   The patch below will affect you if your driver calls
->     pci_sriov_set_totalvfs(dev, 0);
-> 
->   Previously that caused a subsequent pci_sriov_get_totalvfs() to return
->   the totalVFs value from the SR-IOV capability.  After this patch, it will
->   return 0, which has implications for VF enablement via the sysfs
->   "sriov_numvfs" file.]
-> 
+Add support for XDP meta data when using build skb variant of
+the i40e driver. Implementation is analogous to the existing
+ixgbe and ixgbevf support for meta data from 366a88fe2f40 ("bpf,
+ixgbe: add meta data support") and be8333322eff ("ixgbevf: Add
+support for meta data"). With the build skb variant we get
+192 bytes of extra headroom which can be used for encaps or
+meta data.
 
-Thanks. I don't foresee any issues with fm10k regarding this..
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+Acked-by: John Fastabend <john.fastabend@gmail.com>
+Tested-by: John Fastabend <john.fastabend@gmail.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 39 +++++++++++++++++++++++------
+ 1 file changed, 31 insertions(+), 8 deletions(-)
 
-Thanks,
-Jake
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 9b698c5..eee6e91 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2032,6 +2032,21 @@ static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
+ #if L1_CACHE_BYTES < 128
+ 	prefetch(xdp->data + L1_CACHE_BYTES);
+ #endif
++	/* Note, we get here by enabling legacy-rx via:
++	 *
++	 *    ethtool --set-priv-flags <dev> legacy-rx on
++	 *
++	 * In this mode, we currently get 0 extra XDP headroom as
++	 * opposed to having legacy-rx off, where we process XDP
++	 * packets going to stack via i40e_build_skb(). The latter
++	 * provides us currently with 192 bytes of headroom.
++	 *
++	 * For i40e_construct_skb() mode it means that the
++	 * xdp->data_meta will always point to xdp->data, since
++	 * the helper cannot expand the head. Should this ever
++	 * change in future for legacy-rx mode on, then lets also
++	 * add xdp->data_meta handling here.
++	 */
+ 
+ 	/* allocate a skb to store the frags */
+ 	skb = __napi_alloc_skb(&rx_ring->q_vector->napi,
+@@ -2083,19 +2098,25 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
+ 				      struct i40e_rx_buffer *rx_buffer,
+ 				      struct xdp_buff *xdp)
+ {
+-	unsigned int size = xdp->data_end - xdp->data;
++	unsigned int metasize = xdp->data - xdp->data_meta;
+ #if (PAGE_SIZE < 8192)
+ 	unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
+ #else
+ 	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
+-				SKB_DATA_ALIGN(I40E_SKB_PAD + size);
++				SKB_DATA_ALIGN(I40E_SKB_PAD +
++					       (xdp->data_end -
++						xdp->data_hard_start));
+ #endif
+ 	struct sk_buff *skb;
+ 
+-	/* prefetch first cache line of first page */
+-	prefetch(xdp->data);
++	/* Prefetch first cache line of first page. If xdp->data_meta
++	 * is unused, this points extactly as xdp->data, otherwise we
++	 * likely have a consumer accessing first few bytes of meta
++	 * data, and then actual data.
++	 */
++	prefetch(xdp->data_meta);
+ #if L1_CACHE_BYTES < 128
+-	prefetch(xdp->data + L1_CACHE_BYTES);
++	prefetch(xdp->data_meta + L1_CACHE_BYTES);
+ #endif
+ 	/* build an skb around the page buffer */
+ 	skb = build_skb(xdp->data_hard_start, truesize);
+@@ -2103,8 +2124,10 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
+ 		return NULL;
+ 
+ 	/* update pointers within the skb to store the data */
+-	skb_reserve(skb, I40E_SKB_PAD);
+-	__skb_put(skb, size);
++	skb_reserve(skb, I40E_SKB_PAD + (xdp->data - xdp->data_hard_start));
++	__skb_put(skb, xdp->data_end - xdp->data);
++	if (metasize)
++		skb_metadata_set(skb, metasize);
+ 
+ 	/* buffer is used by skb, update page_offset */
+ #if (PAGE_SIZE < 8192)
+@@ -2341,7 +2364,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		if (!skb) {
+ 			xdp.data = page_address(rx_buffer->page) +
+ 				   rx_buffer->page_offset;
+-			xdp_set_data_meta_invalid(&xdp);
++			xdp.data_meta = xdp.data;
+ 			xdp.data_hard_start = xdp.data -
+ 					      i40e_rx_offset(rx_ring);
+ 			xdp.data_end = xdp.data + size;
+-- 
+2.9.5
+
