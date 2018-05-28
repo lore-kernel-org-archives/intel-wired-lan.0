@@ -1,133 +1,78 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 29 May 2018 23:05:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
- 47bf9df2e8201d07c40670e093629f8dfd1b5d9f
-Message-ID: <5b0d6c3c.wUbITXyN0zdZ4nvp%lkp@intel.com>
+From: =?unknown-8bit?q?Ond=C5=99ej_Hlavat=C3=BD?= <ohlavaty@redhat.com>
+Date: Mon, 28 May 2018 18:39:13 +0200
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix parsing of TC actions for
+ HW offload
+Message-ID: <20180528163913.16315-1-ohlavaty@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: 47bf9df2e8201d07c40670e093629f8dfd1b5d9f  mlxsw: spectrum: Forbid creation of VLAN 1 over port/LAG
+The previous code was optimistic, accepting the offload of whole action
+chain when there was a single known action (drop/redirect). This results
+in offloading a rule which should not be offloaded, because its behavior
+cannot be reproduced in the hardware.
 
-elapsed time: 56m
+For example:
 
-configs tested: 108
+$ tc filter add dev eno1 parent ffff: protocol ip \
+    u32 ht 800: order 1 match tcp src 42 FFFF \
+    action mirred egress mirror dev enp1s16 pipe \
+    drop
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The controller is unable to mirror the packet to a VF, but still
+offloads the rule by dropping the packet.
 
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x012-201821
-i386                   randconfig-x017-201821
-i386                   randconfig-x014-201821
-i386                   randconfig-x016-201821
-i386                   randconfig-x018-201821
-i386                   randconfig-x013-201821
-i386                   randconfig-x011-201821
-i386                   randconfig-x015-201821
-i386                   randconfig-x019-201821
-i386                   randconfig-x010-201821
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201821
-x86_64                 randconfig-x003-201821
-x86_64                 randconfig-x007-201821
-x86_64                 randconfig-x000-201821
-x86_64                 randconfig-x005-201821
-x86_64                 randconfig-x004-201821
-x86_64                 randconfig-x001-201821
-x86_64                 randconfig-x008-201821
-x86_64                 randconfig-x002-201821
-x86_64                 randconfig-x006-201821
-x86_64                 randconfig-x009-201821
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i0-201821
-i386                     randconfig-i1-201821
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x011-201821
-x86_64                 randconfig-x015-201821
-x86_64                 randconfig-x018-201821
-x86_64                 randconfig-x010-201821
-x86_64                 randconfig-x019-201821
-x86_64                 randconfig-x014-201821
-x86_64                 randconfig-x013-201821
-x86_64                 randconfig-x016-201821
-x86_64                 randconfig-x017-201821
-x86_64                 randconfig-x012-201821
-i386                   randconfig-a0-05291352
-i386                   randconfig-a1-05291352
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                           allmodconfig
-ia64                            sim_defconfig
-powerpc                     ksi8560_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201821
-i386                     randconfig-s1-201821
-x86_64                 randconfig-s3-05292026
-x86_64                 randconfig-s4-05292026
-x86_64                 randconfig-s5-05292026
-x86_64                   randconfig-i0-201821
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m68k                        m5407c3_defconfig
-powerpc                    ge_imp3a_defconfig
-x86_64                 randconfig-u0-05292159
-x86_64                randconfig-ne0-05292146
-i386                   randconfig-x008-201821
-i386                   randconfig-x009-201821
-i386                   randconfig-x005-201821
-i386                   randconfig-x000-201821
-i386                   randconfig-x003-201821
-i386                   randconfig-x001-201821
-i386                   randconfig-x004-201821
-i386                   randconfig-x006-201821
-i386                   randconfig-x002-201821
-i386                   randconfig-x007-201821
-i386                   randconfig-x078-201821
-i386                   randconfig-x079-201821
-i386                   randconfig-x070-201821
-i386                   randconfig-x075-201821
-i386                   randconfig-x076-201821
-i386                   randconfig-x074-201821
-i386                   randconfig-x071-201821
-i386                   randconfig-x073-201821
-i386                   randconfig-x077-201821
-i386                   randconfig-x072-201821
+Change the approach of the function to a pessimistic one, rejecting the
+chain when an unknown action is found. This is better suited for future
+extensions.
+
+Note that both recognized actions always return TC_ACT_SHOT, therefore
+it is safe to ignore actions behind them.
+
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+Cc: Jamal Hadi Salim <jhs@mojatatu.com>
+Cc: Jiri Pirko <jiri@resnulli.us>
+Signed-off-by: Ond?ej Hlavat? <ohlavaty@redhat.com>
 
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index afadba99f7b8..d01e1f0280cf 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -9054,7 +9054,6 @@ static int parse_tc_actions(struct ixgbe_adapter *adapter,
+ {
+ 	const struct tc_action *a;
+ 	LIST_HEAD(actions);
+-	int err;
+ 
+ 	if (!tcf_exts_has_actions(exts))
+ 		return -EINVAL;
+@@ -9075,14 +9074,14 @@ static int parse_tc_actions(struct ixgbe_adapter *adapter,
+ 
+ 			if (!dev)
+ 				return -EINVAL;
+-			err = handle_redirect_action(adapter, dev->ifindex, queue,
+-						     action);
+-			if (err == 0)
+-				return err;
++			return handle_redirect_action(adapter, dev->ifindex,
++						      queue, action);
+ 		}
++
++		return -EINVAL;
+ 	}
+ 
+-	return -EINVAL;
++	return 0;
+ }
+ #else
+ static int parse_tc_actions(struct ixgbe_adapter *adapter,
+-- 
+2.17.0
+
