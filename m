@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 1 Jun 2018 17:25:56 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix possible race in reset
- subtask
-In-Reply-To: <20180530160512.37220-1-anthony.l.nguyen@intel.com>
-References: <20180530160512.37220-1-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2C5D65@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 1 Jun 2018 17:27:48 +0000
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: check ipsec ip addr against
+ mgmt filters
+In-Reply-To: <1527704404-14759-1-git-send-email-shannon.nelson@oracle.com>
+References: <1527704404-14759-1-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2C5D75@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,20 +13,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Wednesday, May 30, 2018 9:05 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: fix possible race in reset subtask
+> Behalf Of Shannon Nelson
+> Sent: Wednesday, May 30, 2018 11:20 AM
+> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH v2] ixgbe: check ipsec ip addr against mgmt
+> filters
 > 
-> Similar to ixgbevf, the same possibility for race exists. Extend the RTNL lock in
-> ixgbe_reset_subtask() to protect the state bits; this is to make sure that we
-> get the most up-to-date values for the bits and avoid a possible race when
-> going down.
+> Make sure we don't try to offload the decryption of an incoming packet that
+> should get delivered to the management engine.  This is a corner case that
+> will likely be very seldom seen, but could really confuse someone if they
+> were to hit it.
 > 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Suggested-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+> v2 - added the BMC IP check
+> 
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 88
+> ++++++++++++++++++++++++++
+>  1 file changed, 88 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
