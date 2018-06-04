@@ -1,48 +1,66 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Mon, 04 Jun 2018 11:17:38 -0400
-Subject: [Intel-wired-lan] [RFC PATCH 0/4] Add support for DCB and XPS with
- MACVLAN offload
-Message-ID: <20180604150847.74754.8585.stgit@ahduyck-green-test.jf.intel.com>
+Date: Mon, 04 Jun 2018 11:17:44 -0400
+Subject: [Intel-wired-lan] [RFC PATCH 1/4] net-sysfs: Drop support for XPS
+ and traffic_class on single queue device
+In-Reply-To: <20180604150847.74754.8585.stgit@ahduyck-green-test.jf.intel.com>
+References: <20180604150847.74754.8585.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <20180604151744.74754.24882.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch set is meant to address a number of shortcomings in the current
-implementation of MACVLAN offload. The main issue being the fact that the
-current Tx queue implementation for ixgbe required the use of
-ndo_select_queue which doesn't necessarily play well with DCB or XPS.
+This patch makes it so that we do not report the traffic class or allow XPS
+configuration on single queue devices. This is mostly to avoid unnecessary
+complexity with changes I have planned that will allow us to reuse
+the unused tc_to_txq and XPS configuration on a single queue device to
+allow it to make use of a subset of queues on an underlying device.
 
-I started this patch set to address that and thought I would submit the
-start of the series as an RFC just to make sure I am headed in the right
-direction and to see if there is anything I am overlooking. With these
-patches applied we now start seeing what I am calling "subordinate
-channels" which show themselves via a "-x" suffix where the "-x" can be
-anything from "-1" to "-32767". So for example traffic class 0 with a
-subordinate class of 5 will be called out as "0-5" if you dump the traffic
-class via the sysfs value for the queue.
-
-The main pieces that still need to be handled are the updating of the
-ndo_select_queue function and the fallback call to allow support for
-passing the accel_priv which I am changing to a netdev. I figure those
-patches will be mostly noise so I didn't see the need to include them in
-this RFC.
-
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
+ net/core/net-sysfs.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-Alexander Duyck (4):
-      net-sysfs: Drop support for XPS and traffic_class on single queue device
-      net: Add support for subordinate device traffic classes
-      ixgbe: Add code to populate and use macvlan tc to Tx queue map
-      net: Add support for subordinate traffic classes to netdev_pick_tx
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index bb7e80f..335c6a4 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -1047,9 +1047,14 @@ static ssize_t traffic_class_show(struct netdev_queue *queue,
+ 				  char *buf)
+ {
+ 	struct net_device *dev = queue->dev;
+-	int index = get_netdev_queue_index(queue);
+-	int tc = netdev_txq_to_tc(dev, index);
++	int index;
++	int tc;
+ 
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
++
++	index = get_netdev_queue_index(queue);
++	tc = netdev_txq_to_tc(dev, index);
+ 	if (tc < 0)
+ 		return -EINVAL;
+ 
+@@ -1214,6 +1219,9 @@ static ssize_t xps_cpus_show(struct netdev_queue *queue,
+ 	cpumask_var_t mask;
+ 	unsigned long index;
+ 
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
++
+ 	index = get_netdev_queue_index(queue);
+ 
+ 	if (dev->num_tc) {
+@@ -1260,6 +1268,9 @@ static ssize_t xps_cpus_store(struct netdev_queue *queue,
+ 	cpumask_var_t mask;
+ 	int err;
+ 
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
++
+ 	if (!capable(CAP_NET_ADMIN))
+ 		return -EPERM;
+ 
 
-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   55 +++++++---
- drivers/net/macvlan.c                         |   10 --
- include/linux/netdevice.h                     |   20 +++
- net/core/dev.c                                |  144 +++++++++++++++++++++----
- net/core/net-sysfs.c                          |   36 ++++++
- 5 files changed, 215 insertions(+), 50 deletions(-)
-
---
