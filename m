@@ -1,261 +1,137 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Mon, 04 Jun 2018 11:17:49 -0400
-Subject: [Intel-wired-lan] [RFC PATCH 2/4] net: Add support for subordinate
- device traffic classes
+Date: Mon, 04 Jun 2018 11:17:54 -0400
+Subject: [Intel-wired-lan] [RFC PATCH 3/4] ixgbe: Add code to populate and
+ use macvlan tc to Tx queue map
 In-Reply-To: <20180604150847.74754.8585.stgit@ahduyck-green-test.jf.intel.com>
 References: <20180604150847.74754.8585.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <20180604151749.74754.84867.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <20180604151754.74754.20964.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is meant to provide the basic tools needed to allow us to create
-subordinate device traffic classes. The general idea here is to allow
-subdividing the queues of a device into queue groups accessible through an
-upper device such as a macvlan.
+This patch makes it so that we use the tc_to_txq mapping in the macvlan
+device in order to select the Tx queue for outgoing packets.
 
-The idea here is to enforce the idea that an upper device has to be a
-single queue device, ideally with IFF_NO_QUQUE set. With that being the
-case we can pretty much guarantee that the tc_to_txq mappings and XPS maps
-for the upper device are unused. As such we could reuse those in order to
-support subdividing the lower device and distributing those queues between
-the subordinate devices.
-
-In order to distinguish between a regular set of traffic classes and if a
-device is carrying subordinate traffic classes I changed num_tc from a u8
-to a s16 value and use the negative values to represent the suboordinate
-pool values. So starting at -1 and running to -32768 we can encode those as
-pool values, and the existing values of 0 to 15 can be maintained.
+The idea here is to try and move away from using ixgbe_select_queue and to
+come up with a generic way to make this work for devices going forward. By
+encoding this information in the netdev this can become something that can
+be used generically as a solution for similar setups going forward.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- include/linux/netdevice.h |   16 ++++++++
- net/core/dev.c            |   89 +++++++++++++++++++++++++++++++++++++++++++++
- net/core/net-sysfs.c      |   21 ++++++++++-
- 3 files changed, 124 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   44 ++++++++++++++++++++++---
+ 1 file changed, 38 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 03ed492..bbc8045 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -569,6 +569,9 @@ struct netdev_queue {
- 	 * (/sys/class/net/DEV/Q/trans_timeout)
- 	 */
- 	unsigned long		trans_timeout;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index f460c16..05d6d48 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5271,6 +5271,8 @@ static void ixgbe_clean_rx_ring(struct ixgbe_ring *rx_ring)
+ static int ixgbe_fwd_ring_up(struct ixgbe_adapter *adapter,
+ 			     struct ixgbe_fwd_adapter *accel)
+ {
++	u16 rss_i = adapter->ring_feature[RING_F_RSS].indices;
++	int num_tc = netdev_get_num_tc(adapter->netdev);
+ 	struct net_device *vdev = accel->netdev;
+ 	int i, baseq, err;
+ 
+@@ -5282,6 +5284,11 @@ static int ixgbe_fwd_ring_up(struct ixgbe_adapter *adapter,
+ 	accel->rx_base_queue = baseq;
+ 	accel->tx_base_queue = baseq;
+ 
++	/* record configuration for macvlan interface in vdev */
++	for (i = 0; i < num_tc; i++)
++		netdev_bind_sb_channel_queue(adapter->netdev, vdev,
++					     i, rss_i, baseq + (rss_i * i));
 +
-+	/* Suboordinate device that the queue has been assigned to */
-+	struct net_device	*sb_dev;
- /*
-  * write-mostly part
-  */
-@@ -1960,7 +1963,7 @@ struct net_device {
- #ifdef CONFIG_DCB
- 	const struct dcbnl_rtnl_ops *dcbnl_ops;
+ 	for (i = 0; i < adapter->num_rx_queues_per_pool; i++)
+ 		adapter->rx_ring[baseq + i]->netdev = vdev;
+ 
+@@ -5306,6 +5313,10 @@ static int ixgbe_fwd_ring_up(struct ixgbe_adapter *adapter,
+ 
+ 	netdev_err(vdev, "L2FW offload disabled due to L2 filter error\n");
+ 
++	/* unbind the queues and drop the subordinate channel config */
++	netdev_unbind_sb_channel(adapter->netdev, vdev);
++	netdev_set_sb_channel(vdev, 0);
++
+ 	clear_bit(accel->pool, adapter->fwd_bitmask);
+ 	kfree(accel);
+ 
+@@ -8211,18 +8222,22 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
+ 			      void *accel_priv, select_queue_fallback_t fallback)
+ {
+ 	struct ixgbe_fwd_adapter *fwd_adapter = accel_priv;
+-	struct ixgbe_adapter *adapter;
+-	int txq;
+ #ifdef IXGBE_FCOE
++	struct ixgbe_adapter *adapter;
+ 	struct ixgbe_ring_feature *f;
  #endif
--	u8			num_tc;
-+	s16			num_tc;
- 	struct netdev_tc_txq	tc_to_txq[TC_MAX_QUEUE];
- 	u8			prio_tc_map[TC_BITMASK + 1];
++	int txq;
  
-@@ -2014,6 +2017,17 @@ int netdev_get_num_tc(struct net_device *dev)
- 	return dev->num_tc;
- }
- 
-+void netdev_unbind_sb_channel(struct net_device *dev,
-+			      struct net_device *sb_dev);
-+int netdev_bind_sb_channel_queue(struct net_device *dev,
-+				 struct net_device *sb_dev,
-+				 u8 tc, u16 count, u16 offset);
-+int netdev_set_sb_channel(struct net_device *dev, u16 channel);
-+static inline int netdev_get_sb_channel(struct net_device *dev)
-+{
-+	return max_t(int, -dev->num_tc, 0);
-+}
+ 	if (fwd_adapter) {
+-		adapter = netdev_priv(dev);
+-		txq = reciprocal_scale(skb_get_hash(skb),
+-				       adapter->num_rx_queues_per_pool);
++		u8 tc = netdev_get_num_tc(dev) ?
++			netdev_get_prio_tc_map(dev, skb->priority) : 0;
++		struct net_device *vdev = fwd_adapter->netdev;
 +
- static inline
- struct netdev_queue *netdev_get_tx_queue(const struct net_device *dev,
- 					 unsigned int index)
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 034c2a9..eba255d 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2068,11 +2068,13 @@ int netdev_txq_to_tc(struct net_device *dev, unsigned int txq)
- 		struct netdev_tc_txq *tc = &dev->tc_to_txq[0];
- 		int i;
++		txq = vdev->tc_to_txq[tc].offset;
++		txq += reciprocal_scale(skb_get_hash(skb),
++					vdev->tc_to_txq[tc].count);
  
-+		/* walk through the TCs and see if it falls into any of them */
- 		for (i = 0; i < TC_MAX_QUEUE; i++, tc++) {
- 			if ((txq - tc->offset) < tc->count)
- 				return i;
- 		}
- 
-+		/* didn't find it, just return -1 to indicate no match */
- 		return -1;
+-		return txq + fwd_adapter->tx_base_queue;
++		return txq;
  	}
  
-@@ -2215,7 +2217,14 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
- 	bool active = false;
+ #ifdef IXGBE_FCOE
+@@ -8776,6 +8791,11 @@ static int ixgbe_reassign_macvlan_pool(struct net_device *vdev, void *data)
+ 	/* if we cannot find a free pool then disable the offload */
+ 	netdev_err(vdev, "L2FW offload disabled due to lack of queue resources\n");
+ 	macvlan_release_l2fw_offload(vdev);
++
++	/* unbind the queues and drop the subordinate channel config */
++	netdev_unbind_sb_channel(adapter->netdev, vdev);
++	netdev_set_sb_channel(vdev, 0);
++
+ 	kfree(accel);
  
- 	if (dev->num_tc) {
-+		/* Do not allow XPS on subordinate device directly */
- 		num_tc = dev->num_tc;
-+		if (num_tc < 0)
-+			return -EINVAL;
-+
-+		/* If queue belongs to subordinate dev use its map */
-+		dev = netdev_get_tx_queue(dev, index)->sb_dev ? : dev;
-+
- 		tc = netdev_txq_to_tc(dev, index);
- 		if (tc < 0)
- 			return -EINVAL;
-@@ -2366,11 +2375,25 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
- EXPORT_SYMBOL(netif_set_xps_queue);
- 
- #endif
-+static void netdev_unbind_all_sb_channels(struct net_device *dev)
-+{
-+	struct netdev_queue *txq = &dev->_tx[dev->num_tx_queues];
-+
-+	/* Unbind any subordinate channels */
-+	while (txq-- != &dev->_tx[0]) {
-+		if (txq->sb_dev)
-+			netdev_unbind_sb_channel(dev, txq->sb_dev);
-+	}
-+}
-+
- void netdev_reset_tc(struct net_device *dev)
- {
- #ifdef CONFIG_XPS
- 	netif_reset_xps_queues_gt(dev, 0);
- #endif
-+	netdev_unbind_all_sb_channels(dev);
-+
-+	/* Reset TC configuration of device */
- 	dev->num_tc = 0;
- 	memset(dev->tc_to_txq, 0, sizeof(dev->tc_to_txq));
- 	memset(dev->prio_tc_map, 0, sizeof(dev->prio_tc_map));
-@@ -2399,11 +2422,77 @@ int netdev_set_num_tc(struct net_device *dev, u8 num_tc)
- #ifdef CONFIG_XPS
- 	netif_reset_xps_queues_gt(dev, 0);
- #endif
-+	netdev_unbind_all_sb_channels(dev);
-+
- 	dev->num_tc = num_tc;
  	return 0;
+@@ -9780,6 +9800,13 @@ static void *ixgbe_fwd_add(struct net_device *pdev, struct net_device *vdev)
+ 	if (!macvlan_supports_dest_filter(vdev))
+ 		return ERR_PTR(-EMEDIUMTYPE);
+ 
++	/* We need to lock down the macvlan to be a single queue device so that
++	 * we can reuse the tc_to_txq field in the macvlan netdev to represent
++	 * the queue mapping to our netdev.
++	 */
++	if (netif_is_multiqueue(vdev))
++		return ERR_PTR(-ERANGE);
++
+ 	pool = find_first_zero_bit(adapter->fwd_bitmask, adapter->num_rx_pools);
+ 	if (pool == adapter->num_rx_pools) {
+ 		u16 used_pools = adapter->num_vfs + adapter->num_rx_pools;
+@@ -9836,6 +9863,7 @@ static void *ixgbe_fwd_add(struct net_device *pdev, struct net_device *vdev)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	set_bit(pool, adapter->fwd_bitmask);
++	netdev_set_sb_channel(vdev, pool);
+ 	accel->pool = pool;
+ 	accel->netdev = vdev;
+ 
+@@ -9877,6 +9905,10 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
+ 		ring->netdev = NULL;
+ 	}
+ 
++	/* unbind the queues and drop the subordinate channel config */
++	netdev_unbind_sb_channel(pdev, accel->netdev);
++	netdev_set_sb_channel(accel->netdev, 0);
++
+ 	clear_bit(accel->pool, adapter->fwd_bitmask);
+ 	kfree(accel);
  }
- EXPORT_SYMBOL(netdev_set_num_tc);
- 
-+void netdev_unbind_sb_channel(struct net_device *dev,
-+			      struct net_device *sb_dev)
-+{
-+	struct netdev_queue *txq = &dev->_tx[dev->num_tx_queues];
-+
-+#ifdef CONFIG_XPS
-+	netif_reset_xps_queues_gt(sb_dev, 0);
-+#endif
-+	memset(sb_dev->tc_to_txq, 0, sizeof(sb_dev->tc_to_txq));
-+	memset(sb_dev->prio_tc_map, 0, sizeof(sb_dev->prio_tc_map));
-+
-+	while (txq-- != &dev->_tx[0]) {
-+		if (txq->sb_dev == sb_dev)
-+			txq->sb_dev = NULL;
-+	}
-+}
-+EXPORT_SYMBOL(netdev_unbind_sb_channel);
-+
-+int netdev_bind_sb_channel_queue(struct net_device *dev,
-+				 struct net_device *sb_dev,
-+				 u8 tc, u16 count, u16 offset)
-+{
-+	/* Make certain the sb_dev and dev are already configured */
-+	if (sb_dev->num_tc >= 0 || tc >= dev->num_tc)
-+		return -EINVAL;
-+
-+	/* We cannot hand out queues we don't have */
-+	if ((offset + count) > dev->real_num_tx_queues)
-+		return -EINVAL;
-+
-+	/* Record the mapping */
-+	sb_dev->tc_to_txq[tc].count = count;
-+	sb_dev->tc_to_txq[tc].offset = offset;
-+
-+	/* Provide a way for Tx queue to find the tc_to_txq map or
-+	 * XPS map for itself.
-+	 */
-+	while (count--)
-+		netdev_get_tx_queue(dev, count + offset)->sb_dev = sb_dev;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(netdev_bind_sb_channel_queue);
-+
-+int netdev_set_sb_channel(struct net_device *dev, u16 channel)
-+{
-+	/* Do not use a multiqueue device to represent a subordinate channel */
-+	if (netif_is_multiqueue(dev))
-+		return -ENODEV;
-+
-+	/* We allow channels 1 - 32767 to be used for subordinate channels.
-+	 * Channel 0 is meant to be "native" mode and used only to represent
-+	 * the main root device. We allow writing 0 to reset the device back
-+	 * to normal mode after being used as a subordinate channel.
-+	 */
-+	if (channel > S16_MAX)
-+		return -EINVAL;
-+
-+	dev->num_tc = -channel;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(netdev_set_sb_channel);
-+
- /*
-  * Routine to help set real_num_tx_queues. To avoid skbs mapped to queues
-  * greater than real_num_tx_queues stale skbs on the qdisc must be flushed.
-diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 335c6a4..bd067b1 100644
---- a/net/core/net-sysfs.c
-+++ b/net/core/net-sysfs.c
-@@ -1054,11 +1054,23 @@ static ssize_t traffic_class_show(struct netdev_queue *queue,
- 		return -ENOENT;
- 
- 	index = get_netdev_queue_index(queue);
-+
-+	/* If queue belongs to subordinate dev use its tc mapping */
-+	dev = netdev_get_tx_queue(dev, index)->sb_dev ? : dev;
-+
- 	tc = netdev_txq_to_tc(dev, index);
- 	if (tc < 0)
- 		return -EINVAL;
- 
--	return sprintf(buf, "%u\n", tc);
-+	/* We can report the traffic class one of two ways:
-+	 * Subordinate device traffic classes are reported with the traffic
-+	 * class first, and then the subordinate class so for example TC0 on
-+	 * subordinate device 2 will be reported as "0-2". If the queue
-+	 * belongs to the root device it will be reported with just the
-+	 * traffic class, so just "0" for TC 0 for example.
-+	 */
-+	return dev->num_tc < 0 ? sprintf(buf, "%u%d\n", tc, dev->num_tc) :
-+				 sprintf(buf, "%u\n", tc);
- }
- 
- #ifdef CONFIG_XPS
-@@ -1225,7 +1237,14 @@ static ssize_t xps_cpus_show(struct netdev_queue *queue,
- 	index = get_netdev_queue_index(queue);
- 
- 	if (dev->num_tc) {
-+		/* Do not allow XPS on subordinate device directly */
- 		num_tc = dev->num_tc;
-+		if (num_tc < 0)
-+			return -EINVAL;
-+
-+		/* If queue belongs to subordinate dev use its map */
-+		dev = netdev_get_tx_queue(dev, index)->sb_dev ? : dev;
-+
- 		tc = netdev_txq_to_tc(dev, index);
- 		if (tc < 0)
- 			return -EINVAL;
 
