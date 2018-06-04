@@ -1,84 +1,153 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon, 4 Jun 2018 11:22:46 -0700
-Subject: [Intel-wired-lan] [net-queue PATCH] ixgbe: Move ipsec init
- function to before reset call
-In-Reply-To: <CAKgT0Ue6C38xpHpT42o0A0yhpcR-z03k4fPo_Ts9UiMWtWyKsg@mail.gmail.com>
-References: <20180604162312.79628.37984.stgit@ahduyck-green-test.jf.intel.com>
- <4b8f422b-b694-6729-709d-647d44148e7c@oracle.com>
- <CAKgT0Ue6C38xpHpT42o0A0yhpcR-z03k4fPo_Ts9UiMWtWyKsg@mail.gmail.com>
-Message-ID: <ebe1f75c-9354-0325-87d1-579390a9affa@oracle.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 05 Jun 2018 02:26:42 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 62d51d4404794111638403be7f83aab373c93677
+Message-ID: <5b158462.w9MoEeG0Fu3a+e8u%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 6/4/2018 11:07 AM, Alexander Duyck wrote:
-> On Mon, Jun 4, 2018 at 10:34 AM, Shannon Nelson
-> <shannon.nelson@oracle.com> wrote:
->> On 6/4/2018 9:24 AM, Alexander Duyck wrote:
->>>
->>> This patch moves the ipsec init function in ixgbe_sw_init. This way it is
->>> a
->>> bit more consistent with the placement of similar initialization functions
->>> and is placed before the reset_hw call which should allow us to clean up
->>> any link issues that may be introduced by the fact that we force the link
->>> up if somehow the device had ipsec still enabled before the driver was
->>> loaded.
->>>
->>> Fixes: 49a94d74d948 ("ixgbe: add ipsec engine start and stop routines")
->>> Reported-by: Andre Tomt <andre@tomt.net>
->>> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
->>> ---
->>
->>
->> NAK - this won't work for the simple reason that the netdev feature flags
->> that ixgbe_init_ipsec_offload() sets will get bashed later when probe()
->> starts setting netdev feature flags.
-> 
-> Yeah, I realized that after I started doing any testing. I was already
-> working on a v2 to address that as we could pull the feature bit
-> setting out and place it with the other features and only enable it
-> based on if adapter->ipsec is set or not.
-> 
->> The call to stop the engine in the init is probably unnecessary, I really
->> put it there to be sure that no crap was left lying around from before the
->> driver was started.  This can probably be removed to address Alex's timing
->> worries.
-> 
-> Actually I think we just need to look at moving this to a spot before
-> the reset_hw call. My thought is if we place it here, and add the bit
-> for setting the feature bits later we can probably resolve most of the
-> issues.
-> 
-> Also it just occurred to me that we will always report link as being
-> down where the function is called since the watchdog hasn't had a
-> chance to start yet.
-> 
->> We really need a way to check the SEC_EN or ENCRYPTION_EN pins to see if the
->> chip has it supported.  The alternative is to do a quick check to see if we
->> can write to SECTXCTRL.SECTX_DIS and SECRXCTRL.SECRX_DIS to clear those
->> bits.  Since I don't know how to check the pin values, I'll work up a
->> sequence to check the SECTXCTRL bits for writability.
->>
->> sln
-> 
-> Actually I'm wondering if we couldn't just get away with testing the
-> SECTXCTRL.TX_DIS and SECRXCTRL.RX_DIS bits instead. If I am
-> understanding your function correctly I think it is leaving those bits
-> set, and from what I can tell it looks like in the case of hardware
-> with the functionality disabled those bits might be read-only. If so
-> that might be a good way for us to test the functionality as disabled
-> by us, versus disabled by that bit may differ in those bits.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 62d51d4404794111638403be7f83aab373c93677  ixgbe: Move ipsec init function to before reset call
 
-Yes - the bits are set when the engine is disabled, and they need to be 
-cleared to run the encryption engine.  Accordign tot he spec, if the 
-SEC_EN or ENCRYPTION_EN pins are set for "disable", then the DIS bits 
-are not writable and can't be set to 0.  This is what I was thinking as 
-well.  I was going to write a bit of code for this shortly.
+elapsed time: 107m
 
-sln
+configs tested: 128
 
-> 
-> - Alex
-> 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+i386                   randconfig-x010-201822
+i386                   randconfig-x011-201822
+i386                   randconfig-x012-201822
+i386                   randconfig-x013-201822
+i386                   randconfig-x014-201822
+i386                   randconfig-x015-201822
+i386                   randconfig-x016-201822
+i386                   randconfig-x017-201822
+i386                   randconfig-x018-201822
+i386                   randconfig-x019-201822
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201822
+x86_64                 randconfig-x000-201822
+x86_64                 randconfig-x001-201822
+x86_64                 randconfig-x002-201822
+x86_64                 randconfig-x003-201822
+x86_64                 randconfig-x004-201822
+x86_64                 randconfig-x005-201822
+x86_64                 randconfig-x006-201822
+x86_64                 randconfig-x007-201822
+x86_64                 randconfig-x008-201822
+x86_64                 randconfig-x009-201822
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201822
+i386                     randconfig-i1-201822
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+i386                             allmodconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                   randconfig-a1-06041847
+i386                   randconfig-a0-06041847
+x86_64                 randconfig-s0-06050034
+x86_64                 randconfig-s1-06050034
+x86_64                 randconfig-s2-06050034
+arm                         lpc18xx_defconfig
+ia64                             allmodconfig
+powerpc                     akebono_defconfig
+x86_64                 randconfig-x011-201822
+x86_64                 randconfig-x015-201822
+x86_64                 randconfig-x018-201822
+x86_64                 randconfig-x010-201822
+x86_64                 randconfig-x014-201822
+x86_64                 randconfig-x019-201822
+x86_64                 randconfig-x013-201822
+x86_64                 randconfig-x017-201822
+x86_64                 randconfig-x016-201822
+x86_64                 randconfig-x012-201822
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                              fedora-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201822
+i386         randconfig-s0-201822-CONFIG_DEBUG_INFO_REDUCED
+i386                     randconfig-s1-201822
+x86_64                 randconfig-s3-06050013
+x86_64                 randconfig-s4-06050013
+x86_64                 randconfig-s5-06050013
+x86_64                   randconfig-i0-201822
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-u0-06050018
+i386                   randconfig-x009-201822
+i386                   randconfig-x008-201822
+i386                   randconfig-x005-201822
+i386                   randconfig-x001-201822
+i386                   randconfig-x003-201822
+i386                   randconfig-x000-201822
+i386                   randconfig-x004-201822
+i386                   randconfig-x006-201822
+i386                   randconfig-x002-201822
+i386                   randconfig-x007-201822
+i386                   randconfig-x078-201822
+i386                   randconfig-x079-201822
+i386                   randconfig-x070-201822
+i386                   randconfig-x074-201822
+i386                   randconfig-x076-201822
+i386                   randconfig-x075-201822
+i386                   randconfig-x071-201822
+i386                   randconfig-x073-201822
+i386                   randconfig-x077-201822
+i386                   randconfig-x072-201822
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
