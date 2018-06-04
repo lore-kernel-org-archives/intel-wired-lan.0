@@ -1,70 +1,48 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Mon, 04 Jun 2018 11:07:24 -0400
-Subject: [Intel-wired-lan] [net-queue PATCH] ixgbe: Fix setting of TC
- configuration for macvlan case
-Message-ID: <20180604150647.74618.23221.stgit@ahduyck-green-test.jf.intel.com>
+Date: Mon, 04 Jun 2018 11:17:38 -0400
+Subject: [Intel-wired-lan] [RFC PATCH 0/4] Add support for DCB and XPS with
+ MACVLAN offload
+Message-ID: <20180604150847.74754.8585.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When we were enabling macvlan interfaces we weren't correctly configuring
-things until ixgbe_setup_tc was called a second time either by tweaking the
-number of queues or increasing the macvlan count past 15.
+This patch set is meant to address a number of shortcomings in the current
+implementation of MACVLAN offload. The main issue being the fact that the
+current Tx queue implementation for ixgbe required the use of
+ndo_select_queue which doesn't necessarily play well with DCB or XPS.
 
-The issue came down to the fact that num_rx_pools is not populated until
-after the queues and interrupts are reinitialized.
+I started this patch set to address that and thought I would submit the
+start of the series as an RFC just to make sure I am headed in the right
+direction and to see if there is anything I am overlooking. With these
+patches applied we now start seeing what I am calling "subordinate
+channels" which show themselves via a "-x" suffix where the "-x" can be
+anything from "-1" to "-32767". So for example traffic class 0 with a
+subordinate class of 5 will be called out as "0-5" if you dump the traffic
+class via the sysfs value for the queue.
 
-Instead of trying to set it sooner we can just move the call to setup at
-least 1 traffic class to the SR-IOV/VMDq setup function so that we just set
-it for this one case. We already had a spot that was configuring the queues
-for TC 0 in the code here anyway so it makes sense to also set the number
-of TCs here as well.
+The main pieces that still need to be handled are the updating of the
+ndo_select_queue function and the fallback call to allow support for
+passing the accel_priv which I am changing to a netdev. I figure those
+patches will be mostly noise so I didn't see the need to include them in
+this RFC.
 
-Fixes: 49cfbeb7a95c ("ixgbe: Fix handling of macvlan Tx offload")
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |    8 ++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 --------
- 2 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index 893a920..d361f57 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -593,6 +593,14 @@ static bool ixgbe_set_sriov_queues(struct ixgbe_adapter *adapter)
- 	}
- 
- #endif
-+	/* To support macvlan offload we have to use num_tc to
-+	 * restrict the queues that can be used by the device.
-+	 * By doing this we can avoid reporting a false number of
-+	 * queues.
-+	 */
-+	if (vmdq_i > 1)
-+		netdev_set_num_tc(adapter->netdev, 1);
-+
- 	/* populate TC0 for use by pool 0 */
- 	netdev_set_tc_queue(adapter->netdev, 0,
- 			    adapter->num_rx_queues_per_pool, 0);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index d40ed93..f460c16 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8837,14 +8837,6 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
- 	} else {
- 		netdev_reset_tc(dev);
- 
--		/* To support macvlan offload we have to use num_tc to
--		 * restrict the queues that can be used by the device.
--		 * By doing this we can avoid reporting a false number of
--		 * queues.
--		 */
--		if (!tc && adapter->num_rx_pools > 1)
--			netdev_set_num_tc(dev, 1);
--
- 		if (adapter->hw.mac.type == ixgbe_mac_82598EB)
- 			adapter->hw.fc.requested_mode = adapter->last_lfc_mode;
- 
+Alexander Duyck (4):
+      net-sysfs: Drop support for XPS and traffic_class on single queue device
+      net: Add support for subordinate device traffic classes
+      ixgbe: Add code to populate and use macvlan tc to Tx queue map
+      net: Add support for subordinate traffic classes to netdev_pick_tx
 
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   55 +++++++---
+ drivers/net/macvlan.c                         |   10 --
+ include/linux/netdevice.h                     |   20 +++
+ net/core/dev.c                                |  144 +++++++++++++++++++++----
+ net/core/net-sysfs.c                          |   36 ++++++
+ 5 files changed, 215 insertions(+), 50 deletions(-)
+
+--
