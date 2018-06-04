@@ -1,364 +1,287 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Mon,  4 Jun 2018 14:05:57 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 07/11] xsk: wire upp Tx zero-copy
- functions
+Date: Mon,  4 Jun 2018 14:05:58 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 08/11] i40e: added queue pair
+ disable/enable functions
 In-Reply-To: <20180604120601.18123-1-bjorn.topel@gmail.com>
 References: <20180604120601.18123-1-bjorn.topel@gmail.com>
-Message-ID: <20180604120601.18123-8-bjorn.topel@gmail.com>
+Message-ID: <20180604120601.18123-9-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Magnus Karlsson <magnus.karlsson@intel.com>
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Here we add the functionality required to support zero-copy Tx, and
-also exposes various zero-copy related functions for the netdevs.
+Queue pair enable/disable plumbing.
 
-Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- include/net/xdp_sock.h |  9 +++++++
- net/xdp/xdp_umem.c     | 29 +++++++++++++++++++--
- net/xdp/xdp_umem.h     |  8 +++++-
- net/xdp/xsk.c          | 70 +++++++++++++++++++++++++++++++++++++++++++++-----
- net/xdp/xsk_queue.h    | 32 ++++++++++++++++++++++-
- 5 files changed, 137 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 251 ++++++++++++++++++++++++++++
+ 1 file changed, 251 insertions(+)
 
-diff --git a/include/net/xdp_sock.h b/include/net/xdp_sock.h
-index d93d3aac3fc9..9fe472f2ac95 100644
---- a/include/net/xdp_sock.h
-+++ b/include/net/xdp_sock.h
-@@ -9,6 +9,7 @@
- #include <linux/workqueue.h>
- #include <linux/if_xdp.h>
- #include <linux/mutex.h>
-+#include <linux/spinlock.h>
- #include <linux/mm.h>
- #include <net/sock.h>
- 
-@@ -42,6 +43,8 @@ struct xdp_umem {
- 	struct net_device *dev;
- 	u16 queue_id;
- 	bool zc;
-+	spinlock_t xsk_list_lock;
-+	struct list_head xsk_list;
- };
- 
- struct xdp_sock {
-@@ -53,6 +56,8 @@ struct xdp_sock {
- 	struct list_head flush_node;
- 	u16 queue_id;
- 	struct xsk_queue *tx ____cacheline_aligned_in_smp;
-+	struct list_head list;
-+	bool zc;
- 	/* Protects multiple processes in the control path */
- 	struct mutex mutex;
- 	u64 rx_dropped;
-@@ -64,8 +69,12 @@ int xsk_generic_rcv(struct xdp_sock *xs, struct xdp_buff *xdp);
- int xsk_rcv(struct xdp_sock *xs, struct xdp_buff *xdp);
- void xsk_flush(struct xdp_sock *xs);
- bool xsk_is_setup_for_bpf_map(struct xdp_sock *xs);
-+/* Used from netdev driver */
- u64 *xsk_umem_peek_addr(struct xdp_umem *umem, u64 *addr);
- void xsk_umem_discard_addr(struct xdp_umem *umem);
-+void xsk_umem_complete_tx(struct xdp_umem *umem, u32 nb_entries);
-+bool xsk_umem_consume_tx(struct xdp_umem *umem, dma_addr_t *dma, u32 *len);
-+void xsk_umem_consume_tx_done(struct xdp_umem *umem);
- #else
- static inline int xsk_generic_rcv(struct xdp_sock *xs, struct xdp_buff *xdp)
- {
-diff --git a/net/xdp/xdp_umem.c b/net/xdp/xdp_umem.c
-index f729d79b8d91..7eb4948a38d2 100644
---- a/net/xdp/xdp_umem.c
-+++ b/net/xdp/xdp_umem.c
-@@ -17,6 +17,29 @@
- 
- #define XDP_UMEM_MIN_CHUNK_SIZE 2048
- 
-+void xdp_add_sk_umem(struct xdp_umem *umem, struct xdp_sock *xs)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&umem->xsk_list_lock, flags);
-+	list_add_rcu(&xs->list, &umem->xsk_list);
-+	spin_unlock_irqrestore(&umem->xsk_list_lock, flags);
-+}
-+
-+void xdp_del_sk_umem(struct xdp_umem *umem, struct xdp_sock *xs)
-+{
-+	unsigned long flags;
-+
-+	if (xs->dev) {
-+		spin_lock_irqsave(&umem->xsk_list_lock, flags);
-+		list_del_rcu(&xs->list);
-+		spin_unlock_irqrestore(&umem->xsk_list_lock, flags);
-+
-+		if (umem->zc)
-+			synchronize_net();
-+	}
-+}
-+
- int xdp_umem_assign_dev(struct xdp_umem *umem, struct net_device *dev,
- 			u32 queue_id, u16 flags)
- {
-@@ -35,7 +58,7 @@ int xdp_umem_assign_dev(struct xdp_umem *umem, struct net_device *dev,
- 
- 	dev_hold(dev);
- 
--	if (dev->netdev_ops->ndo_bpf) {
-+	if (dev->netdev_ops->ndo_bpf && dev->netdev_ops->ndo_xsk_async_xmit) {
- 		bpf.command = XDP_QUERY_XSK_UMEM;
- 
- 		rtnl_lock();
-@@ -70,7 +93,7 @@ int xdp_umem_assign_dev(struct xdp_umem *umem, struct net_device *dev,
- 	return force_zc ? -ENOTSUPP : 0; /* fail or fallback */
- }
- 
--void xdp_umem_clear_dev(struct xdp_umem *umem)
-+static void xdp_umem_clear_dev(struct xdp_umem *umem)
- {
- 	struct netdev_bpf bpf;
- 	int err;
-@@ -283,6 +306,8 @@ static int xdp_umem_reg(struct xdp_umem *umem, struct xdp_umem_reg *mr)
- 	umem->npgs = size / PAGE_SIZE;
- 	umem->pgs = NULL;
- 	umem->user = NULL;
-+	INIT_LIST_HEAD(&umem->xsk_list);
-+	spin_lock_init(&umem->xsk_list_lock);
- 
- 	refcount_set(&umem->users, 1);
- 
-diff --git a/net/xdp/xdp_umem.h b/net/xdp/xdp_umem.h
-index 674508a32a4d..f11560334f88 100644
---- a/net/xdp/xdp_umem.h
-+++ b/net/xdp/xdp_umem.h
-@@ -13,12 +13,18 @@ static inline char *xdp_umem_get_data(struct xdp_umem *umem, u64 addr)
- 	return umem->pages[addr >> PAGE_SHIFT].addr + (addr & (PAGE_SIZE - 1));
- }
- 
-+static inline dma_addr_t xdp_umem_get_dma(struct xdp_umem *umem, u64 addr)
-+{
-+	return umem->pages[addr >> PAGE_SHIFT].dma + (addr & (PAGE_SIZE - 1));
-+}
-+
- int xdp_umem_assign_dev(struct xdp_umem *umem, struct net_device *dev,
- 			u32 queue_id, u16 flags);
--void xdp_umem_clear_dev(struct xdp_umem *umem);
- bool xdp_umem_validate_queues(struct xdp_umem *umem);
- void xdp_get_umem(struct xdp_umem *umem);
- void xdp_put_umem(struct xdp_umem *umem);
-+void xdp_add_sk_umem(struct xdp_umem *umem, struct xdp_sock *xs);
-+void xdp_del_sk_umem(struct xdp_umem *umem, struct xdp_sock *xs);
- struct xdp_umem *xdp_umem_create(struct xdp_umem_reg *mr);
- 
- #endif /* XDP_UMEM_H_ */
-diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
-index ab64bd8260ea..ddca4bf1cfc8 100644
---- a/net/xdp/xsk.c
-+++ b/net/xdp/xsk.c
-@@ -21,6 +21,7 @@
- #include <linux/uaccess.h>
- #include <linux/net.h>
- #include <linux/netdevice.h>
-+#include <linux/rculist.h>
- #include <net/xdp_sock.h>
- #include <net/xdp.h>
- 
-@@ -138,6 +139,59 @@ int xsk_generic_rcv(struct xdp_sock *xs, struct xdp_buff *xdp)
- 	return err;
- }
- 
-+void xsk_umem_complete_tx(struct xdp_umem *umem, u32 nb_entries)
-+{
-+	xskq_produce_flush_addr_n(umem->cq, nb_entries);
-+}
-+EXPORT_SYMBOL(xsk_umem_complete_tx);
-+
-+void xsk_umem_consume_tx_done(struct xdp_umem *umem)
-+{
-+	struct xdp_sock *xs;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(xs, &umem->xsk_list, list) {
-+		xs->sk.sk_write_space(&xs->sk);
-+	}
-+	rcu_read_unlock();
-+}
-+EXPORT_SYMBOL(xsk_umem_consume_tx_done);
-+
-+bool xsk_umem_consume_tx(struct xdp_umem *umem, dma_addr_t *dma, u32 *len)
-+{
-+	struct xdp_desc desc;
-+	struct xdp_sock *xs;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(xs, &umem->xsk_list, list) {
-+		if (!xskq_peek_desc(xs->tx, &desc))
-+			continue;
-+
-+		if (xskq_produce_addr_lazy(umem->cq, desc.addr))
-+			goto out;
-+
-+		*dma = xdp_umem_get_dma(umem, desc.addr);
-+		*len = desc.len;
-+
-+		xskq_discard_desc(xs->tx);
-+		rcu_read_unlock();
-+		return true;
-+	}
-+
-+out:
-+	rcu_read_unlock();
-+	return false;
-+}
-+EXPORT_SYMBOL(xsk_umem_consume_tx);
-+
-+static int xsk_zc_xmit(struct sock *sk)
-+{
-+	struct xdp_sock *xs = xdp_sk(sk);
-+	struct net_device *dev = xs->dev;
-+
-+	return dev->netdev_ops->ndo_xsk_async_xmit(dev, xs->queue_id);
-+}
-+
- static void xsk_destruct_skb(struct sk_buff *skb)
- {
- 	u64 addr = (u64)(long)skb_shinfo(skb)->destructor_arg;
-@@ -151,7 +205,6 @@ static void xsk_destruct_skb(struct sk_buff *skb)
- static int xsk_generic_xmit(struct sock *sk, struct msghdr *m,
- 			    size_t total_len)
- {
--	bool need_wait = !(m->msg_flags & MSG_DONTWAIT);
- 	u32 max_batch = TX_BATCH_SIZE;
- 	struct xdp_sock *xs = xdp_sk(sk);
- 	bool sent_frame = false;
-@@ -161,8 +214,6 @@ static int xsk_generic_xmit(struct sock *sk, struct msghdr *m,
- 
- 	if (unlikely(!xs->tx))
- 		return -ENOBUFS;
--	if (need_wait)
--		return -EOPNOTSUPP;
- 
- 	mutex_lock(&xs->mutex);
- 
-@@ -192,7 +243,7 @@ static int xsk_generic_xmit(struct sock *sk, struct msghdr *m,
- 			goto out;
- 		}
- 
--		skb = sock_alloc_send_skb(sk, len, !need_wait, &err);
-+		skb = sock_alloc_send_skb(sk, len, 1, &err);
- 		if (unlikely(!skb)) {
- 			err = -EAGAIN;
- 			goto out;
-@@ -235,6 +286,7 @@ static int xsk_generic_xmit(struct sock *sk, struct msghdr *m,
- 
- static int xsk_sendmsg(struct socket *sock, struct msghdr *m, size_t total_len)
- {
-+	bool need_wait = !(m->msg_flags & MSG_DONTWAIT);
- 	struct sock *sk = sock->sk;
- 	struct xdp_sock *xs = xdp_sk(sk);
- 
-@@ -242,8 +294,10 @@ static int xsk_sendmsg(struct socket *sock, struct msghdr *m, size_t total_len)
- 		return -ENXIO;
- 	if (unlikely(!(xs->dev->flags & IFF_UP)))
- 		return -ENETDOWN;
-+	if (need_wait)
-+		return -EOPNOTSUPP;
- 
--	return xsk_generic_xmit(sk, m, total_len);
-+	return (xs->zc) ? xsk_zc_xmit(sk) : xsk_generic_xmit(sk, m, total_len);
- }
- 
- static unsigned int xsk_poll(struct file *file, struct socket *sock,
-@@ -419,10 +473,11 @@ static int xsk_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
- 	}
- 
- 	xs->dev = dev;
--	xs->queue_id = sxdp->sxdp_queue_id;
--
-+	xs->zc = xs->umem->zc;
-+	xs->queue_id = qid;
- 	xskq_set_umem(xs->rx, &xs->umem->props);
- 	xskq_set_umem(xs->tx, &xs->umem->props);
-+	xdp_add_sk_umem(xs->umem, xs);
- 
- out_unlock:
- 	if (err)
-@@ -660,6 +715,7 @@ static void xsk_destruct(struct sock *sk)
- 
- 	xskq_destroy(xs->rx);
- 	xskq_destroy(xs->tx);
-+	xdp_del_sk_umem(xs->umem, xs);
- 	xdp_put_umem(xs->umem);
- 
- 	sk_refcnt_debug_dec(sk);
-diff --git a/net/xdp/xsk_queue.h b/net/xdp/xsk_queue.h
-index 5246ed420a16..ef6a6f0ec949 100644
---- a/net/xdp/xsk_queue.h
-+++ b/net/xdp/xsk_queue.h
-@@ -11,6 +11,7 @@
- #include <net/xdp_sock.h>
- 
- #define RX_BATCH_SIZE 16
-+#define LAZY_UPDATE_THRESHOLD 128
- 
- struct xdp_ring {
- 	u32 producer ____cacheline_aligned_in_smp;
-@@ -61,9 +62,14 @@ static inline u32 xskq_nb_avail(struct xsk_queue *q, u32 dcnt)
- 	return (entries > dcnt) ? dcnt : entries;
- }
- 
-+static inline u32 xskq_nb_free_lazy(struct xsk_queue *q, u32 producer)
-+{
-+	return q->nentries - (producer - q->cons_tail);
-+}
-+
- static inline u32 xskq_nb_free(struct xsk_queue *q, u32 producer, u32 dcnt)
- {
--	u32 free_entries = q->nentries - (producer - q->cons_tail);
-+	u32 free_entries = xskq_nb_free_lazy(q, producer);
- 
- 	if (free_entries >= dcnt)
- 		return free_entries;
-@@ -123,6 +129,9 @@ static inline int xskq_produce_addr(struct xsk_queue *q, u64 addr)
- {
- 	struct xdp_umem_ring *ring = (struct xdp_umem_ring *)q->ring;
- 
-+	if (xskq_nb_free(q, q->prod_tail, LAZY_UPDATE_THRESHOLD) == 0)
-+		return -ENOSPC;
-+
- 	ring->desc[q->prod_tail++ & q->ring_mask] = addr;
- 
- 	/* Order producer and data */
-@@ -132,6 +141,27 @@ static inline int xskq_produce_addr(struct xsk_queue *q, u64 addr)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b5daa5c9c7de..369a116edaa1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -11823,6 +11823,257 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
  	return 0;
  }
  
-+static inline int xskq_produce_addr_lazy(struct xsk_queue *q, u64 addr)
++/**
++ * i40e_enter_busy_conf - Enters busy config state
++ * @vsi: vsi
++ *
++ * Returns 0 on success, <0 for failure.
++ **/
++static int i40e_enter_busy_conf(struct i40e_vsi *vsi)
 +{
-+	struct xdp_umem_ring *ring = (struct xdp_umem_ring *)q->ring;
++	struct i40e_pf *pf = vsi->back;
++	int timeout = 50;
 +
-+	if (xskq_nb_free(q, q->prod_head, LAZY_UPDATE_THRESHOLD) == 0)
-+		return -ENOSPC;
++	while (test_and_set_bit(__I40E_CONFIG_BUSY, pf->state)) {
++		timeout--;
++		if (!timeout)
++			return -EBUSY;
++		usleep_range(1000, 2000);
++	}
 +
-+	ring->desc[q->prod_head++ & q->ring_mask] = addr;
 +	return 0;
 +}
 +
-+static inline void xskq_produce_flush_addr_n(struct xsk_queue *q,
-+					     u32 nb_entries)
++/**
++ * i40e_exit_busy_conf - Exits busy config state
++ * @vsi: vsi
++ **/
++static void i40e_exit_busy_conf(struct i40e_vsi *vsi)
 +{
-+	/* Order producer and data */
-+	smp_wmb();
++	struct i40e_pf *pf = vsi->back;
 +
-+	q->prod_tail += nb_entries;
-+	WRITE_ONCE(q->ring->producer, q->prod_tail);
++	clear_bit(__I40E_CONFIG_BUSY, pf->state);
 +}
 +
- static inline int xskq_reserve_addr(struct xsk_queue *q)
- {
- 	if (xskq_nb_free(q, q->prod_head, 1) == 0)
++/**
++ * i40e_queue_pair_reset_stats - Resets all statistics for a queue pair
++ * @vsi: vsi
++ * @queue_pair: queue pair
++ **/
++static void i40e_queue_pair_reset_stats(struct i40e_vsi *vsi, int queue_pair)
++{
++	memset(&vsi->rx_rings[queue_pair]->rx_stats, 0,
++	       sizeof(vsi->rx_rings[queue_pair]->rx_stats));
++	memset(&vsi->tx_rings[queue_pair]->stats, 0,
++	       sizeof(vsi->tx_rings[queue_pair]->stats));
++	if (i40e_enabled_xdp_vsi(vsi)) {
++		memset(&vsi->xdp_rings[queue_pair]->stats, 0,
++		       sizeof(vsi->xdp_rings[queue_pair]->stats));
++	}
++}
++
++/**
++ * i40e_queue_pair_clean_rings - Cleans all the rings of a queue pair
++ * @vsi: vsi
++ * @queue_pair: queue pair
++ **/
++static void i40e_queue_pair_clean_rings(struct i40e_vsi *vsi, int queue_pair)
++{
++	i40e_clean_tx_ring(vsi->tx_rings[queue_pair]);
++	if (i40e_enabled_xdp_vsi(vsi))
++		i40e_clean_tx_ring(vsi->xdp_rings[queue_pair]);
++	i40e_clean_rx_ring(vsi->rx_rings[queue_pair]);
++}
++
++/**
++ * i40e_queue_pair_control_napi - Enables/disables NAPI for a queue pair
++ * @vsi: vsi
++ * @queue_pair: queue pair
++ * @enable: true for enable, false for disable
++ **/
++static void i40e_queue_pair_control_napi(struct i40e_vsi *vsi, int queue_pair,
++					 bool enable)
++{
++	struct i40e_ring *rxr = vsi->rx_rings[queue_pair];
++	struct i40e_q_vector *q_vector = rxr->q_vector;
++
++	if (!vsi->netdev)
++		return;
++
++	/* All rings in a qp belong to the same qvector. */
++	if (q_vector->rx.ring || q_vector->tx.ring) {
++		if (enable)
++			napi_enable(&q_vector->napi);
++		else
++			napi_disable(&q_vector->napi);
++	}
++}
++
++/**
++ * i40e_queue_pair_control_rings - Enables/disables all rings for a queue pair
++ * @vsi: vsi
++ * @queue_pair: queue pair
++ * @enable: true for enable, false for disable
++ *
++ * Returns 0 on success, <0 on failure.
++ **/
++static int i40e_queue_pair_control_rings(struct i40e_vsi *vsi, int queue_pair,
++					 bool enable)
++{
++	struct i40e_pf *pf = vsi->back;
++	int pf_q, ret = 0;
++
++	pf_q = vsi->base_queue + queue_pair;
++	ret = i40e_control_wait_tx_q(vsi->seid, pf, pf_q,
++				     false /*is xdp*/, enable);
++	if (ret) {
++		dev_info(&pf->pdev->dev,
++			 "VSI seid %d Tx ring %d %sable timeout\n",
++			 vsi->seid, pf_q, (enable ? "en" : "dis"));
++		return ret;
++	}
++
++	i40e_control_rx_q(pf, pf_q, enable);
++	ret = i40e_pf_rxq_wait(pf, pf_q, enable);
++	if (ret) {
++		dev_info(&pf->pdev->dev,
++			 "VSI seid %d Rx ring %d %sable timeout\n",
++			 vsi->seid, pf_q, (enable ? "en" : "dis"));
++		return ret;
++	}
++
++	/* Due to HW errata, on Rx disable only, the register can
++	 * indicate done before it really is. Needs 50ms to be sure
++	 */
++	if (!enable)
++		mdelay(50);
++
++	if (!i40e_enabled_xdp_vsi(vsi))
++		return ret;
++
++	ret = i40e_control_wait_tx_q(vsi->seid, pf,
++				     pf_q + vsi->alloc_queue_pairs,
++				     true /*is xdp*/, enable);
++	if (ret) {
++		dev_info(&pf->pdev->dev,
++			 "VSI seid %d XDP Tx ring %d %sable timeout\n",
++			 vsi->seid, pf_q, (enable ? "en" : "dis"));
++	}
++
++	return ret;
++}
++
++/**
++ * i40e_queue_pair_enable_irq - Enables interrupts for a queue pair
++ * @vsi: vsi
++ * @queue_pair: queue_pair
++ **/
++static void i40e_queue_pair_enable_irq(struct i40e_vsi *vsi, int queue_pair)
++{
++	struct i40e_ring *rxr = vsi->rx_rings[queue_pair];
++	struct i40e_pf *pf = vsi->back;
++	struct i40e_hw *hw = &pf->hw;
++
++	/* All rings in a qp belong to the same qvector. */
++	if (pf->flags & I40E_FLAG_MSIX_ENABLED)
++		i40e_irq_dynamic_enable(vsi, rxr->q_vector->v_idx);
++	else
++		i40e_irq_dynamic_enable_icr0(pf);
++
++	i40e_flush(hw);
++}
++
++/**
++ * i40e_queue_pair_disable_irq - Disables interrupts for a queue pair
++ * @vsi: vsi
++ * @queue_pair: queue_pair
++ **/
++static void i40e_queue_pair_disable_irq(struct i40e_vsi *vsi, int queue_pair)
++{
++	struct i40e_ring *rxr = vsi->rx_rings[queue_pair];
++	struct i40e_pf *pf = vsi->back;
++	struct i40e_hw *hw = &pf->hw;
++
++	/* For simplicity, instead of removing the qp interrupt causes
++	 * from the interrupt linked list, we simply disable the interrupt, and
++	 * leave the list intact.
++	 *
++	 * All rings in a qp belong to the same qvector.
++	 */
++	if (pf->flags & I40E_FLAG_MSIX_ENABLED) {
++		u32 intpf = vsi->base_vector + rxr->q_vector->v_idx;
++
++		wr32(hw, I40E_PFINT_DYN_CTLN(intpf - 1), 0);
++		i40e_flush(hw);
++		synchronize_irq(pf->msix_entries[intpf].vector);
++	} else {
++		/* Legacy and MSI mode - this stops all interrupt handling */
++		wr32(hw, I40E_PFINT_ICR0_ENA, 0);
++		wr32(hw, I40E_PFINT_DYN_CTL0, 0);
++		i40e_flush(hw);
++		synchronize_irq(pf->pdev->irq);
++	}
++}
++
++/**
++ * i40e_queue_pair_disable - Disables a queue pair
++ * @vsi: vsi
++ * @queue_pair: queue pair
++ *
++ * Returns 0 on success, <0 on failure.
++ **/
++static int i40e_queue_pair_disable(struct i40e_vsi *vsi, int queue_pair)
++{
++	int err;
++
++	err = i40e_enter_busy_conf(vsi);
++	if (err)
++		return err;
++
++	i40e_queue_pair_disable_irq(vsi, queue_pair);
++	err = i40e_queue_pair_control_rings(vsi, queue_pair,
++					    false /* disable */);
++	i40e_queue_pair_control_napi(vsi, queue_pair, false /* disable */);
++	i40e_queue_pair_clean_rings(vsi, queue_pair);
++	i40e_queue_pair_reset_stats(vsi, queue_pair);
++
++	return err;
++}
++
++/**
++ * i40e_queue_pair_enable - Enables a queue pair
++ * @vsi: vsi
++ * @queue_pair: queue pair
++ *
++ * Returns 0 on success, <0 on failure.
++ **/
++static int i40e_queue_pair_enable(struct i40e_vsi *vsi, int queue_pair)
++{
++	int err;
++
++	err = i40e_configure_tx_ring(vsi->tx_rings[queue_pair]);
++	if (err)
++		return err;
++
++	if (i40e_enabled_xdp_vsi(vsi)) {
++		err = i40e_configure_tx_ring(vsi->xdp_rings[queue_pair]);
++		if (err)
++			return err;
++	}
++
++	err = i40e_configure_rx_ring(vsi->rx_rings[queue_pair]);
++	if (err)
++		return err;
++
++	err = i40e_queue_pair_control_rings(vsi, queue_pair, true /* enable */);
++	i40e_queue_pair_control_napi(vsi, queue_pair, true /* enable */);
++	i40e_queue_pair_enable_irq(vsi, queue_pair);
++
++	i40e_exit_busy_conf(vsi);
++
++	return err;
++}
++
+ /**
+  * i40e_xdp - implements ndo_bpf for i40e
+  * @dev: netdevice
 -- 
 2.14.1
 
