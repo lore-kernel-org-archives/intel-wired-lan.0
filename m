@@ -1,9 +1,10 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Mon,  4 Jun 2018 14:05:54 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 04/11] xdp: add MEM_TYPE_ZERO_COPY
+Date: Mon,  4 Jun 2018 14:05:55 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 05/11] xsk: add zero-copy support
+ for Rx
 In-Reply-To: <20180604120601.18123-1-bjorn.topel@gmail.com>
 References: <20180604120601.18123-1-bjorn.topel@gmail.com>
-Message-ID: <20180604120601.18123-5-bjorn.topel@gmail.com>
+Message-ID: <20180604120601.18123-6-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,129 +13,352 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Here, a new type of allocator support is added to the XDP return
-API. A zero-copy allocated xdp_buff cannot be converted to an
-xdp_frame. Instead is the buff has to be copied. This is not supported
-at all in this commit.
-
-Also, an opaque "handle" is added to xdp_buff. This can be used as a
-context for the zero-copy allocator implementation.
+Extend the xsk_rcv to support the new MEM_TYPE_ZERO_COPY memory, and
+wireup ndo_bpf call in bind.
 
 Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- include/net/xdp.h | 10 ++++++++++
- net/core/xdp.c    | 19 ++++++++++++++-----
- 2 files changed, 24 insertions(+), 5 deletions(-)
+ include/net/xdp_sock.h      |  6 +++
+ include/uapi/linux/if_xdp.h |  4 +-
+ net/xdp/xdp_umem.c          | 77 ++++++++++++++++++++++++++++++++++++
+ net/xdp/xdp_umem.h          |  3 ++
+ net/xdp/xsk.c               | 96 +++++++++++++++++++++++++++++++++++----------
+ 5 files changed, 165 insertions(+), 21 deletions(-)
 
-diff --git a/include/net/xdp.h b/include/net/xdp.h
-index a3b71a4dd71d..2deea7166a34 100644
---- a/include/net/xdp.h
-+++ b/include/net/xdp.h
-@@ -37,6 +37,7 @@ enum xdp_mem_type {
- 	MEM_TYPE_PAGE_SHARED = 0, /* Split-page refcnt based model */
- 	MEM_TYPE_PAGE_ORDER0,     /* Orig XDP full page model */
- 	MEM_TYPE_PAGE_POOL,
-+	MEM_TYPE_ZERO_COPY,
- 	MEM_TYPE_MAX,
+diff --git a/include/net/xdp_sock.h b/include/net/xdp_sock.h
+index caf343a7e224..d93d3aac3fc9 100644
+--- a/include/net/xdp_sock.h
++++ b/include/net/xdp_sock.h
+@@ -22,6 +22,7 @@ struct xdp_umem_props {
+ 
+ struct xdp_umem_page {
+ 	void *addr;
++	dma_addr_t dma;
  };
  
-@@ -51,6 +52,10 @@ struct xdp_mem_info {
+ struct xdp_umem {
+@@ -38,6 +39,9 @@ struct xdp_umem {
+ 	struct work_struct work;
+ 	struct page **pgs;
+ 	u32 npgs;
++	struct net_device *dev;
++	u16 queue_id;
++	bool zc;
+ };
  
- struct page_pool;
+ struct xdp_sock {
+@@ -60,6 +64,8 @@ int xsk_generic_rcv(struct xdp_sock *xs, struct xdp_buff *xdp);
+ int xsk_rcv(struct xdp_sock *xs, struct xdp_buff *xdp);
+ void xsk_flush(struct xdp_sock *xs);
+ bool xsk_is_setup_for_bpf_map(struct xdp_sock *xs);
++u64 *xsk_umem_peek_addr(struct xdp_umem *umem, u64 *addr);
++void xsk_umem_discard_addr(struct xdp_umem *umem);
+ #else
+ static inline int xsk_generic_rcv(struct xdp_sock *xs, struct xdp_buff *xdp)
+ {
+diff --git a/include/uapi/linux/if_xdp.h b/include/uapi/linux/if_xdp.h
+index e411d6f9ac65..1fa0e977ea8d 100644
+--- a/include/uapi/linux/if_xdp.h
++++ b/include/uapi/linux/if_xdp.h
+@@ -13,7 +13,9 @@
+ #include <linux/types.h>
  
-+struct zero_copy_allocator {
-+	void (*free)(struct zero_copy_allocator *zca, unsigned long handle);
-+};
+ /* Options for the sxdp_flags field */
+-#define XDP_SHARED_UMEM 1
++#define XDP_SHARED_UMEM	(1 << 0)
++#define XDP_COPY	(1 << 1) /* Force copy-mode */
++#define XDP_ZEROCOPY	(1 << 2) /* Force zero-copy mode */
+ 
+ struct sockaddr_xdp {
+ 	__u16 sxdp_family;
+diff --git a/net/xdp/xdp_umem.c b/net/xdp/xdp_umem.c
+index aca826011f6c..f729d79b8d91 100644
+--- a/net/xdp/xdp_umem.c
++++ b/net/xdp/xdp_umem.c
+@@ -17,6 +17,81 @@
+ 
+ #define XDP_UMEM_MIN_CHUNK_SIZE 2048
+ 
++int xdp_umem_assign_dev(struct xdp_umem *umem, struct net_device *dev,
++			u32 queue_id, u16 flags)
++{
++	bool force_zc, force_copy;
++	struct netdev_bpf bpf;
++	int err;
 +
- struct xdp_rxq_info {
++	force_zc = flags & XDP_ZEROCOPY;
++	force_copy = flags & XDP_COPY;
++
++	if (force_zc && force_copy)
++		return -EINVAL;
++
++	if (force_copy)
++		return 0;
++
++	dev_hold(dev);
++
++	if (dev->netdev_ops->ndo_bpf) {
++		bpf.command = XDP_QUERY_XSK_UMEM;
++
++		rtnl_lock();
++		err = dev->netdev_ops->ndo_bpf(dev, &bpf);
++		rtnl_unlock();
++
++		if (err) {
++			dev_put(dev);
++			return force_zc ? -ENOTSUPP : 0;
++		}
++
++		bpf.command = XDP_SETUP_XSK_UMEM;
++		bpf.xsk.umem = umem;
++		bpf.xsk.queue_id = queue_id;
++
++		rtnl_lock();
++		err = dev->netdev_ops->ndo_bpf(dev, &bpf);
++		rtnl_unlock();
++
++		if (err) {
++			dev_put(dev);
++			return force_zc ? err : 0; /* fail or fallback */
++		}
++
++		umem->dev = dev;
++		umem->queue_id = queue_id;
++		umem->zc = true;
++		return 0;
++	}
++
++	dev_put(dev);
++	return force_zc ? -ENOTSUPP : 0; /* fail or fallback */
++}
++
++void xdp_umem_clear_dev(struct xdp_umem *umem)
++{
++	struct netdev_bpf bpf;
++	int err;
++
++	if (umem->dev) {
++		bpf.command = XDP_SETUP_XSK_UMEM;
++		bpf.xsk.umem = NULL;
++		bpf.xsk.queue_id = umem->queue_id;
++
++		rtnl_lock();
++		err = umem->dev->netdev_ops->ndo_bpf(umem->dev, &bpf);
++		rtnl_unlock();
++
++		if (err)
++			WARN(1, "failed to disable umem!\n");
++
++		dev_put(umem->dev);
++		umem->dev = NULL;
++	}
++}
++
+ static void xdp_umem_unpin_pages(struct xdp_umem *umem)
+ {
+ 	unsigned int i;
+@@ -43,6 +118,8 @@ static void xdp_umem_release(struct xdp_umem *umem)
+ 	struct task_struct *task;
+ 	struct mm_struct *mm;
+ 
++	xdp_umem_clear_dev(umem);
++
+ 	if (umem->fq) {
+ 		xskq_destroy(umem->fq);
+ 		umem->fq = NULL;
+diff --git a/net/xdp/xdp_umem.h b/net/xdp/xdp_umem.h
+index 40e8fa4a92af..674508a32a4d 100644
+--- a/net/xdp/xdp_umem.h
++++ b/net/xdp/xdp_umem.h
+@@ -13,6 +13,9 @@ static inline char *xdp_umem_get_data(struct xdp_umem *umem, u64 addr)
+ 	return umem->pages[addr >> PAGE_SHIFT].addr + (addr & (PAGE_SIZE - 1));
+ }
+ 
++int xdp_umem_assign_dev(struct xdp_umem *umem, struct net_device *dev,
++			u32 queue_id, u16 flags);
++void xdp_umem_clear_dev(struct xdp_umem *umem);
+ bool xdp_umem_validate_queues(struct xdp_umem *umem);
+ void xdp_get_umem(struct xdp_umem *umem);
+ void xdp_put_umem(struct xdp_umem *umem);
+diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
+index 4688c750df1d..ab64bd8260ea 100644
+--- a/net/xdp/xsk.c
++++ b/net/xdp/xsk.c
+@@ -36,19 +36,28 @@ static struct xdp_sock *xdp_sk(struct sock *sk)
+ 
+ bool xsk_is_setup_for_bpf_map(struct xdp_sock *xs)
+ {
+-	return !!xs->rx;
++	return READ_ONCE(xs->rx) &&  READ_ONCE(xs->umem) &&
++		READ_ONCE(xs->umem->fq);
+ }
+ 
+-static int __xsk_rcv(struct xdp_sock *xs, struct xdp_buff *xdp)
++u64 *xsk_umem_peek_addr(struct xdp_umem *umem, u64 *addr)
++{
++	return xskq_peek_addr(umem->fq, addr);
++}
++EXPORT_SYMBOL(xsk_umem_peek_addr);
++
++void xsk_umem_discard_addr(struct xdp_umem *umem)
++{
++	xskq_discard_addr(umem->fq);
++}
++EXPORT_SYMBOL(xsk_umem_discard_addr);
++
++static int __xsk_rcv(struct xdp_sock *xs, struct xdp_buff *xdp, u32 len)
+ {
+-	u32 len = xdp->data_end - xdp->data;
+ 	void *buffer;
+ 	u64 addr;
+ 	int err;
+ 
+-	if (xs->dev != xdp->rxq->dev || xs->queue_id != xdp->rxq->queue_index)
+-		return -EINVAL;
+-
+ 	if (!xskq_peek_addr(xs->umem->fq, &addr) ||
+ 	    len > xs->umem->chunk_size_nohr) {
+ 		xs->rx_dropped++;
+@@ -60,25 +69,41 @@ static int __xsk_rcv(struct xdp_sock *xs, struct xdp_buff *xdp)
+ 	buffer = xdp_umem_get_data(xs->umem, addr);
+ 	memcpy(buffer, xdp->data, len);
+ 	err = xskq_produce_batch_desc(xs->rx, addr, len);
+-	if (!err)
++	if (!err) {
+ 		xskq_discard_addr(xs->umem->fq);
+-	else
+-		xs->rx_dropped++;
++		xdp_return_buff(xdp);
++		return 0;
++	}
+ 
++	xs->rx_dropped++;
+ 	return err;
+ }
+ 
+-int xsk_rcv(struct xdp_sock *xs, struct xdp_buff *xdp)
++static int __xsk_rcv_zc(struct xdp_sock *xs, struct xdp_buff *xdp, u32 len)
+ {
+-	int err;
++	int err = xskq_produce_batch_desc(xs->rx, (u64)xdp->handle, len);
+ 
+-	err = __xsk_rcv(xs, xdp);
+-	if (likely(!err))
++	if (err) {
+ 		xdp_return_buff(xdp);
++		xs->rx_dropped++;
++	}
+ 
+ 	return err;
+ }
+ 
++int xsk_rcv(struct xdp_sock *xs, struct xdp_buff *xdp)
++{
++	u32 len;
++
++	if (xs->dev != xdp->rxq->dev || xs->queue_id != xdp->rxq->queue_index)
++		return -EINVAL;
++
++	len = xdp->data_end - xdp->data;
++
++	return (xdp->rxq->mem.type == MEM_TYPE_ZERO_COPY) ?
++		__xsk_rcv_zc(xs, xdp, len) : __xsk_rcv(xs, xdp, len);
++}
++
+ void xsk_flush(struct xdp_sock *xs)
+ {
+ 	xskq_produce_flush_desc(xs->rx);
+@@ -87,12 +112,29 @@ void xsk_flush(struct xdp_sock *xs)
+ 
+ int xsk_generic_rcv(struct xdp_sock *xs, struct xdp_buff *xdp)
+ {
++	u32 len = xdp->data_end - xdp->data;
++	void *buffer;
++	u64 addr;
+ 	int err;
+ 
+-	err = __xsk_rcv(xs, xdp);
+-	if (!err)
++	if (!xskq_peek_addr(xs->umem->fq, &addr) ||
++	    len > xs->umem->chunk_size_nohr) {
++		xs->rx_dropped++;
++		return -ENOSPC;
++	}
++
++	addr += xs->umem->headroom;
++
++	buffer = xdp_umem_get_data(xs->umem, addr);
++	memcpy(buffer, xdp->data, len);
++	err = xskq_produce_batch_desc(xs->rx, addr, len);
++	if (!err) {
++		xskq_discard_addr(xs->umem->fq);
+ 		xsk_flush(xs);
++		return 0;
++	}
+ 
++	xs->rx_dropped++;
+ 	return err;
+ }
+ 
+@@ -291,6 +333,7 @@ static int xsk_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
+ 	struct sock *sk = sock->sk;
+ 	struct xdp_sock *xs = xdp_sk(sk);
  	struct net_device *dev;
- 	u32 queue_index;
-@@ -63,6 +68,7 @@ struct xdp_buff {
- 	void *data_end;
- 	void *data_meta;
- 	void *data_hard_start;
-+	unsigned long handle;
- 	struct xdp_rxq_info *rxq;
- };
++	u32 flags, qid;
+ 	int err = 0;
  
-@@ -86,6 +92,10 @@ struct xdp_frame *convert_to_xdp_frame(struct xdp_buff *xdp)
- 	int metasize;
- 	int headroom;
- 
-+	/* TODO: implement clone, copy, use "native" MEM_TYPE */
-+	if (xdp->rxq->mem.type == MEM_TYPE_ZERO_COPY)
-+		return NULL;
-+
- 	/* Assure headroom is available for storing info */
- 	headroom = xdp->data - xdp->data_hard_start;
- 	metasize = xdp->data - xdp->data_meta;
-diff --git a/net/core/xdp.c b/net/core/xdp.c
-index cb8c4e061a5a..9d1f22072d5d 100644
---- a/net/core/xdp.c
-+++ b/net/core/xdp.c
-@@ -31,6 +31,7 @@ struct xdp_mem_allocator {
- 	union {
- 		void *allocator;
- 		struct page_pool *page_pool;
-+		struct zero_copy_allocator *zc_alloc;
- 	};
- 	struct rhash_head node;
- 	struct rcu_head rcu;
-@@ -261,7 +262,7 @@ int xdp_rxq_info_reg_mem_model(struct xdp_rxq_info *xdp_rxq,
- 	xdp_rxq->mem.type = type;
- 
- 	if (!allocator) {
--		if (type == MEM_TYPE_PAGE_POOL)
-+		if (type == MEM_TYPE_PAGE_POOL || type == MEM_TYPE_ZERO_COPY)
- 			return -EINVAL; /* Setup time check page_pool req */
- 		return 0;
+ 	if (addr_len < sizeof(struct sockaddr_xdp))
+@@ -315,16 +358,26 @@ static int xsk_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
+ 		goto out_unlock;
  	}
-@@ -314,7 +315,8 @@ EXPORT_SYMBOL_GPL(xdp_rxq_info_reg_mem_model);
-  * is used for those calls sites.  Thus, allowing for faster recycling
-  * of xdp_frames/pages in those cases.
-  */
--static void __xdp_return(void *data, struct xdp_mem_info *mem, bool napi_direct)
-+static void __xdp_return(void *data, struct xdp_mem_info *mem, bool napi_direct,
-+			 unsigned long handle)
- {
- 	struct xdp_mem_allocator *xa;
- 	struct page *page;
-@@ -338,6 +340,13 @@ static void __xdp_return(void *data, struct xdp_mem_info *mem, bool napi_direct)
- 		page = virt_to_page(data); /* Assumes order0 page*/
- 		put_page(page);
- 		break;
-+	case MEM_TYPE_ZERO_COPY:
-+		/* NB! Only valid from an xdp_buff! */
-+		rcu_read_lock();
-+		/* mem->id is valid, checked in xdp_rxq_info_reg_mem_model() */
-+		xa = rhashtable_lookup(mem_id_ht, &mem->id, mem_id_rht_params);
-+		xa->zc_alloc->free(xa->zc_alloc, handle);
-+		rcu_read_unlock();
- 	default:
- 		/* Not possible, checked in xdp_rxq_info_reg_mem_model() */
- 		break;
-@@ -346,18 +355,18 @@ static void __xdp_return(void *data, struct xdp_mem_info *mem, bool napi_direct)
  
- void xdp_return_frame(struct xdp_frame *xdpf)
- {
--	__xdp_return(xdpf->data, &xdpf->mem, false);
-+	__xdp_return(xdpf->data, &xdpf->mem, false, 0);
- }
- EXPORT_SYMBOL_GPL(xdp_return_frame);
+-	if ((xs->rx && sxdp->sxdp_queue_id >= dev->real_num_rx_queues) ||
+-	    (xs->tx && sxdp->sxdp_queue_id >= dev->real_num_tx_queues)) {
++	qid = sxdp->sxdp_queue_id;
++
++	if ((xs->rx && qid >= dev->real_num_rx_queues) ||
++	    (xs->tx && qid >= dev->real_num_tx_queues)) {
+ 		err = -EINVAL;
+ 		goto out_unlock;
+ 	}
  
- void xdp_return_frame_rx_napi(struct xdp_frame *xdpf)
- {
--	__xdp_return(xdpf->data, &xdpf->mem, true);
-+	__xdp_return(xdpf->data, &xdpf->mem, true, 0);
- }
- EXPORT_SYMBOL_GPL(xdp_return_frame_rx_napi);
+-	if (sxdp->sxdp_flags & XDP_SHARED_UMEM) {
++	flags = sxdp->sxdp_flags;
++
++	if (flags & XDP_SHARED_UMEM) {
+ 		struct xdp_sock *umem_xs;
+ 		struct socket *sock;
  
- void xdp_return_buff(struct xdp_buff *xdp)
- {
--	__xdp_return(xdp->data, &xdp->rxq->mem, true);
-+	__xdp_return(xdp->data, &xdp->rxq->mem, true, xdp->handle);
- }
- EXPORT_SYMBOL_GPL(xdp_return_buff);
++		if ((flags & XDP_COPY) || (flags & XDP_ZEROCOPY)) {
++			/* Cannot specify flags for shared sockets. */
++			err = -EINVAL;
++			goto out_unlock;
++		}
++
+ 		if (xs->umem) {
+ 			/* We have already our own. */
+ 			err = -EINVAL;
+@@ -343,8 +396,7 @@ static int xsk_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
+ 			err = -EBADF;
+ 			sockfd_put(sock);
+ 			goto out_unlock;
+-		} else if (umem_xs->dev != dev ||
+-			   umem_xs->queue_id != sxdp->sxdp_queue_id) {
++		} else if (umem_xs->dev != dev || umem_xs->queue_id != qid) {
+ 			err = -EINVAL;
+ 			sockfd_put(sock);
+ 			goto out_unlock;
+@@ -360,6 +412,10 @@ static int xsk_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
+ 		/* This xsk has its own umem. */
+ 		xskq_set_umem(xs->umem->fq, &xs->umem->props);
+ 		xskq_set_umem(xs->umem->cq, &xs->umem->props);
++
++		err = xdp_umem_assign_dev(xs->umem, dev, qid, flags);
++		if (err)
++			goto out_unlock;
+ 	}
+ 
+ 	xs->dev = dev;
 -- 
 2.14.1
 
