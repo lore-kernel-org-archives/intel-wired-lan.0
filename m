@@ -1,58 +1,70 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Mon,  4 Jun 2018 14:06:01 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 11/11] samples/bpf: xdpsock: use
- skb Tx path for XDP_SKB
-In-Reply-To: <20180604120601.18123-1-bjorn.topel@gmail.com>
-References: <20180604120601.18123-1-bjorn.topel@gmail.com>
-Message-ID: <20180604120601.18123-12-bjorn.topel@gmail.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
+Date: Mon, 04 Jun 2018 11:07:24 -0400
+Subject: [Intel-wired-lan] [net-queue PATCH] ixgbe: Fix setting of TC
+ configuration for macvlan case
+Message-ID: <20180604150647.74618.23221.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
+When we were enabling macvlan interfaces we weren't correctly configuring
+things until ixgbe_setup_tc was called a second time either by tweaking the
+number of queues or increasing the macvlan count past 15.
 
-Make sure that XDP_SKB also uses the skb Tx path.
+The issue came down to the fact that num_rx_pools is not populated until
+after the queues and interrupts are reinitialized.
 
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+Instead of trying to set it sooner we can just move the call to setup at
+least 1 traffic class to the SR-IOV/VMDq setup function so that we just set
+it for this one case. We already had a spot that was configuring the queues
+for TC 0 in the code here anyway so it makes sense to also set the number
+of TCs here as well.
+
+Fixes: 49cfbeb7a95c ("ixgbe: Fix handling of macvlan Tx offload")
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- samples/bpf/xdpsock_user.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |    8 ++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 --------
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/samples/bpf/xdpsock_user.c b/samples/bpf/xdpsock_user.c
-index 7494f60fbff8..d69c8d78d3fd 100644
---- a/samples/bpf/xdpsock_user.c
-+++ b/samples/bpf/xdpsock_user.c
-@@ -75,6 +75,7 @@ static int opt_queue;
- static int opt_poll;
- static int opt_shared_packet_buffer;
- static int opt_interval = 1;
-+static u32 opt_xdp_bind_flags;
- 
- struct xdp_umem_uqueue {
- 	u32 cached_prod;
-@@ -541,9 +542,12 @@ static struct xdpsock *xsk_configure(struct xdp_umem *umem)
- 	sxdp.sxdp_family = PF_XDP;
- 	sxdp.sxdp_ifindex = opt_ifindex;
- 	sxdp.sxdp_queue_id = opt_queue;
-+
- 	if (shared) {
- 		sxdp.sxdp_flags = XDP_SHARED_UMEM;
- 		sxdp.sxdp_shared_umem_fd = umem->fd;
-+	} else {
-+		sxdp.sxdp_flags = opt_xdp_bind_flags;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+index 893a920..d361f57 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+@@ -593,6 +593,14 @@ static bool ixgbe_set_sriov_queues(struct ixgbe_adapter *adapter)
  	}
  
- 	lassert(bind(sfd, (struct sockaddr *)&sxdp, sizeof(sxdp)) == 0);
-@@ -699,6 +703,7 @@ static void parse_command_line(int argc, char **argv)
- 			break;
- 		case 'S':
- 			opt_xdp_flags |= XDP_FLAGS_SKB_MODE;
-+			opt_xdp_bind_flags |= XDP_COPY;
- 			break;
- 		case 'N':
- 			opt_xdp_flags |= XDP_FLAGS_DRV_MODE;
--- 
-2.14.1
+ #endif
++	/* To support macvlan offload we have to use num_tc to
++	 * restrict the queues that can be used by the device.
++	 * By doing this we can avoid reporting a false number of
++	 * queues.
++	 */
++	if (vmdq_i > 1)
++		netdev_set_num_tc(adapter->netdev, 1);
++
+ 	/* populate TC0 for use by pool 0 */
+ 	netdev_set_tc_queue(adapter->netdev, 0,
+ 			    adapter->num_rx_queues_per_pool, 0);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index d40ed93..f460c16 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8837,14 +8837,6 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
+ 	} else {
+ 		netdev_reset_tc(dev);
+ 
+-		/* To support macvlan offload we have to use num_tc to
+-		 * restrict the queues that can be used by the device.
+-		 * By doing this we can avoid reporting a false number of
+-		 * queues.
+-		 */
+-		if (!tc && adapter->num_rx_pools > 1)
+-			netdev_set_num_tc(dev, 1);
+-
+ 		if (adapter->hw.mac.type == ixgbe_mac_82598EB)
+ 			adapter->hw.fc.requested_mode = adapter->last_lfc_mode;
+ 
 
