@@ -1,36 +1,38 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Tue, 5 Jun 2018 14:43:47 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 10/11] i40e: implement AF_XDP
- zero-copy support for Tx
-In-Reply-To: <20180604120601.18123-11-bjorn.topel@gmail.com>
-References: <20180604120601.18123-1-bjorn.topel@gmail.com>
- <20180604120601.18123-11-bjorn.topel@gmail.com>
-Message-ID: <20180605144347.34351ecc@redhat.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Tue, 5 Jun 2018 23:15:26 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: Use dma_wmb() instead of wmb()
+ before doorbell writes
+In-Reply-To: <CAKgT0UdovBv3gbcW6UOj1M6mn1++QuPifGj_ijYEfe11t=eJ+A@mail.gmail.com>
+References: <20180525041321.140516-1-venkateshs@google.com>
+ <CAKgT0UdovBv3gbcW6UOj1M6mn1++QuPifGj_ijYEfe11t=eJ+A@mail.gmail.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B964FEED6@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon,  4 Jun 2018 14:06:00 +0200
-Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Friday, May 25, 2018 8:56 AM
+> To: Venkatesh Srinivas <venkateshs@google.com>
+> Cc: vsrinivas at ops101.org; intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+> Subject: Re: [Intel-wired-lan] [PATCH] igb: Use dma_wmb() instead of wmb()
+> before doorbell writes
+> 
+> On Thu, May 24, 2018 at 9:13 PM, Venkatesh Srinivas
+> <venkateshs@google.com> wrote:
+> > igb writes to doorbells to post transmit and receive descriptors;
+> > after writing descriptors to memory but before writing to doorbells,
+> > use dma_wmb() rather than wmb(). wmb() is more heavyweight than
+> > necessary before doorbell writes.
+> >
+> > On x86, this avoids SFENCEs before doorbell writes in both the
+> > tx and rx refill paths.
+> >
+> > Signed-off-by: Venkatesh Srinivas <venkateshs@google.com>
+> > ---
+> >  drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
 
-> Here, ndo_xsk_async_xmit is implemented. As a shortcut, the existing
-> XDP Tx rings are used for zero-copy. This will result in other devices
-> doing XDP_REDIRECT to an AF_XDP enabled queue will have its packets
-> dropped.
-
-This behavior is problematic, because XDP Tx rings are smp_processor_id
-based, and several RX queues can (via proc smp_affinity settings) be
-assigned to the same CPU. Thus, other RX-queues (than the AF_XDP
-enabled queue) can experience packet drops.  And other devices doing
-redirect through i40e, which happen to run on a CPU which XDP Tx queue
-is "hijacked" will see dropped packets.
-
-Any plans to allocate/create a dedicated TX ring per AF_XDP socket?
-
--- 
-Best regards,
-  Jesper Dangaard Brouer
-  MSc.CS, Principal Kernel Engineer at Red Hat
-  LinkedIn: http://www.linkedin.com/in/brouer
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
