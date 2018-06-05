@@ -1,25 +1,113 @@
-From: Andre Tomt <andre@tomt.net>
-Date: Tue, 5 Jun 2018 18:30:56 +0200
-Subject: [Intel-wired-lan] [net-queue PATCH 0/2] More fixes for ipsec
-In-Reply-To: <20180605150520.3359.94409.stgit@ahduyck-green-test.jf.intel.com>
-References: <20180605150520.3359.94409.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <c184d37f-119c-9dc4-5fc8-cbb3b7170703@tomt.net>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Tue, 5 Jun 2018 19:44:18 +0300
+Subject: [Intel-wired-lan] [PATCH v5 1/3] drivers core: refactor
+ device_shutdown
+In-Reply-To: <20180516024004.28977-2-pasha.tatashin@oracle.com>
+References: <20180516024004.28977-1-pasha.tatashin@oracle.com>
+ <20180516024004.28977-2-pasha.tatashin@oracle.com>
+Message-ID: <CAHp75Vduh4FG=K56-8bhoDPic_BXcV3UfV8Mxp_UZOeqeJ6F8w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 05. juni 2018 17:11, Alexander Duyck wrote:
-> This set addresses a few more issues for ipsec.
-> 
-> 1. We fix the bit definitions for the SECTXSTAT and SECRXSTAT registers.
-> 2. Use those new definitions to test if fuse or strapping disabled ipsec.
-> 3. Fix boolean logic testing for if we disabled it correctly in software.
-> 4. Add additional test to avoid loopback and wait if it isn't needed.
+On Wed, May 16, 2018 at 5:40 AM, Pavel Tatashin
+<pasha.tatashin@oracle.com> wrote:
+> device_shutdown() traverses through the list of devices, and calls
+> dev->{bug/driver}->shutdown() for each entry in the list.
+>
+> Refactor the function by keeping device_shutdown() to do the logic of
+> traversing the list of devices, and device_shutdown_one() to perform the
+> actual shutdown operation on one device.
+>
 
-Great, I will see if I can get these and the other fix tested on at 
-least this Denverton and two (I think) unaffected Broadwell DE Xeon D 
-15xx SFP+/10GbaseT variants later this evening.
+FWIW,
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 
-Thanks
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> ---
+>  drivers/base/core.c | 50 +++++++++++++++++++++++++++------------------
+>  1 file changed, 30 insertions(+), 20 deletions(-)
+>
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index b610816eb887..ed189f6d1a2f 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -2765,6 +2765,35 @@ int device_move(struct device *dev, struct device *new_parent,
+>  }
+>  EXPORT_SYMBOL_GPL(device_move);
+>
+> +/*
+> + * device_shutdown_one - call ->shutdown() for the device passed as
+> + * argument.
+> + */
+> +static void device_shutdown_one(struct device *dev)
+> +{
+> +       /* Don't allow any more runtime suspends */
+> +       pm_runtime_get_noresume(dev);
+> +       pm_runtime_barrier(dev);
+> +
+> +       if (dev->class && dev->class->shutdown_pre) {
+> +               if (initcall_debug)
+> +                       dev_info(dev, "shutdown_pre\n");
+> +               dev->class->shutdown_pre(dev);
+> +       }
+> +       if (dev->bus && dev->bus->shutdown) {
+> +               if (initcall_debug)
+> +                       dev_info(dev, "shutdown\n");
+> +               dev->bus->shutdown(dev);
+> +       } else if (dev->driver && dev->driver->shutdown) {
+> +               if (initcall_debug)
+> +                       dev_info(dev, "shutdown\n");
+> +               dev->driver->shutdown(dev);
+> +       }
+> +
+> +       /* decrement the reference counter */
+> +       put_device(dev);
+> +}
+> +
+>  /**
+>   * device_shutdown - call ->shutdown() on each device to shutdown.
+>   */
+> @@ -2801,30 +2830,11 @@ void device_shutdown(void)
+>                         device_lock(parent);
+>                 device_lock(dev);
+>
+> -               /* Don't allow any more runtime suspends */
+> -               pm_runtime_get_noresume(dev);
+> -               pm_runtime_barrier(dev);
+> -
+> -               if (dev->class && dev->class->shutdown_pre) {
+> -                       if (initcall_debug)
+> -                               dev_info(dev, "shutdown_pre\n");
+> -                       dev->class->shutdown_pre(dev);
+> -               }
+> -               if (dev->bus && dev->bus->shutdown) {
+> -                       if (initcall_debug)
+> -                               dev_info(dev, "shutdown\n");
+> -                       dev->bus->shutdown(dev);
+> -               } else if (dev->driver && dev->driver->shutdown) {
+> -                       if (initcall_debug)
+> -                               dev_info(dev, "shutdown\n");
+> -                       dev->driver->shutdown(dev);
+> -               }
+> -
+> +               device_shutdown_one(dev);
+>                 device_unlock(dev);
+>                 if (parent)
+>                         device_unlock(parent);
+>
+> -               put_device(dev);
+>                 put_device(parent);
+>
+>                 spin_lock(&devices_kset->list_lock);
+> --
+> 2.17.0
+>
+
+
+
+-- 
+With Best Regards,
+Andy Shevchenko
