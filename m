@@ -1,114 +1,82 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 4 Jun 2018 18:47:34 -0700
+From: zhuyj <zyjzyj2000@gmail.com>
+Date: Tue, 5 Jun 2018 11:25:45 +0800
 Subject: [Intel-wired-lan] [net-queue PATCH] ixgbe: check that ipsec is
  available on the chip
-In-Reply-To: <cbfd9481-3e36-5bcb-df2f-c6134b198cde@oracle.com>
+In-Reply-To: <1528138710-31848-1-git-send-email-shannon.nelson@oracle.com>
 References: <1528138710-31848-1-git-send-email-shannon.nelson@oracle.com>
- <CAKgT0UcN1nJGW6vODk0zycXVmbjLUM5uz-Fj9cRuwPMHzMaA=w@mail.gmail.com>
- <cbfd9481-3e36-5bcb-df2f-c6134b198cde@oracle.com>
-Message-ID: <CAKgT0Uediyz-Y=ZtQbdXhgunm1zTYMP-r_ecYu1UnpCRtMp5tA@mail.gmail.com>
+Message-ID: <CAD=hENe=mx_h1zqF1h2=jir8s64UhRfLKogZDu_jhfC3iz9BNw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jun 4, 2018 at 4:00 PM, Shannon Nelson
+Can we add ipsec state to "ethtool -k"? So we run "ethtool -k" to
+check ipsec offload enabled or not.
+
+Zhu Yanjun
+
+On Tue, Jun 5, 2018 at 2:58 AM, Shannon Nelson
 <shannon.nelson@oracle.com> wrote:
-> On 6/4/2018 2:44 PM, Alexander Duyck wrote:
->>
->> On Mon, Jun 4, 2018 at 11:58 AM, Shannon Nelson
->> <shannon.nelson@oracle.com> wrote:
->>>
->>> Check the writability of the IPsec configuration registers
->>> before setting up the offload.
->>>
->>> Fixes: 49a94d74d948 ("ixgbe: add ipsec engine start and stop routines")
->>> Reported-by: Andre Tomt <andre@tomt.net>
->>> Cc: Alexander Duyck <alexander.h.duyck@intel.com>
->>> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
->>> ---
->>>   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 20
->>> +++++++++++++++++++-
->>>   1 file changed, 19 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
->>> b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
->>> index 344a1f2..003b53f 100644
->>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
->>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
->>> @@ -210,7 +210,10 @@ static void ixgbe_ipsec_stop_engine(struct
->>> ixgbe_adapter *adapter)
->>>          struct ixgbe_hw *hw = &adapter->hw;
->>>          u32 reg;
->>>
->>> -       ixgbe_ipsec_stop_data(adapter);
->>> +       /* stop data if it has been running */
->>> +       reg = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
->>> +       if (!(reg & IXGBE_SECTXCTRL_SECTX_DIS))
->>> +               ixgbe_ipsec_stop_data(adapter);
->>>
->>>          /* disable Rx and Tx SA lookup */
->>>          IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, 0);
->>
->>
->> Instead of doing this here why not look at doing it in
->> ixgbe_ipsec_stop_data itself. That way you cover both places where
->> this gets called.
+> Check the writability of the IPsec configuration registers
+> before setting up the offload.
 >
+> Fixes: 49a94d74d948 ("ixgbe: add ipsec engine start and stop routines")
+> Reported-by: Andre Tomt <andre@tomt.net>
+> Cc: Alexander Duyck <alexander.h.duyck@intel.com>
+> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 20 +++++++++++++++++++-
+>  1 file changed, 19 insertions(+), 1 deletion(-)
 >
-> Sure.
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> index 344a1f2..003b53f 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> @@ -210,7 +210,10 @@ static void ixgbe_ipsec_stop_engine(struct ixgbe_adapter *adapter)
+>         struct ixgbe_hw *hw = &adapter->hw;
+>         u32 reg;
 >
+> -       ixgbe_ipsec_stop_data(adapter);
+> +       /* stop data if it has been running */
+> +       reg = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
+> +       if (!(reg & IXGBE_SECTXCTRL_SECTX_DIS))
+> +               ixgbe_ipsec_stop_data(adapter);
 >
->>
->>> @@ -966,12 +969,27 @@ void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
->>>    **/
->>>   void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter)
->>>   {
->>> +       struct ixgbe_hw *hw = &adapter->hw;
->>>          struct ixgbe_ipsec *ipsec;
->>>          size_t size;
->>> +       u32 reg1, reg2;
->>>
->>>          if (adapter->hw.mac.type == ixgbe_mac_82598EB)
->>>                  return;
->>>
->>> +       /* verify that the ipsec offload is available by checking
->>> +        * the writability of the engine DISable bit - can we clear
->>> +        * the bit?  If not, don't set up ipsec.  If yes, the put
->>> +        * it back and continue the setup.
->>> +        */
->>> +       reg1 = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
->>> +       reg2 = reg1 & ~IXGBE_SECTXCTRL_SECTX_DIS;
->>> +       IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, reg2);
->>> +       reg2 = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
->>> +       if (reg2 & IXGBE_SECTXCTRL_SECTX_DIS)
->>> +               return;
->>> +       IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, reg1);
->>> +
->>
->>
->> Take a look in SECTXSTAT and SECRXSTAT. I think there is are bits
->> (SECRX_OFF_DIS & SECTX_OFF_DIS) there that tell you if the offload is
->> disabled via the strapping pin.
+>         /* disable Rx and Tx SA lookup */
+>         IXGBE_WRITE_REG(hw, IXGBE_IPSTXIDX, 0);
+> @@ -966,12 +969,27 @@ void ixgbe_ipsec_rx(struct ixgbe_ring *rx_ring,
+>   **/
+>  void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter)
+>  {
+> +       struct ixgbe_hw *hw = &adapter->hw;
+>         struct ixgbe_ipsec *ipsec;
+>         size_t size;
+> +       u32 reg1, reg2;
 >
+>         if (adapter->hw.mac.type == ixgbe_mac_82598EB)
+>                 return;
 >
-> Yeah, that would be good.
+> +       /* verify that the ipsec offload is available by checking
+> +        * the writability of the engine DISable bit - can we clear
+> +        * the bit?  If not, don't set up ipsec.  If yes, the put
+> +        * it back and continue the setup.
+> +        */
+> +       reg1 = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
+> +       reg2 = reg1 & ~IXGBE_SECTXCTRL_SECTX_DIS;
+> +       IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, reg2);
+> +       reg2 = IXGBE_READ_REG(hw, IXGBE_SECTXCTRL);
+> +       if (reg2 & IXGBE_SECTXCTRL_SECTX_DIS)
+> +               return;
+> +       IXGBE_WRITE_REG(hw, IXGBE_SECTXCTRL, reg1);
+> +
+>         ipsec = kzalloc(sizeof(*ipsec), GFP_KERNEL);
+>         if (!ipsec)
+>                 goto err1;
+> --
+> 2.7.4
 >
-> It looks like there's a problem with SECnXSTAT bit definitions in
-> ixgbe_types.h: for both RX and TX the ECC_nXERR is wrong and there is no
-> definition for SECnX_OFF_DIS.  In light of a separate discussion regarding
-> shared code patches, perhaps I could ask Jeff or you to fix that file so we
-> can use those bits?
->
-> I'm out of time today, will look in again late tonight.
->
-> sln
-
-I got started but didn't have time to finish it. I will have 2 more
-patches I will submit tomorrow morning to address this and another
-issue I found.
-
-Thanks.
-
-- Alex
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
