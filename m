@@ -1,38 +1,50 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 5 Jun 2018 23:15:26 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: Use dma_wmb() instead of wmb()
- before doorbell writes
-In-Reply-To: <CAKgT0UdovBv3gbcW6UOj1M6mn1++QuPifGj_ijYEfe11t=eJ+A@mail.gmail.com>
-References: <20180525041321.140516-1-venkateshs@google.com>
- <CAKgT0UdovBv3gbcW6UOj1M6mn1++QuPifGj_ijYEfe11t=eJ+A@mail.gmail.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B964FEED6@ORSMSX101.amr.corp.intel.com>
+From: Andre Tomt <andre@tomt.net>
+Date: Wed, 6 Jun 2018 07:52:08 +0200
+Subject: [Intel-wired-lan] [net-queue PATCH 0/2] More fixes for ipsec
+In-Reply-To: <c184d37f-119c-9dc4-5fc8-cbb3b7170703@tomt.net>
+References: <20180605150520.3359.94409.stgit@ahduyck-green-test.jf.intel.com>
+ <c184d37f-119c-9dc4-5fc8-cbb3b7170703@tomt.net>
+Message-ID: <688b5e38-17b7-ae0c-5045-1bfce8d8d316@tomt.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Friday, May 25, 2018 8:56 AM
-> To: Venkatesh Srinivas <venkateshs@google.com>
-> Cc: vsrinivas at ops101.org; intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-> Subject: Re: [Intel-wired-lan] [PATCH] igb: Use dma_wmb() instead of wmb()
-> before doorbell writes
+On 05. juni 2018 18:30, Andre Tomt wrote:
+> On 05. juni 2018 17:11, Alexander Duyck wrote:
+>> This set addresses a few more issues for ipsec.
+>>
+>> 1. We fix the bit definitions for the SECTXSTAT and SECRXSTAT registers.
+>> 2. Use those new definitions to test if fuse or strapping disabled ipsec.
+>> 3. Fix boolean logic testing for if we disabled it correctly in software.
+>> 4. Add additional test to avoid loopback and wait if it isn't needed.
 > 
-> On Thu, May 24, 2018 at 9:13 PM, Venkatesh Srinivas
-> <venkateshs@google.com> wrote:
-> > igb writes to doorbells to post transmit and receive descriptors;
-> > after writing descriptors to memory but before writing to doorbells,
-> > use dma_wmb() rather than wmb(). wmb() is more heavyweight than
-> > necessary before doorbell writes.
-> >
-> > On x86, this avoids SFENCEs before doorbell writes in both the
-> > tx and rx refill paths.
-> >
-> > Signed-off-by: Venkatesh Srinivas <venkateshs@google.com>
-> > ---
-> >  drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> Great, I will see if I can get these and the other fix tested on at 
+> least this Denverton and two (I think) unaffected Broadwell DE Xeon D 
+> 15xx SFP+/10GbaseT variants later this evening.
+> 
+> Thanks
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+I've tested a 4.17 kernel with the following patches applied:
+
+ixgbe-use-CONFIG_XFRM_OFFLOAD-instead-of-CONFIG_XFRM.patch
+ixgbe-move-ipsec-init-function-to-before-reset-call.patch
+ixgbe-avoid-loopback-and-fix-boolean-logic-in-ipsec_stop_data.patch
+ixgbe-fix-bit-definitions-and-add-support-for-testing-for-ipsec-support.patch
+
+(I'm too lazy right now to actually match them up with posted subjects)
+
+The Xeon-Ds now also report "esp-hw-offload: off [fixed]". I'm guessing 
+these parts, probably beeing similar to the controller in Denvertons, 
+have no ipsec offload support and the check do actually work correctly?
+
+04:00.0 Ethernet controller [0200]: Intel Corporation Ethernet 
+Connection X552 10 GbE SFP+ [8086:15ac]
+03:00.0 Ethernet controller [0200]: Intel Corporation Ethernet 
+Connection X552/X557-AT 10GBASE-T [8086:15ad]
+
+ipsec support has not been tested, only that they pass normal traffic 
+and otherwise behave as expected.
+
+Is there any point in me replying to each on the list with a Tested-By?
