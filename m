@@ -1,45 +1,61 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 6 Jun 2018 16:44:54 +0000
-Subject: [Intel-wired-lan] [net-queue PATCH] ixgbe: Fix setting of TC
- configuration for macvlan case
-In-Reply-To: <20180604150647.74618.23221.stgit@ahduyck-green-test.jf.intel.com>
-References: <20180604150647.74618.23221.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2C634F@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 7 Jun 2018 09:14:55 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 12/19]
+ drivers/net//ethernet/intel/ixgbe/ixgbe_ipsec.c:534:12: error: redefinition
+ of 'ixgbe_ipsec_check_mgmt_ip'
+Message-ID: <201806070942.RFKKFfcG%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Monday, June 4, 2018 8:07 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net-queue PATCH] ixgbe: Fix setting of TC
-> configuration for macvlan case
-> 
-> When we were enabling macvlan interfaces we weren't correctly configuring
-> things until ixgbe_setup_tc was called a second time either by tweaking the
-> number of queues or increasing the macvlan count past 15.
-> 
-> The issue came down to the fact that num_rx_pools is not populated until
-> after the queues and interrupts are reinitialized.
-> 
-> Instead of trying to set it sooner we can just move the call to setup at least 1
-> traffic class to the SR-IOV/VMDq setup function so that we just set it for this
-> one case. We already had a spot that was configuring the queues for TC 0 in
-> the code here anyway so it makes sense to also set the number of TCs here
-> as well.
-> 
-> Fixes: 49cfbeb7a95c ("ixgbe: Fix handling of macvlan Tx offload")
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |    8 ++++++++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 --------
->  2 files changed, 8 insertions(+), 8 deletions(-)
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   a009a81ed3ae2334db24462b6d37286b8810049f
+commit: 52a921180e5c07be0f4788137e9d97e1efb098b2 [12/19] ixgbe: check ipsec ip addr against mgmt filters
+config: i386-randconfig-x009-201822 (attached as .config)
+compiler: gcc-7 (Debian 7.3.0-16) 7.3.0
+reproduce:
+        git checkout 52a921180e5c07be0f4788137e9d97e1efb098b2
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
+All errors (new ones prefixed by >>):
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+>> drivers/net//ethernet/intel/ixgbe/ixgbe_ipsec.c:534:12: error: redefinition of 'ixgbe_ipsec_check_mgmt_ip'
+    static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+               ^~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net//ethernet/intel/ixgbe/ixgbe_ipsec.c:451:12: note: previous definition of 'ixgbe_ipsec_check_mgmt_ip' was here
+    static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+               ^~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net//ethernet/intel/ixgbe/ixgbe_ipsec.c:451:12: warning: 'ixgbe_ipsec_check_mgmt_ip' defined but not used [-Wunused-function]
 
+vim +/ixgbe_ipsec_check_mgmt_ip +534 drivers/net//ethernet/intel/ixgbe/ixgbe_ipsec.c
 
+   529	
+   530	/**
+   531	 * ixgbe_ipsec_check_mgmt_ip - make sure there is no clash with mgmt IP filters
+   532	 * @xs: pointer to transformer state struct
+   533	 **/
+ > 534	static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+   535	{
+   536		struct net_device *dev = xs->xso.dev;
+   537		struct ixgbe_adapter *adapter = netdev_priv(dev);
+   538		struct ixgbe_hw *hw = &adapter->hw;
+   539		u32 mfval, manc, reg;
+   540		int num_filters = 4;
+   541		bool manc_ipv4;
+   542		u32 bmcipval;
+   543		int i, j;
+   544	
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 27391 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180607/21557f5b/attachment-0001.bin>
