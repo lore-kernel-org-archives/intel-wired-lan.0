@@ -1,224 +1,182 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 8 Jun 2018 15:19:19 +0000
-Subject: [Intel-wired-lan] [PATCH] fq_codel: fix NULL pointer deref in
- fq_codel_reset
-In-Reply-To: <CANn89iLL1_KnRi5a2oZfvc2rxCuGc5CfgyRWEkdx4d3kK6wpwg@mail.gmail.com>
-References: <20180608000636.4338-1-jacob.e.keller@intel.com>
- <02874ECE860811409154E81DA85FBB5884BC1945@ORSMSX115.amr.corp.intel.com>
- <CANn89iLL1_KnRi5a2oZfvc2rxCuGc5CfgyRWEkdx4d3kK6wpwg@mail.gmail.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5884BC1EBD@ORSMSX115.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 08 Jun 2018 23:58:59 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 84fae5c48a8a73b53ae0add767cb666a93d81f20
+Message-ID: <5b1aa7c3.dm1H6pKKkqozkhmy%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Eric Dumazet [mailto:edumazet at google.com]
-> Sent: Friday, June 08, 2018 8:01 AM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Subject: Re: [PATCH] fq_codel: fix NULL pointer deref in fq_codel_reset
-> 
-> Not sure this is the right fix.
-> 
-> It is very strange that
-> 
-> ->init()   (failure) -> reset()  ,  then ->destroy()
-> 
-> Why reset() is called before a destroy, I have no idea.
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 84fae5c48a8a73b53ae0add767cb666a93d81f20  i40e: implement AF_XDP zero-copy support for Rx
 
-I don't understand either, and I'm not sure that this is the correct fix, but it seemed like the most sure way to avoid panics.
+Regressions in current branch:
 
-> Anyway you must send patches to netdev@
-> 
+drivers/net/ethernet/intel/i40e/i40e_xsk.c:330:20: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+drivers/net/ethernet/intel/i40e/i40e_xsk.c:330:29: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c:496:56: sparse: restricted __be32 degrades to integer
+drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c:543:12: error: redefinition of 'ixgbe_ipsec_check_mgmt_ip'
 
-Jeff forwards them to netdev after it's passed testing here.
+Error ids grouped by kconfigs:
 
-Thanks,
-Jake
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_xsk.c:warning:cast-from-pointer-to-integer-of-different-size
+??? ??? drivers-net-ethernet-intel-i40e-i40e_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? i386-randconfig-i1-201822
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? i386-randconfig-s1-201822
+??? ??? drivers-net-ethernet-intel-i40e-i40e_xsk.c:warning:cast-from-pointer-to-integer-of-different-size
+??? ??? drivers-net-ethernet-intel-i40e-i40e_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? i386-randconfig-x006-201822
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? i386-randconfig-x009-201822
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? i386-randconfig-x072-201822
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? i386-randconfig-x073-201822
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? i386-randconfig-x076-201822
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? ia64-allmodconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? microblaze-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_xsk.c:warning:cast-from-pointer-to-integer-of-different-size
+??? ??? drivers-net-ethernet-intel-i40e-i40e_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? sparc64-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? sparc-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:sparse:restricted-__be32-degrades-to-integer
+??? x86_64-randconfig-x001-201822
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
+??? x86_64-randconfig-x006-201822
+    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ipsec.c:error:redefinition-of-ixgbe_ipsec_check_mgmt_ip
 
-> Thanks.
-> 
-> 
-> On Thu, Jun 7, 2018 at 5:08 PM Keller, Jacob E <jacob.e.keller@intel.com
-> <mailto:jacob.e.keller@intel.com> > wrote:
-> 
-> 
-> 	> -----Original Message-----
-> 	> From: Keller, Jacob E
-> 	> Sent: Thursday, June 07, 2018 5:07 PM
-> 	> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org <mailto:intel-
-> wired-lan at lists.osuosl.org> >
-> 	> Cc: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com
-> <mailto:jeffrey.t.kirsher@intel.com> >; Keller, Jacob E
-> 	> <jacob.e.keller at intel.com <mailto:jacob.e.keller@intel.com> >; Eric
-> Dumazet <edumazet at google.com <mailto:edumazet@google.com> >
-> 	> Subject: [PATCH] fq_codel: fix NULL pointer deref in fq_codel_reset
-> 	>
-> 
-> 	This should be targeting [net] as that's where I built it, as it is a bug fix. I
-> forgot to set the subject prefix when sending the mail.
-> 
-> 	Thanks,
-> 	Jake
-> 
-> 	> The function qdisc_create_dftl attempts to create a default qdisc. If
-> 	> this fails, it calls qdisc_destroy when cleaning up. The qdisc_destroy
-> 	> function calls the ->reset op on the qdisc.
-> 	>
-> 	> In the case of sch_fq_codel.c, this function will panic when the qdisc
-> 	> wasn't properly initialized:
-> 	>
-> 	>    kernel: BUG: unable to handle kernel NULL pointer dereference at
-> 	> 0000000000000008
-> 	>    kernel: IP: fq_codel_reset+0x58/0xd0 [sch_fq_codel]
-> 	>    kernel: PGD 0 P4D 0
-> 	>    kernel: Oops: 0000 [#1] SMP PTI
-> 	>    kernel: Modules linked in: i40iw i40e(OE) xt_CHECKSUM
-> iptable_mangle
-> 	> ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4
-> nf_nat
-> 	> nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack nf_conntrack tun
-> bridge stp llc
-> 	> devlink ebtable_filter ebtables ip6table_filter ip6_tables rpcrdma
-> ib_isert
-> 	> iscsi_target_mod sunrpc ib_iser libiscsi scsi_transport_iscsi ib_srpt
-> 	> target_core_mod ib_srp scsi_transport_srp ib_ipoib rdma_ucm ib_ucm
-> 	> ib_uverbs ib_umad rdma_cm ib_cm iw_cm intel_rapl sb_edac
-> 	> x86_pkg_temp_thermal intel_powerclamp coretemp kvm irqbypass
-> 	> crct10dif_pclmul crc32_pclmul ghash_clmulni_intel intel_cstate
-> iTCO_wdt
-> 	> iTCO_vendor_support intel_uncore ib_core intel_rapl_perf mei_me
-> mei joydev
-> 	> i2c_i801 lpc_ich ioatdma shpchp wmi sch_fq_codel xfs libcrc32c
-> mgag200 ixgbe
-> 	> drm_kms_helper isci ttm firewire_ohci
-> 	>    kernel:  mdio drm igb libsas crc32c_intel firewire_core ptp pps_core
-> 	> scsi_transport_sas crc_itu_t dca i2c_algo_bit ipmi_si ipmi_devintf
-> 	> ipmi_msghandler [last unloaded: i40e]
-> 	>    kernel: CPU: 10 PID: 4219 Comm: ip Tainted: G           OE
-> 4.16.13custom-fq-
-> 	> codel-test+ #3
-> 	>    kernel: Hardware name: Intel Corporation S2600CO/S2600CO, BIOS
-> 	> SE5C600.86B.02.05.0004.051120151007 05/11/2015
-> 	>    kernel: RIP: 0010:fq_codel_reset+0x58/0xd0 [sch_fq_codel]
-> 	>    kernel: RSP: 0018:ffffbfbf4c1fb620 EFLAGS: 00010246
-> 	>    kernel: RAX: 0000000000000400 RBX: 0000000000000000 RCX:
-> 00000000000005b9
-> 	>    kernel: RDX: 0000000000000000 RSI: ffff9d03264a60c0 RDI:
-> ffff9cfd17b31c00
-> 	>    kernel: RBP: 0000000000000001 R08: 00000000000260c0 R09:
-> ffffffffb679c3e9
-> 	>    kernel: R10: fffff1dab06a0e80 R11: ffff9cfd163af800 R12:
-> ffff9cfd17b31c00
-> 	>    kernel: R13: 0000000000000001 R14: ffff9cfd153de600 R15:
-> 0000000000000001
-> 	>    kernel: FS:  00007fdec2f92800(0000) GS:ffff9d0326480000(0000)
-> 	> knlGS:0000000000000000
-> 	>    kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> 	>    kernel: CR2: 0000000000000008 CR3: 0000000c1956a006 CR4:
-> 00000000000606e0
-> 	>    kernel: Call Trace:
-> 	>    kernel:  qdisc_destroy+0x56/0x140
-> 	>    kernel:  qdisc_create_dflt+0x8b/0xb0
-> 	>    kernel:  mq_init+0xc1/0xf0
-> 	>    kernel:  qdisc_create_dflt+0x5a/0xb0
-> 	>    kernel:  dev_activate+0x205/0x230
-> 	>    kernel:  __dev_open+0xf5/0x160
-> 	>    kernel:  __dev_change_flags+0x1a3/0x210
-> 	>    kernel:  dev_change_flags+0x21/0x60
-> 	>    kernel:  do_setlink+0x660/0xdf0
-> 	>    kernel:  ? down_trylock+0x25/0x30
-> 	>    kernel:  ? xfs_buf_trylock+0x1a/0xd0 [xfs]
-> 	>    kernel:  ? rtnl_newlink+0x816/0x990
-> 	>    kernel:  ? _xfs_buf_find+0x327/0x580 [xfs]
-> 	>    kernel:  ? _cond_resched+0x15/0x30
-> 	>    kernel:  ? kmem_cache_alloc+0x20/0x1b0
-> 	>    kernel:  ? rtnetlink_rcv_msg+0x200/0x2f0
-> 	>    kernel:  ? rtnl_calcit.isra.30+0x100/0x100
-> 	>    kernel:  ? netlink_rcv_skb+0x4c/0x120
-> 	>    kernel:  ? netlink_unicast+0x19e/0x260
-> 	>    kernel:  ? netlink_sendmsg+0x1ff/0x3c0
-> 	>    kernel:  ? sock_sendmsg+0x36/0x40
-> 	>    kernel:  ? ___sys_sendmsg+0x295/0x2f0
-> 	>    kernel:  ? ebitmap_cmp+0x6d/0x90
-> 	>    kernel:  ? dev_get_by_name_rcu+0x73/0x90
-> 	>    kernel:  ? skb_dequeue+0x52/0x60
-> 	>    kernel:  ? __inode_wait_for_writeback+0x7f/0xf0
-> 	>    kernel:  ? bit_waitqueue+0x30/0x30
-> 	>    kernel:  ? fsnotify_grab_connector+0x3c/0x60
-> 	>    kernel:  ? __sys_sendmsg+0x51/0x90
-> 	>    kernel:  ? do_syscall_64+0x74/0x180
-> 	>    kernel:  ? entry_SYSCALL_64_after_hwframe+0x3d/0xa2
-> 	>    kernel: Code: 00 00 48 89 87 00 02 00 00 8b 87 a0 01 00 00 85 c0 0f 84 84
-> 00 00 00
-> 	> 31 ed 48 63 dd 83 c5 01 48 c1 e3 06 49 03 9c 24 90 01 00 00 <48> 8b 73 08
-> 48 8b 3b e8
-> 	> 6c 9a 4f f6 48 8d 43 10 48 c7 03 00 00
-> 	>    kernel: RIP: fq_codel_reset+0x58/0xd0 [sch_fq_codel] RSP:
-> ffffbfbf4c1fb620
-> 	>    kernel: CR2: 0000000000000008
-> 	>    kernel: ---[ end trace e81a62bede66274e ]---
-> 	>
-> 	> This occurs because if fq_codel_init fails, it has left the private data
-> 	> in an incomplete state. For example, if tcf_block_get fails, (as in the
-> 	> above panic), then q->flows and q->backlogs will be NULL. Thus they
-> will
-> 	> cause NULL pointer access when attempting to reset them in
-> 	> fq_codel_reset.
-> 	>
-> 	> We could mitigate some of these issues by changing fq_codel_init to
-> more
-> 	> explicitly cleanup after itself when failing. For example, we could
-> 	> ensure that q->flowcnt was set to 0 so that the loop over each flow in
-> 	> fq_codel_reset would not trigger. However, this would not prevent a
-> NULL
-> 	> pointer dereference when attempting to memset the q->backlogs.
-> 	>
-> 	> Instead, just add a NULL check prior to attempting to reset these
-> 	> fields.
-> 	>
-> 	> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com
-> <mailto:jacob.e.keller@intel.com> >
-> 	> Cc: Eric Dumazet <edumazet@google.com
-> <mailto:edumazet@google.com> >
-> 	> ---
-> 	>  net/sched/sch_fq_codel.c | 15 +++++++++------
-> 	>  1 file changed, 9 insertions(+), 6 deletions(-)
-> 	>
-> 	> diff --git a/net/sched/sch_fq_codel.c b/net/sched/sch_fq_codel.c
-> 	> index 22fa13cf5d8b..1658c314ee40 100644
-> 	> --- a/net/sched/sch_fq_codel.c
-> 	> +++ b/net/sched/sch_fq_codel.c
-> 	> @@ -352,14 +352,17 @@ static void fq_codel_reset(struct Qdisc *sch)
-> 	>
-> 	>       INIT_LIST_HEAD(&q->new_flows);
-> 	>       INIT_LIST_HEAD(&q->old_flows);
-> 	> -     for (i = 0; i < q->flows_cnt; i++) {
-> 	> -             struct fq_codel_flow *flow = q->flows + i;
-> 	> +     if (q->flows) {
-> 	> +             for (i = 0; i < q->flows_cnt; i++) {
-> 	> +                     struct fq_codel_flow *flow = q->flows + i;
-> 	>
-> 	> -             fq_codel_flow_purge(flow);
-> 	> -             INIT_LIST_HEAD(&flow->flowchain);
-> 	> -             codel_vars_init(&flow->cvars);
-> 	> +                     fq_codel_flow_purge(flow);
-> 	> +                     INIT_LIST_HEAD(&flow->flowchain);
-> 	> +                     codel_vars_init(&flow->cvars);
-> 	> +             }
-> 	>       }
-> 	> -     memset(q->backlogs, 0, q->flows_cnt * sizeof(u32));
-> 	> +     if (q->backlogs)
-> 	> +             memset(q->backlogs, 0, q->flows_cnt * sizeof(u32));
-> 	>       sch->q.qlen = 0;
-> 	>       sch->qstats.backlog = 0;
-> 	>       q->memory_usage = 0;
-> 	> --
-> 	> 2.18.0.rc1.134.g5f29118f3507
-> 
-> 
+elapsed time: 76m
 
+configs tested: 113
+
+i386                   randconfig-x010-201822
+i386                   randconfig-x011-201822
+i386                   randconfig-x012-201822
+i386                   randconfig-x013-201822
+i386                   randconfig-x014-201822
+i386                   randconfig-x015-201822
+i386                   randconfig-x016-201822
+i386                   randconfig-x017-201822
+i386                   randconfig-x018-201822
+i386                   randconfig-x019-201822
+x86_64                              fedora-25
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201822
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201822
+i386                     randconfig-i1-201822
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                   randconfig-a0-06082326
+i386                   randconfig-a1-06082326
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+microblaze                       allmodconfig
+powerpc                          g5_defconfig
+powerpc                 mpc85xx_cds_defconfig
+powerpc                      ppc44x_defconfig
+x86_64                 randconfig-x011-201822
+x86_64                 randconfig-x015-201822
+x86_64                 randconfig-x018-201822
+x86_64                 randconfig-x010-201822
+x86_64                 randconfig-x014-201822
+x86_64                 randconfig-x019-201822
+x86_64                 randconfig-x013-201822
+x86_64                 randconfig-x017-201822
+x86_64                 randconfig-x016-201822
+x86_64                 randconfig-x012-201822
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201822
+i386                     randconfig-s1-201822
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-06082230
+x86_64                 randconfig-s4-06082230
+x86_64                 randconfig-s5-06082230
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+x86_64                   randconfig-i0-201822
+i386                   randconfig-x009-201822
+i386                   randconfig-x008-201822
+i386                   randconfig-x005-201822
+i386                   randconfig-x001-201822
+i386                   randconfig-x003-201822
+i386                   randconfig-x000-201822
+i386                   randconfig-x004-201822
+i386                   randconfig-x006-201822
+i386                   randconfig-x002-201822
+i386                   randconfig-x007-201822
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x078-201822
+i386                   randconfig-x079-201822
+i386                   randconfig-x070-201822
+i386                   randconfig-x074-201822
+i386                   randconfig-x076-201822
+i386                   randconfig-x075-201822
+i386                   randconfig-x071-201822
+i386                   randconfig-x073-201822
+i386                   randconfig-x077-201822
+i386                   randconfig-x072-201822
+x86_64                 randconfig-x003-201822
+x86_64                 randconfig-x007-201822
+x86_64                 randconfig-x000-201822
+x86_64                 randconfig-x004-201822
+x86_64                 randconfig-x005-201822
+x86_64                 randconfig-x001-201822
+x86_64                 randconfig-x008-201822
+x86_64                 randconfig-x002-201822
+x86_64                 randconfig-x006-201822
+x86_64                 randconfig-x009-201822
+i386                             allmodconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
