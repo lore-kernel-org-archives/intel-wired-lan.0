@@ -1,84 +1,66 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Mon, 11 Jun 2018 13:40:52 -0400
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 0/7] Add support for
- L2 Fwd Offload w/o ndo_select_queue
-Message-ID: <20180611173003.41352.25621.stgit@ahduyck-green-test.jf.intel.com>
+Date: Mon, 11 Jun 2018 13:40:57 -0400
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 1/7] net-sysfs: Drop
+ support for XPS and traffic_class on single queue device
+In-Reply-To: <20180611173003.41352.25621.stgit@ahduyck-green-test.jf.intel.com>
+References: <20180611173003.41352.25621.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <20180611174057.41352.98935.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch series is meant to allow support for the L2 forward offload, aka
-MACVLAN offload without the need for using ndo_select_queue.
+This patch makes it so that we do not report the traffic class or allow XPS
+configuration on single queue devices. This is mostly to avoid unnecessary
+complexity with changes I have planned that will allow us to reuse
+the unused tc_to_txq and XPS configuration on a single queue device to
+allow it to make use of a subset of queues on an underlying device.
 
-The existing solution currently requires that we use ndo_select_queue in
-the transmit path if we want to associate specific Tx queues with a given
-MACVLAN interface. In order to get away from this we need to repurpose the
-tc_to_txq array and XPS pointer for the MACVLAN interface and use those as
-a means of accessing the queues on the lower device. As a result we cannot
-offload a device that is configured as multiqueue, however it doesn't
-really make sense to configure a macvlan interfaced as being multiqueue
-anyway since it doesn't really have a qdisc of its own in the first place.
-
-I am submitting this as an RFC for the netdev mailing list, and officially
-submitting it for testing to Jeff Kirsher's next-queue in order to validate
-the ixgbe specific bits.
-
-The big changes in this set are:
-  Allow lower device to update tc_to_txq and XPS map of offloaded MACVLAN
-  Disable XPS for single queue devices
-  Replace accel_priv with sb_dev in ndo_select_queue
-  Add sb_dev parameter to fallback function for ndo_select_queue
-  Consolidated ndo_select_queue functions that appeared to be duplicates
-
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
+ net/core/net-sysfs.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-Alexander Duyck (7):
-      net-sysfs: Drop support for XPS and traffic_class on single queue device
-      net: Add support for subordinate device traffic classes
-      ixgbe: Add code to populate and use macvlan tc to Tx queue map
-      net: Add support for subordinate traffic classes to netdev_pick_tx
-      net: Add generic ndo_select_queue functions
-      net: allow ndo_select_queue to pass netdev
-      net: allow fallback function to pass netdev
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index bb7e80f..335c6a4 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -1047,9 +1047,14 @@ static ssize_t traffic_class_show(struct netdev_queue *queue,
+ 				  char *buf)
+ {
+ 	struct net_device *dev = queue->dev;
+-	int index = get_netdev_queue_index(queue);
+-	int tc = netdev_txq_to_tc(dev, index);
++	int index;
++	int tc;
+ 
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
++
++	index = get_netdev_queue_index(queue);
++	tc = netdev_txq_to_tc(dev, index);
+ 	if (tc < 0)
+ 		return -EINVAL;
+ 
+@@ -1214,6 +1219,9 @@ static ssize_t xps_cpus_show(struct netdev_queue *queue,
+ 	cpumask_var_t mask;
+ 	unsigned long index;
+ 
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
++
+ 	index = get_netdev_queue_index(queue);
+ 
+ 	if (dev->num_tc) {
+@@ -1260,6 +1268,9 @@ static ssize_t xps_cpus_store(struct netdev_queue *queue,
+ 	cpumask_var_t mask;
+ 	int err;
+ 
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
++
+ 	if (!capable(CAP_NET_ADMIN))
+ 		return -EPERM;
+ 
 
-
- drivers/infiniband/hw/hfi1/vnic_main.c            |    2 
- drivers/infiniband/ulp/opa_vnic/opa_vnic_netdev.c |    4 -
- drivers/net/bonding/bond_main.c                   |    3 
- drivers/net/ethernet/amazon/ena/ena_netdev.c      |    5 -
- drivers/net/ethernet/broadcom/bcmsysport.c        |    6 -
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c   |    6 +
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h   |    3 
- drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c   |    5 -
- drivers/net/ethernet/hisilicon/hns/hns_enet.c     |    5 -
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |   62 ++++++--
- drivers/net/ethernet/lantiq_etop.c                |   10 -
- drivers/net/ethernet/mellanox/mlx4/en_tx.c        |    7 +
- drivers/net/ethernet/mellanox/mlx4/mlx4_en.h      |    3 
- drivers/net/ethernet/mellanox/mlx5/core/en.h      |    3 
- drivers/net/ethernet/mellanox/mlx5/core/en_tx.c   |    5 -
- drivers/net/ethernet/renesas/ravb_main.c          |    3 
- drivers/net/ethernet/sun/ldmvsw.c                 |    3 
- drivers/net/ethernet/sun/sunvnet.c                |    3 
- drivers/net/ethernet/ti/netcp_core.c              |    9 -
- drivers/net/hyperv/netvsc_drv.c                   |    6 -
- drivers/net/macvlan.c                             |   10 -
- drivers/net/net_failover.c                        |    7 +
- drivers/net/team/team.c                           |    3 
- drivers/net/tun.c                                 |    3 
- drivers/net/wireless/marvell/mwifiex/main.c       |    3 
- drivers/net/xen-netback/interface.c               |    4 -
- drivers/net/xen-netfront.c                        |    3 
- drivers/staging/netlogic/xlr_net.c                |    9 -
- drivers/staging/rtl8188eu/os_dep/os_intfs.c       |    3 
- drivers/staging/rtl8723bs/os_dep/os_intfs.c       |    7 -
- include/linux/netdevice.h                         |   32 ++++
- net/core/dev.c                                    |  154 ++++++++++++++++++---
- net/core/net-sysfs.c                              |   36 +++++
- net/mac80211/iface.c                              |    4 -
- net/packet/af_packet.c                            |    9 -
- 35 files changed, 306 insertions(+), 134 deletions(-)
-
---
