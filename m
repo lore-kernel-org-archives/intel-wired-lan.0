@@ -1,175 +1,84 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Mon, 11 Jun 2018 23:50:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- e40d79db59ee339d57c339bce4ee2ed57b2e6a73
-Message-ID: <5b1e9a48.BaJYxsQUpGjIg3xr%lkp@intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
+Date: Mon, 11 Jun 2018 13:40:52 -0400
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 0/7] Add support for
+ L2 Fwd Offload w/o ndo_select_queue
+Message-ID: <20180611173003.41352.25621.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: e40d79db59ee339d57c339bce4ee2ed57b2e6a73  fq_codel: fix NULL pointer deref in fq_codel_reset
+This patch series is meant to allow support for the L2 forward offload, aka
+MACVLAN offload without the need for using ndo_select_queue.
 
-elapsed time: 74m
+The existing solution currently requires that we use ndo_select_queue in
+the transmit path if we want to associate specific Tx queues with a given
+MACVLAN interface. In order to get away from this we need to repurpose the
+tc_to_txq array and XPS pointer for the MACVLAN interface and use those as
+a means of accessing the queues on the lower device. As a result we cannot
+offload a device that is configured as multiqueue, however it doesn't
+really make sense to configure a macvlan interfaced as being multiqueue
+anyway since it doesn't really have a qdisc of its own in the first place.
 
-configs tested: 150
+I am submitting this as an RFC for the netdev mailing list, and officially
+submitting it for testing to Jeff Kirsher's next-queue in order to validate
+the ixgbe specific bits.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-a0-06112149
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x012-201823
-i386                   randconfig-x016-201823
-i386                   randconfig-x017-201823
-i386                   randconfig-x014-201823
-i386                   randconfig-x018-201823
-i386                   randconfig-x013-201823
-i386                   randconfig-x011-201823
-i386                   randconfig-x015-201823
-i386                   randconfig-x019-201823
-i386                   randconfig-x010-201823
-i386                     randconfig-n0-201823
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201823
-i386                     randconfig-i1-201823
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201823
-i386                     randconfig-a1-201823
-x86_64                 randconfig-s0-06112228
-x86_64                 randconfig-s1-06112228
-x86_64                 randconfig-s2-06112228
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-x011-201823
-x86_64                 randconfig-x015-201823
-x86_64                 randconfig-x018-201823
-x86_64                 randconfig-x010-201823
-x86_64                 randconfig-x014-201823
-x86_64                 randconfig-x019-201823
-x86_64                 randconfig-x013-201823
-x86_64                 randconfig-x017-201823
-x86_64                 randconfig-x016-201823
-x86_64                 randconfig-x012-201823
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201823
-i386                     randconfig-s1-201823
-x86_64                 randconfig-s3-06112128
-x86_64                 randconfig-s4-06112128
-x86_64                 randconfig-s5-06112128
-x86_64                 randconfig-s3-06112305
-x86_64                 randconfig-s4-06112305
-x86_64                 randconfig-s5-06112305
-x86_64                 randconfig-i0-06111402
-x86_64                           allmodconfig
-arm                    vt8500_v6_v7_defconfig
-sh                               j2_defconfig
-m68k                            q40_defconfig
-x86_64                randconfig-ne0-06110534
-x86_64                randconfig-ne0-06112306
-i386                   randconfig-x078-201823
-i386                   randconfig-x079-201823
-i386                   randconfig-x070-201823
-i386                   randconfig-x074-201823
-i386                   randconfig-x075-201823
-i386                   randconfig-x076-201823
-i386                   randconfig-x071-201823
-i386                   randconfig-x073-201823
-i386                   randconfig-x077-201823
-i386                   randconfig-x072-201823
-i386                   randconfig-x009-201823
-i386                   randconfig-x008-201823
-i386                   randconfig-x005-201823
-i386                   randconfig-x001-201823
-i386                   randconfig-x000-201823
-i386                   randconfig-x003-201823
-i386                   randconfig-x004-201823
-i386                   randconfig-x006-201823
-i386                   randconfig-x002-201823
-i386                   randconfig-x007-201823
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x003-201823
-x86_64                 randconfig-x007-201823
-x86_64                 randconfig-x000-201823
-x86_64                 randconfig-x004-201823
-x86_64                 randconfig-x005-201823
-x86_64                 randconfig-x001-201823
-x86_64                 randconfig-x008-201823
-x86_64                 randconfig-x002-201823
-x86_64                 randconfig-x006-201823
-x86_64                 randconfig-x009-201823
-i386                             allmodconfig
-arm                          ep93xx_defconfig
-powerpc                      arches_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
+The big changes in this set are:
+  Allow lower device to update tc_to_txq and XPS map of offloaded MACVLAN
+  Disable XPS for single queue devices
+  Replace accel_priv with sb_dev in ndo_select_queue
+  Add sb_dev parameter to fallback function for ndo_select_queue
+  Consolidated ndo_select_queue functions that appeared to be duplicates
 
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+
+Alexander Duyck (7):
+      net-sysfs: Drop support for XPS and traffic_class on single queue device
+      net: Add support for subordinate device traffic classes
+      ixgbe: Add code to populate and use macvlan tc to Tx queue map
+      net: Add support for subordinate traffic classes to netdev_pick_tx
+      net: Add generic ndo_select_queue functions
+      net: allow ndo_select_queue to pass netdev
+      net: allow fallback function to pass netdev
+
+
+ drivers/infiniband/hw/hfi1/vnic_main.c            |    2 
+ drivers/infiniband/ulp/opa_vnic/opa_vnic_netdev.c |    4 -
+ drivers/net/bonding/bond_main.c                   |    3 
+ drivers/net/ethernet/amazon/ena/ena_netdev.c      |    5 -
+ drivers/net/ethernet/broadcom/bcmsysport.c        |    6 -
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c   |    6 +
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h   |    3 
+ drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c   |    5 -
+ drivers/net/ethernet/hisilicon/hns/hns_enet.c     |    5 -
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |   62 ++++++--
+ drivers/net/ethernet/lantiq_etop.c                |   10 -
+ drivers/net/ethernet/mellanox/mlx4/en_tx.c        |    7 +
+ drivers/net/ethernet/mellanox/mlx4/mlx4_en.h      |    3 
+ drivers/net/ethernet/mellanox/mlx5/core/en.h      |    3 
+ drivers/net/ethernet/mellanox/mlx5/core/en_tx.c   |    5 -
+ drivers/net/ethernet/renesas/ravb_main.c          |    3 
+ drivers/net/ethernet/sun/ldmvsw.c                 |    3 
+ drivers/net/ethernet/sun/sunvnet.c                |    3 
+ drivers/net/ethernet/ti/netcp_core.c              |    9 -
+ drivers/net/hyperv/netvsc_drv.c                   |    6 -
+ drivers/net/macvlan.c                             |   10 -
+ drivers/net/net_failover.c                        |    7 +
+ drivers/net/team/team.c                           |    3 
+ drivers/net/tun.c                                 |    3 
+ drivers/net/wireless/marvell/mwifiex/main.c       |    3 
+ drivers/net/xen-netback/interface.c               |    4 -
+ drivers/net/xen-netfront.c                        |    3 
+ drivers/staging/netlogic/xlr_net.c                |    9 -
+ drivers/staging/rtl8188eu/os_dep/os_intfs.c       |    3 
+ drivers/staging/rtl8723bs/os_dep/os_intfs.c       |    7 -
+ include/linux/netdevice.h                         |   32 ++++
+ net/core/dev.c                                    |  154 ++++++++++++++++++---
+ net/core/net-sysfs.c                              |   36 +++++
+ net/mac80211/iface.c                              |    4 -
+ net/packet/af_packet.c                            |    9 -
+ 35 files changed, 306 insertions(+), 134 deletions(-)
+
+--
