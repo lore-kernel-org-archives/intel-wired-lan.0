@@ -1,168 +1,279 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 13 Jun 2018 00:30:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 163f5c7f4d10225b7d5dabafd68b6c88c3379337
-Message-ID: <5b1ff50f.Wr7mwTjnBveg4s6u%lkp@intel.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Tue, 12 Jun 2018 10:49:19 -0700
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 2/7] net: Add
+ support for subordinate device traffic classes
+In-Reply-To: <20180612151835.86792.93718.stgit@ahduyck-green-test.jf.intel.com>
+References: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
+ <20180612151835.86792.93718.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <f4eaac32-204e-259d-b69b-c2c9885d55fa@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 163f5c7f4d10225b7d5dabafd68b6c88c3379337  fq_codel: fix NULL pointer deref in fq_codel_reset
+On 06/12/2018 08:18 AM, Alexander Duyck wrote:
+> This patch is meant to provide the basic tools needed to allow us to create
+> subordinate device traffic classes. The general idea here is to allow
+> subdividing the queues of a device into queue groups accessible through an
+> upper device such as a macvlan.
+> 
+> The idea here is to enforce the idea that an upper device has to be a
+> single queue device, ideally with IFF_NO_QUQUE set. With that being the
+> case we can pretty much guarantee that the tc_to_txq mappings and XPS maps
+> for the upper device are unused. As such we could reuse those in order to
+> support subdividing the lower device and distributing those queues between
+> the subordinate devices.
 
-elapsed time: 107m
+This is not necessarily a valid paradigm to work with. For instance in
+DSA we have IFF_NO_QUEUE devices, but we still expose multiple egress
+queues because that is how an application can choose how it wants to get
+packets transmitted at the switch level. We have a 1:1 representation
+between a queue at the net_device level, and what an egress queue at the
+switch level is, so things like buffer reservation etc. can be configured.
 
-configs tested: 143
+I think you should consider that an upper device might want to have a
+1:1 mapping to the lower device's queues and make that permissible.
+Thoughts?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> 
+> In order to distinguish between a regular set of traffic classes and if a
+> device is carrying subordinate traffic classes I changed num_tc from a u8
+> to a s16 value and use the negative values to represent the suboordinate
+> pool values. So starting at -1 and running to -32768 we can encode those as
+> pool values, and the existing values of 0 to 15 can be maintained.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> ---
+>  include/linux/netdevice.h |   16 ++++++++
+>  net/core/dev.c            |   89 +++++++++++++++++++++++++++++++++++++++++++++
+>  net/core/net-sysfs.c      |   21 ++++++++++-
+>  3 files changed, 124 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+> index 3ec9850..41b4660 100644
+> --- a/include/linux/netdevice.h
+> +++ b/include/linux/netdevice.h
+> @@ -569,6 +569,9 @@ struct netdev_queue {
+>  	 * (/sys/class/net/DEV/Q/trans_timeout)
+>  	 */
+>  	unsigned long		trans_timeout;
+> +
+> +	/* Suboordinate device that the queue has been assigned to */
+> +	struct net_device	*sb_dev;
+>  /*
+>   * write-mostly part
+>   */
+> @@ -1978,7 +1981,7 @@ struct net_device {
+>  #ifdef CONFIG_DCB
+>  	const struct dcbnl_rtnl_ops *dcbnl_ops;
+>  #endif
+> -	u8			num_tc;
+> +	s16			num_tc;
+>  	struct netdev_tc_txq	tc_to_txq[TC_MAX_QUEUE];
+>  	u8			prio_tc_map[TC_BITMASK + 1];
+>  
+> @@ -2032,6 +2035,17 @@ int netdev_get_num_tc(struct net_device *dev)
+>  	return dev->num_tc;
+>  }
+>  
+> +void netdev_unbind_sb_channel(struct net_device *dev,
+> +			      struct net_device *sb_dev);
+> +int netdev_bind_sb_channel_queue(struct net_device *dev,
+> +				 struct net_device *sb_dev,
+> +				 u8 tc, u16 count, u16 offset);
+> +int netdev_set_sb_channel(struct net_device *dev, u16 channel);
+> +static inline int netdev_get_sb_channel(struct net_device *dev)
+> +{
+> +	return max_t(int, -dev->num_tc, 0);
+> +}
+> +
+>  static inline
+>  struct netdev_queue *netdev_get_tx_queue(const struct net_device *dev,
+>  					 unsigned int index)
+> diff --git a/net/core/dev.c b/net/core/dev.c
+> index 6e18242..27fe4f2 100644
+> --- a/net/core/dev.c
+> +++ b/net/core/dev.c
+> @@ -2068,11 +2068,13 @@ int netdev_txq_to_tc(struct net_device *dev, unsigned int txq)
+>  		struct netdev_tc_txq *tc = &dev->tc_to_txq[0];
+>  		int i;
+>  
+> +		/* walk through the TCs and see if it falls into any of them */
+>  		for (i = 0; i < TC_MAX_QUEUE; i++, tc++) {
+>  			if ((txq - tc->offset) < tc->count)
+>  				return i;
+>  		}
+>  
+> +		/* didn't find it, just return -1 to indicate no match */
+>  		return -1;
+>  	}
+>  
+> @@ -2215,7 +2217,14 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
+>  	bool active = false;
+>  
+>  	if (dev->num_tc) {
+> +		/* Do not allow XPS on subordinate device directly */
+>  		num_tc = dev->num_tc;
+> +		if (num_tc < 0)
+> +			return -EINVAL;
+> +
+> +		/* If queue belongs to subordinate dev use its map */
+> +		dev = netdev_get_tx_queue(dev, index)->sb_dev ? : dev;
+> +
+>  		tc = netdev_txq_to_tc(dev, index);
+>  		if (tc < 0)
+>  			return -EINVAL;
+> @@ -2366,11 +2375,25 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
+>  EXPORT_SYMBOL(netif_set_xps_queue);
+>  
+>  #endif
+> +static void netdev_unbind_all_sb_channels(struct net_device *dev)
+> +{
+> +	struct netdev_queue *txq = &dev->_tx[dev->num_tx_queues];
+> +
+> +	/* Unbind any subordinate channels */
+> +	while (txq-- != &dev->_tx[0]) {
+> +		if (txq->sb_dev)
+> +			netdev_unbind_sb_channel(dev, txq->sb_dev);
+> +	}
+> +}
+> +
+>  void netdev_reset_tc(struct net_device *dev)
+>  {
+>  #ifdef CONFIG_XPS
+>  	netif_reset_xps_queues_gt(dev, 0);
+>  #endif
+> +	netdev_unbind_all_sb_channels(dev);
+> +
+> +	/* Reset TC configuration of device */
+>  	dev->num_tc = 0;
+>  	memset(dev->tc_to_txq, 0, sizeof(dev->tc_to_txq));
+>  	memset(dev->prio_tc_map, 0, sizeof(dev->prio_tc_map));
+> @@ -2399,11 +2422,77 @@ int netdev_set_num_tc(struct net_device *dev, u8 num_tc)
+>  #ifdef CONFIG_XPS
+>  	netif_reset_xps_queues_gt(dev, 0);
+>  #endif
+> +	netdev_unbind_all_sb_channels(dev);
+> +
+>  	dev->num_tc = num_tc;
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL(netdev_set_num_tc);
+>  
+> +void netdev_unbind_sb_channel(struct net_device *dev,
+> +			      struct net_device *sb_dev)
+> +{
+> +	struct netdev_queue *txq = &dev->_tx[dev->num_tx_queues];
+> +
+> +#ifdef CONFIG_XPS
+> +	netif_reset_xps_queues_gt(sb_dev, 0);
+> +#endif
+> +	memset(sb_dev->tc_to_txq, 0, sizeof(sb_dev->tc_to_txq));
+> +	memset(sb_dev->prio_tc_map, 0, sizeof(sb_dev->prio_tc_map));
+> +
+> +	while (txq-- != &dev->_tx[0]) {
+> +		if (txq->sb_dev == sb_dev)
+> +			txq->sb_dev = NULL;
+> +	}
+> +}
+> +EXPORT_SYMBOL(netdev_unbind_sb_channel);
+> +
+> +int netdev_bind_sb_channel_queue(struct net_device *dev,
+> +				 struct net_device *sb_dev,
+> +				 u8 tc, u16 count, u16 offset)
+> +{
+> +	/* Make certain the sb_dev and dev are already configured */
+> +	if (sb_dev->num_tc >= 0 || tc >= dev->num_tc)
+> +		return -EINVAL;
+> +
+> +	/* We cannot hand out queues we don't have */
+> +	if ((offset + count) > dev->real_num_tx_queues)
+> +		return -EINVAL;
+> +
+> +	/* Record the mapping */
+> +	sb_dev->tc_to_txq[tc].count = count;
+> +	sb_dev->tc_to_txq[tc].offset = offset;
+> +
+> +	/* Provide a way for Tx queue to find the tc_to_txq map or
+> +	 * XPS map for itself.
+> +	 */
+> +	while (count--)
+> +		netdev_get_tx_queue(dev, count + offset)->sb_dev = sb_dev;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(netdev_bind_sb_channel_queue);
+> +
+> +int netdev_set_sb_channel(struct net_device *dev, u16 channel)
+> +{
+> +	/* Do not use a multiqueue device to represent a subordinate channel */
+> +	if (netif_is_multiqueue(dev))
+> +		return -ENODEV;
+> +
+> +	/* We allow channels 1 - 32767 to be used for subordinate channels.
+> +	 * Channel 0 is meant to be "native" mode and used only to represent
+> +	 * the main root device. We allow writing 0 to reset the device back
+> +	 * to normal mode after being used as a subordinate channel.
+> +	 */
+> +	if (channel > S16_MAX)
+> +		return -EINVAL;
+> +
+> +	dev->num_tc = -channel;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(netdev_set_sb_channel);
+> +
+>  /*
+>   * Routine to help set real_num_tx_queues. To avoid skbs mapped to queues
+>   * greater than real_num_tx_queues stale skbs on the qdisc must be flushed.
+> diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+> index 335c6a4..bd067b1 100644
+> --- a/net/core/net-sysfs.c
+> +++ b/net/core/net-sysfs.c
+> @@ -1054,11 +1054,23 @@ static ssize_t traffic_class_show(struct netdev_queue *queue,
+>  		return -ENOENT;
+>  
+>  	index = get_netdev_queue_index(queue);
+> +
+> +	/* If queue belongs to subordinate dev use its tc mapping */
+> +	dev = netdev_get_tx_queue(dev, index)->sb_dev ? : dev;
+> +
+>  	tc = netdev_txq_to_tc(dev, index);
+>  	if (tc < 0)
+>  		return -EINVAL;
+>  
+> -	return sprintf(buf, "%u\n", tc);
+> +	/* We can report the traffic class one of two ways:
+> +	 * Subordinate device traffic classes are reported with the traffic
+> +	 * class first, and then the subordinate class so for example TC0 on
+> +	 * subordinate device 2 will be reported as "0-2". If the queue
+> +	 * belongs to the root device it will be reported with just the
+> +	 * traffic class, so just "0" for TC 0 for example.
+> +	 */
+> +	return dev->num_tc < 0 ? sprintf(buf, "%u%d\n", tc, dev->num_tc) :
+> +				 sprintf(buf, "%u\n", tc);
+>  }
+>  
+>  #ifdef CONFIG_XPS
+> @@ -1225,7 +1237,14 @@ static ssize_t xps_cpus_show(struct netdev_queue *queue,
+>  	index = get_netdev_queue_index(queue);
+>  
+>  	if (dev->num_tc) {
+> +		/* Do not allow XPS on subordinate device directly */
+>  		num_tc = dev->num_tc;
+> +		if (num_tc < 0)
+> +			return -EINVAL;
+> +
+> +		/* If queue belongs to subordinate dev use its map */
+> +		dev = netdev_get_tx_queue(dev, index)->sb_dev ? : dev;
+> +
+>  		tc = netdev_txq_to_tc(dev, index);
+>  		if (tc < 0)
+>  			return -EINVAL;
+> 
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-a0-06121104
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-mips                       lemote2f_defconfig
-powerpc                    adder875_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-06120816
-x86_64                           allmodconfig
-i386                   randconfig-x012-201823
-i386                   randconfig-x016-201823
-i386                   randconfig-x017-201823
-i386                   randconfig-x014-201823
-i386                   randconfig-x018-201823
-i386                   randconfig-x013-201823
-i386                   randconfig-x011-201823
-i386                   randconfig-x015-201823
-i386                   randconfig-x019-201823
-i386                   randconfig-x010-201823
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201823
-x86_64                 randconfig-x000-201823
-x86_64                 randconfig-x001-201823
-x86_64                 randconfig-x002-201823
-x86_64                 randconfig-x003-201823
-x86_64                 randconfig-x004-201823
-x86_64                 randconfig-x005-201823
-x86_64                 randconfig-x006-201823
-x86_64                 randconfig-x007-201823
-x86_64                 randconfig-x008-201823
-x86_64                 randconfig-x009-201823
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201823
-i386                     randconfig-i1-201823
-mips                      malta_kvm_defconfig
-powerpc                 canyonlands_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x011-201823
-x86_64                 randconfig-x015-201823
-x86_64                 randconfig-x018-201823
-x86_64                 randconfig-x010-201823
-x86_64                 randconfig-x014-201823
-x86_64                 randconfig-x019-201823
-x86_64                 randconfig-x013-201823
-x86_64                 randconfig-x017-201823
-x86_64                 randconfig-x016-201823
-x86_64                 randconfig-x012-201823
-i386                     randconfig-a0-201823
-i386                     randconfig-a1-201823
-x86_64                 randconfig-s0-06122117
-x86_64                 randconfig-s1-06122117
-x86_64                 randconfig-s2-06122117
-x86_64                 randconfig-s0-06122336
-x86_64                 randconfig-s1-06122336
-x86_64                 randconfig-s2-06122336
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-h8300                       h8s-sim_defconfig
-mips                  cavium_octeon_defconfig
-powerpc                     tqm8555_defconfig
-s390                             allmodconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                              fedora-25
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201823
-i386                     randconfig-s1-201823
-x86_64                 randconfig-s3-06121644
-x86_64                 randconfig-s4-06121644
-x86_64                 randconfig-s5-06121644
-i386                               tinyconfig
-x86_64                   randconfig-i0-201823
-i386                   randconfig-b0-06121124
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-u0-06121425
-x86_64                randconfig-ne0-06121044
-powerpc                       ebony_defconfig
-sh                             espt_defconfig
-x86_64                 randconfig-h0-06121827
-i386                   randconfig-x078-201823
-i386                   randconfig-x079-201823
-i386                   randconfig-x070-201823
-i386                   randconfig-x074-201823
-i386                   randconfig-x075-201823
-i386                   randconfig-x076-201823
-i386                   randconfig-x071-201823
-i386                   randconfig-x073-201823
-i386                   randconfig-x077-201823
-i386                   randconfig-x072-201823
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-i386                   randconfig-x009-201823
-i386                   randconfig-x008-201823
-i386                   randconfig-x005-201823
-i386                   randconfig-x001-201823
-i386                   randconfig-x000-201823
-i386                   randconfig-x003-201823
-i386                   randconfig-x004-201823
-i386                   randconfig-x006-201823
-i386                   randconfig-x002-201823
-i386                   randconfig-x007-201823
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-- 
+Florian
