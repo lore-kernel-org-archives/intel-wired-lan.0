@@ -1,137 +1,66 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Tue, 12 Jun 2018 11:18:41 -0400
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 3/7] ixgbe: Add
- code to populate and use macvlan tc to Tx queue map
+Date: Tue, 12 Jun 2018 11:18:30 -0400
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 1/7] net-sysfs:
+ Drop support for XPS and traffic_class on single queue device
 In-Reply-To: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
 References: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <20180612151841.86792.33581.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <20180612151830.86792.69449.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch makes it so that we use the tc_to_txq mapping in the macvlan
-device in order to select the Tx queue for outgoing packets.
-
-The idea here is to try and move away from using ixgbe_select_queue and to
-come up with a generic way to make this work for devices going forward. By
-encoding this information in the netdev this can become something that can
-be used generically as a solution for similar setups going forward.
+This patch makes it so that we do not report the traffic class or allow XPS
+configuration on single queue devices. This is mostly to avoid unnecessary
+complexity with changes I have planned that will allow us to reuse
+the unused tc_to_txq and XPS configuration on a single queue device to
+allow it to make use of a subset of queues on an underlying device.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   44 ++++++++++++++++++++++---
- 1 file changed, 38 insertions(+), 6 deletions(-)
+ net/core/net-sysfs.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index fc23e36..6e27848 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5271,6 +5271,8 @@ static void ixgbe_clean_rx_ring(struct ixgbe_ring *rx_ring)
- static int ixgbe_fwd_ring_up(struct ixgbe_adapter *adapter,
- 			     struct ixgbe_fwd_adapter *accel)
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index bb7e80f..335c6a4 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -1047,9 +1047,14 @@ static ssize_t traffic_class_show(struct netdev_queue *queue,
+ 				  char *buf)
  {
-+	u16 rss_i = adapter->ring_feature[RING_F_RSS].indices;
-+	int num_tc = netdev_get_num_tc(adapter->netdev);
- 	struct net_device *vdev = accel->netdev;
- 	int i, baseq, err;
+ 	struct net_device *dev = queue->dev;
+-	int index = get_netdev_queue_index(queue);
+-	int tc = netdev_txq_to_tc(dev, index);
++	int index;
++	int tc;
  
-@@ -5282,6 +5284,11 @@ static int ixgbe_fwd_ring_up(struct ixgbe_adapter *adapter,
- 	accel->rx_base_queue = baseq;
- 	accel->tx_base_queue = baseq;
- 
-+	/* record configuration for macvlan interface in vdev */
-+	for (i = 0; i < num_tc; i++)
-+		netdev_bind_sb_channel_queue(adapter->netdev, vdev,
-+					     i, rss_i, baseq + (rss_i * i));
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
 +
- 	for (i = 0; i < adapter->num_rx_queues_per_pool; i++)
- 		adapter->rx_ring[baseq + i]->netdev = vdev;
++	index = get_netdev_queue_index(queue);
++	tc = netdev_txq_to_tc(dev, index);
+ 	if (tc < 0)
+ 		return -EINVAL;
  
-@@ -5306,6 +5313,10 @@ static int ixgbe_fwd_ring_up(struct ixgbe_adapter *adapter,
+@@ -1214,6 +1219,9 @@ static ssize_t xps_cpus_show(struct netdev_queue *queue,
+ 	cpumask_var_t mask;
+ 	unsigned long index;
  
- 	netdev_err(vdev, "L2FW offload disabled due to L2 filter error\n");
- 
-+	/* unbind the queues and drop the subordinate channel config */
-+	netdev_unbind_sb_channel(adapter->netdev, vdev);
-+	netdev_set_sb_channel(vdev, 0);
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
 +
- 	clear_bit(accel->pool, adapter->fwd_bitmask);
- 	kfree(accel);
+ 	index = get_netdev_queue_index(queue);
  
-@@ -8212,18 +8223,22 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
- 			      void *accel_priv, select_queue_fallback_t fallback)
- {
- 	struct ixgbe_fwd_adapter *fwd_adapter = accel_priv;
--	struct ixgbe_adapter *adapter;
--	int txq;
- #ifdef IXGBE_FCOE
-+	struct ixgbe_adapter *adapter;
- 	struct ixgbe_ring_feature *f;
- #endif
-+	int txq;
+ 	if (dev->num_tc) {
+@@ -1260,6 +1268,9 @@ static ssize_t xps_cpus_store(struct netdev_queue *queue,
+ 	cpumask_var_t mask;
+ 	int err;
  
- 	if (fwd_adapter) {
--		adapter = netdev_priv(dev);
--		txq = reciprocal_scale(skb_get_hash(skb),
--				       adapter->num_rx_queues_per_pool);
-+		u8 tc = netdev_get_num_tc(dev) ?
-+			netdev_get_prio_tc_map(dev, skb->priority) : 0;
-+		struct net_device *vdev = fwd_adapter->netdev;
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
 +
-+		txq = vdev->tc_to_txq[tc].offset;
-+		txq += reciprocal_scale(skb_get_hash(skb),
-+					vdev->tc_to_txq[tc].count);
+ 	if (!capable(CAP_NET_ADMIN))
+ 		return -EPERM;
  
--		return txq + fwd_adapter->tx_base_queue;
-+		return txq;
- 	}
- 
- #ifdef IXGBE_FCOE
-@@ -8777,6 +8792,11 @@ static int ixgbe_reassign_macvlan_pool(struct net_device *vdev, void *data)
- 	/* if we cannot find a free pool then disable the offload */
- 	netdev_err(vdev, "L2FW offload disabled due to lack of queue resources\n");
- 	macvlan_release_l2fw_offload(vdev);
-+
-+	/* unbind the queues and drop the subordinate channel config */
-+	netdev_unbind_sb_channel(adapter->netdev, vdev);
-+	netdev_set_sb_channel(vdev, 0);
-+
- 	kfree(accel);
- 
- 	return 0;
-@@ -9785,6 +9805,13 @@ static void *ixgbe_fwd_add(struct net_device *pdev, struct net_device *vdev)
- 	if (!macvlan_supports_dest_filter(vdev))
- 		return ERR_PTR(-EMEDIUMTYPE);
- 
-+	/* We need to lock down the macvlan to be a single queue device so that
-+	 * we can reuse the tc_to_txq field in the macvlan netdev to represent
-+	 * the queue mapping to our netdev.
-+	 */
-+	if (netif_is_multiqueue(vdev))
-+		return ERR_PTR(-ERANGE);
-+
- 	pool = find_first_zero_bit(adapter->fwd_bitmask, adapter->num_rx_pools);
- 	if (pool == adapter->num_rx_pools) {
- 		u16 used_pools = adapter->num_vfs + adapter->num_rx_pools;
-@@ -9841,6 +9868,7 @@ static void *ixgbe_fwd_add(struct net_device *pdev, struct net_device *vdev)
- 		return ERR_PTR(-ENOMEM);
- 
- 	set_bit(pool, adapter->fwd_bitmask);
-+	netdev_set_sb_channel(vdev, pool);
- 	accel->pool = pool;
- 	accel->netdev = vdev;
- 
-@@ -9882,6 +9910,10 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
- 		ring->netdev = NULL;
- 	}
- 
-+	/* unbind the queues and drop the subordinate channel config */
-+	netdev_unbind_sb_channel(pdev, accel->netdev);
-+	netdev_set_sb_channel(accel->netdev, 0);
-+
- 	clear_bit(accel->pool, adapter->fwd_bitmask);
- 	kfree(accel);
- }
 
