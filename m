@@ -1,261 +1,164 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Tue, 12 Jun 2018 11:18:35 -0400
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 2/7] net: Add
- support for subordinate device traffic classes
+Date: Tue, 12 Jun 2018 11:18:51 -0400
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 5/7] net: Add
+ generic ndo_select_queue functions
 In-Reply-To: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
 References: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <20180612151835.86792.93718.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <20180612151851.86792.50638.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is meant to provide the basic tools needed to allow us to create
-subordinate device traffic classes. The general idea here is to allow
-subdividing the queues of a device into queue groups accessible through an
-upper device such as a macvlan.
-
-The idea here is to enforce the idea that an upper device has to be a
-single queue device, ideally with IFF_NO_QUQUE set. With that being the
-case we can pretty much guarantee that the tc_to_txq mappings and XPS maps
-for the upper device are unused. As such we could reuse those in order to
-support subdividing the lower device and distributing those queues between
-the subordinate devices.
-
-In order to distinguish between a regular set of traffic classes and if a
-device is carrying subordinate traffic classes I changed num_tc from a u8
-to a s16 value and use the negative values to represent the suboordinate
-pool values. So starting at -1 and running to -32768 we can encode those as
-pool values, and the existing values of 0 to 15 can be maintained.
+This patch adds a generic version of the ndo_select_queue functions for
+either returning 0 or selecting a queue based on the processor ID. This is
+generally meant to just reduce the number of functions we have to change
+in the future when we have to deal with ndo_select_queue changes.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- include/linux/netdevice.h |   16 ++++++++
- net/core/dev.c            |   89 +++++++++++++++++++++++++++++++++++++++++++++
- net/core/net-sysfs.c      |   21 ++++++++++-
- 3 files changed, 124 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/lantiq_etop.c   |   10 +---------
+ drivers/net/ethernet/ti/netcp_core.c |    9 +--------
+ drivers/staging/netlogic/xlr_net.c   |    9 +--------
+ include/linux/netdevice.h            |    4 ++++
+ net/core/dev.c                       |   14 ++++++++++++++
+ net/packet/af_packet.c               |    2 +-
+ 6 files changed, 22 insertions(+), 26 deletions(-)
 
+diff --git a/drivers/net/ethernet/lantiq_etop.c b/drivers/net/ethernet/lantiq_etop.c
+index afc8100..7a637b5 100644
+--- a/drivers/net/ethernet/lantiq_etop.c
++++ b/drivers/net/ethernet/lantiq_etop.c
+@@ -563,14 +563,6 @@ struct ltq_etop_priv {
+ 	spin_unlock_irqrestore(&priv->lock, flags);
+ }
+ 
+-static u16
+-ltq_etop_select_queue(struct net_device *dev, struct sk_buff *skb,
+-		      void *accel_priv, select_queue_fallback_t fallback)
+-{
+-	/* we are currently only using the first queue */
+-	return 0;
+-}
+-
+ static int
+ ltq_etop_init(struct net_device *dev)
+ {
+@@ -641,7 +633,7 @@ struct ltq_etop_priv {
+ 	.ndo_set_mac_address = ltq_etop_set_mac_address,
+ 	.ndo_validate_addr = eth_validate_addr,
+ 	.ndo_set_rx_mode = ltq_etop_set_multicast_list,
+-	.ndo_select_queue = ltq_etop_select_queue,
++	.ndo_select_queue = dev_pick_tx_zero,
+ 	.ndo_init = ltq_etop_init,
+ 	.ndo_tx_timeout = ltq_etop_tx_timeout,
+ };
+diff --git a/drivers/net/ethernet/ti/netcp_core.c b/drivers/net/ethernet/ti/netcp_core.c
+index e40aa3e..2c455bd 100644
+--- a/drivers/net/ethernet/ti/netcp_core.c
++++ b/drivers/net/ethernet/ti/netcp_core.c
+@@ -1889,13 +1889,6 @@ static int netcp_rx_kill_vid(struct net_device *ndev, __be16 proto, u16 vid)
+ 	return err;
+ }
+ 
+-static u16 netcp_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			      void *accel_priv,
+-			      select_queue_fallback_t fallback)
+-{
+-	return 0;
+-}
+-
+ static int netcp_setup_tc(struct net_device *dev, enum tc_setup_type type,
+ 			  void *type_data)
+ {
+@@ -1972,7 +1965,7 @@ static int netcp_setup_tc(struct net_device *dev, enum tc_setup_type type,
+ 	.ndo_vlan_rx_add_vid	= netcp_rx_add_vid,
+ 	.ndo_vlan_rx_kill_vid	= netcp_rx_kill_vid,
+ 	.ndo_tx_timeout		= netcp_ndo_tx_timeout,
+-	.ndo_select_queue	= netcp_select_queue,
++	.ndo_select_queue	= dev_pick_tx_zero,
+ 	.ndo_setup_tc		= netcp_setup_tc,
+ };
+ 
+diff --git a/drivers/staging/netlogic/xlr_net.c b/drivers/staging/netlogic/xlr_net.c
+index e461168..4e6611e 100644
+--- a/drivers/staging/netlogic/xlr_net.c
++++ b/drivers/staging/netlogic/xlr_net.c
+@@ -290,13 +290,6 @@ static netdev_tx_t xlr_net_start_xmit(struct sk_buff *skb,
+ 	return NETDEV_TX_OK;
+ }
+ 
+-static u16 xlr_net_select_queue(struct net_device *ndev, struct sk_buff *skb,
+-				void *accel_priv,
+-				select_queue_fallback_t fallback)
+-{
+-	return (u16)smp_processor_id();
+-}
+-
+ static void xlr_hw_set_mac_addr(struct net_device *ndev)
+ {
+ 	struct xlr_net_priv *priv = netdev_priv(ndev);
+@@ -403,7 +396,7 @@ static void xlr_stats(struct net_device *ndev, struct rtnl_link_stats64 *stats)
+ 	.ndo_open = xlr_net_open,
+ 	.ndo_stop = xlr_net_stop,
+ 	.ndo_start_xmit = xlr_net_start_xmit,
+-	.ndo_select_queue = xlr_net_select_queue,
++	.ndo_select_queue = dev_pick_tx_cpu_id,
+ 	.ndo_set_mac_address = xlr_net_set_mac_addr,
+ 	.ndo_set_rx_mode = xlr_set_rx_mode,
+ 	.ndo_get_stats64 = xlr_stats,
 diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 3ec9850..41b4660 100644
+index 91b3ca9..70f7ee3 100644
 --- a/include/linux/netdevice.h
 +++ b/include/linux/netdevice.h
-@@ -569,6 +569,9 @@ struct netdev_queue {
- 	 * (/sys/class/net/DEV/Q/trans_timeout)
- 	 */
- 	unsigned long		trans_timeout;
-+
-+	/* Suboordinate device that the queue has been assigned to */
-+	struct net_device	*sb_dev;
- /*
-  * write-mostly part
-  */
-@@ -1978,7 +1981,7 @@ struct net_device {
- #ifdef CONFIG_DCB
- 	const struct dcbnl_rtnl_ops *dcbnl_ops;
- #endif
--	u8			num_tc;
-+	s16			num_tc;
- 	struct netdev_tc_txq	tc_to_txq[TC_MAX_QUEUE];
- 	u8			prio_tc_map[TC_BITMASK + 1];
- 
-@@ -2032,6 +2035,17 @@ int netdev_get_num_tc(struct net_device *dev)
- 	return dev->num_tc;
- }
- 
-+void netdev_unbind_sb_channel(struct net_device *dev,
-+			      struct net_device *sb_dev);
-+int netdev_bind_sb_channel_queue(struct net_device *dev,
-+				 struct net_device *sb_dev,
-+				 u8 tc, u16 count, u16 offset);
-+int netdev_set_sb_channel(struct net_device *dev, u16 channel);
-+static inline int netdev_get_sb_channel(struct net_device *dev)
-+{
-+	return max_t(int, -dev->num_tc, 0);
-+}
-+
- static inline
- struct netdev_queue *netdev_get_tx_queue(const struct net_device *dev,
- 					 unsigned int index)
+@@ -2551,6 +2551,10 @@ struct net_device *__dev_get_by_flags(struct net *net, unsigned short flags,
+ void dev_close_many(struct list_head *head, bool unlink);
+ void dev_disable_lro(struct net_device *dev);
+ int dev_loopback_xmit(struct net *net, struct sock *sk, struct sk_buff *newskb);
++u16 dev_pick_tx_zero(struct net_device *dev, struct sk_buff *skb,
++		     void *accel_priv, select_queue_fallback_t fallback);
++u16 dev_pick_tx_cpu_id(struct net_device *dev, struct sk_buff *skb,
++		       void *accel_priv, select_queue_fallback_t fallback);
+ int dev_queue_xmit(struct sk_buff *skb);
+ int dev_queue_xmit_accel(struct sk_buff *skb, struct net_device *sb_dev);
+ int dev_direct_xmit(struct sk_buff *skb, u16 queue_id);
 diff --git a/net/core/dev.c b/net/core/dev.c
-index 6e18242..27fe4f2 100644
+index 2249294..1a1cf2c 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
-@@ -2068,11 +2068,13 @@ int netdev_txq_to_tc(struct net_device *dev, unsigned int txq)
- 		struct netdev_tc_txq *tc = &dev->tc_to_txq[0];
- 		int i;
- 
-+		/* walk through the TCs and see if it falls into any of them */
- 		for (i = 0; i < TC_MAX_QUEUE; i++, tc++) {
- 			if ((txq - tc->offset) < tc->count)
- 				return i;
- 		}
- 
-+		/* didn't find it, just return -1 to indicate no match */
- 		return -1;
- 	}
- 
-@@ -2215,7 +2217,14 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
- 	bool active = false;
- 
- 	if (dev->num_tc) {
-+		/* Do not allow XPS on subordinate device directly */
- 		num_tc = dev->num_tc;
-+		if (num_tc < 0)
-+			return -EINVAL;
-+
-+		/* If queue belongs to subordinate dev use its map */
-+		dev = netdev_get_tx_queue(dev, index)->sb_dev ? : dev;
-+
- 		tc = netdev_txq_to_tc(dev, index);
- 		if (tc < 0)
- 			return -EINVAL;
-@@ -2366,11 +2375,25 @@ int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
- EXPORT_SYMBOL(netif_set_xps_queue);
- 
+@@ -3505,6 +3505,20 @@ static inline int get_xps_queue(struct net_device *dev,
  #endif
-+static void netdev_unbind_all_sb_channels(struct net_device *dev)
+ }
+ 
++u16 dev_pick_tx_zero(struct net_device *dev, struct sk_buff *skb,
++		     void *accel_priv, select_queue_fallback_t fallback)
 +{
-+	struct netdev_queue *txq = &dev->_tx[dev->num_tx_queues];
-+
-+	/* Unbind any subordinate channels */
-+	while (txq-- != &dev->_tx[0]) {
-+		if (txq->sb_dev)
-+			netdev_unbind_sb_channel(dev, txq->sb_dev);
-+	}
++	return 0;
 +}
++EXPORT_SYMBOL(dev_pick_tx_zero);
 +
- void netdev_reset_tc(struct net_device *dev)
++u16 dev_pick_tx_cpu_id(struct net_device *dev, struct sk_buff *skb,
++		       void *accel_priv, select_queue_fallback_t fallback)
++{
++	return (u16)raw_smp_processor_id() % dev->real_num_tx_queues;
++}
++EXPORT_SYMBOL(dev_pick_tx_cpu_id);
++
+ static u16 ___netdev_pick_tx(struct net_device *dev, struct sk_buff *skb,
+ 			     struct net_device *sb_dev)
  {
- #ifdef CONFIG_XPS
- 	netif_reset_xps_queues_gt(dev, 0);
- #endif
-+	netdev_unbind_all_sb_channels(dev);
-+
-+	/* Reset TC configuration of device */
- 	dev->num_tc = 0;
- 	memset(dev->tc_to_txq, 0, sizeof(dev->tc_to_txq));
- 	memset(dev->prio_tc_map, 0, sizeof(dev->prio_tc_map));
-@@ -2399,11 +2422,77 @@ int netdev_set_num_tc(struct net_device *dev, u8 num_tc)
- #ifdef CONFIG_XPS
- 	netif_reset_xps_queues_gt(dev, 0);
- #endif
-+	netdev_unbind_all_sb_channels(dev);
-+
- 	dev->num_tc = num_tc;
- 	return 0;
- }
- EXPORT_SYMBOL(netdev_set_num_tc);
+diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
+index ee01856..905f7cd 100644
+--- a/net/packet/af_packet.c
++++ b/net/packet/af_packet.c
+@@ -277,7 +277,7 @@ static bool packet_use_direct_xmit(const struct packet_sock *po)
  
-+void netdev_unbind_sb_channel(struct net_device *dev,
-+			      struct net_device *sb_dev)
-+{
-+	struct netdev_queue *txq = &dev->_tx[dev->num_tx_queues];
-+
-+#ifdef CONFIG_XPS
-+	netif_reset_xps_queues_gt(sb_dev, 0);
-+#endif
-+	memset(sb_dev->tc_to_txq, 0, sizeof(sb_dev->tc_to_txq));
-+	memset(sb_dev->prio_tc_map, 0, sizeof(sb_dev->prio_tc_map));
-+
-+	while (txq-- != &dev->_tx[0]) {
-+		if (txq->sb_dev == sb_dev)
-+			txq->sb_dev = NULL;
-+	}
-+}
-+EXPORT_SYMBOL(netdev_unbind_sb_channel);
-+
-+int netdev_bind_sb_channel_queue(struct net_device *dev,
-+				 struct net_device *sb_dev,
-+				 u8 tc, u16 count, u16 offset)
-+{
-+	/* Make certain the sb_dev and dev are already configured */
-+	if (sb_dev->num_tc >= 0 || tc >= dev->num_tc)
-+		return -EINVAL;
-+
-+	/* We cannot hand out queues we don't have */
-+	if ((offset + count) > dev->real_num_tx_queues)
-+		return -EINVAL;
-+
-+	/* Record the mapping */
-+	sb_dev->tc_to_txq[tc].count = count;
-+	sb_dev->tc_to_txq[tc].offset = offset;
-+
-+	/* Provide a way for Tx queue to find the tc_to_txq map or
-+	 * XPS map for itself.
-+	 */
-+	while (count--)
-+		netdev_get_tx_queue(dev, count + offset)->sb_dev = sb_dev;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(netdev_bind_sb_channel_queue);
-+
-+int netdev_set_sb_channel(struct net_device *dev, u16 channel)
-+{
-+	/* Do not use a multiqueue device to represent a subordinate channel */
-+	if (netif_is_multiqueue(dev))
-+		return -ENODEV;
-+
-+	/* We allow channels 1 - 32767 to be used for subordinate channels.
-+	 * Channel 0 is meant to be "native" mode and used only to represent
-+	 * the main root device. We allow writing 0 to reset the device back
-+	 * to normal mode after being used as a subordinate channel.
-+	 */
-+	if (channel > S16_MAX)
-+		return -EINVAL;
-+
-+	dev->num_tc = -channel;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(netdev_set_sb_channel);
-+
- /*
-  * Routine to help set real_num_tx_queues. To avoid skbs mapped to queues
-  * greater than real_num_tx_queues stale skbs on the qdisc must be flushed.
-diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 335c6a4..bd067b1 100644
---- a/net/core/net-sysfs.c
-+++ b/net/core/net-sysfs.c
-@@ -1054,11 +1054,23 @@ static ssize_t traffic_class_show(struct netdev_queue *queue,
- 		return -ENOENT;
- 
- 	index = get_netdev_queue_index(queue);
-+
-+	/* If queue belongs to subordinate dev use its tc mapping */
-+	dev = netdev_get_tx_queue(dev, index)->sb_dev ? : dev;
-+
- 	tc = netdev_txq_to_tc(dev, index);
- 	if (tc < 0)
- 		return -EINVAL;
- 
--	return sprintf(buf, "%u\n", tc);
-+	/* We can report the traffic class one of two ways:
-+	 * Subordinate device traffic classes are reported with the traffic
-+	 * class first, and then the subordinate class so for example TC0 on
-+	 * subordinate device 2 will be reported as "0-2". If the queue
-+	 * belongs to the root device it will be reported with just the
-+	 * traffic class, so just "0" for TC 0 for example.
-+	 */
-+	return dev->num_tc < 0 ? sprintf(buf, "%u%d\n", tc, dev->num_tc) :
-+				 sprintf(buf, "%u\n", tc);
+ static u16 __packet_pick_tx_queue(struct net_device *dev, struct sk_buff *skb)
+ {
+-	return (u16) raw_smp_processor_id() % dev->real_num_tx_queues;
++	return dev_pick_tx_cpu_id(dev, skb, NULL, NULL);
  }
  
- #ifdef CONFIG_XPS
-@@ -1225,7 +1237,14 @@ static ssize_t xps_cpus_show(struct netdev_queue *queue,
- 	index = get_netdev_queue_index(queue);
- 
- 	if (dev->num_tc) {
-+		/* Do not allow XPS on subordinate device directly */
- 		num_tc = dev->num_tc;
-+		if (num_tc < 0)
-+			return -EINVAL;
-+
-+		/* If queue belongs to subordinate dev use its map */
-+		dev = netdev_get_tx_queue(dev, index)->sb_dev ? : dev;
-+
- 		tc = netdev_txq_to_tc(dev, index);
- 		if (tc < 0)
- 			return -EINVAL;
+ static u16 packet_pick_tx_queue(struct sk_buff *skb)
 
