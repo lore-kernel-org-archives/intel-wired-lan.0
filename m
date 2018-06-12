@@ -1,306 +1,535 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Tue, 12 Jun 2018 11:18:46 -0400
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 4/7] net: Add
- support for subordinate traffic classes to netdev_pick_tx
+Date: Tue, 12 Jun 2018 11:18:57 -0400
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 6/7] net: allow
+ ndo_select_queue to pass netdev
 In-Reply-To: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
 References: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <20180612151846.86792.83754.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <20180612151857.86792.68635.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change makes it so that we can support the concept of subordinate
-device traffic classes to the core networking code. In doing this we can
-start pulling out the driver specific bits needed to support selecting a
-queue based on an upper device.
-
-The solution at is currently stands is only partially implemented. I have
-the start of some XPS bits in here, but I would still need to allow for
-configuration of the XPS maps on the queues reserved for the subordinate
-devices. For now I am using the reference to the sb_dev XPS map as just a
-way to skip the lookup of the lower device XPS map for now as that would
-result in the wrong queue being picked.
+This patch makes it so that instead of passing a void pointer as the
+accel_priv we instead pass a net_device pointer as sb_dev. Making this
+change allows us to pass the subordinate device through to the fallback
+function eventually so that we can keep the actual code in the
+ndo_select_queue call as focused on possible on the exception cases.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   19 +++-----
- drivers/net/macvlan.c                         |   10 +---
- include/linux/netdevice.h                     |    4 +-
- net/core/dev.c                                |   57 +++++++++++++++----------
- 4 files changed, 45 insertions(+), 45 deletions(-)
+ drivers/infiniband/hw/hfi1/vnic_main.c            |    2 +-
+ drivers/infiniband/ulp/opa_vnic/opa_vnic_netdev.c |    4 ++--
+ drivers/net/bonding/bond_main.c                   |    3 ++-
+ drivers/net/ethernet/amazon/ena/ena_netdev.c      |    3 ++-
+ drivers/net/ethernet/broadcom/bcmsysport.c        |    2 +-
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c   |    3 ++-
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h   |    3 ++-
+ drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c   |    3 ++-
+ drivers/net/ethernet/hisilicon/hns/hns_enet.c     |    3 ++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |    7 ++++---
+ drivers/net/ethernet/mellanox/mlx4/en_tx.c        |    3 ++-
+ drivers/net/ethernet/mellanox/mlx4/mlx4_en.h      |    3 ++-
+ drivers/net/ethernet/mellanox/mlx5/core/en.h      |    3 ++-
+ drivers/net/ethernet/mellanox/mlx5/core/en_tx.c   |    3 ++-
+ drivers/net/ethernet/renesas/ravb_main.c          |    3 ++-
+ drivers/net/ethernet/sun/ldmvsw.c                 |    3 ++-
+ drivers/net/ethernet/sun/sunvnet.c                |    3 ++-
+ drivers/net/hyperv/netvsc_drv.c                   |    4 ++--
+ drivers/net/net_failover.c                        |    5 +++--
+ drivers/net/team/team.c                           |    3 ++-
+ drivers/net/tun.c                                 |    3 ++-
+ drivers/net/wireless/marvell/mwifiex/main.c       |    3 ++-
+ drivers/net/xen-netback/interface.c               |    2 +-
+ drivers/net/xen-netfront.c                        |    3 ++-
+ drivers/staging/rtl8188eu/os_dep/os_intfs.c       |    3 ++-
+ drivers/staging/rtl8723bs/os_dep/os_intfs.c       |    7 +++----
+ include/linux/netdevice.h                         |   11 +++++++----
+ net/core/dev.c                                    |    6 ++++--
+ net/mac80211/iface.c                              |    4 ++--
+ 29 files changed, 66 insertions(+), 42 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 6e27848..053a54c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8219,20 +8219,17 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 					      input, common, ring->queue_index);
+diff --git a/drivers/infiniband/hw/hfi1/vnic_main.c b/drivers/infiniband/hw/hfi1/vnic_main.c
+index 5d65582..616fc9b 100644
+--- a/drivers/infiniband/hw/hfi1/vnic_main.c
++++ b/drivers/infiniband/hw/hfi1/vnic_main.c
+@@ -423,7 +423,7 @@ static netdev_tx_t hfi1_netdev_start_xmit(struct sk_buff *skb,
+ 
+ static u16 hfi1_vnic_select_queue(struct net_device *netdev,
+ 				  struct sk_buff *skb,
+-				  void *accel_priv,
++				  struct net_device *sb_dev,
+ 				  select_queue_fallback_t fallback)
+ {
+ 	struct hfi1_vnic_vport_info *vinfo = opa_vnic_dev_priv(netdev);
+diff --git a/drivers/infiniband/ulp/opa_vnic/opa_vnic_netdev.c b/drivers/infiniband/ulp/opa_vnic/opa_vnic_netdev.c
+index 0c8aec6..6155878 100644
+--- a/drivers/infiniband/ulp/opa_vnic/opa_vnic_netdev.c
++++ b/drivers/infiniband/ulp/opa_vnic/opa_vnic_netdev.c
+@@ -95,7 +95,7 @@ static netdev_tx_t opa_netdev_start_xmit(struct sk_buff *skb,
  }
  
-+#ifdef IXGBE_FCOE
- static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
- 			      void *accel_priv, select_queue_fallback_t fallback)
+ static u16 opa_vnic_select_queue(struct net_device *netdev, struct sk_buff *skb,
+-				 void *accel_priv,
++				 struct net_device *sb_dev,
+ 				 select_queue_fallback_t fallback)
  {
--	struct ixgbe_fwd_adapter *fwd_adapter = accel_priv;
--#ifdef IXGBE_FCOE
- 	struct ixgbe_adapter *adapter;
- 	struct ixgbe_ring_feature *f;
--#endif
+ 	struct opa_vnic_adapter *adapter = opa_vnic_priv(netdev);
+@@ -107,7 +107,7 @@ static u16 opa_vnic_select_queue(struct net_device *netdev, struct sk_buff *skb,
+ 	mdata->entropy = opa_vnic_calc_entropy(skb);
+ 	mdata->vl = opa_vnic_get_vl(adapter, skb);
+ 	rc = adapter->rn_ops->ndo_select_queue(netdev, skb,
+-					       accel_priv, fallback);
++					       sb_dev, fallback);
+ 	skb_pull(skb, sizeof(*mdata));
+ 	return rc;
+ }
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index bd53a71..e33f689 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -4094,7 +4094,8 @@ static inline int bond_slave_override(struct bonding *bond,
+ 
+ 
+ static u16 bond_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			     void *accel_priv, select_queue_fallback_t fallback)
++			     struct net_device *sb_dev,
++			     select_queue_fallback_t fallback)
+ {
+ 	/* This helper function exists to help dev_pick_tx get the correct
+ 	 * destination queue.  Using a helper function skips a call to
+diff --git a/drivers/net/ethernet/amazon/ena/ena_netdev.c b/drivers/net/ethernet/amazon/ena/ena_netdev.c
+index f2af87d..e3befb1 100644
+--- a/drivers/net/ethernet/amazon/ena/ena_netdev.c
++++ b/drivers/net/ethernet/amazon/ena/ena_netdev.c
+@@ -2213,7 +2213,8 @@ static void ena_netpoll(struct net_device *netdev)
+ #endif /* CONFIG_NET_POLL_CONTROLLER */
+ 
+ static u16 ena_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			    void *accel_priv, select_queue_fallback_t fallback)
++			    struct net_device *sb_dev,
++			    select_queue_fallback_t fallback)
+ {
+ 	u16 qid;
+ 	/* we suspect that this is good for in--kernel network services that
+diff --git a/drivers/net/ethernet/broadcom/bcmsysport.c b/drivers/net/ethernet/broadcom/bcmsysport.c
+index d5fca2e..32f548e 100644
+--- a/drivers/net/ethernet/broadcom/bcmsysport.c
++++ b/drivers/net/ethernet/broadcom/bcmsysport.c
+@@ -2107,7 +2107,7 @@ static int bcm_sysport_stop(struct net_device *dev)
+ };
+ 
+ static u16 bcm_sysport_select_queue(struct net_device *dev, struct sk_buff *skb,
+-				    void *accel_priv,
++				    struct net_device *sb_dev,
+ 				    select_queue_fallback_t fallback)
+ {
+ 	struct bcm_sysport_priv *priv = netdev_priv(dev);
+diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c
+index 8cd73ff..969dcc9 100644
+--- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c
++++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c
+@@ -1905,7 +1905,8 @@ void bnx2x_netif_stop(struct bnx2x *bp, int disable_hw)
+ }
+ 
+ u16 bnx2x_select_queue(struct net_device *dev, struct sk_buff *skb,
+-		       void *accel_priv, select_queue_fallback_t fallback)
++		       struct net_device *sb_dev,
++		       select_queue_fallback_t fallback)
+ {
+ 	struct bnx2x *bp = netdev_priv(dev);
+ 
+diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h
+index a8ce5c5..0e508e5 100644
+--- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h
++++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h
+@@ -497,7 +497,8 @@ int bnx2x_set_vf_vlan(struct net_device *netdev, int vf, u16 vlan, u8 qos,
+ 
+ /* select_queue callback */
+ u16 bnx2x_select_queue(struct net_device *dev, struct sk_buff *skb,
+-		       void *accel_priv, select_queue_fallback_t fallback);
++		       struct net_device *sb_dev,
++		       select_queue_fallback_t fallback);
+ 
+ static inline void bnx2x_update_rx_prod(struct bnx2x *bp,
+ 					struct bnx2x_fastpath *fp,
+diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
+index 35cb3ae..8de3039 100644
+--- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
++++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
+@@ -929,7 +929,8 @@ static int setup_sge_queues(struct adapter *adap)
+ }
+ 
+ static u16 cxgb_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			     void *accel_priv, select_queue_fallback_t fallback)
++			     struct net_device *sb_dev,
++			     select_queue_fallback_t fallback)
+ {
  	int txq;
  
--	if (fwd_adapter) {
--		u8 tc = netdev_get_num_tc(dev) ?
--			netdev_get_prio_tc_map(dev, skb->priority) : 0;
--		struct net_device *vdev = fwd_adapter->netdev;
-+	if (accel_priv) {
-+		u8 tc = netdev_get_prio_tc_map(dev, skb->priority);
-+		struct net_device *vdev = accel_priv;
+diff --git a/drivers/net/ethernet/hisilicon/hns/hns_enet.c b/drivers/net/ethernet/hisilicon/hns/hns_enet.c
+index 1ccb644..c36a231 100644
+--- a/drivers/net/ethernet/hisilicon/hns/hns_enet.c
++++ b/drivers/net/ethernet/hisilicon/hns/hns_enet.c
+@@ -2022,7 +2022,8 @@ static void hns_nic_get_stats64(struct net_device *ndev,
+ 
+ static u16
+ hns_nic_select_queue(struct net_device *ndev, struct sk_buff *skb,
+-		     void *accel_priv, select_queue_fallback_t fallback)
++		     struct net_device *sb_dev,
++		     select_queue_fallback_t fallback)
+ {
+ 	struct ethhdr *eth_hdr = (struct ethhdr *)skb->data;
+ 	struct hns_nic_priv *priv = netdev_priv(ndev);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 053a54c..5d9867e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8221,15 +8221,16 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
+ 
+ #ifdef IXGBE_FCOE
+ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			      void *accel_priv, select_queue_fallback_t fallback)
++			      struct net_device *sb_dev,
++			      select_queue_fallback_t fallback)
+ {
+ 	struct ixgbe_adapter *adapter;
+ 	struct ixgbe_ring_feature *f;
+ 	int txq;
+ 
+-	if (accel_priv) {
++	if (sb_dev) {
+ 		u8 tc = netdev_get_prio_tc_map(dev, skb->priority);
+-		struct net_device *vdev = accel_priv;
++		struct net_device *vdev = sb_dev;
  
  		txq = vdev->tc_to_txq[tc].offset;
  		txq += reciprocal_scale(skb_get_hash(skb),
-@@ -8241,8 +8238,6 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
- 		return txq;
- 	}
- 
--#ifdef IXGBE_FCOE
--
- 	/*
- 	 * only execute the code below if protocol is FCoE
- 	 * or FIP and we have FCoE enabled on the adapter
-@@ -8268,11 +8263,9 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
- 		txq -= f->indices;
- 
- 	return txq + f->offset;
--#else
--	return fallback(dev, skb);
--#endif
+diff --git a/drivers/net/ethernet/mellanox/mlx4/en_tx.c b/drivers/net/ethernet/mellanox/mlx4/en_tx.c
+index 0227786..df29966 100644
+--- a/drivers/net/ethernet/mellanox/mlx4/en_tx.c
++++ b/drivers/net/ethernet/mellanox/mlx4/en_tx.c
+@@ -688,7 +688,8 @@ static void build_inline_wqe(struct mlx4_en_tx_desc *tx_desc,
  }
  
-+#endif
- static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
- 			       struct xdp_frame *xdpf)
+ u16 mlx4_en_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			 void *accel_priv, select_queue_fallback_t fallback)
++			 struct net_device *sb_dev,
++			 select_queue_fallback_t fallback)
  {
-@@ -10076,7 +10069,6 @@ static int ixgbe_xdp_xmit(struct net_device *dev, int n,
- 	.ndo_open		= ixgbe_open,
- 	.ndo_stop		= ixgbe_close,
- 	.ndo_start_xmit		= ixgbe_xmit_frame,
--	.ndo_select_queue	= ixgbe_select_queue,
- 	.ndo_set_rx_mode	= ixgbe_set_rx_mode,
- 	.ndo_validate_addr	= eth_validate_addr,
- 	.ndo_set_mac_address	= ixgbe_set_mac,
-@@ -10099,6 +10091,7 @@ static int ixgbe_xdp_xmit(struct net_device *dev, int n,
- 	.ndo_poll_controller	= ixgbe_netpoll,
+ 	struct mlx4_en_priv *priv = netdev_priv(dev);
+ 	u16 rings_p_up = priv->num_tx_rings_p_up;
+diff --git a/drivers/net/ethernet/mellanox/mlx4/mlx4_en.h b/drivers/net/ethernet/mellanox/mlx4/mlx4_en.h
+index ace6545..c3228b8 100644
+--- a/drivers/net/ethernet/mellanox/mlx4/mlx4_en.h
++++ b/drivers/net/ethernet/mellanox/mlx4/mlx4_en.h
+@@ -699,7 +699,8 @@ int mlx4_en_activate_cq(struct mlx4_en_priv *priv, struct mlx4_en_cq *cq,
+ 
+ void mlx4_en_tx_irq(struct mlx4_cq *mcq);
+ u16 mlx4_en_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			 void *accel_priv, select_queue_fallback_t fallback);
++			 struct net_device *sb_dev,
++			 select_queue_fallback_t fallback);
+ netdev_tx_t mlx4_en_xmit(struct sk_buff *skb, struct net_device *dev);
+ netdev_tx_t mlx4_en_xmit_frame(struct mlx4_en_rx_ring *rx_ring,
+ 			       struct mlx4_en_rx_alloc *frame,
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en.h b/drivers/net/ethernet/mellanox/mlx5/core/en.h
+index eb9eb7a..df2d1e8 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en.h
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en.h
+@@ -866,7 +866,8 @@ struct mlx5e_profile {
+ void mlx5e_build_ptys2ethtool_map(void);
+ 
+ u16 mlx5e_select_queue(struct net_device *dev, struct sk_buff *skb,
+-		       void *accel_priv, select_queue_fallback_t fallback);
++		       struct net_device *sb_dev,
++		       select_queue_fallback_t fallback);
+ netdev_tx_t mlx5e_xmit(struct sk_buff *skb, struct net_device *dev);
+ netdev_tx_t mlx5e_sq_xmit(struct mlx5e_txqsq *sq, struct sk_buff *skb,
+ 			  struct mlx5e_tx_wqe *wqe, u16 pi);
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_tx.c b/drivers/net/ethernet/mellanox/mlx5/core/en_tx.c
+index f29deb4..0119e86 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en_tx.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en_tx.c
+@@ -111,7 +111,8 @@ static inline int mlx5e_get_dscp_up(struct mlx5e_priv *priv, struct sk_buff *skb
  #endif
- #ifdef IXGBE_FCOE
-+	.ndo_select_queue	= ixgbe_select_queue,
- 	.ndo_fcoe_ddp_setup = ixgbe_fcoe_ddp_get,
- 	.ndo_fcoe_ddp_target = ixgbe_fcoe_ddp_target,
- 	.ndo_fcoe_ddp_done = ixgbe_fcoe_ddp_put,
-diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
-index adde8fc..401e1d1 100644
---- a/drivers/net/macvlan.c
-+++ b/drivers/net/macvlan.c
-@@ -514,7 +514,6 @@ static int macvlan_queue_xmit(struct sk_buff *skb, struct net_device *dev)
- 	const struct macvlan_dev *vlan = netdev_priv(dev);
- 	const struct macvlan_port *port = vlan->port;
- 	const struct macvlan_dev *dest;
--	void *accel_priv = NULL;
  
- 	if (vlan->mode == MACVLAN_MODE_BRIDGE) {
- 		const struct ethhdr *eth = (void *)skb->data;
-@@ -533,15 +532,10 @@ static int macvlan_queue_xmit(struct sk_buff *skb, struct net_device *dev)
- 			return NET_XMIT_SUCCESS;
- 		}
- 	}
--
--	/* For packets that are non-multicast and not bridged we will pass
--	 * the necessary information so that the lowerdev can distinguish
--	 * the source of the packets via the accel_priv value.
--	 */
--	accel_priv = vlan->accel_priv;
- xmit_world:
- 	skb->dev = vlan->lowerdev;
--	return dev_queue_xmit_accel(skb, accel_priv);
-+	return dev_queue_xmit_accel(skb,
-+				    netdev_get_sb_channel(dev) ? dev : NULL);
+ u16 mlx5e_select_queue(struct net_device *dev, struct sk_buff *skb,
+-		       void *accel_priv, select_queue_fallback_t fallback)
++		       struct net_device *sb_dev,
++		       select_queue_fallback_t fallback)
+ {
+ 	struct mlx5e_priv *priv = netdev_priv(dev);
+ 	int channel_ix = fallback(dev, skb);
+diff --git a/drivers/net/ethernet/renesas/ravb_main.c b/drivers/net/ethernet/renesas/ravb_main.c
+index 68f1221..4a7f54c 100644
+--- a/drivers/net/ethernet/renesas/ravb_main.c
++++ b/drivers/net/ethernet/renesas/ravb_main.c
+@@ -1656,7 +1656,8 @@ static netdev_tx_t ravb_start_xmit(struct sk_buff *skb, struct net_device *ndev)
  }
  
- static inline netdev_tx_t macvlan_netpoll_send_skb(struct macvlan_dev *vlan, struct sk_buff *skb)
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 41b4660..91b3ca9 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -2090,7 +2090,7 @@ static inline void netdev_for_each_tx_queue(struct net_device *dev,
- 
- struct netdev_queue *netdev_pick_tx(struct net_device *dev,
- 				    struct sk_buff *skb,
--				    void *accel_priv);
-+				    struct net_device *sb_dev);
- 
- /* returns the headroom that the master device needs to take in account
-  * when forwarding to this dev
-@@ -2552,7 +2552,7 @@ struct net_device *__dev_get_by_flags(struct net *net, unsigned short flags,
- void dev_disable_lro(struct net_device *dev);
- int dev_loopback_xmit(struct net *net, struct sock *sk, struct sk_buff *newskb);
- int dev_queue_xmit(struct sk_buff *skb);
--int dev_queue_xmit_accel(struct sk_buff *skb, void *accel_priv);
-+int dev_queue_xmit_accel(struct sk_buff *skb, struct net_device *sb_dev);
- int dev_direct_xmit(struct sk_buff *skb, u16 queue_id);
- int register_netdevice(struct net_device *dev);
- void unregister_netdevice_queue(struct net_device *dev, struct list_head *head);
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 27fe4f2..2249294 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2704,24 +2704,26 @@ void netif_device_attach(struct net_device *dev)
-  * Returns a Tx hash based on the given packet descriptor a Tx queues' number
-  * to be used as a distribution range.
-  */
--static u16 skb_tx_hash(const struct net_device *dev, struct sk_buff *skb)
-+static u16 skb_tx_hash(const struct net_device *dev,
-+		       const struct net_device *sb_dev,
-+		       struct sk_buff *skb)
+ static u16 ravb_select_queue(struct net_device *ndev, struct sk_buff *skb,
+-			     void *accel_priv, select_queue_fallback_t fallback)
++			     struct net_device *sb_dev,
++			     select_queue_fallback_t fallback)
  {
- 	u32 hash;
- 	u16 qoffset = 0;
- 	u16 qcount = dev->real_num_tx_queues;
- 
-+	if (dev->num_tc) {
-+		u8 tc = netdev_get_prio_tc_map(dev, skb->priority);
-+
-+		qoffset = sb_dev->tc_to_txq[tc].offset;
-+		qcount = sb_dev->tc_to_txq[tc].count;
-+	}
-+
- 	if (skb_rx_queue_recorded(skb)) {
- 		hash = skb_get_rx_queue(skb);
- 		while (unlikely(hash >= qcount))
- 			hash -= qcount;
--		return hash;
--	}
--
--	if (dev->num_tc) {
--		u8 tc = netdev_get_prio_tc_map(dev, skb->priority);
--
--		qoffset = dev->tc_to_txq[tc].offset;
--		qcount = dev->tc_to_txq[tc].count;
-+		return hash + qoffset;
- 	}
- 
- 	return (u16) reciprocal_scale(skb_get_hash(skb), qcount) + qoffset;
-@@ -3465,7 +3467,9 @@ int dev_loopback_xmit(struct net *net, struct sock *sk, struct sk_buff *skb)
- }
- #endif /* CONFIG_NET_EGRESS */
- 
--static inline int get_xps_queue(struct net_device *dev, struct sk_buff *skb)
-+static inline int get_xps_queue(struct net_device *dev,
-+				struct net_device *sb_dev,
-+				struct sk_buff *skb)
- {
- #ifdef CONFIG_XPS
- 	struct xps_dev_maps *dev_maps;
-@@ -3473,7 +3477,7 @@ static inline int get_xps_queue(struct net_device *dev, struct sk_buff *skb)
- 	int queue_index = -1;
- 
- 	rcu_read_lock();
--	dev_maps = rcu_dereference(dev->xps_maps);
-+	dev_maps = rcu_dereference(sb_dev->xps_maps);
- 	if (dev_maps) {
- 		unsigned int tci = skb->sender_cpu - 1;
- 
-@@ -3501,17 +3505,20 @@ static inline int get_xps_queue(struct net_device *dev, struct sk_buff *skb)
- #endif
+ 	/* If skb needs TX timestamp, it is handled in network control queue */
+ 	return (skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) ? RAVB_NC :
+diff --git a/drivers/net/ethernet/sun/ldmvsw.c b/drivers/net/ethernet/sun/ldmvsw.c
+index a5dd627..d42f47f 100644
+--- a/drivers/net/ethernet/sun/ldmvsw.c
++++ b/drivers/net/ethernet/sun/ldmvsw.c
+@@ -101,7 +101,8 @@ static struct vnet_port *vsw_tx_port_find(struct sk_buff *skb,
  }
  
--static u16 __netdev_pick_tx(struct net_device *dev, struct sk_buff *skb)
-+static u16 ___netdev_pick_tx(struct net_device *dev, struct sk_buff *skb,
-+			     struct net_device *sb_dev)
+ static u16 vsw_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			    void *accel_priv, select_queue_fallback_t fallback)
++			    struct net_device *sb_dev,
++			    select_queue_fallback_t fallback)
  {
- 	struct sock *sk = skb->sk;
- 	int queue_index = sk_tx_queue_get(sk);
+ 	struct vnet_port *port = netdev_priv(dev);
  
-+	sb_dev = sb_dev ? : dev;
-+
- 	if (queue_index < 0 || skb->ooo_okay ||
- 	    queue_index >= dev->real_num_tx_queues) {
--		int new_index = get_xps_queue(dev, skb);
-+		int new_index = get_xps_queue(dev, sb_dev, skb);
- 
- 		if (new_index < 0)
--			new_index = skb_tx_hash(dev, skb);
-+			new_index = skb_tx_hash(dev, sb_dev, skb);
- 
- 		if (queue_index != new_index && sk &&
- 		    sk_fullsock(sk) &&
-@@ -3524,9 +3531,15 @@ static u16 __netdev_pick_tx(struct net_device *dev, struct sk_buff *skb)
- 	return queue_index;
+diff --git a/drivers/net/ethernet/sun/sunvnet.c b/drivers/net/ethernet/sun/sunvnet.c
+index a94f504..12539b3 100644
+--- a/drivers/net/ethernet/sun/sunvnet.c
++++ b/drivers/net/ethernet/sun/sunvnet.c
+@@ -234,7 +234,8 @@ static struct vnet_port *vnet_tx_port_find(struct sk_buff *skb,
  }
  
-+static u16 __netdev_pick_tx(struct net_device *dev,
-+			    struct sk_buff *skb)
-+{
-+	return ___netdev_pick_tx(dev, skb, NULL);
-+}
-+
- struct netdev_queue *netdev_pick_tx(struct net_device *dev,
- 				    struct sk_buff *skb,
--				    void *accel_priv)
-+				    struct net_device *sb_dev)
+ static u16 vnet_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			     void *accel_priv, select_queue_fallback_t fallback)
++			     struct net_device *sb_dev,
++			     select_queue_fallback_t fallback)
  {
- 	int queue_index = 0;
+ 	struct vnet *vp = netdev_priv(dev);
+ 	struct vnet_port *port = __tx_port_find(vp, skb);
+diff --git a/drivers/net/hyperv/netvsc_drv.c b/drivers/net/hyperv/netvsc_drv.c
+index 7b18a8c..0a01572 100644
+--- a/drivers/net/hyperv/netvsc_drv.c
++++ b/drivers/net/hyperv/netvsc_drv.c
+@@ -328,7 +328,7 @@ static u16 netvsc_pick_tx(struct net_device *ndev, struct sk_buff *skb)
+ }
  
-@@ -3541,10 +3554,10 @@ struct netdev_queue *netdev_pick_tx(struct net_device *dev,
- 		const struct net_device_ops *ops = dev->netdev_ops;
+ static u16 netvsc_select_queue(struct net_device *ndev, struct sk_buff *skb,
+-			       void *accel_priv,
++			       struct net_device *sb_dev,
+ 			       select_queue_fallback_t fallback)
+ {
+ 	struct net_device_context *ndc = netdev_priv(ndev);
+@@ -342,7 +342,7 @@ static u16 netvsc_select_queue(struct net_device *ndev, struct sk_buff *skb,
+ 
+ 		if (vf_ops->ndo_select_queue)
+ 			txq = vf_ops->ndo_select_queue(vf_netdev, skb,
+-						       accel_priv, fallback);
++						       sb_dev, fallback);
+ 		else
+ 			txq = fallback(vf_netdev, skb);
+ 
+diff --git a/drivers/net/net_failover.c b/drivers/net/net_failover.c
+index 83f7420..b2dc2e7 100644
+--- a/drivers/net/net_failover.c
++++ b/drivers/net/net_failover.c
+@@ -115,7 +115,8 @@ static netdev_tx_t net_failover_start_xmit(struct sk_buff *skb,
+ }
+ 
+ static u16 net_failover_select_queue(struct net_device *dev,
+-				     struct sk_buff *skb, void *accel_priv,
++				     struct sk_buff *skb,
++				     struct net_device *sb_dev,
+ 				     select_queue_fallback_t fallback)
+ {
+ 	struct net_failover_info *nfo_info = netdev_priv(dev);
+@@ -128,7 +129,7 @@ static u16 net_failover_select_queue(struct net_device *dev,
  
  		if (ops->ndo_select_queue)
--			queue_index = ops->ndo_select_queue(dev, skb, accel_priv,
-+			queue_index = ops->ndo_select_queue(dev, skb, sb_dev,
- 							    __netdev_pick_tx);
+ 			txq = ops->ndo_select_queue(primary_dev, skb,
+-						    accel_priv, fallback);
++						    sb_dev, fallback);
  		else
--			queue_index = __netdev_pick_tx(dev, skb);
-+			queue_index = ___netdev_pick_tx(dev, skb, sb_dev);
+ 			txq = fallback(primary_dev, skb);
  
- 		queue_index = netdev_cap_txqueue(dev, queue_index);
- 	}
-@@ -3556,7 +3569,7 @@ struct netdev_queue *netdev_pick_tx(struct net_device *dev,
- /**
-  *	__dev_queue_xmit - transmit a buffer
-  *	@skb: buffer to transmit
-- *	@accel_priv: private data used for L2 forwarding offload
-+ *	@sb_dev: suboordinate device used for L2 forwarding offload
+diff --git a/drivers/net/team/team.c b/drivers/net/team/team.c
+index 8863fa0..b704051 100644
+--- a/drivers/net/team/team.c
++++ b/drivers/net/team/team.c
+@@ -1706,7 +1706,8 @@ static netdev_tx_t team_xmit(struct sk_buff *skb, struct net_device *dev)
+ }
+ 
+ static u16 team_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			     void *accel_priv, select_queue_fallback_t fallback)
++			     struct net_device *sb_dev,
++			     select_queue_fallback_t fallback)
+ {
+ 	/*
+ 	 * This helper function exists to help dev_pick_tx get the correct
+diff --git a/drivers/net/tun.c b/drivers/net/tun.c
+index a192a01..76f0f41 100644
+--- a/drivers/net/tun.c
++++ b/drivers/net/tun.c
+@@ -607,7 +607,8 @@ static u16 tun_ebpf_select_queue(struct tun_struct *tun, struct sk_buff *skb)
+ }
+ 
+ static u16 tun_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			    void *accel_priv, select_queue_fallback_t fallback)
++			    struct net_device *sb_dev,
++			    select_queue_fallback_t fallback)
+ {
+ 	struct tun_struct *tun = netdev_priv(dev);
+ 	u16 ret;
+diff --git a/drivers/net/wireless/marvell/mwifiex/main.c b/drivers/net/wireless/marvell/mwifiex/main.c
+index 510f6b8..fa3e8dd 100644
+--- a/drivers/net/wireless/marvell/mwifiex/main.c
++++ b/drivers/net/wireless/marvell/mwifiex/main.c
+@@ -1279,7 +1279,8 @@ static struct net_device_stats *mwifiex_get_stats(struct net_device *dev)
+ 
+ static u16
+ mwifiex_netdev_select_wmm_queue(struct net_device *dev, struct sk_buff *skb,
+-				void *accel_priv, select_queue_fallback_t fallback)
++				struct net_device *sb_dev,
++				select_queue_fallback_t fallback)
+ {
+ 	skb->priority = cfg80211_classify8021d(skb, NULL);
+ 	return mwifiex_1d_to_wmm_queue[skb->priority];
+diff --git a/drivers/net/xen-netback/interface.c b/drivers/net/xen-netback/interface.c
+index 78ebe49..19c4c58 100644
+--- a/drivers/net/xen-netback/interface.c
++++ b/drivers/net/xen-netback/interface.c
+@@ -148,7 +148,7 @@ void xenvif_wake_queue(struct xenvif_queue *queue)
+ }
+ 
+ static u16 xenvif_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			       void *accel_priv,
++			       struct net_device *sb_dev,
+ 			       select_queue_fallback_t fallback)
+ {
+ 	struct xenvif *vif = netdev_priv(dev);
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+index 679da1a..3c21a8f 100644
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -545,7 +545,8 @@ static int xennet_count_skb_slots(struct sk_buff *skb)
+ }
+ 
+ static u16 xennet_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			       void *accel_priv, select_queue_fallback_t fallback)
++			       struct net_device *sb_dev,
++			       select_queue_fallback_t fallback)
+ {
+ 	unsigned int num_queues = dev->real_num_tx_queues;
+ 	u32 hash;
+diff --git a/drivers/staging/rtl8188eu/os_dep/os_intfs.c b/drivers/staging/rtl8188eu/os_dep/os_intfs.c
+index add1ba0..38e85c8 100644
+--- a/drivers/staging/rtl8188eu/os_dep/os_intfs.c
++++ b/drivers/staging/rtl8188eu/os_dep/os_intfs.c
+@@ -253,7 +253,8 @@ static unsigned int rtw_classify8021d(struct sk_buff *skb)
+ }
+ 
+ static u16 rtw_select_queue(struct net_device *dev, struct sk_buff *skb,
+-			    void *accel_priv, select_queue_fallback_t fallback)
++			    struct net_device *sb_dev,
++			    select_queue_fallback_t fallback)
+ {
+ 	struct adapter	*padapter = rtw_netdev_priv(dev);
+ 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
+diff --git a/drivers/staging/rtl8723bs/os_dep/os_intfs.c b/drivers/staging/rtl8723bs/os_dep/os_intfs.c
+index ace68f0..1816423 100644
+--- a/drivers/staging/rtl8723bs/os_dep/os_intfs.c
++++ b/drivers/staging/rtl8723bs/os_dep/os_intfs.c
+@@ -403,10 +403,9 @@ static unsigned int rtw_classify8021d(struct sk_buff *skb)
+ }
+ 
+ 
+-static u16 rtw_select_queue(struct net_device *dev, struct sk_buff *skb
+-				, void *accel_priv
+-				, select_queue_fallback_t fallback
+-)
++static u16 rtw_select_queue(struct net_device *dev, struct sk_buff *skb,
++			    struct net_device *sb_dev,
++			    select_queue_fallback_t fallback)
+ {
+ 	struct adapter	*padapter = rtw_netdev_priv(dev);
+ 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 70f7ee3..94d8f9b 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -945,7 +945,8 @@ struct dev_ifalias {
+  *	those the driver believes to be appropriate.
   *
-  *	Queue a buffer for transmission to a network device. The caller must
-  *	have set the device and priority and built the buffer before calling
-@@ -3579,7 +3592,7 @@ struct netdev_queue *netdev_pick_tx(struct net_device *dev,
-  *      the BH enable code must have IRQs enabled so that it will not deadlock.
-  *          --BLG
-  */
--static int __dev_queue_xmit(struct sk_buff *skb, void *accel_priv)
-+static int __dev_queue_xmit(struct sk_buff *skb, struct net_device *sb_dev)
- {
- 	struct net_device *dev = skb->dev;
- 	struct netdev_queue *txq;
-@@ -3618,7 +3631,7 @@ static int __dev_queue_xmit(struct sk_buff *skb, void *accel_priv)
- 	else
- 		skb_dst_force(skb);
- 
--	txq = netdev_pick_tx(dev, skb, accel_priv);
-+	txq = netdev_pick_tx(dev, skb, sb_dev);
- 	q = rcu_dereference_bh(txq->qdisc);
- 
- 	trace_net_dev_queue(skb);
-@@ -3692,9 +3705,9 @@ int dev_queue_xmit(struct sk_buff *skb)
+  * u16 (*ndo_select_queue)(struct net_device *dev, struct sk_buff *skb,
+- *                         void *accel_priv, select_queue_fallback_t fallback);
++ *                         struct net_device *sb_dev,
++ *                         select_queue_fallback_t fallback);
+  *	Called to decide which queue to use when device supports multiple
+  *	transmit queues.
+  *
+@@ -1217,7 +1218,7 @@ struct net_device_ops {
+ 						      netdev_features_t features);
+ 	u16			(*ndo_select_queue)(struct net_device *dev,
+ 						    struct sk_buff *skb,
+-						    void *accel_priv,
++						    struct net_device *sb_dev,
+ 						    select_queue_fallback_t fallback);
+ 	void			(*ndo_change_rx_flags)(struct net_device *dev,
+ 						       int flags);
+@@ -2552,9 +2553,11 @@ struct net_device *__dev_get_by_flags(struct net *net, unsigned short flags,
+ void dev_disable_lro(struct net_device *dev);
+ int dev_loopback_xmit(struct net *net, struct sock *sk, struct sk_buff *newskb);
+ u16 dev_pick_tx_zero(struct net_device *dev, struct sk_buff *skb,
+-		     void *accel_priv, select_queue_fallback_t fallback);
++		     struct net_device *sb_dev,
++		     select_queue_fallback_t fallback);
+ u16 dev_pick_tx_cpu_id(struct net_device *dev, struct sk_buff *skb,
+-		       void *accel_priv, select_queue_fallback_t fallback);
++		       struct net_device *sb_dev,
++		       select_queue_fallback_t fallback);
+ int dev_queue_xmit(struct sk_buff *skb);
+ int dev_queue_xmit_accel(struct sk_buff *skb, struct net_device *sb_dev);
+ int dev_direct_xmit(struct sk_buff *skb, u16 queue_id);
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 1a1cf2c..a78000a 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -3506,14 +3506,16 @@ static inline int get_xps_queue(struct net_device *dev,
  }
- EXPORT_SYMBOL(dev_queue_xmit);
  
--int dev_queue_xmit_accel(struct sk_buff *skb, void *accel_priv)
-+int dev_queue_xmit_accel(struct sk_buff *skb, struct net_device *sb_dev)
+ u16 dev_pick_tx_zero(struct net_device *dev, struct sk_buff *skb,
+-		     void *accel_priv, select_queue_fallback_t fallback)
++		     struct net_device *sb_dev,
++		     select_queue_fallback_t fallback)
  {
--	return __dev_queue_xmit(skb, accel_priv);
-+	return __dev_queue_xmit(skb, sb_dev);
+ 	return 0;
  }
- EXPORT_SYMBOL(dev_queue_xmit_accel);
+ EXPORT_SYMBOL(dev_pick_tx_zero);
  
+ u16 dev_pick_tx_cpu_id(struct net_device *dev, struct sk_buff *skb,
+-		       void *accel_priv, select_queue_fallback_t fallback)
++		       struct net_device *sb_dev,
++		       select_queue_fallback_t fallback)
+ {
+ 	return (u16)raw_smp_processor_id() % dev->real_num_tx_queues;
+ }
+diff --git a/net/mac80211/iface.c b/net/mac80211/iface.c
+index 555e389..5e6cf2c 100644
+--- a/net/mac80211/iface.c
++++ b/net/mac80211/iface.c
+@@ -1130,7 +1130,7 @@ static void ieee80211_uninit(struct net_device *dev)
+ 
+ static u16 ieee80211_netdev_select_queue(struct net_device *dev,
+ 					 struct sk_buff *skb,
+-					 void *accel_priv,
++					 struct net_device *sb_dev,
+ 					 select_queue_fallback_t fallback)
+ {
+ 	return ieee80211_select_queue(IEEE80211_DEV_TO_SUB_IF(dev), skb);
+@@ -1176,7 +1176,7 @@ static u16 ieee80211_netdev_select_queue(struct net_device *dev,
+ 
+ static u16 ieee80211_monitor_select_queue(struct net_device *dev,
+ 					  struct sk_buff *skb,
+-					  void *accel_priv,
++					  struct net_device *sb_dev,
+ 					  select_queue_fallback_t fallback)
+ {
+ 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
 
