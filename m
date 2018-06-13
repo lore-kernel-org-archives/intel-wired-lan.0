@@ -1,17 +1,17 @@
-From: Keith Busch <keith.busch@linux.intel.com>
-Date: Wed, 13 Jun 2018 07:30:55 -0600
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Wed, 13 Jun 2018 09:26:12 -0700
 Subject: [Intel-wired-lan] [PATCH net/jkirsher] bpf, xdp,
  i40e: fix i40e_build_skb skb reserve and truesize
 In-Reply-To: <20180613090436.4266-1-daniel@iogearbox.net>
 References: <20180613090436.4266-1-daniel@iogearbox.net>
-Message-ID: <20180613133055.GA5331@localhost.localdomain>
+Message-ID: <d56adbb7-12df-c197-1976-3eb161af8484@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jun 13, 2018 at 11:04:36AM +0200, Daniel Borkmann wrote:
+On 06/13/2018 02:04 AM, Daniel Borkmann wrote:
 > Using skb_reserve(skb, I40E_SKB_PAD + (xdp->data - xdp->data_hard_start))
 > is clearly wrong since I40E_SKB_PAD already points to the offset where
 > the original xdp->data was sitting since xdp->data_hard_start is defined
@@ -35,7 +35,11 @@ On Wed, Jun 13, 2018 at 11:04:36AM +0200, Daniel Borkmann wrote:
 > Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
 > Cc: Bj?rn T?pel <bjorn.topel@intel.com>
 > Cc: John Fastabend <john.fastabend@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
+> 
 
-Thanks for the quick fix! This works for me.
+Thanks! I missed this during review.
 
-Tested-by: Keith Busch <keith.busch@linux.intel.com>
+Acked-by: John Fastabend <john.fastabend@gmail.com>
