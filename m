@@ -1,52 +1,179 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 13 Jun 2018 10:10:21 -0700
-Subject: [Intel-wired-lan] [PATCH net/jkirsher] bpf, xdp,
- i40e: fix i40e_build_skb skb reserve and truesize
-In-Reply-To: <d56adbb7-12df-c197-1976-3eb161af8484@gmail.com>
-References: <20180613090436.4266-1-daniel@iogearbox.net>
- <d56adbb7-12df-c197-1976-3eb161af8484@gmail.com>
-Message-ID: <CAKgT0Ud_1Tb3oQXJfq6ibcCvR3pk_Bz-OU1_PP_p=t2gfdnK9Q@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 14 Jun 2018 01:16:03 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 55ca9ac4219dea8dc10cb9438d15487b509a4f7d
+Message-ID: <5b215153.EOujlSJIrm3+nQa9%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jun 13, 2018 at 9:26 AM, John Fastabend
-<john.fastabend@gmail.com> wrote:
-> On 06/13/2018 02:04 AM, Daniel Borkmann wrote:
->> Using skb_reserve(skb, I40E_SKB_PAD + (xdp->data - xdp->data_hard_start))
->> is clearly wrong since I40E_SKB_PAD already points to the offset where
->> the original xdp->data was sitting since xdp->data_hard_start is defined
->> as xdp->data - i40e_rx_offset(rx_ring) where latter offsets to I40E_SKB_PAD
->> when build skb is used.
->>
->> However, also before cc5b114dcf98 ("bpf, i40e: add meta data support")
->> this seems broken since bpf_xdp_adjust_head() helper could have been used
->> to alter headroom and enlarge / shrink the frame and with that the assumption
->> that the xdp->data remains unchanged does not hold and would push a bogus
->> packet to upper stack.
->>
->> ixgbe got this right in 924708081629 ("ixgbe: add XDP support for pass and
->> drop actions"). In any case, fix it by removing the I40E_SKB_PAD from both
->> skb_reserve() and truesize calculation.
->>
->> Fixes: cc5b114dcf98 ("bpf, i40e: add meta data support")
->> Fixes: 0c8493d90b6b ("i40e: add XDP support for pass and drop actions")
->> Reported-by: Keith Busch <keith.busch@linux.intel.com>
->> Reported-by: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
->> Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
->> Cc: Bj?rn T?pel <bjorn.topel@intel.com>
->> Cc: John Fastabend <john.fastabend@gmail.com>
->> ---
->>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 7 +++----
->>  1 file changed, 3 insertions(+), 4 deletions(-)
->>
->
-> Thanks! I missed this during review.
->
-> Acked-by: John Fastabend <john.fastabend@gmail.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 55ca9ac4219dea8dc10cb9438d15487b509a4f7d  i40e: fix i40e_build_skb skb reserve and truesize
 
-Looks good to me. Thanks for taking care of this.
+elapsed time: 67m
 
-Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
+configs tested: 154
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                           corgi_defconfig
+mips                        workpad_defconfig
+i386                               tinyconfig
+i386                   randconfig-x012-201823
+i386                   randconfig-x016-201823
+i386                   randconfig-x017-201823
+i386                   randconfig-x014-201823
+i386                   randconfig-x018-201823
+i386                   randconfig-x013-201823
+i386                   randconfig-x011-201823
+i386                   randconfig-x015-201823
+i386                   randconfig-x019-201823
+i386                   randconfig-x010-201823
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201823
+i386         randconfig-n0-201823+bisect_validate
+x86_64                 randconfig-x003-201823
+x86_64                 randconfig-x007-201823
+x86_64                 randconfig-x000-201823
+x86_64                 randconfig-x004-201823
+x86_64                 randconfig-x005-201823
+x86_64                 randconfig-x001-201823
+x86_64                 randconfig-x008-201823
+x86_64                 randconfig-x002-201823
+x86_64                 randconfig-x006-201823
+x86_64                 randconfig-x009-201823
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201823
+i386                     randconfig-i1-201823
+openrisc                 simple_smp_defconfig
+powerpc64                        allyesconfig
+i386                             allmodconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201823
+i386                     randconfig-a1-201823
+x86_64                 randconfig-s0-06132341
+x86_64                 randconfig-s1-06132341
+x86_64                 randconfig-s2-06132341
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+ia64                      gensparse_defconfig
+powerpc                        fsp2_defconfig
+powerpc                    mvme5100_defconfig
+powerpc                     sequoia_defconfig
+x86_64                 randconfig-x011-201823
+x86_64                 randconfig-x015-201823
+x86_64                 randconfig-x018-201823
+x86_64                 randconfig-x010-201823
+x86_64                 randconfig-x014-201823
+x86_64                 randconfig-x019-201823
+x86_64                 randconfig-x013-201823
+x86_64                 randconfig-x017-201823
+x86_64                 randconfig-x016-201823
+x86_64                 randconfig-x012-201823
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                              fedora-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201823
+i386                     randconfig-s1-201823
+x86_64                 randconfig-s3-06132243
+x86_64                 randconfig-s4-06132243
+x86_64                 randconfig-s5-06132243
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201823
+i386                   randconfig-b0-06140025
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-u0-06140015
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-h0-06131824
+i386                  randconfig-sb0-06131904
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x078-201823
+i386                   randconfig-x079-201823
+i386                   randconfig-x070-201823
+i386                   randconfig-x074-201823
+i386                   randconfig-x075-201823
+i386                   randconfig-x076-201823
+i386                   randconfig-x071-201823
+i386                   randconfig-x073-201823
+i386                   randconfig-x077-201823
+i386                   randconfig-x072-201823
+x86_64                                  kexec
+mips                      bmips_stb_defconfig
+sh                          sdk7786_defconfig
+i386                   randconfig-x009-201823
+i386                   randconfig-x008-201823
+i386                   randconfig-x005-201823
+i386                   randconfig-x001-201823
+i386                   randconfig-x000-201823
+i386                   randconfig-x003-201823
+i386                   randconfig-x004-201823
+i386                   randconfig-x006-201823
+i386                   randconfig-x002-201823
+i386                   randconfig-x007-201823
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
