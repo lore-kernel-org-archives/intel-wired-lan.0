@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Jun 2018 17:23:48 +0000
-Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] ixgbe: Be more
- careful when modifying MAC filters
-In-Reply-To: <20180618160028.80602.76507.stgit@ahduyck-green-test.jf.intel.com>
-References: <20180618160028.80602.76507.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2C8149@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 20 Jun 2018 17:25:37 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 2/7] net: Add
+ support for subordinate device traffic classes
+In-Reply-To: <20180612151835.86792.93718.stgit@ahduyck-green-test.jf.intel.com>
+References: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
+ <20180612151835.86792.93718.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2C815A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,32 +15,37 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Alexander Duyck
-> Sent: Monday, June 18, 2018 9:02 AM
-> To: shannon.nelson at oracle.com; Fujinaka, Todd
-> <todd.fujinaka@intel.com>; intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey
-> T <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] ixgbe: Be more careful
-> when modifying MAC filters
+> Sent: Tuesday, June 12, 2018 8:19 AM
+> To: intel-wired-lan at osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 2/7] net: Add
+> support for subordinate device traffic classes
 > 
-> This change makes it so that we are much more explicit about the ordering of
-> updates to the receive address register (RAR) table. Prior to this patch I
-> believe we may have been updating the table while entries were still active,
-> or possibly allowing for reordering of things since we weren't explicitly
-> flushing writes to either the lower or upper portion of the register prior to
-> accessing the other half.
+> This patch is meant to provide the basic tools needed to allow us to create
+> subordinate device traffic classes. The general idea here is to allow
+> subdividing the queues of a device into queue groups accessible through an
+> upper device such as a macvlan.
+> 
+> The idea here is to enforce the idea that an upper device has to be a single
+> queue device, ideally with IFF_NO_QUQUE set. With that being the case we
+> can pretty much guarantee that the tc_to_txq mappings and XPS maps for
+> the upper device are unused. As such we could reuse those in order to
+> support subdividing the lower device and distributing those queues between
+> the subordinate devices.
+> 
+> In order to distinguish between a regular set of traffic classes and if a device
+> is carrying subordinate traffic classes I changed num_tc from a u8 to a s16
+> value and use the negative values to represent the suboordinate pool
+> values. So starting at -1 and running to -32768 we can encode those as pool
+> values, and the existing values of 0 to 15 can be maintained.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
-> 
-> I am submitting this as a fix, but I am not certain this actually fixes anything or
-> if it is more of just a clean-up. I know there have been some issues with MAC
-> address updates reported recently so I decided to review the code and
-> found the bits here that I thought needed to be updated.
-> Especially the case where we were clearing the lower 32b of the address with
-> AV still set in the upper 32b of the register.
-> 
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
+>  include/linux/netdevice.h |   16 ++++++++
+>  net/core/dev.c            |   89
+> +++++++++++++++++++++++++++++++++++++++++++++
+>  net/core/net-sysfs.c      |   21 ++++++++++-
+>  3 files changed, 124 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
