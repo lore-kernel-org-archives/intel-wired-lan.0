@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Jun 2018 17:21:38 +0000
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 7/7] net: allow
- fallback function to pass netdev
-In-Reply-To: <20180612151902.86792.50748.stgit@ahduyck-green-test.jf.intel.com>
-References: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
- <20180612151902.86792.50748.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2C8129@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 20 Jun 2018 17:23:48 +0000
+Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] ixgbe: Be more
+ careful when modifying MAC filters
+In-Reply-To: <20180618160028.80602.76507.stgit@ahduyck-green-test.jf.intel.com>
+References: <20180618160028.80602.76507.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2C8149@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,39 +14,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Alexander Duyck
-> Sent: Tuesday, June 12, 2018 8:19 AM
-> To: intel-wired-lan at osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 7/7] net: allow
-> fallback function to pass netdev
+> Sent: Monday, June 18, 2018 9:02 AM
+> To: shannon.nelson at oracle.com; Fujinaka, Todd
+> <todd.fujinaka@intel.com>; intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey
+> T <jeffrey.t.kirsher@intel.com>
+> Subject: [Intel-wired-lan] [jkirsher/net-queue PATCH] ixgbe: Be more careful
+> when modifying MAC filters
 > 
-> For most of these calls we can just pass NULL through to the fallback function
-> as the sb_dev. The only cases where we cannot are the cases where we
-> might be dealing with either an upper device or a driver that would have
-> configured things to support an sb_dev itself.
-> 
-> The only driver that has any signficant change in this patchset should be ixgbe
-> as we can drop the redundant functionality that existed in both the
-> ndo_select_queue function and the fallback function that was passed
-> through to us.
+> This change makes it so that we are much more explicit about the ordering of
+> updates to the receive address register (RAR) table. Prior to this patch I
+> believe we may have been updating the table while entries were still active,
+> or possibly allowing for reordering of things since we weren't explicitly
+> flushing writes to either the lower or upper portion of the register prior to
+> accessing the other half.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/amazon/ena/ena_netdev.c    |    2 +-
->  drivers/net/ethernet/broadcom/bcmsysport.c      |    4 ++--
->  drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c |    3 ++-
->  drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c |    2 +-
->  drivers/net/ethernet/hisilicon/hns/hns_enet.c   |    2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    4 ++--
->  drivers/net/ethernet/mellanox/mlx4/en_tx.c      |    4 ++--
->  drivers/net/ethernet/mellanox/mlx5/core/en_tx.c |    2 +-
->  drivers/net/hyperv/netvsc_drv.c                 |    2 +-
->  drivers/net/net_failover.c                      |    2 +-
->  drivers/net/xen-netback/interface.c             |    2 +-
->  include/linux/netdevice.h                       |    3 ++-
->  net/core/dev.c                                  |   12 +++---------
->  net/packet/af_packet.c                          |    7 ++++---
->  14 files changed, 24 insertions(+), 27 deletions(-)
+> 
+> I am submitting this as a fix, but I am not certain this actually fixes anything or
+> if it is more of just a clean-up. I know there have been some issues with MAC
+> address updates reported recently so I decided to review the code and
+> found the bits here that I thought needed to be updated.
+> Especially the case where we were clearing the lower 32b of the address with
+> AV still set in the upper 32b of the register.
+> 
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   12 +++++++++++-
+>  1 file changed, 11 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
