@@ -1,20 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Wed, 20 Jun 2018 09:52:10 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:40GbE] BUILD SUCCESS
- 3bec75251bf9e01b777988fd75c673032cb2122a
-Message-ID: <5b29b34a.X7LDbhVVorfFUPe2%lkp@intel.com>
+Date: Wed, 20 Jun 2018 10:38:28 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ dbcdde62b5e2b3c3c67b7de428d32231071aa2a6
+Message-ID: <5b29be24.OiC+FRq+HXSkkl0r%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  40GbE
-branch HEAD: 3bec75251bf9e01b777988fd75c673032cb2122a  bpf, xdp, i40e: fix i40e_build_skb skb reserve and truesize
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: dbcdde62b5e2b3c3c67b7de428d32231071aa2a6  ixgbe: Be more careful when modifying MAC filters
 
-elapsed time: 230m
+elapsed time: 276m
 
-configs tested: 138
+configs tested: 126
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -32,32 +32,12 @@ sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
 x86_64                           allmodconfig
-i386                   randconfig-x014-201824
-i386                   randconfig-x017-201824
-i386                   randconfig-x016-201824
-i386                   randconfig-x012-201824
-i386                   randconfig-x018-201824
-i386                   randconfig-x011-201824
-i386                   randconfig-x013-201824
-i386                   randconfig-x019-201824
-i386                   randconfig-x015-201824
-i386                   randconfig-x010-201824
 x86_64                              fedora-25
 x86_64                                    lkp
 x86_64                                   rhel
 x86_64                               rhel-7.2
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
-x86_64                 randconfig-x003-201824
-x86_64                 randconfig-x007-201824
-x86_64                 randconfig-x005-201824
-x86_64                 randconfig-x004-201824
-x86_64                 randconfig-x000-201824
-x86_64                 randconfig-x001-201824
-x86_64                 randconfig-x008-201824
-x86_64                 randconfig-x006-201824
-x86_64                 randconfig-x002-201824
-x86_64                 randconfig-x009-201824
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
@@ -65,17 +45,20 @@ powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 s390                        default_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
 i386                             allmodconfig
-x86_64                 randconfig-x010-201824
-x86_64                 randconfig-x011-201824
-x86_64                 randconfig-x012-201824
-x86_64                 randconfig-x013-201824
-x86_64                 randconfig-x014-201824
 x86_64                 randconfig-x015-201824
+x86_64                 randconfig-x011-201824
+x86_64                 randconfig-x018-201824
+x86_64                 randconfig-x010-201824
+x86_64                 randconfig-x019-201824
+x86_64                 randconfig-x014-201824
 x86_64                 randconfig-x016-201824
 x86_64                 randconfig-x017-201824
-x86_64                 randconfig-x018-201824
-x86_64                 randconfig-x019-201824
+x86_64                 randconfig-x013-201824
+x86_64                 randconfig-x012-201824
 arm                              allmodconfig
 arm                                      arm5
 arm                                     arm67
@@ -89,9 +72,6 @@ arm                                        sh
 arm                           tegra_defconfig
 arm64                            alldefconfig
 arm64                            allmodconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
 c6x                        evmc6678_defconfig
 h8300                    h8300h-sim_defconfig
 nios2                         10m50_defconfig
@@ -103,18 +83,6 @@ i386                                defconfig
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
 m68k                           sun3_defconfig
-x86_64                 randconfig-s3-06200834
-x86_64                 randconfig-s4-06200834
-x86_64                 randconfig-s5-06200834
-x86_64                 randconfig-s3-06200902
-x86_64                 randconfig-s4-06200902
-x86_64                 randconfig-s5-06200902
-x86_64                 randconfig-s3-06200924
-x86_64                 randconfig-s4-06200924
-x86_64                 randconfig-s5-06200924
-x86_64                 randconfig-s3-06200944
-x86_64                 randconfig-s4-06200944
-x86_64                 randconfig-s5-06200944
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                              allnoconfig
@@ -126,16 +94,16 @@ sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
 i386                               tinyconfig
-i386                   randconfig-x078-201824
-i386                   randconfig-x079-201824
-i386                   randconfig-x076-201824
-i386                   randconfig-x075-201824
-i386                   randconfig-x074-201824
-i386                   randconfig-x070-201824
-i386                   randconfig-x073-201824
-i386                   randconfig-x071-201824
-i386                   randconfig-x077-201824
-i386                   randconfig-x072-201824
+i386                   randconfig-x014-201824
+i386                   randconfig-x017-201824
+i386                   randconfig-x016-201824
+i386                   randconfig-x012-201824
+i386                   randconfig-x018-201824
+i386                   randconfig-x011-201824
+i386                   randconfig-x013-201824
+i386                   randconfig-x019-201824
+i386                   randconfig-x015-201824
+i386                   randconfig-x010-201824
 i386                   randconfig-x008-201824
 i386                   randconfig-x009-201824
 i386                   randconfig-x003-201824
@@ -146,7 +114,6 @@ i386                   randconfig-x006-201824
 i386                   randconfig-x004-201824
 i386                   randconfig-x002-201824
 i386                   randconfig-x007-201824
-x86_64                                  kexec
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -157,6 +124,27 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                             allnoconfig
 arm64                               defconfig
+x86_64                                  kexec
+i386                   randconfig-x078-201824
+i386                   randconfig-x079-201824
+i386                   randconfig-x076-201824
+i386                   randconfig-x075-201824
+i386                   randconfig-x074-201824
+i386                   randconfig-x070-201824
+i386                   randconfig-x073-201824
+i386                   randconfig-x071-201824
+i386                   randconfig-x077-201824
+i386                   randconfig-x072-201824
+x86_64                 randconfig-x003-201824
+x86_64                 randconfig-x007-201824
+x86_64                 randconfig-x005-201824
+x86_64                 randconfig-x004-201824
+x86_64                 randconfig-x000-201824
+x86_64                 randconfig-x001-201824
+x86_64                 randconfig-x008-201824
+x86_64                 randconfig-x006-201824
+x86_64                 randconfig-x002-201824
+x86_64                 randconfig-x009-201824
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
