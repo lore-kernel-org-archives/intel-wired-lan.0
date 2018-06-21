@@ -1,211 +1,70 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 21 Jun 2018 08:11:03 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
- bf28f0b1c29e45b482a9dbc4b35d63609dfeeb62
-Message-ID: <5b2aed17.pv6/hGNUP5MHXLvA%lkp@intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Thu, 21 Jun 2018 14:02:32 +0300
+Subject: [Intel-wired-lan] [bug report] i40e: main driver core
+Message-ID: <20180621110232.gsup57hb5n7dxny5@kili.mountain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: bf28f0b1c29e45b482a9dbc4b35d63609dfeeb62  ixgbe: Be more careful when modifying MAC filters
+Hello Jesse Brandeburg,
 
-TIMEOUT after 607m
+The patch 41c445ff0f48: "i40e: main driver core" from Sep 11, 2013,
+leads to the following static checker warning:
 
+	drivers/net/ethernet/intel/i40e/i40e_main.c:13065 i40e_veb_setup()
+	warn: potential off by one 'pf->vsi[]' 'vsi_idx == pf->num_alloc_vsi'
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+drivers/net/ethernet/intel/i40e/i40e_main.c
+ 13025                           uplink_seid, vsi_seid);
+ 13026                  return NULL;
+ 13027          }
+ 13028  
+ 13029          /* make sure there is such a vsi and uplink */
+ 13030          for (vsi_idx = 0; vsi_idx < pf->num_alloc_vsi; vsi_idx++)
+ 13031                  if (pf->vsi[vsi_idx] && pf->vsi[vsi_idx]->seid == vsi_seid)
+ 13032                          break;
+ 13033          if (vsi_idx >= pf->num_alloc_vsi && vsi_seid != 0) {
+                                                    ^^^^^^^^^^^^^
+I think if pf->num_alloc_vsi is zero then we're going to run into
+problems.  We should remove this condition.
 
-configs timed out: 31
+ 13034                  dev_info(&pf->pdev->dev, "vsi seid %d not found\n",
+ 13035                           vsi_seid);
+ 13036                  return NULL;
+ 13037          }
+ 13038  
+ 13039          if (uplink_seid && uplink_seid != pf->mac_seid) {
+ 13040                  for (veb_idx = 0; veb_idx < I40E_MAX_VEB; veb_idx++) {
+ 13041                          if (pf->veb[veb_idx] &&
+ 13042                              pf->veb[veb_idx]->seid == uplink_seid) {
+ 13043                                  uplink_veb = pf->veb[veb_idx];
+ 13044                                  break;
+ 13045                          }
+ 13046                  }
+ 13047                  if (!uplink_veb) {
+ 13048                          dev_info(&pf->pdev->dev,
+ 13049                                   "uplink seid %d not found\n", uplink_seid);
+ 13050                          return NULL;
+ 13051                  }
+ 13052          }
+ 13053  
+ 13054          /* get veb sw struct */
+ 13055          veb_idx = i40e_veb_mem_alloc(pf);
+ 13056          if (veb_idx < 0)
+ 13057                  goto err_alloc;
+ 13058          veb = pf->veb[veb_idx];
+ 13059          veb->flags = flags;
+ 13060          veb->uplink_seid = uplink_seid;
+ 13061          veb->veb_idx = (uplink_veb ? uplink_veb->idx : I40E_NO_VEB);
+ 13062          veb->enabled_tc = (enabled_tc ? enabled_tc : 0x1);
+ 13063  
+ 13064          /* create the VEB in the switch */
+ 13065          ret = i40e_add_veb(veb, pf->vsi[vsi_idx]);
+                                        ^^^^^^^^^^^^^^^^
+ 13066          if (ret)
+ 13067                  goto err_veb;
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-i386                            randconfig-a0
-i386                            randconfig-a1
-i386                            randconfig-i0
-i386                            randconfig-i1
-i386                            randconfig-n0
-i386                            randconfig-s0
-i386                            randconfig-s1
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-s390                             allmodconfig
-s390                             allyesconfig
-sh                               allmodconfig
-sh                               allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-x86_64                           allyesconfig
-x86_64                          randconfig-i0
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-
-configs tested: 147
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                                  kexec
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-s3-06210214
-x86_64                 randconfig-s4-06210214
-x86_64                 randconfig-s5-06210214
-x86_64                 randconfig-s3-06210236
-x86_64                 randconfig-s4-06210236
-x86_64                 randconfig-s5-06210236
-x86_64                 randconfig-s3-06210309
-x86_64                 randconfig-s4-06210309
-x86_64                 randconfig-s5-06210309
-x86_64                 randconfig-s3-06210348
-x86_64                 randconfig-s4-06210348
-x86_64                 randconfig-s5-06210348
-x86_64                 randconfig-s3-06210641
-x86_64                 randconfig-s4-06210641
-x86_64                 randconfig-s5-06210641
-x86_64                 randconfig-s3-06210705
-x86_64                 randconfig-s4-06210705
-x86_64                 randconfig-s5-06210705
-x86_64                 randconfig-s3-06210744
-x86_64                 randconfig-s4-06210744
-x86_64                 randconfig-s5-06210744
-i386                               tinyconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-x015-201824
-x86_64                 randconfig-x011-201824
-x86_64                 randconfig-x018-201824
-x86_64                 randconfig-x010-201824
-x86_64                 randconfig-x019-201824
-x86_64                 randconfig-x014-201824
-x86_64                 randconfig-x016-201824
-x86_64                 randconfig-x017-201824
-x86_64                 randconfig-x013-201824
-x86_64                 randconfig-x012-201824
-i386                   randconfig-x014-201824
-i386                   randconfig-x017-201824
-i386                   randconfig-x016-201824
-i386                   randconfig-x012-201824
-i386                   randconfig-x018-201824
-i386                   randconfig-x011-201824
-i386                   randconfig-x013-201824
-i386                   randconfig-x019-201824
-i386                   randconfig-x015-201824
-i386                   randconfig-x010-201824
-i386                   randconfig-x078-201824
-i386                   randconfig-x079-201824
-i386                   randconfig-x076-201824
-i386                   randconfig-x075-201824
-i386                   randconfig-x074-201824
-i386                   randconfig-x070-201824
-i386                   randconfig-x073-201824
-i386                   randconfig-x071-201824
-i386                   randconfig-x077-201824
-i386                   randconfig-x072-201824
-i386                   randconfig-x000-201824
-i386                   randconfig-x001-201824
-i386                   randconfig-x002-201824
-i386                   randconfig-x003-201824
-i386                   randconfig-x004-201824
-i386                   randconfig-x005-201824
-i386                   randconfig-x006-201824
-i386                   randconfig-x007-201824
-i386                   randconfig-x008-201824
-i386                   randconfig-x009-201824
-x86_64                 randconfig-x003-201824
-x86_64                 randconfig-x007-201824
-x86_64                 randconfig-x005-201824
-x86_64                 randconfig-x004-201824
-x86_64                 randconfig-x000-201824
-x86_64                 randconfig-x001-201824
-x86_64                 randconfig-x008-201824
-x86_64                 randconfig-x006-201824
-x86_64                 randconfig-x002-201824
-x86_64                 randconfig-x009-201824
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+regards,
+dan carpenter
