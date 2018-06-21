@@ -1,52 +1,211 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Jun 2018 17:25:37 +0000
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 2/7] net: Add
- support for subordinate device traffic classes
-In-Reply-To: <20180612151835.86792.93718.stgit@ahduyck-green-test.jf.intel.com>
-References: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
- <20180612151835.86792.93718.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2C815A@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 21 Jun 2018 08:11:03 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
+ bf28f0b1c29e45b482a9dbc4b35d63609dfeeb62
+Message-ID: <5b2aed17.pv6/hGNUP5MHXLvA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Tuesday, June 12, 2018 8:19 AM
-> To: intel-wired-lan at osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 2/7] net: Add
-> support for subordinate device traffic classes
-> 
-> This patch is meant to provide the basic tools needed to allow us to create
-> subordinate device traffic classes. The general idea here is to allow
-> subdividing the queues of a device into queue groups accessible through an
-> upper device such as a macvlan.
-> 
-> The idea here is to enforce the idea that an upper device has to be a single
-> queue device, ideally with IFF_NO_QUQUE set. With that being the case we
-> can pretty much guarantee that the tc_to_txq mappings and XPS maps for
-> the upper device are unused. As such we could reuse those in order to
-> support subdividing the lower device and distributing those queues between
-> the subordinate devices.
-> 
-> In order to distinguish between a regular set of traffic classes and if a device
-> is carrying subordinate traffic classes I changed num_tc from a u8 to a s16
-> value and use the negative values to represent the suboordinate pool
-> values. So starting at -1 and running to -32768 we can encode those as pool
-> values, and the existing values of 0 to 15 can be maintained.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> ---
->  include/linux/netdevice.h |   16 ++++++++
->  net/core/dev.c            |   89
-> +++++++++++++++++++++++++++++++++++++++++++++
->  net/core/net-sysfs.c      |   21 ++++++++++-
->  3 files changed, 124 insertions(+), 2 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: bf28f0b1c29e45b482a9dbc4b35d63609dfeeb62  ixgbe: Be more careful when modifying MAC filters
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+TIMEOUT after 607m
 
 
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 31
+
+alpha                            allmodconfig
+alpha                            allyesconfig
+i386                            randconfig-a0
+i386                            randconfig-a1
+i386                            randconfig-i0
+i386                            randconfig-i1
+i386                            randconfig-n0
+i386                            randconfig-s0
+i386                            randconfig-s1
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+mips                             allmodconfig
+mips                             allyesconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+s390                             allmodconfig
+s390                             allyesconfig
+sh                               allmodconfig
+sh                               allyesconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+sparc64                          allmodconfig
+sparc64                          allyesconfig
+x86_64                           allyesconfig
+x86_64                          randconfig-i0
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+
+configs tested: 147
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                              fedora-25
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                                  kexec
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-s3-06210214
+x86_64                 randconfig-s4-06210214
+x86_64                 randconfig-s5-06210214
+x86_64                 randconfig-s3-06210236
+x86_64                 randconfig-s4-06210236
+x86_64                 randconfig-s5-06210236
+x86_64                 randconfig-s3-06210309
+x86_64                 randconfig-s4-06210309
+x86_64                 randconfig-s5-06210309
+x86_64                 randconfig-s3-06210348
+x86_64                 randconfig-s4-06210348
+x86_64                 randconfig-s5-06210348
+x86_64                 randconfig-s3-06210641
+x86_64                 randconfig-s4-06210641
+x86_64                 randconfig-s5-06210641
+x86_64                 randconfig-s3-06210705
+x86_64                 randconfig-s4-06210705
+x86_64                 randconfig-s5-06210705
+x86_64                 randconfig-s3-06210744
+x86_64                 randconfig-s4-06210744
+x86_64                 randconfig-s5-06210744
+i386                               tinyconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-x015-201824
+x86_64                 randconfig-x011-201824
+x86_64                 randconfig-x018-201824
+x86_64                 randconfig-x010-201824
+x86_64                 randconfig-x019-201824
+x86_64                 randconfig-x014-201824
+x86_64                 randconfig-x016-201824
+x86_64                 randconfig-x017-201824
+x86_64                 randconfig-x013-201824
+x86_64                 randconfig-x012-201824
+i386                   randconfig-x014-201824
+i386                   randconfig-x017-201824
+i386                   randconfig-x016-201824
+i386                   randconfig-x012-201824
+i386                   randconfig-x018-201824
+i386                   randconfig-x011-201824
+i386                   randconfig-x013-201824
+i386                   randconfig-x019-201824
+i386                   randconfig-x015-201824
+i386                   randconfig-x010-201824
+i386                   randconfig-x078-201824
+i386                   randconfig-x079-201824
+i386                   randconfig-x076-201824
+i386                   randconfig-x075-201824
+i386                   randconfig-x074-201824
+i386                   randconfig-x070-201824
+i386                   randconfig-x073-201824
+i386                   randconfig-x071-201824
+i386                   randconfig-x077-201824
+i386                   randconfig-x072-201824
+i386                   randconfig-x000-201824
+i386                   randconfig-x001-201824
+i386                   randconfig-x002-201824
+i386                   randconfig-x003-201824
+i386                   randconfig-x004-201824
+i386                   randconfig-x005-201824
+i386                   randconfig-x006-201824
+i386                   randconfig-x007-201824
+i386                   randconfig-x008-201824
+i386                   randconfig-x009-201824
+x86_64                 randconfig-x003-201824
+x86_64                 randconfig-x007-201824
+x86_64                 randconfig-x005-201824
+x86_64                 randconfig-x004-201824
+x86_64                 randconfig-x000-201824
+x86_64                 randconfig-x001-201824
+x86_64                 randconfig-x008-201824
+x86_64                 randconfig-x006-201824
+x86_64                 randconfig-x002-201824
+x86_64                 randconfig-x009-201824
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
