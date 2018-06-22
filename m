@@ -1,281 +1,47 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 22 Jun 2018 08:05:54 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
- 9acbe71c6e4e0715796a89053e3c352c78d41316
-Message-ID: <5b2c3d62.KkElyTWOlgI1mM6Y%lkp@intel.com>
+From: =?unknown-8bit?q?Gr=C3=B6nke?=, Christian <C.Groenke@infodas.de>
+Date: Fri, 22 Jun 2018 10:05:00 +0000
+Subject: [Intel-wired-lan] igb: Problems with early PHY reset when using an
+ SFP module with SGMII as phy->addr is unset
+Message-ID: <98c8af132eae46318a4f3dee1d0306b6@infodas.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 9acbe71c6e4e0715796a89053e3c352c78d41316  ixgbe: Be more careful when modifying MAC filters
+Hello Aaron, Hello Jeff,
 
-TIMEOUT after 608m
+I have problems with the newer versions of the e1000 (igb) driver of current kernels. I stumbled over this with a vendor kernel[*] after they pulled in some updates. When starting on my board, which has several i210 MACs connected to SFP ports. In case I use the hardware flashed for SGMII and SGMII capable SFP modules I see errors like this:
 
+> [ 4776.137522] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
+> [ 4776.137525] igb: Copyright (c) 2007-2014 Intel Corporation.
+[...]
+> [ 4776.337079] igb: probe of 0000:09:00.0 failed with error -3
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+I tracked this down to the failing reset that was introduced by Aaron[*]:
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/net/ethernet/intel/igb/e1000_82575.c?id=182785335447957409282ca745aa5bc3968facee
+> igb: reset the PHY before reading the PHY ID
 
-configs timed out: 31
+The problem here, at least for me, is that during this time in the initialization the phy->addr is '0' and thus 'e1000_write_phy_reg_sgmii_82575' fails. The SGMII PHY will only be discovered later on in 'igb_get_phy_id_82575'.
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-i386                            randconfig-a0
-i386                            randconfig-a1
-i386                            randconfig-i0
-i386                            randconfig-i1
-i386                            randconfig-n0
-i386                            randconfig-s0
-i386                            randconfig-s1
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-s390                             allmodconfig
-s390                             allyesconfig
-sh                               allmodconfig
-sh                               allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-x86_64                           allyesconfig
-x86_64                          randconfig-i0
-xtensa                           allmodconfig
-xtensa                           allyesconfig
+> [ 4776.336987] igb: IGB: Soft resetting SGMII attached PHY...
+> [ 4776.336999] IGB: PHY I2C Address 0 is out of range.
+> [ 4776.337009] igb: IGB: Error resetting the PHY.
 
-configs tested: 217
+When hacking the driver and presenting the PHY to the correct address, or doing a discovery of the PHY in case SGMII is active and MDIO is not used, it works. However, it seems a bit opposed to your patch. I understand your patch note in the way that in some cases the PHY has to be reset as otherwise the PHY ID can not be discovered and the "scan" would thus fail. May this inly be the case if SGMII is not used and thus 'igb_phy_hw_reset' would normally be called? It seems that in case SGMII is used the phy->addr has to be known to do a reset.
 
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-i386                   randconfig-x014-201824
-i386                   randconfig-x017-201824
-i386                   randconfig-x016-201824
-i386                   randconfig-x012-201824
-i386                   randconfig-x018-201824
-i386                   randconfig-x011-201824
-i386                   randconfig-x013-201824
-i386                   randconfig-x019-201824
-i386                   randconfig-x015-201824
-i386                   randconfig-x010-201824
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-x003-201824
-x86_64                 randconfig-x007-201824
-x86_64                 randconfig-x005-201824
-x86_64                 randconfig-x004-201824
-x86_64                 randconfig-x000-201824
-x86_64                 randconfig-x001-201824
-x86_64                 randconfig-x008-201824
-x86_64                 randconfig-x006-201824
-x86_64                 randconfig-x002-201824
-x86_64                 randconfig-x009-201824
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                                  kexec
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x015-201824
-x86_64                 randconfig-x011-201824
-x86_64                 randconfig-x018-201824
-x86_64                 randconfig-x010-201824
-x86_64                 randconfig-x019-201824
-x86_64                 randconfig-x014-201824
-x86_64                 randconfig-x016-201824
-x86_64                 randconfig-x017-201824
-x86_64                 randconfig-x013-201824
-x86_64                 randconfig-x012-201824
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-s3-06220235
-x86_64                 randconfig-s4-06220235
-x86_64                 randconfig-s5-06220235
-x86_64                 randconfig-s3-06220307
-x86_64                 randconfig-s4-06220307
-x86_64                 randconfig-s5-06220307
-x86_64                 randconfig-s3-06220337
-x86_64                 randconfig-s4-06220337
-x86_64                 randconfig-s5-06220337
-x86_64                 randconfig-s3-06220348
-x86_64                 randconfig-s4-06220348
-x86_64                 randconfig-s5-06220348
-x86_64                 randconfig-s3-06220353
-x86_64                 randconfig-s4-06220353
-x86_64                 randconfig-s5-06220353
-x86_64                 randconfig-s3-06220357
-x86_64                 randconfig-s4-06220357
-x86_64                 randconfig-s5-06220357
-x86_64                 randconfig-s3-06220407
-x86_64                 randconfig-s4-06220407
-x86_64                 randconfig-s5-06220407
-x86_64                 randconfig-s3-06220415
-x86_64                 randconfig-s4-06220415
-x86_64                 randconfig-s5-06220415
-x86_64                 randconfig-s3-06220429
-x86_64                 randconfig-s4-06220429
-x86_64                 randconfig-s5-06220429
-x86_64                 randconfig-s3-06220442
-x86_64                 randconfig-s4-06220442
-x86_64                 randconfig-s5-06220442
-x86_64                 randconfig-s3-06220447
-x86_64                 randconfig-s4-06220447
-x86_64                 randconfig-s5-06220447
-x86_64                 randconfig-s3-06220451
-x86_64                 randconfig-s4-06220451
-x86_64                 randconfig-s5-06220451
-x86_64                 randconfig-s3-06220456
-x86_64                 randconfig-s4-06220456
-x86_64                 randconfig-s5-06220456
-x86_64                 randconfig-s3-06220459
-x86_64                 randconfig-s4-06220459
-x86_64                 randconfig-s5-06220459
-x86_64                 randconfig-s3-06220519
-x86_64                 randconfig-s4-06220519
-x86_64                 randconfig-s5-06220519
-x86_64                 randconfig-s3-06220527
-x86_64                 randconfig-s4-06220527
-x86_64                 randconfig-s5-06220527
-x86_64                 randconfig-s3-06220538
-x86_64                 randconfig-s4-06220538
-x86_64                 randconfig-s5-06220538
-x86_64                 randconfig-s3-06220542
-x86_64                 randconfig-s4-06220542
-x86_64                 randconfig-s5-06220542
-x86_64                 randconfig-s3-06220549
-x86_64                 randconfig-s4-06220549
-x86_64                 randconfig-s5-06220549
-x86_64                 randconfig-s3-06220611
-x86_64                 randconfig-s4-06220611
-x86_64                 randconfig-s5-06220611
-x86_64                 randconfig-s3-06220615
-x86_64                 randconfig-s4-06220615
-x86_64                 randconfig-s5-06220615
-x86_64                 randconfig-s3-06220632
-x86_64                 randconfig-s4-06220632
-x86_64                 randconfig-s5-06220632
-x86_64                 randconfig-s3-06220643
-x86_64                 randconfig-s4-06220643
-x86_64                 randconfig-s5-06220643
-x86_64                 randconfig-s3-06220655
-x86_64                 randconfig-s4-06220655
-x86_64                 randconfig-s5-06220655
-x86_64                 randconfig-s3-06220707
-x86_64                 randconfig-s4-06220707
-x86_64                 randconfig-s5-06220707
-x86_64                 randconfig-s3-06220718
-x86_64                 randconfig-s4-06220718
-x86_64                 randconfig-s5-06220718
-x86_64                 randconfig-s3-06220735
-x86_64                 randconfig-s4-06220735
-x86_64                 randconfig-s5-06220735
-x86_64                 randconfig-s3-06220743
-x86_64                 randconfig-s4-06220743
-x86_64                 randconfig-s5-06220743
-x86_64                 randconfig-s3-06220749
-x86_64                 randconfig-s4-06220749
-x86_64                 randconfig-s5-06220749
-x86_64                 randconfig-s3-06220758
-x86_64                 randconfig-s4-06220758
-x86_64                 randconfig-s5-06220758
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-x000-201824
-i386                   randconfig-x001-201824
-i386                   randconfig-x002-201824
-i386                   randconfig-x003-201824
-i386                   randconfig-x004-201824
-i386                   randconfig-x005-201824
-i386                   randconfig-x006-201824
-i386                   randconfig-x007-201824
-i386                   randconfig-x008-201824
-i386                   randconfig-x009-201824
-i386                   randconfig-x078-201824
-i386                   randconfig-x079-201824
-i386                   randconfig-x076-201824
-i386                   randconfig-x075-201824
-i386                   randconfig-x074-201824
-i386                   randconfig-x070-201824
-i386                   randconfig-x073-201824
-i386                   randconfig-x071-201824
-i386                   randconfig-x077-201824
-i386                   randconfig-x072-201824
-i386                             allyesconfig
+I know too little about all the possible IGB/i210 configuration to judge what is okay here. This is why I wanted to get in touch. I am not sure what would be the right fix. While I can fix it for myself and our product by disabling your patch and have no reset, I would much prefer an upstream fix that I can backport.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Kind regards
+Christian
+
+[*] Note: This is still the case in the most current driver on the master branch.
+[*] Note2: I first observed this on a L4Linux 4.9 (https://l4linux.org/) running on L4RE. However, I can also reproduce this with a current CentOS 7.5 which has a 3.10++ kernel and a Ubuntu 18.04.
+
+-- 
+
+Christian GR?NKE
+
+INFODAS GmbH ~ Rhonestra?e 2 ~ 50765 K?ln ~ Germany
+Phone: +49 221 7091255 ~ Mail: c.groenke at infodas.de
+
