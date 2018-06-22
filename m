@@ -1,102 +1,171 @@
-From: Chris Arges <christopherarges@gmail.com>
-Date: Fri, 22 Jun 2018 11:27:36 -0500
-Subject: [Intel-wired-lan] igb: Problems with early PHY reset when using
- an SFP module with SGMII as phy->addr is unset
-In-Reply-To: <CAKgT0Uc_fcCJTC56Q24Bi4A4+1kOh=-6hi_aDZjkfdvA2b0e+w@mail.gmail.com>
-References: <98c8af132eae46318a4f3dee1d0306b6@infodas.de>
- <CAKgT0Uc_fcCJTC56Q24Bi4A4+1kOh=-6hi_aDZjkfdvA2b0e+w@mail.gmail.com>
-Message-ID: <CAObcDv-C5Gy6Vm8x1RbLTtE_pH2UaGm8y01fW3bS6PMfPyPZGQ@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 23 Jun 2018 01:20:01 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 709d311f1da4c2c5d268968b5ebb392ab3777414
+Message-ID: <5b2d2fc1.us1RtWDe+E2IzBUF%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jun 22, 2018 at 11:23 AM, Alexander Duyck <alexander.duyck@gmail.com
-> wrote:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 709d311f1da4c2c5d268968b5ebb392ab3777414  ixgbe: Be more careful when modifying MAC filters
 
-> On Fri, Jun 22, 2018 at 3:05 AM, Gr?nke, Christian <C.Groenke@infodas.de>
-> wrote:
-> > Hello Aaron, Hello Jeff,
-> >
-> > I have problems with the newer versions of the e1000 (igb) driver of
-> current kernels. I stumbled over this with a vendor kernel[*] after they
-> pulled in some updates. When starting on my board, which has several i210
-> MACs connected to SFP ports. In case I use the hardware flashed for SGMII
-> and SGMII capable SFP modules I see errors like this:
-> >
-> >> [ 4776.137522] igb: Intel(R) Gigabit Ethernet Network Driver - version
-> 5.4.0-k
-> >> [ 4776.137525] igb: Copyright (c) 2007-2014 Intel Corporation.
-> > [...]
-> >> [ 4776.337079] igb: probe of 0000:09:00.0 failed with error -3
-> >
-> > I tracked this down to the failing reset that was introduced by Aaron[*]:
-> >> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/
-> linux.git/commit/drivers/net/ethernet/intel/igb/e1000_82575.c?id=
-> 182785335447957409282ca745aa5bc3968facee
-> >> igb: reset the PHY before reading the PHY ID
-> >
-> > The problem here, at least for me, is that during this time in the
-> initialization the phy->addr is '0' and thus 'e1000_write_phy_reg_sgmii_82575'
-> fails. The SGMII PHY will only be discovered later on in
-> 'igb_get_phy_id_82575'.
-> >
-> >> [ 4776.336987] igb: IGB: Soft resetting SGMII attached PHY...
-> >> [ 4776.336999] IGB: PHY I2C Address 0 is out of range.
-> >> [ 4776.337009] igb: IGB: Error resetting the PHY.
-> >
-> > When hacking the driver and presenting the PHY to the correct address,
-> or doing a discovery of the PHY in case SGMII is active and MDIO is not
-> used, it works. However, it seems a bit opposed to your patch. I understand
-> your patch note in the way that in some cases the PHY has to be reset as
-> otherwise the PHY ID can not be discovered and the "scan" would thus fail.
-> May this inly be the case if SGMII is not used and thus 'igb_phy_hw_reset'
-> would normally be called? It seems that in case SGMII is used the phy->addr
-> has to be known to do a reset.
-> >
-> > I know too little about all the possible IGB/i210 configuration to judge
-> what is okay here. This is why I wanted to get in touch. I am not sure what
-> would be the right fix. While I can fix it for myself and our product by
-> disabling your patch and have no reset, I would much prefer an upstream fix
-> that I can backport.
-> >
-> > Kind regards
-> > Christian
-> >
-> > [*] Note: This is still the case in the most current driver on the
-> master branch.
-> > [*] Note2: I first observed this on a L4Linux 4.9 (https://l4linux.org/)
-> running on L4RE. However, I can also reproduce this with a current CentOS
-> 7.5 which has a 3.10++ kernel and a Ubuntu 18.04.
-> >
-> > --
-> >
-> > Christian GR?NKE
->
-> Hi Christian,
->
-> Looking over the code I would say it is probably acceptable to just
-> revert the patch. In addition you could also probably revert commit
-> 440aeca4b985 "igb: Explicitly select page 0 at initialization". Both
-> of those patches seem to be redundant as this was also fixed via a
-> third commit 4e684f59d760 "igb: Workaround for igb i210 firmware
-> issue" which I feel did a much better job of addressing the issue
-> without introducing other side effects.
->
-> If you want to submit the patches to revert the first commit you
-> mentioned, and the one I mentioned I would be willing to ack it and
-> see if we can get it pushed through the tree.
->
-> Thanks.
->
-> - Alex
->
+elapsed time: 201m
 
-I would be happy to test this patch out. It did solve a specific problem on
-the machine I tested this on; so I would not want to regress this fix.
-Thanks,
---chris
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180622/916d411e/attachment.html>
+configs tested: 146
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                   randconfig-x014-201824
+i386                   randconfig-x017-201824
+i386                   randconfig-x016-201824
+i386                   randconfig-x012-201824
+i386                   randconfig-x018-201824
+i386                   randconfig-x011-201824
+i386                   randconfig-x013-201824
+i386                   randconfig-x019-201824
+i386                   randconfig-x015-201824
+i386                   randconfig-x010-201824
+x86_64                              fedora-25
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201824
+x86_64                 randconfig-x003-201824
+x86_64                 randconfig-x007-201824
+x86_64                 randconfig-x005-201824
+x86_64                 randconfig-x004-201824
+x86_64                 randconfig-x000-201824
+x86_64                 randconfig-x001-201824
+x86_64                 randconfig-x008-201824
+x86_64                 randconfig-x006-201824
+x86_64                 randconfig-x002-201824
+x86_64                 randconfig-x009-201824
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201824
+i386                     randconfig-i1-201824
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201824
+i386                     randconfig-a1-201824
+x86_64                 randconfig-s0-06222217
+x86_64                 randconfig-s1-06222217
+x86_64                 randconfig-s2-06222217
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+microblaze                       allyesconfig
+powerpc                 mpc8560_ads_defconfig
+sparc                       sparc32_defconfig
+x86_64                 randconfig-x015-201824
+x86_64                 randconfig-x011-201824
+x86_64                 randconfig-x018-201824
+x86_64                 randconfig-x010-201824
+x86_64                 randconfig-x019-201824
+x86_64                 randconfig-x014-201824
+x86_64                 randconfig-x016-201824
+x86_64                 randconfig-x017-201824
+x86_64                 randconfig-x013-201824
+x86_64                 randconfig-x012-201824
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201824
+i386                     randconfig-s1-201824
+x86_64                 randconfig-s3-06222325
+x86_64                 randconfig-s4-06222325
+x86_64                 randconfig-s5-06222325
+i386                               tinyconfig
+arm                         nhk8815_defconfig
+sh                           se7724_defconfig
+sparc64                             defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201824
+i386                   randconfig-b0-06222302
+sparc                               defconfig
+sparc64                           allnoconfig
+x86_64                 randconfig-u0-06222253
+i386                   randconfig-x008-201824
+i386                   randconfig-x009-201824
+i386                   randconfig-x003-201824
+i386                   randconfig-x000-201824
+i386                   randconfig-x001-201824
+i386                   randconfig-x005-201824
+i386                   randconfig-x006-201824
+i386                   randconfig-x004-201824
+i386                   randconfig-x002-201824
+i386                   randconfig-x007-201824
+i386                   randconfig-x078-201824
+i386                   randconfig-x079-201824
+i386                   randconfig-x076-201824
+i386                   randconfig-x075-201824
+i386                   randconfig-x074-201824
+i386                   randconfig-x070-201824
+i386                   randconfig-x073-201824
+i386                   randconfig-x071-201824
+i386                   randconfig-x077-201824
+i386                   randconfig-x072-201824
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
